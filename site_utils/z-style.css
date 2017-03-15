@@ -107,7 +107,7 @@ a.z-btn:hover {  box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0
 a.z-btn:active { opacity:0.5} 
 a.z-low-btn {    border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; position: relative; bottom: -26px; }
 a.z-small-btn {  border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; margin: 0px;}
-a.z-srv-btn {	 background-image: url(sdcp/site_images/icon-esxi.png); width:54px; font-weight:bold; text-align: right; text-shadow: 2px 1px grey }
+a.z-srv-btn {	 background-image: url(/sdcp/site_images/icon-esxi.png); width:54px; font-weight:bold; text-align: right; text-shadow: 2px 1px grey }
 
 a.z-btn > img {       max-height:43px; }
 a.z-low-btn > img {   height:22px; }
@@ -118,7 +118,7 @@ a.z-btnop { outline:none; cursor:pointer; }
 
 .z-font-sub { position: relative; bottom: -36px; font-size: smaller; }
 
-div.z-rack { background-image: url(sdcp/site_images/rack48u.png); background-position: center; background-repeat: no-repeat; }
+div.z-rack { background-image: url(/sdcp/site_images/rack48u.png); background-position: center; background-repeat: no-repeat; }
 
 div.z-overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:1000; display:flex; justify-content:center; align-items:center; overflow:hidden; }
 div.z-loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 2s linear infinite; 
