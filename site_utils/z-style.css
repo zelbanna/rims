@@ -1,0 +1,134 @@
+/*
+Version: 1.0GA
+
+<HEAD><LINK REL="stylesheet" TYPE="text/css" HREF="system.css"></HEAD>
+
+Body Color scale:
+Background:   #9CA6B0 rgb(156,166,176)
+
+MenuBtnBG:    #FFFFFF (white)
+
+Navbar/warn:  red
+Navbar/Btn:   #808D99
+NavBtn:hover: #D5D9DD
+NavBtn:hover: #000000 (text)
+
+Tables
+Background:   #F3F3F3 (inherit / sync weathermap) -> off same scale as rest)
+Nth:          #FFFFFF / #F3F3F3
+
+Spinner:      #5C6870
+
+Btn ID naming: btn-xyz ('-':s)
+DIV ID naming: div_xyz ('_':s)
+
+######################################### NEW LAYOUT ########################################
+
+*/
+
+html{   box-sizing:border-box; }*,*:before,*:after{box-sizing:inherit}
+body{   margin:0px; padding:0px; font-family: Verdana,sans-serif;font-size: 14px; background-color: #9CA6B0;}
+img {   border-style:none }
+iframe{ border-style: none; border-width: thin; height:100%; width:100%; }
+table { border-collapse: collapse; border:none; }
+div{    z-index:100; }
+
+hr { box-sizing:content-box; height:0; overflow:hidden; width:99% }
+br { clear:left; }
+
+/*###################################### Start page ########################################*/
+
+div.z-header-left {   height :75px; width :440px; padding-left: 5px; float: left; }
+div.z-header-right {  height :75px; position: absolute; left: 440px; right: 0px; }
+div.z-content {       border-style: none; width : 100%; position: absolute; top: 75px; bottom : 0px; background-color:#9CA6B0; }
+
+/*######################################## DIVs ###########################################*/
+
+div.z-system { margin:3px; overflow-x: hidden; position: relative}
+
+div.z-graph { border-radius: 6px!important; background-color:#F3F3F3!important; margin:3px; overflow:hidden; }
+div.z-graph:hover {box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19)}
+
+div.z-logs { background-color:#FFFFFF; color:grey; overflow: auto; padding: 4px; font-family: "Courier New", serif; font-size: 12px; margin: 3px; }
+div.z-logs:hover { color#000000; }
+div.z-logs h1 {	margin: 5px; margin-bottom: 6px; text-align:center; font-size: 18px; }
+
+div.z-error { background-color:red }
+div.z-framed { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; }
+div.z-centered { display:flex; justify-content:center; align-items:center; }
+
+
+/*############################################ Table ##############################################*/
+
+div.z-table {	width:auto; border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; }
+div.z-table th { border:none; display: table-cell; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding-bottom: 6px; }
+div.z-table tr:nth-child(even) { background-color: #FFFFFF; font-size:11px; }
+div.z-table tr:nth-child(odd) {  background-color: #F3F3F3; font-size:11px; }
+div.z-table th.z-header { border: 1px solid black; font-size: 16px; }
+div.z-table th.z-result { border: 1px solid black; font-size: 11px; }
+div.z-table td { padding: 0px 2px 0px 2px; }
+div.z-table:hover { box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }
+
+/*############################################ NavBar ############################################*/
+
+div.z-navframe { position: relative; height: 100%; width:100%;}
+
+div.z-navbar { height: 34px; float: left; display: table; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99;cursor:pointer; position:fixed; top:0px; width:100%; }
+div.z-navbar a { color:#FFFFFF; display:block; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
+div.z-navbar a.z-warning { background-color:red; }
+div.z-navbar a.z-right {   float:right; }
+div.z-navbar a.z-reload { background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
+
+div.z-navbar a:hover{ color:#000000 ;background-color:#D5D9DD; }
+
+div.z-nav_left {  display:block; position: absolute; bottom:0px; top:34px; width:360px; overflow-y:auto; overflow-x:hidden; }
+div.z-nav_right { display:block; position: absolute; bottom:0px; top:34px; left: 360px; right:0px; overflow: auto; }
+
+div.z-navcontent {  position: absolute; top: 34px; bottom: 0px; left: 0px; right: 0px; box-sizing: border-box; display:block; overflow: auto;}
+
+/*########################################### A(nything) ##########################################*/
+
+a{ color: black; background-color:transparent;-webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; }
+a:active,a:hover{ outline-width:0; }
+
+a.z-btn { 
+ background-color:#FFFFFF!important; background-position: center; background-repeat: no-repeat; border : 1px solid #ccc; border-radius: 8px; cursor:pointer; display: 
+ inline-block; float: none; font-family: "Courier New", serif; font-size: 20px; height: 52px; vertical-align:top; margin: 5px 0px; outline:0; overflow:hidden; padding: 
+ 4px; text-align:center; text-decoration:none!important; white-space:nowrap;
+ 
+ -webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
+ -webkit-transition:background-color .25s,color .15s,box-shadow .25s,opacity 0.25s,filter 0.25s,border 0.15s;transition:background-color .25s,color .15s,box-shadow .15s .15s,opacity .25s,filter .25s,border .15s;
+
+ /* Comment in to get gray buttons instead
+ -webkit-filter:grayscale(75%);filter:grayscale(75%);
+ */
+}
+a.z-btn:hover {  box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19); font-weight: bold; border: 1px solid black;}
+a.z-btn:active { opacity:0.5} 
+a.z-low-btn {    border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; position: relative; bottom: -26px; }
+a.z-small-btn {  border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; margin: 0px;}
+a.z-srv-btn {	 background-image: url(sdcp/site_images/icon-esxi.png); width:54px; font-weight:bold; text-align: right; text-shadow: 2px 1px grey }
+
+a.z-btn > img {       max-height:43px; }
+a.z-low-btn > img {   height:22px; }
+a.z-small-btn > img { height:22px; }
+
+a.z-btnop { outline:none; cursor:pointer; }
+/*###############################################################################################*/
+
+.z-font-sub { position: relative; bottom: -36px; font-size: smaller; }
+
+div.z-rack { background-image: url(sdcp/site_images/rack48u.png); background-position: center; background-repeat: no-repeat; }
+
+div.z-overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:1000; display:flex; justify-content:center; align-items:center; overflow:hidden; }
+div.z-loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 2s linear infinite; 
+animation: spin 2s linear infinite; z-index:1001; }
+@-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/*##################################### Inframe munin ##########################################*/
+div#header { display:none; }
+div#footer { display:none; }
+div#nav    { display:none; }
+div#content { margin-left: 20px; }
+div#content > h2{ display:none; }

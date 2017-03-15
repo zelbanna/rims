@@ -1,0 +1,13 @@
+{
+ "main-map": {
+  "map": "wm_main-map"
+ },
+ "odengatan": {
+  "map": "wm_odengatan",
+  "graphs": [ "mgmt/sa.mgmt/sys_tunnels","mgmt/fw.mgmt/fwd_sess","mgmt/esxi3.mgmt/esxi_cpu_info" ]
+ }, 
+ "borev": {
+  "map": "wm_borev",
+  "graphs": [ "mgmt/fw2.mgmt/snmp_fw2_mgmt_if_508","mgmt/fw2.mgmt/fwd_sess","mgmt/esxi2.mgmt/esxi_cpu_info" ]  
+ }
+}
