@@ -49,7 +49,7 @@
 
 <DIV ID=div_sub_tool class='z-header-right' style='display:none'>
 <A CLASS='z-btn'	TITLE='RDP'			TARGET="_blank"	HREF=guacamole/><IMG SRC="sdcp/site_images/icon-rdp.png" /></A>
-<A CLASS='z-btn'	TITLE='Device Management'			HREF=devices.cgi?view=main&domain=mgmt&discstart=192.168.121.1&discstop=192.168.122.254><IMG SRC='sdcp/site_images/icon-network.png'/></A>
+<A CLASS='z-btn'	TITLE='Device Management'			HREF=site.cgi?pane=devices&domain=mgmt&discstart=192.168.121.1&discstop=192.168.122.254><IMG SRC='sdcp/site_images/icon-network.png'/></A>
 <A CLASS='z-btn'	TITLE='Weathermap Editor'			HREF=weathermap/editor.php><IMG SRC='sdcp/site_images/icon-wm-editor.png'/></A>
 <A CLASS='z-btn'	TITLE='Munin'						HREF=site.cgi?pane=munin><IMG SRC="sdcp/site_images/icon-munin.png"></A>
 <A CLASS='z-btn'	TITLE='NAS'			TARGET="_blank"	HREF=http://nas.mgmt/><IMG SRC="sdcp/site_images/icon-nas.png" /></A>
@@ -61,6 +61,6 @@
 <!-- ---- Main (i)frame for content ----- -->
 
 <DIV CLASS=z-content ID=div_main_cont>
- <iframe ID=main_cont name=main_cont src='site.cgi?pane=weathermap'></iframe>
+ <iframe ID=main_cont name=main_cont src='site.cgi?pane=weathermap&json=weathermaps.json&view=main-map'></iframe>
 </DIV>
 

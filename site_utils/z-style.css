@@ -77,12 +77,12 @@ div.z-navbar { height: 34px; float: left; display: table; clear:both; margin:0; 
 div.z-navbar a { color:#FFFFFF; display:block; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
 div.z-navbar a.z-warning { background-color:red; }
 div.z-navbar a.z-right {   float:right; }
-div.z-navbar a.z-reload { background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
+div.z-navbar a.z-reload { background-image: url(/sdcp/site_images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
 
 div.z-navbar a:hover{ color:#000000 ;background-color:#D5D9DD; }
 
-div.z-nav_left {  display:block; position: absolute; bottom:0px; top:34px; width:360px; overflow-y:auto; overflow-x:hidden; }
-div.z-nav_right { display:block; position: absolute; bottom:0px; top:34px; left: 360px; right:0px; overflow: auto; }
+div.z-navleft {  display:block; position: absolute; bottom:0px; top:34px; width:360px; overflow-y:auto; overflow-x:hidden; }
+div.z-navright { display:block; position: absolute; bottom:0px; top:34px; left: 360px; right:0px; overflow: auto; }
 
 div.z-navcontent {  position: absolute; top: 34px; bottom: 0px; left: 0px; right: 0px; box-sizing: border-box; display:block; overflow: auto;}
 

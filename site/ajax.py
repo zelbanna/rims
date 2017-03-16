@@ -58,7 +58,7 @@ def esxi_op(aWeb, aEsxi = None):
 
  if nstate:
   from subprocess import check_call, check_output
-  from GenLib import sys_log_msg
+  from sdcp.utils.GenLib import sys_log_msg
   try:
    sys_log_msg("ESXi: {} got command {}".format(aEsxi._fqdn,nstate))
    if "vm-" in nstate:
