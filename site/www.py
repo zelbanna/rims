@@ -12,6 +12,9 @@ __status__= "Production"
 # + site.cgi?
 # + ajax/pane
 #
+#
+# - Log function to avoid importing GenLib EVERYwhere..
+#
 #################################### Web Items #######################################
 
 class Web(object):
