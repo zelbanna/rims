@@ -62,10 +62,10 @@ class Web(object):
 
  # These should be the two mandatory items any web page needs to load 
  def get_header_base(self, aExtra = ""):
-  return "<HEAD>\n<LINK REL='stylesheet' TYPE='text/css' HREF='sdcp/site_utils/z-style.css'>\n<META CHARSET='UTF-8'>\n{}\n</HEAD>".format(aExtra)
+  return "<HEAD>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>\n<META CHARSET='UTF-8'>\n{}\n</HEAD>".format(aExtra)
 
  def get_header_full(self,aTitle):
-  return self.get_header_base("<TITLE>{}</TITLE>\n<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='sdcp/site_utils/z-functions.js'></SCRIPT>".format(aTitle))
+  return self.get_header_base("<TITLE>{}</TITLE>\n<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>".format(aTitle))
 
  def get_listeners(self,aselector = "div_navbar"):
   return "<SCRIPT>$(function() { $('#"+ aselector +"').on('click','.z-btnop',function() { btnoperation(this); } ); });</SCRIPT>"

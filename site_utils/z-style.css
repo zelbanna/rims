@@ -77,7 +77,7 @@ div.z-navbar { height: 34px; float: left; display: table; clear:both; margin:0; 
 div.z-navbar a { color:#FFFFFF; display:block; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
 div.z-navbar a.z-warning { background-color:red; }
 div.z-navbar a.z-right {   float:right; }
-div.z-navbar a.z-reload { background-image: url(/sdcp/site_images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
+div.z-navbar a.z-reload { background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
 
 div.z-navbar a:hover{ color:#000000 ;background-color:#D5D9DD; }
 
@@ -107,7 +107,8 @@ a.z-btn:hover {  box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0
 a.z-btn:active { opacity:0.5} 
 a.z-low-btn {    border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; position: relative; bottom: -26px; }
 a.z-small-btn {  border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; margin: 0px;}
-a.z-srv-btn {	 background-image: url(/sdcp/site_images/icon-esxi.png); width:54px; font-weight:bold; text-align: right; text-shadow: 2px 1px grey }
+
+a.z-srv-btn {	 background-image: url(images/icon-esxi.png); width:54px; font-weight:bold; text-align: right; text-shadow: 2px 1px grey }
 
 a.z-btn > img {       max-height:43px; }
 a.z-low-btn > img {   height:22px; }
@@ -117,8 +118,6 @@ a.z-btnop { outline:none; cursor:pointer; }
 /*###############################################################################################*/
 
 .z-font-sub { position: relative; bottom: -36px; font-size: smaller; }
-
-div.z-rack { background-image: url(/sdcp/site_images/rack48u.png); background-position: center; background-repeat: no-repeat; }
 
 div.z-overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:1000; display:flex; justify-content:center; align-items:center; overflow:hidden; }
 div.z-loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 2s linear infinite; 

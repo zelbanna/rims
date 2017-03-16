@@ -38,7 +38,7 @@ def examine_clear_logs(aWeb, aClear = True):
 def rack_info(aWeb):
  rack = aWeb.get_value('rack', 0)
  print "<DIV style='padding:20px;'>"
- print "<DIV CLASS='z-rack' style='height:1680px; width:770px;'></DIV>"
+ print "<DIV style=' background-image: url(images/rack48u.png); background-position: center; background-repeat: no-repeat; height:1680px; width:770px;'></DIV>"
  print "</DIV>"
 
 ########################################## ESXi Operations ##########################################
@@ -75,7 +75,7 @@ def esxi_op(aWeb, aEsxi = None):
    sys_log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  print "<TABLE>"
- template="<A CLASS='z-btn z-small-btn z-btnop' TITLE='{3}' OP=load DIV=div_esxi_op LNK='site.cgi?ajax=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}'><IMG SRC=sdcp/site_images/btn-{1}.png></A>"
+ template="<A CLASS='z-btn z-small-btn z-btnop' TITLE='{3}' OP=load DIV=div_esxi_op LNK='site.cgi?ajax=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}'><IMG SRC=images/btn-{1}.png></A>"
  statelist = aEsxi.get_vms()
  if not nstate:
   print "<TR><TH CLASS='z-header' COLSPAN=2>{}</TH></TR>".format(aEsxi._fqdn)
@@ -123,8 +123,7 @@ def device_view_devicelist(aWeb):
   keys = devs.get_keys(target,arg, aSortKey = sys_ip2int)
  else:
   keys = devs.get_keys(aSortKey = sys_ip2int)
- print "<DIV CLASS='z-framed' ID=div_device_devicelist>"
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS='z-framed' ID=div_device_devicelist><DIV CLASS='z-table'>"
  print "<CENTER><TABLE WIDTH=330>"
  print "<TR><TH>IP</TH><TH>FQDN</TH><TH>Model</TH></TR>"
  for key in keys:
@@ -157,7 +156,7 @@ def device_view_graphlist(aWeb):
   else:
    print "<TD>{0}</TD>".format(key)
   print "<TD>"+ entry['handler'] +"</TD>"
-  print "<TD TITLE='Include in graphing?'><CENTER><A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='site.cgi?ajax=device_view_graphlist&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=sdcp/site_images/btn-{}.png></A></CENTER></TD>".format("start" if entry['update'] == "no" else "shutdown")
+  print "<TD TITLE='Include in graphing?'><CENTER><A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='site.cgi?ajax=device_view_graphlist&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A></CENTER></TD>".format("start" if entry['update'] == "no" else "shutdown")
   print "</TR>"
  print "</TABLE></CENTER></DIV></DIV>"
 

@@ -28,7 +28,7 @@ def examine(aWeb):
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
  
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-btnop' OP=confirm DIV=div_examine_log MSG='Clear Network Logs?' LNK='site.cgi?ajax=examine_clear_logs&{}'>Clear Logs</A>".format(aWeb.reload_args_except(['ajax','pane']))
+ print "<A CLASS='z-warning z-btnop' OP=confirm DIV=div_examine_log MSG='Clear Network Logs?' LNK='site.cgi?ajax=examine_clear_logs&{}'>Clear Logs</A>".format(aWeb.reload_args_except(['pane']))
  print "<A CLASS=z-btnop OP=single SELECTOR='.z-system' DIV=div_examine_log LNK='.z-system'>Logs</A>"
  if upshost:
   print "<A CLASS=z-btnop OP=single SELECTOR='.z-system' DIV=div_ups LNK='.z-system'>UPS</A>"
@@ -36,7 +36,7 @@ def examine(aWeb):
   print "<A CLASS=z-btnop OP=single SELECTOR='.z-system' DIV=div_dns  LNK='.z-system'>DNS</A>"
   print "<A CLASS=z-btnop OP=single SELECTOR='.z-system' DIV=div_dhcp LNK='.z-system'>DHCP</A>"
   print "<A CLASS=z-btnop OP=single SELECTOR='.z-system' DIV=div_external LNK='.z-system'>External</A>"
- print "<A CLASS=z-btnop OP=reload DIV=div_navframe LNK='site.cgi?&{}'>Reload</A>".format(aWeb.reload_args_except(['ajax']))
+ print "<A CLASS='z-reload z-btnop' OP=reload LNK='site.cgi?{}'></A>".format(aWeb.reload_args_except([]))
  print "</DIV>"
  
  print "<DIV CLASS='z-navcontent' ID=div_navcont>"
@@ -299,7 +299,7 @@ def devices(aWeb):
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='site.cgi?ajax=device__view_consolelist&{}'>Console</A>".format(aWeb.reload_args_except(['discstart','discstop','pdu','view']))
  if pdulist:
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='site.cgi?ajax=device_view_pdulist&{}'>PDU</A>".format(aWeb.reload_args_except(['discstart','discstop','console','view']))
- print "<A CLASS='z-reload z-btnop' OP=reload '></A>"
+ print "<A CLASS='z-reload z-btnop' OP=reload LNK='site.cgi?{}'></A>".format(aWeb.reload_args_except([]))
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Device Discovery?' SPIN=true LNK='site.cgi?ajax=device_op_finddevices&domain={0}&discstart={1}&discstop={2}'>Device Discovery</A>".format(domain,discstart,discstop)
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Graph Discovery?'  SPIN=true LNK='site.cgi?ajax=device_op_findgraphs&domain={0}'>Graph Discovery</A>".format(domain)
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Sync Devices/Graphs?'    LNK='site.cgi?ajax=device_op_syncgraphs&domain={0}'>Sync Graphing</A>".format(domain)
