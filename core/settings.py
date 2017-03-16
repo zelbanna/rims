@@ -17,9 +17,10 @@ if len(argv) < 2:
 else:
  with open(argv[1]) as f:
   config = load(f)
-  
- for name,cathegory in config.iteritems():
-  print "##################### {:<8} ######################".format(name.upper())
-  for key, entry in cathegory.iteritems():
-   print "{}_{} = {}".format(name,key,entry)
-  print ""
+
+ with open('SettingsContainer.py','w') as f:
+  for name,cathegory in config.iteritems():
+   f.write("##################### {:<8} ######################\n".format(name.upper()))
+   for key, entry in cathegory.iteritems():
+    f.write("{}_{} = '{}'\n".format(name,key,entry))
+   f.write("\n")
