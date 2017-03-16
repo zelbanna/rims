@@ -18,7 +18,7 @@ def examine_clear_logs(aWeb, aClear = True):
  try:
   from subprocess import check_output
   if aClear:
-   from sdcp.utils.GenLib import sys_log_msg
+   from sdcp.core.GenLib import sys_log_msg
    open("/var/log/network/"+ domain +".log",'w').close()
    open("/var/log/system/system.log",'w').close()
    sys_log_msg("Emptied logs")
@@ -58,7 +58,7 @@ def esxi_op(aWeb, aEsxi = None):
 
  if nstate:
   from subprocess import check_call, check_output
-  from sdcp.utils.GenLib import sys_log_msg
+  from sdcp.core.GenLib import sys_log_msg
   try:
    sys_log_msg("ESXi: {} got command {}".format(aEsxi._fqdn,nstate))
    if "vm-" in nstate:
@@ -113,7 +113,7 @@ def esxi_op(aWeb, aEsxi = None):
 #
 def device_view_devicelist(aWeb):
  from sdcp.devices.DevHandler import Devices
- from sdcp.utils.GenLib import sys_ip2int
+ from sdcp.core.GenLib import sys_ip2int
  domain = aWeb.get_value('domain')
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
@@ -136,7 +136,7 @@ def device_view_devicelist(aWeb):
 # View graphs
 #
 def device_view_graphlist(aWeb):
- from sdcp.utils.Grapher import Grapher
+ from sdcp.core.Grapher import Grapher
  node  = aWeb.get_value('node')
  state = aWeb.get_value('state')
  graph = Grapher()
@@ -307,7 +307,7 @@ def device_view_devdata(aWeb):
 # find devices operations
 #
 def device_op_finddevices(aWeb):
- from sdcp.utils.GenLib import sys_log_msg
+ from sdcp.core.GenLib import sys_log_msg
  domain    = aWeb.get_value('domain')
  discstart = aWeb.get_value('discstart')
  discstop  = aWeb.get_value('discstop')
@@ -323,8 +323,8 @@ def device_op_finddevices(aWeb):
 # Find graphs
 #
 def device_op_findgraphs(aWeb):
- from sdcp.utils.Grapher import Grapher
- from sdcp.utils.GenLib import sys_log_msg
+ from sdcp.core.Grapher import Grapher
+ from sdcp.core.GenLib import sys_log_msg
  try:
   graph = Grapher() 
   graph.discover()
@@ -338,8 +338,8 @@ def device_op_findgraphs(aWeb):
 #
 def device_op_syncgraphs(aWeb):
  from sdcp.devices.DevHandler import Devices
- from sdcp.utils.Grapher import Grapher
- from sdcp.utils.GenLib import sys_log_msg
+ from sdcp.core.Grapher import Grapher
+ from sdcp.core.GenLib import sys_log_msg
  try:
   devs  = Devices()
   devs.load_json()
@@ -363,7 +363,7 @@ def device_op_addgraph(aWeb):
  domain = aWeb.get_value('domain',None)
  if name and domain:
   fqdn   = name + "." + domain
-  from sdcp.utils.Grapher import Grapher
+  from sdcp.core.Grapher import Grapher
   graph = Grapher()
   entry = graph.get_entry(fqdn)
   if entry:

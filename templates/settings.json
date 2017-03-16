@@ -1,0 +1,24 @@
+{
+ "loopia": {
+  "username":"",
+  "password":"",
+  "domain": ""
+ },
+ "netconf": {
+  "username":"",
+  "password":""  
+ },
+ "esxi": {
+  "username":"",
+  "password":"",
+  "pathtobackup":""
+ },
+ "ipmi": {
+  "username":"",
+  "password":"" 
+ },
+ "snmp": {
+  "read_community":"public",
+  "write_community":"private"
+ }
+}

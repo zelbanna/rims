@@ -21,7 +21,7 @@ def examine(aWeb):
  domain  = aWeb.get_value('domain')
  upshost = aWeb.get_value('upshost')
  svclist = aWeb.get_list('svchost')
- from sdcp.utils.Grapher import Grapher
+ from sdcp.core.Grapher import Grapher
  graph = Grapher() 
  
  print aWeb.get_listeners()
@@ -149,7 +149,7 @@ def weathermap(aWeb):
   print aWeb.get_header_base()
   if json:
    from json import load
-   from sdcp.utils.Grapher import Grapher
+   from sdcp.core.Grapher import Grapher
    with open(json) as conffile:
     config = load(conffile)
     entry  = config[view]
@@ -173,8 +173,8 @@ def weathermap(aWeb):
 # Shutdown all
 #
 def thread_shutdown_host(afqdn):
- from sdcp.utils.GenLib import sys_log_msg
- from sdcp.utils.DevESXi import ESXi
+ from sdcp.core.GenLib import sys_log_msg
+ from sdcp.core.DevESXi import ESXi
  print "<PRE>Shutting down host: {}</PRE>".format(afqdn)
  sys_log_msg("shutdownAll: Thread shutting down [{}]".format(afqdn))
  esxi = ESXi(fqdn)
@@ -232,7 +232,7 @@ def rack(aWeb):
 def esxi(aWeb):
  from ajax import esxi_op
  from sdcp.devices.ESXi import ESXi
- from sdcp.utils.Grapher import Grapher
+ from sdcp.core.Grapher import Grapher
  host   = aWeb.get_value('host')
  domain = aWeb.get_value('domain')
  esxi   = ESXi(host,domain)

@@ -12,8 +12,8 @@ __author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
 
-from sdcp.utils.PasswordContainer import netconf_username, netconf_password, snmp_read_community
-from sdcp.utils.GenLib import sys_log_msg, GenDevice
+from sdcp.core.PasswordContainer import netconf_username, netconf_password, snmp_read_community
+from sdcp.core.GenLib import sys_log_msg, GenDevice
 from netsnmp import VarList, Varbind, Session
 from lxml import etree
 

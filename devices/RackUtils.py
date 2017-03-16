@@ -11,8 +11,8 @@ __author__  = "Zacharias El Banna"
 __version__ = "0.1"
 __status__  = "Beta"
 
-from sdcp.utils.GenLib import GenDevice, ConfObject, sys_log_msg
-import sdcp.utils.PasswordContainer as PC
+from sdcp.core.GenLib import GenDevice, ConfObject, sys_log_msg
+import sdcp.core.PasswordContainer as PC
 
 ######################################## Console ########################################
 #
