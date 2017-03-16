@@ -8,7 +8,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
 
-from sdcp.core.PasswordContainer import esxi_username, esxi_password, snmp_read_community
+from sdcp.core.SettingsContainer import esxi_username, esxi_password, snmp_read_community
 from sdcp.core.GenLib import GenDevice, sys_log_msg, sys_lock_pidfile, sys_release_pidfile, sys_get_host, sys_is_ip
 from netsnmp import VarList, Varbind, Session
 from select import select

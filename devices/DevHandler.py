@@ -11,7 +11,7 @@ __version__ = "1.0GA"
 __status__  = "Production"
 
 from sdcp.core.GenLib import ConfObject, ping_os, sys_ips2range, sys_ip2int, sys_log_msg
-from sdcp.core.PasswordContainer import snmp_read_community
+from sdcp.core.SettingsContainer import snmp_read_community
 
 # keys.sort(key=sys_ip2int)
 # - Devices is the maintainer of discovered devices, use sys_ip2int as sort key

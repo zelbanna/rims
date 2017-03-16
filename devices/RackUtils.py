@@ -12,7 +12,7 @@ __version__ = "0.1"
 __status__  = "Beta"
 
 from sdcp.core.GenLib import GenDevice, ConfObject, sys_log_msg
-import sdcp.core.PasswordContainer as PC
+import sdcp.core.SettingsContainer as PC
 
 ######################################## Console ########################################
 #

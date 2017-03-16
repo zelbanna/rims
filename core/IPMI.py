@@ -11,7 +11,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "3.2"
 __status__ = "Production"
 
-from PasswordContainer import ipmi_username, ipmi_password
+from SettingsContainer import ipmi_username, ipmi_password
 from GenLib import sys_get_results, sys_str2hex
 from subprocess import check_output, check_call
 

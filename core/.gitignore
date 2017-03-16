@@ -8,5 +8,5 @@
 /*.egg-info
 
 # Site specifics
-PasswordContainer.*
+SettingsContainer.*
 *.json
