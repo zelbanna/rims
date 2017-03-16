@@ -63,13 +63,11 @@ def esxi_op(aWeb, aEsxi = None):
    sys_log_msg("ESXi: {} got command {}".format(aEsxi._fqdn,nstate))
    if "vm-" in nstate:
     vmop = nstate.split('-')[1]
-    aEsxi.ssh_connect()
-    aEsxi.ssh_send("vim-cmd vmsvc/power." + vmop + " " + vmid)
-    aEsxi.ssh_close()
+    with aEsxi:
+     aEsxi.ssh_send("vim-cmd vmsvc/power." + vmop + " " + vmid)
    elif nstate == 'poweroff':
-    aEsxi.ssh_connect()
-    aEsxi.ssh_send("poweroff")
-    aEsxi.ssh_close()
+    with aEsxi:
+     aEsxi.ssh_send("poweroff")
    elif nstate == 'vmsoff':
     excpt = "" if vmid == '-1' else vmid
     check_call("/usr/local/sbin/ups-operations shutdown " + aEsxi._hostname + " " + excpt + " &", shell=True)

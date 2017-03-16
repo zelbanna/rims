@@ -39,6 +39,15 @@ class ESXi(GenDevice):
   self.backuplist = []
   self.statefile = "/var/tmp/esxi." + self._hostname + ".vmstate.log"
   self._threads = {}
+ 
+ def __enter__(self):
+  if self.ssh_connect():
+   return self
+  else:
+   raise RuntimeError("Error connecting to host")
+  
+ def __exit__(self, ctx_type, ctx_value, ctx_traceback):
+  self.ssh_close()
   
  def __str__(self):
   return self._hostname + " SSHConnected:" + str(self._sshclient != None)  + " Backuplist:" + str(self.backuplist) + " statefile:" + self.statefile + " Threads:" + str(self._threads.keys())
