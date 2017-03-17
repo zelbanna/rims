@@ -79,3 +79,8 @@ class Web(object):
    return html
   except Exception as err:
    return ""
+
+ def log_msg(amsg, alog='/var/log/system/system.log'):
+  from time import localtime, strftime
+  with open(alog, 'a') as f:
+   f.write(unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), amsg)))

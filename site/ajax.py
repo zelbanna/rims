@@ -18,10 +18,9 @@ def examine_clear_logs(aWeb, aClear = True):
  try:
   from subprocess import check_output
   if aClear:
-   from sdcp.core.GenLib import sys_log_msg
    open("/var/log/network/"+ domain +".log",'w').close()
    open("/var/log/system/system.log",'w').close()
-   sys_log_msg("Emptied logs")
+   aWeb.log_msg("Emptied logs")
   netlogs = check_output("tail -n 15 /var/log/network/{}.log | tac".format(domain), shell=True)
   print "<DIV CLASS='z-logs'><H1>Network Logs</H1><PRE>{}</PRE></DIV>".format(netlogs)
   print "<BR>"
@@ -58,9 +57,8 @@ def esxi_op(aWeb, aEsxi = None):
 
  if nstate:
   from subprocess import check_call, check_output
-  from sdcp.core.GenLib import sys_log_msg
   try:
-   sys_log_msg("ESXi: {} got command {}".format(aEsxi._fqdn,nstate))
+   aWeb.log_msg("ESXi: {} got command {}".format(aEsxi._fqdn,nstate))
    if "vm-" in nstate:
     vmop = nstate.split('-')[1]
     with aEsxi:
@@ -72,7 +70,7 @@ def esxi_op(aWeb, aEsxi = None):
     excpt = "" if vmid == '-1' else vmid
     check_call("/usr/local/sbin/ups-operations shutdown " + aEsxi._hostname + " " + excpt + " &", shell=True)
   except Exception as err:
-   sys_log_msg("ESXi: nstate error [{}]".format(str(err)))
+   aWeb.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  print "<TABLE>"
  template="<A CLASS='z-btn z-small-btn z-btnop' TITLE='{3}' OP=load DIV=div_esxi_op LNK='site.cgi?ajax=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}'><IMG SRC=images/btn-{1}.png></A>"
@@ -307,7 +305,6 @@ def device_view_devdata(aWeb):
 # find devices operations
 #
 def device_op_finddevices(aWeb):
- from sdcp.core.GenLib import sys_log_msg
  domain    = aWeb.get_value('domain')
  discstart = aWeb.get_value('discstart')
  discstop  = aWeb.get_value('discstop')
@@ -317,19 +314,18 @@ def device_op_finddevices(aWeb):
   devs = Devices() 
   devs.discover(discstart,discstop, domain, clear)
   print "<B>Done Discovering Devices: {} -> {} for {}!</B>".format(discstart,discstop,domain)
-  sys_log_msg("devices.cgi: Discovered devices [{}] {} -> {} for {}".format(str(clear), discstart,discstop,domain))
+  aWeb.log_msg("devices.cgi: Discovered devices [{}] {} -> {} for {}".format(str(clear), discstart,discstop,domain))
 
 #
 # Find graphs
 #
 def device_op_findgraphs(aWeb):
  from sdcp.core.Grapher import Grapher
- from sdcp.core.GenLib import sys_log_msg
  try:
   graph = Grapher() 
   graph.discover()
   print "<B>Done discovering graphs</B>"
-  sys_log_msg("devices.cgi: Discovered graphs")
+  aWeb.log_msg("devices.cgi: Discovered graphs")
  except Exception as err:
   print "<B>Error: {}</B>".format(str(err))
 
@@ -339,7 +335,6 @@ def device_op_findgraphs(aWeb):
 def device_op_syncgraphs(aWeb):
  from sdcp.devices.DevHandler import Devices
  from sdcp.core.Grapher import Grapher
- from sdcp.core.GenLib import sys_log_msg
  try:
   devs  = Devices()
   devs.load_json()
@@ -350,7 +345,7 @@ def device_op_syncgraphs(aWeb):
    entry['graphed'] = 'yes' if entry['fqdn'] in graphdevices else 'no'
   devs.save_json()
   print "<B>Done syncing devices' graphing</B>"
-  sys_log_msg("devices.cgi: Done syncing devices' graphing")
+  aWeb.log_msg("devices.cgi: Done syncing devices' graphing")
  except Exception as err:
   print "<B>Error: {}</B>".format(str(err))
 

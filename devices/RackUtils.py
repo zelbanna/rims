@@ -11,7 +11,7 @@ __author__  = "Zacharias El Banna"
 __version__ = "0.1"
 __status__  = "Beta"
 
-from sdcp.core.GenLib import GenDevice, ConfObject, sys_log_msg
+from sdcp.core.GenLib import GenDevice, ConfObject
 import sdcp.core.SettingsContainer as PC
 
 ######################################## Console ########################################
@@ -39,8 +39,7 @@ class OpenGear(GenDevice, ConfObject):
     # [ Port ] = Name
     self._configitems[ int(result.iid) ] = result.val
   except Exception as exception_error:
-   print "OpenGear : error loading conf " + str(exception_error)
-   sys_log_msg("OpenGear : error loading conf " + str(exception_error))
+   self.log_msg("OpenGear : error loading conf " + str(exception_error), aPrint = True)
 
 
 ######################################## PDU ########################################
@@ -79,10 +78,9 @@ class Avocent(GenDevice, ConfObject):
    entry = self.get_entry(node)
    if entry:
     entry['state'] = state
-   sys_log_msg("Avocent : {0} set state to {0} on {0}".format(self._ip,state,node))
+   self.log_msg("Avocent : {0} set state to {0} on {0}".format(self._ip,state,node))
   except Exception as exception_error:
-   print "Avocent : error setting state " + str(exception_error)
-   sys_log_msg("Avocent : error setting state " + str(exception_error))
+   self.log_msg("Avocent : error setting state " + str(exception_error), aPrint = True)
 
  def set_name(self,node,name):
   from netsnmp import VarList, Varbind, Session
@@ -95,8 +93,7 @@ class Avocent(GenDevice, ConfObject):
    if entry:
     entry['name'] = name
   except Exception as exception_error:
-   print "Avocent : error setting name " + str(exception_error)
-   sys_log_msg("Avocent : error setting name " + str(exception_error))
+   self.log_msg("Avocent : error setting name " + str(exception_error), aPrint = True)
 
  def load_snmp(self):
   from netsnmp import VarList, Varbind, Session
@@ -116,8 +113,7 @@ class Avocent(GenDevice, ConfObject):
     node = pdu + "." + outlet.iid
     self._configitems[ node ] = { 'name': outlet.val, 'state':Avocent.get_outlet_state(statedict[node]), 'pduslot':pdudict.get(pdu,"unknown") + "." + outlet.iid }
   except Exception as exception_error:
-   print "Avocent : error loading conf " + str(exception_error)
-   sys_log_msg("Avocent : error loading conf " + str(exception_error))
+   self.log_msg("Avocent : error loading conf " + str(exception_error), aPrint = True)
  
  def get_pdu_names(self):
   from netsnmp import VarList, Varbind, Session
@@ -129,6 +125,5 @@ class Avocent(GenDevice, ConfObject):
    for pdu in pduobj:
     pdus.append([pdu.iid, pdu.val])
   except Exception as exception_error:
-   print "Avocent : error loading pdu member names " + str(exception_error)
-   sys_log_msg("Avocent : error loading pdu member names " + str(exception_error))
+   self.log_msg("Avocent : error loading pdu member names " + str(exception_error), aPrint = True)
   return pdus

@@ -172,11 +172,10 @@ def weathermap(aWeb):
 #
 # Shutdown all
 #
-def thread_shutdown_host(afqdn):
- from sdcp.core.GenLib import sys_log_msg
+def thread_shutdown_host(afqdn, aWeb):
  from sdcp.core.DevESXi import ESXi
  print "<PRE>Shutting down host: {}</PRE>".format(afqdn)
- sys_log_msg("shutdownAll: Thread shutting down [{}]".format(afqdn))
+ aWeb.log_msg("shutdownAll: Thread shutting down [{}]".format(afqdn))
  esxi = ESXi(fqdn)
  esxi.shutdown_vms()
 
@@ -188,7 +187,7 @@ def shutdownall(aWeb):
  if domain and srvlist:
   for host in srvlist:
    fqdn = host+"."+domain
-   t = Thread(target = thread_shutdown_host, args=[fqdn])
+   t = Thread(target = thread_shutdown_host, args=[fqdn, aWeb])
    t.start()
  else:
   print "<PRE>Shutdown system not starting</PRE>"

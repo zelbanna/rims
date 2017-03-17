@@ -9,7 +9,7 @@ __version__ = "1.0GA"
 __status__ = "Production"
 
 from sdcp.core.SettingsContainer import esxi_username, esxi_password, snmp_read_community
-from sdcp.core.GenLib import GenDevice, sys_log_msg, sys_lock_pidfile, sys_release_pidfile, sys_get_host, sys_is_ip
+from sdcp.core.GenLib import GenDevice, sys_lock_pidfile, sys_release_pidfile, sys_get_host, sys_is_ip
 from netsnmp import VarList, Varbind, Session
 from select import select
 from os import remove, path
@@ -52,8 +52,8 @@ class ESXi(GenDevice):
  def __str__(self):
   return self._hostname + " SSHConnected:" + str(self._sshclient != None)  + " Backuplist:" + str(self.backuplist) + " statefile:" + self.statefile + " Threads:" + str(self._threads.keys())
 
- def log(self,amsg):
-  sys_log_msg(amsg, "/var/log/network/" + self._hostname + ".operations.log")
+ def log(self,aMsg):
+  self.log_msg(aMsg, "/var/log/network/{}.operations.log".format(self._hostname), False)
 
  def threading(self, aOperation):
   from threading import Thread

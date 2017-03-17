@@ -12,8 +12,10 @@ from time import sleep, localtime, strftime
 from struct import pack, unpack
 from socket import inet_ntoa, inet_aton, gethostbyname, getfqdn
 
-################################# Generics ####################################
-
+################################# Generic Classes ####################################
+#
+# Generic Device Class
+#
 class GenDevice(object):
  
  # set a number of entries:
@@ -74,7 +76,17 @@ class GenDevice(object):
  def get_type(self):
   return self._type
 
+ def log_msg(self, aMsg, aLog = '/var/log/system/system.log', aPrint = False):
+  from time import localtime, strftime
+  output = unicode("{} : {}".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg))
+  if aPrint:
+   print output
+  with open(aLog, 'a') as f:
+   f.write(output + "\n")
 
+#
+# Generic Configuration Class
+#
 class ConfObject(object):
 
  def __init__(self, aFilename = None):
