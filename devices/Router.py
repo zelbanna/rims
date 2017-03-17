@@ -13,7 +13,7 @@ __version__ = "1.0GA"
 __status__ = "Production"
 
 from sdcp.core.SettingsContainer import netconf_username, netconf_password, snmp_read_community
-from sdcp.core.GenLib import sys_log_msg, GenDevice
+from sdcp.core.GenLib import GenDevice
 from netsnmp import VarList, Varbind, Session
 from lxml import etree
 
@@ -83,7 +83,7 @@ class Junos(GenDevice):
    self._model = self._router.facts['model']
    self._version = self._router.facts['version']
   except Exception as err:
-   sys_log_msg("System Error - Unable to connect to router: " + str(err))
+   self.log_msg("System Error - Unable to connect to router: " + str(err))
    return False
   return True
 
@@ -91,7 +91,7 @@ class Junos(GenDevice):
   try:
    self._router.close()
   except Exception as err:
-   sys_log_msg("System Error - Unable to properly close router connection: " + str(err))
+   self.log_msg("System Error - Unable to properly close router connection: " + str(err))
  
  def ping_rpc(self,ip):
   result = self._router.rpc.ping(host=ip, count='1')
@@ -178,7 +178,7 @@ class SRX(Junos):
     self.dnslist = result.xpath(".//dhcp-option[dhcp-option-name='name-server']/dhcp-option-value")[0].text.strip('[] ').replace(", "," ").split()
     self.dhcpip = addresslist[0].text
   except Exception as err:
-   sys_log_msg("System Error - verifying DHCP assignment: " + str(err))
+   self.log_msg("System Error - verifying DHCP assignment: " + str(err))
    return False
   return True
 
@@ -186,7 +186,7 @@ class SRX(Junos):
   try:
    return self._router.rpc.cli("request system services dhcp renew " + interface, format='text')
   except Exception as err:
-   sys_log_msg("System Error - cannot renew DHCP lease: " +str(err))
+   self.log_msg("System Error - cannot renew DHCP lease: " +str(err))
   return False
    
  def get_ipsec(self,gwname):
@@ -199,7 +199,7 @@ class SRX(Junos):
    address = ike.xpath(".//gateway[name='" + gwname + "']/address")
    return address[0].text, self.tunnels
   except Exception as err:
-   sys_log_msg("System Error - getting IPsec data: " + str(err))
+   self.log_msg("System Error - getting IPsec data: " + str(err))
    return None, self.tunnels
 
  def set_ipsec(self,gwname,oldip,newip):
@@ -208,7 +208,7 @@ class SRX(Junos):
    self._config.load("delete security ike gateway " + gwname + " address " + oldip, format = 'set')
    self._config.commit("commit by setIPsec ["+gwname+"]")
   except Exception as err:
-   sys_log_msg("System Error - modifying IPsec: " + str(err))
+   self.log_msg("System Error - modifying IPsec: " + str(err))
    return False
   return True
 
@@ -248,7 +248,7 @@ class EX(Junos):
      if not mac == "*" and not interface == "Router":
       fdblist.append([ vlan, mac, interface, self.get_interface_name(interface) ]) 
   except Exception as err:
-   sys_log_msg("System Error - fetching FDB: " + str(err))
+   self.log_msg("System Error - fetching FDB: " + str(err))
   return fdblist
 
  #
@@ -266,7 +266,7 @@ class EX(Junos):
     print "<TR><TD>" + "&nbsp;</TD><TD>".join(entry) + "</TD></TR>\n"
    print "</TABLE></DIV>"
   except Exception as err:
-   sys_log_msg("EX widget switch table: Error [{}]".format(str(err)))
+   self.log_msg("EX widget switch table: Error [{}]".format(str(err)))
    print "<B>Error - issue loading widget: {}</B>".format(str(err))
 
 ################################ QFX Object #####################################
@@ -305,7 +305,7 @@ class QFX(Junos):
      if not mac == "*" and not interface == "Router":
       fdblist.append([ vlan, mac, interface, self.get_interface_name(interface) ]) 
   except Exception as err:
-   sys_log_msg("System Error - fetching FDB: " + str(err))
+   self.log_msg("System Error - fetching FDB: " + str(err))
   return fdblist
 
  #
@@ -323,5 +323,5 @@ class QFX(Junos):
     print "<TR><TD>" + "&nbsp;</TD><TD>".join(entry) + "</TD></TR>\n"
    print "</TABLE></DIV>"
   except Exception as err:
-   sys_log_msg("EX widget switch table: Error [{}]".format(str(err)))
+   self.log_msg("EX widget switch table: Error [{}]".format(str(err)))
    print "<B>Error - issue loading widget: {}</B>".format(str(err))

@@ -198,6 +198,7 @@ def device_view_pdulist(aWeb):
 #
 def device_view_consolelist(aWeb):
  from sdcp.devices.RackUtils import OpenGear
+ domain = aWeb.get_value('domain')
  conlist = aWeb.get_list('conlist')
  config="https://{0}/?form=serialconfig&action=edit&ports={1}&start=&end="
  print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
@@ -216,8 +217,8 @@ def device_view_consolelist(aWeb):
 # Device Info
 #
 def device_view_devinfo(aWeb):
- node    = aWeb.get_value('node')
- domaine = aWeb.get_value('domain')
+ node   = aWeb.get_value('node')
+ domain = aWeb.get_value('domain')
  from sdcp.devices.DevHandler import Devices
 
  devs = Devices()
