@@ -1,4 +1,9 @@
 {
+ "sdcp": {
+  "docroot":"/var/www",
+  "logformat": "/var/log/system/system.log",
+  "devicefile":"/var/www/devices.json"
+ },
  "loopia": {
   "username":"",
   "password":"",
@@ -11,7 +16,8 @@
  "esxi": {
   "username":"",
   "password":"",
-  "pathtobackup":""
+  "pathtobackup":"",
+  "logformat":"/var/log/network/{}.operations.log"
  },
  "ipmi": {
   "username":"",

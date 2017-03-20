@@ -12,7 +12,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
 
-from sdcp.core.SettingsContainer import netconf_username, netconf_password, snmp_read_community
+import sdcp.SettingsContainer as SC
 from sdcp.core.GenLib import GenDevice
 from netsnmp import VarList, Varbind, Session
 from lxml import etree
@@ -37,7 +37,7 @@ class WLC(GenDevice):
    cssidobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.15"))
    cipobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.4"))
     
-   session = Session(Version = 2, DestHost = self._ip, Community = snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(cssidobjs)
    session.walk(cipobjs)
   except:
@@ -68,7 +68,7 @@ class Junos(GenDevice):
   GenDevice.__init__(self,ahost,adomain,atype)
   from jnpr.junos import Device
   from jnpr.junos.utils.config import Config
-  self._router = Device(self._ip, user=netconf_username, password=netconf_password, normalize=True)
+  self._router = Device(self._ip, user=SC.netconf_username, password=SC.netconf_password, normalize=True)
   self._config = Config(self._router)
   self._model = ""
   self._version = ""
@@ -141,7 +141,7 @@ class Junos(GenDevice):
  def quick_load(self):
   try:
    devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'))
-   session = Session(Version = 2, DestHost = self._ip, Community = snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(devobjs)
    datalist = devobjs[0].val.split()
    self._model = datalist[3]

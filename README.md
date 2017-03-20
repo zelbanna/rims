@@ -10,3 +10,5 @@ Small or Simple DC Project
 -- cgi file to map POST/GET to various functions
 -- .jsons for various functions
 
+To start, enter sdcp directory and modify settings.json with appropriate settings
+Then run install to write site cgi file

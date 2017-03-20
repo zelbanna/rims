@@ -1,4 +1,3 @@
-
 """Module docstring.
 
 The ESXi interworking module
@@ -8,7 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
 
-from sdcp.core.SettingsContainer import esxi_username, esxi_password, snmp_read_community
+import sdcp.SettingsContainer as SC
 from sdcp.core.GenLib import GenDevice, sys_lock_pidfile, sys_release_pidfile, sys_get_host
 from netsnmp import VarList, Varbind, Session
 from select import select
@@ -98,7 +97,7 @@ class ESXi(GenDevice):
    try:
     self._sshclient = SSHClient()
     self._sshclient.set_missing_host_key_policy(AutoAddPolicy())
-    self._sshclient.connect(self._ip, username=esxi_username, password=esxi_password )
+    self._sshclient.connect(self._ip, username=SC.esxi_username, password=SC.esxi_password )
    except AuthenticationException:
     self.log("DEBUG: Authentication failed when connecting to %s" % self._ip)
     self._sshclient = None
@@ -131,7 +130,7 @@ class ESXi(GenDevice):
  def get_id_vm(self, aname):
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
-   session = Session(Version = 2, DestHost = self._ip, Community = snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    for result in vmnameobjs:
     if result.val == aname:
@@ -143,7 +142,7 @@ class ESXi(GenDevice):
  def get_state_vm(self, aid):
   try:
    vmstateobj = VarList(Varbind(".1.3.6.1.4.1.6876.2.1.1.6." + str(aid)))
-   session = Session(Version = 2, DestHost = self._ip, Community = snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(vmstateobj)
    return vmstateobj[0].val
   except:
@@ -158,7 +157,7 @@ class ESXi(GenDevice):
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
    vmstateobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.6'))
-   session = Session(Version = 2, DestHost = self._ip, Community = snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for index,result in enumerate(vmnameobjs):

@@ -10,7 +10,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "3.2"
 __status__ = "Production"
 
-from SettingsContainer import loopia_username, loopia_password, loopia_domain
+from sdcp.SettingsContainer import loopia_username, loopia_password, loopia_domain
 from GenLib import sys_log_msg, sys_file_replace
 from subprocess import check_output, check_call
 from time import sleep

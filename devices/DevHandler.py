@@ -10,8 +10,8 @@ __author__  = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__  = "Production"
 
+import sdcp.SettingsContainer as SC
 from sdcp.core.GenLib import ConfObject, ping_os, sys_ips2range, sys_ip2int, sys_log_msg
-from sdcp.core.SettingsContainer import snmp_read_community
 
 # keys.sort(key=sys_ip2int)
 # - Devices is the maintainer of discovered devices, use sys_ip2int as sort key
@@ -77,7 +77,7 @@ class Devices(ConfObject):
    # .1.3.6.1.2.1.1.1.0 : Device info
    # .1.3.6.1.2.1.1.5.0 : Device name
    devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'))
-   session = Session(Version = 2, DestHost = aIP, Community = snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = aIP, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(devobjs)
   except:
    pass
