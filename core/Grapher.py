@@ -155,8 +155,8 @@ class Grapher(object):
    return False
 
   activeinterfaces = []
-  type = aentry[5]
-  fqdn = aentry[1]
+  type = aentry['type']
+  fqdn = aentry['fqdn']
   try:
    if type in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
     from sdcp.devices.Router import Junos
@@ -182,7 +182,7 @@ class Grapher(object):
     with open(self._graphplug, 'a') as graphfile:
      if not self.get_entry(fqdn):
       self.add_entry(fqdn, "no", ahandler)
-     graphfile.write('ln -s /usr/share/graph/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')              
+     graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')              
      graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + fqdn + '_esxi\n')
     alock.release()
   except Exception as err:

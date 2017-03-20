@@ -225,10 +225,10 @@ def device_view_devinfo(aWeb):
  devs = Devices()
  devs.load_json()
  values = devs.get_entry(node)
- print "<DIV CLASS='z-framed z-table' style='margin-left:0px; width:410px; height:140px;'><TABLE>"
+ print "<DIV CLASS='z-framed z-table' style='margin-left:0px; width:420px; height:140px;'><TABLE>"
  
  print "<TR><TD><TABLE>"
- print "<TR><TH COLSPAN=2 WIDTH=220>Reachability Info</TH></TR>"
+ print "<TR><TH COLSPAN=2 WIDTH=230>Reachability Info</TH></TR>"
  print "<TR><TD>Name:</TD><TD>{}</TD></TR>".format(values['fqdn'])
  print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(values['domain'])
  print "<TR><TD>Lookup:</TD><TD>{}</TD></TR>".format(values['fqdn'])
@@ -251,7 +251,7 @@ def device_view_devinfo(aWeb):
  print "<TR><TD>Power:</TD><TD>{}</TD></TR>".format(values['powerslots']) 
  print "</TABLE></TD></TR></TABLE>"
  print "</DIV>"
- print "<DIV CLASS='z-framed' style='margin-left:410px;'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file info_{1}.jpg - 600px x 140px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['fqdn'],values['model'])
+ print "<DIV CLASS='z-framed' style='margin-left:420px;'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file info_{1}.jpg - 600px x 140px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['fqdn'],values['model'])
  typefun  = {
   'ex':  [ 'widget_up_interfaces', 'widget_switch_table' ],
   'qfx': [ 'widget_up_interfaces', 'widget_switch_table' ],

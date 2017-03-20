@@ -295,9 +295,9 @@ def devices(aWeb):
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='site.cgi?ajax=device_view_devicelist&domain={}'>Devices</A>".format(domain)
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='site.cgi?ajax=device_view_graphlist&domain={}'>Graphing</A>".format(domain)
  if conlist:
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='site.cgi?ajax=device__view_consolelist&{}'>Console</A>".format(aWeb.reload_args_except(['discstart','discstop','pdu','view']))
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='site.cgi?ajax=device_view_consolelist&{}'>Console</A>".format(aWeb.reload_args_except(['discstart','discstop','pdu','pane']))
  if pdulist:
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='site.cgi?ajax=device_view_pdulist&{}'>PDU</A>".format(aWeb.reload_args_except(['discstart','discstop','console','view']))
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='site.cgi?ajax=device_view_pdulist&{}'>PDU</A>".format(aWeb.reload_args_except(['discstart','discstop','console','pane']))
  print "<A CLASS='z-reload z-btnop' OP=reload LNK='site.cgi?{}'></A>".format(aWeb.reload_args_except([]))
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Device Discovery?' SPIN=true LNK='site.cgi?ajax=device_op_finddevices&domain={0}&discstart={1}&discstop={2}'>Device Discovery</A>".format(domain,discstart,discstop)
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Graph Discovery?'  SPIN=true LNK='site.cgi?ajax=device_op_findgraphs&domain={0}'>Graph Discovery</A>".format(domain)
