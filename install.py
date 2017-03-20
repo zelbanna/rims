@@ -19,7 +19,7 @@ else:
 
 import SettingsContainer as SC
 sitefile  = "{}/site.cgi".format(SC.sdcp_docroot)
-imagedest = "{}/images".format(SC.sdcp_docroot)
+imagedest = "{}/images/".format(SC.sdcp_docroot)
 funcdest  = "{}/".format(SC.sdcp_docroot)
 
 with open(sitefile,'w') as f:
@@ -33,4 +33,12 @@ with open(sitefile,'w') as f:
  wr("web.site_start()\n")
 chmod(sitefile,0755)
 
-print "ToDo: copy style and z-functions as well as entire image"
+from os import listdir
+from shutil import copy
+for file in listdir('site_images'):
+ copy("site_images/" + file, imagedest + file)
+for file in listdir('site_infra'):
+ copy("site_infra/" + file, funcdest + file)
+
+print "Copied necessary files"
+
