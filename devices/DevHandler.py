@@ -10,7 +10,6 @@ __author__  = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__  = "Production"
 
-import sdcp.SettingsContainer as SC
 from sdcp.core.GenLib import ConfObject, ping_os, sys_ips2range, sys_ip2int, sys_log_msg
 
 # keys.sort(key=sys_ip2int)
@@ -18,8 +17,9 @@ from sdcp.core.GenLib import ConfObject, ping_os, sys_ips2range, sys_ip2int, sys
 
 class Devices(ConfObject):
 
- def __init__(self, aconfigfile = '/var/www/device.hosts.json'):
-  ConfObject.__init__(self, aconfigfile)
+ def __init__(self):
+  import sdcp.SettingsContainer as SC
+  ConfObject.__init__(self, SC.sdcp_devicefile)  
   
  def __str__(self):
   return "Device: {}\n{}".format(self._configfile, self.get_json())
@@ -67,6 +67,7 @@ class Devices(ConfObject):
  # Add proper community handling..
  #
  def _detect(self, aIP, aDomain, aSema):
+  import sdcp.SettingsContainer as SC
   from netsnmp import VarList, Varbind, Session
   from socket import gethostbyaddr
   if not ping_os(aIP):
