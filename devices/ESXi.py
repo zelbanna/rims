@@ -33,10 +33,12 @@ class ESXi(GenDevice):
  #
  def __init__(self,aHost,aDomain=None):
   GenDevice.__init__(self,aHost,aDomain,'esxi')
+  # Override log file
+  self._logfile = SC.esxi_logformat.format(self._hostname)
   self._kvmip  = None
   self._sshclient = None
   self.backuplist = []
-  self.statefile = "/var/tmp/esxi." + self._hostname + ".vmstate.log"
+  self.statefile = SC.esxi_shutdownfile.format(self._hostname) 
   self._threads = {}
  
  def __enter__(self):
@@ -51,9 +53,6 @@ class ESXi(GenDevice):
  def __str__(self):
   return self._hostname + " SSHConnected:" + str(self._sshclient != None)  + " Backuplist:" + str(self.backuplist) + " statefile:" + self.statefile + " Threads:" + str(self._threads.keys())
 
- def log(self,aMsg):
-  self.log_msg(aMsg, "/var/log/network/{}.operations.log".format(self._hostname), False)
-
  def threading(self, aOperation):
   from threading import Thread
   op = getattr(self, aOperation, None)
@@ -62,9 +61,9 @@ class ESXi(GenDevice):
    self._threads['aOperation'] = thread
    thread.name = aOperation
    thread.start()
-   self.log("threading: Started operation [{}]".format(aOperation))
+   self.log_msg("threading: Started operation [{}]".format(aOperation))
   else:
-   self.log("threading: Illegal operation passed [{}]".format(aOperation))
+   self.log_msg("threading: Illegal operation passed [{}]".format(aOperation))
 
  # Different FQDN for KVM types
  def get_kvm_ip(self, adefaulttype = 'kvm'):
@@ -99,7 +98,7 @@ class ESXi(GenDevice):
     self._sshclient.set_missing_host_key_policy(AutoAddPolicy())
     self._sshclient.connect(self._ip, username=SC.esxi_username, password=SC.esxi_password )
    except AuthenticationException:
-    self.log("DEBUG: Authentication failed when connecting to %s" % self._ip)
+    self.log_msg("DEBUG: Authentication failed when connecting to %s" % self._ip)
     self._sshclient = None
     return False
   return True
@@ -107,7 +106,7 @@ class ESXi(GenDevice):
  def ssh_send(self,amessage):
   if self._sshclient:
    output = ""
-   self.log("ssh_send: [" + amessage + "]")
+   self.log_msg("ssh_send: [" + amessage + "]")
    stdin, stdout, stderr = self._sshclient.exec_command(amessage)
    while not stdout.channel.exit_status_ready():
     if stdout.channel.recv_ready():
@@ -116,7 +115,7 @@ class ESXi(GenDevice):
       output = output + stdout.channel.recv(4096)
    return output.rstrip('\n')
   else:
-   self.log("Error: trying to send to closed channel")
+   self.log_msg("Error: trying to send to closed channel")
    self._sshclient = None
 
  def ssh_close(self):
@@ -125,7 +124,7 @@ class ESXi(GenDevice):
     self._sshclient.close()
     self._sshclient = None
    except Exception as err:
-    self.log( "Close error: " + str(err))
+    self.log_msg( "Close error: " + str(err))
 
  def get_id_vm(self, aname):
   try:
@@ -197,7 +196,7 @@ class ESXi(GenDevice):
   from time import sleep
   # Power up everything in the statefile
   if not path.isfile(self.statefile):
-   self.log("startup_vms: Has no reason to run powerUp as no VMs were shutdown..")
+   self.log_msg("startup_vms: Has no reason to run powerUp as no VMs were shutdown..")
    return False
   
   self.create_lock(2)
@@ -206,7 +205,7 @@ class ESXi(GenDevice):
   statefilefd = open(self.statefile)
   for line in statefilefd:
    if line == "---------\n":
-    self.log("startup_vms: Powerup - MARK found, wait a while for dependent")
+    self.log_msg("startup_vms: Powerup - MARK found, wait a while for dependent")
     sleep(60)
    else:
     vm = line.strip('\n').split(',')
@@ -235,7 +234,7 @@ class ESXi(GenDevice):
   # 6) apccontrol killpower -> /sbin/apcupsd killpower
   # 7) UPS is signaled and start shutdown sequence ( awaiting new power feed )
   if path.isfile(self.statefile):
-   self.log("shutdown_vms: Shutdown all VMs VMs are already shutdown! exit")
+   self.log_msg("shutdown_vms: Shutdown all VMs VMs are already shutdown! exit")
    return False
 
   deplist=[]
@@ -279,19 +278,19 @@ class ESXi(GenDevice):
    for vm in vmlist:
     if vm[2] == "1":
      if vm[1].startswith("svc-nas"):
-      self.log("shutdown_vms: Shutdown of NAS vm not completed..")
+      self.log_msg("shutdown_vms: Shutdown of NAS vm not completed..")
      elif vm[1].startswith("pulse"):
       self.ssh_send("vim-cmd vmsvc/power.off " + vm[0])
-      self.log("shutdown_vms: powering off machine: {}!".format(vm[0]))
+      self.log_msg("shutdown_vms: powering off machine: {}!".format(vm[0]))
      elif vm[1] not in aExceptlist:
       # Correct? or pass?
       self.ssh_send("vim-cmd vmsvc/power.suspend " + vm[0])
-      self.log("shutdown_vms: suspending machine: {}!".format(vm[0]))
+      self.log_msg("shutdown_vms: suspending machine: {}!".format(vm[0]))
 
    # Done, finish off local machine
    #
    self.ssh_close()
    self.release_lock()
-   self.log("shutdown_vms: Done! Ready for powerloss, awaiting system halt")
+   self.log_msg("shutdown_vms: Done! Ready for powerloss, awaiting system halt")
   except Exception as vmerror:
-   self.log("ERROR: " + str(vmerror))
+   self.log_msg("ERROR: " + str(vmerror))

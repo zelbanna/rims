@@ -23,7 +23,7 @@ class GenDevice(object):
  # - _hostname
  # - _domain
  # - _fqdn
- # - name? == hostname when looked up
+ # - _logfile
  
  # Two options:
  # ahost and adomain is set, then FQDN = host.domain and ip is derived
@@ -32,6 +32,7 @@ class GenDevice(object):
  # use _ip everywhere we need to connect, use fqdn and domain and host for display purposes
  
  def __init__(self, ahost, adomain = None, atype = "unknown"):
+  import sdcp.SettingsContainer as SC
   self._type = atype
   if sys_is_ip(ahost):
    self._ip = ahost
@@ -66,6 +67,7 @@ class GenDevice(object):
      self._ip = ahost
   if self._domain == "":
    self._domain = None
+  self._logfile = SC.sdcp_logformat.format(self._fqdn)
 
  def __str__(self):
   return "FQDN: {} IP: {} Hostname: {} Domain: {} Type:{}".format(self._fqdn, self._ip, self._hostname, self._domain, self._type)
@@ -76,12 +78,12 @@ class GenDevice(object):
  def get_type(self):
   return self._type
 
- def log_msg(self, aMsg, aLog = '/var/log/system/system.log', aPrint = False):
+ def log_msg(self, aMsg, aPrint = False):
   from time import localtime, strftime
   output = unicode("{} : {}".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg))
   if aPrint:
    print output
-  with open(aLog, 'a') as f:
+  with open(self._logfile, 'a') as f:
    f.write(output + "\n")
 
 #
@@ -189,9 +191,10 @@ def ping_os(ip):
 def sys_get_results(test):
  return "success" if test else "failure"
 
-def sys_log_msg(amsg, alog='/var/log/system/system.log'):
+def sys_log_msg(amsg):
+ import sdcp.SettingsContainer as SC
  if _sys_debug: print "Log: " + amsg
- with open(alog, 'a') as f:
+ with open(SC.sdcp_logformat, 'a') as f:
   f.write(unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), amsg)))
 
 #
