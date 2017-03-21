@@ -1,5 +1,5 @@
 /*
-Version: 1.0GA
+Version: 2.0GA
 
 <HEAD><LINK REL="stylesheet" TYPE="text/css" HREF="system.css"></HEAD>
 
@@ -73,7 +73,7 @@ div.z-table:hover { box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,
 
 div.z-navframe { position: relative; height: 100%; width:100%;}
 
-div.z-navbar { height: 34px; float: left; display: table; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99;cursor:pointer; position:fixed; top:0px; width:100%; }
+div.z-navbar { height: 34px; float: left; display: table; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99;cursor:pointer; position:fixed; top:0px; width:100%; z-index:1000; }
 div.z-navbar a { color:#FFFFFF; display:block; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
 div.z-navbar a.z-warning { background-color:red; }
 div.z-navbar a.z-right {   float:right; }
@@ -117,9 +117,28 @@ a.z-small-btn > img { height:22px; }
 a.z-btnop { outline:none; cursor:pointer; }
 /*###############################################################################################*/
 
+.z-input {
+ width:100%;
+ border:none;
+ overflow:visible;
+ background-color: transparent;
+}
+.z-input::placeholder{ color:gray; opacity:1; }
+::-webkit-input-placeholder { color: gray; }
+::-moz-placeholder {          color: gray; }
+:-ms-input-placeholder {      color: gray; }
+:-moz-placeholder {           color: gray; }
+
+.z-select {
+ width:100%;
+ border: none;
+ overflow: visible;
+ background-color: transparent;
+}
+
 .z-font-sub { position: relative; bottom: -36px; font-size: smaller; }
 
-div.z-overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:1000; display:flex; justify-content:center; align-items:center; overflow:hidden; }
+div.z-overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:1000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
 div.z-loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 2s linear infinite; 
 animation: spin 2s linear infinite; z-index:1001; }
 @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }

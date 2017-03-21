@@ -31,18 +31,23 @@ function btnoperation(button) {
   var lnk = button.getAttribute("lnk");
   var spin = button.getAttribute("spin");
   if (spin == "true"){
+   div.scrollTop(0);
+   div.css("overflow-y","hidden");
    div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
   }
-  div.load(lnk);
+  div.load(lnk, function(responseTxt, statusTxt, xhr){ div.css("overflow-y","auto"); });
+
  } else if (op == 'confirm') {
   var msg  = button.getAttribute("msg");
   var lnk  = button.getAttribute("lnk");
   var spin = button.getAttribute("spin");
   if (confirm(msg) == true){
    if (spin == "true"){
+    div.scrollTop(0);
+    div.css("overflow-y","hidden");
     div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
    }
-   div.load(lnk);
+   div.load(lnk, function(responseTxt, statusTxt, xhr){ div.css("overflow-y","auto"); });
   }
  } else if (op == 'iconfirm') {
   var msg = button.getAttribute("msg");
