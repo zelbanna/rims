@@ -24,6 +24,10 @@ from lxml import etree
 
 class WLC(GenDevice):
 
+ @classmethod
+ def get_widgets(cls):
+  return ['widget_switch_table']
+
  def __init__(self,ahost, adomain = None):
   GenDevice.__init__(self,ahost, adomain, 'wlc')
   
@@ -63,6 +67,10 @@ class WLC(GenDevice):
 #
 
 class Junos(GenDevice):
+
+ @classmethod
+ def get_widgets(cls):
+  return ['widget_up_interfaces']
 
  def __init__(self,ahost,adomain = None, atype = 'Junos'):
   GenDevice.__init__(self,ahost,adomain,atype)
@@ -161,6 +169,10 @@ class Junos(GenDevice):
 
 class SRX(Junos):
 
+ @classmethod
+ def get_widgets(cls):
+  return Junos.get_widgets()
+
  def __init__(self,ahost,adomain=None):
   Junos.__init__(self, ahost,adomain,'srx')
   self.dnslist = []
@@ -215,6 +227,12 @@ class SRX(Junos):
 ################################ EX Object #####################################
 
 class EX(Junos):
+
+ @classmethod
+ def get_widgets(cls):
+  widgets = ['widget_switch_table']
+  widgets.extend(Junos.get_widgets())
+  return widgets
 
  def __init__(self,ahost,adomain=None):
   Junos.__init__(self, ahost,adomain,'ex')
@@ -272,6 +290,12 @@ class EX(Junos):
 ################################ QFX Object #####################################
 
 class QFX(Junos):
+
+ @classmethod
+ def get_widgets(cls):
+  widgets = ['widget_switch_table']
+  widgets.extend(Junos.get_widgets())
+  return widgets
 
  def __init__(self,ahost,adomain=None):
   Junos.__init__(self, ahost,adomain,'qfx')

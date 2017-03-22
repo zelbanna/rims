@@ -40,12 +40,12 @@ class Web(object):
    import ajax as ajaxmod
    fun = getattr(ajaxmod,ajax,None)  
   else:
-   print "<B>No function supplied - neither 'ajax' call nor 'pane' view</B>"     
+   print "<B>No function supplied - neither 'ajax' call nor 'pane' view (keys: {})</B>".format(str(self.get_keys()))
    return
   if fun:
    fun(self)  
   else:
-   print "<B>No function mapping for pane:[{}] ajax:[{}]</B>".format(pane,ajax)
+   print "<B>No function mapping for pane:[{}] ajax:[{}] keys:[{}]</B>".format(pane,ajax)
 
  def get_keys(self):
   return self._form.keys()

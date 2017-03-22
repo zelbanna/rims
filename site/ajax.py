@@ -4,7 +4,7 @@ Ajax calls module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__= "2.0GA"
+__version__= "2.1GA"
 __status__= "Production"
 
 
@@ -218,21 +218,23 @@ def device_view_consolelist(aWeb):
 # Device Info
 #
 def device_view_devinfo(aWeb):
- node   = aWeb.get_value('node')
- domain = aWeb.get_value('domain')
  from sdcp.devices.DevHandler import Devices
-
- devs = Devices()
+ node   = aWeb.get_value('node')
+ height = 190
+ devs   = Devices()
  devs.load_json()
  values = devs.get_entry(node)
- print "<DIV CLASS='z-framed z-table' style='margin-left:0px; width:420px; height:140px;'><TABLE>"
  
- print "<TR><TD><TABLE>"
+ print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:440px; z-index:101; height:{}px;'>".format(str(height))
+ print "<FORM ID=info_form><INPUT NAME=ajax VALUE=device_update_devinfo TYPE=HIDDEN><INPUT NAME=node TYPE=HIDDEN VALUE={}>".format(node)
+ print "<TABLE><TR><TD><TABLE>"
+ 
  print "<TR><TH COLSPAN=2 WIDTH=230>Reachability Info</TH></TR>"
- print "<TR><TD>Name:</TD><TD>{}</TD></TR>".format(values['fqdn'])
- print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(values['domain'])
- print "<TR><TD>Lookup:</TD><TD>{}</TD></TR>".format(values['fqdn'])
- print "<TR><TD>SNMP Name:</TD><TD>{}</TD></TR>".format(values['snmp'])
+ print "<TR><TD>DNS_Name:</TD><TD><INPUT NAME=info_dns CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['dns'])
+ print "<TR><TD>Domain:</TD><TD><INPUT NAME=info_domain CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['domain'])
+ print "<TR><TD>FQDN:</TD><TD>{}</TD></TR>".format(values['fqdn'])
+ print "<TR><TD>SNMP_Name:</TD><TD>{}</TD></TR>".format(values['snmp'])
+ print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(node)
  if values['graphed'] == "yes":
   print "<TR><TD><A CLASS='z-btnop' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(values['domain'],values['fqdn'])
  else:
@@ -240,30 +242,37 @@ def device_view_devinfo(aWeb):
    print "<TR><TD>Graphs:</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='site.cgi?ajax=device_op_addgraph&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(node, values['dns'], values['domain'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
- print "<TR><TD>&nbsp;</TD><TD>&nbsp;</TD></TR>"
  print "</TABLE></TD><TD><TABLE>"
- print "<TR><TH COLSPAN=2 WIDTH=180>Device Info</TH></TR>"
- print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(node)
+ print "<TR><TH COLSPAN=2 WIDTH=200>Device Info</TH></TR>"  
+ print "<TR><TD>Type:</TD><TD><SELECT NAME=info_type CLASS='z-select'>"
+ for tp in Devices.get_types():
+  extra = " selected disabled" if values['type'] == tp else ""      
+  print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
+ 
+ print "</SELECT></TD></TR>"
  print "<TR><TD>Model:</TD><TD>{}</TD></TR>".format(values['model'])
- print "<TR><TD>Type:</TD><TD>{}</TD></TR>".format(values['type'].upper())
- print "<TR><TD>Rack:</TD><TD>{}:{}</TD></TR>".format(values['rack'],values['unit'])
- print "<TR><TD>Console:</TD><TD>{}</TD></TR>".format(values['consoleport'])
- print "<TR><TD>Power:</TD><TD>{}</TD></TR>".format(values['powerslots']) 
+ print "<TR><TD>Rack_ID:</TD><TD><INPUT NAME=info_rack CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['rack'])
+ print "<TR><TD>Unit:</TD><TD><SELECT NAME=info_unit CLASS='z-select'>"
+ units = map(lambda x: str(x),range(1,49))
+ units.append('unknown')
+ for unit in units:
+  extra = " selected disabled" if values['unit'] == unit else ""
+  print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(unit),extra)
+ print "</SELECT></TD></TR>"
+ print "<TR><TD>TS_Port:</TD><TD><INPUT NAME=info_consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
+ print "<TR><TD>Power:</TD><TD><INPUT CLASS='z-input' style='width:45%;' NAME=info_pwr_left TYPE=number PLACEHOLDER='{}'> : <INPUT CLASS='z-input' style='width:45%;' NAME=info_pwr_right TYPE=number PLACEHOLDER='{}'></TD></TR>".format(values['power_left'], values['power_right']) 
+
  print "</TABLE></TD></TR></TABLE>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=site.cgi?ajax=device_view_devinfo&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(node)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=site.cgi FRM=info_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
+ print "</FORM>"
  print "</DIV>"
- print "<DIV CLASS='z-framed' style='margin-left:420px;'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file info_{1}.jpg - 600px x 140px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['fqdn'],values['model'])
- typefun  = {
-  'ex':  [ 'widget_up_interfaces', 'widget_switch_table' ],
-  'qfx': [ 'widget_up_interfaces', 'widget_switch_table' ],
-  'srx': [ 'widget_up_interfaces' ],
-  'mx':  [ 'widget_up_interfaces' ],
-  'wlc': [ 'widget_switch_table' ],
-  'esxi':[ 'operated' ]
- }
-                 
- print "<DIV CLASS='z-navbar' style='top:180px;'>"
- if values['type'] in typefun.keys():
-  functions = typefun[values['type']]
+
+ print "<DIV CLASS='z-framed' style='margin-left:440px; overflow-x:hidden; z-index:100'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file images/info_{1}.jpg - 600px x 160px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['fqdn'],values['model'])
+
+ print "<DIV CLASS='z-navbar' style='top:{}px;'>".format(str(height + 40))
+ functions = Devices.get_widgets(values['type'])
+ if functions:
   if functions[0] == 'operated':
    if values['type'] == 'esxi':
     print "<A TARGET='main_cont' HREF='site.cgi?pane=esxi&domain={}&host={}'>Manage</A></B></DIV>".format(values['domain'], values['fqdn'].split('.')[0])
@@ -274,7 +283,25 @@ def device_view_devinfo(aWeb):
  else:
   print "&nbsp;"
  print "</DIV>"
- print "<DIV CLASS='z-navcontent' ID=div_navdata style='top:180px;'></DIV>"
+ print "<DIV CLASS='z-navcontent' ID=div_navdata style='top:{}px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>".format(str(height + 40))
+
+#
+# Save data for device info
+#
+def device_update_devinfo(aWeb):
+ from sdcp.devices.DevHandler import Devices
+ node   = aWeb.get_value('node')
+ devs   = Devices()
+ # devs.load_json()
+ # entry  = devs.get_entry(node)
+ values = aWeb.get_keys()
+ values.remove('ajax')
+ values.remove('node')
+ print "Data: {}".format(values)
+ 
+ # loop through values and update accordingly
+ #
+ #
 
 #
 # View operation data
@@ -284,20 +311,8 @@ def device_view_devdata(aWeb):
  type = aWeb.get_value('type')
  op   = aWeb.get_value('op')
  try:
-  dev = None
-  if type == 'ex':
-   from sdcp.devices.Router import EX
-   dev = EX(node)
-  elif type == 'qfx':
-   from sdcp.devices.Router import QFX
-   dev = QFX(node)
-  elif type == 'wlc':
-   from sdcp.devices.Router import WLC
-   dev = WLC(node)
-  else:
-   print "<B>{} {} {}</B>".format(node,type,op)
-   return
-
+  from sdcp.devices.DevHandler import Devices
+  dev = Devices.get_node(node,type)
   fun = getattr(dev,op,None)
   fun()
  except Exception as err:

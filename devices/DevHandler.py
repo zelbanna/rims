@@ -17,6 +17,46 @@ from sdcp.core.GenLib import ConfObject, ping_os, sys_ips2range, sys_ip2int, sys
 
 class Devices(ConfObject):
 
+ @classmethod
+ def get_widgets(cls,aType):
+  if aType in Devices.get_types():
+   if   aType == 'ex':
+    from Router import EX
+    return EX.get_widgets()
+   elif aType == 'qfx':
+    from Router import QFX
+    return QFX.get_widgets()
+   elif aType == 'srx':
+    from Router import SRX
+    return SRX.get_widgets()
+   elif aType == 'wlc':
+    from Router import WLC
+    return WLC.get_widgets()
+   elif aType == 'esxi':
+    return ['operated']
+  return []
+
+ @classmethod
+ def get_types(cls):
+  return [ 'ex', 'mx', 'srx', 'qfx', 'wlc', 'linux', 'esxi', 'other', 'unknown' ]
+
+ @classmethod
+ def get_node(cls,aNode,aType):
+  if aType in Devices.get_types():
+   Dev = None
+   if   aType == 'ex':
+    from Router import EX as Dev
+   elif aType == 'qfx':
+    from Router import QFX as Dev
+   elif aType == 'srx':
+    from Router import SRX as Dev
+   elif aType == 'wlc':
+    from Router import WLC as Dev
+   elif aType == 'esxi':
+    from ESXi  import ESXi as Dev
+   return Dev(aNode)
+  return None                                                              
+
  def __init__(self):
   import sdcp.SettingsContainer as SC
   ConfObject.__init__(self, SC.sdcp_devicefile)  
@@ -117,10 +157,10 @@ class Devices(ConfObject):
     else:
      model = "generic"
    else:
-    model = "other"
-    type  = " ".join(infolist[0:4])
+    type  = "other"
+    model = " ".join(infolist[0:4])
 
-  self._configitems[aIP] = { 'domain':aDomain, 'fqdn':fqdn, 'dns':dns, 'snmp':snmp, 'model':model, 'type':type, 'graphed':'no', 'rack':'unknown', 'unit':'unknown', 'consoleport':'unknown', 'powerslots':'unknown:unknown' }
+  self._configitems[aIP] = { 'domain':aDomain, 'fqdn':fqdn, 'dns':dns, 'snmp':snmp, 'model':model, 'type':type, 'graphed':'no', 'rack':'unknown', 'unit':'unknown', 'consoleport':'unknown', 'power_left':'unknown', 'power_right':'unknown' }
   aSema.release()
   return True
 
