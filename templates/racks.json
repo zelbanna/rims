@@ -1,0 +1,22 @@
+{
+ "1": {
+  "name": "Rack1",
+  "console":"ts-r01-01",
+  "pdu":"pdu-r01-01"
+ },
+ "2": {
+  "name": "Rack2",
+  "console":"ts-r01-01",
+  "pdu":"pdu-r02-01"
+ },
+ "3": {
+  "name": "Rack3",
+  "console":"ts-r03-01",
+  "pdu":"pdu-r03-01"
+ },
+ "4": {
+  "name": "Rack4",
+  "console":"ts-r03-01",
+  "pdu":"pdu-r04-01"
+ }
+}
