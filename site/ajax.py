@@ -172,7 +172,7 @@ def device_view_pdulist(aWeb):
  if len(pdulist) == 0:
   pdulist.append(pduop)
  print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<TR><TH>PDU</TH><TH>Entry</TH><TH>Device</TH><TH>State</TH></TR>"
+ print "<TR><TH>PDU</TH><TH>Entry</TH><TH>Device</TH><TH style='width:63px;'>State</TH></TR>"
  optemplate = "<A CLASS='z-btn z-small-btn z-btnop' OP=load SPIN=true DIV=div_navleft LNK='site.cgi?ajax=device_view_pdulist&pdu={0}&nstate={1}&slot={2}'><IMG SRC='images/btn-{3}'></A>"
  for pdu in pdulist:
   avocent = Avocent(pdu,domain)
@@ -225,15 +225,14 @@ def device_view_devinfo(aWeb):
  devs.load_json()
  values = devs.get_entry(node)
  
- print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:440px; z-index:101; height:{}px;'>".format(str(height))
+ print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form><INPUT NAME=ajax VALUE=device_update_devinfo TYPE=HIDDEN><INPUT NAME=node TYPE=HIDDEN VALUE={}>".format(node)
- print "<TABLE><TR><TD><TABLE>"
+ print "<TABLE style='width:100%'><TR><TD><TABLE style='width:200px'>"
  
- print "<TR><TH COLSPAN=2 WIDTH=230>Reachability Info</TH></TR>"
- print "<TR><TD>DNS_Name:</TD><TD><INPUT NAME=dns CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['dns'])
+ print "<TR><TH COLSPAN=2>Reachability Info</TH></TR>"
+ print "<TR><TD>Name:</TD><TD><INPUT NAME=dns CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['dns'])
  print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(values['domain'])
- print "<TR><TD>FQDN:</TD><TD>{}</TD></TR>".format(values['fqdn'])
- print "<TR><TD>SNMP_Name:</TD><TD>{}</TD></TR>".format(values['snmp'])
+ print "<TR><TD>SNMP:</TD><TD>{}</TD></TR>".format(values['snmp'])
  print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(node)
  if values['graphed'] == "yes":
   print "<TR><TD><A CLASS='z-btnop' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(values['domain'],values['fqdn'])
@@ -242,25 +241,27 @@ def device_view_devinfo(aWeb):
    print "<TR><TD>Graphs:</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='site.cgi?ajax=device_op_addgraph&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(node, values['dns'], values['domain'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
+ print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
+
  print "</TABLE></TD><TD><TABLE>"
- print "<TR><TH COLSPAN=2 WIDTH=200>Device Info</TH></TR>"  
- print "<TR><TD>Type:</TD><TD><SELECT NAME=type CLASS='z-select'>"
+ print "<TR><TH COLSPAN=2>Device Info</TH></TR>"  
+ print "<TR><TD>Type:</TD><TD TITLE='Device type'><SELECT NAME=type CLASS='z-select'>"
  for tp in Devices.get_types():
   extra = " selected disabled" if values['type'] == tp else ""      
   print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
  
  print "</SELECT></TD></TR>"
- print "<TR><TD>Model:</TD><TD>{}</TD></TR>".format(values['model'])
+ print "<TR><TD>Model:</TD><TD style='max-width:140px;'>{}</TD></TR>".format(values['model'])
  print "<TR><TD>Rack_ID:</TD><TD TITLE='Rack ID - numeric value of rack'><INPUT NAME=rack CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['rack'])
- print "<TR><TD>Unit:</TD><TD><SELECT NAME=unit CLASS='z-select'>"
+ print "<TR><TD>Unit:</TD><TD TITLE='Lowest rack unit, where device is mounted'><SELECT NAME=unit CLASS='z-select'>"
  units = map(lambda x: str(x),range(1,49))
  units.append('unknown')
  for unit in units:
   extra = " selected disabled" if values['unit'] == unit else ""
   print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(unit),extra)
  print "</SELECT></TD></TR>"
- print "<TR><TD>TS_Port:</TD><TD><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
- print "<TR><TD>Power:</TD><TD><INPUT CLASS='z-input' style='width:45%;' NAME=power_left TYPE=number PLACEHOLDER='{}'> : <INPUT CLASS='z-input' style='width:45%;' NAME=power_right TYPE=number PLACEHOLDER='{}'></TD></TR>".format(values['power_left'], values['power_right']) 
+ print "<TR><TD>TS_Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
+ print "<TR><TD>Power:</TD><TD TITLE='Left and Right power slot in rack'><INPUT CLASS='z-input' style='width:45%;' NAME=power_left TYPE=number PLACEHOLDER='{}'> : <INPUT CLASS='z-input' style='width:45%;' NAME=power_right TYPE=number PLACEHOLDER='{}'></TD></TR>".format(values['power_left'], values['power_right']) 
 
  print "</TABLE></TD></TR></TABLE>"
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=site.cgi?ajax=device_view_devinfo&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(node)
@@ -268,7 +269,7 @@ def device_view_devinfo(aWeb):
  print "</FORM>"
  print "</DIV>"
 
- print "<DIV CLASS='z-framed' style='margin-left:440px; overflow-x:hidden; z-index:100'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file images/info_{1}.jpg - 600px x 160px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['fqdn'],values['model'])
+ print "<DIV CLASS='z-framed' style='margin-left:420px; overflow-x:hidden; z-index:100'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file images/info_{1}.jpg - 600px x 160px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['fqdn'],values['model'])
 
  print "<DIV CLASS='z-navbar' style='top:{}px;'>".format(str(height + 40))
  functions = Devices.get_widgets(values['type'])
