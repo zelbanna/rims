@@ -45,7 +45,7 @@ class Web(object):
   if fun:
    fun(self)  
   else:
-   print "<B>No function mapping for pane:[{}] ajax:[{}] keys:[{}]</B>".format(pane,ajax)
+   print "<B>No function mapping for pane:[{}] ajax:[{}]</B>".format(pane,ajax)
 
  def get_keys(self):
   return self._form.keys()

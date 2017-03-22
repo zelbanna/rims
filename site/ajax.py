@@ -30,20 +30,9 @@ def examine_clear_logs(aWeb, aClear = True):
  except Exception as err:
   print "<DIV CLASS='z-error'>{}</DIV>".format(str(err))
 
-########################################## Basic Rack Info ##########################################
-#
-#
-#
-
-def rack_info(aWeb):
- rack = aWeb.get_value('rack', 0)
- print "<DIV style='padding:20px;'>"
- print "<DIV style=' background-image: url(images/rack48u.png); background-position: center; background-repeat: no-repeat; height:1680px; width:770px;'></DIV>"
- print "</DIV>"
-
 ########################################## ESXi Operations ##########################################
 #
-#
+# ESXi operations
 #
 def esxi_op(aWeb, aEsxi = None):
  excpt  = aWeb.get_value('except','-1')
@@ -105,6 +94,18 @@ def esxi_op(aWeb, aEsxi = None):
   print "</CENTER></TD></TR>"
  print "</TABLE>"
 
+########################################## Basic Rack Info ##########################################
+#
+# Basic rack info - right now only a display of a typical rack.. Change to table?
+#
+
+def rack_info(aWeb):
+ rack = aWeb.get_value('rack', 0)
+ print "<DIV style='padding:20px;'>"
+ print "<H1>Rack {}</H1>".format(rack)
+ print "Data: [{}]".format(" ".join(aWeb.get_keys()))
+ print "<DIV style=' background-image: url(images/rack48u.png); background-position: center; background-repeat: no-repeat; height:1680px; width:770px;'></DIV>"
+ print "</DIV>"
 
 ########################################## Device Operations ##########################################
 #
@@ -185,7 +186,8 @@ def device_view_pdulist(aWeb):
     sleep(10)
   for key in avocent.get_keys(aSortKey = lambda x: int(x.split('.')[0])*100+int(x.split('.')[1])):
    value = avocent.get_entry(key)
-   print "<TR><TD>{0}</TD><TD>{1}</TD><TD>{2}</TD><TD>".format(pdu,value['pduslot'], value['name'])
+   print "<TR><TD TITLE='Open up a browser tab for {1}'><A TARGET='_blank' HREF='https://{0}:3502'>{1}</A></TD><TD>{2}</TD>".format(avocent._ip,pdu,value['pduslot'])
+   print "<TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='site.cgi?ajax=device_view_pduslot&domain={0}&pdu={1}&slot={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></TD><TD>".format(domain,pdu,key,value['name'], value['pduslot'])
    if value['state'] == "off":
     print optemplate.format(pdu, "on", key, "start")
    else:
@@ -193,6 +195,51 @@ def device_view_pdulist(aWeb):
     print optemplate.format(pdu, "reboot", key, "reboot")
    print "</TD></TR>"
  print "</TABLE></DIV></DIV>"
+
+#
+# View PDU slot info (same as in list - but nicer way of opening up for updating)
+#
+def device_view_pduslot(aWeb):
+ pdu  = aWeb.get_value('pdu')
+ slot = aWeb.get_value('slot')
+ slotname = aWeb.get_value('slotname')
+ name = aWeb.get_value('name')
+ domain = aWeb.get_value('domain')
+
+ print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
+ print "<FORM ID=pdu_form>"
+ print "<INPUT NAME=ajax VALUE=device_update_pduslot TYPE=HIDDEN>"
+ print "<INPUT NAME=domain VALUE={} TYPE=HIDDEN>".format(domain)
+ print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(slot)
+ print "<INPUT NAME=pdu    VALUE={} TYPE=HIDDEN>".format(pdu)
+ print "<TABLE style='width:100%'>"
+ print "<TR><TH COLSPAN=2>PDU Info</TH></TR>"
+ print "<TR><TD>PDU:</TD><TD>{0}</TD></TR>".format(pdu)
+ print "<TR><TD>Slot:</TD><TD>{0}</TD></TR>".format(slotname)
+ print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
+ print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
+ print "</TABLE>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=site.cgi FRM=pdu_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
+ print "</FORM>"
+ print "</DIV>"
+
+#
+# Update PDU slot info (name basically)
+#
+def device_update_pduslot(aWeb):
+ values = aWeb.get_keys()
+ values.remove('ajax')
+ if 'name' in values:
+  from sdcp.devices.RackUtils import Avocent
+  name = aWeb.get_value('name')
+  pdu  = aWeb.get_value('pdu')
+  slot = aWeb.get_value('slot')
+  domain = aWeb.get_value('domain')
+  avocent = Avocent(pdu,domain)
+  avocent.set_name(slot,name)
+  print "Updated name: {} for {}.{}:{}".format(name,pdu,domain,slot)
+ else:
+  print "Name not updated"
 
 #
 # View Consoles
@@ -214,6 +261,7 @@ def device_view_consolelist(aWeb):
    print "<TR><TD><A HREF='https://{0}/'>{1}</A></TD><TD><A TITLE='Edit port info' HREF={5}>{2}</A></TD><TD><A HREF='telnet://{0}:{3}'>{4}</A></TD>".format(conip, con,str(key),port, value, config.format(conip,key))
  print "</TABLE></DIV></DIV>"
 
+########################################### Device Details ##########################################
 #
 # Device Info
 #
@@ -305,13 +353,9 @@ def device_update_devinfo(aWeb):
    entry['fqdn'] = entry['dns'] + "." + entry['domain']
  devs.save_json()
  print "Updated: {}".format(" ".join(values))
-  
- # loop through values and update accordingly
- #
- #
 
 #
-# View operation data
+# View operation data / widgets
 #
 def device_view_devdata(aWeb):
  node = aWeb.get_value('node')
