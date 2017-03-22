@@ -1,6 +1,6 @@
 // Tools created using javascript
 //
-// Version: 1.0GA
+// Version: 2.0GA
 // Author:  Zacharias El Banna
 // 
 
@@ -14,6 +14,7 @@
 // - iconfirm iframe lnk msg
 // - reload   lnk
 // - iload    iframe lnk
+// - post     div lnk form (to serialize)
 //
 
 function btnoperation(button) {
@@ -63,6 +64,10 @@ function btnoperation(button) {
   var ifr = $("#"+button.getAttribute("iframe"));
   var lnk = button.getAttribute("lnk");
   ifr.attr('src',lnk);
+ } else if (op == 'post') {
+  var lnk = button.getAttribute("lnk");
+  var frm = button.getAttribute("frm");
+  $.post(lnk, $("#"+frm).serialize() , function(result) { div.html(result); });
  } else {
   alert("Unknown button operation: " + op);
  }

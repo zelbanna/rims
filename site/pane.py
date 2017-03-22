@@ -310,3 +310,8 @@ def devices(aWeb):
  print aWeb.get_include('README.devices.html')
  print "</DIV>"
  print "</DIV>" 
+
+##################################################################################################
+#
+# Test
+#
