@@ -230,8 +230,8 @@ def device_view_devinfo(aWeb):
  print "<TABLE><TR><TD><TABLE>"
  
  print "<TR><TH COLSPAN=2 WIDTH=230>Reachability Info</TH></TR>"
- print "<TR><TD>DNS_Name:</TD><TD><INPUT NAME=info_dns CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['dns'])
- print "<TR><TD>Domain:</TD><TD><INPUT NAME=info_domain CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['domain'])
+ print "<TR><TD>DNS_Name:</TD><TD><INPUT NAME=dns CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['dns'])
+ print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(values['domain'])
  print "<TR><TD>FQDN:</TD><TD>{}</TD></TR>".format(values['fqdn'])
  print "<TR><TD>SNMP_Name:</TD><TD>{}</TD></TR>".format(values['snmp'])
  print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(node)
@@ -244,23 +244,23 @@ def device_view_devinfo(aWeb):
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
  print "</TABLE></TD><TD><TABLE>"
  print "<TR><TH COLSPAN=2 WIDTH=200>Device Info</TH></TR>"  
- print "<TR><TD>Type:</TD><TD><SELECT NAME=info_type CLASS='z-select'>"
+ print "<TR><TD>Type:</TD><TD><SELECT NAME=type CLASS='z-select'>"
  for tp in Devices.get_types():
   extra = " selected disabled" if values['type'] == tp else ""      
   print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
  
  print "</SELECT></TD></TR>"
  print "<TR><TD>Model:</TD><TD>{}</TD></TR>".format(values['model'])
- print "<TR><TD>Rack_ID:</TD><TD><INPUT NAME=info_rack CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['rack'])
- print "<TR><TD>Unit:</TD><TD><SELECT NAME=info_unit CLASS='z-select'>"
+ print "<TR><TD>Rack_ID:</TD><TD TITLE='Rack ID - numeric value of rack'><INPUT NAME=rack CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['rack'])
+ print "<TR><TD>Unit:</TD><TD><SELECT NAME=unit CLASS='z-select'>"
  units = map(lambda x: str(x),range(1,49))
  units.append('unknown')
  for unit in units:
   extra = " selected disabled" if values['unit'] == unit else ""
   print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(unit),extra)
  print "</SELECT></TD></TR>"
- print "<TR><TD>TS_Port:</TD><TD><INPUT NAME=info_consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
- print "<TR><TD>Power:</TD><TD><INPUT CLASS='z-input' style='width:45%;' NAME=info_pwr_left TYPE=number PLACEHOLDER='{}'> : <INPUT CLASS='z-input' style='width:45%;' NAME=info_pwr_right TYPE=number PLACEHOLDER='{}'></TD></TR>".format(values['power_left'], values['power_right']) 
+ print "<TR><TD>TS_Port:</TD><TD><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
+ print "<TR><TD>Power:</TD><TD><INPUT CLASS='z-input' style='width:45%;' NAME=power_left TYPE=number PLACEHOLDER='{}'> : <INPUT CLASS='z-input' style='width:45%;' NAME=power_right TYPE=number PLACEHOLDER='{}'></TD></TR>".format(values['power_left'], values['power_right']) 
 
  print "</TABLE></TD></TR></TABLE>"
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=site.cgi?ajax=device_view_devinfo&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(node)
@@ -292,13 +292,19 @@ def device_update_devinfo(aWeb):
  from sdcp.devices.DevHandler import Devices
  node   = aWeb.get_value('node')
  devs   = Devices()
- # devs.load_json()
- # entry  = devs.get_entry(node)
+ devs.load_json()
+ entry  = devs.get_entry(node)
  values = aWeb.get_keys()
  values.remove('ajax')
  values.remove('node')
- print "Data: {}".format(values)
- 
+ for data in values:
+  entry[data] = aWeb.get_value(data)
+  if data == 'dns':
+   # Update FQDN as well
+   entry['fqdn'] = entry['dns'] + "." + entry['domain']
+ devs.save_json()
+ print "Updated: {}".format(" ".join(values))
+  
  # loop through values and update accordingly
  #
  #
