@@ -64,7 +64,7 @@ def examine(aWeb):
   print "<DIV CLASS='z-system' id=div_external title='System Logs' style='display:none;'>"
   for svc in svclist:
    print "<DIV style='width:" + str(int(100/len(svclist))) + "%; float:left'>"
-   print "<DIV CLASS='z-logs'><H1>System Logs for {}.{}</H1>{}</DIV>".format(svc,domain,aWeb.get_include("http://"+ svc +"/systemlog.php"))
+   print "<DIV CLASS='z-logs'><H1>System Logs for {}.{}</H1>{}</DIV>".format(svc,domain,aWeb.get_include("http://"+ svc +"/site.cgi?ajax=examine_log"))
    print "</DIV>"
   print "</DIV>"
  

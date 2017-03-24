@@ -4,6 +4,22 @@
   "logformat": "/var/log/system/system.log",
   "devicefile":"/var/www/devices.json"
  },
+ "dnsdb" : {
+  "proxy" : "False",
+  "ip" : "127.0.0.1",
+  "username: "",
+  "password: "",
+  "dbname": "",
+  "type" : "powerdns"
+ },
+ "ipamdb" : {
+  "proxy" : "False",
+  "ip" : "127.0.0.1",
+  "username: "",
+  "password: "",
+  "dbname": "",
+  "type" : "phpipam"
+ },
  "loopia": {
   "username":"",
   "password":"",
