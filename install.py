@@ -53,4 +53,13 @@ for file in listdir('site_infra'):
  copy("site_infra/" + file, funcdest + file)
 
 print "Copied necessary files"
+print ""
+
+#
+#
+# import pip
+# pip.main['install','pymysql']
+
+print "Please run 'pip install pymysql' for complete mysql support"
+
 
