@@ -4,7 +4,7 @@ Ajax calls module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__= "2.1GA"
+__version__= "2.2GA"
 __status__= "Production"
 
 
@@ -29,6 +29,16 @@ def examine_clear_logs(aWeb, aClear = True):
   print "<DIV CLASS='z-logs'><H1>System Logs</H1><PRE>{}</PRE></DIV>".format(syslogs)
  except Exception as err:
   print "<DIV CLASS='z-error'>{}</DIV>".format(str(err))
+
+def examine_log(aWeb):
+ try:
+  from subprocess import check_output
+  import sdcp.SettingsContainer as SC
+  logfile = aWeb.get_value('logfile',SC.sdcp_logformat)
+  syslogs = check_output("tail -n 15 " + logfile + " | tac", shell=True)
+  print "<PRE>{}</PRE>".format(syslogs)
+ except Exception as err:
+  print "<PRE>{}</PRE>".format(str(err))      
 
 ########################################## ESXi Operations ##########################################
 #
