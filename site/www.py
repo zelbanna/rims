@@ -28,24 +28,26 @@ class Web(object):
   self._form = cgi.FieldStorage()
   print "Content-Type: text/html\r\n"
   stdout.flush()
-  
- def site_start(self):
-  pane = self.get_value('pane')
-  ajax = self.get_value('ajax')
-  fun = None
-  if pane:
-   import pane as panemod
-   fun = getattr(panemod,pane,None)
-  elif ajax:
+
+ def ajax(self):
+  fun  = None
+  ajaxcall = self.get_value('call')
+  try:
    import ajax as ajaxmod
-   fun = getattr(ajaxmod,ajax,None)  
-  else:
-   print "<B>No function supplied - neither 'ajax' call nor 'pane' view (keys: {})</B>".format(str(self.get_keys()))
-   return
-  if fun:
-   fun(self)  
-  else:
-   print "<B>No function mapping for pane:[{}] ajax:[{}]</B>".format(pane,ajax)
+   fun = getattr(ajaxmod,ajaxcall,None)  
+   fun(self)
+  except Exception as err:
+   print "Ajax call:[{}] error: [{}]".format(ajaxcall,str(err))
+
+ def pane(self):
+  fun  = None
+  paneview = self.get_value('view')
+  try:
+   import pane as panemod
+   fun = getattr(panemod,paneview,None)
+   fun(self)
+  except Exception as err:
+   print "Pane view:[{}] error: [{}]".format(paneview,str(err))
 
  def get_keys(self):
   return self._form.keys()

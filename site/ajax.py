@@ -73,7 +73,7 @@ def esxi_op(aWeb, aEsxi = None):
    aWeb.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  print "<TABLE>"
- template="<A CLASS='z-btn z-small-btn z-btnop' TITLE='{3}' OP=load DIV=div_esxi_op LNK='site.cgi?ajax=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}'><IMG SRC=images/btn-{1}.png></A>"
+ template="<A CLASS='z-btn z-small-btn z-btnop' TITLE='{3}' OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}'><IMG SRC=images/btn-{1}.png></A>"
  statelist = aEsxi.get_vms()
  if not nstate:
   print "<TR><TH CLASS='z-header' COLSPAN=2>{}</TH></TR>".format(aEsxi._fqdn)
@@ -138,7 +138,7 @@ def device_view_devicelist(aWeb):
  print "<TR><TH>IP</TH><TH>FQDN</TH><TH>Model</TH></TR>"
  for key in keys:
   values = devs.get_entry(key)
-  print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='site.cgi?ajax=device_view_devinfo&node={0}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(key, values['fqdn'], values['model'])
+  print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_view_devinfo&node={0}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(key, values['fqdn'], values['model'])
  print "</TABLE></CENTER>"
  print "</DIV></DIV>"
 
@@ -166,7 +166,7 @@ def device_view_graphlist(aWeb):
   else:
    print "<TD>{0}</TD>".format(key)
   print "<TD>"+ entry['handler'] +"</TD>"
-  print "<TD TITLE='Include in graphing?'><CENTER><A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='site.cgi?ajax=device_view_graphlist&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A></CENTER></TD>".format("start" if entry['update'] == "no" else "shutdown")
+  print "<TD TITLE='Include in graphing?'><CENTER><A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_graphlist&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A></CENTER></TD>".format("start" if entry['update'] == "no" else "shutdown")
   print "</TR>"
  print "</TABLE></CENTER></DIV></DIV>"
 
@@ -184,7 +184,7 @@ def device_view_pdulist(aWeb):
   pdulist.append(pduop)
  print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR><TH>PDU</TH><TH>Entry</TH><TH>Device</TH><TH style='width:63px;'>State</TH></TR>"
- optemplate = "<A CLASS='z-btn z-small-btn z-btnop' OP=load SPIN=true DIV=div_navleft LNK='site.cgi?ajax=device_view_pdulist&pdu={0}&nstate={1}&slot={2}'><IMG SRC='images/btn-{3}'></A>"
+ optemplate = "<A CLASS='z-btn z-small-btn z-btnop' OP=load SPIN=true DIV=div_navleft LNK='ajax.cgi?call=device_view_pdulist&pdu={0}&nstate={1}&slot={2}'><IMG SRC='images/btn-{3}'></A>"
  for pdu in pdulist:
   avocent = Avocent(pdu,domain)
   avocent.load_snmp()
@@ -197,7 +197,7 @@ def device_view_pdulist(aWeb):
   for key in avocent.get_keys(aSortKey = lambda x: int(x.split('.')[0])*100+int(x.split('.')[1])):
    value = avocent.get_entry(key)
    print "<TR><TD TITLE='Open up a browser tab for {1}'><A TARGET='_blank' HREF='https://{0}:3502'>{1}</A></TD><TD>{2}</TD>".format(avocent._ip,pdu,value['pduslot'])
-   print "<TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='site.cgi?ajax=device_view_pduslot&domain={0}&pdu={1}&slot={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></TD><TD>".format(domain,pdu,key,value['name'], value['pduslot'])
+   print "<TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_view_pduslot&domain={0}&pdu={1}&slot={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></TD><TD>".format(domain,pdu,key,value['name'], value['pduslot'])
    if value['state'] == "off":
     print optemplate.format(pdu, "on", key, "start")
    else:
@@ -218,7 +218,7 @@ def device_view_pduslot(aWeb):
 
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
  print "<FORM ID=pdu_form>"
- print "<INPUT NAME=ajax VALUE=device_update_pduslot TYPE=HIDDEN>"
+ print "<INPUT NAME=call VALUE=device_update_pduslot TYPE=HIDDEN>"
  print "<INPUT NAME=domain VALUE={} TYPE=HIDDEN>".format(domain)
  print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(slot)
  print "<INPUT NAME=pdu    VALUE={} TYPE=HIDDEN>".format(pdu)
@@ -229,7 +229,7 @@ def device_view_pduslot(aWeb):
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
  print "</TABLE>"
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=site.cgi FRM=pdu_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi FRM=pdu_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
 
@@ -238,7 +238,7 @@ def device_view_pduslot(aWeb):
 #
 def device_update_pduslot(aWeb):
  values = aWeb.get_keys()
- values.remove('ajax')
+ values.remove('call')
  if 'name' in values:
   from sdcp.devices.RackUtils import Avocent
   name = aWeb.get_value('name')
@@ -284,7 +284,7 @@ def device_view_devinfo(aWeb):
  values = devs.get_entry(node)
  
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:{}px;'>".format(str(height))
- print "<FORM ID=info_form><INPUT NAME=ajax VALUE=device_update_devinfo TYPE=HIDDEN><INPUT NAME=node TYPE=HIDDEN VALUE={}>".format(node)
+ print "<FORM ID=info_form><INPUT NAME=call VALUE=device_update_devinfo TYPE=HIDDEN><INPUT NAME=node TYPE=HIDDEN VALUE={}>".format(node)
  print "<TABLE style='width:100%'><TR><TD><TABLE style='width:200px'>"
  
  print "<TR><TH COLSPAN=2>Reachability Info</TH></TR>"
@@ -296,7 +296,7 @@ def device_view_devinfo(aWeb):
   print "<TR><TD><A CLASS='z-btnop' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(values['domain'],values['fqdn'])
  else:
   if not values['dns'] == 'unknown':
-   print "<TR><TD>Graphs:</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='site.cgi?ajax=device_op_addgraph&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(node, values['dns'], values['domain'])
+   print "<TR><TD>Graphs:</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_op_addgraph&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(node, values['dns'], values['domain'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
@@ -322,8 +322,8 @@ def device_view_devinfo(aWeb):
  print "<TR><TD>Power:</TD><TD TITLE='Left and Right power slot in rack'><INPUT CLASS='z-input' style='width:45%;' NAME=power_left TYPE=number PLACEHOLDER='{}'> : <INPUT CLASS='z-input' style='width:45%;' NAME=power_right TYPE=number PLACEHOLDER='{}'></TD></TR>".format(values['power_left'], values['power_right']) 
 
  print "</TABLE></TD></TR></TABLE>"
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=site.cgi?ajax=device_view_devinfo&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(node)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=site.cgi FRM=info_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_view_devinfo&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(node)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi FRM=info_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
 
@@ -334,11 +334,11 @@ def device_view_devinfo(aWeb):
  if functions:
   if functions[0] == 'operated':
    if values['type'] == 'esxi':
-    print "<A TARGET='main_cont' HREF='site.cgi?pane=esxi&domain={}&host={}'>Manage</A></B></DIV>".format(values['domain'], values['fqdn'].split('.')[0])
+    print "<A TARGET='main_cont' HREF='pane.cgi?view=esxi&domain={}&host={}'>Manage</A></B></DIV>".format(values['domain'], values['fqdn'].split('.')[0])
   else:
    for fun in functions:
     name = " ".join(fun.split('_')[1:])
-    print "<A CLASS='z-btnop' OP=load DIV=div_navdata SPIN=true LNK='site.cgi?ajax=device_view_devdata&node={0}&type={1}&op={2}'>{3}</A>".format(node, values['type'], fun, name.title())
+    print "<A CLASS='z-btnop' OP=load DIV=div_navdata SPIN=true LNK='ajax.cgi?call=device_view_devdata&node={0}&type={1}&op={2}'>{3}</A>".format(node, values['type'], fun, name.title())
  else:
   print "&nbsp;"
  print "</DIV>"
@@ -354,7 +354,7 @@ def device_update_devinfo(aWeb):
  devs.load_json()
  entry  = devs.get_entry(node)
  values = aWeb.get_keys()
- values.remove('ajax')
+ values.remove('call')
  values.remove('node')
  for data in values:
   entry[data] = aWeb.get_value(data)
