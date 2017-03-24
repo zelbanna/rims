@@ -7,16 +7,16 @@
  "dnsdb" : {
   "proxy" : "False",
   "ip" : "127.0.0.1",
-  "username: "",
-  "password: "",
+  "username" : "",
+  "password" : "",
   "dbname": "",
   "type" : "powerdns"
  },
  "ipamdb" : {
   "proxy" : "False",
   "ip" : "127.0.0.1",
-  "username: "",
-  "password: "",
+  "username" : "",
+  "password" : "",
   "dbname": "",
   "type" : "phpipam"
  },
