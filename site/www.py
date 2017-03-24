@@ -26,29 +26,42 @@ class Web(object):
    import cgitb
    cgitb.enable(display=0, logdir="/tmp/")
   self._form = cgi.FieldStorage()
+  self._debug = aDebug
   print "Content-Type: text/html\r\n"
   stdout.flush()
 
  def ajax(self):
   fun  = None
   ajaxcall = self.get_value('call')
-  try:
-   import ajax as ajaxmod
-   fun = getattr(ajaxmod,ajaxcall,None)  
-   fun(self)
-  except Exception as err:
-   print "Ajax call:[{}] error: [{}]".format(ajaxcall,str(err))
+  import ajax as ajaxmod
+  fun = getattr(ajaxmod,ajaxcall,None)  
+  if self._debug:
+   try:
+    fun(self)
+   except Exception as err:
+    print "<SPAN style='font-size:10px'>Ajax call:[{}] error: [{}]</SPAN>".format(ajaxcall,str(err))
+  else:
+   if fun:
+    fun(self)
+   else:
+    print "<SPAN style='font-size:10px'>Ajax call:[{}] no such function</SPAN>".format(ajaxcall) 
 
  def pane(self):
   fun  = None
   paneview = self.get_value('view')
-  try:
-   import pane as panemod
-   fun = getattr(panemod,paneview,None)
-   fun(self)
-  except Exception as err:
-   print "Pane view:[{}] error: [{}]".format(paneview,str(err))
-
+  import pane as panemod
+  fun = getattr(panemod,paneview,None)
+  if self._debug:
+   try:
+    fun(self)
+   except Exception as err:
+    print "Pane view:[{}] error: [{}]".format(paneview,str(err))
+  else:
+   if fun:
+    fun(self)
+   else:
+    print "Pane view :[{}] no such view".format(paneview)
+                 
  def get_keys(self):
   return self._form.keys()
 

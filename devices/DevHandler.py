@@ -62,8 +62,8 @@ class Devices(ConfObject):
   ConfObject.__init__(self, SC.sdcp_devicefile)  
   
  def __str__(self):
-  return "Device: {}\n{}".format(self._configfile, self.get_json())
-   
+  return "Device: {}\n{}".format(self._filename, self.get_json())
+ 
  ##################################### Device Discovery and Detection ####################################
  #
  # clear existing entries or not?
@@ -106,12 +106,13 @@ class Devices(ConfObject):
  #
  # Add proper community handling..
  #
- def _detect(self, aIP, aDomain, aSema):
+ def _detect(self, aIP, aDomain, aSema = None):
   import sdcp.SettingsContainer as SC
   from netsnmp import VarList, Varbind, Session
   from socket import gethostbyaddr
   if not ping_os(aIP):
-   aSema.release()
+   if aSema:
+    aSema.release()
    return False
 
   try:
@@ -161,7 +162,8 @@ class Devices(ConfObject):
     model = " ".join(infolist[0:4])
 
   self._configitems[aIP] = { 'domain':aDomain, 'fqdn':fqdn, 'dns':dns, 'snmp':snmp, 'model':model, 'type':type, 'graphed':'no', 'rack':'unknown', 'unit':'unknown', 'consoleport':'unknown', 'power_left':'unknown', 'power_right':'unknown' }
-  aSema.release()
+  if aSema:
+   aSema.release()
   return True
 
 #############################################################################

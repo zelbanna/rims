@@ -284,7 +284,7 @@ def device_view_devinfo(aWeb):
  values = devs.get_entry(node)
  
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:{}px;'>".format(str(height))
- print "<FORM ID=info_form><INPUT NAME=call VALUE=device_update_devinfo TYPE=HIDDEN><INPUT NAME=node TYPE=HIDDEN VALUE={}>".format(node)
+ print "<FORM ID=info_form>"
  print "<TABLE style='width:100%'><TR><TD><TABLE style='width:200px'>"
  
  print "<TR><TH COLSPAN=2>Reachability Info</TH></TR>"
@@ -323,7 +323,10 @@ def device_view_devinfo(aWeb):
 
  print "</TABLE></TD></TR></TABLE>"
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_view_devinfo&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(node)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi FRM=info_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_devinfo&node={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(node)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_dns&node={}  FRM=info_form OP=post TITLE='Update DNS'>D</A>".format(node)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_ipam&node={} FRM=info_form OP=post TITLE='Update IPAM'>I</A>".format(node)
+ print "<SPAN style='float:right' ID=update_results></SPAN>&nbsp;"
  print "</FORM>"
  print "</DIV>"
 
@@ -350,19 +353,30 @@ def device_view_devinfo(aWeb):
 def device_update_devinfo(aWeb):
  from sdcp.devices.DevHandler import Devices
  node   = aWeb.get_value('node')
- devs   = Devices()
- devs.load_json()
- entry  = devs.get_entry(node)
  values = aWeb.get_keys()
  values.remove('call')
  values.remove('node')
- for data in values:
-  entry[data] = aWeb.get_value(data)
-  if data == 'dns':
-   # Update FQDN as well
-   entry['fqdn'] = entry['dns'] + "." + entry['domain']
- devs.save_json()
- print "Updated: {}".format(" ".join(values))
+ if values:
+  devs   = Devices()
+  devs.load_json()
+  entry  = devs.get_entry(node)
+  for data in values:
+   entry[data] = aWeb.get_value(data)
+   if data == 'dns':
+    # Update FQDN as well
+    entry['fqdn'] = entry['dns'] + "." + entry['domain']
+  devs.save_json()
+  print "Updated: {}".format(" ".join(values))
+ else:
+  print "Nothing to update"
+
+def device_update_dns(aWeb):
+ import sdcp.SettingsContainer as SC
+ print "not implemented yet",SC.dnsdb_proxy
+
+def device_update_ipam(aWeb):
+ import sdcp.SettingsContainer as SC
+ print "not implemented yet",SC.ipamdb_proxy
 
 #
 # View operation data / widgets

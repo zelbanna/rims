@@ -119,6 +119,12 @@ class ConfObject(object):
   from json import dumps as json_get_str
   return json_get_str(self._configitems, indent = 1, sort_keys = True)
 
+ def add_db_position(self, aPos, aVal = 'unknown'):
+  self.load_json()
+  for entry in self._configitems.itervalues():
+   entry[aPos] = aVal
+  self.save_json()
+
  def get_json_to_html(self):
   pass
 
