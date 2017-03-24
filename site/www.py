@@ -33,6 +33,9 @@ class Web(object):
  def ajax(self):
   fun  = None
   ajaxcall = self.get_value('call')
+  if not ajaxcall:
+   print "<SPAN style='font-size:10px'>No ajax call argument</SPAN>"
+   return
   import ajax as ajaxmod
   fun = getattr(ajaxmod,ajaxcall,None)  
   if self._debug:
@@ -49,6 +52,9 @@ class Web(object):
  def pane(self):
   fun  = None
   paneview = self.get_value('view')
+  if not paneview:
+   print "<SPAN style='font-size:10px'>No pane view argument</SPAN>"
+   return
   import pane as panemod
   fun = getattr(panemod,paneview,None)
   if self._debug:
