@@ -196,21 +196,36 @@ def shutdownall(aWeb):
 #
 # Rack
 #
+
 def rack(aWeb):
- from ajax import rack_info
- print aWeb.get_header_full("Rack")
+ print aWeb.get_header_full("Racks")
+ from sdcp.core.GenLib import DB
+ db = DB()
+ db.connect()
+ db.do("select racks.name, racks.id, pdus.id AS pdu, pdus.ip, consoles.id as console, consoles.ip  from racks LEFT JOIN consoles ON racks.fk_console = consoles.id LEFT JOIN pdus ON racks.fk_pdu = pdus.id")
+ racks = db.get_all_rows()
+ db.close()
+ print "<DIV>"
+ print "<CENTER><H1>Stolab Rack Overview <A TARGET=main_cont TITLE='Unsorted devs' HREF=pane.cgi?view=rack_info>*</A></H1><BR>"
+ for index, rack in enumerate(racks):
+  print "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&rack={1}&pdu={2}&console={3}><IMG ALT='Cabinet {1}' SRC='images/cabinet.{4}.png'></A>&nbsp;".format(rack['name'],rack['id'],rack['pdu'],rack['console'],index % 3)
+ print "</CENTER></DIV>"
+  
+
+def rack_info(aWeb):
+ print aWeb.get_header_full("Rack Info")
+ rack   = aWeb.get_value('rack', 'unknown')
  domain = aWeb.get_value('domain')
- rack   = aWeb.get_value('rack', 0)
- con    = aWeb.get_value('console')
- pdu    = aWeb.get_value('pdu')
+ con = aWeb.get_value('console')
+ pdu = aWeb.get_value('pdu')
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&{}'>Info</A>".format(aWeb.reload_args_except(['pane']))
- print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&domain={0}&target=rack&arg={1}'>Devices</A>".format(domain,rack)
- if con:
+ print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack&arg={0}'>Devices</A>".format(rack)
+ if con and con != 'None':
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_consolelist&domain={0}&conlist={1}'>Console</A>".format(domain,con)
- if pdu:
+ if pdu and pdu != 'None':
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=device_view_pdulist&domain={0}&pdu={1}'>Power</A>".format(domain,pdu)
  print "<A CLASS='z-btnop z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except())
  print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=pdus'>PDUs</A>"
@@ -218,10 +233,11 @@ def rack(aWeb):
  print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=racks'>Racks</A>"
  print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
-
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont>"
- rack_info(aWeb)
+
+ print "<B>Here are all rack info and utilities collected</B>"
+
  print "</DIV>"
  print aWeb.get_listeners('div_navleft')
  print aWeb.get_listeners('div_navcont')

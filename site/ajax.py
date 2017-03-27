@@ -111,7 +111,6 @@ def esxi_op(aWeb, aEsxi = None):
 def device_view_devicelist(aWeb):
  from sdcp.devices.DevHandler import Devices
  from sdcp.core.GenLib import sys_ip2int
- domain = aWeb.get_value('domain')
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  devs = Devices() 
@@ -506,16 +505,16 @@ def rack_data(aWeb):
   db.connect()
   rack = {}
   if id == 'new':
-   rack = { 'id':'new', 'name':'new-name', 'size':'48', 'fk_pdu':'NULL', 'fk_console':'NULL' }
+   rack = { 'id':'new', 'name':'new-name', 'size':'48', 'fk_pdu':0, 'fk_console':0 }
   else:
    db.do("SELECT * from racks WHERE id = {}".format(id))
    rack = db.get_row()
   db.do("SELECT id,name from pdus")
   pdus = db.get_all_rows()
-  pdus.append({'id':'NULL', 'name':'NULL'})
+  pdus.append({'id':0, 'name':'NULL'})
   db.do("SELECT id,name from consoles")
   consoles = db.get_all_rows()
-  consoles.append({'id':'NULL', 'name':'NULL'})
+  consoles.append({'id':0, 'name':'NULL'})
   db.close()
   print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
   print "<TR><TD>Size:</TD><TD><INPUT NAME=size TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['size'])
@@ -530,7 +529,10 @@ def rack_data(aWeb):
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
   print "</SELECT></TD></TR>"
  print "</TABLE>"
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_data_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_data_form OP=post><IMG SRC='images/btn-save.png'></A>"
+ if not id == 'new':
+  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_remove&type={0}&id={1} OP=load><IMG SRC='images/btn-remove.png'></A>".format(type,id)
+ print "&nbsp;<SPAN ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
 
@@ -572,4 +574,18 @@ def rack_update(aWeb):
   db.commit()
  else:
   print "unknown type"
+ db.close()
+
+#
+#
+#
+def rack_remove(aWeb):
+ from sdcp.core.GenLib import DB
+ type = aWeb.get_value('type')
+ id   = aWeb.get_value('id')
+ db   = DB()
+ db.connect()
+ db.do("DELETE FROM {0} WHERE id = '{1}'".format(type,id))
+ db.commit()
+ print "Unit {} of type {} deleted".format(id,type)
  db.close()
