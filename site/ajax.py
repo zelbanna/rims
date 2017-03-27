@@ -104,19 +104,6 @@ def esxi_op(aWeb, aEsxi = None):
   print "</CENTER></TD></TR>"
  print "</TABLE>"
 
-########################################## Basic Rack Info ##########################################
-#
-# Basic rack info - right now only a display of a typical rack.. Change to table?
-#
-
-def rack_info(aWeb):
- rack = aWeb.get_value('rack', 0)
- print "<DIV style='padding:20px;'>"
- print "<H1>Rack {}</H1>".format(rack)
- print "Data: [{}]".format(" ".join(aWeb.get_keys()))
- print "<DIV style=' background-image: url(images/rack48u.png); background-position: center; background-repeat: no-repeat; height:1680px; width:770px;'></DIV>"
- print "</DIV>"
-
 ########################################## Device Operations ##########################################
 #
 #
@@ -459,42 +446,51 @@ def device_op_addgraph(aWeb):
    graph.add_entry(fqdn,'no')
    print "<B>Added graphing for node {0} ({1})</B>".format(node, fqdn)
 
-####################################### INFRA AJAX ##########################################
+########################################## Basic Rack Info ##########################################
 #
-#
+# Basic rack info - right now only a display of a typical rack.. Change to table?
 #
 
-def infra_list(aWeb):
+def rack_info(aWeb):
+ rack = aWeb.get_value('rack', 0)
+ print "<DIV style='padding:20px;'>"
+ print "<H1>Rack {}</H1>".format(rack)
+ print "Data: [{}]".format(" ".join(aWeb.get_keys()))
+ print "<DIV style=' background-image: url(images/rack48u.png); background-position: center; background-repeat: no-repeat; height:1680px; width:770px;'></DIV>"
+ print "</DIV>"
+
+def rack_infra(aWeb):
  from sdcp.core.GenLib import DB, sys_int2ip 
  db   = DB()
  db.connect()
  type = aWeb.get_value('type','racks')
  print "<DIV CLASS='z-framed'>"
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<TR style='height:30px'><TD COLSPAN=3><A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=infra_data&type={0}&id=new'><IMG SRC='images/btn-add.png'></A></TD></TR>".format(type)
+ print "<TR style='height:20px'> <TH COLSPAN=3><CENTER>{0}</CENTER></TH></TR>".format(type.capitalize())
+ print "<TR style='height:20px'> <TD COLSPAN=3><A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_data&type={0}&id=new'><IMG SRC='images/btn-add.png'></A></TD></TR>".format(type)
  res  = db.do("SELECT * from {} ORDER by name".format(type))
  data = db.get_all_rows()
  if type == 'pdus' or type == 'consoles':
   print "<TR><TH>ID</TH><TH>Name</TH><TH>IP</TH></TR>"
   for unit in data:
-   print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=infra_data&type={3}&id={0}&name={1}&ip={2}'>{1}</A></TD><TD>{2}</TD>".format(unit['id'],unit['name'],sys_int2ip(unit['ip']),type)
+   print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_data&type={3}&id={0}&name={1}&ip={2}'>{1}</A></TD><TD>{2}</TD>".format(unit['id'],unit['name'],sys_int2ip(unit['ip']),type)
  elif type == 'racks':
   print "<TR><TH>ID</TH><TH>Name</TH><TH>Size</TH></TR>"
   for unit in data:
-   print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=infra_data&type={3}&id={0}&name={1}'>{1}</A></TD><TD>{2}</TD>".format(unit['id'],unit['name'],unit['size'],type)  
+   print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_data&type={3}&id={0}&name={1}'>{1}</A></TD><TD>{2}</TD>".format(unit['id'],unit['name'],unit['size'],type)  
  print "</TABLE></DIV>"
  db.close()
 
 #
 #
 #
-def infra_data(aWeb):
+def rack_data(aWeb):
  type = aWeb.get_value('type')
  id   = aWeb.get_value('id','new')
  name = aWeb.get_value('name','new-name')
 
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
- print "<FORM ID=infra_data_form>"
+ print "<FORM ID=rack_data_form>"
  print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"
@@ -534,14 +530,14 @@ def infra_data(aWeb):
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
   print "</SELECT></TD></TR>"
  print "</TABLE>"
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=infra_update FRM=infra_data_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_data_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
 
 #
 #
 #
-def infra_update(aWeb):
+def rack_update(aWeb):
  from sdcp.core.GenLib import DB, sys_int2ip, sys_ip2int 
  values = aWeb.get_keys()
  values.remove('call')

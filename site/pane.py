@@ -213,7 +213,10 @@ def rack(aWeb):
  if pdu:
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=device_view_pdulist&domain={0}&pdu={1}'>Power</A>".format(domain,pdu)
  print "<A CLASS='z-btnop z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except())
- print "<A CLASS='z-right'></A>".format(rack)
+ print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=pdus'>PDUs</A>"
+ print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=consoles'>Consoles</A>"
+ print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=racks'>Racks</A>"
+ print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
 
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
@@ -310,23 +313,3 @@ def devices(aWeb):
  print aWeb.get_include('README.devices.html')
  print "</DIV>"
  print "</DIV>" 
-
-##################################################################################################
-#
-# Infra
-#
-def infra(aWeb):
- print aWeb.get_header_full("Infra setup")
- print aWeb.get_listeners()
- print "<DIV CLASS=z-navframe ID=div_navframe>"
- print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=infra_list&type=pdus'>PDUs</A>"
- print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=infra_list&type=consoles'>Consoles</A>"
- print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=infra_list&type=racks'>Racks</A>"
- print "</DIV>"
-
- print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
- print "<DIV CLASS=z-navright ID=div_navcont></DIV>"
- print aWeb.get_listeners('div_navleft')
- print aWeb.get_listeners('div_navcont')
- print "</DIV>"
