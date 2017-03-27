@@ -2,7 +2,11 @@
  "sdcp": {
   "docroot":"/var/www",
   "logformat": "/var/log/system/system.log",
-  "devicefile":"/var/www/devices.json"
+  "devicefile":"/var/www/devices.json",
+  "db": "sdcp",
+  "dbtype":"mysql",
+  "dbuser":"sdcp",
+  "dbpass":"sdcp"
  },
  "dnsdb" : {
   "proxy" : "False",

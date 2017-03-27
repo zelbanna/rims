@@ -230,6 +230,11 @@ def sys_ips2range(addr1,addr2):
  from socket import inet_ntoa, inet_aton
  return map(lambda addr: inet_ntoa(pack("!I", addr)), range(unpack("!I", inet_aton(addr1))[0], unpack("!I", inet_aton(addr2))[0] + 1))
 
+def sys_ip2ptr(addr):
+ octets = addr.split('.')
+ octets.reverse()
+ return ".".join(octets) + ".in-addr.arpa"
+
 def sys_str2hex(arg):
  try:
   return '0x{0:02x}'.format(int(arg))
