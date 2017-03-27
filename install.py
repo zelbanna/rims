@@ -55,11 +55,9 @@ for file in listdir('site_infra'):
 print "Copied necessary files"
 print ""
 
-#
-#
-# import pip
-# pip.main['install','pymysql']
+import pip
+pip.main['install','pymysql']
 
-print "Please run 'pip install pymysql' for complete mysql support"
+print "Please install mysql.txt to complete database installation"
 
 
