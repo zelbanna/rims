@@ -313,5 +313,20 @@ def devices(aWeb):
 
 ##################################################################################################
 #
-# Test
+# Infra
 #
+def infra(aWeb):
+ print aWeb.get_header_full("Infra setup")
+ print aWeb.get_listeners()
+ print "<DIV CLASS=z-navframe ID=div_navframe>"
+ print "<DIV CLASS=z-navbar ID=div_navbar>"
+ print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=infra_list&type=pdus'>PDUs</A>"
+ print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=infra_list&type=consoles'>Consoles</A>"
+ print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=infra_list&type=racks'>Racks</A>"
+ print "</DIV>"
+
+ print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
+ print "<DIV CLASS=z-navright ID=div_navcont></DIV>"
+ print aWeb.get_listeners('div_navleft')
+ print aWeb.get_listeners('div_navcont')
+ print "</DIV>"

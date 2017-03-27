@@ -458,3 +458,122 @@ def device_op_addgraph(aWeb):
   else:
    graph.add_entry(fqdn,'no')
    print "<B>Added graphing for node {0} ({1})</B>".format(node, fqdn)
+
+####################################### INFRA AJAX ##########################################
+#
+#
+#
+
+def infra_list(aWeb):
+ from sdcp.core.GenLib import DB, sys_int2ip 
+ db   = DB()
+ db.connect()
+ type = aWeb.get_value('type','racks')
+ print "<DIV CLASS='z-framed'>"
+ print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
+ print "<TR style='height:30px'><TD COLSPAN=3><A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=infra_data&type={0}&id=new'><IMG SRC='images/btn-add.png'></A></TD></TR>".format(type)
+ res  = db.do("SELECT * from {} ORDER by name".format(type))
+ data = db.get_all_rows()
+ if type == 'pdus' or type == 'consoles':
+  print "<TR><TH>ID</TH><TH>Name</TH><TH>IP</TH></TR>"
+  for unit in data:
+   print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=infra_data&type={3}&id={0}&name={1}&ip={2}'>{1}</A></TD><TD>{2}</TD>".format(unit['id'],unit['name'],sys_int2ip(unit['ip']),type)
+ elif type == 'racks':
+  print "<TR><TH>ID</TH><TH>Name</TH><TH>Size</TH></TR>"
+  for unit in data:
+   print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=infra_data&type={3}&id={0}&name={1}'>{1}</A></TD><TD>{2}</TD>".format(unit['id'],unit['name'],unit['size'],type)  
+ print "</TABLE></DIV>"
+ db.close()
+
+#
+#
+#
+def infra_data(aWeb):
+ type = aWeb.get_value('type')
+ id   = aWeb.get_value('id','new')
+ name = aWeb.get_value('name','new-name')
+
+ print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
+ print "<FORM ID=infra_data_form>"
+ print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
+ print "<TABLE style='width:100%'>"
+ print "<TR><TH COLSPAN=2>{} Info</TH></TR>".format(type[:-1].capitalize())
+
+ if type == "pdus" or type == 'consoles':
+  ip   = aWeb.get_value('ip','127.0.0.1') 
+  print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
+  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
+ if type == 'racks':
+  from sdcp.core.GenLib import DB
+  db = DB()
+  db.connect()
+  rack = {}
+  if id == 'new':
+   rack = { 'id':'new', 'name':'new-name', 'size':'48', 'fk_pdu':'NULL', 'fk_console':'NULL' }
+  else:
+   db.do("SELECT * from racks WHERE id = {}".format(id))
+   rack = db.get_row()
+  db.do("SELECT id,name from pdus")
+  pdus = db.get_all_rows()
+  pdus.append({'id':'NULL', 'name':'NULL'})
+  db.do("SELECT id,name from consoles")
+  consoles = db.get_all_rows()
+  consoles.append({'id':'NULL', 'name':'NULL'})
+  db.close()
+  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
+  print "<TR><TD>Size:</TD><TD><INPUT NAME=size TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['size'])
+  print "<TR><TD>PDU:</TD><TD><SELECT NAME=fk_pdu CLASS='z-select'>"
+  for unit in pdus:
+   extra = " selected" if rack['fk_pdu'] == unit['id'] else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
+  print "</SELECT></TD></TR>"
+  print "<TR><TD>Console:</TD><TD><SELECT NAME=fk_console CLASS='z-select'>"
+  for unit in consoles:
+   extra = " selected" if rack['fk_console'] == unit['id'] else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
+  print "</SELECT></TD></TR>"
+ print "</TABLE>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=infra_update FRM=infra_data_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
+ print "</FORM>"
+ print "</DIV>"
+
+#
+#
+#
+def infra_update(aWeb):
+ from sdcp.core.GenLib import DB, sys_int2ip, sys_ip2int 
+ values = aWeb.get_keys()
+ values.remove('call')
+ db   = DB()
+ db.connect()
+ type = aWeb.get_value('type')
+ id   = aWeb.get_value('id')
+ name = aWeb.get_value('name')
+ if type == 'pdus' or type == 'consoles':
+  ip   = aWeb.get_value('ip')
+  ipint = sys_ip2int(ip)
+  sql = ""
+  if id == 'new':
+   print "New {} created".format(type[:-1])
+   sql = "INSERT into {0} (name, ip) VALUES ('{1}','{2}')".format(type,name,ipint)
+  else:
+   print "Updated {} {}".format(type[:-1],id)
+   sql = "UPDATE {0} SET name = '{1}', ip = '{2}' WHERE id = '{3}'".format(type,name,ipint,id)
+  res = db.do(sql)
+  db.commit()
+ elif type == 'racks':
+  size   = aWeb.get_value('size')
+  fk_pdu = aWeb.get_value('fk_pdu')
+  fk_console = aWeb.get_value('fk_console')
+  if id == 'new':
+   print "New rack created"
+   sql = "INSERT into racks (name, size, fk_pdu, fk_console) VALUES ('{}','{}','{}','{}')".format(name,size,fk_pdu,fk_console)
+  else:
+   print "Updated rack {}".format(id)
+   sql = "UPDATE racks SET name = '{0}', size = '{1}', fk_pdu = '{2}', fk_console = '{3}'  WHERE id = '{4}'".format(name,size,fk_pdu,fk_console,id)
+  res = db.do(sql)
+  db.commit()
+ else:
+  print "unknown type"
+ db.close()

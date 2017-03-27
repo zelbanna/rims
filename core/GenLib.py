@@ -153,21 +153,45 @@ class ConfObject(object):
     self.load_json()
    self.save_json()
 
+#
+# Database Class
+#
 class DB(object):
 
  def __init__(self):
-  import sdcp.SettingsContainer as SC
-  import pymysql
-  conn = pymysql.connect(host='localhost', port=3306, user=SC.sdcp_dbuser, passwd=SC.sdcp_dbpass, db=SC.sdcp_db)
+  self._conn = None
+  self._curs = None
+  self._res  = 0
 
  def connect(self):
-  pass
+  import sdcp.SettingsContainer as SC
+  import pymysql
+  from pymysql.cursors import DictCursor
+  self._conn = pymysql.connect(host='localhost', port=3306, user=SC.sdcp_dbuser, passwd=SC.sdcp_dbpass, db=SC.sdcp_db, cursorclass=DictCursor)
+  self._curs = self._conn.cursor()
+
+ #
+ # Insert and Update and Select
+ # 
+ def do(self,aStr):
+  self._res = self._curs.execute(aStr)
+  return self._res
+
+ def commit(self):
+  self._conn.commit()
+
+ def get_row(self):
+  return self._curs.fetchone()
+
+ def get_all_rows(self):
+  return [] if self._res == 0 else self._curs.fetchmany(self._res)
 
  def get_cursor(self):
-  pass
+  return self._curs
 
  def close(self):
-  pass
+  self._curs.close()
+  self._conn.close()
  
 ################################# Generics ####################################
 
