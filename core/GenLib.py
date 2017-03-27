@@ -7,10 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
 
-from os import remove, path as ospath, system
-from time import sleep, localtime, strftime
-from struct import pack, unpack
-from socket import inet_ntoa, inet_aton, gethostbyname, getfqdn
+from socket import inet_ntoa, inet_aton
 
 ################################# Generic Classes ####################################
 #
@@ -33,6 +30,7 @@ class GenDevice(object):
  
  def __init__(self, ahost, adomain = None, atype = "unknown"):
   import sdcp.SettingsContainer as SC
+  from socket import gethostbyname, getfqdn
   self._type = atype
   if sys_is_ip(ahost):
    self._ip = ahost
@@ -154,6 +152,22 @@ class ConfObject(object):
    if len(self._configitems) == 1:
     self.load_json()
    self.save_json()
+
+class DB(object):
+
+ def __init__(self):
+  import sdcp.SettingsContainer as SC
+  import pymysql
+  conn = pymysql.connect(host='localhost', port=3306, user=SC.sdcp_dbuser, passwd=SC.sdcp_dbpass, db=SC.sdcp_db)
+
+ def connect(self):
+  pass
+
+ def get_cursor(self):
+  pass
+
+ def close(self):
+  pass
  
 ################################# Generics ####################################
 
@@ -164,6 +178,7 @@ def sys_set_debug(astate):
  _sys_debug = astate
 
 def sys_get_host(ahost):
+ from socket import gethostbyname
  try:
   return gethostbyname(ahost)
  except:
@@ -177,12 +192,18 @@ def sys_is_ip(addr):
   return False
 
 def sys_ip2int(addr):
+ from struct import unpack
+ from socket import inet_aton
  return unpack("!I", inet_aton(addr))[0]
  
 def sys_int2ip(addr):
+ from struct import pack
+ from socket import inet_ntoa
  return inet_ntoa(pack("!I", addr))
 
 def sys_ips2range(addr1,addr2):
+ from struct import pack, unpack
+ from socket import inet_ntoa, inet_aton
  return map(lambda addr: inet_ntoa(pack("!I", addr)), range(unpack("!I", inet_aton(addr1))[0], unpack("!I", inet_aton(addr2))[0] + 1))
 
 def sys_ip2ptr(addr):
@@ -197,6 +218,7 @@ def sys_str2hex(arg):
   return '0x00'    
 
 def ping_os(ip):
+ from os import system
  return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
 
 def sys_get_results(test):
@@ -204,6 +226,7 @@ def sys_get_results(test):
 
 def sys_log_msg(amsg):
  import sdcp.SettingsContainer as SC
+ from time import localtime, strftime
  if _sys_debug: print "Log: " + amsg
  with open(SC.sdcp_logformat, 'a') as f:
   f.write(unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), amsg)))
@@ -237,6 +260,7 @@ def sys_write_pidfile(pidfname):
 
 def sys_read_pidfile(pidfname):
  pid = -1
+ from os import path as ospath
  if ospath.isfile(pidfname):
   pidfile = open(pidfname)
   pid = pidfile.readline().strip('\n')
@@ -244,10 +268,14 @@ def sys_read_pidfile(pidfname):
  return int(pid)
 
 def sys_release_pidfile(pidfname):
+ from os import path as ospath
  if ospath.isfile(pidfname):
+  from os import remove
   remove(pidfname)
 
 def sys_lock_pidfile(pidfname, sleeptime):
+ from time import sleep
+ from os import path as ospath
  while ospath.isfile(pidfname):
   sleep(sleeptime)
  sysWritePidFile(pidfname) 
