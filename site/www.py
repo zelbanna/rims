@@ -36,7 +36,17 @@ class Web(object):
   if not ajaxcall:
    print "<SPAN style='font-size:10px'>No ajax call argument</SPAN>"
    return
-  import ajax as ajaxmod
+  module = ajaxcall.split('_')[0]
+  if   module == 'rack':
+   import ajax_rack as ajaxmod
+  elif module == 'esxi':
+   import ajax_esxi as ajaxmod
+  elif module == 'graph':
+   import ajax_graph as ajaxmod
+  elif module == 'pdu':
+   import ajax_pdu as ajaxmod
+  else:
+   import ajax as ajaxmod
   fun = getattr(ajaxmod,ajaxcall,None)  
   if self._debug:
    try:

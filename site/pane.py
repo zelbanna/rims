@@ -16,7 +16,7 @@ __status__= "Production"
 # Examine pane
 #
 def examine(aWeb):
- from ajax import examine_clear_logs
+ from ajax_examine import examine_clear_logs
  print aWeb.get_header_full('Services Pane')
  domain  = aWeb.get_value('domain')
  upshost = aWeb.get_value('upshost')
@@ -228,7 +228,7 @@ def rack_info(aWeb):
  if con and con != 'None':
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_consolelist&domain={0}&conlist={1}'>Console</A>".format(domain,con)
  if pdu and pdu != 'None':
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=device_view_pdulist&domain={0}&pdu={1}'>Power</A>".format(domain,pdu)
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&domain={0}&pdu={1}'>Power</A>".format(domain,pdu)
  print "<A CLASS='z-btnop z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except())
  print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=pdus'>PDUs</A>"
  print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=consoles'>Consoles</A>"
@@ -314,15 +314,15 @@ def devices(aWeb):
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS='z-warning z-btnop' OP=confirm DIV=div_device_frame MSG='Clear DB?' LNK='ajax.cgi?call=device_op_finddevices&clear=true&domain={}'>Reset DB</A>".format(domain)
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&domain={}'>Devices</A>".format(domain)
- print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_graphlist&domain={}'>Graphing</A>".format(domain)
+ print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
  if conlist:
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_consolelist&{}'>Console</A>".format(aWeb.reload_args_except(['discstart','discstop','pdu','pane']))
  if pdulist:
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=device_view_pdulist&{}'>PDU</A>".format(aWeb.reload_args_except(['discstart','discstop','console','pane']))
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&{}'>PDU</A>".format(aWeb.reload_args_except(['discstart','discstop','console','pane']))
  print "<A CLASS='z-reload z-btnop' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Device Discovery?' SPIN=true LNK='ajax.cgi?call=device_op_finddevices&domain={0}&discstart={1}&discstop={2}'>Device Discovery</A>".format(domain,discstart,discstop)
- print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Graph Discovery?'  SPIN=true LNK='ajax.cgi?call=device_op_findgraphs&domain={0}'>Graph Discovery</A>".format(domain)
- print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Sync Devices/Graphs?'    LNK='ajax.cgi?call=device_op_syncgraphs&domain={0}'>Sync Graphing</A>".format(domain)
+ print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Graph Discovery?'  SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
+ print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Sync Devices/Graphs?'    LNK='ajax.cgi?call=graph_sync&domain={0}'>Sync Graphing</A>".format(domain)
  print "</DIV>"
  print aWeb.get_listeners("div_navleft")
  print aWeb.get_listeners("div_navcont")
