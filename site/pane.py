@@ -16,7 +16,7 @@ __status__= "Production"
 # Examine pane
 #
 def examine(aWeb):
- from ajax_examine import examine_clear_logs
+ from ajax import examine_clear_logs
  print aWeb.get_header_full('Services Pane')
  domain  = aWeb.get_value('domain')
  upshost = aWeb.get_value('upshost')
