@@ -160,7 +160,7 @@ class Grapher(object):
 
   activeinterfaces = []
   type = aentry['type']
-  fqdn = aentry['dns'] + "." + aentry['domain']
+  fqdn = aentry['hostname'] + "." + aentry['domain']
   try:
    if type in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
     from sdcp.devices.Router import Junos

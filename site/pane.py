@@ -312,7 +312,7 @@ def devices(aWeb):
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-warning z-btnop' OP=confirm DIV=div_device_frame MSG='Clear DB?' LNK='ajax.cgi?call=device_op_finddevices&clear=true&domain={}'>Reset DB</A>".format(domain)
+ print "<A CLASS='z-warning z-btnop' OP=confirm DIV=div_navcont MSG='Clear DB?' LNK='ajax.cgi?call=device_op_finddevices&clear=true&domain={}'>Reset DB</A>".format(domain)
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&domain={}'>Devices</A>".format(domain)
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
  if conlist:

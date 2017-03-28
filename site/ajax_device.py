@@ -7,12 +7,13 @@ __author__= "Zacharias El Banna"
 __version__= "1.0GA"
 __status__= "Production"
 
+from sdcp.devices.DevHandler import Devices, sys_int2ip
+
 ########################################## Device Operations ##########################################
 #
 #
 #
 def device_view_devicelist(aWeb):
- from sdcp.devices.DevHandler import Devices, sys_int2ip
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  devs = Devices()
@@ -26,7 +27,7 @@ def device_view_devicelist(aWeb):
  print "<TR><TH>IP</TH><TH>FQDN</TH><TH>Model</TH></TR>"
  rows = db.get_all_rows()
  for row in rows:
-  print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_view_devinfo&node={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(sys_int2ip(row['ip']), row['dns']+"."+row['domain'], row['model'],row['id'])
+  print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_view_devinfo&node={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(sys_int2ip(row['ip']), row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</TABLE></CENTER>"
  print "</DIV></DIV>"
 
@@ -34,21 +35,20 @@ def device_view_devicelist(aWeb):
 #
 #
 def device_view_devinfo(aWeb):
- from sdcp.devices.DevHandler import Devices, sys_int2ip
  node   = aWeb.get_value('node')
- height = 210
  devs   = Devices()
  db     = devs.connect_db()
  db.do("SELECT * FROM devices WHERE id ='{}'".format(node))
  values = db.get_row()
+ height = 240
  
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
  print "<TABLE style='width:100%;'><TR>"
  
  # First table
- print "<TD><TABLE style='width:200px; border: solid 1px green;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
- print "<TR><TD>Name:</TD><TD><INPUT NAME=dns CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['dns'])
+ print "<TD><TABLE style='width:200px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
+ print "<TR><TD>Name:</TD><TD><INPUT NAME=hostname CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['hostname'])
  print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(values['domain'])
  print "<TR><TD>SNMP:</TD><TD>{}</TD></TR>".format(values['snmp'])
  print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(sys_int2ip(values['ip']))
@@ -58,18 +58,19 @@ def device_view_devinfo(aWeb):
   print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
  print "</SELECT></TD></TR>"
  print "<TR><TD>Model:</TD><TD style='max-width:140px;'>{}</TD></TR>".format(values['model'])
+ print "<TR><TD>DNS ID:</TD><TD>{}</TD></TR>".format(values['dns_id'])
+ print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(values['ipam_id'])
  if values['graphed'] == "yes":
-  print "<TR><TD><A CLASS='z-btnop' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(values['domain'],values['dns']+"."+values['domain'])
+  print "<TR><TD><A CLASS='z-btnop' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(values['domain'],values['hostname']+"."+values['domain'])
  else:
-  if not values['dns'] == 'unknown':
-   print "<TR><TD>Graphs:</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(node, values['dns'], values['domain'])
+  if not values['hostname'] == 'unknown':
+   print "<TR><TD>Graphs:</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(node, values['hostname'], values['domain'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
  print "</TABLE></TD>"
 
  # Second table
- print "<TD><TABLE style='border: solid 1px green;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
-
+ print "<TD><TABLE><TR><TH COLSPAN=2>Rack Info</TH></TR>"
  print "<TR><TD>Rack:</TD><TD><SELECT NAME=rack_id CLASS='z-select'>"
  db.do("SELECT * FROM racks")
  racks = db.get_all_rows()
@@ -79,18 +80,35 @@ def device_view_devinfo(aWeb):
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
  print "</SELECT></TD></TR>"
 
- print "<TR><TD>DNS_ID:</TD><TD>{}</TD></TR>".format(values['dns_id'])
- print "<TR><TD>IPAM_ID:</TD><TD>{}</TD></TR>".format(values['ipam_id'])
  if not values['rack_id'] == 0:
-  print "<TR><TD>Rack_Unit:</TD><TD TITLE='Lower rack unit of device placement'><INPUT NAME=rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['rack_unit'])
-  print "<TR><TD>TS_Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
-  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
+  db.do("SELECT * FROM consoles")
+  consoles = db.get_all_rows()
+  consoles.append({ 'id':0, 'name':'Not used', 'ip':'127.0.0.1' })
+  db.do("SELECT * FROM pdus")
+  pdus = db.get_all_rows()
+  pdus.append({ 'id':0, 'name':'Not used', 'ip':'127.0.0.1' })
+  print "<TR><TD>Rack Unit:</TD><TD TITLE='Lower rack unit of device placement'><INPUT NAME=rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['rack_unit'])
+  print "<TR><TD>TS:</TD><TD><SELECT NAME=console_id CLASS='z-select'>"
+  for console in consoles:
+   extra = " selected" if values['console_id'] == console['id'] else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
+  print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
+  print "<TR><TD>PEM Left:</TD><TD><SELECT NAME=pwr_left_pdu_id CLASS='z-select'>"
+  for pdu in pdus:
+   extra = " selected" if values['pwr_left_pdu_id'] == pdu['id'] else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(pdu['id'],extra,pdu['name'])
+  print "</SELECT></TD></TR>"
+  print "<TR><TD>PEM Left Unit:</TD><TD><INPUT NAME=pwr_left_pdu_slot CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['pwr_left_pdu_slot'])
+  print "<TR><TD>PEM Right:</TD><TD><SELECT NAME=pwr_right_pdu_id CLASS='z-select'>"
+  for pdu in pdus:
+   extra = " selected" if values['pwr_right_pdu_id'] == pdu['id'] else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(pdu['id'],extra,pdu['name'])
+  print "</SELECT></TD></TR>"
+  print "<TR><TD>PEM Right Unit:</TD><TD><INPUT NAME=pwr_right_pdu_slot CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['pwr_right_pdu_slot'])
   print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
  else:
-  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
-  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
-  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
-  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
+  for index in range(0,8):
+   print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  print "</TABLE></TD>"
 
  # Close large table
@@ -105,14 +123,14 @@ def device_view_devinfo(aWeb):
 
  devs.close_db()
 
- print "<DIV CLASS='z-framed' style='margin-left:420px; overflow-x:hidden; z-index:100'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file images/info_{1}.jpg - 600px x 160px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['dns'],values['model'])
+ print "<DIV CLASS='z-framed' style='margin-left:420px; overflow-x:hidden; z-index:100'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file images/info_{1}.jpg - 600px x 160px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['hostname'],values['model'])
 
  print "<DIV CLASS='z-navbar' style='top:{}px;'>".format(str(height + 40))
  functions = Devices.get_widgets(values['type'])
  if functions:
   if functions[0] == 'operated':
    if values['type'] == 'esxi':
-    print "<A TARGET='main_cont' HREF='pane.cgi?view=esxi&domain={}&host={}'>Manage</A></B></DIV>".format(values['domain'], values['dns'])
+    print "<A TARGET='main_cont' HREF='pane.cgi?view=esxi&domain={}&host={}'>Manage</A></B></DIV>".format(values['domain'], values['hostname'])
   else:
    for fun in functions:
     name = " ".join(fun.split('_')[1:])
@@ -130,7 +148,6 @@ def device_view_devinfo(aWeb):
 # Save data for device info
 #
 def device_update_devinfo(aWeb):
- from sdcp.devices.DevHandler import Devices
  node   = aWeb.get_value('node')
  values = aWeb.get_keys()
  values.remove('call')
@@ -166,7 +183,6 @@ def device_view_devdata(aWeb):
  type = aWeb.get_value('type')
  op   = aWeb.get_value('op')
  try:
-  from sdcp.devices.DevHandler import Devices
   dev = Devices.get_node(ip,type)
   fun = getattr(dev,op,None)
   fun()
@@ -182,8 +198,9 @@ def device_op_finddevices(aWeb):
  discstop  = aWeb.get_value('discstop')
  clear     = aWeb.get_value('clear',False)
  if discstart and discstop and domain:
-  from sdcp.devices.DevHandler import Devices
   devs = Devices() 
   devs.discover(discstart,discstop, domain, clear)
   print "<B>Done Discovering Devices: {} -> {} for {}!</B>".format(discstart,discstop,domain)
   aWeb.log_msg("devices.cgi: Discovered devices [{}] {} -> {} for {}".format(str(clear), discstart,discstop,domain))
+ else:
+  print "<B>Not all parameters supplied</B>"

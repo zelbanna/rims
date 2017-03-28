@@ -114,9 +114,9 @@ class Devices(object):
    for i in range(10):
     sema.acquire()
 
-   sql = "INSERT INTO devices (ip,domain,dns,snmp,model,type) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}')"
+   sql = "INSERT INTO devices (ip,domain,hostname,snmp,model,type,fqdn) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}',{6})"
    for ip,entry in db_new.iteritems():
-    self._db.do(sql.format(sys_ip2int(ip),entry['domain'],entry['dns'],entry['snmp'],entry['model'],entry['type']))
+    self._db.do(sql.format(sys_ip2int(ip),entry['domain'],entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn']))
    else:
     self._db.commit()
       
@@ -150,10 +150,11 @@ class Devices(object):
   except:
    pass
    
-  dns,model,type = 'unknown','unknown','unknown'
+  fqdn,hostname,model,type = 'unknown','unknown','unknown','unknown'
   snmp = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
-  try:
-   dns  = gethostbyaddr(aIP)[0].partition('.')[0].lower()
+  try:   
+   fqdn     = gethostbyaddr(aIP)[0]
+   hostname = fqdn.partition('.')[0].lower()
   except:
    pass
 
@@ -185,7 +186,7 @@ class Devices(object):
     type  = "other"
     model = " ".join(infolist[0:4])
 
-  entry = { 'domain':aDomain, 'dns':dns, 'snmp':snmp, 'model':model, 'type':type }
+  entry = { 'domain':aDomain, 'hostname':hostname, 'snmp':snmp, 'model':model, 'type':type, 'fqdn':fqdn }
   aDict[aIP] = entry
   if aSema:
    aSema.release()

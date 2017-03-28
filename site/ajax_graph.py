@@ -63,7 +63,7 @@ def graph_sync(aWeb):
   graphdevices = graph.get_keys()
   sql = "UPDATE devices SET graphed = 'yes' WHERE id = '{}'"
   for row in rows:
-   fqdn = row['dns'] + "." + row['domain']
+   fqdn = row['hostname'] + "." + row['domain']
    if fqdn in graphdevices:
     db.do(sql.format(row['id']))
   db.commit()
