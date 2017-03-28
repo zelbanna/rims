@@ -226,7 +226,7 @@ def rack_info(aWeb):
  print "<A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&{}'>Info</A>".format(aWeb.reload_args_except(['pane']))
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
  if con and con != 'None':
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_consolelist&domain={0}&conlist={1}'>Console</A>".format(domain,con)
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&domain={0}&conlist={1}'>Console</A>".format(domain,con)
  if pdu and pdu != 'None':
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&domain={0}&pdu={1}'>Power</A>".format(domain,pdu)
  print "<A CLASS='z-btnop z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except())
@@ -316,7 +316,7 @@ def devices(aWeb):
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&domain={}'>Devices</A>".format(domain)
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
  if conlist:
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_consolelist&{}'>Console</A>".format(aWeb.reload_args_except(['discstart','discstop','pdu','pane']))
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&{}'>Console</A>".format(aWeb.reload_args_except(['discstart','discstop','pdu','pane']))
  if pdulist:
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&{}'>PDU</A>".format(aWeb.reload_args_except(['discstart','discstop','console','pane']))
  print "<A CLASS='z-reload z-btnop' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
