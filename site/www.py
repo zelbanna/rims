@@ -37,7 +37,7 @@ class Web(object):
    print "<SPAN style='font-size:10px'>No ajax call argument</SPAN>"
    return
   module = ajaxcall.split('_')[0]
-  elif module == 'device':
+  if   module == 'device':
    import ajax_device as ajaxmod
   elif module == 'rack':
    import ajax_rack as ajaxmod

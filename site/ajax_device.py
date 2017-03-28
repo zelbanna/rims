@@ -123,6 +123,9 @@ def device_view_devinfo(aWeb):
  print "<DIV CLASS='z-navcontent' ID=div_navdata style='top:{}px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>".format(str(height + 40))
 
 
+
+
+################################################### UPDATE ###################################################
 #
 # Save data for device info
 #
