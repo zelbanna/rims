@@ -23,7 +23,7 @@ class OpenGear(GenDevice, ConfObject):
 
  def __init__(self, ahost, adomain = None):
   GenDevice.__init__(self,ahost,adomain,'console')
-  ConfObject.__init__(self,None)
+  ConfObject.__init__(self)
 
  def __str__(self):
   return "OpenGear - {}".format(GenDevice.__str__(self))
@@ -63,7 +63,7 @@ class Avocent(GenDevice, ConfObject):
 
  def __init__(self, ahost, adomain):
   GenDevice.__init__(self,ahost,adomain,'pdu')
-  ConfObject.__init__(self,None)
+  ConfObject.__init__(self)
 
  def __str__(self):
   return "Avocent - {}".format(GenDevice.__str__(self))

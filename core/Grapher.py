@@ -10,7 +10,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "5.0"
 __status__ = "Production"
 
-from GenLib import sys_log_msg, ping_os
+from GenLib import sys_log_msg, ping_os, sys_ip2int, sys_int2ip
 
 ####################################### Grapher Class ##########################################
 #
@@ -130,10 +130,14 @@ class Grapher(object):
    chmod(self._graphplug, 0o777)
 
    devs = Devices()
-   devs.load_json()
-   for key in devs.get_keys():
+   db   = devs.get_db()
+   db.connect()
+   db.do("SELECT * FROM devices")
+   rows = db.get_all_rows()
+   db.close()
+   for item in rows:
     sema.acquire()
-    t = Thread(target = self._detect, args=[key, devs.get_entry(key), ahandler, flock, sema])
+    t = Thread(target = self._detect, args=[sys_int2ip(item['ip']), item, ahandler, flock, sema])
     t.start()
    for i in range(10):
     sema.acquire()       
@@ -156,7 +160,7 @@ class Grapher(object):
 
   activeinterfaces = []
   type = aentry['type']
-  fqdn = aentry['fqdn']
+  fqdn = aentry['dns'] + "." + aentry['domain']
   try:
    if type in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
     from sdcp.devices.Router import Junos

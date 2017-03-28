@@ -176,7 +176,7 @@ def thread_shutdown_host(afqdn, aWeb):
  from sdcp.core.DevESXi import ESXi
  print "<PRE>Shutting down host: {}</PRE>".format(afqdn)
  aWeb.log_msg("shutdownAll: Thread shutting down [{}]".format(afqdn))
- esxi = ESXi(fqdn)
+ esxi = ESXi(afqdn)
  esxi.shutdown_vms()
 
 def shutdownall(aWeb):
@@ -206,12 +206,14 @@ def rack(aWeb):
  racks = db.get_all_rows()
  db.close()
  print "<DIV>"
- print "<CENTER><H1>Stolab Rack Overview <A TARGET=main_cont TITLE='Unsorted devs' HREF=pane.cgi?view=rack_info>*</A></H1><BR>"
+ print "<CENTER><H1>Stolab Rack Overview <A TARGET=main_cont TITLE='Unsorted devices' HREF=pane.cgi?view=rack_info>*</A></H1><BR>"
  for index, rack in enumerate(racks):
   print "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&rack={1}&pdu={2}&console={3}><IMG ALT='Cabinet {1}' SRC='images/cabinet.{4}.png'></A>&nbsp;".format(rack['name'],rack['id'],rack['pdu'],rack['console'],index % 3)
  print "</CENTER></DIV>"
-  
 
+#
+# ZEB ToDo: Make sure console and PDU is fetched from DB
+#
 def rack_info(aWeb):
  print aWeb.get_header_full("Rack Info")
  rack   = aWeb.get_value('rack', 'unknown')
@@ -222,7 +224,7 @@ def rack_info(aWeb):
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&{}'>Info</A>".format(aWeb.reload_args_except(['pane']))
- print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack&arg={0}'>Devices</A>".format(rack)
+ print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
  if con and con != 'None':
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_consolelist&domain={0}&conlist={1}'>Console</A>".format(domain,con)
  if pdu and pdu != 'None':

@@ -109,22 +109,21 @@ def esxi_op(aWeb, aEsxi = None):
 #
 #
 def device_view_devicelist(aWeb):
- from sdcp.devices.DevHandler import Devices
- from sdcp.core.GenLib import sys_ip2int
+ from sdcp.devices.DevHandler import Devices, sys_int2ip
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
- devs = Devices() 
- devs.load_json()
+ devs = Devices()
+ db   = devs.connect_db()
  if target and arg:
-  keys = devs.get_keys(target,arg, aSortKey = sys_ip2int)
+  db.do("SELECT * FROM devices WHERE {0}='{1}' ORDER BY ip".format(target,arg))
  else:
-  keys = devs.get_keys(aSortKey = sys_ip2int)
+  db.do("SELECT * FROM devices ORDER BY ip")
  print "<DIV CLASS='z-framed' ID=div_device_devicelist><DIV CLASS='z-table'>"
  print "<CENTER><TABLE WIDTH=330>"
  print "<TR><TH>IP</TH><TH>FQDN</TH><TH>Model</TH></TR>"
- for key in keys:
-  values = devs.get_entry(key)
-  print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_view_devinfo&node={0}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(key, values['fqdn'], values['model'])
+ rows = db.get_all_rows()
+ for row in rows:
+  print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_view_devinfo&node={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(sys_int2ip(row['ip']), row['dns']+"."+row['domain'], row['model'],row['id'])
  print "</TABLE></CENTER>"
  print "</DIV></DIV>"
 
@@ -262,52 +261,67 @@ def device_view_consolelist(aWeb):
 # Device Info
 #
 def device_view_devinfo(aWeb):
- from sdcp.devices.DevHandler import Devices
+ from sdcp.devices.DevHandler import Devices, sys_int2ip
  node   = aWeb.get_value('node')
- height = 190
+ height = 210
  devs   = Devices()
- devs.load_json()
- values = devs.get_entry(node)
+ db     = devs.connect_db()
+ db.do("SELECT * FROM devices WHERE id ='{}'".format(node))
+ values = db.get_row()
  
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
- print "<TABLE style='width:100%'><TR><TD><TABLE style='width:200px'>"
+ print "<TABLE style='width:100%;'><TR>"
  
- print "<TR><TH COLSPAN=2>Reachability Info</TH></TR>"
+ # First table
+ print "<TD><TABLE style='width:200px; border: solid 1px green;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
  print "<TR><TD>Name:</TD><TD><INPUT NAME=dns CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['dns'])
  print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(values['domain'])
  print "<TR><TD>SNMP:</TD><TD>{}</TD></TR>".format(values['snmp'])
- print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(node)
+ print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(sys_int2ip(values['ip']))
+ print "<TR><TD>Type:</TD><TD TITLE='Device type'><SELECT NAME=type CLASS='z-select'>"
+ for tp in Devices.get_types():
+  extra = " selected disabled" if values['type'] == tp else ""      
+  print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
+ print "</SELECT></TD></TR>"
+ print "<TR><TD>Model:</TD><TD style='max-width:140px;'>{}</TD></TR>".format(values['model'])
  if values['graphed'] == "yes":
-  print "<TR><TD><A CLASS='z-btnop' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(values['domain'],values['fqdn'])
+  print "<TR><TD><A CLASS='z-btnop' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(values['domain'],values['dns']+"."+values['domain'])
  else:
   if not values['dns'] == 'unknown':
    print "<TR><TD>Graphs:</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_op_addgraph&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(node, values['dns'], values['domain'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
- print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
+ print "</TABLE></TD>"
 
- print "</TABLE></TD><TD><TABLE>"
- print "<TR><TH COLSPAN=2>Device Info</TH></TR>"  
- print "<TR><TD>Type:</TD><TD TITLE='Device type'><SELECT NAME=type CLASS='z-select'>"
- for tp in Devices.get_types():
-  extra = " selected disabled" if values['type'] == tp else ""      
-  print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
- 
- print "</SELECT></TD></TR>"
- print "<TR><TD>Model:</TD><TD style='max-width:140px;'>{}</TD></TR>".format(values['model'])
- print "<TR><TD>Rack_ID:</TD><TD TITLE='Rack ID - numeric value of rack'><INPUT NAME=rack CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['rack'])
- print "<TR><TD>Unit:</TD><TD TITLE='Lowest rack unit, where device is mounted'><SELECT NAME=unit CLASS='z-select'>"
- units = map(lambda x: str(x),range(1,49))
- units.append('unknown')
- for unit in units:
-  extra = " selected disabled" if values['unit'] == unit else ""
-  print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(unit),extra)
- print "</SELECT></TD></TR>"
- print "<TR><TD>TS_Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
- print "<TR><TD>Power:</TD><TD TITLE='Left and Right power slot in rack'><INPUT CLASS='z-input' style='width:45%;' NAME=power_left TYPE=number PLACEHOLDER='{}'> : <INPUT CLASS='z-input' style='width:45%;' NAME=power_right TYPE=number PLACEHOLDER='{}'></TD></TR>".format(values['power_left'], values['power_right']) 
+ # Second table
+ print "<TD><TABLE style='border: solid 1px green;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
 
- print "</TABLE></TD></TR></TABLE>"
+ print "<TR><TD>Rack:</TD><TD><SELECT NAME=rack_id CLASS='z-select'>"
+ db.do("SELECT * FROM racks")
+ racks = db.get_all_rows()
+ racks.append({ 'id':0, 'name':'Not used', 'size':'48', 'fk_pdu':'0', 'fk_console':'0'})
+ for rack in racks:
+  extra = " selected" if values['rack_id'] == rack['id'] else ""
+  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
+ print "</SELECT></TD></TR>"
+
+ print "<TR><TD>DNS_ID:</TD><TD>{}</TD></TR>".format(values['dns_id'])
+ print "<TR><TD>IPAM_ID:</TD><TD>{}</TD></TR>".format(values['ipam_id'])
+ if not values['rack_id'] == 0:
+  print "<TR><TD>Rack_Unit:</TD><TD TITLE='Lower rack unit of device placement'><INPUT NAME=rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['rack_unit'])
+  print "<TR><TD>TS_Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
+  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
+  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
+ else:
+  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
+  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
+  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
+  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
+ print "</TABLE></TD>"
+
+ # Close large table
+ print "</TR></TABLE>"
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_view_devinfo&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(node)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_devinfo&node={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(node)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_dns&node={}  FRM=info_form OP=post TITLE='Update DNS'>D</A>".format(node)
@@ -316,23 +330,26 @@ def device_view_devinfo(aWeb):
  print "</FORM>"
  print "</DIV>"
 
- print "<DIV CLASS='z-framed' style='margin-left:420px; overflow-x:hidden; z-index:100'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file images/info_{1}.jpg - 600px x 160px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['fqdn'],values['model'])
+ devs.close_db()
+
+ print "<DIV CLASS='z-framed' style='margin-left:420px; overflow-x:hidden; z-index:100'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file images/info_{1}.jpg - 600px x 160px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['dns'],values['model'])
 
  print "<DIV CLASS='z-navbar' style='top:{}px;'>".format(str(height + 40))
  functions = Devices.get_widgets(values['type'])
  if functions:
   if functions[0] == 'operated':
    if values['type'] == 'esxi':
-    print "<A TARGET='main_cont' HREF='pane.cgi?view=esxi&domain={}&host={}'>Manage</A></B></DIV>".format(values['domain'], values['fqdn'].split('.')[0])
+    print "<A TARGET='main_cont' HREF='pane.cgi?view=esxi&domain={}&host={}'>Manage</A></B></DIV>".format(values['domain'], values['dns'])
   else:
    for fun in functions:
     name = " ".join(fun.split('_')[1:])
-    print "<A CLASS='z-btnop' OP=load DIV=div_navdata SPIN=true LNK='ajax.cgi?call=device_view_devdata&node={0}&type={1}&op={2}'>{3}</A>".format(node, values['type'], fun, name.title())
+    print "<A CLASS='z-btnop' OP=load DIV=div_navdata SPIN=true LNK='ajax.cgi?call=device_view_devdata&ip={0}&type={1}&op={2}'>{3}</A>".format(sys_int2ip(values['ip']), values['type'], fun, name.title())
  else:
   print "&nbsp;"
  print "</DIV>"
  print "<DIV CLASS='z-navcontent' ID=div_navdata style='top:{}px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>".format(str(height + 40))
 
+##################################################
 #
 # Save data for device info
 #
@@ -343,18 +360,18 @@ def device_update_devinfo(aWeb):
  values.remove('call')
  values.remove('node')
  if values:
-  devs   = Devices()
-  devs.load_json()
-  entry  = devs.get_entry(node)
-  for data in values:
-   entry[data] = aWeb.get_value(data)
-   if data == 'dns':
-    # Update FQDN as well
-    entry['fqdn'] = entry['dns'] + "." + entry['domain']
-  devs.save_json()
+  devs = Devices()
+  db   = devs.connect_db()
+  for key in values:
+   db.do("UPDATE devices SET {0}='{1}' where id = '{2}'".format(key,aWeb.get_value(key),node))
+  db.commit()
+  devs.close_db()
   print "Updated: {}".format(" ".join(values))
  else:
   print "Nothing to update"
+
+def device_update_detect(aWeb):
+ print "not implemented yet"
 
 def device_update_dns(aWeb):
  import sdcp.SettingsContainer as SC
@@ -368,12 +385,12 @@ def device_update_ipam(aWeb):
 # View operation data / widgets
 #
 def device_view_devdata(aWeb):
- node = aWeb.get_value('node')
+ ip   = aWeb.get_value('ip')
  type = aWeb.get_value('type')
  op   = aWeb.get_value('op')
  try:
   from sdcp.devices.DevHandler import Devices
-  dev = Devices.get_node(node,type)
+  dev = Devices.get_node(ip,type)
   fun = getattr(dev,op,None)
   fun()
  except Exception as err:
@@ -403,9 +420,10 @@ def device_op_findgraphs(aWeb):
   graph = Grapher() 
   graph.discover()
   print "<B>Done discovering graphs</B>"
-  aWeb.log_msg("devices.cgi: Discovered graphs")
+  aWeb.log_msg("Devices: Discovered graphs")
  except Exception as err:
   print "<B>Error: {}</B>".format(str(err))
+
 
 #
 # Sync graphs and devices
@@ -415,13 +433,18 @@ def device_op_syncgraphs(aWeb):
  from sdcp.core.Grapher import Grapher
  try:
   devs  = Devices()
-  devs.load_json()
+  db = devs.connect_db()
+  db.do("SELECT id,dns,domain FROM devices")
+  rows = db.get_all_rows()
   graph = Grapher()
   graphdevices = graph.get_keys()
-  for dev in devs.get_keys():
-   entry = devs.get_entry(dev)
-   entry['graphed'] = 'yes' if entry['fqdn'] in graphdevices else 'no'
-  devs.save_json()
+  sql = "UPDATE devices SET graphed = 'yes' WHERE id = '{}'"
+  for row in rows:
+   fqdn = row['dns'] + "." + row['domain']
+   if fqdn in graphdevices:
+    db.do(sql.format(row['id']))
+  db.commit()
+  devs.close_db()
   print "<B>Done syncing devices' graphing</B>"
   aWeb.log_msg("devices.cgi: Done syncing devices' graphing")
  except Exception as err:
@@ -445,7 +468,8 @@ def device_op_addgraph(aWeb):
    graph.add_entry(fqdn,'no')
    print "<B>Added graphing for node {0} ({1})</B>".format(node, fqdn)
 
-########################################## Basic Rack Info ##########################################
+
+################################################## Basic Rack Info ######################################################
 #
 # Basic rack info - right now only a display of a typical rack.. Change to table?
 #
@@ -487,6 +511,7 @@ def rack_data(aWeb):
  type = aWeb.get_value('type')
  id   = aWeb.get_value('id','new')
  name = aWeb.get_value('name','new-name')
+ ip   = aWeb.get_value('ip','127.0.0.1') 
 
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
  print "<FORM ID=rack_data_form>"
@@ -496,7 +521,6 @@ def rack_data(aWeb):
  print "<TR><TH COLSPAN=2>{} Info</TH></TR>".format(type[:-1].capitalize())
 
  if type == "pdus" or type == 'consoles':
-  ip   = aWeb.get_value('ip','127.0.0.1') 
   print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
   print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
  if type == 'racks':
@@ -511,10 +535,10 @@ def rack_data(aWeb):
    rack = db.get_row()
   db.do("SELECT id,name from pdus")
   pdus = db.get_all_rows()
-  pdus.append({'id':0, 'name':'NULL'})
+  pdus.append({'id':0, 'name':'Not Used'})
   db.do("SELECT id,name from consoles")
   consoles = db.get_all_rows()
-  consoles.append({'id':0, 'name':'NULL'})
+  consoles.append({'id':0, 'name':'Not Used'})
   db.close()
   print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
   print "<TR><TD>Size:</TD><TD><INPUT NAME=size TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['size'])
@@ -529,9 +553,9 @@ def rack_data(aWeb):
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
   print "</SELECT></TD></TR>"
  print "</TABLE>"
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_data_form OP=post><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Update unit' CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_data_form OP=post><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
-  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_remove&type={0}&id={1} OP=load><IMG SRC='images/btn-remove.png'></A>".format(type,id)
+  print "<A TITLE='Remove unit' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_remove&type={0}&id={1} OP=load><IMG SRC='images/btn-remove.png'></A>".format(type,id)
  print "&nbsp;<SPAN ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
@@ -586,6 +610,7 @@ def rack_remove(aWeb):
  db   = DB()
  db.connect()
  db.do("DELETE FROM {0} WHERE id = '{1}'".format(type,id))
+ db.do("UPDATE devices SET {}_id = '0' WHERE {}_id = '{1}'".format(type[:-1],id))
  db.commit()
  print "Unit {} of type {} deleted".format(id,type)
  db.close()

@@ -1,0 +1,53 @@
+create database sdcp;
+create user 'sdcp'@'localhost' identified by 'sdcp';
+grant all on sdcp.* to 'sdcp';
+use sdcp;
+
+DROP TABLE IF EXISTS `consoles`;
+CREATE TABLE `consoles` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) DEFAULT NULL,
+  `ip` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `pdus`;
+CREATE TABLE `pdus` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) DEFAULT NULL,
+  `ip` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `racks`;
+CREATE TABLE `racks` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) DEFAULT NULL,
+  `size` int(10) unsigned DEFAULT NULL,
+  `fk_console` int(10) unsigned DEFAULT NULL,
+  `fk_pdu` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `devices`;
+CREATE TABLE `devices` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ip` int(10) unsigned NOT NULL,
+  `console_id` int(10) unsigned DEFAULT NULL,
+  `consoleport` int(10) unsigned DEFAULT NULL,
+  `dns_id` int(10) unsigned DEFAULT 0,
+  `dns` varchar(20) DEFAULT NULL,
+  `domain` varchar(20) DEFAULT NULL,
+  `graphed` varchar(3) DEFAULT 'no',
+  `ipam_id` int(10) unsigned DEFAULT 0,
+  `model` varchar(20) DEFAULT NULL,
+  `pwr_left_pdu_id` int(10) unsigned DEFAULT 0,
+  `pwr_left_pdu_slot` varchar(4) DEFAULT NULL,
+  `pwr_right_pdu_id` int(10) unsigned DEFAULT 0,
+  `pwr_right_pdu_slot` varchar(4) DEFAULT NULL,
+  `rack_id` int(10) unsigned DEFAULT 0,
+  `rack_unit` int(10) unsigned DEFAULT NULL,
+  `type` varchar(20),
+  `snmp` varchar(20),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

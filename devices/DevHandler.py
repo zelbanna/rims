@@ -10,12 +10,12 @@ __author__  = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__  = "Production"
 
-from sdcp.core.GenLib import ConfObject, ping_os, sys_ips2range, sys_ip2int, sys_log_msg
+from sdcp.core.GenLib import DB, ping_os, sys_ips2range, sys_ip2int, sys_int2ip, sys_log_msg
 
 # keys.sort(key=sys_ip2int)
 # - Devices is the maintainer of discovered devices, use sys_ip2int as sort key
 
-class Devices(ConfObject):
+class Devices(object):
 
  @classmethod
  def get_widgets(cls,aType):
@@ -41,7 +41,7 @@ class Devices(ConfObject):
   return [ 'ex', 'mx', 'srx', 'qfx', 'wlc', 'linux', 'esxi', 'other', 'unknown' ]
 
  @classmethod
- def get_node(cls,aNode,aType):
+ def get_node(cls,aIP,aType):
   if aType in Devices.get_types():
    Dev = None
    if   aType == 'ex':
@@ -54,51 +54,77 @@ class Devices(ConfObject):
     from Router import WLC as Dev
    elif aType == 'esxi':
     from ESXi  import ESXi as Dev
-   return Dev(aNode)
+   return Dev(aIP)
   return None                                                              
 
  def __init__(self):
-  import sdcp.SettingsContainer as SC
-  ConfObject.__init__(self, SC.sdcp_devicefile)  
-  
- def __str__(self):
-  return "Device: {}\n{}".format(self._filename, self.get_json())
+  self._db = DB()
+  self._connected = False
+
+ def connect_db(self):
+  self._db.connect()
+  self._connected = True
+  return self._db
  
- ##################################### Device Discovery and Detection ####################################
+ def close_db(self):
+  self._db.close()
+  self._connected = False
+
+ def get_db(self):
+  return self._db
+
+ def get_ip_entry(self,aIP):
+  if not self._connected:  
+   self._db.connect()
+  self._db.do("SELECT * FROM devices WHERE ip = '{}'".format(sys_ip2int(aIP)))
+  row = self._db.get_row()
+  if not self._connected:
+   self._db.close()
+  return row
+
+##################################### Device Discovery and Detection ####################################
  #
  # clear existing entries or not?
  def discover(self, aStartIP, aStopIP, aDomain, aClear = False):
   from time import time
   from threading import Thread, BoundedSemaphore
-
   start_time = int(time())
   sys_log_msg("Device discovery: " + aStartIP + " -> " + aStopIP + ", for domain '" + aDomain + "'")
-
-  if not aClear and not self._configitems:
-   self.load_json()
-
+  self._db.connect()
+  db_old, db_new = {}, {}
+  if aClear:
+   self._db.do("TRUNCATE TABLE devices")
+   self._db.commit()
+  else:
+   self._db.do("SELECT ip FROM devices")
+   rows = self._db.get_all_rows()
+   for item in rows:
+    db_old[item.get('ip')] = True
   try:
    sema = BoundedSemaphore(10)
    for ip in sys_ips2range(aStartIP, aStopIP):
-    if aClear:
-     self._configitems.pop(ip,None)
-    else:
-     existing = self._configitems.get(ip,None)
-     if existing:
-      continue
+    if db_old.get('ip',None):
+     continue
     sema.acquire()
-    t = Thread(target = self._detect, args=[ip, aDomain, sema])
+    t = Thread(target = self._detect, args=[ip, aDomain, db_new, sema])
     t.name = "Detect " + ip
     t.start()
    
    # Join all threads by acquiring all semaphore resources
    for i in range(10):
     sema.acquire()
-   #  
-   self.save_json()  
+
+   sql = "INSERT INTO devices (ip,domain,dns,snmp,model,type) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}')"
+   for ip,entry in db_new.iteritems():
+    self._db.do(sql.format(sys_ip2int(ip),entry['domain'],entry['dns'],entry['snmp'],entry['model'],entry['type']))
+   else:
+    self._db.commit()
+      
   except Exception as err:
    sys_log_msg("Device discovery: Error [{}]".format(str(err)))
+  self._db.close()
   sys_log_msg("Device discovery: Total time spent: {} seconds".format(int(time()) - start_time))
+  
 
  ########################### Detect Devices ###########################
  #
@@ -106,14 +132,14 @@ class Devices(ConfObject):
  #
  # Add proper community handling..
  #
- def _detect(self, aIP, aDomain, aSema = None):
+ def _detect(self, aIP, aDomain, aDict, aSema = None):
   import sdcp.SettingsContainer as SC
   from netsnmp import VarList, Varbind, Session
   from socket import gethostbyaddr
   if not ping_os(aIP):
    if aSema:
     aSema.release()
-   return False
+   return None
 
   try:
    # .1.3.6.1.2.1.1.1.0 : Device info
@@ -124,14 +150,12 @@ class Devices(ConfObject):
   except:
    pass
    
-  dns,fqdn,model,type = 'unknown','unknown','unknown','unknown'
+  dns,model,type = 'unknown','unknown','unknown'
   snmp = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
   try:
-   dns = gethostbyaddr(aIP)[0].split('.')[0].lower()
-   fqdn = dns
+   dns  = gethostbyaddr(aIP)[0].partition('.')[0].lower()
   except:
-   fqdn = snmp
-  fqdn = fqdn.split('.')[0] + "." + aDomain if not (aDomain in fqdn) else fqdn
+   pass
 
   if devobjs[0].val:
    infolist = devobjs[0].val.split()
@@ -161,9 +185,10 @@ class Devices(ConfObject):
     type  = "other"
     model = " ".join(infolist[0:4])
 
-  self._configitems[aIP] = { 'domain':aDomain, 'fqdn':fqdn, 'dns':dns, 'snmp':snmp, 'model':model, 'type':type, 'graphed':'no', 'rack':'unknown', 'unit':'unknown', 'consoleport':'unknown', 'power_left':'unknown', 'power_right':'unknown' }
+  entry = { 'domain':aDomain, 'dns':dns, 'snmp':snmp, 'model':model, 'type':type }
+  aDict[aIP] = entry
   if aSema:
    aSema.release()
-  return True
+  return entry
 
 #############################################################################

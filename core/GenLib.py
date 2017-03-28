@@ -32,6 +32,7 @@ class GenDevice(object):
   import sdcp.SettingsContainer as SC
   from socket import gethostbyname, getfqdn
   self._type = atype
+  self._devid = None
   if sys_is_ip(ahost):
    self._ip = ahost
    try:
@@ -89,41 +90,13 @@ class GenDevice(object):
 #
 class ConfObject(object):
 
- def __init__(self, aFilename = None):
+ def __init__(self):
   self._configitems = {}
-  self._filename = aFilename
 
  def __str__(self):
   return "Configuration: - {}".format(str(self._configitems))
 
  def load_snmp(self):
-  pass
-
- def load_json(self):
-  try:
-   self._configitems.clear()
-   from json import load as json_load_file
-   with open(self._filename) as conffile:
-    self._configitems = json_load_file(conffile)
-  except:
-   pass
-   
- def save_json(self):
-  from json import dump as json_save_file
-  with open(self._filename,'w') as conffile:
-    json_save_file(self._configitems, conffile, indent = 1, sort_keys = True)
-
- def get_json(self):
-  from json import dumps as json_get_str
-  return json_get_str(self._configitems, indent = 1, sort_keys = True)
-
- def add_db_position(self, aPos, aVal = 'unknown'):
-  self.load_json()
-  for entry in self._configitems.itervalues():
-   entry[aPos] = aVal
-  self.save_json()
-
- def get_json_to_html(self):
   pass
 
  def get_keys(self, aTargetName = None, aTargetValue = None, aSortKey = None):
@@ -145,13 +118,6 @@ class ConfObject(object):
   for key in aKeyList:
    entries.append(self._configitems.get(key))
   return entries
-
- def add_entry(self, aKey, aEntry, aWriteJSON = False):
-  self._configitems[aKey] = aEntry
-  if aWriteConf:
-   if len(self._configitems) == 1:
-    self.load_json()
-   self.save_json()
 
 #
 # Database Class
