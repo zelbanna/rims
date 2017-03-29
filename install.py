@@ -56,7 +56,7 @@ print "Copied necessary files"
 print ""
 
 import pip
-pip.main['install','pymysql']
+pip.main(['install','pymysql'])
 
 print "Please install mysql.txt to complete database installation"
 

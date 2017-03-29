@@ -230,13 +230,11 @@ def rack_info(aWeb):
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&{}'>Info</A>".format(aWeb.reload_args_except(['pane']))
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
- if con and not con == None:
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&conlist={}'>Console</A>".format(con)
+ if con:
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)
  if len(pdus) > 0:
-  if len(pdus) == 2:
-   print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&pdulist={}&pdulist={}'>Power</A>".format(pdus[0],pdus[1])
-  else:
-   print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&pdulist={}'>Power</A>".format(pdus[0])
+  pdustring = "&pdulist=".join(pdus)
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&pdulist={}'>Power</A>".format(pdustring)
  print "<A CLASS='z-btnop z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except())
  print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=pdus'>PDUs</A>"
  print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=consoles'>Consoles</A>"
