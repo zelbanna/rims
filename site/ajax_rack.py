@@ -26,7 +26,7 @@ def rack_info(aWeb):
  print "<DIV style='padding:20px;'>"
  print "<H1>{}</H1>".format(rackinfo['name'])
  print "<TABLE>"
- print "<TR CLASS='z-rack'><TD CLASS='z-rack-indx'>48</TD><TD CLASS='z-rack-data' style='background:yellow;'><CENTER>Patch Panel</CENTER></TD><TD CLASS='z-rack-indx'>48</TD><TR>"
+ print "<TR CLASS='z-rack'><TD CLASS='z-rack-indx'>{0}</TD><TD CLASS='z-rack-data' style='background:yellow;'><CENTER>Patch Panel</CENTER></TD><TD CLASS='z-rack-indx'>{0}</TD><TR>".format(rackinfo['size'])
  units = range(1,rackinfo['size'])
  units.reverse()
  for index in units:
