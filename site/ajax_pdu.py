@@ -13,17 +13,21 @@ __status__= "Production"
 #
 
 def pdu_list(aWeb):
+ from sdcp.core.GenLib import DB
  from sdcp.devices.RackUtils import Avocent
  domain  = aWeb.get_value('domain')
  slot    = aWeb.get_value('slot')
  nstate  = aWeb.get_value('nstate')
  pdulist = aWeb.get_list('pdulist')
  pduop   = aWeb.get_value('pdu')
+ db = DB()
+
+ optemplate = "<A CLASS='z-btn z-small-btn z-btnop' OP=load SPIN=true DIV=div_navleft LNK='ajax.cgi?call=pdu_list&pdu={0}&nstate={1}&slot={2}'><IMG SRC='images/btn-{3}'></A>"
+
  if len(pdulist) == 0:
   pdulist.append(pduop)
  print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR><TH>PDU</TH><TH>Entry</TH><TH>Device</TH><TH style='width:63px;'>State</TH></TR>"
- optemplate = "<A CLASS='z-btn z-small-btn z-btnop' OP=load SPIN=true DIV=div_navleft LNK='ajax.cgi?call=pdu_list&pdu={0}&nstate={1}&slot={2}'><IMG SRC='images/btn-{3}'></A>"
  for pdu in pdulist:
   avocent = Avocent(pdu,domain)
   avocent.load_snmp()

@@ -1,4 +1,4 @@
-create database sdcp;
+ create database sdcp;
 create user 'sdcp'@'localhost' identified by 'sdcp';
 grant all on sdcp.* to 'sdcp';
 use sdcp;
@@ -16,16 +16,22 @@ CREATE TABLE `pdus` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(20) DEFAULT NULL,
   `ip` int(10) unsigned DEFAULT NULL,
+  `first_slot_name` varchar(10) DEFAULT NULL,
+  `second_slot_name` varchar(10) DEFAULT NULL,
+  `second_slot_id` int(10) unsigned DEFAULT NULL,
+  `first_slot_id` int(10) unsigned DEFAULT NULL,
+  `slots` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
-
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+                  
 DROP TABLE IF EXISTS `racks`;
 CREATE TABLE `racks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(20) DEFAULT NULL,
   `size` int(10) unsigned DEFAULT NULL,
   `fk_console` int(10) unsigned DEFAULT NULL,
-  `fk_pdu` int(10) unsigned DEFAULT NULL,
+  `fk_pdu_1` int(10) unsigned DEFAULT NULL,
+  `fk_pdu_2` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 

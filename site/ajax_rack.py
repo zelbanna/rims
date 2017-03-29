@@ -51,7 +51,7 @@ def rack_data(aWeb):
  name = aWeb.get_value('name','new-name')
  ip   = aWeb.get_value('ip','127.0.0.1') 
 
- print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
+ print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:170px;'>"
  print "<FORM ID=rack_data_form>"
  print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
@@ -70,7 +70,7 @@ def rack_data(aWeb):
   db.connect()
   rack = {}
   if id == 'new':
-   rack = { 'id':'new', 'name':'new-name', 'size':'48', 'fk_pdu':0, 'fk_console':0 }
+   rack = { 'id':'new', 'name':'new-name', 'size':'48', 'fk_pdu_1':0, 'fk_pdu_2':0, 'fk_console':0 }
   else:
    db.do("SELECT * from racks WHERE id = {}".format(id))
    rack = db.get_row()
@@ -83,11 +83,18 @@ def rack_data(aWeb):
   db.close()
   print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
   print "<TR><TD>Size:</TD><TD><INPUT NAME=size TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['size'])
-  print "<TR><TD>PDU:</TD><TD><SELECT NAME=fk_pdu CLASS='z-select'>"
+  print "<TR><TD>PDU_1:</TD><TD><SELECT NAME=fk_pdu_1 CLASS='z-select'>"
   for unit in pdus:
-   extra = " selected" if rack['fk_pdu'] == unit['id'] else ""
+   extra = " selected" if rack['fk_pdu_1'] == unit['id'] else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
   print "</SELECT></TD></TR>"
+
+  print "<TR><TD>PDU_2:</TD><TD><SELECT NAME=fk_pdu_2 CLASS='z-select'>"
+  for unit in pdus:
+   extra = " selected" if rack['fk_pdu_2'] == unit['id'] else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
+  print "</SELECT></TD></TR>"
+
   print "<TR><TD>Console:</TD><TD><SELECT NAME=fk_console CLASS='z-select'>"
   for unit in consoles:
    extra = " selected" if rack['fk_console'] == unit['id'] else ""
@@ -138,15 +145,16 @@ def rack_update(aWeb):
   res = db.do(sql)
   db.commit()  
  elif type == 'racks':
-  size   = aWeb.get_value('size')
-  fk_pdu = aWeb.get_value('fk_pdu')
+  size       = aWeb.get_value('size')
+  fk_pdu_1   = aWeb.get_value('fk_pdu_1')
+  fk_pdu_2   = aWeb.get_value('fk_pdu_2')
   fk_console = aWeb.get_value('fk_console')
   if id == 'new':
    print "New rack created"
-   sql = "INSERT into racks (name, size, fk_pdu, fk_console) VALUES ('{}','{}','{}','{}')".format(name,size,fk_pdu,fk_console)
+   sql = "INSERT into racks (name, size, fk_pdu_1, fk_pdu_2, fk_console) VALUES ('{}','{}','{}','{}','{}')".format(name,size,fk_pdu_1,fk_pdu_2,fk_console)
   else:
    print "Updated rack {}".format(id)
-   sql = "UPDATE racks SET name = '{0}', size = '{1}', fk_pdu = '{2}', fk_console = '{3}'  WHERE id = '{4}'".format(name,size,fk_pdu,fk_console,id)
+   sql = "UPDATE racks SET name = '{}', size = '{}', fk_pdu_1 = '{}', fk_pdu_2 = '{}', fk_console = '{}' WHERE id = '{}'".format(name,size,fk_pdu_1,fk_pdu_2,fk_console,id)
   res = db.do(sql)
   db.commit()
  else:

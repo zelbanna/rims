@@ -73,7 +73,7 @@ def device_view_devinfo(aWeb):
  print "<TR><TD>Rack:</TD><TD><SELECT NAME=rack_id CLASS='z-select'>"
  db.do("SELECT * FROM racks")
  racks = db.get_all_rows()
- racks.append({ 'id':0, 'name':'Not used', 'size':'48', 'fk_pdu':'0', 'fk_console':'0'})
+ racks.append({ 'id':0, 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
  for rack in racks:
   extra = " selected" if values['rack_id'] == rack['id'] else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])

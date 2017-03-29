@@ -199,36 +199,44 @@ def shutdownall(aWeb):
 
 def rack(aWeb):
  print aWeb.get_header_full("Racks")
- from sdcp.core.GenLib import DB
+ from sdcp.core.GenLib import DB, sys_int2ip
  db = DB()
  db.connect()
- db.do("select racks.name, racks.id, pdus.id AS pdu, pdus.ip, consoles.id as console, consoles.ip  from racks LEFT JOIN consoles ON racks.fk_console = consoles.id LEFT JOIN pdus ON racks.fk_pdu = pdus.id")
+ db.do("SELECT name, id, fk_console, fk_pdu_1, fk_pdu_2 from racks")
  racks = db.get_all_rows()
- db.close()
  print "<DIV>"
  print "<CENTER><H1>Stolab Rack Overview <A TARGET=main_cont TITLE='Unsorted devices' HREF=pane.cgi?view=rack_info>*</A></H1><BR>"
+ rackstr = "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&{2}><IMG ALT='Cabinet {0}' SRC='images/cabinet.{1}.png'></A>&nbsp;"
  for index, rack in enumerate(racks):
-  print "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&rack={1}&pdu={2}&console={3}><IMG ALT='Cabinet {1}' SRC='images/cabinet.{4}.png'></A>&nbsp;".format(rack['name'],rack['id'],rack['pdu'],rack['console'],index % 3)
+  rackargs = "rack=" + str(rack['id'])
+  res = db.do("SELECT ip,id FROM consoles WHERE consoles.id = {}".format(rack['fk_console']))
+  row = db.get_row()
+  rackargs = rackargs if not row else rackargs + sys_int2ip(row['ip'])
+  res = db.do("SELECT ip,id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(rack['fk_pdu_1'],rack['fk_pdu_2']))
+  rows = db.get_all_rows()
+  for row in rows:
+   rackargs = rackargs + "&pdulist=" + sys_int2ip(row['ip'])
+  print rackstr.format(rack['name'], index % 3, rackargs)
+ db.close()
  print "</CENTER></DIV>"
 
-#
-# ZEB ToDo: Make sure console and PDU is fetched from DB
-#
 def rack_info(aWeb):
  print aWeb.get_header_full("Rack Info")
- rack   = aWeb.get_value('rack', 'unknown')
- domain = aWeb.get_value('domain')
- con = aWeb.get_value('console')
- pdu = aWeb.get_value('pdu')
+ rack = aWeb.get_value('rack', 'unknown')
+ con  = aWeb.get_value('console')
+ pdus = aWeb.get_list('pdulist')
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&{}'>Info</A>".format(aWeb.reload_args_except(['pane']))
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
- if con and con != 'None':
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&domain={0}&conlist={1}'>Console</A>".format(domain,con)
- if pdu and pdu != 'None':
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&domain={0}&pdu={1}'>Power</A>".format(domain,pdu)
+ if con and not con == None:
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&conlist={}'>Console</A>".format(con)
+ if len(pdus) > 0:
+  if len(pdus) == 2:
+   print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&pdulist={}&pdulist={}'>Power</A>".format(pdus[0],pdus[1])
+  else:
+   print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&pdulist={}'>Power</A>".format(pdus[0])
  print "<A CLASS='z-btnop z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except())
  print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=pdus'>PDUs</A>"
  print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=consoles'>Consoles</A>"
