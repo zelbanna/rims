@@ -114,7 +114,7 @@ class Devices(object):
    for i in range(10):
     sema.acquire()
 
-   sql = "INSERT INTO devices (ip,domain,hostname,snmp,model,type,fqdn) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}',{6})"
+   sql = "INSERT INTO devices (ip,domain,hostname,snmp,model,type,fqdn) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')"
    for ip,entry in db_new.iteritems():
     self._db.do(sql.format(sys_ip2int(ip),entry['domain'],entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn']))
    else:

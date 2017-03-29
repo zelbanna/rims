@@ -40,7 +40,7 @@ def device_view_devinfo(aWeb):
  db     = devs.connect_db()
  db.do("SELECT * FROM devices WHERE id ='{}'".format(node))
  values = db.get_row()
- height = 240
+ height = 230
  
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
@@ -58,8 +58,7 @@ def device_view_devinfo(aWeb):
   print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
  print "</SELECT></TD></TR>"
  print "<TR><TD>Model:</TD><TD style='max-width:140px;'>{}</TD></TR>".format(values['model'])
- print "<TR><TD>DNS ID:</TD><TD>{}</TD></TR>".format(values['dns_id'])
- print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(values['ipam_id'])
+ print "<TR><TD>DNS ID: {}</TD><TD>IPAM ID: {}</TD></TR>".format(values['dns_id'], values['ipam_id'])
  if values['graphed'] == "yes":
   print "<TR><TD><A CLASS='z-btnop' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(values['domain'],values['hostname']+"."+values['domain'])
  else:
@@ -105,9 +104,8 @@ def device_view_devinfo(aWeb):
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(pdu['id'],extra,pdu['name'])
   print "</SELECT></TD></TR>"
   print "<TR><TD>PEM Right Unit:</TD><TD><INPUT NAME=pwr_right_pdu_slot CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['pwr_right_pdu_slot'])
-  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
  else:
-  for index in range(0,8):
+  for index in range(0,7):
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  print "</TABLE></TD>"
 

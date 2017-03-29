@@ -58,7 +58,10 @@ def rack_data(aWeb):
  print "<TABLE style='width:100%'>"
  print "<TR><TH COLSPAN=2>{} Info</TH></TR>".format(type[:-1].capitalize())
 
- if type == "pdus" or type == 'consoles':
+ if type == "pdus":
+  print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
+  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
+ if type == 'consoles':
   print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
   print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
  if type == 'racks':
@@ -110,7 +113,7 @@ def rack_update(aWeb):
  type = aWeb.get_value('type')
  id   = aWeb.get_value('id')
  name = aWeb.get_value('name')
- if type == 'pdus' or type == 'consoles':
+ if type == 'pdus':
   ip   = aWeb.get_value('ip')
   ipint = sys_ip2int(ip)
   sql = ""
@@ -122,6 +125,18 @@ def rack_update(aWeb):
    sql = "UPDATE {0} SET name = '{1}', ip = '{2}' WHERE id = '{3}'".format(type,name,ipint,id)
   res = db.do(sql)
   db.commit()
+ elif type == 'consoles':
+  ip   = aWeb.get_value('ip')
+  ipint = sys_ip2int(ip)
+  sql = ""
+  if id == 'new':
+   print "New {} created".format(type[:-1])
+   sql = "INSERT into {0} (name, ip) VALUES ('{1}','{2}')".format(type,name,ipint)
+  else:
+   print "Updated {} {}".format(type[:-1],id)
+   sql = "UPDATE {0} SET name = '{1}', ip = '{2}' WHERE id = '{3}'".format(type,name,ipint,id)
+  res = db.do(sql)
+  db.commit()  
  elif type == 'racks':
   size   = aWeb.get_value('size')
   fk_pdu = aWeb.get_value('fk_pdu')

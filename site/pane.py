@@ -312,13 +312,13 @@ def devices(aWeb):
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-warning z-btnop' OP=confirm DIV=div_navcont MSG='Clear DB?' LNK='ajax.cgi?call=device_op_finddevices&clear=true&domain={}'>Reset DB</A>".format(domain)
+ print "<A CLASS='z-warning z-btnop' OP=confirm DIV=div_navcont SPIN=true MSG='Clear DB?' LNK='ajax.cgi?call=device_op_finddevices&clear=true&{}'>Reset DB</A>".format(aWeb.reload_args_except(['pdulist','conlist','view']))
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&domain={}'>Devices</A>".format(domain)
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
  if conlist:
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&{}'>Console</A>".format(aWeb.reload_args_except(['discstart','discstop','pdu','pane']))
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&{}'>Console</A>".format(aWeb.reload_args_except(['discstart','discstop','pdulist','view']))
  if pdulist:
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&{}'>PDU</A>".format(aWeb.reload_args_except(['discstart','discstop','console','pane']))
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&{}'>PDU</A>".format(aWeb.reload_args_except(['discstart','discstop','conlist','view']))
  print "<A CLASS='z-reload z-btnop' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Device Discovery?' SPIN=true LNK='ajax.cgi?call=device_op_finddevices&domain={0}&discstart={1}&discstop={2}'>Device Discovery</A>".format(domain,discstart,discstop)
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Graph Discovery?'  SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
