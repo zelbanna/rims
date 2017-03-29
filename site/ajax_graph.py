@@ -57,7 +57,7 @@ def graph_sync(aWeb):
  try:
   devs  = Devices()
   db = devs.connect_db()
-  db.do("SELECT id,dns,domain FROM devices")
+  db.do("SELECT id,hostname,domain FROM devices")
   rows = db.get_all_rows()
   graph = Grapher()
   graphdevices = graph.get_keys()
