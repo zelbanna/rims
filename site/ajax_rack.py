@@ -27,8 +27,11 @@ def rack_infra(aWeb):
  type = aWeb.get_value('type','racks')
  print "<DIV CLASS='z-framed'>"
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<TR style='height:20px'> <TH COLSPAN=3><CENTER>{0}</CENTER></TH></TR>".format(type.capitalize())
- print "<TR style='height:20px'> <TD COLSPAN=3><A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_data&type={0}&id=new'><IMG SRC='images/btn-add.png'></A></TD></TR>".format(type)
+ print "<TR style='height:20px'><TH COLSPAN=3><CENTER>{0}</CENTER></TH></TR>".format(type.capitalize())
+ print "<TR style='height:20px'><TD COLSPAN=3>"
+ print "<A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_data&type={0}&id=new'><IMG SRC='images/btn-add.png'></A>".format(type)
+ print "<A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type={0}'><IMG SRC='images/btn-reboot.png'></A>".format(type)
+ print "</TD></TR>"
  res  = db.do("SELECT * from {} ORDER by name".format(type))
  data = db.get_all_rows()
  if type == 'pdus' or type == 'consoles':
@@ -56,7 +59,7 @@ def rack_data(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"
- print "<TR><TH COLSPAN=2>{} Info</TH></TR>".format(type[:-1].capitalize())
+ print "<TR><TH COLSPAN=2>{} Info {}</TH></TR>".format(type[:-1].capitalize(), "(new)" if id == 'new' else "")
 
  if type == "pdus":
   print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
