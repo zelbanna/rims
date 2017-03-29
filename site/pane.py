@@ -211,7 +211,7 @@ def rack(aWeb):
   rackargs = "rack=" + str(rack['id'])
   res = db.do("SELECT ip,id FROM consoles WHERE consoles.id = {}".format(rack['fk_console']))
   row = db.get_row()
-  rackargs = rackargs if not row else rackargs + sys_int2ip(row['ip'])
+  rackargs = rackargs if not row else rackargs + "&console=" +sys_int2ip(row['ip'])
   res = db.do("SELECT ip,id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(rack['fk_pdu_1'],rack['fk_pdu_2']))
   rows = db.get_all_rows()
   for row in rows:
@@ -307,15 +307,27 @@ def esxi(aWeb):
 #
 # Devices view pane
 #
+# - all devices and all else
+#
  
 def devices(aWeb):
+ from sdcp.core.GenLib import DB, sys_int2ip
  op        = aWeb.get_value('op', None)
  domain    = aWeb.get_value('domain', None)
  discstart = aWeb.get_value('discstart',None)
  discstop  = aWeb.get_value('discstop', None)
- conlist   = aWeb.get_list('conlist')
- pdulist   = aWeb.get_list('pdulist')
- 
+ db = DB() 
+ db.connect()
+ argdict = {}
+ for type in ['pdu','console']:
+  db.do("SELECT id,ip FROM {}s".format(type))
+  tprows = db.get_all_rows()
+  if len(tprows) > 0:
+   arglist = "call={}_list".format(type)
+   for row in tprows:
+    arglist = arglist + "&{}list=".format(type) + sys_int2ip(row['ip'])
+   argdict[type] = arglist
+
  print aWeb.get_header_full("Device View")
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
@@ -323,10 +335,10 @@ def devices(aWeb):
  print "<A CLASS='z-warning z-btnop' OP=confirm DIV=div_navcont SPIN=true MSG='Clear DB?' LNK='ajax.cgi?call=device_op_finddevices&clear=true&{}'>Reset DB</A>".format(aWeb.reload_args_except(['pdulist','conlist','view']))
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&domain={}'>Devices</A>".format(domain)
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
- if conlist:
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&{}'>Console</A>".format(aWeb.reload_args_except(['discstart','discstop','pdulist','view']))
- if pdulist:
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&{}'>PDU</A>".format(aWeb.reload_args_except(['discstart','discstop','conlist','view']))
+ if argdict.get('console',None):
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&{}'>Console</A>".format(argdict.get('console'))
+ if argdict.get('pdu',None):
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&{}'>PDU</A>".format(argdict.get('pdu'))
  print "<A CLASS='z-reload z-btnop' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Device Discovery?' SPIN=true LNK='ajax.cgi?call=device_op_finddevices&domain={0}&discstart={1}&discstop={2}'>Device Discovery</A>".format(domain,discstart,discstop)
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Graph Discovery?'  SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
@@ -339,3 +351,4 @@ def devices(aWeb):
  print aWeb.get_include('README.devices.html')
  print "</DIV>"
  print "</DIV>" 
+ db.close() 

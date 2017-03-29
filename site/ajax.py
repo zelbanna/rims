@@ -47,7 +47,7 @@ def examine_log(aWeb):
 def console_list(aWeb):
  from sdcp.devices.RackUtils import OpenGear
  domain = aWeb.get_value('domain')
- conlist = aWeb.get_list('conlist')
+ conlist = aWeb.get_list('consolelist')
  config="https://{0}/?form=serialconfig&action=edit&ports={1}&start=&end="
  print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR><TH>Server</TH><TH>Port</TH><TH>Device</TH></TR>"
