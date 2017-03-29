@@ -152,6 +152,9 @@ class DB(object):
  def get_all_rows(self):
   return [] if self._res == 0 else self._curs.fetchmany(self._res)
 
+ def get_all_dict(self, aTarget):
+  return {} if self._res == 0 else dict(map(lambda x: (x[aTarget],x),self._curs.fetchmany(self._res)))
+
  def get_cursor(self):
   return self._curs
 

@@ -221,14 +221,15 @@ def rack(aWeb):
  print "</CENTER></DIV>"
 
 def rack_info(aWeb):
+ from sdcp.site.ajax_rack import rack_info as ajax_rack_info
  print aWeb.get_header_full("Rack Info")
- rack = aWeb.get_value('rack', 'unknown')
+ rack = aWeb.get_value('rack')
  con  = aWeb.get_value('console')
  pdus = aWeb.get_list('pdulist')
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&{}'>Info</A>".format(aWeb.reload_args_except(['pane']))
+ print "<A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&rack={}'>Info</A>".format(rack)
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
  if con:
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)
@@ -243,9 +244,7 @@ def rack_info(aWeb):
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont>"
-
- print "<B>Here are all rack info and utilities collected</B>"
-
+ ajax_rack_info(aWeb)
  print "</DIV>"
  print aWeb.get_listeners('div_navleft')
  print aWeb.get_listeners('div_navcont')

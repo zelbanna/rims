@@ -69,6 +69,10 @@ div.z-table th.z-result { border: 1px solid black; font-size: 11px; }
 div.z-table td { padding: 0px 2px 0px 2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 div.z-table:hover { box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }
 
+tr.z-rack { line-height:14px; }
+td.z-rack-indx { font-weight:bold; font-size:8px; color:grey; vertical-align:bottom }
+td.z-rack-data { border: solid 2px grey; width:200px }
+
 /*############################################ NavBar ############################################*/
 
 div.z-navframe { position: relative; height: 100%; width:100%;}

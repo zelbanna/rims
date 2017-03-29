@@ -4,8 +4,10 @@ Ajax Racks calls module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__= "1.0GA"
+__version__= "1.1GA"
 __status__= "Production"
+
+from sdcp.core.GenLib import DB, sys_int2ip, sys_ip2int
 
 ################################################## Basic Rack Info ######################################################
 #
@@ -14,14 +16,30 @@ __status__= "Production"
 
 def rack_info(aWeb):
  rack = aWeb.get_value('rack', 0)
+ db = DB()
+ db.connect()
+ db.do("SELECT name, size from racks where id = {}".format(rack))
+ rackinfo = db.get_row() 
+ db.do("SELECT id, hostname, rack_unit from devices where rack_id = {}".format(rack))
+ rackunits = db.get_all_dict('rack_unit')
+ db.close()
  print "<DIV style='padding:20px;'>"
- print "<H1>Rack {}</H1>".format(rack)
- print "Data: [{}]".format(" ".join(aWeb.get_keys()))
- print "<DIV style=' background-image: url(images/rack48u.png); background-position: center; background-repeat: no-repeat; height:1680px; width:770px;'></DIV>"
+ print "<H1>{}</H1>".format(rackinfo['name'])
+ print "<TABLE>"
+ print "<TR CLASS='z-rack'><TD CLASS='z-rack-indx'>48</TD><TD CLASS='z-rack-data' style='background:yellow;'><CENTER>Patch Panel</CENTER></TD><TD CLASS='z-rack-indx'>48</TD><TR>"
+ units = range(1,rackinfo['size'])
+ units.reverse()
+ for index in units:
+  print "<TR CLASS='z-rack'><TD CLASS='z-rack-indx'>{0}</TD>".format(index)
+  if rackunits.get(index,None):
+   print "<TD CLASS='z-rack-data' style='background-color:green'><CENTER><a class='z-btnop' title='Show device info for {0}' op='load' div='div_navcont' lnk='ajax.cgi?call=device_view_devinfo&node={1}'>{0}</a></CENTER></TD>".format(rackunits[index]['hostname'],rackunits[index]['id'])
+  else:
+   print "<TD CLASS='z-rack-data'></TD>"
+  print "<TD CLASS='z-rack-indx'>{0}</TD><TR>".format(index)
+ print "</TABLE>"
  print "</DIV>"
 
 def rack_infra(aWeb):
- from sdcp.core.GenLib import DB, sys_int2ip 
  db   = DB()
  db.connect()
  type = aWeb.get_value('type','racks')
@@ -29,8 +47,8 @@ def rack_infra(aWeb):
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>{0}</CENTER></TH></TR>".format(type.capitalize())
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_data&type={0}&id=new'><IMG SRC='images/btn-add.png'></A>".format(type)
- print "<A CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type={0}'><IMG SRC='images/btn-reboot.png'></A>".format(type)
+ print "<A TITLE='Add {0}' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_data&type={0}&id=new'><IMG SRC='images/btn-add.png'></A>".format(type)
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type={0}'><IMG SRC='images/btn-reboot.png'></A>".format(type)
  print "</TD></TR>"
  res  = db.do("SELECT * from {} ORDER by name".format(type))
  data = db.get_all_rows()
@@ -54,7 +72,7 @@ def rack_data(aWeb):
  name = aWeb.get_value('name','new-name')
  ip   = aWeb.get_value('ip','127.0.0.1') 
 
- print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:170px;'>"
+ print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
  print "<FORM ID=rack_data_form>"
  print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
@@ -68,7 +86,6 @@ def rack_data(aWeb):
   print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
   print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
  if type == 'racks':
-  from sdcp.core.GenLib import DB
   db = DB()
   db.connect()
   rack = {}
@@ -103,6 +120,8 @@ def rack_data(aWeb):
    extra = " selected" if rack['fk_console'] == unit['id'] else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
   print "</SELECT></TD></TR>"
+  print "<TR><TD>Location:</TD><TD><INPUT NAME=location TYPE=TEXT CLASS='z-input' VALUE='Not used yet'></TD></TR>"
+
  print "</TABLE>"
  print "<A TITLE='Update unit' CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_data_form OP=post><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
@@ -115,7 +134,6 @@ def rack_data(aWeb):
 #
 #
 def rack_update(aWeb):
- from sdcp.core.GenLib import DB, sys_int2ip, sys_ip2int 
  values = aWeb.get_keys()
  values.remove('call')
  db   = DB()
@@ -168,7 +186,6 @@ def rack_update(aWeb):
 #
 #
 def rack_remove(aWeb):
- from sdcp.core.GenLib import DB
  type = aWeb.get_value('type')
  id   = aWeb.get_value('id')
  db   = DB()
