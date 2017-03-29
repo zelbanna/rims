@@ -258,7 +258,7 @@ def rack_info(aWeb):
 # ESXi
 #
 def esxi(aWeb):
- from ajax import esxi_op
+ from ajax_esxi import esxi_op
  from sdcp.devices.ESXi import ESXi
  from sdcp.core.Grapher import Grapher
  host   = aWeb.get_value('host')
