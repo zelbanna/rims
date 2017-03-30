@@ -23,19 +23,29 @@ def rack_info(aWeb):
  db.do("SELECT id, hostname, rack_unit from devices where rack_id = {}".format(rack))
  rackunits = db.get_all_dict('rack_unit')
  db.close()
- print "<DIV style='padding:20px;'>"
- print "<H1>{}</H1>".format(rackinfo['name'])
+ print "<DIV style='padding:20px; float:left;'>"
+ print "<H1>{} front side</H1>".format(rackinfo['name'])
  print "<TABLE>"
  print "<TR CLASS='z-rack'><TD CLASS='z-rack-indx'>{0}</TD><TD CLASS='z-rack-data' style='background:yellow;'><CENTER>Patch Panel</CENTER></TD><TD CLASS='z-rack-indx'>{0}</TD><TR>".format(rackinfo['size'])
- units = range(1,rackinfo['size'])
- units.reverse()
- for index in units:
+ for index in range(rackinfo['size']-1,0,-1):
   print "<TR CLASS='z-rack'><TD CLASS='z-rack-indx'>{0}</TD>".format(index)
   if rackunits.get(index,None):
    print "<TD CLASS='z-rack-data' style='background-color:green'><CENTER><a class='z-btnop' title='Show device info for {0}' op='load' div='div_navcont' lnk='ajax.cgi?call=device_view_devinfo&node={1}'>{0}</a></CENTER></TD>".format(rackunits[index]['hostname'],rackunits[index]['id'])
   else:
    print "<TD CLASS='z-rack-data'></TD>"
-  print "<TD CLASS='z-rack-indx'>{0}</TD><TR>".format(index)
+  print "<TD CLASS='z-rack-indx'>{0}</TD></TR>".format(index)
+ print "</TABLE>"
+ print "</DIV>"
+ print "<DIV style='padding:20px; float:left;'>"
+ print "<H1>{} back side</H1>".format(rackinfo['name'])
+ print "<TABLE>"
+ for index in range(rackinfo['size'],0,-1):
+  print "<TR CLASS='z-rack'><TD CLASS='z-rack-indx'>{0}</TD>".format(index)
+  if rackunits.get((-1*index),None):
+   print "<TD CLASS='z-rack-data' style='background-color:green'><CENTER><a class='z-btnop' title='Show device info for {0}' op='load' div='div_navcont' lnk='ajax.cgi?call=device_view_devinfo&node={1}'>{0}</a></CENTER></TD>".format(rackunits[-1*index]['hostname'],rackunits[-1*index]['id'])
+  else:
+   print "<TD CLASS='z-rack-data'></TD>"
+  print "<TD CLASS='z-rack-indx'>{0}</TD></TR>".format(index)
  print "</TABLE>"
  print "</DIV>"
 
