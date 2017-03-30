@@ -43,7 +43,7 @@ def graph_find(aWeb):
   graph = Grapher() 
   graph.discover()
   print "<B>Done discovering graphs</B>"
-  aWeb.log_msg("Devices: Discovered graphs")
+  aWeb.log_msg("graph_find: Discovered graphs")
  except Exception as err:
   print "<B>Error: {}</B>".format(str(err))
 
@@ -69,7 +69,7 @@ def graph_sync(aWeb):
   db.commit()
   devs.close_db()
   print "<B>Done syncing devices' graphing</B>"
-  aWeb.log_msg("devices.cgi: Done syncing devices' graphing")
+  aWeb.log_msg("graph_sync: Done syncing devices' graphing")
  except Exception as err:
   print "<B>Error: {}</B>".format(str(err))
 

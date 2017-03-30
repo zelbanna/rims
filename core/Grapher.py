@@ -142,8 +142,8 @@ class Grapher(object):
    for i in range(10):
     sema.acquire()       
   except Exception as err:
-   sys_log_msg("graphDiscover: failure in processing Device entries: [{}]".format(str(err)))
-  sys_log_msg("graphDiscover: Total time spent: {} seconds".format(int(time()) - start_time))
+   sys_log_msg("Grapher: failure in processing Device entries: [{}]".format(str(err)))
+  sys_log_msg("Grapher: Total time spent: {} seconds".format(int(time()) - start_time))
 
  ########################### Detect Plugins ###########################
  #

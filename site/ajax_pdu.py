@@ -132,16 +132,17 @@ def pdu_device_info(aWeb):
  else:
   db.do("SELECT * FROM pdus WHERE id = '{0}'".format(id))
   pdudata = db.get_row()
+
  print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(sys_int2ip(pdudata['ip']))
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(pdudata['name'])
  if pdudata['slots'] == 1:
-  print "<TR><TD>Right/Left slots:</TD><TD>{}</TD></TR>".format(True)
+  print "<TR><TD>Right/Left slots:</TD><TD><INPUT TYPE=checkbox NAME=slots VALUE=1 checked=checked></TD></TR>"
   print "<TR><TD>First Slot Name:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_name'])
   print "<TR><TD>First Slot ID:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_id'])
   print "<TR><TD>Second Slot Name:</TD><TD>{}</TD></TR>".format(pdudata['second_slot_name'])
   print "<TR><TD>Second Slot ID:</TD><TD>{}</TD></TR>".format(pdudata['second_slot_id'])
  else:
-  print "<TR><TD>Right/Left slots:</TD><TD>{}</TD></TR>".format(False)
+  print "<TR><TD>Right/Left slots:</TD><TD><INPUT TYPE=checkbox NAME=slots VALUE=1></TD></TR>"
   print "<TR><TD>Slot Name:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_name'])
   print "<TR><TD>Slot ID:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_id'])
 
@@ -151,12 +152,12 @@ def pdu_device_info(aWeb):
  if not id == 'new':
   print "<A TITLE='Remove unit' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<A TITLE='Update info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_device_info&id={0}&op=lookup&ip={1} OP=load><IMG SRC='images/btn-search.png'></A>".format(id,sys_int2ip(pdudata['ip']))
- print "&nbsp;<SPAN ID=update_results></SPAN>"
+ print "&nbsp;<SPAN ID=update_results></SPAN>&nbsp;"
  print "</FORM>"
  print "</DIV>"
 
 #
-#
+# Update pdu info
 #
 def pdu_update(aWeb):
  values = aWeb.get_keys()
@@ -166,14 +167,15 @@ def pdu_update(aWeb):
  id   = aWeb.get_value('id')
  name = aWeb.get_value('name')
  ip   = aWeb.get_value('ip')
+ slots= aWeb.get_value('slots','0')
  ipint = sys_ip2int(ip)
  sql = ""
  if id == 'new':
-  print "New {} created".format(type[:-1])
-  sql = "INSERT into pdus (name, ip) VALUES ('{0}','{1}')".format(name,ipint)
+  print "New pdu created"
+  sql = "INSERT into pdus (name, ip, slots) VALUES ('{0}','{1}','{2}')".format(name,ipint,slots)
  else:
   print "Updated pdus {}".format(id)
-  sql = "UPDATE pdus SET name = '{0}', ip = '{1}' WHERE id = '{2}'".format(name,ipint,id)
+  sql = "UPDATE pdus SET name = '{0}', ip = '{1}', slots = '{2}' WHERE id = '{3}'".format(name,ipint,slots,id)
  res = db.do(sql)
  db.commit()
  db.close()
@@ -210,6 +212,6 @@ def pdu_remove(aWeb):
  db.do("UPDATE racks SET fk_pdu_1 = '0' WHERE fk_pdu_1 = '{0}'".format(id))
  db.do("UPDATE racks SET fk_pdu_2 = '0' WHERE fk_pdu_2 = '{0}'".format(id))
  db.commit()
- print "Unit {0} deleted".format(id)
+ print "<B>Unit {0} deleted<B>".format(id)
  db.close()
 
