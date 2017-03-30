@@ -235,7 +235,7 @@ def rack_info(aWeb):
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)
  if len(pdus) > 0:
   pdustring = "&pdulist=".join(pdus)
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&pdulist={}'>PDU</A>".format(pdustring)
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list_units&pdulist={}'>PDU</A>".format(pdustring)
  print "<A CLASS='z-btnop z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except())
  print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=pdu_list_pdus'>PDUs</A>"
  print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list_consoles'>Consoles</A>"
@@ -336,7 +336,7 @@ def devices(aWeb):
  if argdict.get('console',None):
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&{}'>Console</A>".format(argdict.get('console'))
  if argdict.get('pdu',None):
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&{}'>PDU</A>".format(argdict.get('pdu'))
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
  print "<A CLASS='z-reload z-btnop' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Device Discovery?' SPIN=true LNK='ajax.cgi?call=device_op_finddevices&domain={0}&discstart={1}&discstop={2}'>Device Discovery</A>".format(domain,discstart,discstop)
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Graph Discovery?'  SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)

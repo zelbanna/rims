@@ -14,7 +14,7 @@ from sdcp.core.GenLib import DB, sys_int2ip, sys_ip2int
 # PDUs
 #
 
-def pdu_list(aWeb):
+def pdu_list_units(aWeb):
  from sdcp.devices.RackUtils import Avocent
  domain  = aWeb.get_value('domain')
  pdulist = aWeb.get_list('pdulist')
@@ -26,7 +26,7 @@ def pdu_list(aWeb):
 
  db = DB()
 
- optemplate = "<A CLASS='z-btn z-small-btn z-btnop' OP=load SPIN=true DIV=div_navleft LNK='ajax.cgi?call=pdu_list&pdu={0}&nstate={1}&slot={2}'><IMG SRC='images/btn-{3}'></A>"
+ optemplate = "<A CLASS='z-btn z-small-btn z-btnop' OP=load SPIN=true DIV=div_navleft LNK='ajax.cgi?call=pdu_list_units&pdu={0}&nstate={1}&slot={2}'><IMG SRC='images/btn-{3}'></A>"
 
  if len(pdulist) == 0:
   pdulist.append(pduop)
