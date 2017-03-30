@@ -16,7 +16,7 @@ __status__= "Production"
 # Examine pane
 #
 def examine(aWeb):
- from ajax import examine_clear_logs
+ from ajax_extra import examine_clear_logs
  print aWeb.get_header_full('Services Pane')
  domain  = aWeb.get_value('domain')
  upshost = aWeb.get_value('upshost')
@@ -223,7 +223,7 @@ def rack(aWeb):
 def rack_info(aWeb):
  from sdcp.site.ajax_rack import rack_info as ajax_rack_info
  print aWeb.get_header_full("Rack Info")
- rack = aWeb.get_value('rack')
+ rack = aWeb.get_value('rack','0')
  con  = aWeb.get_value('console')
  pdus = aWeb.get_list('pdulist')
  print aWeb.get_listeners()
@@ -235,16 +235,17 @@ def rack_info(aWeb):
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)
  if len(pdus) > 0:
   pdustring = "&pdulist=".join(pdus)
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&pdulist={}'>Power</A>".format(pdustring)
+  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list&pdulist={}'>PDU</A>".format(pdustring)
  print "<A CLASS='z-btnop z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except())
- print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=pdus'>PDUs</A>"
- print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=consoles'>Consoles</A>"
- print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_infra&type=racks'>Racks</A>"
+ print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=pdu_list_pdus'>PDUs</A>"
+ print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list_consoles'>Consoles</A>"
+ print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_list_racks'>Racks</A>"
  print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont>"
- ajax_rack_info(aWeb)
+ if not rack == '0':
+  ajax_rack_info(aWeb)
  print "</DIV>"
  print aWeb.get_listeners('div_navleft')
  print aWeb.get_listeners('div_navcont')

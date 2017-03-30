@@ -38,25 +38,3 @@ def examine_log(aWeb):
   print "<PRE>{}</PRE>".format(syslogs)
  except Exception as err:
   print "<PRE>{}</PRE>".format(str(err))      
-
-############################################## Consoles ###################################################
-#
-# View Consoles
-#
-
-def console_list(aWeb):
- from sdcp.devices.RackUtils import OpenGear
- domain = aWeb.get_value('domain')
- conlist = aWeb.get_list('consolelist')
- config="https://{0}/?form=serialconfig&action=edit&ports={1}&start=&end="
- print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<TR><TH>Server</TH><TH>Port</TH><TH>Device</TH></TR>"
- for con in conlist:
-  console = OpenGear(con,domain)
-  console.load_snmp()
-  conip = console._ip
-  for key in console.get_keys():
-   port = str(6000 + key)
-   value = console.get_entry(key)
-   print "<TR><TD><A HREF='https://{0}/'>{1}</A></TD><TD><A TITLE='Edit port info' HREF={5}>{2}</A></TD><TD><A HREF='telnet://{0}:{3}'>{4}</A></TD>".format(conip, con,str(key),port, value, config.format(conip,key))
- print "</TABLE></DIV></DIV>"

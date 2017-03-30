@@ -47,8 +47,10 @@ class Web(object):
    import ajax_graph as ajaxmod
   elif module == 'pdu':
    import ajax_pdu as ajaxmod
+  elif module == 'console':
+   import ajax_console as ajaxmod
   else:
-   import ajax as ajaxmod
+   import ajax_extra as ajaxmod
   fun = getattr(ajaxmod,ajaxcall,None)  
   if self._debug:
    try:

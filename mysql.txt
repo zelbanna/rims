@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS `consoles`;
 CREATE TABLE `consoles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(20) DEFAULT NULL,
-  `ip` int(10) unsigned DEFAULT NULL,
+  `ip` int(10) unsigned DEFAULT 2130706433,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 
@@ -16,11 +16,11 @@ CREATE TABLE `pdus` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(20) DEFAULT NULL,
   `ip` int(10) unsigned DEFAULT NULL,
-  `first_slot_name` varchar(10) DEFAULT NULL,
-  `second_slot_name` varchar(10) DEFAULT NULL,
-  `second_slot_id` int(10) unsigned DEFAULT NULL,
-  `first_slot_id` int(10) unsigned DEFAULT NULL,
-  `slots` int(10) unsigned DEFAULT NULL,
+  `first_slot_name` varchar(10) NOT NULL DEFAULT 'unknown',
+  `second_slot_name` varchar(10) NOT NULL DEFAULT 'unknown',
+  `second_slot_id` int(10) unsigned NOT NULL DEFAULT 0,
+  `first_slot_id` int(10) unsigned NOT NULL DEFAULT 0,
+  `slots` int(10) tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
                   
