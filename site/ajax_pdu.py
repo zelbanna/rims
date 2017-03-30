@@ -74,7 +74,7 @@ def pdu_unit_info(aWeb):
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
  print "</TABLE>"
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?pdu_slot_update FRM=pdu_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?pdu_unit_update FRM=pdu_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
 
@@ -103,8 +103,25 @@ def pdu_list_pdus(aWeb):
 #
 #
 def pdu_device_info(aWeb):
- id   = aWeb.get_value('id')
- print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
+ id = aWeb.get_value('id')
+ op = aWeb.get_value('op')
+ db = DB()
+ db.connect()
+
+ if op:
+  ip = aWeb.get_value('ip')
+  from sdcp.devices.RackUtils import Avocent
+  # Assume lookup for now
+  pdu = Avocent(ip)
+  slotlist = pdu.get_slot_names()
+  slots = len(slotlist)
+  if slots == 1:
+   db.do("UPDATE pdus SET slots = 0, first_slot_id = '{1}', first_slot_name = '{2}' WHERE id = '{0}'".format(id,slotlist[0][0],slotlist[0][1]))
+  elif slots == 2:
+   db.do("UPDATE pdus SET slots = 1, first_slot_id = '{1}', first_slot_name = '{2}', second_slot_id = '{3}', second_slot_name = '{4}' WHERE id = '{0}'".format(id,slotlist[0][0],slotlist[0][1],slotlist[1][0],slotlist[1][1]))
+  db.commit()
+
+ print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
  print "<FORM ID=pdu_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"
@@ -113,26 +130,27 @@ def pdu_device_info(aWeb):
  if id == 'new':
   pdudata = { 'id':'new', 'name':'new-name', 'ip':2130706433, 'slots':1, 'first_slot_name':'unknown', 'first_slot_id':0, 'second_slot_name':'unknown', 'second_slot_id':1 }
  else:
-  db = DB()
-  db.connect()
   db.do("SELECT * FROM pdus WHERE id = '{0}'".format(id))
   pdudata = db.get_row()
-  db.close()
  print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(sys_int2ip(pdudata['ip']))
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(pdudata['name'])
  if pdudata['slots'] == 1:
   print "<TR><TD>Right/Left slots:</TD><TD>{}</TD></TR>".format(True)
-  print "<TR><TD>:</TD><TD>{}</TD></TR>".format(True)   
+  print "<TR><TD>First Slot Name:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_name'])
+  print "<TR><TD>First Slot ID:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_id'])
+  print "<TR><TD>Second Slot Name:</TD><TD>{}</TD></TR>".format(pdudata['second_slot_name'])
+  print "<TR><TD>Second Slot ID:</TD><TD>{}</TD></TR>".format(pdudata['second_slot_id'])
  else:
   print "<TR><TD>Right/Left slots:</TD><TD>{}</TD></TR>".format(False)
   print "<TR><TD>Slot Name:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_name'])
   print "<TR><TD>Slot ID:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_id'])
 
+ db.close()
  print "</TABLE>"
  print "<A TITLE='Update unit' CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update FRM=pdu_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
   print "<A TITLE='Remove unit' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A TITLE='Update info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_lookup&id={0} OP=load><IMG SRC='images/btn-search.png'></A>".format(id)
+ print "<A TITLE='Update info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_device_info&id={0}&op=lookup&ip={1} OP=load><IMG SRC='images/btn-search.png'></A>".format(id,sys_int2ip(pdudata['ip']))
  print "&nbsp;<SPAN ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
@@ -163,7 +181,7 @@ def pdu_update(aWeb):
 #
 # Update PDU slot info (name basically)
 #
-def pdu_slot_update(aWeb):
+def pdu_unit_update(aWeb):
  values = aWeb.get_keys()
  values.remove('call')
  if 'name' in values:
@@ -183,8 +201,8 @@ def pdu_slot_update(aWeb):
 #
 #
 def pdu_remove(aWeb):
- id   = aWeb.get_value('id')
- db   = DB()
+ id = aWeb.get_value('id')
+ db = DB()
  db.connect()
  db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
  db.do("UPDATE devices SET pwr_left_pdu_id  = '0' WHERE pwr_left_pdu_id = '{0}'".format(id))
@@ -194,3 +212,4 @@ def pdu_remove(aWeb):
  db.commit()
  print "Unit {0} deleted".format(id)
  db.close()
+

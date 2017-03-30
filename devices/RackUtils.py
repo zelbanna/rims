@@ -61,7 +61,7 @@ class Avocent(GenDevice, ConfObject):
  def set_outlet_state(cls,state):
   return cls._setstatemap.get(state,'1')
 
- def __init__(self, ahost, adomain):
+ def __init__(self, ahost, adomain = None):
   GenDevice.__init__(self,ahost,adomain,'pdu')
   ConfObject.__init__(self)
 
@@ -115,14 +115,14 @@ class Avocent(GenDevice, ConfObject):
   except Exception as exception_error:
    self.log_msg("Avocent : error loading conf " + str(exception_error), aPrint = True)
  
- def get_pdu_names(self):
+ def get_slot_names(self):
   from netsnmp import VarList, Varbind, Session
   pdus = []
   try:
    pduobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
    session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(pduobjs)
-   for pdu in pduobj:
+   for pdu in pduobjs:
     pdus.append([pdu.iid, pdu.val])
   except Exception as exception_error:
    self.log_msg("Avocent : error loading pdu member names " + str(exception_error), aPrint = True)
