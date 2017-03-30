@@ -35,11 +35,19 @@ def device_view_devicelist(aWeb):
 #
 #
 def device_view_devinfo(aWeb):
- node   = aWeb.get_value('node')
- devs   = Devices()
- db     = devs.connect_db()
- db.do("SELECT * FROM devices WHERE id ='{}'".format(node))
+ id   = aWeb.get_value('node')
+ op   = aWeb.get_value('op')
+ devs = Devices()
+ db   = devs.connect_db()
+ if op == 'lookup':
+  ip    = aWeb.get_value('ip')
+  entry = devs._detect(ip,"")
+  db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
+  db.commit()
+
+ db.do("SELECT * FROM devices WHERE id ='{}'".format(id))
  values = db.get_row()
+ ip     = sys_int2ip(values['ip'])
  height = 230
  
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:{}px;'>".format(str(height))
@@ -51,7 +59,7 @@ def device_view_devinfo(aWeb):
  print "<TR><TD>Name:</TD><TD><INPUT NAME=hostname CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['hostname'])
  print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(values['domain'])
  print "<TR><TD>SNMP:</TD><TD>{}</TD></TR>".format(values['snmp'])
- print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(sys_int2ip(values['ip']))
+ print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(ip)
  print "<TR><TD>Type:</TD><TD TITLE='Device type'><SELECT NAME=type CLASS='z-select'>"
  for tp in Devices.get_types():
   extra = " selected disabled" if values['type'] == tp else ""      
@@ -63,7 +71,7 @@ def device_view_devinfo(aWeb):
   print "<TR><TD><A CLASS='z-btnop' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(values['domain'],values['hostname']+"."+values['domain'])
  else:
   if not values['hostname'] == 'unknown':
-   print "<TR><TD>Graphs:</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(node, values['hostname'], values['domain'])
+   print "<TR><TD>Graphs:</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(id, values['hostname'], values['domain'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
  print "</TABLE></TD>"
@@ -111,10 +119,11 @@ def device_view_devinfo(aWeb):
 
  # Close large table
  print "</TR></TABLE>"
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_view_devinfo&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(node)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_devinfo&node={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(node)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_dns&node={}  FRM=info_form OP=post TITLE='Update DNS'>D</A>".format(node)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_ipam&node={} FRM=info_form OP=post TITLE='Update IPAM'>I</A>".format(node)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_view_devinfo&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_devinfo&node={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(id)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_view_devinfo&node={}&op=lookup&ip={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_dns&node={}  FRM=info_form OP=post TITLE='Update DNS'>D</A>".format(id)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_ipam&node={} FRM=info_form OP=post TITLE='Update IPAM'>I</A>".format(id)
  print "<SPAN style='float:right' ID=update_results></SPAN>&nbsp;"
  print "</FORM>"
  print "</DIV>"
@@ -132,7 +141,7 @@ def device_view_devinfo(aWeb):
   else:
    for fun in functions:
     name = " ".join(fun.split('_')[1:])
-    print "<A CLASS='z-btnop' OP=load DIV=div_navdata SPIN=true LNK='ajax.cgi?call=device_view_devdata&ip={0}&type={1}&op={2}'>{3}</A>".format(sys_int2ip(values['ip']), values['type'], fun, name.title())
+    print "<A CLASS='z-btnop' OP=load DIV=div_navdata SPIN=true LNK='ajax.cgi?call=device_view_devdata&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, values['type'], fun, name.title())
  else:
   print "&nbsp;"
  print "</DIV>"

@@ -132,7 +132,7 @@ class Devices(object):
  #
  # Add proper community handling..
  #
- def _detect(self, aIP, aDomain, aDict, aSema = None):
+ def _detect(self, aIP, aDomain, aDict = {}, aSema = None):
   import sdcp.SettingsContainer as SC
   from netsnmp import VarList, Varbind, Session
   from socket import gethostbyaddr
