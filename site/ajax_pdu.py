@@ -47,7 +47,7 @@ def pdu_list_units(aWeb):
   for key in avocent.get_keys(aSortKey = lambda x: int(x.split('.')[0])*100+int(x.split('.')[1])):
    value = avocent.get_entry(key)
    print "<TR><TD TITLE='Open up a browser tab for {1}'><A TARGET='_blank' HREF='https://{0}:3502'>{1}</A></TD><TD>{2}</TD>".format(avocent._ip,pdu,value['pduslot'])
-   print "<TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=pdu_slot_info&domain={0}&pdu={1}&slot={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></TD><TD>".format(domain,pdu,key,value['name'], value['pduslot'])
+   print "<TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=pdu_unit_info&domain={0}&pdu={1}&slot={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></TD><TD>".format(domain,pdu,key,value['name'], value['pduslot'])
    if value['state'] == "off":
     print optemplate.format(pdu, "on", key, "start")
    else:
@@ -56,7 +56,7 @@ def pdu_list_units(aWeb):
    print "</TD></TR>"
  print "</TABLE></DIV></DIV>"
 
-def pdu_slot_info(aWeb):
+def pdu_unit_info(aWeb):
  pdu  = aWeb.get_value('pdu')
  slot = aWeb.get_value('slot')
  slotname = aWeb.get_value('slotname')
