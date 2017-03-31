@@ -15,12 +15,12 @@ DROP TABLE IF EXISTS `pdus`;
 CREATE TABLE `pdus` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(20) DEFAULT NULL,
-  `ip` int(10) unsigned DEFAULT NULL,
-  `first_slot_name` varchar(10) NOT NULL DEFAULT 'unknown',
-  `second_slot_name` varchar(10) NOT NULL DEFAULT 'unknown',
-  `second_slot_id` int(10) unsigned NOT NULL DEFAULT 0,
-  `first_slot_id` int(10) unsigned NOT NULL DEFAULT 0,
-  `slots` tinyint(1) NOT NULL DEFAULT 1,
+  `ip` int(10) unsigned DEFAULT 2130706433,
+  `0_slot_name` varchar(10) NOT NULL DEFAULT 'unknown',
+  `1_slot_name` varchar(10) NOT NULL DEFAULT 'unknown',
+  `0_slot_id` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `1_slot_id` tinyint(3) unsigned NOT NULL DEFAULT 1,
+  `slots` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
                   
@@ -49,13 +49,13 @@ CREATE TABLE `devices` (
   `ipam_id` int(10) unsigned DEFAULT 0,
   `model` varchar(20) DEFAULT NULL,
   `pem0_pdu_id` int(10) unsigned DEFAULT 0,
-  `pem0_pdu_unit` int(10) unsigned DEFAULT 0,
-  `pem0_pdu_slot` varchar(4) DEFAULT NULL,
+  `pem0_pdu_unit` tinyint(3) unsigned DEFAULT 0,
+  `pem0_pdu_slot` tinyint(3) unsigned DEFAULT 0,
   `pem1_pdu_id` int(10) unsigned DEFAULT 0,
-  `pem1_pdu_unit` int(10) unsigned DEFAULT 0,
-  `pem1_pdu_slot` varchar(4) DEFAULT NULL,
+  `pem1_pdu_unit` tinyint(3) unsigned DEFAULT 0,
+  `pem1_pdu_slot` tinyint(3) unsigned DEFAULT 0,
   `rack_id` int(10) unsigned DEFAULT 0,
-  `rack_unit` int(10) DEFAULT 0,
+  `rack_unit` tinyint(3) DEFAULT 0,
   `type` varchar(20),
   `snmp` varchar(20),
   PRIMARY KEY (`id`)

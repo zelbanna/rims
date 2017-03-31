@@ -48,7 +48,8 @@ def device_view_devinfo(aWeb):
  db.do("SELECT * FROM devices WHERE id ='{}'".format(id))
  values = db.get_row()
  ip     = sys_int2ip(values['ip'])
- height = 230
+ height = 240
+ conip  = None
  
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
@@ -90,28 +91,32 @@ def device_view_devinfo(aWeb):
  if not values['rack_id'] == 0:
   db.do("SELECT * FROM consoles")
   consoles = db.get_all_rows()
-  consoles.append({ 'id':0, 'name':'Not used', 'ip':'127.0.0.1' })
+  consoles.append({ 'id':0, 'name':'Not used', 'ip':2130706433 })
   db.do("SELECT * FROM pdus")
   pdus = db.get_all_rows()
-  pdus.append({ 'id':0, 'name':'Not used', 'ip':'127.0.0.1' })
+  pdus.append({ 'id':0, 'name':'Not used', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'Not used' })
   print "<TR><TD>Rack Unit:</TD><TD TITLE='Lower rack unit of device placement'><INPUT NAME=rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['rack_unit'])
   print "<TR><TD>TS:</TD><TD><SELECT NAME=console_id CLASS='z-select'>"
   for console in consoles:
-   extra = " selected" if values['console_id'] == console['id'] else ""
+   extra = ""
+   if values['console_id'] == console['id']:
+    extra = " selected"
+    conip = sys_int2ip(console['ip'])
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
+
   print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
-  print "<TR><TD>PEM Left:</TD><TD><SELECT NAME=pem0_pdu_id CLASS='z-select'>"
-  for pdu in pdus:
-   extra = " selected" if values['pem0_pdu_id'] == pdu['id'] else ""
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(pdu['id'],extra,pdu['name'])
-  print "</SELECT></TD></TR>"
-  print "<TR><TD>PEM Left Unit:</TD><TD><INPUT NAME=pem0_pdu_slot CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['pem0_pdu_slot'])
-  print "<TR><TD>PEM Right:</TD><TD><SELECT NAME=pem1_pdu_id CLASS='z-select'>"
-  for pdu in pdus:
-   extra = " selected" if values['pem1_pdu_id'] == pdu['id'] else ""
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(pdu['id'],extra,pdu['name'])
-  print "</SELECT></TD></TR>"
-  print "<TR><TD>PEM Right Unit:</TD><TD><INPUT NAME=pem1_pdu_slot CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['pem1_pdu_slot'])
+
+  for pem in ['pem0','pem1']:
+   print "<TR><TD>{0} PDU:</TD><TD><SELECT NAME={1}_pdu_slot_id CLASS='z-select'>".format(pem.upper(),pem)
+   for pdu in pdus:
+    for slotid in range(0,pdu['slots'] + 1):
+     extra = " selected" if ((values[pem+"_pdu_id"] == pdu['id']) and (values[pem+"_pdu_slot"] == pdu[str(slotid)+"_slot_id"])) else ""
+     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(str(pdu['id'])+"."+str(pdu[str(slotid)+"_slot_id"]), extra, pdu['name']+":"+pdu[str(slotid)+"_slot_name"])
+
+
+   print "</SELECT></TD></TR>"
+   print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME={1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,values[pem + "_pdu_unit"])
+
  else:
   for index in range(0,7):
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
@@ -124,7 +129,9 @@ def device_view_devinfo(aWeb):
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_view_devinfo&node={}&op=lookup&ip={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_dns&node={}  FRM=info_form OP=post TITLE='Update DNS'>D</A>".format(id)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_ipam&node={} FRM=info_form OP=post TITLE='Update IPAM'>I</A>".format(id)
- print "<SPAN style='float:right' ID=update_results></SPAN>&nbsp;"
+ if conip and not conip == '127.0.0.1' and values['consoleport'] and values['consoleport'] > 0:
+  print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+values['consoleport'])
+ print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>&nbsp;"
  print "</FORM>"
  print "</DIV>"
 
@@ -163,15 +170,17 @@ def device_update_devinfo(aWeb):
   devs = Devices()
   db   = devs.connect_db()
   for key in values:
-   db.do("UPDATE devices SET {0}='{1}' where id = '{2}'".format(key,aWeb.get_value(key),node))
+   if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
+    db.do("UPDATE devices SET {0}='{1}' where id = '{2}'".format(key,aWeb.get_value(key),node))
+   else:
+    pem = key[:4]
+    [id,slot] = aWeb.get_value(key).split('.')
+    db.do("UPDATE devices SET {0}_pdu_id='{1}', {0}_pdu_slot ='{2}' where id = '{3}'".format(pem,id,slot,node))
   db.commit()
   devs.close_db()
   print "Updated: {}".format(" ".join(values))
  else:
   print "Nothing to update"
-
-def device_update_detect(aWeb):
- print "not implemented yet"
 
 def device_update_dns(aWeb):
  import sdcp.SettingsContainer as SC

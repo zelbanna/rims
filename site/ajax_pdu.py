@@ -116,9 +116,9 @@ def pdu_device_info(aWeb):
   slotlist = pdu.get_slot_names()
   slots = len(slotlist)
   if slots == 1:
-   db.do("UPDATE pdus SET slots = 0, first_slot_id = '{1}', first_slot_name = '{2}' WHERE id = '{0}'".format(id,slotlist[0][0],slotlist[0][1]))
+   db.do("UPDATE pdus SET slots = 0, 0_slot_id = '{1}', 0_slot_name = '{2}' WHERE id = '{0}'".format(id,slotlist[0][0],slotlist[0][1]))
   elif slots == 2:
-   db.do("UPDATE pdus SET slots = 1, first_slot_id = '{1}', first_slot_name = '{2}', second_slot_id = '{3}', second_slot_name = '{4}' WHERE id = '{0}'".format(id,slotlist[0][0],slotlist[0][1],slotlist[1][0],slotlist[1][1]))
+   db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE id = '{0}'".format(id,slotlist[0][0],slotlist[0][1],slotlist[1][0],slotlist[1][1]))
   db.commit()
 
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
@@ -128,7 +128,7 @@ def pdu_device_info(aWeb):
  print "<TR><TH COLSPAN=2>PDU Device Info {}</TH></TR>".format("(new)" if id == 'new' else "")
 
  if id == 'new':
-  pdudata = { 'id':'new', 'name':'new-name', 'ip':2130706433, 'slots':1, 'first_slot_name':'unknown', 'first_slot_id':0, 'second_slot_name':'unknown', 'second_slot_id':1 }
+  pdudata = { 'id':'new', 'name':'new-name', 'ip':2130706433, 'slots':0, '0_slot_name':'unknown', '0_slot_id':0, '1_slot_name':'unknown', '1_slot_id':1 }
  else:
   db.do("SELECT * FROM pdus WHERE id = '{0}'".format(id))
   pdudata = db.get_row()
@@ -137,14 +137,14 @@ def pdu_device_info(aWeb):
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(pdudata['name'])
  if pdudata['slots'] == 1:
   print "<TR><TD>Right/Left slots:</TD><TD><INPUT TYPE=checkbox NAME=slots VALUE=1 checked=checked></TD></TR>"
-  print "<TR><TD>First Slot Name:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_name'])
-  print "<TR><TD>First Slot ID:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_id'])
-  print "<TR><TD>Second Slot Name:</TD><TD>{}</TD></TR>".format(pdudata['second_slot_name'])
-  print "<TR><TD>Second Slot ID:</TD><TD>{}</TD></TR>".format(pdudata['second_slot_id'])
+  print "<TR><TD>Slot 1 Name:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_name'])
+  print "<TR><TD>Slot 1 ID:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_id'])
+  print "<TR><TD>Slot 2 Name:</TD><TD>{}</TD></TR>".format(pdudata['1_slot_name'])
+  print "<TR><TD>Slot 2 ID:</TD><TD>{}</TD></TR>".format(pdudata['1_slot_id'])
  else:
   print "<TR><TD>Right/Left slots:</TD><TD><INPUT TYPE=checkbox NAME=slots VALUE=1></TD></TR>"
-  print "<TR><TD>Slot Name:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_name'])
-  print "<TR><TD>Slot ID:</TD><TD>{}</TD></TR>".format(pdudata['first_slot_id'])
+  print "<TR><TD>Slot Name:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_name'])
+  print "<TR><TD>Slot ID:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_id'])
 
  db.close()
  print "</TABLE>"
