@@ -76,7 +76,7 @@ def device_detect(aIP, aDomain, aDict = {}, aSema = None):
  except:
   pass
    
- fqdn,hostname,model,type = 'unknown','unknown','unknown','unknown'
+ rack_size,fqdn,hostname,model,type = 1,'unknown','unknown','unknown','unknown'
  snmp = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
  try:   
   fqdn     = gethostbyaddr(aIP)[0]
@@ -112,7 +112,7 @@ def device_detect(aIP, aDomain, aDict = {}, aSema = None):
    type  = "other"
    model = " ".join(infolist[0:4])
 
- entry = { 'domain':aDomain, 'hostname':hostname, 'snmp':snmp, 'model':model, 'type':type, 'fqdn':fqdn }
+ entry = { 'domain':aDomain, 'hostname':hostname, 'snmp':snmp, 'model':model, 'type':type, 'fqdn':fqdn, 'rack_size':rack_size }
  aDict[aIP] = entry
  if aSema:
   aSema.release()
@@ -151,9 +151,10 @@ def device_discover(aStartIP, aStopIP, aDomain, aClear = False):
   # Join all threads by acquiring all semaphore resources
   for i in range(10):
    sema.acquire()
-  sql = "INSERT INTO devices (ip,domain,hostname,snmp,model,type,fqdn) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')"
+  # We can do insert as either we clear or we skip existing :-)
+  sql = "INSERT INTO devices (ip,domain,hostname,snmp,model,type,fqdn,rack_size) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}')"
   for ip,entry in db_new.iteritems():
-   db.do(sql.format(sys_ip2int(ip),entry['domain'],entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn']))
+   db.do(sql.format(sys_ip2int(ip),entry['domain'],entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn'],entry['rack_size']))
   else:
    db.commit()
       

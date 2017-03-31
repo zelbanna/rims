@@ -205,8 +205,8 @@ def rack(aWeb):
  db.do("SELECT name, id, fk_console, fk_pdu_1, fk_pdu_2 from racks")
  racks = db.get_all_rows()
  print "<DIV>"
- print "<CENTER><H1>Stolab Rack Overview <A TARGET=main_cont TITLE='Unsorted devices' HREF=pane.cgi?view=rack_info>*</A></H1><BR>"
- rackstr = "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&{2}><IMG ALT='Cabinet {0}' SRC='images/cabinet.{1}.png'></A>&nbsp;"
+ print "<CENTER><H1>Rack Overview <A TARGET=main_cont TITLE='Unsorted devices' HREF=pane.cgi?view=rack_info>*</A></H1><BR>"
+ rackstr = "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&name={0}&{2}><IMG ALT='Cabinet {0}' SRC='images/cabinet.{1}.png'></A>&nbsp;"
  for index, rack in enumerate(racks):
   rackargs = "rack=" + str(rack['id'])
   res = db.do("SELECT ip,id FROM consoles WHERE consoles.id = {}".format(rack['fk_console']))
@@ -226,10 +226,11 @@ def rack_info(aWeb):
  rack = aWeb.get_value('rack','0')
  con  = aWeb.get_value('console')
  pdus = aWeb.get_list('pdulist')
+ name = aWeb.get_value('name',"")
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&rack={}'>Info</A>".format(rack)
+ print "<A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(rack,name)
  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
  if con:
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)

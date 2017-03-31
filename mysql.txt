@@ -61,6 +61,7 @@ CREATE TABLE `devices` (
   `pem1_pdu_slot` tinyint(3) unsigned DEFAULT 0,
   `rack_id` int(10) unsigned DEFAULT 0,
   `rack_unit` tinyint(3) DEFAULT 0,
+  `rack_size` tinyint(3) DEFAULT 1,
   `type` varchar(20),
   `snmp` varchar(20),
   PRIMARY KEY (`id`),

@@ -67,11 +67,11 @@ def device_device_info(aWeb):
  height = 240
  conip  = None
  
- print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:430px; z-index:101; height:{}px;'>".format(str(height))
+ print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:590px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
  print "<TABLE style='width:100%;'><TR>"
  
- # First table
+ print "<!-- 1st Table -->"
  print "<TD><TABLE style='width:200px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
  print "<TR><TD>Name:</TD><TD><INPUT NAME=hostname CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['hostname'])
  print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(values['domain'])
@@ -83,7 +83,6 @@ def device_device_info(aWeb):
   print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
  print "</SELECT></TD></TR>"
  print "<TR><TD>Model:</TD><TD style='max-width:140px;'>{}</TD></TR>".format(values['model'])
- print "<TR><TD>DNS ID: {}</TD><TD>IPAM ID: {}</TD></TR>".format(values['dns_id'], values['ipam_id'])
  if values['graphed'] == "yes":
   print "<TR><TD><A CLASS='z-btnop' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(values['domain'],values['hostname']+"."+values['domain'])
  else:
@@ -91,9 +90,10 @@ def device_device_info(aWeb):
    print "<TR><TD>Graphs:</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(id, values['hostname'], values['domain'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
+ print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  print "</TABLE></TD>"
 
- # Second table
+ print "<!-- 2nd Table -->"
  print "<TD><TABLE><TR><TH COLSPAN=2>Rack Info</TH></TR>"
  print "<TR><TD>Rack:</TD><TD><SELECT NAME=rack_id CLASS='z-select'>"
  db.do("SELECT * FROM racks")
@@ -102,8 +102,6 @@ def device_device_info(aWeb):
  for rack in racks:
   extra = " selected" if values['rack_id'] == rack['id'] else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
- print "</SELECT></TD></TR>"
-
  if values['rack_id'] == 0 or values['type'] == 'pdu':
   for index in range(0,7):
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
@@ -135,10 +133,18 @@ def device_device_info(aWeb):
      print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(str(pdu['id'])+"."+str(pdu[str(slotid)+"_slot_id"]), extra, pdu['name']+":"+pdu[str(slotid)+"_slot_name"])
    print "</SELECT></TD></TR>"
    print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME={1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,values[pem + "_pdu_unit"])
-
  print "</TABLE></TD>"
 
- # Close large table
+ print "<!-- 3rd Table -->"
+ print "<TD><TABLE style='width:150px;'><TR><TH COLSPAN=2>Extra info</TH></TR>"
+ print "<TR><TD>Rack Size</TD><TD><INPUT NAME=rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['rack_size'])
+ print "<TR><TD>FQDN</TD><TD>{}</TD></TR>".format(values['fqdn'])
+ print "<TR><TD>DNS ID:</TD><TD>{}</TD></TR>".format(values['dns_id'])
+ print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(values['ipam_id'])
+ for index in range(0,4):
+  print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
+ print "</TABLE></TD>"
+
  print "</TR></TABLE>"
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=update       FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(id)
@@ -154,7 +160,7 @@ def device_device_info(aWeb):
 
  db.close()
 
- print "<-- Function navbar and navcontent -->"
+ print "<!-- Function navbar and navcontent -->"
  print "<DIV CLASS='z-navbar' style='top:{}px;'>".format(str(height + 40))
 
  functions = device_get_widgets(values['type'])
