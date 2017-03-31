@@ -104,21 +104,21 @@ def pdu_list_pdus(aWeb):
 #
 def pdu_device_info(aWeb):
  id = aWeb.get_value('id')
+ ip = aWeb.get_value('ip')
  op = aWeb.get_value('op')
  db = DB()
  db.connect()
 
  if op:
-  ip = aWeb.get_value('ip')
   from sdcp.devices.RackUtils import Avocent
   # Assume lookup for now
   pdu = Avocent(ip)
   slotlist = pdu.get_slot_names()
   slots = len(slotlist)
   if slots == 1:
-   db.do("UPDATE pdus SET slots = 0, 0_slot_id = '{1}', 0_slot_name = '{2}' WHERE id = '{0}'".format(id,slotlist[0][0],slotlist[0][1]))
+   db.do("UPDATE pdus SET slots = 0, 0_slot_id = '{1}', 0_slot_name = '{2}' WHERE ip = '{0}'".format(ip,slotlist[0][0],slotlist[0][1]))
   elif slots == 2:
-   db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE id = '{0}'".format(id,slotlist[0][0],slotlist[0][1],slotlist[1][0],slotlist[1][1]))
+   db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE ip = '{0}'".format(ip,slotlist[0][0],slotlist[0][1],slotlist[1][0],slotlist[1][1]))
   db.commit()
 
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
@@ -129,29 +129,35 @@ def pdu_device_info(aWeb):
 
  if id == 'new':
   pdudata = { 'id':'new', 'name':'new-name', 'ip':2130706433, 'slots':0, '0_slot_name':'unknown', '0_slot_id':0, '1_slot_name':'unknown', '1_slot_id':1 }
+  if not ip:
+   ip ='127.0.0.1'
  else:
-  db.do("SELECT * FROM pdus WHERE id = '{0}'".format(id))
+  if id:
+   db.do("SELECT * FROM pdus WHERE id = '{0}'".format(id))
+  else:
+   db.do("SELECT * FROM pdus WHERE ip = '{0}'".format(ip))
   pdudata = db.get_row()
+  ip = sys_int2ip(pdudata['ip'])
 
- print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(sys_int2ip(pdudata['ip']))
+ print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(pdudata['name'])
  if pdudata['slots'] == 1:
-  print "<TR><TD>Right/Left slots:</TD><TD><INPUT TYPE=checkbox NAME=slots VALUE=1 checked=checked></TD></TR>"
+  print "<TR><TD>Right/Left slots:</TD><TD><INPUT TYPE=checkbox style='border:none;' NAME=slots VALUE=1 checked=checked></TD></TR>"
   print "<TR><TD>Slot 1 Name:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_name'])
   print "<TR><TD>Slot 1 ID:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_id'])
   print "<TR><TD>Slot 2 Name:</TD><TD>{}</TD></TR>".format(pdudata['1_slot_name'])
   print "<TR><TD>Slot 2 ID:</TD><TD>{}</TD></TR>".format(pdudata['1_slot_id'])
  else:
-  print "<TR><TD>Right/Left slots:</TD><TD><INPUT TYPE=checkbox NAME=slots VALUE=1></TD></TR>"
-  print "<TR><TD>Slot Name:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_name'])
-  print "<TR><TD>Slot ID:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_id'])
+  print "<TR><TD>Right/Left slots:</TD><TD><INPUT TYPE=checkbox style='border:none;' NAME=slots VALUE=1></TD></TR>"
+  print "<TR><TD>Slot 1 Name:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_name'])
+  print "<TR><TD>Slot 1 ID:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_id'])
 
  db.close()
  print "</TABLE>"
  print "<A TITLE='Update unit' CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update FRM=pdu_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
   print "<A TITLE='Remove unit' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A TITLE='Update info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_device_info&id={0}&op=lookup&ip={1} OP=load><IMG SRC='images/btn-search.png'></A>".format(id,sys_int2ip(pdudata['ip']))
+ print "<A TITLE='Update info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_device_info&id={0}&op=lookup&ip={1} OP=load><IMG SRC='images/btn-search.png'></A>".format(id,ip)
  print "&nbsp;<SPAN ID=update_results></SPAN>&nbsp;"
  print "</FORM>"
  print "</DIV>"

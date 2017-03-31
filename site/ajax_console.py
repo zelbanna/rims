@@ -52,7 +52,9 @@ def console_list_consoles(aWeb):
 #
 #
 def console_device_info(aWeb):
- id   = aWeb.get_value('id')
+ id = aWeb.get_value('id')
+ ip = aWeb.get_value('ip')
+
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
  print "<FORM ID=console_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
@@ -60,13 +62,19 @@ def console_device_info(aWeb):
  print "<TR><TH COLSPAN=2>Consoles Info {}</TH></TR>".format("(new)" if id == 'new' else "")
  if id == 'new':
   condata = { 'id':'new', 'name':'new-name', 'ip':2130706433 }
+  if not ip:
+   ip = '127.0.0.1'
  else:
   db = DB()
   db.connect()
-  db.do("SELECT * FROM consoles WHERE id = '{0}'".format(id))
+  if id:
+   db.do("SELECT * FROM consoles WHERE id = '{0}'".format(id))
+  else:
+   db.do("SELECT * FROM consoles WHERE ip = '{0}'".format(ip))
   condata = db.get_row()
+  ip = sys_int2ip(condata['ip'])
   db.close()
- print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(sys_int2ip(condata['ip']))
+ print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(condata['name'])
  print "</TABLE>"
  print "<A TITLE='Update unit' CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=console_update FRM=console_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
