@@ -112,13 +112,14 @@ def pdu_device_info(aWeb):
  if op:
   from sdcp.devices.RackUtils import Avocent
   # Assume lookup for now
-  pdu = Avocent(ip)
-  slotlist = pdu.get_slot_names()
-  slots = len(slotlist)
-  if slots == 1:
-   db.do("UPDATE pdus SET slots = 0, 0_slot_id = '{1}', 0_slot_name = '{2}' WHERE ip = '{0}'".format(ip,slotlist[0][0],slotlist[0][1]))
-  elif slots == 2:
-   db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE ip = '{0}'".format(ip,slotlist[0][0],slotlist[0][1],slotlist[1][0],slotlist[1][1]))
+  pdu   = Avocent(ip)
+  ipint = sys_ip2int(ip) 
+  slotl = pdu.get_slot_names()
+  slotn = len(slotl)
+  if slotn == 1:
+   db.do("UPDATE pdus SET slots = 0, 0_slot_id = '{1}', 0_slot_name = '{2}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1]))
+  elif slotn == 2:
+   db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1],slotl[1][0],slotl[1][1]))
   db.commit()
 
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
@@ -158,7 +159,7 @@ def pdu_device_info(aWeb):
  if not id == 'new':
   print "<A TITLE='Remove unit' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<A TITLE='Update info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_device_info&id={0}&op=lookup&ip={1} OP=load><IMG SRC='images/btn-search.png'></A>".format(id,ip)
- print "&nbsp;<SPAN ID=update_results></SPAN>&nbsp;"
+ print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>&nbsp;"
  print "</FORM>"
  print "</DIV>"
 

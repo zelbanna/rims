@@ -6,6 +6,7 @@ use sdcp;
 DROP TABLE IF EXISTS `consoles`;
 CREATE TABLE `consoles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `device_id` int(10) unsigned DEFAULT NULL,
   `name` varchar(20) DEFAULT NULL,
   `ip` int(10) unsigned DEFAULT 2130706433,
   PRIMARY KEY (`id`)
@@ -14,6 +15,7 @@ CREATE TABLE `consoles` (
 DROP TABLE IF EXISTS `pdus`;
 CREATE TABLE `pdus` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `device_id` int(10) unsigned DEFAULT NULL,
   `name` varchar(20) DEFAULT NULL,
   `ip` int(10) unsigned DEFAULT 2130706433,
   `0_slot_name` varchar(10) NOT NULL DEFAULT 'unknown',
