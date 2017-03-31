@@ -10,7 +10,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "5.0"
 __status__ = "Production"
 
-from GenLib import sys_log_msg, ping_os, sys_ip2int, sys_int2ip
+from GenLib import DB, sys_log_msg, ping_os, sys_ip2int, sys_int2ip
 
 ####################################### Grapher Class ##########################################
 #
@@ -120,7 +120,6 @@ class Grapher(object):
   from os import chmod
   from time import time
   from threading import Lock, Thread, BoundedSemaphore
-  from sdcp.devices.DevHandler import Devices
   start_time = int(time())
   try:
    flock = Lock()
@@ -128,9 +127,7 @@ class Grapher(object):
    with open(self._graphplug, 'w') as f:
     f.write("#!/bin/bash\n")
    chmod(self._graphplug, 0o777)
-
-   devs = Devices()
-   db   = devs.get_db()
+   db = DB()
    db.connect()
    db.do("SELECT * FROM devices")
    rows = db.get_all_rows()

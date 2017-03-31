@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__= "1.0GA"
 __status__= "Production"
 
-from sdcp.devices.DevHandler import Devices, sys_int2ip
+from sdcp.core.GenLib import DB, sys_ip2int, sys_int2ip
 
 ########################################## Device Operations ##########################################
 #
@@ -16,8 +16,8 @@ from sdcp.devices.DevHandler import Devices, sys_int2ip
 def device_view_devicelist(aWeb):
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
- devs = Devices()
- db   = devs.connect_db()
+ db     = DB()
+ db.connect()
  if target and arg:
   db.do("SELECT * FROM devices WHERE {0}='{1}' ORDER BY ip".format(target,arg))
  else:
@@ -30,18 +30,20 @@ def device_view_devicelist(aWeb):
   print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&node={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(sys_int2ip(row['ip']), row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</TABLE></CENTER>"
  print "</DIV></DIV>"
+ db.close()
 
 #
 #
 #
 def device_device_info(aWeb):
+ from sdcp.devices.DevHandler import device_detect, device_types, device_get_widgets
  id   = aWeb.get_value('node')
  op   = aWeb.get_value('op')
- devs = Devices()
- db   = devs.connect_db()
+ db   = DB()
+ db.connect()
  if   op == 'lookup':
   ip    = aWeb.get_value('ip')
-  entry = devs._detect(ip,"")
+  entry = device_detect(ip,"")
   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
   db.commit()
  elif op == 'update':
@@ -76,7 +78,7 @@ def device_device_info(aWeb):
  print "<TR><TD>SNMP:</TD><TD>{}</TD></TR>".format(values['snmp'])
  print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(ip)
  print "<TR><TD>Type:</TD><TD TITLE='Device type'><SELECT NAME=type CLASS='z-select'>"
- for tp in Devices.get_types():
+ for tp in device_types():
   extra = " selected disabled" if values['type'] == tp else ""      
   print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
  print "</SELECT></TD></TR>"
@@ -131,13 +133,11 @@ def device_device_info(aWeb):
     for slotid in range(0,pdu['slots'] + 1):
      extra = " selected" if ((values[pem+"_pdu_id"] == pdu['id']) and (values[pem+"_pdu_slot"] == pdu[str(slotid)+"_slot_id"])) else ""
      print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(str(pdu['id'])+"."+str(pdu[str(slotid)+"_slot_id"]), extra, pdu['name']+":"+pdu[str(slotid)+"_slot_name"])
-
-
    print "</SELECT></TD></TR>"
    print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME={1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,values[pem + "_pdu_unit"])
 
  print "</TABLE></TD>"
- devs.close_db()
+ db.close()
 
  # Close large table
  print "</TR></TABLE>"
@@ -151,8 +151,10 @@ def device_device_info(aWeb):
  print "</FORM>"
  print "</DIV>"
 
+ print "<-- Function navbar and navcontent -->"
  print "<DIV CLASS='z-navbar' style='top:{}px;'>".format(str(height + 40))
- functions = Devices.get_widgets(values['type'])
+
+ functions = device_get_widgets(values['type'])
  if functions:
   if functions[0] == 'operated':
    if values['type'] == 'esxi':
@@ -172,11 +174,12 @@ def device_device_info(aWeb):
 # View operation data / widgets
 #
 def device_op_function(aWeb):
+ from sdcp.devices.DevHandler import device_get_instance
  ip   = aWeb.get_value('ip')
  type = aWeb.get_value('type')
  op   = aWeb.get_value('op')
  try:
-  dev = Devices.get_node(ip,type)
+  dev = device_get_instance(ip,type)
   fun = getattr(dev,op,None)
   fun()
  except Exception as err:
@@ -186,14 +189,14 @@ def device_op_function(aWeb):
 # find devices operations
 #
 def device_op_finddevices(aWeb):
+ from sdcp.devices.DevHandler import device_discover
  domain    = aWeb.get_value('domain')
  discstart = aWeb.get_value('discstart')
  discstop  = aWeb.get_value('discstop')
  clear     = aWeb.get_value('clear',False)
  if discstart and discstop and domain:
-  devs = Devices() 
-  devs.discover(discstart,discstop, domain, clear)
+  device_discover(discstart,discstop, domain, clear)
   print "<B>Done Discovering Devices: {} -> {} for {}!</B>".format(discstart,discstop,domain)
-  aWeb.log_msg("devices.cgi: Discovered devices [{}] {} -> {} for {}".format(str(clear), discstart,discstop,domain))
+  aWeb.log_msg("devices_op_finddevices: Discovered devices [{}] {} -> {} for {}".format(str(clear), discstart,discstop,domain))
  else:
   print "<B>Not all parameters supplied</B>"

@@ -4,7 +4,7 @@ Ajax Graph calls module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__= "1.0GA"
+__version__= "5.0GA"
 __status__= "Production"
 
 ############################################ GRAPHS ##########################################
@@ -52,11 +52,11 @@ def graph_find(aWeb):
 # Sync graphs and devices
 #
 def graph_sync(aWeb):
- from sdcp.devices.DevHandler import Devices
+ from sdcp.core.GenLib import DB
  from sdcp.core.Grapher import Grapher
  try:
-  devs  = Devices()
-  db = devs.connect_db()
+  db = DB()
+  db.connect()
   db.do("SELECT id,hostname,domain FROM devices")
   rows = db.get_all_rows()
   graph = Grapher()
@@ -67,7 +67,7 @@ def graph_sync(aWeb):
    if fqdn in graphdevices:
     db.do(sql.format(row['id']))
   db.commit()
-  devs.close_db()
+  db.close()
   print "<B>Done syncing devices' graphing</B>"
   aWeb.log_msg("graph_sync: Done syncing devices' graphing")
  except Exception as err:
