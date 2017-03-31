@@ -60,7 +60,8 @@ div.z-centered { display:flex; justify-content:center; align-items:center; }
 
 /*############################################ Table ##############################################*/
 
-div.z-table {	width:auto; border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; }
+div.z-table {	width:auto; border-radius: 6px; border: none; background-color:#F3F3F3; margin:3px; overflow:hidden; padding:6px 2px 6px 2px;}
+div.z-table table { margin-left:auto; margin-right:auto; }
 div.z-table th { border:none; display: table-cell; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding-bottom: 6px; }
 div.z-table tr:nth-child(even) { background-color: #FFFFFF; font-size:11px; line-height:20px; }
 div.z-table tr:nth-child(odd) {  background-color: #F3F3F3; font-size:11px; line-height:20px; }

@@ -9,7 +9,8 @@ CREATE TABLE `consoles` (
   `device_id` int(10) unsigned DEFAULT NULL,
   `name` varchar(20) DEFAULT NULL,
   `ip` int(10) unsigned DEFAULT 2130706433,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ip` (`ip`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS `pdus`;
@@ -23,7 +24,8 @@ CREATE TABLE `pdus` (
   `0_slot_id` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `1_slot_id` tinyint(3) unsigned NOT NULL DEFAULT 1,
   `slots` tinyint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ip` (`ip`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
                   
 DROP TABLE IF EXISTS `racks`;
@@ -34,7 +36,8 @@ CREATE TABLE `racks` (
   `fk_console` int(10) unsigned DEFAULT NULL,
   `fk_pdu_1` int(10) unsigned DEFAULT NULL,
   `fk_pdu_2` int(10) unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS `devices`;
@@ -60,5 +63,6 @@ CREATE TABLE `devices` (
   `rack_unit` tinyint(3) DEFAULT 0,
   `type` varchar(20),
   `snmp` varchar(20),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ip` (`ip`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

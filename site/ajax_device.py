@@ -23,12 +23,12 @@ def device_view_devicelist(aWeb):
  else:
   db.do("SELECT * FROM devices ORDER BY ip")
  print "<DIV CLASS='z-framed' ID=div_device_devicelist><DIV CLASS='z-table'>"
- print "<CENTER><TABLE WIDTH=330>"
+ print "<TABLE WIDTH=330>"
  print "<TR><TH>IP</TH><TH>FQDN</TH><TH>Model</TH></TR>"
  rows = db.get_all_rows()
  for row in rows:
   print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&node={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(sys_int2ip(row['ip']), row['hostname']+"."+row['domain'], row['model'],row['id'])
- print "</TABLE></CENTER>"
+ print "</TABLE>"
  print "</DIV></DIV>"
  db.close()
 

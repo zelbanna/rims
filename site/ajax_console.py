@@ -33,8 +33,7 @@ def console_list(aWeb):
 def console_list_consoles(aWeb):
  db   = DB()
  db.connect()
- print "<DIV CLASS='z-framed'>"
- print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
+ print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Consoles</CENTER></TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
@@ -44,8 +43,8 @@ def console_list_consoles(aWeb):
  data = db.get_all_rows()
  print "<TR><TH>ID</TH><TH>Name</TH><TH>IP</TH></TR>"
  for unit in data:
-  print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id={0}'>{1}</A></TD><TD>{2}</TD>".format(unit['id'],unit['name'],sys_int2ip(unit['ip']))
- print "</TABLE></DIV>"
+  print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],sys_int2ip(unit['ip']))
+ print "</TABLE></DIV></DIV>"
  db.close()
 
 #
