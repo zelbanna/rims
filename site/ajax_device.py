@@ -67,7 +67,7 @@ def device_device_info(aWeb):
  height = 240
  conip  = None
  
- print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:{}px;'>".format(str(height))
+ print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:430px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
  print "<TABLE style='width:100%;'><TR>"
  
