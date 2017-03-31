@@ -137,7 +137,6 @@ def device_device_info(aWeb):
    print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME={1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,values[pem + "_pdu_unit"])
 
  print "</TABLE></TD>"
- db.close()
 
  # Close large table
  print "</TR></TABLE>"
@@ -147,9 +146,13 @@ def device_device_info(aWeb):
  if conip and not conip == '127.0.0.1' and values['consoleport'] and values['consoleport'] > 0:
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+values['consoleport'])
  if values['type'] == 'pdu' or values['type'] == 'console':
-  print "<A style='float:right;' TITLE='Add {0}' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}'><IMG SRC='images/btn-add.png'></A>".format(values['type'],ip,values['hostname'])
+  res = db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(values['type'],values['ip']))
+  if res == 0:
+   print "<A style='float:right;' TITLE='Add {0}' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}'><IMG SRC='images/btn-add.png'></A>".format(values['type'],ip,values['hostname'])
  print "</FORM>"
  print "</DIV>"
+
+ db.close()
 
  print "<-- Function navbar and navcontent -->"
  print "<DIV CLASS='z-navbar' style='top:{}px;'>".format(str(height + 40))
