@@ -38,7 +38,7 @@ class Devices(object):
 
  @classmethod
  def get_types(cls):
-  return [ 'ex', 'mx', 'srx', 'qfx', 'wlc', 'linux', 'esxi', 'other', 'unknown' ]
+  return [ 'ex', 'mx', 'srx', 'qfx', 'wlc', 'linux', 'esxi', 'other', 'unknown', 'pdu', 'console']
 
  @classmethod
  def get_node(cls,aIP,aType):

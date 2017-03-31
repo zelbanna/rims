@@ -88,7 +88,10 @@ def device_view_devinfo(aWeb):
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
  print "</SELECT></TD></TR>"
 
- if not values['rack_id'] == 0:
+ if values['rack_id'] == 0 or values['type'] == 'pdu' or values['type'] == 'console':
+  for index in range(0,7):
+   print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
+ else:
   db.do("SELECT * FROM consoles")
   consoles = db.get_all_rows()
   consoles.append({ 'id':0, 'name':'Not used', 'ip':2130706433 })
@@ -117,10 +120,8 @@ def device_view_devinfo(aWeb):
    print "</SELECT></TD></TR>"
    print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME={1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,values[pem + "_pdu_unit"])
 
- else:
-  for index in range(0,7):
-   print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  print "</TABLE></TD>"
+ devs.close_db()
 
  # Close large table
  print "</TR></TABLE>"
@@ -132,10 +133,10 @@ def device_view_devinfo(aWeb):
  if conip and not conip == '127.0.0.1' and values['consoleport'] and values['consoleport'] > 0:
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+values['consoleport'])
  print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>&nbsp;"
+ if values['type'] == 'pdu':
+  print "<A style='float:right;' TITLE='Add PDU' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=pdu_device_info&id=new&ip={}&name={}'><IMG SRC='images/btn-add.png'></A>".format(ip,values['hostname'])
  print "</FORM>"
  print "</DIV>"
-
- devs.close_db()
 
  print "<DIV CLASS='z-framed' style='margin-left:420px; overflow-x:hidden; z-index:100'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file images/info_{1}.jpg - 600px x 160px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['hostname'],values['model'])
 

@@ -37,8 +37,8 @@ def console_list_consoles(aWeb):
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Consoles</CENTER></TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "</TD></TR>"
  res  = db.do("SELECT * from consoles ORDER by name")
  data = db.get_all_rows()
@@ -54,6 +54,24 @@ def console_list_consoles(aWeb):
 def console_device_info(aWeb):
  id = aWeb.get_value('id')
  ip = aWeb.get_value('ip')
+ op = aWeb.get_value('op')
+ name = aWeb.get_value('name')
+ db = DB()
+ db.connect()
+
+ if op == 'update':
+  ipint = sys_ip2int(ip)
+  if id == 'new':
+   sql = "INSERT into consoles (name, ip) VALUES ('{0}','{1}')".format(name,ipint)
+   db.do(sql)
+   db.commit() 
+   db.do("SELECT id FROM consoles WHERE ip = '{0}'".format(ipint))
+   res = db.get_row()   
+   id  = res['id']
+  else:
+   sql = "UPDATE consoles SET name = '{0}', ip = '{1}' WHERE id = '{2}'".format(name,ipint,id)
+   res = db.do(sql)
+   db.commit()  
 
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
  print "<FORM ID=console_device_info_form>"
@@ -64,48 +82,26 @@ def console_device_info(aWeb):
   condata = { 'id':'new', 'name':'new-name', 'ip':2130706433 }
   if not ip:
    ip = '127.0.0.1'
+  if not name:
+   name = 'new-name'
  else:
-  db = DB()
-  db.connect()
   if id:
    db.do("SELECT * FROM consoles WHERE id = '{0}'".format(id))
   else:
    db.do("SELECT * FROM consoles WHERE ip = '{0}'".format(ip))
   condata = db.get_row()
   ip = sys_int2ip(condata['ip'])
-  db.close()
+  name = condata['name']
+ db.close()
  print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
- print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(condata['name'])
+ print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
  print "</TABLE>"
- print "<A TITLE='Update unit' CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=console_update FRM=console_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
+  print "<A TITLE='Reload info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=console_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
   print "<A TITLE='Remove unit' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=console_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "&nbsp;<SPAN ID=update_results></SPAN>"
+ print "<A TITLE='Update unit'  CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=console_device_info&op=update FRM=console_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"
-
-#
-#
-#
-def console_update(aWeb):
- values = aWeb.get_keys()
- values.remove('call')
- db   = DB()
- db.connect()
- id   = aWeb.get_value('id')
- name = aWeb.get_value('name')
- ip   = aWeb.get_value('ip')
- ipint = sys_ip2int(ip)
- sql = ""
- if id == 'new':
-  print "New console created"
-  sql = "INSERT into consoles (name, ip) VALUES ('{0}','{1}')".format(name,ipint)
- else:
-  print "Updated consoles ({})".format(id)
-  sql = "UPDATE consoles SET name = '{0}', ip = '{1}' WHERE id = '{2}'".format(name,ipint,id)
- res = db.do(sql)
- db.commit()  
- db.close()
 
 #
 #

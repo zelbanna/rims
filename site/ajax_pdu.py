@@ -88,8 +88,8 @@ def pdu_list_pdus(aWeb):
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>PDUs</CENTER></TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=pdu_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=pdu_list_pdus'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=pdu_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "</TD></TR>"
  res  = db.do("SELECT * from pdus ORDER by name")
  data = db.get_all_rows()
@@ -106,10 +106,11 @@ def pdu_device_info(aWeb):
  id = aWeb.get_value('id')
  ip = aWeb.get_value('ip')
  op = aWeb.get_value('op')
+ name = aWeb.get_value('name')
  db = DB()
  db.connect()
 
- if op:
+ if op == 'lookup':
   from sdcp.devices.RackUtils import Avocent
   # Assume lookup for now
   pdu   = Avocent(ip)
@@ -121,6 +122,20 @@ def pdu_device_info(aWeb):
   elif slotn == 2:
    db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1],slotl[1][0],slotl[1][1]))
   db.commit()
+ elif op == 'update':
+  ipint = sys_ip2int(ip)
+  slots = aWeb.get_value('slots','0')
+  if id == 'new':
+   sql = "INSERT into pdus (name, ip, slots) VALUES ('{0}','{1}','{2}')".format(name,ipint,slots)
+   res = db.do(sql)
+   db.commit()
+   db.do("SELECT id FROM pdus WHERE ip = '{0}'".format(ipint)) 
+   res = db.get_row()
+   id  = res['id']
+  else:
+   sql = "UPDATE pdus SET name = '{0}', ip = '{1}', slots = '{2}' WHERE id = '{3}'".format(name,ipint,slots,id)
+   res = db.do(sql)
+   db.commit()
 
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
  print "<FORM ID=pdu_device_info_form>"
@@ -129,19 +144,22 @@ def pdu_device_info(aWeb):
  print "<TR><TH COLSPAN=2>PDU Device Info {}</TH></TR>".format("(new)" if id == 'new' else "")
 
  if id == 'new':
-  pdudata = { 'id':'new', 'name':'new-name', 'ip':2130706433, 'slots':0, '0_slot_name':'unknown', '0_slot_id':0, '1_slot_name':'unknown', '1_slot_id':1 }
+  pdudata = { 'id':'new', 'slots':0, '0_slot_name':'unknown', '0_slot_id':0, '1_slot_name':'unknown', '1_slot_id':1 }
   if not ip:
    ip ='127.0.0.1'
+  if not name:
+   name = 'new-name'
  else:
   if id:
    db.do("SELECT * FROM pdus WHERE id = '{0}'".format(id))
   else:
    db.do("SELECT * FROM pdus WHERE ip = '{0}'".format(ip))
   pdudata = db.get_row()
-  ip = sys_int2ip(pdudata['ip'])
+  ip   = sys_int2ip(pdudata['ip'])
+  name = pdudata['name']
 
  print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
- print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(pdudata['name'])
+ print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
  if pdudata['slots'] == 1:
   print "<TR><TD>Right/Left slots:</TD><TD><INPUT TYPE=checkbox style='border:none;' NAME=slots VALUE=1 checked=checked></TD></TR>"
   print "<TR><TD>Slot 1 Name:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_name'])
@@ -155,37 +173,13 @@ def pdu_device_info(aWeb):
 
  db.close()
  print "</TABLE>"
- print "<A TITLE='Update unit' CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update FRM=pdu_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
+  print "<A TITLE='Reload info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_device_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
   print "<A TITLE='Remove unit' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A TITLE='Update info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_device_info&id={0}&op=lookup&ip={1} OP=load><IMG SRC='images/btn-search.png'></A>".format(id,ip)
- print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>&nbsp;"
+  print "<A TITLE='Fecth  info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_device_info&id={0}&op=lookup&ip={1} OP=load><IMG SRC='images/btn-search.png'></A>".format(id,ip)
+ print "<A TITLE='Update unit' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=pdu_device_info&op=update FRM=pdu_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"
-
-#
-# Update pdu info
-#
-def pdu_update(aWeb):
- values = aWeb.get_keys()
- values.remove('call')
- db   = DB()
- db.connect()
- id   = aWeb.get_value('id')
- name = aWeb.get_value('name')
- ip   = aWeb.get_value('ip')
- slots= aWeb.get_value('slots','0')
- ipint = sys_ip2int(ip)
- sql = ""
- if id == 'new':
-  print "New pdu created"
-  sql = "INSERT into pdus (name, ip, slots) VALUES ('{0}','{1}','{2}')".format(name,ipint,slots)
- else:
-  print "Updated pdus {}".format(id)
-  sql = "UPDATE pdus SET name = '{0}', ip = '{1}', slots = '{2}' WHERE id = '{3}'".format(name,ipint,slots,id)
- res = db.do(sql)
- db.commit()
- db.close()
 
 #
 # Update PDU slot info (name basically)

@@ -56,8 +56,8 @@ def rack_list_racks(aWeb):
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Rack</CENTER></TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "</TD></TR>"
  res  = db.do("SELECT * from racks ORDER by name")
  data = db.get_all_rows()
@@ -115,6 +115,7 @@ def rack_device_info(aWeb):
  print "<TR><TD>Location:</TD><TD><INPUT NAME=location TYPE=TEXT CLASS='z-input' VALUE='Not used yet'></TD></TR>"
 
  print "</TABLE>"
+ print "<A TITLE='Reload info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_device_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A TITLE='Update unit' CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
   print "<A TITLE='Remove unit' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
