@@ -30,7 +30,7 @@ def rack_info(aWeb):
  for index in range(rackinfo['size']-1,0,-1):
   print "<TR CLASS='z-rack'><TD CLASS='z-rack-indx'>{0}</TD>".format(index)
   if rackunits.get(index,None):
-   print "<TD CLASS='z-rack-data' style='background-color:green'><CENTER><a class='z-btnop' title='Show device info for {0}' op='load' div='div_navcont' lnk='ajax.cgi?call=device_view_devinfo&node={1}'>{0}</a></CENTER></TD>".format(rackunits[index]['hostname'],rackunits[index]['id'])
+   print "<TD CLASS='z-rack-data' style='background-color:green'><CENTER><a class='z-btnop' title='Show device info for {0}' op='load' div='div_navcont' lnk='ajax.cgi?call=device_device_info&node={1}'>{0}</a></CENTER></TD>".format(rackunits[index]['hostname'],rackunits[index]['id'])
   else:
    print "<TD CLASS='z-rack-data'></TD>"
   print "<TD CLASS='z-rack-indx'>{0}</TD></TR>".format(index)
@@ -42,7 +42,7 @@ def rack_info(aWeb):
  for index in range(rackinfo['size'],0,-1):
   print "<TR CLASS='z-rack'><TD CLASS='z-rack-indx'>{0}</TD>".format(index)
   if rackunits.get((-1*index),None):
-   print "<TD CLASS='z-rack-data' style='background-color:green'><CENTER><a class='z-btnop' title='Show device info for {0}' op='load' div='div_navcont' lnk='ajax.cgi?call=device_view_devinfo&node={1}'>{0}</a></CENTER></TD>".format(rackunits[-1*index]['hostname'],rackunits[-1*index]['id'])
+   print "<TD CLASS='z-rack-data' style='background-color:green'><CENTER><a class='z-btnop' title='Show device info for {0}' op='load' div='div_navcont' lnk='ajax.cgi?call=device_device_info&node={1}'>{0}</a></CENTER></TD>".format(rackunits[-1*index]['hostname'],rackunits[-1*index]['id'])
   else:
    print "<TD CLASS='z-rack-data'></TD>"
   print "<TD CLASS='z-rack-indx'>{0}</TD></TR>".format(index)

@@ -27,23 +27,37 @@ def device_view_devicelist(aWeb):
  print "<TR><TH>IP</TH><TH>FQDN</TH><TH>Model</TH></TR>"
  rows = db.get_all_rows()
  for row in rows:
-  print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_view_devinfo&node={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(sys_int2ip(row['ip']), row['hostname']+"."+row['domain'], row['model'],row['id'])
+  print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&node={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(sys_int2ip(row['ip']), row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</TABLE></CENTER>"
  print "</DIV></DIV>"
 
 #
 #
 #
-def device_view_devinfo(aWeb):
+def device_device_info(aWeb):
  id   = aWeb.get_value('node')
  op   = aWeb.get_value('op')
  devs = Devices()
  db   = devs.connect_db()
- if op == 'lookup':
+ if   op == 'lookup':
   ip    = aWeb.get_value('ip')
   entry = devs._detect(ip,"")
   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
   db.commit()
+ elif op == 'update':
+  values = aWeb.get_keys()
+  values.remove('call')
+  values.remove('node')
+  values.remove('op')
+  if values:
+   for key in values:
+    if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
+     db.do("UPDATE devices SET {0}='{1}' where id = '{2}'".format(key,aWeb.get_value(key),id))
+    else:
+     pem = key[:4]
+     [pemid,pemslot] = aWeb.get_value(key).split('.')
+     db.do("UPDATE devices SET {0}_pdu_id='{1}', {0}_pdu_slot ='{2}' where id = '{3}'".format(pem,pemid,pemslot,id))
+   db.commit()
 
  db.do("SELECT * FROM devices WHERE id ='{}'".format(id))
  values = db.get_row()
@@ -51,7 +65,7 @@ def device_view_devinfo(aWeb):
  height = 240
  conip  = None
  
- print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:{}px;'>".format(str(height))
+ print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
  print "<TABLE style='width:100%;'><TR>"
  
@@ -88,7 +102,7 @@ def device_view_devinfo(aWeb):
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
  print "</SELECT></TD></TR>"
 
- if values['rack_id'] == 0 or values['type'] == 'pdu' or values['type'] == 'console':
+ if values['rack_id'] == 0 or values['type'] == 'pdu':
   for index in range(0,7):
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  else:
@@ -99,16 +113,18 @@ def device_view_devinfo(aWeb):
   pdus = db.get_all_rows()
   pdus.append({ 'id':0, 'name':'Not used', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'Not used' })
   print "<TR><TD>Rack Unit:</TD><TD TITLE='Lower rack unit of device placement'><INPUT NAME=rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['rack_unit'])
-  print "<TR><TD>TS:</TD><TD><SELECT NAME=console_id CLASS='z-select'>"
-  for console in consoles:
-   extra = ""
-   if values['console_id'] == console['id']:
-    extra = " selected"
-    conip = sys_int2ip(console['ip'])
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
-
-  print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
-
+  if not values['type'] == 'console':
+   print "<TR><TD>TS:</TD><TD><SELECT NAME=console_id CLASS='z-select'>"
+   for console in consoles:
+    extra = ""
+    if values['console_id'] == console['id']:
+     extra = " selected"
+     conip = sys_int2ip(console['ip'])
+    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
+   print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
+  else:
+   print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
+   print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
   for pem in ['pem0','pem1']:
    print "<TR><TD>{0} PDU:</TD><TD><SELECT NAME={1}_pdu_slot_id CLASS='z-select'>".format(pem.upper(),pem)
    for pdu in pdus:
@@ -125,20 +141,15 @@ def device_view_devinfo(aWeb):
 
  # Close large table
  print "</TR></TABLE>"
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_view_devinfo&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_devinfo&node={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(id)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_view_devinfo&node={}&op=lookup&ip={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_dns&node={}  FRM=info_form OP=post TITLE='Update DNS'>D</A>".format(id)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=device_update_ipam&node={} FRM=info_form OP=post TITLE='Update IPAM'>I</A>".format(id)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=update       FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(id)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=lookup&ip={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip)
  if conip and not conip == '127.0.0.1' and values['consoleport'] and values['consoleport'] > 0:
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+values['consoleport'])
- print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>&nbsp;"
- if values['type'] == 'pdu':
-  print "<A style='float:right;' TITLE='Add PDU' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=pdu_device_info&id=new&ip={}&name={}'><IMG SRC='images/btn-add.png'></A>".format(ip,values['hostname'])
+ if values['type'] == 'pdu' or values['type'] == 'console':
+  print "<A style='float:right;' TITLE='Add {0}' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}'><IMG SRC='images/btn-add.png'></A>".format(values['type'],ip,values['hostname'])
  print "</FORM>"
  print "</DIV>"
-
- print "<DIV CLASS='z-framed' style='margin-left:420px; overflow-x:hidden; z-index:100'><CENTER><IMG TITLE='Info image of {0}' ALT='Missing file images/info_{1}.jpg - 600px x 160px max' SRC='images/info_{1}.jpg'></CENTER></DIV>".format(values['hostname'],values['model'])
 
  print "<DIV CLASS='z-navbar' style='top:{}px;'>".format(str(height + 40))
  functions = Devices.get_widgets(values['type'])
@@ -149,53 +160,18 @@ def device_view_devinfo(aWeb):
   else:
    for fun in functions:
     name = " ".join(fun.split('_')[1:])
-    print "<A CLASS='z-btnop' OP=load DIV=div_navdata SPIN=true LNK='ajax.cgi?call=device_view_devdata&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, values['type'], fun, name.title())
+    print "<A CLASS='z-btnop' OP=load DIV=div_navdata SPIN=true LNK='ajax.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, values['type'], fun, name.title())
  else:
   print "&nbsp;"
  print "</DIV>"
  print "<DIV CLASS='z-navcontent' ID=div_navdata style='top:{}px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>".format(str(height + 40))
 
 
-
-
-################################################### UPDATE ###################################################
-#
-# Save data for device info
-#
-def device_update_devinfo(aWeb):
- node   = aWeb.get_value('node')
- values = aWeb.get_keys()
- values.remove('call')
- values.remove('node')
- if values:
-  devs = Devices()
-  db   = devs.connect_db()
-  for key in values:
-   if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
-    db.do("UPDATE devices SET {0}='{1}' where id = '{2}'".format(key,aWeb.get_value(key),node))
-   else:
-    pem = key[:4]
-    [id,slot] = aWeb.get_value(key).split('.')
-    db.do("UPDATE devices SET {0}_pdu_id='{1}', {0}_pdu_slot ='{2}' where id = '{3}'".format(pem,id,slot,node))
-  db.commit()
-  devs.close_db()
-  print "Updated: {}".format(" ".join(values))
- else:
-  print "Nothing to update"
-
-def device_update_dns(aWeb):
- import sdcp.SettingsContainer as SC
- print "not implemented yet",SC.dnsdb_proxy
-
-def device_update_ipam(aWeb):
- import sdcp.SettingsContainer as SC
- print "not implemented yet",SC.ipamdb_proxy
-
-################################################## WIDGETs ################################################## 
+####################################################### Functions #######################################################
 #
 # View operation data / widgets
 #
-def device_view_devdata(aWeb):
+def device_op_function(aWeb):
  ip   = aWeb.get_value('ip')
  type = aWeb.get_value('type')
  op   = aWeb.get_value('op')
