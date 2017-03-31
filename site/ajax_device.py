@@ -100,18 +100,18 @@ def device_view_devinfo(aWeb):
    extra = " selected" if values['console_id'] == console['id'] else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
   print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['consoleport'])
-  print "<TR><TD>PEM Left:</TD><TD><SELECT NAME=pwr_left_pdu_id CLASS='z-select'>"
+  print "<TR><TD>PEM Left:</TD><TD><SELECT NAME=pem0_pdu_id CLASS='z-select'>"
   for pdu in pdus:
-   extra = " selected" if values['pwr_left_pdu_id'] == pdu['id'] else ""
+   extra = " selected" if values['pem0_pdu_id'] == pdu['id'] else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(pdu['id'],extra,pdu['name'])
   print "</SELECT></TD></TR>"
-  print "<TR><TD>PEM Left Unit:</TD><TD><INPUT NAME=pwr_left_pdu_slot CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['pwr_left_pdu_slot'])
-  print "<TR><TD>PEM Right:</TD><TD><SELECT NAME=pwr_right_pdu_id CLASS='z-select'>"
+  print "<TR><TD>PEM Left Unit:</TD><TD><INPUT NAME=pem0_pdu_slot CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['pem0_pdu_slot'])
+  print "<TR><TD>PEM Right:</TD><TD><SELECT NAME=pem1_pdu_id CLASS='z-select'>"
   for pdu in pdus:
-   extra = " selected" if values['pwr_right_pdu_id'] == pdu['id'] else ""
+   extra = " selected" if values['pem1_pdu_id'] == pdu['id'] else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(pdu['id'],extra,pdu['name'])
   print "</SELECT></TD></TR>"
-  print "<TR><TD>PEM Right Unit:</TD><TD><INPUT NAME=pwr_right_pdu_slot CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['pwr_right_pdu_slot'])
+  print "<TR><TD>PEM Right Unit:</TD><TD><INPUT NAME=pem1_pdu_slot CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(values['pem1_pdu_slot'])
  else:
   for index in range(0,7):
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
