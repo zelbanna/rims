@@ -40,7 +40,7 @@ br { clear:left; }
 
 div.z-header-left {   height :75px; width :440px; padding-left: 5px; float: left; }
 div.z-header-right {  height :75px; position: absolute; left: 440px; right: 0px; }
-div.z-content {       border-style: none; width : 100%; position: absolute; top: 75px; bottom : 0px; background-color:#9CA6B0; }
+div.z-content {       border-style: none; width : 100%; position: absolute; top: 75px; bottom : 0px; }
 
 /*######################################## DIVs ###########################################*/
 
@@ -50,7 +50,7 @@ div.z-graph { border-radius: 6px!important; background-color:#F3F3F3!important; 
 div.z-graph:hover {box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19)}
 
 div.z-logs { background-color:#FFFFFF; color:grey; overflow: auto; padding: 4px; font-family: "Courier New", serif; font-size: 12px; margin: 3px; }
-div.z-logs:hover { color#000000; }
+div.z-logs:hover { color:#000000; }
 div.z-logs h1 {	margin: 5px; margin-bottom: 6px; text-align:center; font-size: 18px; }
 
 div.z-error { background-color:red }
@@ -64,7 +64,7 @@ div.z-table {	width:auto; border-radius: 6px; border: none; background-color:#F3
 div.z-table table { margin-left:auto; margin-right:auto; }
 div.z-table th { border:none; display: table-cell; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding-bottom: 6px; }
 div.z-table tr:nth-child(even) { background-color: #FFFFFF; font-size:11px; line-height:20px; }
-div.z-table tr:nth-child(odd) {  background-color: #F3F3F3; font-size:11px; line-height:20px; }
+div.z-table tr:nth-child(odd) {  background-color: transparent; font-size:11px; line-height:20px; }
 div.z-table th.z-header { border: 1px solid black; font-size: 16px; }
 div.z-table th.z-result { border: 1px solid black; font-size: 11px; }
 div.z-table td { padding: 0px 2px 0px 2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
