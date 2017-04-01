@@ -11,8 +11,37 @@ __author__  = "Zacharias El Banna"
 __version__ = "0.1"
 __status__  = "Beta"
 
-from sdcp.core.GenLib import GenDevice, ConfObject
+from sdcp.core.GenLib import GenDevice
 import sdcp.SettingsContainer as SC
+
+#
+# Generic SNMP Configuration Class
+#
+class ConfObject(object):
+
+ def __init__(self):
+  self._configitems = {}
+
+ def __str__(self):
+  return "Configuration: - {}".format(str(self._configitems))
+
+ def load_snmp(self):
+  pass
+
+ def get_keys(self, aTargetName = None, aTargetValue = None, aSortKey = None):
+  if not aTargetName:
+   keys = self._configitems.keys()       
+  else:        
+   keys = []
+   for key, entry in self._configitems.iteritems():
+    if entry[aTargetName] == aTargetValue:
+     keys.append(key) 
+  keys.sort(key = aSortKey)
+  return keys         
+
+ def get_entry(self, aKey):
+  return self._configitems.get(aKey,None)
+
 
 ######################################## Console ########################################
 #

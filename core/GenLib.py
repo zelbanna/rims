@@ -85,40 +85,7 @@ class GenDevice(object):
   with open(self._logfile, 'a') as f:
    f.write(output + "\n")
 
-#
-# Generic Configuration Class
-#
-class ConfObject(object):
-
- def __init__(self):
-  self._configitems = {}
-
- def __str__(self):
-  return "Configuration: - {}".format(str(self._configitems))
-
- def load_snmp(self):
-  pass
-
- def get_keys(self, aTargetName = None, aTargetValue = None, aSortKey = None):
-  if not aTargetName:
-   keys = self._configitems.keys()
-  else:
-   keys = []
-   for key, entry in self._configitems.iteritems():
-    if entry[aTargetName] == aTargetValue:
-     keys.append(key)
-  keys.sort(key = aSortKey)
-  return keys
-
- def get_entry(self, aKey):
-  return self._configitems.get(aKey,None)
-
- def get_select_entries(self, aKeyList):
-  entries = []
-  for key in aKeyList:
-   entries.append(self._configitems.get(key))
-  return entries
-
+############################################ Database ######################################
 #
 # Database Class
 #
@@ -164,12 +131,6 @@ class DB(object):
  
 ################################# Generics ####################################
 
-_sys_debug = False
-
-def sys_set_debug(astate):
- global _sys_debug
- _sys_debug = astate
-
 def sys_get_host(ahost):
  from socket import gethostbyname
  try:
@@ -204,18 +165,9 @@ def sys_ip2ptr(addr):
  octets.reverse()
  return ".".join(octets) + ".in-addr.arpa"
 
-def sys_str2hex(arg):
- try:
-  return '0x{0:02x}'.format(int(arg))
- except:
-  return '0x00'    
-
 def ping_os(ip):
  from os import system
  return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
-
-def sys_get_results(test):
- return "success" if test else "failure"
 
 def sys_log_msg(amsg):
  import sdcp.SettingsContainer as SC
@@ -223,66 +175,3 @@ def sys_log_msg(amsg):
  if _sys_debug: print "Log: " + amsg
  with open(SC.sdcp_logformat, 'a') as f:
   f.write(unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), amsg)))
-
-#
-# Lightweight argument parser, returns a dictionary with found arguments - { arg : value }
-# Requires - or -- before any argument
-#
-def simple_arg_parser(args):
- # args should really be the argv
- argdict = {}
- currkey = None
- for arg in args:
-  if arg.startswith('-'):
-   if currkey:
-    argdict[currkey] = True
-   currkey = arg.lstrip('-')
-  else:
-   if currkey:
-    argdict[currkey] = arg
-    currkey = None
- if currkey:
-  argdict[currkey] = True
- return argdict
-
-
-def sys_write_pidfile(pidfname):
- pidfile = open(pidfname,'w')
- pidfile.write(str(getpid()))
- pidfile.close()
-
-def sys_read_pidfile(pidfname):
- pid = -1
- from os import path as ospath
- if ospath.isfile(pidfname):
-  pidfile = open(pidfname)
-  pid = pidfile.readline().strip('\n')
-  pidfile.close()
- return int(pid)
-
-def sys_release_pidfile(pidfname):
- from os import path as ospath
- if ospath.isfile(pidfname):
-  from os import remove
-  remove(pidfname)
-
-def sys_lock_pidfile(pidfname, sleeptime):
- from time import sleep
- from os import path as ospath
- while ospath.isfile(pidfname):
-  sleep(sleeptime)
- sysWritePidFile(pidfname) 
-
-def sys_file_replace(afile,old,new):
- if afile == "" or new == "" or old == "":
-  return False
-
- filedata = None
- with open(afile, 'r') as f:
-  filedata = f.read()
-
- filedata = filedata.replace(old,new)
-
- with open(afile, 'w') as f:
-  f.write(filedata)
- return True

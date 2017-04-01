@@ -8,7 +8,8 @@ __version__ = "1.0GA"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
-from sdcp.core.GenLib import GenDevice, sys_lock_pidfile, sys_release_pidfile, sys_get_host
+from sdcp.core.GenLib import GenDevice, sys_get_host
+from sdcp.core.XtraLib import sys_lock_pidfile, sys_release_pidfile
 from netsnmp import VarList, Varbind, Session
 from select import select
 from os import remove, path

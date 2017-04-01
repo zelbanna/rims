@@ -12,7 +12,7 @@ __version__ = "3.2"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
-from GenLib import sys_get_results, sys_str2hex
+from XtraLib import sys_get_results, sys_str2hex
 from subprocess import check_output, check_call
 
 
