@@ -78,49 +78,27 @@ def rack_device_info(aWeb):
  if id == 'new':
   rack = { 'id':'new', 'name':'new-name', 'size':'48', 'fk_pdu_1':0, 'fk_pdu_2':0, 'fk_console':0 }
  else:
-  res = db.do("SELECT * from racks WHERE id = {}".format(id))
-  if res == 1:
-   rack = db.get_row()
-  else:
-   print "Could not find rack (stale info?)"
-   return
-
- db.do("SELECT id,name from pdus")
- pdus = db.get_all_rows()
- pdus.append({'id':0, 'name':'Not Used'})
- db.do("SELECT id,name from consoles")
- consoles = db.get_all_rows()
- consoles.append({'id':0, 'name':'Not Used'})
- db.close()
+  db.do("SELECT * from racks WHERE id = {}".format(id))
+  rack = db.get_row()
 
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
  print "<FORM ID=rack_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"
  print "<TR><TH COLSPAN=2>Rack Info {}</TH></TR>".format("(new)" if id == 'new' else "")
-
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['name'])
  print "<TR><TD>Size:</TD><TD><INPUT NAME=size TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['size'])
-
- print "<TR><TD>PDU_1:</TD><TD><SELECT NAME=fk_pdu_1 CLASS='z-select'>"
- for unit in pdus:
-  extra = " selected" if rack['fk_pdu_1'] == unit['id'] else ""
-  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
- print "</SELECT></TD></TR>"
-
- print "<TR><TD>PDU_2:</TD><TD><SELECT NAME=fk_pdu_2 CLASS='z-select'>"
- for unit in pdus:
-  extra = " selected" if rack['fk_pdu_2'] == unit['id'] else ""
-  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
- print "</SELECT></TD></TR>"
-
- print "<TR><TD>Console:</TD><TD><SELECT NAME=fk_console CLASS='z-select'>"
- for unit in consoles:
-  extra = " selected" if rack['fk_console'] == unit['id'] else ""
-  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
- print "</SELECT></TD></TR>"
- print "<TR><TD>Location:</TD><TD><INPUT NAME=location TYPE=TEXT CLASS='z-input' VALUE='Not used yet'></TD></TR>"
-
+ for key in ['pdu_1','pdu_2','console']:
+  dbname = key.partition('_')[0] + "s"
+  db.do("SELECT id,name from "+dbname)
+  rows = db.get_all_rows()
+  rows.append({'id':0, 'name':'Not Used'})
+  print "<TR><TD>{0}:</TD><TD><SELECT NAME=fk_{1} CLASS='z-select'>".format(key.capitalize(),key)
+  for unit in rows:
+   extra = " selected" if rack["fk_"+key] == unit['id'] else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
+  print "</SELECT></TD></TR>"
+ db.close()
  print "</TABLE>"
  print "<A TITLE='Reload info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_device_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A TITLE='Update unit' CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
@@ -134,11 +112,9 @@ def rack_device_info(aWeb):
 #
 #
 def rack_update(aWeb):
- values = aWeb.get_keys()
- values.remove('call')
+ id = aWeb.get_value('id')
  db   = DB()
  db.connect()
- id         = aWeb.get_value('id')
  name       = aWeb.get_value('name')
  size       = aWeb.get_value('size')
  fk_pdu_1   = aWeb.get_value('fk_pdu_1')
