@@ -131,9 +131,9 @@ class DB(object):
 
  def connect(self):
   import sdcp.SettingsContainer as SC
-  import pymysql
+  from pymysql import connect
   from pymysql.cursors import DictCursor
-  self._conn = pymysql.connect(host='localhost', port=3306, user=SC.sdcp_dbuser, passwd=SC.sdcp_dbpass, db=SC.sdcp_db, cursorclass=DictCursor)
+  self._conn = connect(host='localhost', port=3306, user=SC.sdcp_dbuser, passwd=SC.sdcp_dbpass, db=SC.sdcp_db, cursorclass=DictCursor)
   self._curs = self._conn.cursor()
 
  #
