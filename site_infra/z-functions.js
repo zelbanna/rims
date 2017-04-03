@@ -14,7 +14,7 @@
 // - iconfirm iframe lnk msg
 // - reload   lnk
 // - iload    iframe lnk
-// - post     div lnk form (to serialize)
+// - post     div lnk form (to serialize) spin(tru/false)
 //
 
 function btnoperation(button) {
@@ -67,6 +67,12 @@ function btnoperation(button) {
  } else if (op == 'post') {
   var lnk = button.getAttribute("lnk");
   var frm = button.getAttribute("frm");
+  var spin = button.getAttribute("spin");
+  if (spin == "true"){
+   div.scrollTop(0);
+   div.css("overflow-y","hidden");
+   div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
+  }
   $.post(lnk, $("#"+frm).serialize() , function(result) { div.html(result); });
  } else {
   alert("Unknown button operation: " + op);

@@ -229,6 +229,14 @@ def device_op_finddevices(aWeb):
   device_discover(start,stop, domain, clear)
   results = "Discovered devices [{}] {} -> {}".format(str(clear), start,stop)
   aWeb.log_msg("devices_op_finddevices: " + results)
+ elif clear:
+  db = DB()
+  db.connect()
+  db.do("TRUNCATE table devices")
+  db.commit()
+  db.close()
+  results = "Cleared table"
+  aWeb.log_msg("devices_op_finddevices: " + results)
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
  print "<FORM ID=device_discover_form>"
  print "<TABLE style='width:100%'>"
@@ -238,6 +246,6 @@ def device_op_finddevices(aWeb):
  print "<TR><TD>Domain:</TD><TD><INPUT   NAME=domain TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(domain)
  print "<TR><TD>Clear</TD><TD><INPUT TYPE=checkbox NAME=clear VALUE=True {}></TD></TR>".format("checked" if clear else "")
  print "</TABLE>"
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_op_finddevices FRM=device_discover_form OP=post><IMG SRC='images/btn-start.png'></A>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont SPIN=true LNK=ajax.cgi?call=device_op_finddevices FRM=device_discover_form OP=post><IMG SRC='images/btn-start.png'></A>"
  print "<SPAN style='font-size:9px; float:right'>{}</SPAN>".format(results)
  print "</DIV>"
