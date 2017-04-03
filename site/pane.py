@@ -313,8 +313,6 @@ def devices(aWeb):
  from sdcp.core.GenLib import DB, sys_int2ip
  op        = aWeb.get_value('op', None)
  domain    = aWeb.get_value('domain', None)
- discstart = aWeb.get_value('discstart',None)
- discstop  = aWeb.get_value('discstop', None)
  db = DB() 
  db.connect()
  argdict = {}
@@ -339,7 +337,7 @@ def devices(aWeb):
  if argdict.get('pdu',None):
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
  print "<A CLASS='z-reload z-btnop' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
- print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Device Discovery?' SPIN=true LNK='ajax.cgi?call=device_op_finddevices&domain={0}&discstart={1}&discstop={2}'>Device Discovery</A>".format(domain,discstart,discstop)
+ print "<A CLASS='z-right z-btnop' OP=load DIV=div_navcont MSG='Start Device Discovery?' SPIN=true LNK='ajax.cgi?call=device_op_finddevices&domain={0}'>Device Discovery</A>".format(domain)
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Graph Discovery?'  SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
  print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Sync Devices/Graphs?'    LNK='ajax.cgi?call=graph_sync&domain={0}'>Sync Graphing</A>".format(domain)
  print "</DIV>"

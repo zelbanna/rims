@@ -220,13 +220,24 @@ def device_op_function(aWeb):
 #
 def device_op_finddevices(aWeb):
  from sdcp.devices.DevHandler import device_discover
- domain    = aWeb.get_value('domain')
- discstart = aWeb.get_value('discstart')
- discstop  = aWeb.get_value('discstop')
- clear     = aWeb.get_value('clear',False)
- if discstart and discstop and domain:
-  device_discover(discstart,discstop, domain, clear)
-  print "<B>Done Discovering Devices: {} -> {} for {}!</B>".format(discstart,discstop,domain)
-  aWeb.log_msg("devices_op_finddevices: Discovered devices [{}] {} -> {} for {}".format(str(clear), discstart,discstop,domain))
- else:
-  print "<B>Not all parameters supplied</B>"
+ start = aWeb.get_value('start','127.0.0.1')
+ stop  = aWeb.get_value('stop','127.0.0.1')
+ clear = aWeb.get_value('clear',False)
+ domain  = aWeb.get_value('domain')
+ results = ""
+ if not start == '127.0.0.1' and not stop == '127.0.0.1' and domain:
+  device_discover(start,stop, domain, clear)
+  results = "Discovered devices [{}] {} -> {}".format(str(clear), start,stop)
+  aWeb.log_msg("devices_op_finddevices: " + results)
+ print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
+ print "<FORM ID=device_discover_form>"
+ print "<TABLE style='width:100%'>"
+ print "<TR><TH COLSPAN=2>Device Discovery</TH></TR>"
+ print "<TR><TD>Start IP:</TD><TD><INPUT NAME=start TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(start)
+ print "<TR><TD>End IP:</TD><TD><INPUT   NAME=stop TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(stop)
+ print "<TR><TD>Domain:</TD><TD><INPUT   NAME=domain TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(domain)
+ print "<TR><TD>Clear</TD><TD><INPUT TYPE=checkbox NAME=clear VALUE=True {}></TD></TR>".format("checked" if clear else "")
+ print "</TABLE>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_op_finddevices FRM=device_discover_form OP=post><IMG SRC='images/btn-start.png'></A>"
+ print "<SPAN style='font-size:9px; float:right'>{}</SPAN>".format(results)
+ print "</DIV>"
