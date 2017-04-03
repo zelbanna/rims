@@ -103,6 +103,12 @@ class DB(object):
   self._conn = connect(host='localhost', port=3306, user=SC.sdcp_dbuser, passwd=SC.sdcp_dbpass, db=SC.sdcp_db, cursorclass=DictCursor)
   self._curs = self._conn.cursor()
 
+ def connect_details(self, aHost = 'localhost', aUser, aPass, aDB):
+  from pymysql import connect
+  from pymysql.cursors import DictCursor
+  self._conn = connect(host=aHost, port=3306, user=aUser, passwd=aPass, db=aDB, cursorclass=DictCursor)
+  self._curs = self._conn.cursor()
+
  #
  # Insert and Update and Select
  # 
@@ -172,6 +178,5 @@ def ping_os(ip):
 def sys_log_msg(amsg):
  import sdcp.SettingsContainer as SC
  from time import localtime, strftime
- if _sys_debug: print "Log: " + amsg
  with open(SC.sdcp_logformat, 'a') as f:
   f.write(unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), amsg)))
