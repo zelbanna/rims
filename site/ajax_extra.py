@@ -39,31 +39,8 @@ def examine_log(aWeb):
  except Exception as err:
   print "<PRE>{}</PRE>".format(str(err))      
 
-def pdns_lookup_entries(aIP,aName,aDomain):
- from sdcp.core.GenLib import DB, sys_ip2ptr
- import sdcp.SettingsContainer as SC
- ptr     = sys_ip2ptr(aIP)
- fqdn    = aName + "." + aDomain
- retvals = {}
- domains = [ aDomain, ptr.partition('.')[2] ]
- 
- db = DB()
- db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
- db.do("SELECT id,name, notified_serial from domains")
- domain_db = db.get_all_dict("name")
- domain_id = [ domain_db.get(domains[0],None), domain_db.get(domains[1],None) ] 
- db.do("SELECT id,content FROM records WHERE type = 'A' and domain_id = '{}' and name = '{}'".format(domain_id[0]['id'],fqdn)) 
- a_record = db.get_row()                       
- db.do("SELECT id,content FROM records WHERE type = 'PTR' and domain_id = '{}' and name = '{}'".format(domain_id[1]['id'],ptr)) 
- p_record = db.get_row() 
- if a_record and (a_record.get('content',None) == aIP):
-  retvals['dns_a_id'] = a_record.get('id') 
- if p_record and (p_record.get('content',None) == fqdn):
-  retvals['dns_ptr_id'] = p_record.get('id')
- db.close() 
- return retvals
-
 def remote_json(aWeb):
+ from sdcp.core.DNS import pdns_lookup_entries
  from json import dumps
  res = {}    
  op  = aWeb.get_value('op')
@@ -75,5 +52,3 @@ def remote_json(aWeb):
  else:
   res['res'] = "op_not_found"
  print dumps(res,sort_keys = True)     
-
-
