@@ -40,7 +40,7 @@ def examine_log(aWeb):
   print "<PRE>{}</PRE>".format(str(err))      
 
 def remote_json(aWeb):
- from sdcp.core.DNS import pdns_lookup_entries
+ from sdcp.core.DNS import pdns_lookup_records
  from json import dumps
  res = {}    
  op  = aWeb.get_value('op')
@@ -48,7 +48,7 @@ def remote_json(aWeb):
   ip   = aWeb.get_value('ip')
   name = aWeb.get_value('hostname')
   dom  = aWeb.get_value('domain')
-  res  = pdns_lookup_entries(ip,name,dom)
+  res  = pdns_lookup_records(ip,name,dom)
  else:
   res['res'] = "op_not_found"
  print dumps(res,sort_keys = True)     

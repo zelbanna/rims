@@ -90,7 +90,7 @@ def pdns_sync(dnslist):
   return False
  return True  
 
-def pdns_lookup_entries(aIP,aName,aDomain):
+def pdns_lookup_records(aIP,aName,aDomain):
  ptr     = sys_ip2ptr(aIP)
  fqdn    = aName + "." + aDomain
  retvals = {}

@@ -54,15 +54,14 @@ def device_device_info(aWeb):
    if SC.dnsdb_proxy == 'True':
     retvals = aWeb.get_proxy(SC.dnsdb_url + "&op=dns_lookup&ip={}&hostname={}&domain={}".format(ip,name,domain))
    else:
-    from ajax_extra import pdns_lookup_entries
-    retvals = pdns_lookup_entries(ip,name,domain)
+    from sdcp.core.DNS import pdns_lookup_records
+    retvals = pdns_lookup_records(ip,name,domain)
    dns_a_id   = retvals.get('dns_a_id',None)
    dns_ptr_id = retvals.get('dns_ptr_id',None)
    if dns_a_id:
     db.do("UPDATE devices SET dns_a_id = '{}' where id = '{}'".format(dns_a_id,id))
    if dns_ptr_id:
     db.do("UPDATE devices SET dns_ptr_id = '{}' where id = '{}'".format(dns_ptr_id,id))
-
   db.commit()
 
  elif op == 'update':
@@ -241,8 +240,8 @@ def device_op_finddevices(aWeb):
  print "<FORM ID=device_discover_form>"
  print "<TABLE style='width:100%'>"
  print "<TR><TH COLSPAN=2>Device Discovery</TH></TR>"
- print "<TR><TD>Start IP:</TD><TD><INPUT NAME=start TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(start)
- print "<TR><TD>End IP:</TD><TD><INPUT   NAME=stop TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(stop)
+ print "<TR><TD>Start IP:</TD><TD><INPUT NAME=start  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(start)
+ print "<TR><TD>End IP:</TD><TD><INPUT   NAME=stop   TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(stop)
  print "<TR><TD>Domain:</TD><TD><INPUT   NAME=domain TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(domain)
  print "<TR><TD>Clear</TD><TD><INPUT TYPE=checkbox NAME=clear VALUE=True {}></TD></TR>".format("checked" if clear else "")
  print "</TABLE>"
