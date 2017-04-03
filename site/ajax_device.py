@@ -50,6 +50,7 @@ def device_device_info(aWeb):
   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
 
   if not name == 'unknown':
+   aWeb.log_msg("Device lookup: input [{}, {}, {}]".format(ip,name,domain))
    import sdcp.SettingsContainer as SC
    if SC.dnsdb_proxy == 'True':
     retvals = aWeb.get_proxy(SC.dnsdb_url + "&op=dns_lookup&ip={}&hostname={}&domain={}".format(ip,name,domain))
@@ -84,10 +85,17 @@ def device_device_info(aWeb):
  ip     = sys_int2ip(device_data['ip'])
  height = 240
  conip  = None
- 
+
+ if op == 'updateddi':
+  if not device_data['hostname'] == 'unknown':
+   import sdcp.SettingsContainer as SC
+   if SC.dnsdb_proxy == 'True':
+    aWeb.get_proxy(SC.dnsdb_url + "&op=dns_update&ip={}&hostname={}&domain={}&dns_a_id={}&dns_ptr_id={}".format(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id']))
+   else:
+    pdns_update_records(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id'])
+
  print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize:horizontal; margin-left:0px; width:654px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
- 
  print "<!-- 1st Table -->"
  print "<DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
  print "<TR><TD>Name:</TD><TD><INPUT NAME=hostname CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['hostname'])
@@ -166,8 +174,9 @@ def device_device_info(aWeb):
  # print "</TR></TABLE>"
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=update       FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(id)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=lookup&ip={}&hostname={}&domain={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip,device_data['hostname'],device_data['domain'])
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=update    FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(id)
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=lookup&ip={}&hostname={}&domain={}  FRM=info_form OP=post TITLE='Lookup Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip,device_data['hostname'],device_data['domain'])
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM Entry'><IMG SRC='images/btn-start.png'></A>".format(id)
  if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+device_data['consoleport'])
  if device_data['type'] == 'pdu' or device_data['type'] == 'console':

@@ -95,13 +95,12 @@ def pdns_lookup_records(aIP,aName,aDomain):
  ptr     = sys_ip2ptr(aIP)
  fqdn    = aName + "." + aDomain
  retvals = {}
- domains = [ aDomain, ptr.partition('.')[2] ]
- 
+ sys_log_msg("PDNS lookup - input:{}, {}, {}".format(aIP,aName,aDomain))  
  db = DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
- db.do("SELECT id,name, notified_serial from domains")
+ res = db.do("SELECT id,name from domains")
  domain_db = db.get_all_dict("name")
- domain_id = [ domain_db.get(domains[0],None), domain_db.get(domains[1],None) ] 
+ domain_id = [ domain_db.get(aDomain,{ 'id':'0' }), domain_db.get(ptr.partition('.')[2],{ 'id':'0' }) ]
  db.do("SELECT id,content FROM records WHERE type = 'A' and domain_id = '{}' and name = '{}'".format(domain_id[0]['id'],fqdn)) 
  a_record = db.get_row()                       
  db.do("SELECT id,content FROM records WHERE type = 'PTR' and domain_id = '{}' and name = '{}'".format(domain_id[1]['id'],ptr)) 
@@ -111,4 +110,34 @@ def pdns_lookup_records(aIP,aName,aDomain):
  if p_record and (p_record.get('content',None) == fqdn):
   retvals['dns_ptr_id'] = p_record.get('id')
  db.close() 
+ return retvals
+
+def pdns_update_records(aIP,aName,aDomain,aAid,aPid):
+ from time import strftime
+ serial  = strftime("%Y%m%d01")
+ ptr     = sys_ip2ptr(aIP)
+ fqdn    = aName + "." + aDomain
+ retvals = {}
+ sys_log_msg("PDNS update - input:{}, {}, {}, {}, {}".format(aIP,aName,aDomain,aAid,aPid))  
+ db = DB()
+ db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
+ db.do("SELECT id,name from domains")
+ domain_db = db.get_all_dict("name")
+ domain_id = [ domain_db.get(aDomain,{ 'id':'0' }), domain_db.get(ptr.partition('.')[2],{ 'id':'0' }) ]
+ # A domain dict, PTR domain dict
+ if aAid != '0':
+  retvals['a'] = "update"
+  db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(fqdn,aIP,serial,aAid))
+ else:
+  retvals['a'] = "insert"
+  db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','A','{}',3600,'{}')".format(str(domain_id[0].get('id')),fqdn,aIP,serial))
+ if aPid != '0':
+  retvals['ptr'] = "update"
+  db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(ptr,fqdn,serial,aPid))
+ else:
+  retvals['ptr'] = "insert"
+  db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','PTR','{}',3600,'{}')".format(str(domain_id[1].get('id')),ptr,fqdn,serial))
+ db.commit()
+ db.close()
+ sys_log_msg("PDNS update - results: " + str(retvals))
  return retvals
