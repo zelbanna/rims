@@ -11,7 +11,7 @@ __version__ = "3.2"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
-from GenLib import sys_log_msg, sys_file_replace, sys_ip2ptr, DB
+from GenLib import sys_log_msg, sys_ip2ptr, DB
 from subprocess import check_output, check_call
 from time import sleep
 from socket import gethostbyname
@@ -78,6 +78,7 @@ def pdns_get():
 # - returns True if was in sync and False if modified
 # 
 def pdns_sync(dnslist):
+ from XtraLib import sys_file_replace
  pdns = pdns_get()
  if not pdns in dnslist:
   sys_log_msg("System Info - updating recursor to " + dnslist[0])
