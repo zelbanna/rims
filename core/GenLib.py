@@ -103,7 +103,7 @@ class DB(object):
   self._conn = connect(host='localhost', port=3306, user=SC.sdcp_dbuser, passwd=SC.sdcp_dbpass, db=SC.sdcp_db, cursorclass=DictCursor)
   self._curs = self._conn.cursor()
 
- def connect_details(self, aHost = 'localhost', aUser, aPass, aDB):
+ def connect_details(self, aHost, aUser, aPass, aDB):
   from pymysql import connect
   from pymysql.cursors import DictCursor
   self._conn = connect(host=aHost, port=3306, user=aUser, passwd=aPass, db=aDB, cursorclass=DictCursor)
