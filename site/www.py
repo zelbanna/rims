@@ -118,6 +118,11 @@ class Web(object):
   except Exception as err:
    return ""
 
+ def get_proxy(self,aurl):
+  from json import loads
+  remote_json = self.get_include(aurl)    
+  return loads(remote_json)
+
  def log_msg(self, aMsg, aLog='/var/log/system/system.log'):
   from time import localtime, strftime
   output = unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg) )

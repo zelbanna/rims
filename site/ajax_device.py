@@ -39,13 +39,32 @@ def device_device_info(aWeb):
  from sdcp.devices.DevHandler import device_detect, device_types, device_get_widgets
  id   = aWeb.get_value('node')
  op   = aWeb.get_value('op')
+
  db   = DB()
  db.connect()
  if   op == 'lookup':
-  ip    = aWeb.get_value('ip')
-  entry = device_detect(ip,"")
+  ip     = aWeb.get_value('ip')
+  name   = aWeb.get_value('hostname')
+  domain = aWeb.get_value('domain')
+  entry  = device_detect(ip,domain)
   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
+
+  if not name == 'unknown':
+   import sdcp.SettingsContainer as SC
+   if SC.dnsdb_proxy == 'True':
+    retvals = aWeb.get_proxy(SC.dnsdb_url + "&op=dns_lookup&ip={}&hostname={}&domain={}".format(ip,name,domain))
+   else:
+    from ajax_extra import pdns_lookup_entries
+    retvals = pdns_lookup_entries(ip,name,domain)
+   dns_a_id   = retvals.get('dns_a_id',None)
+   dns_ptr_id = retvals.get('dns_ptr_id',None)
+   if dns_a_id:
+    db.do("UPDATE devices SET dns_a_id = '{}' where id = '{}'".format(dns_a_id,id))
+   if dns_ptr_id:
+    db.do("UPDATE devices SET dns_ptr_id = '{}' where id = '{}'".format(dns_ptr_id,id))
+
   db.commit()
+
  elif op == 'update':
   keys = aWeb.get_keys()
   keys.remove('call')
@@ -60,19 +79,6 @@ def device_device_info(aWeb):
      [pemid,pemslot] = aWeb.get_value(key).split('.')
      db.do("UPDATE devices SET {0}_pdu_id='{1}', {0}_pdu_slot ='{2}' where id = '{3}'".format(pem,pemid,pemslot,id))
    db.commit()
- elif op == 'dnslookup':
-  ip     = aWeb.get_value('ip')
-  name   = aWeb.get_value('hostname')
-  domain = aWeb.get_value('domain')
-  import sdcp.SettingsContainer as SC
-  if SC.dnsdb_proxy == 'True':
-   remote_url  = SC.dnsdb_url
-   remote_json = aWeb.get_include(remote_url + "&op=dns_lookup&ip={}&hostname={}&domain={}".format(ip,name,domain))
-   print remote_json
-  else:
-   print "not implemented yet"
-  db.close()
-  return
 
  db.do("SELECT * FROM devices WHERE id ='{}'".format(id))
  device_data = db.get_row()
@@ -162,16 +168,13 @@ def device_device_info(aWeb):
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=update       FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(id)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=lookup&ip={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip)
- if (device_data['dns_a_id'] == 0 or device_data['dns_ptr_id'] == 0):
-  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=op_results LNK=ajax.cgi?call=device_device_info&node={}&op=dnslookup&ip={}&hostname={}&domain={} OP=load TITLE='Update DNS'><IMG SRC='images/btn-search.png'></A>".format(id,ip,device_data['hostname'],device_data['domain'])
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=lookup&ip={}&hostname={}&domain={} FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip,device_data['hostname'],device_data['domain'])
  if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+device_data['consoleport'])
  if device_data['type'] == 'pdu' or device_data['type'] == 'console':
   res = db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip']))
   if res == 0:
    print "<A style='float:right;' TITLE='Add {0}' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname'])
- print "<SPAN ID=op_results style='float:right;'>&nbsp;</SPAN>"
  print "</DIV>"
  print "</FORM>"
  print "</DIV>"
