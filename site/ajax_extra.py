@@ -40,7 +40,7 @@ def examine_log(aWeb):
   print "<PRE>{}</PRE>".format(str(err))      
 
 def remote_json(aWeb):
- from sdcp.core.DNS import pdns_lookup_records,pdns_update_records,ipam_lookup_record, ipam_update_record
+ from sdcp.core.ddi import pdns_lookup_records,pdns_update_records,ipam_lookup_record, ipam_update_record
  from json import dumps
  res = {}    
  op  = aWeb.get_value('op')

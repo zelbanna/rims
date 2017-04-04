@@ -91,7 +91,7 @@ def pdns_sync(dnslist):
   return False
  return True  
 
-def pdns_lookup_records(aIP,aName,aDomain):
+def dns_lookup_records(aIP,aName,aDomain):
  ptr     = sys_ip2ptr(aIP)
  fqdn    = aName + "." + aDomain
  retvals = {}
@@ -112,7 +112,7 @@ def pdns_lookup_records(aIP,aName,aDomain):
  db.close() 
  return retvals
 
-def pdns_update_records(aIP,aName,aDomain,aAid,aPid):
+def dns_update_records(aIP,aName,aDomain,aAid,aPid):
  from time import strftime
  serial  = strftime("%Y%m%d01")
  ptr     = sys_ip2ptr(aIP)
