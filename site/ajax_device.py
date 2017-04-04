@@ -50,8 +50,12 @@ def device_device_info(aWeb):
  if   op == 'lookup':
   ip     = aWeb.get_value('ip')
   domain = aWeb.get_value('domain')
+  name   = aWeb.get_value('hostname')
   entry  = device_detect(ip,domain)
-  name   = entry['hostname']
+  if entry['hostname'] == 'unknown':
+   entry['hostname'] = name
+  else:
+   name = entry['hostname']
   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
   opres = "device detection"
   if not name == 'unknown':
@@ -97,18 +101,21 @@ def device_device_info(aWeb):
 
  db.do("SELECT *, INET_NTOA(ip) as ipasc FROM devices WHERE id ='{}'".format(id))
  device_data = db.get_row()
- ip     = device_data['ipasc']
+ ip   = device_data['ipasc']
+ name = device_data['hostname']
 
  if op == 'updateddi' and not device_data['hostname'] == 'unknown':
   opres = "updating ddi"
+  print device_data['hostname']
   import sdcp.SettingsContainer as SC
   if SC.dnsdb_proxy == 'True':
    aWeb.get_proxy(SC.dnsdb_url + "&op=dns_update&ip={}&hostname={}&domain={}&dns_a_id={}&dns_ptr_id={}".format(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id']))
   else:
    pdns_update_records(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id'])
-
   if SC.ipamdb_proxy == 'True':
+   print "H4"
    aWeb.get_proxy(SC.ipamdb_url + "&op=ipam_update&ip={}&fqdn={}&ipam_id={}&dns_ptr_id={}".format(ip,device_data['hostname'] + "." + device_data['domain'],device_data['ipam_id'],device_data['dns_ptr_id']))
+   print "H5"
   else:
    ipam_update_record(ip,device_data['hostname'] + "." + device_data['domain'],device_data['ipam_id'],device_data['dns_ptr_id'])
 
@@ -192,7 +199,7 @@ def device_device_info(aWeb):
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=update    FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(id)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=lookup&ip={}&domain={}  FRM=info_form OP=post TITLE='Lookup Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip,device_data['domain'])
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=lookup&ip={}&domain={}&hostname={} FRM=info_form OP=post TITLE='Lookup Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip,device_data['domain'],name)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM Entry'><IMG SRC='images/btn-start.png'></A>".format(id)
  if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+device_data['consoleport'])
@@ -281,7 +288,7 @@ def device_op_finddevices(aWeb):
 #
 def device_op_syncddi(aWeb):
  import sdcp.SettingsContainer as SC
- from sdcp.core.DNS import pdns_lookup_records, pdns_update_records
+ from sdcp.core.DNS import pdns_lookup_records, pdns_update_records, ipam_lookup_record, ipam_ipdate_record
  db = DB()
  db.connect()
  db.do("SELECT id, ip, hostname, INET_NTOA(ip) as ipasc, domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0 or ipam_id = 0) ORDER BY ip")
