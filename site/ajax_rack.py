@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__= "1.1GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import DB, sys_int2ip, sys_ip2int
+from sdcp.core.GenLib import DB
 
 ################################################## Basic Rack Info ######################################################
 #

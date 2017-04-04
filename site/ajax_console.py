@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__= "1.0GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import DB, sys_int2ip, sys_ip2int
+from sdcp.core.GenLib import DB, sys_ip2int
 ############################################## Consoles ###################################################
 #
 # View Consoles
@@ -39,11 +39,11 @@ def console_list_consoles(aWeb):
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "</TD></TR>"
- res  = db.do("SELECT * from consoles ORDER by name")
+ res  = db.do("SELECT id, INET_NTOA(ip) as ip, name from consoles ORDER by name")
  data = db.get_all_rows()
  print "<TR><TH>ID</TH><TH>Name</TH><TH>IP</TH></TR>"
  for unit in data:
-  print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],sys_int2ip(unit['ip']))
+  print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['ip'])
  print "</TABLE></DIV></DIV>"
  db.close()
 
@@ -85,11 +85,11 @@ def console_device_info(aWeb):
    name = 'new-name'
  else:
   if id:
-   db.do("SELECT * FROM consoles WHERE id = '{0}'".format(id))
+   db.do("SELECT id, name, INET_NTOA(ip) as ip FROM consoles WHERE id = '{0}'".format(id))
   else:
-   db.do("SELECT * FROM consoles WHERE ip = '{0}'".format(ip))
+   db.do("SELECT id, name, INET_NTOA(ip) FROM consoles WHERE ip = '{0}'".format(ip))
   condata = db.get_row()
-  ip = sys_int2ip(condata['ip'])
+  ip   = condata['ip']
   name = condata['name']
  db.close()
  print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)

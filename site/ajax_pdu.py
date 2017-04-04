@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__= "3.0GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import DB, sys_int2ip, sys_ip2int
+from sdcp.core.GenLib import DB, sys_ip2int
 
 ############################################## PDUs ###################################################
 #
@@ -90,11 +90,11 @@ def pdu_list_pdus(aWeb):
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=pdu_list_pdus'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=pdu_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "</TD></TR>"
- res  = db.do("SELECT * from pdus ORDER by name")
+ res  = db.do("SELECT id, name, INET_NTOA(ip) as ip from pdus ORDER by name")
  data = db.get_all_rows()
  print "<TR><TH>ID</TH><TH>Name</TH><TH>IP</TH></TR>"
  for unit in data:
-  print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=pdu_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],sys_int2ip(unit['ip']))
+  print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=pdu_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['ip'])
  print "</TABLE></DIV></DIV>"
  db.close()
 
@@ -104,6 +104,7 @@ def pdu_list_pdus(aWeb):
 def pdu_device_info(aWeb):
  id = aWeb.get_value('id')
  ip = aWeb.get_value('ip')
+ ipint = sys_ip2int(ip)
  op = aWeb.get_value('op')
  name = aWeb.get_value('name')
  db = DB()
@@ -113,7 +114,6 @@ def pdu_device_info(aWeb):
   from sdcp.devices.RackUtils import Avocent
   # Assume lookup for now
   pdu   = Avocent(ip)
-  ipint = sys_ip2int(ip) 
   slotl = pdu.get_slot_names()
   slotn = len(slotl)
   if slotn == 1:
@@ -122,7 +122,6 @@ def pdu_device_info(aWeb):
    db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1],slotl[1][0],slotl[1][1]))
   db.commit()
  elif op == 'update':
-  ipint = sys_ip2int(ip)
   slots = aWeb.get_value('slots','0')
   if id == 'new':
    sql = "INSERT into pdus (name, ip, slots) VALUES ('{0}','{1}','{2}')".format(name,ipint,slots)
@@ -150,11 +149,11 @@ def pdu_device_info(aWeb):
    name = 'new-name'
  else:
   if id:
-   db.do("SELECT * FROM pdus WHERE id = '{0}'".format(id))
+   db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus WHERE id = '{0}'".format(id))
   else:
-   db.do("SELECT * FROM pdus WHERE ip = '{0}'".format(ip))
+   db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus WHERE ip = '{0}'".format(ipint))
   pdudata = db.get_row()
-  ip   = sys_int2ip(pdudata['ip'])
+  ip   = pdudata['ipasc']
   name = pdudata['name']
 
  print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)

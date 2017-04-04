@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__= "1.0GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import DB, sys_ip2int, sys_int2ip
+from sdcp.core.GenLib import DB, sys_ip2int
 
 ########################################## Device Operations ##########################################
 #
@@ -19,15 +19,15 @@ def device_view_devicelist(aWeb):
  db     = DB()
  db.connect()
  if target and arg:
-  db.do("SELECT * FROM devices WHERE {0}='{1}' ORDER BY ip".format(target,arg))
+  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices WHERE {0}='{1}' ORDER BY ip".format(target,arg))
  else:
-  db.do("SELECT * FROM devices ORDER BY ip")
+  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices ORDER BY ip")
  print "<DIV CLASS='z-framed' ID=div_device_devicelist><DIV CLASS='z-table'>"
  print "<TABLE WIDTH=330>"
  print "<TR><TH>IP</TH><TH>FQDN</TH><TH>Model</TH></TR>"
  rows = db.get_all_rows()
  for row in rows:
-  print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&node={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(sys_int2ip(row['ip']), row['hostname']+"."+row['domain'], row['model'],row['id'])
+  print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&node={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</TABLE>"
  print "</DIV></DIV>"
  db.close()
@@ -85,9 +85,9 @@ def device_device_info(aWeb):
      db.do("UPDATE devices SET {0}_pdu_id='{1}', {0}_pdu_slot ='{2}' where id = '{3}'".format(pem,pemid,pemslot,id))
    db.commit()
 
- db.do("SELECT * FROM devices WHERE id ='{}'".format(id))
+ db.do("SELECT *, INET_NTOA(ip) as ipasc FROM devices WHERE id ='{}'".format(id))
  device_data = db.get_row()
- ip     = sys_int2ip(device_data['ip'])
+ ip     = device_data['ipasc']
 
  if op == 'updateddi' and not device_data['hostname'] == 'unknown':
   opres = "updating ddi"
@@ -135,10 +135,10 @@ def device_device_info(aWeb):
   for index in range(0,7):
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  else:
-  db.do("SELECT * FROM consoles")
+  db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles")
   consoles = db.get_all_rows()
-  consoles.append({ 'id':0, 'name':'Not used', 'ip':2130706433 })
-  db.do("SELECT * FROM pdus")
+  consoles.append({ 'id':0, 'name':'Not used', 'ip':2130706433, 'ipasc':'127.0.0.1' })
+  db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus")
   pdus = db.get_all_rows()
   pdus.append({ 'id':0, 'name':'Not used', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'Not used' })
   print "<TR><TD>Rack Unit:</TD><TD TITLE='Top rack unit of device placement'><INPUT NAME=rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_unit'])
@@ -148,7 +148,7 @@ def device_device_info(aWeb):
     extra = ""
     if device_data['console_id'] == console['id']:
      extra = " selected"
-     conip = sys_int2ip(console['ip'])
+     conip = console['ipasc']
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
    print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['consoleport'])
   else:
@@ -269,13 +269,13 @@ def device_op_syncddi(aWeb):
  from sdcp.core.DNS import pdns_lookup_records
  db = DB()
  db.connect()
- db.do("SELECT id,hostname,ip,domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0)")
+ db.do("SELECT id,hostname, INET_NTOA(ip) as ipasc, domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0)")
  rows = db.get_all_rows()
  print "<DIV CLASS='z-table'>"
  print "<TABLE>"
  print "<TR><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>Domain</TH><TH>A Id</TH><TH>PTR Id</TH><TH>Extra</TH>"
  for row in rows:
-  ip   = sys_int2ip(row['ip'])
+  ip   = row['ipasc']
   name = row['hostname']
   dom  = row['domain'] 
   if SC.dnsdb_proxy == 'True':
