@@ -32,16 +32,21 @@ def device_view_devicelist(aWeb):
  print "</DIV></DIV>"
  db.close()
 
+
+################################ Gigantic Device info and Ops function #################################
 #
-#
-#
+
 def device_device_info(aWeb):
  from sdcp.devices.DevHandler import device_detect, device_types, device_get_widgets
- id   = aWeb.get_value('node')
- op   = aWeb.get_value('op')
- opres= ""
- db   = DB()
+ id     = aWeb.get_value('node')
+ op     = aWeb.get_value('op')
+ opres  = ""
+ height = 240
+ conip  = None
+ db     = DB()
  db.connect()
+
+ ###################### Data operations ###################
  if   op == 'lookup':
   ip     = aWeb.get_value('ip')
   domain = aWeb.get_value('domain')
@@ -83,8 +88,6 @@ def device_device_info(aWeb):
  db.do("SELECT * FROM devices WHERE id ='{}'".format(id))
  device_data = db.get_row()
  ip     = sys_int2ip(device_data['ip'])
- height = 240
- conip  = None
 
  if op == 'updateddi' and not device_data['hostname'] == 'unknown':
   opres = "updating ddi"
@@ -94,6 +97,8 @@ def device_device_info(aWeb):
   else:
    pdns_update_records(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id'])
 
+ ########################## Data Tables ######################
+ 
  print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize:horizontal; margin-left:0px; width:654px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
  print "<!-- 1st Table -->"
@@ -117,7 +122,6 @@ def device_device_info(aWeb):
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
  print "<TR><TD COLSPAN=2 style='width:210px'>&nbsp;</TD></TR>"
  print "</TABLE></DIV>"
-
  print "<!-- 2nd Table -->"
  print "<DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
  print "<TR><TD>Rack:</TD><TD><SELECT NAME=rack_id CLASS='z-select'>"
@@ -137,7 +141,7 @@ def device_device_info(aWeb):
   db.do("SELECT * FROM pdus")
   pdus = db.get_all_rows()
   pdus.append({ 'id':0, 'name':'Not used', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'Not used' })
-  print "<TR><TD>Rack Unit:</TD><TD TITLE='Lower rack unit of device placement'><INPUT NAME=rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_unit'])
+  print "<TR><TD>Rack Unit:</TD><TD TITLE='Top rack unit of device placement'><INPUT NAME=rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_unit'])
   if not device_data['type'] == 'console':
    print "<TR><TD>TS:</TD><TD><SELECT NAME=console_id CLASS='z-select'>"
    for console in consoles:
@@ -159,7 +163,6 @@ def device_device_info(aWeb):
    print "</SELECT></TD></TR>"
    print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME={1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,device_data[pem + "_pdu_unit"])
  print "</TABLE></DIV>"
-
  print "<!-- 3rd Table -->"
  print "<DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Extra info</TH></TR>"
  print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_size'])
@@ -170,7 +173,7 @@ def device_device_info(aWeb):
  for index in range(0,3):
   print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
  print "</TABLE></DIV>"
-
+ print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=update    FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(id)
