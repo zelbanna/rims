@@ -337,9 +337,10 @@ def devices(aWeb):
  if argdict.get('pdu',None):
   print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
  print "<A CLASS='z-reload z-btnop' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
- print "<A CLASS='z-right z-btnop' OP=load DIV=div_navcont MSG='Start Device Discovery?' SPIN=true LNK='ajax.cgi?call=device_op_finddevices&domain={0}'>Device Discovery</A>".format(domain)
- print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Start Graph Discovery?'  SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
- print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Sync Devices/Graphs?'    LNK='ajax.cgi?call=graph_sync&domain={0}'>Sync Graphing</A>".format(domain)
+ print "<A CLASS='z-right z-btnop' OP=load DIV=div_navcont MSG='Discover devices?'               LNK='ajax.cgi?call=device_op_finddevices&domain={0}'>Device Discovery</A>".format(domain)
+ print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Discover graphs?'   SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
+ print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Sync Devices/Graphs?'         LNK='ajax.cgi?call=graph_sync&domain={0}'>Sync Graphing</A>".format(domain)
+ print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Sync DNS and IPAM?' SPIN=true LNK='ajax.cgi?call=device_op_syncddi&domain={}'>Sync DDI</A>".format(domain)
  print "</DIV>"
  print aWeb.get_listeners("div_navleft")
  print aWeb.get_listeners("div_navcont")

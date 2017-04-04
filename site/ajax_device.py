@@ -39,17 +39,18 @@ def device_device_info(aWeb):
  from sdcp.devices.DevHandler import device_detect, device_types, device_get_widgets
  id   = aWeb.get_value('node')
  op   = aWeb.get_value('op')
-
+ opres= ""
  db   = DB()
  db.connect()
  if   op == 'lookup':
   ip     = aWeb.get_value('ip')
-  name   = aWeb.get_value('hostname')
   domain = aWeb.get_value('domain')
   entry  = device_detect(ip,domain)
+  name   = entry['hostname']
   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
-
+  opres = "looked up"
   if not name == 'unknown':
+   opres = opres + " and updating dns:"
    aWeb.log_msg("Device lookup: input [{}, {}, {}]".format(ip,name,domain))
    import sdcp.SettingsContainer as SC
    if SC.dnsdb_proxy == 'True':
@@ -57,12 +58,10 @@ def device_device_info(aWeb):
    else:
     from sdcp.core.DNS import pdns_lookup_records
     retvals = pdns_lookup_records(ip,name,domain)
-   dns_a_id   = retvals.get('dns_a_id',None)
-   dns_ptr_id = retvals.get('dns_ptr_id',None)
-   if dns_a_id:
-    db.do("UPDATE devices SET dns_a_id = '{}' where id = '{}'".format(dns_a_id,id))
-   if dns_ptr_id:
-    db.do("UPDATE devices SET dns_ptr_id = '{}' where id = '{}'".format(dns_ptr_id,id))
+   dns_a_id   = retvals.get('dns_a_id','0')
+   dns_ptr_id = retvals.get('dns_ptr_id','0')
+   db.do("UPDATE devices SET dns_a_id = '{}', dns_ptr_id = '{}' where id = '{}'".format(dns_a_id,dns_ptr_id,id))
+   opres = opres + " a_id ptr_id"
   db.commit()
 
  elif op == 'update':
@@ -70,6 +69,7 @@ def device_device_info(aWeb):
   keys.remove('call')
   keys.remove('node')
   keys.remove('op')
+  opres = "updating values:" + " ".join(keys)
   if keys:
    for key in keys:
     if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
@@ -86,13 +86,13 @@ def device_device_info(aWeb):
  height = 240
  conip  = None
 
- if op == 'updateddi':
-  if not device_data['hostname'] == 'unknown':
-   import sdcp.SettingsContainer as SC
-   if SC.dnsdb_proxy == 'True':
-    aWeb.get_proxy(SC.dnsdb_url + "&op=dns_update&ip={}&hostname={}&domain={}&dns_a_id={}&dns_ptr_id={}".format(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id']))
-   else:
-    pdns_update_records(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id'])
+ if op == 'updateddi' and not device_data['hostname'] == 'unknown':
+  opres = "updating ddi"
+  import sdcp.SettingsContainer as SC
+  if SC.dnsdb_proxy == 'True':
+   aWeb.get_proxy(SC.dnsdb_url + "&op=dns_update&ip={}&hostname={}&domain={}&dns_a_id={}&dns_ptr_id={}".format(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id']))
+  else:
+   pdns_update_records(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id'])
 
  print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize:horizontal; margin-left:0px; width:654px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
@@ -171,11 +171,10 @@ def device_device_info(aWeb):
   print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
  print "</TABLE></DIV>"
 
- # print "</TR></TABLE>"
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=update    FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(id)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=lookup&ip={}&hostname={}&domain={}  FRM=info_form OP=post TITLE='Lookup Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip,device_data['hostname'],device_data['domain'])
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=lookup&ip={}&domain={}  FRM=info_form OP=post TITLE='Lookup Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip,device_data['domain'])
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM Entry'><IMG SRC='images/btn-start.png'></A>".format(id)
  if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+device_data['consoleport'])
@@ -183,6 +182,7 @@ def device_device_info(aWeb):
   res = db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip']))
   if res == 0:
    print "<A style='float:right;' TITLE='Add {0}' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname'])
+ print "<SPAN ID=update_results style='float:right; font-size:9px;'>{}</SPAN>".format(opres)
  print "</DIV>"
  print "</FORM>"
  print "</DIV>"
@@ -257,3 +257,44 @@ def device_op_finddevices(aWeb):
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont SPIN=true LNK=ajax.cgi?call=device_op_finddevices FRM=device_discover_form OP=post><IMG SRC='images/btn-start.png'></A>"
  print "<SPAN style='font-size:9px; float:right'>{}</SPAN>".format(results)
  print "</DIV>"
+
+#
+#
+#
+def device_op_syncddi(aWeb):
+ import sdcp.SettingsContainer as SC
+ from sdcp.core.DNS import pdns_lookup_records
+ db = DB()
+ db.connect()
+ db.do("SELECT id,hostname,ip,domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0)")
+ rows = db.get_all_rows()
+ print "<DIV CLASS='z-table'>"
+ print "<TABLE>"
+ print "<TR><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>Domain</TH><TH>A Id</TH><TH>PTR Id</TH><TH>Extra</TH>"
+ for row in rows:
+  ip   = sys_int2ip(row['ip'])
+  name = row['hostname']
+  dom  = row['domain'] 
+  if SC.dnsdb_proxy == 'True':
+   retvals = aWeb.get_proxy(SC.dnsdb_url + "&op=dns_lookup&ip={}&hostname={}&domain={}".format(ip,name,dom))
+  else:
+   retvals = pdns_lookup_records(ip,name,dom)
+  dns_a_id   = retvals.get('dns_a_id','0')
+  dns_ptr_id = retvals.get('dns_ptr_id','0')
+
+  print "<TR><TD>{}</<TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>".format(row['id'],ip,name,dom,dns_a_id,dns_ptr_id)
+  if not name == 'unknown':
+   print "updating"
+   if SC.dnsdb_proxy == 'True':
+    aWeb.get_proxy(SC.dnsdb_url + "&op=dns_update&ip={}&hostname={}&domain={}&dns_a_id={}&dns_ptr_id={}".format(ip,name,dom,dns_a_id,dns_ptr_id))
+    retvals = aWeb.get_proxy(SC.dnsdb_url + "&op=dns_lookup&ip={}&hostname={}&domain={}".format(ip,name,dom))
+   else:
+    pdns_update_records(ip,name,dom,dns_a_id,dns_ptr_id)
+    retvals = pdns_lookup_records(ip,name,dom)
+   print str(retvals)
+   db.do("UPDATE devices SET dns_a_id = '{}', dns_ptr_id = '{}' WHERE id = '{}'".format(retvals.get('dns_a_id','0'),retvals.get('dns_ptr_id','0'), row['id']))
+  print "</TD></TR>"
+
+ db.commit()
+ db.close()
+ print "</TABLE></DIV>"

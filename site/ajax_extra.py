@@ -44,23 +44,18 @@ def remote_json(aWeb):
  from json import dumps
  res = {}    
  op  = aWeb.get_value('op')
+ ip   = aWeb.get_value('ip')
+ name = aWeb.get_value('hostname')
+ dom  = aWeb.get_value('domain')
  if   op == 'dns_lookup':
-  ip   = aWeb.get_value('ip')
-  name = aWeb.get_value('hostname')
-  dom  = aWeb.get_value('domain')
   res  = pdns_lookup_records(ip,name,dom)
- 
- if op == 'dns_update':
-  ip   = aWeb.get_value('ip')
-  name = aWeb.get_value('hostname')
-  dom  = aWeb.get_value('domain')
+ elif op == 'dns_update':
   aid  = aWeb.get_value('dns_a_id')
   pid  = aWeb.get_value('dns_ptr_id')
   try: 
-   res  = pdns_update_records(ip,name,dom,aid,pid)
+   res = pdns_update_records(ip,name,dom,aid,pid)
   except Exception as err:
-   res['op_results'] = str(err)
-
+   res['op_result'] = str(err)
  else:
   res['op_result'] = "op_not_found"
  print dumps(res,sort_keys = True)     
