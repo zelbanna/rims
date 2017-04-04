@@ -7,11 +7,11 @@
 
 """
 __author__ = "Zacharias El Banna"                     
-__version__ = "3.2"
+__version__ = "10.0GA"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
-from GenLib import sys_log_msg, sys_ip2ptr, DB
+from GenLib import sys_log_msg, sys_ip2ptr, sys_ip2int, DB
 from subprocess import check_output, check_call
 from time import sleep
 from socket import gethostbyname
@@ -104,10 +104,10 @@ def pdns_lookup_records(aIP,aName,aDomain):
  db.do("SELECT id,content FROM records WHERE type = 'A' and domain_id = '{}' and name = '{}'".format(domain_id[0]['id'],fqdn)) 
  a_record = db.get_row()                       
  db.do("SELECT id,content FROM records WHERE type = 'PTR' and domain_id = '{}' and name = '{}'".format(domain_id[1]['id'],ptr)) 
- p_record = db.get_row() 
+ p_record = db.get_row()
  if a_record and (a_record.get('content',None) == aIP):
   retvals['dns_a_id'] = a_record.get('id') 
- if p_record and (p_record.get('content',None) == fqdn):
+ if p_record and p_record.get('content',None):
   retvals['dns_ptr_id'] = p_record.get('id')
  db.close() 
  return retvals
@@ -140,4 +140,40 @@ def pdns_update_records(aIP,aName,aDomain,aAid,aPid):
  db.commit()
  db.close()
  sys_log_msg("PDNS update - results: " + str(retvals))
+ return retvals
+
+def ipam_lookup_record(aIP):
+ sys_log_msg("IPAM lookup - input {}".format(aIP))
+ ipint   = sys_ip2int(aIP)
+ retvals = { 'ipam_id':'0' }
+ db = DB()
+ db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
+ db.do("SELECT id, subnet, INET_NTOA(subnet) as subnetasc, mask FROM subnets WHERE vrfId = 0 AND {0} > subnet AND {0} < (subnet + POW(2,(32-mask))-1)".format(ipint))
+ subnet = db.get_row()
+ retvals['subnet_id'] = subnet.get('id')
+ db.do("SELECT id, dns_name, PTR FROM ipaddresses WHERE ip_addr = {0} AND subnetId = {1}".format(ipint,subnet['id']))
+ ipam   = db.get_row()
+ if ipam:
+  retvals['ipam_id']    = ipam.get('id')
+  retvals['dns_a_name'] = ipam.get('dns_name',None)
+  retvals['dns_ptr_id'] = ipam.get('PTR',0)
+ return retvals
+
+def ipam_update_record(aIP, aIPAMid, aPid, aFQDN):
+ retvals = { 'op_result':'done' }
+ ipint   = sys_ip2int(aIP)
+ sys_log_msg("IPAM update - input:{}, {}, {}, {}".format(aIP,aIPAMid,aPid,aFQDN))
+ db = DB()
+ db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
+ if not aIPAMid == '0':
+  # sys_log_msg("UPDATE ipaddresses SET PTR = '{}' and dns_name = '{}' WHERE id = '{}'".format(aPid,aFQDN,aIPAMid))
+  db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aPid,aFQDN,aIPAMid))
+ else:
+  db.do("SELECT id, subnet, INET_NTOA(subnet) as subnetasc, mask FROM subnets WHERE vrfId = 0 AND {0} > subnet AND {0} < (subnet + POW(2,(32-mask))-1)".format(ipint))
+  subnet = db.get_row()
+  subnet_id = subnet.get('id')
+  # sys_log_msg("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name,PTR) VALUES('{}','{}','{}','{}')".format(subnet_id,ipint,aFQDN,aPid))
+  db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name,PTR) VALUES('{}','{}','{}','{}')".format(subnet_id,ipint,aFQDN,aPid))
+ db.commit()
+ db.close()
  return retvals

@@ -53,9 +53,9 @@ def device_device_info(aWeb):
   entry  = device_detect(ip,domain)
   name   = entry['hostname']
   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
-  opres = "looked up"
+  opres = "device detection"
   if not name == 'unknown':
-   opres = opres + " and updating dns:"
+   opres = opres + " and updating DDI:"
    aWeb.log_msg("Device lookup: input [{}, {}, {}]".format(ip,name,domain))
    import sdcp.SettingsContainer as SC
    if SC.dnsdb_proxy == 'True':
@@ -65,8 +65,18 @@ def device_device_info(aWeb):
     retvals = pdns_lookup_records(ip,name,domain)
    dns_a_id   = retvals.get('dns_a_id','0')
    dns_ptr_id = retvals.get('dns_ptr_id','0')
-   db.do("UPDATE devices SET dns_a_id = '{}', dns_ptr_id = '{}' where id = '{}'".format(dns_a_id,dns_ptr_id,id))
-   opres = opres + " a_id ptr_id"
+   opres = opres + "{}".format(str(retvals))
+   if SC.ipamdb_proxy == 'True':
+    retvals = aWeb.get_proxy(SC.ipamdb_url + "&op=ipam_lookup&ip={}".format(ip))
+   else:
+    from sdcp.core.DNS import ipam_lookup_record
+    retvals = ipam_lookup_record(ip)
+   ipam_id    = retvals.get('ipam_id','0') 
+   tmp_ptr_id = retvals.get('dns_ptr_id','0')
+   opres = opres + "{}".format(str(retvals))
+   if tmp_ptr_id != '0' and tmp_ptr_id != dns_ptr_id:
+    opres = "<B>"+opres+"</B>"
+   db.do("UPDATE devices SET ipam_id = {}, dns_a_id = '{}', dns_ptr_id = '{}' where id = '{}'".format(ipam_id, dns_a_id,dns_ptr_id,id))
   db.commit()
 
  elif op == 'update':
@@ -96,6 +106,11 @@ def device_device_info(aWeb):
    aWeb.get_proxy(SC.dnsdb_url + "&op=dns_update&ip={}&hostname={}&domain={}&dns_a_id={}&dns_ptr_id={}".format(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id']))
   else:
    pdns_update_records(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id'])
+
+  if SC.ipamdb_proxy == 'True':
+   aWeb.get_proxy(SC.ipamdb_url + "&op=ipam_update&ip={}&fqdn={}&ipam_id={}&dns_ptr_id={}".format(ip,device_data['hostname'] + "." + device_data['domain'],device_data['ipam_id'],device_data['dns_ptr_id']))
+  else:
+   ipam_update_record(ip,device_data['hostname'] + "." + device_data['domain'],device_data['ipam_id'],device_data['dns_ptr_id'])
 
  ########################## Data Tables ######################
  
@@ -266,14 +281,14 @@ def device_op_finddevices(aWeb):
 #
 def device_op_syncddi(aWeb):
  import sdcp.SettingsContainer as SC
- from sdcp.core.DNS import pdns_lookup_records
+ from sdcp.core.DNS import pdns_lookup_records, pdns_update_records
  db = DB()
  db.connect()
- db.do("SELECT id,hostname, INET_NTOA(ip) as ipasc, domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0)")
+ db.do("SELECT id, ip, hostname, INET_NTOA(ip) as ipasc, domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0 or ipam_id = 0) ORDER BY ip")
  rows = db.get_all_rows()
  print "<DIV CLASS='z-table'>"
  print "<TABLE>"
- print "<TR><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>Domain</TH><TH>A Id</TH><TH>PTR Id</TH><TH>Extra</TH>"
+ print "<TR><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>Domain</TH><TH>A</TH><TH>PTR</TH><TH>IPAM</TH><TH>Extra</TH>"
  for row in rows:
   ip   = row['ipasc']
   name = row['hostname']
@@ -284,8 +299,15 @@ def device_op_syncddi(aWeb):
    retvals = pdns_lookup_records(ip,name,dom)
   dns_a_id   = retvals.get('dns_a_id','0')
   dns_ptr_id = retvals.get('dns_ptr_id','0')
+  if SC.ipamdb_proxy == 'True':
+   retvals = aWeb.get_proxy(SC.ipamdb_url + "&op=ipam_lookup&ip={}".format(ip))                                  
+  else:
+   from sdcp.core.DNS import ipam_lookup_record 
+   retvals = ipam_lookup_record(ip)             
 
-  print "<TR><TD>{}</<TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>".format(row['id'],ip,name,dom,dns_a_id,dns_ptr_id)
+  ipam_id    = retvals.get('ipam_id','0')
+
+  print "<TR><TD>{}</<TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>".format(row['id'],ip,name,dom,dns_a_id,dns_ptr_id,ipam_id)
   if not name == 'unknown':
    print "updating"
    if SC.dnsdb_proxy == 'True':
@@ -294,8 +316,13 @@ def device_op_syncddi(aWeb):
    else:
     pdns_update_records(ip,name,dom,dns_a_id,dns_ptr_id)
     retvals = pdns_lookup_records(ip,name,dom)
+   if SC.ipamdb_proxy == 'True':
+    aWeb.get_proxy(SC.ipamdb_url + "&op=ipam_update&ip={}&fqdn={}&ipam_id={}&dns_ptr_id={}".format(ip,name + '.' + domain, ipam_id, retvals.get('dns_ptr_id','0')))
+   else:
+    ipam_update_record(ip,name + '.' + domain, ipam_id, retvals.get('dns_ptr_id','0'))
+
    print str(retvals)
-   db.do("UPDATE devices SET dns_a_id = '{}', dns_ptr_id = '{}' WHERE id = '{}'".format(retvals.get('dns_a_id','0'),retvals.get('dns_ptr_id','0'), row['id']))
+   db.do("UPDATE devices SET ipam_id = {}, dns_a_id = '{}', dns_ptr_id = '{}' WHERE id = '{}'".format(ipam_id, retvals.get('dns_a_id','0'),retvals.get('dns_ptr_id','0'), row['id']))
   print "</TD></TR>"
 
  db.commit()
