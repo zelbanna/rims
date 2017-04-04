@@ -39,9 +39,9 @@ def device_view_devicelist(aWeb):
 def device_device_info(aWeb):
  from sdcp.devices.DevHandler import device_detect, device_types, device_get_widgets
  id     = aWeb.get_value('node')
- op     = aWeb.get_value('op')
- opres  = ""
- height = 240
+ op     = aWeb.get_value('op',"no_op")
+ opres  = str(op).upper()
+ height = 250
  conip  = None
  db     = DB()
  db.connect()
@@ -57,7 +57,6 @@ def device_device_info(aWeb):
   else:
    name = entry['hostname']
   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
-  opres = "device detection"
   if not name == 'unknown':
    opres = opres + " and updating DDI:"
    aWeb.log_msg("Device lookup: input [{}, {}, {}]".format(ip,name,domain))
@@ -88,7 +87,7 @@ def device_device_info(aWeb):
   keys.remove('call')
   keys.remove('node')
   keys.remove('op')
-  opres = "updating values:" + " ".join(keys)
+  opres = opres + " values:" + " ".join(keys)
   if keys:
    for key in keys:
     if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
@@ -105,17 +104,15 @@ def device_device_info(aWeb):
  name = device_data['hostname']
 
  if op == 'updateddi' and not device_data['hostname'] == 'unknown':
-  opres = "updating ddi"
-  print device_data['hostname']
+  if device_data['ipam_id'] == '0':
+   opres = opres + " (please rerun lookup for proper sync)"
   import sdcp.SettingsContainer as SC
   if SC.dnsdb_proxy == 'True':
    aWeb.get_proxy(SC.dnsdb_url + "&op=dns_update&ip={}&hostname={}&domain={}&dns_a_id={}&dns_ptr_id={}".format(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id']))
   else:
    pdns_update_records(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id'])
   if SC.ipamdb_proxy == 'True':
-   print "H4"
    aWeb.get_proxy(SC.ipamdb_url + "&op=ipam_update&ip={}&fqdn={}&ipam_id={}&dns_ptr_id={}".format(ip,device_data['hostname'] + "." + device_data['domain'],device_data['ipam_id'],device_data['dns_ptr_id']))
-   print "H5"
   else:
    ipam_update_record(ip,device_data['hostname'] + "." + device_data['domain'],device_data['ipam_id'],device_data['dns_ptr_id'])
 

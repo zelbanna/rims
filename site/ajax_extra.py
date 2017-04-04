@@ -62,4 +62,5 @@ def remote_json(aWeb):
   res  = ipam_update_record(ip,iid,pid,fqdn)
  else:
   res['op_result'] = "op_not_found"
+ # aWeb.log_msg("remote_json - op_result: " + str(res))
  print dumps(res,sort_keys = True)     

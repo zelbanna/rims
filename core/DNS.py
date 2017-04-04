@@ -166,14 +166,19 @@ def ipam_update_record(aIP, aIPAMid, aPid, aFQDN):
  db = DB()
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
  if not aIPAMid == '0':
-  # sys_log_msg("UPDATE ipaddresses SET PTR = '{}' and dns_name = '{}' WHERE id = '{}'".format(aPid,aFQDN,aIPAMid))
   db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aPid,aFQDN,aIPAMid))
  else:
   db.do("SELECT id, subnet, INET_NTOA(subnet) as subnetasc, mask FROM subnets WHERE vrfId = 0 AND {0} > subnet AND {0} < (subnet + POW(2,(32-mask))-1)".format(ipint))
   subnet = db.get_row()
   subnet_id = subnet.get('id')
-  # sys_log_msg("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name,PTR) VALUES('{}','{}','{}','{}')".format(subnet_id,ipint,aFQDN,aPid))
-  db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name,PTR) VALUES('{}','{}','{}','{}')".format(subnet_id,ipint,aFQDN,aPid))
+  db.do("SELECT id FROM ipaddresses WHERE ip_addr = '{0}' AND subnetId = {1}".format(ipint,subnet_id))
+  entry = db.get_row()
+  if entry:
+   aIPAMid = entry.get('id')
+   sys_log_msg("IPAM update - ipam_id 0 -> {}".format(aIPAMid))
+   db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aPid,aFQDN,aIPAMid))
+  else:
+   db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name,PTR) VALUES('{}','{}','{}','{}')".format(subnet_id,ipint,aFQDN,aPid))
  db.commit()
  db.close()
  return retvals
