@@ -10,7 +10,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "5.0"
 __status__ = "Production"
 
-from GenLib import DB, sys_log_msg, ping_os, sys_ip2int, sys_int2ip
+from GenLib import DB, sys_log_msg, ping_os
 
 ####################################### Grapher Class ##########################################
 #
@@ -129,12 +129,12 @@ class Grapher(object):
    chmod(self._graphplug, 0o777)
    db = DB()
    db.connect()
-   db.do("SELECT * FROM devices")
+   db.do("SELECT type,hostname,domain, INET_NTOA(ip) as ip FROM devices")
    rows = db.get_all_rows()
    db.close()
    for item in rows:
     sema.acquire()
-    t = Thread(target = self._detect, args=[sys_int2ip(item['ip']), item, ahandler, flock, sema])
+    t = Thread(target = self._detect, args=[item['ip'], item, ahandler, flock, sema])
     t.start()
    for i in range(10):
     sema.acquire()       

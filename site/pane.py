@@ -199,7 +199,7 @@ def shutdownall(aWeb):
 
 def rack(aWeb):
  print aWeb.get_header_full("Racks")
- from sdcp.core.GenLib import DB, sys_int2ip
+ from sdcp.core.GenLib import DB
  db = DB()
  db.connect()
  db.do("SELECT name, id, fk_console, fk_pdu_1, fk_pdu_2 from racks")
@@ -209,13 +209,13 @@ def rack(aWeb):
  rackstr = "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&name={0}&{2}><IMG ALT='Cabinet {0}' SRC='images/cabinet.{1}.png'></A>&nbsp;"
  for index, rack in enumerate(racks):
   rackargs = "rack=" + str(rack['id'])
-  res = db.do("SELECT ip,id FROM consoles WHERE consoles.id = {}".format(rack['fk_console']))
+  res = db.do("SELECT INET_NTOA(ip) as ip, id FROM consoles WHERE consoles.id = {}".format(rack['fk_console']))
   row = db.get_row()
-  rackargs = rackargs if not row else rackargs + "&console=" +sys_int2ip(row['ip'])
-  res = db.do("SELECT ip,id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(rack['fk_pdu_1'],rack['fk_pdu_2']))
+  rackargs = rackargs if not row else rackargs + "&console=" + row['ip']
+  res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(rack['fk_pdu_1'],rack['fk_pdu_2']))
   rows = db.get_all_rows()
   for row in rows:
-   rackargs = rackargs + "&pdulist=" + sys_int2ip(row['ip'])
+   rackargs = rackargs + "&pdulist=" + row['ip']
   print rackstr.format(rack['name'], index % 3, rackargs)
  db.close()
  print "</CENTER></DIV>"
@@ -310,19 +310,19 @@ def esxi(aWeb):
 #
  
 def devices(aWeb):
- from sdcp.core.GenLib import DB, sys_int2ip
+ from sdcp.core.GenLib import DB
  op        = aWeb.get_value('op', None)
  domain    = aWeb.get_value('domain', None)
  db = DB() 
  db.connect()
  argdict = {}
  for type in ['pdu','console']:
-  db.do("SELECT id,ip FROM {}s".format(type))
+  db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
   tprows = db.get_all_rows()
   if len(tprows) > 0:
    arglist = "call={}_list".format(type)
    for row in tprows:
-    arglist = arglist + "&{}list=".format(type) + sys_int2ip(row['ip'])
+    arglist = arglist + "&{}list=".format(type) + row['ip']
    argdict[type] = arglist
 
  print aWeb.get_header_full("Device View")
