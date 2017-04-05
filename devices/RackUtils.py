@@ -97,17 +97,17 @@ class Avocent(GenDevice, ConfObject):
  def __str__(self):
   return "Avocent - {}".format(GenDevice.__str__(self))
 
- def set_state(self,node,state):
+ def set_state(self,slot,unit,state):
   from netsnmp import VarList, Varbind, Session
   try:
    # node = "pdu.outlet"
    session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_write_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
-   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.6.1." + node , Avocent.set_outlet_state(state) ,"INTEGER"))
+   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.6.1.{}.{}".format(slot,unit) , Avocent.set_outlet_state(state) ,"INTEGER"))
    session.set(setobj)
-   entry = self.get_entry(node)
+   entry = self.get_entry(slot+"."+unit)
    if entry:
     entry['state'] = state
-   self.log_msg("Avocent : {0} set state to {0} on {0}".format(self._ip,state,node))
+   self.log_msg("Avocent : {0} set state to {1} on {2}.{3}".format(self._ip,state,slot,unit))
   except Exception as exception_error:
    self.log_msg("Avocent : error setting state " + str(exception_error), aPrint = True)
 
@@ -130,30 +130,33 @@ class Avocent(GenDevice, ConfObject):
   try:
    outletobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.4'))
    stateobjs  = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.5'))
-   pduobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
+   slotobjs   = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
    session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(outletobjs)
    session.walk(stateobjs)
-   session.walk(pduobjs)
+   session.walk(slotobjs)
    statedict = dict(map(lambda var: (var.tag[34:] + "." + var.iid, var.val), stateobjs))
-   pdudict   = dict(map(lambda var: (var.iid, var.val),pduobjs))
+   slotdict  = dict(map(lambda var: (var.iid, var.val),slotobjs))
    for outlet in outletobjs:
     # outlet.iid = outlet number
-    pdu= outlet.tag[34:]
-    node = pdu + "." + outlet.iid
-    self._configitems[ node ] = { 'name': outlet.val, 'state':Avocent.get_outlet_state(statedict[node]), 'pduslot':pdudict.get(pdu,"unknown") + "." + outlet.iid }
+    slot = outlet.tag[34:]
+    node = slot + "." + outlet.iid
+    self._configitems[ node ] = { 'name': outlet.val, 'state':Avocent.get_outlet_state(statedict[node]), 'slotname':slotdict.get(slot,"unknown"), 'slot':slot, 'unit':outlet.iid }
   except Exception as exception_error:
    self.log_msg("Avocent : error loading conf " + str(exception_error), aPrint = True)
  
  def get_slot_names(self):
   from netsnmp import VarList, Varbind, Session
-  pdus = []
+  slots = []
   try:
-   pduobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
+   slotobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
    session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
-   session.walk(pduobjs)
-   for pdu in pduobjs:
-    pdus.append([pdu.iid, pdu.val])
+   session.walk(slotobjs)
+   for slot in slotobjs:
+    slots.append([slot.iid, slot.val])
   except Exception as exception_error:
    self.log_msg("Avocent : error loading pdu member names " + str(exception_error), aPrint = True)
-  return pdus
+  return slots
+
+ def get_slotunit(self, aSlot, aUnit):
+  return self._configitems.get(aSlot +'.'+ aUnit,None)
