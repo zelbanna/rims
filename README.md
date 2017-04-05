@@ -12,3 +12,6 @@ Small or Simple DC Project
 
 To start, enter sdcp directory and modify settings.json with appropriate settings
 Then run install to write site cgi file
+
+- To get a working MySQL implementation - pip install PyMySql
+
