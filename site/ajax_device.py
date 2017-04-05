@@ -200,7 +200,7 @@ def device_device_info(aWeb):
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&id={}&dns_a_id={}&dns_ptr_id={}&ipam_id={} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id,device_data['dns_a_id'],device_data['dns_ptr_id'],device_data['ipam_id'])
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&id={}&dns_a_id={}&dns_ptr_id={}&ipam_id={} OP=confirm MSG='Are you sure you want to delete entry?'><IMG SRC='images/btn-remove.png'></A>".format(id,device_data['dns_a_id'],device_data['dns_ptr_id'],device_data['ipam_id'])
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=update    FRM=info_form OP=post TITLE='Update Entry'><IMG SRC='images/btn-save.png'></A>".format(id)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=lookup&ip={}&domain={}&hostname={} FRM=info_form OP=post TITLE='Lookup Entry'><IMG SRC='images/btn-search.png'></A>".format(id,ip,device_data['domain'],name)
  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&node={}&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM Entry'><IMG SRC='images/btn-start.png'></A>".format(id)

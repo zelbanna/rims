@@ -31,7 +31,6 @@ class Web(object):
   stdout.flush()
 
  def ajax(self):
-  fun  = None
   ajaxcall = self.get_value('call')
   if not ajaxcall:
    print "<SPAN style='font-size:10px'>No ajax call argument</SPAN>"
@@ -52,35 +51,28 @@ class Web(object):
   else:
    import ajax_extra as ajaxmod
   fun = getattr(ajaxmod,ajaxcall,None)  
-  if self._debug:
+  if not self._debug:
+   fun(self)
+  else:
    try:
     fun(self)
    except Exception as err:
     print "<SPAN style='font-size:10px'>Ajax call:[{}] error: [{}]</SPAN>".format(ajaxcall,str(err))
-  else:
-   if fun:
-    fun(self)
-   else:
-    print "<SPAN style='font-size:10px'>Ajax call:[{}] no such function</SPAN>".format(ajaxcall) 
 
  def pane(self):
-  fun  = None
   paneview = self.get_value('view')
   if not paneview:
    print "<SPAN style='font-size:10px'>No pane view argument</SPAN>"
    return
   import pane as panemod
   fun = getattr(panemod,paneview,None)
-  if self._debug:
+  if not self._debug:
+   fun(self)
+  else:
    try:
     fun(self)
    except Exception as err:
     print "Pane view:[{}] error: [{}]".format(paneview,str(err))
-  else:
-   if fun:
-    fun(self)
-   else:
-    print "Pane view :[{}] no such view".format(paneview)
                  
  def get_keys(self):
   return self._form.keys()
