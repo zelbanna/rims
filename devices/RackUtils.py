@@ -8,8 +8,8 @@ Exports:
 
 """  
 __author__  = "Zacharias El Banna"
-__version__ = "0.1"
-__status__  = "Beta"
+__version__ = "1.0GA"
+__status__  = "Production"
 
 from sdcp.core.GenLib import GenDevice
 import sdcp.SettingsContainer as SC
@@ -111,18 +111,19 @@ class Avocent(GenDevice, ConfObject):
   except Exception as exception_error:
    self.log_msg("Avocent : error setting state " + str(exception_error), aPrint = True)
 
- def set_name(self,node,name):
+ def set_name(self,slot,unit,name):
   from netsnmp import VarList, Varbind, Session
   try:
-   # node = pdu.outlet
    session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_write_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
-   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.4.1." + node , name, "OPAQUE"))
+   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.4.1.{}.{}".format(slot,unit) , name, "OPAQUE"))
    session.set(setobj)
-   entry = self.get_entry(node)
+   entry = self.get_entry(slot+"."+unit)
    if entry:
     entry['name'] = name
+   return "Name set to: {}".format(name)
   except Exception as exception_error:
    self.log_msg("Avocent : error setting name " + str(exception_error), aPrint = True)
+   return "Error setting name {}".format(name)
 
  def load_snmp(self):
   from netsnmp import VarList, Varbind, Session

@@ -21,6 +21,7 @@ def pdu_list_units(aWeb):
 
  # For Operations:
  slot    = aWeb.get_value('slot')
+ unit    = aWeb.get_value('unit')
  nstate  = aWeb.get_value('nstate')
  pduop   = aWeb.get_value('pdu')
 
@@ -64,7 +65,6 @@ def pdu_unit_info(aWeb):
  domain = aWeb.get_value('domain')
  print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
  print "<FORM ID=pdu_form>"
- print "<INPUT NAME=domain VALUE={} TYPE=HIDDEN>".format(domain)
  print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(slot)
  print "<INPUT NAME=pdu    VALUE={} TYPE=HIDDEN>".format(pdu)
  print "<TABLE style='width:100%'>"
@@ -74,7 +74,8 @@ def pdu_unit_info(aWeb):
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
  print "</TABLE>"
- print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?pdu_unit_update FRM=pdu_form OP=post><IMG SRC='images/btn-save.png'></A><SPAN ID=update_results></SPAN>"
+ print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_unit_update FRM=pdu_form OP=post><IMG SRC='images/btn-save.png'></A>"
+ print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
 
@@ -190,13 +191,11 @@ def pdu_unit_update(aWeb):
   name = aWeb.get_value('name')
   pdu  = aWeb.get_value('pdu')
   slot = aWeb.get_value('slot')
-  domain = aWeb.get_value('domain')
-  avocent = Avocent(pdu,domain)
+  avocent = Avocent(pdu)
   avocent.set_name(slot,name)
-  print "Updated name: {} for {}.{}:{}".format(name,pdu,domain,slot)
+  print "Updated name: {} for {} slot {}".format(name,pdu,slot)
  else:
   print "Name not updated"
-
 
 #
 #
