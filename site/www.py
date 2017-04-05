@@ -124,7 +124,7 @@ class Web(object):
    remote_json = self.get_include(aurl + "ajax.cgi?call=remote_json&op={}&{}".format(op,args))
    return loads(remote_json)
   except Exception as err:
-   self.log_msg("Error in get_proxy: {}".format(str(err))
+   self.log_msg("Error in get_proxy: {}".format(str(err)))
   return { "res":"get_proxy_err" }
 
  def log_msg(self, aMsg, aLog='/var/log/system/system.log'):
