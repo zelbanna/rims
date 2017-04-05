@@ -91,7 +91,11 @@ def pdns_sync(dnslist):
   return False
  return True  
 
-def dns_lookup_records(aIP,aName,aDomain):
+################################################# DDI - DNS ##################################################
+#
+# Lookup a and ptr id for a given ip,hostname and domain, return as dict
+#
+def ddi_dns_lookup(aIP,aName,aDomain):
  ptr     = sys_ip2ptr(aIP)
  fqdn    = aName + "." + aDomain
  retvals = {}
@@ -112,7 +116,7 @@ def dns_lookup_records(aIP,aName,aDomain):
  db.close() 
  return retvals
 
-def dns_update_records(aIP,aName,aDomain,aAid,aPid):
+def ddi_dns_update(aIP,aName,aDomain,aAid,aPid):
  from time import strftime
  serial  = strftime("%Y%m%d01")
  ptr     = sys_ip2ptr(aIP)
@@ -142,7 +146,20 @@ def dns_update_records(aIP,aName,aDomain,aAid,aPid):
  sys_log_msg("PDNS update - results: " + str(retvals))
  return retvals
 
-def ipam_lookup_record(aIP):
+def ddi_dns_remove(aAid,aPid):
+ db = DB()
+ db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
+ ares = db.do("DELETE FROM records WHERE id = '{}' and type = 'A'".format(aAid))
+ pres = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aPid))
+ db.commit()
+ sys_log_msg("PDNS remove - A:{} PTR:{}".format(str(ares),str(pres)))
+ return { 'a':ares 'ptr':pres }
+ db.close()
+
+################################################# DDI - IPAM ##################################################
+#
+#
+def ddi_ipam_lookup(aIP):
  sys_log_msg("IPAM lookup - input {}".format(aIP))
  ipint   = sys_ip2int(aIP)
  retvals = { 'ipam_id':'0' }
@@ -159,7 +176,10 @@ def ipam_lookup_record(aIP):
   retvals['dns_ptr_id'] = ipam.get('PTR',0)
  return retvals
 
-def ipam_update_record(aIP, aIPAMid, aPid, aFQDN):
+#
+#
+#
+def ddi_ipam_update(aIP, aIPAMid, aPid, aFQDN):
  retvals = { 'op_result':'done' }
  ipint   = sys_ip2int(aIP)
  sys_log_msg("IPAM update - input:{}, {}, {}, {}".format(aIP,aIPAMid,aPid,aFQDN))
@@ -182,3 +202,15 @@ def ipam_update_record(aIP, aIPAMid, aPid, aFQDN):
  db.commit()
  db.close()
  return retvals
+
+#
+#
+#
+def ddi_ipam_remove(aIPAMid):
+ db = DB()
+ db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
+ ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aIPAMid))
+ db.commit()
+ sys_log_msg("IPAM remove - I:{}".format(str(ires)))
+ return { 'ipam':ires }
+ db.close()
