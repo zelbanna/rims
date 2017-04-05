@@ -113,11 +113,11 @@ class Web(object):
  def get_proxy(self,aurl,op,args):
   from json import loads
   if not self._debug:
-   return  loads(self.get_include(aurl + "?call=remote_json&op={}&{}".format(op,args)))
+   return  loads(self.get_include(aurl + "ajax.cgi?call=remote_json&op={}&{}".format(op,args)))
   else:
    self.log_msg(aurl + "?call=remote_json&op={}&{}".format(op,args))
    try:
-    return loads(self.get_include(aurl + "?call=remote_json&op={}&{}".format(op,args)))
+    return loads(self.get_include(aurl + "ajax.cgi?call=remote_json&op={}&{}".format(op,args)))
    except Exception as err:
     self.log_msg("Error in get_proxy: {}".format(str(err)))
     return { "res":"get_proxy_err" }

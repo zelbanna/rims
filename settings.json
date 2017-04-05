@@ -9,7 +9,7 @@
   "dbpass":"sdcp"
  },
  "dnsdb" : {
-  "proxy" : "False",
+  "proxy" : "http://<ip>/",
   "url" : "",
   "username" : "",
   "password" : "",
@@ -19,9 +19,9 @@
  "ipamdb" : {
   "proxy" : "False",
   "url" : "",
-  "username" : "",
-  "password" : "",
-  "dbname": "",
+  "username" : "username",
+  "password" : "password",
+  "dbname": "dbname",
   "type" : "phpipam"
  },
  "loopia": {
