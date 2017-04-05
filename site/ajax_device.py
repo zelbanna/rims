@@ -70,7 +70,7 @@ def device_device_info(aWeb):
    dns_ptr_id = retvals.get('dns_ptr_id','0')
    opres = opres + "{}".format(str(retvals))
    if SC.ipamdb_proxy == 'True':
-    retvals = aWeb.get_proxy(SC.ipamdb_url, "&ddi_ipam_lookup", "ip={}".format(ip))
+    retvals = aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_lookup", "ip={}".format(ip))
    else:
     from sdcp.core.ddi import ddi_ipam_lookup
     retvals = ddi_ipam_lookup(ip)

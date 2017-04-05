@@ -153,7 +153,7 @@ def ddi_dns_remove(aAid,aPid):
  pres = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aPid))
  db.commit()
  sys_log_msg("PDNS remove - A:{} PTR:{}".format(str(ares),str(pres)))
- return { 'a':ares 'ptr':pres }
+ return { 'a':ares, 'ptr':pres }
  db.close()
 
 ################################################# DDI - IPAM ##################################################
