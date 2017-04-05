@@ -18,13 +18,16 @@ def device_view_devicelist(aWeb):
  arg    = aWeb.get_value('arg')
  db     = DB()
  db.connect()
- if target and arg:
-  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices WHERE {0}='{1}' ORDER BY ip".format(target,arg))
- else:
-  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices ORDER BY ip")
  print "<DIV CLASS='z-framed' ID=div_device_devicelist><DIV CLASS='z-table'>"
  print "<TABLE WIDTH=330>"
  print "<TR><TH>IP</TH><TH>FQDN</TH><TH>Model</TH></TR>"
+ print "<TR style='height:20px'><TD COLSPAN=3>"
+ if target and arg:
+  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices WHERE {0}='{1}' ORDER BY ip".format(target,arg))
+  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target={0}&arg={1}'><IMG SRC='images/btn-reboot.png'></A>".format(target,arg)
+ else:
+  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices ORDER BY ip")
+  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist'><IMG SRC='images/btn-reboot.png'></A>"
  rows = db.get_all_rows()
  for row in rows:
   print "<TR><TD><A CLASS=z-btnop TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&node={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
