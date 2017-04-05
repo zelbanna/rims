@@ -134,14 +134,14 @@ def device_discover(aStartIP, aStopIP, aDomain, aClear = False):
   db.do("TRUNCATE TABLE devices")
   db.commit()
  else:
-  db.do("SELECT ip FROM devices")
+  res  = db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(sys_ip2int(aStartIP),sys_ip2int(aStopIP)))
   rows = db.get_all_rows()
   for item in rows:
    db_old[item.get('ip')] = True
  try:
   sema = BoundedSemaphore(10)
   for ip in sys_ips2range(aStartIP, aStopIP):
-   if db_old.get('ip',None):
+   if db_old.get(sys_ip2int(ip),None):
     continue
    sema.acquire()
    t = Thread(target = device_detect, args=[ip, aDomain, db_new, sema])

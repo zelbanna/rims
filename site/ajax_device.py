@@ -254,17 +254,19 @@ def device_remove(aWeb):
  if (dns_a_id != '0') or (dns_ptr_id != '0'):
   import sdcp.SettingsContainer as SC
   if SC.dnsdb_proxy == 'True':
-   aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_remove","dns_a_id={}&dns_ptr_id={}".format(dns_a_id,dns_ptr_id))
+   dres = aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_remove","dns_a_id={}&dns_ptr_id={}".format(dns_a_id,dns_ptr_id))
   else:
    from sdcp.core.ddi import ddi_dns_remove
-   ddi_dns_remove(dns_a_id,dns_ptr_id)
+   dres = ddi_dns_remove(dns_a_id,dns_ptr_id)
+  print "DNS  entries removed:{}<BR>".format(str(dres))
  if not ipam_id == '0':
   import sdcp.SettingsContainer as SC
   if SC.ipamdb_proxy == 'True':
-   aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_remove","ipam_id={}".format(ipam_id))
+   ires = aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_remove","ipam_id={}".format(ipam_id))
   else:
    from sdcp.core.ddi import ddi_ipam_remove
-   ddi_ipam_remove(ipam_id)
+   ires = ddi_ipam_remove(ipam_id)
+  print "IPAM entries removed:{}<BR>".format(str(ires))
  print "Unit {0} deleted".format(device_id)
  db.close()
 
