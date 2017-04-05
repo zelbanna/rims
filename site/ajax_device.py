@@ -247,12 +247,11 @@ def device_remove(aWeb):
  dns_a_id   = aWeb.get_value('dns_a_id','0')
  dns_ptr_id = aWeb.get_value('dns_ptr_id','0')
  ipam_id    = aWeb.get_value('ipam_id','0')
- return
  db = DB()
  db.connect()
  db.do("DELETE FROM devices WHERE id = '{0}'".format(device_id))
  db.commit()
- if not (dns_a_id == '0' and dns_ptr_id == '0'):
+ if (dns_a_id != '0') or (dns_ptr_id != '0'):
   import sdcp.SettingsContainer as SC
   if SC.dnsdb_proxy == 'True':
    aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_remove","dns_a_id={}&dns_ptr_id={}".format(dns_a_id,dns_ptr_id))
