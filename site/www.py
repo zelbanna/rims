@@ -118,10 +118,14 @@ class Web(object):
   except Exception as err:
    return ""
 
- def get_proxy(self,aurl):
+ def get_proxy(self,aurl,op,args):
   from json import loads
-  remote_json = self.get_include(aurl)    
-  return loads(remote_json)
+  try:
+   remote_json = self.get_include(aurl + "ajax.cgi?call=remote_json&op={}&{}"format(op,args))
+   return loads(remote_json)
+  except Exception as err:
+   self.log_msg("Error in get_proxy: {}".format(str(err))
+  return { "res":"get_proxy_err" }
 
  def log_msg(self, aMsg, aLog='/var/log/system/system.log'):
   from time import localtime, strftime
