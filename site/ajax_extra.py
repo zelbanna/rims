@@ -58,7 +58,7 @@ def remote_json(aWeb):
  elif op == 'ddi_dns_remove':
   aid  = aWeb.get_value('dns_a_id')
   pid  = aWeb.get_value('dns_ptr_id')
-  res  = DDI.ddi_dns_update(aid,pid)  
+  res  = DDI.ddi_dns_remove(aid,pid)  
  elif op == 'ddi_ipam_lookup':
   res  = DDI.ddi_ipam_lookup(ip)
  elif op == 'ddi_ipam_update':

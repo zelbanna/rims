@@ -99,7 +99,7 @@ def ddi_dns_lookup(aIP,aName,aDomain):
  ptr     = sys_ip2ptr(aIP)
  fqdn    = aName + "." + aDomain
  retvals = {}
- sys_log_msg("PDNS lookup - input:{}, {}, {}".format(aIP,aName,aDomain))  
+ sys_log_msg("DNS  lookup - input:{}, {}, {}".format(aIP,aName,aDomain))  
  db = DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
  res = db.do("SELECT id,name from domains")
@@ -122,7 +122,7 @@ def ddi_dns_update(aIP,aName,aDomain,aAid,aPid):
  ptr     = sys_ip2ptr(aIP)
  fqdn    = aName + "." + aDomain
  retvals = {}
- sys_log_msg("PDNS update - input:{}, {}, {}, {}, {}".format(aIP,aName,aDomain,aAid,aPid))  
+ sys_log_msg("DNS  update - input:{}, {}, {}, {}, {}".format(aIP,aName,aDomain,aAid,aPid))  
  db = DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
  db.do("SELECT id,name from domains")
@@ -143,16 +143,20 @@ def ddi_dns_update(aIP,aName,aDomain,aAid,aPid):
   db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','PTR','{}',3600,'{}')".format(str(domain_id[1].get('id')),ptr,fqdn,serial))
  db.commit()
  db.close()
- sys_log_msg("PDNS update - results: " + str(retvals))
+ sys_log_msg("DNS  update - results: " + str(retvals))
  return retvals
 
 def ddi_dns_remove(aAid,aPid):
  db = DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
- ares = db.do("DELETE FROM records WHERE id = '{}' and type = 'A'".format(aAid))
- pres = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aPid))
+ ares = 0
+ pres = 0
+ if aAid != '0':
+  ares = db.do("DELETE FROM records WHERE id = '{}' and type = 'A'".format(aAid))
+ if aPid != '0':
+  pres = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aPid))
  db.commit()
- sys_log_msg("PDNS remove - A:{} PTR:{}".format(str(ares),str(pres)))
+ sys_log_msg("DNS  remove - A:{} PTR:{}".format(str(ares),str(pres)))
  return { 'a':ares, 'ptr':pres }
  db.close()
 
