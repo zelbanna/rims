@@ -8,6 +8,7 @@ __version__= "3.0GA"
 __status__= "Production"
 
 from sdcp.core.GenLib import DB, sys_ip2int
+from sdcp.devices.RackUtils import Avocent
 
 ############################################## PDUs ###################################################
 #
@@ -15,7 +16,6 @@ from sdcp.core.GenLib import DB, sys_ip2int
 #
 
 def pdu_list_units(aWeb):
- from sdcp.devices.RackUtils import Avocent
  domain  = aWeb.get_value('domain')
  pdulist = aWeb.get_list('pdulist')
 
@@ -113,7 +113,6 @@ def pdu_device_info(aWeb):
  db.connect()
 
  if op == 'lookup':
-  from sdcp.devices.RackUtils import Avocent
   # Assume lookup for now
   pdu   = Avocent(ip)
   slotl = pdu.get_slot_names()
@@ -188,11 +187,10 @@ def pdu_unit_update(aWeb):
  values = aWeb.get_keys()
  values.remove('call')
  if 'name' in values:
-  from sdcp.devices.RackUtils import Avocent
   name = aWeb.get_value('name')
-  pdu  = aWeb.get_value('pdu')
-  slot = aWeb.get_value('slot')
-  unit = aWeb.get_value('unit')
+  pdu  = aWeb.get_value('pdu','0')
+  slot = aWeb.get_value('slot','0')
+  unit = aWeb.get_value('unit','0')
   avocent = Avocent(pdu)
   avocent.set_name(slot,unit,name)
   print "Updated name: {} for {} slot {}".format(name,pdu,slot)
@@ -215,3 +213,25 @@ def pdu_remove(aWeb):
  print "<B>Unit {0} deleted<B>".format(id)
  db.close()
 
+def pdu_update_device_pdus(aWeb):
+ (pem0_id,pem0_slot) = aWeb.get_value('pem0_pdu_slot_id',"0.0").split('.')
+ (pem1_id,pem1_slot) = aWeb.get_value('pem1_pdu_slot_id',"0.0").split('.')
+ pem0_unit = aWeb.get_value('pem0_unit','0')
+ pem1_unit = aWeb.get_value('pem1_unit','0')
+ hostname  = aWeb.get_value('name')
+ retstr    = ""
+ db = DB()
+ db.connect()
+ db.do("SELECT id,INET_NTOA(ip) as ip FROM pdus WHERE id = '{}' OR id = '{}'".format(pem0_id,pem1_id))
+ pdus = db.get_all_dict('id')
+ aWeb.log_msg("{} {} {}".format(pem0_id,pem0_slot,pem0_unit))
+ if not (pem0_slot == '0' or pem0_unit == '0') and hostname:
+  string = hostname+"-P0"
+  avocent = Avocent(pdus[int(pem0_id)]['ip'])
+  retstr = retstr + " " + avocent.set_name(pem0_slot,pem0_unit,string)
+ if not (pem1_slot == '0' or pem1_unit == '0') and hostname:
+  string = hostname+"-P1"
+  avocent = Avocent(pdus[int(pem1_id)]['ip'])
+  retstr = retstr + " " + avocent.set_name(pem1_slot,pem1_unit,string)
+ db.close()
+ print retstr

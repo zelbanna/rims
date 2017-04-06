@@ -74,7 +74,5 @@ function btnoperation(button) {
    div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
   }
   $.post(lnk, $("#"+frm).serialize() , function(result) { div.html(result); });
- } else {
-  alert("Unknown button operation: " + op);
  }
 };

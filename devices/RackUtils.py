@@ -115,14 +115,14 @@ class Avocent(GenDevice, ConfObject):
   from netsnmp import VarList, Varbind, Session
   try:
    session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_write_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
-   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.4.1.{}.{}".format(slot,unit) , name, "OPAQUE"))
+   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.4.1.{}.{}".format(slot,unit) , name[:16], "OPAQUE"))
    session.set(setobj)
    entry = self.get_entry(slot+"."+unit)
    if entry:
-    entry['name'] = name
-   return "Name set to: {}".format(name)
+    entry['name'] = name[:16]
+   return "{0}.{1}_name: {2}".format(slot,unit,name[:16])
   except Exception as exception_error:
-   self.log_msg("Avocent : error setting name " + str(exception_error), aPrint = True)
+   self.log_msg("Avocent : error setting name " + str(exception_error))
    return "Error setting name {}".format(name)
 
  def load_snmp(self):
@@ -143,7 +143,7 @@ class Avocent(GenDevice, ConfObject):
     node = slot + "." + outlet.iid
     self._configitems[ node ] = { 'name': outlet.val, 'state':Avocent.get_outlet_state(statedict[node]), 'slotname':slotdict.get(slot,"unknown"), 'slot':slot, 'unit':outlet.iid }
   except Exception as exception_error:
-   self.log_msg("Avocent : error loading conf " + str(exception_error), aPrint = True)
+   self.log_msg("Avocent : error loading conf " + str(exception_error))
  
  def get_slot_names(self):
   from netsnmp import VarList, Varbind, Session

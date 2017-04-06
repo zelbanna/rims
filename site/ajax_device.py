@@ -211,7 +211,7 @@ def device_device_info(aWeb):
  if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+device_data['consoleport'])
  if (device_data['pem0_pdu_id'] != 0 and device_data['pem0_pdu_id'] != 0) or (device_data['pem1_pdu_id'] != 0 and device_data['pem1_pdu_id'] != 0):
-  print "<A>P</A>"
+  print "<A CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post>P</A>".format(device_data['pem0_pdu_unit'],device_data['pem1_pdu_unit'],name)
  if device_data['type'] == 'pdu' or device_data['type'] == 'console':
   res = db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip']))
   if res == 0:
