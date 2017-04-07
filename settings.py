@@ -15,7 +15,7 @@ def convertSettings(aFile):
    config = load(f)
   with open("SettingsContainer.py",'w') as f:
    for name,cathegory in config.iteritems():
-    f.write("##################### {:<8} ######################\n".format(name.upper()))
+    # f.write("##################### {:<8} ######################\n".format(name.upper()))
     for key, entry in cathegory.iteritems():
      f.write("{}_{} = '{}'\n".format(name,key,entry))
     f.write("\n")

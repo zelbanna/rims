@@ -7,6 +7,8 @@
   "dbtype":"mysql",
   "dbuser":"sdcp",
   "dbpass":"sdcp"
+  "dnssrv":"127.0.0.1",
+  "ntpsrv":"127.0.0.1"
  },
  "dnsdb" : {
   "proxy" : "http://<ip>/",
