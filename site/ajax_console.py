@@ -36,14 +36,14 @@ def console_list_consoles(aWeb):
  print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Consoles</CENTER></TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "</TD></TR>"
  res  = db.do("SELECT id, INET_NTOA(ip) as ip, name from consoles ORDER by name")
  data = db.get_all_rows()
  print "<TR><TH>ID</TH><TH>Name</TH><TH>IP</TH></TR>"
  for unit in data:
-  print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['ip'])
+  print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['ip'])
  print "</TABLE></DIV></DIV>"
  db.close()
 
@@ -96,9 +96,9 @@ def console_device_info(aWeb):
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
  print "</TABLE>"
  if not id == 'new':
-  print "<A TITLE='Reload info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=console_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
-  print "<A TITLE='Remove unit' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=console_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A TITLE='Update unit'  CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=console_device_info&op=update FRM=console_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
+  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=console_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
+  print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=console_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
+ print "<A TITLE='Update unit'  CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=console_device_info&op=update FRM=console_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"
 

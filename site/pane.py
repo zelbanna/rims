@@ -28,15 +28,15 @@ def examine(aWeb):
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
  
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-btnop' OP=confirm DIV=div_examine_log MSG='Clear Network Logs?' LNK='ajax.cgi?call=examine_clear_logs&{}'>Clear Logs</A>".format(aWeb.reload_args_except(['pane']))
- print "<A CLASS=z-btnop OP=single SELECTOR='.z-system' DIV=div_examine_log LNK='.z-system'>Logs</A>"
+ print "<A CLASS='z-warning z-op' OP=confirm DIV=div_examine_log MSG='Clear Network Logs?' LNK='ajax.cgi?call=examine_clear_logs&{}'>Clear Logs</A>".format(aWeb.reload_args_except(['pane']))
+ print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_examine_log LNK='.z-system'>Logs</A>"
  if upshost:
-  print "<A CLASS=z-btnop OP=single SELECTOR='.z-system' DIV=div_ups LNK='.z-system'>UPS</A>"
+  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_ups LNK='.z-system'>UPS</A>"
  if svclist:
-  print "<A CLASS=z-btnop OP=single SELECTOR='.z-system' DIV=div_dns  LNK='.z-system'>DNS</A>"
-  print "<A CLASS=z-btnop OP=single SELECTOR='.z-system' DIV=div_dhcp LNK='.z-system'>DHCP</A>"
-  print "<A CLASS=z-btnop OP=single SELECTOR='.z-system' DIV=div_external LNK='.z-system'>External</A>"
- print "<A CLASS='z-reload z-btnop' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
+  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_dns  LNK='.z-system'>DNS</A>"
+  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_dhcp LNK='.z-system'>DHCP</A>"
+  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_external LNK='.z-system'>External</A>"
+ print "<A CLASS='z-reload z-op' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
  print "</DIV>"
  
  print "<DIV CLASS='z-navcontent' ID=div_navcont>"
@@ -97,7 +97,7 @@ def munin(aWeb):
  <DIV CLASS=z-navframe ID=div_navframe>
  <DIV CLASS=z-navbar ID=div_navbar>
  <A onclick=toggleMuninNavigation()>Navigation</A>
- <A CLASS='z-reload z-btnop' OP=iload IFRAME=iframe_munin LNK='/munin-cgi/munin-cgi-html/index.html'></A>
+ <A CLASS='z-reload z-op' OP=iload IFRAME=iframe_munin LNK='/munin-cgi/munin-cgi-html/index.html'></A>
  </DIV>
  <DIV CLASS='z-navcontent' ID=div_navcont>
  <IFRAME ID=iframe_munin src='/munin-cgi/munin-cgi-html/index.html'></IFRAME>
@@ -127,7 +127,7 @@ def weathermap(aWeb):
      config = load(conffile)
      for entry in config.keys():
       name= config[entry]['map'][3:]
-      print "<A CLASS='z-btnop' OP=iload IFRAME=iframe_wm_cont LNK=pane.cgi?view=weathermap&json={2}&page={0}>{1}</A>".format(name,name.capitalize(),json)
+      print "<A CLASS='z-op' OP=iload IFRAME=iframe_wm_cont LNK=pane.cgi?view=weathermap&json={2}&page={0}>{1}</A>".format(name,name.capitalize(),json)
    except :
     print "<A CLASS='z-warning'>Error loading JSON file</A>"
   else:
@@ -136,7 +136,7 @@ def weathermap(aWeb):
     for file in listdir("wm_configs/"):
      if file.startswith("wm_"):
       name= file[3:-5]
-      print "<A CLASS='z-btnop' OP=iload IFRAME=iframe_wm_cont LNK=pane.cgi?view=weathermap&page={0}>{1}</A>".format(name,name.capitalize())
+      print "<A CLASS='z-op' OP=iload IFRAME=iframe_wm_cont LNK=pane.cgi?view=weathermap&page={0}>{1}</A>".format(name,name.capitalize())
    except Exception as err:
     print "weathermap.cgi: error finding config files in 'wm_configs/' [{}]".format(str(err))
   print "</DIV>"
@@ -230,17 +230,17 @@ def rack_info(aWeb):
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(rack,name)
- print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
+ print "<A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(rack,name)
+ print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
  if con:
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)
+  print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)
  if len(pdus) > 0:
   pdustring = "&pdulist=".join(pdus)
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list_units&pdulist={}'>PDU</A>".format(pdustring)
- print "<A CLASS='z-btnop z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except())
- print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=pdu_list_pdus'>PDUs</A>"
- print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list_consoles'>Consoles</A>"
- print "<A CLASS='z-btnop' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_list_racks'>Racks</A>"
+  print "<A CLASS='z-op' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list_units&pdulist={}'>PDU</A>".format(pdustring)
+ print "<A CLASS='z-op z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except())
+ print "<A CLASS='z-op' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=pdu_list_pdus'>PDUs</A>"
+ print "<A CLASS='z-op' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list_consoles'>Consoles</A>"
+ print "<A CLASS='z-op' style='float:right;' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_list_racks'>Racks</A>"
  print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
@@ -268,13 +268,13 @@ def esxi(aWeb):
  print aWeb.get_listeners()
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-btnop' OP=confirm DIV=div_esxi_op MSG='Really shut down?' LNK='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.reload_args_except(['pane']))
- print "<A CLASS=z-btnop OP=toggle DIV=div_esxi_pic   HREF='#'>Picture</A>"
- print "<A CLASS=z-btnop OP=toggle DIV=div_esxi_stats HREF='#'>Stats</A>"
- print "<A CLASS=z-btnop OP=toggle DIV=div_esxi_op   HREF='#'>VM OPs</A>"
+ print "<A CLASS='z-warning z-op' OP=confirm DIV=div_esxi_op MSG='Really shut down?' LNK='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.reload_args_except(['pane']))
+ print "<A CLASS=z-op OP=toggle DIV=div_esxi_pic   HREF='#'>Picture</A>"
+ print "<A CLASS=z-op OP=toggle DIV=div_esxi_stats HREF='#'>Stats</A>"
+ print "<A CLASS=z-op OP=toggle DIV=div_esxi_op   HREF='#'>VM OPs</A>"
  print "<A HREF=https://{0}/ui target=_blank>UI</A>".format(esxi._ip)
  print "<A HREF=http://{0}/index.html target=_blank>IPMI</A>".format(esxi.get_kvm_ip('ipmi'))
- print "<A CLASS='z-btnop z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
+ print "<A CLASS='z-op z-reload' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
  print "</DIV>"
  
  print aWeb.get_listeners("div_navcont")
@@ -329,18 +329,18 @@ def devices(aWeb):
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-warning z-btnop' OP=confirm DIV=div_navcont SPIN=true MSG='Clear DB?' LNK='ajax.cgi?call=device_op_finddevices&domain={0}&clear=true'>Clear DB</A>".format(domain)
- print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&domain={}'>Devices</A>".format(domain)
- print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
+ print "<A CLASS='z-warning z-op' OP=confirm DIV=div_navcont SPIN=true MSG='Clear DB?' LNK='ajax.cgi?call=device_op_finddevices&domain={0}&clear=true'>Clear DB</A>".format(domain)
+ print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&domain={}'>Devices</A>".format(domain)
+ print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
  if argdict.get('console',None):
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&{}'>Console</A>".format(argdict.get('console'))
+  print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&{}'>Console</A>".format(argdict.get('console'))
  if argdict.get('pdu',None):
-  print "<A CLASS='z-btnop' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
- print "<A CLASS='z-reload z-btnop' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
- print "<A CLASS='z-right z-btnop' OP=load DIV=div_navcont MSG='Discover devices?'               LNK='ajax.cgi?call=device_op_finddevices&domain={0}'>Device Discovery</A>".format(domain)
- print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Discover graphs?'   SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
- print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Sync Devices/Graphs?'         LNK='ajax.cgi?call=graph_sync&domain={0}'>Sync Graphing</A>".format(domain)
- print "<A CLASS='z-right z-btnop' OP=confirm DIV=div_navcont MSG='Sync DNS and IPAM?' SPIN=true LNK='ajax.cgi?call=device_op_syncddi&domain={}'>Sync DDI</A>".format(domain)
+  print "<A CLASS='z-op' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
+ print "<A CLASS='z-reload z-op' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.reload_args_except([]))
+ print "<A CLASS='z-right z-op' OP=load DIV=div_navcont MSG='Discover devices?'               LNK='ajax.cgi?call=device_op_finddevices&domain={0}'>Device Discovery</A>".format(domain)
+ print "<A CLASS='z-right z-op' OP=confirm DIV=div_navcont MSG='Discover graphs?'   SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
+ print "<A CLASS='z-right z-op' OP=confirm DIV=div_navcont MSG='Sync Devices/Graphs?'         LNK='ajax.cgi?call=graph_sync&domain={0}'>Sync Graphing</A>".format(domain)
+ print "<A CLASS='z-right z-op' OP=confirm DIV=div_navcont MSG='Sync DNS and IPAM?' SPIN=true LNK='ajax.cgi?call=device_op_syncddi&domain={}'>Sync DDI</A>".format(domain)
  print "</DIV>"
  print aWeb.get_listeners("div_navleft")
  print aWeb.get_listeners("div_navcont")

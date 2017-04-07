@@ -98,7 +98,7 @@ class Web(object):
   return self.get_header_base("<TITLE>{}</TITLE>\n<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>".format(aTitle))
 
  def get_listeners(self,aselector = "div_navbar"):
-  return "<SCRIPT>$(function() { $('#"+ aselector +"').on('click','.z-btnop',function() { btnoperation(this); } ); });</SCRIPT>"
+  return "<SCRIPT>$(function() { $('#"+ aselector +"').on('click','.z-op',function() { btnoperation(this); } ); });</SCRIPT>"
 
  def get_include(self,aurl):
   from urllib import urlopen

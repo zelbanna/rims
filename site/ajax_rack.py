@@ -40,7 +40,7 @@ def rack_info(aWeb):
     else:
      if rackunits.get(count*index,None):
       rowspan = rackunits[count*index].get('rack_size')
-      print "<TD CLASS='z-rack-data' rowspan={2} style='background-color:green'><CENTER><a class='z-btnop' title='Show device info for {0}' op='load' div='div_navcont' lnk='ajax.cgi?call=device_device_info&id={1}'>{0}</a></CENTER></TD>".format(rackunits[count*index]['hostname'],rackunits[count*index]['id'],rowspan)
+      print "<TD CLASS='z-rack-data' rowspan={2} style='background-color:green'><CENTER><a class='z-op' title='Show device info for {0}' op='load' div='div_navcont' lnk='ajax.cgi?call=device_device_info&id={1}'>{0}</a></CENTER></TD>".format(rackunits[count*index]['hostname'],rackunits[count*index]['id'],rowspan)
       rowspan = rowspan - 1
      else:
       print "<TD CLASS='z-rack-data'>&nbsp;</TD>"
@@ -57,14 +57,14 @@ def rack_list_racks(aWeb):
  print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Rack</CENTER></TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "</TD></TR>"
  res  = db.do("SELECT * from racks ORDER by name")
  data = db.get_all_rows()
  print "<TR><TH>ID</TH><TH>Name</TH><TH>Size</TH></TR>"
  for unit in data:
-  print "<TR><TD>{0}</TD><TD><A CLASS='z-btnop' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['size'])
+  print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['size'])
  print "</TABLE></DIV></DIV>"
  db.close()
 
@@ -100,10 +100,10 @@ def rack_device_info(aWeb):
   print "</SELECT></TD></TR>"
  db.close()
  print "</TABLE>"
- print "<A TITLE='Reload info' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_device_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A TITLE='Update unit' CLASS='z-btn z-btnop z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_device_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
-  print "<A TITLE='Remove unit' CLASS='z-btn z-btnop z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
+  print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"

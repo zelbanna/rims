@@ -40,7 +40,7 @@ def esxi_op(aWeb, aEsxi = None):
    aWeb.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  print "<TABLE>"
- template="<A CLASS='z-btn z-small-btn z-btnop' TITLE='{3}' OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}'><IMG SRC=images/btn-{1}.png></A>"
+ template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}'><IMG SRC=images/btn-{1}.png></A>"
  statelist = aEsxi.get_vms()
  if not nstate:
   print "<TR><TH CLASS='z-header' COLSPAN=2>{}</TH></TR>".format(aEsxi._fqdn)

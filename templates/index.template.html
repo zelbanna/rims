@@ -4,24 +4,24 @@
 <LINK REL="icon" HREF="images/sdcp.png" >
 <SCRIPT SRC="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></SCRIPT>
 <SCRIPT SRC='z-functions.js'></SCRIPT>
-<SCRIPT>$(function() { $('.z-btnop').click( function() { btnoperation(this); } ); });</SCRIPT>
+<SCRIPT>$(function() { $('.z-op').click( function() { btnoperation(this); } ); });</SCRIPT>
 <BASE TARGET="main_cont">
 <META CHARSET="UTF-8">
 </HEAD>
 <!-- -------- Main/Left Menu -------- -->
 
 <DIV class='z-header-left' ID=div_main_menu>
- <A CLASS='z-btn z-btnop'	OP=single DIV=div_sub_menu SELECTOR='div.z-header-right'	TITLE='General'>	<IMG SRC='images/icon-start.png'/></A>
+ <A CLASS='z-btn z-op'	OP=single DIV=div_sub_menu SELECTOR='div.z-header-right'	TITLE='General'>	<IMG SRC='images/icon-start.png'/></A>
  <A CLASS='z-btn'			TITLE='Examine'	HREF=site.cgi?pane=examine&upshost=esxi3&domain=mgmt&svchost=services&svchost=services2><IMG SRC='images/icon-examine.png'/></A>
- <A CLASS='z-btn z-btnop'	OP=single DIV=div_sub_tool SELECTOR='div.z-header-right'	TITLE='Tool'>		<IMG SRC='images/icon-tools.png'/></A>
- <A CLASS='z-btn z-btnop'	OP=single DIV=div_sub_esxi SELECTOR='div.z-header-right'	TITLE='ESXi'>		<IMG SRC='images/icon-servers.png'/></A>
- <A CLASS='z-btn z-btnop'	OP=single DIV=div_sub_medi SELECTOR='div.z-header-right'	TITLE='Media'>		<IMG SRC='images/icon-multimedia.png'/></A>
- <A CLASS='z-btn z-btnop'	OP=single DIV=div_sub_auto SELECTOR='div.z-header-right'	TITLE='Home'>		<IMG SRC='images/icon-zwave.png'/></A>
+ <A CLASS='z-btn z-op'	OP=single DIV=div_sub_tool SELECTOR='div.z-header-right'	TITLE='Tool'>		<IMG SRC='images/icon-tools.png'/></A>
+ <A CLASS='z-btn z-op'	OP=single DIV=div_sub_esxi SELECTOR='div.z-header-right'	TITLE='ESXi'>		<IMG SRC='images/icon-servers.png'/></A>
+ <A CLASS='z-btn z-op'	OP=single DIV=div_sub_medi SELECTOR='div.z-header-right'	TITLE='Media'>		<IMG SRC='images/icon-multimedia.png'/></A>
+ <A CLASS='z-btn z-op'	OP=single DIV=div_sub_auto SELECTOR='div.z-header-right'	TITLE='Home'>		<IMG SRC='images/icon-zwave.png'/></A>
 </DIV>
 
 <!-- ---------- Sub Menues ---------- -->
 
-<DIV ID=div_sub_menu class='z-header-right' style='display:block'>
+<DIV ID=div_sub_menu class='z-header-right' style='display: block'>
 <A CLASS='z-btn'	TITLE='Weathermap'	HREF=site.cgi?pane=weathermap&view=main&json=weathermaps.json><IMG SRC='images/icon-wm.png'/></A>
 <A CLASS='z-btn'	TITLE='Rack'		HREF=site.cgi?pane=rack&rack=1&domain=mgmt&console=ts1.mgmt&pdu=apc.mgmt><IMG SRC='images/icon-rack.png'/></A>
 <A CLASS='z-btn'	TITLE='QNAP'		HREF=http://172.16.121.19><IMG SRC='images/icon-qnap.png'/></A>
@@ -32,22 +32,22 @@
 <A CLASS='z-btn'	TITLE='Junos'		TARGET="_blank"	HREF=http://www.juniper.net/support><IMG SRC='images/icon-junos.png'/></A>
 </DIV>
 
-<DIV ID=div_sub_esxi class='z-header-right' style='display:none'>
+<DIV ID=div_sub_esxi class='z-header-right' style='display: none'>
 <A CLASS='z-btn' 			TITLE='vCenter'	TARGET="_blank"		HREF=https://vcenter.mgmt:9443/vsphere-client/><IMG SRC="images/icon-vcenter.png"></A>
 <A CLASS='z-btn z-srv-btn'	TITLE='ESXi2 menu'		HREF=site.cgi?pane=esxi&domain=mgmt&host=esxi2>2</A>
 <A CLASS='z-btn z-srv-btn'	TITLE='ESXi3 menu'		HREF=site.cgi?pane=esxi&domain=mgmt&host=esxi3>3</A>
-<A CLASS='z-btn z-btnop'	TITLE='Shutdown All'	OP=iconfirm IFRAME=main_cont MSG='Shut down ALL VMs?' LNK='shutdownall.cgi?domain=mgmt&srvhost=esxi3'><IMG SRC="images/icon-bigshutdown.png"></A>
+<A CLASS='z-btn z-op'	TITLE='Shutdown All'	OP=iconfirm IFRAME=main_cont MSG='Shut down ALL VMs?' LNK='shutdownall.cgi?domain=mgmt&srvhost=esxi3'><IMG SRC="images/icon-bigshutdown.png"></A>
 </DIV>
 
-<DIV ID=div_sub_medi class='z-header-right' style='display:none'>
+<DIV ID=div_sub_medi class='z-header-right' style='display: none'>
 <IFRAME ID=menu_media name=menu_media src='submedia.php'></IFRAME>
 </DIV>
 
-<DIV ID=div_sub_auto class='z-header-right' style='display:none'>
+<DIV ID=div_sub_auto class='z-header-right' style='display: none'>
 <A CLASS='z-btn'	TITLE='Vera Device'	HREF=http://172.16.121.66/cmh/><IMG SRC="images/icon-vera.png"></A>
 </DIV>
 
-<DIV ID=div_sub_tool class='z-header-right' style='display:none'>
+<DIV ID=div_sub_tool class='z-header-right' style='display: none'>
 <A CLASS='z-btn'	TITLE='RDP'			TARGET="_blank"	HREF=guacamole/><IMG SRC="images/icon-rdp.png" /></A>
 <A CLASS='z-btn'	TITLE='Device Management'			HREF=site.cgi?pane=devices&domain=mgmt&discstart=192.168.121.1&discstop=192.168.122.254><IMG SRC='images/icon-network.png'/></A>
 <A CLASS='z-btn'	TITLE='Weathermap Editor'			HREF=weathermap/editor.php><IMG SRC='images/icon-wm-editor.png'/></A>

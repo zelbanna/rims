@@ -118,7 +118,7 @@ a.z-btn > img {       max-height:43px; }
 a.z-low-btn > img {   height:22px; }
 a.z-small-btn > img { height:22px; }
 
-a.z-btnop { outline:none; cursor:pointer; }
+a.z-op { outline:none; cursor:pointer; }
 /*###############################################################################################*/
 
 .z-input {
