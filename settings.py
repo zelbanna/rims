@@ -4,7 +4,7 @@
 Creates a settings container from a .json file
 """
 __author__ = "Zacharias El Banna"
-__version__ = "1.1GA"
+__version__ = "10.0GA"
 __status__ = "Production"
 
 def convertSettings(aFile):

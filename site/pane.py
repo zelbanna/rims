@@ -4,7 +4,7 @@ Site view panes module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__= "2.0GA"
+__version__ = "10.0GA"
 __status__= "Production"
 
 #

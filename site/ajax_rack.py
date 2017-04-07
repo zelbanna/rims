@@ -4,7 +4,7 @@ Ajax Racks calls module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__= "1.1GA"
+__version__ = "10.0GA"
 __status__= "Production"
 
 from sdcp.core.GenLib import DB

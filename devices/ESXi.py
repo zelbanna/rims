@@ -4,7 +4,7 @@ The ESXi interworking module
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "1.0GA"
+__version__ = "10.0GA"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
