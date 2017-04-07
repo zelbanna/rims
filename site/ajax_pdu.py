@@ -106,14 +106,13 @@ def pdu_list_pdus(aWeb):
 def pdu_device_info(aWeb):
  id = aWeb.get_value('id')
  ip = aWeb.get_value('ip')
- ipint = sys_ip2int(ip)
  op = aWeb.get_value('op')
  name = aWeb.get_value('name')
  db = DB()
  db.connect()
 
  if op == 'lookup':
-  # Assume lookup for now
+  ipint = sys_ip2int(ip)
   pdu   = Avocent(ip)
   slotl = pdu.get_slot_names()
   slotn = len(slotl)
@@ -123,6 +122,7 @@ def pdu_device_info(aWeb):
    db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1],slotl[1][0],slotl[1][1]))
   db.commit()
  elif op == 'update':
+  ipint = sys_ip2int(ip)
   slots = aWeb.get_value('slots','0')
   if id == 'new':
    sql = "INSERT into pdus (name, ip, slots) VALUES ('{0}','{1}','{2}')".format(name,ipint,slots)
