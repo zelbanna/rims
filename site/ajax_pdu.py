@@ -224,11 +224,10 @@ def pdu_update_device_pdus(aWeb):
  db.connect()
  db.do("SELECT id,INET_NTOA(ip) as ip FROM pdus WHERE id = '{}' OR id = '{}'".format(pem0_id,pem1_id))
  pdus = db.get_all_dict('id')
- aWeb.log_msg("{} {} {}".format(pem0_id,pem0_slot,pem0_unit))
  if not (pem0_slot == '0' or pem0_unit == '0') and hostname:
   string = hostname+"-P0"
   avocent = Avocent(pdus[int(pem0_id)]['ip'])
-  retstr = retstr + " " + avocent.set_name(pem0_slot,pem0_unit,string)
+  retstr = avocent.set_name(pem0_slot,pem0_unit,string)
  if not (pem1_slot == '0' or pem1_unit == '0') and hostname:
   string = hostname+"-P1"
   avocent = Avocent(pdus[int(pem1_id)]['ip'])
