@@ -171,6 +171,16 @@ def sys_ip2ptr(addr):
  octets.reverse()
  return ".".join(octets) + ".in-addr.arpa"
 
+def sys_int2mac(aInt):
+ return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).upper()
+
+def sys_is_mac(aMAC):           
+ try:
+  aMAC = aMAC.replace(":","")
+  return len(aMAC) == 12 and int(aMAC,16)
+ except:         
+  return False
+
 def ping_os(ip):
  from os import system
  return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0

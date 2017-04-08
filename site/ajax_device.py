@@ -7,10 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "10.1GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import DB, sys_ip2int
-
-def int2mac(aInt):
- return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).upper()
+from sdcp.core.GenLib import DB, sys_ip2int, sys_int2mac, sys_is_mac
 
 ########################################## Device Operations ##########################################
 #
@@ -134,8 +131,7 @@ def device_device_info(aWeb):
  print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize:horizontal; margin-left:0px; width:670px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<!-- 1st Table -->"
- print "<DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
+ print "<!-- Reachability Info --><DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
  print "<TR><TD>Name:</TD><TD><INPUT NAME=hostname CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['hostname'])
  print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(device_data['domain'])
  print "<TR><TD>SNMP:</TD><TD>{}</TD></TR>".format(device_data['snmp'])
@@ -155,8 +151,7 @@ def device_device_info(aWeb):
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
  print "<TR><TD COLSPAN=2 style='width:210px'>&nbsp;</TD></TR>"
  print "</TABLE></DIV>"
- print "<!-- 2nd Table -->"
- print "<DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
+ print "<!-- Rack Info --><DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
  print "<TR><TD>Rack:</TD><TD><SELECT NAME=rack_id CLASS='z-select'>"
  db.do("SELECT * FROM racks")
  racks = db.get_all_rows()
@@ -198,14 +193,13 @@ def device_device_info(aWeb):
    for index in range(0,4):
     print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  print "</TABLE></DIV>"
- print "<!-- 3rd Table -->"
- print "<DIV style='margin:3px; float:left;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Extra info</TH></TR>"
+ print "<!-- Extra info --><DIV style='margin:3px; float:left;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Extra info</TH></TR>"
  print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_size'])
  print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['domain'] != device_data['fqdn']) else "", device_data['fqdn'])
  print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['dns_a_id'])
  print "<TR><TD>DNS PTR ID:</TD><TD>{}</TD></TR>".format(device_data['dns_ptr_id'])
  print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(device_data['ipam_id'])
- print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(int2mac(device_data['mac']))
+ print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(sys_int2mac(device_data['mac']))
  print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
  print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
  print "</TABLE></DIV>"
@@ -222,6 +216,7 @@ def device_device_info(aWeb):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+device_data['consoleport'])
  if device_data['type'] == 'pdu' or device_data['type'] == 'console' and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip'])) == 0:
   print "<A style='float:right;' TITLE='Add {0}' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname'])
+ 
  print "<SPAN ID=update_results style='float:right; font-size:9px;'>{}</SPAN>".format(opres)
  print "</DIV>"
  print "</FORM>"
@@ -393,13 +388,6 @@ def device_op_syncddi(aWeb):
 #
 #
 
-def is_mac(aMAC):
- try:
-  aMAC = aMAC.replace(":","")
-  return len(aMAC) == 12 and int(aMAC,16)
- except:
-  return False
-
 def device_new(aWeb):
  ip  = aWeb.get_value('ip',"127.0.0.1")
  mac = aWeb.get_value('mac',"00:00:00:00:00:00")
@@ -412,7 +400,7 @@ def device_new(aWeb):
   xist = db.do("SELECT id,hostname,domain FROM devices WHERE ip ='{}'".format(ipint))
   if xist == 0:
    mac = mac.replace(":","")
-   if not is_mac(mac):
+   if not sys_is_mac(mac):
     mac = "000000000000"
    res = db.do("INSERT INTO devices (ip,mac,domain,hostname,snmp,model,type,fqdn,rack_size) VALUES('{}',x'{}','{}','unknown','unknown','unknown','unknown','unknown',1)".format(ipint,mac,dom))
    db.commit()
@@ -433,3 +421,10 @@ def device_new(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_new FRM=device_new_form OP=post><IMG SRC='images/btn-start.png'></A>"
  print "<SPAN style='font-size:9px; float:right'>{}</SPAN>".format(results)
  print "</DIV>"
+
+#
+#
+#
+def device_gen_conf(aWeb):
+ ip  = aWeb.get_value('ip',"127.0.0.1")
+
