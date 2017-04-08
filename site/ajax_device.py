@@ -436,8 +436,8 @@ def device_conf_gen(aWeb):
  else: 
   from sdcp.core.ddi import ddi_ipam_lookup
   retvals = ddi_ipam_lookup(ip)
- mask = aWeb.get_value('mask',retvals.get('subnet_mask',"24"))
- sub  = aWeb.get_value('sub',retvals.get('subnet_as',"127.0.0.0"))
+ mask = aWeb.get_value('mask', retvals.get('subnet_mask',"24"))
+ sub  = aWeb.get_value('sub',  retvals.get('subnet_asc',"127.0.0.0"))
  gw   = aWeb.get_value('gateway', sys_int2ip(sys_ip2int(sub) + 1))
  print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:150px; float:left;'>"
  print "<FORM ID=device_conf_gen_form>"
