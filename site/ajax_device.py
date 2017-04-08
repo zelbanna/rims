@@ -131,7 +131,7 @@ def device_device_info(aWeb):
 
  ########################## Data Tables ######################
  
- print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize:horizontal; margin-left:0px; width:654px; z-index:101; height:{}px;'>".format(str(height))
+ print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize:horizontal; margin-left:0px; width:670px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<!-- 1st Table -->"
@@ -197,7 +197,7 @@ def device_device_info(aWeb):
    print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME={1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,device_data[pem + "_pdu_unit"])
  print "</TABLE></DIV>"
  print "<!-- 3rd Table -->"
- print "<DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Extra info</TH></TR>"
+ print "<DIV style='margin:3px; float:left;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Extra info</TH></TR>"
  print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_size'])
  print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['domain'] != device_data['fqdn']) else "", device_data['fqdn'])
  print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['dns_a_id'])
