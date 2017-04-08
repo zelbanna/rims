@@ -11,6 +11,7 @@ from sdcp.core.GenLib import DB, sys_ip2int
 
 def int2mac(aInt):
  return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).upper()
+
 ########################################## Device Operations ##########################################
 #
 #
