@@ -9,6 +9,8 @@ __status__= "Production"
 
 from sdcp.core.GenLib import DB, sys_ip2int
 
+def int2mac(aInt):
+ return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).upper()
 ########################################## Device Operations ##########################################
 #
 #
@@ -196,12 +198,13 @@ def device_device_info(aWeb):
  print "<!-- 3rd Table -->"
  print "<DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Extra info</TH></TR>"
  print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_size'])
- print "<TR><TD>FQDN:</TD><TD>{}</TD></TR>".format(device_data['fqdn'])
+ print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['domain'] != device_data['fqdn']) else "", device_data['fqdn'])
  print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['dns_a_id'])
  print "<TR><TD>DNS PTR ID:</TD><TD>{}</TD></TR>".format(device_data['dns_ptr_id'])
  print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(device_data['ipam_id'])
- for index in range(0,3):
-  print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
+ print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(int2mac(device_data['mac']))
+ print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
+ print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
  print "</TABLE></DIV>"
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
@@ -212,11 +215,8 @@ def device_device_info(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
  if (device_data['pem0_pdu_id'] != 0 and device_data['pem0_pdu_id'] != 0) or (device_data['pem1_pdu_id'] != 0 and device_data['pem1_pdu_id'] != 0):
   print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post TITLE='Update PDU with device info'><IMG SRC='images/btn-pdu-save.png' ALT='P'></A>".format(device_data['pem0_pdu_unit'],device_data['pem1_pdu_unit'],name)
-
-
  if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+device_data['consoleport'])
-
  if device_data['type'] == 'pdu' or device_data['type'] == 'console':
   res = db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip']))
   if res == 0:
