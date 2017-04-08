@@ -54,7 +54,7 @@ def rack_info(aWeb):
 def rack_list_racks(aWeb):
  db   = DB()
  db.connect()
- print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
+ print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Rack</CENTER></TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
@@ -65,7 +65,7 @@ def rack_list_racks(aWeb):
  print "<TR><TH>ID</TH><TH>Name</TH><TH>Size</TH></TR>"
  for unit in data:
   print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['size'])
- print "</TABLE></DIV></DIV>"
+ print "</TABLE></DIV>"
  db.close()
 
 #
@@ -81,7 +81,7 @@ def rack_device_info(aWeb):
   db.do("SELECT * from racks WHERE id = {}".format(id))
   rack = db.get_row()
 
- print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
+ print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
  print "<FORM ID=rack_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"

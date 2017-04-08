@@ -31,7 +31,7 @@ def pdu_list_units(aWeb):
 
  if len(pdulist) == 0:
   pdulist.append(pduop)
- print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
+ print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR><TH>PDU</TH><TH>Entry</TH><TH>Device</TH><TH style='width:63px;'>State</TH></TR>"
  for pdu in pdulist:
   avocent = Avocent(pdu)
@@ -55,7 +55,7 @@ def pdu_list_units(aWeb):
     print optemplate.format(pdu, "off", value['slot'],value['unit'], "shutdown")
     print optemplate.format(pdu, "reboot", value['slot'],value['unit'], "reboot")
    print "</TD></TR>"
- print "</TABLE></DIV></DIV>"
+ print "</TABLE></DIV>"
 
 def pdu_unit_info(aWeb):
  pdu  = aWeb.get_value('pdu')
@@ -63,7 +63,7 @@ def pdu_unit_info(aWeb):
  unit = aWeb.get_value('unit')
  slotname = aWeb.get_value('slotname')
  name = aWeb.get_value('name')
- print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
+ print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
  print "<FORM ID=pdu_form>"
  print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(slot)
  print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(unit)
@@ -86,7 +86,7 @@ def pdu_unit_info(aWeb):
 def pdu_list_pdus(aWeb):
  db   = DB()
  db.connect()
- print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
+ print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>PDUs</CENTER></TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=pdu_list_pdus'><IMG SRC='images/btn-reboot.png'></A>"
@@ -97,7 +97,7 @@ def pdu_list_pdus(aWeb):
  print "<TR><TH>ID</TH><TH>Name</TH><TH>IP</TH></TR>"
  for unit in data:
   print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=pdu_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['ip'])
- print "</TABLE></DIV></DIV>"
+ print "</TABLE></DIV>"
  db.close()
 
 #
@@ -136,7 +136,7 @@ def pdu_device_info(aWeb):
    res = db.do(sql)
    db.commit()
 
- print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
+ print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
  print "<FORM ID=pdu_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"
@@ -210,7 +210,7 @@ def pdu_remove(aWeb):
  db.do("UPDATE racks SET fk_pdu_1 = '0' WHERE fk_pdu_1 = '{0}'".format(id))
  db.do("UPDATE racks SET fk_pdu_2 = '0' WHERE fk_pdu_2 = '{0}'".format(id))
  db.commit()
- print "<B>Unit {0} deleted<B>".format(id)
+ print "<B>PDU {0} deleted<B>".format(id)
  db.close()
 
 def pdu_update_device_pdus(aWeb):

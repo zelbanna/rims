@@ -18,7 +18,7 @@ def graph_list(aWeb):
  if node and state:
   nstate = "yes" if state == "no" else "no"
   graph.update_entry(node, nstate)
- print "<DIV CLASS='z-framed'><DIV CLASS='z-table'>"
+ print "<DIV CLASS='z-table'>"
  print "<TABLE WIDTH=330><TR><TH>Node</TH><TH>Handler</TH><TH TITLE='Include in graphing?'>Include</TH></TR>"
  keys = graph.get_keys()
  for key in keys:
@@ -32,7 +32,7 @@ def graph_list(aWeb):
   print "<TD>"+ entry['handler'] +"</TD>"
   print "<TD TITLE='Include in graphing?'><CENTER><A CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A></CENTER></TD>".format("start" if entry['update'] == "no" else "shutdown")
   print "</TR>"
- print "</TABLE></DIV></DIV>"
+ print "</TABLE></DIV>"
 
 #
 # Find graphs

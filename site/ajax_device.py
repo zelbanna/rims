@@ -18,7 +18,7 @@ def device_view_devicelist(aWeb):
  arg    = aWeb.get_value('arg')
  db     = DB()
  db.connect()
- print "<DIV CLASS='z-framed' ID=div_device_devicelist><DIV CLASS='z-table'>"
+ print "<DIV CLASS='z-table'>"
  print "<TABLE WIDTH=330>"
  print "<TR><TH>IP</TH><TH>FQDN</TH><TH>Model</TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
@@ -32,8 +32,7 @@ def device_view_devicelist(aWeb):
  print "<A TITLE='Add Device' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new'><IMG SRC='images/btn-add.png'></A>"
  for row in rows:
   print "<TR><TD><A CLASS=z-op TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&id={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
- print "</TABLE>"
- print "</DIV></DIV>"
+ print "</TABLE></DIV>"
  db.close()
 
 
@@ -128,7 +127,7 @@ def device_device_info(aWeb):
 
  ########################## Data Tables ######################
  
- print "<DIV ID=div_device_info CLASS='z-framed z-table' style='resize:horizontal; margin-left:0px; width:670px; z-index:101; height:{}px;'>".format(str(height))
+ print "<DIV ID=div_device_info CLASS='z-table' style='resize:horizontal; margin-left:0px; width:670px; z-index:101; height:{}px;'>".format(str(height))
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<!-- Reachability Info --><DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
@@ -210,6 +209,7 @@ def device_device_info(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&ip={}&domain={}&hostname={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['domain'],name)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_conf_gen&id={}&type={}&hostname={}&domain={} OP=load TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>".format(id,device_data['type'],name,device_data['domain'])
  if (device_data['pem0_pdu_id'] != 0 and device_data['pem0_pdu_unit'] != 0) or (device_data['pem1_pdu_id'] != 0 and device_data['pem1_pdu_unit'] != 0):
   print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post TITLE='Update PDU with device info'><IMG SRC='images/btn-pdu-save.png' ALT='P'></A>".format(device_data['pem0_pdu_unit'],device_data['pem1_pdu_unit'],name)
  if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
@@ -316,7 +316,7 @@ def device_op_finddevices(aWeb):
   db.close()
   results = "Cleared table"
   aWeb.log_msg("devices_op_finddevices: " + results)
- print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
+ print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
  print "<FORM ID=device_discover_form>"
  print "<TABLE style='width:100%'>"
  print "<TR><TH COLSPAN=2>Device Discovery</TH></TR>"
@@ -410,11 +410,11 @@ def device_new(aWeb):
    results = "Existing IP: {}.{} ({})".format(xist['hostname'],xist['domain'],xist['id']) 
   db.close()
 
- print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:140px;'>"
+ print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:140px;'>"
  print "<FORM ID=device_new_form>"
  print "<TABLE style='width:100%'>"
  print "<TR><TH COLSPAN=2>Add Device</TH></TR>"
- print "<TR><TD>IP:</TD><TD><INPUT     NAME=ip     TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(ip)
+ print "<TR><TD>IP:</TD><TD><INPUT     NAME=ip  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(ip)
  print "<TR><TD>Domain:</TD><TD><INPUT NAME=dom TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(dom)
  print "<TR><TD>MAC:</TD><TD><INPUT NAME=mac TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(mac)
  print "</TABLE>"
@@ -425,6 +425,29 @@ def device_new(aWeb):
 #
 #
 #
-def device_gen_conf(aWeb):
- ip  = aWeb.get_value('ip',"127.0.0.1")
+def device_conf_gen(aWeb):
+ import sdcp.SettingsContainer as SC
+ id   = aWeb.get_value('id')
+ type = aWeb.get_value('type')
+ name = aWeb.get_value('hostname')
+ dom  = aWeb.get_value('domain')
+ mask = aWeb.get_value('mask',"24")
+ gw   = aWeb.get_value('gateway',"127.0.0.1")
+ print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:150px; float:left;'>"
+ print "<FORM ID=device_conf_gen_form>"
+ print "<INPUT TYPE=HIDDEN NAME=id   VALUE={}>".format(id)
+ print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
+ print "<TABLE style='width:100%'>"
+ print "<TR><TH COLSPAN=2>Generate device configuration</TH></TR>"
+ print "<TR><TD>Name</TD><TD><INPUT     NAME=hostname TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
+ print "<TR><TD>Domain:</TD><TD><INPUT  NAME=domain   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(dom)
+ print "<TR><TD>Mask:</TD><TD><INPUT    NAME=mask   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(mask)
+ print "<TR><TD>Gateway:</TD><TD><INPUT NAME=gateway   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(gw)
+
+ print "</TABLE>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_conf_gen FRM=device_conf_gen_form OP=post><IMG SRC='images/btn-start.png'></A>"
+ print "</DIV>"
+ print "<DIV CLASS='z-table' style='margin-left:0px; z-index:101; width:100%; float:left;'>"
+ print "Test"
+ print "</DIV>"
 

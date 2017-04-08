@@ -18,7 +18,7 @@ def console_list(aWeb):
  domain = aWeb.get_value('domain')
  conlist = aWeb.get_list('consolelist')
  config="https://{0}/?form=serialconfig&action=edit&ports={1}&start=&end="
- print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
+ print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR><TH>Server</TH><TH>Port</TH><TH>Device</TH></TR>"
  for con in conlist:
   console = OpenGear(con,domain)
@@ -28,12 +28,12 @@ def console_list(aWeb):
    port = str(6000 + key)
    value = console.get_entry(key)
    print "<TR><TD><A HREF='https://{0}/'>{1}</A></TD><TD><A TITLE='Edit port info' HREF={5}>{2}</A></TD><TD><A HREF='telnet://{0}:{3}'>{4}</A></TD>".format(conip, con,str(key),port, value, config.format(conip,key))
- print "</TABLE></DIV></DIV>"
+ print "</TABLE></DIV>"
 
 def console_list_consoles(aWeb):
  db   = DB()
  db.connect()
- print "<DIV CLASS='z-framed'><DIV CLASS='z-table'><TABLE WIDTH=330>"
+ print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Consoles</CENTER></TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
@@ -44,7 +44,7 @@ def console_list_consoles(aWeb):
  print "<TR><TH>ID</TH><TH>Name</TH><TH>IP</TH></TR>"
  for unit in data:
   print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=console_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['ip'])
- print "</TABLE></DIV></DIV>"
+ print "</TABLE></DIV>"
  db.close()
 
 #
@@ -72,7 +72,7 @@ def console_device_info(aWeb):
    res = db.do(sql)
    db.commit()  
 
- print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
+ print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
  print "<FORM ID=console_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"
@@ -114,5 +114,5 @@ def console_remove(aWeb):
  db.do("UPDATE devices SET console_id = '0' WHERE console_id = '{0}'".format(id))
  db.do("UPDATE racks SET fk_console = '0' WHERE fk_console = '{0}'".format(id))
  db.commit()
- print "Unit {0} deleted".format(id)
+ print "<B>Console {0} deleted</B>".format(id)
  db.close()
