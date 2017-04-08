@@ -44,6 +44,7 @@ DROP TABLE IF EXISTS `devices`;
 CREATE TABLE `devices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ip` int(10) unsigned NOT NULL,
+  `mac` bigint(20) unsigned DEFAULT 0,
   `console_id` int(10) unsigned DEFAULT 0,
   `consoleport` int(10) unsigned DEFAULT NULL,
   `dns_a_id` int(10) unsigned DEFAULT 0,

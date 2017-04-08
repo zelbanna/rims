@@ -33,7 +33,8 @@
  },
  "netconf": {
   "username":"",
-  "password":""  
+  "password":"",
+  "encrypted":""
  },
  "esxi": {
   "username":"",

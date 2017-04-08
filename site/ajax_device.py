@@ -4,7 +4,7 @@ Ajax Device calls module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__ = "10.0GA"
+__version__ = "10.1GA"
 __status__= "Production"
 
 from sdcp.core.GenLib import DB, sys_ip2int
@@ -29,6 +29,7 @@ def device_view_devicelist(aWeb):
   db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices ORDER BY ip")
   print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist'><IMG SRC='images/btn-reboot.png'></A>"
  rows = db.get_all_rows()
+ print "<A TITLE='Add Device' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new'><IMG SRC='images/btn-add.png'></A>"
  for row in rows:
   print "<TR><TD><A CLASS=z-op TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&id={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</TABLE>"
@@ -110,6 +111,7 @@ def device_device_info(aWeb):
   return
  ip   = device_data['ipasc']
  name = device_data['hostname']
+
 
  if op == 'updateddi' and not device_data['hostname'] == 'unknown':
   if device_data['ipam_id'] == '0':
@@ -256,9 +258,10 @@ def device_remove(aWeb):
  dns_a_id   = aWeb.get_value('dns_a_id','0')
  dns_ptr_id = aWeb.get_value('dns_ptr_id','0')
  ipam_id    = aWeb.get_value('ipam_id','0')
+ print "<DIV CLASS='z-table'>"
  db = DB()
  db.connect()
- db.do("DELETE FROM devices WHERE id = '{0}'".format(device_id))
+ res = db.do("DELETE FROM devices WHERE id = '{0}'".format(device_id))
  db.commit()
  if (dns_a_id != '0') or (dns_ptr_id != '0'):
   import sdcp.SettingsContainer as SC
@@ -276,7 +279,8 @@ def device_remove(aWeb):
    from sdcp.core.ddi import ddi_ipam_remove
    ires = ddi_ipam_remove(ipam_id)
   print "IPAM entries removed:{}<BR>".format(str(ires))
- print "Unit {0} deleted".format(device_id)
+ print "Unit {0} deleted ({1})".format(device_id,res)
+ print "</DIV>"
  db.close()
 
 #
@@ -383,3 +387,48 @@ def device_op_syncddi(aWeb):
  db.commit()
  db.close()
  print "</TABLE></DIV>"
+
+#
+#
+#
+
+def is_mac(aMAC):
+ try:
+  aMAC = aMAC.replace(":","")
+  return len(aMAC) == 12 and int(aMAC,16)
+ except:
+  return False
+
+def device_new(aWeb):
+ ip  = aWeb.get_value('ip',"127.0.0.1")
+ mac = aWeb.get_value('mac',"00:00:00:00:00:00")
+ dom = aWeb.get_value('dom',"domain")
+ results = ""
+ if not (ip == '127.0.0.1' or dom == 'domain'):
+  ipint = sys_ip2int(ip)
+  db = DB()
+  db.connect()
+  xist = db.do("SELECT id,hostname,domain FROM devices WHERE ip ='{}'".format(ipint))
+  if xist == 0:
+   mac = mac.replace(":","")
+   if not is_mac(mac):
+    mac = "000000000000"
+   res = db.do("INSERT INTO devices (ip,mac,domain,hostname,snmp,model,type,fqdn,rack_size) VALUES('{}',x'{}','{}','unknown','unknown','unknown','unknown','unknown',1)".format(ipint,mac,dom))
+   db.commit()
+   results = "Added IP {} and MAC {} ({})".format(ip,mac,res)
+  else:
+   xist = db.get_row()
+   results = "Existing IP: {}.{} ({})".format(xist['hostname'],xist['domain'],xist['id']) 
+  db.close()
+
+ print "<DIV CLASS='z-framed z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:140px;'>"
+ print "<FORM ID=device_new_form>"
+ print "<TABLE style='width:100%'>"
+ print "<TR><TH COLSPAN=2>Add Device</TH></TR>"
+ print "<TR><TD>IP:</TD><TD><INPUT     NAME=ip     TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(ip)
+ print "<TR><TD>Domain:</TD><TD><INPUT NAME=dom TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(dom)
+ print "<TR><TD>MAC:</TD><TD><INPUT NAME=mac TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(mac)
+ print "</TABLE>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_new FRM=device_new_form OP=post><IMG SRC='images/btn-start.png'></A>"
+ print "<SPAN style='font-size:9px; float:right'>{}</SPAN>".format(results)
+ print "</DIV>"
