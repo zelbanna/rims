@@ -100,20 +100,6 @@ class Junos(GenDevice):
   for entry in ifs:
    print "<TR><TD>" + "&nbsp;</TD><TD>".join(entry) + "</TD></TR>\n"
   print "</TABLE></DIV>"                
-
- def widget_create_base_conf(self):
-  print "set system host-name {}<BR>".format(self._hostname)
-  print "set system root-authentication encrypted-password \"{}\"<BR>".format(SC.netconf_encrypted)
-  print "set groups default_system system domain-name {}<BR>".format(self._domain)
-  print "set groups default_system system domain-search {}<BR>".format(self._domain)
-  print "set groups default_system system name-server {}<BR>".format(SC.sdcp_dnssrv)
-  print "set groups default_system system services ssh root-login allow<BR>"
-  print "set groups default_system system services netconf ssh<BR>"
-  print "set groups default_system system ntp server {}<BR>".format(SC.sdcp_ntpsrv)
-  print "set groups default_system routing-options static route 0.0.0.0/0 next-hop 172.30.104.1<BR>"
-  print "set groups default_system routing-options static route 0.0.0.0/0 no-readvertise<BR>"
-  print "set groups default_system snmp community public clients 172.30.104.0/23<BR>"
-  print "set apply-groups default_system<BR>"
   
  #
  # SNMP is much smoother than Netconf for some things :-)
