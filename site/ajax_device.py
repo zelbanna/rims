@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "10.1GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import DB, sys_ip2int, sys_int2mac, sys_is_mac
+from sdcp.core.GenLib import DB, sys_ip2int, sys_int2mac, sys_is_mac, sys_int2ip
 
 ########################################## Device Operations ##########################################
 #
@@ -209,7 +209,7 @@ def device_device_info(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&ip={}&domain={}&hostname={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['domain'],name)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_conf_gen&id={}&type={}&hostname={}&domain={} OP=load TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>".format(id,device_data['type'],name,device_data['domain'])
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_conf_gen&ip={}&type={}&hostname={}&domain={} OP=load TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>".format(ip,device_data['type'],name,device_data['domain'])
  if (device_data['pem0_pdu_id'] != 0 and device_data['pem0_pdu_unit'] != 0) or (device_data['pem1_pdu_id'] != 0 and device_data['pem1_pdu_unit'] != 0):
   print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post TITLE='Update PDU with device info'><IMG SRC='images/btn-pdu-save.png' ALT='P'></A>".format(device_data['pem0_pdu_unit'],device_data['pem1_pdu_unit'],name)
  if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
@@ -427,15 +427,21 @@ def device_new(aWeb):
 #
 def device_conf_gen(aWeb):
  import sdcp.SettingsContainer as SC
- id   = aWeb.get_value('id')
+ ip   = aWeb.get_value('ip')
  type = aWeb.get_value('type')
  name = aWeb.get_value('hostname')
  dom  = aWeb.get_value('domain')
- mask = aWeb.get_value('mask',"24")
- gw   = aWeb.get_value('gateway',"127.0.0.1")
+ if SC.ipamdb_proxy == 'True':   
+  retvals = aWeb.get_proxy(SC.ipamdb_url,"ddi_ipam_lookup","ip={}".format(ip))        
+ else: 
+  from sdcp.core.ddi import ddi_ipam_lookup
+  retvals = ddi_ipam_lookup(ip)
+ mask = aWeb.get_value('mask',retvals.get('subnet_mask',"24"))
+ sub  = aWeb.get_value('sub',retvals.get('subnet_as',"127.0.0.0"))
+ gw   = aWeb.get_value('gateway', sys_int2ip(sys_ip2int(sub) + 1))
  print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:150px; float:left;'>"
  print "<FORM ID=device_conf_gen_form>"
- print "<INPUT TYPE=HIDDEN NAME=id   VALUE={}>".format(id)
+ print "<INPUT TYPE=HIDDEN NAME=ip   VALUE={}>".format(ip)
  print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
  print "<TABLE style='width:100%'>"
  print "<TR><TH COLSPAN=2>Generate device configuration</TH></TR>"
@@ -443,11 +449,20 @@ def device_conf_gen(aWeb):
  print "<TR><TD>Domain:</TD><TD><INPUT  NAME=domain   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(dom)
  print "<TR><TD>Mask:</TD><TD><INPUT    NAME=mask   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(mask)
  print "<TR><TD>Gateway:</TD><TD><INPUT NAME=gateway   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(gw)
-
  print "</TABLE>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_conf_gen FRM=device_conf_gen_form OP=post><IMG SRC='images/btn-start.png'></A>"
  print "</DIV>"
  print "<DIV CLASS='z-table' style='margin-left:0px; z-index:101; width:100%; float:left;'>"
- print "Test"
+ print "set system host-name {}<BR>".format(name)
+ print "set system root-authentication encrypted-password \"{}\"<BR>".format(SC.netconf_encrypted)
+ print "set groups default_system system domain-name {}<BR>".format(dom)
+ print "set groups default_system system domain-search {}<BR>".format(dom)
+ print "set groups default_system system name-server {}<BR>".format(SC.sdcp_dnssrv)
+ print "set groups default_system system services ssh root-login allow<BR>"
+ print "set groups default_system system services netconf ssh<BR>"
+ print "set groups default_system system ntp server {}<BR>".format(SC.sdcp_ntpsrv)
+ print "set groups default_system routing-options static route 0.0.0.0/0 next-hop {}<BR>".format(gw)
+ print "set groups default_system routing-options static route 0.0.0.0/0 no-readvertise<BR>"
+ print "set groups default_system snmp community public clients {}/{}<BR>".format(sub,mask)
+ print "set apply-groups default_system<BR>"
  print "</DIV>"
-

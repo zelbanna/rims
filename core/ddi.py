@@ -171,7 +171,9 @@ def ddi_ipam_lookup(aIP):
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
  db.do("SELECT id, subnet, INET_NTOA(subnet) as subnetasc, mask FROM subnets WHERE vrfId = 0 AND {0} > subnet AND {0} < (subnet + POW(2,(32-mask))-1)".format(ipint))
  subnet = db.get_row()
- retvals['subnet_id'] = subnet.get('id')
+ retvals['subnet_id']   = subnet.get('id')
+ retvals['subnet_asc']  = subnet.get('subnetasc')
+ retvals['subnet_mask'] = subnet.get('mask')
  db.do("SELECT id, dns_name, PTR FROM ipaddresses WHERE ip_addr = {0} AND subnetId = {1}".format(ipint,subnet['id']))
  ipam   = db.get_row()
  if ipam:
