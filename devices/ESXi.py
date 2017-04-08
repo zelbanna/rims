@@ -4,7 +4,7 @@ The ESXi interworking module
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "10.0GA"
+__version__ = "10.2GA"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
@@ -26,6 +26,10 @@ class ESXi(GenDevice):
  @classmethod
  def get_state_str(cls,astate):
   return cls._vmstatemap[astate]
+
+ @classmethod
+ def get_widgets(cls):
+  return ['operated']
   
  #
  # Each ESXi Server has an IP and probably KVM means for out of band access.

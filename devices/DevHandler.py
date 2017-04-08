@@ -4,7 +4,7 @@ Module for generic device interaction
 
 """  
 __author__  = "Zacharias El Banna"
-__version__ = "10.0GA"
+__version__ = "10.2GA"
 __status__  = "Production"
 
 from sdcp.core.GenLib import DB, ping_os, sys_ips2range, sys_ip2int, sys_log_msg
@@ -19,41 +19,39 @@ def device_types():
 # Returns an instantiation of X type
 #
 def device_get_instance(aIP,aType):
- if aType in device_types():
-  Dev = None
-  if   aType == 'ex':
-   from Router import EX as Dev
-  elif aType == 'qfx':
-   from Router import QFX as Dev
-  elif aType == 'srx':
-   from Router import SRX as Dev
-  elif aType == 'wlc':
-   from Router import WLC as Dev
-  elif aType == 'esxi':
-   from ESXi  import ESXi as Dev
-  return Dev(aIP)
- return None                                                              
+ Dev = None
+ if   aType == 'ex':
+  from Router import EX as Dev
+ elif aType == 'qfx':
+  from Router import QFX as Dev
+ elif aType == 'srx':
+  from Router import SRX as Dev
+ elif aType == 'mx':
+  from Router import MX as Dev
+ elif aType == 'wlc':
+  from Router import WLC as Dev
+ elif aType == 'esxi':
+  from ESXi  import ESXi as Dev
+ return None if not Dev else Dev(aIP)
 
 #
 #  Return widgets for a give type
 #
 def device_get_widgets(aType):
- if aType in device_types():
-  if   aType == 'ex':
-   from Router import EX
-   return EX.get_widgets()
-  elif aType == 'qfx':
-   from Router import QFX
-   return QFX.get_widgets()
-  elif aType == 'srx':
-   from Router import SRX
-   return SRX.get_widgets()
-  elif aType == 'wlc':
-   from Router import WLC
-   return WLC.get_widgets()
-  elif aType == 'esxi':
-   return ['operated']
- return []
+ Dev = None
+ if   aType == 'ex':
+  from Router import EX as Dev
+ elif aType == 'qfx':
+  from Router import QFX as Dev
+ elif aType == 'srx':
+  from Router import SRX as Dev
+ elif aType == 'mx':
+  from Router import MX as Dev
+ elif aType == 'wlc':
+  from Router import WLC as Dev
+ elif aType == 'esxi':
+  from ESXi import ESXi as Dev
+ return [] if not Dev else Dev.get_widgets()
 
 #
 # Detect device info

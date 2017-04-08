@@ -42,7 +42,7 @@ class GenDevice(object):
    except:
     self._fqdn = ahost
     self._hostname = ahost
-    self._domain = aDomain
+    self._domain = adomain
   else:
    # ahost is a aname, if domain is not supplied, can it be part of host? 
    if adomain:

@@ -239,8 +239,8 @@ def device_device_info(aWeb):
     print "<A TARGET='main_cont' HREF='pane.cgi?view=esxi&domain={}&host={}'>Manage</A></B></DIV>".format(device_data['domain'], device_data['hostname'])
   else:
    for fun in functions:
-    name = " ".join(fun.split('_')[1:])
-    print "<A CLASS='z-op' OP=load DIV=div_navdata SPIN=true LNK='ajax.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, device_data['type'], fun, name.title())
+    funname = " ".join(fun.split('_')[1:])
+    print "<A CLASS='z-op' OP=load DIV=div_navdata SPIN=true LNK='ajax.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, device_data['type'], fun, funname.title())
  else:
   print "&nbsp;"
  print "</DIV>"

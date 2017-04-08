@@ -9,58 +9,16 @@ Junos Router Base Class
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "10.0GA"
+__version__ = "10.2GA"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
 from sdcp.core.GenLib import GenDevice
 from netsnmp import VarList, Varbind, Session
-from lxml import etree
 
-################################ WLC Object #####################################
 #
-# Simpler WLC class
+# TODO: Widgets should take two args or list of arguments!
 #
-
-class WLC(GenDevice):
-
- @classmethod
- def get_widgets(cls):
-  return ['widget_switch_table']
-
- def __init__(self,ahost, adomain = None):
-  GenDevice.__init__(self,ahost, adomain, 'wlc')
-  
- def __str__(self):
-  return "WLC - {}".format(GenDevice.__str__(self))
-
- def widget_switch_table(self):
-  from socket import gethostbyaddr
-  try:
-   # Length of below is used to offset ip address (32) + 1 and mac base (33) + 1 
-   cssidobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.15"))
-   cipobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.4"))
-    
-   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
-   session.walk(cssidobjs)
-   session.walk(cipobjs)
-  except:
-   return
-        
-  ipdict= dict(map(lambda res: (res.tag[33:], res.val) ,cipobjs))
-  print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
-  print "<TABLE style='margin:3px;'><TH>Name</TH><TH>IP</TH><TH>MAC</TH><TH>SSid</TH>"
-  for res in cssidobjs:
-   macbase=res.tag[34:]
-   mac = (macbase+"."+res.iid).split(".")
-   mac = ":".join(map(lambda x: hex(int(x))[2:],mac))
-   try:
-    clientname = gethostbyaddr(ipdict[macbase])[0]
-   except:
-    clientname = "unknown"
-   print "<TR><TD>" + clientname + "&nbsp;</TD><TD>" + ipdict.get(macbase) + "&nbsp;</TD><TD>" + mac + "&nbsp;</TD><TD>" + res.val + "</TD></TR>"
-  print "</TABLE></DIV>"
-
 ################################ JUNOS Object #####################################
 #
 # Connect to Router, a couple of RPCs will be issued from there
@@ -70,7 +28,7 @@ class Junos(GenDevice):
 
  @classmethod
  def get_widgets(cls):
-  return ['widget_up_interfaces']
+  return ['widget_up_interfaces','widget_create_base_conf']
 
  def __init__(self,ahost,adomain = None, atype = 'Junos'):
   GenDevice.__init__(self,ahost,adomain,atype)
@@ -142,6 +100,9 @@ class Junos(GenDevice):
   for entry in ifs:
    print "<TR><TD>" + "&nbsp;</TD><TD>".join(entry) + "</TD></TR>\n"
   print "</TABLE></DIV>"                
+
+ def widget_create_base_conf(self):
+  print "{}".format(self._hostname)
   
  #
  # SNMP is much smoother than Netconf for some things :-)
@@ -164,6 +125,50 @@ class Junos(GenDevice):
     self._type = "mx"
   except:
    pass
+
+################################ WLC Object #####################################
+#
+# Simpler WLC class
+#
+
+class WLC(GenDevice):
+
+ @classmethod
+ def get_widgets(cls):
+  return ['widget_switch_table']
+
+ def __init__(self,ahost, adomain = None):
+  GenDevice.__init__(self,ahost, adomain, 'wlc')
+  
+ def __str__(self):
+  return "WLC - {}".format(GenDevice.__str__(self))
+
+ def widget_switch_table(self):
+  from socket import gethostbyaddr
+  try:
+   # Length of below is used to offset ip address (32) + 1 and mac base (33) + 1 
+   cssidobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.15"))
+   cipobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.4"))
+    
+   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session.walk(cssidobjs)
+   session.walk(cipobjs)
+  except:
+   return
+        
+  ipdict= dict(map(lambda res: (res.tag[33:], res.val) ,cipobjs))
+  print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
+  print "<TABLE style='margin:3px;'><TH>Name</TH><TH>IP</TH><TH>MAC</TH><TH>SSid</TH>"
+  for res in cssidobjs:
+   macbase=res.tag[34:]
+   mac = (macbase+"."+res.iid).split(".")
+   mac = ":".join(map(lambda x: hex(int(x))[2:],mac))
+   try:
+    clientname = gethostbyaddr(ipdict[macbase])[0]
+   except:
+    clientname = "unknown"
+   print "<TR><TD>" + clientname + "&nbsp;</TD><TD>" + ipdict.get(macbase) + "&nbsp;</TD><TD>" + mac + "&nbsp;</TD><TD>" + res.val + "</TD></TR>"
+  print "</TABLE></DIV>"
 
 ################################ SRX Object #####################################
 
@@ -202,6 +207,7 @@ class SRX(Junos):
   return False
    
  def get_ipsec(self,gwname):
+  from lxml import etree
   try:
    # Could actually just look at "show security ike security-associations" - len of that result
    # is the number of ikes (not tunnels though) with GW etc
@@ -313,21 +319,11 @@ class QFX(Junos):
   fdblist = []
   try:
    swdata = self._router.rpc.get_ethernet_switching_table_information()
-   if swdata.tag == "l2ng-l2ald-rtb-macdb":
-    self._style = "ELS"
-    for entry in swdata[0].iter("l2ng-mac-entry"):
-     vlan = entry.find("l2ng-l2-mac-vlan-name").text
-     mac  = entry.find("l2ng-l2-mac-address").text     
-     interface = entry.find("l2ng-l2-mac-logical-interface").text
-     fdblist.append([ vlan, mac, interface, self.get_interface_name(interface) ])
-   elif swdata.tag == "ethernet-switching-table-information":
-    self._style = "Legacy"
-    for entry in swdata[0].iter("mac-table-entry"):
-     vlan = entry.find("mac-vlan").text
-     mac  = entry.find("mac-address").text
-     interface = entry.find(".//mac-interfaces").text
-     if not mac == "*" and not interface == "Router":
-      fdblist.append([ vlan, mac, interface, self.get_interface_name(interface) ]) 
+   for entry in swdata[0].iter("l2ng-mac-entry"):
+    vlan = entry.find("l2ng-l2-mac-vlan-name").text
+    mac  = entry.find("l2ng-l2-mac-address").text     
+    interface = entry.find("l2ng-l2-mac-logical-interface").text
+    fdblist.append([ vlan, mac, interface, self.get_interface_name(interface) ])
   except Exception as err:
    self.log_msg("System Error - fetching FDB: " + str(err))
   return fdblist
@@ -347,5 +343,20 @@ class QFX(Junos):
     print "<TR><TD>" + "&nbsp;</TD><TD>".join(entry) + "</TD></TR>\n"
    print "</TABLE></DIV>"
   except Exception as err:
-   self.log_msg("EX widget switch table: Error [{}]".format(str(err)))
+   self.log_msg("QFX widget switch table: Error [{}]".format(str(err)))
    print "<B>Error - issue loading widget: {}</B>".format(str(err))
+
+################################ MX Object #####################################
+
+class MX(Junos):
+
+ @classmethod
+ def get_widgets(cls):
+  return Junos.get_widgets()
+
+ def __init__(self,ahost,adomain=None):
+  Junos.__init__(self, ahost,adomain,'mx')
+  self._interfacenames = {}
+
+ def __str__(self):
+  return Junos.__str__(self) + " Style:" + str(self._style)
