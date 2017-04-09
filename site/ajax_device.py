@@ -426,11 +426,11 @@ def device_new(aWeb):
 #
 #
 def device_conf_gen(aWeb):
- import sdcp.SettingsContainer as SC
- ip   = aWeb.get_value('ip')
  type = aWeb.get_value('type')
+ ip   = aWeb.get_value('ip')
  name = aWeb.get_value('hostname')
  dom  = aWeb.get_value('domain')
+ import sdcp.SettingsContainer as SC
  if SC.ipamdb_proxy == 'True':   
   retvals = aWeb.get_proxy(SC.ipamdb_url,"ddi_ipam_lookup","ip={}".format(ip))        
  else: 
@@ -439,12 +439,12 @@ def device_conf_gen(aWeb):
  mask = aWeb.get_value('mask',    retvals.get('subnet_mask',"24"))
  sub  = aWeb.get_value('subnet',  retvals.get('subnet_asc',"127.0.0.0"))
  gw   = aWeb.get_value('gateway', sys_int2ip(sys_ip2int(sub) + 1))
- print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:150px; float:left;'>"
+ print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:250px; height:150px; float:left;'>"
  print "<FORM ID=device_conf_gen_form>"
  print "<INPUT TYPE=HIDDEN NAME=ip   VALUE={}>".format(ip)
  print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
  print "<TABLE style='width:100%'>"
- print "<TR><TH COLSPAN=4>Generate device configuration</TH></TR>"
+ print "<TR><TH COLSPAN=4>Generate configuration</TH></TR>"
  print "<TR><TD>Name</TD>   <TD COLSPAN=3><INPUT  NAME=hostname TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
  print "<TR><TD>Domain:</TD><TD COLSPAN=3><INPUT  NAME=domain   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(dom)
  print "<TR><TD>Subnet:</TD><TD><INPUT NAME=subnet TYPE=TEXT CLASS='z-input' VALUE='{}'></TD><TD>/</TD>".format(sub)
@@ -454,16 +454,10 @@ def device_conf_gen(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_conf_gen FRM=device_conf_gen_form OP=post><IMG SRC='images/btn-start.png'></A>"
  print "</DIV>"
  print "<DIV CLASS='z-table' style='margin-left:0px; z-index:101; width:100%; float:left;'>"
- print "set system host-name {}<BR>".format(name)
- print "set system root-authentication encrypted-password \"{}\"<BR>".format(SC.netconf_encrypted)
- print "set groups default_system system domain-name {}<BR>".format(dom)
- print "set groups default_system system domain-search {}<BR>".format(dom)
- print "set groups default_system system name-server {}<BR>".format(SC.sdcp_dnssrv)
- print "set groups default_system system services ssh root-login allow<BR>"
- print "set groups default_system system services netconf ssh<BR>"
- print "set groups default_system system ntp server {}<BR>".format(SC.sdcp_ntpsrv)
- print "set groups default_system routing-options static route 0.0.0.0/0 next-hop {}<BR>".format(gw)
- print "set groups default_system routing-options static route 0.0.0.0/0 no-readvertise<BR>"
- print "set groups default_system snmp community public clients {}/{}<BR>".format(sub,mask)
- print "set apply-groups default_system<BR>"
+ from sdcp.devices.DevHandler import device_get_instance
+ try:
+  dev  = device_get_instance(ip,type)
+  dev.print_conf({'name':name, 'domain':dom, 'gateway':gw, 'subnet':sub, 'mask':mask})
+ except:
+  print "No instance config specification"
  print "</DIV>"

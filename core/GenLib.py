@@ -72,7 +72,7 @@ class GenDevice(object):
   return "FQDN: {} IP: {} Hostname: {} Domain: {} Type:{}".format(self._fqdn, self._ip, self._hostname, self._domain, self._type)
  
  def ping_device(self):
-  return ping_os(self._fqdn)
+  return ping_os(self._ip)
 
  def get_type(self):
   return self._type
@@ -84,6 +84,9 @@ class GenDevice(object):
    print output
   with open(self._logfile, 'a') as f:
    f.write(output + "\n")
+
+ def print_conf(self,argdict):
+  print "No config for device"
 
 ############################################ Database ######################################
 #

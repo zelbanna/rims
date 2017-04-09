@@ -123,6 +123,21 @@ class Junos(GenDevice):
   except:
    pass
 
+ def print_conf(self,argdict):
+  import sdcp.SettingsContainer as SC
+  print "set system host-name {}<BR>".format(argdict['name'])
+  print "set system root-authentication encrypted-password \"{}\"<BR>".format(SC.netconf_encrypted)
+  print "set groups default_system system domain-name {}<BR>".format(argdict['domain'])
+  print "set groups default_system system domain-search {}<BR>".format(argdict['domain'])
+  print "set groups default_system system name-server {}<BR>".format(SC.sdcp_dnssrv)
+  print "set groups default_system system services ssh root-login allow<BR>"
+  print "set groups default_system system services netconf ssh<BR>"
+  print "set groups default_system system ntp server {}<BR>".format(SC.sdcp_ntpsrv)
+  print "set groups default_system routing-options static route 0.0.0.0/0 next-hop {}<BR>".format(argdict['gateway'])
+  print "set groups default_system routing-options static route 0.0.0.0/0 no-readvertise<BR>"
+  print "set groups default_system snmp community {} clients {}/{}<BR>".format(SC.snmp_read_community,argdict['subnet'],argdict['mask'])
+  print "set apply-groups default_system<BR>"
+
 ################################ WLC Object #####################################
 #
 # Simpler WLC class
