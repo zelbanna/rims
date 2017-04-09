@@ -436,19 +436,20 @@ def device_conf_gen(aWeb):
  else: 
   from sdcp.core.ddi import ddi_ipam_lookup
   retvals = ddi_ipam_lookup(ip)
- mask = aWeb.get_value('mask', retvals.get('subnet_mask',"24"))
- sub  = aWeb.get_value('sub',  retvals.get('subnet_asc',"127.0.0.0"))
+ mask = aWeb.get_value('mask',    retvals.get('subnet_mask',"24"))
+ sub  = aWeb.get_value('subnet',  retvals.get('subnet_asc',"127.0.0.0"))
  gw   = aWeb.get_value('gateway', sys_int2ip(sys_ip2int(sub) + 1))
  print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:150px; float:left;'>"
  print "<FORM ID=device_conf_gen_form>"
  print "<INPUT TYPE=HIDDEN NAME=ip   VALUE={}>".format(ip)
  print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
  print "<TABLE style='width:100%'>"
- print "<TR><TH COLSPAN=2>Generate device configuration</TH></TR>"
- print "<TR><TD>Name</TD><TD><INPUT     NAME=hostname TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
- print "<TR><TD>Domain:</TD><TD><INPUT  NAME=domain   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(dom)
- print "<TR><TD>Mask:</TD><TD><INPUT    NAME=mask   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(mask)
- print "<TR><TD>Gateway:</TD><TD><INPUT NAME=gateway   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(gw)
+ print "<TR><TH COLSPAN=4>Generate device configuration</TH></TR>"
+ print "<TR><TD>Name</TD>   <TD COLSPAN=3><INPUT  NAME=hostname TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
+ print "<TR><TD>Domain:</TD><TD COLSPAN=3><INPUT  NAME=domain   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(dom)
+ print "<TR><TD>Subnet:</TD><TD><INPUT NAME=subnet TYPE=TEXT CLASS='z-input' VALUE='{}'></TD><TD>/</TD>".format(sub)
+ print "    <TD><INPUT NAME=mask TYPE=TEXT CLASS='z-input' VALUE='{}'></TD></TR>".format(mask)
+ print "<TR><TD>Gateway:</TD><TD COLSPAN=3><INPUT NAME=gateway  TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(gw)
  print "</TABLE>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_conf_gen FRM=device_conf_gen_form OP=post><IMG SRC='images/btn-start.png'></A>"
  print "</DIV>"
