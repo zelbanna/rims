@@ -126,7 +126,11 @@ class Junos(GenDevice):
  def print_conf(self,argdict):
   import sdcp.SettingsContainer as SC
   print "set system host-name {}<BR>".format(argdict['name'])
-  print "set system root-authentication encrypted-password \"{}\"<BR>".format(SC.netconf_encrypted)
+  if SC.netconf_username == 'root':
+   print "set system root-authentication encrypted-password \"{}\"<BR>".format(SC.netconf_encrypted)
+  else:
+   print "set system login user {0} class super-user<BR>".format(SC.netconf_username)
+   print "set system login user {0} authentication encrypted-password \"{1}\"<BR>".format(SC.netconf_username,SC.netconf_encrypted)
   print "set groups default_system system domain-name {}<BR>".format(argdict['domain'])
   print "set groups default_system system domain-search {}<BR>".format(argdict['domain'])
   print "set groups default_system system name-server {}<BR>".format(SC.sdcp_dnssrv)

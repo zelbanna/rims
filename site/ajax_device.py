@@ -127,7 +127,7 @@ def device_device_info(aWeb):
 
  ########################## Data Tables ######################
  
- print "<DIV ID=div_device_info CLASS='z-table' style='resize:horizontal; margin-left:0px; width:670px; z-index:101; height:{}px;'>".format(str(height))
+ print "<DIV ID=div_devinfo CLASS='z-table' style='resize:horizontal; margin-left:0px; width:670px; z-index:101; height:{}px; float:left;'>".format(str(height))
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<!-- Reachability Info --><DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
@@ -209,7 +209,7 @@ def device_device_info(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&ip={}&domain={}&hostname={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['domain'],name)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_conf_gen&ip={}&type={}&hostname={}&domain={} OP=load TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>".format(ip,device_data['type'],name,device_data['domain'])
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_devextra LNK=ajax.cgi?call=device_conf_gen&ip={}&type={}&hostname={}&domain={} OP=load TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>".format(ip,device_data['type'],name,device_data['domain'])
  if (device_data['pem0_pdu_id'] != 0 and device_data['pem0_pdu_unit'] != 0) or (device_data['pem1_pdu_id'] != 0 and device_data['pem1_pdu_unit'] != 0):
   print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post TITLE='Update PDU with device info'><IMG SRC='images/btn-pdu-save.png' ALT='P'></A>".format(device_data['pem0_pdu_unit'],device_data['pem1_pdu_unit'],name)
  if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
@@ -223,9 +223,10 @@ def device_device_info(aWeb):
  print "</DIV>"
 
  db.close()
+ print "<DIV ID=div_devextra style='width:150px; z-index:101; height:{}px; float:left; margin-top:3px; margin-left:0px; margin-right:3px;'>&nbsp;</DIV>".format(str(height + 3))
 
  print "<!-- Function navbar and navcontent -->"
- print "<DIV CLASS='z-navbar' style='top:{}px;'>".format(str(height + 40))
+ print "<DIV CLASS='z-navbar' style='top:{}px; clear:left;'>".format(str(height + 40))
 
  functions = device_get_widgets(device_data['type'])
  if functions:
@@ -439,25 +440,30 @@ def device_conf_gen(aWeb):
  mask = aWeb.get_value('mask',    retvals.get('subnet_mask',"24"))
  sub  = aWeb.get_value('subnet',  retvals.get('subnet_asc',"127.0.0.0"))
  gw   = aWeb.get_value('gateway', sys_int2ip(sys_ip2int(sub) + 1))
- print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:250px; height:150px; float:left;'>"
- print "<FORM ID=device_conf_gen_form>"
- print "<INPUT TYPE=HIDDEN NAME=ip   VALUE={}>".format(ip)
- print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
- print "<TABLE style='width:100%'>"
- print "<TR><TH COLSPAN=4>Generate configuration</TH></TR>"
- print "<TR><TD>Name</TD>   <TD COLSPAN=3><INPUT  NAME=hostname TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
- print "<TR><TD>Domain:</TD><TD COLSPAN=3><INPUT  NAME=domain   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(dom)
- print "<TR><TD>Subnet:</TD><TD><INPUT NAME=subnet TYPE=TEXT CLASS='z-input' VALUE='{}'></TD><TD>/</TD>".format(sub)
- print "    <TD><INPUT NAME=mask TYPE=TEXT CLASS='z-input' VALUE='{}'></TD></TR>".format(mask)
- print "<TR><TD>Gateway:</TD><TD COLSPAN=3><INPUT NAME=gateway  TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(gw)
- print "</TABLE>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_conf_gen FRM=device_conf_gen_form OP=post><IMG SRC='images/btn-start.png'></A>"
- print "</DIV>"
- print "<DIV CLASS='z-table' style='margin-left:0px; z-index:101; width:100%; float:left;'>"
- from sdcp.devices.DevHandler import device_get_instance
- try:
-  dev  = device_get_instance(ip,type)
-  dev.print_conf({'name':name, 'domain':dom, 'gateway':gw, 'subnet':sub, 'mask':mask})
- except:
-  print "No instance config specification"
- print "</DIV>"
+ op   = aWeb.get_value('op')
+ if not op:
+  print "<DIV CLASS='z-table' style='margin:0px; height:250px; width:145px;'>"
+  print "<FORM ID=device_conf_gen_form>"
+  print "<INPUT TYPE=HIDDEN NAME=ip   VALUE={}>".format(ip)
+  print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
+  print "<TABLE style='width:100%; margin-top:3px; margin-bottom:6px;'>"
+  print "<TR><TH COLSPAN=4>Parameters</TH></TR>"
+  print "<TR><TD>Name</TD>   <TD COLSPAN=3><INPUT  NAME=hostname TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
+  print "<TR><TD>Domain:</TD><TD COLSPAN=3><INPUT  NAME=domain   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(dom)
+  print "<TR><TD>Subnet:</TD><TD><INPUT NAME=subnet TYPE=TEXT CLASS='z-input' VALUE='{}'></TD></TR>".format(sub)
+  print "<TR><TD>Mask:</TD><TD><INPUT NAME=mask TYPE=TEXT CLASS='z-input' VALUE='{}'></TD></TR>".format(mask)
+  print "<TR><TD>Gateway:</TD><TD COLSPAN=3><INPUT NAME=gateway  TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(gw)
+  for index in range(0,3):
+   print "<TR><TD COLSPAN=4>&nbsp;</TD></TR>"
+  print "</TABLE>"
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen&op=conf FRM=device_conf_gen_form OP=post><IMG SRC='images/btn-start.png'></A>"
+  print "</DIV>"
+ else:
+  print "<DIV CLASS='z-table' style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
+  from sdcp.devices.DevHandler import device_get_instance
+  try:
+   dev  = device_get_instance(ip,type)
+   dev.print_conf({'name':name, 'domain':dom, 'gateway':gw, 'subnet':sub, 'mask':mask})
+  except:
+   print "No instance config specification"
+  print "</DIV>"

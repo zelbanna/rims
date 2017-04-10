@@ -95,6 +95,14 @@ def pdns_sync(dnslist):
 #
 # Lookup a and ptr id for a given ip,hostname and domain, return as dict
 #
+
+def ddi_dns_domains():
+ db = DB()
+ db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
+ res = db.do("SELECT id,name from domains")
+ retvals = db.get_all_rows()
+ return retvals
+
 def ddi_dns_lookup(aIP,aName,aDomain):
  ptr     = sys_ip2ptr(aIP)
  fqdn    = aName + "." + aDomain

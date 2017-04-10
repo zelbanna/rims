@@ -51,6 +51,8 @@ def remote_json(aWeb):
  dom  = aWeb.get_value('domain')
  if   op == 'ddi_dns_lookup':
   res  = DDI.ddi_dns_lookup(ip,name,dom)
+ elif op == 'ddi_dns_domains':
+  res  = DDI.ddi_dns_domains()
  elif op == 'ddi_dns_update':
   aid  = aWeb.get_value('dns_a_id')
   pid  = aWeb.get_value('dns_ptr_id')
