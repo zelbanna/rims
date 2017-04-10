@@ -16,20 +16,20 @@ from sdcp.core.GenLib import DB, sys_ip2int, sys_int2mac, sys_is_mac, sys_int2ip
 def device_view_devicelist(aWeb):
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
+ sort   = aWeb.get_value('sort','ip')
  db     = DB()
  db.connect()
  print "<DIV CLASS='z-table'>"
- print "<TABLE WIDTH=330>"
- print "<TR><TH>IP</TH><TH>FQDN</TH><TH>Model</TH></TR>"
- print "<TR style='height:20px'><TD COLSPAN=3>"
+ print "<TABLE WIDTH=330><TR>"
+ print "<TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&sort=ip&{0}'>IP</A></TH><TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&sort=hostname&{0}'>FQDN</A></TH><TH>Model</TH>".format(aWeb.reload_args_except(['call','sort']))
+ print "</TR><TR style='height:20px'><TD COLSPAN=3>"
  if target and arg:
-  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices WHERE {0}='{1}' ORDER BY ip".format(target,arg))
-  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target={0}&arg={1}'><IMG SRC='images/btn-reboot.png'></A>".format(target,arg)
+  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices WHERE {0}='{1}' ORDER BY {2}".format(target,arg,sort))
  else:
-  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices ORDER BY ip")
-  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist'><IMG SRC='images/btn-reboot.png'></A>"
+  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices ORDER BY {}".format(sort))
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.reload_args_except(['call']))
+ print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new'><IMG SRC='images/btn-add.png'></A>"
  rows = db.get_all_rows()
- print "<A TITLE='Add Device' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new'><IMG SRC='images/btn-add.png'></A>"
  for row in rows:
   print "<TR><TD><A CLASS=z-op TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&id={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</TABLE></DIV>"
@@ -53,13 +53,15 @@ def device_device_info(aWeb):
  if   op == 'lookup':
   ip     = aWeb.get_value('ip')
   domain = aWeb.get_value('domain')
-  name   = aWeb.get_value('hostname')
+  name   = aWeb.get_value('hostname','unknown')
   entry  = device_detect(ip,domain)
-  if entry['hostname'] == 'unknown':
-   entry['hostname'] = name
-  else:
-   name = entry['hostname']
-  db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
+  if entry:
+   if entry['hostname'] == 'unknown':
+    entry['hostname'] = name
+   else:
+    name = entry['hostname']
+   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
+
   if not name == 'unknown':
    opres = opres + " and updating DDI:"
    aWeb.log_msg("Device lookup: input [{}, {}, {}]".format(ip,name,domain))
@@ -205,7 +207,7 @@ def device_device_info(aWeb):
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&id={}&dns_a_id={}&dns_ptr_id={}&ipam_id={} OP=confirm MSG='Are you sure you want to delete entry?'><IMG SRC='images/btn-remove.png'></A>".format(id,device_data['dns_a_id'],device_data['dns_ptr_id'],device_data['ipam_id'])
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&id={}&dns_a_id={}&dns_ptr_id={}&ipam_id={} OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id,device_data['dns_a_id'],device_data['dns_ptr_id'],device_data['ipam_id'])
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&ip={}&domain={}&hostname={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['domain'],name)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
