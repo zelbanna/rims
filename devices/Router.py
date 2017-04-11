@@ -87,7 +87,9 @@ class Junos(GenDevice):
   result = []
   for ifd in interfaces:
    status = map((lambda pos: ifd[pos].text), [0,2,4,5])
-   if status[0].split('-')[0] in [ 'ge', 'fe', 'xe', 'et','st0' ] and status[1] == "up":
+   # Split ge-0/0/0 into ge and 0/0/0, remove extra numbers for aeX interfaces
+   tp = status[0].partition('-')[0].rstrip('0123456789')
+   if tp in [ 'ge', 'fe', 'xe', 'et','st0','ae' ] and status[1] == "up":
     result.append(status)
   return result
 
