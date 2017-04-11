@@ -299,3 +299,11 @@ class ESXi(GenDevice):
    self.log_msg("shutdown_vms: Done! Ready for powerloss, awaiting system halt")
   except Exception as vmerror:
    self.log_msg("ERROR: " + str(vmerror))
+
+###################################### End ESXi Class #####################################
+
+def thread_shutdown_host(afqdn, aWeb):
+ print "<PRE>Shutting down host: {}</PRE>".format(afqdn)
+ aWeb.log_msg("shutdownAll: Thread shutting down [{}]".format(afqdn))
+ esxi = ESXi(afqdn)             
+ esxi.shutdown_vms()                
