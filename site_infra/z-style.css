@@ -32,10 +32,9 @@ img {   border-style:none }
 iframe{ border-style: none; border-width: thin; height:100%; width:100%; }
 table { border-collapse: collapse; border:none; }
 div{    z-index:100; }
-pre{	font-size:10px; font-family: "Courier New", serif; }
-pre:hover{ font-weight:bold; }
 hr {	box-sizing:content-box; height:0; overflow:hidden; width:99% }
 br {	clear:left; }
+form{   display:inline; }
 
 /*###################################### Start page ########################################*/
 
@@ -78,15 +77,15 @@ td.z-rack-data { border: solid 2px grey; width:220px; font-size:12px; }
 
 div.z-navframe { position: relative; height: 100%; width:100%;}
 
-div.z-navbar { height: 34px; float: left; display: table; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99;cursor:pointer; position:fixed; top:0px; width:100%; z-index:1000; }
-div.z-navbar a { color:#FFFFFF; display:block; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
+div.z-navbar { height: 34px; float: left; display: table; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99; cursor:pointer; position:fixed; top:0px; width:100%; z-index:1000; }
+div.z-navbar a { color:#FFFFFF; display:table-cell; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
 div.z-navbar a.z-warning { background-color:red; }
 div.z-navbar a.z-right {   float:right; }
 div.z-navbar a.z-reload { background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
 
 div.z-navbar a:hover{ color:#000000 ;background-color:#D5D9DD; }
 
-div.z-navleft {  display:block; position: absolute; bottom:0px; top:34px; width:360px; overflow-y:auto; overflow-x:hidden; }
+div.z-navleft {  display:block; position: fixed;    bottom:0px; top:34px; width:360px; overflow-y:auto; overflow-x:hidden; }
 div.z-navright { display:block; position: absolute; bottom:0px; top:34px; left: 360px; right:0px; overflow: auto; }
 
 div.z-navcontent {  position: absolute; top: 34px; bottom: 0px; left: 0px; right: 0px; box-sizing: border-box; display:block; overflow: auto;}

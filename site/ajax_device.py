@@ -44,7 +44,6 @@ def device_device_info(aWeb):
  id     = aWeb.get_value('id')
  op     = aWeb.get_value('op',"")
  opres  = str(op).upper()
- height = 250
  conip  = None
  db     = DB()
  db.connect()
@@ -129,10 +128,11 @@ def device_device_info(aWeb):
 
  ########################## Data Tables ######################
  
- print "<DIV ID=div_devinfo CLASS='z-table' style='resize:horizontal; margin-left:0px; width:670px; z-index:101; height:{}px; float:left;'>".format(str(height))
+ print "<DIV ID=div_devinfo CLASS='z-table' style='position:relative; resize:horizontal; margin-left:0px; min-width:675px; z-index:101; height:240px; float:left;'>"
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<!-- Reachability Info --><DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
+ print "<!-- Reachability Info -->"
+ print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
  print "<TR><TD>Name:</TD><TD><INPUT NAME=hostname CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['hostname'])
  print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(device_data['domain'])
  print "<TR><TD>SNMP:</TD><TD>{}</TD></TR>".format(device_data['snmp'])
@@ -152,7 +152,8 @@ def device_device_info(aWeb):
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
  print "<TR><TD COLSPAN=2 style='width:210px'>&nbsp;</TD></TR>"
  print "</TABLE></DIV>"
- print "<!-- Rack Info --><DIV style='margin:3px; float:left;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
+ print "<!-- Rack Info -->"
+ print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
  print "<TR><TD>Rack:</TD><TD><SELECT NAME=rack_id CLASS='z-select'>"
  db.do("SELECT * FROM racks")
  racks = db.get_all_rows()
@@ -194,7 +195,8 @@ def device_device_info(aWeb):
    for index in range(0,4):
     print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  print "</TABLE></DIV>"
- print "<!-- Extra info --><DIV style='margin:3px; float:left;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Extra info</TH></TR>"
+ print "<!-- Additional info -->"
+ print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Additional Info</TH></TR>"
  print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_size'])
  print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['domain'] != device_data['fqdn']) else "", device_data['fqdn'])
  print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['dns_a_id'])
@@ -204,6 +206,9 @@ def device_device_info(aWeb):
  print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
  print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
  print "</TABLE></DIV>"
+ print "</FORM>"
+ print "<!-- Extra -->"
+ print "<DIV ID=div_devextra style='margin:3px; float:left; height:190px;'></DIV>"
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
@@ -217,19 +222,14 @@ def device_device_info(aWeb):
  if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+device_data['consoleport'])
  if device_data['type'] == 'pdu' or device_data['type'] == 'console' and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip'])) == 0:
-  print "<A CLASS='z-btn z-op z-small-btn DIV=div_navcont LNK='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}' OP=load style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname'])
- 
+  print "<A CLASS='z-btn z-op z-small-btn DIV=div_navcont LNK='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}' OP=load style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
  print "<SPAN ID=update_results style='float:right; font-size:9px;'>{}</SPAN>".format(opres)
  print "</DIV>"
- print "</FORM>"
+ db.close()
  print "</DIV>"
 
- db.close()
- print "<DIV ID=div_devextra style='width:170px; z-index:101; height:{}px; float:left; margin-top:3px; margin-left:0px; margin-right:3px;'>&nbsp;</DIV>".format(str(height + 3))
-
  print "<!-- Function navbar and navcontent -->"
- print "<DIV CLASS='z-navbar' style='top:{}px; clear:left;'>".format(str(height + 40))
-
+ print "<DIV CLASS='z-navbar' style='top:280px; clear:left;'>"
  functions = device_get_widgets(device_data['type'])
  if functions:
   if functions[0] == 'operated':
@@ -242,8 +242,7 @@ def device_device_info(aWeb):
  else:
   print "&nbsp;"
  print "</DIV>"
- print "<DIV CLASS='z-navcontent' ID=div_navdata style='top:{}px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>".format(str(height + 40))
-
+ print "<DIV CLASS='z-navcontent' ID=div_navdata style='top:280px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>"
 
 
 
@@ -444,22 +443,19 @@ def device_conf_gen(aWeb):
  gw   = aWeb.get_value('gateway', sys_int2ip(sys_ip2int(sub) + 1))
  op   = aWeb.get_value('op')
  if not op:
-  print "<DIV CLASS='z-table' style='margin:0px; height:250px; width:165px;'>"
   print "<FORM ID=device_conf_gen_form>"
   print "<INPUT TYPE=HIDDEN NAME=ip   VALUE={}>".format(ip)
   print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
-  print "<TABLE style='width:100%; margin-top:3px; margin-bottom:6px;'>"
+  print "<TABLE style='width:170px;'>"
   print "<TR><TH COLSPAN=4>Parameters</TH></TR>"
   print "<TR><TD>Name</TD>   <TD COLSPAN=3><INPUT  NAME=hostname TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
   print "<TR><TD>Domain:</TD><TD COLSPAN=3><INPUT  NAME=domain   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(dom)
   print "<TR><TD>Subnet:</TD><TD><INPUT NAME=subnet TYPE=TEXT CLASS='z-input' VALUE='{}'></TD></TR>".format(sub)
   print "<TR><TD>Mask:</TD><TD><INPUT NAME=mask TYPE=TEXT CLASS='z-input' VALUE='{}'></TD></TR>".format(mask)
   print "<TR><TD>Gateway:</TD><TD COLSPAN=3><INPUT NAME=gateway  TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(gw)
-  for index in range(0,3):
-   print "<TR><TD COLSPAN=4>&nbsp;</TD></TR>"
   print "</TABLE>"
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen&op=conf FRM=device_conf_gen_form OP=post><IMG SRC='images/btn-start.png'></A>"
-  print "</DIV>"
+  print "</FORM>"
+  print "<CENTER><A CLASS='z-btn z-op' style='height:30px' TITLE='Generate Config' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen&op=conf FRM=device_conf_gen_form OP=post>Generate</A></CENTER>"
  else:
   print "<DIV CLASS='z-table' style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
   from sdcp.devices.DevHandler import device_get_instance

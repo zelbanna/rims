@@ -101,7 +101,7 @@ def graph_wm(aWeb):
  dom  = aWeb.get_value('domain')
  desc = aWeb.get_value('desc',"LNK"+indx)
  gstr = "munin-cgi/munin-cgi-graph/{1}/{0}.{1}/snmp_{2}_{1}_if_{3}-day.png".format(name,dom,snmpname,indx)
- print "<DIV CLASS=z-table><PRE>"
+ print "<DIV CLASS=z-table><PRE style='font-size:10px;'>"
  print "LINK {}-{}".format(name,desc)
  print "\tINFOURL " +  gstr
  print "\tOVERLIBGRAPH " + gstr
