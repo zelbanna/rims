@@ -83,7 +83,7 @@ class Web(object):
  def get_list(self, aid):
   return self._form.getlist(aid)
   
- def reload_args_except(self,aexceptlist = []):
+ def get_args_except(self,aexceptlist = []):
   reload = ""
   for key in self._form.keys():
    if not key in aexceptlist:
