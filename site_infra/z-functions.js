@@ -21,11 +21,6 @@ function btnoperation(button) {
  var op   = button.getAttribute("op");
  var div  = $("#"+button.getAttribute("div"));
  var spin = button.getAttribute("spin");
- if (spin == "true"){
-  div.scrollTop(0);
-  div.css("overflow-y","hidden");
-  div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
- }
 
  if (op == 'toggle') {
   div.toggle();
@@ -38,11 +33,20 @@ function btnoperation(button) {
  } else if (op == 'load') {
   var lnk = button.getAttribute("lnk");
   div.load(lnk, function(responseTxt, statusTxt, xhr){ div.css("overflow-y","auto"); });
-
+  if (spin == "true"){
+   div.scrollTop(0);
+   div.css("overflow-y","hidden");
+   div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
+  }
  } else if (op == 'confirm') {
   var msg  = button.getAttribute("msg");
   var lnk  = button.getAttribute("lnk");
   if (confirm(msg) == true){
+   if (spin == "true"){
+    div.scrollTop(0);
+    div.css("overflow-y","hidden");
+    div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
+   }
    div.load(lnk, function(responseTxt, statusTxt, xhr){ div.css("overflow-y","auto"); });
   }
  } else if (op == 'iconfirm') {
@@ -62,6 +66,11 @@ function btnoperation(button) {
  } else if (op == 'post') {
   var lnk = button.getAttribute("lnk");
   var frm = button.getAttribute("frm");
+  if (spin == "true"){
+   div.scrollTop(0);
+   div.css("overflow-y","hidden");
+   div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
+  }
   $.post(lnk, $("#"+frm).serialize() , function(result) { div.html(result); });
  }
 };

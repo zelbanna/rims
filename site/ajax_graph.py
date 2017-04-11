@@ -90,3 +90,21 @@ def graph_add(aWeb):
   else:
    graph.add_entry(fqdn,'no')
    print "<B>Added graphing for node {0} ({1})</B>".format(node, fqdn)
+
+#
+# Weathermap Link
+#
+def graph_wm(aWeb):
+ indx = aWeb.get_value('index')
+ name = aWeb.get_value('hostname')
+ snmpname = name.replace('-','_')
+ dom  = aWeb.get_value('domain')
+ desc = aWeb.get_value('desc',"LNK"+indx)
+ gstr = "munin-cgi/munin-cgi-graph/{1}/{0}.{1}/snmp_{2}_{1}_if_{3}-day.png".format(name,dom,snmpname,indx)
+ print "<DIV CLASS=z-table><PRE>"
+ print "LINK {}-{}".format(name,desc)
+ print "\tINFOURL " +  gstr
+ print "\tOVERLIBGRAPH " + gstr
+ print "\tBWLABEL bits"
+ print "\tTARGET {1}/{0}.{1}-snmp_{2}_{1}_if_{3}-recv-d.rrd {1}/{0}.{1}-snmp_{2}_{1}_if_{3}-send-d.rrd:-:42".format(name,dom,snmpname,indx)
+ print "</PRE></DIV>"

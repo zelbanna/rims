@@ -225,7 +225,7 @@ def device_device_info(aWeb):
  print "</DIV>"
 
  db.close()
- print "<DIV ID=div_devextra style='width:150px; z-index:101; height:{}px; float:left; margin-top:3px; margin-left:0px; margin-right:3px;'>&nbsp;</DIV>".format(str(height + 3))
+ print "<DIV ID=div_devextra style='width:170px; z-index:101; height:{}px; float:left; margin-top:3px; margin-left:0px; margin-right:3px;'>&nbsp;</DIV>".format(str(height + 3))
 
  print "<!-- Function navbar and navcontent -->"
  print "<DIV CLASS='z-navbar' style='top:{}px; clear:left;'>".format(str(height + 40))
@@ -444,7 +444,7 @@ def device_conf_gen(aWeb):
  gw   = aWeb.get_value('gateway', sys_int2ip(sys_ip2int(sub) + 1))
  op   = aWeb.get_value('op')
  if not op:
-  print "<DIV CLASS='z-table' style='margin:0px; height:250px; width:145px;'>"
+  print "<DIV CLASS='z-table' style='margin:0px; height:250px; width:165px;'>"
   print "<FORM ID=device_conf_gen_form>"
   print "<INPUT TYPE=HIDDEN NAME=ip   VALUE={}>".format(ip)
   print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)

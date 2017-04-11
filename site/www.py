@@ -57,7 +57,7 @@ class Web(object):
    try:
     fun(self)
    except Exception as err:
-    print "<SPAN style='font-size:10px'>Ajax call:[{}] error: [{}]</SPAN>".format(ajaxcall,str(err))
+    print "<SPAN style='font-size:10px'>Ajax Error - {}:({}) error: [{}]</SPAN>".format(ajaxcall,",".join(self.get_keys()),str(err))
 
  def pane(self):
   paneview = self.get_value('view')

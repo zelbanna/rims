@@ -92,14 +92,20 @@ class Junos(GenDevice):
   return result
 
  def widget_up_interfaces(self):
+  from sdcp.core.Grapher import Grapher
+  graph = Grapher()
+  graph.load_conf()
+  gdev = graph.get_entry(self._fqdn)
+  if gdev and gdev['update'] == 'yes':
+   print "<DIV ID=graph_config></DIV>"
   self.connect()
   ifs = self.get_up_interfaces()
   self.close()
   print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
-  print "<TABLE style='margin:3px;'><TH>Interface</TH><TH>State</TH><TH>SNMP index</TH><TH>Description</TH>"
+  print "<TABLE style='margin:3px;'><TH>Interface</TH><TH>State</TH><TH>SNMP</TH><TH>Description</TH>"
   for entry in ifs:
-   print "<TR><TD>" + "&nbsp;</TD><TD>".join(entry) + "</TD></TR>\n"
-  print "</TABLE></DIV>"                
+   print "<TR><TD>{0}</TD><TD>{1}</TD><TD><A CLASS='z-op' DIV=graph_config OP=load LNK='ajax.cgi?call=graph_wm&hostname={4}&domain={5}&index={2}'>{2}</A></TD><TD>{3}</TD></TR>\n".format(entry[0],entry[1],entry[2],entry[3],self._hostname,self._domain)
+  print "</TABLE></DIV>"           
   
  #
  # SNMP is much smoother than Netconf for some things :-)

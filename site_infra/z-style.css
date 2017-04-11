@@ -32,9 +32,10 @@ img {   border-style:none }
 iframe{ border-style: none; border-width: thin; height:100%; width:100%; }
 table { border-collapse: collapse; border:none; }
 div{    z-index:100; }
-
-hr { box-sizing:content-box; height:0; overflow:hidden; width:99% }
-br { clear:left; }
+pre{	font-size:10px; font-family: "Courier New", serif; }
+pre:hover{ font-weight:bold; }
+hr {	box-sizing:content-box; height:0; overflow:hidden; width:99% }
+br {	clear:left; }
 
 /*###################################### Start page ########################################*/
 
@@ -61,12 +62,12 @@ div.z-centered { display:flex; justify-content:center; align-items:center; }
 /*############################################ Table ##############################################*/
 
 div.z-table {	width:auto; border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; }
-div.z-table th { border:none; display: table-cell; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 2px; }
+div.z-table th { border:none; display: table-cell; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 4px; }
 div.z-table tr:nth-child(even) { background-color: #FFFFFF; font-size:11px; line-height:20px; }
 div.z-table tr:nth-child(odd) {  background-color: #F3F3F3; font-size:11px; line-height:20px; }
 div.z-table th.z-header { border: 1px solid black; font-size: 16px; }
 div.z-table th.z-result { border: 1px solid black; font-size: 11px; }
-div.z-table td { padding: 0px 2px 0px 2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+div.z-table td { padding: 0px 0px 0px 6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 div.z-table:hover { box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }
 
 tr.z-rack { line-height:14px; }
