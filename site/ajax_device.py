@@ -229,7 +229,7 @@ def device_device_info(aWeb):
  print "</DIV>"
 
  print "<!-- Function navbar and navcontent -->"
- print "<DIV CLASS='z-navbar' style='top:280px; clear:left;'>"
+ print "<DIV CLASS='z-navbar' style='top:280px;'>"
  functions = device_get_widgets(device_data['type'])
  if functions:
   if functions[0] == 'operated':
