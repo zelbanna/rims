@@ -54,6 +54,8 @@ CREATE TABLE `devices` (
   `fqdn` varchar(40) DEFAULT NULL,
   `graphed` varchar(3) DEFAULT 'no',
   `ipam_id` int(10) unsigned DEFAULT 0,
+  `ipam_mask` tinyint(3) unsigned DEFAULT 24,
+  `ipam_sub` int(10) unsigned DEFAULT 0,
   `model` varchar(20) DEFAULT NULL,
   `pem0_pdu_id` int(10) unsigned DEFAULT 0,
   `pem0_pdu_unit` tinyint(3) unsigned DEFAULT 0,
