@@ -61,7 +61,6 @@ def device_device_info(aWeb):
 
   if not name == 'unknown':
    opres = opres + " and updating DDI:"
-   aWeb.log_msg("Device lookup: input [{}, {}, {}]".format(ip,name,domain))
    import sdcp.SettingsContainer as SC
    pargs = { 'ip':ip, 'name':name, 'domain':domain }
    if SC.dnsdb_proxy == 'True':
