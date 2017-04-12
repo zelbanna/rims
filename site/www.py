@@ -110,7 +110,7 @@ class Web(object):
   if not self._debug:
    return  loads(self.get_include(aurl + "ajax.cgi?call=remote_json&op={}&{}".format(op,args)))
   else:
-   self.log_msg(aurl + "?call=remote_json&op={}&{}".format(op,args))
+   self.log_msg(aurl + "ajax.cgi?call=remote_json&op={}&{}".format(op,args))
    try:
     return loads(self.get_include(aurl + "ajax.cgi?call=remote_json&op={}&{}".format(op,args)))
    except Exception as err:

@@ -76,12 +76,16 @@ def device_device_info(aWeb):
    else:
     from sdcp.core.ddi import ddi_ipam_lookup
     retvals = ddi_ipam_lookup(ip)
-   ipam_id    = retvals.get('ipam_id','0') 
+   ipam_id    = retvals.get('ipam_id','0')
+   ipam_mask  = retvals.get('subnet_mask','24')
+   ipam_sub   = retvals.get('subnet_asc','0.0.0.0')
+   ipam_subint = sys_ip2int(ipam_sub)
    tmp_ptr_id = retvals.get('dns_ptr_id','0')
    opres = opres + "{}".format(str(retvals))
    if tmp_ptr_id != '0' and tmp_ptr_id != dns_ptr_id:
     opres = "<B>"+opres+"</B>"
-   db.do("UPDATE devices SET ipam_id = {}, dns_a_id = '{}', dns_ptr_id = '{}' where id = '{}'".format(ipam_id, dns_a_id,dns_ptr_id,id))
+
+   db.do("UPDATE devices SET ipam_id = {}, dns_a_id = '{}', dns_ptr_id = '{}', ipam_mask = '{}', ipam_sub = '{}' WHERE id = '{}'".format(ipam_id, dns_a_id,dns_ptr_id,ipam_mask,ipam_subint,id))
   db.commit()
 
  elif op == 'update':
@@ -89,7 +93,9 @@ def device_device_info(aWeb):
   keys.remove('call')
   keys.remove('id')
   keys.remove('op')
-  opres = opres + " values:" + " ".join(keys)
+  if 'ipam_gw'   in keys: keys.remove('ipam_gw')
+  if 'ipam_mask' in keys: keys.remove('ipam_mask')
+  if 'ipam_sub'  in keys: keys.remove('ipam_sub')
   if keys:
    for key in keys:
     if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
@@ -99,6 +105,7 @@ def device_device_info(aWeb):
      [pemid,pemslot] = aWeb.get_value(key).split('.')
      db.do("UPDATE devices SET {0}_pdu_id='{1}', {0}_pdu_slot ='{2}' where id = '{3}'".format(pem,pemid,pemslot,id))
    db.commit()
+  opres = opres + " values:" + " ".join(keys)
 
  db.do("SELECT *, INET_NTOA(ip) as ipasc FROM devices WHERE id ='{}'".format(id))
  device_data = db.get_row()
@@ -109,7 +116,6 @@ def device_device_info(aWeb):
   return
  ip   = device_data['ipasc']
  name = device_data['hostname']
-
 
  if op == 'updateddi' and not device_data['hostname'] == 'unknown':
   if device_data['ipam_id'] == '0':
@@ -126,15 +132,18 @@ def device_device_info(aWeb):
 
  ########################## Data Tables ######################
  
- print "<DIV ID=div_devinfo CLASS='z-table' style='position:relative; resize:horizontal; margin-left:0px; min-width:675px; z-index:101; height:240px; float:left;'>"
+ print "<DIV ID=div_devinfo CLASS='z-table' style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
+ print "<INPUT TYPE=HIDDEN NAME=ipam_sub  VALUE={}>".format(device_data['ipam_sub'])
+ print "<INPUT TYPE=HIDDEN NAME=ipam_mask VALUE={}>".format(device_data['ipam_mask'])
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
- print "<TR><TD>Name:</TD><TD><INPUT NAME=hostname CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['hostname'])
+ print "<TR><TD>Name:</TD><TD><INPUT NAME=hostname CLASS='z-input' TYPE=TEXT VALUE='{}'></TD></TR>".format(device_data['hostname'])
  print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(device_data['domain'])
  print "<TR><TD>SNMP:</TD><TD>{}</TD></TR>".format(device_data['snmp'])
  print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(ip)
+ print "<TR><TD>Mask:</TD><TD>/{}</TD></TR>".format(device_data['ipam_mask'])
  print "<TR><TD>Type:</TD><TD TITLE='Device type'><SELECT NAME=type CLASS='z-select'>"
  for tp in device_types():
   extra = " selected disabled" if device_data['type'] == tp else ""      
@@ -148,7 +157,6 @@ def device_device_info(aWeb):
    print "<TR><TD>Graphs:</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(id, device_data['hostname'], device_data['domain'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
- print "<TR><TD COLSPAN=2 style='width:210px'>&nbsp;</TD></TR>"
  print "</TABLE></DIV>"
  print "<!-- Rack Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
@@ -201,12 +209,10 @@ def device_device_info(aWeb):
  print "<TR><TD>DNS PTR ID:</TD><TD>{}</TD></TR>".format(device_data['dns_ptr_id'])
  print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(device_data['ipam_id'])
  print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(sys_int2mac(device_data['mac']))
- print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
+ print "<TR><TD>Gateway:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=ipam_gw VALUE={}></TD></TR>".format(sys_int2ip(device_data['ipam_sub'] + 1))
  print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
  print "</TABLE></DIV>"
  print "</FORM>"
- print "<!-- Extra -->"
- print "<DIV ID=div_devextra style='margin:3px; float:left; height:190px;'></DIV>"
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
@@ -214,7 +220,7 @@ def device_device_info(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&ip={}&domain={}&hostname={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['domain'],name)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_devextra LNK=ajax.cgi?call=device_conf_gen&ip={}&type={}&hostname={}&domain={} OP=load TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>".format(ip,device_data['type'],name,device_data['domain'])
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen&type={}&ip={}&domain={} FRM=info_form OP=post TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>".format(device_data['type'],ip,device_data['domain'])
  if (device_data['pem0_pdu_id'] != 0 and device_data['pem0_pdu_unit'] != 0) or (device_data['pem1_pdu_id'] != 0 and device_data['pem1_pdu_unit'] != 0):
   print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post TITLE='Update PDU with device info'><IMG SRC='images/btn-pdu-save.png' ALT='P'></A>".format(device_data['pem0_pdu_unit'],device_data['pem1_pdu_unit'],name)
  if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
@@ -336,7 +342,7 @@ def device_op_syncddi(aWeb):
  import sdcp.SettingsContainer as SC
  db = DB()
  db.connect()
- db.do("SELECT id, ip, hostname, INET_NTOA(ip) as ipasc, domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0 or ipam_id = 0) ORDER BY ip")
+ db.do("SELECT id, ip, hostname, INET_NTOA(ip) as ipasc, domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0 or ipam_id = 0 or ipam_mask = 0 or ipam_sub = 0) ORDER BY ip")
  rows = db.get_all_rows()
  print "<DIV CLASS='z-table'>"
  print "<TABLE>"
@@ -359,7 +365,9 @@ def device_op_syncddi(aWeb):
    retvals = ddi_ipam_lookup(ip)             
 
   ipam_id    = retvals.get('ipam_id','0')
-
+  ipam_mask  = retvals.get('ipam_mask','24')
+  ipam_sub   = retvals.get('ipam_sub','0.0.0.0')
+  ipam_sub   = sys_ip2int(ipam_sub)
   print "<TR><TD>{}</<TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>".format(row['id'],ip,name,dom,dns_a_id,dns_ptr_id,ipam_id)
   if not name == 'unknown':
    print "updating"
@@ -377,7 +385,7 @@ def device_op_syncddi(aWeb):
     ddi_ipam_update(ip,name + '.' + dom, ipam_id, retvals.get('dns_ptr_id','0'))
 
    print str(retvals)
-   db.do("UPDATE devices SET ipam_id = {}, dns_a_id = '{}', dns_ptr_id = '{}' WHERE id = '{}'".format(ipam_id, retvals.get('dns_a_id','0'),retvals.get('dns_ptr_id','0'), row['id']))
+   db.do("UPDATE devices SET ipam_id = {}, dns_a_id = '{}', dns_ptr_id = '{}', ipam_mask = '{}', ipam_sub = '{}' WHERE id = '{}'".format(ipam_id, retvals.get('dns_a_id','0'),retvals.get('dns_ptr_id','0'), ipam_mask, ipam_sub, row['id']))
   print "</TD></TR>"
 
  db.commit()
@@ -427,39 +435,11 @@ def device_new(aWeb):
 #
 def device_conf_gen(aWeb):
  type = aWeb.get_value('type')
- ip   = aWeb.get_value('ip')
- name = aWeb.get_value('hostname')
- dom  = aWeb.get_value('domain')
- import sdcp.SettingsContainer as SC
- if SC.ipamdb_proxy == 'True':   
-  retvals = aWeb.get_proxy(SC.ipamdb_url,"ddi_ipam_lookup","ip={}".format(ip))        
- else: 
-  from sdcp.core.ddi import ddi_ipam_lookup
-  retvals = ddi_ipam_lookup(ip)
- mask = aWeb.get_value('mask',    retvals.get('subnet_mask',"24"))
- sub  = aWeb.get_value('subnet',  retvals.get('subnet_asc',"127.0.0.0"))
- gw   = aWeb.get_value('gateway', sys_int2ip(sys_ip2int(sub) + 1))
- op   = aWeb.get_value('op')
- if not op:
-  print "<FORM ID=device_conf_gen_form>"
-  print "<INPUT TYPE=HIDDEN NAME=ip   VALUE={}>".format(ip)
-  print "<INPUT TYPE=HIDDEN NAME=type VALUE={}>".format(type)
-  print "<TABLE style='width:170px;'>"
-  print "<TR><TH COLSPAN=4>Parameters</TH></TR>"
-  print "<TR><TD>Name</TD>   <TD COLSPAN=3><INPUT  NAME=hostname TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
-  print "<TR><TD>Domain:</TD><TD COLSPAN=3><INPUT  NAME=domain   TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(dom)
-  print "<TR><TD>Subnet:</TD><TD><INPUT NAME=subnet TYPE=TEXT CLASS='z-input' VALUE='{}'></TD></TR>".format(sub)
-  print "<TR><TD>Mask:</TD><TD><INPUT NAME=mask TYPE=TEXT CLASS='z-input' VALUE='{}'></TD></TR>".format(mask)
-  print "<TR><TD>Gateway:</TD><TD COLSPAN=3><INPUT NAME=gateway  TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(gw)
-  print "</TABLE>"
-  print "</FORM>"
-  print "<CENTER><A CLASS='z-btn z-op' style='height:30px' TITLE='Generate Config' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen&op=conf FRM=device_conf_gen_form OP=post>Generate</A></CENTER>"
- else:
-  print "<DIV CLASS='z-table' style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
-  from sdcp.devices.DevHandler import device_get_instance
-  try:
-   dev  = device_get_instance(ip,type)
-   dev.print_conf({'name':name, 'domain':dom, 'gateway':gw, 'subnet':sub, 'mask':mask})
-  except:
-   print "No instance config specification"
-  print "</DIV>"
+ print "<DIV CLASS='z-table' style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
+ from sdcp.devices.DevHandler import device_get_instance
+ try:
+  dev  = device_get_instance(aWeb.get_value('ip'),type)
+  dev.print_conf({'name':aWeb.get_value('hostname'), 'domain':aWeb.get_value('domain'), 'gateway':aWeb.get_value('ipam_gw'), 'subnet':sys_int2ip(int(aWeb.get_value('ipam_sub'))), 'mask':aWeb.get_value('ipam_mask')})
+ except Exception as err:
+  print "No instance config specification ({})".format(type)
+ print "</DIV>"

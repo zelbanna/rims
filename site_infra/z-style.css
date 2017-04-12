@@ -126,6 +126,7 @@ a.z-op { outline:none; cursor:pointer; }
  border:none;
  overflow:visible;
  background-color: transparent;
+ color:darkgray;
 }
 .z-input::placeholder{ color:gray; opacity:1; }
 ::-webkit-input-placeholder { color: gray; }
