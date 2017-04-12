@@ -52,7 +52,7 @@ def remote_json(aWeb):
   mod = None
 
  try:
-  fun = getattr(mod,op,lambda x: print "op_not_found")
+  fun = getattr(mod,op,None)
   res = fun(arg)
  except Exception as err:
   res['err'] = str(err)
