@@ -151,4 +151,4 @@ class Web(object):
   else:
    mod = None
   fun = getattr(mod,op,lambda x: { 'err':'no_such_op_in_module', 'op':x })
-  print dumps(fun(arg))
+  print dumps(fun(args))
