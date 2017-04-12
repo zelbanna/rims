@@ -21,11 +21,11 @@ def device_view_devicelist(aWeb):
  db.connect()
  print "<DIV CLASS='z-table'>"
  print "<TABLE WIDTH=330><TR>"
- print "<TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&sort=ip&{0}'>IP</A></TH><TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&sort=hostname&{0}'>FQDN</A></TH><TH>Model</TH>".format(aWeb.get_args_except(['call','sort']))
+ print "<TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?{0}&sort=ip'>IP</A></TH><TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?{0}&sort=hostname'>FQDN</A></TH><TH>Model</TH>".format(aWeb.get_args_except(['sort']))
  print "</TR><TR style='height:20px'><TD COLSPAN=3>"
  tune = '' if not target or not arg else "WHERE {0}='{1}'".format(target,arg)
  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices {0} ORDER BY {1}".format(tune,sort))
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except(['call']))
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new'><IMG SRC='images/btn-add.png'></A>"
  rows = db.get_all_rows()
  for row in rows:
@@ -63,19 +63,20 @@ def device_device_info(aWeb):
    opres = opres + " and updating DDI:"
    aWeb.log_msg("Device lookup: input [{}, {}, {}]".format(ip,name,domain))
    import sdcp.SettingsContainer as SC
+   pargs = { 'ip':ip, 'name':name, 'domain':domain }
    if SC.dnsdb_proxy == 'True':
-    retvals = aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_lookup","ip={}&hostname={}&domain={}".format(ip,name,domain))
+    retvals = aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_lookup",pargs)
    else:
     from sdcp.core.ddi import ddi_dns_lookup
-    retvals = ddi_dns_lookup(ip,name,domain)
+    retvals = ddi_dns_lookup(pargs)
    dns_a_id   = retvals.get('dns_a_id','0')
    dns_ptr_id = retvals.get('dns_ptr_id','0')
    opres = opres + "{}".format(str(retvals))
    if SC.ipamdb_proxy == 'True':
-    retvals = aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_lookup", "ip={}".format(ip))
+    retvals = aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_lookup", {'ip':ip})
    else:
     from sdcp.core.ddi import ddi_ipam_lookup
-    retvals = ddi_ipam_lookup(ip)
+    retvals = ddi_ipam_lookup({'ip':ip})
    ipam_id    = retvals.get('ipam_id','0')
    ipam_mask  = retvals.get('subnet_mask','24')
    ipam_sub   = retvals.get('subnet_asc','0.0.0.0')
@@ -121,14 +122,17 @@ def device_device_info(aWeb):
   if device_data['ipam_id'] == '0':
    opres = opres + " (please rerun lookup for proper sync)"
   import sdcp.SettingsContainer as SC
+  pargs = { 'ip':ip, 'name':device_data['hostname'], 'domain': device_data['domain'], 'a_id':device_data['dns_a_id'], 'ptr_id':device_data['dns_ptr_id'] }
   if SC.dnsdb_proxy == 'True':
-   aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_update","ip={}&hostname={}&domain={}&dns_a_id={}&dns_ptr_id={}".format(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id']))
+   aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_update",pargs)
   else:
-   ddi_dns_update(ip,device_data['hostname'],device_data['domain'],device_data['dns_a_id'],device_data['dns_ptr_id'])
+   ddi_dns_update(pargs)
+  pargs['ipam_id'] = device_data['ipam_id']
+  del pargs['a_id']
   if SC.ipamdb_proxy == 'True':
-   aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_update","ip={}&fqdn={}&ipam_id={}&dns_ptr_id={}".format(ip,device_data['hostname'] + "." + device_data['domain'],device_data['ipam_id'],device_data['dns_ptr_id']))
+   aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_update", pargs)
   else:
-   ddi_ipam_update(ip,device_data['hostname'] + "." + device_data['domain'],device_data['ipam_id'],device_data['dns_ptr_id'])
+   ddi_ipam_update(pargs)
 
  ########################## Data Tables ######################
  
@@ -266,18 +270,18 @@ def device_remove(aWeb):
  if (dns_a_id != '0') or (dns_ptr_id != '0'):
   import sdcp.SettingsContainer as SC
   if SC.dnsdb_proxy == 'True':
-   dres = aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_remove","dns_a_id={}&dns_ptr_id={}".format(dns_a_id,dns_ptr_id))
+   dres = aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_remove", { 'a_id':dns_a_id, 'ptr_id':dns_ptr_id })
   else:
    from sdcp.core.ddi import ddi_dns_remove
-   dres = ddi_dns_remove(dns_a_id,dns_ptr_id)
+   dres = ddi_dns_remove( { 'a_id':dns_a_id, 'ptr_id':dns_ptr_id })
   print "DNS  entries removed:{}<BR>".format(str(dres))
  if not ipam_id == '0':
   import sdcp.SettingsContainer as SC
   if SC.ipamdb_proxy == 'True':
-   ires = aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_remove","ipam_id={}".format(ipam_id))
+   ires = aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_remove",{ 'ipam_id':ipam_id })
   else:
    from sdcp.core.ddi import ddi_ipam_remove
-   ires = ddi_ipam_remove(ipam_id)
+   ires = ddi_ipam_remove({ 'ipam_id':ipam_id })
   print "IPAM entries removed:{}<BR>".format(str(ires))
  print "Unit {0} deleted ({1})".format(device_id,res)
  print "</DIV>"
@@ -300,7 +304,7 @@ def device_conf_gen(aWeb):
   dev  = device_get_instance(row['ipasc'],type)
   dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':sys_int2ip(int(row['ipam_sub'])), 'mask':row['ipam_mask']})
  except Exception as err:
-  print "No instance config specification ({})".format(str(err))
+  print "No instance config specification for {} type".format(row.get('type','unknown'))
  print "</DIV>"
 
 #
@@ -365,18 +369,19 @@ def device_op_syncddi(aWeb):
   ip   = row['ipasc']
   name = row['hostname']
   dom  = row['domain'] 
+  pargs = { 'ip':ip, 'name':name, 'domain':dom }
   if SC.dnsdb_proxy == 'True':
-   retvals = aWeb.get_proxy(SC.dnsdb_url,"ddi_dns_lookup","ip={}&hostname={}&domain={}".format(ip,name,dom))
+   retvals = aWeb.get_proxy(SC.dnsdb_url,"ddi_dns_lookup",pargs)
   else:
    from sdcp.core.ddi import ddi_dns_lookup
-   retvals = ddi_dns_lookup(ip,name,dom)
+   retvals = ddi_dns_lookup(pargs)
   dns_a_id   = retvals.get('dns_a_id','0')
   dns_ptr_id = retvals.get('dns_ptr_id','0')
   if SC.ipamdb_proxy == 'True':
-   retvals = aWeb.get_proxy(SC.ipamdb_url,"ddi_ipam_lookup","ip={}".format(ip))                                  
+   retvals = aWeb.get_proxy(SC.ipamdb_url,"ddi_ipam_lookup", {'ip':ip})                                  
   else:
    from sdcp.core.ddi import ddi_ipam_lookup 
-   retvals = ddi_ipam_lookup(ip)             
+   retvals = ddi_ipam_lookup({'ip':ip})
 
   ipam_id    = retvals.get('ipam_id','0')
   ipam_mask  = retvals.get('subnet_mask','24')
@@ -385,19 +390,22 @@ def device_op_syncddi(aWeb):
   print "<TR><TD>{}</<TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>".format(row['id'],ip,name,dom,dns_a_id,dns_ptr_id,ipam_id,ipam_sub,ipam_mask)
   if not name == 'unknown':
    print "updating"
+   uargs = { 'ip':ip, 'name':name, 'domain':dom, 'a_id':dns_a_id, 'ptr_id':dns_ptr_id }
    if SC.dnsdb_proxy == 'True':
-    aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_update","ip={}&hostname={}&domain={}&dns_a_id={}&dns_ptr_id={}".format(ip,name,dom,dns_a_id,dns_ptr_id))
-    retvals = aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_lookup","ip={}&hostname={}&domain={}".format(ip,name,dom))
+    aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_update",uargs)
+    retvals = aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_lookup",pargs)
    else:
     from sdcp.core.ddi import ddi_dns_update
-    ddi_dns_update(ip,name,dom,dns_a_id,dns_ptr_id)
-    retvals = ddi_dns_lookup(ip,name,dom)
+    ddi_dns_update(uargs)
+    retvals = ddi_dns_lookup(pargs)
+   uargs['ipam_id'] = ipam_id
+   uargs['ptr_id']  = retvals.get('dns_ptr_id','0')
+   del uargs['a_id']
    if SC.ipamdb_proxy == 'True':
-    aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_update","ip={}&fqdn={}&ipam_id={}&dns_ptr_id={}".format(ip,name + '.' + dom, ipam_id, retvals.get('dns_ptr_id','0')))
+    aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_update", uargs)
    else:
     from sdcp.core.ddi import ddi_ipam_updates
-    ddi_ipam_update(ip,name + '.' + dom, ipam_id, retvals.get('dns_ptr_id','0'))
-
+    ddi_ipam_update(uargs)
    print str(retvals)
    db.do("UPDATE devices SET ipam_id = {}, dns_a_id = '{}', dns_ptr_id = '{}', ipam_mask = '{}', ipam_sub = '{}' WHERE id = '{}'".format(ipam_id, retvals.get('dns_a_id','0'),retvals.get('dns_ptr_id','0'), ipam_mask, ipam_subint, row['id']))
   print "</TD></TR>"
@@ -414,32 +422,37 @@ def device_new(aWeb):
  ip  = aWeb.get_value('ip',"127.0.0.1")
  mac = aWeb.get_value('mac',"00:00:00:00:00:00")
  dom = aWeb.get_value('dom',"domain")
- results = ""
- if not (ip == '127.0.0.1' or dom == 'domain'):
-  ipint = sys_ip2int(ip)
-  db = DB()
-  db.connect()
-  xist = db.do("SELECT id,hostname,domain FROM devices WHERE ip ='{}'".format(ipint))
-  if xist == 0:
-   mac = mac.replace(":","")
-   if not sys_is_mac(mac):
-    mac = "000000000000"
-   res = db.do("INSERT INTO devices (ip,mac,domain,hostname,snmp,model,type,fqdn,rack_size) VALUES('{}',x'{}','{}','unknown','unknown','unknown','unknown','unknown',1)".format(ipint,mac,dom))
-   db.commit()
-   results = "Added IP {} and MAC {} ({})".format(ip,mac,res)
-  else:
-   xist = db.get_row()
-   results = "Existing IP: {}.{} ({})".format(xist['hostname'],xist['domain'],xist['id']) 
-  db.close()
-
- print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:140px;'>"
- print "<FORM ID=device_new_form>"
- print "<TABLE style='width:100%'>"
- print "<TR><TH COLSPAN=2>Add Device</TH></TR>"
- print "<TR><TD>IP:</TD><TD><INPUT     NAME=ip  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(ip)
- print "<TR><TD>Domain:</TD><TD><INPUT NAME=dom TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(dom)
- print "<TR><TD>MAC:</TD><TD><INPUT NAME=mac TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(mac)
- print "</TABLE>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_new FRM=device_new_form OP=post><IMG SRC='images/btn-start.png'></A>"
- print "<SPAN style='font-size:9px; float:right'>{}</SPAN>".format(results)
- print "</DIV>"
+ op  = aWeb.get_value('op')
+ if op:
+  res = { "res":"Nothing to be done", 'op':op, 'ip':ip, 'mac':mac, 'dom':dom }
+  if not (ip == '127.0.0.1' or dom == 'domain'):
+   ipint = sys_ip2int(ip)
+   db = DB()
+   db.connect()
+   xist = db.do("SELECT id,hostname,domain FROM devices WHERE ip ='{}'".format(ipint))
+   if xist == 0:
+    mac = mac.replace(":","")
+    if not sys_is_mac(mac):
+     mac = "000000000000"
+    dbres = db.do("INSERT INTO devices (ip,mac,domain,hostname,snmp,model,type,fqdn,rack_size) VALUES('{}',x'{}','{}','unknown','unknown','unknown','unknown','unknown',1)".format(ipint,mac,dom))
+    db.commit()
+    res['res'] = "Added ({})".format(dbres)
+   else:
+    xist = db.get_row()
+    res['res'] = "Existing ({}.{} - {})".format(xist['hostname'],xist['domain'],xist['id']) 
+   db.close()
+  from json import dumps
+  print dumps(res)
+ else:
+  print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:400px; height:140px;'>"
+  print "<FORM ID=device_new_form>"
+  print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
+  print "<TABLE style='width:100%'>"
+  print "<TR><TH COLSPAN=2>Add Device</TH></TR>"
+  print "<TR><TD>IP:</TD><TD><INPUT     NAME=ip  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(ip)
+  print "<TR><TD>Domain:</TD><TD><INPUT NAME=dom TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(dom)
+  print "<TR><TD>MAC:</TD><TD><INPUT NAME=mac TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(mac)
+  print "</TABLE>"
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span LNK=ajax.cgi?call=device_new FRM=device_new_form OP=post><IMG SRC='images/btn-start.png'></A>&nbsp;"
+  print "<SPAN ID=device_new_span style='max-width:370px; font-size:9px; float:right'></SPAN>"
+  print "</DIV>"

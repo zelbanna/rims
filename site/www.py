@@ -52,7 +52,11 @@ class Web(object):
     keys = self.get_keys()
     keys.remove('call')
     keys = ",".join(keys)
-    print "<SPAN style='font-size:10px'>Ajax Error - {}:({}) error: [{}] - possible calls in 'selected' module:[{}]</SPAN>".format(ajaxcall,keys,str(err),", ".join(filter(lambda a: a[:2] != "__", dir(ajaxmod))))
+   
+    print "<SPAN style='font-size:10px'>Ajax Error - {}:({}) error: [{}]".format(ajaxcall,keys,str(err))
+    if not ajaxcall in dir(ajaxmod):
+     print " - possible calls in 'selected' module:[{}]".format(", ".join(filter(lambda a: a[:2] != "__", dir(ajaxmod))))
+    print "</SPAN>"
 
  def pane(self):
   paneview = self.get_value('view')
@@ -67,7 +71,16 @@ class Web(object):
    try:
     fun(self)
    except Exception as err:
-    print "<SPAN style='font-size:10px'>Pane view:[{}] error: [{}] - possible panes:[{}]</SPAN><BR>".format(paneview, str(err),", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
+    print "<SPAN style='font-size:10px'>Pane view:[{}] error: [{}]".format(paneview, str(err))
+    if not paneview in dir(panemod):
+     print " - possible panes:[{}]".format(", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
+    print "</SPAN>"
+
+ def get_dict(self):
+  form = {}
+  for key in self._form.keys():
+   form[key] = self._form.getfirst(key)
+  return form
 
  def get_keys(self):
   return self._form.keys()
@@ -85,7 +98,6 @@ class Web(object):
     reload = reload + "&{}=".format(key) + "&{}=".format(key).join(self._form.getlist(key))
   return reload[1:]
 
- # These should be the two mandatory items any web page needs to load 
  def get_header_base(self, aExtra = ""):
   return "<HEAD>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>\n<META CHARSET='UTF-8'>\n{}\n</HEAD>".format(aExtra)
 
@@ -105,18 +117,21 @@ class Web(object):
   except Exception as err:
    return ""
 
+ #
+ # 
  def get_proxy(self,aurl,op,args):
-  from json import loads
+  from json import loads, dumps
+  arg = dumps(args)
+  lnk = aurl + "ajax.cgi?call=remote_json&op={}&args={}".format(op,arg)
   if not self._debug:
-   return  loads(self.get_include(aurl + "ajax.cgi?call=remote_json&op={}&{}".format(op,args)))
+   return  loads(self.get_include(lnk))
   else:
-   self.log_msg(aurl + "ajax.cgi?call=remote_json&op={}&{}".format(op,args))
+   self.log_msg(lnk)
    try:
-    return loads(self.get_include(aurl + "ajax.cgi?call=remote_json&op={}&{}".format(op,args)))
+    return loads(self.get_include(lnk))
    except Exception as err:
     self.log_msg("Error in get_proxy: {}".format(str(err)))
     return { "res":"get_proxy_err" }
-
 
  def log_msg(self, aMsg, aLog='/var/log/system/system.log'):
   from time import localtime, strftime

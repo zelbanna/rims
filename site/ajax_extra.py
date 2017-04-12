@@ -40,38 +40,21 @@ def examine_log(aWeb):
   print "<PRE>{}</PRE>".format(str(err))      
 
 def remote_json(aWeb):
- from json import dumps
+ from json import loads, dumps
  res = {}    
  op  = aWeb.get_value('op')
- # Assume DDI
- import sdcp.core.ddi as DDI
-
- ip   = aWeb.get_value('ip')
- name = aWeb.get_value('hostname')
- dom  = aWeb.get_value('domain')
- if   op == 'ddi_dns_lookup':
-  res  = DDI.ddi_dns_lookup(ip,name,dom)
- elif op == 'ddi_dns_domains':
-  res  = DDI.ddi_dns_domains()
- elif op == 'ddi_dns_update':
-  aid  = aWeb.get_value('dns_a_id')
-  pid  = aWeb.get_value('dns_ptr_id')
-  res  = DDI.ddi_dns_update(ip,name,dom,aid,pid)
- elif op == 'ddi_dns_remove':
-  aid  = aWeb.get_value('dns_a_id')
-  pid  = aWeb.get_value('dns_ptr_id')
-  res  = DDI.ddi_dns_remove(aid,pid)  
- elif op == 'ddi_ipam_lookup':
-  res  = DDI.ddi_ipam_lookup(ip)
- elif op == 'ddi_ipam_update':
-  iid  = aWeb.get_value('ipam_id')
-  pid  = aWeb.get_value('dns_ptr_id')
-  fqdn = aWeb.get_value('fqdn')
-  res  = DDI.ddi_ipam_update(ip,iid,pid,fqdn)
- elif op == 'ddi_ipam_remove':
-  iid  = aWeb.get_value('ipam_id')
-  res  = DDI.ddi_ipam_remove(iid)
+ args= aWeb.get_value('args')
+ arg = loads(args)
+ module = op.partition('_')[0]
+ if   module == 'ddi':
+  import sdcp.core.ddi as mod
  else:
-  res['op_result'] = "op_not_found"
+  mod = None
+
+ try:
+  fun = getattr(mod,op,lambda x: print "op_not_found")
+  res = fun(arg)
+ except Exception as err:
+  res['err'] = str(err)
  # aWeb.log_msg("remote_json - op_result: " + str(res))
  print dumps(res,sort_keys = True)     
