@@ -4,17 +4,9 @@ WWW/HTMLinterworking module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__ = "10.0GA"
+__version__ = "10.3GA"
 __status__= "Production"
 
-#
-# - reload_args -> get_args_except
-# + site.cgi?
-# + ajax/pane
-#
-#
-# - Log function to avoid importing GenLib EVERYwhere..
-#
 #################################### Web Items #######################################
 
 class Web(object):
@@ -57,7 +49,10 @@ class Web(object):
    try:
     fun(self)
    except Exception as err:
-    print "<SPAN style='font-size:10px'>Ajax Error - {}:({}) error: [{}]</SPAN>".format(ajaxcall,",".join(self.get_keys()),str(err))
+    keys = self.get_keys()
+    keys.remove('call')
+    keys = ",".join(keys)
+    print "<SPAN style='font-size:10px'>Ajax Error - {}:({}) error: [{}] - possible calls in 'selected' module:[{}]</SPAN>".format(ajaxcall,keys,str(err),", ".join(filter(lambda a: a[:2] != "__", dir(ajaxmod))))
 
  def pane(self):
   paneview = self.get_value('view')
@@ -72,8 +67,8 @@ class Web(object):
    try:
     fun(self)
    except Exception as err:
-    print "Pane view:[{}] error: [{}]".format(paneview,str(err))
-                 
+    print "<SPAN style='font-size:10px'>Pane view:[{}] error: [{}] - possible panes:[{}]</SPAN><BR>".format(paneview, str(err),", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
+
  def get_keys(self):
   return self._form.keys()
 

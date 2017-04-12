@@ -23,10 +23,8 @@ def device_view_devicelist(aWeb):
  print "<TABLE WIDTH=330><TR>"
  print "<TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&sort=ip&{0}'>IP</A></TH><TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&sort=hostname&{0}'>FQDN</A></TH><TH>Model</TH>".format(aWeb.get_args_except(['call','sort']))
  print "</TR><TR style='height:20px'><TD COLSPAN=3>"
- if target and arg:
-  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices WHERE {0}='{1}' ORDER BY {2}".format(target,arg,sort))
- else:
-  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices ORDER BY {}".format(sort))
+ tune = '' if not target or not arg else "WHERE {0}='{1}'".format(target,arg)
+ db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices {0} ORDER BY {1}".format(tune,sort))
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except(['call']))
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new'><IMG SRC='images/btn-add.png'></A>"
  rows = db.get_all_rows()
