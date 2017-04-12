@@ -22,13 +22,24 @@ class Web(object):
   print "Content-Type: text/html\r\n"
   stdout.flush()
 
+
+ def log_msg(self, aMsg, aLog='/var/log/system/system.log'):
+  from time import localtime, strftime
+  output = unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg) )
+  with open(aLog, 'a') as f:
+   f.write( output )
+
  def ajax(self):
   ajaxcall = self.get_value('call')
   if not ajaxcall:
-   print "<SPAN style='font-size:10px'>No ajax call argument</SPAN>"
+   from json import dumps
+   print dumps({'err':'No ajax call argument'})
    return
+  
   module = ajaxcall.split('_')[0]
-  if   module == 'device':
+  if ajaxcall == 'remote_json':
+   ajaxmod = self
+  elif module == 'device':
    import ajax_device as ajaxmod
   elif module == 'rack':
    import ajax_rack as ajaxmod
@@ -52,11 +63,8 @@ class Web(object):
     keys = self.get_keys()
     keys.remove('call')
     keys = ",".join(keys)
-   
-    print "<SPAN style='font-size:10px'>Ajax Error - {}:({}) error: [{}]".format(ajaxcall,keys,str(err))
-    if not ajaxcall in dir(ajaxmod):
-     print " - possible calls in 'selected' module:[{}]".format(", ".join(filter(lambda a: a[:2] != "__", dir(ajaxmod))))
-    print "</SPAN>"
+    from json import dumps
+    print dumps({ 'call':ajaxcall, 'args': keys, 'err':str(err) })
 
  def pane(self):
   paneview = self.get_value('view')
@@ -133,8 +141,14 @@ class Web(object):
     self.log_msg("Error in get_proxy: {}".format(str(err)))
     return { "res":"get_proxy_err" }
 
- def log_msg(self, aMsg, aLog='/var/log/system/system.log'):
-  from time import localtime, strftime
-  output = unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg) )
-  with open(aLog, 'a') as f:
-   f.write( output )
+ def remote_json(void):
+  from json import loads, dumps
+  op   = self.get_value('op')
+  args = loads(self.get_value('args'))
+  module = op.partition('_')[0]
+  if   module == 'ddi':
+   import sdcp.core.ddi as mod
+  else:
+   mod = None
+  fun = getattr(mod,op,lambda x: { 'err':'no_such_op_in_module', 'op':x })
+  print dumps(fun(arg))

@@ -38,23 +38,3 @@ def examine_log(aWeb):
   print "<PRE>{}</PRE>".format(syslogs)
  except Exception as err:
   print "<PRE>{}</PRE>".format(str(err))      
-
-def remote_json(aWeb):
- from json import loads, dumps
- res = {}    
- op  = aWeb.get_value('op')
- args= aWeb.get_value('args')
- arg = loads(args)
- module = op.partition('_')[0]
- if   module == 'ddi':
-  import sdcp.core.ddi as mod
- else:
-  mod = None
-
- try:
-  fun = getattr(mod,op,None)
-  res = fun(arg)
- except Exception as err:
-  res['err'] = str(err)
- # aWeb.log_msg("remote_json - op_result: " + str(res))
- print dumps(res,sort_keys = True)     
