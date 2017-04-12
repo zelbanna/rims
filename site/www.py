@@ -141,7 +141,7 @@ class Web(object):
     self.log_msg("Error in get_proxy: {}".format(str(err)))
     return { "res":"get_proxy_err" }
 
- def remote_json(void):
+ def remote_json(self,void):
   from json import loads, dumps
   op   = self.get_value('op')
   args = loads(self.get_value('args'))
