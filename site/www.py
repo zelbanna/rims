@@ -90,7 +90,7 @@ class Web(object):
  def rest(self):
   from json import loads, dumps
   rpc  = self.get_value('rpc')
-  args = loads(self.get_value('args'))
+  args = loads(self.get_value('args',str({})))
   module = rpc.partition('_')[0]
   if   module == 'ddi':
    import rest_ddi as mod
