@@ -98,10 +98,9 @@ class Web(object):
    mod = None
   try:
    fun = getattr(mod,rpc,lambda x: { 'err':'no_such_op_in_module', 'op':x })
-   res = fun(args)
+   print dumps(fun(args))
   except Exception as err:
-   res = { 'err':'module_error', 'res':str(err) }
-  print dumps(res)
+   print dumps({ 'err':'module_error', 'res':str(err) })
 
  ############################## CGI/Web functions ###############################
  def get_dict(self):
