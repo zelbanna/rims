@@ -9,19 +9,19 @@ __status__ = "Production"
 
 ################################# Generics ####################################
 
-_sys_debug = False
+_debug = False
 
-def sys_set_debug(astate):
- global _sys_debug
- _sys_debug = astate
+def set_debug(astate):
+ global _debug
+ _debug = astate
 
-def sys_str2hex(arg):
+def str2hex(arg):
  try:
   return '0x{0:02x}'.format(int(arg))
  except:
   return '0x00'    
 
-def sys_get_results(test):
+def get_results(test):
  return "success" if test else "failure"
 
 def sys_log_msg(amsg):
@@ -52,12 +52,12 @@ def simple_arg_parser(args):
   argdict[currkey] = True
  return argdict
 
-def sys_write_pidfile(pidfname):
+def pidfile_write(pidfname):
  pidfile = open(pidfname,'w')
  pidfile.write(str(getpid()))
  pidfile.close()
 
-def sys_read_pidfile(pidfname):
+def pidfile_read(pidfname):
  pid = -1
  from os import path as ospath
  if ospath.isfile(pidfname):
@@ -66,20 +66,20 @@ def sys_read_pidfile(pidfname):
   pidfile.close()
  return int(pid)
 
-def sys_release_pidfile(pidfname):
+def pidfile_release(pidfname):
  from os import path as ospath
  if ospath.isfile(pidfname):
   from os import remove
   remove(pidfname)
 
-def sys_lock_pidfile(pidfname, sleeptime):
+def pidfile_lock(pidfname, sleeptime):
  from time import sleep
  from os import path as ospath
  while ospath.isfile(pidfname):
   sleep(sleeptime)
  sysWritePidFile(pidfname) 
 
-def sys_file_replace(afile,old,new):
+def file_replace(afile,old,new):
  if afile == "" or new == "" or old == "":
   return False
 

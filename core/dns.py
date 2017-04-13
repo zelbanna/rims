@@ -76,13 +76,13 @@ from subprocess import check_output
 # - returns True if was in sync and False if modified
 # 
 def pdns_sync(dnslist):
- from XtraLib import sys_file_replace
+ from XtraLib import file_replace
  pdns = pdns_get()
  if not pdns in dnslist:
   from subprocess import check_call
   from time import sleep
   sys_log_msg("System Info - updating recursor to " + dnslist[0])
-  sys_file_replace('/etc/powerdns/pdns.conf', pdns, dnslist[0])
+  file_replace('/etc/powerdns/pdns.conf', pdns, dnslist[0])
   try:
    check_call(["/usr/sbin/service","pdns","reload"])
    sleep(1)

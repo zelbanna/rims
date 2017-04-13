@@ -9,7 +9,7 @@ __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
 from sdcp.core.GenLib import GenDevice, sys_get_host
-from sdcp.core.XtraLib import sys_lock_pidfile, sys_release_pidfile
+from sdcp.core.XtraLib import pidfile_lock, pidfile_release
 from netsnmp import VarList, Varbind, Session
 from select import select
 from os import remove, path
@@ -87,10 +87,10 @@ class ESXi(GenDevice):
   return self._kvmip
 
  def create_lock(self,atime):
-  sys_lock_pidfile("/tmp/esxi." + self._hostname + ".vm.pid",atime)
+  pidfile_lock("/tmp/esxi." + self._hostname + ".vm.pid",atime)
 
  def release_lock(self):
-  sys_release_pidfile("/tmp/esxi." + self._hostname + ".vm.pid")
+  pidfile_release("/tmp/esxi." + self._hostname + ".vm.pid")
 
  #
  # ESXi ssh interaction - Connect() send, send,.. Close()

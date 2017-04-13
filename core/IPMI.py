@@ -12,7 +12,7 @@ __version__ = "10.0GA"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
-from XtraLib import sys_get_results, sys_str2hex
+from XtraLib import get_results, str2hex
 from subprocess import check_output, check_call
 
 
@@ -33,8 +33,8 @@ class IPMI(object):
   from io import open
   from os import devnull
   FNULL = open(devnull, 'w')
-  rear  = sys_str2hex(arear)
-  front = sys_str2hex(afront)
+  rear  = str2hex(arear)
+  front = str2hex(afront)
   ipmistring = "ipmitool -H " + self.hostname + " -U " + SC.ipmi_username + " -P " + SC.ipmi_password + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
   res = check_call(ipmistring,stdout=FNULL,stderr=FNULL,shell=True)
-  print sys_get_results(res)
+  print get_results(res)
