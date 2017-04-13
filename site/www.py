@@ -7,8 +7,6 @@ __author__= "Zacharias El Banna"
 __version__ = "10.3GA"
 __status__= "Production"
 
-#################################### Web Items #######################################
-
 class Web(object):
  
  def __init__(self, aDebug=False):
@@ -22,13 +20,17 @@ class Web(object):
   print "Content-Type: text/html\r\n"
   stdout.flush()
 
-
- def log_msg(self, aMsg, aLog='/var/log/system/system.log'):
-  from time import localtime, strftime
-  output = unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg) )
+ def log_msg(self, aMsg, aLog = None):
+  if not aLog:
+   import core.SettingsContainer as SC
+   aLog = SC.sdcp_logformat
   with open(aLog, 'a') as f:
-   f.write( output )
+   from time import localtime, strftime
+   f.write( unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg) ) )
 
+ ################################# AJAX #########################################
+ #
+ #
  def ajax(self):
   ajaxcall = self.get_value('call')
   if not ajaxcall:
@@ -36,10 +38,8 @@ class Web(object):
    print dumps({'err':'No ajax call argument'})
    return
   
-  module = ajaxcall.split('_')[0]
-  if ajaxcall == 'remote_json':
-   ajaxmod = self
-  elif module == 'device':
+  module = ajaxcall.partition('_')[0]
+  if   module == 'device':
    import ajax_device as ajaxmod
   elif module == 'rack':
    import ajax_rack as ajaxmod
@@ -53,7 +53,7 @@ class Web(object):
    import ajax_console as ajaxmod
   else:
    import ajax_extra as ajaxmod
-  fun = getattr(ajaxmod,ajaxcall,None)  
+  fun = getattr(ajaxmod,ajaxcall,None)
   if not self._debug:
    fun(self)
   else:
@@ -66,6 +66,9 @@ class Web(object):
     from json import dumps
     print dumps({ 'call':ajaxcall, 'args': keys, 'err':str(err) })
 
+ ################################# PANE #########################################
+ #
+ #
  def pane(self):
   paneview = self.get_value('view')
   if not paneview:
@@ -83,7 +86,26 @@ class Web(object):
     if not paneview in dir(panemod):
      print " - possible panes:[{}]".format(", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
     print "</SPAN>"
+ 
+ ################################# REST #########################################
+ #
+ # REST API:
+ # - rpc: operation/function to call
+ # - args: json string with arguments passed on as single argument to function call
+ #
+ def rest(self):
+  from json import loads, dumps
+  rpc  = self.get_value('rpc')
+  args = loads(self.get_value('args'))
+  module = rpc.partition('_')[0]
+  if   module == 'ddi':
+   import rest_ddi as mod
+  else:
+   mod = None
+  fun = getattr(mod,rpc,lambda x: { 'err':'no_such_op_in_module', 'op':x })
+  print dumps(fun(args))
 
+ ############################## CGI/Web functions ###############################
  def get_dict(self):
   form = {}
   for key in self._form.keys():
@@ -124,31 +146,3 @@ class Web(object):
    return html
   except Exception as err:
    return ""
-
- #
- # 
- def get_proxy(self,aurl,op,args):
-  from json import loads, dumps
-  arg = dumps(args)
-  lnk = aurl + "ajax.cgi?call=remote_json&op={}&args={}".format(op,arg)
-  if not self._debug:
-   return  loads(self.get_include(lnk))
-  else:
-   self.log_msg(lnk)
-   try:
-    return loads(self.get_include(lnk))
-   except Exception as err:
-    self.log_msg("Error in get_proxy: {}".format(str(err)))
-    return { "res":"get_proxy_err" }
-
- def remote_json(self,void):
-  from json import loads, dumps
-  op   = self.get_value('op')
-  args = loads(self.get_value('args'))
-  module = op.partition('_')[0]
-  if   module == 'ddi':
-   import sdcp.core.ddi as mod
-  else:
-   mod = None
-  fun = getattr(mod,op,lambda x: { 'err':'no_such_op_in_module', 'op':x })
-  print dumps(fun(args))

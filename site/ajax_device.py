@@ -60,22 +60,14 @@ def device_device_info(aWeb):
    db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
 
   if not name == 'unknown':
+   from rest_ddi import ddi_dns_lookup, ddi_ipam_lookup
    opres = opres + " and updating DDI:"
-   import sdcp.SettingsContainer as SC
-   pargs = { 'ip':ip, 'name':name, 'domain':domain }
-   if SC.dnsdb_proxy == 'True':
-    retvals = aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_lookup",pargs)
-   else:
-    from sdcp.core.ddi import ddi_dns_lookup
-    retvals = ddi_dns_lookup(pargs)
+   retvals    = ddi_dns_lookup({ 'ip':ip, 'name':name, 'domain':domain })
    dns_a_id   = retvals.get('dns_a_id','0')
    dns_ptr_id = retvals.get('dns_ptr_id','0')
    opres = opres + "{}".format(str(retvals))
-   if SC.ipamdb_proxy == 'True':
-    retvals = aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_lookup", {'ip':ip})
-   else:
-    from sdcp.core.ddi import ddi_ipam_lookup
-    retvals = ddi_ipam_lookup({'ip':ip})
+
+   retvals    = ddi_ipam_lookup({'ip':ip})
    ipam_id    = retvals.get('ipam_id','0')
    ipam_mask  = retvals.get('subnet_mask','24')
    ipam_sub   = retvals.get('subnet_asc','0.0.0.0')
@@ -110,7 +102,6 @@ def device_device_info(aWeb):
  db.do("SELECT *, INET_NTOA(ip) as ipasc FROM devices WHERE id ='{}'".format(id))
  device_data = db.get_row()
  if not device_data:
-  # Stale info, quit
   print "Stale info! Reload device list"
   db.close()
   return
@@ -118,20 +109,14 @@ def device_device_info(aWeb):
  name = device_data['hostname']
 
  if op == 'updateddi' and not device_data['hostname'] == 'unknown':
+  from rest_ddi import ddi_dns_update, ddi_ipam_update
   if device_data['ipam_id'] == '0':
    opres = opres + " (please rerun lookup for proper sync)"
-  import sdcp.SettingsContainer as SC
   pargs = { 'ip':ip, 'name':device_data['hostname'], 'domain': device_data['domain'], 'a_id':device_data['dns_a_id'], 'ptr_id':device_data['dns_ptr_id'] }
-  if SC.dnsdb_proxy == 'True':
-   aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_update",pargs)
-  else:
-   ddi_dns_update(pargs)
+  ddi_dns_update(pargs)
   pargs['ipam_id'] = device_data['ipam_id']
   del pargs['a_id']
-  if SC.ipamdb_proxy == 'True':
-   aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_update", pargs)
-  else:
-   ddi_ipam_update(pargs)
+  ddi_ipam_update(pargs)
 
  ########################## Data Tables ######################
  
@@ -267,20 +252,12 @@ def device_remove(aWeb):
  res = db.do("DELETE FROM devices WHERE id = '{0}'".format(device_id))
  db.commit()
  if (dns_a_id != '0') or (dns_ptr_id != '0'):
-  import sdcp.SettingsContainer as SC
-  if SC.dnsdb_proxy == 'True':
-   dres = aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_remove", { 'a_id':dns_a_id, 'ptr_id':dns_ptr_id })
-  else:
-   from sdcp.core.ddi import ddi_dns_remove
-   dres = ddi_dns_remove( { 'a_id':dns_a_id, 'ptr_id':dns_ptr_id })
+  from rest_ddi import ddi_dns_remove
+  dres = ddi_dns_remove( { 'a_id':dns_a_id, 'ptr_id':dns_ptr_id })
   print "DNS  entries removed:{}<BR>".format(str(dres))
  if not ipam_id == '0':
-  import sdcp.SettingsContainer as SC
-  if SC.ipamdb_proxy == 'True':
-   ires = aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_remove",{ 'ipam_id':ipam_id })
-  else:
-   from sdcp.core.ddi import ddi_ipam_remove
-   ires = ddi_ipam_remove({ 'ipam_id':ipam_id })
+  from rest_ddi import ddi_ipam_remove
+  ires = ddi_ipam_remove({ 'ipam_id':ipam_id })
   print "IPAM entries removed:{}<BR>".format(str(ires))
  print "Unit {0} deleted ({1})".format(device_id,res)
  print "</DIV>"
@@ -356,7 +333,7 @@ def device_op_finddevices(aWeb):
 #
 #
 def device_op_syncddi(aWeb):
- import sdcp.SettingsContainer as SC
+ from rest_ddi import ddi_dns_lookup, ddi_ipam_lookup, ddi_dns_update, ddi_ipam_update
  db = DB()
  db.connect()
  db.do("SELECT id, ip, hostname, INET_NTOA(ip) as ipasc, domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0 or ipam_id = 0 or ipam_mask = 0 or ipam_sub = 0) ORDER BY ip")
@@ -368,20 +345,12 @@ def device_op_syncddi(aWeb):
   ip   = row['ipasc']
   name = row['hostname']
   dom  = row['domain'] 
-  pargs = { 'ip':ip, 'name':name, 'domain':dom }
-  if SC.dnsdb_proxy == 'True':
-   retvals = aWeb.get_proxy(SC.dnsdb_url,"ddi_dns_lookup",pargs)
-  else:
-   from sdcp.core.ddi import ddi_dns_lookup
-   retvals = ddi_dns_lookup(pargs)
+  dargs = { 'ip':ip, 'name':name, 'domain':dom }
+  retvals    = ddi_dns_lookup( dargs )
   dns_a_id   = retvals.get('dns_a_id','0')
   dns_ptr_id = retvals.get('dns_ptr_id','0')
-  if SC.ipamdb_proxy == 'True':
-   retvals = aWeb.get_proxy(SC.ipamdb_url,"ddi_ipam_lookup", {'ip':ip})                                  
-  else:
-   from sdcp.core.ddi import ddi_ipam_lookup 
-   retvals = ddi_ipam_lookup({'ip':ip})
 
+  retvals    = ddi_ipam_lookup({'ip':ip})
   ipam_id    = retvals.get('ipam_id','0')
   ipam_mask  = retvals.get('subnet_mask','24')
   ipam_sub   = retvals.get('subnet_asc','0.0.0.0')
@@ -390,21 +359,12 @@ def device_op_syncddi(aWeb):
   if not name == 'unknown':
    print "updating"
    uargs = { 'ip':ip, 'name':name, 'domain':dom, 'a_id':dns_a_id, 'ptr_id':dns_ptr_id }
-   if SC.dnsdb_proxy == 'True':
-    aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_update",uargs)
-    retvals = aWeb.get_proxy(SC.dnsdb_url, "ddi_dns_lookup",pargs)
-   else:
-    from sdcp.core.ddi import ddi_dns_update
-    ddi_dns_update(uargs)
-    retvals = ddi_dns_lookup(pargs)
+   ddi_dns_update(uargs)
+   retvals = ddi_dns_lookup(dargs)
    uargs['ipam_id'] = ipam_id
    uargs['ptr_id']  = retvals.get('dns_ptr_id','0')
    del uargs['a_id']
-   if SC.ipamdb_proxy == 'True':
-    aWeb.get_proxy(SC.ipamdb_url, "ddi_ipam_update", uargs)
-   else:
-    from sdcp.core.ddi import ddi_ipam_updates
-    ddi_ipam_update(uargs)
+   ddi_ipam_update(uargs)
    print str(retvals)
    db.do("UPDATE devices SET ipam_id = {}, dns_a_id = '{}', dns_ptr_id = '{}', ipam_mask = '{}', ipam_sub = '{}' WHERE id = '{}'".format(ipam_id, retvals.get('dns_a_id','0'),retvals.get('dns_ptr_id','0'), ipam_mask, ipam_subint, row['id']))
   print "</TD></TR>"
