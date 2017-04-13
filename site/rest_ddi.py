@@ -8,7 +8,7 @@ __version__ = "10.0GA"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
-from GenLib import sys_log_msg, sys_ip2ptr, sys_ip2int, DB, rpc_call
+from sdcp.core.GenLib import sys_log_msg, sys_ip2ptr, sys_ip2int, DB, rpc_call
 
 ################################################# DDI - DNS ##################################################
 #
