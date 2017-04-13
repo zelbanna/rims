@@ -4,7 +4,7 @@ Module for generic device interaction
 
 """  
 __author__  = "Zacharias El Banna"
-__version__ = "10.2GA"
+__version__ = "10.5GA"
 __status__  = "Production"
 
 from sdcp.core.GenLib import DB, ping_os, sys_ips2range, sys_ip2int, sys_log_msg

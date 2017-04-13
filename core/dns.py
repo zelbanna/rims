@@ -1,13 +1,10 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 """Module docstring.
 
  DNS interworking module
 
 """
 __author__ = "Zacharias El Banna"                     
-__version__ = "10.0GA"
+__version__ = "10.5GA"
 __status__ = "Production"
 import sdcp.SettingsContainer as SC
 from GenLib import sys_log_msg

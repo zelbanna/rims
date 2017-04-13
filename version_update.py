@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
-__version__ = "1.0"
+__version__ = "10.5GA"
 __status__ = "Production"
 
 from subprocess import call
@@ -19,4 +19,4 @@ for root,dirs,files in walk('.'):
  for file in files:
   if file[-2:] == 'py':
    print path.join(root,file)
-   call(["sed","-i","s/__version__.*/__version__ = \"{}\"/g".format(argv[1]),path.join(root,file)])
+   call(["sed","-i","s/__version__ = "10.5GA"

@@ -1,10 +1,10 @@
-"""Moduledocstring.
+"""Module docstring.
 
 Ajax Console calls module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__ = "10.0GA"
+__version__ = "10.5GA"
 __status__= "Production"
 
 from sdcp.core.GenLib import DB, sys_ip2int

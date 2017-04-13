@@ -4,7 +4,7 @@
 
 """
 __author__ = "Zacharias El Banna"                     
-__version__ = "10.0GA"
+__version__ = "10.5GA"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
@@ -20,8 +20,8 @@ def dns_domains(aDict):
   return rpc_call(SC.dnsdb_url, "ddi_dns_domains", aDict)
  db = DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
- res = db.do("SELECT id,name from domains")
- retvals = db.get_all_rows()
+ res = db.do("SELECT id,name FROM domains")
+ retvals = db.get_all_dict('id')
  return retvals
 
 def dns_lookup(aDict):
@@ -103,7 +103,7 @@ def ipam_subnets(aDict):
   return rpc_call(SC.ipamdb_url, "ddi_ipam_subnets", aDict)
  db = DB()
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
- db.do("SELECT subnets.id, subnet, mask, subnets.description, name, sectionId FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
+ db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
  res = db.get_all_dict('id')
  db.close()
  return res

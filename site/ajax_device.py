@@ -1,10 +1,10 @@
-"""Moduledocstring.
+"""Module docstring.
 
 Ajax Device calls module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__ = "10.1GA"
+__version__ = "10.5GA"
 __status__= "Production"
 
 from sdcp.core.GenLib import DB, sys_ip2int, sys_int2mac, sys_is_mac, sys_int2ip

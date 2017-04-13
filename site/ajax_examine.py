@@ -1,10 +1,10 @@
-"""Moduledocstring.
+"""Module docstring.
 
 Ajax Generic calls module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__ = "10.0GA"
+__version__ = "10.5GA"
 __status__= "Production"
 
 ######################################## Examine pane - logs ########################################

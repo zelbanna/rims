@@ -7,7 +7,7 @@ Exports:
 
 """  
 __author__ = "Zacharias El Banna"
-__version__ = "10.0GA"
+__version__ = "10.5GA"
 __status__ = "Production"
 
 from GenLib import DB, sys_log_msg, ping_os

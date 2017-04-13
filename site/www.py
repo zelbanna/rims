@@ -1,10 +1,10 @@
-"""Moduledocstring.
+"""Module docstring.
 
 WWW/HTMLinterworking module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__ = "10.3GA"
+__version__ = "10.5GA"
 __status__= "Production"
 
 class Web(object):
@@ -33,38 +33,20 @@ class Web(object):
  # call = <module>_<module_function>
  #
  def ajax(self):
-  ajaxcall = self.get_value('call')
-  if not ajaxcall:
-   from json import dumps
-   print dumps({'err':'No ajax call argument'})
-   return
-  
+  ajaxcall = self.get_value('call','none_nofunc')
   (module,void,func) = ajaxcall.partition('_')
-  if   module == 'device':
-   import ajax_device as ajaxmod
-  elif module == 'rack':
-   import ajax_rack as ajaxmod
-  elif module == 'esxi':
-   import ajax_esxi as ajaxmod
-  elif module == 'graph':
-   import ajax_graph as ajaxmod
-  elif module == 'pdu':
-   import ajax_pdu as ajaxmod
-  elif module == 'console':
-   import ajax_console as ajaxmod
-  elif module == 'examine':
-   import ajax_examine as ajaxmod
-  else:
-   ajaxmod = None
-  fun = getattr(ajaxmod,func,None)
+  from importlib import import_module
   try:
+   ajaxmod = import_module("sdcp.site.ajax_" + module)
+   fun = getattr(ajaxmod,func,None)
    fun(self)
   except Exception as err:
    keys = self.get_keys()
-   keys.remove('call')
+   if 'call' in keys:
+    keys.remove('call')
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'module':module, 'function':func, 'args': keys, 'err':str(err) })
+   print dumps({ 'module':module, 'function':func, 'args': keys, 'err':str(err) }, sort_keys=True)
 
  ################################# PANE #########################################
  #
@@ -92,18 +74,16 @@ class Web(object):
  #
  def rest(self):
   from json import loads, dumps
-  rpc  = self.get_value('rpc','norpc_nofunc')
-  (module,void,func) = rpc.partition('_')
+  from importlib import import_module
+  rpc  = self.get_value('rpc','none_nofunc')
   args = loads(self.get_value('args',str({})))
-  if   module == 'ddi':
-   import rest_ddi as mod
-  else:
-   mod = None
+  (module,void,func) = rpc.partition('_')
   try:
-   fun = getattr(mod,func,lambda x: { 'err':'No such op in module, try rpc: list_<module>', 'op':x, 'module':module, 'function':func })
+   mod = import_module("sdcp.site.rest_" + module)
+   fun = getattr(mod,func,lambda x: { 'err':"No such function in module", 'args':x, 'module':module, 'function':func })
    print dumps(fun(args))
   except Exception as err:
-   print dumps({ 'err':'module_error', 'res':str(err) })
+   print dumps({ 'err':'module_error', 'res':str(err), 'module':module, 'function':func }, sort_keys=True)
 
  ############################## CGI/Web functions ###############################
  def get_dict(self):

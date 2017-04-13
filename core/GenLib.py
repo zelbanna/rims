@@ -4,10 +4,8 @@ Generic Library
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "10.0GA"
+__version__ = "10.5GA"
 __status__ = "Production"
-
-from socket import inet_ntoa, inet_aton
 
 ################################# Generic Classes ####################################
 #
@@ -164,6 +162,7 @@ def sys_get_host(ahost):
   return None
 
 def sys_is_ip(addr):
+ from socket import inet_aton
  try:
   inet_aton(addr)
   return True
