@@ -146,7 +146,7 @@ def rpc_call(aurl,op,args):
   arg = dumps(args)
   lnk = aurl + "rest.cgi?rpc={}&args={}".format(op,arg)
   try:
-   # sys_log_msg(lnk)
+   sys_log_msg(lnk)
    sock = urlopen(lnk)
    res  = sock.read()
    sock.close()

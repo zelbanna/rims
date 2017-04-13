@@ -22,7 +22,7 @@ class Web(object):
 
  def log_msg(self, aMsg, aLog = None):
   if not aLog:
-   import core.SettingsContainer as SC
+   import sdcp.SettingsContainer as SC
    aLog = SC.sdcp_logformat
   with open(aLog, 'a') as f:
    from time import localtime, strftime
@@ -54,17 +54,14 @@ class Web(object):
   else:
    import ajax_extra as ajaxmod
   fun = getattr(ajaxmod,ajaxcall,None)
-  if not self._debug:
+  try:
    fun(self)
-  else:
-   try:
-    fun(self)
-   except Exception as err:
-    keys = self.get_keys()
-    keys.remove('call')
-    keys = ",".join(keys)
-    from json import dumps
-    print dumps({ 'call':ajaxcall, 'args': keys, 'err':str(err) })
+  except Exception as err:
+   keys = self.get_keys()
+   keys.remove('call')
+   keys = ",".join(keys)
+   from json import dumps
+   print dumps({ 'call':ajaxcall, 'args': keys, 'err':str(err) })
 
  ################################# PANE #########################################
  #
@@ -76,16 +73,13 @@ class Web(object):
    return
   import pane as panemod
   fun = getattr(panemod,paneview,None)
-  if not self._debug:
-   fun(self)
-  else:
-   try:
+  try:
     fun(self)
-   except Exception as err:
-    print "<SPAN style='font-size:10px'>Pane view:[{}] error: [{}]".format(paneview, str(err))
-    if not paneview in dir(panemod):
-     print " - possible panes:[{}]".format(", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
-    print "</SPAN>"
+  except Exception as err:
+   print "<SPAN style='font-size:10px'>Pane view:[{}] error: [{}]".format(paneview, str(err))
+   if not paneview in dir(panemod):
+    print " - possible panes:[{}]".format(", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
+   print "</SPAN>"
  
  ################################# REST #########################################
  #
@@ -102,8 +96,12 @@ class Web(object):
    import rest_ddi as mod
   else:
    mod = None
-  fun = getattr(mod,rpc,lambda x: { 'err':'no_such_op_in_module', 'op':x })
-  print dumps(fun(args))
+  try:
+   fun = getattr(mod,rpc,lambda x: { 'err':'no_such_op_in_module', 'op':x })
+   res = fun(args)
+  except Exception as err:
+   res = { 'err':'module_error', 'res':str(err) }
+  print dumps(res)
 
  ############################## CGI/Web functions ###############################
  def get_dict(self):
