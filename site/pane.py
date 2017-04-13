@@ -4,7 +4,7 @@ Site view panes module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__ = "10.5GA"
+__version__ = "10.5.1GA"
 __status__= "Production"
 
 #
@@ -216,7 +216,7 @@ def rack(aWeb):
  print "</CENTER></DIV>"
 
 def rack_info(aWeb):
- from sdcp.site.ajax_rack import rack_info as ajax_rack_info
+ from sdcp.site.ajax_rack import info as ajax_info
  print aWeb.get_header_full("Rack Info")
  rack = aWeb.get_value('rack','0')
  con  = aWeb.get_value('console')
@@ -241,7 +241,7 @@ def rack_info(aWeb):
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont>"
  if not rack == '0':
-  ajax_rack_info(aWeb)
+  ajax_info(aWeb)
  print "</DIV>"
  print aWeb.get_listeners('div_navleft')
  print aWeb.get_listeners('div_navcont')
