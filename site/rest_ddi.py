@@ -15,7 +15,7 @@ from sdcp.core.GenLib import sys_log_msg, sys_ip2ptr, sys_ip2int, DB, rpc_call
 # Lookup a and ptr id for a given ip,hostname and domain, return as dict
 #
 
-def ddi_dns_domains(aDict):
+def dns_domains(aDict):
  if SC.dnsdb_proxy == 'True':
   return rpc_call(SC.dnsdb_url, "ddi_dns_domains", aDict)
  db = DB()
@@ -24,7 +24,7 @@ def ddi_dns_domains(aDict):
  retvals = db.get_all_rows()
  return retvals
 
-def ddi_dns_lookup(aDict):
+def dns_lookup(aDict):
  if SC.dnsdb_proxy == 'True':
   return rpc_call(SC.dnsdb_url, "ddi_dns_lookup", aDict)
  ptr     = sys_ip2ptr(aDict['ip'])
@@ -47,7 +47,7 @@ def ddi_dns_lookup(aDict):
  db.close() 
  return retvals
 
-def ddi_dns_update(aDict):
+def dns_update(aDict):
  if SC.dnsdb_proxy == 'True':
   return rpc_call(SC.dnsdb_url, "ddi_dns_update", aDict)
  from time import strftime
@@ -79,7 +79,7 @@ def ddi_dns_update(aDict):
  sys_log_msg("DNS  update - results: " + str(retvals))
  return retvals
 
-def ddi_dns_remove(aDict):
+def dns_remove(aDict):
  if SC.dnsdb_proxy == 'True':
   return rpc_call(SC.dnsdb_url, "ddi_dns_remove", aDict)
  db = DB()
@@ -98,7 +98,7 @@ def ddi_dns_remove(aDict):
 ################################################# DDI - IPAM ##################################################
 #
 #
-def ddi_ipam_subnets(aDict):
+def ipam_subnets(aDict):
  if SC.ipamdb_proxy == 'True':
   return rpc_call(SC.ipamdb_url, "ddi_ipam_subnets", aDict)
  db = DB()
@@ -108,7 +108,7 @@ def ddi_ipam_subnets(aDict):
  db.close()
  return res
 
-def ddi_ipam_lookup(aDict):
+def ipam_lookup(aDict):
  if SC.ipamdb_proxy == 'True':
   return rpc_call(SC.ipamdb_url, "ddi_ipam_lookup", aDict)
  sys_log_msg("IPAM lookup - input {}".format(aDict['ip']))
@@ -132,7 +132,7 @@ def ddi_ipam_lookup(aDict):
 #
 #
 #
-def ddi_ipam_update(aDict):
+def ipam_update(aDict):
  if SC.ipamdb_proxy == 'True':
   return rpc_call(SC.ipamdb_url, "ddi_ipam_update", aDict)
  ipint = sys_ip2int(aDict['ip'])
@@ -160,7 +160,7 @@ def ddi_ipam_update(aDict):
 #
 #
 #
-def ddi_ipam_remove(aDict):
+def ipam_remove(aDict):
  if SC.ipamdb_proxy == 'True':
   return rpc_call(SC.ipamdb_url, "ddi_ipam_remove", aDict)
  db = DB()

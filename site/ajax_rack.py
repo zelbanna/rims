@@ -14,7 +14,7 @@ from sdcp.core.GenLib import DB
 # Basic rack info - right now only a display of a typical rack.. Change to table?
 #
 
-def rack_info(aWeb):
+def info(aWeb):
  rack = aWeb.get_value('rack', 0)
  db = DB()
  db.connect()
@@ -51,7 +51,7 @@ def rack_info(aWeb):
 #
 #
 #
-def rack_list_racks(aWeb):
+def list_racks(aWeb):
  db   = DB()
  db.connect()
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
@@ -71,7 +71,7 @@ def rack_list_racks(aWeb):
 #
 #
 #
-def rack_device_info(aWeb):
+def device_info(aWeb):
  id = aWeb.get_value('id')
  db = DB()
  db.connect()
@@ -111,7 +111,7 @@ def rack_device_info(aWeb):
 #
 #
 #
-def rack_update(aWeb):
+def update(aWeb):
  id = aWeb.get_value('id')
  db   = DB()
  db.connect()
@@ -133,7 +133,7 @@ def rack_update(aWeb):
 #
 #
 #
-def rack_remove(aWeb):
+def remove(aWeb):
  id   = aWeb.get_value('id')
  db   = DB()
  db.connect()

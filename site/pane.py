@@ -16,7 +16,7 @@ __status__= "Production"
 # Examine pane
 #
 def examine(aWeb):
- from ajax_extra import examine_clear_logs
+ from ajax_examine import clear_logs
  print aWeb.get_header_full('Services Pane')
  domain  = aWeb.get_value('domain')
  upshost = aWeb.get_value('upshost')
@@ -42,7 +42,7 @@ def examine(aWeb):
  print "<DIV CLASS='z-navcontent' ID=div_navcont>"
  
  print "<DIV CLASS='z-system' id=div_examine_log title='Network Logs' style='display:block;'>"
- examine_clear_logs(aWeb, False)
+ clear_logs(aWeb, False)
  print "</DIV>"
  
  if upshost:
@@ -252,7 +252,7 @@ def rack_info(aWeb):
 # ESXi
 #
 def esxi(aWeb):
- from ajax_esxi import esxi_op
+ from ajax_esxi import op as esxi_op
  from sdcp.devices.ESXi import ESXi
  from sdcp.core.Grapher import Grapher
  host   = aWeb.get_value('host')

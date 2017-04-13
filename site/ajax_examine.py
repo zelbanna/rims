@@ -12,7 +12,7 @@ __status__= "Production"
 #
 #
 
-def examine_clear_logs(aWeb, aClear = True):
+def clear_logs(aWeb, aClear = True):
  domain  = aWeb.get_value('domain')
  try:
   from subprocess import check_output
@@ -29,7 +29,7 @@ def examine_clear_logs(aWeb, aClear = True):
  except Exception as err:
   print "<DIV CLASS='z-error'>{}</DIV>".format(str(err))
 
-def examine_log(aWeb):
+def log(aWeb):
  try:
   from subprocess import check_output
   import sdcp.SettingsContainer as SC

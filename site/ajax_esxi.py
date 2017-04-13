@@ -11,7 +11,7 @@ __status__= "Production"
 #
 # ESXi operations
 #
-def esxi_op(aWeb, aEsxi = None):
+def op(aWeb, aEsxi = None):
  excpt  = aWeb.get_value('except','-1')
  nstate = aWeb.get_value('nstate')
  vmid   = aWeb.get_value('vmid','-1')

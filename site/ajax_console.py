@@ -13,7 +13,7 @@ from sdcp.core.GenLib import DB, sys_ip2int
 # View Consoles
 #
 
-def console_list(aWeb):
+def list(aWeb):
  from sdcp.devices.RackUtils import OpenGear
  domain = aWeb.get_value('domain')
  conlist = aWeb.get_list('consolelist')
@@ -30,7 +30,7 @@ def console_list(aWeb):
    print "<TR><TD><A HREF='https://{0}/'>{1}</A></TD><TD><A TITLE='Edit port info' HREF={5}>{2}</A></TD><TD><A HREF='telnet://{0}:{3}'>{4}</A></TD>".format(conip, con,str(key),port, value, config.format(conip,key))
  print "</TABLE></DIV>"
 
-def console_list_consoles(aWeb):
+def list_consoles(aWeb):
  db   = DB()
  db.connect()
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
@@ -50,7 +50,7 @@ def console_list_consoles(aWeb):
 #
 #
 #
-def console_device_info(aWeb):
+def device_info(aWeb):
  id = aWeb.get_value('id')
  ip = aWeb.get_value('ip')
  op = aWeb.get_value('op')
@@ -105,7 +105,7 @@ def console_device_info(aWeb):
 #
 #
 #
-def console_remove(aWeb):
+def remove(aWeb):
  type = aWeb.get_value('type')
  id   = aWeb.get_value('id')
  db   = DB()

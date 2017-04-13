@@ -9,7 +9,7 @@ __status__= "Production"
 
 ############################################ GRAPHS ##########################################
 
-def graph_list(aWeb):
+def list(aWeb):
  from sdcp.core.Grapher import Grapher
  node  = aWeb.get_value('node')
  state = aWeb.get_value('state')
@@ -37,7 +37,7 @@ def graph_list(aWeb):
 #
 # Find graphs
 #
-def graph_find(aWeb):
+def find(aWeb):
  from sdcp.core.Grapher import Grapher
  try:
   graph = Grapher() 
@@ -51,7 +51,7 @@ def graph_find(aWeb):
 #
 # Sync graphs and devices
 #
-def graph_sync(aWeb):
+def sync(aWeb):
  from sdcp.core.GenLib import DB
  from sdcp.core.Grapher import Grapher
  try:
@@ -76,7 +76,7 @@ def graph_sync(aWeb):
 #
 # Add graphs
 #
-def graph_add(aWeb):
+def add(aWeb):
  node   = aWeb.get_value('node',None)
  name   = aWeb.get_value('name',None)
  domain = aWeb.get_value('domain',None)
@@ -94,7 +94,7 @@ def graph_add(aWeb):
 #
 # Weathermap Link
 #
-def graph_wm(aWeb):
+def wm(aWeb):
  indx = aWeb.get_value('index')
  name = aWeb.get_value('hostname')
  snmpname = name.replace('-','_')

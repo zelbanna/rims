@@ -15,7 +15,7 @@ from sdcp.devices.RackUtils import Avocent
 # PDUs
 #
 
-def pdu_list_units(aWeb):
+def list_units(aWeb):
  domain  = aWeb.get_value('domain')
  pdulist = aWeb.get_list('pdulist')
 
@@ -57,7 +57,7 @@ def pdu_list_units(aWeb):
    print "</TD></TR>"
  print "</TABLE></DIV>"
 
-def pdu_unit_info(aWeb):
+def unit_info(aWeb):
  pdu  = aWeb.get_value('pdu')
  slot = aWeb.get_value('slot')
  unit = aWeb.get_value('unit')
@@ -83,7 +83,7 @@ def pdu_unit_info(aWeb):
 #
 #
 #
-def pdu_list_pdus(aWeb):
+def list_pdus(aWeb):
  db   = DB()
  db.connect()
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
@@ -103,7 +103,7 @@ def pdu_list_pdus(aWeb):
 #
 #
 #
-def pdu_device_info(aWeb):
+def device_info(aWeb):
  id = aWeb.get_value('id')
  ip = aWeb.get_value('ip')
  op = aWeb.get_value('op')
@@ -183,7 +183,7 @@ def pdu_device_info(aWeb):
 #
 # Update PDU slot info (name basically)
 #
-def pdu_unit_update(aWeb):
+def unit_update(aWeb):
  values = aWeb.get_keys()
  values.remove('call')
  if 'name' in values:
@@ -200,7 +200,7 @@ def pdu_unit_update(aWeb):
 #
 #
 #
-def pdu_remove(aWeb):
+def remove(aWeb):
  id = aWeb.get_value('id')
  db = DB()
  db.connect()
@@ -213,7 +213,7 @@ def pdu_remove(aWeb):
  print "<B>PDU {0} deleted<B>".format(id)
  db.close()
 
-def pdu_update_device_pdus(aWeb):
+def update_device_pdus(aWeb):
  (pem0_id,pem0_slot) = aWeb.get_value('pem0_pdu_slot_id',"0.0").split('.')
  (pem1_id,pem1_slot) = aWeb.get_value('pem1_pdu_slot_id',"0.0").split('.')
  pem0_unit = aWeb.get_value('pem0_unit','0')

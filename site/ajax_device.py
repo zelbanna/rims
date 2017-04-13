@@ -13,7 +13,7 @@ from sdcp.core.GenLib import DB, sys_ip2int, sys_int2mac, sys_is_mac, sys_int2ip
 #
 #
 #
-def device_view_devicelist(aWeb):
+def view_devicelist(aWeb):
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  sort   = aWeb.get_value('sort','ip')
@@ -37,7 +37,7 @@ def device_view_devicelist(aWeb):
 ################################ Gigantic Device info and Ops function #################################
 #
 
-def device_device_info(aWeb):
+def device_info(aWeb):
  from sdcp.devices.DevHandler import device_detect, device_types, device_get_widgets
  id     = aWeb.get_value('id')
  op     = aWeb.get_value('op',"")
@@ -60,14 +60,14 @@ def device_device_info(aWeb):
    db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
 
   if not name == 'unknown':
-   from rest_ddi import ddi_dns_lookup, ddi_ipam_lookup
+   from rest_ddi import dns_lookup, ipam_lookup
    opres = opres + " and updating DDI:"
-   retvals    = ddi_dns_lookup({ 'ip':ip, 'name':name, 'domain':domain })
+   retvals    = dns_lookup({ 'ip':ip, 'name':name, 'domain':domain })
    dns_a_id   = retvals.get('dns_a_id','0')
    dns_ptr_id = retvals.get('dns_ptr_id','0')
    opres = opres + "{}".format(str(retvals))
 
-   retvals    = ddi_ipam_lookup({'ip':ip})
+   retvals    = ipam_lookup({'ip':ip})
    ipam_id    = retvals.get('ipam_id','0')
    ipam_mask  = retvals.get('subnet_mask','24')
    ipam_sub   = retvals.get('subnet_asc','0.0.0.0')
@@ -109,14 +109,14 @@ def device_device_info(aWeb):
  name = device_data['hostname']
 
  if op == 'updateddi' and not device_data['hostname'] == 'unknown':
-  from rest_ddi import ddi_dns_update, ddi_ipam_update
+  from rest_ddi import dns_update, ipam_update
   if device_data['ipam_id'] == '0':
    opres = opres + " (please rerun lookup for proper sync)"
   pargs = { 'ip':ip, 'name':device_data['hostname'], 'domain': device_data['domain'], 'a_id':device_data['dns_a_id'], 'ptr_id':device_data['dns_ptr_id'] }
-  ddi_dns_update(pargs)
+  dns_update(pargs)
   pargs['ipam_id'] = device_data['ipam_id']
   del pargs['a_id']
-  ddi_ipam_update(pargs)
+  ipam_update(pargs)
 
  ########################## Data Tables ######################
  
@@ -241,7 +241,7 @@ def device_device_info(aWeb):
 # View operation data / widgets
 #
 
-def device_remove(aWeb):
+def remove(aWeb):
  device_id  = aWeb.get_value('id')
  dns_a_id   = aWeb.get_value('dns_a_id','0')
  dns_ptr_id = aWeb.get_value('dns_ptr_id','0')
@@ -252,12 +252,12 @@ def device_remove(aWeb):
  res = db.do("DELETE FROM devices WHERE id = '{0}'".format(device_id))
  db.commit()
  if (dns_a_id != '0') or (dns_ptr_id != '0'):
-  from rest_ddi import ddi_dns_remove
-  dres = ddi_dns_remove( { 'a_id':dns_a_id, 'ptr_id':dns_ptr_id })
+  from rest_ddi import dns_remove
+  dres = dns_remove( { 'a_id':dns_a_id, 'ptr_id':dns_ptr_id })
   print "DNS  entries removed:{}<BR>".format(str(dres))
  if not ipam_id == '0':
-  from rest_ddi import ddi_ipam_remove
-  ires = ddi_ipam_remove({ 'ipam_id':ipam_id })
+  from rest_ddi import ipam_remove
+  ires = ipam_remove({ 'ipam_id':ipam_id })
   print "IPAM entries removed:{}<BR>".format(str(ires))
  print "Unit {0} deleted ({1})".format(device_id,res)
  print "</DIV>"
@@ -265,7 +265,7 @@ def device_remove(aWeb):
 #
 #
 #
-def device_conf_gen(aWeb):
+def conf_gen(aWeb):
  id = aWeb.get_value('id','0')
  gw = aWeb.get_value('ipam_gw')
  db = DB()
@@ -285,7 +285,7 @@ def device_conf_gen(aWeb):
 
 #
 #
-def device_op_function(aWeb):
+def op_function(aWeb):
  from sdcp.devices.DevHandler import device_get_instance
  try:
   dev = device_get_instance(aWeb.get_value('ip'),aWeb.get_value('type'))
@@ -297,7 +297,7 @@ def device_op_function(aWeb):
 #
 # find devices operations
 #
-def device_op_finddevices(aWeb):
+def op_finddevices(aWeb):
  from sdcp.devices.DevHandler import device_discover
  start = aWeb.get_value('start','127.0.0.1')
  stop  = aWeb.get_value('stop','127.0.0.1')
@@ -332,8 +332,8 @@ def device_op_finddevices(aWeb):
 #
 #
 #
-def device_op_syncddi(aWeb):
- from rest_ddi import ddi_dns_lookup, ddi_ipam_lookup, ddi_dns_update, ddi_ipam_update
+def op_syncddi(aWeb):
+ from rest_ddi import dns_lookup, ipam_lookup, dns_update, ipam_update
  db = DB()
  db.connect()
  db.do("SELECT id, ip, hostname, INET_NTOA(ip) as ipasc, domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0 or ipam_id = 0 or ipam_mask = 0 or ipam_sub = 0) ORDER BY ip")
@@ -346,11 +346,11 @@ def device_op_syncddi(aWeb):
   name = row['hostname']
   dom  = row['domain'] 
   dargs = { 'ip':ip, 'name':name, 'domain':dom }
-  retvals    = ddi_dns_lookup( dargs )
+  retvals    = dns_lookup( dargs )
   dns_a_id   = retvals.get('dns_a_id','0')
   dns_ptr_id = retvals.get('dns_ptr_id','0')
 
-  retvals    = ddi_ipam_lookup({'ip':ip})
+  retvals    = ipam_lookup({'ip':ip})
   ipam_id    = retvals.get('ipam_id','0')
   ipam_mask  = retvals.get('subnet_mask','24')
   ipam_sub   = retvals.get('subnet_asc','0.0.0.0')
@@ -359,12 +359,12 @@ def device_op_syncddi(aWeb):
   if not name == 'unknown':
    print "updating"
    uargs = { 'ip':ip, 'name':name, 'domain':dom, 'a_id':dns_a_id, 'ptr_id':dns_ptr_id }
-   ddi_dns_update(uargs)
-   retvals = ddi_dns_lookup(dargs)
+   dns_update(uargs)
+   retvals = dns_lookup(dargs)
    uargs['ipam_id'] = ipam_id
    uargs['ptr_id']  = retvals.get('dns_ptr_id','0')
    del uargs['a_id']
-   ddi_ipam_update(uargs)
+   ipam_update(uargs)
    print str(retvals)
    db.do("UPDATE devices SET ipam_id = {}, dns_a_id = '{}', dns_ptr_id = '{}', ipam_mask = '{}', ipam_sub = '{}' WHERE id = '{}'".format(ipam_id, retvals.get('dns_a_id','0'),retvals.get('dns_ptr_id','0'), ipam_mask, ipam_subint, row['id']))
   print "</TD></TR>"
@@ -377,7 +377,7 @@ def device_op_syncddi(aWeb):
 #
 #
 
-def device_new(aWeb):
+def new(aWeb):
  ip  = aWeb.get_value('ip',"127.0.0.1")
  mac = aWeb.get_value('mac',"00:00:00:00:00:00")
  dom = aWeb.get_value('dom',"domain")

@@ -30,6 +30,7 @@ class Web(object):
 
  ################################# AJAX #########################################
  #
+ # call = <module>_<module_function>
  #
  def ajax(self):
   ajaxcall = self.get_value('call')
@@ -38,7 +39,7 @@ class Web(object):
    print dumps({'err':'No ajax call argument'})
    return
   
-  module = ajaxcall.partition('_')[0]
+  (module,void,func) = ajaxcall.partition('_')
   if   module == 'device':
    import ajax_device as ajaxmod
   elif module == 'rack':
@@ -51,9 +52,11 @@ class Web(object):
    import ajax_pdu as ajaxmod
   elif module == 'console':
    import ajax_console as ajaxmod
+  elif module == 'examine':
+   import ajax_examine as ajaxmod
   else:
-   import ajax_extra as ajaxmod
-  fun = getattr(ajaxmod,ajaxcall,None)
+   ajaxmod = None
+  fun = getattr(ajaxmod,func,None)
   try:
    fun(self)
   except Exception as err:
@@ -61,7 +64,7 @@ class Web(object):
    keys.remove('call')
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'call':ajaxcall, 'args': keys, 'err':str(err) })
+   print dumps({ 'module':module, 'function':func, 'args': keys, 'err':str(err) })
 
  ################################# PANE #########################################
  #
@@ -89,15 +92,15 @@ class Web(object):
  #
  def rest(self):
   from json import loads, dumps
-  rpc  = self.get_value('rpc')
+  rpc  = self.get_value('rpc','norpc_nofunc')
+  (module,void,func) = rpc.partition('_')
   args = loads(self.get_value('args',str({})))
-  module = rpc.partition('_')[0]
   if   module == 'ddi':
    import rest_ddi as mod
   else:
    mod = None
   try:
-   fun = getattr(mod,rpc,lambda x: { 'err':'no_such_op_in_module', 'op':x })
+   fun = getattr(mod,func,lambda x: { 'err':'No such op in module, try rpc: list_<module>', 'op':x, 'module':module, 'function':func })
    print dumps(fun(args))
   except Exception as err:
    print dumps({ 'err':'module_error', 'res':str(err) })
