@@ -112,7 +112,6 @@ def remove(aWeb):
  db.connect()
  db.do("DELETE FROM consoles WHERE id = '{0}'".format(id))
  db.do("UPDATE devices SET console_id = '0' WHERE console_id = '{0}'".format(id))
- db.do("UPDATE racks SET fk_console = '0' WHERE fk_console = '{0}'".format(id))
  db.commit()
  print "<B>Console {0} deleted</B>".format(id)
  db.close()

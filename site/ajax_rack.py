@@ -58,50 +58,50 @@ def list_racks(aWeb):
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Rack</CENTER></TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_unit_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "</TD></TR>"
  res  = db.do("SELECT * from racks ORDER by name")
  data = db.get_all_rows()
  print "<TR><TH>ID</TH><TH>Name</TH><TH>Size</TH></TR>"
  for unit in data:
-  print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['size'])
+  print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_unit_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['size'])
  print "</TABLE></DIV>"
  db.close()
 
 #
 #
 #
-def device_info(aWeb):
+def unit_info(aWeb):
  id = aWeb.get_value('id')
  db = DB()
  db.connect()
  if id == 'new':
-  rack = { 'id':'new', 'name':'new-name', 'size':'48', 'fk_pdu_1':0, 'fk_pdu_2':0, 'fk_console':0 }
+  rack = { 'id':'new', 'name':'new-name', 'size':'48', 'fk_pdu_1':None, 'fk_pdu_2':None, 'fk_console':None }
  else:
   db.do("SELECT * from racks WHERE id = {}".format(id))
   rack = db.get_row()
 
  print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
- print "<FORM ID=rack_device_info_form>"
+ print "<FORM ID=rack_unit_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"
  print "<TR><TH COLSPAN=2>Rack Info {}</TH></TR>".format("(new)" if id == 'new' else "")
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['name'])
  print "<TR><TD>Size:</TD><TD><INPUT NAME=size TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['size'])
  for key in ['pdu_1','pdu_2','console']:
-  dbname = key.partition('_')[0] + "s"
-  db.do("SELECT id,name from "+dbname)
+  dbname = key.partition('_')[0]
+  db.do("SELECT id,name from {0}s".format(dbname))
   rows = db.get_all_rows()
-  rows.append({'id':0, 'name':'Not Used'})
+  rows.append({'id':'NULL', 'name':"No {}".format(dbname.capitalize())})
   print "<TR><TD>{0}:</TD><TD><SELECT NAME=fk_{1} CLASS='z-select'>".format(key.capitalize(),key)
   for unit in rows:
-   extra = " selected" if rack["fk_"+key] == unit['id'] else ""
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
+   extra = " selected" if (rack.get("fk_"+key) == unit['id']) or (not rack.get("fk_"+key) and unit['id'] == 'NULL') else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])   
   print "</SELECT></TD></TR>"
  db.close()
  print "</TABLE>"
- print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_device_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_unit_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_unit_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
   print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
@@ -122,10 +122,10 @@ def update(aWeb):
  fk_console = aWeb.get_value('fk_console')
  if id == 'new':
   print "Creating new rack [new:{}]".format(name)
-  sql = "INSERT into racks (name, size, fk_pdu_1, fk_pdu_2, fk_console) VALUES ('{}','{}','{}','{}','{}')".format(name,size,fk_pdu_1,fk_pdu_2,fk_console)
+  sql = "INSERT into racks (name, size, fk_pdu_1, fk_pdu_2, fk_console) VALUES ('{}','{}',{},{},{})".format(name,size,fk_pdu_1,fk_pdu_2,fk_console)
  else:
   print "Updated rack [{}:{}]".format(id,name)
-  sql = "UPDATE racks SET name = '{}', size = '{}', fk_pdu_1 = '{}', fk_pdu_2 = '{}', fk_console = '{}' WHERE id = '{}'".format(name,size,fk_pdu_1,fk_pdu_2,fk_console,id)
+  sql = "UPDATE racks SET name = '{}', size = '{}', fk_pdu_1 = {}, fk_pdu_2 = {}, fk_console = {} WHERE id = '{}'".format(name,size,fk_pdu_1,fk_pdu_2,fk_console,id)
  res = db.do(sql)
  db.commit()
  db.close()

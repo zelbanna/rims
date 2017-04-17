@@ -204,13 +204,15 @@ def rack(aWeb):
  rackstr = "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&name={0}&{2}><IMG ALT='Cabinet {0}' SRC='images/cabinet.{1}.png'></A>&nbsp;"
  for index, rack in enumerate(racks):
   rackargs = "rack=" + str(rack['id'])
-  res = db.do("SELECT INET_NTOA(ip) as ip, id FROM consoles WHERE consoles.id = {}".format(rack['fk_console']))
-  row = db.get_row()
-  rackargs = rackargs if not row else rackargs + "&console=" + row['ip']
-  res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(rack['fk_pdu_1'],rack['fk_pdu_2']))
-  rows = db.get_all_rows()
-  for row in rows:
-   rackargs = rackargs + "&pdulist=" + row['ip']
+  if rack.get('fk_console'):
+   res = db.do("SELECT INET_NTOA(ip) as ip, id FROM consoles WHERE consoles.id = {}".format(rack.get('fk_console')))
+   row = db.get_row()
+   rackargs = rackargs + "&console=" + row.get('ip')
+  if (rack.get('fk_pdu_1') or rack.get('fk_pdu_2')):
+   res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(rack.get('fk_pdu_1','0'),rack.get('fk_pdu_2','0')))
+   rows = db.get_all_rows()
+   for row in rows:
+    rackargs = rackargs + "&pdulist=" + row.get('ip')
   print rackstr.format(rack['name'], index % 3, rackargs)
  db.close()
  print "</CENTER></DIV>"
@@ -218,15 +220,16 @@ def rack(aWeb):
 def rack_info(aWeb):
  from sdcp.site.ajax_rack import info as ajax_info
  print aWeb.get_header_full("Rack Info")
- rack = aWeb.get_value('rack','0')
+ rack = aWeb.get_value('rack')
  con  = aWeb.get_value('console')
  pdus = aWeb.get_list('pdulist')
  name = aWeb.get_value('name',"")
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(rack,name)
- print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
+ if rack:
+  print "<A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(rack,name)
+ print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist&target=rack_id'>Devices</A>"
  if con:
   print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)
  if len(pdus) > 0:
@@ -240,7 +243,7 @@ def rack_info(aWeb):
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont>"
- if not rack == '0':
+ if rack:
   ajax_info(aWeb)
  print "</DIV>"
  print aWeb.get_listeners('div_navleft')
@@ -345,3 +348,20 @@ def devices(aWeb):
  print "</DIV>"
  print "</DIV>" 
  db.close() 
+
+##################################################################################################
+#
+# Settings/System pane
+#
+
+def config(aWeb):
+ domain    = aWeb.get_value('domain', None)
+ print aWeb.get_header_full("Device View")
+ print aWeb.get_listeners("div_config_menu")
+ print "<DIV CLASS='z-table' ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
+ print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
+ print "<A CLASS='z-btn z-op' OP=load DIV=div_config           LNK='ajax.cgi?call=graph_sync&domain={0}'>Sync Graphing</A>".format(domain)
+ print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=device_op_syncddi'>Sync Dev DDI</A>"
+ print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='rest.cgi?rpc=ddi_load_ddi'>Load DDI</A>"
+ print "</DIV>"
+ print "<DIV CLASS='z-table' ID=div_config style='float:left; min-width:600px; min-height:300px;'></DIV>"

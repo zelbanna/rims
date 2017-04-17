@@ -207,12 +207,14 @@ def remove(aWeb):
  db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
  db.do("UPDATE devices SET pem0_pdu_id  = '0', pem0_pdu_slot = '0' WHERE pem0_pdu_id = '{0}'".format(id))
  db.do("UPDATE devices SET pem1_pdu_id  = '0', pem1_pdu_slot = '0' WHERE pem1_pdu_id = '{0}'".format(id))
- db.do("UPDATE racks SET fk_pdu_1 = '0' WHERE fk_pdu_1 = '{0}'".format(id))
- db.do("UPDATE racks SET fk_pdu_2 = '0' WHERE fk_pdu_2 = '{0}'".format(id))
  db.commit()
  print "<B>PDU {0} deleted<B>".format(id)
  db.close()
 
+
+#
+# Update info on PDU unit
+#
 def update_device_pdus(aWeb):
  (pem0_id,pem0_slot) = aWeb.get_value('pem0_pdu_slot_id',"0.0").split('.')
  (pem1_id,pem1_slot) = aWeb.get_value('pem1_pdu_slot_id',"0.0").split('.')
