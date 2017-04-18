@@ -76,16 +76,21 @@ class Web(object):
   from json import loads, dumps
   from importlib import import_module
   rpc  = self.get_value('rpc','none_nofunc')
-  args = loads(self.get_value('args',str({})))
+  args = self.get_value('args',str({}))
   (module,void,func) = rpc.partition('_')
+  # self.log_msg("rest call - rpc:{}, args:{}".format(rpc,args))
   try:
    mod = import_module("sdcp.site.rest_" + module)
    fun = getattr(mod,func,lambda x: { 'err':"No such function in module", 'args':x, 'module':module, 'function':func })
-   print dumps(fun(args))
+   print dumps(fun(loads(args)))
   except Exception as err:
    print dumps({ 'err':'module_error', 'res':str(err), 'module':module, 'function':func }, sort_keys=True)
 
  ############################## CGI/Web functions ###############################
+ def json2html(self,astring):
+  from urllib import quote_plus
+  return quote_plus(astring)
+
  def get_dict(self):
   form = {}
   for key in self._form.keys():

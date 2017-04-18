@@ -95,8 +95,9 @@ div.z-navcontent {  position: absolute; top: 34px; bottom: 0px; left: 0px; right
 a{ color: black; background-color:transparent;-webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; }
 a:active,a:hover{ outline-width:0; }
 
+a.z-op { outline:none; cursor:pointer; }
 a.z-btn { 
- background-color:#FFFFFF!important; background-position: center; background-repeat: no-repeat; border : 1px solid #ccc; cursor:pointer; display: inline-block; float: none; font-family: "Courier New", serif; font-size: 20px; vertical-align:top; outline:0; overflow:hidden; text-align:center; text-decoration:none!important; white-space:nowrap;
+ background-color:#FFFFFF!important; background-position: center; background-repeat: no-repeat; border-radius:3px; border: 1px solid #ccc; cursor:pointer; display: inline-block; float: none; font-family: "Courier New", serif; font-size: 20px; vertical-align:top; outline:0; overflow:hidden; text-align:center; text-decoration:none!important; white-space:nowrap; padding:2px; margin:2px;
  
  -webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
  -webkit-transition:background-color .25s,color .15s,box-shadow .25s,opacity 0.25s,filter 0.25s,border 0.15s;transition:background-color .25s,color .15s,box-shadow .15s .15s,opacity .25s,filter .25s,border .15s;
@@ -108,16 +109,14 @@ a.z-btn {
 a.z-btn:hover {  box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19); font-weight: bold; border: 1px solid black;}
 a.z-btn:active { opacity:0.5} 
 
-a.z-small-btn {  border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; margin: 0px;}
 a.z-menu-btn {   border-radius: 8px!important; padding: 4px; height: 52px; margin: 5px 0px; }
+a.z-menu-btn > img {  max-height:43px; }
+
+a.z-small-btn {  border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; margin: 0px;}
+a.z-small-btn > img { height:22px; }
 
 a.z-srv-btn {	 background-image: url(images/icon-esxi.png); width:54px; font-weight:bold; text-align: right; text-shadow: 2px 1px grey }
 
-a.z-btn > img {       max-height:43px; }
-a.z-low-btn > img {   height:22px; }
-a.z-small-btn > img { height:22px; }
-
-a.z-op { outline:none; cursor:pointer; }
 /*###############################################################################################*/
 
 .z-input {
