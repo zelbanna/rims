@@ -151,7 +151,6 @@ class Grapher(object):
  #
  def _detect(self, aip, aentry, ahandler, alock, asema):
   if not ping_os(aip):
-   sys_log_msg("Grapher.py: release {}".format(aip))
    asema.release()
    return False
 
@@ -189,7 +188,6 @@ class Grapher(object):
   except Exception as err:
    sys_log_msg("Graph detect - error: [{}]".format(str(err)))
   
-  sys_log_msg("REL: {}".format(aip))
   asema.release()
   return True
 

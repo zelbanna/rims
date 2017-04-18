@@ -23,7 +23,12 @@ def view_devicelist(aWeb):
  print "<TABLE WIDTH=330><TR>"
  print "<TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?{0}&sort=ip'>IP</A></TH><TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?{0}&sort=hostname'>FQDN</A></TH><TH>Model</TH>".format(aWeb.get_args_except(['sort']))
  print "</TR><TR style='height:20px'><TD COLSPAN=3>"
- tune = '' if not target or not arg else "WHERE {0}='{1}'".format(target,arg)
+ if not target or not arg:
+  tune = ""
+ elif target and arg == 'NULL':
+  tune = "WHERE {0} is NULL".format(target)
+ else:
+  tune = "WHERE {0} = {1}".format(target,arg)
  db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices {0} ORDER BY {1}".format(tune,sort))
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new'><IMG SRC='images/btn-add.png'></A>"
@@ -90,12 +95,16 @@ def device_info(aWeb):
   if 'ipam_sub'  in keys: keys.remove('ipam_sub')
   if keys:
    for key in keys:
+    data = aWeb.get_value(key)
     if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
-     db.do("UPDATE devices SET {0}='{1}' where id = '{2}'".format(key,aWeb.get_value(key),id))
+     if data == 'NULL':
+      db.do("UPDATE devices SET {0}=NULL WHERE id = '{1}'".format(key,id))
+     else:
+      db.do("UPDATE devices SET {0}='{1}' WHERE id = '{2}'".format(key,data,id))
     else:
      pem = key[:4]
-     [pemid,pemslot] = aWeb.get_value(key).split('.')
-     db.do("UPDATE devices SET {0}_pdu_id='{1}', {0}_pdu_slot ='{2}' where id = '{3}'".format(pem,pemid,pemslot,id))
+     [pemid,pemslot] = data.split('.')
+     db.do("UPDATE devices SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE id = '{3}'".format(pem,pemid,pemslot,id))
    db.commit()
   opres = opres + " values:" + " ".join(keys)
 
@@ -149,37 +158,37 @@ def device_info(aWeb):
  print "<TR><TD>Rack:</TD><TD><SELECT NAME=rack_id CLASS='z-select'>"
  db.do("SELECT * FROM racks")
  racks = db.get_all_rows()
- racks.append({ 'id':0, 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
+ racks.append({ 'id':'NULL', 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
  for rack in racks:
-  extra = " selected" if device_data['rack_id'] == rack['id'] else ""
+  extra = " selected" if (device_data['rack_id'] == rack['id']) or (not device_data['rack_id'] and rack['id'] == 'NULL') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
- if device_data['rack_id'] == 0 or device_data['type'] == 'pdu':
+ if not device_data['rack_id'] or device_data['type'] == 'pdu':
   for index in range(0,7):
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  else:
   print "<TR><TD>Rack Unit:</TD><TD TITLE='Top rack unit of device placement'><INPUT NAME=rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_unit'])
   if not device_data['type'] == 'console' and db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") > 0:
    consoles = db.get_all_rows()
-   consoles.append({ 'id':0, 'name':'Not used', 'ip':2130706433, 'ipasc':'127.0.0.1' })
+   consoles.append({ 'id':'NULL', 'name':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1' })
    print "<TR><TD>TS:</TD><TD><SELECT NAME=console_id CLASS='z-select'>"
    for console in consoles:
     extra = ""
-    if device_data['console_id'] == console['id']:
-     extra = " selected"
+    if (device_data['console_id'] == console['id']) or (not device_data['console_id'] and console['id'] == 'NULL'):
+     extra = " selected='selected'"
      conip = console['ipasc']
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
    print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['consoleport'])
   else:
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
-  if not device_data['type'] == 'console' and db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus") > 0:
+  if not device_data['type'] == 'pdu' and db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus") > 0:
    pdus = db.get_all_rows()
-   pdus.append({ 'id':0, 'name':'Not used', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'Not used' })  
+   pdus.append({ 'id':'NULL', 'name':'No', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'PDU' })
    for pem in ['pem0','pem1']:
     print "<TR><TD>{0} PDU:</TD><TD><SELECT NAME={1}_pdu_slot_id CLASS='z-select'>".format(pem.upper(),pem)
     for pdu in pdus:
      for slotid in range(0,pdu['slots'] + 1):
-      extra = " selected" if ((device_data[pem+"_pdu_id"] == pdu['id']) and (device_data[pem+"_pdu_slot"] == pdu[str(slotid)+"_slot_id"])) else ""
+      extra = " selected" if ((device_data[pem+"_pdu_id"] == pdu['id']) and (device_data[pem+"_pdu_slot"] == pdu[str(slotid)+"_slot_id"])) or (not device_data[pem+"_pdu_id"] and  pdu['id'] == 'NULL')else ""
       print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(str(pdu['id'])+"."+str(pdu[str(slotid)+"_slot_id"]), extra, pdu['name']+":"+pdu[str(slotid)+"_slot_name"])
     print "</SELECT></TD></TR>"
     print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME={1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,device_data[pem + "_pdu_unit"])

@@ -106,12 +106,11 @@ def device_info(aWeb):
 #
 #
 def remove(aWeb):
- type = aWeb.get_value('type')
  id   = aWeb.get_value('id')
  db   = DB()
  db.connect()
+ db.do("UPDATE devices SET consoleport = 0 WHERE id = '{0}'".format(id))
  db.do("DELETE FROM consoles WHERE id = '{0}'".format(id))
- db.do("UPDATE devices SET console_id = '0' WHERE console_id = '{0}'".format(id))
  db.commit()
  print "<B>Console {0} deleted</B>".format(id)
  db.close()
