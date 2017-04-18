@@ -137,7 +137,7 @@ def remove(aWeb):
  id   = aWeb.get_value('id')
  db   = DB()
  db.connect()
- db.do("UPDATE devices SET rack_unit = 0 WHERE id = '{0}'".format(id))
+ db.do("UPDATE devices SET rack_unit = 0 WHERE rack_id = '{0}'".format(id))
  db.do("DELETE FROM racks WHERE id = '{0}'".format(id))
  db.commit()
  print "Rack {0} deleted".format(id)
