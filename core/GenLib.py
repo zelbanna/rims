@@ -110,12 +110,8 @@ class DB(object):
   self._conn = connect(host=aHost, port=3306, user=aUser, passwd=aPass, db=aDB, cursorclass=DictCursor)
   self._curs = self._conn.cursor()
 
- #
- # Insert and Update and Select
- # 
  def do(self,aStr):
-  self._res = self._curs.execute(aStr)
-  return self._res
+  return self._curs.execute(aStr)
 
  def commit(self):
   self._conn.commit()
@@ -124,10 +120,10 @@ class DB(object):
   return self._curs.fetchone()
 
  def get_all_rows(self):
-  return [] if self._res == 0 else self._curs.fetchmany(self._res)
+  return self._curs.fetchall()
 
  def get_all_dict(self, aTarget):
-  return {} if self._res == 0 else dict(map(lambda x: (x[aTarget],x),self._curs.fetchmany(self._res)))
+  return dict(map(lambda x: (x[aTarget],x),self._curs.fetchall()))
 
  def get_cursor(self):
   return self._curs

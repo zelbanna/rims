@@ -358,8 +358,8 @@ def config(aWeb):
  print aWeb.get_listeners("div_config_menu")
  print "<DIV CLASS='z-table' ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
- print "<A CLASS='z-btn z-op' OP=load DIV=div_config           LNK='ajax.cgi?call=graph_sync&domain={0}'>Sync Graphing</A>".format(domain)
- print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=ddi_sync'>Sync Device DDI</A>"
+ print "<A CLASS='z-btn z-op' OP=load DIV=div_config           LNK='ajax.cgi?call=graph_sync&domain={0}'>Synch Graphing</A>".format(domain)
+ print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=ddi_sync'>Synch Device DDI</A>"
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=ddi_load_infra'>Load DDI Tables</A>"
  print "<A CLASS='z-btn' TARGET=_blank HREF='ajax.cgi?call=device_dump_db'>Device DB2JSON</A>"
  print "</DIV>"

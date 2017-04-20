@@ -29,7 +29,8 @@ def view_devicelist(aWeb):
   tune = "WHERE {0} is NULL".format(target)
  else:
   tune = "WHERE {0} = {1}".format(target,arg)
- db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices {0} ORDER BY {1}".format(tune,sort))
+
+ res = db.do("SELECT id, INET_NTOA(ip) as ipasc, hostname, domain, model FROM devices {0} ORDER BY {1}".format(tune,sort))
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new'><IMG SRC='images/btn-add.png'></A>"
  rows = db.get_all_rows()
@@ -177,7 +178,7 @@ def device_info(aWeb):
      extra = " selected='selected'"
      conip = console['ipasc']
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
-   print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=consoleport CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['consoleport'])
+   print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=console_port CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['console_port'])
   else:
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
@@ -218,8 +219,8 @@ def device_info(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=post TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
  if (device_data['pem0_pdu_id'] != 0 and device_data['pem0_pdu_unit'] != 0) or (device_data['pem1_pdu_id'] != 0 and device_data['pem1_pdu_unit'] != 0):
   print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post TITLE='Update PDU with device info'><IMG SRC='images/btn-pdu-save.png' ALT='P'></A>".format(device_data['pem0_pdu_unit'],device_data['pem1_pdu_unit'],name)
- if conip and not conip == '127.0.0.1' and device_data['consoleport'] and device_data['consoleport'] > 0:
-  print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+device_data['consoleport'])
+ if conip and not conip == '127.0.0.1' and device_data['console_port'] and device_data['console_port'] > 0:
+  print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+device_data['console_port'])
  if (device_data['type'] == 'pdu' or device_data['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip'])) == 0:
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}' OP=load style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
  print "<SPAN ID=update_results style='max-width:400px; float:right; font-size:9px;'>{}</SPAN>".format(opres)
@@ -314,16 +315,21 @@ def op_finddevices(aWeb):
  print "<SPAN style='font-size:9px; float:right'>{}</SPAN>".format(results)
  print "</DIV>"
 
-#
-#
-#
+##################################### Rest API #########################################
 
+#
+# new device:
+# - hostname, domain, ip, mac 
+# -> do lookup unless unknown
+# -> convert to rest
+#
 def new(aWeb):
  ip  = aWeb.get_value('ip',"127.0.0.1")
  mac = aWeb.get_value('mac',"00:00:00:00:00:00")
  dom = aWeb.get_value('dom',"domain")
  op  = aWeb.get_value('op')
  if op:
+  args = { 'ip':ip, 'mac':mac, 'domain':dom }
   res = { "res":"Nothing to be done", 'op':op, 'ip':ip, 'mac':mac, 'dom':dom }
   if not (ip == '127.0.0.1' or dom == 'domain'):
    ipint = sys_ip2int(ip)
@@ -365,6 +371,7 @@ def remove(aWeb):
  dns_a_id   = aWeb.get_value('dns_a_id','0')
  dns_ptr_id = aWeb.get_value('dns_ptr_id','0')
  ipam_id    = aWeb.get_value('ipam_id','0')
+ args = { 'id':device_id, 'dns_a_id':dns_a_id, 'dns_ptr_id':dns_ptr_id, 'ipam_id':ipam_id }
  print "<DIV CLASS='z-table'>"
  db = DB()
  db.connect()
