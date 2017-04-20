@@ -9,16 +9,16 @@ __status__= "Production"
 
 class Web(object):
  
+ #
+ # Create a web object and prep content for display, or download (by forcing to octet stream)
+ # 
  def __init__(self, aDebug=False):
-  from sys import stdout
   import cgi
   if aDebug:
    import cgitb
    cgitb.enable(display=0, logdir="/tmp/")
   self._form = cgi.FieldStorage()
   self._debug = aDebug
-  print "Content-Type: text/html\r\n"
-  stdout.flush()
 
  def log_msg(self, aMsg, aLog = None):
   if not aLog:
@@ -33,6 +33,9 @@ class Web(object):
  # call = <module>_<module_function>
  #
  def ajax(self):
+  from sys import stdout
+  print "Content-Type: text/html\r\n"
+  stdout.flush()
   ajaxcall = self.get_value('call','none_nofunc')
   (module,void,func) = ajaxcall.partition('_')
   from importlib import import_module
@@ -52,6 +55,9 @@ class Web(object):
  #
  #
  def pane(self):
+  from sys import stdout
+  print "Content-Type: text/html\r\n"
+  stdout.flush()
   paneview = self.get_value('view')
   if not paneview:
    print "<SPAN style='font-size:10px'>No pane view argument</SPAN>"
@@ -71,14 +77,17 @@ class Web(object):
  # REST API:
  # - rpc: operation/function to call
  # - args: json string with arguments passed on as single argument to function call
+ # - format: pretty print if True
  #
  def rest(self):
+  from sys import stdout
   from json import loads, dumps
   from importlib import import_module
+  print "Content-Type: text/html\r\n"
+  stdout.flush()
   rpc  = self.get_value('rpc','none_nofunc')
   args = self.get_value('args',str({}))
   (module,void,func) = rpc.partition('_')
-  # self.log_msg("rest call - rpc:{}, args:{}".format(rpc,args))
   try:
    mod = import_module("sdcp.site.rest_" + module)
    fun = getattr(mod,func,lambda x: { 'err':"No such function in module", 'args':x, 'module':module, 'function':func })

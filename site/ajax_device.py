@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "10.5GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import DB, sys_ip2int, sys_int2mac, sys_is_mac, sys_int2ip
+from sdcp.core.GenLib import DB, sys_ip2int, sys_int2mac, sys_is_mac, sys_int2ip, rpc_call
 
 ########################################## Device Operations ##########################################
 #
@@ -250,30 +250,6 @@ def device_info(aWeb):
 # View operation data / widgets
 #
 
-def remove(aWeb):
- device_id  = aWeb.get_value('id')
- dns_a_id   = aWeb.get_value('dns_a_id','0')
- dns_ptr_id = aWeb.get_value('dns_ptr_id','0')
- ipam_id    = aWeb.get_value('ipam_id','0')
- print "<DIV CLASS='z-table'>"
- db = DB()
- db.connect()
- res = db.do("DELETE FROM devices WHERE id = '{0}'".format(device_id))
- db.commit()
- if (dns_a_id != '0') or (dns_ptr_id != '0'):
-  from rest_ddi import dns_remove
-  dres = dns_remove( { 'a_id':dns_a_id, 'ptr_id':dns_ptr_id })
-  print "DNS  entries removed:{}<BR>".format(str(dres))
- if not ipam_id == '0':
-  from rest_ddi import ipam_remove
-  ires = ipam_remove({ 'ipam_id':ipam_id })
-  print "IPAM entries removed:{}<BR>".format(str(ires))
- print "Unit {0} deleted ({1})".format(device_id,res)
- print "</DIV>"
- db.close()
-#
-#
-#
 def conf_gen(aWeb):
  id = aWeb.get_value('id','0')
  gw = aWeb.get_value('ipam_gw')
@@ -341,50 +317,6 @@ def op_finddevices(aWeb):
 #
 #
 #
-def op_syncddi(aWeb):
- from rest_ddi import dns_lookup, ipam_lookup, dns_update, ipam_update
- db = DB()
- db.connect()
- db.do("SELECT id, ip, hostname, INET_NTOA(ip) as ipasc, domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0 or ipam_id = 0 or ipam_mask = 0 or ipam_sub = 0) ORDER BY ip")
- rows = db.get_all_rows()
- print "<DIV CLASS='z-table'>"
- print "<TABLE>"
- print "<TR><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>Domain</TH><TH>A</TH><TH>PTR</TH><TH>IPAM</TH><TH>Subnet</TH><TH>Mask</TH><TH>Extra</TH>"
- for row in rows:
-  ip   = row['ipasc']
-  name = row['hostname']
-  dom  = row['domain'] 
-  dargs = { 'ip':ip, 'name':name, 'domain':dom }
-  retvals    = dns_lookup( dargs )
-  dns_a_id   = retvals.get('dns_a_id','0')
-  dns_ptr_id = retvals.get('dns_ptr_id','0')
-
-  retvals    = ipam_lookup({'ip':ip})
-  ipam_id    = retvals.get('ipam_id','0')
-  ipam_mask  = retvals.get('subnet_mask','24')
-  ipam_sub   = retvals.get('subnet_asc','0.0.0.0')
-  ipam_subint= sys_ip2int(ipam_sub)
-  print "<TR><TD>{}</<TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>".format(row['id'],ip,name,dom,dns_a_id,dns_ptr_id,ipam_id,ipam_sub,ipam_mask)
-  if not name == 'unknown':
-   print "updating"
-   uargs = { 'ip':ip, 'name':name, 'domain':dom, 'a_id':dns_a_id, 'ptr_id':dns_ptr_id }
-   dns_update(uargs)
-   retvals = dns_lookup(dargs)
-   uargs['ipam_id'] = ipam_id
-   uargs['ptr_id']  = retvals.get('dns_ptr_id','0')
-   del uargs['a_id']
-   ipam_update(uargs)
-   print str(retvals)
-   db.do("UPDATE devices SET ipam_id = {}, dns_a_id = '{}', dns_ptr_id = '{}', ipam_mask = '{}', ipam_sub = '{}' WHERE id = '{}'".format(ipam_id, retvals.get('dns_a_id','0'),retvals.get('dns_ptr_id','0'), ipam_mask, ipam_subint, row['id']))
-  print "</TD></TR>"
-
- db.commit()
- db.close()
- print "</TABLE></DIV>"
-
-#
-#
-#
 
 def new(aWeb):
  ip  = aWeb.get_value('ip',"127.0.0.1")
@@ -424,3 +356,36 @@ def new(aWeb):
   print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span LNK=ajax.cgi?call=device_new FRM=device_new_form OP=post><IMG SRC='images/btn-start.png'></A>&nbsp;"
   print "<SPAN ID=device_new_span style='max-width:370px; font-size:9px; float:right'></SPAN>"
   print "</DIV>"
+
+#
+#
+#
+def remove(aWeb):
+ device_id  = aWeb.get_value('id')
+ dns_a_id   = aWeb.get_value('dns_a_id','0')
+ dns_ptr_id = aWeb.get_value('dns_ptr_id','0')
+ ipam_id    = aWeb.get_value('ipam_id','0')
+ print "<DIV CLASS='z-table'>"
+ db = DB()
+ db.connect()
+ res = db.do("DELETE FROM devices WHERE id = '{0}'".format(device_id))
+ db.commit()
+ if (dns_a_id != '0') or (dns_ptr_id != '0'):
+  from rest_ddi import dns_remove
+  dres = dns_remove( { 'a_id':dns_a_id, 'ptr_id':dns_ptr_id })
+  print "DNS  entries removed:{}<BR>".format(str(dres))
+ if not ipam_id == '0':
+  from rest_ddi import ipam_remove
+  ires = ipam_remove({ 'ipam_id':ipam_id })
+  print "IPAM entries removed:{}<BR>".format(str(ires))
+ print "Unit {0} deleted ({1})".format(device_id,res)
+ print "</DIV>"
+ db.close()
+
+#
+#
+#
+def dump_db(aWeb):
+ from json import dumps
+ from rest_device import dump_db
+ print "<PRE>{}</PRE>".format(dumps(dump_db(None), indent=4, sort_keys=True))

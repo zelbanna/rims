@@ -10,6 +10,16 @@ __status__ = "Production"
 import sdcp.SettingsContainer as SC
 from sdcp.core.GenLib import sys_log_msg, sys_ip2ptr, sys_ip2int, DB, rpc_call
 
+################################################ DDI - Common ################################################
+#
+def load_infra(aDict):
+ #
+ # Get domains from dns and subnets from ipam
+ #
+ 
+ return "load_infra"
+
+
 ################################################# DDI - DNS ##################################################
 #
 # Lookup a and ptr id for a given ip,hostname and domain, return as dict
@@ -21,8 +31,7 @@ def dns_domains(aDict):
  db = DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
  res = db.do("SELECT id,name FROM domains")
- retvals = db.get_all_dict('id')
- return retvals
+ return db.get_all_rows()
 
 def dns_lookup(aDict):
  if SC.dnsdb_proxy == 'True':
@@ -91,9 +100,9 @@ def dns_remove(aDict):
  if aDict['ptr_id'] != '0':
   pres = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aDict['ptr_id']))
  db.commit()
+ db.close()
  sys_log_msg("DNS  remove - A:{} PTR:{}".format(str(ares),str(pres)))
  return { 'a':ares, 'ptr':pres }
- db.close()
 
 ################################################# DDI - IPAM ##################################################
 #
@@ -103,10 +112,9 @@ def ipam_subnets(aDict):
   return rpc_call(SC.ipamdb_url, "ddi_ipam_subnets", aDict)
  db = DB()
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
- db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
- res = db.get_all_dict('id')
+ res = db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
  db.close()
- return res
+ return db.get_all_rows()
 
 def ipam_lookup(aDict):
  if SC.ipamdb_proxy == 'True':
@@ -155,7 +163,7 @@ def ipam_update(aDict):
    db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name,PTR) VALUES('{}','{}','{}','{}')".format(subnet_id,ipint,fqdn,aDict['ptr_id']))
  db.commit()
  db.close()
- return { 'op_result':'done' }
+ return "done"
 
 #
 #
@@ -167,6 +175,6 @@ def ipam_remove(aDict):
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
  ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
  db.commit()
- sys_log_msg("IPAM remove - I:{}".format(str(ires)))
- return { 'ipam':ires }
  db.close()
+ sys_log_msg("IPAM remove - I:{}".format(str(ires)))
+ return ires

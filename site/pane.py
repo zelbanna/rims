@@ -335,10 +335,8 @@ def devices(aWeb):
  if argdict.get('pdu',None):
   print "<A CLASS='z-op' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
  print "<A CLASS='z-reload z-op' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
- print "<A CLASS='z-right z-op' OP=load DIV=div_navcont MSG='Discover devices?'               LNK='ajax.cgi?call=device_op_finddevices&domain={0}'>Device Discovery</A>".format(domain)
+ print "<A CLASS='z-right z-op' OP=load    DIV=div_navcont MSG='Discover devices?'            LNK='ajax.cgi?call=device_op_finddevices&domain={0}'>Device Discovery</A>".format(domain)
  print "<A CLASS='z-right z-op' OP=confirm DIV=div_navcont MSG='Discover graphs?'   SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
- print "<A CLASS='z-right z-op' OP=confirm DIV=div_navcont MSG='Sync Devices/Graphs?'         LNK='ajax.cgi?call=graph_sync&domain={0}'>Sync Graphing</A>".format(domain)
- print "<A CLASS='z-right z-op' OP=confirm DIV=div_navcont MSG='Sync DNS and IPAM?' SPIN=true LNK='ajax.cgi?call=device_op_syncddi'>Sync DDI</A>"
  print "</DIV>"
  print aWeb.get_listeners("div_navleft")
  print aWeb.get_listeners("div_navcont")
@@ -361,7 +359,8 @@ def config(aWeb):
  print "<DIV CLASS='z-table' ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config           LNK='ajax.cgi?call=graph_sync&domain={0}'>Sync Graphing</A>".format(domain)
- print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=device_op_syncddi'>Sync Dev DDI</A>"
- print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='rest.cgi?rpc=ddi_load_ddi'>Load DDI</A>"
+ print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=ddi_sync'>Sync Device DDI</A>"
+ print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=ddi_load_infra'>Load DDI Tables</A>"
+ print "<A CLASS='z-btn' TARGET=_blank HREF='ajax.cgi?call=device_dump_db'>Device DB2JSON</A>"
  print "</DIV>"
- print "<DIV CLASS='z-table' ID=div_config style='float:left; min-width:600px; min-height:300px;'></DIV>"
+ print "<DIV ID=div_config style='min-width:600px; min-height:300px; display:inline;'></DIV>"
