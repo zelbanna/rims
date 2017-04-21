@@ -119,8 +119,10 @@ class DB(object):
  def get_row(self):
   return self._curs.fetchone()
 
+ # Bug in fetchall, a tupple is not an empty list as according to func spec
  def get_all_rows(self):
-  return self._curs.fetchall()
+  rows = self._curs.fetchall()
+  return rows if rows != () else []
 
  def get_all_dict(self, aTarget):
   return dict(map(lambda x: (x[aTarget],x),self._curs.fetchall()))
