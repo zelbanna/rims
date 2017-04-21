@@ -11,9 +11,28 @@ from sdcp.core.GenLib import DB
 
 ################################################## Basic Rack Info ######################################################
 #
+#
+#
+def list_racks(aWeb):
+ db   = DB()
+ db.connect()
+ print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
+ print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Rack</CENTER></TH></TR>"
+ print "<TR style='height:20px'><TD COLSPAN=3>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_unit_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print "</TD></TR>"
+ res  = db.do("SELECT * from racks ORDER by name")
+ data = db.get_all_rows()
+ print "<TR><TH>ID</TH><TH>Name</TH><TH>Size</TH></TR>"
+ for unit in data:
+  print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_unit_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['size'])
+ print "</TABLE></DIV>"
+ db.close()
+
+#
 # Basic rack info - right now only a display of a typical rack.. Change to table?
 #
-
 def info(aWeb):
  rack = aWeb.get_value('rack', 0)
  db = DB()
@@ -47,26 +66,6 @@ def info(aWeb):
    print "<TD CLASS='z-rack-indx'>{0}</TD></TR>".format(index)
   print "</TABLE>"
   print "</DIV>"
-
-#
-#
-#
-def list_racks(aWeb):
- db   = DB()
- db.connect()
- print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Rack</CENTER></TH></TR>"
- print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_unit_info&id=new'><IMG SRC='images/btn-add.png'></A>"
- print "</TD></TR>"
- res  = db.do("SELECT * from racks ORDER by name")
- data = db.get_all_rows()
- print "<TR><TH>ID</TH><TH>Name</TH><TH>Size</TH></TR>"
- for unit in data:
-  print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=rack_unit_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['size'])
- print "</TABLE></DIV>"
- db.close()
 
 #
 #
