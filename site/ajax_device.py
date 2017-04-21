@@ -98,7 +98,7 @@ def device_info(aWeb):
    for fkey in keys:
     # fkey = table_key
     (table, void, key) = fkey.partition('_')
-    data = aWeb.get_value(key)
+    data = aWeb.get_value(fkey)
     if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
      if data == 'NULL':
       db.do("UPDATE devices SET {0}=NULL WHERE id = '{1}'".format(key,id))
