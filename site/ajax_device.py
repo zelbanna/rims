@@ -157,7 +157,7 @@ def device_info(aWeb):
  print "</TABLE></DIV>"
  print "<!-- Rack Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
- print "<TR><TD>Rack:</TD><TD><SELECT NAME=devices_rack_id CLASS='z-select'>"
+ print "<TR><TD>Rack:</TD><TD><SELECT NAME=rackinfo_rack_id CLASS='z-select'>"
  db.do("SELECT * FROM racks")
  racks = db.get_all_rows()
  racks.append({ 'id':'NULL', 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
@@ -168,18 +168,18 @@ def device_info(aWeb):
   for index in range(0,7):
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  else:
-  print "<TR><TD>Rack Unit:</TD><TD TITLE='Top rack unit of device placement'><INPUT NAME=devices_rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_unit'])
+  print "<TR><TD>Rack Unit:</TD><TD TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_unit'])
   if not device_data['type'] == 'console' and db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") > 0:
    consoles = db.get_all_rows()
    consoles.append({ 'id':'NULL', 'name':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1' })
-   print "<TR><TD>TS:</TD><TD><SELECT NAME=devices_console_id CLASS='z-select'>"
+   print "<TR><TD>TS:</TD><TD><SELECT NAME=rackinfo_console_id CLASS='z-select'>"
    for console in consoles:
     extra = ""
     if (device_data['console_id'] == console['id']) or (not device_data['console_id'] and console['id'] == 'NULL'):
      extra = " selected='selected'"
      conip = console['ipasc']
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
-   print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=devices_console_port CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['console_port'])
+   print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=rackinfo_console_port CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['console_port'])
   else:
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
@@ -187,20 +187,20 @@ def device_info(aWeb):
    pdus = db.get_all_rows()
    pdus.append({ 'id':'NULL', 'name':'No', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'PDU' })
    for pem in ['pem0','pem1']:
-    print "<TR><TD>{0} PDU:</TD><TD><SELECT NAME=devices_{1}_pdu_slot_id CLASS='z-select'>".format(pem.upper(),pem)
+    print "<TR><TD>{0} PDU:</TD><TD><SELECT NAME=rackinfo_{1}_pdu_slot_id CLASS='z-select'>".format(pem.upper(),pem)
     for pdu in pdus:
      for slotid in range(0,pdu['slots'] + 1):
       extra = " selected" if ((device_data[pem+"_pdu_id"] == pdu['id']) and (device_data[pem+"_pdu_slot"] == pdu[str(slotid)+"_slot_id"])) or (not device_data[pem+"_pdu_id"] and  pdu['id'] == 'NULL')else ""
       print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(str(pdu['id'])+"."+str(pdu[str(slotid)+"_slot_id"]), extra, pdu['name']+":"+pdu[str(slotid)+"_slot_name"])
     print "</SELECT></TD></TR>"
-    print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME=devices_{1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,device_data[pem + "_pdu_unit"])
+    print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME=rackinfo_{1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,device_data[pem + "_pdu_unit"])
   else:
    for index in range(0,4):
     print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  print "</TABLE></DIV>"
  print "<!-- Additional info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Additional Info</TH></TR>"
- print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=devices_rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_size'])
+ print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rackinfo_rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_size'])
  print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['domain'] != device_data['fqdn']) else "", device_data['fqdn'])
  print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['dns_a_id'])
  print "<TR><TD>DNS PTR ID:</TD><TD>{}</TD></TR>".format(device_data['dns_ptr_id'])
