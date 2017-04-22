@@ -49,7 +49,7 @@ class Web(object):
     keys.remove('call')
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'module':module, 'function':func, 'args': keys, 'err':str(err) }, sort_keys=True)
+   print dumps({ 'ajax_module':module, 'function':func, 'args': keys, 'err':str(err) }, sort_keys=True)
 
  ################################# PANE #########################################
  #
@@ -90,10 +90,10 @@ class Web(object):
   (module,void,func) = rpc.partition('_')
   try:
    mod = import_module("sdcp.site.rest_" + module)
-   fun = getattr(mod,func,lambda x: { 'err':"No such function in module", 'args':x, 'module':module, 'function':func })
+   fun = getattr(mod,func,lambda x: { 'err':"No such function in module", 'args':x, 'rest_module':module, 'function':func })
    print dumps(fun(loads(args)))
   except Exception as err:
-   print dumps({ 'err':'module_error', 'res':str(err), 'module':module, 'function':func }, sort_keys=True)
+   print dumps({ 'err':'module_error', 'res':str(err), 'rest_module':module, 'function':func }, sort_keys=True)
 
  ############################## CGI/Web functions ###############################
  def json2html(self,astring):

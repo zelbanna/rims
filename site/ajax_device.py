@@ -330,32 +330,12 @@ def new(aWeb):
  hostname = aWeb.get_value('hostname','unknown')
  a_dom    = aWeb.get_value('dns_a_dom_id')
  ptr_dom  = aWeb.get_value('dns_ptr_dom_id')
+ ipam_dom = aWeb.get_value('ipam_dom_id')
  mac      = aWeb.get_value('mac',"00:00:00:00:00:00")
  op       = aWeb.get_value('op')
  if op:
-  args = { 'ip':ip, 'mac':mac, 'hostname':hostname, 'dns_a_dom_id':a_dom, 'dns_ptr_dom_id':ptr_dom }
-  res = "Nothing to be done"
-  if not (ip == '127.0.0.1' or hostname == 'unknown'):
-   ipint = sys_ip2int(ip)
-   db = DB()
-   db.connect()
-   # 
-   # Check ipam_dom as well
-   #
-   xist = db.do("SELECT id,hostname, dns_a_dom_id, dns_a_ptr_id FROM devices WHERE ip ='{}'".format(ipint))
-   if xist == 0:
-    mac = mac.replace(":","")
-    if not sys_is_mac(mac):
-     mac = "000000000000"
-    dbres = db.do("INSERT INTO devices (ip,mac,domain_id,domain,hostname,snmp,model,type,fqdn,rack_size) VALUES({},x'{}',{},'unknown','unknown','unknown','unknown','unknown','unknown',1)".format(ipint,mac,dom))
-    db.commit()
-    res = "Added ({})".format(dbres)
-   else:
-    xist = db.get_row()
-    res = "Existing ({}.{} - {})".format(xist['hostname'],xist['domain_id'],xist['id']) 
-   db.close()
-  from json import dumps
-  print dumps(res)
+  from rest_device import new
+  print new({ 'ip':ip, 'mac':mac, 'hostname':hostname, 'dns_a_dom_id':a_dom, 'dns_ptr_dom_id':ptr_dom, 'ipam_dom_id':ipam_dom })
  else:
   db = DB()
   db.connect()
@@ -364,17 +344,23 @@ def new(aWeb):
   db.do("SELECT id, name FROM domains")
   domains = db.get_all_rows()
   db.close()
-  print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:400px; height:140px;'>"
+  print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:400px; height:170px;'>"
   print "<FORM ID=device_new_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
   print "<TABLE style='width:100%'>"
   print "<TR><TH COLSPAN=2>Add Device</TH></TR>"
   print "<TR><TD>IP:</TD><TD><INPUT       NAME=ip       TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(ip)
-  print "<TR><TD>Hostname:</TD><TD><INPUT NAME=hostname TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
+  print "<TR><TD>Hostname:</TD><TD><INPUT NAME=hostname TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(hostname)
   print "<TR><TD>Domain:</TD><TD><SELECT CLASS='z-select' NAME=dns_a_dom_id>"
   for d in domains:
-   print "<OPTION VALUE={0}>{1}</OPTION>".format(d.get('id'),d.get('name'))
+   if not "in-addr.arpa" in d.get('name'):
+    print "<OPTION VALUE={0}>{1}</OPTION>".format(d.get('id'),d.get('name'))
   print "</SELECT></TD></TR>"
+  print "<TR><TD>Subnet:</TD><TD><SELECT CLASS='z-select' NAME=ipam_dom_id>"
+  for s in subnets:
+   print "<OPTION VALUE={0}>{1}/{2}</OPTION>".format(s.get('id'),s.get('subasc'),s.get('mask'))
+  print "</SELECT></TD></TR>"
+
   # <INPUT   NAME=dom  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(dom)
   print "<TR><TD>MAC:</TD><TD><INPUT      NAME=mac  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(mac)
   print "</TABLE>"
