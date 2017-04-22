@@ -59,7 +59,7 @@ def info(aWeb):
     else:
      if rackunits.get(count*index,None):
       rowspan = rackunits[count*index].get('rack_size')
-      print "<TD CLASS='z-rack-data' rowspan={2} style='background-color:green'><CENTER><a class='z-op' title='Show device info for {0}' op='load' div='div_navcont' lnk='ajax.cgi?call=device_device_info&id={1}'>{0}</a></CENTER></TD>".format(rackunits[count*index]['hostname'],rackunits[count*index]['id'],rowspan)
+      print "<TD CLASS='z-rack-data' rowspan={2} style='background-color:green'><CENTER><a class='z-op' title='Show device info for {0}' op='load' div='div_navcont' lnk='ajax.cgi?call=device_device_info&devices_id={1}'>{0}</a></CENTER></TD>".format(rackunits[count*index]['hostname'],rackunits[count*index]['id'],rowspan)
       rowspan = rowspan - 1
      else:
       print "<TD CLASS='z-rack-data' style='line-height:14px;'>&nbsp;</TD>"

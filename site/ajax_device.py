@@ -110,6 +110,7 @@ def device_info(aWeb):
      db.do("UPDATE devices SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE id = '{3}'".format(pem,pemid,pemslot,id))
    db.commit()
   opres = opres + " values:" + " ".join(keys)
+
  db.do("SELECT *, INET_NTOA(ip) as ipasc FROM devices WHERE id ='{}'".format(id))
  device_data = db.get_row()
  if not device_data:
@@ -212,9 +213,9 @@ def device_info(aWeb):
  print "</FORM>"
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&devices_id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&id={}&dns_a_id={}&dns_ptr_id={}&ipam_id={} OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id,device_data['dns_a_id'],device_data['dns_ptr_id'],device_data['ipam_id'])
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&ip={}&domain={}&hostname={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['domain'],name)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&devices_ip={}&devices_domain={}&devices_hostname={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['domain'],name)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=post TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
@@ -253,14 +254,14 @@ def device_info(aWeb):
 #
 
 def conf_gen(aWeb):
- id = aWeb.get_value('id','0')
- gw = aWeb.get_value('ipam_gw')
+ id = aWeb.get_value('devices_id','0')
+ gw = aWeb.get_value('devices_ipam_gw')
  db = DB()
  db.connect()
  db.do("SELECT INET_NTOA(ip) as ipasc, hostname,domain, ipam_sub, ipam_mask FROM devices where id = '{}'".format(id))
  row = db.get_row()
  db.close()
- type = aWeb.get_value('type')
+ type = aWeb.get_value('devices_type')
  print "<DIV CLASS='z-table' style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
  from sdcp.devices.DevHandler import device_get_instance
  try:
@@ -325,40 +326,57 @@ def op_finddevices(aWeb):
 # -> convert to rest
 #
 def new(aWeb):
- ip  = aWeb.get_value('ip',"127.0.0.1")
- mac = aWeb.get_value('mac',"00:00:00:00:00:00")
- dom = aWeb.get_value('dom',"domain")
- op  = aWeb.get_value('op')
+ ip       = aWeb.get_value('ip',"127.0.0.1")
+ hostname = aWeb.get_value('hostname','unknown')
+ a_dom    = aWeb.get_value('dns_a_dom_id')
+ ptr_dom  = aWeb.get_value('dns_ptr_dom_id')
+ mac      = aWeb.get_value('mac',"00:00:00:00:00:00")
+ op       = aWeb.get_value('op')
  if op:
-  args = { 'ip':ip, 'mac':mac, 'domain':dom }
-  res = { "res":"Nothing to be done", 'op':op, 'ip':ip, 'mac':mac, 'dom':dom }
-  if not (ip == '127.0.0.1' or dom == 'domain'):
+  args = { 'ip':ip, 'mac':mac, 'hostname':hostname, 'dns_a_dom_id':a_dom, 'dns_ptr_dom_id':ptr_dom }
+  res = "Nothing to be done"
+  if not (ip == '127.0.0.1' or hostname == 'unknown'):
    ipint = sys_ip2int(ip)
    db = DB()
    db.connect()
-   xist = db.do("SELECT id,hostname,domain FROM devices WHERE ip ='{}'".format(ipint))
+   # 
+   # Check ipam_dom as well
+   #
+   xist = db.do("SELECT id,hostname, dns_a_dom_id, dns_a_ptr_id FROM devices WHERE ip ='{}'".format(ipint))
    if xist == 0:
     mac = mac.replace(":","")
     if not sys_is_mac(mac):
      mac = "000000000000"
-    dbres = db.do("INSERT INTO devices (ip,mac,domain,hostname,snmp,model,type,fqdn,rack_size) VALUES('{}',x'{}','{}','unknown','unknown','unknown','unknown','unknown',1)".format(ipint,mac,dom))
+    dbres = db.do("INSERT INTO devices (ip,mac,domain_id,domain,hostname,snmp,model,type,fqdn,rack_size) VALUES({},x'{}',{},'unknown','unknown','unknown','unknown','unknown','unknown',1)".format(ipint,mac,dom))
     db.commit()
-    res['res'] = "Added ({})".format(dbres)
+    res = "Added ({})".format(dbres)
    else:
     xist = db.get_row()
-    res['res'] = "Existing ({}.{} - {})".format(xist['hostname'],xist['domain'],xist['id']) 
+    res = "Existing ({}.{} - {})".format(xist['hostname'],xist['domain_id'],xist['id']) 
    db.close()
   from json import dumps
   print dumps(res)
  else:
+  db = DB()
+  db.connect()
+  db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet");
+  subnets = db.get_all_rows()
+  db.do("SELECT id, name FROM domains")
+  domains = db.get_all_rows()
+  db.close()
   print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:400px; height:140px;'>"
   print "<FORM ID=device_new_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
   print "<TABLE style='width:100%'>"
   print "<TR><TH COLSPAN=2>Add Device</TH></TR>"
-  print "<TR><TD>IP:</TD><TD><INPUT     NAME=ip  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(ip)
-  print "<TR><TD>Domain:</TD><TD><INPUT NAME=dom TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(dom)
-  print "<TR><TD>MAC:</TD><TD><INPUT NAME=mac TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(mac)
+  print "<TR><TD>IP:</TD><TD><INPUT       NAME=ip       TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(ip)
+  print "<TR><TD>Hostname:</TD><TD><INPUT NAME=hostname TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
+  print "<TR><TD>Domain:</TD><TD><SELECT CLASS='z-select' NAME=dns_a_dom_id>"
+  for d in domains:
+   print "<OPTION VALUE={0}>{1}</OPTION>".format(d.get('id'),d.get('name'))
+  print "</SELECT></TD></TR>"
+  # <INPUT   NAME=dom  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(dom)
+  print "<TR><TD>MAC:</TD><TD><INPUT      NAME=mac  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(mac)
   print "</TABLE>"
   print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span LNK=ajax.cgi?call=device_new FRM=device_new_form OP=post><IMG SRC='images/btn-start.png'></A>&nbsp;"
   print "<SPAN ID=device_new_span style='max-width:370px; font-size:9px; float:right'></SPAN>"
