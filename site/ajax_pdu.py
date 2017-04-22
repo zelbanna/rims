@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "10.5GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import DB, sys_ip2int
+import sdcp.core.GenLib as GL
 from sdcp.devices.RackUtils import Avocent
 
 ############################################## PDUs ###################################################
@@ -25,7 +25,7 @@ def list_units(aWeb):
  nstate  = aWeb.get_value('nstate')
  pduop   = aWeb.get_value('pdu')
 
- db = DB()
+ db = GL.DB()
 
  optemplate = "<A CLASS='z-btn z-small-btn z-op' OP=load SPIN=true DIV=div_navleft LNK='ajax.cgi?call=pdu_list_units&pdu={0}&nstate={1}&slot={2}&unit={3}'><IMG SRC='images/btn-{4}'></A>"
 
@@ -84,7 +84,7 @@ def unit_info(aWeb):
 #
 #
 def list_pdus(aWeb):
- db   = DB()
+ db   = GL.DB()
  db.connect()
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>PDUs</CENTER></TH></TR>"
@@ -108,11 +108,11 @@ def device_info(aWeb):
  ip = aWeb.get_value('ip')
  op = aWeb.get_value('op')
  name = aWeb.get_value('name')
- db = DB()
+ db = GL.DB()
  db.connect()
 
  if op == 'lookup':
-  ipint = sys_ip2int(ip)
+  ipint = GL.sys_ip2int(ip)
   pdu   = Avocent(ip)
   slotl = pdu.get_slot_names()
   slotn = len(slotl)
@@ -122,7 +122,7 @@ def device_info(aWeb):
    db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1],slotl[1][0],slotl[1][1]))
   db.commit()
  elif op == 'update':
-  ipint = sys_ip2int(ip)
+  ipint = GL.sys_ip2int(ip)
   slots = aWeb.get_value('slots','0')
   if id == 'new':
    sql = "INSERT into pdus (name, ip, slots) VALUES ('{0}','{1}','{2}')".format(name,ipint,slots)
@@ -202,7 +202,7 @@ def unit_update(aWeb):
 #
 def remove(aWeb):
  id = aWeb.get_value('id')
- db = DB()
+ db = GL.DB()
  db.connect()
  db.do("UPDATE devices SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
  db.do("UPDATE devices SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
@@ -222,7 +222,7 @@ def update_device_pdus(aWeb):
  pem1_unit = aWeb.get_value('pem1_unit','0')
  hostname  = aWeb.get_value('name')
  retstr    = ""
- db = DB()
+ db = GL.DB()
  db.connect()
  db.do("SELECT id,INET_NTOA(ip) as ip FROM pdus WHERE id = '{}' OR id = '{}'".format(pem0_id,pem1_id))
  pdus = db.get_all_dict('id')

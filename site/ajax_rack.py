@@ -7,14 +7,14 @@ __author__= "Zacharias El Banna"
 __version__ = "10.5GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import DB
+import sdcp.core.GenLib as GL
 
 ################################################## Basic Rack Info ######################################################
 #
 #
 #
 def list_racks(aWeb):
- db   = DB()
+ db   = GL.DB()
  db.connect()
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Rack</CENTER></TH></TR>"
@@ -35,7 +35,7 @@ def list_racks(aWeb):
 #
 def info(aWeb):
  rack = aWeb.get_value('rack', 0)
- db = DB()
+ db = GL.DB()
  db.connect()
  db.do("SELECT name, size from racks where id = {}".format(rack))
  rackinfo = db.get_row() 
@@ -72,7 +72,7 @@ def info(aWeb):
 #
 def unit_info(aWeb):
  id = aWeb.get_value('id')
- db = DB()
+ db = GL.DB()
  db.connect()
  if id == 'new':
   rack = { 'id':'new', 'name':'new-name', 'size':'48', 'fk_pdu_1':None, 'fk_pdu_2':None, 'fk_console':None }
@@ -112,7 +112,7 @@ def unit_info(aWeb):
 #
 def update(aWeb):
  id = aWeb.get_value('id')
- db   = DB()
+ db   = GL.DB()
  db.connect()
  name       = aWeb.get_value('name')
  size       = aWeb.get_value('size')
@@ -134,7 +134,7 @@ def update(aWeb):
 #
 def remove(aWeb):
  id   = aWeb.get_value('id')
- db   = DB()
+ db   = GL.DB()
  db.connect()
  db.do("UPDATE devices SET rack_unit = 0 WHERE rack_id = '{0}'".format(id))
  db.do("DELETE FROM racks WHERE id = '{0}'".format(id))

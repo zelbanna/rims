@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "10.5GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import DB, sys_ip2int
+import sdcp.core.GenLib as GL
 ############################################## Consoles ###################################################
 #
 # View Consoles
@@ -31,7 +31,7 @@ def list(aWeb):
  print "</TABLE></DIV>"
 
 def list_consoles(aWeb):
- db   = DB()
+ db   = GL.DB()
  db.connect()
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Consoles</CENTER></TH></TR>"
@@ -55,11 +55,11 @@ def device_info(aWeb):
  ip = aWeb.get_value('ip')
  op = aWeb.get_value('op')
  name = aWeb.get_value('name')
- db = DB()
+ db = GL.DB()
  db.connect()
 
  if op == 'update':
-  ipint = sys_ip2int(ip)
+  ipint = GL.sys_ip2int(ip)
   if id == 'new':
    sql = "INSERT into consoles (name, ip) VALUES ('{0}','{1}')".format(name,ipint)
    db.do(sql)
@@ -107,7 +107,7 @@ def device_info(aWeb):
 #
 def remove(aWeb):
  id   = aWeb.get_value('id')
- db   = DB()
+ db   = GL.DB()
  db.connect()
  db.do("UPDATE devices SET console_port = 0 WHERE console_id = '{0}'".format(id))
  db.do("DELETE FROM consoles WHERE id = '{0}'".format(id))
