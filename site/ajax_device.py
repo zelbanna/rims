@@ -66,13 +66,14 @@ def device_info(aWeb):
 
   if not name == 'unknown':
    from rest_ddi import dns_lookup, ipam_lookup
+   ipam_sub_id = aWeb.get_value('devices_ipam_sub_id')
    opres = opres + " and updating DDI:"
    retvals    = dns_lookup({ 'ip':ip, 'name':name, 'domain':domain })
    a_id   = retvals.get('a_id','0')
    ptr_id = retvals.get('ptr_id','0')
    opres = opres + "{}".format(str(retvals))
 
-   retvals    = ipam_lookup({'ip':ip})
+   retvals    = ipam_lookup({'ip':ip, 'ipam_sub_id':ipam_sub_id})
    ipam_id    = retvals.get('ipam_id','0')
    tmp_ptr_id = retvals.get('ptr_id','0')
    opres = opres + "{}".format(str(retvals))
@@ -86,7 +87,9 @@ def device_info(aWeb):
   keys = aWeb.get_keys()
   keys.remove('call')
   keys.remove('devices_id')
+  keys.remove('devices_ipam_sub_id')
   keys.remove('op')
+  
   if 'devices_ipam_gw'   in keys: keys.remove('devices_ipam_gw')
   if keys:
    for fkey in keys:
@@ -129,6 +132,7 @@ def device_info(aWeb):
  print "<DIV ID=div_devinfo CLASS='z-table' style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=devices_id VALUE={}>".format(id)
+ print "<INPUT TYPE=HIDDEN NAME=devices_ipam_sub_id VALUE={}>".format(device_data['ipam_sub_id'])
 
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
@@ -211,7 +215,7 @@ def device_info(aWeb):
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&devices_id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&devices_id={}&a_id={}&ptr_id={}&ipam_id={} OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id,device_data['a_id'],device_data['ptr_id'],device_data['ipam_id'])
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&devices_ip={}&devices_domain={}&devices_hostname={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['a_name'],name)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&devices_ip={}&devices_domain={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['a_name'])
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=post TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
