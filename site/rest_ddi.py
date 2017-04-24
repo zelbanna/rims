@@ -12,6 +12,8 @@ import sdcp.core.GenLib as GL
 
 ################################################ DDI - Common ################################################
 #
+#
+#
 def load_infra(aDict):
  #
  # Get domains from dns and subnets from ipam
@@ -31,9 +33,8 @@ def load_infra(aDict):
 
 ################################################# DDI - DNS ##################################################
 #
-# Lookup a and ptr id for a given ip,hostname and domain, return as dict
 #
-
+#
 def dns_domains(aDict):
  if SC.dnsdb_proxy == 'True':
   return GL.rpc_call(SC.dnsdb_url, "ddi_dns_domains", aDict)
@@ -43,13 +44,16 @@ def dns_domains(aDict):
  db.close()
  return db.get_all_rows()
 
+#
+# Lookup a and ptr id for a given ip,hostname and domain, return as dict
+#
 def dns_lookup(aDict):
  if SC.dnsdb_proxy == 'True':
   return GL.rpc_call(SC.dnsdb_url, "ddi_dns_lookup", aDict)
  ptr     = GL.sys_ip2ptr(aDict['ip'])
  fqdn    = aDict['name'] + "." + aDict['domain']
  retvals = {}
- GL.sys_log_msg("DNS  lookup - input:{}, {}, {}".format(aDict['ip'],aDict['name'],aDict['domain']))  
+ GL.sys_log_msg("DNS  lookup - input:{}".format(aDict.values()))  
  db = GL.DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
  res = db.do("SELECT id,name from domains")
@@ -127,22 +131,17 @@ def ipam_subnets(aDict):
  return db.get_all_rows()
 
 #
-# Not correct..
+# lookup(ip,ipam_sub_id)
 #
 def ipam_lookup(aDict):
  if SC.ipamdb_proxy == 'True':
   return GL.rpc_call(SC.ipamdb_url, "ddi_ipam_lookup", aDict)
- GL.sys_log_msg("IPAM lookup - input {}".format(aDict['ip']))
+ GL.sys_log_msg("IPAM lookup - input {}".format(aDict.values()))
  ipint   = GL.sys_ip2int(aDict['ip'])
  retvals = { 'ipam_id':'0' }
  db = GL.DB()
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
- db.do("SELECT id, subnet, INET_NTOA(subnet) as subnetasc, mask FROM subnets WHERE vrfId = 0 AND {0} > subnet AND {0} < (subnet + POW(2,(32-mask))-1)".format(ipint))
- subnet = db.get_row()
- retvals['subnet_id']   = subnet.get('id')
- retvals['subnet_asc']  = subnet.get('subnetasc')
- retvals['subnet_mask'] = subnet.get('mask')
- db.do("SELECT id, dns_name, PTR FROM ipaddresses WHERE ip_addr = {0} AND subnetId = {1}".format(ipint,subnet['id']))
+ db.do("SELECT id, dns_name, PTR FROM ipaddresses WHERE ip_addr = {0} AND subnetId = {1}".format(ipint,aDict.get('ipam_sub_id'))
  db.close()
  ipam   = db.get_row()
  if ipam:

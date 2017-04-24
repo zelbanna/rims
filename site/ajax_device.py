@@ -105,7 +105,7 @@ def device_info(aWeb):
    db.commit()
   opres = opres + " values:" + " ".join(keys)
 
- db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name FROM devices LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_dom_id = subnets.id WHERE devices.id ='{}'".format(id))
+ db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name FROM devices LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
  device_data = db.get_row()
  if not device_data:
   print "Stale info! Reload device list"
@@ -254,7 +254,7 @@ def conf_gen(aWeb):
  gw = aWeb.get_value('devices_ipam_gw')
  db = DB()
  db.connect()
- db.do("SELECT INET_NTOA(ip) as ipasc, hostname,domains.name as domain, subnets.subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_dom_id WHERE devices.id = '{}'".format(id))
+ db.do("SELECT INET_NTOA(ip) as ipasc, hostname,domains.name as domain, subnets.subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_sub_id WHERE devices.id = '{}'".format(id))
  row = db.get_row()
  db.close()
  type = aWeb.get_value('devices_type')
@@ -295,8 +295,8 @@ def new(aWeb):
  if op:
   from rest_device import new
   a_dom    = aWeb.get_value('a_dom_id')
-  ipam_dom = aWeb.get_value('ipam_dom_id')
-  print new({ 'ip':ip, 'mac':mac, 'hostname':hostname, 'a_dom_id':a_dom, 'ipam_dom_id':ipam_dom })
+  ipam_sub = aWeb.get_value('ipam_sub_id')
+  print new({ 'ip':ip, 'mac':mac, 'hostname':hostname, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub })
  else:
   db = DB()
   db.connect()
@@ -317,7 +317,7 @@ def new(aWeb):
    if not "in-addr.arpa" in d.get('name'):
     print "<OPTION VALUE={0}>{1}</OPTION>".format(d.get('id'),d.get('name'))
   print "</SELECT></TD></TR>"
-  print "<TR><TD>Subnet:</TD><TD><SELECT CLASS='z-select' NAME=ipam_dom_id>"
+  print "<TR><TD>Subnet:</TD><TD><SELECT CLASS='z-select' NAME=ipam_sub_id>"
   for s in subnets:
    print "<OPTION VALUE={0}>{1}/{2} ({3})</OPTION>".format(s.get('id'),s.get('subasc'),s.get('mask'),s.get('subnet_description'))
   print "</SELECT></TD></TR>"
@@ -360,9 +360,9 @@ def discover(aWeb):
   from rest_device import discover
   clear = aWeb.get_value('clear',False)
   a_dom = aWeb.get_value('a_dom_id')
-  ipam  = aWeb.get_value('ipam_dom',"0_0_32").split('_')
+  ipam  = aWeb.get_value('ipam_sub',"0_0_32").split('_')
   # id, subnet int, subnet mask
-  res = discover({ 'ipam_dom_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1])+2**(32-int(ipam[2])), 'a_dom_id':a_dom, 'clear':clear})
+  res = discover({ 'ipam_sub_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1])+2**(32-int(ipam[2])), 'a_dom_id':a_dom, 'clear':clear})
   aWeb.log_msg("ajax_devices_discover: " + str(res))
   print "<DIV CLASS='z-table'>{}</DIV>".format(res)
  else:
@@ -382,7 +382,7 @@ def discover(aWeb):
     extra = "" if not dom_name == d.get('name') else "selected=selected"
     print "<OPTION VALUE={0} {2}>{1}</OPTION>".format(d.get('id'),d.get('name'),extra)
   print "</SELECT></TD></TR>"
-  print "<TR><TD>Subnet:</TD><TD><SELECT CLASS='z-select' NAME=ipam_dom>"
+  print "<TR><TD>Subnet:</TD><TD><SELECT CLASS='z-select' NAME=ipam_sub>"
   for s in subnets:
    print "<OPTION VALUE={0}_{1}_{3}>{2}/{3} ({4})</OPTION>".format(s.get('id'),s.get('subnet'),s.get('subasc'),s.get('mask'),s.get('subnet_description'))
   print "</SELECT></TD></TR>"
