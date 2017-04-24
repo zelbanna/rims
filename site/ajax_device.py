@@ -129,6 +129,7 @@ def device_info(aWeb):
  print "<DIV ID=div_devinfo CLASS='z-table' style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=devices_id VALUE={}>".format(id)
+
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
  print "<TR><TD>Name:</TD><TD><INPUT NAME=devices_hostname CLASS='z-input' TYPE=TEXT VALUE='{}'></TD></TR>".format(device_data['hostname'])
@@ -148,9 +149,11 @@ def device_info(aWeb):
    print "<TR><TD>Graphs:</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(id, device_data['hostname'], device_data['a_name'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
+ print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
  print "</TABLE></DIV>"
- print "<!-- Rack Info -->"
- print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
+
+ print "<!-- Additional info -->"
+ print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Additional Info</TH></TR>"
  print "<TR><TD>Rack:</TD><TD><SELECT NAME=rackinfo_rack_id CLASS='z-select'>"
  db.do("SELECT * FROM racks")
  racks = db.get_all_rows()
@@ -158,10 +161,20 @@ def device_info(aWeb):
  for rack in racks:
   extra = " selected" if (device_data['rack_id'] == rack['id']) or (not device_data['rack_id'] and rack['id'] == 'NULL') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
- if not device_data['rack_id'] or device_data['type'] == 'pdu':
-  for index in range(0,7):
-   print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
- else:
+ print "</SELECT></TD></TR>"
+ print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['a_name'] != device_data['fqdn']) else "", device_data['fqdn'])
+ print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['a_id'])
+ print "<TR><TD>DNS PTR ID:</TD><TD>{}</TD></TR>".format(device_data['ptr_id'])
+ print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(device_data['ipam_id'])
+ print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(sys_int2mac(device_data['mac']))
+ print "<TR><TD>Gateway:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=devices_ipam_gw VALUE={}></TD></TR>".format(sys_int2ip(device_data['subnet'] + 1))
+ print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
+ print "</TABLE></DIV>"
+
+ print "<!-- Rack Info if such exists -->"
+ if device_data['rack_id'] and not device_data['type'] == 'pdu':
+  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
+  print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rackinfo_rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_size'])
   print "<TR><TD>Rack Unit:</TD><TD TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_unit'])
   if not device_data['type'] == 'console' and db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") > 0:
    consoles = db.get_all_rows()
@@ -173,6 +186,7 @@ def device_info(aWeb):
      extra = " selected='selected'"
      conip = console['ipasc']
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
+   print "</SELECT></TD></TR>"
    print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=rackinfo_console_port CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['console_port'])
   else:
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
@@ -191,23 +205,12 @@ def device_info(aWeb):
   else:
    for index in range(0,4):
     print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
- print "</TABLE></DIV>"
- print "<!-- Additional info -->"
- print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Additional Info</TH></TR>"
- print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rackinfo_rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_size'])
- print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['a_name'] != device_data['fqdn']) else "", device_data['fqdn'])
- print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['a_id'])
- print "<TR><TD>DNS PTR ID:</TD><TD>{}</TD></TR>".format(device_data['ptr_id'])
- print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(device_data['ipam_id'])
- print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(sys_int2mac(device_data['mac']))
- print "<TR><TD>Gateway:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=devices_ipam_gw VALUE={}></TD></TR>".format(sys_int2ip(device_data['subnet'] + 1))
- print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
- print "</TABLE></DIV>"
+  print "</TABLE></DIV>"
  print "</FORM>"
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&devices_id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&id={}&a_id={}&ptr_id={}&ipam_id={} OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id,device_data['a_id'],device_data['ptr_id'],device_data['ipam_id'])
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&devices_id={}&a_id={}&ptr_id={}&ipam_id={} OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id,device_data['a_id'],device_data['ptr_id'],device_data['ipam_id'])
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&devices_ip={}&devices_domain={}&devices_hostname={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['a_name'],name)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
@@ -251,7 +254,7 @@ def conf_gen(aWeb):
  gw = aWeb.get_value('devices_ipam_gw')
  db = DB()
  db.connect()
- db.do("SELECT INET_NTOA(ip) as ipasc, hostname,domain, ipam_sub, ipam_mask FROM devices where id = '{}'".format(id))
+ db.do("SELECT INET_NTOA(ip) as ipasc, hostname,domains.name as domain, subnets.subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_dom_id WHERE devices.id = '{}'".format(id))
  row = db.get_row()
  db.close()
  type = aWeb.get_value('devices_type')
@@ -259,7 +262,7 @@ def conf_gen(aWeb):
  from sdcp.devices.DevHandler import device_get_instance
  try:
   dev  = device_get_instance(row['ipasc'],type)
-  dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':sys_int2ip(int(row['ipam_sub'])), 'mask':row['ipam_mask']})
+  dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':sys_int2ip(int(row['subnet'])), 'mask':row['mask']})
  except Exception as err:
   print "No instance config specification for {} type".format(row.get('type','unknown'))
  print "</DIV>"
@@ -328,27 +331,15 @@ def new(aWeb):
 #
 #
 def remove(aWeb):
- device_id  = aWeb.get_value('id')
- a_id   = aWeb.get_value('a_id','0')
- ptr_id = aWeb.get_value('ptr_id','0')
- ipam_id    = aWeb.get_value('ipam_id','0')
- args = { 'id':device_id, 'a_id':a_id, 'ptr_id':ptr_id, 'ipam_id':ipam_id }
+ from rest_device import remove
+ id      = aWeb.get_value('devices_id')
+ a_id    = aWeb.get_value('a_id','0')
+ ptr_id  = aWeb.get_value('ptr_id','0')
+ ipam_id = aWeb.get_value('ipam_id','0')
  print "<DIV CLASS='z-table'>"
- db = DB()
- db.connect()
- res = db.do("DELETE FROM devices WHERE id = '{0}'".format(device_id))
- db.commit()
- if (a_id != '0') or (ptr_id != '0'):
-  from rest_ddi import dns_remove
-  dres = dns_remove( { 'a_id':a_id, 'ptr_id':ptr_id })
-  print "DNS  entries removed:{}<BR>".format(str(dres))
- if not ipam_id == '0':
-  from rest_ddi import ipam_remove
-  ires = ipam_remove({ 'ipam_id':ipam_id })
-  print "IPAM entries removed:{}<BR>".format(str(ires))
- print "Unit {0} deleted ({1})".format(device_id,res)
+ res = remove({ 'id':id, 'a_id':a_id, 'ptr_id':ptr_id, 'ipam_id':ipam_id })
+ print "Unit {0} deleted ({1})".format(device_id,str(res))
  print "</DIV>"
- db.close()
 
 #
 #
