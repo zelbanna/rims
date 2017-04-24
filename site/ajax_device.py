@@ -56,7 +56,7 @@ def device_info(aWeb):
   ip     = aWeb.get_value('devices_ip')
   domain = aWeb.get_value('devices_domain')
   name   = aWeb.get_value('devices_hostname','unknown')
-  entry  = device_detect(ip,domain)
+  entry  = device_detect(ip)
   if entry:
    if entry['hostname'] == 'unknown':
     entry['hostname'] = name
@@ -74,15 +74,12 @@ def device_info(aWeb):
 
    retvals    = ipam_lookup({'ip':ip})
    ipam_id    = retvals.get('ipam_id','0')
-   ipam_mask  = retvals.get('subnet_mask','24')
-   ipam_sub   = retvals.get('subnet_asc','0.0.0.0')
-   ipam_subint = sys_ip2int(ipam_sub)
    tmp_ptr_id = retvals.get('ptr_id','0')
    opres = opres + "{}".format(str(retvals))
    if tmp_ptr_id != '0' and tmp_ptr_id != ptr_id:
     opres = "<B>"+opres+"</B>"
 
-   db.do("UPDATE devices SET ipam_id = {}, a_id = '{}', ptr_id = '{}', ipam_mask = '{}', ipam_sub = '{}' WHERE id = '{}'".format(ipam_id, a_id,ptr_id,ipam_mask,ipam_subint,id))
+   db.do("UPDATE devices SET ipam_id = {}, a_id = '{}', ptr_id = '{}' WHERE id = '{}'".format(ipam_id, a_id,ptr_id,id))
   db.commit()
 
  elif op == 'update':
@@ -91,8 +88,6 @@ def device_info(aWeb):
   keys.remove('devices_id')
   keys.remove('op')
   if 'devices_ipam_gw'   in keys: keys.remove('devices_ipam_gw')
-  if 'devices_ipam_mask' in keys: keys.remove('devices_ipam_mask')
-  if 'devices_ipam_sub'  in keys: keys.remove('devices_ipam_sub')
   if keys:
    for fkey in keys:
     # fkey = table_key
@@ -110,7 +105,7 @@ def device_info(aWeb):
    db.commit()
   opres = opres + " values:" + " ".join(keys)
 
- db.do("SELECT *, INET_NTOA(ip) as ipasc FROM devices WHERE id ='{}'".format(id))
+ db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name FROM devices LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_dom_id = subnets.id WHERE devices.id ='{}'".format(id))
  device_data = db.get_row()
  if not device_data:
   print "Stale info! Reload device list"
@@ -123,7 +118,7 @@ def device_info(aWeb):
   from rest_ddi import dns_update, ipam_update
   if device_data['ipam_id'] == '0':
    opres = opres + " (please rerun lookup for proper sync)"
-  pargs = { 'ip':ip, 'name':device_data['hostname'], 'domain': device_data['domain'], 'a_id':device_data['a_id'], 'ptr_id':device_data['ptr_id'] }
+  pargs = { 'ip':ip, 'name':device_data['hostname'], 'domain': device_data['a_name'], 'a_id':device_data['a_id'], 'ptr_id':device_data['ptr_id'] }
   dns_update(pargs)
   pargs['ipam_id'] = device_data['ipam_id']
   del pargs['a_id']
@@ -137,10 +132,9 @@ def device_info(aWeb):
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
  print "<TR><TD>Name:</TD><TD><INPUT NAME=devices_hostname CLASS='z-input' TYPE=TEXT VALUE='{}'></TD></TR>".format(device_data['hostname'])
- print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(device_data['domain'])
+ print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(device_data['a_name'])
  print "<TR><TD>SNMP:</TD><TD>{}</TD></TR>".format(device_data['snmp'])
  print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(ip)
- print "<TR><TD>Mask:</TD><TD>/{}</TD></TR>".format(device_data['ipam_mask'])
  print "<TR><TD>Type:</TD><TD TITLE='Device type'><SELECT NAME=devices_type CLASS='z-select'>"
  for tp in device_types():
   extra = " selected" if device_data['type'] == tp else ""      
@@ -148,10 +142,10 @@ def device_info(aWeb):
  print "</SELECT></TD></TR>"
  print "<TR><TD>Model:</TD><TD style='max-width:150px;'>{}</TD></TR>".format(device_data['model'])
  if device_data['graphed'] == "yes":
-  print "<TR><TD><A CLASS='z-op' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(device_data['domain'],device_data['hostname']+"."+device_data['domain'])
+  print "<TR><TD><A CLASS='z-op' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(device_data['a_name'],device_data['hostname']+"."+ device_data['a_name'])
  else:
   if not device_data['hostname'] == 'unknown':
-   print "<TR><TD>Graphs:</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(id, device_data['hostname'], device_data['domain'])
+   print "<TR><TD>Graphs:</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(id, device_data['hostname'], device_data['a_name'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
  print "</TABLE></DIV>"
@@ -201,12 +195,12 @@ def device_info(aWeb):
  print "<!-- Additional info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Additional Info</TH></TR>"
  print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rackinfo_rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_size'])
- print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['domain'] != device_data['fqdn']) else "", device_data['fqdn'])
+ print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['a_name'] != device_data['fqdn']) else "", device_data['fqdn'])
  print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['a_id'])
  print "<TR><TD>DNS PTR ID:</TD><TD>{}</TD></TR>".format(device_data['ptr_id'])
  print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(device_data['ipam_id'])
  print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(sys_int2mac(device_data['mac']))
- print "<TR><TD>Gateway:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=devices_ipam_gw VALUE={}></TD></TR>".format(sys_int2ip(device_data['ipam_sub'] + 1))
+ print "<TR><TD>Gateway:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=devices_ipam_gw VALUE={}></TD></TR>".format(sys_int2ip(device_data['subnet'] + 1))
  print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
  print "</TABLE></DIV>"
  print "</FORM>"
@@ -214,7 +208,7 @@ def device_info(aWeb):
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&devices_id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&id={}&a_id={}&ptr_id={}&ipam_id={} OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id,device_data['a_id'],device_data['ptr_id'],device_data['ipam_id'])
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&devices_ip={}&devices_domain={}&devices_hostname={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['domain'],name)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&devices_ip={}&devices_domain={}&devices_hostname={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['a_name'],name)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=post TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
@@ -235,7 +229,7 @@ def device_info(aWeb):
  if functions:
   if functions[0] == 'operated':
    if device_data['type'] == 'esxi':
-    print "<A TARGET='main_cont' HREF='pane.cgi?view=esxi&domain={}&host={}'>Manage</A></B></DIV>".format(device_data['domain'], device_data['hostname'])
+    print "<A TARGET='main_cont' HREF='pane.cgi?view=esxi&domain={}&host={}'>Manage</A></B></DIV>".format(device_data['a_name'], device_data['hostname'])
   else:
    for fun in functions:
     funname = " ".join(fun.split('_')[1:])

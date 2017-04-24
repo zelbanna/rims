@@ -57,7 +57,7 @@ def sync(aWeb):
  try:
   db = DB()
   db.connect()
-  db.do("SELECT id,hostname,domain FROM devices")
+  db.do("SELECT devices.id, hostname, domains.name AS domain FROM devices LEFT JOIN domains on domains.id = devices.a_dom_id")
   rows = db.get_all_rows()
   graph = Grapher()
   graphdevices = graph.get_keys()
