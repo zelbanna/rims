@@ -61,9 +61,9 @@ def dns_lookup(aDict):
  p_record = db.get_row()
  db.close()
  if a_record and (a_record.get('content',None) == aDict['ip']):
-  retvals['dns_a_id'] = a_record.get('id') 
+  retvals['a_id'] = a_record.get('id') 
  if p_record and p_record.get('content',None):
-  retvals['dns_ptr_id'] = p_record.get('id')
+  retvals['ptr_id'] = p_record.get('id')
  return retvals
 
 def dns_update(aDict):
@@ -146,9 +146,9 @@ def ipam_lookup(aDict):
  db.close()
  ipam   = db.get_row()
  if ipam:
-  retvals['ipam_id']    = ipam.get('id')
-  retvals['dns_a_name'] = ipam.get('dns_name',None)
-  retvals['dns_ptr_id'] = ipam.get('PTR',0)
+  retvals['ipam_id'] = ipam.get('id')
+  retvals['a_name']  = ipam.get('dns_name',None)
+  retvals['ptr_id']  = ipam.get('PTR',0)
  return retvals
 
 #

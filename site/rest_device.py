@@ -7,11 +7,12 @@ __author__ = "Zacharias El Banna"
 __version__ = "10.5GA"
 __status__ = "Production"
 
+import sdcp.core.GenLib as GL
+
 #
 # Dump 2 JSON              
 #
 def dump_db(aDict):
- import sdcp.core.GenLib as GL
  db = GL.DB()
  db.connect()
  res = db.do("SELECT * FROM devices")
@@ -22,29 +23,78 @@ def dump_db(aDict):
   return []
 
 #
-# new
+# New
 #
 def new(aDict):
- # args = { 'ip':ip, 'mac':mac, 'hostname':hostname, 'dns_a_dom_id':a_dom, 'dns_ptr_dom_id':ptr_dom, 'ipam_dom_id':ipam_dom }
- res = "Nothing to be done"
- if not (ip == '127.0.0.1' or hostname == 'unknown'):
-  ipint = sys_ip2int(ip)
-  db = DB()
-  db.connect()
-  # 
-  # Check ipam_dom as well
-  #
-  xist = db.do("SELECT id,hostname, dns_a_dom_id, dns_a_ptr_id, ipam_dom_id FROM devices WHERE ip ='{}'".format(ipint))
+ ipint = GL.sys_ip2int(aDict.get('ip'))
+ ptrid = GL.sys_ip2ptr(aDict.get('ip')).partition('.')[2]
+ db = GL.DB()
+ db.connect()
+ xist  = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(aDict.get('ipam_dom_id'),ipint))
+ if xist == 0:
+  ret = "IP not in subnet range"
+ elif not aDict.get('hostname') == 'unknown':
+  xist = db.do("SELECT devices.id, hostname, a_dom_id, ptr_dom_id FROM devices WHERE ipam_dom_id = {} AND ip = {}".format(aDict.get('ipam_dom_id'),ipint))
   if xist == 0:
-   mac = mac.replace(":","")
-   if not sys_is_mac(mac):
+   res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ptrid))
+   ptr_dom_id = db.get_row().get('id') if res > 0 else 'NULL'
+   mac = aDict.get('mac').replace(":","")
+   if not (GL.sys_is_mac(mac)):
     mac = "000000000000"
-   # dbres = db.do("INSERT INTO devices (ip,mac,domain_id,domain,hostname,snmp,model,type,fqdn,rack_size) VALUES({},x'{}',{},'unknown','unknown','unknown','unknown','unknown'$
-   # db.commit()
-   res = "Added ({})".format(dbres)
+   dbres = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_dom_id,hostname,snmp,model,type,fqdn,rack_size) VALUES({},x'{}',{},{},{},'{}','unknown','unknown','unknown','unknown',1)".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_dom_id'),aDict.get('hostname')))
+   db.commit()
+   ret = "Added ({})".format(dbres)
   else:
    xist = db.get_row()
-   res = "Existing ({}.{} - {})".format(xist['hostname'],xist['dns_a_dom_id'],xist['id'])
-  db.close()
- from json import dumps
- print dumps(res)
+   ret = "Existing ({}.{} - {})".format(xist['hostname'],xist['a_dom_id'],xist['id']) 
+ db.close()
+ return ret
+
+
+#
+#
+#
+def discover(aDict):
+ from time import time
+ from threading import Thread, BoundedSemaphore
+ from sdcp.devices.DevHandler import device_detect
+ start_time = int(time())
+ GL.sys_log_msg("rest_device_discover: " + str(aDict))
+ ip_start = aDict.get('start')
+ ip_end   = aDict.get('end')
+ db = GL.DB()
+ db.connect()
+ db_old, db_new = {}, {}
+ if aDict.get('clear',False):
+  db.do("TRUNCATE TABLE devices")
+  db.commit()
+ else:
+  res  = db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(ip_start,ip_end))
+  rows = db.get_all_rows()
+  for item in rows:
+   db_old[item.get('ip')] = True
+ try:
+  sema = BoundedSemaphore(10)
+  for ip in GL.sys_ipint2range(ip_start,ip_end):
+   if db_old.get(GL.sys_ip2int(ip),None):
+    continue
+   sema.acquire()
+   t = Thread(target = device_detect, args=[ip, db_new, sema])
+   t.name = "Detect " + ip
+   t.start()
+  
+  # Join all threads by acquiring all semaphore resources
+  for i in range(10):
+   sema.acquire()
+  # We can do insert as either we clear or we skip existing :-)
+  sql   = "INSERT INTO devices (ip, a_dom_id, ipam_dom_id, hostname, snmp, model, type, fqdn, rack_size) VALUES ({0},{1},{2},'{3}','{4}','{5}','{6}','{7}',{8})"
+  ptrid = GL.sys_ip2ptr(GL.sys_int2ip(ip_start)).partition('.')[2]
+  for ip,entry in db_new.iteritems():
+   db.do(sql.format(GL.sys_ip2int(ip), aDict.get('a_dom_id'), aDict.get('ipam_dom_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn'],entry['rack_size']))
+  else:
+   db.commit()
+ except Exception as err:
+  GL.sys_log_msg("device discover: Error [{}]".format(str(err)))
+ db.close()
+ GL.sys_log_msg("device discover: Total time spent: {} seconds".format(int(time()) - start_time))
+ return { 'found':len(db_new) }

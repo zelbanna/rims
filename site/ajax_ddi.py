@@ -16,7 +16,7 @@ def sync(aWeb):
  from rest_ddi import dns_lookup, ipam_lookup, dns_update, ipam_update
  db = GL.DB()
  db.connect()
- db.do("SELECT id, ip, hostname, INET_NTOA(ip) as ipasc, domain FROM devices WHERE (dns_a_id = 0 or dns_ptr_id = 0 or ipam_id = 0 or ipam_mask = 0 or ipam_sub = 0) ORDER BY ip")
+ db.do("SELECT id, ip, hostname, INET_NTOA(ip) as ipasc, domain FROM devices WHERE (a_id = 0 or ptr_id = 0 or ipam_id = 0 or ipam_mask = 0 or ipam_sub = 0) ORDER BY ip")
  rows = db.get_all_rows()
  print "<DIV CLASS='z-table'>"
  print "<TABLE>"
@@ -27,26 +27,26 @@ def sync(aWeb):
   dom  = row['domain'] 
   dargs = { 'ip':ip, 'name':name, 'domain':dom }
   retvals    = dns_lookup( dargs )
-  dns_a_id   = retvals.get('dns_a_id','0')
-  dns_ptr_id = retvals.get('dns_ptr_id','0')
+  a_id   = retvals.get('a_id','0')
+  ptr_id = retvals.get('ptr_id','0')
 
   retvals    = ipam_lookup({'ip':ip})
   ipam_id    = retvals.get('ipam_id','0')
   ipam_mask  = retvals.get('subnet_mask','24')
   ipam_sub   = retvals.get('subnet_asc','0.0.0.0')
   ipam_subint= GL.sys_ip2int(ipam_sub)
-  print "<TR><TD>{}</<TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>".format(row['id'],ip,name,dom,dns_a_id,dns_ptr_id,ipam_id,ipam_sub,ipam_mask)
+  print "<TR><TD>{}</<TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>".format(row['id'],ip,name,dom,a_id,ptr_id,ipam_id,ipam_sub,ipam_mask)
   if not name == 'unknown':
    print "updating"
-   uargs = { 'ip':ip, 'name':name, 'domain':dom, 'a_id':dns_a_id, 'ptr_id':dns_ptr_id }
+   uargs = { 'ip':ip, 'name':name, 'domain':dom, 'a_id':a_id, 'ptr_id':ptr_id }
    dns_update(uargs)
    retvals = dns_lookup(dargs)
    uargs['ipam_id'] = ipam_id
-   uargs['ptr_id']  = retvals.get('dns_ptr_id','0')
+   uargs['ptr_id']  = retvals.get('ptr_id','0')
    del uargs['a_id']
    ipam_update(uargs)
    print str(retvals)
-   db.do("UPDATE devices SET ipam_id = {}, dns_a_id = '{}', dns_ptr_id = '{}', ipam_mask = '{}', ipam_sub = '{}' WHERE id = '{}'".format(ipam_id, retvals.get('dns_a_id','0'),retvals.get('dns_ptr_id','0'), ipam_mask, ipam_subint, row['id']))
+   db.do("UPDATE devices SET ipam_id = {}, a_id = '{}', ptr_id = '{}', ipam_mask = '{}', ipam_sub = '{}' WHERE id = '{}'".format(ipam_id, retvals.get('a_id','0'),retvals.get('ptr_id','0'), ipam_mask, ipam_subint, row['id']))
   print "</TD></TR>"
 
  db.commit()

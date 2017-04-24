@@ -56,7 +56,7 @@ def device_get_widgets(aType):
 #
 # Detect device info
 #
-def device_detect(aIP, aDomain, aDict = {}, aSema = None):
+def device_detect(aIP, aDict = {}, aSema = None):
  import sdcp.SettingsContainer as SC
  from netsnmp import VarList, Varbind, Session
  from socket import gethostbyaddr
@@ -110,53 +110,8 @@ def device_detect(aIP, aDomain, aDict = {}, aSema = None):
    type  = "other"
    model = " ".join(infolist[0:4])
 
- entry = { 'domain':aDomain, 'hostname':hostname, 'snmp':snmp, 'model':model, 'type':type, 'fqdn':fqdn, 'rack_size':rack_size }
+ entry = { 'hostname':hostname, 'snmp':snmp, 'model':model, 'type':type, 'fqdn':fqdn, 'rack_size':rack_size }
  aDict[aIP] = entry
  if aSema:
   aSema.release()
  return entry
-
-#################################### Device Discovery and Detection ####################################
-#
-# clear existing entries or not?
-
-def device_discover(aStartIP, aStopIP, aDomain, aClear = False):
- from time import time
- from threading import Thread, BoundedSemaphore
- start_time = int(time())
- sys_log_msg("Device discovery: " + aStartIP + " -> " + aStopIP + ", for domain '" + aDomain + "'")
- db = DB()
- db.connect()
- db_old, db_new = {}, {}
- if aClear:
-  db.do("TRUNCATE TABLE devices")
-  db.commit()
- else:
-  res  = db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(sys_ip2int(aStartIP),sys_ip2int(aStopIP)))
-  rows = db.get_all_rows()
-  for item in rows:
-   db_old[item.get('ip')] = True
- try:
-  sema = BoundedSemaphore(10)
-  for ip in sys_ips2range(aStartIP, aStopIP):
-   if db_old.get(sys_ip2int(ip),None):
-    continue
-   sema.acquire()
-   t = Thread(target = device_detect, args=[ip, aDomain, db_new, sema])
-   t.name = "Detect " + ip
-   t.start()
-  
-  # Join all threads by acquiring all semaphore resources
-  for i in range(10):
-   sema.acquire()
-  # We can do insert as either we clear or we skip existing :-)
-  sql = "INSERT INTO devices (ip,domain,hostname,snmp,model,type,fqdn,rack_size) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}')"
-  for ip,entry in db_new.iteritems():
-   db.do(sql.format(sys_ip2int(ip),entry['domain'],entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn'],entry['rack_size']))
-  else:
-   db.commit()
-      
- except Exception as err:
-  sys_log_msg("Device discovery: Error [{}]".format(str(err)))
- db.close()
- sys_log_msg("Device discovery: Total time spent: {} seconds".format(int(time()) - start_time))

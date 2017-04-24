@@ -182,6 +182,11 @@ def sys_ips2range(addr1,addr2):
  from socket import inet_ntoa, inet_aton
  return map(lambda addr: inet_ntoa(pack("!I", addr)), range(unpack("!I", inet_aton(addr1))[0], unpack("!I", inet_aton(addr2))[0] + 1))
 
+def sys_ipint2range(start,end):
+ from struct import pack
+ from socket import inet_ntoa
+ return map(lambda addr: inet_ntoa(pack("!I", addr)), range(start,end + 1))
+
 def sys_ip2ptr(addr):
  octets = addr.split('.')
  octets.reverse()
