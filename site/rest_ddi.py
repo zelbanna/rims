@@ -59,7 +59,7 @@ def dns_lookup(aDict):
  domains = db.get_all_rows()
  domain  = domains[0]['name'] if domains[1]['name'] == ptr else domains[1]['name']
  fqdn    = aDict['name'] + "." + domain
- ptr_id  = domains[1]['id'] if domains[1]['name'] == ptr else domains[0]['id]
+ ptr_id  = domains[1]['id']   if domains[1]['name'] == ptr else domains[0]['id']
  db.do("SELECT id,content FROM records WHERE type = 'A' and domain_id = {} and name = '{}'".format(aDict('a_dom_id'),fqdn))
  a_record = db.get_row()
  db.do("SELECT id,content FROM records WHERE type = 'PTR' and domain_id = {} and name = '{}'".format(ptr_id,ptr)) 
