@@ -45,7 +45,6 @@ def dns_domains(aDict):
  return db.get_all_rows()
 
 #
-# Lookup a and ptr id for a given ip,hostname and domain, return as dict
 # lookup ( name, a_dom_id, ip)
 #
 def dns_lookup(aDict):
@@ -55,14 +54,18 @@ def dns_lookup(aDict):
  GL.sys_log_msg("DNS  lookup - input:{}".format(aDict.values()))  
  db = GL.DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
- res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = {}".format(aDict('a_dom_id'),ptr))
+ res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr))
  domains = db.get_all_rows()
- domain  = domains[0]['name'] if domains[1]['name'] == ptr else domains[1]['name']
+ if res == 2:
+  domain     = domains[0]['name'] if domains[1]['name'] == ptr else domains[1]['name']
+  ptr_dom_id = domains[1]['id']   if domains[1]['name'] == ptr else domains[0]['id']
+ else:
+  domain     = domains[0]['name']
+  ptr_dom_id = '0'
  fqdn    = aDict['name'] + "." + domain
- ptr_id  = domains[1]['id']   if domains[1]['name'] == ptr else domains[0]['id']
- db.do("SELECT id,content FROM records WHERE type = 'A' and domain_id = {} and name = '{}'".format(aDict('a_dom_id'),fqdn))
+ db.do("SELECT id,content FROM records WHERE type = 'A' and domain_id = {} and name = '{}'".format(aDict['a_dom_id'],fqdn))
  a_record = db.get_row()
- db.do("SELECT id,content FROM records WHERE type = 'PTR' and domain_id = {} and name = '{}'".format(ptr_id,ptr)) 
+ db.do("SELECT id,content FROM records WHERE type = 'PTR' and domain_id = {} and name = '{}'".format(ptr_dom_id,GL.sys_ip2ptr(aDict['ip']))) 
  p_record = db.get_row()
  db.close()
  retvals = {}
@@ -70,35 +73,43 @@ def dns_lookup(aDict):
   retvals['a_id'] = a_record.get('id') 
  if p_record and p_record.get('content',None):
   retvals['ptr_id'] = p_record.get('id')
+  retvals['ptr_dom_id'] = ptr_dom_id
  return retvals
 
+#
+# update( ip, name, a_dom_id , a_id, ptr_id )
+#
 def dns_update(aDict):
  if SC.dnsdb_proxy == 'True':
   return GL.rpc_call(SC.dnsdb_url, "ddi_dns_update", aDict)
  from time import strftime
  serial  = strftime("%Y%m%d01")
  ptr     = GL.sys_ip2ptr(aDict['ip'])
- fqdn    = aDict['name'] + "." + aDict['domain']
  retvals = {}
  GL.sys_log_msg("DNS  update - input:{}".format(", ".join(aDict.values)))
  db = GL.DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
- db.do("SELECT id,name from domains")
- domain_db = db.get_all_dict("name")
- domain_id = [ domain_db.get(aDict['domain'],{ 'id':'0' }), domain_db.get(ptr.partition('.')[2],{ 'id':'0' }) ]
- # A domain dict, PTR domain dict
+ res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr.partition('.')[2]))
+ domains = db.get_all_rows()
+ if res == 2:
+  domain     = domains[0]['name'] if domains[1]['name'] == ptr else domains[1]['name']
+  ptr_dom_id = domains[1]['id']   if domains[1]['name'] == ptr else domains[0]['id']
+ else:
+  domain     = domains[0]['name']
+  ptr_dom_id = None
+ fqdn    = aDict['name'] + "." + domain
  if aDict['a_id'] != '0':
   retvals['a'] = "update"
   db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(fqdn,aDict['ip'],serial,aDict['a_id']))
  else:
   retvals['a'] = "insert"
-  db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','A','{}',3600,'{}')".format(str(domain_id[0].get('id')),fqdn,aDict['ip'],serial))
+  db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES({},'{}','A','{}',3600,'{}')".format(aDict['a_dom_id'],fqdn,aDict['ip'],serial))
  if aDict['ptr_id'] != '0':
   retvals['ptr'] = "update"
   db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(ptr,fqdn,serial,aDict['ptr_id']))
- else:
+ elif aDict['ptr_id'] == '0' and ptr_dom_id:
   retvals['ptr'] = "insert"
-  db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','PTR','{}',3600,'{}')".format(str(domain_id[1].get('id')),ptr,fqdn,serial))
+  db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','PTR','{}',3600,'{}')".format(ptr_dom_id,ptr,fqdn,serial))
  db.commit()
  db.close()
  GL.sys_log_msg("DNS  update - results: " + str(retvals))
