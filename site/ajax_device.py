@@ -67,8 +67,9 @@ def device_info(aWeb):
   if not name == 'unknown':
    from rest_ddi import dns_lookup, ipam_lookup
    ipam_sub_id = aWeb.get_value('devices_ipam_sub_id')
+   a_dom_id    = aWeb.get_value('devices_a_dom_id')
    opres = opres + " and updating DDI:"
-   retvals    = dns_lookup({ 'ip':ip, 'name':name, 'domain':domain })
+   retvals    = dns_lookup({ 'ip':ip, 'name':name, 'domain':domain, 'a_dom_id':a_dom_id })
    a_id   = retvals.get('a_id','0')
    ptr_id = retvals.get('ptr_id','0')
    opres = opres + "{}".format(str(retvals))
@@ -88,6 +89,7 @@ def device_info(aWeb):
   keys.remove('call')
   keys.remove('devices_id')
   keys.remove('devices_ipam_sub_id')
+  keys.remove('devices_a_dom_id')
   keys.remove('op')
   
   if 'devices_ipam_gw'   in keys: keys.remove('devices_ipam_gw')
@@ -133,6 +135,7 @@ def device_info(aWeb):
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=devices_id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=devices_ipam_sub_id VALUE={}>".format(device_data['ipam_sub_id'])
+ print "<INPUT TYPE=HIDDEN NAME=devices_a_dom_id VALUE={}>".format(device_data['a_dom_id'])
 
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"

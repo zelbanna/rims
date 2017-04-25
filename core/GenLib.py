@@ -192,6 +192,12 @@ def sys_ip2ptr(addr):
  octets.reverse()
  return ".".join(octets) + ".in-addr.arpa"
 
+def sys_ip2arpa(addr):
+ octets = addr.split('.')[:3]
+ octets.reverse()
+ return ".".join(octets) + ".in-addr.arpa"
+
+
 def sys_int2mac(aInt):
  return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).upper()
 
