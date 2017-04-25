@@ -27,7 +27,7 @@ def dump_db(aDict):
 #
 def new(aDict):
  ipint = GL.sys_ip2int(aDict.get('ip'))
- ptrid = GL.sys_ip2ptr(aDict.get('ip')).partition('.')[2]
+ ptr_dom = GL.sys_ip2arpa(aDict.get('ip'))
  db = GL.DB()
  db.connect()
  xist  = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(aDict.get('ipam_sub_id'),ipint))
@@ -36,7 +36,7 @@ def new(aDict):
  elif not aDict.get('hostname') == 'unknown':
   xist = db.do("SELECT devices.id, hostname, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND ip = {}".format(aDict.get('ipam_sub_id'),ipint))
   if xist == 0:
-   res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ptrid))
+   res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ptr_dom))
    ptr_dom_id = db.get_row().get('id') if res > 0 else 'NULL'
    mac = aDict.get('mac').replace(":","")
    if not (GL.sys_is_mac(mac)):
@@ -106,10 +106,12 @@ def discover(aDict):
   for i in range(10):
    sema.acquire()
   # We can do insert as either we clear or we skip existing :-)
-  sql   = "INSERT INTO devices (ip, a_dom_id, ipam_sub_id, hostname, snmp, model, type, fqdn, rack_size) VALUES ({0},{1},{2},'{3}','{4}','{5}','{6}','{7}',{8})"
-  ptrid = GL.sys_ip2ptr(GL.sys_int2ip(ip_start)).partition('.')[2]
+  sql = "INSERT INTO devices (ip, a_dom_id, ptr_dom_id, ipam_sub_id, hostname, snmp, model, type, fqdn, rack_size) VALUES ({0},{1},{2},{3},'{4}','{5}','{6}','{7}','{8}',{9})"
+  res = db.do("SELECT id,name FROM domains WHERE name LIKE '%arpa%'")
+  ptr_doms = db.get_all_dict('name')
   for ip,entry in db_new.iteritems():
-   db.do(sql.format(GL.sys_ip2int(ip), aDict.get('a_dom_id'), aDict.get('ipam_sub_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn'],entry['rack_size']))
+   ptr_dom_id = ptr_doms.get(GL.sys_ip2arpa(ip),{ 'id':'NULL' })['id']
+   db.do(sql.format(GL.sys_ip2int(ip), aDict.get('a_dom_id'), ptr_dom_id, aDict.get('ipam_sub_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn'],entry['rack_size']))
   else:
    db.commit()
  except Exception as err:

@@ -327,7 +327,7 @@ def devices(aWeb):
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-warning z-op' OP=confirm DIV=div_navcont SPIN=true MSG='Clear DB?' LNK='ajax.cgi?call=device_op_finddevices&domain={0}&clear=true'>Clear DB</A>".format(domain)
+ print "<A CLASS='z-warning z-op' OP=confirm DIV=div_navcont SPIN=true MSG='Clear DB?' LNK='ajax.cgi?call=device_clear_db'>Clear DB</A>"
  print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist'>Devices</A>"
  print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
  if argdict.get('console',None):

@@ -54,7 +54,6 @@ def device_info(aWeb):
  ###################### Data operations ###################
  if   op == 'lookup':
   ip     = aWeb.get_value('devices_ip')
-  domain = aWeb.get_value('devices_domain')
   name   = aWeb.get_value('devices_hostname','unknown')
   entry  = device_detect(ip)
   if entry:
@@ -69,7 +68,7 @@ def device_info(aWeb):
    ipam_sub_id = aWeb.get_value('devices_ipam_sub_id')
    a_dom_id    = aWeb.get_value('devices_a_dom_id')
    opres = opres + " and updating DDI:"
-   retvals    = dns_lookup({ 'ip':ip, 'name':name, 'domain':domain, 'a_dom_id':a_dom_id })
+   retvals    = dns_lookup({ 'ip':ip, 'name':name, 'a_dom_id':a_dom_id })
    a_id   = retvals.get('a_id','0')
    ptr_id = retvals.get('ptr_id','0')
    opres = opres + "{}".format(str(retvals))
@@ -88,6 +87,7 @@ def device_info(aWeb):
   keys = aWeb.get_keys()
   keys.remove('call')
   keys.remove('devices_id')
+  keys.remove('devices_ip')
   keys.remove('devices_ipam_sub_id')
   keys.remove('devices_a_dom_id')
   keys.remove('op')
@@ -123,9 +123,10 @@ def device_info(aWeb):
   from rest_ddi import dns_update, ipam_update
   if device_data['ipam_id'] == '0':
    opres = opres + " (please rerun lookup for proper sync)"
-  pargs = { 'ip':ip, 'name':device_data['hostname'], 'domain': device_data['a_name'], 'a_id':device_data['a_id'], 'ptr_id':device_data['ptr_id'] }
+  pargs = { 'ip':ip, 'name':device_data['hostname'], 'a_dom_id': device_data['a_dom_id'], 'a_id':device_data['a_id'], 'ptr_id':device_data['ptr_id'] }
   dns_update(pargs)
   pargs['ipam_id'] = device_data['ipam_id']
+  pargs['ipam_sub_id'] = device_data['ipam_sub_id']
   del pargs['a_id']
   ipam_update(pargs)
 
@@ -136,7 +137,7 @@ def device_info(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=devices_id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=devices_ipam_sub_id VALUE={}>".format(device_data['ipam_sub_id'])
  print "<INPUT TYPE=HIDDEN NAME=devices_a_dom_id VALUE={}>".format(device_data['a_dom_id'])
-
+ print "<INPUT TYPE=HIDDEN NAME=devices_ip VALUE={}>".format(ip)
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
  print "<TR><TD>Name:</TD><TD><INPUT NAME=devices_hostname CLASS='z-input' TYPE=TEXT VALUE='{}'></TD></TR>".format(device_data['hostname'])
@@ -218,7 +219,7 @@ def device_info(aWeb):
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&devices_id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&devices_id={}&a_id={}&ptr_id={}&ipam_id={} OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id,device_data['a_id'],device_data['ptr_id'],device_data['ipam_id'])
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&devices_ip={}&devices_domain={} FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(ip,device_data['a_name'])
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup&   FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=post TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
@@ -398,3 +399,14 @@ def discover(aWeb):
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont SPIN=true LNK=ajax.cgi?call=device_discover FRM=device_discover_form OP=post><IMG SRC='images/btn-start.png'></A>"
   print "</DIV>"
  db.close() 
+
+#
+# clear db
+#
+def clear_db(aWeb):
+ db = DB()
+ db.connect()
+ db.do("TRUNCATE TABLE devices")
+ db.close()
+ print "<DIV CLASS='z-table'>Cleared DB</DIV>"
+
