@@ -188,9 +188,9 @@ def dump_db(aDict):
   return []
 
 #
-# find_free(ipam_sub_id, consecutive)
+# find(ipam_sub_id, consecutive)
 #
-def find_free(aDict):
+def find(aDict):
  db = GL.DB()
  db.connect()
  db.do("SELECT subnet, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id')))
