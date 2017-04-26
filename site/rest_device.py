@@ -10,17 +10,42 @@ __status__ = "Production"
 import sdcp.core.GenLib as GL
 
 #
-# Dump 2 JSON              
+# lookup(id)
 #
-def dump_db(aDict):
- db = GL.DB()
+#
+def lookup(aDict):
+ from sdcp.devices.DevHandler import device_detect
+ id  = aDict.get('id')
+ db  = GL.DB()
  db.connect()
- res = db.do("SELECT * FROM devices")
+ res = db.do("SELECT INET_NTOA(ip) as ipasc, hostname, ipam_sub_id, a_dom_id, ptr_dom_id FROM devices WHERE id = {}".format(id))
+ ret = ""
+ dev = db.get_row()
+ name = dev.get('hostname')
+ ip   = dev.get('ipasc')
+ entry = device_detect(ip)
+ if entry:
+  if entry['hostname'] != 'unknown':
+   name = entry['hostname']
+  db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(name,entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
+  ret = "1) updating base info"
+ 
+ if not name == 'unknown':
+  from rest_ddi import dns_lookup, ipam_lookup
+  vals   = dns_lookup({ 'ip':ip, 'name':name, 'a_dom_id':dev.get('a_dom_id') })
+  a_id   = vals.get('a_id','0')
+  ptr_id = vals.get('ptr_id','0')
+  ret    = ret + " 2) updating internal DDI info: {} ".format(str(vals))
+  vals   = ipam_lookup({'ip':ip, 'ipam_sub_id':dev.get('ipam_sub_id') })
+  ipam_id = vals.get('ipam_id','0')
+  iptr_id = vals.get('ptr_id','0')
+  ret    = ret + "{} ".format(str(vals))
+  if iptr_id != '0' and iptr_id != ptr_id:
+   ret = ret + " (dns/ipam out-of-sync)"
+  db.do("UPDATE devices SET ipam_id = {}, a_id = '{}', ptr_id = '{}' WHERE id = '{}'".format(ipam_id, a_id,ptr_id,id))
+ db.commit()
  db.close()
- if res > 0:
-  return db.get_all_rows()
- else:
-  return []
+ return ret
 
 #
 # new(ip, ipam_sub_id, a_dom_id, hostname)
@@ -51,29 +76,7 @@ def new(aDict):
  return ret
 
 #
-# remove(id)
-#
-def remove(aDict):
- db = GL.DB()
- db.connect()
- res = db.do("SELECT a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
- ddi = db.get_row()
- res = db.do("DELETE FROM devices WHERE id = '{0}'".format(aDict['id']))
- ret = { 'device': dev }
- db.commit()
- db.close()
- if (ddi['a_id'] != '0') or (ddi['ptr_id'] != '0'):
-  from rest_ddi import dns_remove
-  dres = dns_remove( { 'a_id':ddi['a_id'], 'ptr_id':ddi['ptr_id'] })
-  ret['a'] = dres.get('a')
-  ret['ptr'] = dres.get('ptr')
- if not ddi['ipam_id'] == '0':
-  from rest_ddi import ipam_remove
-  ret['ipam'] = ipam_remove({ 'ipam_id':ddi['ipam_id'] })
- return ret
-
-#
-#
+# discover(start, end, clear, a_dom_id, ipam_sub_id)
 #
 def discover(aDict):
  from time import time
@@ -121,3 +124,40 @@ def discover(aDict):
  db.close()
  GL.sys_log_msg("device discover: Total time spent: {} seconds".format(int(time()) - start_time))
  return { 'found':len(db_new) }
+
+#
+# remove(id)
+#
+def remove(aDict):
+ db = GL.DB()
+ db.connect()
+ res = db.do("SELECT a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
+ ddi = db.get_row()
+ res = db.do("DELETE FROM devices WHERE id = '{0}'".format(aDict['id']))
+ ret = { 'device': dev }
+ db.commit()
+ db.close()
+ if (ddi['a_id'] != '0') or (ddi['ptr_id'] != '0'):
+  from rest_ddi import dns_remove
+  dres = dns_remove( { 'a_id':ddi['a_id'], 'ptr_id':ddi['ptr_id'] })
+  ret['a'] = dres.get('a')
+  ret['ptr'] = dres.get('ptr')
+ if not ddi['ipam_id'] == '0':
+  from rest_ddi import ipam_remove
+  ret['ipam'] = ipam_remove({ 'ipam_id':ddi['ipam_id'] })
+ return ret
+
+#
+# dump(columnlist_as_string)
+#
+def dump_db(aDict):
+ db = GL.DB()
+ db.connect()
+ cols = aDict.get('columnlist_as_string','*')
+ res = db.do("SELECT {} FROM devices".format(cols))
+ db.close()
+ if res > 0:
+  return db.get_all_rows()
+ else:
+  return []
+
