@@ -195,16 +195,45 @@ def ipam_update(aDict):
  return res
 
 #
-#
+# remove(ipam_id)
 #
 def ipam_remove(aDict):
  if SC.ipamdb_proxy == 'True':
   return GL.rpc_call(SC.ipamdb_url, "ddi_ipam_remove", aDict)
- GL.sys_log_msg("IPAM remove - input {}".format(aDict.values()))
  db = GL.DB()
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
  ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
  db.commit()
  db.close()
- GL.sys_log_msg("IPAM remove - I:{}".format(str(ires)))
+ GL.sys_log_msg("IPAM remove - {} -> {}".format(aDict,ires))
  return ires
+
+#
+# find_free(ipam_sub_id, consecutive)
+#
+def find_free(aDict):
+ if SC.ipamdb_proxy == 'True':
+  return GL.rpc_call(SC.ipamdb_url, "ddi_ipam_find", aDict)
+ db = GL.DB()
+ db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
+ db.do("SELECT subnet, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id'))) 
+ sub = db.get_row()
+ db.do("SELECT ip FROM ipaddresses WHERE subnetId = {}".format(aDict.get('ipam_sub_id')))
+ iplist = db.get_all_dict('ip')
+ db.close()
+ start = None
+ ret = { 'subnet':GL.sys_int2ip(sub.get('subnet')) }
+ for ip in range(sub.get('subnet') + 1,sub.get('subnet') + 2**(32-sub.get('mask'))-1):
+  if not iplist.get(ip,False):
+   if start:
+    count = count - 1
+    if count == 1:
+     ret['start'] = GL.sys_int2ip(start)
+     ret['end'] = GL.sys_int2ip(start+int(aDict.get('consecutive'))-1)
+     break
+   else:
+    count = int(aDict.get('consecutive'))          
+    start = ip       
+  else:     
+   start = None           
+ return ret                            

@@ -73,7 +73,7 @@ def update_info(aDict):
  return "update_values:" + ", ".join(keys)
 
 #
-# new(ip, ipam_sub_id, a_dom_id, hostname)
+# new(ip, hostname, ipam_sub_id, a_dom_id, mac)
 #
 def new(aDict):
  ipint = GL.sys_ip2int(aDict.get('ip'))
@@ -88,7 +88,7 @@ def new(aDict):
   if xist == 0:
    res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ptr_dom))
    ptr_dom_id = db.get_row().get('id') if res > 0 else 'NULL'
-   mac = aDict.get('mac').replace(":","")
+   mac = aDict.get('mac','000000000000').replace(":","")
    if not (GL.sys_is_mac(mac)):
     mac = "000000000000"
    dbres = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,snmp,model,type,fqdn,rack_size) VALUES({},x'{}',{},{},{},'{}','unknown','unknown','unknown','unknown',1)".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_sub_id'),aDict.get('hostname')))
@@ -96,7 +96,7 @@ def new(aDict):
    ret = "Added ({})".format(dbres)
   else:
    xist = db.get_row()
-   ret = "Existing ({}.{} - {})".format(xist['hostname'],xist['a_dom_id'],xist['id']) 
+   ret = "Existing host:{0}({2}) domain:{}".format(xist['hostname'],xist['a_dom_id'],xist['id']) 
  db.close()
  return ret
 
@@ -173,12 +173,13 @@ def remove(aDict):
  return ret
 
 #
-# dump(columnlist_as_string)
+# dump(columns)
+# - columns is a string list
 #
 def dump_db(aDict):
  db = GL.DB()
  db.connect()
- cols = aDict.get('columnlist_as_string','*')
+ cols = aDict.get('columns','*')
  res = db.do("SELECT {} FROM devices".format(cols))
  db.close()
  if res > 0:
@@ -186,3 +187,30 @@ def dump_db(aDict):
  else:
   return []
 
+#
+# find_free(ipam_sub_id, consecutive)
+#
+def find_free(aDict):
+ db = GL.DB()
+ db.connect()
+ db.do("SELECT subnet, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id')))
+ sub = db.get_row()
+ db.do("SELECT ip FROM devices WHERE ipam_sub_id = {}".format(aDict.get('ipam_sub_id')))
+ iplist = db.get_all_dict('ip')
+ db.close()
+ start = None
+ ret = { 'subnet':GL.sys_int2ip(sub.get('subnet')) }
+ for ip in range(sub.get('subnet') + 1,sub.get('subnet') + 2**(32-sub.get('mask'))-1):
+  if not iplist.get(ip,False):
+   if start:
+    count = count - 1
+    if count == 1:
+     ret['start'] = GL.sys_int2ip(start)
+     ret['end'] = GL.sys_int2ip(start+int(aDict.get('consecutive'))-1)
+     break
+   else:
+    count = int(aDict.get('consecutive'))
+    start = ip
+  else:
+   start = None
+ return ret

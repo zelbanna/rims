@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "10.5GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import DB, sys_ip2int, sys_int2mac, sys_is_mac, sys_int2ip, rpc_call
+import sdcp.core.GenLib as GL
 
 ########################################## Device Operations ##########################################
 #
@@ -17,7 +17,7 @@ def view_devicelist(aWeb):
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  sort   = aWeb.get_value('sort','ip')
- db     = DB()
+ db     = GL.DB()
  db.connect()
  print "<DIV CLASS='z-table'>"
  print "<TABLE WIDTH=330><TR>"
@@ -59,7 +59,7 @@ def device_info(aWeb):
   d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
   opres = opres + " " + str(update_info(d))
 
- db  = DB()
+ db  = GL.DB()
  db.connect()
  res = db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name FROM devices LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
  if res > 0:
@@ -120,8 +120,8 @@ def device_info(aWeb):
  print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['a_id'])
  print "<TR><TD>DNS PTR ID:</TD><TD>{}</TD></TR>".format(device_data['ptr_id'])
  print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(device_data['ipam_id'])
- print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(sys_int2mac(device_data['mac']))
- print "<TR><TD>Gateway:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=devices_ipam_gw VALUE={}></TD></TR>".format(sys_int2ip(device_data['subnet'] + 1))
+ print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(GL.sys_int2mac(device_data['mac']))
+ print "<TR><TD>Gateway:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=devices_ipam_gw VALUE={}></TD></TR>".format(GL.sys_int2ip(device_data['subnet'] + 1))
  print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
  print "</TABLE></DIV>"
 
@@ -206,7 +206,7 @@ def device_info(aWeb):
 def conf_gen(aWeb):
  id = aWeb.get_value('id','0')
  gw = aWeb.get_value('devices_ipam_gw')
- db = DB()
+ db = GL.DB()
  db.connect()
  db.do("SELECT INET_NTOA(ip) as ipasc, hostname,domains.name as domain, subnets.subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_sub_id WHERE devices.id = '{}'".format(id))
  row = db.get_row()
@@ -216,7 +216,7 @@ def conf_gen(aWeb):
  from sdcp.devices.DevHandler import device_get_instance
  try:
   dev  = device_get_instance(row['ipasc'],type)
-  dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':sys_int2ip(int(row['subnet'])), 'mask':row['mask']})
+  dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':GL.sys_int2ip(int(row['subnet'])), 'mask':row['mask']})
  except Exception as err:
   print "No instance config specification for {} type".format(row.get('type','unknown'))
  print "</DIV>"
@@ -237,9 +237,6 @@ def op_function(aWeb):
 
 #
 # new device:
-# - hostname, domain, ip, mac 
-# -> do lookup unless unknown
-# -> convert to rest
 #
 def new(aWeb):
  ip       = aWeb.get_value('ip',"127.0.0.1")
@@ -252,7 +249,7 @@ def new(aWeb):
   ipam_sub = aWeb.get_value('ipam_sub_id')
   print new({ 'ip':ip, 'mac':mac, 'hostname':hostname, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub })
  else:
-  db = DB()
+  db = GL.DB()
   db.connect()
   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet");
   subnets = db.get_all_rows()
@@ -305,7 +302,7 @@ def dump_db(aWeb):
 #
 def discover(aWeb):
  op = aWeb.get_value('op')
- db = DB()
+ db = GL.DB()
  db.connect()
  if op:
   from rest_device import discover
@@ -347,7 +344,7 @@ def discover(aWeb):
 # clear db
 #
 def clear_db(aWeb):
- db = DB()
+ db = GL.DB()
  db.connect()
  db.do("TRUNCATE TABLE devices")
  db.close()
