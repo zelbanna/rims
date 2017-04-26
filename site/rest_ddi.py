@@ -82,7 +82,7 @@ def dns_lookup(aDict):
 def dns_update(aDict):
  if SC.dnsdb_proxy == 'True':
   return GL.rpc_call(SC.dnsdb_url, "ddi_dns_update", aDict)
- GL.sys_log_msg("DNS  update - input:{}".format(", ".join(aDict.values())))
+ GL.sys_log_msg("DNS  update - input:{}".format(aDict.values()))
  from time import strftime
  serial  = strftime("%Y%m%d01")
  ptr     = GL.sys_ip2ptr(aDict['ip'])
@@ -119,6 +119,7 @@ def dns_update(aDict):
 def dns_remove(aDict):
  if SC.dnsdb_proxy == 'True':
   return GL.rpc_call(SC.dnsdb_url, "ddi_dns_remove", aDict)
+ GL.sys_log_msg("DNS  remove - input:{}".format(aDict.values()))
  db = GL.DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
  ares = 0
@@ -171,7 +172,7 @@ def ipam_lookup(aDict):
 def ipam_update(aDict):
  if SC.ipamdb_proxy == 'True':
   return GL.rpc_call(SC.ipamdb_url, "ddi_ipam_update", aDict)
- GL.sys_log_msg("IPAM update - input:{}".format(", ".join(aDict.values())))
+ GL.sys_log_msg("IPAM update - input:{}".format(aDict.values()))
  db = GL.DB()
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
  res = {}
@@ -199,6 +200,7 @@ def ipam_update(aDict):
 def ipam_remove(aDict):
  if SC.ipamdb_proxy == 'True':
   return GL.rpc_call(SC.ipamdb_url, "ddi_ipam_remove", aDict)
+ GL.sys_log_msg("IPAM remove - input {}".format(aDict.values()))
  db = GL.DB()
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
  ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
