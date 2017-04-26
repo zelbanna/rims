@@ -342,7 +342,7 @@ def remove(aWeb):
  ipam_id = aWeb.get_value('ipam_id','0')
  print "<DIV CLASS='z-table'>"
  res = remove({ 'id':id, 'a_id':a_id, 'ptr_id':ptr_id, 'ipam_id':ipam_id })
- print "Unit {0} deleted ({1})".format(device_id,str(res))
+ print "Unit {0} deleted ({1})".format(id,str(res))
  print "</DIV>"
 
 #
