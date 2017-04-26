@@ -54,20 +54,21 @@ def new(aDict):
 # Remove
 #
 def remove(aDict):
- db = DB()
+ db = GL.DB()
  db.connect()
- dev = db.do("DELETE FROM devices WHERE id = '{0}'".format(device_id))
+ print aDict
+ dev = db.do("DELETE FROM devices WHERE id = '{0}'".format(aDict['id']))
  res = { 'device': dev }
  db.commit()
  db.close()
  if (a_id != '0') or (ptr_id != '0'):
   from rest_ddi import dns_remove
-  dres = dns_remove( { 'a_id':a_id, 'ptr_id':ptr_id })
+  dres = dns_remove( { 'a_id':aDict['a_id'], 'ptr_id':aDict['ptr_id'] })
   res['a'] = dres.get('a')
   res['ptr'] = dres.get('ptr')
  if not ipam_id == '0':
   from rest_ddi import ipam_remove
-  res['ipam'] = ipam_remove({ 'ipam_id':ipam_id })
+  res['ipam'] = ipam_remove({ 'ipam_id':aDict['ipam_id'] })
  return res
 
 #

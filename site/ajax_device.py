@@ -67,7 +67,7 @@ def device_info(aWeb):
    from rest_ddi import dns_lookup, ipam_lookup
    ipam_sub_id = aWeb.get_value('devices_ipam_sub_id')
    a_dom_id    = aWeb.get_value('devices_a_dom_id')
-   opres = opres + " and updating DDI:"
+   opres = opres + " and updating internal DDI:"
    retvals    = dns_lookup({ 'ip':ip, 'name':name, 'a_dom_id':a_dom_id })
    a_id   = retvals.get('a_id','0')
    ptr_id = retvals.get('ptr_id','0')
@@ -119,16 +119,12 @@ def device_info(aWeb):
  ip   = device_data['ipasc']
  name = device_data['hostname']
 
- if op == 'updateddi' and not device_data['hostname'] == 'unknown':
+ if op == 'updateddi' and not name == 'unknown':
   from rest_ddi import dns_update, ipam_update
   if device_data['ipam_id'] == '0':
    opres = opres + " (please rerun lookup for proper sync)"
-  pargs = { 'ip':ip, 'name':device_data['hostname'], 'a_dom_id': device_data['a_dom_id'], 'a_id':device_data['a_id'], 'ptr_id':device_data['ptr_id'] }
-  dns_update(pargs)
-  pargs['ipam_id'] = device_data['ipam_id']
-  pargs['ipam_sub_id'] = device_data['ipam_sub_id']
-  del pargs['a_id']
-  ipam_update(pargs)
+  dns_update( { 'ip':ip, 'name':name, 'a_dom_id': str(device_data['a_dom_id']), 'a_id':str(device_data['a_id']), 'ptr_id':str(device_data['ptr_id']) })
+  ipam_update({ 'ip':ip, 'fqdn':name+"."+device_data['a_name'], 'a_dom_id': str(device_data['a_dom_id']), 'ipam_id':str(device_data['ipam_id']), 'ipam_sub_id':str(device_data['ipam_sub_id']),'ptr_id':str(device_data['ptr_id']) })
 
  ########################## Data Tables ######################
  
