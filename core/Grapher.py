@@ -129,7 +129,7 @@ class Grapher(object):
    chmod(self._graphplug, 0o777)
    db = DB()
    db.connect()
-   db.do("SELECT type,hostname,domain, INET_NTOA(ip) as ip FROM devices")
+   db.do("SELECT type, hostname, domains.name AS domain, INET_NTOA(ip) as ip FROM devices INNER JOIN domains ON devices.a_dom_id = domains.id")
    rows = db.get_all_rows()
    db.close()
    for item in rows:
