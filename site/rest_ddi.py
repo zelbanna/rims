@@ -209,9 +209,9 @@ def ipam_remove(aDict):
  return ires
 
 #
-# find_free(ipam_sub_id, consecutive)
+# ipam_find_free(ipam_sub_id, consecutive)
 #
-def find_free(aDict):
+def ipam_find_free(aDict):
  if SC.ipamdb_proxy == 'True':
   return GL.rpc_call(SC.ipamdb_url, "ddi_ipam_find", aDict)
  db = GL.DB()
