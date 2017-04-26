@@ -52,12 +52,12 @@ def device_info(aWeb):
  ###################### Data operations ###################
  if   op == 'lookup':
   from rest_device import lookup_info
-  opres = opres + " " + lookup_info({'id':id})
+  opres = opres + " " + str(lookup_info({'id':id}))
 
  elif op == 'update':
   from rest_device import update_info
   d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
-  opres = opres + " " + update_info(d)
+  opres = opres + " " + str(update_info(d))
 
  db  = DB()
  db.connect()
