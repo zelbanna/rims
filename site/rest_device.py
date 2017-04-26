@@ -23,7 +23,7 @@ def dump_db(aDict):
   return []
 
 #
-# New
+# new(ip, ipam_sub_id, a_dom_id, hostname)
 #
 def new(aDict):
  ipint = GL.sys_ip2int(aDict.get('ip'))
@@ -51,24 +51,26 @@ def new(aDict):
  return ret
 
 #
-# Remove
+# remove(id)
 #
 def remove(aDict):
  db = GL.DB()
  db.connect()
- dev = db.do("DELETE FROM devices WHERE id = '{0}'".format(aDict['id']))
- res = { 'device': dev }
+ res = db.do("SELECT a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
+ ddi = db.get_row()
+ res = db.do("DELETE FROM devices WHERE id = '{0}'".format(aDict['id']))
+ ret = { 'device': dev }
  db.commit()
  db.close()
- if (aDict['a_id'] != '0') or (aDict['ptr_id'] != '0'):
+ if (ddi['a_id'] != '0') or (ddi['ptr_id'] != '0'):
   from rest_ddi import dns_remove
-  dres = dns_remove( { 'a_id':aDict['a_id'], 'ptr_id':aDict['ptr_id'] })
-  res['a'] = dres.get('a')
-  res['ptr'] = dres.get('ptr')
- if not aDict['ipam_id'] == '0':
+  dres = dns_remove( { 'a_id':ddi['a_id'], 'ptr_id':ddi['ptr_id'] })
+  ret['a'] = dres.get('a')
+  ret['ptr'] = dres.get('ptr')
+ if not ddi['ipam_id'] == '0':
   from rest_ddi import ipam_remove
-  res['ipam'] = ipam_remove({ 'ipam_id':aDict['ipam_id'] })
- return res
+  ret['ipam'] = ipam_remove({ 'ipam_id':ddi['ipam_id'] })
+ return ret
 
 #
 #
