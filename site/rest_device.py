@@ -19,7 +19,7 @@ def lookup_info(aDict):
  db  = GL.DB()
  db.connect()
  res = db.do("SELECT INET_NTOA(ip) as ipasc, hostname, ipam_sub_id, a_dom_id, ptr_dom_id FROM devices WHERE id = {}".format(id))
- ret = ""
+ ret = {}
  dev = db.get_row()
  name = dev.get('hostname')
  ip   = dev.get('ipasc')
@@ -28,20 +28,19 @@ def lookup_info(aDict):
   if entry['hostname'] != 'unknown':
    name = entry['hostname']
   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(name,entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
-  ret = "1) updating base info"
+  ret['base'] ='True'
  
  if not name == 'unknown':
   from rest_ddi import dns_lookup, ipam_lookup
   vals   = dns_lookup({ 'ip':ip, 'name':name, 'a_dom_id':dev.get('a_dom_id') })
   a_id   = vals.get('a_id','0')
   ptr_id = vals.get('ptr_id','0')
-  ret    = ret + " 2) updating internal DDI info: {} ".format(str(vals))
+  ret['dns'] = str(vals)
   vals   = ipam_lookup({'ip':ip, 'ipam_sub_id':dev.get('ipam_sub_id') })
   ipam_id = vals.get('ipam_id','0')
   iptr_id = vals.get('ptr_id','0')
-  ret    = ret + "{} ".format(str(vals))
-  if iptr_id != '0' and iptr_id != ptr_id:
-   ret = ret + " (dns/ipam out-of-sync)"
+  ret['ipam'] = str(vals)
+  ret['out-of-sync'] = (iptr_id != '0' and iptr_id != ptr_id)
   db.do("UPDATE devices SET ipam_id = {}, a_id = '{}', ptr_id = '{}' WHERE id = '{}'".format(ipam_id, a_id,ptr_id,id))
  db.commit()
  db.close()
