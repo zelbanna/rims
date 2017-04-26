@@ -109,6 +109,15 @@ class Web(object):
  def get_keys(self):
   return self._form.keys()
 
+ def get_args2dict_except(self,aexceptlist = []):
+  keys = self._form.keys()
+  for exc in aexceptlist:
+   try:
+    keys.remove(exc)
+   except:
+    pass
+  return dict(map(lambda x: (x,self._form.getfirst(x,None)), keys))
+
  def get_value(self,aid,adefault = None):
   return self._form.getfirst(aid,adefault)
 

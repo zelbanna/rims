@@ -10,10 +10,10 @@ __status__ = "Production"
 import sdcp.core.GenLib as GL
 
 #
-# lookup(id)
+# lookup_info(id)
 #
 #
-def lookup(aDict):
+def lookup_info(aDict):
  from sdcp.devices.DevHandler import device_detect
  id  = aDict.get('id')
  db  = GL.DB()
@@ -46,6 +46,32 @@ def lookup(aDict):
  db.commit()
  db.close()
  return ret
+
+#
+# update_info(id,**key:value pairs)
+#
+def update_info(aDict):
+ id   = aDict.pop('id',None)
+ keys = aDict.keys()
+ if keys:
+  db = GL.DB()
+  db.connect()
+  for fkey in keys:
+   # fkey = table _ key
+   (table, void, key) = fkey.partition('_')
+   data = aDict.get(fkey)
+   if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
+    if data == 'NULL':
+     db.do("UPDATE devices SET {0}=NULL WHERE id = '{1}'".format(key,id))
+    else:
+     db.do("UPDATE devices SET {0}='{1}' WHERE id = '{2}'".format(key,data,id))
+   else:
+    pem = key[:4]
+    [pemid,pemslot] = data.split('.')
+    db.do("UPDATE devices SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE id = '{3}'".format(pem,pemid,pemslot,id))
+  db.commit()
+  db.close()
+ return "update_values:" + ", ".join(keys)
 
 #
 # new(ip, ipam_sub_id, a_dom_id, hostname)

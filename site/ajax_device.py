@@ -34,7 +34,7 @@ def view_devicelist(aWeb):
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new'><IMG SRC='images/btn-add.png'></A>"
  rows = db.get_all_rows()
  for row in rows:
-  print "<TR><TD><A CLASS=z-op TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&devices_id={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
+  print "<TR><TD><A CLASS=z-op TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&id={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</TABLE></DIV>"
  db.close()
 
@@ -43,79 +43,32 @@ def view_devicelist(aWeb):
 #
 
 def device_info(aWeb):
- from sdcp.devices.DevHandler import device_detect, device_types, device_get_widgets
- id     = aWeb.get_value('devices_id')
- op     = aWeb.get_value('op',"")
- opres  = str(op).upper()
- conip  = None
- db     = DB()
- db.connect()
+ from sdcp.devices.DevHandler import device_types, device_get_widgets
+ id    = aWeb.get_value('id')
+ op    = aWeb.get_value('op',"")
+ opres = str(op).upper()
+ conip = None
 
  ###################### Data operations ###################
  if   op == 'lookup':
-  ip     = aWeb.get_value('devices_ip')
-  name   = aWeb.get_value('devices_hostname','unknown')
-  entry  = device_detect(ip)
-  if entry:
-   if entry['hostname'] == 'unknown':
-    entry['hostname'] = name
-   else:
-    name = entry['hostname']
-   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(entry['hostname'],entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
-
-  if not name == 'unknown':
-   from rest_ddi import dns_lookup, ipam_lookup
-   ipam_sub_id = aWeb.get_value('devices_ipam_sub_id')
-   a_dom_id    = aWeb.get_value('devices_a_dom_id')
-   opres = opres + " and updating internal DDI:"
-   retvals    = dns_lookup({ 'ip':ip, 'name':name, 'a_dom_id':a_dom_id })
-   a_id   = retvals.get('a_id','0')
-   ptr_id = retvals.get('ptr_id','0')
-   opres = opres + "{}".format(str(retvals))
-
-   retvals    = ipam_lookup({'ip':ip, 'ipam_sub_id':ipam_sub_id})
-   ipam_id    = retvals.get('ipam_id','0')
-   tmp_ptr_id = retvals.get('ptr_id','0')
-   opres = opres + "{}".format(str(retvals))
-   if tmp_ptr_id != '0' and tmp_ptr_id != ptr_id:
-    opres = "<B>"+opres+"</B>"
-
-   db.do("UPDATE devices SET ipam_id = {}, a_id = '{}', ptr_id = '{}' WHERE id = '{}'".format(ipam_id, a_id,ptr_id,id))
-  db.commit()
+  from rest_device import lookup_info
+  opres = opres + " " + lookup_info({'id':id})
 
  elif op == 'update':
-  keys = aWeb.get_keys()
-  keys.remove('call')
-  keys.remove('devices_id')
-  keys.remove('devices_ip')
-  keys.remove('devices_ipam_sub_id')
-  keys.remove('devices_a_dom_id')
-  keys.remove('op')
-  
-  if 'devices_ipam_gw'   in keys: keys.remove('devices_ipam_gw')
-  if keys:
-   for fkey in keys:
-    # fkey = table_key
-    (table, void, key) = fkey.partition('_')
-    data = aWeb.get_value(fkey)
-    if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
-     if data == 'NULL':
-      db.do("UPDATE devices SET {0}=NULL WHERE id = '{1}'".format(key,id))
-     else:
-      db.do("UPDATE devices SET {0}='{1}' WHERE id = '{2}'".format(key,data,id))
-    else:
-     pem = key[:4]
-     [pemid,pemslot] = data.split('.')
-     db.do("UPDATE devices SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE id = '{3}'".format(pem,pemid,pemslot,id))
-   db.commit()
-  opres = opres + " values:" + " ".join(keys)
+  from rest_device import update_info
+  d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
+  opres = opres + " " + update_info(d)
 
- db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name FROM devices LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
- device_data = db.get_row()
- if not device_data:
+ db  = DB()
+ db.connect()
+ res = db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name FROM devices LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
+ if res > 0:
+  device_data = db.get_row()
+ else:
   print "Stale info! Reload device list"
   db.close()
   return
+
  ip   = device_data['ipasc']
  name = device_data['hostname']
 
@@ -130,10 +83,7 @@ def device_info(aWeb):
  
  print "<DIV ID=div_devinfo CLASS='z-table' style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
  print "<FORM ID=info_form>"
- print "<INPUT TYPE=HIDDEN NAME=devices_id VALUE={}>".format(id)
- print "<INPUT TYPE=HIDDEN NAME=devices_ipam_sub_id VALUE={}>".format(device_data['ipam_sub_id'])
- print "<INPUT TYPE=HIDDEN NAME=devices_a_dom_id VALUE={}>".format(device_data['a_dom_id'])
- print "<INPUT TYPE=HIDDEN NAME=devices_ip VALUE={}>".format(ip)
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
  print "<TR><TD>Name:</TD><TD><INPUT NAME=devices_hostname CLASS='z-input' TYPE=TEXT VALUE='{}'></TD></TR>".format(device_data['hostname'])
@@ -213,8 +163,8 @@ def device_info(aWeb):
  print "</FORM>"
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&devices_id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&devices_id={}      OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&id={}      OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup    FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
@@ -254,7 +204,7 @@ def device_info(aWeb):
 #
 
 def conf_gen(aWeb):
- id = aWeb.get_value('devices_id','0')
+ id = aWeb.get_value('id','0')
  gw = aWeb.get_value('devices_ipam_gw')
  db = DB()
  db.connect()
@@ -336,7 +286,7 @@ def new(aWeb):
 #
 def remove(aWeb):
  from rest_device import remove
- id      = aWeb.get_value('devices_id')
+ id      = aWeb.get_value('id')
  print "<DIV CLASS='z-table'>"
  res = remove({ 'id':id })
  print "Unit {0} deleted ({1})".format(id,str(res))
