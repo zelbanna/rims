@@ -218,13 +218,14 @@ def ipam_find(aDict):
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
  db.do("SELECT subnet, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id'))) 
  sub = db.get_row()
- db.do("SELECT ip FROM ipaddresses WHERE subnetId = {}".format(aDict.get('ipam_sub_id')))
- iplist = db.get_all_dict('ip')
+ db.do("SELECT ip_addr FROM ipaddresses WHERE subnetId = {}".format(aDict.get('ipam_sub_id')))
  db.close()
- start = None
- ret = { 'subnet':GL.sys_int2ip(sub.get('subnet')) }
- for ip in range(sub.get('subnet') + 1,sub.get('subnet') + 2**(32-sub.get('mask'))-1):
-  if not iplist.get(ip,False):
+ iplist = db.get_all_dict('ip_addr')
+ subnet = int(sub.get('subnet'))
+ start  = None
+ ret    = { 'subnet':GL.sys_int2ip(subnet) }
+ for ip in range(subnet + 1, subnet + 2**(32-int(sub.get('mask')))-1):
+  if not iplist.get(str(ip),False):
    if start:
     count = count - 1
     if count == 1:
