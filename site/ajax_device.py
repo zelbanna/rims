@@ -295,7 +295,7 @@ def remove(aWeb):
 def dump_db(aWeb):
  from json import dumps
  from rest_device import dump_db
- print "<PRE>{}</PRE>".format(dumps(dump_db(None), indent=4, sort_keys=True))
+ print "<PRE>{}</PRE>".format(dumps(dump_db({}), indent=4, sort_keys=True))
 
 #
 # find devices operations
