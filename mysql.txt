@@ -68,20 +68,38 @@ DROP TABLE IF EXISTS `devices`;
 CREATE TABLE `devices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ip` int(10) unsigned NOT NULL,
+  `hostname` varchar(20) DEFAULT NULL,
   `a_id` int(10) unsigned DEFAULT '0',
   `a_dom_id` int(10) unsigned DEFAULT NULL,
   `ptr_id` int(10) unsigned DEFAULT '0',
   `ptr_dom_id` int(10) unsigned DEFAULT NULL,
-  `hostname` varchar(20) DEFAULT NULL,
-  `fqdn` varchar(20) DEFAULT NULL,
-  `graphed` varchar(3) DEFAULT 'no',
   `ipam_id` int(10) unsigned DEFAULT '0',
   `ipam_sub_id` int(10) unsigned DEFAULT NULL,
+  `fqdn` varchar(20) DEFAULT NULL,
+  `graphed` varchar(3) DEFAULT 'no',
   `model` varchar(20) DEFAULT NULL,
   `type` varchar(20) DEFAULT NULL,
   `snmp` varchar(20) DEFAULT NULL,
   `mac` bigint(20) unsigned DEFAULT '0',
+  `vm` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `rack_id` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ip` (`ip`),
+  KEY `rack_id` (`rack_id`),
+  KEY `a_dom_id` (`a_dom_id`),
+  KEY `ptr_dom_id` (`ptr_dom_id`),
+  KEY `ipam_sub_id` (`ipam_sub_id`),
+  CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`a_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`ptr_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`ipam_sub_id`) REFERENCES `subnets` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `devices_ibfk_4` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `rackinfo`;
+CREATE TABLE `rackinfo` (
+  `device_id` int(10) unsigned NOT NULL,
+  `backup_ip` int(10) unsigned DEFAULT NULL,  
   `rack_unit` tinyint(3) DEFAULT '0',
   `rack_size` tinyint(3) DEFAULT '1',
   `console_id` int(10) unsigned DEFAULT NULL,
@@ -92,20 +110,13 @@ CREATE TABLE `devices` (
   `pem1_pdu_id` int(10) unsigned DEFAULT NULL,
   `pem1_pdu_unit` tinyint(3) unsigned DEFAULT '0',
   `pem1_pdu_slot` tinyint(3) unsigned DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ip` (`ip`),
-  KEY `a_dom_id` (`a_dom_id`),
-  KEY `ptr_dom_id` (`ptr_dom_id`),
-  KEY `ipam_sub_id` (`ipam_sub_id`),
-  KEY `rack_id` (`rack_id`),
+  UNIQUE KEY `device_id` (`device_id`),
   KEY `console_id` (`console_id`),
   KEY `pem0_pdu_id` (`pem0_pdu_id`),
   KEY `pem1_pdu_id` (`pem1_pdu_id`),
-  CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`a_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`ptr_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`ipam_sub_id`) REFERENCES `subnets` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `devices_ibfk_4` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `devices_ibfk_5` FOREIGN KEY (`console_id`) REFERENCES `consoles` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `devices_ibfk_6` FOREIGN KEY (`pem0_pdu_id`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `devices_ibfk_7` FOREIGN KEY (`pem1_pdu_id`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+  CONSTRAINT `rackinfo_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `rackinfo_ibfk_2` FOREIGN KEY (`console_id`) REFERENCES `consoles` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `rackinfo_ibfk_3` FOREIGN KEY (`pem0_pdu_id`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `rackinfo_ibfk_4` FOREIGN KEY (`pem1_pdu_id`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+

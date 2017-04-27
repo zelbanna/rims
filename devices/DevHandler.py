@@ -74,7 +74,7 @@ def device_detect(aIP, aDict = {}, aSema = None):
  except:
   pass
    
- rack_size,fqdn,hostname,model,type = 1,'unknown','unknown','unknown','unknown'
+ fqdn,hostname,model,type = 'unknown','unknown','unknown','unknown'
  snmp = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
  try:   
   fqdn     = gethostbyaddr(aIP)[0]
@@ -110,7 +110,7 @@ def device_detect(aIP, aDict = {}, aSema = None):
    type  = "other"
    model = " ".join(infolist[0:4])
 
- entry = { 'hostname':hostname, 'snmp':snmp, 'model':model, 'type':type, 'fqdn':fqdn, 'rack_size':rack_size }
+ entry = { 'hostname':hostname, 'snmp':snmp, 'model':model, 'type':type, 'fqdn':fqdn  }
  aDict[aIP] = entry
  if aSema:
   aSema.release()

@@ -61,13 +61,19 @@ def device_info(aWeb):
 
  db  = GL.DB()
  db.connect()
- res = db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name FROM devices LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
- if res > 0:
+ xist = db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name FROM devices LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
+ if xist > 0:
   device_data = db.get_row()
  else:
   print "Stale info! Reload device list"
   db.close()
   return
+ db.do("SELECT * FROM racks")
+ racks = db.get_all_rows()
+ racks.append({ 'id':'NULL', 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
+ if device_data['rack_id']:
+  rack_xist = db.do("SELECT * FROM rackinfo WHERE device_id = {}".format(id))
+  rack_info = db.get_row()
 
  ip   = device_data['ipasc']
  name = device_data['hostname']
@@ -84,6 +90,7 @@ def device_info(aWeb):
  print "<DIV ID=div_devinfo CLASS='z-table' style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
+ print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(1 if device_data['rack_id'] else 0)
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
  print "<TR><TD>Name:</TD><TD><INPUT NAME=devices_hostname CLASS='z-input' TYPE=TEXT VALUE='{}'></TD></TR>".format(device_data['hostname'])
@@ -108,12 +115,9 @@ def device_info(aWeb):
 
  print "<!-- Additional info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Additional Info</TH></TR>"
- print "<TR><TD>Rack:</TD><TD><SELECT NAME=rackinfo_rack_id CLASS='z-select'>"
- db.do("SELECT * FROM racks")
- racks = db.get_all_rows()
- racks.append({ 'id':'NULL', 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
+ print "<TR><TD>Rack:</TD><TD><SELECT NAME=devices_rack_id CLASS='z-select'>"
  for rack in racks:
-  extra = " selected" if (device_data['rack_id'] == rack['id']) or (not device_data['rack_id'] and rack['id'] == 'NULL') else ""
+  extra = " selected" if ((not device_data['rack_id'] and rack['id'] == 'NULL') or (device_data['rack_id'] and device_data['rack_id'] == rack['id'])) else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
  print "</SELECT></TD></TR>"
  print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['a_name'] != device_data['fqdn']) else "", device_data['fqdn'])
@@ -128,20 +132,20 @@ def device_info(aWeb):
  print "<!-- Rack Info if such exists -->"
  if device_data['rack_id'] and not device_data['type'] == 'pdu':
   print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
-  print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rackinfo_rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_size'])
-  print "<TR><TD>Rack Unit:</TD><TD TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['rack_unit'])
+  print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rackinfo_rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(rack_info['rack_size'])
+  print "<TR><TD>Rack Unit:</TD><TD TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(rack_info['rack_unit'])
   if not device_data['type'] == 'console' and db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") > 0:
    consoles = db.get_all_rows()
    consoles.append({ 'id':'NULL', 'name':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1' })
    print "<TR><TD>TS:</TD><TD><SELECT NAME=rackinfo_console_id CLASS='z-select'>"
    for console in consoles:
     extra = ""
-    if (device_data['console_id'] == console['id']) or (not device_data['console_id'] and console['id'] == 'NULL'):
+    if (rack_info['console_id'] == console['id']) or (not rack_info['console_id'] and console['id'] == 'NULL'):
      extra = " selected='selected'"
      conip = console['ipasc']
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
    print "</SELECT></TD></TR>"
-   print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=rackinfo_console_port CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(device_data['console_port'])
+   print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=rackinfo_console_port CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(rack_info['console_port'])
   else:
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
@@ -152,10 +156,10 @@ def device_info(aWeb):
     print "<TR><TD>{0} PDU:</TD><TD><SELECT NAME=rackinfo_{1}_pdu_slot_id CLASS='z-select'>".format(pem.upper(),pem)
     for pdu in pdus:
      for slotid in range(0,pdu['slots'] + 1):
-      extra = " selected" if ((device_data[pem+"_pdu_id"] == pdu['id']) and (device_data[pem+"_pdu_slot"] == pdu[str(slotid)+"_slot_id"])) or (not device_data[pem+"_pdu_id"] and  pdu['id'] == 'NULL')else ""
+      extra = " selected" if ((rack_info[pem+"_pdu_id"] == pdu['id']) and (rack_info[pem+"_pdu_slot"] == pdu[str(slotid)+"_slot_id"])) or (not rack_info[pem+"_pdu_id"] and  pdu['id'] == 'NULL')else ""
       print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(str(pdu['id'])+"."+str(pdu[str(slotid)+"_slot_id"]), extra, pdu['name']+":"+pdu[str(slotid)+"_slot_name"])
     print "</SELECT></TD></TR>"
-    print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME=rackinfo_{1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,device_data[pem + "_pdu_unit"])
+    print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME=rackinfo_{1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,rack_info[pem + "_pdu_unit"])
   else:
    for index in range(0,4):
     print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
@@ -169,10 +173,10 @@ def device_info(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=post TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
- if (device_data['pem0_pdu_id'] != 0 and device_data['pem0_pdu_unit'] != 0) or (device_data['pem1_pdu_id'] != 0 and device_data['pem1_pdu_unit'] != 0):
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post TITLE='Update PDU with device info'><IMG SRC='images/btn-pdu-save.png' ALT='P'></A>".format(device_data['pem0_pdu_unit'],device_data['pem1_pdu_unit'],name)
- if conip and not conip == '127.0.0.1' and device_data['console_port'] and device_data['console_port'] > 0:
-  print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+device_data['console_port'])
+ if device_data['rack_id'] and ((rack_info['pem0_pdu_id'] != 0 and rack_info['pem0_pdu_unit'] != 0) or (rack_info['pem1_pdu_id'] != 0 and rack_info['pem1_pdu_unit'] != 0)):
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post TITLE='Update PDU with device info'><IMG SRC='images/btn-pdu-save.png' ALT='P'></A>".format(rack_info['pem0_pdu_unit'],rack_info['pem1_pdu_unit'],name)
+ if device_data['rack_id'] and (conip and not conip == '127.0.0.1' and rack_info['console_port'] and rack_info['console_port'] > 0):
+  print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+rack_info['console_port'])
  if (device_data['type'] == 'pdu' or device_data['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip'])) == 0:
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}' OP=load style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
  print "<SPAN ID=update_results style='max-width:400px; float:right; font-size:9px;'>{}</SPAN>".format(opres)
@@ -223,6 +227,7 @@ def conf_gen(aWeb):
 
 #
 #
+#
 def op_function(aWeb):
  from sdcp.devices.DevHandler import device_get_instance
  try:
@@ -232,6 +237,41 @@ def op_function(aWeb):
  except Exception as err:
   print "<B>Error in devdata: {}</B>".format(str(err))
 
+#
+#
+#
+def rack_info(aWeb):
+ db = GL.DB()
+ db.connect()
+ res  = db.do("SELECT rackinfo.*, devices.rack_id, devices.ip, INET_NTOA(devices.ip) as ipasc FROM rackinfo JOIN devices ON devices.id = rackinfo.device_id")
+ devs = db.get_all_rows()
+ if res == 0:
+  db.close()
+  return
+ order = devs[0].keys()
+ order.sort()
+ db.do("SELECT id, name FROM pdus")
+ pdus  = db.get_all_dict('id')
+ db.do("SELECT id, name FROM consoles")
+ cons  = db.get_all_dict('id')
+ db.do("SELECT id, name FROM racks")
+ racks = db.get_all_dict('id')
+ row   = "<TR style='border: 1px solid grey'><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>" 
+ print "<DIV CLASS='z-table' style='overflow-x:auto;'><TABLE>"
+ print "<TR style='border: 1px solid grey'><TH>Console</TH><TH>Port</TH><TH>Device ID</TH><TH>IP</TH><TH>PEM0 PDU</TH><TH>slot</TH><TH>unit</TH><TH>PEM1 PDU</TH><TH>slot</TH><TH>unit</TH><TH>Rack</TH><TH>size</TH><TH>unit</TH></TR>"
+ for dev in devs:
+  if not dev['backup_ip']:
+   db.do("UPDATE rackinfo SET backup_ip = {} WHERE device_id = {}".format(dev['ip'],dev['device_id']))
+  print "<TR style='border: 1px solid grey'>"
+  print "<TD>{}</TD><TD>{}</TD>".format(cons.get(dev['console_id'],{}).get('name',None),dev['console_port'])
+  print "<TD>{}</TD><TD>{}</TD>".format(dev['device_id'],dev['ipasc'])
+  print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format( pdus.get(dev['pem0_pdu_id'],{}).get('name',None),dev['pem0_pdu_slot'],dev['pem0_pdu_unit'])
+  print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format( pdus.get(dev['pem1_pdu_id'],{}).get('name',None),dev['pem1_pdu_slot'],dev['pem1_pdu_unit'])
+  print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format(racks.get(dev['rack_id'],{}).get('name',None),dev['rack_size'],dev['rack_unit'])
+  print "</TR>"
+ print "</TABLE></DIV>"
+ db.commit()
+ db.close()
 
 ##################################### Rest API #########################################
 

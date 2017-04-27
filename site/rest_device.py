@@ -50,26 +50,34 @@ def lookup_info(aDict):
 # update_info(id,**key:value pairs)
 #
 def update_info(aDict):
- id   = aDict.pop('id',None)
- keys = aDict.keys()
- if keys:
-  db = GL.DB()
-  db.connect()
-  for fkey in keys:
-   # fkey = table _ key
-   (table, void, key) = fkey.partition('_')
-   data = aDict.get(fkey)
-   if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
-    if data == 'NULL':
-     db.do("UPDATE devices SET {0}=NULL WHERE id = '{1}'".format(key,id))
-    else:
-     db.do("UPDATE devices SET {0}='{1}' WHERE id = '{2}'".format(key,data,id))
-   else:
-    pem = key[:4]
-    [pemid,pemslot] = data.split('.')
-    db.do("UPDATE devices SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE id = '{3}'".format(pem,pemid,pemslot,id))
+ id     = aDict.pop('id',None)
+ racked= aDict.pop('racked',None)
+ keys   = aDict.keys()
+ tbl_id = { 'devices':'id', 'rackinfo':'device_id' }
+ db = GL.DB()
+ db.connect()
+ if   racked == '0' and aDict.get('devices_rack_id') != 'NULL':
+  db.do("INSERT INTO rackinfo SET device_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(id))
   db.commit()
-  db.close()
+ elif racked == '1' and aDict.get('devices_rack_id') == 'NULL':
+  db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
+  db.commit()
+
+ for fkey in keys:
+  # fkey = table _ key
+  (table, void, key) = fkey.partition('_')
+  data = aDict.get(fkey)
+  if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
+   if data == 'NULL':
+    db.do("UPDATE {0} SET {1}=NULL WHERE {2} = '{3}'".format(table,key,tbl_id[table],id))
+   else:
+    db.do("UPDATE {0} SET {1}='{4}' WHERE {2} = '{3}'".format(table,key,tbl_id[table],id,data))
+  else:
+   pem = key[:4]
+   [pemid,pemslot] = data.split('.')
+   db.do("UPDATE rackinfo SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE device_id = '{3}'".format(pem,pemid,pemslot,id))
+ db.commit()
+ db.close()
  return "update_values:" + ", ".join(keys)
 
 #
@@ -91,7 +99,7 @@ def new(aDict):
    mac = aDict.get('mac','000000000000').replace(":","")
    if not (GL.sys_is_mac(mac)):
     mac = "000000000000"
-   dbres = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,snmp,model,type,fqdn,rack_size) VALUES({},x'{}',{},{},{},'{}','unknown','unknown','unknown','unknown',1)".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_sub_id'),aDict.get('hostname')))
+   dbres = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,snmp,model,type,fqdn) VALUES({},x'{}',{},{},{},'{}','unknown','unknown','unknown','unknown')".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_sub_id'),aDict.get('hostname')))
    db.commit()
    ret = "Added ({})".format(dbres)
   else:
@@ -136,12 +144,12 @@ def discover(aDict):
   for i in range(10):
    sema.acquire()
   # We can do insert as either we clear or we skip existing :-)
-  sql = "INSERT INTO devices (ip, a_dom_id, ptr_dom_id, ipam_sub_id, hostname, snmp, model, type, fqdn, rack_size) VALUES ({0},{1},{2},{3},'{4}','{5}','{6}','{7}','{8}',{9})"
+  sql = "INSERT INTO devices (ip, a_dom_id, ptr_dom_id, ipam_sub_id, hostname, snmp, model, type, fqdn) VALUES ({0},{1},{2},{3},'{4}','{5}','{6}','{7}','{8}')"
   res = db.do("SELECT id,name FROM domains WHERE name LIKE '%arpa%'")
   ptr_doms = db.get_all_dict('name')
   for ip,entry in db_new.iteritems():
    ptr_dom_id = ptr_doms.get(GL.sys_ip2arpa(ip),{ 'id':'NULL' })['id']
-   db.do(sql.format(GL.sys_ip2int(ip), aDict.get('a_dom_id'), ptr_dom_id, aDict.get('ipam_sub_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn'],entry['rack_size']))
+   db.do(sql.format(GL.sys_ip2int(ip), aDict.get('a_dom_id'), ptr_dom_id, aDict.get('ipam_sub_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn']))
   else:
    db.commit()
  except Exception as err:

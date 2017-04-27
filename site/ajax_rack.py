@@ -39,7 +39,7 @@ def info(aWeb):
  db.connect()
  db.do("SELECT name, size from racks where id = {}".format(rack))
  rackinfo = db.get_row() 
- db.do("SELECT id, hostname, rack_unit, rack_size from devices where rack_id = {}".format(rack))
+ db.do("SELECT devices.id, hostname, rackinfo.rack_unit, rackinfo.rack_size from devices LEFT JOIN rackinfo ON devices.id = rackinfo.device_id WHERE rack_id = {}".format(rack))
  rackunits = db.get_all_dict('rack_unit')
  db.close()
  print "<DIV style='margin:10px;'><SPAN style='font-size:20px; font-weight:bold'>{}</SPAN></DIV>".format(rackinfo['name'])
