@@ -167,7 +167,7 @@ def remove(aDict):
  res = db.do("SELECT a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
  ddi = db.get_row()
  res = db.do("DELETE FROM devices WHERE id = '{0}'".format(aDict['id']))
- ret = { 'device': dev }
+ ret = { 'device': res }
  db.commit()
  db.close()
  if (ddi['a_id'] != '0') or (ddi['ptr_id'] != '0'):
