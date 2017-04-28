@@ -28,7 +28,7 @@ class Junos(GenDevice):
 
  @classmethod
  def get_widgets(cls):
-  return ['widget_up_interfaces']
+  return ['widget_up_interfaces','widget_lldp']
 
  def __init__(self,ahost,adomain = None, atype = 'Junos'):
   GenDevice.__init__(self,ahost,adomain,atype)
@@ -93,6 +93,15 @@ class Junos(GenDevice):
     result.append(status)
   return result
 
+ def get_lldp(self):
+  neighbors = self._router.rpc.get_lldp_neighbors_information()
+  result = []
+  for neigh in neighbors:
+   # Remote system always last, remote port second to last, local is always first and pos 3 (2) determines if there is a mac or not
+   fields = len(neigh)-1
+   result.append([ neigh[fields].text,neigh[3].text if neigh[2].text == "Mac address" else '-',neigh[0].text,neigh[fields-1].text ])
+  return result
+
  def widget_up_interfaces(self):
   from sdcp.core.Grapher import Grapher
   graph = Grapher()
@@ -100,15 +109,25 @@ class Junos(GenDevice):
   gdev = graph.get_entry(self._fqdn)
   if gdev and gdev['update'] == 'yes':
    print "<DIV ID=graph_config></DIV>"
+  print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
+  print "<TABLE style='margin:3px;'><TR><TH>Interface</TH><TH>State</TH><TH>SNMP</TH><TH>Description</TH></TR>"
   self.connect()
   ifs = self.get_up_interfaces()
   self.close()
-  print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
-  print "<TABLE style='margin:3px;'><TH>Interface</TH><TH>State</TH><TH>SNMP</TH><TH>Description</TH>"
   for entry in ifs:
    print "<TR><TD>{0}</TD><TD>{1}</TD><TD><A CLASS='z-op' DIV=graph_config OP=load LNK='ajax.cgi?call=graph_wm&hostname={4}&domain={5}&index={2}'>{2}</A></TD><TD>{3}</TD></TR>\n".format(entry[0],entry[1],entry[2],entry[3],self._hostname,self._domain)
-  print "</TABLE></DIV>"           
-  
+  print "</TABLE></DIV>"
+
+ def widget_lldp(self):
+  print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
+  print "<TABLE style='margin:3px;'><TR><TH>Neighbor</TH><TH>MAC</TH><TH>Local_Port</TH><TH>Destination_Port</TH></TR>"
+  self.connect()
+  neigh = self.get_lldp()
+  self.close()
+  for entry in neigh:
+   print "<TR><TD>{0}</TD><TD>{1}</TD><TD>{2}</TD><TD>{3}</TD></TR>".format(entry[0],entry[1],entry[2],entry[3])
+  print "</TABLE></DIV>"  
+
  #
  # SNMP is much smoother than Netconf for some things :-)
  #
