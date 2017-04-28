@@ -243,7 +243,7 @@ def op_function(aWeb):
 def rack_info(aWeb):
  db = GL.DB()
  db.connect()
- res  = db.do("SELECT rackinfo.*, devices.rack_id, devices.ip, INET_NTOA(devices.ip) as ipasc FROM rackinfo JOIN devices ON devices.id = rackinfo.device_id")
+ res  = db.do("SELECT rackinfo.*, devices.hostname, devices.rack_id, devices.ip, INET_NTOA(devices.ip) as ipasc FROM rackinfo JOIN devices ON devices.id = rackinfo.device_id")
  devs = db.get_all_rows()
  if res == 0:
   db.close()
@@ -258,13 +258,13 @@ def rack_info(aWeb):
  racks = db.get_all_dict('id')
  row   = "<TR style='border: 1px solid grey'><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>" 
  print "<DIV CLASS='z-table' style='overflow-x:auto;'><TABLE>"
- print "<TR style='border: 1px solid grey'><TH>Console</TH><TH>Port</TH><TH>Device ID</TH><TH>IP</TH><TH>PEM0 PDU</TH><TH>slot</TH><TH>unit</TH><TH>PEM1 PDU</TH><TH>slot</TH><TH>unit</TH><TH>Rack</TH><TH>size</TH><TH>unit</TH></TR>"
+ print "<TR style='border: 1px solid grey'><TH>Hostname</TH><TH>Device</TH><TH>IP</TH><TH>Console</TH><TH>Port</TH><TH>PEM0-PDU</TH><TH>slot</TH><TH>unit</TH><TH>PEM1-PDU</TH><TH>slot</TH><TH>unit</TH><TH>Rack</TH><TH>size</TH><TH>unit</TH></TR>"
  for dev in devs:
   if not dev['backup_ip']:
    db.do("UPDATE rackinfo SET backup_ip = {} WHERE device_id = {}".format(dev['ip'],dev['device_id']))
-  print "<TR style='border: 1px solid grey'>"
+  print "<TR>"
+  print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format(dev['hostname'],dev['device_id'],dev['ipasc'])
   print "<TD>{}</TD><TD>{}</TD>".format(cons.get(dev['console_id'],{}).get('name',None),dev['console_port'])
-  print "<TD>{}</TD><TD>{}</TD>".format(dev['device_id'],dev['ipasc'])
   print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format( pdus.get(dev['pem0_pdu_id'],{}).get('name',None),dev['pem0_pdu_slot'],dev['pem0_pdu_unit'])
   print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format( pdus.get(dev['pem1_pdu_id'],{}).get('name',None),dev['pem1_pdu_slot'],dev['pem1_pdu_unit'])
   print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format(racks.get(dev['rack_id'],{}).get('name',None),dev['rack_size'],dev['rack_unit'])
@@ -335,7 +335,9 @@ def remove(aWeb):
 def dump_db(aWeb):
  from json import dumps
  from rest_device import dump_db
- print "<PRE>{}</PRE>".format(dumps(dump_db({}), indent=4, sort_keys=True))
+ table = aWeb.get_value('table','devices')
+ cols  = aWeb.get_value('columns','*')
+ print "<PRE>{}</PRE>".format(dumps(dump_db({'table':table,'columns':cols}), indent=4, sort_keys=True))
 
 #
 # find devices operations

@@ -188,7 +188,8 @@ def dump_db(aDict):
  db = GL.DB()
  db.connect()
  cols = aDict.get('columns','*')
- res = db.do("SELECT {} FROM devices".format(cols))
+ tbl  = aDict.get('table','devices')
+ res = db.do("SELECT {} FROM {}".format(cols,tbl))
  db.close()
  if res > 0:
   return db.get_all_rows()
