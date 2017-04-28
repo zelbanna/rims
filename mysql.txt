@@ -75,7 +75,7 @@ CREATE TABLE `devices` (
   `ptr_dom_id` int(10) unsigned DEFAULT NULL,
   `ipam_id` int(10) unsigned DEFAULT '0',
   `ipam_sub_id` int(10) unsigned DEFAULT NULL,
-  `fqdn` varchar(20) DEFAULT NULL,
+  `fqdn` varchar(40) DEFAULT NULL,
   `graphed` varchar(3) DEFAULT 'no',
   `model` varchar(20) DEFAULT NULL,
   `type` varchar(20) DEFAULT NULL,
