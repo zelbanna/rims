@@ -327,7 +327,6 @@ def devices(aWeb):
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-warning z-op' OP=confirm DIV=div_navcont SPIN=true MSG='Clear DB?' LNK='ajax.cgi?call=device_clear_db'>Clear DB</A>"
  print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist'>Devices</A>"
  print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
  if argdict.get('console',None):
@@ -335,6 +334,7 @@ def devices(aWeb):
  if argdict.get('pdu',None):
   print "<A CLASS='z-op' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
  print "<A CLASS='z-reload z-op' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-right z-warning z-op' OP=confirm DIV=div_navcont SPIN=true MSG='Clear DB?' LNK='ajax.cgi?call=device_clear_db'>Clear DB</A>"
  print "<A CLASS='z-right z-op' OP=load    DIV=div_navcont MSG='Discover devices?'            LNK='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
  print "<A CLASS='z-right z-op' OP=confirm DIV=div_navcont MSG='Discover graphs?'   SPIN=true LNK='ajax.cgi?call=graph_find'>Graph Discovery</A>"
  print "</DIV>"

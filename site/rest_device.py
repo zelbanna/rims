@@ -88,10 +88,12 @@ def new(aDict):
  ptr_dom = GL.sys_ip2arpa(aDict.get('ip'))
  db = GL.DB()
  db.connect()
- xist  = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(aDict.get('ipam_sub_id'),ipint))
- if xist == 0:
+ in_sub = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(aDict.get('ipam_sub_id'),ipint))
+ if in_sub == 0:
   ret = "IP not in subnet range"
- elif not aDict.get('hostname') == 'unknown':
+ elif aDict.get('hostname') == 'unknown':
+  ret = "Hostname unknown not allowed"
+ else:
   xist = db.do("SELECT devices.id, hostname, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND ip = {}".format(aDict.get('ipam_sub_id'),ipint))
   if xist == 0:
    res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ptr_dom))
@@ -103,8 +105,8 @@ def new(aDict):
    db.commit()
    ret = "Added ({})".format(dbres)
   else:
-   xist = db.get_row()
-   ret = "Existing host:{0}({2}) domain:{}".format(xist['hostname'],xist['a_dom_id'],xist['id']) 
+   dev = db.get_row()
+   ret = "Existing host:{0}({2}) domain:{1}".format(dev['hostname'],dev['a_dom_id'],dev['id'])
  db.close()
  return ret
 
