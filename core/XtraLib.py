@@ -53,6 +53,7 @@ def simple_arg_parser(args):
  return argdict
 
 def pidfile_write(pidfname):
+ from os import getpid
  pidfile = open(pidfname,'w')
  pidfile.write(str(getpid()))
  pidfile.close()
@@ -77,7 +78,7 @@ def pidfile_lock(pidfname, sleeptime):
  from os import path as ospath
  while ospath.isfile(pidfname):
   sleep(sleeptime)
- sysWritePidFile(pidfname) 
+ pidfile_write(pidfname) 
 
 def file_replace(afile,old,new):
  if afile == "" or new == "" or old == "":
