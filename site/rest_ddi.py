@@ -101,6 +101,7 @@ def dns_update(aDict):
 
  if aDict['a_id'] != '0':
   retvals['a_op'] = "update"
+  retvals['a_id'] = aDict['a_id']
   db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(fqdn,aDict['ip'],serial,aDict['a_id']))
  else:
   db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','A','{}',3600,'{}')".format(aDict['a_dom_id'],fqdn,aDict['ip'],serial))
@@ -108,6 +109,7 @@ def dns_update(aDict):
   retvals['a_id'] = db.get_last_id()
 
  if aDict['ptr_id'] != '0':
+  retvals['ptr_id'] = aDict['ptr_id']
   retvals['ptr_op'] = "update"
   db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(ptr,fqdn,serial,aDict['ptr_id']))
  elif aDict['ptr_id'] == '0' and ptr_dom_id:
@@ -182,15 +184,17 @@ def ipam_update(aDict):
  res = {}
 
  if aDict.get('ipam_id','0') != '0':
-  res['ipam_op'] = 'update'
   db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict['ptr_id'],aDict['fqdn'],aDict['ipam_id']))
+  res['ipam_op'] = 'update'
+  res['ipam_id'] = aDict['ipam_id']
  else:
   ipint = GL.sys_ip2int(aDict['ip'])
   db.do("SELECT id FROM ipaddresses WHERE ip_addr = '{0}' AND subnetId = {1}".format(ipint,aDict['ipam_sub_id']))
   entry = db.get_row()
   if entry:
+   db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict['ptr_id'],aDict['fqdn'],entry['id']))
    res['ipam_op'] = 'update_existed'
-   db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict['ptr_id'],aDict['fqdn'],entry.get('id')))
+   res['ipam_id'] = entry['id']
   else:
    db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name,PTR) VALUES('{}','{}','{}','{}')".format(aDict['ipam_sub_id'],ipint,aDict['fqdn'],aDict['ptr_id']))
    res['ipam_op'] = "insert"

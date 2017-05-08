@@ -51,17 +51,18 @@ def lookup_info(aDict):
 #
 def update_info(aDict):
  id     = aDict.pop('id',None)
- racked= aDict.pop('racked',None)
+ racked = aDict.pop('racked',None)
  keys   = aDict.keys()
  tbl_id = { 'devices':'id', 'rackinfo':'device_id' }
  db = GL.DB()
  db.connect()
- if racked and racked == '0' and aDict.get('devices_rack_id') != 'NULL':
-  db.do("INSERT INTO rackinfo SET device_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(id))
-  db.commit()
- elif racked and racked == '1' and aDict.get('devices_rack_id') == 'NULL':
-  db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
-  db.commit()
+ if racked:
+  if racked == '0' and aDict.get('devices_rack_id') != 'NULL':
+   db.do("INSERT INTO rackinfo SET device_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(id))
+   db.commit()
+  elif racked == '1' and aDict.get('devices_rack_id') == 'NULL':
+   db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
+   db.commit()
 
  for fkey in keys:
   # fkey = table _ key
