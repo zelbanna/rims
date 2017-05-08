@@ -21,7 +21,7 @@ def examine(aWeb):
  domain  = aWeb.get_value('domain')
  upshost = aWeb.get_value('upshost')
  svclist = aWeb.get_list('svchost')
- from sdcp.core.Grapher import Grapher
+ from sdcp.tools.Grapher import Grapher
  graph = Grapher() 
  
  print aWeb.get_listeners()
@@ -149,7 +149,7 @@ def weathermap(aWeb):
   print aWeb.get_header_base()
   if json:
    from json import load
-   from sdcp.core.Grapher import Grapher
+   from sdcp.tools.Grapher import Grapher
    with open(json) as conffile:
     config = load(conffile)
     entry  = config[page]
@@ -257,7 +257,7 @@ def rack_info(aWeb):
 def esxi(aWeb):
  from ajax_esxi import op as esxi_op
  from sdcp.devices.ESXi import ESXi
- from sdcp.core.Grapher import Grapher
+ from sdcp.tools.Grapher import Grapher
  host   = aWeb.get_value('host')
  domain = aWeb.get_value('domain')
  esxi   = ESXi(host,domain)

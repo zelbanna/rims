@@ -10,7 +10,7 @@ __status__= "Production"
 ############################################ GRAPHS ##########################################
 
 def list(aWeb):
- from sdcp.core.Grapher import Grapher
+ from sdcp.tools.Grapher import Grapher
  node  = aWeb.get_value('node')
  state = aWeb.get_value('state')
  graph = Grapher()
@@ -38,7 +38,7 @@ def list(aWeb):
 # Find graphs
 #
 def find(aWeb):
- from sdcp.core.Grapher import Grapher
+ from sdcp.tools.Grapher import Grapher
  try:
   graph = Grapher() 
   graph.discover()
@@ -53,7 +53,7 @@ def find(aWeb):
 #
 def sync(aWeb):
  from sdcp.core.GenLib import DB
- from sdcp.core.Grapher import Grapher
+ from sdcp.tools.Grapher import Grapher
  try:
   db = DB()
   db.connect()
@@ -82,7 +82,7 @@ def add(aWeb):
  domain = aWeb.get_value('domain',None)
  if name and domain:
   fqdn   = name + "." + domain
-  from sdcp.core.Grapher import Grapher
+  from sdcp.tools.Grapher import Grapher
   graph = Grapher()
   entry = graph.get_entry(fqdn)
   if entry:

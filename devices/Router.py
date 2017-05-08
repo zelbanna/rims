@@ -103,7 +103,7 @@ class Junos(GenDevice):
   return result
 
  def widget_up_interfaces(self):
-  from sdcp.core.Grapher import Grapher
+  from sdcp.tools.Grapher import Grapher
   graph = Grapher()
   graph.load_conf()
   gdev = graph.get_entry(self._fqdn)
