@@ -50,8 +50,8 @@ def dns_domains(aDict):
 def dns_lookup(aDict):
  if SC.dnsdb_proxy == 'True':
   return GL.rpc_call(SC.dnsdb_url, "ddi_dns_lookup", aDict)
- ptr  = GL.sys_ip2arpa(aDict['ip'])
- GL.sys_log_msg("DNS  lookup - input:{}".format(aDict.values()))  
+ ptr  = GL.ip2arpa(aDict['ip'])
+ GL.log_msg("DNS  lookup - input:{}".format(aDict.values()))  
  db = GL.DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
  res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr))
@@ -65,7 +65,7 @@ def dns_lookup(aDict):
  fqdn    = aDict['name'] + "." + domain
  db.do("SELECT id,content FROM records WHERE type = 'A' and domain_id = {} and name = '{}'".format(aDict['a_dom_id'],fqdn))
  a_record = db.get_row()
- db.do("SELECT id,content FROM records WHERE type = 'PTR' and domain_id = {} and name = '{}'".format(ptr_dom_id,GL.sys_ip2ptr(aDict['ip']))) 
+ db.do("SELECT id,content FROM records WHERE type = 'PTR' and domain_id = {} and name = '{}'".format(ptr_dom_id,GL.ip2ptr(aDict['ip']))) 
  p_record = db.get_row()
  db.close()
  retvals = {}
@@ -82,10 +82,10 @@ def dns_lookup(aDict):
 def dns_update(aDict):
  if SC.dnsdb_proxy == 'True':
   return GL.rpc_call(SC.dnsdb_url, "ddi_dns_update", aDict)
- GL.sys_log_msg("DNS  update - input:{}".format(aDict.values()))
+ GL.log_msg("DNS  update - input:{}".format(aDict.values()))
  from time import strftime
  serial  = strftime("%Y%m%d%H")
- ptr     = GL.sys_ip2ptr(aDict['ip'])
+ ptr     = GL.ip2ptr(aDict['ip'])
  retvals = {}
  db = GL.DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
@@ -119,13 +119,13 @@ def dns_update(aDict):
 
  db.commit()
  db.close()
- GL.sys_log_msg("DNS  update - results: " + str(retvals))
+ GL.log_msg("DNS  update - results: " + str(retvals))
  return retvals
 
 def dns_remove(aDict):
  if SC.dnsdb_proxy == 'True':
   return GL.rpc_call(SC.dnsdb_url, "ddi_dns_remove", aDict)
- GL.sys_log_msg("DNS  remove - input:{}".format(aDict.values()))
+ GL.log_msg("DNS  remove - input:{}".format(aDict.values()))
  db = GL.DB()
  db.connect_details('localhost',SC.dnsdb_username, SC.dnsdb_password, SC.dnsdb_dbname)
  ares = 0
@@ -136,7 +136,7 @@ def dns_remove(aDict):
   pres = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aDict['ptr_id']))
  db.commit()
  db.close()
- GL.sys_log_msg("DNS  remove - A:{} PTR:{}".format(str(ares),str(pres)))
+ GL.log_msg("DNS  remove - A:{} PTR:{}".format(str(ares),str(pres)))
  return { 'a':ares, 'ptr':pres }
 
 ################################################# DDI - IPAM ##################################################
@@ -158,8 +158,8 @@ def ipam_subnets(aDict):
 def ipam_lookup(aDict):
  if SC.ipamdb_proxy == 'True':
   return GL.rpc_call(SC.ipamdb_url, "ddi_ipam_lookup", aDict)
- GL.sys_log_msg("IPAM lookup - input {}".format(aDict.values()))
- ipint   = GL.sys_ip2int(aDict['ip'])
+ GL.log_msg("IPAM lookup - input {}".format(aDict.values()))
+ ipint   = GL.ip2int(aDict['ip'])
  retvals = { 'ipam_id':'0' }
  db = GL.DB()
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
@@ -178,7 +178,7 @@ def ipam_lookup(aDict):
 def ipam_update(aDict):
  if SC.ipamdb_proxy == 'True':
   return GL.rpc_call(SC.ipamdb_url, "ddi_ipam_update", aDict)
- GL.sys_log_msg("IPAM update - input:{}".format(aDict.values()))
+ GL.log_msg("IPAM update - input:{}".format(aDict.values()))
  db = GL.DB()
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
  res = {}
@@ -188,7 +188,7 @@ def ipam_update(aDict):
   res['ipam_op'] = 'update'
   res['ipam_id'] = aDict['ipam_id']
  else:
-  ipint = GL.sys_ip2int(aDict['ip'])
+  ipint = GL.ip2int(aDict['ip'])
   db.do("SELECT id FROM ipaddresses WHERE ip_addr = '{0}' AND subnetId = {1}".format(ipint,aDict['ipam_sub_id']))
   entry = db.get_row()
   if entry:
@@ -214,7 +214,7 @@ def ipam_remove(aDict):
  ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
  db.commit()
  db.close()
- GL.sys_log_msg("IPAM remove - {} -> {}".format(aDict,ires))
+ GL.log_msg("IPAM remove - {} -> {}".format(aDict,ires))
  return ires
 
 #
@@ -232,14 +232,14 @@ def ipam_find(aDict):
  iplist = db.get_all_dict('ip_addr')
  subnet = int(sub.get('subnet'))
  start  = None
- ret    = { 'subnet':GL.sys_int2ip(subnet) }
+ ret    = { 'subnet':GL.int2ip(subnet) }
  for ip in range(subnet + 1, subnet + 2**(32-int(sub.get('mask')))-1):
   if not iplist.get(str(ip),False):
    if start:
     count = count - 1
     if count == 1:
-     ret['start'] = GL.sys_int2ip(start)
-     ret['end'] = GL.sys_int2ip(start+int(aDict.get('consecutive'))-1)
+     ret['start'] = GL.int2ip(start)
+     ret['end'] = GL.int2ip(start+int(aDict.get('consecutive'))-1)
      break
    else:
     count = int(aDict.get('consecutive'))          

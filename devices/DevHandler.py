@@ -7,8 +7,6 @@ __author__  = "Zacharias El Banna"
 __version__ = "10.5GA"
 __status__  = "Production"
 
-from sdcp.core.GenLib import DB, ping_os, sys_ips2range, sys_ip2int, sys_log_msg
-
 #
 # Returns current list of types
 #
@@ -60,6 +58,8 @@ def device_detect(aIP, aDict = {}, aSema = None):
  import sdcp.SettingsContainer as SC
  from netsnmp import VarList, Varbind, Session
  from socket import gethostbyaddr
+ from sdcp.core.GenLib import ping_os
+
  if not ping_os(aIP):
   if aSema:
    aSema.release()

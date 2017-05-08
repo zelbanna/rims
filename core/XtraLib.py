@@ -24,10 +24,10 @@ def str2hex(arg):
 def get_results(test):
  return "success" if test else "failure"
 
-def sys_log_msg(amsg):
+def log_msg(amsg):
  import sdcp.SettingsContainer as SC
  from time import localtime, strftime
- if _sys_debug: print "Log: " + amsg
+ if _debug: print "Log: " + amsg
  with open(SC.sdcp_logformat, 'a') as f:
   f.write(unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), amsg)))
 

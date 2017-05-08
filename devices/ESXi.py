@@ -8,7 +8,7 @@ __version__ = "10.5GA"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
-from sdcp.core.GenLib import GenDevice, sys_get_host
+from sdcp.core.GenLib import GenDevice, get_host
 from sdcp.core.XtraLib import pidfile_lock, pidfile_release
 from netsnmp import VarList, Varbind, Session
 from select import select
@@ -76,7 +76,7 @@ class ESXi(GenDevice):
    return self._kvmip
   elif self._domain:
    for type in ['amt','ipmi','kvm']:
-    ip = sys_get_host("{0}-{1}.{2}".format(self._hostname,type,self._domain))
+    ip = get_host("{0}-{1}.{2}".format(self._hostname,type,self._domain))
     if ip:
      self._kvmip = ip + ":16992" if type == 'amt' else ip
      break

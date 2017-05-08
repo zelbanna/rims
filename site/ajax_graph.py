@@ -43,7 +43,6 @@ def find(aWeb):
   graph = Grapher() 
   graph.discover()
   print "<B>Done discovering graphs</B>"
-  aWeb.log_msg("graph_find: Discovered graphs")
  except Exception as err:
   print "<B>Error: {}</B>".format(str(err))
 
@@ -52,10 +51,10 @@ def find(aWeb):
 # Sync graphs and devices
 #
 def sync(aWeb):
- from sdcp.core.GenLib import DB
+ import sdcp.core.GenLib as GL
  from sdcp.tools.Grapher import Grapher
  try:
-  db = DB()
+  db = GL.DB()
   db.connect()
   db.do("SELECT devices.id, hostname, domains.name AS domain FROM devices LEFT JOIN domains on domains.id = devices.a_dom_id")
   rows = db.get_all_rows()
@@ -69,7 +68,7 @@ def sync(aWeb):
   db.commit()
   db.close()
   print "<B>Done syncing devices' graphing</B>"
-  aWeb.log_msg("graph_sync: Done syncing devices' graphing")
+  GL.log_msg("graph_sync: Done syncing devices' graphing")
  except Exception as err:
   print "<B>Error: {}</B>".format(str(err))
 

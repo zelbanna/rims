@@ -59,7 +59,7 @@ def device_info(aWeb):
  db.connect()
 
  if op == 'update':
-  ipint = GL.sys_ip2int(ip)
+  ipint = GL.ip2int(ip)
   if id == 'new':
    sql = "INSERT into consoles (name, ip) VALUES ('{0}','{1}')".format(name,ipint)
    db.do(sql)

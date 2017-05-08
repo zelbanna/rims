@@ -87,8 +87,8 @@ def update_info(aDict):
 # new(ip, hostname, ipam_sub_id, a_dom_id, mac, target, arg)
 #
 def new(aDict):
- ipint = GL.sys_ip2int(aDict.get('ip'))
- ptr_dom = GL.sys_ip2arpa(aDict.get('ip'))
+ ipint = GL.ip2int(aDict.get('ip'))
+ ptr_dom = GL.ip2arpa(aDict.get('ip'))
  db = GL.DB()
  db.connect()
  in_sub = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(aDict.get('ipam_sub_id'),ipint))
@@ -102,7 +102,7 @@ def new(aDict):
    res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ptr_dom))
    ptr_dom_id = db.get_row().get('id') if res > 0 else 'NULL'
    mac = aDict.get('mac','000000000000').replace(":","")
-   if not (GL.sys_is_mac(mac)):
+   if not (GL.is_mac(mac)):
     mac = "000000000000"
    rack_id = "NULL" if (aDict.get('target') != 'rack_id' or aDict.get('arg') == 'None') else aDict.get('arg')
    dbres = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,snmp,model,type,fqdn,rack_id) VALUES({},x'{}',{},{},{},'{}','unknown','unknown','unknown','unknown',{})".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_sub_id'),aDict.get('hostname'),rack_id))   
@@ -124,7 +124,7 @@ def discover(aDict):
  from threading import Thread, BoundedSemaphore
  from sdcp.devices.DevHandler import device_detect
  start_time = int(time())
- GL.sys_log_msg("rest_device_discover: " + str(aDict))
+ GL.log_msg("rest_device_discover: " + str(aDict))
  ip_start = aDict.get('start')
  ip_end   = aDict.get('end')
  db = GL.DB()
@@ -140,8 +140,8 @@ def discover(aDict):
    db_old[item.get('ip')] = True
  try:
   sema = BoundedSemaphore(10)
-  for ip in GL.sys_ipint2range(ip_start,ip_end):
-   if db_old.get(GL.sys_ip2int(ip),None):
+  for ip in GL.ipint2range(ip_start,ip_end):
+   if db_old.get(GL.ip2int(ip),None):
     continue
    sema.acquire()
    t = Thread(target = device_detect, args=[ip, db_new, sema])
@@ -156,14 +156,14 @@ def discover(aDict):
   res = db.do("SELECT id,name FROM domains WHERE name LIKE '%arpa%'")
   ptr_doms = db.get_all_dict('name')
   for ip,entry in db_new.iteritems():
-   ptr_dom_id = ptr_doms.get(GL.sys_ip2arpa(ip),{ 'id':'NULL' })['id']
-   db.do(sql.format(GL.sys_ip2int(ip), aDict.get('a_dom_id'), ptr_dom_id, aDict.get('ipam_sub_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn']))
+   ptr_dom_id = ptr_doms.get(GL.ip2arpa(ip),{ 'id':'NULL' })['id']
+   db.do(sql.format(GL.ip2int(ip), aDict.get('a_dom_id'), ptr_dom_id, aDict.get('ipam_sub_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn']))
   else:
    db.commit()
  except Exception as err:
-  GL.sys_log_msg("device discover: Error [{}]".format(str(err)))
+  GL.log_msg("device discover: Error [{}]".format(str(err)))
  db.close()
- GL.sys_log_msg("device discover: Total time spent: {} seconds".format(int(time()) - start_time))
+ GL.log_msg("device discover: Total time spent: {} seconds".format(int(time()) - start_time))
  return { 'found':len(db_new) }
 
 #
@@ -216,14 +216,14 @@ def find(aDict):
  iplist = db.get_all_dict('ip')
  db.close()
  start = None
- ret = { 'subnet':GL.sys_int2ip(sub.get('subnet')) }
+ ret = { 'subnet':GL.int2ip(sub.get('subnet')) }
  for ip in range(sub.get('subnet') + 1,sub.get('subnet') + 2**(32-sub.get('mask'))-1):
   if not iplist.get(ip,False):
    if start:
     count = count - 1
     if count == 1:
-     ret['start'] = GL.sys_int2ip(start)
-     ret['end'] = GL.sys_int2ip(start+int(aDict.get('consecutive'))-1)
+     ret['start'] = GL.int2ip(start)
+     ret['end'] = GL.int2ip(start+int(aDict.get('consecutive'))-1)
      break
    else:
     count = int(aDict.get('consecutive'))

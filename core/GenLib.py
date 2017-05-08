@@ -31,7 +31,7 @@ class GenDevice(object):
   from socket import gethostbyname, getfqdn
   self._type = atype
   self._devid = None
-  if sys_is_ip(ahost):
+  if is_ip(ahost):
    self._ip = ahost
    try:
     self._fqdn = getfqdn(ahost)
@@ -145,7 +145,7 @@ def rpc_call(aurl,op,args):
   arg = dumps(args)
   lnk = aurl + "rest.cgi?rpc={}&args={}".format(op,arg)
   try:
-   sys_log_msg(lnk)
+   log_msg(lnk)
    sock = urlopen(lnk)
    res  = sock.read()
    sock.close()
@@ -155,14 +155,14 @@ def rpc_call(aurl,op,args):
  
 ################################# Generics ####################################
 
-def sys_get_host(ahost):
+def get_host(ahost):
  from socket import gethostbyname
  try:
   return gethostbyname(ahost)
  except:
   return None
 
-def sys_is_ip(addr):
+def is_ip(addr):
  from socket import inet_aton
  try:
   inet_aton(addr)
@@ -170,41 +170,41 @@ def sys_is_ip(addr):
  except:
   return False
 
-def sys_ip2int(addr):
+def ip2int(addr):
  from struct import unpack
  from socket import inet_aton
  return unpack("!I", inet_aton(addr))[0]
  
-def sys_int2ip(addr):
+def int2ip(addr):
  from struct import pack
  from socket import inet_ntoa
  return inet_ntoa(pack("!I", addr))
 
-def sys_ips2range(addr1,addr2):
+def ips2range(addr1,addr2):
  from struct import pack, unpack
  from socket import inet_ntoa, inet_aton
  return map(lambda addr: inet_ntoa(pack("!I", addr)), range(unpack("!I", inet_aton(addr1))[0], unpack("!I", inet_aton(addr2))[0] + 1))
 
-def sys_ipint2range(start,end):
+def ipint2range(start,end):
  from struct import pack
  from socket import inet_ntoa
  return map(lambda addr: inet_ntoa(pack("!I", addr)), range(start,end + 1))
 
-def sys_ip2ptr(addr):
+def ip2ptr(addr):
  octets = addr.split('.')
  octets.reverse()
  return ".".join(octets) + ".in-addr.arpa"
 
-def sys_ip2arpa(addr):
+def ip2arpa(addr):
  octets = addr.split('.')[:3]
  octets.reverse()
  return ".".join(octets) + ".in-addr.arpa"
 
 
-def sys_int2mac(aInt):
+def int2mac(aInt):
  return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).upper()
 
-def sys_is_mac(aMAC):           
+def is_mac(aMAC):           
  try:
   aMAC = aMAC.replace(":","")
   return len(aMAC) == 12 and int(aMAC,16)
@@ -215,7 +215,7 @@ def ping_os(ip):
  from os import system
  return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
 
-def sys_log_msg(amsg):
+def log_msg(amsg):
  import sdcp.SettingsContainer as SC
  from time import localtime, strftime
  with open(SC.sdcp_logformat, 'a') as f:

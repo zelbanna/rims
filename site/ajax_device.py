@@ -137,8 +137,8 @@ def device_info(aWeb):
  print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['a_id'])
  print "<TR><TD>DNS PTR ID:</TD><TD>{}</TD></TR>".format(device_data['ptr_id'])
  print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(device_data['ipam_id'])
- print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(GL.sys_int2mac(device_data['mac']))
- print "<TR><TD>Gateway:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=devices_ipam_gw VALUE={}></TD></TR>".format(GL.sys_int2ip(device_data['subnet'] + 1))
+ print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(GL.int2mac(device_data['mac']))
+ print "<TR><TD>Gateway:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=devices_ipam_gw VALUE={}></TD></TR>".format(GL.int2ip(device_data['subnet'] + 1))
  print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
  print "</TABLE></DIV>"
 
@@ -233,7 +233,7 @@ def conf_gen(aWeb):
  from sdcp.devices.DevHandler import device_get_instance
  try:
   dev  = device_get_instance(row['ipasc'],type)
-  dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':GL.sys_int2ip(int(row['subnet'])), 'mask':row['mask']})
+  dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':GL.int2ip(int(row['subnet'])), 'mask':row['mask']})
  except Exception as err:
   print "No instance config specification for {} type".format(row.get('type','unknown'))
  print "</DIV>"
@@ -370,7 +370,7 @@ def discover(aWeb):
   ipam  = aWeb.get_value('ipam_sub',"0_0_32").split('_')
   # id, subnet int, subnet mask
   res = discover({ 'ipam_sub_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1])+2**(32-int(ipam[2])), 'a_dom_id':a_dom, 'clear':clear})
-  aWeb.log_msg("ajax_devices_discover: " + str(res))
+  GL.log_msg("ajax_devices_discover: " + str(res))
   print "<DIV CLASS='z-table'>{}</DIV>".format(res)
  else:
   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet");

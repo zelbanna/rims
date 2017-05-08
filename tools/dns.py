@@ -7,7 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "10.5GA"
 __status__ = "Production"
 import sdcp.SettingsContainer as SC
-from sdcp.core.GenLib import sys_log_msg
+import sdcp.core.GenLib as GL
 
 ################################ LOOPIA DNS ###################################
 #
@@ -24,7 +24,7 @@ def set_loopia_ip(subdomain, newip):
   data['rdata'] = newip
   status = client.updateZoneRecord(SC.loopia_username, SC.loopia_password, SC.loopia_domain, subdomain, data)[0]
  except Exception as exmlrpc:
-  sys_log_msg("System Error - Loopia set: " + str(exmlrpc))
+  GL.log_msg("System Error - Loopia set: " + str(exmlrpc))
   return False
  return True
 
@@ -38,7 +38,7 @@ def get_loopia_ip(subdomain):
   data = client.getZoneRecords(SC.loopia_username, SC.loopia_password, SC.loopia_domain, subdomain)[0]
   return data['rdata']
  except Exception as exmlrpc:
-  sys_log_msg("System Error - Loopia get: " + str(exmlrpc))
+  GL.log_msg("System Error - Loopia get: " + str(exmlrpc))
   return False
 
 def get_loopia_suffix():
@@ -57,7 +57,7 @@ def opendns_my_ip():
   myiplookup = opendns.query("myip.opendns.com",'A').response.answer[0]
   return str(myiplookup).split()[4]
  except Exception as exresolve:
-  sys_log_msg("OpenDNS Error - Resolve: " + str(exresolve))
+  GL.log_msg("OpenDNS Error - Resolve: " + str(exresolve))
   return False
  
 ############################### PDNS SYSTEM FUNCTIONS ##################################
@@ -78,12 +78,12 @@ def pdns_sync(dnslist):
  if not pdns in dnslist:
   from subprocess import check_call
   from time import sleep
-  sys_log_msg("System Info - updating recursor to " + dnslist[0])
+  GL.log_msg("System Info - updating recursor to " + dnslist[0])
   file_replace('/etc/powerdns/pdns.conf', pdns, dnslist[0])
   try:
    check_call(["/usr/sbin/service","pdns","reload"])
    sleep(1)
   except Exception as svcerr:
-   sys_log_msg("System Error - Reloading PowerDNS: " + str(svcerr))
+   GL.log_msg("System Error - Reloading PowerDNS: " + str(svcerr))
   return False
  return True  

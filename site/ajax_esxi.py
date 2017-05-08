@@ -24,8 +24,9 @@ def op(aWeb, aEsxi = None):
 
  if nstate:
   from subprocess import check_call, check_output
+  import sdcp.core.GenLib as GL
   try:
-   aWeb.log_msg("ESXi: {} got command {}".format(aEsxi._fqdn,nstate))
+   GL.log_msg("ESXi: {} got command {}".format(aEsxi._fqdn,nstate))
    if "vm-" in nstate:
     vmop = nstate.split('-')[1]
     with aEsxi:
@@ -37,7 +38,7 @@ def op(aWeb, aEsxi = None):
     excpt = "" if vmid == '-1' else vmid
     check_call("/usr/local/sbin/ups-operations shutdown " + aEsxi._hostname + " " + excpt + " &", shell=True)
   except Exception as err:
-   aWeb.log_msg("ESXi: nstate error [{}]".format(str(err)))
+   GL.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  print "<TABLE>"
  template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}'><IMG SRC=images/btn-{1}.png></A>"
