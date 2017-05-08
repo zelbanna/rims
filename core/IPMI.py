@@ -19,7 +19,7 @@ from subprocess import check_output, check_call
 ################################### IPMI #######################################
 
 class IPMI(object):
- def __init__(self, ahost)
+ def __init__(self, ahost):
   self.hostname = ahost
   
  def print_info(self, agrep):
