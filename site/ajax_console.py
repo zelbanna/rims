@@ -63,10 +63,8 @@ def device_info(aWeb):
   if id == 'new':
    sql = "INSERT into consoles (name, ip) VALUES ('{0}','{1}')".format(name,ipint)
    db.do(sql)
-   db.commit() 
-   db.do("SELECT id FROM consoles WHERE ip = '{0}'".format(ipint))
-   res = db.get_row()   
-   id  = res['id']
+   db.commit()
+   id = db.get_last_id()
   else:
    sql = "UPDATE consoles SET name = '{0}', ip = '{1}' WHERE id = '{2}'".format(name,ipint,id)
    res = db.do(sql)
@@ -109,7 +107,7 @@ def remove(aWeb):
  id   = aWeb.get_value('id')
  db   = GL.DB()
  db.connect()
- db.do("UPDATE devices SET console_port = 0 WHERE console_id = '{0}'".format(id))
+ db.do("UPDATE rackinfo SET console_port = 0 WHERE console_id = '{0}'".format(id))
  db.do("DELETE FROM consoles WHERE id = '{0}'".format(id))
  db.commit()
  print "<B>Console {0} deleted</B>".format(id)

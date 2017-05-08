@@ -42,6 +42,7 @@ CREATE TABLE `racks` (
   `fk_console` int(10) unsigned DEFAULT NULL,
   `fk_pdu_1` int(10) unsigned DEFAULT NULL,
   `fk_pdu_2` int(10) unsigned DEFAULT NULL,
+  `image_url` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `fk_console` (`fk_console`),

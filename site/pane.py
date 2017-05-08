@@ -197,11 +197,11 @@ def rack(aWeb):
  from sdcp.core.GenLib import DB
  db = DB()
  db.connect()
- db.do("SELECT name, id, fk_console, fk_pdu_1, fk_pdu_2 from racks")
+ db.do("SELECT * from racks")
  racks = db.get_all_rows()
  print "<DIV>"
  print "<CENTER><H1>Rack Overview <A TARGET=main_cont TITLE='Unsorted devices' HREF=pane.cgi?view=rack_info&rack=NULL>*</A></H1><BR>"
- rackstr = "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&name={0}&{2}><IMG ALT='Cabinet {0}' SRC='images/cabinet.{1}.png'></A>&nbsp;"
+ rackstr = "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&name={0}&{2}><IMG ALT='{0} ({1})' SRC='images/{1}'></A>&nbsp;"
  for index, rack in enumerate(racks):
   rackargs = "rack=" + str(rack['id'])
   if rack.get('fk_console'):
@@ -213,7 +213,7 @@ def rack(aWeb):
    rows = db.get_all_rows()
    for row in rows:
     rackargs = rackargs + "&pdulist=" + row.get('ip')
-  print rackstr.format(rack['name'], index % 3, rackargs)
+  print rackstr.format(rack['name'], rack['image_url'], rackargs)
  db.close()
  print "</CENTER></DIV>"
 

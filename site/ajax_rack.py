@@ -71,6 +71,8 @@ def info(aWeb):
 #
 #
 def unit_info(aWeb):
+ import sdcp.SettingsContainer as SC
+ from os import listdir, path
  id = aWeb.get_value('id')
  db = GL.DB()
  db.connect()
@@ -79,8 +81,7 @@ def unit_info(aWeb):
  else:
   db.do("SELECT * from racks WHERE id = {}".format(id))
   rack = db.get_row()
-
- print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
+ print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
  print "<FORM ID=rack_unit_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"
@@ -97,14 +98,21 @@ def unit_info(aWeb):
    extra = " selected" if (rack.get("fk_"+key) == unit['id']) or (not rack.get("fk_"+key) and unit['id'] == 'NULL') else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])   
   print "</SELECT></TD></TR>"
+ print "<TR><TD>Image</TD><TD><SELECT NAME=image_url CLASS='z-select'>"
+ print "<OPTION VALUE=NULL>No picture</OPTION>"
+ for image in listdir(path.join(SC.sdcp_docroot,"images")):
+  extra = " selected" if (rack.get("image_url") == image) or (not rack.get('image_url') and image == 'NULL') else ""
+  if image[-3:] == "png" or image[-3:] == "jpg":
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(image,extra,image[:-4])
+ print "</SELECT></TD></TR>"
  db.close()
  print "</TABLE>"
+ print "</FORM>"
  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_unit_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=rack_update FRM=rack_unit_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
   print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=rack_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
- print "</FORM>"
  print "</DIV>"
 
 #
@@ -119,12 +127,13 @@ def update(aWeb):
  fk_pdu_1   = aWeb.get_value('fk_pdu_1')
  fk_pdu_2   = aWeb.get_value('fk_pdu_2')
  fk_console = aWeb.get_value('fk_console')
+ image_url  = aWeb.get_value('image_url')
  if id == 'new':
   print "Creating new rack [new:{}]".format(name)
-  sql = "INSERT into racks (name, size, fk_pdu_1, fk_pdu_2, fk_console) VALUES ('{}','{}',{},{},{})".format(name,size,fk_pdu_1,fk_pdu_2,fk_console)
+  sql = "INSERT into racks (name, size, fk_pdu_1, fk_pdu_2, fk_console, image_url) VALUES ('{}','{}',{},{},{},'{}')".format(name,size,fk_pdu_1,fk_pdu_2,fk_console,image_url)
  else:
   print "Updated rack [{}:{}]".format(id,name)
-  sql = "UPDATE racks SET name = '{}', size = '{}', fk_pdu_1 = {}, fk_pdu_2 = {}, fk_console = {} WHERE id = '{}'".format(name,size,fk_pdu_1,fk_pdu_2,fk_console,id)
+  sql = "UPDATE racks SET name = '{}', size = '{}', fk_pdu_1 = {}, fk_pdu_2 = {}, fk_console = {}, image_url='{}' WHERE id = '{}'".format(name,size,fk_pdu_1,fk_pdu_2,fk_console,image_url,id)
  res = db.do(sql)
  db.commit()
  db.close()
@@ -136,8 +145,11 @@ def remove(aWeb):
  id   = aWeb.get_value('id')
  db   = GL.DB()
  db.connect()
- db.do("UPDATE devices SET rack_unit = 0 WHERE rack_id = '{0}'".format(id))
- db.do("DELETE FROM racks WHERE id = '{0}'".format(id))
+ res  = db.do("SELECT id FROM devices WHERE rack_id = {0}".format(id))
+ devs = db.get_all_rows()
+ for dev in devs:
+  db.do("DELETE FROM rackinfo WHERE device_id = {0}".format(dev['id']))
+ db.do("DELETE FROM racks WHERE id = {0}".format(id))
  db.commit()
  print "Rack {0} deleted".format(id)
  db.close()

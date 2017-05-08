@@ -31,7 +31,7 @@ def view_devicelist(aWeb):
   tune = "WHERE {0} = {1}".format(target,arg)
  res = db.do("SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort))
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
- print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new&{0}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args_except(['sort','call']))
  rows = db.get_all_rows()
  for row in rows:
   print "<TR><TD><A CLASS=z-op TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&id={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
@@ -82,8 +82,8 @@ def device_info(aWeb):
   from rest_ddi import dns_update, ipam_update
   if device_data['ipam_id'] == '0':
    opres = opres + " (please rerun lookup for proper sync)"
-  dns_update( { 'ip':ip, 'name':name, 'a_dom_id': str(device_data['a_dom_id']), 'a_id':str(device_data['a_id']), 'ptr_id':str(device_data['ptr_id']) })
-  ipam_update({ 'ip':ip, 'fqdn':name+"."+device_data['a_name'], 'a_dom_id': str(device_data['a_dom_id']), 'ipam_id':str(device_data['ipam_id']), 'ipam_sub_id':str(device_data['ipam_sub_id']),'ptr_id':str(device_data['ptr_id']) })
+  opres = opres + " " + str(dns_update( { 'ip':ip, 'name':name, 'a_dom_id': str(device_data['a_dom_id']), 'a_id':str(device_data['a_id']), 'ptr_id':str(device_data['ptr_id']) }))
+  opres = opres + " " + str(ipam_update({ 'ip':ip, 'fqdn':name+"."+device_data['a_name'], 'a_dom_id': str(device_data['a_dom_id']), 'ipam_id':str(device_data['ipam_id']), 'ipam_sub_id':str(device_data['ipam_sub_id']),'ptr_id':str(device_data['ptr_id']) }))
 
  ########################## Data Tables ######################
  
@@ -279,15 +279,17 @@ def rack_info(aWeb):
 # new device:
 #
 def new(aWeb):
- ip       = aWeb.get_value('ip',"127.0.0.1")
- hostname = aWeb.get_value('hostname','unknown')
- mac      = aWeb.get_value('mac',"00:00:00:00:00:00")
- op       = aWeb.get_value('op')
+ ip     = aWeb.get_value('ip',"127.0.0.1")
+ name   = aWeb.get_value('hostname','unknown')
+ mac    = aWeb.get_value('mac',"00:00:00:00:00:00")
+ op     = aWeb.get_value('op')
+ target = aWeb.get_value('target')
+ arg    = aWeb.get_value('arg')
  if op:
   from rest_device import new
   a_dom    = aWeb.get_value('a_dom_id')
   ipam_sub = aWeb.get_value('ipam_sub_id')
-  print new({ 'ip':ip, 'mac':mac, 'hostname':hostname, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub })
+  print new({ 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg })
  else:
   db = GL.DB()
   db.connect()
@@ -299,10 +301,12 @@ def new(aWeb):
   print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:180px;'>"
   print "<FORM ID=device_new_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
+  print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(target)
+  print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(arg)
   print "<TABLE style='width:100%'>"
   print "<TR><TH COLSPAN=2>Add Device</TH></TR>"
   print "<TR><TD>IP:</TD><TD><INPUT       NAME=ip       TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(ip)
-  print "<TR><TD>Hostname:</TD><TD><INPUT NAME=hostname TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(hostname)
+  print "<TR><TD>Hostname:</TD><TD><INPUT NAME=hostname TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
   print "<TR><TD>Domain:</TD><TD><SELECT CLASS='z-select' NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):

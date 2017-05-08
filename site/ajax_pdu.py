@@ -128,9 +128,7 @@ def device_info(aWeb):
    sql = "INSERT into pdus (name, ip, slots) VALUES ('{0}','{1}','{2}')".format(name,ipint,slots)
    res = db.do(sql)
    db.commit()
-   db.do("SELECT id FROM pdus WHERE ip = '{0}'".format(ipint)) 
-   res = db.get_row()
-   id  = res['id']
+   id = db.get_last_id()
   else:
    sql = "UPDATE pdus SET name = '{0}', ip = '{1}', slots = '{2}' WHERE id = '{3}'".format(name,ipint,slots,id)
    res = db.do(sql)
@@ -204,8 +202,8 @@ def remove(aWeb):
  id = aWeb.get_value('id')
  db = GL.DB()
  db.connect()
- db.do("UPDATE devices SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
- db.do("UPDATE devices SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
+ db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
+ db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
  db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
  db.commit()
  print "<B>PDU {0} deleted<B>".format(id)

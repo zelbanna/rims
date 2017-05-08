@@ -130,6 +130,9 @@ class DB(object):
  def get_cursor(self):
   return self._curs
 
+ def get_last_id(self):
+  return self._curs.lastrowid
+
  def close(self):
   self._curs.close()
   self._conn.close()

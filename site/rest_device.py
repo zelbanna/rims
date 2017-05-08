@@ -81,7 +81,7 @@ def update_info(aDict):
  return "update_values:" + ", ".join(keys)
 
 #
-# new(ip, hostname, ipam_sub_id, a_dom_id, mac)
+# new(ip, hostname, ipam_sub_id, a_dom_id, mac, target, arg)
 #
 def new(aDict):
  ipint = GL.sys_ip2int(aDict.get('ip'))
@@ -101,11 +101,14 @@ def new(aDict):
    mac = aDict.get('mac','000000000000').replace(":","")
    if not (GL.sys_is_mac(mac)):
     mac = "000000000000"
-   dbres = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,snmp,model,type,fqdn) VALUES({},x'{}',{},{},{},'{}','unknown','unknown','unknown','unknown')".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_sub_id'),aDict.get('hostname')))
+   rack_id = "NULL" if (aDict.get('target') != 'rack_id' or aDict.get('arg') == 'None') else aDict.get('arg')
+   dbres = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,snmp,model,type,fqdn,rack_id) VALUES({},x'{}',{},{},{},'{}','unknown','unknown','unknown','unknown',{})".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_sub_id'),aDict.get('hostname'),rack_id))   
+   devid = db.get_last_id()
+   rres  = db.do("INSERT INTO rackinfo SET device_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(devid))
    db.commit()
-   ret = "Added ({})".format(dbres)
+   ret = "Added ({} - id:{})".format(dbres,devid)
   else:
-   dev = db.get_row()
+   dev = db.get_row()    
    ret = "Existing host:{0}({2}) domain:{1}".format(dev['hostname'],dev['a_dom_id'],dev['id'])
  db.close()
  return ret

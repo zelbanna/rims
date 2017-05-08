@@ -84,7 +84,7 @@ def dns_update(aDict):
   return GL.rpc_call(SC.dnsdb_url, "ddi_dns_update", aDict)
  GL.sys_log_msg("DNS  update - input:{}".format(aDict.values()))
  from time import strftime
- serial  = strftime("%Y%m%d01")
+ serial  = strftime("%Y%m%d%H")
  ptr     = GL.sys_ip2ptr(aDict['ip'])
  retvals = {}
  db = GL.DB()
@@ -98,19 +98,23 @@ def dns_update(aDict):
   domain     = domains[0]['name']
   ptr_dom_id = None
  fqdn    = aDict['name'] + "." + domain
+
  if aDict['a_id'] != '0':
-  retvals['a'] = "update"
+  retvals['a_op'] = "update"
   db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(fqdn,aDict['ip'],serial,aDict['a_id']))
  else:
-  retvals['a'] = "insert"
-  GL.sys_log_msg("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','A','{}',3600,'{}')".format(aDict['a_dom_id'],fqdn,aDict['ip'],serial))
   db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','A','{}',3600,'{}')".format(aDict['a_dom_id'],fqdn,aDict['ip'],serial))
+  retvals['a_op'] = "insert"
+  retvals['a_id'] = db.get_last_id()
+
  if aDict['ptr_id'] != '0':
-  retvals['ptr'] = "update"
+  retvals['ptr_op'] = "update"
   db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(ptr,fqdn,serial,aDict['ptr_id']))
  elif aDict['ptr_id'] == '0' and ptr_dom_id:
-  retvals['ptr'] = "insert"
   db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','PTR','{}',3600,'{}')".format(ptr_dom_id,ptr,fqdn,serial))
+  retvals['ptr_op'] = "insert"
+  retvals['ptr_id'] = db.get_last_id()
+
  db.commit()
  db.close()
  GL.sys_log_msg("DNS  update - results: " + str(retvals))
@@ -176,20 +180,21 @@ def ipam_update(aDict):
  db = GL.DB()
  db.connect_details('localhost',SC.ipamdb_username, SC.ipamdb_password, SC.ipamdb_dbname)
  res = {}
+
  if aDict.get('ipam_id','0') != '0':
-  res['ipam_id'] = 'update_id'
+  res['ipam_op'] = 'update'
   db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict['ptr_id'],aDict['fqdn'],aDict['ipam_id']))
  else:
   ipint = GL.sys_ip2int(aDict['ip'])
   db.do("SELECT id FROM ipaddresses WHERE ip_addr = '{0}' AND subnetId = {1}".format(ipint,aDict['ipam_sub_id']))
   entry = db.get_row()
   if entry:
-   res['ipam_id'] = 'update_existed'
-   GL.sys_log_msg("IPAM update - ipam_id 0 -> {}".format(entry.get('id')))
+   res['ipam_op'] = 'update_existed'
    db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict['ptr_id'],aDict['fqdn'],entry.get('id')))
   else:
-   res['ipam_id'] = 'insert_new'
    db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name,PTR) VALUES('{}','{}','{}','{}')".format(aDict['ipam_sub_id'],ipint,aDict['fqdn'],aDict['ptr_id']))
+   res['ipam_op'] = "insert"
+   res['ipam_id'] = db.get_last_id()
  db.commit()
  db.close()
  return res
