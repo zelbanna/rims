@@ -200,7 +200,7 @@ def rack(aWeb):
  db.do("SELECT * from racks")
  racks = db.get_all_rows()
  print "<DIV>"
- print "<CENTER><H1>Rack Overview <A TARGET=main_cont TITLE='Unsorted devices' HREF=pane.cgi?view=rack_info&rack=NULL>*</A></H1><BR>"
+ print "<CENTER><H1>Rack Overview | <A HREF=pane.cgi?view=devices&target=vm&arg=1>Virtual Machines</A> <A TITLE='Non-racked devices' HREF=pane.cgi?view=rack_info&rack=NULL>*</A></H1><BR>"
  rackstr = "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&name={0}&{2}><IMG ALT='{0} ({1})' SRC='images/{1}'></A>&nbsp;"
  for index, rack in enumerate(racks):
   rackargs = "rack=" + str(rack['id'])
@@ -309,8 +309,11 @@ def esxi(aWeb):
  
 def devices(aWeb):
  from sdcp.core.GenLib import DB
- op        = aWeb.get_value('op', None)
- domain    = aWeb.get_value('domain', None)
+ op     = aWeb.get_value('op')
+ domain = aWeb.get_value('domain')
+ target = aWeb.get_value('target')
+ arg    = aWeb.get_value('arg')
+ 
  db = DB() 
  db.connect()
  argdict = {}
@@ -327,16 +330,14 @@ def devices(aWeb):
  print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist'>Devices</A>"
+ print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
  if argdict.get('console',None):
   print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=console_list&{}'>Console</A>".format(argdict.get('console'))
  if argdict.get('pdu',None):
   print "<A CLASS='z-op' OP=load DIV=div_navleft SPIN=true LNK='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
  print "<A CLASS='z-reload z-op' OP=reload LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
- print "<A CLASS='z-right z-warning z-op' OP=confirm DIV=div_navcont SPIN=true MSG='Clear DB?' LNK='ajax.cgi?call=device_clear_db'>Clear DB</A>"
- print "<A CLASS='z-right z-op' OP=load    DIV=div_navcont MSG='Discover devices?'            LNK='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
- print "<A CLASS='z-right z-op' OP=confirm DIV=div_navcont MSG='Discover graphs?'   SPIN=true LNK='ajax.cgi?call=graph_find'>Graph Discovery</A>"
+ print "<A CLASS='z-right z-op'  OP=load   DIV=div_navcont MSG='Discover devices?' LNK='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
  print "</DIV>"
  print aWeb.get_listeners("div_navleft")
  print aWeb.get_listeners("div_navcont")
@@ -357,6 +358,7 @@ def config(aWeb):
  print aWeb.get_header_full("Config and Settings")
  print aWeb.get_listeners("div_config_menu")
  print "<DIV CLASS='z-table' ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
+ print "<A CLASS='z-btn z-warning z-op' OP=confirm DIV=div_config SPIN=true MSG='Clear DB?' LNK='ajax.cgi?call=device_clear_db'>Clear Database</A>"
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config           LNK='ajax.cgi?call=graph_sync&domain={0}'>Synch Graphing</A>".format(domain)
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=ddi_sync'>Synch DDI</A>"

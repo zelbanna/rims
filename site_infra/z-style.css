@@ -79,7 +79,6 @@ div.z-navframe { position: relative; height: 100%; width:100%;}
 
 div.z-navbar { height: 34px; float: left; display: table; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99; cursor:pointer; position:fixed; top:0px; width:100%; z-index:1000; }
 div.z-navbar a { color:#FFFFFF; display:table-cell; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
-div.z-navbar a.z-warning { background-color:red; }
 div.z-navbar a.z-right {   float:right; }
 div.z-navbar a.z-reload { background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
 
@@ -115,7 +114,11 @@ a.z-menu-btn > img {  max-height:43px; }
 a.z-small-btn {  border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; margin: 0px;}
 a.z-small-btn > img { height:22px; }
 
+a.z-low-btn {    border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; position: relative; bottom: -26px; }
+
 a.z-srv-btn {	 background-image: url(images/icon-esxi.png); width:54px; font-weight:bold; text-align: right; text-shadow: 2px 1px grey }
+
+a.z-warning {    background-color:red!important; }
 
 /*###############################################################################################*/
 
@@ -124,19 +127,20 @@ a.z-srv-btn {	 background-image: url(images/icon-esxi.png); width:54px; font-wei
  border:none;
  overflow:visible;
  background-color: transparent;
- color:darkgray;
+ color: black;
 }
-.z-input::placeholder{ color:gray; opacity:1; }
-::-webkit-input-placeholder { color: gray; }
-::-moz-placeholder {          color: gray; }
-:-ms-input-placeholder {      color: gray; }
-:-moz-placeholder {           color: gray; }
+.z-input::placeholder{        color: darkgray; }
+::-webkit-input-placeholder { color: darkgray; }
+::-moz-placeholder {          color: darkgray; }
+:-ms-input-placeholder {      color: darkgray; }
+:-moz-placeholder {           color: darkgray; }
 
 .z-select {
  width:100%;
  border: none;
  overflow: visible;
  background-color: transparent;
+ color: black;
 }
 
 .z-font-sub { position: relative; bottom: -36px; font-size: smaller; }
