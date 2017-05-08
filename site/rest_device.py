@@ -52,8 +52,6 @@ def lookup_info(aDict):
 def update_info(aDict):
  id     = aDict.pop('id',None)
  racked = aDict.pop('racked',None)
- keys   = aDict.keys()
- tbl_id = { 'devices':'id', 'rackinfo':'device_id' }
  db = GL.DB()
  db.connect()
  if racked:
@@ -64,7 +62,11 @@ def update_info(aDict):
    db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
    db.commit()
 
- for fkey in keys:
+ tbl_id = { 'devices':'id', 'rackinfo':'device_id' } 
+ # Checkboxes...
+ if not aDict.get('devices_vm',None):
+  aDict['devices_vm'] = 0
+ for fkey in aDict.keys():
   # fkey = table _ key
   (table, void, key) = fkey.partition('_')
   data = aDict.get(fkey)
@@ -79,7 +81,7 @@ def update_info(aDict):
    db.do("UPDATE rackinfo SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE device_id = '{3}'".format(pem,pemid,pemslot,id))
  db.commit()
  db.close()
- return "update_values:" + ", ".join(keys)
+ return "update_values:" + ", ".join(aDict.keys())
 
 #
 # new(ip, hostname, ipam_sub_id, a_dom_id, mac, target, arg)

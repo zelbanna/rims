@@ -68,15 +68,12 @@ def device_info(aWeb):
   print "Stale info! Reload device list"
   db.close()
   return
- db.do("SELECT * FROM racks")
- racks = db.get_all_rows()
- racks.append({ 'id':'NULL', 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
- if device_data['rack_id']:
-  rack_xist = db.do("SELECT * FROM rackinfo WHERE device_id = {}".format(id))
-  rack_info = db.get_row()
 
  ip   = device_data['ipasc']
  name = device_data['hostname']
+ if device_data['rack_id']:
+  rack_xist = db.do("SELECT * FROM rackinfo WHERE device_id = {}".format(id))
+  rack_info = db.get_row()
 
  #
  # If inserts are return as x_op, update local db using newly constructed dict
@@ -120,15 +117,21 @@ def device_info(aWeb):
    print "<TR><TD>Graphs:</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(id, device_data['hostname'], device_data['a_name'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
- print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
+ print "<TR><TD>VM:</TD><TD><INPUT NAME=devices_vm CLASS='z-input' style='width:auto;' TYPE=checkbox VALUE=1 {0}></TD></TR>".format("checked=checked" if device_data['vm'] == 1 else "") 
  print "</TABLE></DIV>"
 
  print "<!-- Additional info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Additional Info</TH></TR>"
  print "<TR><TD>Rack:</TD><TD><SELECT NAME=devices_rack_id CLASS='z-select'>"
- for rack in racks:
-  extra = " selected" if ((not device_data['rack_id'] and rack['id'] == 'NULL') or (device_data['rack_id'] and device_data['rack_id'] == rack['id'])) else ""
-  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
+ if device_data['vm']:
+  print "<OPTION VALUE=NULL>Not used (VM)</OPTION>"
+ else:
+  db.do("SELECT * FROM racks")
+  racks = db.get_all_rows()
+  racks.append({ 'id':'NULL', 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
+  for rack in racks:
+   extra = " selected" if ((not device_data['rack_id'] and rack['id'] == 'NULL') or (device_data['rack_id'] and device_data['rack_id'] == rack['id'])) else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
  print "</SELECT></TD></TR>"
  print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['a_name'] != device_data['fqdn']) else "", device_data['fqdn'])
  print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['a_id'])
