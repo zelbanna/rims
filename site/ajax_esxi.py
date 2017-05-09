@@ -15,6 +15,7 @@ def op(aWeb, aEsxi = None):
  excpt  = aWeb.get_value('except','-1')
  nstate = aWeb.get_value('nstate')
  vmid   = aWeb.get_value('vmid','-1')
+ sort   = aWeb.get_value('sort','name')
 
  if not aEsxi:
   from sdcp.devices.ESXi import ESXi
@@ -41,13 +42,13 @@ def op(aWeb, aEsxi = None):
    GL.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  print "<TABLE>"
- template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}'><IMG SRC=images/btn-{1}.png></A>"
- statelist = aEsxi.get_vms()
+ template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
+ statelist = aEsxi.get_vms(sort)
  if not nstate:
   print "<TR><TH CLASS='z-header' COLSPAN=2>{}</TH></TR>".format(aEsxi._fqdn)
  else:
   print "<TR><TH CLASS='z-header' COLSPAN=2>{} - {}:{}</TH></TR>".format(aEsxi._fqdn,vmid, nstate.split('-')[1])
- print "<TR><TH>VM</TH><TH>Operations</TH></TR><TR>"
+ print "<TR><TH><A CLASS='z-op' OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></TH><TH>Operations</TH></TR><TR>"
  if nstate and nstate == 'vmsoff':
   print "<TD><B>SHUTDOWN ALL VMs!</B></TD>"
  else:

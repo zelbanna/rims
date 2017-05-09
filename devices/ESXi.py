@@ -153,10 +153,11 @@ class ESXi(GenDevice):
    pass
   return "unknown"
 
- def get_vms(self):
+ def get_vms(self, aSort = None):
   #
   # Returns a list with tuples of strings: [ vm.id, vm.name, vm.powerstate, vm.to_be_backedup ]
   #
+  # aSort = 'id' or 'name'
   statelist=[]
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
@@ -170,6 +171,8 @@ class ESXi(GenDevice):
     statelist.append(statetuple)
   except:
    pass
+  if aSort == 'name':
+   statelist.sort(key = lambda x: x[1])
   return statelist
 
  #
