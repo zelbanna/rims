@@ -365,5 +365,6 @@ def config(aWeb):
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=ddi_load_infra'>Load DDI Tables</A>"
  print "<A CLASS='z-btn' TARGET=_blank HREF='ajax.cgi?call=device_dump_db'>Dump DB to JSON</A>"
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=device_rack_info'>Device Rackinfo</A>"
+ print "<A CLASS='z-btn z-op' OP=load DIV=div_config           LNK='ajax.cgi?call=device_mac_sync'>Sync MAC Info</A>"
  print "</DIV>"
  print "<DIV ID=div_config style='min-width:600px; min-height:300px; display:inline;'></DIV>"

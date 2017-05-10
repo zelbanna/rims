@@ -288,6 +288,24 @@ def rack_info(aWeb):
  db.commit()
  db.close()
 
+def mac_sync(aWeb):
+ from sdcp.tools.mac_tool import load_macs
+ arps = load_macs()
+ db = GL.DB()
+ db.connect()
+ db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices ORDER BY ip")
+ rows = db.get_all_rows()
+ print "<DIV CLASS='z-table' style='overflow-x:auto; width:400px;'><TABLE>"
+ print "<TR style='border: 1px solid grey'><TH>IP</TH><TH>ID</TH><TH>MAC</TH><TH>Hostname</TH></TR>"
+ for row in rows:
+  xist = arps.get(row['ipasc'],None)
+  print "<TR><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>".format(row['ipasc'],row['id'],xist,row['hostname'])
+  if xist:
+   db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL.mac2int(xist),row['id']))
+ print "</TABLE></DIV>"
+ db.commit()
+ db.close()
+
 ##################################### Rest API #########################################
 
 #

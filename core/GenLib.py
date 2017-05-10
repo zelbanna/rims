@@ -200,9 +200,14 @@ def ip2arpa(addr):
  octets.reverse()
  return ".".join(octets) + ".in-addr.arpa"
 
-
 def int2mac(aInt):
- return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).upper()
+ return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
+
+def mac2int(aMAC):
+ try:
+  return int(aMAC.replace(":",""),16)
+ except:
+  return 0
 
 def is_mac(aMAC):           
  try:
