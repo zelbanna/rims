@@ -19,4 +19,4 @@ for root,dirs,files in walk('.'):
  for file in files:
   if file[-2:] == 'py':
    print path.join(root,file)
-   call(["sed","-i","s/__version__ = "10.5GA"
+   # call(["sed","-i","s/__version__.*/__version__ = \"" + argv[1] + "\""])
