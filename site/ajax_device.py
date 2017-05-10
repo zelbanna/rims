@@ -57,6 +57,8 @@ def device_info(aWeb):
  elif op == 'update':
   from rest_device import update_info
   d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
+  if not d.get('devices_vm',None):
+   d['devices_vm'] = 0
   opres = opres + " " + str(update_info(d))
 
  db  = GL.DB()

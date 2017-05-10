@@ -63,9 +63,6 @@ def update_info(aDict):
    db.commit()
 
  tbl_id = { 'devices':'id', 'rackinfo':'device_id' } 
- # Checkboxes...
- if not aDict.get('devices_vm',None):
-  aDict['devices_vm'] = 0
  for fkey in aDict.keys():
   # fkey = table _ key
   (table, void, key) = fkey.partition('_')
