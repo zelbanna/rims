@@ -6,7 +6,7 @@ Arp tool
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "10.5GA"
+__version__ = "11.0"
 __status__ = "Production"
 
 def load_arp():
