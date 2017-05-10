@@ -9,7 +9,7 @@ __status__ = "Production"
 
 from sys import exit,argv
 from os import chmod,getcwd
-from settings import convertSettings
+from tools.settings import convertSettings
 
 if len(argv) < 2:
  print "Usage: {} <json settings file>".format(argv[0])
