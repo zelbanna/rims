@@ -19,7 +19,15 @@ def load_arp():
     ret[ip] = mac
  return ret
 
+def update_db():
+ from sys import path
+ path.append('../')
+ import sdcp.core.GenLib as GL
+ db = GL.DB()
+ db.connect()
+ db.do("SELECT ip,mac FROM devices")
+ rows = db.get_all_rows()
+ print rows
+
 if __name__ == "__main__":
- arpdict = load_arp()
- for key,arp in arpdict.iteritems():
-  print "{} -> {}".format(key,arp)
+ update_db()
