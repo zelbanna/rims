@@ -28,10 +28,14 @@ def op(aWeb, aEsxi = None):
   import sdcp.core.GenLib as GL
   try:
    GL.log_msg("ESXi: {} got command {}".format(aEsxi._fqdn,nstate))
-   if "vm-" in nstate:
-    vmop = nstate.split('-')[1]
+   if nstate == 'vmsvc-snapshot.create':
+    from time import strftime
     with aEsxi:
-     aEsxi.ssh_send("vim-cmd vmsvc/power." + vmop + " " + vmid)
+     aEsxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")))
+   elif "vmsvc-" in nstate:
+    vmop = nstate.partition('-')[2]
+    with aEsxi:
+     aEsxi.ssh_send("vim-cmd vmsvc/{} {}".format(vmop,vmid))
    elif nstate == 'poweroff':
     with aEsxi:
      aEsxi.ssh_send("poweroff")
@@ -42,12 +46,13 @@ def op(aWeb, aEsxi = None):
    GL.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  print "<TABLE>"
+ # Formatting template (command, btn-xyz, vm-id, hover text)
  template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
  statelist = aEsxi.get_vms(sort)
  if not nstate:
   print "<TR><TH CLASS='z-header' COLSPAN=2>{}</TH></TR>".format(aEsxi._fqdn)
  else:
-  print "<TR><TH CLASS='z-header' COLSPAN=2>{} - {}:{}</TH></TR>".format(aEsxi._fqdn,vmid, nstate.split('-')[1])
+  print "<TR><TH CLASS='z-header' COLSPAN=2>{} <SPAN style='font-size:12px'>{}:{}</SPAN></TH></TR>".format(aEsxi._fqdn,vmid, nstate.split('-')[1])
  print "<TR><TH><A CLASS='z-op' OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></TH><TH>Operations</TH></TR><TR>"
  if nstate and nstate == 'vmsoff':
   print "<TD><B>SHUTDOWN ALL VMs!</B></TD>"
@@ -59,16 +64,17 @@ def op(aWeb, aEsxi = None):
    print "<TR><TD><B>" + vm[1] + "</B></TD>"
   else:
    print "<TR><TD>" + vm[1] + "</TD>"
-  print "<TD><CENTER>"
+  print "<TD>"
   if vm[2] == "1":
-   print template.format('vm-shutdown','shutdown', vm[0], "Soft shutdown")
-   print template.format('vm-reboot','reboot', vm[0], "Soft reboot")
-   print template.format('vm-suspend','suspend', vm[0], "Suspend")
-   print template.format('vm-off','off', vm[0], "Hard power off")
+   print template.format('vmsvc-power.shutdown','shutdown', vm[0], "Soft shutdown")
+   print template.format('vmsvc-power.reboot','reboot', vm[0], "Soft reboot")
+   print template.format('vmsvc-power.suspend','suspend', vm[0], "Suspend")
+   print template.format('vmsvc-power.off','off', vm[0], "Hard power off")
   elif vm[2] == "3":
-   print template.format('vm-on','start', vm[0], "Start")
-   print template.format('vm-off','off', vm[0], "Hard power off")
+   print template.format('vmsvc-power.on','start', vm[0], "Start")
+   print template.format('vmsvc-power.off','off', vm[0], "Hard power off")
   else:
-   print template.format('vm-on','start', vm[0], "Start")
-  print "</CENTER></TD></TR>"
+   print template.format('vmsvc-power.on','start', vm[0], "Start")
+   print template.format('vmsvc-snapshot.create','snapshot', vm[0], "Snapshot")
+  print "</TD></TR>"
  print "</TABLE>"
