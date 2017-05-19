@@ -285,7 +285,7 @@ def esxi(aWeb):
  print "<DIV CLASS=z-table ID=div_esxi_op style='float:left; display:block'>"
  esxi_op(aWeb,esxi)
  print "</DIV>"
- 
+
  print "<DIV CLASS='z-system' id=div_esxi_pic title='Device picture' style='display:none;'>"
  print "<CENTER><IMG ALT='Image of "+ host +"' SRC='images/" + host + ".jpg'></CENTER>"
  print "</DIV>"

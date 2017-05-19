@@ -32,6 +32,16 @@ def op(aWeb, aEsxi = None):
     from time import strftime
     with aEsxi:
      aEsxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")))
+   elif nstate == 'vmsvc-snapshot.revert':
+    with aEsxi:
+     data = aEsxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid))
+     s_last = 0
+     for line in data.splitlines():
+      if "Snapshot Id" in line:
+       s_id = int(line.split()[3])
+       s_last = s_last if s_last > s_id else s_id
+     if s_last > 0:
+      aEsxi.ssh_send("vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff".format(vmid,s_last))
    elif "vmsvc-" in nstate:
     vmop = nstate.partition('-')[2]
     with aEsxi:
@@ -45,10 +55,10 @@ def op(aWeb, aEsxi = None):
   except Exception as err:
    GL.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
+ statelist = aEsxi.get_vms(sort)
  print "<TABLE>"
  # Formatting template (command, btn-xyz, vm-id, hover text)
- template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
- statelist = aEsxi.get_vms(sort)
+ template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
  if not nstate:
   print "<TR><TH CLASS='z-header' COLSPAN=2>{}</TH></TR>".format(aEsxi._fqdn)
  else:
@@ -76,5 +86,6 @@ def op(aWeb, aEsxi = None):
   else:
    print template.format('vmsvc-power.on','start', vm[0], "Start")
    print template.format('vmsvc-snapshot.create','snapshot', vm[0], "Snapshot")
+   print template.format('vmsvc-snapshot.revert','revert', vm[0], "Snapshot revert to last")
   print "</TD></TR>"
  print "</TABLE>"
