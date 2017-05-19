@@ -13,7 +13,7 @@ __version__ = "10.5GA"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
-from sdcp.core.GenLib import GenDevice
+from GenDevice import GenDevice
 from netsnmp import VarList, Varbind, Session
 
 #
