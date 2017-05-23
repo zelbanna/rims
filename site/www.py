@@ -36,12 +36,12 @@ class Web(object):
   from sys import stdout
   print "Content-Type: text/html\r\n"
   stdout.flush()
-  ajaxcall = self.get_value('call','none_nofunc')
-  (module,void,func) = ajaxcall.partition('_')
+  ajaxcall = self.get_value('call','none_nocall')
+  (module,void,call) = ajaxcall.partition('_')
   from importlib import import_module
   try:
    ajaxmod = import_module("sdcp.site.ajax_" + module)
-   fun = getattr(ajaxmod,func,None)
+   fun = getattr(ajaxmod,call,None)
    fun(self)
   except Exception as err:
    keys = self.get_keys()
@@ -49,7 +49,7 @@ class Web(object):
     keys.remove('call')
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'ajax_module':module, 'function':func, 'args': keys, 'err':str(err) }, sort_keys=True)
+   print dumps({ 'ajax_module':module, 'call':call, 'args': keys, 'err':str(err) }, sort_keys=True)
 
  ################################# PANE #########################################
  #
@@ -83,7 +83,7 @@ class Web(object):
   from sys import stdout
   from json import loads, dumps
   from importlib import import_module
-  print "Content-Type: text/html\r\n"
+  print "Content-Type: application/json\r\n"
   stdout.flush()
   rpc  = self.get_value('rpc','none_nofunc')
   args = self.get_value('args',str({}))
@@ -101,10 +101,7 @@ class Web(object):
   return quote_plus(astring)
 
  def get_dict(self):
-  form = {}
-  for key in self._form.keys():
-   form[key] = self._form.getfirst(key)
-  return form
+  return dict(map(lambda x: (x,self._form.getfirst(x,None)), self._form.keys()))
 
  def get_keys(self):
   return self._form.keys()

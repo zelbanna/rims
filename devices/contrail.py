@@ -27,6 +27,9 @@ class ContrailRPC(object):
  def get_id(self):
   return self._project_id
 
+ def get_auth_token(self):
+  return self._token
+
  def dump(self,aFile):
   from json import dump
   with open(aFile,'w') as f:
@@ -69,11 +72,17 @@ class ContrailRPC(object):
     self._token_expire = int(mktime(strptime(token['expires_at'],"%Y-%m-%dT%H:%M:%S.%fZ")))
     self._project = token['project']['name']
     self._project_id = token['project']['id']
-    self._catalog = token['catalog']
+    catalog = {}
+    for svc in token['catalog']:
+     catalog[svc['name']] = svc
+    self._catalog = catalog
    sock.close()
    return self._catalog
   except HTTPError, h:
-   print "HTTPError: {}\n{}".format(h,h.info())
+   if h.reason == 'Unauthorized' and h.code == 401:
+    pass
+   else:
+    print "{}\n{}".format(h,h.info())
   except URLError, u:
    print "URLError: {}".format(u)
   except Exception, e:

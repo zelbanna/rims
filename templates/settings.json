@@ -43,6 +43,11 @@
   "logformat":"/var/log/network/{}.operations.log",
   "shutdownfile":"/var/tmp/esxi.{}.vmstate.log"
  },
+ "openstack":{
+  "project":"",
+  "username":"",
+  "password":""
+ },
  "ipmi": {
   "username":"",
   "password":"" 

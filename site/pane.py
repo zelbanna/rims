@@ -368,3 +368,76 @@ def config(aWeb):
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config           LNK='ajax.cgi?call=device_mac_sync'>Sync MAC Info</A>"
  print "</DIV>"
  print "<DIV ID=div_config style='min-width:600px; min-height:300px; display:inline;'></DIV>"
+
+##################################################################################################
+#
+# Openstack
+#
+
+def openstack_login(aWeb):
+ from sdcp.devices.contrail import ContrailRPC
+ import sdcp.SettingsContainer as SC
+ name = aWeb.get_value('name')
+ ctrl_ip = aWeb.get_value('controller',"127.0.0.1")
+ contrail = ContrailRPC(ctrl_ip)
+ if not contrail.load("/tmp/openstack." + SC.openstack_project + ".cookie.json"):
+  catalog = contrail.auth({'project':SC.openstack_project, 'username':SC.openstack_username,'password':SC.openstack_password })
+  # Forget about catalog - let user decide what we can do ..
+ print aWeb.get_header_full("{} 2 Cloud".format(name.capitalize()))
+ print aWeb.get_listeners("div_navframe")
+ print "<DIV CLASS='z-navframe' ID=div_navframe>"
+ print "<DIV CLASS='z-centered' style='height:100%;'>"
+ print "<DIV ID=div_openstack_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
+ print "<CENTER><H1>Welcome to {} 2 Cloud portal</H1></CENTER>".format(name.capitalize())
+ print "<FORM ID=openstack_login>"
+ print "<INPUT TYPE=hidden NAME=name VALUE={0}>".format(name)
+ print "<INPUT TYPE=hidden NAME=controller VALUE={0}>".format(ctrl_ip)
+ print "<TABLE style='display:inline; float:left; margin:0px 0px 0px 30px;'>"
+ print "<TR><TD>Customer:</TD><TD><SELECT style='border:none; width:100px; display:inline; color:black' NAME=project>"
+ projects =  contrail.call("5000","v3/projects")['projects']
+ for p in projects:
+  print "<OPTION VALUE={0}_{1}>{1}</OPTION>".format(p['id'],p['name'])
+ print "</SELECT></TD></TR>"
+ print "<TR><TD>Username:</TD><TD>[<INPUT style='z-input' TYPE=text NAME=username>]</TD></TR>"
+ print "<TR><TD>Password:</TD><TD>[<INPUT style='z-input' TYPE=password NAME=password>]</TD></TR>"
+ print "</TABLE>"
+ print "</FORM>"
+ print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=post FRM=openstack_login LNK='pane.cgi?view=openstack_portal' DIV=div_navframe>Login</A>"
+ print "</DIV></DIV>"
+ print "</DIV>"  
+
+def openstack_portal(aWeb):
+ from json import dumps
+ from sdcp.devices.contrail import ContrailRPC
+ (pid,pname) = aWeb.get_value('project').split('_')
+ username = aWeb.get_value('username')
+ password = aWeb.get_value('password')
+ ctrl_ip  = aWeb.get_value('controller')
+ #
+ # Verify login name, create simple "project + username" cookie
+ # 
+ contrail = ContrailRPC(ctrl_ip)
+ if not contrail.load("/tmp/openstack.{}.cookie.json".format(pname)):
+  catalog = contrail.auth({'project':pname, 'username':username,'password':password })
+  if catalog:
+   contrail.dump("/tmp/openstack.{}.cookie.json".format(pname))
+   with open("/tmp/openstack.{}.catalog.json".format(pname),'w') as f:
+    from json import dump
+    dump(catalog,f,indent=4)
+  else:
+   print "Error login in - please try again"
+   return
+ print "<DIV style='height:60px; position:fixed; top:0px; left:0px; right:0px; display:block; z-index:101; border-bottom: 1px solid black;' >"
+ print "<TABLE style='display:inline; float:left; margin:5px 100px 0px 10px;'>"
+ print "<TR><TD>Project:</TD><TD>{}</TD></TR>".format(pname)
+ print "<TR><TD>User:</TD><TD>{}</TD></TR>".format(username)
+ print "</TABLE>"
+ print "</DIV>"
+ print "<DIV CLASS='z-navbar' style='top:60px;' ID=div_navbar>"
+ print "<A CLASS='z-op'          OP=load           DIV=div_openstack_content LNK='ajax.cgi?call=openstack_view_heat&{}'>Heat</A>".format(aWeb.get_args_except(['view','username','password']))
+ print "<A CLASS='z-op'          OP=load SPIN=true DIV=div_openstack_content LNK='ajax.cgi?call=openstack_load&args={}'>Add Service1</A>".format(aWeb.json2html(dumps({'op':'add','svc':'svc1'})))
+ print "<A CLASS='z-reload z-op' OP=load           DIV=div_navframe          LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "</DIV>"
+ print "<DIV ID=div_openstack_content style='position:absolute; top:94px; bottom:0px; width:100%; display:block; clear:left;'>"
+ print contrail
+ print "</DIV>"
