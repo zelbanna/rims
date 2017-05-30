@@ -46,7 +46,8 @@
  "openstack":{
   "project":"",
   "username":"",
-  "password":""
+  "password":"",
+  "cookietemplate":"/tmp/openstack.{}.cookie.json"
  },
  "ipmi": {
   "username":"",
