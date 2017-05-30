@@ -73,7 +73,7 @@ def pdns_get():
 # - returns True if was in sync and False if modified
 # 
 def pdns_sync(dnslist):
- from XtraLib import file_replace
+ from sdcp.core.XtraLib import file_replace
  pdns = pdns_get()
  if not pdns in dnslist:
   from subprocess import check_call
