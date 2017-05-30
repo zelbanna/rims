@@ -64,7 +64,7 @@ def opendns_my_ip():
 #
 
 def pdns_get():
-from subprocess import check_output
+ from subprocess import check_output
  recursor = check_output(["sudo","/bin/grep", "^recursor","/etc/powerdns/pdns.conf"])
  return recursor.split('=')[1].split('#')[0].strip()
 
