@@ -434,10 +434,10 @@ def openstack_portal(aWeb):
  print "</TABLE>"
  print "</DIV>"
  print "<DIV CLASS='z-navbar' style='top:60px;' ID=div_navbar>"
- print "<A CLASS='z-op'          OP=load           DIV=div_openstack_content LNK='ajax.cgi?call=openstack_heat_view&{}'>Heat Stacks</A>".format(aWeb.get_args_except(['view','password','name']))
- print "<A CLASS='z-op'          OP=load SPIN=true DIV=div_openstack_content LNK='ajax.cgi?call=openstack_heat_add&{}'>Add Service</A>".format(aWeb.get_args_except(['view','password','name']))
+ print "<A CLASS='z-op'          OP=load           DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_view&project={}'>Heat Stacks</A>".format(aWeb.get_value('project'))
+ print "<A CLASS='z-op'          OP=load SPIN=true DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_add&&project={}'>Add Service</A>".format(aWeb.get_value('project'))
  print "<A CLASS='z-reload z-op' OP=load           DIV=div_navframe          LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "</DIV>"
- print "<DIV ID=div_openstack_content style='position:absolute; top:94px; bottom:0px; width:100%; display:block; clear:left;'>"
+ print "<DIV ID=div_navcont style='position:absolute; top:94px; bottom:0px; width:100%; display:block; clear:left;'>"
  print openstack
  print "</DIV>"
