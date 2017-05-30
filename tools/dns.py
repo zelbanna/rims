@@ -64,7 +64,7 @@ def opendns_my_ip():
 #
 
 def pdns_get():
-from subprocess import check_output
+ from subprocess import check_output
  recursor = check_output(["sudo","/bin/grep", "^recursor","/etc/powerdns/pdns.conf"])
  return recursor.split('=')[1].split('#')[0].strip()
 
@@ -73,7 +73,7 @@ from subprocess import check_output
 # - returns True if was in sync and False if modified
 # 
 def pdns_sync(dnslist):
- from XtraLib import file_replace
+ from sdcp.core.XtraLib import file_replace
  pdns = pdns_get()
  if not pdns in dnslist:
   from subprocess import check_call
