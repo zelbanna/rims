@@ -4,8 +4,9 @@ WLC Base Class
 
 Junos Router Base Class
 - Junos (Template Class)
-- SRX functions
-- EX functions
+- SRX, EX, QFX, MX sub classes
+
+Uses SettingsContainer for login info..
 
 """
 __author__ = "Zacharias El Banna"
