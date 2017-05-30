@@ -1,17 +1,17 @@
 """Module docstring.
 
-Contrail Library
+Openstack Library
 
 """
 __author__ = "Zacharias El Banna"
 __version__ = "10.5GA"
 __status__ = "Production"
 
-############################################ ContrailRPC ######################################
+############################################ OpenstackRPC ######################################
 #
-# ContrailRPC Class
+# OpenstackRPC Class
 #
-class ContrailRPC(object):
+class OpenstackRPC(object):
 
  def __init__(self, aIP):
   self._token = None
@@ -24,16 +24,10 @@ class ContrailRPC(object):
  def __str__(self):
   return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._ip, self._token, self._token_expire, self._project,self._project_id)
 
- def get_id(self):
-  return self._project_id
-
- def get_auth_token(self):
-  return self._token
-
  def dump(self,aFile):
   from json import dump
   with open(aFile,'w') as f:
-   dump({'token':self._token, 'token_expire':self._token_expire, 'project':self._project, 'ip':self._ip,'project_id':self._project_id },f, sort_keys=True, indent=4)
+   dump({'token':self._token, 'token_expire':self._token_expire, 'project':self._project, 'ip':self._ip,'project_id':self._project_id, 'catalog':self._catalog },f, sort_keys=True, indent=4)
 
  def load(self,aFile):
   from json import load
@@ -47,6 +41,7 @@ class ContrailRPC(object):
      self._token_expire = data['token_expire']
      self._project = data['project']
      self._project_id = data['project_id']
+     self._catalog = data['catalog']
   except:
    pass
   return self._token
@@ -89,29 +84,53 @@ class ContrailRPC(object):
    print "Error: {}".format(e)
   return None
 
+ def get_id(self):
+  return self._project_id
+
+ def get_auth_token(self):
+  return self._token
+
+ def get_catalog(self):
+  return self._catalog
+
  #
- # port = string rep of port
- # op   = '<nested-dirs>'
- # arg  = dict with arguments, empty dict means no arg
+ # Input: Service, auth-type (admin/internal/public)
+ # Returns tuple with:
+ # - base port
+ # - service link
+ # - service id
+ def get_service(self,aService,aType):
+  for svc in self._catalog[aService]['endpoints']:
+   if svc['interface'] == aType:
+    # http : //x.y.z : port / lnk
+    (port,_,lnk) = svc['url'].split(':')[2].partition('/')
+    return (port,lnk,svc['id'])
+  else:
+   return (None,None,None)
+
  #
- def call(self,port,op,arg = {}):
+ # Input:
+ # - port = base port
+ # - lnk  = service link
+ # - arg  = dict with arguments for post operation, empty dict or nothing means no arguments (!)
+ #
+ def call(self,port,lnk,arg = {}):
   from json import loads, dumps
   from urllib2 import urlopen, Request, URLError, HTTPError
   try:
    head = { 'Content-Type': 'application/json', 'X-Auth-Token':self._token }
    if len(arg) == 0:
-    req  = Request("http://{}:{}/{}".format(self._ip,port,op), headers=head)
+    req  = Request("http://{}:{}/{}".format(self._ip,port,lnk), headers=head)
    else:
     args = dumps(arg)
-    req  = Request("http://{}:{}/{}".format(self._ip,port,op), headers=head, data=args)
+    req  = Request("http://{}:{}/{}".format(self._ip,port,lnk), headers=head, data=args)
    sock = urlopen(req)
-   data = sock.read()
+   type,info,data,code = "OK",sock.info(),loads(sock.read()), sock.code
    sock.close()
-   return loads(data)
   except HTTPError, h:
-   error = "HTTPError: {}\n{}".format(h,h.info())
+   type,info,data,code = "HTTPError",h.info(),loads(h.read()),h.code
   except URLError, u:
-   error = "URLError: {}".format(u)
+   type,info,data,code = "URLError",u,None,None
   except Exception, e:
-   error = "Error: {}".format(e)
-  return { 'error':error }
+   type,info,data,code = "Error",e,None,None
+  return { 'header':info, 'type':type, 'data':data, 'code':code }
