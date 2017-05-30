@@ -4,7 +4,7 @@ Generic Library
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "10.5GA"
+__version__ = "11.0GA"
 __status__ = "Production"
 
 ############################################ Database ######################################
@@ -16,7 +16,6 @@ class DB(object):
  def __init__(self):
   self._conn = None
   self._curs = None
-  self._res  = 0
 
  def connect(self):
   import sdcp.SettingsContainer as SC
@@ -40,7 +39,7 @@ class DB(object):
  def get_row(self):
   return self._curs.fetchone()
 
- # Bug in fetchall, a tupple is not an empty list as according to func spec
+ # Bug in fetchall, a tuple is not an empty list in contrary to func spec
  def get_all_rows(self):
   rows = self._curs.fetchall()
   return rows if rows != () else []
