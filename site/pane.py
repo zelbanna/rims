@@ -429,13 +429,14 @@ def openstack_portal(aWeb):
   catalog = openstack.get_catalog()
  print "<DIV style='height:60px; position:fixed; top:0px; left:0px; right:0px; display:block; z-index:101; border-bottom: 1px solid black;' >"
  print "<TABLE style='display:inline; float:left; margin:5px 100px 0px 10px;'>"
- print "<TR><TD>Project:</TD><TD>{}</TD></TR>".format(pname)
- print "<TR><TD>User:</TD><TD>{}</TD></TR>".format(username)
+ print "<TR><TD><B>Identity:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Id:</B></TD><TD><I>{}</I></TD></TR>".format(pname,openstack.get_id())
+ print "<TR><TD><B>Username:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Token:</B></TD><TD><I>{}</I></TD></TR>".format(username,openstack.get_auth_token())
  print "</TABLE>"
  print "</DIV>"
  print "<DIV CLASS='z-navbar' style='top:60px;' ID=div_navbar>"
  print "<A CLASS='z-op'          OP=load           DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_view&project={}'>Heat Stacks</A>".format(aWeb.get_value('project'))
  print "<A CLASS='z-op'          OP=load SPIN=true DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_add&&project={}'>Add Service</A>".format(aWeb.get_value('project'))
+ print "<A CLASS='z-op'          OP=load           DIV=div_navcont LNK='ajax.cgi?call=openstack_contrail_view&project={}'>Virtual Networks</A>".format(aWeb.get_value('project'))
  print "<A CLASS='z-reload z-op' OP=load           DIV=div_navframe          LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "</DIV>"
  print "<DIV ID=div_navcont style='position:absolute; top:94px; bottom:0px; width:100%; display:block; clear:left;'>"

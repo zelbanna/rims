@@ -113,8 +113,9 @@ class OpenstackRPC(object):
  # - port = base port
  # - lnk  = service link
  # - arg  = dict with arguments for post operation, empty dict or nothing means no arguments (!)
+ # - method = used to send other things than GET and POST (i.e. 'DELETE')
  #
- def call(self,port,lnk,arg = {}):
+ def call(self,port,lnk,arg = {}, method = None):
   from json import loads, dumps
   from urllib2 import urlopen, Request, URLError, HTTPError
   try:
@@ -124,11 +125,17 @@ class OpenstackRPC(object):
    else:
     args = dumps(arg)
     req  = Request("http://{}:{}/{}".format(self._ip,port,lnk), headers=head, data=args)
+   if method:
+    req.get_method = lambda: method
    sock = urlopen(req)
-   type,info,data,code = "OK",sock.info(),loads(sock.read()), sock.code
+   type,info,code = "OK", sock.info(), sock.code
+   try: data = loads(sock.read())
+   except: data = None
    sock.close()
   except HTTPError, h:
-   type,info,data,code = "HTTPError",h.info(),loads(h.read()),h.code
+   type,info,code = "HTTPError",h.info(),h.code
+   try: data = loads(h.read())
+   except: data = None
   except URLError, u:
    type,info,data,code = "URLError",u,None,None
   except Exception, e:
