@@ -76,7 +76,9 @@ def heat_action(aWeb):
  if not controller.load(SC.openstack_cookietemplate.format(pname)):
   print "Not logged in"
   return
+ aWeb.log_msg("openstack_heat_action - id:{} name:{} op:{} for project:{}".format(id,name,op,project))
  port,lnk,svc = controller.get_service('heat','public')
+
  if   op == 'info':
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info LNK=ajax.cgi?call=openstack_heat_action&project=" + project + "&name=" + name + "&id=" + id+ "&op={} OP=load SPIN=true>{}</A>"
   print "<DIV>"
@@ -230,6 +232,7 @@ def nova_action(aWeb):
  if not controller.load(SC.openstack_cookietemplate.format(pname)):
   print "Not logged in"
   return
+ aWeb.log_msg("openstack_nova_action - id:{} name:{} op:{} for project:{}".format(id,name,op,project))
  port,lnk,svc = controller.get_service('nova','public')
 
  if   op == 'info':
