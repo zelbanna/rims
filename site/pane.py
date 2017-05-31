@@ -398,8 +398,8 @@ def openstack_login(aWeb):
  for p in projects:
   print "<OPTION VALUE={0}_{1}>{1}</OPTION>".format(p['id'],p['name'])
  print "</SELECT></TD></TR>"
- print "<TR><TD>Username:</TD><TD>[<INPUT style='z-input' TYPE=text NAME=username>]</TD></TR>"
- print "<TR><TD>Password:</TD><TD>[<INPUT style='z-input' TYPE=password NAME=password>]</TD></TR>"
+ print "<TR><TD>Username:</TD><TD><INPUT style='z-input' TYPE=text NAME=username></TD></TR>"
+ print "<TR><TD>Password:</TD><TD><INPUT style='z-input' TYPE=password NAME=password></TD></TR>"
  print "</TABLE>"
  print "</FORM>"
  print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=post FRM=openstack_login LNK='pane.cgi?view=openstack_portal' DIV=div_navframe>Login</A>"

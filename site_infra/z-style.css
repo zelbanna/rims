@@ -116,7 +116,7 @@ a.z-small-btn > img { height:22px; }
 
 a.z-low-btn {    border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; position: relative; bottom: -26px; }
 
-a.z-srv-btn {	 background-image: url(images/icon-esxi.png); width:54px; font-weight:bold; text-align: right; text-shadow: 2px 1px grey }
+a.z-icon-txt-btn {	width:54px; font-weight:bold; font-size:12px; text-align: right; text-shadow: 2px 1px grey }
 
 a.z-warning {    background-color:red!important; }
 
