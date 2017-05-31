@@ -14,7 +14,7 @@
 // - iconfirm iframe lnk msg
 // - reload   lnk
 // - iload    iframe lnk
-// - post     div lnk form (to serialize) spin(tru/false)
+// - post     div lnk frm (to serialize) spin(true/false)
 //
 
 function btnoperation(button) {

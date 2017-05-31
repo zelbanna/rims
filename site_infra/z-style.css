@@ -122,32 +122,18 @@ a.z-warning {    background-color:red!important; }
 
 /*###############################################################################################*/
 
-.z-input {
- width:100%;
- border:none;
- overflow:visible;
- background-color: transparent;
- color: black;
-}
-.z-input::placeholder{        color: darkgray; }
-::-webkit-input-placeholder { color: darkgray; }
-::-moz-placeholder {          color: darkgray; }
-:-ms-input-placeholder {      color: darkgray; }
-:-moz-placeholder {           color: darkgray; }
+.z-input { width:100%; border:none; overflow:visible; background-color: transparent; color: black; }
+.z-input::-webkit-input-placeholder { color: darkgrey; }
+.z-input:-moz-placeholder {	  color: darkgrey;  }
+.z-input::-moz-placeholder {	  color: darkgrey;  }
+.z-input:-ms-input-placeholder {  color: darkgrey;  }
 
-.z-select {
- width:100%;
- border: none;
- overflow: visible;
- background-color: transparent;
- color: black;
-}
+.z-select { width:100%; border: none; overflow: visible; background-color: transparent; color: black; }
 
 .z-font-sub { position: relative; bottom: -36px; font-size: smaller; }
 
 div.z-overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:1000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
-div.z-loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 2s linear infinite; 
-animation: spin 2s linear infinite; z-index:1001; }
+div.z-loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 2s linear infinite; animation: spin 2s linear infinite; z-index:1001; }
 @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 

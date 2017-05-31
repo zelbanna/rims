@@ -439,7 +439,7 @@ def openstack_portal(aWeb):
  print "<A CLASS='z-op'          OP=load           DIV=div_navleft  LNK='ajax.cgi?call=openstack_nova_list&project={}'>Virtual Machines</A>".format(aWeb.get_value('project'))
  print "<A CLASS='z-reload z-op' OP=load           DIV=div_navframe LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "</DIV>"
- print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px;'></DIV>"
- print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; overflow-x:auto'>"
+ print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px; width:400px;'></DIV>"
+ print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px; overflow-x:auto'>"
  print openstack
  print "</DIV>"
