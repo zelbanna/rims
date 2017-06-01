@@ -4,7 +4,7 @@ Module for generic device interaction
 
 """  
 __author__  = "Zacharias El Banna"
-__version__ = "10.5GA"
+__version__ = "17.6.1GA"
 __status__  = "Production"
 
 #

@@ -4,7 +4,7 @@ REST interface module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__ = "1.0GA"
+__version__ = "17.6.1GA"
 __status__= "Production"
 
 # from sdcp.core.GenLib import log_msg

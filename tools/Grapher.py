@@ -7,7 +7,7 @@ Exports:
 
 """  
 __author__ = "Zacharias El Banna"
-__version__ = "11.0"
+__version__ = "17.6.1GA"
 __status__ = "Production"
 
 import sdcp.core.GenLib as GL

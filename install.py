@@ -4,7 +4,7 @@
 Creates a settings container from a .json file
 """
 __author__ = "Zacharias El Banna"
-__version__ = "10.5GA"
+__version__ = "17.6.1GA"
 __status__ = "Production"
 
 from sys import exit,argv
