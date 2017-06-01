@@ -18,7 +18,7 @@ import sdcp.SettingsContainer as SC
 def _print_info(aName,aData):
  print "<H2>{}</H2>".format(aName)
  print "<TABLE style='width:99%'>"
- print "<TR><TH>Field</TH><TH>Data</TH></TR>"
+ print "<THEAD><TH>Field</TH><TH>Data</TH></THEAD>"
  for key,value in aData.iteritems():
   if not isinstance(value,dict):
    print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'>{}</TD></TR>".format(key,value)
@@ -41,12 +41,12 @@ def heat_list(aWeb):
  port,lnk,svc = controller.get_service('heat','public')
  ret = controller.call(port,lnk + "/stacks") 
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"
- print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Heat Stacks</CENTER></TH></TR>"
+ print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Heat Stacks</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=openstack_heat_list&project={}'><IMG SRC='images/btn-reboot.png'></A>".format(project)
  print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_choose_template&project={}'><IMG SRC='images/btn-add.png'></A>".format(project)
  print "</TR>"
- print "<TR><TH>Name</TH><TH>Status</TH><TH>Operations</TH></TR>"
+ print "<THEAD><TH>Name</TH><TH>Status</TH><TH>Operations</TH></THEAD>"
  for stack in ret['data'].get('stacks',None):
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_heat_action&project=" + project + "&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} OP=load SPIN=true>{}</A>"
   print "<TR>"
@@ -67,11 +67,11 @@ def heat_list(aWeb):
 #
 def heat_choose_template(aWeb):
  project = aWeb.get_value('project')
- print "<DIV CLASS='z-table' style='width:600px'>"
- print "<FORM ID=frm_heat_choose_template style='display:inline'>"
+ print "<DIV CLASS='z-table' style='display:inline-block; padding:6px'>"
+ print "<FORM ID=frm_heat_choose_template>"
  print "<INPUT TYPE=hidden NAME=project VALUE={}>".format(project)
  try:
-  print "Select solution:<SELECT NAME=template style='height:22px;'>"
+  print "Add solution from template:<SELECT NAME=template style='height:22px;'>"
   from os import listdir
   for file in listdir("os_templates/"):
    name = file.partition('.')[0]
@@ -79,15 +79,32 @@ def heat_choose_template(aWeb):
   print "</SELECT>"
  except Exception as err:
   print "openstack_choose_template: error finding template files in 'os_templates/' [{}]".format(str(err))
- print "Unique name:<INPUT CLASS='z-input' TYPE=TEXT NAME=name style='background-color:white; display:inline; width:260px; height:23px;' PLACEHOLDER='new-solution'>"
  print "</FORM>"
- print "<A TITLE='Load'          CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info LNK='ajax.cgi?call=openstack_heat_parameters'><IMG SRC='images/btn-start.png'></A>"
- print "<A TITLE='View template' CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info LNK='ajax.cgi?call=openstack_heat_action&op=templateview'><IMG SRC='images/btn-document.png'></A>"
+ print "<A TITLE='Enter parameters' CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info LNK='ajax.cgi?call=openstack_heat_enter_parameters'><IMG SRC='images/btn-document.png'></A>"
+ print "<A TITLE='View template'    CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info LNK='ajax.cgi?call=openstack_heat_action&op=templateview'><IMG SRC='images/btn-info.png'></A>"
  print "</DIV>"
  print "<DIV ID=div_os_info></DIV>"
 
-def heat_parameters(aWeb):
- 
+def heat_enter_parameters(aWeb):
+ from json import load,dumps
+ project  = aWeb.get_value('project')
+ template = aWeb.get_value('template')
+ with open("os_templates/"+template) as f:
+  data = load(f)
+ print "<DIV CLASS='z-table' style='display:inline-block; padding:6px'>"
+ print "<FORM ID=frm_heat_template_parameters>"
+ print "<INPUT TYPE=hidden NAME=project VALUE={}>".format(project)
+ print "<INPUT TYPE=hidden NAME=template VALUE={}>".format(template)
+ print "<TABLE>"
+ print "<THEAD><TH>Parameter</TH><TH style='min-width:300px'>Value</TH></THEAD>"
+ print "<TR><TD><B>Unique Name</B></TD><TD><INPUT CLASS='z-input' TYPE=text NAME=name PLACEHOLDER='change-this-name'></TD></TR>"
+ for key,value in data['parameters'].iteritems():
+  print "<TR><TD>{0}</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></TD></TR>".format(key,value)
+ print "</TABLE>"
+ print "</FORM>"
+ print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' OP=post SPIN=true FRM=frm_heat_template_parameters DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_action&op=create2'><IMG SRC='images/btn-start.png'></A>"
+ print "</DIV>"
+
 #
 # Heat Actions
 #
@@ -156,10 +173,13 @@ def heat_action(aWeb):
  elif op == 'create':
   template = aWeb.get_value('template')
   if name and template:
-   from json import load
+   from json import load,dumps
    with open("os_templates/"+template) as f:
     data = load(f)
    data['stack_name'] = name
+   params  = aWeb.get_args2dict_except(['op','call','template','project','name'])
+   for key,value in params.iteritems():
+    data['parameters'][key[6:]] = value
    ret = controller.call(port,lnk + "/stacks",arg=data)
    if ret['code'] == 201:
     print "<DIV CLASS='z-table'>"
@@ -192,8 +212,8 @@ def contrail_list(aWeb):
  ret = controller.call("8082","virtual-networks")
  # print ret
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"
- print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Contrail VNs</CENTER></TH></TR>"
- print "<TR><TH>Owner</TH><TH>Network</TH></TR>"
+ print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Contrail VNs</CENTER></TH></THEAD>"
+ print "<THEAD><TH>Owner</TH><TH>Network</TH></THEAD>"
  for net in ret['data']['virtual-networks']:
   # net['uuid']
   if net['fq_name'][1] == pname:
@@ -213,11 +233,11 @@ def nova_list(aWeb):
  port,lnk,svc = controller.get_service('nova','public')
  ret = controller.call(port,lnk + "/servers")
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"
- print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Nova Servers</CENTER></TH></TR>"
+ print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Nova Servers</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=openstack_nova_list&project={}'><IMG SRC='images/btn-reboot.png'></A>".format(project)
  print "</TR>"
- print "<TR><TH>Name</TH><TH style='width:94px;'>Operations</TH></TR>"
+ print "<THEAD><TH>Name</TH><TH style='width:94px;'>Operations</TH></THEAD>"
  for server in ret['data'].get('servers',None):
   print "<TR>"
   print "<TD>{}</TD>".format(server['name'])
