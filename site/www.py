@@ -72,33 +72,7 @@ class Web(object):
     print " - possible panes:[{}]".format(", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
    print "</SPAN>"
  
- ################################# REST #########################################
- #
- # REST API:
- # - rpc: operation/function to call
- # - args: json string with arguments passed on as single argument to function call
- # - format: pretty print if True
- #
- def rest(self):
-  from sys import stdout
-  from json import loads, dumps
-  from importlib import import_module
-  print "Content-Type: application/json\r\n"
-  stdout.flush()
-  rpc  = self.get_value('rpc','none_nofunc')
-  args = self.get_value('args',str({}))
-  (module,void,func) = rpc.partition('_')
-  try:
-   mod = import_module("sdcp.site.rest_" + module)
-   fun = getattr(mod,func,lambda x: { 'err':"No such function in module", 'args':x, 'rest_module':module, 'function':func })
-   print dumps(fun(loads(args)))
-  except Exception as err:
-   print dumps({ 'err':'module_error', 'res':str(err), 'rest_module':module, 'function':func }, sort_keys=True)
-
  ############################## CGI/Web functions ###############################
- def json2html(self,astring):
-  from urllib import quote_plus
-  return quote_plus(astring)
 
  def get_dict(self):
   return dict(map(lambda x: (x,self._form.getfirst(x,None)), self._form.keys()))

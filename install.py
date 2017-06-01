@@ -18,9 +18,6 @@ else:
  convertSettings(argv[1])
 
 import SettingsContainer as SC
-siteajax  = "{}/ajax.cgi".format(SC.sdcp_docroot)
-sitepane  = "{}/pane.cgi".format(SC.sdcp_docroot)
-siterest  = "{}/rest.cgi".format(SC.sdcp_docroot)
 
 for dest in [ 'ajax', 'pane', 'rest' ]:
  site = "{}/{}.cgi".format(SC.sdcp_docroot,dest)
@@ -30,9 +27,13 @@ for dest in [ 'ajax', 'pane', 'rest' ]:
   wr("# -*- coding: utf-8 -*-\n")
   wr("from sys import path as syspath\n")
   wr("syspath.insert(1, '{}')\n".format(getcwd().rpartition('/')[0]))
-  wr("from sdcp.site.www import Web\n")
-  wr("web = Web(aDebug = True)\n")
-  wr("web.{}()\n".format(dest))
+  if dest == 'rest':
+   wr("from sdcp.site.rest import rest_server\n")
+   wr("rest_server()\n")
+  else:
+   wr("from sdcp.site.www import Web\n")
+   wr("web = Web()\n")
+   wr("web.{}()\n".format(dest))
  chmod(site,0755)
 
 #

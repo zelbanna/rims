@@ -44,7 +44,7 @@ def heat_list(aWeb):
  print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Heat Stacks</CENTER></TH></TR>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=openstack_heat_list&project={}'><IMG SRC='images/btn-reboot.png'></A>".format(project)
- print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_add&project={}'><IMG SRC='images/btn-add.png'></A>".format(project)
+ print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_choose_template&project={}'><IMG SRC='images/btn-add.png'></A>".format(project)
  print "</TR>"
  print "<TR><TH>Name</TH><TH>Status</TH><TH>Operations</TH></TR>"
  for stack in ret['data'].get('stacks',None):
@@ -65,29 +65,29 @@ def heat_list(aWeb):
 #
 # Add instantiation
 #
-def heat_add(aWeb):
+def heat_choose_template(aWeb):
  project = aWeb.get_value('project')
- print "<DIV CLASS='z-table' style='width:400px'>"
- print "<FORM ID=frm_heat_add style='display:inline'>"
+ print "<DIV CLASS='z-table' style='width:600px'>"
+ print "<FORM ID=frm_heat_choose_template style='display:inline'>"
  print "<INPUT TYPE=hidden NAME=project VALUE={}>".format(project)
- print "<TABLE>"
- print "<TR><TH COLSPAN=2><CENTER>Parameters</CENTER></TH></TR>"
- print "<TR><TD>Instantiate solution:</TD><TD><SELECT NAME=template style='height:22px;'>"
  try:
+  print "Select solution:<SELECT NAME=template style='height:22px;'>"
   from os import listdir
   for file in listdir("os_templates/"):
    name = file.partition('.')[0]
    print "<OPTION VALUE={}>{}</OPTION>".format(file,name)
+  print "</SELECT>"
  except Exception as err:
-  print "openstack_heat_add: error finding template files in 'os_templates/' [{}]".format(str(err))
- print "</SELECT></TD></TR>"
- print "<TR><TD>Unique name:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=name style='background-color:white; display:inline; width:260px; height:23px;' PLACEHOLDER='new-solution'></TD></TR>"
- print "</TABLE></FORM>"
- print "<A TITLE='Instantiate' CLASS='z-btn z-small-btn z-op' SPIN=true OP=post FRM=frm_heat_add DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_action&project={}&op=create'><IMG SRC='images/btn-start.png'></A>".format(project) 
- print "<A TITLE='Preview'     CLASS='z-btn z-small-btn z-op'           OP=post FRM=frm_heat_add DIV=div_os_info LNK='ajax.cgi?call=openstack_heat_action&project={}&op=templateview'><IMG SRC='images/btn-document.png'></A>".format(project) 
+  print "openstack_choose_template: error finding template files in 'os_templates/' [{}]".format(str(err))
+ print "Unique name:<INPUT CLASS='z-input' TYPE=TEXT NAME=name style='background-color:white; display:inline; width:260px; height:23px;' PLACEHOLDER='new-solution'>"
+ print "</FORM>"
+ print "<A TITLE='Load'          CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info LNK='ajax.cgi?call=openstack_heat_parameters'><IMG SRC='images/btn-start.png'></A>"
+ print "<A TITLE='View template' CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info LNK='ajax.cgi?call=openstack_heat_action&op=templateview'><IMG SRC='images/btn-document.png'></A>"
  print "</DIV>"
  print "<DIV ID=div_os_info></DIV>"
 
+def heat_parameters(aWeb):
+ 
 #
 # Heat Actions
 #
@@ -143,6 +143,7 @@ def heat_action(aWeb):
   from json import dumps
   ret = controller.call(port,lnk + "/stacks/{}/{}/template".format(name,id))
   print "<PRE>" + dumps(ret['data'], indent=4) + "</PRE>"
+
  elif op == 'parameters':
   from json import dumps
   ret = controller.call(port,lnk + "/stacks/{}/{}".format(name,id))

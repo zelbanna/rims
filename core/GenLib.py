@@ -57,22 +57,6 @@ class DB(object):
   self._curs.close()
   self._conn.close()
 
-################################ RPC ###########################################
-
-def rpc_call(aurl,op,args):
-  from json import loads, dumps
-  from urllib import urlopen
-  arg = dumps(args)
-  lnk = aurl + "rest.cgi?rpc={}&args={}".format(op,arg)
-  try:
-   log_msg(lnk)
-   sock = urlopen(lnk)
-   res  = sock.read()
-   sock.close()
-   return loads(res)
-  except Exception as err:
-   return { 'err':str(err) }
- 
 ################################# Generics ####################################
 
 def get_host(ahost):
