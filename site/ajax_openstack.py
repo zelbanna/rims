@@ -28,11 +28,9 @@ def _print_info(aName,aData):
     print "<TR><TD>{}</TD><TD>{}</TD>".format(k,v)
    print "</TABLE></TD></TR>"
  print "</TABLE>"
- 
 
-############################### Heatstack #############################
+##################################### Heatstack ##################################
 #
-# rename to heat_list
 def heat_list(aWeb):
  project = aWeb.get_value('project')
  (pid,pname) = project.split('_')
@@ -63,8 +61,35 @@ def heat_list(aWeb):
  print "</TABLE>"
  print "</DIV>"
 
+######################### HEAT ADD ######################
 #
-# Heat Action with op
+# Add instantiation
+#
+def heat_add(aWeb):
+ project = aWeb.get_value('project')
+ print "<DIV CLASS='z-table' style='width:400px'>"
+ print "<FORM ID=frm_heat_add style='display:inline'>"
+ print "<INPUT TYPE=hidden NAME=project VALUE={}>".format(project)
+ print "<TABLE>"
+ print "<TR><TH COLSPAN=2><CENTER>Parameters</CENTER></TH></TR>"
+ print "<TR><TD>Instantiate solution:</TD><TD><SELECT NAME=template style='height:22px;'>"
+ try:
+  from os import listdir
+  for file in listdir("os_templates/"):
+   name = file.partition('.')[0]
+   print "<OPTION VALUE={}>{}</OPTION>".format(file,name)
+ except Exception as err:
+  print "openstack_heat_add: error finding template files in 'os_templates/' [{}]".format(str(err))
+ print "</SELECT></TD></TR>"
+ print "<TR><TD>Unique name:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=name style='background-color:white; display:inline; width:260px; height:23px;' PLACEHOLDER='new-solution'></TD></TR>"
+ print "</TABLE></FORM>"
+ print "<A TITLE='Instantiate' CLASS='z-btn z-small-btn z-op' SPIN=true OP=post FRM=frm_heat_add DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_action&project={}&op=create'><IMG SRC='images/btn-start.png'></A>".format(project) 
+ print "<A TITLE='Preview'     CLASS='z-btn z-small-btn z-op'           OP=post FRM=frm_heat_add DIV=div_os_info LNK='ajax.cgi?call=openstack_heat_action&project={}&op=templateview'><IMG SRC='images/btn-document.png'></A>".format(project) 
+ print "</DIV>"
+ print "<DIV ID=div_os_info></DIV>"
+
+#
+# Heat Actions
 #
 def heat_action(aWeb):
  project = aWeb.get_value('project')
@@ -83,6 +108,7 @@ def heat_action(aWeb):
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info LNK=ajax.cgi?call=openstack_heat_action&project=" + project + "&name=" + name + "&id=" + id+ "&op={} OP=load SPIN=true>{}</A>"
   print "<DIV>"
   print tmpl.format('Stack Details','details','Details')
+  print tmpl.format('Stack Parameters','events','Events')
   print tmpl.format('Stack Template','template','Template')
   print tmpl.format('Stack Parameters','parameters','Parameters')
   print "</DIV>"
@@ -90,6 +116,14 @@ def heat_action(aWeb):
   ret = controller.call(port,lnk + "/stacks/{}/{}".format(name,id))
   _print_info(name,ret['data']['stack'])
   print "</DIV>"
+
+ elif op == 'events':
+  from json import dumps
+  ret = controller.call(port,lnk + "/stacks/{}/{}/events".format(name,id))
+  print "<TABLE>"
+  for event in ret['data']['events']:
+   print "<TR><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>".format(event['resource_name'],event['logical_resource_id'],event['resource_status'],event['resource_status_reason'])
+  print "</TABLE>"
 
  elif op == 'details':
   ret = controller.call(port,lnk + "/stacks/{}/{}".format(name,id))
@@ -145,32 +179,6 @@ def heat_action(aWeb):
   print "<DIV CLASS='z-table'><PRE>"
   print dumps(data, indent=4, sort_keys=True)
   print "</PRE></DIV>"
-  
-#
-# Add instantiation
-#
-def heat_add(aWeb):
- project = aWeb.get_value('project')
- print "<DIV CLASS='z-table' style='width:400px'>"
- print "<FORM ID=frm_heat_add style='display:inline'>"
- print "<INPUT TYPE=hidden NAME=project VALUE={}>".format(project)
- print "<TABLE>"
- print "<TR><TH COLSPAN=2><CENTER>Parameters</CENTER></TH></TR>"
- print "<TR><TD>Instantiate solution:</TD><TD><SELECT NAME=template style='height:22px;'>"
- try:
-  from os import listdir
-  for file in listdir("os_templates/"):
-   name = file.partition('.')[0]
-   print "<OPTION VALUE={}>{}</OPTION>".format(file,name)
- except Exception as err:
-  print "openstack_heat_add: error finding template files in 'os_templates/' [{}]".format(str(err))
- print "</SELECT></TD></TR>"
- print "<TR><TD>Unique name:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=name style='background-color:white; display:inline; width:260px; height:23px;' PLACEHOLDER='new-solution'></TD></TR>"
- print "</TABLE></FORM>"
- print "<A TITLE='Instantiate' CLASS='z-btn z-small-btn z-op' SPIN=true OP=post FRM=frm_heat_add DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_action&project={}&op=create'><IMG SRC='images/btn-start.png'></A>".format(project) 
- print "<A TITLE='Preview'     CLASS='z-btn z-small-btn z-op'           OP=post FRM=frm_heat_add DIV=div_os_info LNK='ajax.cgi?call=openstack_heat_action&project={}&op=templateview'><IMG SRC='images/btn-document.png'></A>".format(project) 
- print "</DIV>"
- print "<DIV ID=div_os_info></DIV>"
 
 ############################### Contrail ##############################
 #
@@ -224,10 +232,11 @@ def nova_list(aWeb):
 # Actions
 # 
 def nova_action(aWeb):
- (pid,pname) = aWeb.get_value('project').split('_')
+ project = aWeb.get_value('project')
  name = aWeb.get_value('name')
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
+ (pid,pname) = project.split('_')
  controller = OpenstackRPC("127.0.0.1")
  if not controller.load(SC.openstack_cookietemplate.format(pname)):
   print "Not logged in"
