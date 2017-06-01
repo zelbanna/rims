@@ -15,7 +15,7 @@ __status__= "Production"
 # - reads body to find input data
 # - returns json:ed response from function
 # 
-def rest_server():
+def server():
  from os import getenv
  from sys import stdout, stdin
  from json import loads, dumps
@@ -41,7 +41,7 @@ def rest_server():
 # - args = body/content 
 #
 #  returns un-json:ed data
-def rest_call(aurl,amod,args):
+def call(aurl,amod,args):
  from json import loads, dumps
  from urllib2 import urlopen, Request, HTTPError
  head = { 'Content-Type': 'application/json' }

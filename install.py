@@ -28,8 +28,8 @@ for dest in [ 'ajax', 'pane', 'rest' ]:
   wr("from sys import path as syspath\n")
   wr("syspath.insert(1, '{}')\n".format(getcwd().rpartition('/')[0]))
   if dest == 'rest':
-   wr("from sdcp.site.rest import rest_server\n")
-   wr("rest_server()\n")
+   wr("import sdcp.core.rest as REST\n")
+   wr("REST.server()\n")
   else:
    wr("from sdcp.site.www import Web\n")
    wr("web = Web()\n")
