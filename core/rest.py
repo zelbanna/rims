@@ -16,23 +16,25 @@ from sdcp.core.GenLib import log_msg
 # - returns json:ed response from function
 # 
 def server():
- from os import getenv
+ from os import getenv, environ
  from sys import stdout, stdin
  from json import loads, dumps
- from importlib import import_module
- # Assume (!) api = abc_xyz
- api  = getenv("QUERY_STRING").partition("=")[2]
- path = getenv("X-Z-PATH")
+ api = getenv("HTTP_X_Z_API")
+ if api:
+  path = getenv("HTTP_X_Z_PATH")
+ else:
+  api  = getenv("QUERY_STRING").partition("=")[2]
+  path = "sdcp.site"
  (module,void,func) = api.partition('_')
- print "X-Z-Module:{}\r".format(module)
+ print "X-Z-Mod:{}\r".format(module)
  print "X-Z-Func:{}\r".format(func)
  print "X-Z-Path:{}\r".format(path)
  print "Content-Type: application/json\r"
- log_msg("REST server - {} {} {}".format(path,module,func))
  body = stdin.read()
  args = body if len(body) > 0 else '{"args":"empty"}'
  try:
-  mod = import_module("sdcp.site.rest_" + module)
+  from importlib import import_module
+  mod = import_module(path + ".rest_" + module)
   fun = getattr(mod,func,lambda x: { 'err':"No such function in module", 'args':x })
   data = dumps(fun(loads(args)))
  except Exception as err:
@@ -51,10 +53,10 @@ def server():
 def call(aurl,amod,args):
  from json import loads, dumps
  from urllib2 import urlopen, Request, HTTPError
- head = { 'Content-Type': 'application/json', 'X-Z-Path':'sdcp.site' }
+ head = { 'Content-Type': 'application/json', 'X-Z-Path':'sdcp.site', 'X-Z-API':amod }
  try:
   arg = dumps(args)
-  req = Request(aurl + "?api=" + amod, headers=head, data=arg)
+  req = Request(aurl, headers=head, data=arg)
   sock = urlopen(req)
   try: data = sock.read()
   except: data = '{ "rest_response":"no_data" }'
