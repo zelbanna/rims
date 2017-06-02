@@ -436,10 +436,11 @@ def openstack_portal(aWeb):
  print "</TABLE>"
  print "</DIV>"
  print "<DIV CLASS='z-navbar' style='top:60px;' ID=div_navbar>"
- print "<A CLASS='z-op'          OP=load           DIV=div_navleft  LNK='ajax.cgi?call=openstack_heat_list&project={}'>Orchestration</A>".format(aWeb.get_value('project'))
- print "<A CLASS='z-op'          OP=load           DIV=div_navleft  LNK='ajax.cgi?call=openstack_contrail_list&project={}'>Virtual Networks</A>".format(aWeb.get_value('project'))
- print "<A CLASS='z-op'          OP=load           DIV=div_navleft  LNK='ajax.cgi?call=openstack_nova_list&project={}'>Virtual Machines</A>".format(aWeb.get_value('project'))
- print "<A CLASS='z-reload z-op' OP=load           DIV=div_navframe LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-op'           OP=load DIV=div_navleft  LNK='ajax.cgi?call=openstack_heat_list&project={}'>Orchestration</A>".format(aWeb.get_value('project'))
+ print "<A CLASS='z-op'           OP=load DIV=div_navleft  LNK='ajax.cgi?call=openstack_contrail_list&project={}'>Virtual Networks</A>".format(aWeb.get_value('project'))
+ print "<A CLASS='z-op'           OP=load DIV=div_navleft  LNK='ajax.cgi?call=openstack_nova_list&project={}'>Virtual Machines</A>".format(aWeb.get_value('project'))
+ print "<A CLASS='z-op' SPIN=true OP=load DIV=div_navcont  LNK='ajax.cgi?call=appformix_report&project={}'>Usage Report</A>".format(aWeb.get_value('project'))
+ print "<A CLASS='z-reload z-op'  OP=load DIV=div_navframe LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px; width:400px;'></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px; overflow-x:auto'>"

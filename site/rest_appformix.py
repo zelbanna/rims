@@ -1,6 +1,6 @@
 """Module docstring.
 
- Device restAPI module
+ Appformix restAPI module
 
 """
 __author__ = "Zacharias El Banna"
@@ -13,6 +13,6 @@ import sdcp.core.GenLib as GL
 # lookup_info(id)
 #
 #
-def alarm(aDict): 
+def alarm(aDict):
  GL.log_msg("appformix_alarm: [{}]".format(str(aDict)))
- return { 'res':'got alarm', 'data':aDict}
+ return { 'res':'got alarm', 'data':'waiting to find out what to do with it :-)'}

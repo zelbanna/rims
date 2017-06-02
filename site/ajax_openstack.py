@@ -15,8 +15,7 @@ __status__= "Production"
 from sdcp.devices.openstack import OpenstackRPC
 import sdcp.SettingsContainer as SC
 
-def _print_info(aName,aData):
- print "<H2>{}</H2>".format(aName)
+def _print_info(aData):
  print "<TABLE style='width:99%'>"
  print "<THEAD><TH>Field</TH><TH>Data</TH></THEAD>"
  for key,value in aData.iteritems():
@@ -25,7 +24,7 @@ def _print_info(aName,aData):
   else:
    print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'><TABLE style='width:100%'>".format(key)
    for k,v in value.iteritems():
-    print "<TR><TD>{}</TD><TD>{}</TD>".format(k,v)
+    print "<TR><TD>{}</TD><TD>{}</TD></TR>".format(k,v)
    print "</TABLE></TD></TR>"
  print "</TABLE>"
 
@@ -131,7 +130,8 @@ def heat_action(aWeb):
   print "</DIV>"
   print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
   ret = controller.call(port,lnk + "/stacks/{}/{}".format(name,id))
-  _print_info(name,ret['data']['stack'])
+  print "<H2>{}</H2>".format(name)
+  _print_info(ret['data']['stack'])
   print "</DIV>"
 
  elif op == 'events':
@@ -144,7 +144,8 @@ def heat_action(aWeb):
 
  elif op == 'details':
   ret = controller.call(port,lnk + "/stacks/{}/{}".format(name,id))
-  _print_info(name,ret['data']['stack'])
+  print "<H2>{}</H2>".format(name)
+  _print_info(ret['data']['stack'])
 
  elif op == 'remove':
   ret = controller.call(port,lnk + "/stacks/{}/{}".format(name,id), method='DELETE')
@@ -269,7 +270,8 @@ def nova_action(aWeb):
  if   op == 'info':
   ret = controller.call(port,lnk + "/servers/{}".format(id))
   print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
-  _print_info(name,ret['data']['server'])
+  print "<H2>{}</H2>".format(name)
+  _print_info(ret['data']['server'])
   print "</DIV>"
  elif op == 'remove':
   ret = controller.call(port,lnk + "/servers/{}".format(id), method='DELETE')
