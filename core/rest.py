@@ -54,7 +54,7 @@ def call(aurl,amod,args):
  head = { 'Content-Type': 'application/json', 'X-Z-Path':'sdcp.site' }
  try:
   arg = dumps(args)
-  req = Request(aurl + "rest.cgi?api=" + amod, headers=head, data=arg)
+  req = Request(aurl + "?api=" + amod, headers=head, data=arg)
   sock = urlopen(req)
   try: data = sock.read()
   except: data = '{ "rest_response":"no_data" }'

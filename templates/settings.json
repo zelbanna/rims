@@ -11,7 +11,7 @@
   "ntpsrv":"127.0.0.1"
  },
  "dnsdb" : {
-  "proxy" : "http://<ip>/",
+  "proxy" : "http://<ip-if-using-rest>/rest.cgi",
   "url" : "",
   "username" : "",
   "password" : "",
@@ -20,7 +20,7 @@
  },
  "ipamdb" : {
   "proxy" : "False",
-  "url" : "",
+  "url" : "http://<ip-if-using-rest>/rest.cgi",
   "username" : "username",
   "password" : "password",
   "dbname": "dbname",
