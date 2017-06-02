@@ -24,10 +24,6 @@ def server():
  if not api:
   api = getenv("QUERY_STRING").partition("=")[2]
  (module,void,func) = api.partition('_')
- print "X-Z-Mod:{}\r".format(module)
- print "X-Z-Func:{}\r".format(func)
- print "X-Z-Path:{}\r".format(path)
- print "Content-Type: application/json\r"
  body = stdin.read()
  args = body if len(body) > 0 else '{"args":"empty"}'
  try:
@@ -35,8 +31,14 @@ def server():
   mod = import_module(path + ".rest_" + module)
   fun = getattr(mod,func,lambda x: { 'err':"No such function in module", 'args':x })
   data = dumps(fun(loads(args)))
+  print "X-Z-Res:{}\r".format("OK")
  except Exception as err:
+  print "X-Z-Res:{}\r".format(str(err))
   data = dumps({ 'err':'module_error', 'res':str(err)  }, sort_keys=True)
+ print "X-Z-Mod:{}\r".format(module)
+ print "X-Z-Func:{}\r".format(func)
+ print "X-Z-Path:{}\r".format(path)
+ print "Content-Type: application/json\r"
  stdout.flush()
  print ""
  print data
