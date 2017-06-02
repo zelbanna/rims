@@ -4,7 +4,7 @@ REST interface module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__ = "17.6.1GA"
+__version__ = "17.6.2GA"
 __status__= "Production"
 
 from sdcp.core.GenLib import log_msg
@@ -19,12 +19,10 @@ def server():
  from os import getenv, environ
  from sys import stdout, stdin
  from json import loads, dumps
- api = getenv("HTTP_X_Z_API")
- if api:
-  path = getenv("HTTP_X_Z_PATH")
- else:
-  api  = getenv("QUERY_STRING").partition("=")[2]
-  path = "sdcp.site"
+ api  = getenv("HTTP_X_Z_API")
+ path = getenv("HTTP_X_Z_PATH") if api else "sdcp.site"
+ if not api:
+  api = getenv("QUERY_STRING").partition("=")[2]
  (module,void,func) = api.partition('_')
  print "X-Z-Mod:{}\r".format(module)
  print "X-Z-Func:{}\r".format(func)
@@ -45,15 +43,16 @@ def server():
 
 #
 # Make proper REST call with arg = body
-# - aurl = base link
+# - aurl = REST API link - complete
 # - amod = module
 # - args = body/content 
+# - apath= python-path-to-module-named-rest_ (e.g. sdcp.site [.rest_xyz])
 #
 #  returns un-json:ed data
-def call(aurl,amod,args):
+def call(aurl,amod,args,apath = "sdcp.site"):
  from json import loads, dumps
  from urllib2 import urlopen, Request, HTTPError
- head = { 'Content-Type': 'application/json', 'X-Z-Path':'sdcp.site', 'X-Z-API':amod }
+ head = { 'Content-Type': 'application/json', 'X-Z-Path':apath, 'X-Z-API':amod }
  try:
   arg = dumps(args)
   req = Request(aurl, headers=head, data=arg)
