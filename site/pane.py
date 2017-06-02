@@ -443,5 +443,5 @@ def openstack_portal(aWeb):
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px; width:400px;'></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px; overflow-x:auto'>"
- print openstack
+ print "<P><H2>Welcome to the IaaS Self-Service Portal</H2></P>"
  print "</DIV>"

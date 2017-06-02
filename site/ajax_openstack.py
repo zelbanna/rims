@@ -239,11 +239,12 @@ def nova_list(aWeb):
  print "</TR>"
  print "<THEAD><TH>Name</TH><TH style='width:94px;'>Operations</TH></THEAD>"
  for server in ret['data'].get('servers',None):
+  qserver = aWeb.quote(server['name'])
   print "<TR>"
   print "<TD>{}</TD>".format(server['name'])
   print "<TD>"
-  print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&project={0}&name={1}&id={2}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(project,server['name'],server['id'])
-  print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&project={0}&name={1}&id={2}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(project,server['name'],server['id'])
+  print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&project={0}&name={1}&id={2}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(project,qserver,server['id'])
+  print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&project={0}&name={1}&id={2}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(project,qserver,server['id'])
   print "</TD>"
   print "</TR>"
  print "</TABLE>"

@@ -73,6 +73,10 @@ class Web(object):
    print "</SPAN>"
  
  ############################## CGI/Web functions ###############################
+ 
+ def quote(self,aString):
+  from urllib import quote_plus
+  return quote_plus(aString)
 
  def get_dict(self):
   return dict(map(lambda x: (x,self._form.getfirst(x,None)), self._form.keys()))
