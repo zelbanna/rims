@@ -21,10 +21,15 @@ def report(aWeb):
  from json import dumps
  project = aWeb.get_value('project')
  (pid,pname) = project.split('_')
+ # First auth..
  controller  = AppformixRPC(SC.appformix_ip)
  if not controller.load(SC.appformix_cookietemplate.format(pname)):
-  controller.auth({'username':SC.appformix_username, 'password':SC.appformix_password })
+  token = controller.auth({'username':SC.appformix_username, 'password':SC.appformix_password })
  
+ if not token:
+  print "Error logging in"
+  return
+
  resp = controller.call("reports/project/metadata")
  # Many id's?
  for rep in resp['data']['Metadata']:
@@ -54,4 +59,3 @@ def report(aWeb):
       print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'>{}</TD></TR>".format(key,value)
    print "</TABLE>"
    print "</DIV>"
-

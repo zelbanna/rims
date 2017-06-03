@@ -12,13 +12,9 @@ class Web(object):
  #
  # Create a web object and prep content for display, or download (by forcing to octet stream)
  # 
- def __init__(self, aDebug=False):
-  import cgi
-  if aDebug:
-   import cgitb
-   cgitb.enable(display=0, logdir="/tmp/")
-  self._form = cgi.FieldStorage()
-  self._debug = aDebug
+ def __init__(self):
+  self._has_header = False
+  self._form = None
 
  def log_msg(self, aMsg, aLog = None):
   if not aLog:
@@ -36,6 +32,8 @@ class Web(object):
   from sys import stdout
   print "Content-Type: text/html\r\n"
   stdout.flush()
+  import cgi
+  self._form = cgi.FieldStorage()
   ajaxcall = self.get_value('call','none_nocall')
   (module,void,call) = ajaxcall.partition('_')
   from importlib import import_module
@@ -58,6 +56,8 @@ class Web(object):
   from sys import stdout
   print "Content-Type: text/html\r\n"
   stdout.flush()
+  import cgi
+  self._form = cgi.FieldStorage()
   paneview = self.get_value('view')
   if not paneview:
    print "<SPAN style='font-size:10px'>No pane view argument</SPAN>"
@@ -71,6 +71,13 @@ class Web(object):
    if not paneview in dir(panemod):
     print " - possible panes:[{}]".format(", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
    print "</SPAN>"
+
+ def get_header_base(self, aExtra = ""):
+  self._has_header = True
+  return "<HEAD>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>\n<META CHARSET='UTF-8'>\n{}\n</HEAD>".format(aExtra)
+
+ def get_header_full(self,aTitle):
+  return self.get_header_base("<TITLE>{}</TITLE>\n<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>".format(aTitle))
  
  ############################## CGI/Web functions ###############################
  
@@ -105,12 +112,6 @@ class Web(object):
    if not key in aexceptlist:
     reload = reload + "&{}=".format(key) + "&{}=".format(key).join(self._form.getlist(key))
   return reload[1:]
-
- def get_header_base(self, aExtra = ""):
-  return "<HEAD>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>\n<META CHARSET='UTF-8'>\n{}\n</HEAD>".format(aExtra)
-
- def get_header_full(self,aTitle):
-  return self.get_header_base("<TITLE>{}</TITLE>\n<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>".format(aTitle))
 
  def get_listeners(self,aselector = "div_navbar"):
   return "<SCRIPT>$(function() { $('#"+ aselector +"').on('click','.z-op',function() { btnoperation(this); } ); });</SCRIPT>"

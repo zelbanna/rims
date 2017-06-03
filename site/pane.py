@@ -18,15 +18,15 @@ __status__= "Production"
 def examine(aWeb):
  from ajax_examine import clear_logs
  print aWeb.get_header_full('Services Pane')
+ print aWeb.get_listeners()
+
  domain  = aWeb.get_value('domain')
  upshost = aWeb.get_value('upshost')
  svclist = aWeb.get_list('svchost')
  from sdcp.tools.Grapher import Grapher
- graph = Grapher() 
- 
- print aWeb.get_listeners()
+ graph = Grapher()  
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
- 
+
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
  print "<A CLASS='z-warning z-op' OP=confirm DIV=div_examine_log MSG='Clear Network Logs?' LNK='ajax.cgi?call=examine_clear_logs&{}'>Clear Logs</A>".format(aWeb.get_args_except(['pane']))
  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_examine_log LNK='.z-system'>Logs</A>"
@@ -176,6 +176,8 @@ def weathermap(aWeb):
 def shutdownall(aWeb):
  from sdcp.devices.ESXi import thread_shutdown_host
  from threading import Thread 
+ print aWeb.get_header_full('Shutdown All')
+
  domain    = aWeb.get_value('domain',None)
  srvlist   = aWeb.get_list('srvhost')
   
@@ -218,13 +220,13 @@ def rack(aWeb):
  print "</CENTER></DIV>"
 
 def rack_info(aWeb):
- from sdcp.site.ajax_rack import info as ajax_info
  print aWeb.get_header_full("Rack Info")
+ print aWeb.get_listeners()
+ from sdcp.site.ajax_rack import info as ajax_info
  rack = aWeb.get_value('rack')
  con  = aWeb.get_value('console')
  pdus = aWeb.get_list('pdulist')
  name = aWeb.get_value('name')
- print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  if rack and name:
@@ -255,15 +257,15 @@ def rack_info(aWeb):
 # ESXi
 #
 def esxi(aWeb):
+ print aWeb.get_header_full("ESXi Operations")
+ print aWeb.get_listeners()
+
  from ajax_esxi import op as esxi_op
  from sdcp.devices.ESXi import ESXi
  from sdcp.tools.Grapher import Grapher
  host   = aWeb.get_value('host')
  domain = aWeb.get_value('domain')
  esxi   = ESXi(host,domain)
- 
- print aWeb.get_header_full("ESXi Operations")
- print aWeb.get_listeners()
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
  print "<A CLASS='z-warning z-op' OP=confirm DIV=div_esxi_op MSG='Really shut down?' LNK='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.get_args_except(['pane']))
@@ -308,6 +310,9 @@ def esxi(aWeb):
 #
  
 def devices(aWeb):
+ print aWeb.get_header_full("Device View")
+ print aWeb.get_listeners()
+
  from sdcp.core.GenLib import DB
  op     = aWeb.get_value('op')
  domain = aWeb.get_value('domain')
@@ -326,8 +331,6 @@ def devices(aWeb):
     arglist = arglist + "&{}list=".format(type) + row['ip']
    argdict[type] = arglist
 
- print aWeb.get_header_full("Device View")
- print aWeb.get_listeners()
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS='z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
@@ -354,9 +357,9 @@ def devices(aWeb):
 #
 
 def config(aWeb):
- domain    = aWeb.get_value('domain', None)
  print aWeb.get_header_full("Config and Settings")
  print aWeb.get_listeners("div_config_menu")
+ domain    = aWeb.get_value('domain', None)
  print "<DIV CLASS='z-table' ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
  print "<A CLASS='z-btn z-warning z-op' OP=confirm DIV=div_config SPIN=true MSG='Clear DB?' LNK='ajax.cgi?call=device_clear_db'>Clear Database</A>"
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true LNK='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
@@ -375,16 +378,17 @@ def config(aWeb):
 #
 
 def openstack_login(aWeb):
+ name = aWeb.get_value('name')
+ print aWeb.get_header_full("{} 2 Cloud".format(name.capitalize()))
+ print aWeb.get_listeners("div_navframe")
+
  from sdcp.devices.openstack import OpenstackRPC
  import sdcp.SettingsContainer as SC
- name = aWeb.get_value('name')
  ctrl_ip = aWeb.get_value('controller',"127.0.0.1")
  openstack = OpenstackRPC(ctrl_ip)
  if not openstack.load(SC.openstack_cookietemplate.format(SC.openstack_project)):
   catalog = openstack.auth({'project':SC.openstack_project, 'username':SC.openstack_username,'password':SC.openstack_password })
   # Forget about catalog - let user decide what we can do ..
- print aWeb.get_header_full("{} 2 Cloud".format(name.capitalize()))
- print aWeb.get_listeners("div_navframe")
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV ID=div_openstack_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"

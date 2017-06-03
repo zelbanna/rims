@@ -13,8 +13,8 @@ __status__ = "Production"
 #
 class OpenstackRPC(object):
 
- def __init__(self, aIP):
-  self._token = None
+ def __init__(self, aIP, aToken = None):
+  self._token = aToken
   self._token_expire = None
   self._ip = aIP
   self._project = None
