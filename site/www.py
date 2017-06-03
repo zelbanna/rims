@@ -13,6 +13,8 @@ class Web(object):
  # Create a web object and prep content for display, or download (by forcing to octet stream)
  # 
  def __init__(self):
+  from os import getenv
+  self._cookie = dict(map( lambda c: c.split("="), getenv("HTTP_COOKIE").replace(";",'').split()))
   self._has_header = False
   self._form = None
 

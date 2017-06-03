@@ -16,15 +16,16 @@ class AppformixRPC(object):
  def __init__(self, aIP, aToken = None):
   self._token = aToken
   self._token_expire = None
+  self._token_utc = None
   self._ip = aIP
 
  def __str__(self):
-  return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._token_expire)
+  return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._token_utc)
 
  def dump(self,aFile):
   from json import dump
   with open(aFile,'w') as f:
-   dump({'token':self._token, 'token_expire':self._token_expire, 'ip':self._ip },f, sort_keys=True, indent=4)
+   dump({'token':self._token, 'token_utc':self._token_utc, 'token_expire':self._token_expire, 'ip':self._ip },f, sort_keys=True, indent=4)
 
  def load(self,aFile):
   from json import load
@@ -36,6 +37,7 @@ class AppformixRPC(object):
      self._ip = data['ip']
      self._token = data['token']
      self._token_expire = data['token_expire']
+     self._token_utc = data['token_utc']
   except:
    pass
   return self._token
@@ -57,6 +59,7 @@ class AppformixRPC(object):
     data = loads(sock.read())
     token = data['Token']
     self._token = token['tokenId']
+    self._token_utc = token['expiresAt']
     self._token_expire = int(mktime(strptime(token['expiresAt'],"%Y-%m-%dT%H:%M:%S.%fZ")))
    sock.close()
    return self._token

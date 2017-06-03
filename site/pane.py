@@ -406,7 +406,7 @@ def openstack_login(aWeb):
  print "<TR><TD>Password:</TD><TD><INPUT style='z-input' TYPE=password NAME=password></TD></TR>"
  print "</TABLE>"
  print "</FORM>"
- print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=post FRM=openstack_login LNK='pane.cgi?view=openstack_portal' DIV=div_navframe>Login</A>"
+ print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' SPIN=true OP=post FRM=openstack_login LNK='pane.cgi?view=openstack_portal' DIV=div_navframe>Login</A>"
  print "</DIV></DIV>"
  print "</DIV>"  
 
@@ -421,6 +421,7 @@ def openstack_portal(aWeb):
  #
  # Verify login name, create simple "project + username" cookie
  # 
+ aWeb.put_header_base()
  openstack = OpenstackRPC(ctrl_ip)
  if not openstack.load(SC.openstack_cookietemplate.format(pname)):
   catalog = openstack.auth({'project':pname, 'username':username,'password':password })
