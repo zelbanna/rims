@@ -16,8 +16,8 @@ __status__= "Production"
 # Examine pane
 #
 def examine(aWeb):
+ aWeb.put_header_full('Services Pane')
  from ajax_examine import clear_logs
- print aWeb.get_header_full('Services Pane')
  print aWeb.get_listeners()
 
  domain  = aWeb.get_value('domain')
@@ -76,7 +76,7 @@ def examine(aWeb):
 # Munin
 #
 def munin(aWeb):
- print aWeb.get_header_full('Munin')
+ aWeb.put_header_full('Munin')
  print aWeb.get_listeners()
  print """
  <SCRIPT>
@@ -114,7 +114,7 @@ def weathermap(aWeb):
  json = aWeb.get_value('json')
  
  if page == 'main':
-  print aWeb.get_header_full('Weathermap')
+  aWeb.put_header_full('Weathermap')
   print aWeb.get_listeners()
   print "<DIV CLASS=z-navframe ID=div_navframe>"
   print "<DIV CLASS=z-navbar ID=div_navbar>"
@@ -146,7 +146,7 @@ def weathermap(aWeb):
   print "</DIV>"
  
  elif page:
-  print aWeb.get_header_base()
+  aWeb.put_header_base()
   if json:
    from json import load
    from sdcp.tools.Grapher import Grapher
@@ -176,7 +176,7 @@ def weathermap(aWeb):
 def shutdownall(aWeb):
  from sdcp.devices.ESXi import thread_shutdown_host
  from threading import Thread 
- print aWeb.get_header_full('Shutdown All')
+ aWeb.put_header_full('Shutdown All')
 
  domain    = aWeb.get_value('domain',None)
  srvlist   = aWeb.get_list('srvhost')
@@ -195,7 +195,7 @@ def shutdownall(aWeb):
 #
 
 def rack(aWeb):
- print aWeb.get_header_full("Racks")
+ aWeb.put_header_full("Racks")
  from sdcp.core.GenLib import DB
  db = DB()
  db.connect()
@@ -220,7 +220,7 @@ def rack(aWeb):
  print "</CENTER></DIV>"
 
 def rack_info(aWeb):
- print aWeb.get_header_full("Rack Info")
+ aWeb.put_header_full("Rack Info")
  print aWeb.get_listeners()
  from sdcp.site.ajax_rack import info as ajax_info
  rack = aWeb.get_value('rack')
@@ -257,7 +257,7 @@ def rack_info(aWeb):
 # ESXi
 #
 def esxi(aWeb):
- print aWeb.get_header_full("ESXi Operations")
+ aWeb.put_header_full("ESXi Operations")
  print aWeb.get_listeners()
 
  from ajax_esxi import op as esxi_op
@@ -310,7 +310,7 @@ def esxi(aWeb):
 #
  
 def devices(aWeb):
- print aWeb.get_header_full("Device View")
+ aWeb.put_header_full("Device View")
  print aWeb.get_listeners()
 
  from sdcp.core.GenLib import DB
@@ -357,7 +357,7 @@ def devices(aWeb):
 #
 
 def config(aWeb):
- print aWeb.get_header_full("Config and Settings")
+ aWeb.put_header_full("Config and Settings")
  print aWeb.get_listeners("div_config_menu")
  domain    = aWeb.get_value('domain', None)
  print "<DIV CLASS='z-table' ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
@@ -379,7 +379,7 @@ def config(aWeb):
 
 def openstack_login(aWeb):
  name = aWeb.get_value('name')
- print aWeb.get_header_full("{} 2 Cloud".format(name.capitalize()))
+ aWeb.put_header_full("{} 2 Cloud".format(name.capitalize()))
  print aWeb.get_listeners("div_navframe")
 
  from sdcp.devices.openstack import OpenstackRPC

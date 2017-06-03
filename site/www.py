@@ -53,31 +53,47 @@ class Web(object):
  #
  #
  def pane(self):
-  from sys import stdout
-  print "Content-Type: text/html\r\n"
-  stdout.flush()
   import cgi
   self._form = cgi.FieldStorage()
   paneview = self.get_value('view')
-  if not paneview:
-   print "<SPAN style='font-size:10px'>No pane view argument</SPAN>"
-   return
-  import pane as panemod
-  fun = getattr(panemod,paneview,None)
   try:
-    fun(self)
+   import pane as panemod
+   getattr(panemod,paneview,None)(self)
   except Exception as err:
+   if not self._has_header:
+    from sys import stdout
+    print "Content-Type: text/html\r\n"
+    stdout.flush()
    print "<SPAN style='font-size:10px'>Pane view:[{}] error: [{}]".format(paneview, str(err))
    if not paneview in dir(panemod):
     print " - possible panes:[{}]".format(", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
    print "</SPAN>"
 
- def get_header_base(self, aExtra = ""):
+ def put_header_base(self, aHeader={}):
+  if self._has_header:
+   return
   self._has_header = True
-  return "<HEAD>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>\n<META CHARSET='UTF-8'>\n{}\n</HEAD>".format(aExtra)
+  from sys import stdout
+  for key,value in aHeader.iteritems():
+   print "{}: {}\r".format(key,value)
+  print "Content-Type: text/html\r\n"
+  print "<HEAD>"
+  print "<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>\n<META CHARSET='UTF-8'>"
+  print "</HEAD>"
+  stdout.flush()
 
- def get_header_full(self,aTitle):
-  return self.get_header_base("<TITLE>{}</TITLE>\n<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>".format(aTitle))
+ def put_header_full(self, aTitle, aHeader={}):
+  self._has_header = True
+  from sys import stdout
+  for key,value in aHeader.iteritems():
+   print "{}: {}\r".format(key,value)
+  print "Content-Type: text/html\r\n"
+  print "<HEAD>"
+  print "<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>\n<META CHARSET='UTF-8'>"
+  print "<TITLE>{}</TITLE>".format(aTitle)
+  print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>"
+  print "</HEAD>"
+  stdout.flush()
  
  ############################## CGI/Web functions ###############################
  
