@@ -429,8 +429,8 @@ def openstack_portal(aWeb):
    aWeb.log_msg("openstack_portal - saving cookie for user {} @ {}".format(username,ctrl_ip))
    openstack.dump(SC.openstack_cookietemplate.format(pname))
   else:
-   aWeb.log_msg("openstack_portal - error logging in")
-   print "Error loggin in - please try again"
+   aWeb.log_msg("openstack_portal - error accessing catalog")
+   print "Error accessing catalog - please try login again"
    return
  else:
   catalog = openstack.get_catalog()
