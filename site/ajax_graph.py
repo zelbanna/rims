@@ -26,11 +26,11 @@ def list(aWeb):
   gdomain = key.partition(".")[2]
   print "<TR>"
   if entry['update'] == 'yes':
-   print "<TD><A CLASS=z-op TITLE='Show graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html'>{1}</A></TD>".format(gdomain,key)
+   print "<TD><A CLASS=z-op TITLE='Show graphs for {1}' OP=load DIV=div_navcont URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html'>{1}</A></TD>".format(gdomain,key)
   else:
    print "<TD>{0}</TD>".format(key)
   print "<TD>"+ entry['handler'] +"</TD>"
-  print "<TD TITLE='Include in graphing?'><CENTER><A CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=graph_list&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A></CENTER></TD>".format("start" if entry['update'] == "no" else "shutdown")
+  print "<TD TITLE='Include in graphing?'><CENTER><A CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=graph_list&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A></CENTER></TD>".format("start" if entry['update'] == "no" else "shutdown")
   print "</TR>"
  print "</TABLE></DIV>"
 

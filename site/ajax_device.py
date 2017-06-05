@@ -21,7 +21,7 @@ def view_devicelist(aWeb):
  db.connect()
  print "<DIV CLASS='z-table'>"
  print "<TABLE WIDTH=330><TR>"
- print "<TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?{0}&sort=ip'>IP</A></TH><TH><A CLASS=z-op OP=load DIV=div_navleft LNK='ajax.cgi?{0}&sort=hostname'>FQDN</A></TH><TH>Model</TH>".format(aWeb.get_args_except(['sort']))
+ print "<TH><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=ip'>IP</A></TH><TH><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=hostname'>FQDN</A></TH><TH>Model</TH>".format(aWeb.get_args_except(['sort']))
  print "</TR><TR style='height:20px'><TD COLSPAN=3>"
  if not target or not arg:
   tune = ""
@@ -30,11 +30,11 @@ def view_devicelist(aWeb):
  else:
   tune = "WHERE {0} = {1}".format(target,arg)
  res = db.do("SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort))
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
- print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_new&{0}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args_except(['sort','call']))
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
+ print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=device_new&{0}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args_except(['sort','call']))
  rows = db.get_all_rows()
  for row in rows:
-  print "<TR><TD><A CLASS=z-op TITLE='Show device info for {0}' OP=load DIV=div_navcont LNK='ajax.cgi?call=device_device_info&id={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
+  print "<TR><TD><A CLASS=z-op TITLE='Show device info for {0}' OP=load DIV=div_navcont URL='ajax.cgi?call=device_device_info&id={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</TABLE></DIV>"
  db.close()
 
@@ -113,10 +113,10 @@ def device_info(aWeb):
  print "</SELECT></TD></TR>"
  print "<TR><TD>Model:</TD><TD style='max-width:150px;'>{}</TD></TR>".format(device_data['model'])
  if device_data['graphed'] == "yes":
-  print "<TR><TD><A CLASS='z-op' TITLE='View graphs for {1}' OP=load DIV=div_navcont LNK='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(device_data['a_name'],device_data['hostname']+"."+ device_data['a_name'])
+  print "<TR><TD><A CLASS='z-op' TITLE='View graphs for {1}' OP=load DIV=div_navcont URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(device_data['a_name'],device_data['hostname']+"."+ device_data['a_name'])
  else:
   if not device_data['hostname'] == 'unknown':
-   print "<TR><TD>Graphs:</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(id, device_data['hostname'], device_data['a_name'])
+   print "<TR><TD>Graphs:</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(id, device_data['hostname'], device_data['a_name'])
   else:
    print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
  print "<TR><TD>VM:</TD><TD><INPUT NAME=devices_vm CLASS='z-input' style='width:auto;' TYPE=checkbox VALUE=1 {0}></TD></TR>".format("checked=checked" if device_data['vm'] == 1 else "") 
@@ -182,18 +182,18 @@ def device_info(aWeb):
  print "</FORM>"
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_remove&id={}      OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=lookup    FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata LNK=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=post TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_remove&id={}      OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=lookup    FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information'><IMG SRC='images/btn-save.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=updateddi FRM=info_form OP=post TITLE='Update DNS/IPAM systems'><IMG SRC='images/btn-start.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata URL=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=post TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
  if device_data['rack_id'] and ((rack_info['pem0_pdu_id'] != 0 and rack_info['pem0_pdu_unit'] != 0) or (rack_info['pem1_pdu_id'] != 0 and rack_info['pem1_pdu_unit'] != 0)):
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results LNK=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post TITLE='Update PDU with device info'><IMG SRC='images/btn-pdu-save.png' ALT='P'></A>".format(rack_info['pem0_pdu_unit'],rack_info['pem1_pdu_unit'],name)
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post TITLE='Update PDU with device info'><IMG SRC='images/btn-pdu-save.png' ALT='P'></A>".format(rack_info['pem0_pdu_unit'],rack_info['pem1_pdu_unit'],name)
  if device_data['rack_id'] and (conip and not conip == '127.0.0.1' and rack_info['console_port'] and rack_info['console_port'] > 0):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+rack_info['console_port'])
  if (device_data['type'] == 'pdu' or device_data['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip'])) == 0:
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}' OP=load style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}' OP=load style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
  print "<SPAN ID=update_results style='max-width:400px; float:right; font-size:9px;'>{}</SPAN>".format(opres)
  print "</DIV>"
  db.close()
@@ -209,7 +209,7 @@ def device_info(aWeb):
   else:
    for fun in functions:
     funname = " ".join(fun.split('_')[1:])
-    print "<A CLASS='z-op' OP=load DIV=div_navdata SPIN=true LNK='ajax.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, device_data['type'], fun, funname.title())
+    print "<A CLASS='z-op' OP=load DIV=div_navdata SPIN=true URL='ajax.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, device_data['type'], fun, funname.title())
  else:
   print "&nbsp;"
  print "</DIV>"
@@ -351,7 +351,7 @@ def new(aWeb):
   print "</SELECT></TD></TR>"
   print "<TR><TD>MAC:</TD><TD><INPUT      NAME=mac  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(mac)
   print "</TABLE>"
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span LNK=ajax.cgi?call=device_new FRM=device_new_form OP=post><IMG SRC='images/btn-start.png'></A>&nbsp;"
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span URL=ajax.cgi?call=device_new FRM=device_new_form OP=post><IMG SRC='images/btn-start.png'></A>&nbsp;"
   print "<SPAN ID=device_new_span style='max-width:400px; font-size:9px; float:right'></SPAN>"
   print "</DIV>"
 
@@ -415,7 +415,7 @@ def discover(aWeb):
   print "</SELECT></TD></TR>"
   print "<TR><TD>Clear</TD><TD><INPUT TYPE=checkbox NAME=clear VALUE=True></TD></TR>"
   print "</TABLE>"
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont SPIN=true LNK=ajax.cgi?call=device_discover FRM=device_discover_form OP=post><IMG SRC='images/btn-start.png'></A>"
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont SPIN=true URL=ajax.cgi?call=device_discover FRM=device_discover_form OP=post><IMG SRC='images/btn-start.png'></A>"
   print "</DIV>"
  db.close() 
 

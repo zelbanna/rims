@@ -116,7 +116,7 @@ class Junos(GenDevice):
   ifs = self.get_up_interfaces()
   self.close()
   for entry in ifs:
-   print "<TR><TD>{0}</TD><TD>{1}</TD><TD><A CLASS='z-op' DIV=graph_config OP=load LNK='ajax.cgi?call=graph_wm&hostname={4}&domain={5}&index={2}'>{2}</A></TD><TD>{3}</TD></TR>\n".format(entry[0],entry[1],entry[2],entry[3],self._hostname,self._domain)
+   print "<TR><TD>{0}</TD><TD>{1}</TD><TD><A CLASS='z-op' DIV=graph_config OP=load URL='ajax.cgi?call=graph_wm&hostname={4}&domain={5}&index={2}'>{2}</A></TD><TD>{3}</TD></TR>\n".format(entry[0],entry[1],entry[2],entry[3],self._hostname,self._domain)
   print "</TABLE></DIV>"
 
  def widget_lldp(self):

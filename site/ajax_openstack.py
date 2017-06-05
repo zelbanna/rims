@@ -52,12 +52,12 @@ def heat_list(aWeb):
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"
  print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Heat Stacks</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=openstack_heat_list'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=openstack_heat_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=openstack_heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
  print "</TR>"
  print "<THEAD><TH>Name</TH><TH>Status</TH><TH>Operations</TH></THEAD>"
  for stack in ret['data'].get('stacks',None):
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} OP=load SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} OP=load SPIN=true>{}</A>"
   print "<TR>"
   print "<TD>{}</TD>".format(stack['stack_name'])
   print "<TD>{}</TD>".format(stack['stack_status'])
@@ -87,8 +87,8 @@ def heat_choose_template(aWeb):
  except Exception as err:
   print "openstack_choose_template: error finding template files in 'os_templates/' [{}]".format(str(err))
  print "</FORM>"
- print "<A TITLE='Enter parameters' CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info LNK='ajax.cgi?call=openstack_heat_enter_parameters'><IMG SRC='images/btn-document.png'></A>"
- print "<A TITLE='View template'    CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info LNK='ajax.cgi?call=openstack_heat_action&op=templateview'><IMG SRC='images/btn-info.png'></A>"
+ print "<A TITLE='Enter parameters' CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info URL='ajax.cgi?call=openstack_heat_enter_parameters'><IMG SRC='images/btn-document.png'></A>"
+ print "<A TITLE='View template'    CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info URL='ajax.cgi?call=openstack_heat_action&op=templateview'><IMG SRC='images/btn-info.png'></A>"
  print "</DIV>"
  print "<DIV ID=div_os_info></DIV>"
 
@@ -107,7 +107,7 @@ def heat_enter_parameters(aWeb):
   print "<TR><TD>{0}</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></TD></TR>".format(key,value)
  print "</TABLE>"
  print "</FORM>"
- print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' OP=post SPIN=true FRM=frm_heat_template_parameters DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_action&op=create'><IMG SRC='images/btn-start.png'></A>"
+ print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' OP=post SPIN=true FRM=frm_heat_template_parameters DIV=div_navcont URL='ajax.cgi?call=openstack_heat_action&op=create'><IMG SRC='images/btn-start.png'></A>"
  print "</DIV>"
 
 #
@@ -130,7 +130,7 @@ def heat_action(aWeb):
  aWeb.log_msg("openstack_heat_action - id:{} name:{} op:{} for project:{}".format(id,name,op,cookie.get('os_project_name')))
 
  if   op == 'info':
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info LNK=ajax.cgi?call=openstack_heat_action&name=" + name + "&id=" + id+ "&op={} OP=load SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_heat_action&name=" + name + "&id=" + id+ "&op={} OP=load SPIN=true>{}</A>"
   print "<DIV>"
   print tmpl.format('Stack Details','details','Details')
   print tmpl.format('Stack Parameters','events','Events')
@@ -258,7 +258,7 @@ def nova_list(aWeb):
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"
  print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Nova Servers</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=openstack_nova_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=openstack_nova_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "</TR>"
  print "<THEAD><TH>Name</TH><TH style='width:94px;'>Operations</TH></THEAD>"
  for server in ret['data'].get('servers',None):
@@ -266,8 +266,8 @@ def nova_list(aWeb):
   print "<TR>"
   print "<TD>{}</TD>".format(server['name'])
   print "<TD>"
-  print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(qserver,server['id'])
-  print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(qserver,server['id'])
   print "</TD>"
   print "</TR>"
  print "</TABLE>"

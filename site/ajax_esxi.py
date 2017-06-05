@@ -58,12 +58,12 @@ def op(aWeb, aEsxi = None):
  statelist = aEsxi.get_vms(sort)
  print "<TABLE>"
  # Formatting template (command, btn-xyz, vm-id, hover text)
- template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
+ template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true OP=load DIV=div_esxi_op URL='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
  if not nstate:
   print "<TR><TH CLASS='z-header' COLSPAN=2>{}</TH></TR>".format(aEsxi._fqdn)
  else:
   print "<TR><TH CLASS='z-header' COLSPAN=2>{} <SPAN style='font-size:12px'>{}:{}</SPAN></TH></TR>".format(aEsxi._fqdn,vmid, nstate.split('-')[1])
- print "<TR><TH><A CLASS='z-op' OP=load DIV=div_esxi_op LNK='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></TH><TH>Operations</TH></TR><TR>"
+ print "<TR><TH><A CLASS='z-op' OP=load DIV=div_esxi_op URL='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></TH><TH>Operations</TH></TR><TR>"
  if nstate and nstate == 'vmsoff':
   print "<TD><B>SHUTDOWN ALL VMs!</B></TD>"
  else:
