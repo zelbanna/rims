@@ -7,16 +7,130 @@ __author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__= "Production"
 
+##################################################################################################
 #
-# - Divide all panes into pane (nav) and include widget_xyz
+# Openstack
 #
+# Cookies:
+# os_demo_name    = Name of Customer demoing for
+# os_main_token   = auth token for project recovery
+# os_controller   = controller ip
+# os_project_id   = id for selected project
+# os_project_name = name for selected project
+# os_user_name    = username last used
+# os_user_token   = token for user
+# os_xyz_port     = port for service xyz
+# os_xyz_url      = url  for service xyz
+# os_xyz_id       = id   for service xyz
 #
+
+def openstack_login(aWeb):
+ from sdcp.devices.openstack import OpenstackRPC
+ import sdcp.SettingsContainer as SC
+ name = aWeb.get_value('name',"iaas")
+ ctrl = aWeb.get_value('controller',"127.0.0.1")
+ cookie = aWeb.get_cookie()
+ user = cookie.get("os_user_name")
+ mtok = cookie.get("os_main_token")
+ prev = cookie.get("os_project_id")
+
+ aWeb.put_cookie("os_demo_name",name)
+ aWeb.put_cookie("os_controller",ctrl)
+
+ if not mtok:
+  openstack = OpenstackRPC(ctrl,None)
+  res = openstack.auth({'project':SC.openstack_project, 'username':SC.openstack_username,'password':SC.openstack_password })
+  aWeb.log_msg("openstack_login - login result: {}".format(str(res['result'])))
+  aWeb.put_cookie("os_main_token",openstack.get_token())
+ else:
+  aWeb.log_msg("openstack_login - reusing token: {}".format(mtok))
+  openstack = OpenstackRPC(ctrl,mtok)
+ projects =  openstack.call("5000","v3/projects")['data']['projects']
+ aWeb.put_html_header("{} 2 Cloud".format(name.capitalize()))
+
+ print aWeb.get_listeners("div_navframe")
+ print "<DIV CLASS='z-navframe' ID=div_navframe>"
+ print "<DIV CLASS='z-centered' style='height:100%;'>"
+ print "<DIV ID=div_openstack_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
+ print "<CENTER><H1>Welcome to {} 2 Cloud portal</H1></CENTER>".format(name.capitalize())
+ print "<FORM ID=openstack_login>"
+ print "<TABLE style='display:inline; float:left; margin:0px 0px 0px 30px;'>"
+ print "<TR><TD>Customer:</TD><TD><SELECT style='border:none; width:100px; display:inline; color:black' NAME=project>"
+ for p in projects:
+  extra = '' if not p['id'] == prev else "selected"
+  print "<OPTION VALUE={0}_{1} {2}>{1}</OPTION>".format(p['id'],p['name'],extra)
+ print "</SELECT></TD></TR>"
+ print "<TR><TD>Username:</TD><TD><INPUT style='z-input' TYPE=text NAME=username VALUE='{}'></TD></TR>".format(user if user else "login name")
+ print "<TR><TD>Password:</TD><TD><INPUT style='z-input' TYPE=password NAME=password></TD></TR>"
+ print "</TABLE>"
+ print "</FORM>"
+ # Replace with standard HREF
+ print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' SPIN=true OP=post  FRM=openstack_login LNK='pane.cgi?view=openstack_portal' DIV=div_navframe>Login</A>"
+ print "</DIV></DIV>"
+ print "</DIV>"  
+
+def openstack_portal(aWeb):
+ from json import dumps
+ from sdcp.devices.openstack import OpenstackRPC
+ import sdcp.SettingsContainer as SC
+ username = aWeb.get_value('username')
+ password = aWeb.get_value('password')
+ project  = aWeb.get_value('project')
+ cookie   = aWeb.get_cookie()
+ ctrl = cookie.get('os_controller')
+ utok = cookie.get('os_user_token')
+ (pid,pname) = project.split('_')
+ aWeb.put_cookie("os_project_id",pid)
+ aWeb.put_cookie("os_project_name",pname)
+
+ if not utok:
+  openstack = OpenstackRPC(ctrl,utok)
+  res = openstack.auth({'project':pname, 'username':username,'password':password })
+  if not res['result'] == "OK":
+   aWeb.put_html_header("Openstack Portal")
+   aWeb.log_msg("openstack_portal - error during login for {}@{}".format(username,ctrl))
+   print "Error logging in - please try login again"
+   return
+  utok = openstack.get_token()
+  aWeb.put_cookie('os_user_token',utok)
+  aWeb.log_msg("openstack_portal - successful login for {}@{}".format(username,ctrl))
+ else:
+  aWeb.log_msg("openstack_portal - using existing token for {}@{}".format(username,ctrl))
+
+ # Download catalog here
+ for service in ['heat','nova']:
+  base = "os_" + service
+  port,url,id = openstack.get_service(service,'public')
+  aWeb.put_cookie(base + "_port",port)
+  aWeb.put_cookie(base + "_url",url)
+  aWeb.put_cookie(base + "_id",id)
+
+ aWeb.put_html_header("Openstack Portal")
+
+ print "<DIV style='height:60px; position:fixed; top:0px; left:0px; right:0px; display:block; z-index:101; border-bottom: 1px solid black;' >"
+ print "<TABLE style='display:inline; float:left; margin:5px 100px 0px 10px;'>"
+ print "<TR><TD><B>Identity:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Id:</B></TD><TD><I>{}</I></TD></TR>".format(pname,pid)
+ print "<TR><TD><B>Username:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Token:</B></TD><TD><I>{}</I></TD></TR>".format(username,utok)
+ print "</TABLE>"
+ print "</DIV>"
+ print "<DIV CLASS='z-navbar' style='top:60px;' ID=div_navbar>"
+ print "<A CLASS='z-op'           OP=load DIV=div_navleft  LNK='ajax.cgi?call=openstack_heat_list'>Orchestration</A>"
+ print "<A CLASS='z-op'           OP=load DIV=div_navleft  LNK='ajax.cgi?call=openstack_contrail_list'>Virtual Networks</A>"
+ print "<A CLASS='z-op'           OP=load DIV=div_navleft  LNK='ajax.cgi?call=openstack_nova_list'>Virtual Machines</A>"
+ print "<A CLASS='z-op' SPIN=true OP=load DIV=div_navcont  LNK='ajax.cgi?call=appformix_report'>Usage Report</A>"
+ print "<A CLASS='z-reload z-op'  OP=load DIV=div_navframe LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "</DIV>"
+ print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px; width:400px;'></DIV>"
+ print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px; overflow-x:auto'>"
+ print "<P><H2>Welcome to the IaaS Self-Service Portal</H2></P>"
+ print "</DIV>"
+
 ##################################################################################################
 #
 # Examine pane
 #
 def examine(aWeb):
- aWeb.put_header_full('Services Pane')
+ aWeb.put_html_header('Services Pane')
  from ajax_examine import clear_logs
  print aWeb.get_listeners()
 
@@ -76,7 +190,7 @@ def examine(aWeb):
 # Munin
 #
 def munin(aWeb):
- aWeb.put_header_full('Munin')
+ aWeb.put_html_header('Munin')
  print aWeb.get_listeners()
  print """
  <SCRIPT>
@@ -114,7 +228,7 @@ def weathermap(aWeb):
  json = aWeb.get_value('json')
  
  if page == 'main':
-  aWeb.put_header_full('Weathermap')
+  aWeb.put_html_header('Weathermap')
   print aWeb.get_listeners()
   print "<DIV CLASS=z-navframe ID=div_navframe>"
   print "<DIV CLASS=z-navbar ID=div_navbar>"
@@ -146,7 +260,7 @@ def weathermap(aWeb):
   print "</DIV>"
  
  elif page:
-  aWeb.put_header_base()
+  aWeb.put_html_header("Weathermap")
   if json:
    from json import load
    from sdcp.tools.Grapher import Grapher
@@ -176,7 +290,7 @@ def weathermap(aWeb):
 def shutdownall(aWeb):
  from sdcp.devices.ESXi import thread_shutdown_host
  from threading import Thread 
- aWeb.put_header_full('Shutdown All')
+ aWeb.put_html_header('Shutdown All')
 
  domain    = aWeb.get_value('domain',None)
  srvlist   = aWeb.get_list('srvhost')
@@ -195,7 +309,7 @@ def shutdownall(aWeb):
 #
 
 def rack(aWeb):
- aWeb.put_header_full("Racks")
+ aWeb.put_html_header("Racks")
  from sdcp.core.GenLib import DB
  db = DB()
  db.connect()
@@ -220,7 +334,7 @@ def rack(aWeb):
  print "</CENTER></DIV>"
 
 def rack_info(aWeb):
- aWeb.put_header_full("Rack Info")
+ aWeb.put_html_header("Rack Info")
  print aWeb.get_listeners()
  from sdcp.site.ajax_rack import info as ajax_info
  rack = aWeb.get_value('rack')
@@ -257,7 +371,7 @@ def rack_info(aWeb):
 # ESXi
 #
 def esxi(aWeb):
- aWeb.put_header_full("ESXi Operations")
+ aWeb.put_html_header("ESXi Operations")
  print aWeb.get_listeners()
 
  from ajax_esxi import op as esxi_op
@@ -310,7 +424,7 @@ def esxi(aWeb):
 #
  
 def devices(aWeb):
- aWeb.put_header_full("Device View")
+ aWeb.put_html_header("Device View")
  print aWeb.get_listeners()
 
  from sdcp.core.GenLib import DB
@@ -357,7 +471,7 @@ def devices(aWeb):
 #
 
 def config(aWeb):
- aWeb.put_header_full("Config and Settings")
+ aWeb.put_html_header("Config and Settings")
  print aWeb.get_listeners("div_config_menu")
  domain    = aWeb.get_value('domain', None)
  print "<DIV CLASS='z-table' ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
@@ -371,83 +485,3 @@ def config(aWeb):
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config           LNK='ajax.cgi?call=device_mac_sync'>Sync MAC Info</A>"
  print "</DIV>"
  print "<DIV ID=div_config style='min-width:600px; min-height:300px; display:inline;'></DIV>"
-
-##################################################################################################
-#
-# Openstack
-#
-
-def openstack_login(aWeb):
- name = aWeb.get_value('name')
- aWeb.put_header_full("{} 2 Cloud".format(name.capitalize()))
- print aWeb.get_listeners("div_navframe")
-
- from sdcp.devices.openstack import OpenstackRPC
- import sdcp.SettingsContainer as SC
- ctrl_ip = aWeb.get_value('controller',"127.0.0.1")
- openstack = OpenstackRPC(ctrl_ip)
- if not openstack.load(SC.openstack_cookietemplate.format(SC.openstack_project)):
-  catalog = openstack.auth({'project':SC.openstack_project, 'username':SC.openstack_username,'password':SC.openstack_password })
-  # Forget about catalog - let user decide what we can do ..
- print "<DIV CLASS='z-navframe' ID=div_navframe>"
- print "<DIV CLASS='z-centered' style='height:100%;'>"
- print "<DIV ID=div_openstack_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
- print "<CENTER><H1>Welcome to {} 2 Cloud portal</H1></CENTER>".format(name.capitalize())
- print "<FORM ID=openstack_login>"
- print "<INPUT TYPE=hidden NAME=name VALUE={0}>".format(name)
- print "<INPUT TYPE=hidden NAME=controller VALUE={0}>".format(ctrl_ip)
- print "<TABLE style='display:inline; float:left; margin:0px 0px 0px 30px;'>"
- print "<TR><TD>Customer:</TD><TD><SELECT style='border:none; width:100px; display:inline; color:black' NAME=project>"
- projects =  openstack.call("5000","v3/projects")['data']['projects']
- for p in projects:
-  print "<OPTION VALUE={0}_{1}>{1}</OPTION>".format(p['id'],p['name'])
- print "</SELECT></TD></TR>"
- print "<TR><TD>Username:</TD><TD><INPUT style='z-input' TYPE=text NAME=username></TD></TR>"
- print "<TR><TD>Password:</TD><TD><INPUT style='z-input' TYPE=password NAME=password></TD></TR>"
- print "</TABLE>"
- print "</FORM>"
- print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' SPIN=true OP=post FRM=openstack_login LNK='pane.cgi?view=openstack_portal' DIV=div_navframe>Login</A>"
- print "</DIV></DIV>"
- print "</DIV>"  
-
-def openstack_portal(aWeb):
- from json import dumps
- from sdcp.devices.openstack import OpenstackRPC
- import sdcp.SettingsContainer as SC
- (pid,pname) = aWeb.get_value('project').split('_')
- username = aWeb.get_value('username')
- password = aWeb.get_value('password')
- ctrl_ip  = aWeb.get_value('controller')
- #
- # Verify login name, create simple "project + username" cookie
- # 
- aWeb.put_header_base()
- openstack = OpenstackRPC(ctrl_ip)
- if not openstack.load(SC.openstack_cookietemplate.format(pname)):
-  catalog = openstack.auth({'project':pname, 'username':username,'password':password })
-  if catalog:
-   aWeb.log_msg("openstack_portal - saving cookie for user {} @ {}".format(username,ctrl_ip))
-   openstack.dump(SC.openstack_cookietemplate.format(pname))
-  else:
-   aWeb.log_msg("openstack_portal - error accessing catalog")
-   print "Error accessing catalog - please try login again"
-   return
- else:
-  catalog = openstack.get_catalog()
- print "<DIV style='height:60px; position:fixed; top:0px; left:0px; right:0px; display:block; z-index:101; border-bottom: 1px solid black;' >"
- print "<TABLE style='display:inline; float:left; margin:5px 100px 0px 10px;'>"
- print "<TR><TD><B>Identity:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Id:</B></TD><TD><I>{}</I></TD></TR>".format(pname,openstack.get_id())
- print "<TR><TD><B>Username:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Token:</B></TD><TD><I>{}</I></TD></TR>".format(username,openstack.get_auth_token())
- print "</TABLE>"
- print "</DIV>"
- print "<DIV CLASS='z-navbar' style='top:60px;' ID=div_navbar>"
- print "<A CLASS='z-op'           OP=load DIV=div_navleft  LNK='ajax.cgi?call=openstack_heat_list&project={}'>Orchestration</A>".format(aWeb.get_value('project'))
- print "<A CLASS='z-op'           OP=load DIV=div_navleft  LNK='ajax.cgi?call=openstack_contrail_list&project={}'>Virtual Networks</A>".format(aWeb.get_value('project'))
- print "<A CLASS='z-op'           OP=load DIV=div_navleft  LNK='ajax.cgi?call=openstack_nova_list&project={}'>Virtual Machines</A>".format(aWeb.get_value('project'))
- print "<A CLASS='z-op' SPIN=true OP=load DIV=div_navcont  LNK='ajax.cgi?call=appformix_report&project={}'>Usage Report</A>".format(aWeb.get_value('project'))
- print "<A CLASS='z-reload z-op'  OP=load DIV=div_navframe LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
- print "</DIV>"
- print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px; width:400px;'></DIV>"
- print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px; overflow-x:auto'>"
- print "<P><H2>Welcome to the IaaS Self-Service Portal</H2></P>"
- print "</DIV>"
