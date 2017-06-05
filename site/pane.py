@@ -158,7 +158,7 @@ def examine(aWeb):
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_dns  URL='.z-system'>DNS</A>"
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_dhcp URL='.z-system'>DHCP</A>"
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_external URL='.z-system'>External</A>"
- print "<A CLASS='z-reload z-op' OP=reload URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "</DIV>"
  
  print "<DIV CLASS='z-navcontent' ID=div_navcont>"
@@ -359,7 +359,7 @@ def rack_info(aWeb):
  if len(pdus) > 0:
   pdustring = "&pdulist=".join(pdus)
   print "<A CLASS='z-op' OP=load DIV=div_navleft SPIN=true URL='ajax.cgi?call=pdu_list_units&pdulist={}'>PDU</A>".format(pdustring)
- print "<A CLASS='z-op z-reload' OP=reload URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "<A CLASS='z-op' style='float:right;' OP=load DIV=div_navleft URL='ajax.cgi?call=pdu_list_pdus'>PDUs</A>"
  print "<A CLASS='z-op' style='float:right;' OP=load DIV=div_navleft URL='ajax.cgi?call=console_list_consoles'>Consoles</A>"
  print "<A CLASS='z-op' style='float:right;' OP=load DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'>Racks</A>"
@@ -396,7 +396,7 @@ def esxi(aWeb):
  print "<A CLASS=z-op OP=toggle DIV=div_esxi_op   HREF='#'>VM OPs</A>"
  print "<A HREF=https://{0}/ui target=_blank>UI</A>".format(esxi._ip)
  print "<A HREF=http://{0}/index.html target=_blank>IPMI</A>".format(esxi.get_kvm_ip('ipmi'))
- print "<A CLASS='z-op z-reload' OP=reload URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "</DIV>"
  
  print aWeb.get_listeners("div_navcont")
@@ -461,7 +461,7 @@ def devices(aWeb):
   print "<A CLASS='z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=console_list&{}'>Console</A>".format(argdict.get('console'))
  if argdict.get('pdu',None):
   print "<A CLASS='z-op' OP=load DIV=div_navleft SPIN=true URL='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
- print "<A CLASS='z-reload z-op' OP=reload URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "<A CLASS='z-right z-op'  OP=load   DIV=div_navcont MSG='Discover devices?' URL='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
  print "</DIV>"
  print aWeb.get_listeners("div_navleft")
