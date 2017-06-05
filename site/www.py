@@ -8,14 +8,13 @@ __version__ = "17.6.1GA"
 __status__= "Production"
 
 class Web(object):
- 
- #
- # Create a web object and prep content for display, or download (by forcing to octet stream)
- # 
+
  def __init__(self):
   from os import getenv
-  self._cookie = dict(map( lambda c: c.split("="), getenv("HTTP_COOKIE").replace(";",'').split()))
-  self._has_header = False
+  cookie = getenv("HTTP_COOKIE")
+  self._browser_cookie = {} if not cookie else dict(map( lambda c: c.split("="), getenv("HTTP_COOKIE").replace(";",'').split()))
+  self._header = {}
+  self._cookie = {}
   self._form = None
 
  def log_msg(self, aMsg, aLog = None):
@@ -53,6 +52,7 @@ class Web(object):
 
  ################################# PANE #########################################
  #
+ # pane, view = <module>_<function>
  #
  def pane(self):
   import cgi
@@ -62,43 +62,41 @@ class Web(object):
    import pane as panemod
    getattr(panemod,paneview,None)(self)
   except Exception as err:
-   if not self._has_header:
-    from sys import stdout
-    print "Content-Type: text/html\r\n"
-    stdout.flush()
+   print "Content-Type: text/html\r\n"
    print "<SPAN style='font-size:10px'>Pane view:[{}] error: [{}]".format(paneview, str(err))
    if not paneview in dir(panemod):
     print " - possible panes:[{}]".format(", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
    print "</SPAN>"
 
- def put_header_base(self, aHeader={}):
-  if self._has_header:
-   return
-  self._has_header = True
-  from sys import stdout
-  for key,value in aHeader.iteritems():
-   print "{}: {}\r".format(key,value)
-  print "Content-Type: text/html\r\n"
-  print "<HEAD>"
-  print "<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>\n<META CHARSET='UTF-8'>"
-  print "</HEAD>"
-  stdout.flush()
+ # Header Key/Values
+ def put_header(self,aKey,aValue):
+  self._header[aKey] = aValue
 
- def put_header_full(self, aTitle, aHeader={}):
+ # Cookie Name + Params, Data= main
+ def put_cookie(self,aName,aData):
+  self._cookie[aName] = aData
+
+ # Put a proper HTML header + body header (!) for the browser
+ def put_html_header(self, aTitle):
   self._has_header = True
-  from sys import stdout
-  for key,value in aHeader.iteritems():
-   print "{}: {}\r".format(key,value)
+  for key,value in self._header.iteritems():
+   print "{}: {}\r".format(key,value)   
+  for key,value in self._cookie.iteritems():
+   print "Set-Cookie: {}={}; Path=/; Max-Age=1800;\r".format(key,value)
+  self._header = None
   print "Content-Type: text/html\r\n"
   print "<HEAD>"
   print "<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>\n<META CHARSET='UTF-8'>"
   print "<TITLE>{}</TITLE>".format(aTitle)
   print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>"
   print "</HEAD>"
+  from sys import stdout
   stdout.flush()
  
  ############################## CGI/Web functions ###############################
- 
+ def get_cookie(self):
+  return self._browser_cookie
+
  def quote(self,aString):
   from urllib import quote_plus
   return quote_plus(aString)
