@@ -12,9 +12,10 @@ __status__= "Production"
 # Openstack
 #
 # Cookies:
+# af_controller   = appformix controller ip
+# os_controller   = openstack controller ip
 # os_demo_name    = Name of Customer demoing for
 # os_main_token   = auth token for project recovery
-# os_controller   = controller ip
 # os_project_id   = id for selected project
 # os_project_name = name for selected project
 # os_user_name    = username last used
@@ -29,6 +30,7 @@ def openstack_login(aWeb):
  import sdcp.SettingsContainer as SC
  name = aWeb.get_value('name',"iaas")
  ctrl = aWeb.get_value('controller',"127.0.0.1")
+ appf = aWeb.get_value('appformix',"127.0.0.1")
  cookie = aWeb.get_cookie()
  user = cookie.get("os_user_name")
  mtok = cookie.get("os_main_token")
@@ -36,6 +38,7 @@ def openstack_login(aWeb):
 
  aWeb.put_cookie("os_demo_name",name)
  aWeb.put_cookie("os_controller",ctrl)
+ aWeb.put_cookie("af_controller",appf)
 
  if not mtok:
   openstack = OpenstackRPC(ctrl,None)
@@ -45,15 +48,18 @@ def openstack_login(aWeb):
  else:
   aWeb.log_msg("openstack_login - reusing token: {}".format(mtok))
   openstack = OpenstackRPC(ctrl,mtok)
- projects =  openstack.call("5000","v3/projects")['data']['projects']
- aWeb.put_html_header("{} 2 Cloud".format(name.capitalize()))
 
+ ret = openstack.call("5000","v3/projects")
+ projects = [] if not ret['code'] == 200 else ret['data']['projects']
+
+ aWeb.put_html_header("{} 2 Cloud".format(name.capitalize()))
  print aWeb.get_listeners("div_navframe")
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV ID=div_openstack_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to {} 2 Cloud portal</H1></CENTER>".format(name.capitalize())
- print "<FORM ID=openstack_login>"
+ print "<FORM ACTION=pane.cgi METHOD=POST ID=openstack_login>"
+ print "<INPUT TYPE=HIDDEN NAME=view VALUE=openstack_portal>"
  print "<TABLE style='display:inline; float:left; margin:0px 0px 0px 30px;'>"
  print "<TR><TD>Customer:</TD><TD><SELECT style='border:none; width:100px; display:inline; color:black' NAME=project>"
  for p in projects:
@@ -63,9 +69,8 @@ def openstack_login(aWeb):
  print "<TR><TD>Username:</TD><TD><INPUT style='z-input' TYPE=text NAME=username VALUE='{}'></TD></TR>".format(user if user else "login name")
  print "<TR><TD>Password:</TD><TD><INPUT style='z-input' TYPE=password NAME=password></TD></TR>"
  print "</TABLE>"
+ print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
  print "</FORM>"
- # Replace with standard HREF
- print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' SPIN=true OP=post  FRM=openstack_login LNK='pane.cgi?view=openstack_portal' DIV=div_navframe>Login</A>"
  print "</DIV></DIV>"
  print "</DIV>"  
 
@@ -84,7 +89,7 @@ def openstack_portal(aWeb):
  aWeb.put_cookie("os_project_name",pname)
 
  if not utok:
-  openstack = OpenstackRPC(ctrl,utok)
+  openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':pname, 'username':username,'password':password })
   if not res['result'] == "OK":
    aWeb.put_html_header("Openstack Portal")
@@ -93,25 +98,29 @@ def openstack_portal(aWeb):
    return
   utok = openstack.get_token()
   aWeb.put_cookie('os_user_token',utok)
-  aWeb.log_msg("openstack_portal - successful login for {}@{}".format(username,ctrl))
+  aWeb.put_cookie('os_user_name',username)
+
+  for service in ['heat','nova']:
+   base = "os_" + service
+   port,url,id = openstack.get_service(service,'public')
+   aWeb.put_cookie(base + "_port",port)
+   aWeb.put_cookie(base + "_url",url)
+   aWeb.put_cookie(base + "_id",id)
+
+  aWeb.log_msg("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
  else:
   aWeb.log_msg("openstack_portal - using existing token for {}@{}".format(username,ctrl))
-
- # Download catalog here
- for service in ['heat','nova']:
-  base = "os_" + service
-  port,url,id = openstack.get_service(service,'public')
-  aWeb.put_cookie(base + "_port",port)
-  aWeb.put_cookie(base + "_url",url)
-  aWeb.put_cookie(base + "_id",id)
+  openstack = OpenstackRPC(ctrl,utok)
 
  aWeb.put_html_header("Openstack Portal")
-
+ print aWeb.get_listeners("div_navframe")
+ print "<DIV ID=div_navframe>"
  print "<DIV style='height:60px; position:fixed; top:0px; left:0px; right:0px; display:block; z-index:101; border-bottom: 1px solid black;' >"
  print "<TABLE style='display:inline; float:left; margin:5px 100px 0px 10px;'>"
  print "<TR><TD><B>Identity:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Id:</B></TD><TD><I>{}</I></TD></TR>".format(pname,pid)
  print "<TR><TD><B>Username:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Token:</B></TD><TD><I>{}</I></TD></TR>".format(username,utok)
  print "</TABLE>"
+ print "<A CLASS='z-btn' style='float:right; margin-right:20px'>Log out</A>"
  print "</DIV>"
  print "<DIV CLASS='z-navbar' style='top:60px;' ID=div_navbar>"
  print "<A CLASS='z-op'           OP=load DIV=div_navleft  LNK='ajax.cgi?call=openstack_heat_list'>Orchestration</A>"
@@ -121,8 +130,7 @@ def openstack_portal(aWeb):
  print "<A CLASS='z-reload z-op'  OP=load DIV=div_navframe LNK='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px; width:400px;'></DIV>"
- print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px; overflow-x:auto'>"
- print "<P><H2>Welcome to the IaaS Self-Service Portal</H2></P>"
+ print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px; overflow-x:auto'><P><H2>Welcome to the IaaS Self-Service Portal</H2></P></DIV>"
  print "</DIV>"
 
 ##################################################################################################

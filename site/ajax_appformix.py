@@ -19,15 +19,16 @@ import sdcp.SettingsContainer as SC
 def report(aWeb):
  from datetime import datetime
  from json import dumps
- project = aWeb.get_value('project')
- (pid,pname) = project.split('_')
+ cookie = aWeb.get_cookie()
+ pid    = cookie.get('os_project_id')
+ pname  = cookie.get('os_project_name')
+ ctrl   = cookie.get('af_controller')
  # First auth..
- controller  = AppformixRPC(SC.appformix_ip)
- if not controller.load(SC.appformix_cookietemplate.format(pname)):
-  token = controller.auth({'username':SC.appformix_username, 'password':SC.appformix_password })
+ controller  = AppformixRPC(ctrl)
+ res = controller.auth({'username':SC.appformix_username, 'password':SC.appformix_password })
  
- if not token:
-  print "Error logging in"
+ if not res['result'] == "OK":
+  print "Error logging in - {}".format(str(res))
   return
 
  resp = controller.call("reports/project/metadata")

@@ -220,6 +220,7 @@ def contrail_list(aWeb):
   print "Not logged in"
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
+ pname = cookie.get("os_project_name")
 
  ret = controller.call("8082","virtual-networks")
  if not ret['result'] == "OK":
@@ -249,9 +250,9 @@ def nova_list(aWeb):
  port  = cookie.get('os_nova_port')
  url   = cookie.get('os_nova_url')
 
- ret = controller.call(port,lnk + "/servers")
+ ret = controller.call(port,url + "/servers")
  if not ret['result'] == "OK":
-  print "Error retrieving list"
+  print "Error retrieving list {}".format(str(ret))
   return
 
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"
@@ -265,8 +266,8 @@ def nova_list(aWeb):
   print "<TR>"
   print "<TD>{}</TD>".format(server['name'])
   print "<TD>"
-  print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&name={1}&id={2}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(qserver,server['id'])
-  print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&name={1}&id={2}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(qserver,server['id'])
   print "</TD>"
   print "</TR>"
  print "</TABLE>"
@@ -292,13 +293,16 @@ def nova_action(aWeb):
  aWeb.log_msg("openstack_nova_action - id:{} name:{} op:{} for project:{}".format(id,name,op,cookie.get('os_project_name')))
 
  if   op == 'info':
-  ret = controller.call(port,urk + "/servers/{}".format(id))
+  ret = controller.call(port,url + "/servers/{}".format(id))
   print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
   print "<H2>{}</H2>".format(name)
   _print_info(ret['data']['server'])
   print "</DIV>"
  elif op == 'remove':
   ret = controller.call(port,url + "/servers/{}".format(id), method='DELETE')
+  if not ret['result'] == "OK":
+   print "Error performing op {}".format(str(ret))
+   return
   print "<DIV CLASS='z-table'>"
   print "<H2>Removing {}</H2>".format(name)
   if ret['code'] == 204:
