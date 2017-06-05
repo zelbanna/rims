@@ -58,9 +58,8 @@ def openstack_login(aWeb):
  projects = [] if not ret['code'] == 200 else ret['data']['projects']
 
  aWeb.put_html_header("{} 2 Cloud".format(name.capitalize()))
- print aWeb.get_listeners("div_navframe")
- print "<DIV CLASS='z-navframe' ID=div_navframe>"
- print "<DIV CLASS='z-centered' style='height:100%;'>"
+ print aWeb.get_listeners("div_os_login")
+ print "<DIV CLASS='z-centered' style='height:100%;' ID=div_os_login>"
  print "<DIV ID=div_openstack_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to {} 2 Cloud portal</H1></CENTER>".format(name.capitalize())
  print "<FORM ACTION=pane.cgi METHOD=POST ID=openstack_login>"
@@ -77,7 +76,6 @@ def openstack_login(aWeb):
  print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
  print "</FORM>"
  print "</DIV></DIV>"
- print "</DIV>"  
 
 def openstack_portal(aWeb):
  from json import dumps
@@ -95,7 +93,7 @@ def openstack_portal(aWeb):
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':pname, 'username':username,'password':password })
   if not res['result'] == "OK":
-   aWeb.put_html_header("Openstack Portal")
+   aWeb.put_html_header()
    aWeb.log_msg("openstack_portal - error during login for {}@{}".format(username,ctrl))
    print "Error logging in - please try login again"
    return
@@ -120,7 +118,7 @@ def openstack_portal(aWeb):
   aWeb.log_msg("openstack_portal - using existing token for {}@{}".format(username,ctrl))
   openstack = OpenstackRPC(ctrl,utok)
 
- aWeb.put_html_header("Openstack Portal")
+ aWeb.put_html_header()
  print aWeb.get_listeners("div_navframe")
  print "<DIV ID=div_navframe>"
  print "<DIV style='height:60px; position:fixed; top:0px; left:0px; right:0px; display:block; z-index:101; border-bottom: 1px solid black;' >"
@@ -135,7 +133,7 @@ def openstack_portal(aWeb):
  print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_contrail_list'>Virtual Networks</A>"
  print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_nova_list'>Virtual Machines</A>"
  print "<A CLASS='z-op' SPIN=true OP=load DIV=div_navcont  URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
- print "<A CLASS='z-reload z-op'  OP=load DIV=div_navframe URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-reload z-op'  OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px; width:400px;'></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px; overflow-x:auto'><P><H2>Welcome to the IaaS Self-Service Portal</H2></P></DIV>"
