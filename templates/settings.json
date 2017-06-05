@@ -46,14 +46,12 @@
  "openstack":{
   "project":"",
   "username":"",
-  "password":"",
-  "cookietemplate":"/tmp/openstack.{}.cookie.json"
+  "password":""
  },
  "appformix":{
   "ip":"",
   "username":"",
-  "password":"",
-  "cookietemplate":"/tmp/appformix.{}.cookie.json"
+  "password":""
  },
  "ipmi": {
   "username":"",
