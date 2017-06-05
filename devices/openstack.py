@@ -25,29 +25,6 @@ class OpenstackRPC(object):
  def __str__(self):
   return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._ip, self._token, self._token_utc, self._project,self._project_id)
 
- def dump(self,aFile):
-  from json import dump
-  with open(aFile,'w') as f:
-   dump({'token':self._token, 'token_utc':self._token_utc, 'token_expire':self._token_expire, 'project':self._project, 'ip':self._ip,'project_id':self._project_id, 'catalog':self._catalog },f, sort_keys=True, indent=4)
-
- def load(self,aFile):
-  from json import load
-  from datetime import datetime
-  try:
-   with open(aFile,'r') as f:
-    data = load(f)
-    if datetime.fromtimestamp(int(data['token_expire'])) > datetime.utcnow():
-     self._ip = data['ip']
-     self._token = data['token']
-     self._token_expire = data['token_expire']
-     self._token_utc = data['token_utc']
-     self._project = data['project']
-     self._project_id = data['project_id']
-     self._catalog = data['catalog']
-  except:
-   pass
-  return self._token
-
  #
  # Keystone v3 authentication - using v2.0 compatible domain (default), project = admin unless specified
  # { 'username','password', 'project' }
@@ -74,23 +51,20 @@ class OpenstackRPC(object):
     for svc in token['catalog']:
      catalog[svc['name']] = svc
     self._catalog = catalog
+   result, code, info  = "OK", sock.code, None
    sock.close()
-   return self._catalog
   except HTTPError, h:
-   if h.reason == 'Unauthorized' and h.code == 401:
-    pass
-   else:
-    print "{}\n{}".format(h,h.info())
+   result,code,info = h.reason,h.code,str(h)
   except URLError, u:
-   print "URLError: {}".format(u)
+   result,code,info = "URLError",590,str(u)
   except Exception, e:
-   print "Error: {}".format(e)
-  return None
+   result,code,info = "Error",591,str(e)
+  return {'result':result, 'code':code, 'info':info }
 
  def get_id(self):
   return self._project_id
 
- def get_auth_token(self):
+ def get_token(self):
   return self._token
 
  def get_catalog(self):
@@ -133,16 +107,43 @@ class OpenstackRPC(object):
    if method:
     req.get_method = lambda: method
    sock = urlopen(req)
-   type,info,code = "OK", sock.info(), sock.code
+   result,info,code = "OK", sock.info(), sock.code
    try: data = loads(sock.read())
    except: data = None
    sock.close()
   except HTTPError, h:
-   type,info,code = "HTTPError",h.info(),h.code
+   result,info,code = "HTTPError",h.info(),h.code
    try: data = loads(h.read())
    except: data = None
   except URLError, u:
-   type,info,data,code = "URLError",u,None,None
+   result,info,data,code = "URLError",u,None,None
   except Exception, e:
-   type,info,data,code = "Error",e,None,None
-  return { 'header':info, 'type':type, 'data':data, 'code':code }
+   result,info,data,code = "Error",e,None,None
+  return { 'header':info, 'result':result, 'data':data, 'code':code }
+
+ #################################### File OPs ####################################
+ #
+ # File operations for debugging
+ # 
+ def dump(self,aFile):
+  from json import dump
+  with open(aFile,'w') as f:
+   dump({'token':self._token, 'token_utc':self._token_utc, 'token_expire':self._token_expire, 'project':self._project, 'ip':self._ip,'project_id':self._project_id, 'catalog':self._catalog },f, sort_keys=True, indent=4)
+
+ def load(self,aFile):
+  from json import load
+  from datetime import datetime
+  try:
+   with open(aFile,'r') as f:
+    data = load(f)
+    if datetime.fromtimestamp(int(data['token_expire'])) > datetime.utcnow():
+     self._ip = data['ip']
+     self._token = data['token']
+     self._token_expire = data['token_expire']
+     self._token_utc = data['token_utc']
+     self._project = data['project']
+     self._project_id = data['project_id']
+     self._catalog = data['catalog']
+  except:
+   pass
+  return self._token

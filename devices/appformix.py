@@ -22,26 +22,6 @@ class AppformixRPC(object):
  def __str__(self):
   return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._token_utc)
 
- def dump(self,aFile):
-  from json import dump
-  with open(aFile,'w') as f:
-   dump({'token':self._token, 'token_utc':self._token_utc, 'token_expire':self._token_expire, 'ip':self._ip },f, sort_keys=True, indent=4)
-
- def load(self,aFile):
-  from json import load
-  from datetime import datetime
-  try:
-   with open(aFile,'r') as f:
-    data = load(f)
-    if datetime.fromtimestamp(int(data['token_expire'])) > datetime.utcnow():
-     self._ip = data['ip']
-     self._token = data['token']
-     self._token_expire = data['token_expire']
-     self._token_utc = data['token_utc']
-  except:
-   pass
-  return self._token
-
  #
  # Basic POST  authentication
  # { 'username','password' }
@@ -62,20 +42,21 @@ class AppformixRPC(object):
     self._token_utc = token['expiresAt']
     self._token_expire = int(mktime(strptime(token['expiresAt'],"%Y-%m-%dT%H:%M:%S.%fZ")))
    sock.close()
-   return self._token
+   result, code, info  = "OK", sock.code, None
+   sock.close()
   except HTTPError, h:
-   if h.reason == 'Unauthorized' and h.code == 401:
-    pass
-   else:
-    print "{}\n{}".format(h,h.info())
+   result,code,info = h.reason,h.code,str(h)
   except URLError, u:
-   print "URLError: {}".format(u)
+   result,code,info = "URLError",590,str(u)
   except Exception, e:
-   print "Error: {}".format(e)
-  return None
+   result,code,info = "Error",591,str(e)
+  return {'result':result, 'code':code, 'info':info }
 
- def get_auth_token(self):
+ def get_token(self):
   return self._token
+
+ def get_token_utc(self):
+  return self._token_utc
 
  #
  # Input:
@@ -96,16 +77,41 @@ class AppformixRPC(object):
    if method:
     req.get_method = lambda: method
    sock = urlopen(req)
-   type,info,code = "OK", sock.info(), sock.code
+   result,info,code = "OK", sock.info(), sock.code
    try: data = loads(sock.read())
    except: data = None
    sock.close()
   except HTTPError, h:
-   type,info,code = "HTTPError",h.info(),h.code
+   result,info,code = "HTTPError",h.info(),h.code
    try: data = loads(h.read())
    except: data = None
   except URLError, u:
-   type,info,data,code = "URLError",u,None,None
+   result,info,data,code = "URLError",u,None,None
   except Exception, e:
-   type,info,data,code = "Error",e,None,None
-  return { 'header':info, 'type':type, 'data':data, 'code':code }
+   result,info,data,code = "Error",e,None,None
+  return { 'header':info, 'result':type, 'data':data, 'code':code }
+
+ ###################################### File OPs ########################################
+ #
+ # Basic file ops for debugging
+ #
+ def dump(self,aFile):
+  from json import dump
+  with open(aFile,'w') as f:
+   dump({'token':self._token, 'token_utc':self._token_utc, 'token_expire':self._token_expire, 'ip':self._ip },f, sort_keys=True, indent=4)
+
+ def load(self,aFile):
+  from json import load
+  from datetime import datetime
+  try:
+   with open(aFile,'r') as f:
+    data = load(f)
+    if datetime.fromtimestamp(int(data['token_expire'])) > datetime.utcnow():
+     self._ip = data['ip']
+     self._token = data['token']
+     self._token_expire = data['token_expire']
+     self._token_utc = data['token_utc']
+  except:
+   pass
+  return self._token
+
