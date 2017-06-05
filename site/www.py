@@ -77,7 +77,7 @@ class Web(object):
   self._cookie[aName] = aData
 
  # Put a proper HTML header + body header (!) for the browser
- def put_html_header(self, aTitle):
+ def put_html_header(self, aTitle = None):
   self._has_header = True
   for key,value in self._header.iteritems():
    print "{}: {}\r".format(key,value)   
@@ -87,7 +87,8 @@ class Web(object):
   print "Content-Type: text/html\r\n"
   print "<HEAD>"
   print "<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>\n<META CHARSET='UTF-8'>"
-  print "<TITLE>{}</TITLE>".format(aTitle)
+  if aTitle:
+   print "<TITLE>{}</TITLE>".format(aTitle)
   print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>"
   print "</HEAD>"
   from sys import stdout

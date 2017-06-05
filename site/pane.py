@@ -33,8 +33,13 @@ def openstack_login(aWeb):
  appf = aWeb.get_value('appformix',"127.0.0.1")
  cookie = aWeb.get_cookie()
  user = cookie.get("os_user_name")
+ utok = cookie.get("os_user_token")
  mtok = cookie.get("os_main_token")
  prev = cookie.get("os_project_id")
+ if utok:
+  aWeb.put_header("Location","pane.cgi?view=openstack_portal")
+  aWeb.put_html_header()
+  return
 
  aWeb.put_cookie("os_demo_name",name)
  aWeb.put_cookie("os_controller",ctrl)
@@ -43,8 +48,8 @@ def openstack_login(aWeb):
  if not mtok:
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':SC.openstack_project, 'username':SC.openstack_username,'password':SC.openstack_password })
-  aWeb.log_msg("openstack_login - login result: {}".format(str(res['result'])))
   aWeb.put_cookie("os_main_token",openstack.get_token())
+  aWeb.log_msg("openstack_login - login result: {}".format(str(res['result'])))
  else:
   aWeb.log_msg("openstack_login - reusing token: {}".format(mtok))
   openstack = OpenstackRPC(ctrl,mtok)
@@ -78,17 +83,15 @@ def openstack_portal(aWeb):
  from json import dumps
  from sdcp.devices.openstack import OpenstackRPC
  import sdcp.SettingsContainer as SC
- username = aWeb.get_value('username')
- password = aWeb.get_value('password')
- project  = aWeb.get_value('project')
  cookie   = aWeb.get_cookie()
  ctrl = cookie.get('os_controller')
  utok = cookie.get('os_user_token')
- (pid,pname) = project.split('_')
- aWeb.put_cookie("os_project_id",pid)
- aWeb.put_cookie("os_project_name",pname)
 
  if not utok:
+  username = aWeb.get_value('username')
+  password = aWeb.get_value('password')
+  project  = aWeb.get_value('project')
+  (pid,pname) = project.split('_')
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':pname, 'username':username,'password':password })
   if not res['result'] == "OK":
@@ -99,6 +102,8 @@ def openstack_portal(aWeb):
   utok = openstack.get_token()
   aWeb.put_cookie('os_user_token',utok)
   aWeb.put_cookie('os_user_name',username)
+  aWeb.put_cookie("os_project_id",pid)
+  aWeb.put_cookie("os_project_name",pname)
 
   for service in ['heat','nova']:
    base = "os_" + service
@@ -109,6 +114,9 @@ def openstack_portal(aWeb):
 
   aWeb.log_msg("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
  else:
+  username = cookie.get("os_user_name")
+  pid      = cookie.get("os_project_id")
+  pname    = cookie.get("os_project_name")
   aWeb.log_msg("openstack_portal - using existing token for {}@{}".format(username,ctrl))
   openstack = OpenstackRPC(ctrl,utok)
 
