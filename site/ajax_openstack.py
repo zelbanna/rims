@@ -31,23 +31,33 @@ def _print_info(aData):
 ##################################### Heatstack ##################################
 #
 def heat_list(aWeb):
- project = aWeb.get_value('project')
- (pid,pname) = project.split('_')
- controller  = OpenstackRPC("127.0.0.1")
- if not controller.load(SC.openstack_cookietemplate.format(pname)):
+ cookie = aWeb.get_cookie()
+ token  = cookie.get('os_user_token')
+ if not token:
   print "Not logged in"
   return
- port,lnk,svc = controller.get_service('heat','public')
- ret = controller.call(port,lnk + "/stacks") 
+ controller = OpenstackRPC(cookie.get('os_controller'),token)
+
+ port  = cookie.get('os_heat_port')
+ url   = cookie.get('os_heat_url')
+ name = aWeb.get_value('name')
+ id   = aWeb.get_value('id')
+ op   = aWeb.get_value('op','info')
+
+ ret = controller.call(cookie.get('os_heat_port'),cookie.get('os_heat_url') + "/stacks") 
+ if not ret['result'] == "OK":
+  print "Error retrieving list"
+  return
+
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"
  print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Heat Stacks</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=openstack_heat_list&project={}'><IMG SRC='images/btn-reboot.png'></A>".format(project)
- print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_choose_template&project={}'><IMG SRC='images/btn-add.png'></A>".format(project)
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=openstack_heat_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
  print "</TR>"
  print "<THEAD><TH>Name</TH><TH>Status</TH><TH>Operations</TH></THEAD>"
  for stack in ret['data'].get('stacks',None):
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_heat_action&project=" + project + "&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} OP=load SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} OP=load SPIN=true>{}</A>"
   print "<TR>"
   print "<TD>{}</TD>".format(stack['stack_name'])
   print "<TD>{}</TD>".format(stack['stack_status'])
@@ -65,10 +75,8 @@ def heat_list(aWeb):
 # Add instantiation
 #
 def heat_choose_template(aWeb):
- project = aWeb.get_value('project')
  print "<DIV CLASS='z-table' style='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_choose_template>"
- print "<INPUT TYPE=hidden NAME=project VALUE={}>".format(project)
  try:
   print "Add solution from template:<SELECT NAME=template style='height:22px;'>"
   from os import listdir
@@ -86,13 +94,11 @@ def heat_choose_template(aWeb):
 
 def heat_enter_parameters(aWeb):
  from json import load,dumps
- project  = aWeb.get_value('project')
  template = aWeb.get_value('template')
  with open("os_templates/"+template) as f:
   data = load(f)
  print "<DIV CLASS='z-table' style='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_template_parameters>"
- print "<INPUT TYPE=hidden NAME=project VALUE={}>".format(project)
  print "<INPUT TYPE=hidden NAME=template VALUE={}>".format(template)
  print "<TABLE>"
  print "<THEAD><TH>Parameter</TH><TH style='min-width:300px'>Value</TH></THEAD>"
@@ -101,27 +107,30 @@ def heat_enter_parameters(aWeb):
   print "<TR><TD>{0}</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></TD></TR>".format(key,value)
  print "</TABLE>"
  print "</FORM>"
- print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' OP=post SPIN=true FRM=frm_heat_template_parameters DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_action&op=create2'><IMG SRC='images/btn-start.png'></A>"
+ print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' OP=post SPIN=true FRM=frm_heat_template_parameters DIV=div_navcont LNK='ajax.cgi?call=openstack_heat_action&op=create'><IMG SRC='images/btn-start.png'></A>"
  print "</DIV>"
 
 #
 # Heat Actions
 #
 def heat_action(aWeb):
- project = aWeb.get_value('project')
- (pid,pname) = project.split('_')
+ cookie = aWeb.get_cookie()
+ token  = cookie.get('os_user_token')
+ if not token:
+  print "Not logged in"
+  return
+ controller = OpenstackRPC(cookie.get('os_controller'),token)
+
+ port  = cookie.get('os_heat_port')
+ url   = cookie.get('os_heat_url')
  name = aWeb.get_value('name')
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
- controller = OpenstackRPC("127.0.0.1")
- if not controller.load(SC.openstack_cookietemplate.format(pname)):
-  print "Not logged in"
-  return
- aWeb.log_msg("openstack_heat_action - id:{} name:{} op:{} for project:{}".format(id,name,op,project))
- port,lnk,svc = controller.get_service('heat','public')
+
+ aWeb.log_msg("openstack_heat_action - id:{} name:{} op:{} for project:{}".format(id,name,op,cookie.get('os_project_name')))
 
  if   op == 'info':
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info LNK=ajax.cgi?call=openstack_heat_action&project=" + project + "&name=" + name + "&id=" + id+ "&op={} OP=load SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info LNK=ajax.cgi?call=openstack_heat_action&name=" + name + "&id=" + id+ "&op={} OP=load SPIN=true>{}</A>"
   print "<DIV>"
   print tmpl.format('Stack Details','details','Details')
   print tmpl.format('Stack Parameters','events','Events')
@@ -129,26 +138,26 @@ def heat_action(aWeb):
   print tmpl.format('Stack Parameters','parameters','Parameters')
   print "</DIV>"
   print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
-  ret = controller.call(port,lnk + "/stacks/{}/{}".format(name,id))
+  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
   print "<H2>{}</H2>".format(name)
   _print_info(ret['data']['stack'])
   print "</DIV>"
 
  elif op == 'events':
   from json import dumps
-  ret = controller.call(port,lnk + "/stacks/{}/{}/events".format(name,id))
+  ret = controller.call(port,url + "/stacks/{}/{}/events".format(name,id))
   print "<TABLE>"
   for event in ret['data']['events']:
    print "<TR><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>".format(event['resource_name'],event['logical_resource_id'],event['resource_status'],event['resource_status_reason'])
   print "</TABLE>"
 
  elif op == 'details':
-  ret = controller.call(port,lnk + "/stacks/{}/{}".format(name,id))
+  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
   print "<H2>{}</H2>".format(name)
   _print_info(ret['data']['stack'])
 
  elif op == 'remove':
-  ret = controller.call(port,lnk + "/stacks/{}/{}".format(name,id), method='DELETE')
+  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id), method='DELETE')
   print "<DIV CLASS='z-table'>"
   print "<H3>Removing {}</H3>".format(name)
   if ret['code'] == 204:
@@ -159,12 +168,12 @@ def heat_action(aWeb):
 
  elif op == 'template':
   from json import dumps
-  ret = controller.call(port,lnk + "/stacks/{}/{}/template".format(name,id))
+  ret = controller.call(port,url + "/stacks/{}/{}/template".format(name,id))
   print "<PRE>" + dumps(ret['data'], indent=4) + "</PRE>"
 
  elif op == 'parameters':
   from json import dumps
-  ret = controller.call(port,lnk + "/stacks/{}/{}".format(name,id))
+  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
   data = ret['data']['stack']['parameters']
   data.pop('OS::project_id')
   data.pop('OS::stack_name')
@@ -178,10 +187,10 @@ def heat_action(aWeb):
    with open("os_templates/"+template) as f:
     data = load(f)
    data['stack_name'] = name
-   params  = aWeb.get_args2dict_except(['op','call','template','project','name'])
+   params  = aWeb.get_args2dict_except(['op','call','template','name'])
    for key,value in params.iteritems():
     data['parameters'][key[6:]] = value
-   ret = controller.call(port,lnk + "/stacks",arg=data)
+   ret = controller.call(port,url + "/stacks",arg=data)
    if ret['code'] == 201:
     print "<DIV CLASS='z-table'>"
     print "<H2>Successful instantiation of '{}' solution</H2>".format(template.partition('.')[0])
@@ -205,13 +214,18 @@ def heat_action(aWeb):
 ############################### Contrail ##############################
 #
 def contrail_list(aWeb):
- (pid,pname) = aWeb.get_value('project').split('_')
- controller = OpenstackRPC("127.0.0.1")
- if not controller.load(SC.openstack_cookietemplate.format(pname)):
+ cookie = aWeb.get_cookie()
+ token  = cookie.get('os_user_token')
+ if not token:
   print "Not logged in"
   return
+ controller = OpenstackRPC(cookie.get('os_controller'),token)
+
  ret = controller.call("8082","virtual-networks")
- # print ret
+ if not ret['result'] == "OK":
+  print "Error retrieving list"
+  return
+
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"
  print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Contrail VNs</CENTER></TH></THEAD>"
  print "<THEAD><TH>Owner</TH><TH>Network</TH></THEAD>"
@@ -225,18 +239,25 @@ def contrail_list(aWeb):
 ################################# Nova ###############################
 #
 def nova_list(aWeb):
- project = aWeb.get_value('project')
- (pid,pname) = project.split('_')
- controller  = OpenstackRPC("127.0.0.1")
- if not controller.load(SC.openstack_cookietemplate.format(pname)):
+ cookie = aWeb.get_cookie()
+ token  = cookie.get('os_user_token')
+ if not token:
   print "Not logged in"
   return
- port,lnk,svc = controller.get_service('nova','public')
+ controller = OpenstackRPC(cookie.get('os_controller'),token)
+
+ port  = cookie.get('os_nova_port')
+ url   = cookie.get('os_nova_url')
+
  ret = controller.call(port,lnk + "/servers")
+ if not ret['result'] == "OK":
+  print "Error retrieving list"
+  return
+
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"
  print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Nova Servers</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=openstack_nova_list&project={}'><IMG SRC='images/btn-reboot.png'></A>".format(project)
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft LNK='ajax.cgi?call=openstack_nova_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "</TR>"
  print "<THEAD><TH>Name</TH><TH style='width:94px;'>Operations</TH></THEAD>"
  for server in ret['data'].get('servers',None):
@@ -244,8 +265,8 @@ def nova_list(aWeb):
   print "<TR>"
   print "<TD>{}</TD>".format(server['name'])
   print "<TD>"
-  print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&project={0}&name={1}&id={2}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(project,qserver,server['id'])
-  print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&project={0}&name={1}&id={2}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(project,qserver,server['id'])
+  print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&name={1}&id={2}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont LNK=ajax.cgi?call=openstack_nova_action&name={1}&id={2}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(qserver,server['id'])
   print "</TD>"
   print "</TR>"
  print "</TABLE>"
@@ -255,26 +276,29 @@ def nova_list(aWeb):
 # Actions
 # 
 def nova_action(aWeb):
- project = aWeb.get_value('project')
+ cookie = aWeb.get_cookie()
+ token  = cookie.get('os_user_token')
+ if not token:
+  print "Not logged in"
+  return
+ controller = OpenstackRPC(cookie.get('os_controller'),token)
+
+ port  = cookie.get('os_nova_port')
+ url   = cookie.get('os_nova_url')
  name = aWeb.get_value('name')
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
- (pid,pname) = project.split('_')
- controller = OpenstackRPC("127.0.0.1")
- if not controller.load(SC.openstack_cookietemplate.format(pname)):
-  print "Not logged in"
-  return
- aWeb.log_msg("openstack_nova_action - id:{} name:{} op:{} for project:{}".format(id,name,op,project))
- port,lnk,svc = controller.get_service('nova','public')
+
+ aWeb.log_msg("openstack_nova_action - id:{} name:{} op:{} for project:{}".format(id,name,op,cookie.get('os_project_name')))
 
  if   op == 'info':
-  ret = controller.call(port,lnk + "/servers/{}".format(id))
+  ret = controller.call(port,urk + "/servers/{}".format(id))
   print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
   print "<H2>{}</H2>".format(name)
   _print_info(ret['data']['server'])
   print "</DIV>"
  elif op == 'remove':
-  ret = controller.call(port,lnk + "/servers/{}".format(id), method='DELETE')
+  ret = controller.call(port,url + "/servers/{}".format(id), method='DELETE')
   print "<DIV CLASS='z-table'>"
   print "<H2>Removing {}</H2>".format(name)
   if ret['code'] == 204:
