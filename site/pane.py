@@ -66,7 +66,7 @@ def openstack_login(aWeb):
   extra = '' if not p['id'] == prev else "selected"
   print "<OPTION VALUE={0}_{1} {2}>{1}</OPTION>".format(p['id'],p['name'],extra)
  print "</SELECT></TD></TR>"
- print "<TR><TD>Username:</TD><TD><INPUT style='z-input' TYPE=text NAME=username VALUE='{}'></TD></TR>".format(user if user else "login name")
+ print "<TR><TD>Username:</TD><TD><INPUT style='z-input' TYPE=text NAME=username {}></TD></TR>".format('' if not user else "VALUE={}".format(user))
  print "<TR><TD>Password:</TD><TD><INPUT style='z-input' TYPE=password NAME=password></TD></TR>"
  print "</TABLE>"
  print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
@@ -120,7 +120,7 @@ def openstack_portal(aWeb):
  print "<TR><TD><B>Identity:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Id:</B></TD><TD><I>{}</I></TD></TR>".format(pname,pid)
  print "<TR><TD><B>Username:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Token:</B></TD><TD><I>{}</I></TD></TR>".format(username,utok)
  print "</TABLE>"
- print "<A CLASS='z-btn' style='float:right; margin-right:20px'>Log out</A>"
+ print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px'>Log out</A>".format(ctrl,cookie.get('os_demo_name'),cookie.get('af_controller'))
  print "</DIV>"
  print "<DIV CLASS='z-navbar' style='top:60px;' ID=div_navbar>"
  print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_heat_list'>Orchestration</A>"

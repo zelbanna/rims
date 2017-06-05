@@ -16,6 +16,7 @@
 // - iload    iframe url
 // - post     div url frm (to serialize) spin(true/false)
 // - submit   frm
+// - logout   url
 //
 
 function btnoperation(button) {
@@ -68,8 +69,16 @@ function btnoperation(button) {
    div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
   }
   $.post(url, $("#"+frm).serialize() , function(result) { div.html(result); });
- } else if (op =='submit') {
+ } else if (op == 'submit') {
   var frm = button.getAttribute("frm");
   $("#"+frm).submit();
+ } else if (op == 'logout') {
+  var cookies = document.cookie.split(";");
+  for(var i=0; i < cookies.length; i++) {
+   var equals = cookies[i].indexOf("=");
+   var name = equals > -1 ? cookies[i].substr(0, equals) : cookies[i];
+   document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  }
+  location.replace(url);
  }
 };
