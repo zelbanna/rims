@@ -15,6 +15,7 @@
 // - reload   lnk
 // - iload    iframe lnk
 // - post     div lnk frm (to serialize) spin(true/false)
+// - submit   frm
 //
 
 function btnoperation(button) {
@@ -72,5 +73,8 @@ function btnoperation(button) {
    div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
   }
   $.post(lnk, $("#"+frm).serialize() , function(result) { div.html(result); });
+ } else if (op =='submit') {
+  var frm = button.getAttribute("frm");
+  $("#"+frm).submit();
  }
 };
