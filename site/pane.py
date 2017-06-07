@@ -121,7 +121,7 @@ def openstack_portal(aWeb):
  aWeb.put_html_header()
  print aWeb.get_listeners("div_navframe")
  print "<DIV ID=div_navframe>"
- print "<DIV style='height:60px; position:fixed; top:0px; left:0px; right:0px; display:block; z-index:101; border-bottom: 1px solid black;' >"
+ print "<DIV  ID=div_header style='height:60px; position:fixed; top:0px; left:0px; right:0px; display:block; z-index:101; border-bottom: 1px solid black;' >"
  print "<TABLE style='display:inline; float:left; margin:5px 100px 0px 10px;'>"
  print "<TR><TD><B>Identity:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Id:</B></TD><TD><I>{}</I></TD></TR>".format(pname,pid)
  print "<TR><TD><B>Username:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Token:</B></TD><TD><I>{}</I></TD></TR>".format(username,utok)
@@ -133,7 +133,7 @@ def openstack_portal(aWeb):
  print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_contrail_list'>Virtual Networks</A>"
  print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_nova_list'>Virtual Machines</A>"
  print "<A CLASS='z-op' SPIN=true OP=load DIV=div_navcont  URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
- print "<A CLASS='z-reload z-op'  OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-reload z-op'  OP=redirect URL='pane.cgi?{}'></A>"
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px; width:400px;'></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px; overflow-x:auto'><P><H2>Welcome to the IaaS Self-Service Portal</H2></P></DIV>"

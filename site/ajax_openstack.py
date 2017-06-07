@@ -268,6 +268,7 @@ def nova_list(aWeb):
   print "<TD>"
   print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(qserver,server['id'])
   print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='Console'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_console&name={}&id={}&op=info   OP=load SPIN=true><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
   print "</TD>"
   print "</TR>"
  print "</TABLE>"
@@ -310,3 +311,18 @@ def nova_action(aWeb):
   else:
    print "Error code: {}".format(ret['code'])
   print "</DIV>"
+
+def nova_console(aWeb):
+ # Old school version, before microapi 2.6
+ # - after: /servers/{server_id}/remote-consoles , body: { "remote_console": { "protocol": "vnc", "type": "novnc" }
+ cookie = aWeb.get_cookie()
+ token = cookie.get('os_user_token')
+ if not token:
+  print "Not logged in"
+  return
+ id   = aWeb.get_value('id')
+ name = aWeb.get_value('name')
+ controller = OpenstackRPC(cookie.get('os_controller'),token)
+ data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/" + id + "/action", { "os-getVNCConsole": { "type": "novnc" } } )
+ if data['code'] == 200:
+  print "<iframe id='console_embed' src='{}&title={}({})' style='width: 100%; height: 100%;'></iframe>".format(data['data']['console']['url'],id,name)
