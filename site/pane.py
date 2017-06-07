@@ -8,25 +8,6 @@ __version__ = "17.6.1GA"
 __status__= "Production"
 
 ##################################################################################################
-
-def openstack_console(aWeb):
- # Old school version, before microapi 2.6
- # - after: /servers/{server_id}/remote-consoles , body: { "remote_console": { "protocol": "vnc", "type": "novnc" }
- from sdcp.devices.openstack import OpenstackRPC
- cookie = aWeb.get_cookie()
- token = cookie.get('os_user_token')
- if not token:
-  print "Not logged in"
-  return
- id   = aWeb.get_value('id')
- name = aWeb.get_value('name')
- controller = OpenstackRPC(cookie.get('os_controller'),token)
- data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/" + id + "/action", { "os-getVNCConsole": { "type": "novnc" } } )
- if data['code'] == 200:
-  aWeb.put_header("Location","{}&title={}".format(data['data']['console']['url'],name))
-  aWeb.put_html_header()
-
-##################################################################################################
 #
 # Openstack
 #
@@ -157,6 +138,27 @@ def openstack_portal(aWeb):
  print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px; width:400px;'></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px; overflow-x:auto'><P><H2>Welcome to the IaaS Self-Service Portal</H2></P></DIV>"
  print "</DIV>"
+
+#
+# Console redirect - since ajax not able to do header manipulations yet
+#
+def openstack_console(aWeb):
+ # Old school version, before microapi 2.6
+ # - after: /servers/{server_id}/remote-consoles , body: { "remote_console": { "protocol": "vnc", "type": "novnc" }
+ from sdcp.devices.openstack import OpenstackRPC
+ cookie = aWeb.get_cookie()
+ token = cookie.get('os_user_token')
+ if not token:
+  print "Not logged in"
+  return
+ id   = aWeb.get_value('id')
+ name = aWeb.get_value('name')
+ controller = OpenstackRPC(cookie.get('os_controller'),token)
+ data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/" + id + "/action", { "os-getVNCConsole": { "type": "novnc" } } )
+ if data['code'] == 200:
+  aWeb.put_header("Location","{}&title={}".format(data['data']['console']['url'],name))
+  aWeb.put_html_header()
+
 
 ##################################################################################################
 #
