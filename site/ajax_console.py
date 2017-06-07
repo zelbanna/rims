@@ -19,7 +19,7 @@ def list(aWeb):
  conlist = aWeb.get_list('consolelist')
  config="https://{0}/?form=serialconfig&action=edit&ports={1}&start=&end="
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<TR><TH>Server</TH><TH>Port</TH><TH>Device</TH></TR>"
+ print "<THEAD><TH>Server</TH><TH>Port</TH><TH>Device</TH></THEAD>"
  for con in conlist:
   console = OpenGear(con,domain)
   console.load_snmp()
@@ -34,7 +34,7 @@ def list_consoles(aWeb):
  db   = GL.DB()
  db.connect()
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Consoles</CENTER></TH></TR>"
+ print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Consoles</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=console_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
@@ -74,7 +74,7 @@ def device_info(aWeb):
  print "<FORM ID=console_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"
- print "<TR><TH COLSPAN=2>Consoles Info {}</TH></TR>".format("(new)" if id == 'new' else "")
+ print "<THEAD><TH COLSPAN=2>Consoles Info {}</TH></THEAD>".format("(new)" if id == 'new' else "")
  if id == 'new':
   condata = { 'id':'new', 'name':'new-name', 'ip':2130706433 }
   if not ip:

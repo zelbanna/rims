@@ -17,7 +17,7 @@ def list_racks(aWeb):
  db   = GL.DB()
  db.connect()
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<TR style='height:20px'><TH COLSPAN=3><CENTER>Rack</CENTER></TH></TR>"
+ print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Rack</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=rack_unit_info&id=new'><IMG SRC='images/btn-add.png'></A>"
@@ -85,7 +85,7 @@ def unit_info(aWeb):
  print "<FORM ID=rack_unit_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"
- print "<TR><TH COLSPAN=2>Rack Info {}</TH></TR>".format("(new)" if id == 'new' else "")
+ print "<THEAD><TH COLSPAN=2>Rack Info {}</TH></THEAD>".format("(new)" if id == 'new' else "")
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['name'])
  print "<TR><TD>Size:</TD><TD><INPUT NAME=size TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['size'])
  for key in ['pdu_1','pdu_2','console']:

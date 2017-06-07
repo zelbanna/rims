@@ -20,9 +20,9 @@ def view_devicelist(aWeb):
  db     = GL.DB()
  db.connect()
  print "<DIV CLASS='z-table'>"
- print "<TABLE WIDTH=330><TR>"
+ print "<TABLE WIDTH=330><THEAD>"
  print "<TH><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=ip'>IP</A></TH><TH><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=hostname'>FQDN</A></TH><TH>Model</TH>".format(aWeb.get_args_except(['sort']))
- print "</TR><TR style='height:20px'><TD COLSPAN=3>"
+ print "</THEAD><TR style='height:20px'><TD COLSPAN=3>"
  if not target or not arg:
   tune = ""
  elif target and arg == 'NULL':
@@ -32,6 +32,7 @@ def view_devicelist(aWeb):
  res = db.do("SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort))
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=device_new&{0}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args_except(['sort','call']))
+ print "</TR>"
  rows = db.get_all_rows()
  for row in rows:
   print "<TR><TD><A CLASS=z-op TITLE='Show device info for {0}' OP=load DIV=div_navcont URL='ajax.cgi?call=device_device_info&id={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])

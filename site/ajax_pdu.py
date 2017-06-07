@@ -32,7 +32,7 @@ def list_units(aWeb):
  if len(pdulist) == 0:
   pdulist.append(pduop)
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<TR><TH>PDU</TH><TH>Entry</TH><TH>Device</TH><TH style='width:63px;'>State</TH></TR>"
+ print "<THEAD><TH>PDU</TH><TH>Entry</TH><TH>Device</TH><TH style='width:63px;'>State</TH></THEAD>"
  for pdu in pdulist:
   avocent = Avocent(pdu)
   avocent.load_snmp()
@@ -69,7 +69,7 @@ def unit_info(aWeb):
  print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(unit)
  print "<INPUT NAME=pdu    VALUE={} TYPE=HIDDEN>".format(pdu)
  print "<TABLE style='width:100%'>"
- print "<TR><TH COLSPAN=2>PDU Slot Info</TH></TR>"
+ print "<THEAD><TH COLSPAN=2>PDU Slot Info</TH></THEAD>"
  print "<TR><TD>PDU:</TD><TD>{0}</TD></TR>".format(pdu)
  print "<TR><TD>Slot.Unit:</TD><TD>{0}.{1}</TD></TR>".format(slotname,unit)
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
@@ -87,7 +87,7 @@ def list_pdus(aWeb):
  db   = GL.DB()
  db.connect()
  print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<TR style='height:20px'><TH COLSPAN=3><CENTER>PDUs</CENTER></TH></TR>"
+ print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>PDUs</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=pdu_list_pdus'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=pdu_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
@@ -138,7 +138,7 @@ def device_info(aWeb):
  print "<FORM ID=pdu_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<TABLE style='width:100%'>"
- print "<TR><TH COLSPAN=2>PDU Device Info {}</TH></TR>".format("(new)" if id == 'new' else "")
+ print "<THEAD><TH COLSPAN=2>PDU Device Info {}</TH></THEAD>".format("(new)" if id == 'new' else "")
 
  if id == 'new':
   pdudata = { 'id':'new', 'slots':0, '0_slot_name':'unknown', '0_slot_id':0, '1_slot_name':'unknown', '1_slot_id':1 }
