@@ -152,7 +152,7 @@ def openstack_portal(aWeb):
  print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_contrail_list'>Virtual Networks</A>"
  print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_nova_list'>Virtual Machines</A>"
  print "<A CLASS='z-op' SPIN=true OP=load DIV=div_navcont  URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
- print "<A CLASS='z-reload z-op'  OP=redirect URL='pane.cgi?{}'></A>"
+ print "<A CLASS='z-reload z-op'  OP=redirect URL='pane.cgi?view=openstack_portal'></A>"
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px; width:400px;'></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px; overflow-x:auto'><P><H2>Welcome to the IaaS Self-Service Portal</H2></P></DIV>"
