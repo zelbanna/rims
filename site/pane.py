@@ -61,7 +61,7 @@ def openstack_login(aWeb):
  print aWeb.get_listeners("div_os_login")
  print "<DIV CLASS='z-centered' style='height:100%;' ID=div_os_login>"
  print "<DIV ID=div_openstack_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
- print "<CENTER><H1>Welcome to {} 2 Cloud portal</H1></CENTER>".format(name.capitalize())
+ print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
  print "<FORM ACTION=pane.cgi METHOD=POST ID=openstack_login>"
  print "<INPUT TYPE=HIDDEN NAME=view VALUE=openstack_portal>"
  print "<TABLE style='display:inline; float:left; margin:0px 0px 0px 30px;'>"
