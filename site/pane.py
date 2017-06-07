@@ -107,7 +107,7 @@ def openstack_portal(aWeb):
  if not utok:
   username = aWeb.get_value('username')
   password = aWeb.get_value('password')
-  project  = aWeb.get_value('project')
+  project  = aWeb.get_value('project','none_none')
   (pid,pname) = project.split('_')
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':pname, 'username':username,'password':password })
