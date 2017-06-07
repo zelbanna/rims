@@ -264,12 +264,13 @@ def nova_list(aWeb):
  for server in ret['data'].get('servers',None):
   qserver = aWeb.quote(server['name'])
   print "<TR>"
+  print "<!-- {} -->".format(server)
   print "<TD>{}</TD>".format(server['name'])
   print "<TD>"
   print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(qserver,server['id'])
   print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(qserver,server['id'])
-  print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	TARGET=_blank      HREF='pane.cgi?view=openstack_console&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
   print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_console&name={}&id={} OP=load><IMG SRC='images/btn-term-frame.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	TARGET=_blank      HREF='pane.cgi?view=openstack_console&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
   print "</TD>"
   print "</TR>"
  print "</TABLE>"
