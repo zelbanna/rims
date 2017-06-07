@@ -8,6 +8,25 @@ __version__ = "17.6.1GA"
 __status__= "Production"
 
 ##################################################################################################
+
+def openstack_console(aWeb):
+ # Old school version, before microapi 2.6
+ # - after: /servers/{server_id}/remote-consoles , body: { "remote_console": { "protocol": "vnc", "type": "novnc" }
+ from sdcp.devices.openstack import OpenstackRPC
+ cookie = aWeb.get_cookie()
+ token = cookie.get('os_user_token')
+ if not token:
+  print "Not logged in"
+  return
+ id   = aWeb.get_value('id')
+ name = aWeb.get_value('name')
+ controller = OpenstackRPC(cookie.get('os_controller'),token)
+ data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/" + id + "/action", { "os-getVNCConsole": { "type": "novnc" } } )
+ if data['code'] == 200:
+  aWeb.put_header("Location","{}&title={}".format(data['data']['console']['url'],name))
+  aWeb.put_html_header()
+
+##################################################################################################
 #
 # Openstack
 #

@@ -268,7 +268,8 @@ def nova_list(aWeb):
   print "<TD>"
   print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(qserver,server['id'])
   print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(qserver,server['id'])
-  print "<A TITLE='Console'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_console&name={}&id={}&op=info   OP=load SPIN=true><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	TARGET=_blank      HREF='pane.cgi?view=openstack_console&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_console&name={}&id={} OP=load><IMG SRC='images/btn-term-frame.png'></A>".format(qserver,server['id'])
   print "</TD>"
   print "</TR>"
  print "</TABLE>"
@@ -325,4 +326,4 @@ def nova_console(aWeb):
  controller = OpenstackRPC(cookie.get('os_controller'),token)
  data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/" + id + "/action", { "os-getVNCConsole": { "type": "novnc" } } )
  if data['code'] == 200:
-  print "<iframe id='console_embed' src='{}&title={}({})' style='width: 100%; height: 100%;'></iframe>".format(data['data']['console']['url'],id,name)
+  print "<iframe id='console_embed' src='{}&title={}' style='width: 100%; height: 100%;'></iframe>".format(data['data']['console']['url'],name)
