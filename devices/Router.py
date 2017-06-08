@@ -338,13 +338,13 @@ class EX(Junos):
   try:
    if self.connect():
     self.load_interfaces_name()
-    fdb = self.get_switch_table()
-    self.close()
     print "<DIV CLASS='z-table'>"
     print "<TABLE style='margin:3px;'><TH>VLAN</TH><TH>MAC</TH><TH>Interface</TH><TH>Description</TH>"
+    fdb = self.get_switch_table()
     for entry in fdb:
      print "<TR><TD>" + "&nbsp;</TD><TD>".join(entry) + "</TD></TR>\n"
     print "</TABLE></DIV>"
+    self.close()
    else:
     print "Could not connect"
   except Exception as err:
