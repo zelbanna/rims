@@ -229,13 +229,16 @@ def neutron_list(aWeb):
 
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"
  print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Contrail VNs</CENTER></TH></THEAD>"
+ print "<TR style='height:20px'><TD COLSPAN=3>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=openstack_neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "</TR>"
  print "<THEAD><TH>Owner</TH><TH>Network</TH><TH>Operations</TH></THEAD>"
  for net in ret['data']['networks']:
   if net['tenant_id'] == cookie.get('os_project_id'):
    print "<TR><TD>{}</TD><TD>{}</TD>".format(pname,net['name'])
    print "<TD>"
    tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_neutron_action&name=" + net['name'] + "&id=" + net['id'] + "&op={} OP=load SPIN=true>{}</A>"
-   print tmpl.format('L2 Network info','networks','<IMG SRC=images/btn-info.png>')  
+   print tmpl.format('Network info','info','<IMG SRC=images/btn-info.png>')  
    print "</TD>"
    print "</TR>"
  print "</TABLE>"
@@ -255,11 +258,11 @@ def neutron_action(aWeb):
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
 
- if   op == 'networks':
+ if   op == 'info':
   print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
-  ret = controller.call(port,url + "v2.0/{}/{}".format(op,id))
-  print "<H2>{}</H2>".format(name)
-  _print_info(ret['data']['network'])
+  ret = controller.call("8082","virtual-network/{}".format(id))
+  print "<H2>{} ({})</H2>".format(name,id)
+  _print_info(ret['data']['virtual-network'])
   print "</DIV>"
 
 
