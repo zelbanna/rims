@@ -67,8 +67,7 @@ def openstack_login(aWeb):
  print "<TABLE style='display:inline; float:left; margin:0px 0px 0px 30px;'>"
  print "<TR><TD>Customer:</TD><TD><SELECT style='border:none; width:100px; display:inline; color:black' NAME=project>"
  for p in projects:
-  extra = '' if not p['id'] == prev else "selected"
-  print "<OPTION VALUE={0}_{1} {2}>{1}</OPTION>".format(p['id'],p['name'],extra)
+  print "<OPTION VALUE={0}_{1} {2}>{1}</OPTION>".format(p['id'],p['name'],'' if not p['id'] == prev else "selected")
  print "</SELECT></TD></TR>"
  print "<TR><TD>Username:</TD><TD><INPUT style='z-input' TYPE=text NAME=username {}></TD></TR>".format('' if not user else "VALUE={}".format(user))
  print "<TR><TD>Password:</TD><TD><INPUT style='z-input' TYPE=password NAME=password></TD></TR>"
@@ -140,7 +139,7 @@ def openstack_portal(aWeb):
  print "</DIV>"
 
 #
-# Console redirect - since ajax not able to do header manipulations yet
+# Console redirect - since ajax not able to do header manipulations 'yet'
 #
 def openstack_console(aWeb):
  # Old school version, before microapi 2.6

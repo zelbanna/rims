@@ -25,10 +25,14 @@ def view_devicelist(aWeb):
  print "</THEAD><TR style='height:20px'><TD COLSPAN=3>"
  if not target or not arg:
   tune = ""
- elif target and arg == 'NULL':
-  tune = "WHERE {0} is NULL".format(target)
- else:
-  tune = "WHERE {0} = {1}".format(target,arg)
+ elif target:
+  if not arg == 'NULL':
+   tune = "WHERE {0} = {1}".format(target,arg)
+  elif target == 'rack_id':
+   tune = "WHERE vm = 0 AND rack_id is NULL" 
+  else: 
+   tune = "WHERE {0} is NULL".format(target)
+
  res = db.do("SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort))
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=device_new&{0}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args_except(['sort','call']))
@@ -272,14 +276,14 @@ def rack_info(aWeb):
  cons  = db.get_all_dict('id')
  db.do("SELECT id, name FROM racks")
  racks = db.get_all_dict('id')
- row   = "<TR style='border: 1px solid grey'><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>" 
+ row   = "<THEAD style='border: 1px solid grey'><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></THEAD>" 
  print "<DIV CLASS='z-table' style='overflow-x:auto;'><TABLE>"
- print "<TR style='border: 1px solid grey'><TH>Hostname</TH><TH>Device</TH><TH>IP</TH><TH>Console</TH><TH>Port</TH><TH>PEM0-PDU</TH><TH>slot</TH><TH>unit</TH><TH>PEM1-PDU</TH><TH>slot</TH><TH>unit</TH><TH>Rack</TH><TH>size</TH><TH>unit</TH></TR>"
+ print "<TR style='border: 1px solid grey'><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>Console</TH><TH>Port</TH><TH>PEM0-PDU</TH><TH>slot</TH><TH>unit</TH><TH>PEM1-PDU</TH><TH>slot</TH><TH>unit</TH><TH>Rack</TH><TH>size</TH><TH>unit</TH></TR>"
  for dev in devs:
   if not dev['backup_ip']:
    db.do("UPDATE rackinfo SET backup_ip = {} WHERE device_id = {}".format(dev['ip'],dev['device_id']))
   print "<TR>"
-  print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format(dev['hostname'],dev['device_id'],dev['ipasc'])
+  print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format(dev['device_id'],dev['ipasc'],dev['hostname'])
   print "<TD>{}</TD><TD>{}</TD>".format(cons.get(dev['console_id'],{}).get('name',None),dev['console_port'])
   print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format( pdus.get(dev['pem0_pdu_id'],{}).get('name',None),dev['pem0_pdu_slot'],dev['pem0_pdu_unit'])
   print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format( pdus.get(dev['pem1_pdu_id'],{}).get('name',None),dev['pem1_pdu_slot'],dev['pem1_pdu_unit'])
@@ -297,10 +301,10 @@ def mac_sync(aWeb):
  db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices ORDER BY ip")
  rows = db.get_all_rows()
  print "<DIV CLASS='z-table' style='overflow-x:auto; width:400px;'><TABLE>"
- print "<TR style='border: 1px solid grey'><TH>IP</TH><TH>ID</TH><TH>MAC</TH><TH>Hostname</TH></TR>"
+ print "<THEAD style='border: 1px solid grey'><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>MAC</TH></THEAD>"
  for row in rows:
   xist = arps.get(row['ipasc'],None)
-  print "<TR><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>".format(row['ipasc'],row['id'],xist,row['hostname'])
+  print "<TR><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>".format(row['id'],row['ipasc'],row['hostname'],xist)
   if xist:
    db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL.mac2int(xist),row['id']))
  print "</TABLE></DIV>"

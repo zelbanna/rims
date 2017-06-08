@@ -20,7 +20,7 @@ def sync(aWeb):
  rows = db.get_all_rows()
  print "<DIV CLASS='z-table'>"
  print "<TABLE>"
- print "<TR><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>Domain</TH><TH>A</TH><TH>PTR</TH><TH>IPAM</TH><TH>Extra</TH>"
+ print "<THEAD style='border: 1px solid grey'><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>Domain</TH><TH>A</TH><TH>PTR</TH><TH>IPAM</TH><TH>Extra</TH></THEAD>"
  for row in rows:
   ip   = row['ipasc']
   name = row['hostname']
