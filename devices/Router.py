@@ -104,6 +104,11 @@ class Junos(GenDevice):
   return result
 
  def widget_up_interfaces(self):
+  if not self.connect():
+   print "Could not connect"
+   return
+  ifs = self.get_up_interfaces()
+  self.close()
   from sdcp.tools.Grapher import Grapher
   graph = Grapher()
   graph.load_conf()
@@ -112,23 +117,21 @@ class Junos(GenDevice):
    print "<DIV ID=graph_config></DIV>"
   print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
   print "<TABLE style='margin:3px;'><TR><TH>Interface</TH><TH>State</TH><TH>SNMP</TH><TH>Description</TH></TR>"
-  self.connect()
-  ifs = self.get_up_interfaces()
-  self.close()
   for entry in ifs:
    print "<TR><TD>{0}</TD><TD>{1}</TD><TD><A CLASS='z-op' DIV=graph_config OP=load URL='ajax.cgi?call=graph_wm&hostname={4}&domain={5}&index={2}'>{2}</A></TD><TD>{3}</TD></TR>\n".format(entry[0],entry[1],entry[2],entry[3],self._hostname,self._domain)
   print "</TABLE></DIV>"
 
  def widget_lldp(self):
-  print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
-  print "<TABLE style='margin:3px;'><TR><TH>Neighbor</TH><TH>MAC</TH><TH>Local_Port</TH><TH>Destination_Port</TH></TR>"
-  self.connect()
-  neigh = self.get_lldp()
-  self.close()
-  for entry in neigh:
-   print "<TR><TD>{0}</TD><TD>{1}</TD><TD>{2}</TD><TD>{3}</TD></TR>".format(entry[0],entry[1],entry[2],entry[3])
-  print "</TABLE></DIV>"  
-
+  if self.connect():
+   neigh = self.get_lldp()
+   self.close()
+   print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
+   print "<TABLE style='margin:3px;'><TR><TH>Neighbor</TH><TH>MAC</TH><TH>Local_Port</TH><TH>Destination_Port</TH></TR>"
+   for entry in neigh:
+    print "<TR><TD>{0}</TD><TD>{1}</TD><TD>{2}</TD><TD>{3}</TD></TR>".format(entry[0],entry[1],entry[2],entry[3])
+   print "</TABLE></DIV>"  
+  else:
+   print "Could not connect"
  #
  # SNMP is much smoother than Netconf for some things :-)
  #
@@ -159,15 +162,24 @@ class Junos(GenDevice):
   else:
    print "set system login user {0} class super-user<BR>".format(SC.netconf_username)
    print "set system login user {0} authentication encrypted-password \"{1}\"<BR>".format(SC.netconf_username,SC.netconf_encrypted)
-  print "set groups default_system system domain-name {}<BR>".format(argdict['domain'])
-  print "set groups default_system system domain-search {}<BR>".format(argdict['domain'])
-  print "set groups default_system system name-server {}<BR>".format(SC.sdcp_dnssrv)
-  print "set groups default_system system services ssh root-login allow<BR>"
-  print "set groups default_system system services netconf ssh<BR>"
-  print "set groups default_system system ntp server {}<BR>".format(SC.sdcp_ntpsrv)
-  print "set groups default_system routing-options static route 0.0.0.0/0 next-hop {}<BR>".format(argdict['gateway'])
-  print "set groups default_system routing-options static route 0.0.0.0/0 no-readvertise<BR>"
-  print "set groups default_system snmp community {} clients {}/{}<BR>".format(SC.snmp_read_community,argdict['subnet'],argdict['mask'])
+  base  = "set groups default_system"
+  print base + " system domain-name {}<BR>".format(argdict['domain'])
+  print base + " system domain-search {}<BR>".format(argdict['domain'])
+  print base + " system name-server {}<BR>".format(SC.sdcp_dnssrv)
+  print base + " system services ssh root-login allow<BR>"
+  print base + " system services netconf ssh<BR>"
+  print base + " system syslog user * any emergency<BR>"
+  print base + " system syslog file messages any notice<BR>"
+  print base + " system syslog file messages authorization info<BR>"
+  print base + " system syslog file interactive-commands interactive-commands any<BR>"
+  print base + " system commit persist-groups-inheritance"
+  print base + " system ntp server {}<BR>".format(SC.sdcp_ntpsrv)
+  print base + " routing-options static route 0.0.0.0/0 next-hop {}<BR>".format(argdict['gateway'])
+  print base + " routing-options static route 0.0.0.0/0 no-readvertise<BR>"
+  print base + " snmp community {} clients {}/{}<BR>".format(SC.snmp_read_community,argdict['subnet'],argdict['mask'])
+  print base + " protocols lldp port-id-subtype interface-name<BR>"
+  print base + " protocols lldp interface all<BR>"
+  print base + " class-of-service host-outbound-traffic forwarding-class network-control<BR>"
   print "set apply-groups default_system<BR>"
 
 ################################ WLC Object #####################################
@@ -324,15 +336,17 @@ class EX(Junos):
  #
  def widget_switch_table(self):
   try:
-   self.connect()
-   self.load_interfaces_name()
-   fdb = self.get_switch_table()
-   self.close()
-   print "<DIV CLASS='z-table'>"
-   print "<TABLE style='margin:3px;'><TH>VLAN</TH><TH>MAC</TH><TH>Interface</TH><TH>Description</TH>"
-   for entry in fdb:
-    print "<TR><TD>" + "&nbsp;</TD><TD>".join(entry) + "</TD></TR>\n"
-   print "</TABLE></DIV>"
+   if self.connect():
+    self.load_interfaces_name()
+    fdb = self.get_switch_table()
+    self.close()
+    print "<DIV CLASS='z-table'>"
+    print "<TABLE style='margin:3px;'><TH>VLAN</TH><TH>MAC</TH><TH>Interface</TH><TH>Description</TH>"
+    for entry in fdb:
+     print "<TR><TD>" + "&nbsp;</TD><TD>".join(entry) + "</TD></TR>\n"
+    print "</TABLE></DIV>"
+   else:
+    print "Could not connect"
   except Exception as err:
    self.log_msg("EX widget switch table: Error [{}]".format(str(err)))
    print "<B>Error - issue loading widget: {}</B>".format(str(err))
@@ -363,11 +377,12 @@ class QFX(Junos):
   fdblist = []
   try:
    swdata = self._router.rpc.get_ethernet_switching_table_information()
-   for entry in swdata[0].iter("l2ng-mac-entry"):
-    vlan = entry.find("l2ng-l2-mac-vlan-name").text
-    mac  = entry.find("l2ng-l2-mac-address").text     
-    interface = entry.find("l2ng-l2-mac-logical-interface").text
-    fdblist.append([ vlan, mac, interface, self.get_interface_name(interface) ])
+   for vlan in swdata.iter("l2ng-l2ald-mac-entry-vlan"):
+    for entry in vlan.iter("l2ng-mac-entry"):
+     vlan = entry.find("l2ng-l2-mac-vlan-name").text
+     mac  = entry.find("l2ng-l2-mac-address").text     
+     interface = entry.find("l2ng-l2-mac-logical-interface").text
+     fdblist.append([ vlan, mac, interface, self.get_interface_name(interface) ])
   except Exception as err:
    self.log_msg("System Error - fetching FDB: " + str(err))
   return fdblist
@@ -377,15 +392,19 @@ class QFX(Junos):
  #
  def widget_switch_table(self):
   try:
-   self.connect()
-   self.load_interfaces_name()
-   fdb = self.get_switch_table()
-   self.close()
-   print "<DIV CLASS='z-table'>"
-   print "<TABLE style='margin:3px;'><TH>VLAN</TH><TH>MAC</TH><TH>Interface</TH><TH>Description</TH>"
-   for entry in fdb:
-    print "<TR><TD>" + "&nbsp;</TD><TD>".join(entry) + "</TD></TR>\n"
-   print "</TABLE></DIV>"
+   if self.connect():
+    self.load_interfaces_name()
+    fdb = self.get_switch_table()
+    self.close()
+    print "<DIV CLASS='z-table'>"
+    print "<TABLE style='margin:3px;'><THEAD><TH>VLAN</TH><TH>MAC</TH><TH>Interface</TH><TH>Description</TH></THEAD>"
+    for n in fdb:
+     print "<TR><TD>{}</TD><TD>{}</TD><TD>{}</TD>".format(n[0],n[1],n[2])
+     print "<TD>{}</TD>".format(n[3]) if n[3] else "<TD style='border: 1px solid red'>No Description</TD>"
+     print "<TR>"
+    print "</TABLE></DIV>"
+   else:
+    print "Could not connect"
   except Exception as err:
    self.log_msg("QFX widget switch table: Error [{}]".format(str(err)))
    print "<B>Error - issue loading widget: {}</B>".format(str(err))

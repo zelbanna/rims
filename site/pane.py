@@ -103,7 +103,7 @@ def openstack_portal(aWeb):
   aWeb.put_cookie("os_project_id",pid)
   aWeb.put_cookie("os_project_name",pname)
 
-  for service in ['heat','nova']:
+  for service in ['heat','nova','neutron']:
    base = "os_" + service
    port,url,id = openstack.get_service(service,'public')
    aWeb.put_cookie(base + "_port",port)
@@ -130,7 +130,7 @@ def openstack_portal(aWeb):
  print "</DIV>"
  print "<DIV CLASS='z-navbar' style='top:60px;' ID=div_navbar>"
  print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_heat_list'>Orchestration</A>"
- print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_contrail_list'>Virtual Networks</A>"
+ print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_neutron_list'>Virtual Networks</A>"
  print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_nova_list'>Virtual Machines</A>"
  print "<A CLASS='z-op' SPIN=true OP=load DIV=div_navcont  URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
  print "<A CLASS='z-reload z-op'  OP=redirect URL='pane.cgi?view=openstack_portal'></A>"

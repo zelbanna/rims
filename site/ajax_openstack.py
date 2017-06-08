@@ -57,11 +57,11 @@ def heat_list(aWeb):
  print "</TR>"
  print "<THEAD><TH>Name</TH><TH>Status</TH><TH>Operations</TH></THEAD>"
  for stack in ret['data'].get('stacks',None):
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} OP=load SPIN=true>{}</A>"
   print "<TR>"
   print "<TD>{}</TD>".format(stack['stack_name'])
   print "<TD>{}</TD>".format(stack['stack_status'])
   print "<TD>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} OP=load SPIN=true>{}</A>"
   print tmpl.format('Stack info','info','<IMG SRC=images/btn-info.png>')
   if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED":
    print tmpl.format('Remove stack','remove','<IMG SRC=images/btn-remove.png>')
@@ -211,9 +211,9 @@ def heat_action(aWeb):
   print dumps(data, indent=4, sort_keys=True)
   print "</PRE></DIV>"
 
-############################### Contrail ##############################
+############################### Neutron ##############################
 #
-def contrail_list(aWeb):
+def neutron_list(aWeb):
  cookie = aWeb.get_cookie()
  token  = cookie.get('os_user_token')
  if not token:
@@ -222,20 +222,46 @@ def contrail_list(aWeb):
  controller = OpenstackRPC(cookie.get('os_controller'),token)
  pname = cookie.get("os_project_name")
 
- ret = controller.call("8082","virtual-networks")
+ ret = controller.call(cookie.get('os_neutron_port'), cookie.get('os_neutron_url')+"/v2.0/networks")
  if not ret['result'] == "OK":
   print "Error retrieving list"
   return
 
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"
  print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Contrail VNs</CENTER></TH></THEAD>"
- print "<THEAD><TH>Owner</TH><TH>Network</TH></THEAD>"
- for net in ret['data']['virtual-networks']:
-  # net['uuid']
-  if net['fq_name'][1] == pname:
-   print "<TR><TD>{}</TD><TD>{}</TD></TR>".format(pname,net['fq_name'][2])
+ print "<THEAD><TH>Owner</TH><TH>Network</TH><TH>Operations</TH></THEAD>"
+ for net in ret['data']['networks']:
+  if net['tenant_id'] == cookie.get('os_project_id'):
+   print "<TR><TD>{}</TD><TD>{}</TD>".format(pname,net['name'])
+   print "<TD>"
+   tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_neutron_action&name=" + net['name'] + "&id=" + net['id'] + "&op={} OP=load SPIN=true>{}</A>"
+   print tmpl.format('L2 Network info','networks','<IMG SRC=images/btn-info.png>')  
+   print "</TD>"
+   print "</TR>"
  print "</TABLE>"
  print "</DIV>"
+
+def neutron_action(aWeb):
+ cookie = aWeb.get_cookie()
+ token  = cookie.get('os_user_token')
+ if not token:
+  print "Not logged in"
+  return
+ controller = OpenstackRPC(cookie.get('os_controller'),token)
+
+ port  = cookie.get('os_neutron_port')
+ url   = cookie.get('os_neutron_url')
+ name = aWeb.get_value('name')
+ id   = aWeb.get_value('id')
+ op   = aWeb.get_value('op','info')
+
+ if   op == 'networks':
+  print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
+  ret = controller.call(port,url + "v2.0/{}/{}".format(op,id))
+  print "<H2>{}</H2>".format(name)
+  _print_info(ret['data']['network'])
+  print "</DIV>"
+
 
 ################################# Nova ###############################
 #
@@ -296,11 +322,28 @@ def nova_action(aWeb):
  aWeb.log_msg("openstack_nova_action - id:{} name:{} op:{} for project:{}".format(id,name,op,cookie.get('os_project_name')))
 
  if   op == 'info':
-  ret = controller.call(port,url + "/servers/{}".format(id))
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_nova_action&name=" + name + "&id=" + id+ "&op={} OP=load SPIN=true>{}</A>"
+  print "<DIV>"
+  print tmpl.format('Details','details','Details')
+  print tmpl.format('Diagnostics','diagnostics','Diagnostics')
+  print "</DIV>"
+
   print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
+  ret = controller.call(port,url + "/servers/{}".format(id))
   print "<H2>{}</H2>".format(name)
   _print_info(ret['data']['server'])
   print "</DIV>"
+
+ elif op == 'details':
+  ret = controller.call(port,url + "/servers/{}".format(id))
+  print "<H2>{}</H2>".format(name)
+  _print_info(ret['data']['server'])
+
+ elif op == 'diagnostics':
+  ret = controller.call(port,url + "/servers/{}/diagnostics".format(id))
+  print "<H2>{}</H2>".format(name)
+  _print_info(ret['data'])
+
  elif op == 'remove':
   ret = controller.call(port,url + "/servers/{}".format(id), method='DELETE')
   if not ret['result'] == "OK":
