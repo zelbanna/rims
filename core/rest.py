@@ -64,7 +64,7 @@ def call(aurl,amod,args,apath = "sdcp.site"):
  except HTTPError, h:
   try: body = loads(h.read())
   except: body = None
-  data = { 'rest_response':'httperror', 'body':body, 'info':str(h.info()), 'code': h.code }
+  data = { 'rest_response':'httperror', 'body':body, 'info':dict(h.info()), 'code': h.code }
  except Exception, e:
   data = { 'rest_response':'error', 'error':str(e) }
  return loads(data)

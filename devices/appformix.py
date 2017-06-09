@@ -73,12 +73,12 @@ class AppformixRPC(object):
    if method:
     req.get_method = lambda: method
    sock = urlopen(req)
-   result,info,code = "OK", sock.info(), sock.code
+   result,info,code = "OK", dict(sock.info()), sock.code
    try: data = loads(sock.read())
    except: data = None
    sock.close()
   except HTTPError, h:
-   result,info,code = "HTTPError",h.info(),h.code
+   result,info,code = "HTTPError",dict(h.info()),h.code
    try: data = loads(h.read())
    except: data = None
   except URLError, u:

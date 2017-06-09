@@ -102,7 +102,7 @@ class OpenstackRPC(object):
    if method:
     req.get_method = lambda: method
    sock = urlopen(req)
-   result,info,code = "OK", sock.info(), sock.code
+   result,info,code = "OK", dict(sock.info()), sock.code
    try: data = loads(sock.read())
    except: data = None
    sock.close()
