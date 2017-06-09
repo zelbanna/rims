@@ -155,10 +155,9 @@ def openstack_console(aWeb):
  controller = OpenstackRPC(cookie.get('os_controller'),token)
  data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/" + id + "/action", { "os-getVNCConsole": { "type": "novnc" } } )
  if data['code'] == 200:
-  aWeb.put_header("Location","{}&title={}".format(data['data']['console']['url'],name))
+  suffix = data['data']['console']['url'][7:].partition(':')[2]
+  aWeb.put_header("Location","{}&title={}".format("http://" + cookie.get('os_controller') + ":" + suffix,name))
   aWeb.put_html_header()
-
-
 ##################################################################################################
 #
 # Examine pane
