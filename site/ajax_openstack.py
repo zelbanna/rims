@@ -46,7 +46,7 @@ def heat_list(aWeb):
 
  ret = controller.call(cookie.get('os_heat_port'),cookie.get('os_heat_url') + "/stacks") 
  if not ret['result'] == "OK":
-  print "Error retrieving list"
+  print "Error retrieving heat stacks ({})".format(ret['code'])
   return
 
  print "<DIV CLASS='z-table' style='width:394px'><TABLE style='width:99%'>"

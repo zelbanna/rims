@@ -391,13 +391,13 @@ def rack_info(aWeb):
  print "<A CLASS='z-op' style='float:right;' OP=load DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'>Racks</A>"
  print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
+ print aWeb.get_listeners('div_navleft')
+ print aWeb.get_listeners('div_navcont')
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont>"
  if rack and name:
   ajax_info(aWeb)
  print "</DIV>"
- print aWeb.get_listeners('div_navleft')
- print aWeb.get_listeners('div_navcont')
  print "</DIV>"
 
 ##################################################################################################

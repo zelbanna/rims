@@ -34,12 +34,12 @@ function btnoperation(button) {
   selector.hide();
   div.show();
  } else if (op == 'load') {
-  div.load(url, function(responseTxt, statusTxt, xhr){ div.css("overflow-y","auto"); });
   if (spin == "true"){
    div.scrollTop(0);
    div.css("overflow-y","hidden");
    div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
   }
+  div.load(url, function(responseTxt, statusTxt, xhr){ div.css("overflow-y","auto"); });
  } else if (op == 'confirm') {
   var msg  = button.getAttribute("msg");
   if (confirm(msg) == true){
