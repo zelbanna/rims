@@ -56,8 +56,7 @@ def call(aurl,amod,args,apath = "sdcp.site"):
  from urllib2 import urlopen, Request, HTTPError
  head = { 'Content-Type': 'application/json', 'X-Z-Path':apath, 'X-Z-API':amod }
  try:
-  arg = dumps(args)
-  req = Request(aurl, headers=head, data=arg)
+  req = Request(aurl, headers=head, data=dumps(args))
   sock = urlopen(req)
   try: data = sock.read()
   except: data = '{ "rest_response":"no_data" }'

@@ -36,8 +36,7 @@ class OpenstackRPC(object):
   try:
    head = { 'Content-Type': 'application/json' }
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
-   args = dumps(auth)
-   sock = urlopen(Request("http://{}:{}/{}".format(self._ip,"5000","v3/auth/tokens"), headers=head, data=args))
+   sock = urlopen(Request("http://{}:{}/{}".format(self._ip,"5000","v3/auth/tokens"), headers=head, data=dumps(auth)))
    # If sock code is created (201), not ok (200) - we can expect to find a token
    if sock.code == 201:
     data = loads(sock.read())
@@ -94,16 +93,12 @@ class OpenstackRPC(object):
  # - arg  = dict with arguments for post operation, empty dict or nothing means no arguments (!)
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  #
- def call(self,port,lnk,arg = {}, method = None):
+ def call(self,port,lnk,arg = None, method = None):
   from json import loads, dumps
   from urllib2 import urlopen, Request, URLError, HTTPError
   try:
    head = { 'Content-Type': 'application/json', 'X-Auth-Token':self._token }
-   if len(arg) == 0:
-    req  = Request("http://{}:{}/{}".format(self._ip,port,lnk), headers=head)
-   else:
-    args = dumps(arg)
-    req  = Request("http://{}:{}/{}".format(self._ip,port,lnk), headers=head, data=args)
+   req  = Request("http://{}:{}/{}".format(self._ip,port,lnk), headers=head, data = dumps(arg) if arg else None)
    if method:
     req.get_method = lambda: method
    sock = urlopen(req)
