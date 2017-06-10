@@ -32,6 +32,24 @@ def load_infra(aDict):
  db.close()
  return { 'domains':len(domains), 'subnets':len(subnets) }
 
+################################################# DDI - DHCP #################################################
+
+def dhcp_update(aDict):
+ #
+ # {'op':<add/remove>, 'host':<string>, 'mac':<string>, 'ip':<string> }
+ #
+ if SC.dhcp_proxy == 'True':
+  return REST.call(SC.dhcp_url, "ddi_dhcp_update", aDict)
+ return {'res':'updating', 'host':aDict.get('host') }
+
+def dhcp_fetch(aDict):
+ #
+ # { 'host':<string> }
+ #
+ if SC.dhcp_proxy == 'True':
+  return REST.call(SC.dhcp_url, "ddi_dhcp_fetch", aDict)
+ return {'res':'fetching', 'host':aDict.get('host') }
+
 ################################################# DDI - DNS ##################################################
 #
 # Should be domains(target, arg) to simpler select domain 

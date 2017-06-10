@@ -26,6 +26,11 @@
   "dbname": "dbname",
   "type" : "phpipam"
  },
+ "dhcp": {
+  "proxy" : "False",
+  "url" : "",
+  "file": ""
+ },
  "loopia": {
   "username":"",
   "password":"",
