@@ -92,12 +92,16 @@ class OpenstackRPC(object):
  # - lnk  = service link
  # - arg  = dict with arguments for post operation, empty dict or nothing means no arguments (!)
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
- #
- def call(self,port,lnk,arg = None, method = None):
+ # - header = send additional headers as dictionary
+ # 
+ def call(self,port,lnk,arg = None, method = None, header = None):
   from json import loads, dumps
   from urllib2 import urlopen, Request, URLError, HTTPError
   try:
    head = { 'Content-Type': 'application/json', 'X-Auth-Token':self._token }
+   if header:
+    for key,value in aHead.iteritems():
+     head['key'] = value
    req  = Request("http://{}:{}/{}".format(self._ip,port,lnk), headers=head, data = dumps(arg) if arg else None)
    if method:
     req.get_method = lambda: method
