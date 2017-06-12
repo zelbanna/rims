@@ -286,7 +286,7 @@ def nova_list(aWeb):
  port  = cookie.get('os_nova_port')
  url   = cookie.get('os_nova_url')
 
- ret = controller.call(port,url + "/servers")
+ ret = controller.call(port,url + "/servers/detail")
  if not ret['result'] == "OK":
   print "Error retrieving list {}".format(str(ret))
   return
@@ -299,14 +299,22 @@ def nova_list(aWeb):
  print "<THEAD><TH>Name</TH><TH style='width:94px;'>Operations</TH></THEAD>"
  for server in ret['data'].get('servers',None):
   qserver = aWeb.quote(server['name'])
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name=" + qserver + "&id=" + server['id'] + "&op={} OP=load SPIN=true>{}</A>"
   print "<TR>"
-  print "<!-- {} -->".format(server)
-  print "<TD>{}</TD>".format(server['name'])
+  print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
+  print "<TD><A TITLE='VM info' CLASS='z-op' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=info OP=load SPIN=true>{}</A></TD>".format(qserver,server['id'],server['name'])
   print "<TD>"
-  print "<A TITLE='VM info'   CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=info   OP=load SPIN=true><IMG SRC='images/btn-info.png'></A>".format(qserver,server['id'])
-  print "<A TITLE='Remove VM' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=remove OP=load SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(qserver,server['id'])
-  print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_console&name={}&id={} OP=load><IMG SRC='images/btn-term-frame.png'></A>".format(qserver,server['id'])
   print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	TARGET=_blank      HREF='pane.cgi?view=openstack_console&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_console&name={}&id={} OP=load><IMG SRC='images/btn-term-frame.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='Remove VM'        CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=openstack_nova_action&name={}&id={}&op=remove OP=confirm MSG='Are you sure you want to delete VM?' SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(qserver,server['id'])
+  if not server['OS-EXT-STS:task_state']:
+   if   server['status'] == 'ACTIVE':
+    print tmpl.format('Stop VM','stop',"<IMG SRC='images/btn-shutdown.png'>")
+    print tmpl.format('Reboot','reboot',"<IMG SRC='images/btn-reboot.png'>")
+   elif server['status'] == 'SHUTOFF':
+    print tmpl.format('Start VM','start',"<IMG SRC='images/btn-start.png'>")
+  else:
+   print tmpl.format('VM info','info',"<IMG SRC='images/btn-info.png'>")
   print "</TD>"
   print "</TR>"
  print "</TABLE>"
@@ -349,6 +357,14 @@ def nova_action(aWeb):
   ret = controller.call(port,url + "/servers/{}".format(id))
   print "<H2>{}</H2>".format(name)
   _print_info(ret['data']['server'])
+
+ elif op == 'stop' or op == 'start' or op == 'reboot':
+  arg = {"os-"+op:None} if op != 'reboot' else {"reboot":{ "type":"SOFT" }}
+  ret = controller.call(port,url + "/servers/{}/action".format(id),arg)
+  if ret.get('code') == 202:
+   print "Command executed successfully [{}]".format(str(arg))
+  else:
+   print "Error executing command [{}]".format(str(arg))
 
  elif op == 'diagnostics':
   ret = controller.call(port,url + "/servers/{}/diagnostics".format(id))
