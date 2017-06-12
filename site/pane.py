@@ -147,20 +147,21 @@ def openstack_console(aWeb):
  from sdcp.devices.openstack import OpenstackRPC
  cookie = aWeb.get_cookie()
  token = cookie.get('os_user_token')
- if not token:
-  print "Not logged in"
-  return
- id   = aWeb.get_value('id')
- name = aWeb.get_value('name')
- controller = OpenstackRPC(cookie.get('os_controller'),token)
- data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/" + id + "/action", { "os-getVNCConsole": { "type": "novnc" } } )
- if data['code'] == 200:
-  url = data['data']['console']['url']
-  # URL is #@?! inline URL.. remove http:// and replace IP (assume there is a port..) with controller IP
-  url = "http://" + cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
-  print "<iframe id='console_embed' src='{}&title={}' style='width: 100%; height: 100%;'></iframe>".format(url,name)
-  aWeb.put_header("Location","{}&title={}".format(url,name))
+ if token:
+  id   = aWeb.get_value('id')
+  name = aWeb.get_value('name')
+  controller = OpenstackRPC(cookie.get('os_controller'),token)
+  data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/" + id + "/action", { "os-getVNCConsole": { "type": "novnc" } } )
+  if data['code'] == 200:
+   url = data['data']['console']['url']
+   # URL is #@?! inline URL.. remove http:// and replace IP (assume there is a port..) with controller IP
+   url = "http://" + cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
+   aWeb.put_header("Location","{}&title={}".format(url,name))
+   aWeb.put_html_header()
+ else:
   aWeb.put_html_header()
+  print "Not logged in "
+  
 ##################################################################################################
 #
 # Examine pane
