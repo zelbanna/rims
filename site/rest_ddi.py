@@ -36,11 +36,36 @@ def load_infra(aDict):
 
 def dhcp_update(aDict):
  #
- # {'op':<add/remove>, 'host':<string>, 'mac':<string>, 'ip':<string> }
+ # {'op':<update/remove>, 'host':<string>, 'mac':<string>, 'ip':<string> }
  #
  if SC.dhcp_proxy == 'True':
   return REST.call(SC.dhcp_url, "ddi_dhcp_update", aDict)
- return {'res':'updating', 'host':aDict.get('host') }
+ dhcp_data = {}
+ res  = "no_change"
+ # Read content of file
+ with open(SC.dhcp_file) as dhcp_file:
+  for line in dhcp_file:
+   host,_,info = line.partition(' ')
+   dhcp_data[host] = info[:-1]
+ old_info = dhcp_data.get(aDict['host'])
+ 
+ # Which op?
+ if aDict['op'] == 'update':
+  new_info = '{ hardware ethernet ' + aDict['mac'] + "; fixed-address " + aDict['ip'] + '; }'
+  if old_info != new_info:
+   res = aDict['op']
+   dhcp_data[aDict['host']] = new_info
+ elif aDict['op'] == 'remove' and old_info:
+  res = aDict['op']
+  dhcp_data.pop(aDict['host'])
+
+ # Write config file if any changes
+ if res != "no_change":
+  with open(SC.dhcp_file,'w') as dhcp_file:
+   for key,value in dhcp_data.iteritems():
+    dhcp_file.write(key + " " + value + "\n")
+
+ return {'res':res, 'host':aDict.get('host') }
 
 def dhcp_fetch(aDict):
  #
@@ -48,7 +73,13 @@ def dhcp_fetch(aDict):
  #
  if SC.dhcp_proxy == 'True':
   return REST.call(SC.dhcp_url, "ddi_dhcp_fetch", aDict)
- return {'res':'fetching', 'host':aDict.get('host') }
+ fetch_host = aDict.get('host')
+ with open(SC.dhcp_file) as dhcp_file:
+  for line in dhcp_file:
+   host,_,info = line.partition(' ')
+   if host == fetch_host:
+    return {'found': True , 'host':fetch_host, 'info':info}
+ return {'found': False, 'host':fetch_host, 'info':None}
 
 ################################################# DDI - DNS ##################################################
 #
