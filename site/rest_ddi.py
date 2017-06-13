@@ -4,7 +4,7 @@
 
 """
 __author__ = "Zacharias El Banna"                     
-__version__ = "17.6.1GA"
+__version__ = "17.6.12GA"
 __status__ = "Production"
 
 import sdcp.SettingsContainer as SC
@@ -34,38 +34,41 @@ def load_infra(aDict):
 
 ################################################# DDI - DHCP #################################################
 
-def dhcp_update(aDict):
+def dhcp_entry(aDict):
  #
- # {'op':<update/remove>, 'host':<string>, 'mac':<string>, 'ip':<string> }
+ # {'op':<add/update/remove>, 'host':<string>, 'mac':<string>, 'ip':<string>, 'extra':[list of extra entries] }
  #
  if SC.dhcp_proxy == 'True':
-  return REST.call(SC.dhcp_url, "ddi_dhcp_update", aDict)
+  return REST.call(SC.dhcp_url, "ddi_dhcp_entry", aDict)
+ op = aDict['op']
+ status = None
  dhcp_data = {}
  res  = "no_change"
  # Read content of file
  with open(SC.dhcp_file) as dhcp_file:
   for line in dhcp_file:
-   host,_,info = line.partition(' ')
+   host,_,info = line[5:].partition(' ')
    dhcp_data[host] = info[:-1]
  old_info = dhcp_data.get(aDict['host'])
- 
  # Which op?
- if aDict['op'] == 'update':
+ if (op == 'update' or op == 'add') and aDict['mac'] != "00:00:00:00:00:00":
   new_info = '{ hardware ethernet ' + aDict['mac'] + "; fixed-address " + aDict['ip'] + '; }'
   if old_info != new_info:
-   res = aDict['op']
+   res = op
    dhcp_data[aDict['host']] = new_info
- elif aDict['op'] == 'remove' and old_info:
-  res = aDict['op']
+ elif op == 'remove' and old_info:
+  res = op
   dhcp_data.pop(aDict['host'])
 
  # Write config file if any changes
  if res != "no_change":
   with open(SC.dhcp_file,'w') as dhcp_file:
    for key,value in dhcp_data.iteritems():
-    dhcp_file.write(key + " " + value + "\n")
-
- return {'res':res, 'host':aDict.get('host') }
+    dhcp_file.write("host " + key + " " + value + "\n")
+  if op == 'update':
+   # Use ajax lib call to update.. 
+   status = dhcp_update(_)
+ return {'res':res, 'host':aDict.get('host'), 'status':status}
 
 def dhcp_fetch(aDict):
  #
@@ -76,10 +79,24 @@ def dhcp_fetch(aDict):
  fetch_host = aDict.get('host')
  with open(SC.dhcp_file) as dhcp_file:
   for line in dhcp_file:
-   host,_,info = line.partition(' ')
+   host,_,info = line[5:].partition(' ')
    if host == fetch_host:
     return {'found': True , 'host':fetch_host, 'info':info}
  return {'found': False, 'host':fetch_host, 'info':None}
+
+def dhcp_update(_):
+ #
+ # Update function - reload the DHCP server to use new info
+ #
+ if SC.dhcp_proxy == 'True':
+  return REST.call(SC.dhcp_url, "ddi_dhcp_update", "")
+ from subprocess import check_output, CalledProcessError
+ commands = SC.dhcp_reload.split()
+ try:
+  status = check_output(commands)
+ except CalledProcessError, c:
+  status = "{} - {}".format(c.returncode,c.output)
+ return status
 
 ################################################# DDI - DNS ##################################################
 #

@@ -86,7 +86,7 @@ def device_info(aWeb):
  # If inserts are return as x_op, update local db using newly constructed dict
  # 
  if op == 'updateddi' and not name == 'unknown':
-  from rest_ddi import dns_update, ipam_update
+  from rest_ddi import dns_update, ipam_update, dhcp_entry
   from rest_device import update_info
   if device_data['ipam_id'] == '0':
    opres = opres + " (please rerun lookup/update for proper sync)"
@@ -98,6 +98,10 @@ def device_info(aWeb):
   device_data['a_id']    = newop['devices_a_id']
   device_data['ptr_id']  = newop['devices_ptr_id']
   device_data['ipam_id'] = newop['devices_ipam_id']
+  print "<!-- MAC: {} -->".format(device_data['mac'])
+  if device_data['mac'] != 0:
+   mac = GL.int2mac(device_data['mac'])
+   dhcp_entry({'op':'add', 'host':name, 'mac':mac, 'ip':ip })
 
  ########################## Data Tables ######################
  

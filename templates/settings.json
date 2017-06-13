@@ -29,7 +29,8 @@
  "dhcp": {
   "proxy" : "False",
   "url" : "",
-  "file": ""
+  "file": "",
+  "reload":"sudo /etc/init.d/isc-dhcp-server restart"
  },
  "loopia": {
   "username":"",
