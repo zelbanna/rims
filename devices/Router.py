@@ -59,16 +59,22 @@ class Junos(GenDevice):
    self._router.close()
   except Exception as err:
    self.log_msg("System Error - Unable to properly close router connection: " + str(err))
- 
- def ping_rpc(self,ip):
-  result = self._router.rpc.ping(host=ip, count='1')
-  return len(result.xpath("ping-success"))
 
  def get_rpc(self):
   return self._router.rpc
 
  def get_dev(self):
   return self._router
+
+ def get_interface_name(self, aifl):
+  return self._interfacesname.get(aifl.split('.')[0],None)
+ 
+ #
+ # Netconf shit
+ # 
+ def ping_rpc(self,ip):
+  result = self._router.rpc.ping(host=ip, count='1')
+  return len(result.xpath("ping-success"))
 
  def get_facts(self,akey):
   return self._router.facts[akey]
@@ -79,9 +85,6 @@ class Junos(GenDevice):
    ifd         = interface.find("name").text
    description = interface.find("description").text
    self._interfacesname[ifd] = description
-
- def get_interface_name(self, aifl):
-  return self._interfacesname.get(aifl.split('.')[0],None)
 
  def get_up_interfaces(self):
   interfaces = self._router.rpc.get_interface_information()
@@ -103,6 +106,9 @@ class Junos(GenDevice):
    result.append([ neigh[fields].text,neigh[3].text if neigh[2].text == "Mac address" else '-',neigh[0].text,neigh[fields-1].text ])
   return result
 
+ #
+ # End of NETCONF crap
+ # 
  def widget_archive(self):
   print "To be implemented"
 
