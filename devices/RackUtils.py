@@ -108,8 +108,10 @@ class Avocent(GenDevice, ConfObject):
    if entry:
     entry['state'] = state
    self.log_msg("Avocent : {0} set state to {1} on {2}.{3}".format(self._ip,state,slot,unit))
+   return {'res':'success'}
   except Exception as exception_error:
-   self.log_msg("Avocent : error setting state " + str(exception_error), aPrint = True)
+   self.log_msg("Avocent : error setting state " + str(exception_error))
+   return {'res':'failed', 'info':str(exception_error) }
 
  def set_name(self,slot,unit,name):
   from netsnmp import VarList, Varbind, Session

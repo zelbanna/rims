@@ -214,15 +214,16 @@ def remove(aWeb):
 # Update info on PDU unit
 #
 def update_device_pdus(aWeb):
- (pem0_id,pem0_slot) = aWeb.get_value('pem0_pdu_slot_id',"0.0").split('.')
- (pem1_id,pem1_slot) = aWeb.get_value('pem1_pdu_slot_id',"0.0").split('.')
+ (pem0_id,pem0_slot) = aWeb.get_value('rackinfo_pem0_pdu_slot_id',"0.0").split('.')
+ (pem1_id,pem1_slot) = aWeb.get_value('rackinfo_pem1_pdu_slot_id',"0.0").split('.')
  pem0_unit = aWeb.get_value('pem0_unit','0')
  pem1_unit = aWeb.get_value('pem1_unit','0')
  hostname  = aWeb.get_value('name')
  retstr    = ""
  db = GL.DB()
  db.connect()
- db.do("SELECT id,INET_NTOA(ip) as ip FROM pdus WHERE id = '{}' OR id = '{}'".format(pem0_id,pem1_id))
+ sql = "SELECT id,INET_NTOA(ip) as ip FROM pdus WHERE id = '{}' OR id = '{}'".format(pem0_id,pem1_id)
+ db.do(sql)
  pdus = db.get_all_dict('id')
  if not (pem0_slot == '0' or pem0_unit == '0') and hostname:
   string = hostname+"-P0"
@@ -231,6 +232,6 @@ def update_device_pdus(aWeb):
  if not (pem1_slot == '0' or pem1_unit == '0') and hostname:
   string = hostname+"-P1"
   avocent = Avocent(pdus[int(pem1_id)]['ip'])
-  retstr = retstr + " " + avocent.set_name(pem1_slot,pem1_unit,string)
+  retstr = retstr + "<BR>" + avocent.set_name(pem1_slot,pem1_unit,string)
  db.close()
  print retstr
