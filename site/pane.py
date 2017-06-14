@@ -128,9 +128,9 @@ def openstack_portal(aWeb):
  print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px'>Log out</A>".format(ctrl,cookie.get('os_demo_name'),cookie.get('af_controller'))
  print "</DIV>"
  print "<DIV CLASS='z-navbar' style='top:60px;' ID=div_navbar>"
- print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_heat_list'>Orchestration</A>"
- print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_neutron_list'>Virtual Networks</A>"
- print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=openstack_nova_list'>Virtual Machines</A>"
+ print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=heat_list'>Orchestration</A>"
+ print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=neutron_list'>Virtual Networks</A>"
+ print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=nova_list'>Virtual Machines</A>"
  print "<A CLASS='z-op' SPIN=true OP=load DIV=div_navcont  URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
  print "<A CLASS='z-reload z-op'  OP=redirect URL='pane.cgi?view=openstack_portal'></A>"
  print "</DIV>"
