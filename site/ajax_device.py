@@ -199,13 +199,12 @@ def device_info(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata URL=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=post TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
  if device_data['rack_id'] and ((rack_info['pem0_pdu_id'] != 0 and rack_info['pem0_pdu_unit'] != 0) or (rack_info['pem1_pdu_id'] != 0 and rack_info['pem1_pdu_unit'] != 0)):
   print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=pdu_update_device_pdus&pem0_unit={}&pem1_unit={}&name={} FRM=info_form OP=post TITLE='Update PDU with device info'><IMG SRC='images/btn-pdu-save.png' ALT='P'></A>".format(rack_info['pem0_pdu_unit'],rack_info['pem1_pdu_unit'],name)
+ import sdcp.SettingsContainer as SC
+ print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(SC.netconf_username,ip)
  if device_data['rack_id'] and (conip and not conip == '127.0.0.1' and rack_info['console_port'] and rack_info['console_port'] > 0):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+rack_info['console_port'])
  if (device_data['type'] == 'pdu' or device_data['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip'])) == 0:
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}' OP=load style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
- if (device_data['vm'] == 1):
-  import sdcp.SettingsContainer as SC
-  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='VM SSH'><IMG SRC='images/btn-term.png'></A>".format(SC.netconf_username,ip)
 
  print "<SPAN ID=update_results style='max-width:400px; float:right; font-size:9px;'>{}</SPAN>".format(opres)
  print "</DIV>"
