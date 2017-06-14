@@ -86,13 +86,14 @@ def update_info(aDict):
 def new(aDict):
  ipint = GL.ip2int(aDict.get('ip'))
  ptr_dom = GL.ip2arpa(aDict.get('ip'))
+ ret = {'res':'not_added', 'info':None}
  db = GL.DB()
  db.connect()
  in_sub = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(aDict.get('ipam_sub_id'),ipint))
  if in_sub == 0:
-  ret = "IP not in subnet range"
+  ret['info'] = "IP not in subnet range"
  elif aDict.get('hostname') == 'unknown':
-  ret = "Hostname unknown not allowed"
+  ret['info'] = "Hostname unknown not allowed"
  else:
   xist = db.do("SELECT devices.id, hostname, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND ip = {}".format(aDict.get('ipam_sub_id'),ipint))
   if xist == 0:
@@ -106,10 +107,12 @@ def new(aDict):
    devid = db.get_last_id()
    rres  = db.do("INSERT INTO rackinfo SET device_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(devid))
    db.commit()
-   ret = "Added ({} - id:{})".format(dbres,devid)
+   ret['res']  = "added"
+   ret['info'] = "DB:{} ID:{}".format(dbres,devid)
   else:
-   dev = db.get_row()    
-   ret = "Existing host:{0}({2}) domain:{1}".format(dev['hostname'],dev['a_dom_id'],dev['id'])
+   dev = db.get_row()
+   ret['info']  = "existing"
+   ret['extra'] = "hostname:{0} id:{2} domain:{1}".format(dev['hostname'],dev['a_dom_id'],dev['id'])
  db.close()
  return ret
 

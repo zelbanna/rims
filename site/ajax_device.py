@@ -332,10 +332,14 @@ def new(aWeb):
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  if op:
-  from rest_device import new
+  from rest_device import new as rest_new
   a_dom    = aWeb.get_value('a_dom_id')
   ipam_sub = aWeb.get_value('ipam_sub_id')
-  print new({ 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg })
+  res = rest_new({ 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg })
+  if mac != "00:00:00:00:00:00" and res['res'] == "added":
+   res['dhcp'] = mac
+   # frome rest_ddi import dhcp_entry 
+  print res
  else:
   db = GL.DB()
   db.connect()
