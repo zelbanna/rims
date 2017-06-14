@@ -101,7 +101,7 @@ def device_info(aWeb):
   print "<!-- MAC: {} -->".format(device_data['mac'])
   if device_data['mac'] != 0:
    mac = GL.int2mac(device_data['mac'])
-   dhcp_entry({'op':'add', 'host':name, 'mac':mac, 'ip':ip })
+   dhcp_entry({'op':'add', 'hostname':name, 'mac':mac, 'ip':ip })
 
  ########################## Data Tables ######################
  
@@ -334,10 +334,12 @@ def new(aWeb):
   from rest_device import new as rest_new
   a_dom    = aWeb.get_value('a_dom_id')
   ipam_sub = aWeb.get_value('ipam_sub_id')
-  res = rest_new({ 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg })
+  params =  { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg } 
+  res = rest_new(params)
   if mac != "00:00:00:00:00:00" and res['res'] == "added":
-   res['dhcp'] = mac
-   # frome rest_ddi import dhcp_entry 
+   from rest_ddi import dhcp_entry
+   params['op'] = 'add'
+   res['dhcp'] = dhcp_entry(params)
   print res
  else:
   db = GL.DB()

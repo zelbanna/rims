@@ -36,7 +36,7 @@ def load_infra(aDict):
 
 def dhcp_entry(aDict):
  #
- # {'op':<add/update/remove>, 'host':<string>, 'mac':<string>, 'ip':<string>, 'extra':[list of extra entries] }
+ # {'op':<add/update/remove>, 'hostname':<string>, 'mac':<string>, 'ip':<string>, 'extra':[list of extra entries] }
  #
  if SC.dhcp_proxy == 'True':
   return REST.call(SC.dhcp_url, "ddi_dhcp_entry", aDict)
@@ -49,16 +49,16 @@ def dhcp_entry(aDict):
   for line in dhcp_file:
    host,_,info = line[5:].partition(' ')
    dhcp_data[host] = info[:-1]
- old_info = dhcp_data.get(aDict['host'])
+ old_info = dhcp_data.get(aDict['hostname'])
  # Which op?
  if (op == 'update' or op == 'add') and aDict['mac'] != "00:00:00:00:00:00":
   new_info = '{ hardware ethernet ' + aDict['mac'] + "; fixed-address " + aDict['ip'] + '; }'
   if old_info != new_info:
    res = op
-   dhcp_data[aDict['host']] = new_info
+   dhcp_data[aDict['hostname']] = new_info
  elif op == 'remove' and old_info:
   res = op
-  dhcp_data.pop(aDict['host'])
+  dhcp_data.pop(aDict['hostname'])
 
  # Write config file if any changes
  if res != "no_change":
@@ -68,21 +68,21 @@ def dhcp_entry(aDict):
   if op == 'update':
    # Use ajax lib call to update.. 
    status = dhcp_update(_)
- return {'res':res, 'host':aDict.get('host'), 'status':status}
+ return {'res':res, 'hostname':aDict.get('hostname'), 'status':status}
 
 def dhcp_fetch(aDict):
  #
- # { 'host':<string> }
+ # { 'hostname':<string> }
  #
  if SC.dhcp_proxy == 'True':
   return REST.call(SC.dhcp_url, "ddi_dhcp_fetch", aDict)
- fetch_host = aDict.get('host')
+ fetch_host = aDict.get('hostname')
  with open(SC.dhcp_file) as dhcp_file:
   for line in dhcp_file:
    host,_,info = line[5:].partition(' ')
    if host == fetch_host:
-    return {'found': True , 'host':fetch_host, 'info':info}
- return {'found': False, 'host':fetch_host, 'info':None}
+    return {'found': True , 'hostname':fetch_host, 'info':info}
+ return {'found': False, 'hostname':fetch_host, 'info':None}
 
 def dhcp_update(_):
  #
