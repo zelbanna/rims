@@ -29,7 +29,7 @@ class Junos(GenDevice):
 
  @classmethod
  def get_widgets(cls):
-  return ['widget_up_interfaces','widget_lldp']
+  return ['widget_up_interfaces','widget_lldp','widget_archive' ]
 
  def __init__(self,ahost,adomain = None, atype = 'Junos'):
   GenDevice.__init__(self,ahost,adomain,atype)
@@ -103,6 +103,9 @@ class Junos(GenDevice):
    result.append([ neigh[fields].text,neigh[3].text if neigh[2].text == "Mac address" else '-',neigh[0].text,neigh[fields-1].text ])
   return result
 
+ def widget_archive(self):
+  print "To be implemented"
+
  def widget_up_interfaces(self):
   if not self.connect():
    print "Could not connect"
@@ -162,21 +165,23 @@ class Junos(GenDevice):
   else:
    print "set system login user {0} class super-user<BR>".format(SC.netconf_username)
    print "set system login user {0} authentication encrypted-password \"{1}\"<BR>".format(SC.netconf_username,SC.netconf_encrypted)
-  base  = "set groups default_system"
-  print base + " system domain-name {}<BR>".format(argdict['domain'])
-  print base + " system domain-search {}<BR>".format(argdict['domain'])
-  print base + " system name-server {}<BR>".format(SC.sdcp_dnssrv)
-  print base + " system services ssh root-login allow<BR>"
-  print base + " system services netconf ssh<BR>"
-  print base + " system syslog user * any emergency<BR>"
-  print base + " system syslog file messages any notice<BR>"
-  print base + " system syslog file messages authorization info<BR>"
-  print base + " system syslog file interactive-commands interactive-commands any<BR>"
-  print base + " system commit persist-groups-inheritance"
-  print base + " system ntp server {}<BR>".format(SC.sdcp_ntpsrv)
-  print base + " routing-options static route 0.0.0.0/0 next-hop {}<BR>".format(argdict['gateway'])
-  print base + " routing-options static route 0.0.0.0/0 no-readvertise<BR>"
-  print base + " snmp community {} clients {}/{}<BR>".format(SC.snmp_read_community,argdict['subnet'],argdict['mask'])
+  base  = "set groups default_system "
+  print base + "system domain-name {}<BR>".format(argdict['domain'])
+  print base + "system domain-search {}<BR>".format(argdict['domain'])
+  print base + "system name-server {}<BR>".format(SC.sdcp_dnssrv)
+  print base + "system services ssh root-login allow<BR>"
+  print base + "system services netconf ssh<BR>"
+  print base + "system syslog user * any emergency<BR>"
+  print base + "system syslog file messages any notice<BR>"
+  print base + "system syslog file messages authorization info<BR>"
+  print base + "system syslog file interactive-commands interactive-commands any<BR>"
+  print base + "system archival configuration transfer-on-commit<BR>"
+  print base + "system archival configuration archive-sites ftp://{}/<BR>".format(SC.sdcp_anonftp)
+  print base + "system commit persist-groups-inheritance<BR>"
+  print base + "system ntp server {}<BR>".format(SC.sdcp_ntpsrv)
+  print base + "routing-options static route 0.0.0.0/0 next-hop {}<BR>".format(argdict['gateway'])
+  print base + "routing-options static route 0.0.0.0/0 no-readvertise<BR>"
+  print base + "snmp community {} clients {}/{}<BR>".format(SC.snmp_read_community,argdict['subnet'],argdict['mask'])
   print base + " protocols lldp port-id-subtype interface-name<BR>"
   print base + " protocols lldp interface all<BR>"
   print base + " class-of-service host-outbound-traffic forwarding-class network-control<BR>"
