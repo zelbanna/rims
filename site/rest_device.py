@@ -95,7 +95,7 @@ def new(aDict):
  elif aDict.get('hostname') == 'unknown':
   ret['info'] = "Hostname unknown not allowed"
  else:
-  xist = db.do("SELECT devices.id, hostname, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND ip = {}".format(aDict.get('ipam_sub_id'),ipint))
+  xist = db.do("SELECT id, hostname, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND (ip = {} OR hostname = '{}')".format(aDict.get('ipam_sub_id'),ipint,aDict.get('hostname')))
   if xist == 0:
    res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ptr_dom))
    ptr_dom_id = db.get_row().get('id') if res > 0 else 'NULL'
@@ -172,7 +172,7 @@ def discover(aDict):
 def remove(aDict):
  db = GL.DB()
  db.connect()
- res = db.do("SELECT a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
+ res = db.do("SELECT hostname, mac, a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
  ddi = db.get_row()
  res = db.do("DELETE FROM devices WHERE id = '{0}'".format(aDict['id']))
  ret = { 'device': res }
@@ -186,6 +186,9 @@ def remove(aDict):
  if not ddi['ipam_id'] == '0':
   from rest_ddi import ipam_remove
   ret['ipam'] = ipam_remove({ 'ipam_id':ddi['ipam_id'] })
+ if ddi['mac'] != 0:
+  from rest_ddi import dhcp_entry
+  ret['dhcp'] = dhcp_entry({'op':'remove', 'hostname':aDict.get('hostname')})
  return ret
 
 #
