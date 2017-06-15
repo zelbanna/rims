@@ -78,7 +78,7 @@ def update_info(aDict):
    db.do("UPDATE rackinfo SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE device_id = '{3}'".format(pem,pemid,pemslot,id))
  db.commit()
  db.close()
- return "update_values:" + ", ".join(aDict.keys())
+ return { 'res':'update','keys':aDict.keys() }
 
 #
 # new(ip, hostname, ipam_sub_id, a_dom_id, mac, target, arg)

@@ -104,7 +104,7 @@ class Avocent(GenDevice, ConfObject):
    session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_write_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.6.1.{}.{}".format(slot,unit) , Avocent.set_outlet_state(state) ,"INTEGER"))
    session.set(setobj)
-   entry = self.get_entry(slot+"."+unit)
+   entry = self.get_entry("{}.{}".format(slot,unit))
    if entry:
     entry['state'] = state
    self.log_msg("Avocent : {0} set state to {1} on {2}.{3}".format(self._ip,state,slot,unit))
@@ -116,13 +116,14 @@ class Avocent(GenDevice, ConfObject):
  def set_name(self,slot,unit,name):
   from netsnmp import VarList, Varbind, Session
   try:
+   name = name[:16]
    session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_write_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
-   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.4.1.{}.{}".format(slot,unit) , name[:16], "OPAQUE"))
+   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.4.1.{}.{}".format(slot,unit) , name, "OPAQUE"))
    session.set(setobj)
-   entry = self.get_entry(slot+"."+unit)
+   entry = self.get_entry("{}.{}".format(slot,unit))
    if entry:
-    entry['name'] = name[:16]
-   return "{0}.{1}_name: {2}".format(slot,unit,name[:16])
+    entry['name'] = name
+   return "{0}.{1}: {2}".format(slot,unit,name)
   except Exception as exception_error:
    self.log_msg("Avocent : error setting name " + str(exception_error))
    return "Error setting name {}".format(name)

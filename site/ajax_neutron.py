@@ -4,7 +4,7 @@ Ajax Openstack Neutron/Contrail calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "17.6.1GA"
+__version__ = "17.6.15GA"
 __status__= "Production"
 
 from sdcp.devices.openstack import OpenstackRPC
@@ -48,10 +48,12 @@ def list(aWeb):
  for net in ret['data']['networks']:
   if net['tenant_id'] == cookie.get("os_project_id") or net['shared'] == True:
    print "<TR>"
+   print "<!-- {} -->".format(str(net))
    print "<TD>{}</TD>".format(net['name'])
    print "<TD>"
-   for n in net['contrail:subnet_ipam']:
-    print n['subnet_cidr']
+   if net.get('contrail:subnet_ipam'):
+    for n in net['contrail:subnet_ipam']:
+     print n['subnet_cidr']
    print "</TD>"
    print "<TD>"
    tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=neutron_action&name=" + net['name'] + "&id=" + net['id'] + "&op={} OP=load SPIN=true>{}</A>"

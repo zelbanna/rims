@@ -25,8 +25,6 @@ def list_units(aWeb):
  nstate  = aWeb.get_value('nstate')
  pduop   = aWeb.get_value('pdu')
 
- db = GL.DB()
-
  optemplate = "<A CLASS='z-btn z-small-btn z-op' OP=load SPIN=true DIV=div_navleft URL='ajax.cgi?call=pdu_list_units&pdu={0}&nstate={1}&slot={2}&unit={3}'><IMG SRC='images/btn-{4}'></A>"
 
  if len(pdulist) == 0:
@@ -58,9 +56,16 @@ def list_units(aWeb):
  print "</TABLE></DIV>"
 
 def unit_info(aWeb):
+ op = aWeb.get_value('op')
  pdu  = aWeb.get_value('pdu')
  slot = aWeb.get_value('slot')
  unit = aWeb.get_value('unit')
+ if op == 'update':
+  name = aWeb.get_value('name')
+  avocent = Avocent(pdu)
+  avocent.set_name(slot,unit,name)
+  print "Updated name: {} for {} slot {}".format(name,pdu,slot)
+  return
  slotname = aWeb.get_value('slotname')
  name = aWeb.get_value('name')
  print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
@@ -75,7 +80,7 @@ def unit_info(aWeb):
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
  print "</TABLE>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=pdu_unit_update FRM=pdu_form OP=post><IMG SRC='images/btn-save.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=pdu_unit_info&op=update FRM=pdu_form OP=post><IMG SRC='images/btn-save.png'></A>"
  print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
@@ -179,23 +184,6 @@ def device_info(aWeb):
  print "</DIV>"
 
 #
-# Update PDU slot info (name basically)
-#
-def unit_update(aWeb):
- values = aWeb.get_keys()
- values.remove('call')
- if 'name' in values:
-  name = aWeb.get_value('name')
-  pdu  = aWeb.get_value('pdu','0')
-  slot = aWeb.get_value('slot','0')
-  unit = aWeb.get_value('unit','0')
-  avocent = Avocent(pdu)
-  avocent.set_name(slot,unit,name)
-  print "Updated name: {} for {} slot {}".format(name,pdu,slot)
- else:
-  print "Name not updated"
-
-#
 #
 #
 def remove(aWeb):
@@ -208,30 +196,3 @@ def remove(aWeb):
  db.commit()
  print "<B>PDU {0} deleted<B>".format(id)
  db.close()
-
-
-#
-# Update info on PDU unit
-#
-def update_device_pdus(aWeb):
- (pem0_id,pem0_slot) = aWeb.get_value('rackinfo_pem0_pdu_slot_id',"0.0").split('.')
- (pem1_id,pem1_slot) = aWeb.get_value('rackinfo_pem1_pdu_slot_id',"0.0").split('.')
- pem0_unit = aWeb.get_value('pem0_unit','0')
- pem1_unit = aWeb.get_value('pem1_unit','0')
- hostname  = aWeb.get_value('name')
- retstr    = ""
- db = GL.DB()
- db.connect()
- sql = "SELECT id,INET_NTOA(ip) as ip FROM pdus WHERE id = '{}' OR id = '{}'".format(pem0_id,pem1_id)
- db.do(sql)
- pdus = db.get_all_dict('id')
- if not (pem0_slot == '0' or pem0_unit == '0') and hostname:
-  string = hostname+"-P0"
-  avocent = Avocent(pdus[int(pem0_id)]['ip'])
-  retstr = avocent.set_name(pem0_slot,pem0_unit,string)
- if not (pem1_slot == '0' or pem1_unit == '0') and hostname:
-  string = hostname+"-P1"
-  avocent = Avocent(pdus[int(pem1_id)]['ip'])
-  retstr = retstr + "<BR>" + avocent.set_name(pem1_slot,pem1_unit,string)
- db.close()
- print retstr
