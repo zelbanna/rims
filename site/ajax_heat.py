@@ -87,8 +87,8 @@ def choose_template(aWeb):
  except Exception as err:
   print "openstack_choose_template: error finding template files in 'os_templates/' [{}]".format(str(err))
  print "</FORM>"
- print "<A TITLE='Enter parameters' CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info URL='ajax.cgi?call=heat_enter_parameters'><IMG SRC='images/btn-document.png'></A>"
- print "<A TITLE='View template'    CLASS='z-btn z-small-btn z-op' OP=post FRM=frm_heat_choose_template DIV=div_os_info URL='ajax.cgi?call=heat_action&op=templateview'><IMG SRC='images/btn-info.png'></A>"
+ print "<A TITLE='Enter parameters' CLASS='z-btn z-small-btn z-op' OP=load FRM=frm_heat_choose_template DIV=div_os_info URL='ajax.cgi?call=heat_enter_parameters'><IMG SRC='images/btn-document.png'></A>"
+ print "<A TITLE='View template'    CLASS='z-btn z-small-btn z-op' OP=load FRM=frm_heat_choose_template DIV=div_os_info URL='ajax.cgi?call=heat_action&op=templateview'><IMG SRC='images/btn-info.png'></A>"
  print "</DIV>"
  print "<DIV ID=div_os_info></DIV>"
 
@@ -107,7 +107,7 @@ def enter_parameters(aWeb):
   print "<TR><TD>{0}</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></TD></TR>".format(key,value)
  print "</TABLE>"
  print "</FORM>"
- print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' OP=post SPIN=true FRM=frm_heat_template_parameters DIV=div_navcont URL='ajax.cgi?call=heat_action&op=create'><IMG SRC='images/btn-start.png'></A>"
+ print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' OP=load SPIN=true FRM=frm_heat_template_parameters DIV=div_navcont URL='ajax.cgi?call=heat_action&op=create'><IMG SRC='images/btn-start.png'></A>"
  print "</DIV>"
 
 #

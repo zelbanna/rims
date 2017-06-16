@@ -196,10 +196,10 @@ def device_info(aWeb):
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_remove&id={}      OP=confirm MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=lookup    FRM=info_form OP=post TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=post TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata URL=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=post TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_remove&id={}      OP=load MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=lookup    FRM=info_form OP=load TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=load TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata URL=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=load TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
  import sdcp.SettingsContainer as SC
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(SC.netconf_username,ip)
  if device_data['rack_id'] and (conip and not conip == '127.0.0.1' and ri['console_port'] and ri['console_port'] > 0):
@@ -369,7 +369,7 @@ def new(aWeb):
   print "</SELECT></TD></TR>"
   print "<TR><TD>MAC:</TD><TD><INPUT      NAME=mac  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(mac)
   print "</TABLE>"
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span URL=ajax.cgi?call=device_new FRM=device_new_form OP=post><IMG SRC='images/btn-start.png'></A>&nbsp;"
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span URL=ajax.cgi?call=device_new FRM=device_new_form OP=load><IMG SRC='images/btn-start.png'></A>&nbsp;"
   print "<SPAN ID=device_new_span style='max-width:400px; font-size:9px; float:right'></SPAN>"
   print "</DIV>"
 
@@ -433,7 +433,7 @@ def discover(aWeb):
   print "</SELECT></TD></TR>"
   print "<TR><TD>Clear</TD><TD><INPUT TYPE=checkbox NAME=clear VALUE=True></TD></TR>"
   print "</TABLE>"
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont SPIN=true URL=ajax.cgi?call=device_discover FRM=device_discover_form OP=post><IMG SRC='images/btn-start.png'></A>"
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont SPIN=true URL=ajax.cgi?call=device_discover FRM=device_discover_form OP=load><IMG SRC='images/btn-start.png'></A>"
   print "</DIV>"
  db.close() 
 

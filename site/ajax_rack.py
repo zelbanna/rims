@@ -59,7 +59,7 @@ def info(aWeb):
     else:
      if rackunits.get(count*index,None):
       rowspan = rackunits[count*index].get('rack_size')
-      print "<TD CLASS='z-rack-data' rowspan={2} style='background-color:green'><CENTER><A CLASS='z-op' TITLE='Show device info for {0}' OP='load' DIV='div_navcont' URL='ajax.cgi?call=device_device_info&id={1}'>{0}</A></CENTER></TD>".format(rackunits[count*index]['hostname'],rackunits[count*index]['id'],rowspan)
+      print "<TD CLASS='z-rack-data' rowspan={2} style='background-color:green'><CENTER><A CLASS='z-op' TITLE='Show device info for {0}' OP=load DIV='div_navcont' URL='ajax.cgi?call=device_device_info&id={1}'>{0}</A></CENTER></TD>".format(rackunits[count*index]['hostname'],rackunits[count*index]['id'],rowspan)
       rowspan = rowspan - 1
      else:
       print "<TD CLASS='z-rack-data' style='line-height:14px;'>&nbsp;</TD>"
@@ -109,7 +109,7 @@ def unit_info(aWeb):
  print "</TABLE>"
  print "</FORM>"
  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=rack_unit_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=rack_update FRM=rack_unit_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=rack_update FRM=rack_unit_info_form OP=load><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
   print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=rack_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"

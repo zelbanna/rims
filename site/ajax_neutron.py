@@ -58,8 +58,8 @@ def list(aWeb):
      print "{}/{}".format(sub['subnet']['ip_prefix'],sub['subnet']['ip_prefix_len'])
   print "</TD>"
   print "<TD>"
-  #tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=neutron_action&name=" + net['name'] + "&id=" + net['id'] + "&op={} OP=load SPIN=true>{}</A>"
-  #print tmpl.format('Network info','info','<IMG SRC=images/btn-info.png>')
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=neutron_action&name=" + net['display_name'] + "&id=" + net['uuid'] + "&op={} OP=load SPIN=true>{}</A>"
+  print tmpl.format('Remove','remove','<IMG SRC=images/btn-remove.png>')
   print "</TD>" 
  print "</TR>"
  print "</TABLE>"
@@ -73,8 +73,6 @@ def action(aWeb):
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
 
- port  = cookie.get('os_neutron_port')
- url   = cookie.get('os_neutron_url')
  name = aWeb.get_value('name')
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
@@ -85,3 +83,7 @@ def action(aWeb):
   print "<H2>{} ({})</H2>".format(name,id)
   _print_info(ret['data']['virtual-network'])
   print "</DIV>"
+
+ elif   op == 'remove':
+  ret = controller.call("8082","virtual-network/{}".format(id), method='DELETE')
+  print ret

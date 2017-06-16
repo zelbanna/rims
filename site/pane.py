@@ -179,7 +179,7 @@ def examine(aWeb):
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
 
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-op' OP=confirm DIV=div_examine_log MSG='Clear Network Logs?' URL='ajax.cgi?call=examine_clear_logs&{}'>Clear Logs</A>".format(aWeb.get_args_except(['pane']))
+ print "<A CLASS='z-warning z-op' OP=load DIV=div_examine_log MSG='Clear Network Logs?' URL='ajax.cgi?call=examine_clear_logs&{}'>Clear Logs</A>".format(aWeb.get_args_except(['pane']))
  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_examine_log URL='.z-system'>Logs</A>"
  if upshost:
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_ups URL='.z-system'>UPS</A>"
@@ -419,7 +419,7 @@ def esxi(aWeb):
  esxi   = ESXi(host,domain)
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-op' OP=confirm DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.get_args_except(['pane']))
+ print "<A CLASS='z-warning z-op' OP=load DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.get_args_except(['pane']))
  print "<A CLASS=z-op OP=toggle DIV=div_esxi_pic   HREF='#'>Picture</A>"
  print "<A CLASS=z-op OP=toggle DIV=div_esxi_stats HREF='#'>Stats</A>"
  print "<A CLASS=z-op OP=toggle DIV=div_esxi_op   HREF='#'>VM OPs</A>"
@@ -512,7 +512,7 @@ def config(aWeb):
  print aWeb.get_listeners("div_config_menu")
  domain    = aWeb.get_value('domain', None)
  print "<DIV CLASS='z-table' ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
- print "<A CLASS='z-btn z-warning z-op' OP=confirm DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"
+ print "<A CLASS='z-btn z-warning z-op' OP=load DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true URL='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config           URL='ajax.cgi?call=graph_sync&domain={0}'>Synch Graphing</A>".format(domain)
  print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_sync'>Synch DDI</A>"

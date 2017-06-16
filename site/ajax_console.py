@@ -96,7 +96,7 @@ def device_info(aWeb):
  if not id == 'new':
   print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=console_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
   print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=console_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A TITLE='Update unit'  CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=console_device_info&op=update FRM=console_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Update unit'  CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=console_device_info&op=update FRM=console_device_info_form OP=load><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"
 

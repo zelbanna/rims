@@ -80,7 +80,7 @@ def unit_info(aWeb):
  print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
  print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
  print "</TABLE>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=pdu_unit_info&op=update FRM=pdu_form OP=post><IMG SRC='images/btn-save.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=pdu_unit_info&op=update FRM=pdu_form OP=load><IMG SRC='images/btn-save.png'></A>"
  print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
@@ -179,7 +179,7 @@ def device_info(aWeb):
   print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=pdu_device_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
   print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=pdu_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
   print "<A TITLE='Fecth  info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=pdu_device_info&id={0}&op=lookup&ip={1} OP=load><IMG SRC='images/btn-search.png'></A>".format(id,ip)
- print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=pdu_device_info&op=update FRM=pdu_device_info_form OP=post><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=pdu_device_info&op=update FRM=pdu_device_info_form OP=load><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"
 
