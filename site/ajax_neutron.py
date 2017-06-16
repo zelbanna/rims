@@ -34,7 +34,7 @@ def list(aWeb):
  controller = OpenstackRPC(cookie.get('os_controller'),token)
  pname = cookie.get("os_project_name")
 
- ret = controller.call(cookie.get('os_neutron_port'), cookie.get('os_neutron_url')+"/v2.0/networks")
+ ret = controller.call("8082","virtual-networks?fields=name,display_name,virtual_network_properties,network_ipam_refs")
  if not ret['result'] == "OK":
   print "Error retrieving list"
   return
@@ -45,22 +45,22 @@ def list(aWeb):
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "</TR>"
  print "<THEAD><TH>Network</TH><TH>Subnet</TH><TH>Operations</TH></THEAD>"
- for net in ret['data']['networks']:
-  if net['tenant_id'] == cookie.get("os_project_id") or net['shared'] == True:
-   print "<TR>"
-   print "<!-- {} -->".format(str(net))
-   print "<TD>{}</TD>".format(net['name'])
-   print "<TD>"
-   if net.get('contrail:subnet_ipam'):
-    for n in net['contrail:subnet_ipam']:
-     print n['subnet_cidr']
-   print "</TD>"
-   print "<TD>"
-   tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=neutron_action&name=" + net['name'] + "&id=" + net['id'] + "&op={} OP=load SPIN=true>{}</A>"
-   print tmpl.format('Network info','info','<IMG SRC=images/btn-info.png>')  
-   print "</TD>" 
-  else:
-   print "<!-- Excluding {} -->".format(net['id'])
+ for net in ret['data']['virtual-networks']:
+  if not net.get('display_name'):
+   continue
+  print "<TR>"
+  print "<!-- {} -->".format(str(net))
+  print "<TD><A TITLE='Info' CLASS='z-op' DIV=div_navcont URL=ajax.cgi?call=neutron_action&id={0}&name={1}&op=info OP=load SPIN=true>{1}</A></TD>".format(net['uuid'],net['display_name'])
+  print "<TD>"
+  if net.get('network_ipam_refs'):
+   for ipam in net['network_ipam_refs']:
+    for sub in ipam['attr']['ipam_subnets']:
+     print "{}/{}".format(sub['subnet']['ip_prefix'],sub['subnet']['ip_prefix_len'])
+  print "</TD>"
+  print "<TD>"
+  #tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=neutron_action&name=" + net['name'] + "&id=" + net['id'] + "&op={} OP=load SPIN=true>{}</A>"
+  #print tmpl.format('Network info','info','<IMG SRC=images/btn-info.png>')
+  print "</TD>" 
  print "</TR>"
  print "</TABLE>"
  print "</DIV>"

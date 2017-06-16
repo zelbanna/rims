@@ -1,5 +1,5 @@
 /*
-Version: 2.0GA
+Version: 17.6.15GA
 
 <HEAD><LINK REL="stylesheet" TYPE="text/css" HREF="system.css"></HEAD>
 
@@ -133,7 +133,9 @@ a.z-warning {    background-color:red!important; }
 .z-font-sub { position: relative; bottom: -36px; font-size: smaller; }
 
 div.z-overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:1000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
-div.z-loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 2s linear infinite; animation: spin 2s linear infinite; z-index:1001; }
+
+div.z-loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; z-index:1001; }
+/* Spin properties */
 @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
