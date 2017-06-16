@@ -26,33 +26,6 @@ def unit_update(aDict):
   return { 'res':'op_failed' }
 
 #
-# Update PDU slot info for a device
-#
-def update_device_pdus(aDict):
- from sdcp.devices.RackUtils import Avocent
- pem0_id   = aDict.get('pem0_id')
- pem1_id   = aDict.get('pem1_id')
- pem0_slot = aDict.get('pem0_slot')
- pem1_slot = aDict.get('pem1_slot')
- pem0_unit = aDict.get('pem0_unit')
- pem1_unit = aDict.get('pem1_unit')
- hostname  = aDict.get('hostname')
- ret = {'pem0':None,'pem1':None}
- db = GL.DB()
- db.connect()
- sql = "SELECT id,INET_NTOA(ip) as ip FROM pdus WHERE id = '{}' OR id = '{}'".format(pem0_id,pem1_id)
- db.do(sql)
- pdus = db.get_all_dict('id')
- if pem0_id and not (pem0_slot == 0 or pem0_unit == 0):
-  avocent = Avocent(pdus[int(pem0_id)]['ip'])
-  ret['pem0'] = avocent.set_name(pem0_slot,pem0_unit,hostname+"-P0")
- if pem1_id and not (pem1_slot == 0 or pem1_unit == 0):
-  avocent = Avocent(pdus[int(pem1_id)]['ip'])
-  ret['pem1'] = avocent.set_name(pem1_slot,pem1_unit,hostname+"-P1")
- db.close()
- return ret
-
-#
 # Remove PDU from DB
 #
 def remove(aDict):
@@ -65,3 +38,26 @@ def remove(aDict):
  db.commit()
  db.close()
  return { 'res':'op_success' }
+
+#
+# Update PDU slot info for a device
+#
+def update_device_pdus(aDict):
+ hostname  = aDict.get('hostname')
+ ret = {}
+ db = GL.DB()
+ db.connect()
+ for p in ['0','1']:
+  ret[p] = None
+  id = aDict.get("pem{}_pdu_id".format(p))
+  if id:
+   slot = aDict.get("pem{}_pdu_slot".format(p))
+   unit = aDict.get("pem{}_pdu_unit".format(p))
+   if not (slot == 0 or unit == 0):
+    from sdcp.devices.RackUtils import Avocent
+    db.do("SELECT INET_NTOA(ip) as ip FROM pdus WHERE id = '{}'".format(id))
+    pdu = db.get_row()
+    avocent = Avocent(pdu['ip'])
+    ret["pem{}".format(p)] = avocent.set_name(slot,unit,hostname+"-P{}".format(p))
+ db.close()
+ return ret

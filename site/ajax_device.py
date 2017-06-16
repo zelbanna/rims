@@ -104,8 +104,8 @@ def device_info(aWeb):
    opres['dhcp'] = dhcp_entry({'op':'add', 'hostname':name, 'mac':mac, 'ip':ip })
   if device_data['rack_id']:
    from rest_pdu import update_device_pdus
-   params = { 'hostname':name, 'pem0_id':ri['pem0_pdu_id'], 'pem0_unit':ri['pem0_pdu_unit'], 'pem0_slot':ri['pem0_pdu_slot'], 'pem1_id':ri['pem1_pdu_id'], 'pem1_unit':ri['pem1_pdu_unit'], 'pem1_slot':ri['pem1_pdu_slot'] }
-   opres['pdu'] = update_device_pdus(params)
+   ri['hostname'] = name
+   opres['pdu'] = update_device_pdus(ri)
 
  ########################## Data Tables ######################
  
