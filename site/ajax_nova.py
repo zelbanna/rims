@@ -125,17 +125,15 @@ def action(aWeb):
   print "<TABLE>"
   print "<THEAD><TH>MAC</TH><TH>Routing Instance</TH><TH>Network</TH><TH>IP</TH><TH>Floating IP</TH><TH>Operation</TH></THEAD>"
   for vmir in vm['virtual_machine_interface_back_refs']:
-   input = "virtual-machine-interface/{}".format(vmir['uuid'])
-   vmi = controller.call("8082",input)['data']['virtual-machine-interface']
-   ip = controller.call("8082","instance-ip/{}".format(vmi['instance_ip_back_refs'][0]['uuid']))['data']['instance-ip']
+   vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']
+   ip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
    print "<TR>"
-   print "<!-- {} -->".format(input)
    print "<TD>{}</TD>".format(vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
    print "<TD>{}</TD>".format(vmi['routing_instance_refs'][0]['to'][3])
    print "<TD>{}</TD>".format(vmi['virtual_network_refs'][0]['to'][2])
    print "<TD>{}</TD>".format(ip['instance_ip_address'])
    if vmi.get('floating_ip_back_refs'):
-    fip = controller.call("8082","floating-ip/{}".format(vmi['floating_ip_back_refs'][0]['uuid']))['data']['floating-ip']
+    fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
     print "<TD>{} ({})</TD>".format(fip['floating_ip_address'],fip['fq_name'][2])
     print "<TD><A TITLE='Disassociate' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fip_disassociate&fip={} OP=load SPIN=true><IMG SRC=images/btn-remove.png></TD>".format(fip['uuid'])
    else:

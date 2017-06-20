@@ -86,7 +86,7 @@ class OpenstackRPC(object):
   else:
    return (None,None,None)
 
- #
+ # call and href
  # Input:
  # - port = base port
  # - lnk  = service link
@@ -95,6 +95,10 @@ class OpenstackRPC(object):
  # - header = send additional headers as dictionary
  # 
  def call(self,port,lnk,arg = None, method = None, header = None):
+  return self.href("http://{}:{}/{}".format(self._ip,port,lnk),arg, method, header)
+
+ # Native href from openstack - simplify formatting
+ def href(self,href,arg = None, method = None, header = None):
   from json import loads, dumps
   from urllib2 import urlopen, Request, URLError, HTTPError
   try:
@@ -102,7 +106,7 @@ class OpenstackRPC(object):
    if header:
     for key,value in aHead.iteritems():
      head['key'] = value
-   req  = Request("http://{}:{}/{}".format(self._ip,port,lnk), headers=head, data = dumps(arg) if arg else None)
+   req  = Request(href, headers=head, data = dumps(arg) if arg else None)
    if method:
     req.get_method = lambda: method
    sock = urlopen(req)

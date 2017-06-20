@@ -65,11 +65,15 @@ class AppformixRPC(object):
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  #
  def call(self,lnk,arg = None, method = None):
+  return self.href("http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,lnk),arg, method)
+
+ # Native href from openstack - simplify formatting
+ def href(self,href,arg = None, method = None):
   from json import loads, dumps
   from urllib2 import urlopen, Request, URLError, HTTPError
   try:
    head = { 'Content-Type': 'application/json', 'X-Auth-Token':self._token }
-   req  = Request("http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,lnk), headers=head, data = dumps(arg) if arg else None)
+   req  = Request(href, headers=head, data = dumps(arg) if arg else None)
    if method:
     req.get_method = lambda: method
    sock = urlopen(req)
