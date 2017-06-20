@@ -104,8 +104,13 @@ def action(aWeb):
 
  elif op == 'interfaces':
   vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
+  print "<TABLE><THEAD><TH>IP</TH><TH>MAC</TH></THEAD>"
   for ip in vn['instance_ip_back_refs']:
-   print "<PRE>{}</PRE>".format(ip)
+   iip = controller.href(ip['href'])['data']['instance-ip']
+   vmi = controller.href(iip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
+   print "<TR><TD><A CLASS='z-op' DIV=div_navcont OP=load SPIN=true URL=ajax.cgi?call=nova_action&id={0}>{1}</TD><TD>{2}</TD></TR>".format(vmi['virtual_machine_refs'][0]['uuid'],iip['instance_ip_address'],vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
+
+  print "</TABLE>"
 
  elif op == 'floating-ip':
   fips = aWeb.get_value('fip').split(',')
@@ -122,22 +127,31 @@ def action(aWeb):
      vmi = controller.href(ip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
      print "<TD><A TITLE='VM info' CLASS='z-op' DIV=div_navcont  URL=ajax.cgi?call=nova_action&op=info&id={0} OP=load SPIN=true>{1}</TD>".format(vmi['virtual_machine_refs'][0]['to'][0],fixed)
      print "<TD><A TITLE='Network info' CLASS='z-op' DIV=div_navcont  URL=ajax.cgi?call=neutron_action&op=info&id={0} OP=load SPIN=true>{1}</TD>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
-     print "<TD><A TITLE='Disassociate' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fip_disassociate&fip={} OP=load SPIN=true><IMG SRC=images/btn-remove.png></A></TD>".format(ip['uuid'])
+     print "<TD>"
+     print "<A TITLE='Info'         CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fip_info&fip={} OP=load SPIN=true><IMG SRC=images/btn-info.png></A>".format(ip['uuid'])
+     print "<A TITLE='Disassociate' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fip_disassociate&fip={} OP=load SPIN=true><IMG SRC=images/btn-remove.png></A>".format(ip['uuid'])
+     print "</TD>"
     else:
      print "<TD></TD>"
      print "<TD></TD>"
-     print "<TD></TD>"
+     print "<TD>"
+     print "<A TITLE='Info'         CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fip_info&fip={} OP=load SPIN=true><IMG SRC=images/btn-info.png></A>".format(ip['uuid'])
+     print "</TD>"
     print "</TR>"
   print "</TABLE>" 
 
- elif op == 'fip_disassociate':
+ elif op == 'fip_info':
   from json import dumps
   fip  = aWeb.get_value('fip')
-  vmis = controller.call("8082","floating-ip/{}".format(fip))['data']['floating-ip']['virtual_machine_interface_refs']
-  for vmi in vmis:
-   data = controller.href(vmi['href'])['data']
-   print "<H3>{}</H3>".format(vmi['uuid'])
-   print "<PRE>{}</PRE>".format(dumps(data,indent=4, sort_keys=True))
+  print "<PRE>{}</PRE>".format(dumps(controller.call("8082","floating-ip/{}".format(fip))['data']['floating-ip'],indent=4))
+
+ elif op == 'fip_disassociate':
+  from json import dumps
+  fipid = aWeb.get_value('fip')
+  fip = controller.call("8082","floating-ip/{}".format(fipid))['data']['floating-ip']
+  fip.pop('virtual_machine_interface_refs')
+  fip.pop('floating_ip_fixed_ip_address')
+  print "<PRE>{}</PRE>".format(dumps(fip,indent=4))
 
  elif op == 'remove':
   ret = controller.call("8082","virtual-network/{}".format(id), method='DELETE')

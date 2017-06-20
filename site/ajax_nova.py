@@ -128,9 +128,10 @@ def action(aWeb):
    vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']
    ip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
    print "<TR>"
+   print "<!-- {} -->".format(vmir['href'])
    print "<TD>{}</TD>".format(vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
    print "<TD>{}</TD>".format(vmi['routing_instance_refs'][0]['to'][3])
-   print "<TD>{}</TD>".format(vmi['virtual_network_refs'][0]['to'][2])
+   print "<TD><A CLASS='z-op' DIV=div_navcont OP=load SPIN=true URL=ajax.cgi?call=neutron_action&id={0}&op=info>{1}</A></TD>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
    print "<TD>{}</TD>".format(ip['instance_ip_address'])
    if vmi.get('floating_ip_back_refs'):
     fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
