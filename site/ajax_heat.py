@@ -63,8 +63,8 @@ def list(aWeb):
   print "<TD>"
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} OP=load SPIN=true>{}</A>"
   print tmpl.format('Stack info','info','<IMG SRC=images/btn-info.png>')
-  if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED":
-   print tmpl.format('Remove stack','remove','<IMG SRC=images/btn-remove.png>')
+  if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED" or stack['stack_status'] == "DELETE_FAILED":
+   print "<A TITLE='Remove stack' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op=remove OP=load MSG='Are you sure' SPIN=true><IMG SRC=images/btn-remove.png></A>"
   print "</TD>"
   print "</TR>"
  print "</TABLE>"
@@ -121,8 +121,8 @@ def action(aWeb):
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
 
- port  = cookie.get('os_heat_port')
- url   = cookie.get('os_heat_url')
+ port = cookie.get('os_heat_port')
+ url  = cookie.get('os_heat_url')
  name = aWeb.get_value('name')
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
@@ -132,7 +132,7 @@ def action(aWeb):
  if   op == 'info':
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=heat_action&name=" + name + "&id=" + id+ "&op={} OP=load SPIN=true>{}</A>"
   print "<DIV>"
-  print tmpl.format('Stack Details','details','Details')
+  print tmpl.format('Stack Details','details','Stack Details')
   print tmpl.format('Stack Parameters','events','Events')
   print tmpl.format('Stack Template','template','Template')
   print tmpl.format('Stack Parameters','parameters','Parameters')

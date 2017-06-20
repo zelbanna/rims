@@ -52,11 +52,11 @@ def list(aWeb):
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=nova_action&name=" + qserver + "&id=" + server['id'] + "&op={} OP=load SPIN=true>{}</A>"
   print "<TR>"
   print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
-  print "<TD><A TITLE='VM info' CLASS='z-op' DIV=div_navcont URL=ajax.cgi?call=nova_action&name={}&id={}&op=info OP=load SPIN=true>{}</A></TD>".format(qserver,server['id'],server['name'])
+  print "<TD><A TITLE='VM info' CLASS='z-op' DIV=div_navcont URL=ajax.cgi?call=nova_action&id={}&op=info OP=load SPIN=true>{}</A></TD>".format(server['id'],server['name'])
   print "<TD>"
   print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	TARGET=_blank      HREF='pane.cgi?view=openstack_console&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
-  print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=nova_console&name={}&id={} OP=load><IMG SRC='images/btn-term-frame.png'></A>".format(qserver,server['id'])
-  print "<A TITLE='Remove VM'        CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=nova_action&name={}&id={}&op=remove OP=load MSG='Are you sure you want to delete VM?' SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=nova_console&id={} OP=load><IMG SRC='images/btn-term-frame.png'></A>".format(server['id'])
+  print "<A TITLE='Remove VM'        CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=nova_action&id={}&op=remove OP=load MSG='Are you sure you want to delete VM?' SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(server['id'])
   if not server['OS-EXT-STS:task_state']:
    if   server['status'] == 'ACTIVE':
     print tmpl.format('Stop VM','stop',"<IMG SRC='images/btn-shutdown.png'>")
@@ -83,30 +83,29 @@ def action(aWeb):
 
  port  = cookie.get('os_nova_port')
  url   = cookie.get('os_nova_url')
- name = aWeb.get_value('name')
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
 
- aWeb.log_msg("nova_action - id:{} name:{} op:{} for project:{}".format(id,name,op,cookie.get('os_project_name')))
+ aWeb.log_msg("nova_action - id:{} op:{} for project:{}".format(id,op,cookie.get('os_project_name')))
 
  if   op == 'info':
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=nova_action&name=" + name + "&id=" + id+ "&op={} OP=load SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=nova_action&id=" + id+ "&op={} OP=load SPIN=true>{}</A>"
   print "<DIV>"
-  print tmpl.format('Details','details','Details')
+  print tmpl.format('Details','details','VM Details')
   print tmpl.format('Diagnostics','diagnostics','Diagnostics')
   print tmpl.format('Networks','networks','Networks')
   print "</DIV>"
 
   print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
-  ret = controller.call(port,url + "/servers/{}".format(id))
-  print "<H2>{}</H2>".format(name)
-  _print_info(ret['data']['server'])
+  server = controller.call(port,url + "/servers/{}".format(id))['data']['server']
+  print "<H2>{}</H2>".format(server['name'])
+  _print_info(server)
   print "</DIV>"
 
  elif op == 'details':
-  ret = controller.call(port,url + "/servers/{}".format(id))
-  print "<H2>{}</H2>".format(name)
-  _print_info(ret['data']['server'])
+  server = controller.call(port,url + "/servers/{}".format(id))['data']['server']
+  print "<H2>{}</H2>".format(server['name'])
+  _print_info(server)
 
  elif op == 'stop' or op == 'start' or op == 'reboot':
   arg = {"os-"+op:None} if op != 'reboot' else {"reboot":{ "type":"SOFT" }}
@@ -118,11 +117,32 @@ def action(aWeb):
 
  elif op == 'diagnostics':
   ret = controller.call(port,url + "/servers/{}/diagnostics".format(id))
-  print "<H2>{}</H2>".format(name)
   _print_info(ret['data'])
 
  elif op == 'networks':
-  print "networks"
+  from json import dumps
+  vm  = controller.call("8082","virtual-machine/{}".format(id))['data']['virtual-machine']
+  print "<TABLE>"
+  print "<THEAD><TH>MAC</TH><TH>Routing Instance</TH><TH>Network</TH><TH>IP</TH><TH>Floating IP</TH><TH>Operation</TH></THEAD>"
+  for vmir in vm['virtual_machine_interface_back_refs']:
+   input = "virtual-machine-interface/{}".format(vmir['uuid'])
+   vmi = controller.call("8082",input)['data']['virtual-machine-interface']
+   ip = controller.call("8082","instance-ip/{}".format(vmi['instance_ip_back_refs'][0]['uuid']))['data']['instance-ip']
+   print "<TR>"
+   print "<!-- {} -->".format(input)
+   print "<TD>{}</TD>".format(vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
+   print "<TD>{}</TD>".format(vmi['routing_instance_refs'][0]['to'][3])
+   print "<TD>{}</TD>".format(vmi['virtual_network_refs'][0]['to'][2])
+   print "<TD>{}</TD>".format(ip['instance_ip_address'])
+   if vmi.get('floating_ip_back_refs'):
+    fip = controller.call("8082","floating-ip/{}".format(vmi['floating_ip_back_refs'][0]['uuid']))['data']['floating-ip']
+    print "<TD>{} ({})</TD>".format(fip['floating_ip_address'],fip['fq_name'][2])
+    print "<TD><A TITLE='Disassociate' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fip_disassociate&fip={} OP=load SPIN=true><IMG SRC=images/btn-remove.png></TD>".format(fip['uuid'])
+   else:
+    print "<TD></TD>"
+    print "<TD></TD>"
+   print "</TR>"
+  print "</TABLE>"
 
  elif op == 'remove':
   ret = controller.call(port,url + "/servers/{}".format(id), method='DELETE')
@@ -130,9 +150,9 @@ def action(aWeb):
    print "Error performing op {}".format(str(ret))
    return
   print "<DIV CLASS='z-table'>"
-  print "<H2>Removing {}</H2>".format(name)
+  print "<H2>Removing VM</H2>"
   if ret['code'] == 204:
-   print "Server removed"
+   print "VM removed"
   else:
    print "Error code: {}".format(ret['code'])
   print "</DIV>"
@@ -146,11 +166,10 @@ def console(aWeb):
   print "Not logged in"
   return
  id   = aWeb.get_value('id')
- name = aWeb.get_value('name')
  controller = OpenstackRPC(cookie.get('os_controller'),token)
  data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/" + id + "/action", { "os-getVNCConsole": { "type": "novnc" } } )
  if data['code'] == 200:
   url = data['data']['console']['url']
   # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
   url = "http://" + cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
-  print "<iframe id='console_embed' src='{}&title={}' style='width: 100%; height: 100%;'></iframe>".format(url,name)
+  print "<iframe id='console_embed' src='{}' style='width: 100%; height: 100%;'></iframe>".format(url)
