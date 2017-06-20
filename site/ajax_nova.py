@@ -109,7 +109,7 @@ def action(aWeb):
 
  elif op == 'stop' or op == 'start' or op == 'reboot':
   arg = {"os-"+op:None} if op != 'reboot' else {"reboot":{ "type":"SOFT" }}
-  ret = controller.call(port,url + "/servers/{}/action".format(id),arg)
+  ret = controller.call(port,url + "/servers/{}/action".format(id),args=arg)
   if ret.get('code') == 202:
    print "Command executed successfully [{}]".format(str(arg))
   else:
@@ -118,6 +118,10 @@ def action(aWeb):
  elif op == 'diagnostics':
   ret = controller.call(port,url + "/servers/{}/diagnostics".format(id))
   _print_info(ret['data'])
+
+ elif op == 'print':
+  from json import dumps
+  print "<PRE>{}</PRE>".format(dumps(controller.href(id)['data'],indent=4))
 
  elif op == 'networks':
   from json import dumps
@@ -136,7 +140,7 @@ def action(aWeb):
    if vmi.get('floating_ip_back_refs'):
     fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
     print "<TD>{} ({})</TD>".format(fip['floating_ip_address'],fip['fq_name'][2])
-    print "<TD><A TITLE='Disassociate' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fip_disassociate&fip={} OP=load SPIN=true><IMG SRC=images/btn-remove.png></TD>".format(fip['uuid'])
+    print "<TD><A TITLE='Disassociate' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fi_disassociate&id={} OP=load SPIN=true><IMG SRC=images/btn-remove.png></TD>".format(fip['uuid'])
    else:
     print "<TD></TD>"
     print "<TD></TD>"

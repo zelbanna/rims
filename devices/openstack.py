@@ -89,16 +89,16 @@ class OpenstackRPC(object):
  # call and href
  # Input:
  # - port = base port
- # - lnk  = service link
- # - arg  = dict with arguments for post operation, empty dict or nothing means no arguments (!)
+ # - url  = service url
+ # - args = dict with arguments for post operation, empty dict or nothing means no arguments (!)
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  # - header = send additional headers as dictionary
  # 
- def call(self,port,lnk,arg = None, method = None, header = None):
-  return self.href("http://{}:{}/{}".format(self._ip,port,lnk),arg, method, header)
+ def call(self,port,url,args = None, method = None, header = None):
+  return self.href("http://{}:{}/{}".format(self._ip,port,url), args, method, header)
 
  # Native href from openstack - simplify formatting
- def href(self,href,arg = None, method = None, header = None):
+ def href(self,href,args = None, method = None, header = None):
   from json import loads, dumps
   from urllib2 import urlopen, Request, URLError, HTTPError
   try:
@@ -106,7 +106,7 @@ class OpenstackRPC(object):
    if header:
     for key,value in aHead.iteritems():
      head['key'] = value
-   req  = Request(href, headers=head, data = dumps(arg) if arg else None)
+   req  = Request(href, headers=head, data = dumps(args) if args else None)
    if method:
     req.get_method = lambda: method
    sock = urlopen(req)
@@ -115,7 +115,7 @@ class OpenstackRPC(object):
    except: data = None
    sock.close()
   except HTTPError, h:
-   result,info,code = "HTTPError",h.info(),h.code
+   result,info,code = "HTTPError",dict(h.info()),h.code
    try: data = loads(h.read())
    except: data = None
   except URLError, u:

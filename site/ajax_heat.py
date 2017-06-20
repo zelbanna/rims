@@ -190,7 +190,7 @@ def action(aWeb):
    params  = aWeb.get_args2dict_except(['op','call','template','name'])
    for key,value in params.iteritems():
     data['parameters'][key[6:]] = value
-   ret = controller.call(port,url + "/stacks",arg=data)
+   ret = controller.call(port,url + "/stacks",args=data)
    if ret['code'] == 201:
     print "<DIV CLASS='z-table'>"
     print "<H2>Successful instantiation of '{}' solution</H2>".format(template.partition('.')[0])
