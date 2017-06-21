@@ -55,7 +55,7 @@ def list(aWeb):
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
  print "</TR>"
- print "<THEAD><TH>Name</TH><TH>Status</TH><TH>Operations</TH></THEAD>"
+ print "<THEAD><TH>Name</TH><TH>Status</TH><TH></TH></THEAD>"
  for stack in ret['data'].get('stacks',None):
   print "<TR>"
   print "<TD>{}</TD>".format(stack['stack_name'])

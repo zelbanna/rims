@@ -46,7 +46,7 @@ def list(aWeb):
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=nova_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "</TR>"
- print "<THEAD><TH>Name</TH><TH style='width:94px;'>Operations</TH></THEAD>"
+ print "<THEAD><TH>Name</TH><TH style='width:94px;'></TH></THEAD>"
  for server in ret['data'].get('servers',None):
   qserver = aWeb.quote(server['name'])
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=nova_action&name=" + qserver + "&id=" + server['id'] + "&op={} OP=load SPIN=true>{}</A>"
