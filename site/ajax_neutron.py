@@ -160,60 +160,50 @@ def action(aWeb):
   from json import dumps
   print "<PRE>{}</PRE>".format(dumps(controller.href(id)['data'],indent=4))
 
+ elif op == 'remove':
+  ret = controller.call("8082","virtual-network/{}".format(id), method='DELETE')
+  print ret
+
+ ############################################# Floating IP ##############################################
  elif op == 'fi_disassociate':
-  fip = controller.call("8082","floating-ip/{}".format(id))['data']['floating-ip']
-  fip['virtual_machine_interface_refs'] = None
-  fip['floating_ip_fixed_ip_address'] = None
-  res = controller.href(fip['href'],args={'floating-ip':fip},method='PUT')
-  if res['code'] == 200:
-   print "Floating IP association removed"
-  else:
-   print "Error - [{}]".format(res)
+  fip = {'floating-ip':{'virtual_machine_interface_refs':None,'floating_ip_fixed_ip_address':None }}
+  res = controller.call("8082","floating-ip/{}".format(id),args=fip,method='PUT')
+  print "Floating IP association removed" if res['code'] == 200 else "Error - [{}]".format(res)
 
  elif op == 'fi_associate_choose_vm':
-  vms = controller.call(ookie.get('os_nova_port'),cookie.get('os_nova_url') + "/servers")['data']['servers']
-  print "<FORM ID=frm_fi_assoc_vm>"
-  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
+  vms = controller.call(cookie.get('os_nova_port'),cookie.get('os_nova_url') + "/servers")['data']['servers']
+  print "<FORM ID=frm_fi_assoc_vm><INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
   print "VM: <SELECT NAME=vm>"
   for vm in vms:
    print "<OPTION VALUE={0}#{1}>{0}</OPTION>".format(vm['name'],vm['id'])
-  print "</SELECT>"
-  print "</FORM>"
+  print "</SELECT></FORM>"
   print "<A CLASS='z-btn z-small-btn z-op'  DIV=div_os_info FRM=frm_fi_assoc_vm URL=ajax.cgi?call=neutron_action&op=fi_associate_choose_interface><IMG SRC=images/btn-start.png></A>"
 
  elif op == 'fi_associate_choose_interface':
   vm_name,_,vm_id = aWeb.get_value('vm').partition('#')
   vmis = controller.call("8082","virtual-machine/{}".format(vm_id))['data']['virtual-machine']['virtual_machine_interface_back_refs']
   print "<FORM ID=frm_fi_assoc_vmi>"
-  print "VM: <INPUT TYPE=TEXT VALUE={} disabled> Interface:".format(vm_name)
   print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
   print "<INPUT TYPE=HIDDEN NAME=vm VALUE={}>".format(vm_id)
-  print "<SELECT NAME=vmi>"
+  print "VM: <INPUT TYPE=TEXT VALUE={} disabled> Interface:<SELECT NAME=vmi>".format(vm_name)
   for vmi in vmis:
    uuid = vmi['uuid']
    vmi = controller.href(vmi['href'])['data']['virtual-machine-interface']
    iip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
    print "<OPTION VALUE={0}#{1}>{2} ({1})</OPTION>".format(uuid,iip['instance_ip_address'],iip['virtual_network_refs'][0]['to'][2])
-  print "</SELECT>"
-  print "</FORM>"
+  print "</SELECT></FORM>"
   print "<A CLASS='z-btn z-small-btn z-op'  DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=fi_associate_choose_vm&id={}><IMG SRC=images/btn-back.png></A>".format(id)
-  print "<A CLASS='z-btn z-small-btn z-op'  DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=fi_associate_choose FRM=frm_fi_assoc_vmi><IMG SRC=images/btn-start.png></A>"
+  print "<A CLASS='z-btn z-small-btn z-op'  DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=fi_associate FRM=frm_fi_assoc_vmi><IMG SRC=images/btn-start.png></A>"
 
- elif op == 'fi_associate_choose':
+ elif op == 'fi_associate':
   from json import dumps
   vmid  = aWeb.get_value('vm')
   vmiid,_,ip = aWeb.get_value('vmi').partition('#')
-  fip = controller.call("8082","floating-ip/{}".format(id))['data']['floating-ip']
   vmi = controller.call("8082","virtual-machine-interface/{}".format(vmiid))['data']['virtual-machine-interface']
-  fip['floating_ip_fixed_ip_address'] = ip
-  fip['virtual_machine_interface_refs'] = [{'href':vmi['href'],'attr':None,'uuid':vmi['uuid'],'to':vmi['fq_name']}]
-  res = controller.href(fip['href'],args={'floating-ip':fip},method='PUT')
+  fip = { 'floating-ip':{ 'floating_ip_fixed_ip_address':ip, 'virtual_machine_interface_refs':[ {'href':vmi['href'],'attr':None,'uuid':vmi['uuid'],'to':vmi['fq_name'] } ] } }
+  res = controller.call("8082","floating-ip/{}".format(id),args=fip,method='PUT')
   if res['code'] == 200:
    print "Floating IP association created"
   else:
    print "Error - [{}]".format(res)
-
- elif op == 'remove':
-  ret = controller.call("8082","virtual-network/{}".format(id), method='DELETE')
-  print ret
 
