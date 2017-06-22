@@ -95,7 +95,7 @@ class OpenstackRPC(object):
  # - header = send additional headers as dictionary
  # 
  def call(self,port,url,args = None, method = None, header = None):
-  return self.href("http://{}:{}/{}".format(self._ip,port,url), args, method, header)
+  return self.href("http://{}:{}/{}".format(self._ip,port,url), args=args, method=method, header=header)
 
  # Native href from openstack - simplify formatting
  def href(self,href,args = None, method = None, header = None):
@@ -104,8 +104,8 @@ class OpenstackRPC(object):
   try:
    head = { 'Content-Type': 'application/json', 'X-Auth-Token':self._token }
    if header:
-    for key,value in aHead.iteritems():
-     head['key'] = value
+    for key,value in header.iteritems():
+     head[key] = value
    req  = Request(href, headers=head, data = dumps(args) if args else None)
    if method:
     req.get_method = lambda: method
