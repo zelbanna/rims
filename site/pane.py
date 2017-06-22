@@ -59,8 +59,8 @@ def openstack_login(aWeb):
 
  aWeb.put_html_header("{} 2 Cloud".format(name.capitalize()))
  print aWeb.get_listeners("div_os_login")
- print "<DIV CLASS='z-centered' style='height:100%;' ID=div_os_login>"
- print "<DIV ID=div_openstack_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
+ print "<DIV CLASS='z-centered' style='height:100%;'>"
+ print "<DIV ID=div_os_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
  print "<FORM ACTION=pane.cgi METHOD=POST ID=openstack_login>"
  print "<INPUT TYPE=HIDDEN NAME=view VALUE=openstack_portal>"
@@ -118,24 +118,27 @@ def openstack_portal(aWeb):
   openstack = OpenstackRPC(ctrl,utok)
 
  aWeb.put_html_header()
- print aWeb.get_listeners("div_navframe")
- print "<DIV ID=div_navframe>"
- print "<DIV  ID=div_header style='height:60px; position:fixed; top:0px; left:0px; right:0px; display:block; z-index:101; border-bottom: 1px solid black;' >"
+ print aWeb.get_listeners("div_os_header")
+ print "<DIV CLASS=z-os-header    ID=div_os_header>"
+ print "<DIV CLASS=z-os-head-info ID=div_os_head_info>"
  print "<TABLE style='display:inline; float:left; margin:5px 100px 0px 10px;'>"
  print "<TR><TD><B>Identity:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Id:</B></TD><TD><I>{}</I></TD></TR>".format(pname,pid)
  print "<TR><TD><B>Username:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Token:</B></TD><TD><I>{}</I></TD></TR>".format(username,utok)
  print "</TABLE>"
  print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px'>Log out</A>".format(ctrl,cookie.get('os_demo_name'),cookie.get('af_controller'))
  print "</DIV>"
- print "<DIV CLASS='z-navbar' style='top:60px;' ID=div_navbar>"
- print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=heat_list'>Orchestration</A>"
- print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=neutron_list'>Virtual Networks</A>"
- print "<A CLASS='z-op'           OP=load DIV=div_navleft  URL='ajax.cgi?call=nova_list'>Virtual Machines</A>"
- print "<A CLASS='z-op' SPIN=true OP=load DIV=div_navcont  URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
+ print "<DIV CLASS='z-navbar' style='top:60px; z-index:1001' ID=div_navbar>"
+ print "<A CLASS='z-op'           DIV=div_os_frame URL='ajax.cgi?call=heat_list'>Orchestration</A>"
+ print "<A CLASS='z-op'           DIV=div_os_frame URL='ajax.cgi?call=neutron_list'>Virtual Networks</A>"
+ print "<A CLASS='z-op'           DIV=div_os_frame URL='ajax.cgi?call=nova_list'>Virtual Machines</A>"
+ print "<A CLASS='z-op' SPIN=true DIV=div_os_frame URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
  print "<A CLASS='z-reload z-op'  OP=redirect URL='pane.cgi?view=openstack_portal'></A>"
+ if username == 'admin':
+  print "<A CLASS='z-op z-right'  DIV=div_os_frame URL=ajax.cgi?call=openstack_debug>API Debug</A>"
  print "</DIV>"
- print "<DIV CLASS=z-navleft  ID=div_navleft style='position:absolute; top:94px; width:400px; overflow-x:auto;'></DIV>"
- print "<DIV CLASS=z-navright ID=div_navcont style='position:absolute; top:94px; left:400px;  overflow-x:auto;'><P><H2>Welcome to the IaaS Self-Service Portal</H2></P></DIV>"
+ print "</DIV>"
+ print aWeb.get_listeners("div_os_frame")
+ print "<DIV CLASS=z-os-frame ID=div_os_frame></DIV>"
  print "</DIV>"
 
 #

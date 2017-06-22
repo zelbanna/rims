@@ -89,6 +89,12 @@ div.z-navright { display:block; position: absolute; bottom:0px; top:34px; left: 
 
 div.z-navcontent {  position: absolute; top: 34px; bottom: 0px; left: 0px; right: 0px; box-sizing: border-box; display:block; overflow: auto;}
 
+div.z-os-header {    position:fixed; top:0px; left:0px; right:0px; height:94px; z-index:1000; }
+div.z-os-head-info { position:fixed; top:0px; left:0px; right:0px; height:60px; display:block; z-index:1001; border-bottom: 1px solid black; }
+div.z-os-frame {     position:absolute; top:94px; bottom:0px; width:100%; }
+div.z-os-left {      position:absolute; top:0px;  bottom:0px; left:0px; width:400px; overflow-x:auto; }
+div.z-os-right {     position:absolute; top:0px;  bottom:0px; right:0px; left:400px; overflow:auto; }
+
 /*########################################### A(nything) ##########################################*/
 
 a{ color: black; background-color:transparent;-webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; }
@@ -135,6 +141,7 @@ a.z-warning {    background-color:red!important; }
 div.z-overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:1000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
 
 div.z-loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; z-index:1001; }
+div.z-loader-small  { border: 4px solid #D5DADD; border-radius: 50%; border-top: 4px solid #5C6870; width: 20px; height: 20px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; z-index:1001; }
 /* Spin properties */
 @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

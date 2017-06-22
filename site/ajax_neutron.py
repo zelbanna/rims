@@ -38,11 +38,12 @@ def list(aWeb):
  if not ret['result'] == "OK":
   print "Error retrieving list"
   return
-
- print "<DIV CLASS='z-table' style='overflow:auto;'><TABLE style='width:99%'>"
+ 
+ print "<DIV CLASS=z-os-left ID=div_os_left>"
+ print "<DIV CLASS=z-table style='overflow:auto;'><TABLE style='width:99%'>"
  print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Contrail VNs</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_left URL='ajax.cgi?call=neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "</TR>"
  print "<THEAD><TH>Network</TH><TH>Subnet</TH><TH></TH></THEAD>"
  for net in ret['data']['virtual-networks']:
@@ -50,7 +51,7 @@ def list(aWeb):
    continue
   print "<TR>"
   print "<!-- {} -->".format(str(net))
-  print "<TD style='max-width:200px; overflow-x:hidden;'><A TITLE='Info {1}' CLASS='z-op' DIV=div_navcont URL=ajax.cgi?call=neutron_action&id={0}&op=info OP=load SPIN=true>{1}</A></TD>".format(net['uuid'],net['display_name'])
+  print "<TD style='max-width:200px; overflow-x:hidden;'><A TITLE='Info {1}' CLASS='z-op' DIV=div_os_right URL=ajax.cgi?call=neutron_action&id={0}&op=info SPIN=true>{1}</A></TD>".format(net['uuid'],net['display_name'])
   print "<TD>"
   if net.get('network_ipam_refs'):
    for ipam in net['network_ipam_refs']:
@@ -58,12 +59,13 @@ def list(aWeb):
      print "{}/{}".format(sub['subnet']['ip_prefix'],sub['subnet']['ip_prefix_len'])
   print "</TD>"
   print "<TD>"
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=neutron_action&name=" + net['display_name'] + "&id=" + net['uuid'] + "&op={} OP=load {} SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=neutron_action&name=" + net['display_name'] + "&id=" + net['uuid'] + "&op={} {} SPIN=true>{}</A>"
   print tmpl.format('Remove','remove',"MSG='Really delete network?'", '<IMG SRC=images/btn-remove.png>')
   print "</TD>" 
  print "</TR>"
- print "</TABLE>"
+ print "</TABLE></DIV>"
  print "</DIV>"
+ print "<DIV CLASS=z-os-right ID=div_os_right></DIV>"
 
 def action(aWeb):
  cookie = aWeb.get_cookie()
@@ -80,15 +82,15 @@ def action(aWeb):
  if   op == 'info':
   vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
   name = vn['display_name']
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&name=" + name + "&id=" + id+ "&op={} OP=load SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&name=" + name + "&id=" + id+ "&op={} SPIN=true>{}</A>"
   print "<DIV>"
-  print "<A TITLE='Network details' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&id={}&op=details    OP=load SPIN=true>Network Details</A>".format(id)
+  print "<A TITLE='Network details' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&id={}&op=details    SPIN=true>Network Details</A>".format(id)
   if vn.get('instance_ip_back_refs'):
-   print "<A TITLE='Network details' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&id={}&op=interfaces OP=load SPIN=true>Interfaces</A>".format(id)
+   print "<A TITLE='Network details' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&id={}&op=interfaces SPIN=true>Interfaces</A>".format(id)
   if vn.get('floating_ip_pools'):
    # create a list of floating-ips
    fipool = ",".join(map(lambda x: x.get('uuid'), vn.get('floating_ip_pools')))
-   print "<A TITLE='Network details' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=floating-ip&fipool={} OP=load SPIN=true>Floating IPs</A>".format(fipool)
+   print "<A TITLE='Network details' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=floating-ip&fipool={} SPIN=true>Floating IPs</A>".format(fipool)
 
   print "</DIV>"
   print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
@@ -108,10 +110,9 @@ def action(aWeb):
   for ip in vn['instance_ip_back_refs']:
    iip = controller.href(ip['href'])['data']['instance-ip']
    vmi = controller.href(iip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
-   print "<!-- {} -->".format(iip['virtual_machine_interface_refs'][0]['href'])
    print "<TR>"
    if vmi.get('virtual_machine_refs'):
-    print "<TD><A CLASS='z-op' DIV=div_navcont OP=load SPIN=true URL=ajax.cgi?call=nova_action&id={0}>{1}</A></TD>".format(vmi['virtual_machine_refs'][0]['uuid'],iip['instance_ip_address'])
+    print "<TD><A CLASS='z-op' DIV=div_os_right SPIN=true URL=ajax.cgi?call=nova_action&id={0}>{1}</A></TD>".format(vmi['virtual_machine_refs'][0]['uuid'],iip['instance_ip_address'])
    else:
     print "<TD>{}</TD>".format(iip['instance_ip_address'])
    print "<TD>{}</TD>".format(vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
@@ -123,10 +124,17 @@ def action(aWeb):
    elif vmi.get('logical_interface_back_refs'):
     li = vmi['logical_interface_back_refs'][0]
     interface = li['to'][1] + "-" + li['to'][3]
-    print "<TD><A CLASS='z-op' DIV=div_os_info OP=load SPIN=true URL=ajax.cgi?call=neutron_action&op=print&id={}>{}</A></TD>".format(li['href'],interface)
+    print "<TD><A CLASS='z-op' DIV=div_os_info SPIN=true URL=ajax.cgi?call=neutron_action&op=print&id={}>{}</A></TD>".format(li['href'],interface)
+   else:
+    print "<!-- HREF:{} -->".format(vmi['href'])
+    print "<!-- VMI:{} -->".format(vmi)
+    print "<TD>{}</TD>".format(vmi['virtual_machine_interface_device_owner'])
    print "</TR>"
   print "</TABLE>"
 
+ ############################################# Floating IP ##############################################
+ #
+ #
  elif op == 'floating-ip':
   fipools = aWeb.get_value('fipool').split(',')
   print "<TABLE><THEAD><TH>Pool</TH><TH>Floating IP</TH><TH>Fixed IP</TH><TH>Fixed Network</TH><TH>Operations</TH></THEAD>"
@@ -140,17 +148,17 @@ def action(aWeb):
      # Do we select one or many VMI:s?
      print "<!-- {} -->".format(fip)
      vmi = controller.href(fip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
-     print "<TD><A TITLE='VM info' CLASS='z-op' DIV=div_navcont  URL=ajax.cgi?call=nova_action&op=info&id={0} OP=load SPIN=true>{1}</TD>".format(vmi['virtual_machine_refs'][0]['to'][0],fixed)
-     print "<TD><A TITLE='Network info' CLASS='z-op' DIV=div_navcont  URL=ajax.cgi?call=neutron_action&op=info&id={0} OP=load SPIN=true>{1}</TD>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
+     print "<TD><A TITLE='VM info' CLASS='z-op' DIV=div_os_right  URL=ajax.cgi?call=nova_action&op=info&id={0} SPIN=true>{1}</TD>".format(vmi['virtual_machine_refs'][0]['to'][0],fixed)
+     print "<TD><A TITLE='Network info' CLASS='z-op' DIV=div_os_right  URL=ajax.cgi?call=neutron_action&op=info&id={0} SPIN=true>{1}</TD>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
      print "<TD>"
-     print "<A TITLE='Info' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=print&id={} OP=load SPIN=true><IMG SRC=images/btn-info.png></A>".format(fip['href'])
-     print "<A TITLE='Disassociate floating IP' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fi_disassociate&id={} MSG='Are you sure?' OP=load SPIN=true><IMG SRC=images/btn-remove.png></A>".format(fip['uuid'])
+     print "<A TITLE='Info' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=print&id={} SPIN=true><IMG SRC=images/btn-info.png></A>".format(fip['href'])
+     print "<A TITLE='Disassociate floating IP' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fi_disassociate&id={} MSG='Are you sure?' SPIN=true><IMG SRC=images/btn-remove.png></A>".format(fip['uuid'])
      print "</TD>"
     else:
      print "<TD></TD>"
      print "<TD></TD>"
      print "<TD>"
-     print "<A TITLE='Info' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=print&id={} OP=load SPIN=true><IMG SRC=images/btn-info.png></A>".format(fip['href'])
+     print "<A TITLE='Info' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=print&id={} SPIN=true><IMG SRC=images/btn-info.png></A>".format(fip['href'])
      print "<A TITLE='Associate floating IP' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fi_associate_choose_vm&id={} OP=load><IMG SRC=images/btn-add.png></A>".format(fip['uuid'])
      print "</TD>"
     print "</TR>"
@@ -164,7 +172,6 @@ def action(aWeb):
   ret = controller.call("8082","virtual-network/{}".format(id), method='DELETE')
   print ret
 
- ############################################# Floating IP ##############################################
  elif op == 'fi_disassociate':
   fip = {'floating-ip':{'virtual_machine_interface_refs':None,'floating_ip_fixed_ip_address':None }}
   res = controller.call("8082","floating-ip/{}".format(id),args=fip,method='PUT')
