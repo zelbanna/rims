@@ -161,8 +161,6 @@ def action(aWeb):
   print "</DIV>"
 
 def console(aWeb):
- # Old school version, before microapi 2.6
- # - after: /servers/{server_id}/remote-consoles , body: { "remote_console": { "protocol": "vnc", "type": "novnc" }
  cookie = aWeb.get_cookie()
  token = cookie.get('os_user_token')
  if not token:
@@ -170,9 +168,9 @@ def console(aWeb):
   return
  id   = aWeb.get_value('id')
  controller = OpenstackRPC(cookie.get('os_controller'),token)
- data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/" + id + "/action", { "os-getVNCConsole": { "type": "novnc" } } )
+ data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(id), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.25'})
  if data['code'] == 200:
-  url = data['data']['console']['url']
+  url = data['data']['remote_console']['url']
   # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
   url = "http://" + cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
   print "<iframe id='console_embed' src='{}' style='width: 100%; height: 100%;'></iframe>".format(url)

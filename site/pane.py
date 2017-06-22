@@ -151,9 +151,9 @@ def openstack_console(aWeb):
   id   = aWeb.get_value('id')
   name = aWeb.get_value('name')
   controller = OpenstackRPC(cookie.get('os_controller'),token)
-  data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/" + id + "/action", { "os-getVNCConsole": { "type": "novnc" } } )
+  data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(id), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.25'})
   if data['code'] == 200:
-   url = data['data']['console']['url']
+   url = data['data']['remote_console']['url']
    # URL is #@?! inline URL.. remove http:// and replace IP (assume there is a port..) with controller IP
    url = "http://" + cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
    aWeb.put_header("Location","{}&title={}".format(url,name))
