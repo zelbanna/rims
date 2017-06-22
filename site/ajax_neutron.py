@@ -177,7 +177,7 @@ def action(aWeb):
   for vm in vms:
    print "<OPTION VALUE={0}#{1}>{0}</OPTION>".format(vm['name'],vm['id'])
   print "</SELECT></FORM>"
-  print "<A CLASS='z-btn z-small-btn z-op'  DIV=div_os_info FRM=frm_fi_assoc_vm URL=ajax.cgi?call=neutron_action&op=fi_associate_choose_interface><IMG SRC=images/btn-start.png></A>"
+  print "<A TITLE='Choose interface' CLASS='z-btn z-small-btn z-op'  DIV=div_os_info FRM=frm_fi_assoc_vm URL=ajax.cgi?call=neutron_action&op=fi_associate_choose_interface><IMG SRC=images/btn-start.png></A>"
 
  elif op == 'fi_associate_choose_interface':
   vm_name,_,vm_id = aWeb.get_value('vm').partition('#')
@@ -192,8 +192,8 @@ def action(aWeb):
    iip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
    print "<OPTION VALUE={0}#{1}>{2} ({1})</OPTION>".format(uuid,iip['instance_ip_address'],iip['virtual_network_refs'][0]['to'][2])
   print "</SELECT></FORM>"
-  print "<A CLASS='z-btn z-small-btn z-op'  DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=fi_associate_choose_vm&id={}><IMG SRC=images/btn-back.png></A>".format(id)
-  print "<A CLASS='z-btn z-small-btn z-op'  DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=fi_associate FRM=frm_fi_assoc_vmi><IMG SRC=images/btn-start.png></A>"
+  print "<A TITLE='Change VM' CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=fi_associate_choose_vm&id={}><IMG SRC=images/btn-back.png></A>".format(id)
+  print "<A TITLE='Commit'    CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=fi_associate FRM=frm_fi_assoc_vmi><IMG SRC=images/btn-start.png></A>"
 
  elif op == 'fi_associate':
   from json import dumps
