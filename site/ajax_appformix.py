@@ -2,6 +2,7 @@
 
 Ajax Appformix calls module
 
+- left and right divs frames (div_os_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"

@@ -2,16 +2,12 @@
 
 Ajax Openstack HEAT calls module
 
+- left and right divs frames (div_os_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__= "Production"
 
-
-############################### Openstack #############################
-#
-# Assume we've created a token from the pane, so auth is done and we should pick up cookie template .. now username is the final thing .. before proper cookies in web reader
-#
 from sdcp.devices.openstack import OpenstackRPC
 import sdcp.SettingsContainer as SC
 
@@ -81,7 +77,7 @@ def choose_template(aWeb):
  print "<DIV CLASS='z-table' style='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_choose_template>"
  try:
-  print "Add solution from template:<SELECT NAME=template style='height:22px;'>"
+  print "Add solution from template:<SELECT CLASS='z-select' NAME=template style='height:22px; width:auto;'>"
   from os import listdir
   for file in listdir("os_templates/"):
    name = file.partition('.')[0]
