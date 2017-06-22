@@ -142,8 +142,6 @@ def openstack_portal(aWeb):
 # Console redirect - since ajax not able to do header manipulations 'yet'
 #
 def openstack_console(aWeb):
- # Old school version, before microapi 2.6
- # - after: /servers/{server_id}/remote-consoles , body: { "remote_console": { "protocol": "vnc", "type": "novnc" }
  from sdcp.devices.openstack import OpenstackRPC
  cookie = aWeb.get_cookie()
  token = cookie.get('os_user_token')
@@ -151,7 +149,7 @@ def openstack_console(aWeb):
   id   = aWeb.get_value('id')
   name = aWeb.get_value('name')
   controller = OpenstackRPC(cookie.get('os_controller'),token)
-  data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(id), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.25'})
+  data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(id), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})
   if data['code'] == 200:
    url = data['data']['remote_console']['url']
    # URL is #@?! inline URL.. remove http:// and replace IP (assume there is a port..) with controller IP
