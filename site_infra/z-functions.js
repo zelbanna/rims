@@ -10,6 +10,7 @@
 // - toggle   div
 // - hide     div
 // - single   div select
+// - empty    div
 // - redirect url
 // - iload    iframe url
 // - submit   frm
@@ -41,6 +42,8 @@ function btnoperation(button) {
   div.toggle();
  } else if (op == 'hide') {
   div.hide();
+ } else if (op == 'empty') {
+  div.html('');
  } else if (op == 'single') {
   $(button.getAttribute("selector")).hide();
   div.show();
