@@ -127,7 +127,7 @@ def action(aWeb):
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
 
- aWeb.log_msg("heat_action - id:{} name:{} op:{} for project:{}".format(id,name,op,cookie.get('os_project_name')))
+ aWeb.log_msg("heat_action - project:{} id:{} name:{} op:{}".format(id,cookie.get('os_project_name'),name,op))
 
  if   op == 'info':
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=heat_action&name=" + name + "&id=" + id+ "&op={} SPIN=true>{}</A>"
