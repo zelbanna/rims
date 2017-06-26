@@ -45,14 +45,14 @@ def list(aWeb):
  print "<DIV CLASS=z-table style='overflow:auto;'><TABLE style='width:99%'>"
  print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Contrail VNs</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_left URL='ajax.cgi?call=neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "</TR>"
  print "<THEAD><TH>Network</TH><TH>Subnet</TH><TH></TH></THEAD>"
  for net in ret['data']['virtual-networks']:
   if not net.get('display_name'):
    continue
   print "<TR>"
-  print "<!-- {} -->".format(str(net))
+  print "<!-- {} -->".format(net.get('href'))
   print "<TD style='max-width:200px; overflow-x:hidden;'><A TITLE='Info {1}' CLASS='z-op' DIV=div_os_right URL=ajax.cgi?call=neutron_action&id={0}&op=info SPIN=true>{1}</A></TD>".format(net['uuid'],net['display_name'])
   print "<TD>"
   if net.get('network_ipam_refs'):
@@ -113,6 +113,8 @@ def action(aWeb):
    iip = controller.href(ip['href'])['data']['instance-ip']
    vmi = controller.href(iip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
    print "<TR>"
+   print "<! -- {} -->".format(ip['href'])
+   print "<! -- {} -->".format(iip['virtual_machine_interface_refs'][0]['href'])
    if vmi.get('virtual_machine_refs'):
     print "<TD><A CLASS='z-op' DIV=div_os_right SPIN=true URL=ajax.cgi?call=nova_action&id={0}>{1}</A></TD>".format(vmi['virtual_machine_refs'][0]['uuid'],iip['instance_ip_address'])
    else:
@@ -128,8 +130,7 @@ def action(aWeb):
     interface = li['to'][1] + "-" + li['to'][3]
     print "<TD><A CLASS='z-op' DIV=div_os_info SPIN=true URL=ajax.cgi?call=neutron_action&op=print&id={}>{}</A></TD>".format(li['href'],interface)
    else:
-    print "<!-- HREF:{} -->".format(vmi['href'])
-    print "<!-- VMI:{} -->".format(vmi)
+    print "<!-- {} -->".format(vmi['href'])
     print "<TD>{}</TD>".format(vmi['virtual_machine_interface_device_owner'])
    print "</TR>"
   print "</TABLE>"

@@ -49,7 +49,7 @@ def list(aWeb):
  print "<DIV CLASS=z-table style='width:394px;'><TABLE style='width:99%'>"
  print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Heat Stacks</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_left URL='ajax.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_os_right URL='ajax.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
  print "</TR>"
  print "<THEAD><TH>Name</TH><TH>Status</TH><TH></TH></THEAD>"
@@ -80,8 +80,9 @@ def choose_template(aWeb):
   print "Add solution from template:<SELECT CLASS='z-select' NAME=template style='height:22px; width:auto;'>"
   from os import listdir
   for file in listdir("os_templates/"):
-   name = file.partition('.')[0]
-   print "<OPTION VALUE={}>{}</OPTION>".format(file,name)
+   name,_,suffix = file.partition('.')
+   if suffix == 'tmpl.json':
+    print "<OPTION VALUE={}>{}</OPTION>".format(file,name)
   print "</SELECT>"
  except Exception as err:
   print "openstack_choose_template: error finding template files in 'os_templates/' [{}]".format(str(err))
