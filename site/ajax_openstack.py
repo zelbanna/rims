@@ -8,14 +8,49 @@ __author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__= "Production"
 
-
 ############################### Openstack #############################
 #
 from sdcp.devices.openstack import OpenstackRPC
 import sdcp.SettingsContainer as SC
 
+def result(aWeb):
+ if not aWeb.get_value('os_call') and not aWeb.get_value('os_href'):
+  return
+ from json import dumps,loads
+ cookie = aWeb.get_cookie()
+ token  = cookie.get('os_user_token')
+ if not token:
+  print "Not logged in"
+  return
+ controller = OpenstackRPC(cookie.get('os_controller'),token)
+ try:    arguments = loads(aWeb.get_value('os_args'))
+ except: arguments = None
+ ret = {} 
+ if aWeb.get_value('os_href'):
+  ret = controller.href(aWeb.get_value('os_href'), args = arguments, method=aWeb.get_value('os_method'))
+ else:
+  service = aWeb.get_value('os_service')
+  if service == 'contrail':
+   port,url = "8082",""
+  else:
+   port,url = cookie.get("os_{}_port".format(service)),cookie.get("os_{}_url".format(service))
+  ret = controller.call(port,url + aWeb.get_value('os_call'), args = arguments, method=aWeb.get_value('os_method'))
+ print "<DIV CLASS=z-table style='overflow:auto;'>"
+ print "<TABLE style=' width:100%;'>"
+ print "<TR><TD style='width:100px'>Result</TD><TD>{}</TD></TR>".format(ret['result'])
+ print "<TR><TD style='width:100px'>HTTP Code</TD><TD>{}</TD></TR>".format(ret['code'])
+ print "<TR><TD style='width:100px'>Header</TD><TD>"
+ for key,value in ret['header'].iteritems():
+  print "{}:{}<BR>".format(key,value)
+ print "</TD></TR>"
+ print "</TABLE>"
+ print "<DIV style='border:solid 1px black; background:#FFFFFF'>"
+ output = dumps(ret['data'],indent=4, sort_keys=True)
+ print "<PRE style='margin:0px;'>{}</PRE>".format(output)
+ print "</DIV></DIV>"
+
 def api(aWeb):
- print "<DIV CLASS='z-table'><FORM ID=frm_os_api>"
+ print "<DIV CLASS='z-table' ID=div_os_control><FORM ID=frm_os_api>"
  print "<H3>OpenStack REST API inspection</H3>"
  print "Choose Service and enter API call: <SELECT CLASS='z-select' style='width:auto; height:22px;' NAME=os_service>"
  for service in ['contrail','heat','nova','neutron']:
@@ -26,50 +61,16 @@ def api(aWeb):
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
- print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_rest FRM=frm_os_api TITLE='Go'><IMG SRC=images/btn-start.png></A>"
+ print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_result FRM=frm_os_api TITLE='Go'><IMG SRC=images/btn-start.png></A>"
  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_info OP=empty TITLE='Clear results view'><IMG SRC=images/btn-remove.png></A><BR>"
  print "Arguments/Body"
  print "<TEXTAREA style='width:100%; height:100px;' NAME=os_args></TEXTAREA>"
  print "</FORM>"
- print "<DIV ID=div_os_info></DIV>"
  print "</DIV>"
-
-def rest(aWeb):
- if not aWeb.get_value('os_call') and not aWeb.get_value('os_href'):
-  return
- from json import dumps,loads
- cookie = aWeb.get_cookie()
- token  = cookie.get('os_user_token')
- if not token:
-  print "Not logged in"
-  return
- controller = OpenstackRPC(cookie.get('os_controller'),token)
- try:    data = loads(aWeb.get_value('os_args'))
- except: data = None
- ret = {} 
- if aWeb.get_value('os_href'):
-  ret = controller.href(aWeb.get_value('os_href'), args = data, method=aWeb.get_value('os_method'))
- else:
-  service = aWeb.get_value('os_service')
-  if service == 'contrail':
-   port = "8082"
-   url = ""
-  else:
-   port = cookie.get("os_{}_port".format(service))
-   url  = cookie.get("os_{}_url".format(service))
-  ret = controller.call(port,url + aWeb.get_value('os_call'), args = data, method=aWeb.get_value('os_method'))
- print "<TABLE style=' width:100%;'>"
- print "<TR><TD style='width:100px'>Result</TD><TD>{}</TD></TR>".format(ret['result'])
- print "<TR><TD style='width:100px'>HTTP Code</TD><TD>{}</TD></TR>".format(ret['code'])
- print "<TR><TD style='width:100px'>Header</TD><TD>"
- for key,value in ret['header'].iteritems():
-  print "{}:{}<BR>".format(key,value)
- print "</TD></TR>"
- print "</TABLE>"
- print "<DIV style='border:solid 1px black; background:#FFFFFF'><PRE>{}</PRE></DIV>".format(dumps(ret['data'],indent=4, sort_keys=True))
+ print "<DIV ID=div_os_info></DIV>"
 
 def fqname(aWeb):
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=z-table ID=div_os_control>"
  print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT style='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb.get_value('os_uuid') if aWeb.get_value('os_uuid') else "")
  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL=ajax.cgi?call=openstack_fqname FRM=frm_os_uuid TITLE='Go'><IMG SRC=images/btn-start.png></A><BR>"
  if aWeb.get_value('os_uuid'):
@@ -80,12 +81,13 @@ def fqname(aWeb):
    print "Not logged in"
   else:
    controller = OpenstackRPC(cookie.get('os_controller'),token)
-   data = {'uuid':aWeb.get_value('os_uuid')}
-   ret = controller.call("8082","id-to-fqname",args=data,method='POST')['data']
-   print "<!-- {} -->".format(ret)  
-   print "<TABLE style='width:100%;'><THEAD><TH>Type</TH><TH>Value</TH></THEAD>"
-   print "<TR><TD>FQDN</TD><TD>{}</TD></TR>".format(".".join(ret['fq_name']))
-   print "<TR><TD>Type</TD><TD><A CLASS='z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_rest&os_service=contrail&os_call={0}/{1}>{0}</A></TD></TR>".format(ret['type'],data['uuid'])
-   print "</TABLE><BR>"
- print "<DIV ID=div_os_info></DIV>"
+   argument   = {'uuid':aWeb.get_value('os_uuid')}
+   ret  = controller.call("8082","id-to-fqname",args=argument,method='POST')
+   data = ret['data']
+   if ret['result'] == 'OK':
+    print "<TABLE style='width:100%;'><THEAD><TH>Type</TH><TH>Value</TH></THEAD>"
+    print "<TR><TD>FQDN</TD><TD>{}</TD></TR>".format(".".join(data['fq_name']))
+    print "<TR><TD>Type</TD><TD><A CLASS='z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_result&os_service=contrail&os_call={0}/{1}>{0}</A></TD></TR>".format(data['type'],argument['uuid'])
+    print "</TABLE><BR>"
  print "</DIV>"
+ print "<DIV ID=div_os_info></DIV>"
