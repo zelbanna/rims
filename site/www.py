@@ -82,7 +82,7 @@ class Web(object):
   for key,value in self._header.iteritems():
    print "{}: {}\r".format(key,value)   
   for key,value in self._cookie.iteritems():
-   print "Set-Cookie: {}={}; Path=/; Max-Age=1800;\r".format(key,value)
+   print "Set-Cookie: {}={}; Path=/; Max-Age=3000;\r".format(key,value)
   self._header = None
   print "Content-Type: text/html\r\n"
   print "<HEAD>"

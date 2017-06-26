@@ -1,5 +1,5 @@
 /*
-Version: 17.6.15GA
+Version: 17.6.26GA
 
 <HEAD><LINK REL="stylesheet" TYPE="text/css" HREF="system.css"></HEAD>
 
@@ -50,7 +50,7 @@ div.z-graph { border-radius: 6px!important; background-color:#F3F3F3!important; 
 div.z-graph:hover {box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19)}
 
 div.z-logs { background-color:#FFFFFF; color:grey; overflow: auto; padding: 4px; font-family: "Courier New", serif; font-size: 12px; margin: 3px; }
-div.z-logs:hover { color#000000; }
+div.z-logs:hover { color:#000000; }
 div.z-logs h1 {	margin: 5px; margin-bottom: 6px; text-align:center; font-size: 18px; }
 
 div.z-error { background-color:red }
@@ -104,7 +104,7 @@ a.z-op { outline:none; cursor:pointer; }
 a.z-btn { 
  background-color:#FFFFFF!important; background-position: center; background-repeat: no-repeat; border-radius:3px; border: 1px solid #ccc; cursor:pointer; display: inline-block; float: none; font-family: "Courier New", serif; font-size: 20px; vertical-align:top; outline:0; overflow:hidden; text-align:center; text-decoration:none!important; white-space:nowrap; padding:2px; margin:2px;
  
- -webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
+ -webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;
  -webkit-transition:background-color .25s,color .15s,box-shadow .25s,opacity 0.25s,filter 0.25s,border 0.15s;transition:background-color .25s,color .15s,box-shadow .15s .15s,opacity .25s,filter .25s,border .15s;
 
  /* Comment in to get gray buttons instead
@@ -130,9 +130,8 @@ a.z-warning {    background-color:red!important; }
 
 .z-input { width:100%; border:none; overflow:visible; background-color: transparent; color: black; }
 .z-input::-webkit-input-placeholder { color: darkgrey; }
-.z-input:-moz-placeholder {	  color: darkgrey;  }
-.z-input::-moz-placeholder {	  color: darkgrey;  }
-.z-input:-ms-input-placeholder {  color: darkgrey;  }
+.z-input::-moz-placeholder { color: darkgrey; opacity:1; }
+.z-input:-ms-input-placeholder {  color: darkgrey; }
 
 .z-select { width:100%; border: none; overflow: visible; background-color: transparent; color: black; }
 

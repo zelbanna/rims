@@ -134,7 +134,8 @@ def openstack_portal(aWeb):
  print "<A CLASS='z-op' SPIN=true DIV=div_os_frame URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
  print "<A CLASS='z-reload z-op'  OP=redirect URL='pane.cgi?view=openstack_portal'></A>"
  if username == 'admin':
-  print "<A CLASS='z-op z-right'  DIV=div_os_frame URL=ajax.cgi?call=openstack_debug>API Debug</A>"
+  print "<A CLASS='z-op z-right'  DIV=div_os_frame URL=ajax.cgi?call=openstack_fqname>FQDN</A>"
+  print "<A CLASS='z-op z-right'  DIV=div_os_frame URL=ajax.cgi?call=openstack_api>API Debug</A>"
  print "</DIV>"
  print "</DIV>"
  print aWeb.get_listeners("div_os_frame")

@@ -14,19 +14,19 @@ __status__= "Production"
 from sdcp.devices.openstack import OpenstackRPC
 import sdcp.SettingsContainer as SC
 
-def debug(aWeb):
- print "<DIV CLASS='z-table'><FORM ID=frm_os_debug>"
+def api(aWeb):
+ print "<DIV CLASS='z-table'><FORM ID=frm_os_api>"
  print "<H3>OpenStack REST API inspection</H3>"
- print "Choose Service: <SELECT CLASS='z-select' style='width:auto; height:22px;' NAME=os_service>"
+ print "Choose Service and enter API call: <SELECT CLASS='z-select' style='width:auto; height:22px;' NAME=os_service>"
  for service in ['contrail','heat','nova','neutron']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(service)
- print "</SELECT> and API Call: <INPUT style='width:528px;' TYPE=TEXT NAME=os_call><BR>"
- print "Or enter HREF: <DIV ID=div_href style='display:inline-block;'><INPUT style='width:700px;' TYPE=TEXT NAME=os_href></DIV><BR>"
+ print "</SELECT> / <INPUT style='width:520px;' TYPE=TEXT NAME=os_call><BR>"
+ print "Or enter HREF: <DIV ID=div_href style='display:inline-block;'><INPUT style='width:736px;' TYPE=TEXT NAME=os_href></DIV><BR>"
  print "Call 'Method': <SELECT CLASS='z-select' style='width:auto; height:22px;' NAME=os_method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
- print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_rest FRM=frm_os_debug TITLE='Go'><IMG SRC=images/btn-start.png></A>"
+ print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_rest FRM=frm_os_api TITLE='Go'><IMG SRC=images/btn-start.png></A>"
  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_info OP=empty TITLE='Clear results view'><IMG SRC=images/btn-remove.png></A><BR>"
  print "Arguments/Body"
  print "<TEXTAREA style='width:100%; height:100px;' NAME=os_args></TEXTAREA>"
@@ -44,7 +44,8 @@ def rest(aWeb):
   print "Not logged in"
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
- data = None if not aWeb.get_value('os_args') else loads(aWeb.get_value('os_args'))
+ try:    data = loads(aWeb.get_value('os_args'))
+ except: data = None
  ret = {} 
  if aWeb.get_value('os_href'):
   ret = controller.href(aWeb.get_value('os_href'), args = data, method=aWeb.get_value('os_method'))
@@ -65,6 +66,26 @@ def rest(aWeb):
   print "{}:{}<BR>".format(key,value)
  print "</TD></TR>"
  print "</TABLE>"
- print "<DIV style='border:solid 1px black; background:#FFFFFF'>"
- print "<PRE>{}</PRE>".format(dumps(ret['data'],indent=4, sort_keys=True))
+ print "<DIV style='border:solid 1px black; background:#FFFFFF'><PRE>{}</PRE></DIV>".format(dumps(ret['data'],indent=4, sort_keys=True))
+
+def fqname(aWeb):
+ print "<DIV CLASS=z-table>"
+ print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT style='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb.get_value('os_uuid') if aWeb.get_value('os_uuid') else "")
+ print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL=ajax.cgi?call=openstack_fqname FRM=frm_os_uuid TITLE='Go'><IMG SRC=images/btn-start.png></A><BR>"
+ if aWeb.get_value('os_uuid'):
+  from json import dumps,loads
+  cookie = aWeb.get_cookie()
+  token  = cookie.get('os_user_token')
+  if not token:
+   print "Not logged in"
+  else:
+   controller = OpenstackRPC(cookie.get('os_controller'),token)
+   data = {'uuid':aWeb.get_value('os_uuid')}
+   ret = controller.call("8082","id-to-fqname",args=data,method='POST')['data']
+   print "<!-- {} -->".format(ret)  
+   print "<TABLE style='width:100%;'><THEAD><TH>Type</TH><TH>Value</TH></THEAD>"
+   print "<TR><TD>FQDN</TD><TD>{}</TD></TR>".format(".".join(ret['fq_name']))
+   print "<TR><TD>Type</TD><TD><A CLASS='z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_rest&os_service=contrail&os_call={0}/{1}>{0}</A></TD></TR>".format(ret['type'],data['uuid'])
+   print "</TABLE><BR>"
+ print "<DIV ID=div_os_info></DIV>"
  print "</DIV>"
