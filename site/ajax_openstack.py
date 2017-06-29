@@ -10,12 +10,39 @@ __status__= "Production"
 
 ############################### Openstack #############################
 #
-from sdcp.devices.openstack import OpenstackRPC
-import sdcp.SettingsContainer as SC
+
+#
+# Assume div_os_info
+
+def dict2html(aData,aTitle=None):
+ print "<H2>{}</H2>".format(aTitle) if aTitle else "<!-- No title -->"
+ data2html(aData)
+
+def data2html(aData):
+ if isinstance(aData,dict):
+  print "<TABLE style='table-layout:auto;'>"
+  for k,v in aData.iteritems():
+   print "<TR><TD style='padding:0px;'><I>{}</I>:</TD><TD style='white-space:normal; overflow:auto; width:100%'>".format(k)
+   if 'href' in k:
+    print "<A CLASS=z-op DIV=div_os_frame URL=ajax.cgi?call=openstack_result&method=GET&os_href={0}>{0}</A>".format(v)
+   else:
+    data2html(v)
+   print "</TD></TR>"
+  print "</TABLE>"
+ elif isinstance(aData,list):
+  print "<TABLE style='width:100%;'>"
+  for v in aData:
+   print "<TR><TD style='padding:0px;'>"
+   data2html(v)
+   print "</TD></TR>"
+  print "</TABLE>"
+ else:
+  print aData
 
 def result(aWeb):
  if not aWeb.get_value('os_call') and not aWeb.get_value('os_href'):
   return
+ from sdcp.devices.openstack import OpenstackRPC
  from json import dumps,loads
  cookie = aWeb.get_cookie()
  token  = cookie.get('os_user_token')
@@ -53,9 +80,11 @@ def api(aWeb):
  print "<DIV CLASS='z-table' ID=div_os_control><FORM ID=frm_os_api>"
  print "<H3>OpenStack REST API inspection</H3>"
  print "Choose Service and enter API call: <SELECT CLASS='z-select' style='width:auto; height:22px;' NAME=os_service>"
- for service in ['contrail','heat','nova','neutron']:
+ services = ['contrail']
+ services.extend(aWeb.get_cookie()['os_services'].split(','))
+ for service in services:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(service)
- print "</SELECT> / <INPUT style='width:520px;' TYPE=TEXT NAME=os_call><BR>"
+ print "</SELECT> <INPUT style='width:520px;' TYPE=TEXT NAME=os_call><BR>"
  print "Or enter HREF: <DIV ID=div_href style='display:inline-block;'><INPUT style='width:736px;' TYPE=TEXT NAME=os_href></DIV><BR>"
  print "Call 'Method': <SELECT CLASS='z-select' style='width:auto; height:22px;' NAME=os_method>"
  for method in ['GET','POST','DELETE','PUT']:
@@ -63,7 +92,7 @@ def api(aWeb):
  print "</SELECT>"
  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_result FRM=frm_os_api TITLE='Go'><IMG SRC=images/btn-start.png></A>"
  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_info OP=empty TITLE='Clear results view'><IMG SRC=images/btn-remove.png></A><BR>"
- print "Arguments/Body"
+ print "Arguments/Body<BR>"
  print "<TEXTAREA style='width:100%; height:100px;' NAME=os_args></TEXTAREA>"
  print "</FORM>"
  print "</DIV>"
@@ -80,6 +109,7 @@ def fqname(aWeb):
   if not token:
    print "Not logged in"
   else:
+   from sdcp.devices.openstack import OpenstackRPC
    controller = OpenstackRPC(cookie.get('os_controller'),token)
    argument   = {'uuid':aWeb.get_value('os_uuid')}
    ret  = controller.call("8082","id-to-fqname",args=argument,method='POST')

@@ -9,20 +9,7 @@ __version__ = "17.6.1GA"
 __status__= "Production"
 
 from sdcp.devices.openstack import OpenstackRPC
-import sdcp.SettingsContainer as SC
-
-def _print_info(aData):
- print "<TABLE style='width:99%'>"
- print "<THEAD><TH>Field</TH><TH>Data</TH></THEAD>"
- for key,value in aData.iteritems():
-  if not isinstance(value,dict):
-   print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'>{}</TD></TR>".format(key,value)
-  else:
-   print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'><TABLE style='width:100%'>".format(key)
-   for k,v in value.iteritems():
-    print "<TR><TD>{}</TD><TD>{}</TD></TR>".format(k,v)
-   print "</TABLE></TD></TR>"
- print "</TABLE>"
+from sdcp.site.ajax_openstack import dict2html
 
 ################################# Nova ###############################
 #
@@ -34,10 +21,7 @@ def list(aWeb):
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
 
- port  = cookie.get('os_nova_port')
- url   = cookie.get('os_nova_url')
-
- ret = controller.call(port,url + "/servers/detail")
+ ret = controller.call(cookie.get('os_nova_port'),cookie.get('os_nova_url') + "/servers/detail")
  if not ret['result'] == "OK":
   print "Error retrieving list {}".format(str(ret))
   return
@@ -47,6 +31,7 @@ def list(aWeb):
  print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Nova Servers</CENTER></TH></THEAD>"
  print "<TR style='height:20px'><TD COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=nova_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add serer'   CLASS='z-btn z-small-btn z-op' DIV=div_os_right URL='ajax.cgi?call=nova_select_parameters'><IMG SRC='images/btn-add.png'></A>"
  print "</TR>"
  print "<THEAD><TH>Name</TH><TH style='width:94px;'></TH></THEAD>"
  for server in ret['data'].get('servers',None):
@@ -67,15 +52,50 @@ def list(aWeb):
     print tmpl.format('Start VM','start',"<IMG SRC='images/btn-start.png'>")
   else:
    print tmpl.format('VM info','info',"<IMG SRC='images/btn-info.png'>")
-  print "</TD>"
-  print "</TR>"
- print "</TABLE>"
- print "</DIV>"
+  print "</TD></TR>"
+ print "</TABLE></DIV>"
  print "</DIV>"
  print "<DIV CLASS=z-os-right ID=div_os_right></DIV>"
 
+
+def select_parameters(aWeb):
+ cookie = aWeb.get_cookie()
+ token  = cookie.get('os_user_token')
+ if not token:
+  print "Not logged in"
+  return
+ controller = OpenstackRPC(cookie.get('os_controller'),token)
+ port,url = cookie.get('os_nova_port'),cookie.get('os_nova_url')
+ print "<DIV CLASS=z-table>"
+ print "<H2>New VM parameters</H2>"
+ print "<FORM ID=frm_os_create_vm><TABLE><THEAD><TH>Parameter</TH><TH>Value</TH></THEAD>"
+ print "<TR><TD>Name</TD><TD><INPUT CLASS=z-input NAME=os_name PLACEHOLDER='Unique Name'></TD></TR>"
+ print "<TR><TD>Image</TD><TD><SELECT CLASS=z-select NAME=os_image>"
+ images = controller.call(cookie.get('os_glance_port'),cookie.get('os_glance_url') + "/v2/images?sort=name:asc")['data']['images']
+ for img in images:
+  print "<OPTION VALUE={}>{} (Min Ram: {}Mb)</OPTION>".format(img['id'],img['name'],img['min_ram'])
+ print "</SELECT></TD></TR>"
+
+ flavors = controller.call(port,url + "/flavors/detail?sort_key=name")['data']['flavors']
+ print "<TR><TD>Flavor</TD><TD><SELECT CLASS=z-select NAME=os_flavor>"
+ for fl in flavors:
+  print "<OPTION VALUE={}>{} (Ram: {}Mb, vCPUs: {}, Disk: {}Gb</OPTION>".format(fl['id'],fl['name'],fl['ram'],fl['vcpus'],fl['disk'])
+ print "</SELECT></TD></TR>"
+
+ print "<TR><TD>Network</TD><TD><SELECT CLASS=z-select NAME=os_network>"
+ networks = controller.call(cookie.get('os_neutron_port'),cookie.get('os_neutron_url') + "/v2.0/networks?sort_key=name")['data']['networks']
+ for net in networks:
+  if net.get('contrail:subnet_ipam'):
+   print "<OPTION VALUE={}>{} ({})</OPTION>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
+ print "</SELECT></TD></TR>"
+
+ print "</TABLE>"
+ print "</FORM>"
+ print "<A TITLE='Create VM' CLASS='z-btn z-op z-small-btn' FRM=frm_os_create_vm DIV=div_os_right URL=ajax.cgi?call=nova_action&id={}&op=add SPIN=true><IMG SRC='images/btn-start.png'></A>".format("new") 
+ print "</DIV>"
+
+######################################## Actions ########################################
 #
-# Actions
 # 
 def action(aWeb):
  cookie = aWeb.get_cookie()
@@ -93,23 +113,22 @@ def action(aWeb):
  aWeb.log_msg("nova_action - id:{} op:{} for project:{}".format(id,op,cookie.get('os_project_name')))
 
  if   op == 'info':
+  server = controller.call(port,url + "/servers/{}".format(id))['data']['server']
+  qserver = aWeb.quote(server['name'])
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=nova_action&id=" + id+ "&op={} SPIN=true>{}</A>"
   print "<DIV>"
   print tmpl.format('Details','details','VM Details')
   print tmpl.format('Diagnostics','diagnostics','Diagnostics')
   print tmpl.format('Networks','networks','Networks')
+  print "<A TITLE='New-tab Console'  CLASS='z-btn'  TARGET=_blank HREF='pane.cgi?view=openstack_console&name={0}&id={1}'>Console</A>".format(qserver,id)
   print "</DIV>"
-
-  print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
-  server = controller.call(port,url + "/servers/{}".format(id))['data']['server']
-  print "<H2>{}</H2>".format(server['name'])
-  _print_info(server)
+  print "<DIV CLASS=z-table style='overflow:auto;' ID=div_os_info>"
+  dict2html(server,server['name'])
   print "</DIV>"
 
  elif op == 'details':
   server = controller.call(port,url + "/servers/{}".format(id))['data']['server']
-  print "<H2>{}</H2>".format(server['name'])
-  _print_info(server)
+  dict2html(server,server['name'])
 
  elif op == 'stop' or op == 'start' or op == 'reboot':
   arg = {"os-"+op:None} if op != 'reboot' else {"reboot":{ "type":"SOFT" }}
@@ -121,7 +140,7 @@ def action(aWeb):
 
  elif op == 'diagnostics':
   ret = controller.call(port,url + "/servers/{}/diagnostics".format(id))
-  _print_info(ret['data'])
+  dict2html(ret['data'])
 
  elif op == 'print':
   from json import dumps
@@ -150,6 +169,9 @@ def action(aWeb):
     print "<TD></TD>"
    print "</TR>"
   print "</TABLE>"
+
+ elif op == 'add':
+  print aWeb.get_keys()
 
  elif op == 'remove':
   ret = controller.call(port,url + "/servers/{}".format(id), method='DELETE')

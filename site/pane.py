@@ -101,8 +101,8 @@ def openstack_portal(aWeb):
   aWeb.put_cookie('os_user_name',username)
   aWeb.put_cookie("os_project_id",pid)
   aWeb.put_cookie("os_project_name",pname)
-
-  for service in ['heat','nova','neutron']:
+  aWeb.put_cookie("os_services",",".join(['heat','nova','neutron','glance']))
+  for service in ['heat','nova','neutron','glance']:
    base = "os_" + service
    port,url,id = openstack.get_service(service,'public')
    aWeb.put_cookie(base + "_port",port)

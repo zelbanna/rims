@@ -10,20 +10,7 @@ __version__ = "17.6.15GA"
 __status__= "Production"
 
 from sdcp.devices.openstack import OpenstackRPC
-import sdcp.SettingsContainer as SC
-
-def _print_info(aData):
- print "<TABLE style='width:99%'>"
- print "<THEAD><TH>Field</TH><TH>Data</TH></THEAD>"
- for key,value in aData.iteritems():
-  if not isinstance(value,dict):
-   print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'>{}</TD></TR>".format(key,value)
-  else:
-   print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'><TABLE style='width:100%'>".format(key)
-   for k,v in value.iteritems():
-    print "<TR><TD>{}</TD><TD>{}</TD></TR>".format(k,v)
-   print "</TABLE></TD></TR>"
- print "</TABLE>"
+from sdcp.site.ajax_openstack import dict2html
 
 ############################### Neutron ##############################
 #
@@ -95,16 +82,14 @@ def action(aWeb):
    print "<A TITLE='Network details' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=floating-ip&fipool={} SPIN=true>Floating IPs</A>".format(fipool)
 
   print "</DIV>"
-  print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
-  print "<H2>{} ({})</H2>".format(name,id)
-  _print_info(vn)
+  print "<DIV CLASS=z-table style='overflow:auto;' ID=div_os_info>"
+  dict2html(vn,"{} ({})".format(name,id))
   print "</DIV>"
 
  elif op == 'details':
   vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
   name = vn['display_name']
-  print "<H2>{} ({})</H2>".format(name,id)
-  _print_info(vn)
+  dict2html(vn,"{} ({})".format(name,id))
 
  elif op == 'interfaces':
   vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
@@ -173,7 +158,7 @@ def action(aWeb):
 
  elif op == 'remove':
   ret = controller.call("8082","virtual-network/{}".format(id), method='DELETE')
-  print ret
+  print "<DIV CLASS=z-table>{}</DIV>".format(ret)
 
  elif op == 'fi_disassociate':
   fip = {'floating-ip':{'virtual_machine_interface_refs':None,'floating_ip_fixed_ip_address':None }}

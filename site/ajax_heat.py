@@ -9,20 +9,7 @@ __version__ = "17.6.1GA"
 __status__= "Production"
 
 from sdcp.devices.openstack import OpenstackRPC
-import sdcp.SettingsContainer as SC
-
-def _print_info(aData):
- print "<TABLE style='width:99%'>"
- print "<THEAD><TH>Field</TH><TH>Data</TH></THEAD>"
- for key,value in aData.iteritems():
-  if not isinstance(value,dict):
-   print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'>{}</TD></TR>".format(key,value)
-  else:
-   print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'><TABLE style='width:100%'>".format(key)
-   for k,v in value.iteritems():
-    print "<TR><TD>{}</TD><TD>{}</TD></TR>".format(k,v)
-   print "</TABLE></TD></TR>"
- print "</TABLE>"
+from sdcp.site.ajax_openstack import dict2html
 
 ##################################### Heatstack ##################################
 #
@@ -137,31 +124,30 @@ def action(aWeb):
   print tmpl.format('Stack Template','template','Template')
   print tmpl.format('Stack Parameters','parameters','Parameters')
   print "</DIV>"
-  print "<DIV CLASS='z-table' style='overflow:auto' ID=div_os_info>"
   ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
-  print "<H2>{}</H2>".format(name)
-  _print_info(ret['data']['stack'])
+  print "<DIV CLASS=z-table style='overflow:auto;' ID=div_os_info>"
+  dict2html(ret['data']['stack'],name)
   print "</DIV>"
+
+ elif op == 'details':
+  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
+  dict2html(ret['data']['stack'],name)
 
  elif op == 'events':
   from json import dumps
   ret = controller.call(port,url + "/stacks/{}/{}/events".format(name,id))
-  print "<TABLE>"
+  print "<!-- {} -->".format("/stacks/{}/{}/events".format(name,id) )
+  print "<TABLE><THEAD><TH>Time</TH><TH>Resource</TH><TH>Id</TH><TH>Status</TH><TH>Reason</TH></THEAD>"
   for event in ret['data']['events']:
-   print "<TR><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>".format(event['resource_name'],event['logical_resource_id'],event['resource_status'],event['resource_status_reason'])
+   print "<TR><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>".format(event['event_time'].replace("T"," "),event['resource_name'],event['physical_resource_id'],event['resource_status'],event['resource_status_reason'])
   print "</TABLE>"
-
- elif op == 'details':
-  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
-  print "<H2>{}</H2>".format(name)
-  _print_info(ret['data']['stack'])
 
  elif op == 'remove':
   ret = controller.call(port,url + "/stacks/{}/{}".format(name,id), method='DELETE')
   print "<DIV CLASS='z-table'>"
   print "<H3>Removing {}</H3>".format(name)
   if ret['code'] == 204:
-   print "Stack removed"
+   print "Removing stack"
   else:
    print "Error code: {}".format(ret['code'])
   print "</DIV>"
@@ -193,7 +179,7 @@ def action(aWeb):
    ret = controller.call(port,url + "/stacks",args=data)
    if ret['code'] == 201:
     print "<DIV CLASS='z-table'>"
-    print "<H2>Successful instantiation of '{}' solution</H2>".format(template.partition('.')[0])
+    print "<H2>Starting instantiation of '{}' solution</H2>".format(template.partition('.')[0])
     print "Name: {}<BR>Id:{}".format(name,ret['data']['stack']['id'])
     print "</DIV>"
    else:
