@@ -25,7 +25,6 @@ function btnoperation(event) {
  var div = $("#"+$(button).attr("div"));
  var url = $(button).attr("url");
  var log = $(button).attr("log");
- console.log(event);
 
  if (log)
   console.log("Log OP:"+op);
