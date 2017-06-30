@@ -6,6 +6,8 @@
 
 //
 // Button functions - accepts proper JScript object:
+//  Set attribute log=true to log operation
+//
 // - [load]   div url spin(true/small/false) [msg = for confirmation] [frm = if doing a post]
 // - toggle   div
 // - hide     div
@@ -17,10 +19,14 @@
 // - logout   url
 //
 
-function btnoperation(button) {
- var op   = button.getAttribute("op");
- var div  = $("#"+button.getAttribute("div"));
- var url  = button.getAttribute("url");
+function btnoperation(event) {
+ button = event.target;
+ var op  = $(button).attr("op");
+ var div = $("#"+$(button).attr("div"));
+ var url = $(button).attr("url");
+ var log = $(button).attr("log");
+ if (log)
+  console.log("Log OP:"+op);
 
  if (!op || op == 'load') {
   var msg  = button.getAttribute("msg");

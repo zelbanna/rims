@@ -86,7 +86,7 @@ class Web(object):
   self._header = None
   print "Content-Type: text/html\r\n"
   print "<HEAD>"
-  print "<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>\n<META CHARSET='UTF-8'>"
+  print "<META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>"
   if aTitle:
    print "<TITLE>{}</TITLE>".format(aTitle)
   print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>"
@@ -131,7 +131,7 @@ class Web(object):
   return reload[1:]
 
  def get_listeners(self,aselector = "div_navbar"):
-  return "<SCRIPT>$(function() { $('#"+ aselector +"').on('click','.z-op',function() { btnoperation(this); } ); });</SCRIPT>"
+  return "<SCRIPT>$(function() { $('#"+ aselector +"').on('click','.z-op',btnoperation ); });</SCRIPT>"
 
  def get_include(self,aurl):
   from urllib import urlopen
