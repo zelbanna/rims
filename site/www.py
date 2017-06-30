@@ -78,7 +78,6 @@ class Web(object):
 
  # Put a proper HTML header + body header (!) for the browser
  def put_html_header(self, aTitle = None):
-  self._has_header = True
   for key,value in self._header.iteritems():
    print "{}: {}\r".format(key,value)   
   for key,value in self._cookie.iteritems():
