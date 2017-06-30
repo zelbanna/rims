@@ -61,13 +61,14 @@ div.z-centered { display:flex; justify-content:center; align-items:center; }
 /*############################################ Table ##############################################*/
 
 div.z-table {	width:auto; border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; }
+div.z-table:hover { box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }
+
 div.z-table th { border:none; display: table-cell; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 4px; }
 div.z-table tr:nth-child(even) { background-color: #FFFFFF; font-size:11px; line-height:20px; }
 div.z-table tr:nth-child(odd) {  background-color: #F3F3F3; font-size:11px; line-height:20px; }
+div.z-table td { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding: 0px 0px 0px 6px;}
 div.z-table th.z-header { border: 1px solid black; font-size: 16px; }
 div.z-table th.z-result { border: 1px solid black; font-size: 11px; }
-div.z-table td { padding: 0px 0px 0px 6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-div.z-table:hover { box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }
 
 tr.z-rack { line-height:14px; }
 td.z-rack-indx { font-weight:bold; font-size:8px; color:grey; vertical-align:bottom; padding:2px; }
@@ -125,6 +126,31 @@ a.z-low-btn {    border-radius: 5px!important; padding: 0px; height: 24px; width
 a.z-icon-txt-btn {	width:54px; font-weight:bold; font-size:12px; text-align: right; text-shadow: 2px 1px grey }
 
 a.z-warning {    background-color:red!important; }
+
+/*###############################################################################################*/
+div.z-drag {   height:20px; width:390px; margin:5px; font-size:11px; cursor:move; -ms-touch-action: none; touch-action: none; border-radius: 5px!important; border: 1px solid #ccc; }
+div.z-drop {   -ms-touch-action: none; touch-action: none; }
+
+.z-rnd { border-radius: 5px!important; border: 1px solid #ccc; }
+
+/* Formatted frame + table */ 
+div.z-fframe {	width:auto; border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; }
+div.z-fframe:hover { box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }
+
+div.z-table2   { display: table; }
+div.z-table2 .z-thead { display: table-header-group; }
+div.z-table2 .z-thead .z-th { display: table-cell; border:none; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 4px; }
+div.z-table2 .z-tbody { display: table-row-group; }
+div.z-table2 .z-tbody .z-tr:nth-child(even) { display: table-row; background-color: #FFFFFF; font-size:11px; line-height:20px; }
+div.z-table2 .z-tbody .z-tr:nth-child(odd)  { display: table-row; background-color: #F3F3F3; font-size:11px; line-height:20px; }
+div.z-table2 .z-tbody .z-tr .z-td { display: table-cell; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding: 0px 0px 0px 6px; } 
+div.z-table2 .z-tfoot { display: table-footer-group; }
+
+.z-td > select { width:100%; height:100%; border: none; overflow: visible; background-color: transparent; color: black; }
+.z-td > input  { width:100%; border:none; overflow:visible; background-color: transparent; color: black; }
+.z-td > input::-webkit-input-placeholder { color: darkgrey; }
+.z-td > input::-moz-placeholder { color: darkgrey; opacity:1; }
+.z-td > input:-ms-input-placeholder {  color: darkgrey; }
 
 /*###############################################################################################*/
 

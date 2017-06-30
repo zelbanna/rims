@@ -66,31 +66,67 @@ def select_parameters(aWeb):
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
  port,url = cookie.get('os_nova_port'),cookie.get('os_nova_url')
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=z-fframe>"
+ print """
+ <script>
+  $( function() {
+	$(".z-drag").attr("draggable","true");
+	$(".z-drag").on("dragstart", function(e){
+		console.log("Drag " + $(this).prop("id") + " FROM " + $(this).parent().prop("id"));
+		e.originalEvent.dataTransfer.setData("Text",e.target.id);
+	});
+
+	$(document.body).on("drop dragover", ".z-drop", function(e){ e.preventDefault();
+		if (e.type == 'drop') {
+			var elem_id = e.originalEvent.dataTransfer.getData("Text");
+			var elem    = document.getElementById(elem_id);
+			var input   = $("#" + elem_id + " input");
+			console.log("Drop " + elem_id + " INTO " + $(this).prop("id"));
+			e.target.appendChild(elem);
+			$(this).removeClass("z-drop");
+			if ($(elem).attr("name")) {
+				console.log("Restoring drop to: " + $(elem).attr("name"));
+				$("#" + $(elem).attr("name")).addClass("z-drop");
+			}
+			
+			input.attr("name",$(this).prop("id"));
+		}
+   });
+ });
+</script>
+ """
  print "<H2>New VM parameters</H2>"
- print "<FORM ID=frm_os_create_vm><TABLE><THEAD><TH>Parameter</TH><TH>Value</TH></THEAD>"
- print "<TR><TD>Name</TD><TD><INPUT CLASS=z-input NAME=os_name PLACEHOLDER='Unique Name'></TD></TR>"
- print "<TR><TD>Image</TD><TD><SELECT CLASS=z-select NAME=os_image>"
+ print "<FORM ID=frm_os_create_vm>"
+ print "<DIV ID=div_os_form CLASS='z-table2' style='float:left;'><DIV CLASS=z-tbody>"
+ print "<DIV CLASS=z-tr><DIV CLASS=z-td>Name</DIV><DIV CLASS='z-td'><INPUT NAME=os_name PLACEHOLDER='Unique Name'></DIV></DIV>"
+ print "<DIV CLASS=z-tr><DIV CLASS=z-td>Image</DIV><DIV CLASS='z-td'><SELECT NAME=os_image>"
  images = controller.call(cookie.get('os_glance_port'),cookie.get('os_glance_url') + "/v2/images?sort=name:asc")['data']['images']
  for img in images:
   print "<OPTION VALUE={}>{} (Min Ram: {}Mb)</OPTION>".format(img['id'],img['name'],img['min_ram'])
- print "</SELECT></TD></TR>"
+ print "</SELECT></DIV></DIV>"
 
  flavors = controller.call(port,url + "/flavors/detail?sort_key=name")['data']['flavors']
- print "<TR><TD>Flavor</TD><TD><SELECT CLASS=z-select NAME=os_flavor>"
+ print "<DIV CLASS=z-tr><DIV CLASS=z-td>Flavor</DIV><DIV CLASS='z-table-val z-td'><SELECT NAME=os_flavor>"
  for fl in flavors:
   print "<OPTION VALUE={}>{} (Ram: {}Mb, vCPUs: {}, Disk: {}Gb</OPTION>".format(fl['id'],fl['name'],fl['ram'],fl['vcpus'],fl['disk'])
- print "</SELECT></TD></TR>"
+ print "</SELECT></DIV></DIV>"
 
- print "<TR><TD>Network</TD><TD><SELECT CLASS=z-select NAME=os_network>"
+ #print "<TR><TD>Network</TD><TD><SELECT CLASS=z-select NAME=os_network>"
+ #networks = controller.call(cookie.get('os_neutron_port'),cookie.get('os_neutron_url') + "/v2.0/networks?sort_key=name")['data']['networks']
+ #for net in networks:
+ # if net.get('contrail:subnet_ipam'):
+ #  print "<OPTION VALUE={}>{} ({})</OPTION>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
+ #print "</SELECT></TD></TR>"
+ print "<DIV CLASS=z-tr><DIV CLASS=z-td>Network</DIV><DIV CLASS='z-td z-drop' ID=os_network1></DIV></DIV>"
+ print "</DIV></DIV></FORM>"
+
+ print "<DIV ID=div_os_nets style='float:left; height:200px; overflow:auto;'>"
  networks = controller.call(cookie.get('os_neutron_port'),cookie.get('os_neutron_url') + "/v2.0/networks?sort_key=name")['data']['networks']
  for net in networks:
   if net.get('contrail:subnet_ipam'):
-   print "<OPTION VALUE={}>{} ({})</OPTION>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
- print "</SELECT></TD></TR>"
-
- print "</TABLE>"
- print "</FORM>"
+   print "<DIV ID=div_drag_{0} CLASS='z-drag z-drag-input' style='font-size:11px;'><INPUT ID=input_{0} NAME=unused TYPE=HIDDEN VALUE={0}>{1} ({2})</DIV>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
+ print "</DIV>"
+ print "<BR style='clear:left;'>"
  print "<A TITLE='Create VM' CLASS='z-btn z-op z-small-btn' FRM=frm_os_create_vm DIV=div_os_right URL=ajax.cgi?call=nova_action&id={}&op=add SPIN=true><IMG SRC='images/btn-start.png'></A>".format("new") 
  print "</DIV>"
 
