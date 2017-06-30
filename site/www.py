@@ -92,6 +92,9 @@ class Web(object):
   print "</HEAD>"
   from sys import stdout
   stdout.flush()
+
+ def put_listeners(self):
+  print "<SCRIPT>$(function() { $(document.body).on('click','.z-op',btnoperation ); });</SCRIPT>"
  
  ############################## CGI/Web functions ###############################
  def get_cookie(self):
@@ -128,9 +131,6 @@ class Web(object):
    if not key in aexceptlist:
     reload = reload + "&{}=".format(key) + "&{}=".format(key).join(self._form.getlist(key))
   return reload[1:]
-
- def get_listeners(self,aselector = "div_navbar"):
-  return "<SCRIPT>$(function() { $('#"+ aselector +"').on('click','.z-op',btnoperation ); });</SCRIPT>"
 
  def get_include(self,aurl):
   from urllib import urlopen

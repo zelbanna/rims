@@ -20,11 +20,13 @@
 //
 
 function btnoperation(event) {
- button = event.target;
+ button = event.currentTarget;
  var op  = $(button).attr("op");
  var div = $("#"+$(button).attr("div"));
  var url = $(button).attr("url");
  var log = $(button).attr("log");
+ console.log(event);
+
  if (log)
   console.log("Log OP:"+op);
 

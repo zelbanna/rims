@@ -58,7 +58,7 @@ def openstack_login(aWeb):
  projects = [] if not ret['code'] == 200 else ret['data']['projects']
 
  aWeb.put_html_header("{} 2 Cloud".format(name.capitalize()))
- print aWeb.get_listeners("div_os_login")
+ aWeb.put_listeners()
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV ID=div_os_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
@@ -118,7 +118,7 @@ def openstack_portal(aWeb):
   openstack = OpenstackRPC(ctrl,utok)
 
  aWeb.put_html_header()
- print aWeb.get_listeners("div_os_header")
+ aWeb.put_listeners()
  print "<DIV CLASS=z-os-header    ID=div_os_header>"
  print "<DIV CLASS=z-os-head-info ID=div_os_head_info>"
  print "<TABLE style='display:inline; float:left; margin:5px 100px 0px 10px;'>"
@@ -138,7 +138,6 @@ def openstack_portal(aWeb):
   print "<A CLASS='z-op z-right'  DIV=div_os_frame URL=ajax.cgi?call=openstack_api>API Debug</A>"
  print "</DIV>"
  print "</DIV>"
- print aWeb.get_listeners("div_os_frame")
  print "<DIV CLASS=z-os-frame ID=div_os_frame></DIV>"
  print "</DIV>"
 
@@ -171,7 +170,7 @@ def openstack_console(aWeb):
 def examine(aWeb):
  aWeb.put_html_header('Services Pane')
  from ajax_examine import clear_logs
- print aWeb.get_listeners()
+ aWeb.put_listeners()
 
  domain  = aWeb.get_value('domain')
  upshost = aWeb.get_value('upshost')
@@ -230,7 +229,7 @@ def examine(aWeb):
 #
 def munin(aWeb):
  aWeb.put_html_header('Munin')
- print aWeb.get_listeners()
+ aWeb.put_listeners()
  print """
  <SCRIPT>
  function toggleMuninNavigation(){
@@ -268,7 +267,7 @@ def weathermap(aWeb):
  
  if page == 'main':
   aWeb.put_html_header('Weathermap')
-  print aWeb.get_listeners()
+  aWeb.put_listeners()
   print "<DIV CLASS=z-navframe ID=div_navframe>"
   print "<DIV CLASS=z-navbar ID=div_navbar>"
  
@@ -374,7 +373,7 @@ def rack(aWeb):
 
 def rack_info(aWeb):
  aWeb.put_html_header("Rack Info")
- print aWeb.get_listeners()
+ aWeb.put_listeners()
  from sdcp.site.ajax_rack import info as ajax_info
  rack = aWeb.get_value('rack')
  con  = aWeb.get_value('console')
@@ -396,8 +395,6 @@ def rack_info(aWeb):
  print "<A CLASS='z-op' style='float:right;' OP=load DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'>Racks</A>"
  print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
- print aWeb.get_listeners('div_navleft')
- print aWeb.get_listeners('div_navcont')
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont>"
  if rack and name:
@@ -411,7 +408,7 @@ def rack_info(aWeb):
 #
 def esxi(aWeb):
  aWeb.put_html_header("ESXi Operations")
- print aWeb.get_listeners()
+ aWeb.put_listeners()
 
  from ajax_esxi import op as esxi_op
  from sdcp.devices.ESXi import ESXi
@@ -430,7 +427,6 @@ def esxi(aWeb):
  print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "</DIV>"
  
- print aWeb.get_listeners("div_navcont")
  print "<DIV CLASS='z-navcontent' ID=div_navcont>"
  print "<DIV CLASS='z-system' id=div_esxi_stats title='Device stats' style='display:none;'>"
  graph  = Grapher()
@@ -464,7 +460,7 @@ def esxi(aWeb):
  
 def devices(aWeb):
  aWeb.put_html_header("Device View")
- print aWeb.get_listeners()
+ aWeb.put_listeners()
 
  from sdcp.core.GenLib import DB
  op     = aWeb.get_value('op')
@@ -495,8 +491,6 @@ def devices(aWeb):
  print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "<A CLASS='z-right z-op'  OP=load   DIV=div_navcont MSG='Discover devices?' URL='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
  print "</DIV>"
- print aWeb.get_listeners("div_navleft")
- print aWeb.get_listeners("div_navcont")
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont>" 
  print aWeb.get_include('README.devices.html')
@@ -511,7 +505,7 @@ def devices(aWeb):
 
 def config(aWeb):
  aWeb.put_html_header("Config and Settings")
- print aWeb.get_listeners("div_config_menu")
+ aWeb.put_listeners()
  domain    = aWeb.get_value('domain', None)
  print "<DIV CLASS='z-table' ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
  print "<A CLASS='z-btn z-warning z-op' OP=load DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"
