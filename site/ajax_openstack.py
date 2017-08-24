@@ -20,22 +20,23 @@ def dict2html(aData,aTitle=None):
 
 def data2html(aData):
  if isinstance(aData,dict):
-  print "<TABLE style='table-layout:auto;'>"
+  print "<DIV CLASS=z-table2><DIV CLASS=z-tbody>"
   for k,v in aData.iteritems():
-   print "<TR><TD style='padding:0px;'><I>{}</I>:</TD><TD style='white-space:normal; overflow:auto; width:100%'>".format(k)
+   print "<DIV CLASS=z-tr><DIV CLASS=z-td style='padding:0px;'><I>{}</I>:</DIV><DIV CLASS=z-td style='white-space:normal; overflow:auto; width:100%'>".format(k)
    if 'href' in k:
     print "<A CLASS=z-op DIV=div_os_frame URL=ajax.cgi?call=openstack_result&method=GET&os_href={0}>{0}</A>".format(v)
    else:
     data2html(v)
-   print "</TD></TR>"
-  print "</TABLE>"
+   print "</DIV></DIV>"
+  print "</DIV></DIV>"
  elif isinstance(aData,list):
-  print "<TABLE style='width:100%;'>"
+  print "<DIV CLASS=z-table2 style='width:100%;'><DIV CLASS=z-tbody>"
   for v in aData:
-   print "<TR><TD style='padding:0px;'>"
+   print "<DIV CLASS=z-tr><DIV CLASS=z-td style='padding:0px;'>"
    data2html(v)
-   print "</TD></TR>"
-  print "</TABLE>"
+   print "</DIV></DIV>"
+  print "</DIV>"
+  print "</DIV>"
  else:
   print aData
 
