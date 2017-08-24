@@ -32,28 +32,26 @@ def list(aWeb):
   print "Error retrieving heat stacks ({})".format(ret['code'])
   return
 
- print "<DIV CLASS=z-os-left ID=div_os_left>"
- print "<DIV CLASS=z-table style='width:394px;'><TABLE style='width:99%'>"
- print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Heat Stacks</CENTER></TH></THEAD>"
- print "<TR style='height:20px'><TD COLSPAN=3>"
+ print "<DIV CLASS=z-os-left ID=div_os_left><DIV CLASS=z-fframe style='width:394px;'><DIV CLASS=z-table2 style='width:99%'>"
+ print "<DIV CLASS=z-thead style='height:20px'><DIV CLASS=z-th><CENTER>Heat Stacks</CENTER></DIV></DIV>"
+ print "<DIV CLASS=z-tbody><DIV CLASS=z-tr style='height:20px'><DIV CLASS=z-td>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_os_right URL='ajax.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
- print "</TR>"
- print "<THEAD><TH>Name</TH><TH>Status</TH><TH></TH></THEAD>"
+ print "</DIV></DIV></DIV>"
+ print "<DIV CLASS=z-thead><DIV CLASS=z-th>Name</DIV><DIV CLASS=z-th>Status</DIV><DIV CLASS=z-th style='width:94px;'></DIV></DIV>"
+ print "<DIV CLASS=z-tbody>"
  for stack in ret['data'].get('stacks',None):
-  print "<TR>"
-  print "<TD>{}</TD>".format(stack['stack_name'])
-  print "<TD>{}</TD>".format(stack['stack_status'])
-  print "<TD>"
+  print "<DIV CLASS=z-tr>"
+  print "<DIV CLASS=z-td>{}</DIV>".format(stack['stack_name'])
+  print "<DIV CLASS=z-td>{}</DIV>".format(stack['stack_status'])
+  print "<DIV CLASS=z-td>"
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} SPIN=true>{}</A>"
   print tmpl.format('Stack info','info','<IMG SRC=images/btn-info.png>')
   if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED" or stack['stack_status'] == "DELETE_FAILED":
    print "<A TITLE='Remove stack' CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op=remove MSG='Are you sure' SPIN=true><IMG SRC=images/btn-remove.png></A>"
-  print "</TD>"
-  print "</TR>"
- print "</TABLE>"
+  print "&nbsp;</DIV></DIV>"
  print "</DIV>"
- print "</DIV>"
+ print "</DIV></DIV></DIV>"
  print "<DIV CLASS=z-os-right ID=div_os_right></DIV>"
 
 ######################### HEAT ADD ######################
@@ -61,7 +59,7 @@ def list(aWeb):
 # Add instantiation
 #
 def choose_template(aWeb):
- print "<DIV CLASS='z-table' style='display:inline-block; padding:6px'>"
+ print "<DIV CLASS='z-fframe' style='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_choose_template>"
  try:
   print "Add solution from template:<SELECT CLASS='z-select' NAME=template style='height:22px; width:auto;'>"
@@ -84,15 +82,16 @@ def enter_parameters(aWeb):
  template = aWeb.get_value('template')
  with open("os_templates/"+template) as f:
   data = load(f)
- print "<DIV CLASS='z-table' style='display:inline-block; padding:6px'>"
+ print "<DIV CLASS='z-fframe' style='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_template_parameters>"
  print "<INPUT TYPE=hidden NAME=template VALUE={}>".format(template)
- print "<TABLE>"
- print "<THEAD><TH>Parameter</TH><TH style='min-width:300px'>Value</TH></THEAD>"
- print "<TR><TD><B>Unique Name</B></TD><TD><INPUT CLASS='z-input' TYPE=text NAME=name PLACEHOLDER='change-this-name'></TD></TR>"
+ print "<DIV CLASS=z-table2>"
+ print "<DIV CLASS=z-thead><DIV CLASS=z-th>Parameter</DIV><DIV CLASS=z-th style='min-width:300px'>Value</DIV></DIV>"
+ print "<DIV CLASS=z-tbody>"
+ print "<DIV CLASS=z-tr><DIV CLASS=z-td><B>Unique Name</B></DIV><DIV CLASS=z-td><INPUT TYPE=text NAME=name PLACEHOLDER='change-this-name'></DIV></DIV>"
  for key,value in data['parameters'].iteritems():
-  print "<TR><TD>{0}</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></TD></TR>".format(key,value)
- print "</TABLE>"
+  print "<DIV CLASS=z-tr><DIV CLASS=z-td>{0}</DIV><DIV CLASS=z-td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value)
+ print "</DIV></DIV>"
  print "</FORM>"
  print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' SPIN=true FRM=frm_heat_template_parameters DIV=div_os_right URL='ajax.cgi?call=heat_action&op=create'><IMG SRC='images/btn-start.png'></A>"
  print "</DIV>"
@@ -125,7 +124,7 @@ def action(aWeb):
   print tmpl.format('Stack Parameters','parameters','Parameters')
   print "</DIV>"
   ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
-  print "<DIV CLASS=z-table style='overflow:auto;' ID=div_os_info>"
+  print "<DIV CLASS=z-fframe style='overflow:auto;' ID=div_os_info>"
   dict2html(ret['data']['stack'],name)
   print "</DIV>"
 
@@ -137,14 +136,17 @@ def action(aWeb):
   from json import dumps
   ret = controller.call(port,url + "/stacks/{}/{}/events".format(name,id))
   print "<!-- {} -->".format("/stacks/{}/{}/events".format(name,id) )
-  print "<TABLE><THEAD><TH>Time</TH><TH>Resource</TH><TH>Id</TH><TH>Status</TH><TH>Reason</TH></THEAD>"
+  print "<DIV CLASS=z-table2>"
+  print "<DIV CLASS=z-thead><DIV CLASS=z-th>Time</DIV><DIV CLASS=z-th>Resource</DIV><DIV CLASS=z-th>Id</DIV><DIV CLASS=z-th>Status</DIV><DIV CLASS=z-th>Reason</DIV></DIV>"
+  print "<DIV CLASS=z-tbody>"
   for event in ret['data']['events']:
-   print "<TR><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>".format(event['event_time'].replace("T"," "),event['resource_name'],event['physical_resource_id'],event['resource_status'],event['resource_status_reason'])
-  print "</TABLE>"
+   print "<DIV CLASS=z-tr><DIV CLASS=z-td>{}</DIV><DIV CLASS=z-td>{}</DIV><DIV CLASS=z-td>{}</DIV><DIV CLASS=z-td>{}</DIV><DIV CLASS=z-td>{}</DIV></DIV>".format(event['event_time'].replace("T"," "),event['resource_name'],event['physical_resource_id'],event['resource_status'],event['resource_status_reason'])
+  print "</DIV>"
+  print "</DIV>"
 
  elif op == 'remove':
   ret = controller.call(port,url + "/stacks/{}/{}".format(name,id), method='DELETE')
-  print "<DIV CLASS='z-table'>"
+  print "<DIV CLASS='z-fframe'>"
   print "<H3>Removing {}</H3>".format(name)
   if ret['code'] == 204:
    print "Removing stack"
@@ -178,10 +180,8 @@ def action(aWeb):
     data['parameters'][key[6:]] = value
    ret = controller.call(port,url + "/stacks",args=data)
    if ret['code'] == 201:
-    print "<DIV CLASS='z-table'>"
     print "<H2>Starting instantiation of '{}' solution</H2>".format(template.partition('.')[0])
     print "Name: {}<BR>Id:{}".format(name,ret['data']['stack']['id'])
-    print "</DIV>"
    else:
     print "<PRE>Error instantiating stack:" + str(ret) + "</PRE>"
   else:
@@ -193,6 +193,4 @@ def action(aWeb):
   with open("os_templates/"+template) as f:
    data = load(f)
   data['stack_name'] = name if name else "Need_to_specify_name"
-  print "<DIV CLASS='z-table'><PRE>"
-  print dumps(data, indent=4, sort_keys=True)
-  print "</PRE></DIV>"
+  print "<PRE>{}</PRE>".format(dumps(data, indent=4, sort_keys=True))

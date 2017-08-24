@@ -32,7 +32,7 @@ def list(aWeb):
  print "<DIV CLASS=z-thead style='height:20px'><DIV CLASS=z-th><CENTER>Nova Servers</CENTER></DIV></DIV>"
  print "<DIV CLASS=z-tbody><DIV CLASS=z-tr style='height:20px'><DIV CLASS=z-td>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=nova_list'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add serer'   CLASS='z-btn z-small-btn z-op' DIV=div_os_right URL='ajax.cgi?call=nova_select_parameters'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Add server'   CLASS='z-btn z-small-btn z-op' DIV=div_os_right URL='ajax.cgi?call=nova_select_parameters'><IMG SRC='images/btn-add.png'></A>"
  print "</DIV></DIV></DIV>"
  print "<DIV CLASS=z-thead><DIV CLASS=z-th>Name</DIV><DIV CLASS=z-th style='width:94px;'></DIV></DIV>"
  print "<DIV CLASS=z-tbody>"
@@ -201,7 +201,7 @@ def action(aWeb):
    if vmi.get('floating_ip_back_refs'):
     fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
     print "<DIV CLASS=z-td>{} ({})</DIV>".format(fip['floating_ip_address'],fip['fq_name'][2])
-    print "<DIV CLASS=z-td><A TITLE='Disassociate' CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=fi_disassociate&id={} SPIN=true><IMG SRC=images/btn-remove.png></A></DIV>".format(fip['uuid'])
+    print "<DIV CLASS=z-td><A TITLE='Disassociate' CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=fi_disassociate&id={} SPIN=true><IMG SRC=images/btn-remove.png></A>&nbsp;</DIV>".format(fip['uuid'])
    else:
     print "<DIV CLASS=z-td></DIV>"
     print "<DIV CLASS=z-td></DIV>"
