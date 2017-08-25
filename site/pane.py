@@ -64,13 +64,13 @@ def openstack_login(aWeb):
  print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
  print "<FORM ACTION=pane.cgi METHOD=POST ID=openstack_login>"
  print "<INPUT TYPE=HIDDEN NAME=view VALUE=openstack_portal>"
- print "<DIV CLASS=z-table2 style='display:inline; float:left; margin:0px 0px 0px 30px;'><DIV CLASS=z-tbody>"
- print "<DIV CLASS=z-tr><DIV CLASS=z-td>Customer:</DIV><DIV CLASS=z-td><SELECT style='border:none; width:100px; display:inline; color:black' NAME=project>"
+ print "<DIV CLASS=z-table2 style='display:inline; float:left; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Customer:</DIV><DIV CLASS=td><SELECT style='border:none; width:100px; display:inline; color:black' NAME=project>"
  for p in projects:
   print "<OPTION VALUE={0}_{1} {2}>{1}</OPTION>".format(p['id'],p['name'],'' if not p['id'] == prev else "selected")
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=z-tr><DIV CLASS=z-td>Username:</DIV><DIV CLASS=z-td><INPUT TYPE=text NAME=username {}></DIV></DIV>".format('' if not user else "VALUE={}".format(user))
- print "<DIV CLASS=z-tr><DIV CLASS=z-td>Password:</DIV><DIV CLASS=z-td><INPUT TYPE=password NAME=password></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><INPUT TYPE=text NAME=username {}></DIV></DIV>".format('' if not user else "VALUE={}".format(user))
+ print "<DIV CLASS=tr><DIV CLASS=td>Password:</DIV><DIV CLASS=td><INPUT TYPE=password NAME=password></DIV></DIV>"
  print "</DIV></DIV>"
  print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
  print "</FORM>"
@@ -121,9 +121,9 @@ def openstack_portal(aWeb):
  aWeb.put_listeners()
  print "<DIV CLASS=z-os-header    ID=div_os_header>"
  print "<DIV CLASS=z-os-head-info ID=div_os_head_info>"
- print "<DIV CLASS=z-table2 style='display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=z-tbody>"
- print "<DIV CLASS=z-tr style='background:transparent'><DIV CLASS=z-td><B>Identity:</B></DIV><DIV CLASS=z-td><I>{}</I></DIV><DIV CLASS=z-td>&nbsp;<B>Id:</B></DIV><DIV CLASS=z-td><I>{}</I></DIV></DIV>".format(pname,pid)
- print "<DIV CLASS=z-tr style='background:transparent'><DIV CLASS=z-td><B>Username:</B></DIV><DIV CLASS=z-td><I>{}</I></DIV><DIV CLASS=z-td>&nbsp;<B>Token:</B></DIV><DIV CLASS=z-td><I>{}</I></DIV></DIV>".format(username,utok)
+ print "<DIV CLASS=z-table2 style='display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
+ print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
  print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px'>Log out</A>".format(ctrl,cookie.get('os_demo_name'),cookie.get('af_controller'))
  print "</DIV>"

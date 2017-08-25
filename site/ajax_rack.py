@@ -16,18 +16,18 @@ import sdcp.core.GenLib as GL
 def list_racks(aWeb):
  db   = GL.DB()
  db.connect()
- print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Rack</CENTER></TH></THEAD>"
- print "<TR style='height:20px'><TD COLSPAN=3>"
+ print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=z-title>Rack</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=rack_unit_info&id=new'><IMG SRC='images/btn-add.png'></A>"
- print "</TD></TR>"
+ print "<DIV CLASS=z-table2 style='width:330px'>"
+ print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
  res  = db.do("SELECT * from racks ORDER by name")
  data = db.get_all_rows()
- print "<TR><TH>ID</TH><TH>Name</TH><TH>Size</TH></TR>"
  for unit in data:
-  print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=rack_unit_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['size'])
- print "</TABLE></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=rack_unit_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['size'])
+ print "</DIV></DIV></DIV>"
  db.close()
 
 #
@@ -81,32 +81,32 @@ def unit_info(aWeb):
  else:
   db.do("SELECT * from racks WHERE id = {}".format(id))
   rack = db.get_row()
- print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
+ print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
  print "<FORM ID=rack_unit_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<TABLE style='width:100%'>"
- print "<THEAD><TH COLSPAN=2>Rack Info {}</TH></THEAD>".format("(new)" if id == 'new' else "")
- print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['name'])
- print "<TR><TD>Size:</TD><TD><INPUT NAME=size TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(rack['size'])
+ print "<CENTER>Rack Info {}</CENTER>".format("(new)" if id == 'new' else "")
+ print "<DIV CLASS=z-table2 style='width:100%'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(rack['name'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(rack['size'])
  for key in ['pdu_1','pdu_2','console']:
   dbname = key.partition('_')[0]
   db.do("SELECT id,name from {0}s".format(dbname))
   rows = db.get_all_rows()
   rows.append({'id':'NULL', 'name':"No {}".format(dbname.capitalize())})
-  print "<TR><TD>{0}:</TD><TD><SELECT NAME=fk_{1} CLASS='z-select'>".format(key.capitalize(),key)
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}:</DIV><DIV CLASS=td><SELECT NAME=fk_{1} CLASS='z-select'>".format(key.capitalize(),key)
   for unit in rows:
    extra = " selected" if (rack.get("fk_"+key) == unit['id']) or (not rack.get("fk_"+key) and unit['id'] == 'NULL') else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])   
-  print "</SELECT></TD></TR>"
- print "<TR><TD>Image</TD><TD><SELECT NAME=image_url CLASS='z-select'>"
+  print "</SELECT></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=image_url CLASS='z-select'>"
  print "<OPTION VALUE=NULL>No picture</OPTION>"
  for image in listdir(path.join(SC.sdcp_docroot,"images")):
   extra = " selected" if (rack.get("image_url") == image) or (not rack.get('image_url') and image == 'NULL') else ""
   if image[-3:] == "png" or image[-3:] == "jpg":
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(image,extra,image[:-4])
- print "</SELECT></TD></TR>"
+ print "</SELECT></DIV></DIV>"
  db.close()
- print "</TABLE>"
+ print "</DIV></DIV>"
  print "</FORM>"
  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=rack_unit_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=rack_update FRM=rack_unit_info_form OP=load><IMG SRC='images/btn-save.png'></A>"

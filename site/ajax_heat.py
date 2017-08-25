@@ -32,19 +32,18 @@ def list(aWeb):
   print "Error retrieving heat stacks ({})".format(ret['code'])
   return
 
- print "<DIV CLASS=z-os-left ID=div_os_left><DIV CLASS=z-fframe style='width:394px;'><DIV CLASS=z-table2 style='width:99%'>"
- print "<DIV CLASS=z-thead style='height:20px'><DIV CLASS=z-th><CENTER>Heat Stacks</CENTER></DIV></DIV>"
- print "<DIV CLASS=z-tbody><DIV CLASS=z-tr style='height:20px'><DIV CLASS=z-td>"
+ print "<DIV CLASS=z-os-left ID=div_os_left><DIV CLASS=z-fframe style='width:394px;'>"
+ print "<DIV CLASS=title>Heat Stacks</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_os_right URL='ajax.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
- print "</DIV></DIV></DIV>"
- print "<DIV CLASS=z-thead><DIV CLASS=z-th>Name</DIV><DIV CLASS=z-th>Status</DIV><DIV CLASS=z-th style='width:94px;'></DIV></DIV>"
- print "<DIV CLASS=z-tbody>"
+ print "<DIV CLASS=z-table2 style='width:99%'>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th style='width:94px;'></DIV></DIV>"
+ print "<DIV CLASS=tbody>"
  for stack in ret['data'].get('stacks',None):
-  print "<DIV CLASS=z-tr>"
-  print "<DIV CLASS=z-td>{}</DIV>".format(stack['stack_name'])
-  print "<DIV CLASS=z-td>{}</DIV>".format(stack['stack_status'])
-  print "<DIV CLASS=z-td>"
+  print "<DIV CLASS=tr>"
+  print "<DIV CLASS=td>{}</DIV>".format(stack['stack_name'])
+  print "<DIV CLASS=td>{}</DIV>".format(stack['stack_status'])
+  print "<DIV CLASS=td>"
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} SPIN=true>{}</A>"
   print tmpl.format('Stack info','info','<IMG SRC=images/btn-info.png>')
   if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED" or stack['stack_status'] == "DELETE_FAILED":
@@ -86,11 +85,11 @@ def enter_parameters(aWeb):
  print "<FORM ID=frm_heat_template_parameters>"
  print "<INPUT TYPE=hidden NAME=template VALUE={}>".format(template)
  print "<DIV CLASS=z-table2>"
- print "<DIV CLASS=z-thead><DIV CLASS=z-th>Parameter</DIV><DIV CLASS=z-th style='min-width:300px'>Value</DIV></DIV>"
- print "<DIV CLASS=z-tbody>"
- print "<DIV CLASS=z-tr><DIV CLASS=z-td><B>Unique Name</B></DIV><DIV CLASS=z-td><INPUT TYPE=text NAME=name PLACEHOLDER='change-this-name'></DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Parameter</DIV><DIV CLASS=th style='min-width:300px'>Value</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td><B>Unique Name</B></DIV><DIV CLASS=td><INPUT TYPE=text NAME=name PLACEHOLDER='change-this-name'></DIV></DIV>"
  for key,value in data['parameters'].iteritems():
-  print "<DIV CLASS=z-tr><DIV CLASS=z-td>{0}</DIV><DIV CLASS=z-td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value)
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value)
  print "</DIV></DIV>"
  print "</FORM>"
  print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' SPIN=true FRM=frm_heat_template_parameters DIV=div_os_right URL='ajax.cgi?call=heat_action&op=create'><IMG SRC='images/btn-start.png'></A>"
@@ -137,10 +136,10 @@ def action(aWeb):
   ret = controller.call(port,url + "/stacks/{}/{}/events".format(name,id))
   print "<!-- {} -->".format("/stacks/{}/{}/events".format(name,id) )
   print "<DIV CLASS=z-table2>"
-  print "<DIV CLASS=z-thead><DIV CLASS=z-th>Time</DIV><DIV CLASS=z-th>Resource</DIV><DIV CLASS=z-th>Id</DIV><DIV CLASS=z-th>Status</DIV><DIV CLASS=z-th>Reason</DIV></DIV>"
-  print "<DIV CLASS=z-tbody>"
+  print "<DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>Resource</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th>Reason</DIV></DIV>"
+  print "<DIV CLASS=tbody>"
   for event in ret['data']['events']:
-   print "<DIV CLASS=z-tr><DIV CLASS=z-td>{}</DIV><DIV CLASS=z-td>{}</DIV><DIV CLASS=z-td>{}</DIV><DIV CLASS=z-td>{}</DIV><DIV CLASS=z-td>{}</DIV></DIV>".format(event['event_time'].replace("T"," "),event['resource_name'],event['physical_resource_id'],event['resource_status'],event['resource_status_reason'])
+   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(event['event_time'].replace("T"," "),event['resource_name'],event['physical_resource_id'],event['resource_status'],event['resource_status_reason'])
   print "</DIV>"
   print "</DIV>"
 

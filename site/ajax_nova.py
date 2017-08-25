@@ -29,20 +29,20 @@ def list(aWeb):
  print "<DIV CLASS=z-os-left ID=div_os_left>"
  print "<DIV CLASS=z-fframe style='width:394px'>"
  print "<DIV CLASS=z-table2 style='width:99%'>"
- print "<DIV CLASS=z-thead style='height:20px'><DIV CLASS=z-th><CENTER>Nova Servers</CENTER></DIV></DIV>"
- print "<DIV CLASS=z-tbody><DIV CLASS=z-tr style='height:20px'><DIV CLASS=z-td>"
+ print "<DIV CLASS=thead style='height:20px'><DIV CLASS=th><CENTER>Nova Servers</CENTER></DIV></DIV>"
+ print "<DIV CLASS=tbody><DIV CLASS=tr style='height:20px'><DIV CLASS=td>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=nova_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add server'   CLASS='z-btn z-small-btn z-op' DIV=div_os_right URL='ajax.cgi?call=nova_select_parameters'><IMG SRC='images/btn-add.png'></A>"
  print "</DIV></DIV></DIV>"
- print "<DIV CLASS=z-thead><DIV CLASS=z-th>Name</DIV><DIV CLASS=z-th style='width:94px;'></DIV></DIV>"
- print "<DIV CLASS=z-tbody>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th style='width:94px;'></DIV></DIV>"
+ print "<DIV CLASS=tbody>"
  for server in ret['data'].get('servers',None):
   qserver = aWeb.quote(server['name'])
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=nova_action&name=" + qserver + "&id=" + server['id'] + "&op={} SPIN=true>{}</A>"
-  print "<DIV CLASS=z-tr>"
+  print "<DIV CLASS=tr>"
   print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
-  print "<DIV CLASS=z-td><A TITLE='VM info' CLASS='z-op' DIV=div_os_right URL=ajax.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
-  print "<DIV CLASS=z-td>"
+  print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_os_right URL=ajax.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
+  print "<DIV CLASS=td>"
   print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	TARGET=_blank      HREF='pane.cgi?view=openstack_console&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
   print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=nova_console&id={} OP=load><IMG SRC='images/btn-term-frame.png'></A>".format(server['id'])
   print "<A TITLE='Remove VM'        CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=nova_action&id={}&op=remove MSG='Are you sure you want to delete VM?' SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(server['id'])
@@ -98,16 +98,16 @@ def select_parameters(aWeb):
  """
  print "<H2>New VM parameters</H2>"
  print "<FORM ID=frm_os_create_vm>"
- print "<DIV ID=div_os_form CLASS='z-table2' style='float:left;'><DIV CLASS=z-tbody>"
- print "<DIV CLASS=z-tr><DIV CLASS=z-td>Name</DIV><DIV CLASS='z-td'><INPUT NAME=os_name PLACEHOLDER='Unique Name'></DIV></DIV>"
- print "<DIV CLASS=z-tr><DIV CLASS=z-td>Image</DIV><DIV CLASS='z-td'><SELECT NAME=os_image>"
+ print "<DIV ID=div_os_form CLASS='z-table2' style='float:left;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Name</DIV><DIV CLASS=td><INPUT NAME=os_name PLACEHOLDER='Unique Name'></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=os_image>"
  images = controller.call(cookie.get('os_glance_port'),cookie.get('os_glance_url') + "/v2/images?sort=name:asc")['data']['images']
  for img in images:
   print "<OPTION VALUE={}>{} (Min Ram: {}Mb)</OPTION>".format(img['id'],img['name'],img['min_ram'])
  print "</SELECT></DIV></DIV>"
 
  flavors = controller.call(port,url + "/flavors/detail?sort_key=name")['data']['flavors']
- print "<DIV CLASS=z-tr><DIV CLASS=z-td>Flavor</DIV><DIV CLASS='z-table-val z-td'><SELECT NAME=os_flavor>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Flavor</DIV><DIV CLASS='z-table-val td'><SELECT NAME=os_flavor>"
  for fl in flavors:
   print "<OPTION VALUE={}>{} (Ram: {}Mb, vCPUs: {}, Disk: {}Gb</OPTION>".format(fl['id'],fl['name'],fl['ram'],fl['vcpus'],fl['disk'])
  print "</SELECT></DIV></DIV>"
@@ -118,7 +118,7 @@ def select_parameters(aWeb):
  # if net.get('contrail:subnet_ipam'):
  #  print "<OPTION VALUE={}>{} ({})</OPTION>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
  #print "</SELECT></TD></TR>"
- print "<DIV CLASS=z-tr><DIV CLASS=z-td>Network</DIV><DIV CLASS='z-td z-drop' ID=os_network1></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Network</DIV><DIV CLASS='td z-drop' ID=os_network1></DIV></DIV>"
  print "</DIV></DIV></FORM>"
 
  print "<DIV ID=div_os_nets style='float:left; height:200px; overflow:auto;'>"
@@ -187,24 +187,24 @@ def action(aWeb):
   from json import dumps
   vm  = controller.call("8082","virtual-machine/{}".format(id))['data']['virtual-machine']
   print "<DIV CLASS=z-table2>"
-  print "<DIV CLASS=z-thead><DIV CLASS=z-th>MAC</DIV><DIV CLASS=z-th>Routing Instance</DIV><DIV CLASS=z-th>Network</DIV><DIV CLASS=z-th>IP</DIV><DIV CLASS=z-th>Floating IP</DIV><DIV CLASS=z-th>Operation</DIV></DIV>"
+  print "<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV>"
   for vmir in vm['virtual_machine_interface_back_refs']:
    vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']
    ip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
-   print "<DIV CLASS=z-tbody>"
-   print "<DIV CLASS=z-tr>"
+   print "<DIV CLASS=tbody>"
+   print "<DIV CLASS=tr>"
    print "<!-- {} -->".format(vmir['href'])
-   print "<DIV CLASS=z-td>{}</DIV>".format(vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
-   print "<DIV CLASS=z-td>{}</DIV>".format(vmi['routing_instance_refs'][0]['to'][3])
-   print "<DIV CLASS=z-td><A CLASS='z-op' DIV=div_os_right SPIN=true URL=ajax.cgi?call=neutron_action&id={0}&op=info>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
-   print "<DIV CLASS=z-td>{}</DIV>".format(ip['instance_ip_address'])
+   print "<DIV CLASS=td>{}</DIV>".format(vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
+   print "<DIV CLASS=td>{}</DIV>".format(vmi['routing_instance_refs'][0]['to'][3])
+   print "<DIV CLASS=td><A CLASS='z-op' DIV=div_os_right SPIN=true URL=ajax.cgi?call=neutron_action&id={0}&op=info>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
+   print "<DIV CLASS=td>{}</DIV>".format(ip['instance_ip_address'])
    if vmi.get('floating_ip_back_refs'):
     fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
-    print "<DIV CLASS=z-td>{} ({})</DIV>".format(fip['floating_ip_address'],fip['fq_name'][2])
-    print "<DIV CLASS=z-td><A TITLE='Disassociate' CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=fi_disassociate&id={} SPIN=true><IMG SRC=images/btn-remove.png></A>&nbsp;</DIV>".format(fip['uuid'])
+    print "<DIV CLASS=td>{} ({})</DIV>".format(fip['floating_ip_address'],fip['fq_name'][2])
+    print "<DIV CLASS=td><A TITLE='Disassociate' CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=fi_disassociate&id={} SPIN=true><IMG SRC=images/btn-remove.png></A>&nbsp;</DIV>".format(fip['uuid'])
    else:
-    print "<DIV CLASS=z-td></DIV>"
-    print "<DIV CLASS=z-td></DIV>"
+    print "<DIV CLASS=td></DIV>"
+    print "<DIV CLASS=td></DIV>"
    print "</DIV>"
   print "</DIV>"
   print "</DIV>"
