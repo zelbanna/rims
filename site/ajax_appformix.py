@@ -38,26 +38,26 @@ def report(aWeb):
   reportid = rep['ReportId']
   report = controller.call("reports/project/{}".format(reportid))['data'].get('UsageReport',None)
   if report['ProjectId'] == pid:
-   print "<DIV CLASS='z-table' style='overflow:auto; display:block' ID=div_appformix_info>"
+   print "<DIV CLASS=z-fframe style='overflow:auto; display:block' ID=div_appformix_info>"
    print "<H2>Report: {}</H2>".format(report['ReportId'])
    print "<H3>{} -> {}</H3>".format(datetime.utcfromtimestamp(float(report['Start'])/1e3),datetime.utcfromtimestamp(float(report['End'])/1e3))
    # print "<H3>Created by: {}</H3>".format(report['CreatedBy']) 
-   print "<TABLE style='width:99%; display:inline-block;'>"
+   print "<DIV CLASS=z-table2 style='width:99%; display:inline-block;'><DIV CLASS=z-tbody>"
    for ent in report['Data']:
     #print "<THEAD><TH>Field</TH><TH>Data</TH></THEAD>"
     print "<!-- Ent -->"
     for key,value in ent.iteritems():
      if isinstance(value,dict):
-      print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'><TABLE>".format(key)
+      print "<DIV CLASS=z-tr><DIV CLASS=z-td>{}</DIV><TD style='white-space:normal; overflow:auto;'><DIV CLASS=z-table2><DIV CLASS=z-tbody>".format(key)
       for k,v in value.iteritems():
-       print "<TR><TD>{}</TD><TD>{}</TD></TR>".format(k,v)
-      print "</TABLE></TD></TR>"
+       print "<DIV CLASS=z-tr><DIV CLASS=z-td>{}</DIV><DIV CLASS=z-td>{}</DIV></DIV>".format(k,v)
+      print "</DIV></DIV></DIV></DIV>"
      elif isinstance(value,list):
-      print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'><TABLE>".format(key)
+      print "<DIV CLASS=z-tr><DIV CLASS=z-td>{}</DIV><TD style='white-space:normal; overflow:auto;'><DIV CLASS=z-table2><DIV CLASS=z-tbody>".format(key)
       for v in value:
-       print "<TR><TD>{}</TD></TR>".format(v)
-      print "</TABLE></TD></TR>"
+       print "<DIV CLASS=z-tr><DIV CLASS=z-td>{}</DIV></DIV>".format(v)
+      print "</DIV></DIV></DIV></DIV>"
      else:
-      print "<TR><TD>{}</TD><TD style='white-space:normal; overflow:auto;'>{}</TD></TR>".format(key,value)
-   print "</TABLE>"
+      print "<DIV CLASS=z-tr><DIV CLASS=z-td>{}</DIV><TD style='white-space:normal; overflow:auto;'>{}</DIV></DIV>".format(key,value)
+   print "</DIV></DIV>"
    print "</DIV>"

@@ -35,8 +35,7 @@ def data2html(aData):
    print "<DIV CLASS=z-tr><DIV CLASS=z-td style='padding:0px;'>"
    data2html(v)
    print "</DIV></DIV>"
-  print "</DIV>"
-  print "</DIV>"
+  print "</DIV></DIV>"
  else:
   print aData
 
@@ -63,22 +62,23 @@ def result(aWeb):
   else:
    port,url = cookie.get("os_{}_port".format(service)),cookie.get("os_{}_url".format(service))
   ret = controller.call(port,url + aWeb.get_value('os_call'), args = arguments, method=aWeb.get_value('os_method'))
- print "<DIV CLASS=z-table style='overflow:auto;'>"
- print "<TABLE style=' width:100%;'>"
- print "<TR><TD style='width:100px'>Result</TD><TD>{}</TD></TR>".format(ret['result'])
- print "<TR><TD style='width:100px'>HTTP Code</TD><TD>{}</TD></TR>".format(ret['code'])
- print "<TR><TD style='width:100px'>Header</TD><TD>"
+ print "<DIV CLASS=z-fframe style='overflow:auto;'>"
+ print "<DIV CLASS=z-table2 style=' width:100%;'>"
+ print "<DIV CLASS=z-tbody>"
+ print "<DIV CLASS=z-tr><DIV CLASS=z-td style='width:100px'>Result</DIV><DIV CLASS=z-td>{}</DIV></DIV>".format(ret['result'])
+ print "<DIV CLASS=z-tr><DIV CLASS=z-td style='width:100px'>HTTP Code</DIV><DIV CLASS=z-td>{}</DIV></DIV>".format(ret['code'])
+ print "<DIV CLASS=z-tr><DIV CLASS=z-td style='width:100px'>Header</DIV><DIV CLASS=z-td>"
  for key,value in ret['header'].iteritems():
   print "{}:{}<BR>".format(key,value)
- print "</TD></TR>"
- print "</TABLE>"
+ print "</DIV></DIV>"
+ print "</DIV></DIV>"
  print "<DIV style='border:solid 1px black; background:#FFFFFF'>"
  output = dumps(ret['data'],indent=4, sort_keys=True)
  print "<PRE style='margin:0px;'>{}</PRE>".format(output)
  print "</DIV></DIV>"
 
 def api(aWeb):
- print "<DIV CLASS='z-table' ID=div_os_control><FORM ID=frm_os_api>"
+ print "<DIV CLASS=z-fframe ID=div_os_control><FORM ID=frm_os_api>"
  print "<H3>OpenStack REST API inspection</H3>"
  print "Choose Service and enter API call: <SELECT CLASS='z-select' style='width:auto; height:22px;' NAME=os_service>"
  services = ['contrail']
@@ -100,7 +100,7 @@ def api(aWeb):
  print "<DIV ID=div_os_info></DIV>"
 
 def fqname(aWeb):
- print "<DIV CLASS=z-table ID=div_os_control>"
+ print "<DIV CLASS=z-fframe ID=div_os_control>"
  print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT style='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb.get_value('os_uuid') if aWeb.get_value('os_uuid') else "")
  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL=ajax.cgi?call=openstack_fqname FRM=frm_os_uuid TITLE='Go'><IMG SRC=images/btn-start.png></A><BR>"
  if aWeb.get_value('os_uuid'):
@@ -116,9 +116,9 @@ def fqname(aWeb):
    ret  = controller.call("8082","id-to-fqname",args=argument,method='POST')
    data = ret['data']
    if ret['result'] == 'OK':
-    print "<TABLE style='width:100%;'><THEAD><TH>Type</TH><TH>Value</TH></THEAD>"
-    print "<TR><TD>FQDN</TD><TD>{}</TD></TR>".format(".".join(data['fq_name']))
-    print "<TR><TD>Type</TD><TD><A CLASS='z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_result&os_service=contrail&os_call={0}/{1}>{0}</A></TD></TR>".format(data['type'],argument['uuid'])
-    print "</TABLE><BR>"
+    print "<DIV CLASS=z-table2 style='width:100%;'><DIV CLASS=z-thead><DIV CLASS=z-th>Type</DIV><DIV CLASS=z-th>Value</DIV></DIV><DIV CLASS=z-tbody>"
+    print "<DIV CLASS=z-tr><DIV CLASS=z-td>FQDN</DIV><DIV CLASS=z-td>{}</DIV></DIV>".format(".".join(data['fq_name']))
+    print "<DIV CLASS=z-tr><DIV CLASS=z-td>Type</DIV><DIV CLASS=z-td><A CLASS='z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_result&os_service=contrail&os_call={0}/{1}>{0}</A></DIV></DIV>".format(data['type'],argument['uuid'])
+    print "</DIV></DIV><BR>"
  print "</DIV>"
  print "<DIV ID=div_os_info></DIV>"

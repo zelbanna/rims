@@ -144,16 +144,6 @@ def action(aWeb):
   print "</DIV>"
   print "</DIV>"
 
- elif op == 'remove':
-  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id), method='DELETE')
-  print "<DIV CLASS='z-fframe'>"
-  print "<H3>Removing {}</H3>".format(name)
-  if ret['code'] == 204:
-   print "Removing stack"
-  else:
-   print "Error code: {}".format(ret['code'])
-  print "</DIV>"
-
  elif op == 'template':
   from json import dumps
   ret = controller.call(port,url + "/stacks/{}/{}/template".format(name,id))
@@ -170,6 +160,7 @@ def action(aWeb):
 
  elif op == 'create':
   template = aWeb.get_value('template')
+  print "<DIV CLASS='z-fframe'>"
   if name and template:
    from json import load,dumps
    with open("os_templates/"+template) as f:
@@ -186,6 +177,17 @@ def action(aWeb):
     print "<PRE>Error instantiating stack:" + str(ret) + "</PRE>"
   else:
    print "Error - need to provide a name for the instantiation"
+  print "</DIV>"
+
+ elif op == 'remove':
+  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id), method='DELETE')
+  print "<DIV CLASS='z-fframe'>"
+  print "<H3>Removing {}</H3>".format(name)
+  if ret['code'] == 204:
+   print "Removing stack"
+  else:
+   print "Error code: {}".format(ret['code'])
+  print "</DIV>"
 
  if op == 'templateview':
   template = aWeb.get_value('template')

@@ -64,14 +64,14 @@ def openstack_login(aWeb):
  print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
  print "<FORM ACTION=pane.cgi METHOD=POST ID=openstack_login>"
  print "<INPUT TYPE=HIDDEN NAME=view VALUE=openstack_portal>"
- print "<TABLE style='display:inline; float:left; margin:0px 0px 0px 30px;'>"
- print "<TR><TD>Customer:</TD><TD><SELECT style='border:none; width:100px; display:inline; color:black' NAME=project>"
+ print "<DIV CLASS=z-table2 style='display:inline; float:left; margin:0px 0px 0px 30px;'><DIV CLASS=z-tbody>"
+ print "<DIV CLASS=z-tr><DIV CLASS=z-td>Customer:</DIV><DIV CLASS=z-td><SELECT style='border:none; width:100px; display:inline; color:black' NAME=project>"
  for p in projects:
   print "<OPTION VALUE={0}_{1} {2}>{1}</OPTION>".format(p['id'],p['name'],'' if not p['id'] == prev else "selected")
- print "</SELECT></TD></TR>"
- print "<TR><TD>Username:</TD><TD><INPUT style='z-input' TYPE=text NAME=username {}></TD></TR>".format('' if not user else "VALUE={}".format(user))
- print "<TR><TD>Password:</TD><TD><INPUT style='z-input' TYPE=password NAME=password></TD></TR>"
- print "</TABLE>"
+ print "</SELECT></DIV></DIV>"
+ print "<DIV CLASS=z-tr><DIV CLASS=z-td>Username:</DIV><DIV CLASS=z-td><INPUT TYPE=text NAME=username {}></DIV></DIV>".format('' if not user else "VALUE={}".format(user))
+ print "<DIV CLASS=z-tr><DIV CLASS=z-td>Password:</DIV><DIV CLASS=z-td><INPUT TYPE=password NAME=password></DIV></DIV>"
+ print "</DIV></DIV>"
  print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
  print "</FORM>"
  print "</DIV></DIV>"
@@ -121,10 +121,10 @@ def openstack_portal(aWeb):
  aWeb.put_listeners()
  print "<DIV CLASS=z-os-header    ID=div_os_header>"
  print "<DIV CLASS=z-os-head-info ID=div_os_head_info>"
- print "<TABLE style='display:inline; float:left; margin:5px 100px 0px 10px;'>"
- print "<TR><TD><B>Identity:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Id:</B></TD><TD><I>{}</I></TD></TR>".format(pname,pid)
- print "<TR><TD><B>Username:</B></TD><TD><I>{}</I></TD><TD>&nbsp;<B>Token:</B></TD><TD><I>{}</I></TD></TR>".format(username,utok)
- print "</TABLE>"
+ print "<DIV CLASS=z-table2 style='display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=z-tbody>"
+ print "<DIV CLASS=z-tr style='background:transparent'><DIV CLASS=z-td><B>Identity:</B></DIV><DIV CLASS=z-td><I>{}</I></DIV><DIV CLASS=z-td>&nbsp;<B>Id:</B></DIV><DIV CLASS=z-td><I>{}</I></DIV></DIV>".format(pname,pid)
+ print "<DIV CLASS=z-tr style='background:transparent'><DIV CLASS=z-td><B>Username:</B></DIV><DIV CLASS=z-td><I>{}</I></DIV><DIV CLASS=z-td>&nbsp;<B>Token:</B></DIV><DIV CLASS=z-td><I>{}</I></DIV></DIV>".format(username,utok)
+ print "</DIV></DIV>"
  print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px'>Log out</A>".format(ctrl,cookie.get('os_demo_name'),cookie.get('af_controller'))
  print "</DIV>"
  print "<DIV CLASS='z-navbar' style='top:60px; z-index:1001' ID=div_navbar>"
@@ -180,7 +180,7 @@ def examine(aWeb):
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
 
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-op' OP=load DIV=div_examine_log MSG='Clear Network Logs?' URL='ajax.cgi?call=examine_clear_logs&{}'>Clear Logs</A>".format(aWeb.get_args_except(['pane']))
+ print "<A CLASS='z-warning z-op' DIV=div_examine_log MSG='Clear Network Logs?' URL='ajax.cgi?call=examine_clear_logs&{}'>Clear Logs</A>".format(aWeb.get_args_except(['pane']))
  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_examine_log URL='.z-system'>Logs</A>"
  if upshost:
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_ups URL='.z-system'>UPS</A>"
@@ -203,10 +203,10 @@ def examine(aWeb):
   print "</DIV>"
  
  if svclist:
-  print "<DIV CLASS='z-system' id=div_dns title='DNS data' style='display:none;'>"
+  print "<DIV CLASS=z-system id=div_dns title='DNS data' style='display:none;'>"
   graph.widget_rows( ["{1}/{0}.{1}/pdns_queries".format(svclist[0],domain), "{1}/{0}.{1}/dhcpd3".format(svclist[0],domain) ])
-  print "<DIV CLASS='z-table' style='width:30%; float:left;'><CENTER>{}</CENTER></DIV>".format(aWeb.get_include("http://"+ svclist[0] +"/dns-top.php?type=sites"))
-  print "<DIV CLASS='z-table' style='width:30%; float:left;'><CENTER>{}</CENTER></DIV>".format(aWeb.get_include("http://"+ svclist[0] +"/dns-top.php?type=clients"))
+  print "<DIV CLASS=z-fframe style='width:30%; float:left;'><CENTER>{}</CENTER></DIV>".format(aWeb.get_include("http://"+ svclist[0] +"/dns-top.php?type=sites"))
+  print "<DIV CLASS=z-fframe style='width:30%; float:left;'><CENTER>{}</CENTER></DIV>".format(aWeb.get_include("http://"+ svclist[0] +"/dns-top.php?type=clients"))
   print "</DIV>"
  
   print "<DIV CLASS='z-system' id=div_dhcp title='DHCP leases' style='display:none;'>"
@@ -382,17 +382,17 @@ def rack_info(aWeb):
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  if rack and name:
-  print "<A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(rack,name)
- print "<A CLASS='z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
+  print "<A CLASS='z-op' DIV=div_navcont URL='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(rack,name)
+ print "<A CLASS='z-op'  DIV=div_navleft URL='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
  if con:
-  print "<A CLASS='z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)
+  print "<A CLASS='z-op' DIV=div_navleft URL='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)
  if len(pdus) > 0:
   pdustring = "&pdulist=".join(pdus)
-  print "<A CLASS='z-op' OP=load DIV=div_navleft SPIN=true URL='ajax.cgi?call=pdu_list_units&pdulist={}'>PDU</A>".format(pdustring)
+  print "<A CLASS='z-op' DIV=div_navleft SPIN=true URL='ajax.cgi?call=pdu_list_units&pdulist={}'>PDU</A>".format(pdustring)
  print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
- print "<A CLASS='z-op' style='float:right;' OP=load DIV=div_navleft URL='ajax.cgi?call=pdu_list_pdus'>PDUs</A>"
- print "<A CLASS='z-op' style='float:right;' OP=load DIV=div_navleft URL='ajax.cgi?call=console_list_consoles'>Consoles</A>"
- print "<A CLASS='z-op' style='float:right;' OP=load DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'>Racks</A>"
+ print "<A CLASS='z-op' style='float:right;' DIV=div_navleft URL='ajax.cgi?call=pdu_list_pdus'>PDUs</A>"
+ print "<A CLASS='z-op' style='float:right;' DIV=div_navleft URL='ajax.cgi?call=console_list_consoles'>Consoles</A>"
+ print "<A CLASS='z-op' style='float:right;' DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'>Racks</A>"
  print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
@@ -418,7 +418,7 @@ def esxi(aWeb):
  esxi   = ESXi(host,domain)
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-op' OP=load DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.get_args_except(['pane']))
+ print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.get_args_except(['pane']))
  print "<A CLASS=z-op OP=toggle DIV=div_esxi_pic   HREF='#'>Picture</A>"
  print "<A CLASS=z-op OP=toggle DIV=div_esxi_stats HREF='#'>Stats</A>"
  print "<A CLASS=z-op OP=toggle DIV=div_esxi_op   HREF='#'>VM OPs</A>"
@@ -482,14 +482,14 @@ def devices(aWeb):
 
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
- print "<A CLASS='z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
+ print "<A CLASS='z-op' DIV=div_navleft URL='ajax.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
+ print "<A CLASS='z-op' DIV=div_navleft URL='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
  if argdict.get('console',None):
-  print "<A CLASS='z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=console_list&{}'>Console</A>".format(argdict.get('console'))
+  print "<A CLASS='z-op' DIV=div_navleft URL='ajax.cgi?call=console_list&{}'>Console</A>".format(argdict.get('console'))
  if argdict.get('pdu',None):
-  print "<A CLASS='z-op' OP=load DIV=div_navleft SPIN=true URL='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
+  print "<A CLASS='z-op' DIV=div_navleft SPIN=true URL='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
  print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
- print "<A CLASS='z-right z-op'  OP=load   DIV=div_navcont MSG='Discover devices?' URL='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
+ print "<A CLASS='z-right z-op' DIV=div_navcont MSG='Discover devices?' URL='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
  print "<DIV CLASS=z-navright ID=div_navcont>" 
@@ -508,14 +508,14 @@ def config(aWeb):
  aWeb.put_listeners()
  domain    = aWeb.get_value('domain', None)
  print "<DIV CLASS='z-table' ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
- print "<A CLASS='z-btn z-warning z-op' OP=load DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"
- print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true URL='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
- print "<A CLASS='z-btn z-op' OP=load DIV=div_config           URL='ajax.cgi?call=graph_sync&domain={0}'>Synch Graphing</A>".format(domain)
- print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_sync'>Synch DDI</A>"
- print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true URL='rest.cgi?call=ddi_dhcp_update'>Update DHCP</A>"
- print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_load_infra'>Load DDI Tables</A>"
+ print "<A CLASS='z-btn z-warning z-op' DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"
+ print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
+ print "<A CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=graph_sync&domain={0}'>Synch Graphing</A>".format(domain)
+ print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_sync'>Synch DDI</A>"
+ print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='rest.cgi?call=ddi_dhcp_update'>Update DHCP</A>"
+ print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_load_infra'>Load DDI Tables</A>"
  print "<A CLASS='z-btn' TARGET=_blank HREF='ajax.cgi?call=device_dump_db'>Dump DB to JSON</A>"
- print "<A CLASS='z-btn z-op' OP=load DIV=div_config SPIN=true URL='ajax.cgi?call=device_rack_info'>Device Rackinfo</A>"
- print "<A CLASS='z-btn z-op' OP=load DIV=div_config           URL='ajax.cgi?call=device_mac_sync'>Sync MAC Info</A>"
+ print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=device_rack_info'>Device Rackinfo</A>"
+ print "<A CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=device_mac_sync'>Sync MAC Info</A>"
  print "</DIV>"
  print "<DIV ID=div_config style='min-width:600px; min-height:300px; display:inline;'></DIV>"
