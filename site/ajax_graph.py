@@ -18,21 +18,22 @@ def list(aWeb):
  if node and state:
   nstate = "yes" if state == "no" else "no"
   graph.update_entry(node, nstate)
- print "<DIV CLASS='z-table'>"
- print "<TABLE WIDTH=330><TR><TH>Node</TH><TH>Handler</TH><TH TITLE='Include in graphing?'>Include</TH></TR>"
+ print "<DIV CLASS=z-fframe><DIV CLASS=z-table2 style='width:330px'>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Handler</DIV><DIV CLASS=th TITLE='Include in graphing?'>Include</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
  keys = graph.get_keys()
  for key in keys:
   entry = graph.get_entry(key)
   gdomain = key.partition(".")[2]
-  print "<TR>"
+  print "<DIV CLASS=tr>"
   if entry['update'] == 'yes':
-   print "<TD><A CLASS=z-op TITLE='Show graphs for {1}' OP=load DIV=div_navcont URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html'>{1}</A></TD>".format(gdomain,key)
+   print "<DIV CLASS=td><A CLASS=z-op TITLE='Show graphs for {1}' OP=load DIV=div_navcont URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html'>{1}</A></DIV>".format(gdomain,key)
   else:
-   print "<TD>{0}</TD>".format(key)
-  print "<TD>"+ entry['handler'] +"</TD>"
-  print "<TD TITLE='Include in graphing?'><CENTER><A CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=graph_list&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A></CENTER></TD>".format("start" if entry['update'] == "no" else "shutdown")
-  print "</TR>"
- print "</TABLE></DIV>"
+   print "<DIV CLASS=td>{0}</DIV>".format(key)
+  print "<DIV CLASS=td>"+ entry['handler'] +"</DIV>"
+  print "<DIV CLASS=td TITLE='Include in graphing?'><A CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=graph_list&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A>&nbsp;</DIV>".format("start" if entry['update'] == "no" else "shutdown")
+  print "</DIV>"
+ print "</DIV></DIV></DIV>"
 
 #
 # Find graphs
