@@ -29,8 +29,9 @@ def list_units(aWeb):
 
  if len(pdulist) == 0:
   pdulist.append(pduop)
- print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<THEAD><TH>PDU</TH><TH>Entry</TH><TH>Device</TH><TH style='width:63px;'>State</TH></THEAD>"
+ print "<DIV CLASS=z-fframe><DIV CLASS=z-table2 style='width:330px;'>"
+ print "<DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Entry</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th style='width:63px;'>State</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
  for pdu in pdulist:
   avocent = Avocent(pdu)
   avocent.load_snmp()
@@ -45,15 +46,15 @@ def list_units(aWeb):
 
   for key in avocent.get_keys(aSortKey = lambda x: int(x.split('.')[0])*100+int(x.split('.')[1])):
    value = avocent.get_entry(key)
-   print "<TR><TD TITLE='Open up a browser tab for {1}'><A TARGET='_blank' HREF='https://{0}:3502'>{1}</A></TD><TD>{2}</TD>".format(avocent._ip,pdu,value['slotname']+'.'+value['unit'])
-   print "<TD><A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=pdu_unit_info&pdu={0}&slot={1}&unit={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></TD><TD>".format(pdu,value['slot'],value['unit'],value['name'], value['slotname'])
+   print "<DIV CLASS=tr><DIV CLASS=td TITLE='Open up a browser tab for {1}'><A TARGET='_blank' HREF='https://{0}:3502'>{1}</A></DIV><DIV CLASS=td>{2}</DIV>".format(avocent._ip,pdu,value['slotname']+'.'+value['unit'])
+   print "<DIV CLASS=td><A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=pdu_unit_info&pdu={0}&slot={1}&unit={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td>".format(pdu,value['slot'],value['unit'],value['name'], value['slotname'])
    if value['state'] == "off":
     print optemplate.format(pdu, "on", value['slot'],value['unit'], "start")
    else:
     print optemplate.format(pdu, "off", value['slot'],value['unit'], "shutdown")
     print optemplate.format(pdu, "reboot", value['slot'],value['unit'], "reboot")
-   print "</TD></TR>"
- print "</TABLE></DIV>"
+   print "&nbsp;</DIV></DIV>"
+ print "</DIV></DIV></DIV>"
 
 def unit_info(aWeb):
  op = aWeb.get_value('op')
@@ -68,18 +69,17 @@ def unit_info(aWeb):
   return
  slotname = aWeb.get_value('slotname')
  name = aWeb.get_value('name')
- print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
+ print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
  print "<FORM ID=pdu_form>"
  print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(slot)
  print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(unit)
  print "<INPUT NAME=pdu    VALUE={} TYPE=HIDDEN>".format(pdu)
- print "<TABLE style='width:100%'>"
- print "<THEAD><TH COLSPAN=2>PDU Slot Info</TH></THEAD>"
- print "<TR><TD>PDU:</TD><TD>{0}</TD></TR>".format(pdu)
- print "<TR><TD>Slot.Unit:</TD><TD>{0}.{1}</TD></TR>".format(slotname,unit)
- print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
- print "<TR><TD COLSPAN=2>&nbsp;</TD></TR>"
- print "</TABLE>"
+ print "<DIV CLASS=title>PDU Slot Info</DIV>"
+ print "<DIV CLASS=z-table2 style='width:100%'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>PDU:</DIV><DIV CLASS=td>{0}</DIV></DIV>".format(pdu)
+ print "<DIV CLASS=tr><DIV CLASS=td>Slot.Unit:</DIV><DIV CLASS=td>{0}.{1}</DIV></DIV>".format(slotname,unit)
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
+ print "</DIV></DIV>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=pdu_unit_info&op=update FRM=pdu_form OP=load><IMG SRC='images/btn-save.png'></A>"
  print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>"
  print "</FORM>"
@@ -91,18 +91,18 @@ def unit_info(aWeb):
 def list_pdus(aWeb):
  db   = GL.DB()
  db.connect()
- print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>PDUs</CENTER></TH></THEAD>"
- print "<TR style='height:20px'><TD COLSPAN=3>"
+ print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=title>PDUs</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=pdu_list_pdus'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=pdu_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
- print "</TD></TR>"
+ print "<DIV CLASS=z-table2 style='width:99%'><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
  res  = db.do("SELECT id, name, INET_NTOA(ip) as ip from pdus ORDER by name")
  data = db.get_all_rows()
- print "<TR><TH>ID</TH><TH>Name</TH><TH>IP</TH></TR>"
+
  for unit in data:
-  print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=pdu_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['ip'])
- print "</TABLE></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=pdu_device_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['ip'])
+ print "</DIV></DIV></DIV>"
  db.close()
 
 #
@@ -139,12 +139,11 @@ def device_info(aWeb):
    res = db.do(sql)
    db.commit()
 
- print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
+ print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
+ print "<DIV CLASS=title>PDU Device Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<FORM ID=pdu_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<TABLE style='width:100%'>"
- print "<THEAD><TH COLSPAN=2>PDU Device Info {}</TH></THEAD>".format("(new)" if id == 'new' else "")
-
+ print "<DIV CLASS=z-table2 style='width:100%'><DIV CLASS=tbody>"
  if id == 'new':
   pdudata = { 'id':'new', 'slots':0, '0_slot_name':'unknown', '0_slot_id':0, '1_slot_name':'unknown', '1_slot_id':1 }
   if not ip:
@@ -160,21 +159,21 @@ def device_info(aWeb):
   ip   = pdudata['ipasc']
   name = pdudata['name']
 
- print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
- print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
+ print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(ip)
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(name)
  if pdudata['slots'] == 1:
-  print "<TR><TD>Right/Left slots:</TD><TD><INPUT TYPE=checkbox style='border:none;' NAME=slots VALUE=1 checked=checked></TD></TR>"
-  print "<TR><TD>Slot 1 Name:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_name'])
-  print "<TR><TD>Slot 1 ID:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_id'])
-  print "<TR><TD>Slot 2 Name:</TD><TD>{}</TD></TR>".format(pdudata['1_slot_name'])
-  print "<TR><TD>Slot 2 ID:</TD><TD>{}</TD></TR>".format(pdudata['1_slot_id'])
+  print "<DIV CLASS=tr><DIV CLASS=td>Right/Left slots:</DIV><DIV CLASS=td><INPUT TYPE=checkbox style='border:none;' NAME=slots VALUE=1 checked=checked></DIV></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Slot 1 Name:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(pdudata['0_slot_name'])
+  print "<DIV CLASS=tr><DIV CLASS=td>Slot 1 ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(pdudata['0_slot_id'])
+  print "<DIV CLASS=tr><DIV CLASS=td>Slot 2 Name:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(pdudata['1_slot_name'])
+  print "<DIV CLASS=tr><DIV CLASS=td>Slot 2 ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(pdudata['1_slot_id'])
  else:
-  print "<TR><TD>Right/Left slots:</TD><TD><INPUT TYPE=checkbox style='border:none;' NAME=slots VALUE=1></TD></TR>"
-  print "<TR><TD>Slot 1 Name:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_name'])
-  print "<TR><TD>Slot 1 ID:</TD><TD>{}</TD></TR>".format(pdudata['0_slot_id'])
+  print "<DIV CLASS=tr><DIV CLASS=td>Right/Left slots:</DIV><DIV CLASS=td><INPUT TYPE=checkbox style='border:none;' NAME=slots VALUE=1></DIV></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Slot 1 Name:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(pdudata['0_slot_name'])
+  print "<DIV CLASS=tr><DIV CLASS=td>Slot 1 ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(pdudata['0_slot_id'])
 
  db.close()
- print "</TABLE>"
+ print "</DIV></DIV>"
  if not id == 'new':
   print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=pdu_device_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
   print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=pdu_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)

@@ -17,7 +17,7 @@ def list_racks(aWeb):
  db   = GL.DB()
  db.connect()
  print "<DIV CLASS=z-fframe>"
- print "<DIV CLASS=z-title>Rack</DIV>"
+ print "<DIV CLASS=title>Rack</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=rack_unit_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table2 style='width:330px'>"
@@ -84,7 +84,7 @@ def unit_info(aWeb):
  print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
  print "<FORM ID=rack_unit_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<CENTER>Rack Info {}</CENTER>".format("(new)" if id == 'new' else "")
+ print "<DIV CLASS=title>Rack Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<DIV CLASS=z-table2 style='width:100%'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(rack['name'])
  print "<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(rack['size'])
