@@ -204,7 +204,6 @@ def examine(aWeb):
  
  if svclist:
   print "<DIV CLASS=z-system id=div_dns title='DNS data' style='display:none;'>"
-  graph.widget_rows( ["{1}/{0}.{1}/pdns_queries".format(svclist[0],domain), "{1}/{0}.{1}/dhcpd3".format(svclist[0],domain) ])
   print "<DIV CLASS=z-fframe style='width:30%; float:left;'><CENTER>{}</CENTER></DIV>".format(aWeb.get_include("http://"+ svclist[0] +"/dns-top.php?type=sites"))
   print "<DIV CLASS=z-fframe style='width:30%; float:left;'><CENTER>{}</CENTER></DIV>".format(aWeb.get_include("http://"+ svclist[0] +"/dns-top.php?type=clients"))
   print "</DIV>"
@@ -428,12 +427,12 @@ def esxi(aWeb):
  print "</DIV>"
  
  print "<DIV CLASS='z-navcontent' ID=div_navcont>"
- print "<DIV CLASS='z-system' id=div_esxi_stats title='Device stats' style='display:none;'>"
+ print "<DIV CLASS=z-system id=div_esxi_stats title='Device stats' style='display:none;'>"
  graph  = Grapher()
  graph.widget_cols([ "{1}/{0}/esxi_vm_info".format(esxi._fqdn,domain), "{1}/{0}/esxi_cpu_info".format(esxi._fqdn,domain), "{1}/{0}/esxi_mem_info".format(esxi._fqdn,domain) ])
  print "</DIV>"
  
- print "<DIV CLASS=z-table ID=div_esxi_op style='float:left; display:block'>"
+ print "<DIV CLASS=z-fframe ID=div_esxi_op style='float:left; display:block'>"
  esxi_op(aWeb,esxi)
  print "</DIV>"
 

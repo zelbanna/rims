@@ -18,9 +18,10 @@ def sync(aWeb):
  db.connect()
  db.do("SELECT devices.id, ip, hostname, INET_NTOA(ip) as ipasc, ipam_sub_id, a_dom_id, domains.name as domain FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE (a_id = 0 or ptr_id = 0 or ipam_id = 0) ORDER BY ip")
  rows = db.get_all_rows()
- print "<DIV CLASS='z-table'>"
- print "<TABLE>"
- print "<THEAD style='border: 1px solid grey'><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>Domain</TH><TH>A</TH><TH>PTR</TH><TH>IPAM</TH><TH>Extra</TH></THEAD>"
+ print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=z-table2>"
+ print "<DIV CLASS=thead style='border: 1px solid grey'><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>A</DIV><DIV CLASS=th>PTR</DIV><DIV CLASS=th>IPAM</DIV><DIV CLASS=th>Extra</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
  for row in rows:
   ip   = row['ipasc']
   name = row['hostname']
@@ -32,7 +33,7 @@ def sync(aWeb):
 
   retvals = ipam_lookup({'ip':ip, 'ipam_sub_id':row['ipam_sub_id']})
   ipam_id = retvals.get('ipam_id','0')
-  print "<TR><TD>{}</<TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>".format(row['id'],ip,name,dom,a_id,ptr_id,ipam_id)
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(row['id'],ip,name,dom,a_id,ptr_id,ipam_id)
   if not name == 'unknown':
    print "updating"
    uargs = { 'ip':ip, 'name':name, 'a_dom_id':dom, 'a_id':a_id, 'ptr_id':ptr_id }
@@ -42,11 +43,11 @@ def sync(aWeb):
    ipam_update(uargs)
    print str(retvals)
    db.do("UPDATE devices SET ipam_id = {}, a_id = {}, ptr_id = {}, ptr_dom_id = {}  WHERE id = {}".format(ipam_id, retvals.get('a_id','0'),retvals.get('ptr_id','0'), retvals.get('ptr_dom_id','NULL'), row['id']))
-  print "</TD></TR>"
+  print "</DIV></DIV>"
 
  db.commit()
  db.close()
- print "</TABLE></DIV>"
+ print "</DIV></DIV></DIV>"
 
 #
 #

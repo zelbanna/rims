@@ -56,25 +56,25 @@ def op(aWeb, aEsxi = None):
    GL.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  statelist = aEsxi.get_vms(sort)
- print "<TABLE>"
  # Formatting template (command, btn-xyz, vm-id, hover text)
  template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true OP=load DIV=div_esxi_op URL='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
  if not nstate:
-  print "<TR><TH CLASS='z-header' COLSPAN=2>{}</TH></TR>".format(aEsxi._fqdn)
+  print "<DIV CLASS=title>{}</DIV>".format(aEsxi._fqdn)
  else:
-  print "<TR><TH CLASS='z-header' COLSPAN=2>{} <SPAN style='font-size:12px'>{}:{}</SPAN></TH></TR>".format(aEsxi._fqdn,vmid, nstate.split('-')[1])
- print "<TR><TH><A CLASS='z-op' OP=load DIV=div_esxi_op URL='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></TH><TH>Operations</TH></TR><TR>"
+  print "<DIV CLASS=title>{} <SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(aEsxi._fqdn,vmid, nstate.split('-')[1])
+ print "<DIV CLASS=z-table2>"
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS='z-op' OP=load DIV=div_esxi_op URL='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>"
  if nstate and nstate == 'vmsoff':
-  print "<TD><B>SHUTDOWN ALL VMs!</B></TD>"
+  print "<B>SHUTDOWN ALL VMs!</B>"
  else:
-  print "<TD>SHUTDOWN ALL VMs!</TD>"
- print "<TD><CENTER>" + template.format('vmsoff','shutdown',excpt, "Shutdown all VMs") + "</CENTER></TD></TR>"
+  print "SHUTDOWN ALL VMs!"
+ print "</DIV><DIV CLASS=td><CENTER>" + template.format('vmsoff','shutdown',excpt, "Shutdown all VMs") + "&nbsp;</CENTER></DIV></DIV>"
  for vm in statelist:
-  if vm[0] == vmid:
-   print "<TR><TD><B>" + vm[1] + "</B></TD>"
-  else:
-   print "<TR><TD>" + vm[1] + "</TD>"
-  print "<TD>"
+  print "<DIV CLASS=tr><DIV CLASS=td>"
+  print "<B>{}</B>".format(vm[1]) if vm[0] == vmid else vm[1]
+  print "</DIV><DIV CLASS=td>"
   if vm[2] == "1":
    print template.format('vmsvc-power.shutdown','shutdown', vm[0], "Soft shutdown")
    print template.format('vmsvc-power.reboot','reboot', vm[0], "Soft reboot")
@@ -87,5 +87,5 @@ def op(aWeb, aEsxi = None):
    print template.format('vmsvc-power.on','start', vm[0], "Start")
    print template.format('vmsvc-snapshot.create','snapshot', vm[0], "Snapshot")
    print template.format('vmsvc-snapshot.revert','revert', vm[0], "Snapshot revert to last")
-  print "</TD></TR>"
- print "</TABLE>"
+  print "</DIV></DIV>"
+ print "</DIV></DIV>"
