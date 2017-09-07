@@ -18,20 +18,33 @@ def list(aWeb):
  if node and state:
   nstate = "yes" if state == "no" else "no"
   graph.update_entry(node, nstate)
+<<<<<<< HEAD
  print "<DIV CLASS=z-fframe><DIV CLASS=z-table2 style='width:330px'>"
+=======
+ print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=z-table2 style='width=330px;'>"
+>>>>>>> 1d30ffca178b31d10b169757f7d81420eb75837d
  print "<DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Handler</DIV><DIV CLASS=th TITLE='Include in graphing?'>Include</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  keys = graph.get_keys()
  for key in keys:
+  print "<DIV CLASS=tr>"
   entry = graph.get_entry(key)
   gdomain = key.partition(".")[2]
+<<<<<<< HEAD
   print "<DIV CLASS=tr>"
+=======
+>>>>>>> 1d30ffca178b31d10b169757f7d81420eb75837d
   if entry['update'] == 'yes':
    print "<DIV CLASS=td><A CLASS=z-op TITLE='Show graphs for {1}' OP=load DIV=div_navcont URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html'>{1}</A></DIV>".format(gdomain,key)
   else:
    print "<DIV CLASS=td>{0}</DIV>".format(key)
   print "<DIV CLASS=td>"+ entry['handler'] +"</DIV>"
+<<<<<<< HEAD
   print "<DIV CLASS=td TITLE='Include in graphing?'><A CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=graph_list&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A>&nbsp;</DIV>".format("start" if entry['update'] == "no" else "shutdown")
+=======
+  print "<DIV CLASS=td TITLE='Include in graphing?'><CENTER><A CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=graph_list&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A>&nbsp;</CENTER></DIV>".format("start" if entry['update'] == "no" else "shutdown")
+>>>>>>> 1d30ffca178b31d10b169757f7d81420eb75837d
   print "</DIV>"
  print "</DIV></DIV></DIV>"
 
@@ -101,7 +114,7 @@ def wm(aWeb):
  dom  = aWeb.get_value('domain')
  desc = aWeb.get_value('desc',"LNK"+indx)
  gstr = "munin-cgi/munin-cgi-graph/{1}/{0}.{1}/snmp_{2}_{1}_if_{3}-day.png".format(name,dom,snmpname,indx)
- print "<DIV CLASS=z-table><PRE style='font-size:10px;'>"
+ print "<DIV CLASS=z-fframe><PRE style='font-size:10px;'>"
  print "LINK {}-{}".format(name,desc)
  print "\tINFOURL " +  gstr
  print "\tOVERLIBGRAPH " + gstr

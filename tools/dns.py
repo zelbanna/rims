@@ -81,7 +81,7 @@ def pdns_sync(dnslist):
   GL.log_msg("System Info - updating recursor to " + dnslist[0])
   file_replace('/etc/powerdns/pdns.conf', pdns, dnslist[0])
   try:
-   check_call(["/usr/sbin/service","pdns","reload"])
+   check_call(["/bin/systemctl","restart","pdns"])
    sleep(1)
   except Exception as svcerr:
    GL.log_msg("System Error - Reloading PowerDNS: " + str(svcerr))

@@ -15,11 +15,13 @@ import sdcp.core.GenLib as GL
 
 def list(aWeb):
  from sdcp.devices.RackUtils import OpenGear
+ print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=z-table2 style='width:330px'>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Server</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>Device</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
  domain = aWeb.get_value('domain')
  conlist = aWeb.get_list('consolelist')
  config="https://{0}/?form=serialconfig&action=edit&ports={1}&start=&end="
- print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<THEAD><TH>Server</TH><TH>Port</TH><TH>Device</TH></THEAD>"
  for con in conlist:
   console = OpenGear(con,domain)
   console.load_snmp()
@@ -27,24 +29,24 @@ def list(aWeb):
   for key in console.get_keys():
    port = str(6000 + key)
    value = console.get_entry(key)
-   print "<TR><TD><A HREF='https://{0}/'>{1}</A></TD><TD><A TITLE='Edit port info' HREF={5}>{2}</A></TD><TD><A HREF='telnet://{0}:{3}'>{4}</A></TD>".format(conip, con,str(key),port, value, config.format(conip,key))
- print "</TABLE></DIV>"
+   print "<DIV CLASS=tr><DIV CLASS=td><A HREF='https://{0}/'>{1}</A></DIV><DIV CLASS=td><A TITLE='Edit port info' HREF={5}>{2}</A></DIV><DIV CLASS=td><A HREF='telnet://{0}:{3}'>{4}</A></DIV></DIV>".format(conip, con,str(key),port, value, config.format(conip,key))
+ print "</DIV></DIV></DIV>"
 
 def list_consoles(aWeb):
  db   = GL.DB()
  db.connect()
- print "<DIV CLASS='z-table'><TABLE WIDTH=330>"
- print "<THEAD style='height:20px'><TH COLSPAN=3><CENTER>Consoles</CENTER></TH></THEAD>"
- print "<TR style='height:20px'><TD COLSPAN=3>"
+ print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=title>Consoles</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=console_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
- print "</TD></TR>"
+ print "<DIV CLASS=z-table2 style='width:330px'>"
  res  = db.do("SELECT id, INET_NTOA(ip) as ip, name from consoles ORDER by name")
  data = db.get_all_rows()
- print "<TR><TH>ID</TH><TH>Name</TH><TH>IP</TH></TR>"
+ print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
  for unit in data:
-  print "<TR><TD>{0}</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=console_device_info&id={0}'>{1}</A></TD><TD>{2}</TD></TR>".format(unit['id'],unit['name'],unit['ip'])
- print "</TABLE></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=console_device_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['ip'])
+ print "</DIV></DIV></DIV>"
  db.close()
 
 #
@@ -70,11 +72,12 @@ def device_info(aWeb):
    res = db.do(sql)
    db.commit()  
 
- print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
+ print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
  print "<FORM ID=console_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<TABLE style='width:100%'>"
- print "<THEAD><TH COLSPAN=2>Consoles Info {}</TH></THEAD>".format("(new)" if id == 'new' else "")
+ print "<DIV CLASS=title>Consoles Info {}</DIV>".format("(new)" if id == 'new' else "")
+ print "<DIV CLASS=z-table2 style='width:100%'>"
+ print "<DIV CLASS=tbody>"
  if id == 'new':
   condata = { 'id':'new', 'name':'new-name', 'ip':2130706433 }
   if not ip:
@@ -90,9 +93,9 @@ def device_info(aWeb):
   ip   = condata['ip']
   name = condata['name']
  db.close()
- print "<TR><TD>IP:</TD><TD><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(ip)
- print "<TR><TD>Name:</TD><TD><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></TD></TR>".format(name)
- print "</TABLE>"
+ print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(ip)
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(name)
+ print "</DIV></DIV>"
  if not id == 'new':
   print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=console_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
   print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=console_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)

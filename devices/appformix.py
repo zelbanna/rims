@@ -32,7 +32,7 @@ class AppformixRPC(object):
   from time import mktime, strptime
   try:
    head = { 'Content-Type': 'application/json' }
-   auth ={'UserName': aAuth.get('username'), 'Password': aAuth.get('password') }
+   auth ={'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
    sock = urlopen(Request("http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,"auth_credentials"), headers=head, data=dumps(auth)))
    # If sock code is ok (200) - we can expect to find a token
    if sock.code == 200:
