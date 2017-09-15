@@ -171,7 +171,7 @@ def action(aWeb):
  elif op == 'fi_associate_choose_vm':
   vms = controller.call(cookie.get('os_nova_port'),cookie.get('os_nova_url') + "/servers")['data']['servers']
   print "<FORM ID=frm_fi_assoc_vm><INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
-  print "VM: <SELECT CLASS='z-select' style='width:auto; height:22px;' NAME=vm>"
+  print "VM: <SELECT style='width:auto; height:22px;' NAME=vm>"
   for vm in vms:
    print "<OPTION VALUE={0}#{1}>{0}</OPTION>".format(vm['name'],vm['id'])
   print "</SELECT></FORM>"
@@ -183,7 +183,7 @@ def action(aWeb):
   print "<FORM ID=frm_fi_assoc_vmi>"
   print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
   print "<INPUT TYPE=HIDDEN NAME=vm VALUE={}>".format(vm_id)
-  print "VM: <INPUT CLASS='z-input' style='width:auto;' TYPE=TEXT VALUE={} disabled> Interface:<SELECT CLASS='z-select' style='width:auto; height:22px;' NAME=vmi>".format(vm_name)
+  print "VM: <INPUT style='width:auto;' TYPE=TEXT VALUE={} disabled> Interface:<SELECT style='width:auto; height:22px;' NAME=vmi>".format(vm_name)
   for vmi in vmis:
    uuid = vmi['uuid']
    vmi = controller.href(vmi['href'])['data']['virtual-machine-interface']

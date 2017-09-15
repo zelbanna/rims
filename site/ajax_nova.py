@@ -112,12 +112,6 @@ def select_parameters(aWeb):
   print "<OPTION VALUE={}>{} (Ram: {}Mb, vCPUs: {}, Disk: {}Gb</OPTION>".format(fl['id'],fl['name'],fl['ram'],fl['vcpus'],fl['disk'])
  print "</SELECT></DIV></DIV>"
 
- #print "<TR><TD>Network</TD><TD><SELECT CLASS=z-select NAME=os_network>"
- #networks = controller.call(cookie.get('os_neutron_port'),cookie.get('os_neutron_url') + "/v2.0/networks?sort_key=name")['data']['networks']
- #for net in networks:
- # if net.get('contrail:subnet_ipam'):
- #  print "<OPTION VALUE={}>{} ({})</OPTION>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
- #print "</SELECT></TD></TR>"
  print "<DIV CLASS=tr><DIV CLASS=td>Network</DIV><DIV CLASS='td z-drop' ID=os_network1></DIV></DIV>"
  print "</DIV></DIV></FORM>"
 

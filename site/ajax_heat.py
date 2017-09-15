@@ -61,7 +61,7 @@ def choose_template(aWeb):
  print "<DIV CLASS='z-frame' style='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_choose_template>"
  try:
-  print "Add solution from template:<SELECT CLASS='z-select' NAME=template style='height:22px; width:auto;'>"
+  print "Add solution from template:<SELECT NAME=template style='border: none; overflow: visible; background-color: transparent; height:22px; width:auto;'>"
   from os import listdir
   for file in listdir("os_templates/"):
    name,_,suffix = file.partition('.')

@@ -60,6 +60,9 @@ div.z-frame {	width:auto; border-radius: 6px; border: none; background-color:#F3
 div.z-frame:hover { box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }
 div.z-frame .title { font-weight: bold; text-align:center; }
 
+div.z-drag {   height:20px; width:390px; margin:5px; font-size:11px; cursor:move; -ms-touch-action: none; touch-action: none; border-radius: 5px!important; border: 1px solid #ccc; }
+div.z-drop {   -ms-touch-action: none; touch-action: none; }
+
 /*############################### Tables #####################################*/ 
 
 div.z-table   { display: table; }
@@ -136,22 +139,7 @@ a.z-icon-txt-btn {	width:54px; font-weight:bold; font-size:12px; text-align: rig
 
 a.z-warning {    background-color:red!important; }
 
-/*###############################################################################################*/
-div.z-drag {   height:20px; width:390px; margin:5px; font-size:11px; cursor:move; -ms-touch-action: none; touch-action: none; border-radius: 5px!important; border: 1px solid #ccc; }
-div.z-drop {   -ms-touch-action: none; touch-action: none; }
-
-.z-rnd { border-radius: 5px!important; border: 1px solid #ccc; }
-
-/*###############################################################################################*/
-
-.z-input { width:100%; border:none; overflow:visible; background-color: transparent; color: black; }
-.z-input::-webkit-input-placeholder { color: darkgrey; }
-.z-input::-moz-placeholder { color: darkgrey; opacity:1; }
-.z-input:-ms-input-placeholder {  color: darkgrey; }
-
-.z-select { width:100%; border: none; overflow: visible; background-color: transparent; color: black; }
-
-.z-font-sub { position: relative; bottom: -36px; font-size: smaller; }
+/*##################################### Spinner overlay ##########################################*/
 
 div.z-overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:1000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
 

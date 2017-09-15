@@ -65,7 +65,7 @@ def openstack_login(aWeb):
  print "<FORM ACTION=pane.cgi METHOD=POST ID=openstack_login>"
  print "<INPUT TYPE=HIDDEN NAME=view VALUE=openstack_portal>"
  print "<DIV CLASS=z-table style='display:inline; float:left; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Customer:</DIV><DIV CLASS=td><SELECT style='border:none; width:100px; display:inline; color:black' NAME=project>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Customer:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=project>"
  for p in projects:
   print "<OPTION VALUE={0}_{1} {2}>{1}</OPTION>".format(p['id'],p['name'],'' if not p['id'] == prev else "selected")
  print "</SELECT></DIV></DIV>"
