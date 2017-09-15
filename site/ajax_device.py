@@ -17,12 +17,15 @@ def view_devicelist(aWeb):
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  sort   = aWeb.get_value('sort','ip')
+ print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=title>Devices</DIV>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
+ print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=device_new&{0}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args_except(['sort','call']))
+ print "<DIV CLASS=z-table2 style='width:330px'>"
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
+
  db     = GL.DB()
  db.connect()
- print "<DIV CLASS='z-table'>"
- print "<TABLE WIDTH=330><THEAD>"
- print "<TH><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=ip'>IP</A></TH><TH><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=hostname'>FQDN</A></TH><TH>Model</TH>".format(aWeb.get_args_except(['sort']))
- print "</THEAD><TR style='height:20px'><TD COLSPAN=3>"
  if not target or not arg:
   tune = ""
  elif target:
@@ -32,16 +35,14 @@ def view_devicelist(aWeb):
    tune = "WHERE vm = 0 AND rack_id is NULL" 
   else: 
    tune = "WHERE {0} is NULL".format(target)
-
  res = db.do("SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort))
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
- print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=device_new&{0}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args_except(['sort','call']))
- print "</TR>"
  rows = db.get_all_rows()
- for row in rows:
-  print "<TR><TD><A CLASS=z-op TITLE='Show device info for {0}' OP=load DIV=div_navcont URL='ajax.cgi?call=device_device_info&id={3}'>{0}</A></TD><TD>{1}</TD><TD>{2}</TD></TR>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
- print "</TABLE></DIV>"
  db.close()
+ 
+ print "<DIV CLASS=tbody>"
+ for row in rows:
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='Show device info for {0}' OP=load DIV=div_navcont URL='ajax.cgi?call=device_device_info&id={3}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
+ print "</DIV></DIV></DIV>"
 
 
 ################################ Gigantic Device info and Ops function #################################
@@ -243,7 +244,7 @@ def conf_gen(aWeb):
  row = db.get_row()
  db.close()
  type = aWeb.get_value('devices_type')
- print "<DIV CLASS='z-table' style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
+ print "<DIV CLASS=z-fframe style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
  from sdcp.devices.DevHandler import device_get_instance
  try:
   dev  = device_get_instance(row['ipasc'],type)
@@ -283,7 +284,6 @@ def rack_info(aWeb):
  cons  = db.get_all_dict('id')
  db.do("SELECT id, name FROM racks")
  racks = db.get_all_dict('id')
- row   = "<THEAD style='border: 1px solid grey'><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></THEAD>" 
  print "<DIV CLASS='z-table' style='overflow-x:auto;'><TABLE>"
  print "<TR style='border: 1px solid grey'><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>Console</TH><TH>Port</TH><TH>PEM0-PDU</TH><TH>slot</TH><TH>unit</TH><TH>PEM1-PDU</TH><TH>slot</TH><TH>unit</TH><TH>Rack</TH><TH>size</TH><TH>unit</TH></TR>"
  for dev in devs:

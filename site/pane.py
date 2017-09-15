@@ -506,7 +506,7 @@ def config(aWeb):
  aWeb.put_html_header("Config and Settings")
  aWeb.put_listeners()
  domain    = aWeb.get_value('domain', None)
- print "<DIV CLASS='z-table' ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
+ print "<DIV CLASS=z-fframe ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
  print "<A CLASS='z-btn z-warning z-op' DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"
  print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
  print "<A CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=graph_sync&domain={0}'>Synch Graphing</A>".format(domain)
