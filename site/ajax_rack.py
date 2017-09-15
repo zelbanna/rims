@@ -86,19 +86,19 @@ def unit_info(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=title>Rack Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<DIV CLASS=z-table2 style='width:100%'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(rack['name'])
- print "<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(rack['size'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(rack['name'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(rack['size'])
  for key in ['pdu_1','pdu_2','console']:
   dbname = key.partition('_')[0]
   db.do("SELECT id,name from {0}s".format(dbname))
   rows = db.get_all_rows()
   rows.append({'id':'NULL', 'name':"No {}".format(dbname.capitalize())})
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}:</DIV><DIV CLASS=td><SELECT NAME=fk_{1} CLASS='z-select'>".format(key.capitalize(),key)
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}:</DIV><DIV CLASS=td><SELECT NAME=fk_{1}>".format(key.capitalize(),key)
   for unit in rows:
    extra = " selected" if (rack.get("fk_"+key) == unit['id']) or (not rack.get("fk_"+key) and unit['id'] == 'NULL') else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])   
   print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=image_url CLASS='z-select'>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=image_url>"
  print "<OPTION VALUE=NULL>No picture</OPTION>"
  for image in listdir(path.join(SC.sdcp_docroot,"images")):
   extra = " selected" if (rack.get("image_url") == image) or (not rack.get('image_url') and image == 'NULL') else ""

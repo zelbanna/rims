@@ -93,8 +93,8 @@ def device_info(aWeb):
   ip   = condata['ip']
   name = condata['name']
  db.close()
- print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(ip)
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(name)
+ print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(ip)
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(name)
  print "</DIV></DIV>"
  if not id == 'new':
   print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=console_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)

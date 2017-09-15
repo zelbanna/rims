@@ -3,7 +3,7 @@
 Ajax Device calls module
 
 """
-__author__= "Zacharias El Banna"                     
+__author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__= "Production"
 
@@ -110,35 +110,37 @@ def device_info(aWeb):
 
  ########################## Data Tables ######################
  
- print "<DIV ID=div_devinfo CLASS='z-table' style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
+ print "<DIV ID=div_devinfo CLASS=z-fframe style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(1 if device_data['rack_id'] else 0)
  print "<!-- Reachability Info -->"
- print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Reachability Info</TH></TR>"
- print "<TR><TD>Name:</TD><TD><INPUT NAME=devices_hostname CLASS='z-input' TYPE=TEXT VALUE='{}'></TD></TR>".format(device_data['hostname'])
- print "<TR><TD>Domain:</TD><TD>{}</TD></TR>".format(device_data['a_name'])
- print "<TR><TD>SNMP:</TD><TD>{}</TD></TR>".format(device_data['snmp'])
- print "<TR><TD>IP:</TD><TD>{}</TD></TR>".format(ip)
- print "<TR><TD>Type:</TD><TD TITLE='Device type'><SELECT NAME=devices_type CLASS='z-select'>"
+ print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Reachability Info</DIV>"
+ print "<DIV CLASS=z-table2 style='width:210px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(device_data['hostname'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['a_name'])
+ print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['snmp'])
+ print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ip)
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type>"
  for tp in device_types():
-  extra = " selected" if device_data['type'] == tp else ""      
+  extra = " selected" if device_data['type'] == tp else ""
   print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
- print "</SELECT></TD></TR>"
- print "<TR><TD>Model:</TD><TD style='max-width:150px;'>{}</TD></TR>".format(device_data['model'])
+ print "</SELECT></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td style='max-width:150px;'>{}</DIV></DIV>".format(device_data['model'])
  if device_data['graphed'] == "yes":
-  print "<TR><TD><A CLASS='z-op' TITLE='View graphs for {1}' OP=load DIV=div_navcont URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</TD><TD>yes</TD></TR>".format(device_data['a_name'],device_data['hostname']+"."+ device_data['a_name'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' TITLE='View graphs for {1}' OP=load DIV=div_navcont URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</DIV><DIV CLASS=td>yes</DIV></DIV>".format(device_data['a_name'],device_data['hostname']+"."+ device_data['a_name'])
  else:
   if not device_data['hostname'] == 'unknown':
-   print "<TR><TD>Graphs:</TD><TD><A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></TD></TR>".format(id, device_data['hostname'], device_data['a_name'])
+   print "<DIV CLASS=tr><DIV CLASS=td>Graphs:</DIV><DIV CLASS=td><A CLASS='z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></DIV></DIV>".format(id, device_data['hostname'], device_data['a_name'])
   else:
-   print "<TR><TD>Graphs:</TD><TD>no</TD></TR>"
- print "<TR><TD>VM:</TD><TD><INPUT NAME=devices_vm CLASS='z-input' style='width:auto;' TYPE=checkbox VALUE=1 {0}></TD></TR>".format("checked=checked" if device_data['vm'] == 1 else "") 
- print "</TABLE></DIV>"
+   print "<DIV CLASS=tr><DIV CLASS=td>Graphs:</DIV><DIV CLASS=td>no</DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm style='width:auto;' TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if device_data['vm'] == 1 else "") 
+ print "</DIV></DIV></DIV>"
 
  print "<!-- Additional info -->"
- print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:227px;'><TR><TH COLSPAN=2>Additional Info</TH></TR>"
- print "<TR><TD>Rack:</TD><TD><SELECT NAME=devices_rack_id CLASS='z-select'>"
+ print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Additional Info</DIV>"
+ print "<DIV CLASS=z-table2 style='width:227px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=devices_rack_id>"
  if device_data['vm']:
   print "<OPTION VALUE=NULL>Not used (VM)</OPTION>"
  else:
@@ -148,51 +150,52 @@ def device_info(aWeb):
   for rack in racks:
    extra = " selected" if ((not device_data['rack_id'] and rack['id'] == 'NULL') or (device_data['rack_id'] and device_data['rack_id'] == rack['id'])) else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
- print "</SELECT></TD></TR>"
- print "<TR><TD>FQDN:</TD><TD style='{0}'>{1}</TD></TR>".format("border: solid 1px red;" if (name + "." + device_data['a_name'] != device_data['fqdn']) else "", device_data['fqdn'])
- print "<TR><TD>DNS A ID:</TD><TD>{}</TD></TR>".format(device_data['a_id'])
- print "<TR><TD>DNS PTR ID:</TD><TD>{}</TD></TR>".format(device_data['ptr_id'])
- print "<TR><TD>IPAM ID:</TD><TD>{}</TD></TR>".format(device_data['ipam_id'])
- print "<TR><TD>MAC:</TD><TD>{}</TD></TR>".format(GL.int2mac(device_data['mac']))
- print "<TR><TD>Gateway:</TD><TD><INPUT CLASS='z-input' TYPE=TEXT NAME=devices_ipam_gw VALUE={}></TD></TR>".format(GL.int2ip(device_data['subnet'] + 1))
- print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>" 
- print "</TABLE></DIV>"
+ print "</SELECT></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>FQDN:</DIV><DIV CLASS=td style='{0}'>{1}</DIV></DIV>".format("border: solid 1px red;" if (name + "." + device_data['a_name'] != device_data['fqdn']) else "", device_data['fqdn'])
+ print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['a_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['ptr_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['ipam_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(GL.int2mac(device_data['mac']))
+ print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={}></DIV></DIV>".format(GL.int2ip(device_data['subnet'] + 1))
+ print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>" 
+ print "</DIV></DIV></DIV>"
 
  print "<!-- Rack Info if such exists -->"
  if device_data['rack_id'] and not device_data['type'] == 'pdu':
-  print "<DIV style='margin:3px; float:left; height:190px;'><TABLE style='width:210px;'><TR><TH COLSPAN=2>Rack Info</TH></TR>"
-  print "<TR><TD>Rack Size:</TD><TD><INPUT NAME=rackinfo_rack_size CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(ri['rack_size'])
-  print "<TR><TD>Rack Unit:</TD><TD TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(ri['rack_unit'])
+  print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Rack Info</DIV>"
+  print "<DIV CLASS=z-table2 style='width:210px;'><DIV CLASS=tbody>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(ri['rack_size'])
+  print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(ri['rack_unit'])
   if not device_data['type'] == 'console' and db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") > 0:
    consoles = db.get_all_rows()
    consoles.append({ 'id':'NULL', 'name':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1' })
-   print "<TR><TD>TS:</TD><TD><SELECT NAME=rackinfo_console_id CLASS='z-select'>"
+   print "<DIV CLASS=tr><DIV CLASS=td>TS:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_console_id>"
    for console in consoles:
     extra = ""
     if (ri['console_id'] == console['id']) or (not ri['console_id'] and console['id'] == 'NULL'):
      extra = " selected='selected'"
      conip = console['ipasc']
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
-   print "</SELECT></TD></TR>"
-   print "<TR><TD>TS Port:</TD><TD TITLE='Console port in rack TS'><INPUT NAME=rackinfo_console_port CLASS='z-input' TYPE=TEXT PLACEHOLDER='{}'></TD></TR>".format(ri['console_port'])
+   print "</SELECT></DIV></DIV>"
+   print "<DIV CLASS=tr><DIV CLASS=td>TS Port:</DIV><DIV CLASS=td TITLE='Console port in rack TS'><INPUT NAME=rackinfo_console_port TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(ri['console_port'])
   else:
-   print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
-   print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
+   print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
+   print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
   if not device_data['type'] == 'pdu' and db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus") > 0:
    pdus = db.get_all_rows()
    pdus.append({ 'id':'NULL', 'name':'No', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'PDU' })
    for pem in ['pem0','pem1']:
-    print "<TR><TD>{0} PDU:</TD><TD><SELECT NAME=rackinfo_{1}_pdu_slot_id CLASS='z-select'>".format(pem.upper(),pem)
+    print "<DIV CLASS=tr><DIV CLASS=td>{0} PDU:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_{1}_pdu_slot_id>".format(pem.upper(),pem)
     for pdu in pdus:
      for slotid in range(0,pdu['slots'] + 1):
       extra = " selected" if ((ri[pem+"_pdu_id"] == pdu['id']) and (ri[pem+"_pdu_slot"] == pdu[str(slotid)+"_slot_id"])) or (not ri[pem+"_pdu_id"] and  pdu['id'] == 'NULL')else ""
       print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(str(pdu['id'])+"."+str(pdu[str(slotid)+"_slot_id"]), extra, pdu['name']+":"+pdu[str(slotid)+"_slot_name"])
-    print "</SELECT></TD></TR>"
-    print "<TR><TD>{0} Unit:</TD><TD><INPUT NAME=rackinfo_{1}_pdu_unit CLASS='z-input' TYPE=TEXT PLACEHOLDER='{2}'></TD></TR>".format(pem.upper(),pem,ri[pem + "_pdu_unit"])
+    print "</SELECT></DIV></DIV>"
+    print "<DIV CLASS=tr><DIV CLASS=td>{0} Unit:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_{1}_pdu_unit TYPE=TEXT PLACEHOLDER='{2}'></DIV></DIV>".format(pem.upper(),pem,ri[pem + "_pdu_unit"])
   else:
    for index in range(0,4):
-    print "<TR><TD COLSPAN=2 style='width:200px'>&nbsp;</TD></TR>"
-  print "</TABLE></DIV>"
+    print "<DIV CLASS=tr><TD COLSPAN=2 style='width:200px'>&nbsp;</DIV></DIV>"
+  print "</DIV></DIV></DIV>"
  print "</FORM>"
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
@@ -351,26 +354,26 @@ def new(aWeb):
   db.do("SELECT id, name FROM domains")
   domains = db.get_all_rows()
   db.close()
-  print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:180px;'>"
+  print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:180px;'>"
   print "<FORM ID=device_new_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
   print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(target)
   print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(arg)
-  print "<TABLE style='width:100%'>"
-  print "<TR><TH COLSPAN=2>Add Device</TH></TR>"
-  print "<TR><TD>IP:</TD><TD><INPUT       NAME=ip       TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(ip)
-  print "<TR><TD>Hostname:</TD><TD><INPUT NAME=hostname TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(name)
-  print "<TR><TD>Domain:</TD><TD><SELECT CLASS='z-select' NAME=a_dom_id>"
+  print "<DIV CLASS=title>Add Device</DIV>"
+  print "<DIV CLASS=z-table2 style='width:100%'><DIV CLASS=tbody>"
+  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(ip)
+  print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
+  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):
     print "<OPTION VALUE={0}>{1}</OPTION>".format(d.get('id'),d.get('name'))
-  print "</SELECT></TD></TR>"
-  print "<TR><TD>Subnet:</TD><TD><SELECT CLASS='z-select' NAME=ipam_sub_id>"
+  print "</SELECT></DIV></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_sub_id>"
   for s in subnets:
    print "<OPTION VALUE={0}>{1}/{2} ({3})</OPTION>".format(s.get('id'),s.get('subasc'),s.get('mask'),s.get('subnet_description'))
-  print "</SELECT></TD></TR>"
-  print "<TR><TD>MAC:</TD><TD><INPUT      NAME=mac  TYPE=TEXT CLASS='z-input' PLACEHOLDER='{0}'></TD></TR>".format(mac)
-  print "</TABLE>"
+  print "</SELECT></DIV></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXR PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
+  print "</DIV></DIV>"
   print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span URL=ajax.cgi?call=device_new FRM=device_new_form OP=load><IMG SRC='images/btn-start.png'></A>&nbsp;"
   print "<SPAN ID=device_new_span style='max-width:400px; font-size:9px; float:right'></SPAN>"
   print "</DIV>"
@@ -381,7 +384,7 @@ def new(aWeb):
 def remove(aWeb):
  from rest_device import remove
  id      = aWeb.get_value('id')
- print "<DIV CLASS='z-table'>"
+ print "<DIV CLASS=z-fframe>"
  res = remove({ 'id':id })
  print "Unit {0} deleted ({1})".format(id,str(res))
  print "</DIV>"
@@ -411,30 +414,30 @@ def discover(aWeb):
   # id, subnet int, subnet mask
   res = discover({ 'ipam_sub_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1])+2**(32-int(ipam[2])), 'a_dom_id':a_dom, 'clear':clear})
   GL.log_msg("ajax_devices_discover: " + str(res))
-  print "<DIV CLASS='z-table'>{}</DIV>".format(res)
+  print "<DIV CLASS=z-fframe>{}</DIV>".format(res)
  else:
   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet");
-  subnets = db.get_all_rows()              
+  subnets = db.get_all_rows()
   db.do("SELECT id, name FROM domains")
-  domains  = db.get_all_rows()      
-  dom_name = aWeb.get_value('domain')  
-  print "<DIV CLASS='z-table' style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
+  domains  = db.get_all_rows()
+  dom_name = aWeb.get_value('domain')
+  print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
   print "<FORM ID=device_discover_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
-  print "<TABLE style='width:100%'>"
-  print "<TR><TH COLSPAN=2>Device Discovery</TH></TR>"
-  print "<TR><TD>Domain:</TD><TD><SELECT CLASS='z-select' NAME=a_dom_id>"
+  print "<DIV CLASS=title>Device Discovery</DIV>"
+  print "<DIV CLASS=z-table2 style='width:100%'><DIV CLASS=tbody>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):
     extra = "" if not dom_name == d.get('name') else "selected=selected"
     print "<OPTION VALUE={0} {2}>{1}</OPTION>".format(d.get('id'),d.get('name'),extra)
-  print "</SELECT></TD></TR>"
-  print "<TR><TD>Subnet:</TD><TD><SELECT CLASS='z-select' NAME=ipam_sub>"
+  print "</SELECT></DIV></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_sub>"
   for s in subnets:
    print "<OPTION VALUE={0}_{1}_{3}>{2}/{3} ({4})</OPTION>".format(s.get('id'),s.get('subnet'),s.get('subasc'),s.get('mask'),s.get('subnet_description'))
-  print "</SELECT></TD></TR>"
-  print "<TR><TD>Clear</TD><TD><INPUT TYPE=checkbox NAME=clear VALUE=True></TD></TR>"
-  print "</TABLE>"
+  print "</SELECT></DIV></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Clear</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=clear VALUE=True></DIV></DIV>"
+  print "</DIV></DIV>"
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont SPIN=true URL=ajax.cgi?call=device_discover FRM=device_discover_form OP=load><IMG SRC='images/btn-start.png'></A>"
   print "</DIV>"
  db.close() 
@@ -447,5 +450,5 @@ def clear_db(aWeb):
  db.connect()
  db.do("TRUNCATE TABLE devices")
  db.close()
- print "<DIV CLASS='z-table'>Cleared DB</DIV>"
+ print "<DIV CLASS=z-fframe>Cleared DB</DIV>"
 

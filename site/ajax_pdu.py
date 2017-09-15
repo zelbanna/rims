@@ -3,7 +3,7 @@
 Ajax calls module
 
 """
-__author__= "Zacharias El Banna"                     
+__author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__= "Production"
 
@@ -159,8 +159,8 @@ def device_info(aWeb):
   ip   = pdudata['ipasc']
   name = pdudata['name']
 
- print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(ip)
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT CLASS='z-input' VALUE='{0}'></DIV></DIV>".format(name)
+ print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(ip)
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(name)
  if pdudata['slots'] == 1:
   print "<DIV CLASS=tr><DIV CLASS=td>Right/Left slots:</DIV><DIV CLASS=td><INPUT TYPE=checkbox style='border:none;' NAME=slots VALUE=1 checked=checked></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Slot 1 Name:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(pdudata['0_slot_name'])
