@@ -21,7 +21,7 @@ def view_devicelist(aWeb):
  print "<DIV CLASS=title>Devices</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=device_new&{0}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args_except(['sort','call']))
- print "<DIV CLASS=z-table2 style='width:330px'>"
+ print "<DIV CLASS=z-table style='width:330px'>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
 
  db     = GL.DB()
@@ -116,7 +116,7 @@ def device_info(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(1 if device_data['rack_id'] else 0)
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Reachability Info</DIV>"
- print "<DIV CLASS=z-table2 style='width:210px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table style='width:210px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(device_data['hostname'])
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['a_name'])
  print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['snmp'])
@@ -139,7 +139,7 @@ def device_info(aWeb):
 
  print "<!-- Additional info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Additional Info</DIV>"
- print "<DIV CLASS=z-table2 style='width:227px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table style='width:227px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=devices_rack_id>"
  if device_data['vm']:
   print "<OPTION VALUE=NULL>Not used (VM)</OPTION>"
@@ -163,7 +163,7 @@ def device_info(aWeb):
  print "<!-- Rack Info if such exists -->"
  if device_data['rack_id'] and not device_data['type'] == 'pdu':
   print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Rack Info</DIV>"
-  print "<DIV CLASS=z-table2 style='width:210px;'><DIV CLASS=tbody>"
+  print "<DIV CLASS=z-table style='width:210px;'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(ri['rack_size'])
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(ri['rack_unit'])
   if not device_data['type'] == 'console' and db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") > 0:
@@ -287,7 +287,7 @@ def rack_info(aWeb):
  cons  = db.get_all_dict('id')
  db.do("SELECT id, name FROM racks")
  racks = db.get_all_dict('id')
- print "<DIV CLASS=z-fframe style='overflow-x:auto;'><DIV CLASS=z-table2>"
+ print "<DIV CLASS=z-fframe style='overflow-x:auto;'><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
  print "<DIV CLASS=tbody>" 
  for dev in devs:
@@ -311,7 +311,7 @@ def mac_sync(aWeb):
  db.connect()
  db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices ORDER BY ip")
  rows = db.get_all_rows()
- print "<DIV CLASS=z-fframe style='overflow-x:auto; width:400px;'><DIV CLASS=z-table2>"
+ print "<DIV CLASS=z-fframe style='overflow-x:auto; width:400px;'><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
@@ -360,7 +360,7 @@ def new(aWeb):
   print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(target)
   print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(arg)
   print "<DIV CLASS=title>Add Device</DIV>"
-  print "<DIV CLASS=z-table2 style='width:100%'><DIV CLASS=tbody>"
+  print "<DIV CLASS=z-table style='width:100%'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
@@ -425,7 +425,7 @@ def discover(aWeb):
   print "<FORM ID=device_discover_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
   print "<DIV CLASS=title>Device Discovery</DIV>"
-  print "<DIV CLASS=z-table2 style='width:100%'><DIV CLASS=tbody>"
+  print "<DIV CLASS=z-table style='width:100%'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):

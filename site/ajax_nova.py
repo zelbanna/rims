@@ -28,7 +28,7 @@ def list(aWeb):
 
  print "<DIV CLASS=z-os-left ID=div_os_left>"
  print "<DIV CLASS=z-fframe style='width:394px'>"
- print "<DIV CLASS=z-table2 style='width:99%'>"
+ print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead style='height:20px'><DIV CLASS=th><CENTER>Nova Servers</CENTER></DIV></DIV>"
  print "<DIV CLASS=tbody><DIV CLASS=tr style='height:20px'><DIV CLASS=td>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=nova_list'><IMG SRC='images/btn-reboot.png'></A>"
@@ -98,7 +98,7 @@ def select_parameters(aWeb):
  """
  print "<H2>New VM parameters</H2>"
  print "<FORM ID=frm_os_create_vm>"
- print "<DIV ID=div_os_form CLASS='z-table2' style='float:left;'><DIV CLASS=tbody>"
+ print "<DIV ID=div_os_form CLASS='z-table' style='float:left;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name</DIV><DIV CLASS=td><INPUT NAME=os_name PLACEHOLDER='Unique Name'></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=os_image>"
  images = controller.call(cookie.get('os_glance_port'),cookie.get('os_glance_url') + "/v2/images?sort=name:asc")['data']['images']
@@ -186,7 +186,7 @@ def action(aWeb):
  elif op == 'networks':
   from json import dumps
   vm  = controller.call("8082","virtual-machine/{}".format(id))['data']['virtual-machine']
-  print "<DIV CLASS=z-table2>"
+  print "<DIV CLASS=z-table>"
   print "<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV>"
   for vmir in vm['virtual_machine_interface_back_refs']:
    vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']

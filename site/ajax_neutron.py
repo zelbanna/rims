@@ -29,7 +29,7 @@ def list(aWeb):
   return
  
  print "<DIV CLASS=z-os-left ID=div_os_left>"
- print "<DIV CLASS=z-fframe style='overflow:auto;'><DIV CLASS=z-table2 style='width:99%'>"
+ print "<DIV CLASS=z-fframe style='overflow:auto;'><DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead  style='height:20px'><DIV CLASS=th><CENTER>Contrail VNs</CENTER></DIV></DIV>"
  print "<DIV CLASS=tr  style='height:20px'><DIV CLASS=td COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
@@ -94,7 +94,7 @@ def action(aWeb):
 
  elif op == 'interfaces':
   vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
-  print "<DIV CLASS=z-table2><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Interface</DIV></DIV>"
+  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Interface</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for ip in vn['instance_ip_back_refs']:
    iip = controller.href(ip['href'])['data']['instance-ip']
@@ -127,7 +127,7 @@ def action(aWeb):
  #
  elif op == 'floating-ip':
   fipools = aWeb.get_value('fipool').split(',')
-  print "<DIV CLASS=z-table2><DIV CLASS=thead><DIV CLASS=th>Pool</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Fixed IP</DIV><DIV CLASS=th>Fixed Network</DIV><DIV CLASS=th>Operations</DIV></DIV>"
+  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Pool</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Fixed IP</DIV><DIV CLASS=th>Fixed Network</DIV><DIV CLASS=th>Operations</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for fipool in fipools:
    pool  = controller.call("8082","floating-ip-pool/{}".format(fipool))['data']['floating-ip-pool']

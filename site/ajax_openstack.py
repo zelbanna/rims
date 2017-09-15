@@ -20,7 +20,7 @@ def dict2html(aData,aTitle=None):
 
 def data2html(aData):
  if isinstance(aData,dict):
-  print "<DIV CLASS=z-table2><DIV CLASS=tbody>"
+  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
   for k,v in aData.iteritems():
    print "<DIV CLASS=tr><DIV CLASS=td style='padding:0px;'><I>{}</I>:</DIV><DIV CLASS=td style='white-space:normal; overflow:auto; width:100%'>".format(k)
    if 'href' in k:
@@ -30,7 +30,7 @@ def data2html(aData):
    print "</DIV></DIV>"
   print "</DIV></DIV>"
  elif isinstance(aData,list):
-  print "<DIV CLASS=z-table2 style='width:100%;'><DIV CLASS=tbody>"
+  print "<DIV CLASS=z-table style='width:100%;'><DIV CLASS=tbody>"
   for v in aData:
    print "<DIV CLASS=tr><DIV CLASS=td style='padding:0px;'>"
    data2html(v)
@@ -63,7 +63,7 @@ def result(aWeb):
    port,url = cookie.get("os_{}_port".format(service)),cookie.get("os_{}_url".format(service))
   ret = controller.call(port,url + aWeb.get_value('os_call'), args = arguments, method=aWeb.get_value('os_method'))
  print "<DIV CLASS=z-fframe style='overflow:auto;'>"
- print "<DIV CLASS=z-table2 style=' width:100%;'>"
+ print "<DIV CLASS=z-table style=' width:100%;'>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>Result</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['result'])
  print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>HTTP Code</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['code'])
@@ -116,7 +116,7 @@ def fqname(aWeb):
    ret  = controller.call("8082","id-to-fqname",args=argument,method='POST')
    data = ret['data']
    if ret['result'] == 'OK':
-    print "<DIV CLASS=z-table2 style='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
+    print "<DIV CLASS=z-table style='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
     print "<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(data['fq_name']))
     print "<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL=ajax.cgi?call=openstack_result&os_service=contrail&os_call={0}/{1}>{0}</A></DIV></DIV>".format(data['type'],argument['uuid'])
     print "</DIV></DIV><BR>"

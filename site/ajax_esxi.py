@@ -62,7 +62,7 @@ def op(aWeb, aEsxi = None):
   print "<DIV CLASS=title>{}</DIV>".format(aEsxi._fqdn)
  else:
   print "<DIV CLASS=title>{} <SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(aEsxi._fqdn,vmid, nstate.split('-')[1])
- print "<DIV CLASS=z-table2>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS='z-op' OP=load DIV=div_esxi_op URL='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&host="+ aEsxi._hostname + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>"
