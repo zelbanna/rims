@@ -284,19 +284,20 @@ def rack_info(aWeb):
  cons  = db.get_all_dict('id')
  db.do("SELECT id, name FROM racks")
  racks = db.get_all_dict('id')
- print "<DIV CLASS='z-table' style='overflow-x:auto;'><TABLE>"
- print "<TR style='border: 1px solid grey'><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>Console</TH><TH>Port</TH><TH>PEM0-PDU</TH><TH>slot</TH><TH>unit</TH><TH>PEM1-PDU</TH><TH>slot</TH><TH>unit</TH><TH>Rack</TH><TH>size</TH><TH>unit</TH></TR>"
+ print "<DIV CLASS=z-fframe style='overflow-x:auto;'><DIV CLASS=z-table2>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
+ print "<DIV CLASS=tbody>" 
  for dev in devs:
   if not dev['backup_ip']:
    db.do("UPDATE rackinfo SET backup_ip = {} WHERE device_id = {}".format(dev['ip'],dev['device_id']))
-  print "<TR>"
-  print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format(dev['device_id'],dev['ipasc'],dev['hostname'])
-  print "<TD>{}</TD><TD>{}</TD>".format(cons.get(dev['console_id'],{}).get('name',None),dev['console_port'])
-  print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format( pdus.get(dev['pem0_pdu_id'],{}).get('name',None),dev['pem0_pdu_slot'],dev['pem0_pdu_unit'])
-  print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format( pdus.get(dev['pem1_pdu_id'],{}).get('name',None),dev['pem1_pdu_slot'],dev['pem1_pdu_unit'])
-  print "<TD>{}</TD><TD>{}</TD><TD>{}</TD>".format(racks.get(dev['rack_id'],{}).get('name',None),dev['rack_size'],dev['rack_unit'])
-  print "</TR>"
- print "</TABLE></DIV>"
+  print "<DIV CLASS=tr>"
+  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(dev['device_id'],dev['ipasc'],dev['hostname'])
+  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(cons.get(dev['console_id'],{}).get('name',None),dev['console_port'])
+  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(dev['pem0_pdu_id'],{}).get('name',None),dev['pem0_pdu_slot'],dev['pem0_pdu_unit'])
+  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(dev['pem1_pdu_id'],{}).get('name',None),dev['pem1_pdu_slot'],dev['pem1_pdu_unit'])
+  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(racks.get(dev['rack_id'],{}).get('name',None),dev['rack_size'],dev['rack_unit'])
+  print "</DIV>"
+ print "</DIV></DIV></DIV>"
  db.commit()
  db.close()
 
@@ -307,14 +308,15 @@ def mac_sync(aWeb):
  db.connect()
  db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices ORDER BY ip")
  rows = db.get_all_rows()
- print "<DIV CLASS='z-table' style='overflow-x:auto; width:400px;'><TABLE>"
- print "<THEAD style='border: 1px solid grey'><TH>Id</TH><TH>IP</TH><TH>Hostname</TH><TH>MAC</TH></THEAD>"
+ print "<DIV CLASS=z-fframe style='overflow-x:auto; width:400px;'><DIV CLASS=z-table2>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
  for row in rows:
   xist = arps.get(row['ipasc'],None)
-  print "<TR><TD>{}</TD><TD>{}</TD><TD>{}</TD><TD>{}</TD></TR>".format(row['id'],row['ipasc'],row['hostname'],xist)
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['id'],row['ipasc'],row['hostname'],xist)
   if xist:
    db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL.mac2int(xist),row['id']))
- print "</TABLE></DIV>"
+ print "</DIV></DIV></DIV>"
  db.commit()
  db.close()
 
