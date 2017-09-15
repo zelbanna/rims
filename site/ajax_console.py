@@ -15,7 +15,7 @@ import sdcp.core.GenLib as GL
 
 def list(aWeb):
  from sdcp.devices.RackUtils import OpenGear
- print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=z-table style='width:330px'>"
  print "<DIV CLASS=thead><DIV CLASS=th>Server</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>Device</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -35,7 +35,7 @@ def list(aWeb):
 def list_consoles(aWeb):
  db   = GL.DB()
  db.connect()
- print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Consoles</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=console_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
@@ -72,7 +72,7 @@ def device_info(aWeb):
    res = db.do(sql)
    db.commit()  
 
- print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
+ print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
  print "<FORM ID=console_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=title>Consoles Info {}</DIV>".format("(new)" if id == 'new' else "")

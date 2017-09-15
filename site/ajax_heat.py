@@ -32,7 +32,7 @@ def list(aWeb):
   print "Error retrieving heat stacks ({})".format(ret['code'])
   return
 
- print "<DIV CLASS=z-os-left ID=div_os_left><DIV CLASS=z-fframe style='width:394px;'>"
+ print "<DIV CLASS=z-os-left ID=div_os_left><DIV CLASS=z-frame style='width:394px;'>"
  print "<DIV CLASS=title>Heat Stacks</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_os_right URL='ajax.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
@@ -58,7 +58,7 @@ def list(aWeb):
 # Add instantiation
 #
 def choose_template(aWeb):
- print "<DIV CLASS='z-fframe' style='display:inline-block; padding:6px'>"
+ print "<DIV CLASS='z-frame' style='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_choose_template>"
  try:
   print "Add solution from template:<SELECT CLASS='z-select' NAME=template style='height:22px; width:auto;'>"
@@ -81,7 +81,7 @@ def enter_parameters(aWeb):
  template = aWeb.get_value('template')
  with open("os_templates/"+template) as f:
   data = load(f)
- print "<DIV CLASS='z-fframe' style='display:inline-block; padding:6px'>"
+ print "<DIV CLASS='z-frame' style='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_template_parameters>"
  print "<INPUT TYPE=hidden NAME=template VALUE={}>".format(template)
  print "<DIV CLASS=z-table>"
@@ -123,7 +123,7 @@ def action(aWeb):
   print tmpl.format('Stack Parameters','parameters','Parameters')
   print "</DIV>"
   ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
-  print "<DIV CLASS=z-fframe style='overflow:auto;' ID=div_os_info>"
+  print "<DIV CLASS=z-frame style='overflow:auto;' ID=div_os_info>"
   dict2html(ret['data']['stack'],name)
   print "</DIV>"
 
@@ -159,7 +159,7 @@ def action(aWeb):
 
  elif op == 'create':
   template = aWeb.get_value('template')
-  print "<DIV CLASS='z-fframe'>"
+  print "<DIV CLASS='z-frame'>"
   if name and template:
    from json import load,dumps
    with open("os_templates/"+template) as f:
@@ -180,7 +180,7 @@ def action(aWeb):
 
  elif op == 'remove':
   ret = controller.call(port,url + "/stacks/{}/{}".format(name,id), method='DELETE')
-  print "<DIV CLASS='z-fframe'>"
+  print "<DIV CLASS='z-frame'>"
   print "<H3>Removing {}</H3>".format(name)
   if ret['code'] == 204:
    print "Removing stack"

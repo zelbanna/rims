@@ -29,7 +29,7 @@ def list_units(aWeb):
 
  if len(pdulist) == 0:
   pdulist.append(pduop)
- print "<DIV CLASS=z-fframe><DIV CLASS=z-table style='width:330px;'>"
+ print "<DIV CLASS=z-frame><DIV CLASS=z-table style='width:330px;'>"
  print "<DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Entry</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th style='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for pdu in pdulist:
@@ -69,7 +69,7 @@ def unit_info(aWeb):
   return
  slotname = aWeb.get_value('slotname')
  name = aWeb.get_value('name')
- print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
+ print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
  print "<FORM ID=pdu_form>"
  print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(slot)
  print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(unit)
@@ -91,7 +91,7 @@ def unit_info(aWeb):
 def list_pdus(aWeb):
  db   = GL.DB()
  db.connect()
- print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>PDUs</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=pdu_list_pdus'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=pdu_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
@@ -139,7 +139,7 @@ def device_info(aWeb):
    res = db.do(sql)
    db.commit()
 
- print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
+ print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
  print "<DIV CLASS=title>PDU Device Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<FORM ID=pdu_device_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)

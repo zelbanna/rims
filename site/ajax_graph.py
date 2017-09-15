@@ -18,7 +18,7 @@ def list(aWeb):
  if node and state:
   nstate = "yes" if state == "no" else "no"
   graph.update_entry(node, nstate)
- print "<DIV CLASS=z-fframe><DIV CLASS=z-table style='width:330px'>"
+ print "<DIV CLASS=z-frame><DIV CLASS=z-table style='width:330px'>"
  print "<DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Handler</DIV><DIV CLASS=th TITLE='Include in graphing?'>Include</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  keys = graph.get_keys()
@@ -101,7 +101,7 @@ def wm(aWeb):
  dom  = aWeb.get_value('domain')
  desc = aWeb.get_value('desc',"LNK"+indx)
  gstr = "munin-cgi/munin-cgi-graph/{1}/{0}.{1}/snmp_{2}_{1}_if_{3}-day.png".format(name,dom,snmpname,indx)
- print "<DIV CLASS=z-fframe><PRE style='font-size:10px;'>"
+ print "<DIV CLASS=z-frame><PRE style='font-size:10px;'>"
  print "LINK {}-{}".format(name,desc)
  print "\tINFOURL " +  gstr
  print "\tOVERLIBGRAPH " + gstr

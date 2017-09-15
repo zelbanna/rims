@@ -204,8 +204,8 @@ def examine(aWeb):
  
  if svclist:
   print "<DIV CLASS=z-system id=div_dns title='DNS data' style='display:none;'>"
-  print "<DIV CLASS=z-fframe style='width:30%; float:left;'><CENTER>{}</CENTER></DIV>".format(aWeb.get_include("http://"+ svclist[0] +"/dns-top.php?type=sites"))
-  print "<DIV CLASS=z-fframe style='width:30%; float:left;'><CENTER>{}</CENTER></DIV>".format(aWeb.get_include("http://"+ svclist[0] +"/dns-top.php?type=clients"))
+  print "<DIV CLASS=z-frame style='width:30%; float:left;'><CENTER>{}</CENTER></DIV>".format(aWeb.get_include("http://"+ svclist[0] +"/dns-top.php?type=sites"))
+  print "<DIV CLASS=z-frame style='width:30%; float:left;'><CENTER>{}</CENTER></DIV>".format(aWeb.get_include("http://"+ svclist[0] +"/dns-top.php?type=clients"))
   print "</DIV>"
  
   print "<DIV CLASS='z-system' id=div_dhcp title='DHCP leases' style='display:none;'>"
@@ -432,7 +432,7 @@ def esxi(aWeb):
  graph.widget_cols([ "{1}/{0}/esxi_vm_info".format(esxi._fqdn,domain), "{1}/{0}/esxi_cpu_info".format(esxi._fqdn,domain), "{1}/{0}/esxi_mem_info".format(esxi._fqdn,domain) ])
  print "</DIV>"
  
- print "<DIV CLASS=z-fframe ID=div_esxi_op style='float:left; display:block'>"
+ print "<DIV CLASS=z-frame ID=div_esxi_op style='float:left; display:block'>"
  esxi_op(aWeb,esxi)
  print "</DIV>"
 
@@ -506,7 +506,7 @@ def config(aWeb):
  aWeb.put_html_header("Config and Settings")
  aWeb.put_listeners()
  domain    = aWeb.get_value('domain', None)
- print "<DIV CLASS=z-fframe ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
+ print "<DIV CLASS=z-frame ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
  print "<A CLASS='z-btn z-warning z-op' DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"
  print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
  print "<A CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=graph_sync&domain={0}'>Synch Graphing</A>".format(domain)

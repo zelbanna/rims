@@ -62,7 +62,7 @@ def result(aWeb):
   else:
    port,url = cookie.get("os_{}_port".format(service)),cookie.get("os_{}_url".format(service))
   ret = controller.call(port,url + aWeb.get_value('os_call'), args = arguments, method=aWeb.get_value('os_method'))
- print "<DIV CLASS=z-fframe style='overflow:auto;'>"
+ print "<DIV CLASS=z-frame style='overflow:auto;'>"
  print "<DIV CLASS=z-table style=' width:100%;'>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>Result</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['result'])
@@ -78,7 +78,7 @@ def result(aWeb):
  print "</DIV></DIV>"
 
 def api(aWeb):
- print "<DIV CLASS=z-fframe ID=div_os_control><FORM ID=frm_os_api>"
+ print "<DIV CLASS=z-frame ID=div_os_control><FORM ID=frm_os_api>"
  print "<H3>OpenStack REST API inspection</H3>"
  print "Choose Service and enter API call: <SELECT CLASS='z-select' style='width:auto; height:22px;' NAME=os_service>"
  services = ['contrail']
@@ -100,7 +100,7 @@ def api(aWeb):
  print "<DIV ID=div_os_info></DIV>"
 
 def fqname(aWeb):
- print "<DIV CLASS=z-fframe ID=div_os_control>"
+ print "<DIV CLASS=z-frame ID=div_os_control>"
  print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT style='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb.get_value('os_uuid') if aWeb.get_value('os_uuid') else "")
  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL=ajax.cgi?call=openstack_fqname FRM=frm_os_uuid TITLE='Go'><IMG SRC=images/btn-start.png></A><BR>"
  if aWeb.get_value('os_uuid'):

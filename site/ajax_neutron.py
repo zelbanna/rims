@@ -29,7 +29,7 @@ def list(aWeb):
   return
  
  print "<DIV CLASS=z-os-left ID=div_os_left>"
- print "<DIV CLASS=z-fframe style='overflow:auto;'><DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-frame style='overflow:auto;'><DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead  style='height:20px'><DIV CLASS=th><CENTER>Contrail VNs</CENTER></DIV></DIV>"
  print "<DIV CLASS=tr  style='height:20px'><DIV CLASS=td COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
@@ -83,7 +83,7 @@ def action(aWeb):
    print "<A TITLE='Network details' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=neutron_action&op=floating-ip&fipool={} SPIN=true>Floating IPs</A>".format(fipool)
 
   print "</DIV>"
-  print "<DIV CLASS=z-fframe style='overflow:auto;' ID=div_os_info>"
+  print "<DIV CLASS=z-frame style='overflow:auto;' ID=div_os_info>"
   dict2html(vn,"{} ({})".format(name,id))
   print "</DIV>"
 
@@ -161,7 +161,7 @@ def action(aWeb):
 
  elif op == 'remove':
   ret = controller.call("8082","virtual-network/{}".format(id), method='DELETE')
-  print "<DIV CLASS=z-fframee>{}</DIV>".format(ret)
+  print "<DIV CLASS=z-framee>{}</DIV>".format(ret)
 
  elif op == 'fi_disassociate':
   fip = {'floating-ip':{'virtual_machine_interface_refs':None,'floating_ip_fixed_ip_address':None }}

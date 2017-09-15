@@ -17,7 +17,7 @@ def view_devicelist(aWeb):
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  sort   = aWeb.get_value('sort','ip')
- print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Devices</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=device_new&{0}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args_except(['sort','call']))
@@ -110,7 +110,7 @@ def device_info(aWeb):
 
  ########################## Data Tables ######################
  
- print "<DIV ID=div_devinfo CLASS=z-fframe style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
+ print "<DIV ID=div_devinfo CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(1 if device_data['rack_id'] else 0)
@@ -247,7 +247,7 @@ def conf_gen(aWeb):
  row = db.get_row()
  db.close()
  type = aWeb.get_value('devices_type')
- print "<DIV CLASS=z-fframe style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
+ print "<DIV CLASS=z-frame style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
  from sdcp.devices.DevHandler import device_get_instance
  try:
   dev  = device_get_instance(row['ipasc'],type)
@@ -287,7 +287,7 @@ def rack_info(aWeb):
  cons  = db.get_all_dict('id')
  db.do("SELECT id, name FROM racks")
  racks = db.get_all_dict('id')
- print "<DIV CLASS=z-fframe style='overflow-x:auto;'><DIV CLASS=z-table>"
+ print "<DIV CLASS=z-frame style='overflow-x:auto;'><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
  print "<DIV CLASS=tbody>" 
  for dev in devs:
@@ -311,7 +311,7 @@ def mac_sync(aWeb):
  db.connect()
  db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices ORDER BY ip")
  rows = db.get_all_rows()
- print "<DIV CLASS=z-fframe style='overflow-x:auto; width:400px;'><DIV CLASS=z-table>"
+ print "<DIV CLASS=z-frame style='overflow-x:auto; width:400px;'><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
@@ -354,7 +354,7 @@ def new(aWeb):
   db.do("SELECT id, name FROM domains")
   domains = db.get_all_rows()
   db.close()
-  print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:180px;'>"
+  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:180px;'>"
   print "<FORM ID=device_new_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
   print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(target)
@@ -384,7 +384,7 @@ def new(aWeb):
 def remove(aWeb):
  from rest_device import remove
  id      = aWeb.get_value('id')
- print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=z-frame>"
  res = remove({ 'id':id })
  print "Unit {0} deleted ({1})".format(id,str(res))
  print "</DIV>"
@@ -414,14 +414,14 @@ def discover(aWeb):
   # id, subnet int, subnet mask
   res = discover({ 'ipam_sub_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1])+2**(32-int(ipam[2])), 'a_dom_id':a_dom, 'clear':clear})
   GL.log_msg("ajax_devices_discover: " + str(res))
-  print "<DIV CLASS=z-fframe>{}</DIV>".format(res)
+  print "<DIV CLASS=z-frame>{}</DIV>".format(res)
  else:
   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet");
   subnets = db.get_all_rows()
   db.do("SELECT id, name FROM domains")
   domains  = db.get_all_rows()
   dom_name = aWeb.get_value('domain')
-  print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
+  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
   print "<FORM ID=device_discover_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
   print "<DIV CLASS=title>Device Discovery</DIV>"
@@ -450,5 +450,5 @@ def clear_db(aWeb):
  db.connect()
  db.do("TRUNCATE TABLE devices")
  db.close()
- print "<DIV CLASS=z-fframe>Cleared DB</DIV>"
+ print "<DIV CLASS=z-frame>Cleared DB</DIV>"
 

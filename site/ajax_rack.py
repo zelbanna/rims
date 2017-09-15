@@ -16,7 +16,7 @@ import sdcp.core.GenLib as GL
 def list_racks(aWeb):
  db   = GL.DB()
  db.connect()
- print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Rack</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=rack_unit_info&id=new'><IMG SRC='images/btn-add.png'></A>"
@@ -47,25 +47,24 @@ def info(aWeb):
  for side in ['Front','Back']:
   print "<DIV style='margin:10px 20px; float:left;'><SPAN style='font-size: 16px; font-weight:bold'>{} side</SPAN>".format(side)
   count = 1 if side == 'Front' else -1
-  print "<TABLE>"
+  print "<TABLE CLASS=z-rack>"
   rowspan = 0
   for index in range(rackinfo['size'],0,-1):
-   print "<TR CLASS='z-rack'><TD CLASS='z-rack-indx'>{0}</TD>".format(index)
+   print "<TR><TD CLASS=indx>{0}</TD>".format(index)
    if index == rackinfo['size'] and count == 1:
-    print "<TD CLASS='z-rack-data' style='background:yellow;'><CENTER>Patch Panel</CENTER></TD>"
+    print "<TD CLASS=data style='background:yellow;'><CENTER>Patch Panel</CENTER></TD>"
    else:
     if rowspan > 0:
      rowspan = rowspan - 1
     else:
      if rackunits.get(count*index,None):
       rowspan = rackunits[count*index].get('rack_size')
-      print "<TD CLASS='z-rack-data' rowspan={2} style='background-color:green'><CENTER><A CLASS='z-op' TITLE='Show device info for {0}' OP=load DIV='div_navcont' URL='ajax.cgi?call=device_device_info&id={1}'>{0}</A></CENTER></TD>".format(rackunits[count*index]['hostname'],rackunits[count*index]['id'],rowspan)
+      print "<TD CLASS=data rowspan={2} style='background-color:green'><CENTER><A CLASS='z-op' TITLE='Show device info for {0}' OP=load DIV='div_navcont' URL='ajax.cgi?call=device_device_info&id={1}'>{0}</A></CENTER></TD>".format(rackunits[count*index]['hostname'],rackunits[count*index]['id'],rowspan)
       rowspan = rowspan - 1
      else:
-      print "<TD CLASS='z-rack-data' style='line-height:14px;'>&nbsp;</TD>"
-   print "<TD CLASS='z-rack-indx'>{0}</TD></TR>".format(index)
-  print "</TABLE>"
-  print "</DIV>"
+      print "<TD CLASS=data style='line-height:14px;'>&nbsp;</TD>"
+   print "<TD CLASS=indx>{0}</TD></TR>".format(index)
+  print "</TABLE></DIV>"
 
 #
 #
@@ -81,7 +80,7 @@ def unit_info(aWeb):
  else:
   db.do("SELECT * from racks WHERE id = {}".format(id))
   rack = db.get_row()
- print "<DIV CLASS=z-fframe style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
+ print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
  print "<FORM ID=rack_unit_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=title>Rack Info {}</DIV>".format("(new)" if id == 'new' else "")

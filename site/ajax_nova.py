@@ -27,7 +27,7 @@ def list(aWeb):
   return
 
  print "<DIV CLASS=z-os-left ID=div_os_left>"
- print "<DIV CLASS=z-fframe style='width:394px'>"
+ print "<DIV CLASS=z-frame style='width:394px'>"
  print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead style='height:20px'><DIV CLASS=th><CENTER>Nova Servers</CENTER></DIV></DIV>"
  print "<DIV CLASS=tbody><DIV CLASS=tr style='height:20px'><DIV CLASS=td>"
@@ -67,7 +67,7 @@ def select_parameters(aWeb):
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
  port,url = cookie.get('os_nova_port'),cookie.get('os_nova_url')
- print "<DIV CLASS=z-fframe>"
+ print "<DIV CLASS=z-frame>"
  print """
  <script>
   $( function() {
@@ -159,7 +159,7 @@ def action(aWeb):
   print tmpl.format('Networks','networks','Networks')
   print "<A TITLE='New-tab Console'  CLASS='z-btn'  TARGET=_blank HREF='pane.cgi?view=openstack_console&name={0}&id={1}'>Console</A>".format(qserver,id)
   print "</DIV>"
-  print "<DIV CLASS=z-fframe style='overflow:auto;' ID=div_os_info>"
+  print "<DIV CLASS=z-frame style='overflow:auto;' ID=div_os_info>"
   dict2html(server,server['name'])
   print "</DIV>"
 
@@ -217,7 +217,7 @@ def action(aWeb):
   if not ret['result'] == "OK":
    print "Error performing op {}".format(str(ret))
    return
-  print "<DIV CLASS='z-fframe'>"
+  print "<DIV CLASS='z-frame'>"
   print "<H2>Removing VM</H2>"
   if ret['code'] == 204:
    print "VM removed"
