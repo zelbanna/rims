@@ -18,12 +18,7 @@ def sync(aWeb):
  db.connect()
  db.do("SELECT devices.id, ip, hostname, INET_NTOA(ip) as ipasc, ipam_sub_id, a_dom_id, domains.name as domain FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE (a_id = 0 or ptr_id = 0 or ipam_id = 0) ORDER BY ip")
  rows = db.get_all_rows()
-<<<<<<< HEAD
  print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
-=======
- print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=z-table>"
->>>>>>> 1d30ffca178b31d10b169757f7d81420eb75837d
  print "<DIV CLASS=thead style='border: 1px solid grey'><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>A</DIV><DIV CLASS=th>PTR</DIV><DIV CLASS=th>IPAM</DIV><DIV CLASS=th>Extra</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
