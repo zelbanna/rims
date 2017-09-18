@@ -7,11 +7,11 @@ __author__= "Zacharias El Banna"
 __version__ = "17.6.2GA"
 __status__= "Production"
 
-from sdcp.core.GenLib import log_msg
 #
 # Make proper REST responses 
 #
-# - uses GET semantics to find module - encoded as api=module_function
+# - encoded as apicall=package.path:module_function
+# - module file is prefixed with rest_ , use _ for function names but not module name (!)
 # - reads body to find input data
 # - returns json:ed response from function
 # 
@@ -19,11 +19,9 @@ def server():
  from os import getenv, environ
  from sys import stdout, stdin
  from json import loads, dumps
- api  = getenv("HTTP_X_Z_API")
- path = getenv("HTTP_X_Z_PATH") if api else "sdcp.site"
- if not api:
-  api = getenv("QUERY_STRING").partition("=")[2]
- (module,void,func) = api.partition('_')
+ apicall = getenv("HTTP_X_Z_APICALL")
+ (path,void,mod_fun) = apicall.partition(':')
+ (module,void,func)  = mod_fun.partition('_')
  body = stdin.read()
  args = body if len(body) > 0 else '{"args":"empty"}'
  try:
@@ -35,7 +33,7 @@ def server():
  except Exception as err:
   print "X-Z-Res:{}\r".format(str(err))
   data = dumps({ 'err':'module_error', 'res':str(err)  }, sort_keys=True)
- print "X-Z-Mod:{}\r".format(module)
+ print "X-Z-API:{}\r".format(module)
  print "X-Z-Func:{}\r".format(func)
  print "X-Z-Path:{}\r".format(path)
  print "Content-Type: application/json\r"
@@ -45,18 +43,17 @@ def server():
 
 #
 # Make proper REST call with arg = body
-# - aurl = REST API link - complete
-# - amod = module
-# - args = body/content 
-# - apath= python-path-to-module-named-rest_ (e.g. sdcp.site [.rest_xyz])
+# - aURL = REST API link - complete
+# - aAPI= python-path-to-module (e.g. package.path:module_fun*)
+# - aArgs = body/content 
 #
 #  returns un-json:ed data
-def call(aurl,amod,args,apath = "sdcp.site"):
+def call(aURL, aAPI, aArgs):
  from json import loads, dumps
  from urllib2 import urlopen, Request, HTTPError
- head = { 'Content-Type': 'application/json', 'X-Z-Path':apath, 'X-Z-API':amod }
+ head = { 'Content-Type': 'application/json', 'X-Z-API':aAPI }
  try:
-  req = Request(aurl, headers=head, data=dumps(args))
+  req = Request(aURL, headers=head, data=dumps(aArgs))
   sock = urlopen(req)
   try: data = sock.read()
   except: data = '{ "rest_response":"no_data" }'

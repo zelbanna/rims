@@ -1,6 +1,6 @@
 """Moduledocstring.
 
-REST calls module
+PDU REST calls module
 
 """
 __author__= "Zacharias El Banna"                     
