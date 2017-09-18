@@ -16,7 +16,7 @@ def clear_logs(aWeb, aClear = True):
  domain  = aWeb.get_value('domain')
  try:
   from subprocess import check_output
-  import sdcp.SettingsContainer as SC
+  import sdcp.PackageContainer as SC
   import sdcp.core.GenLib as GL
   if aClear:
    open("/var/log/network/"+ domain +".log",'w').close()
@@ -33,7 +33,7 @@ def clear_logs(aWeb, aClear = True):
 def log(aWeb):
  try:
   from subprocess import check_output
-  import sdcp.SettingsContainer as SC
+  import sdcp.PackageContainer as SC
   logfile = aWeb.get_value('logfile',SC.generic_logformat)
   syslogs = check_output("tail -n 15 " + logfile + " | tac", shell=True)
   print "<PRE>{}</PRE>".format(syslogs)

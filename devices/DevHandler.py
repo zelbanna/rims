@@ -55,7 +55,7 @@ def device_get_widgets(aType):
 # Detect device info
 #
 def device_detect(aIP, aDict = {}, aSema = None):
- import sdcp.SettingsContainer as SC
+ import sdcp.PackageContainer as SC
  from netsnmp import VarList, Varbind, Session
  from socket import gethostbyaddr
  from sdcp.core.GenLib import ping_os

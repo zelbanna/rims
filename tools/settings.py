@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """Program docstring.
-Creates a settings container from a .json file
+Creates a package specific container, partly using settings from a .json file
 """
 __author__ = "Zacharias El Banna"
 __version__ = "17.6.1GA"
@@ -13,15 +13,19 @@ def convertSettings(aFile):
  try:
   with open(aFile) as f:
    config = load(f)
-  with open("SettingsContainer.py",'w') as f:
+  with open("PackageContainer.py",'w') as f:
    for name,cathegory in config.iteritems():
     for key, entry in cathegory.iteritems():
      f.write("{}_{} = '{}'\n".format(name,key,entry))
     f.write("\n")
+   f.write("def log_msg(amsg):\n")
+   f.write(" from time import localtime, strftime\n")
+   f.write(" with open(generic_logformat, 'a') as f:\n")
+   f.write(repr("  f.write(unicode('{} : {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), amsg)))")[1:-1] + "\n")
   # Brute way of compiling ...
-  import SettingsContainer
-  remove("SettingsContainer.py")
-  print "Parsed settings and wrote SettingsContainer"
+  import PackageContainer
+  remove("PackageContainer.py")
+  print "Parsed settings and wrote PackageContainer"
  except Exception as err:
   print "Error handling settings files: {}".format(str(err))
 

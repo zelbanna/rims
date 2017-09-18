@@ -6,14 +6,14 @@ Junos Router Base Class
 - Junos (Template Class)
 - SRX, EX, QFX, MX sub classes
 
-Uses SettingsContainer for login info..
+Uses PackageContainer for login info..
 
 """
 __author__ = "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__ = "Production"
 
-import sdcp.SettingsContainer as SC
+import sdcp.PackageContainer as SC
 from GenDevice import GenDevice
 from netsnmp import VarList, Varbind, Session
 
@@ -164,7 +164,7 @@ class Junos(GenDevice):
    pass
 
  def print_conf(self,argdict):
-  import sdcp.SettingsContainer as SC
+  import sdcp.PackageContainer as SC
   print "set system host-name {}<BR>".format(argdict['name'])
   if SC.netconf_username == 'root':
    print "set system root-authentication encrypted-password \"{}\"<BR>".format(SC.netconf_encrypted)

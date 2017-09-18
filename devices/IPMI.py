@@ -11,7 +11,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__ = "Production"
 
-import sdcp.SettingsContainer as SC
+import sdcp.PackageContainer as SC
 from XtraLib import get_results, str2hex
 from subprocess import check_output, check_call
 

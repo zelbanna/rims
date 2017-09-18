@@ -27,7 +27,7 @@ __status__= "Production"
 
 def openstack_login(aWeb):
  from sdcp.devices.openstack import OpenstackRPC
- import sdcp.SettingsContainer as SC
+ import sdcp.PackageContainer as SC
  import sdcp.core.GenLib as GL
  name = aWeb.get_value('name',"iaas")
  ctrl = aWeb.get_value('controller',"127.0.0.1")
@@ -80,7 +80,7 @@ def openstack_login(aWeb):
 def openstack_portal(aWeb):
  from json import dumps
  from sdcp.devices.openstack import OpenstackRPC
- import sdcp.SettingsContainer as SC
+ import sdcp.PackageContainer as SC
  import sdcp.core.GenLib as GL
  cookie   = aWeb.get_cookie()
  ctrl = cookie.get('os_controller')

@@ -12,7 +12,7 @@ __version__ = "17.6.1GA"
 __status__  = "Production"
 
 from GenDevice import GenDevice
-import sdcp.SettingsContainer as SC
+import sdcp.PackageContainer as SC
 
 #
 # Generic SNMP Configuration Class

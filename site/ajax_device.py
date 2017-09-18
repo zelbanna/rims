@@ -204,7 +204,7 @@ def device_info(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=lookup    FRM=info_form OP=load TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=load TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata URL=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=load TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
- import sdcp.SettingsContainer as SC
+ import sdcp.PackageContainer as SC
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(SC.netconf_username,ip)
  if device_data['rack_id'] and (conip and not conip == '127.0.0.1' and ri['console_port'] and ri['console_port'] > 0):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+ri['console_port'])

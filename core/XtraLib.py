@@ -25,7 +25,7 @@ def get_results(test):
  return "success" if test else "failure"
 
 def log_msg(amsg):
- import sdcp.SettingsContainer as SC
+ import sdcp.PackageContainer as SC
  from time import localtime, strftime
  if _debug: print "Log: " + amsg
  with open(SC.generic_logformat, 'a') as f:

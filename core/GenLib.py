@@ -18,7 +18,7 @@ class DB(object):
   self._curs = None
 
  def connect(self):
-  import sdcp.SettingsContainer as SC
+  import sdcp.PackageContainer as SC
   from pymysql import connect
   from pymysql.cursors import DictCursor
   self._conn = connect(host='localhost', port=3306, user=SC.sdcp_dbuser, passwd=SC.sdcp_dbpass, db=SC.sdcp_db, cursorclass=DictCursor)
@@ -125,7 +125,7 @@ def ping_os(ip):
  return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
 
 def log_msg(amsg):
- import sdcp.SettingsContainer as SC
+ import sdcp.PackageContainer as SC
  from time import localtime, strftime
  with open(SC.generic_logformat, 'a') as f:
   f.write(unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), amsg)))

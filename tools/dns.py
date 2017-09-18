@@ -6,7 +6,7 @@
 __author__ = "Zacharias El Banna"                     
 __version__ = "17.6.1GA"
 __status__ = "Production"
-import sdcp.SettingsContainer as SC
+import sdcp.PackageContainer as SC
 import sdcp.core.GenLib as GL
 
 ################################ LOOPIA DNS ###################################

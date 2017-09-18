@@ -31,7 +31,7 @@ class GenDevice(object):
  # use _ip everywhere we need to connect, use fqdn and domain and host for display purposes
  
  def __init__(self, ahost, adomain = None, atype = "unknown"):
-  import sdcp.SettingsContainer as SC
+  import sdcp.PackageContainer as SC
   from socket import gethostbyname, getfqdn
   self._type = atype
   self._devid = None

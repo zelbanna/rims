@@ -70,7 +70,7 @@ def info(aWeb):
 #
 #
 def unit_info(aWeb):
- import sdcp.SettingsContainer as SC
+ import sdcp.PackageContainer as SC
  from os import listdir, path
  id = aWeb.get_value('id')
  db = GL.DB()
