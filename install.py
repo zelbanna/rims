@@ -33,7 +33,10 @@ for dest in [ 'ajax', 'pane', 'rest' ]:
   else:
    wr("from sdcp.site.www import Web\n")
    wr("web = Web()\n")
-   wr("web.{}()\n".format(dest))
+   if dest == 'ajax':
+    wr("web.{}('sdcp.site')\n".format(dest))
+   else:
+    wr("web.{}()\n".format(dest))
  chmod(site,0755)
 
 #

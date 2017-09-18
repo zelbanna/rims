@@ -28,6 +28,7 @@ __status__= "Production"
 def openstack_login(aWeb):
  from sdcp.devices.openstack import OpenstackRPC
  import sdcp.SettingsContainer as SC
+ import sdcp.core.GenLib as GL
  name = aWeb.get_value('name',"iaas")
  ctrl = aWeb.get_value('controller',"127.0.0.1")
  appf = aWeb.get_value('appformix',"127.0.0.1")
@@ -49,9 +50,9 @@ def openstack_login(aWeb):
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':SC.openstack_project, 'username':SC.openstack_username,'password':SC.openstack_password })
   aWeb.put_cookie("os_main_token",openstack.get_token())
-  aWeb.log_msg("openstack_login - login result: {}".format(str(res['result'])))
+  GL.log_msg("openstack_login - login result: {}".format(str(res['result'])))
  else:
-  aWeb.log_msg("openstack_login - reusing token: {}".format(mtok))
+  GL.log_msg("openstack_login - reusing token: {}".format(mtok))
   openstack = OpenstackRPC(ctrl,mtok)
 
  ret = openstack.call("5000","v3/projects")
@@ -80,6 +81,7 @@ def openstack_portal(aWeb):
  from json import dumps
  from sdcp.devices.openstack import OpenstackRPC
  import sdcp.SettingsContainer as SC
+ import sdcp.core.GenLib as GL
  cookie   = aWeb.get_cookie()
  ctrl = cookie.get('os_controller')
  utok = cookie.get('os_user_token')
@@ -93,7 +95,7 @@ def openstack_portal(aWeb):
   res = openstack.auth({'project':pname, 'username':username,'password':password })
   if not res['result'] == "OK":
    aWeb.put_html_header()
-   aWeb.log_msg("openstack_portal - error during login for {}@{}".format(username,ctrl))
+   GL.log_msg("openstack_portal - error during login for {}@{}".format(username,ctrl))
    print "Error logging in - please try login again"
    return
   utok = openstack.get_token()
@@ -109,12 +111,12 @@ def openstack_portal(aWeb):
    aWeb.put_cookie(base + "_url",url)
    aWeb.put_cookie(base + "_id",id)
 
-  aWeb.log_msg("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
+  GL.log_msg("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
  else:
   username = cookie.get("os_user_name")
   pid      = cookie.get("os_project_id")
   pname    = cookie.get("os_project_name")
-  aWeb.log_msg("openstack_portal - using existing token for {}@{}".format(username,ctrl))
+  GL.log_msg("openstack_portal - using existing token for {}@{}".format(username,ctrl))
   openstack = OpenstackRPC(ctrl,utok)
 
  aWeb.put_html_header()

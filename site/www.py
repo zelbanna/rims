@@ -1,6 +1,6 @@
 """Module docstring.
 
-WWW/HTMLinterworking module
+Generic WWW/HTMLinterworking module
 
 """
 __author__= "Zacharias El Banna"                     
@@ -17,19 +17,11 @@ class Web(object):
   self._cookie = {}
   self._form = None
 
- def log_msg(self, aMsg, aLog = None):
-  if not aLog:
-   import sdcp.SettingsContainer as SC
-   aLog = SC.sdcp_logformat
-  with open(aLog, 'a') as f:
-   from time import localtime, strftime
-   f.write( unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg) ) )
-
  ################################# AJAX #########################################
  #
  # call = <module>_<module_function>
  #
- def ajax(self):
+ def ajax(self,aSiteBase):
   from sys import stdout
   print "Content-Type: text/html\r\n"
   stdout.flush()
@@ -39,7 +31,7 @@ class Web(object):
   (module,void,call) = ajaxcall.partition('_')
   from importlib import import_module
   try:
-   ajaxmod = import_module("sdcp.site.ajax_" + module)
+   ajaxmod = import_module(aSiteBase + ".ajax_" + module)
    fun = getattr(ajaxmod,call,None)
    fun(self)
   except Exception as err:

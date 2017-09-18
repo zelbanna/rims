@@ -129,6 +129,7 @@ def select_parameters(aWeb):
 #
 # 
 def action(aWeb):
+ import sdcp.core.GenLib as GL
  cookie = aWeb.get_cookie()
  token  = cookie.get('os_user_token')
  if not token:
@@ -141,7 +142,7 @@ def action(aWeb):
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
 
- aWeb.log_msg("nova_action - id:{} op:{} for project:{}".format(id,op,cookie.get('os_project_name')))
+ GL.log_msg("nova_action - id:{} op:{} for project:{}".format(id,op,cookie.get('os_project_name')))
 
  if   op == 'info':
   server = controller.call(port,url + "/servers/{}".format(id))['data']['server']
