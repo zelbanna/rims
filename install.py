@@ -7,9 +7,10 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__ = "Production"
 
-from sys import exit,argv
-from os import chmod,getcwd
+from sys import exit,argv, path as syspath
+from os import chmod,getcwd,remove
 from tools.settings import convertSettings
+syspath.insert(1, './')
 
 if len(argv) < 2:
  print "Usage: {} <json settings file>".format(argv[0])
@@ -18,6 +19,7 @@ else:
  convertSettings(argv[1])
 
 import PackageContainer as PC
+remove("PackageContainer.py")
 
 for dest in [ 'ajax', 'pane', 'rest' ]:
  site = "{}/{}.cgi".format(PC.generic_docroot,dest)
