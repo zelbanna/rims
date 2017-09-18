@@ -123,8 +123,9 @@ def discover(aDict):
  from time import time
  from threading import Thread, BoundedSemaphore
  from sdcp.devices.DevHandler import device_detect
+ import sdcp.PackageContainer as PC
  start_time = int(time())
- GL.log_msg("rest_device_discover: " + str(aDict))
+ PC.log_msg("rest_device_discover: " + str(aDict))
  ip_start = aDict.get('start')
  ip_end   = aDict.get('end')
  db = GL.DB()
@@ -161,9 +162,9 @@ def discover(aDict):
   else:
    db.commit()
  except Exception as err:
-  GL.log_msg("device discover: Error [{}]".format(str(err)))
+  PC.log_msg("device discover: Error [{}]".format(str(err)))
  db.close()
- GL.log_msg("device discover: Total time spent: {} seconds".format(int(time()) - start_time))
+ PC.log_msg("device discover: Total time spent: {} seconds".format(int(time()) - start_time))
  return { 'found':len(db_new) }
 
 #

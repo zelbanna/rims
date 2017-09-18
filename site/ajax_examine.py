@@ -17,11 +17,10 @@ def clear_logs(aWeb, aClear = True):
  try:
   from subprocess import check_output
   import sdcp.PackageContainer as PC
-  import sdcp.core.GenLib as GL
   if aClear:
    open("/var/log/network/"+ domain +".log",'w').close()
    open(PC.generic_logformat,'w').close()
-   GL.log_msg("Emptied logs")
+   PC.log_msg("Emptied logs")
   netlogs = check_output("tail -n 15 /var/log/network/{}.log | tac".format(domain), shell=True)
   print "<DIV CLASS='z-logs'><H1>Network Logs</H1><PRE>{}</PRE></DIV>".format(netlogs)
   print "<BR>"

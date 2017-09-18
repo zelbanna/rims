@@ -17,7 +17,7 @@ if len(argv) < 2:
 else:
  convertSettings(argv[1])
 
-import PackageContainer as SC
+import PackageContainer as PC
 
 for dest in [ 'ajax', 'pane', 'rest' ]:
  site = "{}/{}.cgi".format(PC.generic_docroot,dest)

@@ -10,7 +10,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__ = "Production"
 
-import sdcp.core.GenLib as GL
+import sdcp.PackageContainer as PC
 
 ####################################### Grapher Class ##########################################
 #
@@ -102,10 +102,10 @@ class Grapher(object):
      data['update'] = astate
      self._configitems[akey] = data
   except Exception as err:
-   GL.log_msg("Grapher updateEntry: Error [{}]".format(str(err)))
+   PC.log_msg("Grapher updateEntry: Error [{}]".format(str(err)))
 
  def add_entry(self, akey, aupdate, ahandler = '127.0.0.1'):
-  GL.log_msg("Grapher: Adding entry: {} - {} - {}".format(akey, aupdate, ahandler))
+  PC.log_msg("Grapher: Adding entry: {} - {} - {}".format(akey, aupdate, ahandler))
   with open(self._configfile, 'a') as conffile:
    conffile.write("\n")
    conffile.write("[" + akey + "]\n")
@@ -120,6 +120,7 @@ class Grapher(object):
   from os import chmod
   from time import time
   from threading import Lock, Thread, BoundedSemaphore
+  import sdcp.core.GenLib as GL
   start_time = int(time())
   try:
    flock = Lock()
@@ -139,8 +140,8 @@ class Grapher(object):
    for i in range(10):
     sema.acquire()       
   except Exception as err:
-   GL.log_msg("Grapher: failure in processing Device entries: [{}]".format(str(err)))
-  GL.log_msg("Grapher: Total time spent: {} seconds".format(int(time()) - start_time))
+   PC.log_msg("Grapher: failure in processing Device entries: [{}]".format(str(err)))
+  PC.log_msg("Grapher: Total time spent: {} seconds".format(int(time()) - start_time))
 
  ########################### Detect Plugins ###########################
  #
@@ -150,6 +151,7 @@ class Grapher(object):
  # DevHandler should have a method for getting a 'type' object
  #
  def _detect(self, aip, aentry, ahandler, alock, asema):
+  import sdcp.core.GenLib as GL
   if not GL.ping_os(aip):
    asema.release()
    return False
@@ -166,7 +168,7 @@ class Grapher(object):
       activeinterfaces = jdev.get_up_interfaces()
       jdev.close()
      else:
-      GL.log_msg("Graph detect: impossible to connect to {}! [{} - {}]".format(fqdn,type,model))
+      PC.log_msg("Graph detect: impossible to connect to {}! [{} - {}]".format(fqdn,type,model))
     alock.acquire()
     with open(self._graphplug, 'a') as graphfile:
      if not self.get_entry(fqdn):
@@ -186,7 +188,7 @@ class Grapher(object):
      graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + fqdn + '_esxi\n')
     alock.release()
   except Exception as err:
-   GL.log_msg("Graph detect - error: [{}]".format(str(err)))
+   PC.log_msg("Graph detect - error: [{}]".format(str(err)))
   
   asema.release()
   return True

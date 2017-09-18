@@ -99,7 +99,6 @@ def enter_parameters(aWeb):
 # Heat Actions
 #
 def action(aWeb):
- import sdcp.core.GenLib as GL
  cookie = aWeb.get_cookie()
  token  = cookie.get('os_user_token')
  if not token:
@@ -113,7 +112,8 @@ def action(aWeb):
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
 
- GL.log_msg("heat_action - project:{} id:{} name:{} op:{}".format(id,cookie.get('os_project_name'),name,op))
+ import sdcp.PackageContainer as PC
+ PC.log_msg("heat_action - project:{} id:{} name:{} op:{}".format(id,cookie.get('os_project_name'),name,op))
 
  if   op == 'info':
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=ajax.cgi?call=heat_action&name=" + name + "&id=" + id+ "&op={} SPIN=true>{}</A>"

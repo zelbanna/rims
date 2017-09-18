@@ -118,7 +118,7 @@ def dns_lookup(aDict):
  if PC.dnsdb_proxy == 'True':
   return REST.call(PC.dnsdb_url, "ddi_dns_lookup", aDict)
  ptr  = GL.ip2arpa(aDict['ip'])
- GL.log_msg("DNS  lookup - input:{}".format(aDict.values()))  
+ PC.log_msg("DNS  lookup - input:{}".format(aDict.values()))  
  db = GL.DB()
  db.connect_details('localhost',PC.dnsdb_username, PC.dnsdb_password, PC.dnsdb_dbname)
  res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr))
@@ -149,7 +149,7 @@ def dns_lookup(aDict):
 def dns_update(aDict):
  if PC.dnsdb_proxy == 'True':
   return REST.call(PC.dnsdb_url, "ddi_dns_update", aDict)
- GL.log_msg("DNS  update - input:{}".format(aDict.values()))
+ PC.log_msg("DNS  update - input:{}".format(aDict.values()))
  from time import strftime
  serial  = strftime("%Y%m%d%H")
  ptr     = GL.ip2ptr(aDict['ip'])
@@ -186,13 +186,13 @@ def dns_update(aDict):
 
  db.commit()
  db.close()
- GL.log_msg("DNS  update - results: " + str(retvals))
+ PC.log_msg("DNS  update - results: " + str(retvals))
  return retvals
 
 def dns_remove(aDict):
  if PC.dnsdb_proxy == 'True':
   return REST.call(PC.dnsdb_url, "ddi_dns_remove", aDict)
- GL.log_msg("DNS  remove - input:{}".format(aDict.values()))
+ PC.log_msg("DNS  remove - input:{}".format(aDict.values()))
  db = GL.DB()
  db.connect_details('localhost',PC.dnsdb_username, PC.dnsdb_password, PC.dnsdb_dbname)
  ares = 0
@@ -203,7 +203,7 @@ def dns_remove(aDict):
   pres = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aDict['ptr_id']))
  db.commit()
  db.close()
- GL.log_msg("DNS  remove - A:{} PTR:{}".format(str(ares),str(pres)))
+ PC.log_msg("DNS  remove - A:{} PTR:{}".format(str(ares),str(pres)))
  return { 'a':ares, 'ptr':pres }
 
 ################################################# DDI - IPAM ##################################################
@@ -225,7 +225,7 @@ def ipam_subnets(aDict):
 def ipam_lookup(aDict):
  if PC.ipamdb_proxy == 'True':
   return REST.call(PC.ipamdb_url, "ddi_ipam_lookup", aDict)
- GL.log_msg("IPAM lookup - input {}".format(aDict.values()))
+ PC.log_msg("IPAM lookup - input {}".format(aDict.values()))
  ipint   = GL.ip2int(aDict['ip'])
  retvals = { 'ipam_id':'0' }
  db = GL.DB()
@@ -245,7 +245,7 @@ def ipam_lookup(aDict):
 def ipam_update(aDict):
  if PC.ipamdb_proxy == 'True':
   return REST.call(PC.ipamdb_url, "ddi_ipam_update", aDict)
- GL.log_msg("IPAM update - input:{}".format(aDict.values()))
+ PC.log_msg("IPAM update - input:{}".format(aDict.values()))
  db = GL.DB()
  db.connect_details('localhost',PC.ipamdb_username, PC.ipamdb_password, PC.ipamdb_dbname)
  res = {}
@@ -281,7 +281,7 @@ def ipam_remove(aDict):
  ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
  db.commit()
  db.close()
- GL.log_msg("IPAM remove - {} -> {}".format(aDict,ires))
+ PC.log_msg("IPAM remove - {} -> {}".format(aDict,ires))
  return ires
 
 #

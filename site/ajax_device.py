@@ -413,7 +413,6 @@ def discover(aWeb):
   ipam  = aWeb.get_value('ipam_sub',"0_0_32").split('_')
   # id, subnet int, subnet mask
   res = discover({ 'ipam_sub_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1])+2**(32-int(ipam[2])), 'a_dom_id':a_dom, 'clear':clear})
-  GL.log_msg("ajax_devices_discover: " + str(res))
   print "<DIV CLASS=z-frame>{}</DIV>".format(res)
  else:
   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet");

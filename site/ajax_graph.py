@@ -53,6 +53,7 @@ def find(aWeb):
 #
 def sync(aWeb):
  import sdcp.core.GenLib as GL
+ import sdcp.PackageContainer as PC
  from sdcp.tools.Grapher import Grapher
  try:
   db = GL.DB()
@@ -69,7 +70,7 @@ def sync(aWeb):
   db.commit()
   db.close()
   print "<B>Done syncing devices' graphing</B>"
-  GL.log_msg("graph_sync: Done syncing devices' graphing")
+  PC.log_msg("graph_sync: Done syncing devices' graphing")
  except Exception as err:
   print "<B>Error: {}</B>".format(str(err))
 

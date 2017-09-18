@@ -25,9 +25,9 @@ def op(aWeb, aEsxi = None):
 
  if nstate:
   from subprocess import check_call, check_output
-  import sdcp.core.GenLib as GL
+  import sdcp.PackageContainer as PC
   try:
-   GL.log_msg("ESXi: {} got command {}".format(aEsxi._fqdn,nstate))
+   PC.log_msg("ESXi: {} got command {}".format(aEsxi._fqdn,nstate))
    if nstate == 'vmsvc-snapshot.create':
     from time import strftime
     with aEsxi:
@@ -53,7 +53,7 @@ def op(aWeb, aEsxi = None):
     excpt = "" if vmid == '-1' else vmid
     check_call("/usr/local/sbin/ups-operations shutdown " + aEsxi._hostname + " " + excpt + " &", shell=True)
   except Exception as err:
-   GL.log_msg("ESXi: nstate error [{}]".format(str(err)))
+   PC.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  statelist = aEsxi.get_vms(sort)
  # Formatting template (command, btn-xyz, vm-id, hover text)
