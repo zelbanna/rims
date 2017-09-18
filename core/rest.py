@@ -7,8 +7,6 @@ __author__= "Zacharias El Banna"
 __version__ = "17.6.2GA"
 __status__= "Production"
 
-import sdcp.PackageContainer as PC
-
 #
 # Make proper REST responses 
 #
@@ -22,7 +20,6 @@ def server():
  from sys import stdout, stdin
  from json import loads, dumps
  apicall = getenv("HTTP_X_Z_APICALL")
- PC.log_msg("API: {}".format(apicall))
  (path,void,mod_fun) = apicall.partition(':')
  (module,void,func)  = mod_fun.partition('_')
  body = stdin.read()

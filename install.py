@@ -34,7 +34,7 @@ for dest in [ 'ajax', 'pane', 'rest' ]:
    wr("from {}.site.www import Web\n".format(PC.generic_sitebase))
    wr("web = Web()\n")
    if dest == 'ajax':
-    wr("web.ajax('{}')\n".format(PC.generic_sitebase + ".site"))
+    wr("web.ajax('{}')\n".format(PC.generic_sitebase))
    else:
     wr("web.{}()\n".format(dest))
  chmod(site,0755)
