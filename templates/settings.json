@@ -1,7 +1,8 @@
 {
  "generic": {
   "docroot":"/var/www",
-  "logformat": "/var/log/system/system.log"
+  "logformat": "/var/log/system/system.log",
+  "sitebase": "sdcp"
  },
  "sdcp": {
   "devicefile":"/var/www/devices.json",

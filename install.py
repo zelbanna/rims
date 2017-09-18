@@ -28,13 +28,13 @@ for dest in [ 'ajax', 'pane', 'rest' ]:
   wr("from sys import path as syspath\n")
   wr("syspath.insert(1, '{}')\n".format(getcwd().rpartition('/')[0]))
   if dest == 'rest':
-   wr("import sdcp.core.rest as REST\n")
+   wr("import {}.core.rest as REST\n".format(SC.generic_sitebase))
    wr("REST.server()\n")
   else:
-   wr("from sdcp.site.www import Web\n")
+   wr("from {}.site.www import Web\n".format(SC.generic_sitebase))
    wr("web = Web()\n")
    if dest == 'ajax':
-    wr("web.{}('sdcp.site')\n".format(dest))
+    wr("web.ajax('{}')\n".format(SC.generic_sitebase))
    else:
     wr("web.{}()\n".format(dest))
  chmod(site,0755)

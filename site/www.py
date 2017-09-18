@@ -31,7 +31,7 @@ class Web(object):
   (module,void,call) = ajaxcall.partition('_')
   from importlib import import_module
   try:
-   ajaxmod = import_module(aSiteBase + ".ajax_" + module)
+   ajaxmod = import_module(aSiteBase + ".site.ajax_" + module)
    fun = getattr(ajaxmod,call,None)
    fun(self)
   except Exception as err:
