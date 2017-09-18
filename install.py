@@ -20,7 +20,7 @@ else:
 import SettingsContainer as SC
 
 for dest in [ 'ajax', 'pane', 'rest' ]:
- site = "{}/{}.cgi".format(SC.sdcp_docroot,dest)
+ site = "{}/{}.cgi".format(SC.generic_docroot,dest)
  with open(site,'w') as f:
   wr = f.write
   wr("#!/usr/bin/python\n")
@@ -44,8 +44,8 @@ for dest in [ 'ajax', 'pane', 'rest' ]:
 #
 from os import listdir
 from shutil import copy
-imagedest = "{}/images/".format(SC.sdcp_docroot)
-funcdest  = "{}/".format(SC.sdcp_docroot)
+imagedest = "{}/images/".format(SC.generic_docroot)
+funcdest  = "{}/".format(SC.generic_docroot)
 for file in listdir('site_images'):
  copy("site_images/" + file, imagedest + file)
 for file in listdir('site_infra'):

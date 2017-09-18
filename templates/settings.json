@@ -1,7 +1,9 @@
 {
- "sdcp": {
+ "generic": {
   "docroot":"/var/www",
-  "logformat": "/var/log/system/system.log",
+  "logformat": "/var/log/system/system.log"
+ },
+ "sdcp": {
   "devicefile":"/var/www/devices.json",
   "db": "sdcp",
   "dbtype":"mysql",
