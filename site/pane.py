@@ -27,7 +27,7 @@ __status__= "Production"
 
 def openstack_login(aWeb):
  from sdcp.devices.openstack import OpenstackRPC
- import sdcp.PackageContainer as SC
+ import sdcp.PackageContainer as PC
  import sdcp.core.GenLib as GL
  name = aWeb.get_value('name',"iaas")
  ctrl = aWeb.get_value('controller',"127.0.0.1")
@@ -48,7 +48,7 @@ def openstack_login(aWeb):
 
  if not mtok:
   openstack = OpenstackRPC(ctrl,None)
-  res = openstack.auth({'project':SC.openstack_project, 'username':SC.openstack_username,'password':SC.openstack_password })
+  res = openstack.auth({'project':PC.openstack_project, 'username':PC.openstack_username,'password':PC.openstack_password })
   aWeb.put_cookie("os_main_token",openstack.get_token())
   GL.log_msg("openstack_login - login result: {}".format(str(res['result'])))
  else:
@@ -80,7 +80,7 @@ def openstack_login(aWeb):
 def openstack_portal(aWeb):
  from json import dumps
  from sdcp.devices.openstack import OpenstackRPC
- import sdcp.PackageContainer as SC
+ import sdcp.PackageContainer as PC
  import sdcp.core.GenLib as GL
  cookie   = aWeb.get_cookie()
  ctrl = cookie.get('os_controller')

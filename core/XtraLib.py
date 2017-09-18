@@ -25,10 +25,10 @@ def get_results(test):
  return "success" if test else "failure"
 
 def log_msg(amsg):
- import sdcp.PackageContainer as SC
+ import sdcp.PackageContainer as PC
  from time import localtime, strftime
  if _debug: print "Log: " + amsg
- with open(SC.generic_logformat, 'a') as f:
+ with open(PC.generic_logformat, 'a') as f:
   f.write(unicode("{} : {}\n".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), amsg)))
 
 #

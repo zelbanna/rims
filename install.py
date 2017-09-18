@@ -20,7 +20,7 @@ else:
 import PackageContainer as SC
 
 for dest in [ 'ajax', 'pane', 'rest' ]:
- site = "{}/{}.cgi".format(SC.generic_docroot,dest)
+ site = "{}/{}.cgi".format(PC.generic_docroot,dest)
  with open(site,'w') as f:
   wr = f.write
   wr("#!/usr/bin/python\n")
@@ -28,13 +28,13 @@ for dest in [ 'ajax', 'pane', 'rest' ]:
   wr("from sys import path as syspath\n")
   wr("syspath.insert(1, '{}')\n".format(getcwd().rpartition('/')[0]))
   if dest == 'rest':
-   wr("import {}.core.rest as REST\n".format(SC.generic_sitebase))
+   wr("import {}.core.rest as REST\n".format(PC.generic_sitebase))
    wr("REST.server()\n")
   else:
-   wr("from {}.site.www import Web\n".format(SC.generic_sitebase))
+   wr("from {}.site.www import Web\n".format(PC.generic_sitebase))
    wr("web = Web()\n")
    if dest == 'ajax':
-    wr("web.ajax('{}')\n".format(SC.generic_sitebase))
+    wr("web.ajax('{}')\n".format(PC.generic_sitebase))
    else:
     wr("web.{}()\n".format(dest))
  chmod(site,0755)
@@ -44,8 +44,8 @@ for dest in [ 'ajax', 'pane', 'rest' ]:
 #
 from os import listdir
 from shutil import copy
-imagedest = "{}/images/".format(SC.generic_docroot)
-funcdest  = "{}/".format(SC.generic_docroot)
+imagedest = "{}/images/".format(PC.generic_docroot)
+funcdest  = "{}/".format(PC.generic_docroot)
 for file in listdir('site_images'):
  copy("site_images/" + file, imagedest + file)
 for file in listdir('site_infra'):

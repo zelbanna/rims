@@ -13,7 +13,7 @@ __status__= "Beta"
 # Assume we've created a token from the pane, so auth is done and we should pick up cookie template .. now username is the final thing .. before proper cookies in web reader
 #
 from sdcp.devices.appformix import AppformixRPC
-import sdcp.PackageContainer as SC
+import sdcp.PackageContainer as PC
 
 ##################################### Report ##################################
 #
@@ -26,7 +26,7 @@ def report(aWeb):
  ctrl   = cookie.get('af_controller')
  # First auth..
  controller  = AppformixRPC(ctrl)
- res = controller.auth({'username':SC.appformix_username, 'password':SC.appformix_password })
+ res = controller.auth({'username':PC.appformix_username, 'password':PC.appformix_password })
  
  if not res['result'] == "OK":
   print "Error logging in - {}".format(str(res))

@@ -55,7 +55,7 @@ def device_get_widgets(aType):
 # Detect device info
 #
 def device_detect(aIP, aDict = {}, aSema = None):
- import sdcp.PackageContainer as SC
+ import sdcp.PackageContainer as PC
  from netsnmp import VarList, Varbind, Session
  from socket import gethostbyaddr
  from sdcp.core.GenLib import ping_os
@@ -69,7 +69,7 @@ def device_detect(aIP, aDict = {}, aSema = None):
   # .1.3.6.1.2.1.1.1.0 : Device info
   # .1.3.6.1.2.1.1.5.0 : Device name
   devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'))
-  session = Session(Version = 2, DestHost = aIP, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+  session = Session(Version = 2, DestHost = aIP, Community = PC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
   session.get(devobjs)
  except:
   pass

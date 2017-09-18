@@ -6,7 +6,7 @@
 __author__ = "Zacharias El Banna"                     
 __version__ = "17.6.1GA"
 __status__ = "Production"
-import sdcp.PackageContainer as SC
+import sdcp.PackageContainer as PC
 import sdcp.core.GenLib as GL
 
 ################################ LOOPIA DNS ###################################
@@ -19,10 +19,10 @@ def set_loopia_ip(subdomain, newip):
  import xmlrpclib
  try:
   client = xmlrpclib.ServerProxy(uri = loopia_domain_server_url, encoding = 'utf-8')
-  data = client.getZoneRecords(SC.loopia_username, SC.loopia_password, SC.loopia_domain, subdomain)[0]
+  data = client.getZoneRecords(PC.loopia_username, PC.loopia_password, PC.loopia_domain, subdomain)[0]
   oldip = data['rdata']
   data['rdata'] = newip
-  status = client.updateZoneRecord(SC.loopia_username, SC.loopia_password, SC.loopia_domain, subdomain, data)[0]
+  status = client.updateZoneRecord(PC.loopia_username, PC.loopia_password, PC.loopia_domain, subdomain, data)[0]
  except Exception as exmlrpc:
   GL.log_msg("System Error - Loopia set: " + str(exmlrpc))
   return False
@@ -35,14 +35,14 @@ def get_loopia_ip(subdomain):
  import xmlrpclib
  try:
   client = xmlrpclib.ServerProxy(uri = loopia_domain_server_url, encoding = 'utf-8')
-  data = client.getZoneRecords(SC.loopia_username, SC.loopia_password, SC.loopia_domain, subdomain)[0]
+  data = client.getZoneRecords(PC.loopia_username, PC.loopia_password, PC.loopia_domain, subdomain)[0]
   return data['rdata']
  except Exception as exmlrpc:
   GL.log_msg("System Error - Loopia get: " + str(exmlrpc))
   return False
 
 def get_loopia_suffix():
- return "." + SC.loopia_domain
+ return "." + PC.loopia_domain
 
 ################################# OpenDNS ######################################
 #

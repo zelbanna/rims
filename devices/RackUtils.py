@@ -12,7 +12,7 @@ __version__ = "17.6.1GA"
 __status__  = "Production"
 
 from GenDevice import GenDevice
-import sdcp.PackageContainer as SC
+import sdcp.PackageContainer as PC
 
 #
 # Generic SNMP Configuration Class
@@ -61,7 +61,7 @@ class OpenGear(GenDevice, ConfObject):
   from netsnmp import VarList, Varbind, Session
   try:
    portobjs = VarList(Varbind('.1.3.6.1.4.1.25049.17.2.1.2'))
-   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(portobjs)
    self._configitems.clear()
    for result in portobjs:
@@ -101,7 +101,7 @@ class Avocent(GenDevice, ConfObject):
   from netsnmp import VarList, Varbind, Session
   try:
    # node = "pdu.outlet"
-   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_write_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp_write_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.6.1.{}.{}".format(slot,unit) , Avocent.set_outlet_state(state) ,"INTEGER"))
    session.set(setobj)
    entry = self.get_entry("{}.{}".format(slot,unit))
@@ -117,7 +117,7 @@ class Avocent(GenDevice, ConfObject):
   from netsnmp import VarList, Varbind, Session
   try:
    name = name[:16]
-   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_write_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp_write_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.4.1.{}.{}".format(slot,unit) , name, "OPAQUE"))
    session.set(setobj)
    entry = self.get_entry("{}.{}".format(slot,unit))
@@ -134,7 +134,7 @@ class Avocent(GenDevice, ConfObject):
    outletobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.4'))
    stateobjs  = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.5'))
    slotobjs   = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
-   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(outletobjs)
    session.walk(stateobjs)
    session.walk(slotobjs)
@@ -153,7 +153,7 @@ class Avocent(GenDevice, ConfObject):
   slots = []
   try:
    slotobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
-   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(slotobjs)
    for slot in slotobjs:
     slots.append([slot.iid, slot.val])
