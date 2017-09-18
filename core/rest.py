@@ -7,6 +7,8 @@ __author__= "Zacharias El Banna"
 __version__ = "17.6.2GA"
 __status__= "Production"
 
+import sdcp.PackageContainer as PC
+
 #
 # Make proper REST responses 
 #
@@ -20,6 +22,7 @@ def server():
  from sys import stdout, stdin
  from json import loads, dumps
  apicall = getenv("HTTP_X_Z_APICALL")
+ PC.log_msg("API: {}".format(apicall))
  (path,void,mod_fun) = apicall.partition(':')
  (module,void,func)  = mod_fun.partition('_')
  body = stdin.read()
@@ -51,7 +54,7 @@ def server():
 def call(aURL, aAPI, aArgs):
  from json import loads, dumps
  from urllib2 import urlopen, Request, HTTPError
- head = { 'Content-Type': 'application/json', 'X-Z-API':aAPI }
+ head = { 'Content-Type': 'application/json', 'X-Z-APICALL':aAPI }
  try:
   req = Request(aURL, headers=head, data=dumps(aArgs))
   sock = urlopen(req)
