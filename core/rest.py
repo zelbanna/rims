@@ -20,22 +20,22 @@ def server():
  from sys import stdout, stdin
  from json import loads, dumps
  apicall = getenv("HTTP_X_Z_APICALL")
- (path,void,mod_fun) = apicall.partition(':')
- (module,void,func)  = mod_fun.partition('_')
- body = stdin.read()
- args = body if len(body) > 0 else '{"args":"empty"}'
  try:
+  (path,void,mod_fun) = apicall.partition(':')
+  (module,void,func)  = mod_fun.partition('_')
+  body = stdin.read()
+  args = body if len(body) > 0 else '{"args":"empty"}'
   from importlib import import_module
   mod = import_module(path + ".rest_" + module)
   fun = getattr(mod,func,lambda x: { 'err':"No such function in module", 'args':x })
   data = dumps(fun(loads(args)))
   print "X-Z-Res:{}\r".format("OK")
+  print "X-Z-Path:{}\r".format(path)
+  print "X-Z-API:{}\r".format(module)
+  print "X-Z-Func:{}\r".format(func)
  except Exception as err:
   print "X-Z-Res:{}\r".format(str(err))
   data = dumps({ 'err':'module_error', 'res':str(err)  }, sort_keys=True)
- print "X-Z-API:{}\r".format(module)
- print "X-Z-Func:{}\r".format(func)
- print "X-Z-Path:{}\r".format(path)
  print "Content-Type: application/json\r"
  stdout.flush()
  print ""
