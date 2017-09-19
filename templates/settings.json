@@ -20,7 +20,8 @@
   "username" : "",
   "password" : "",
   "dbname": "",
-  "type" : "powerdns"
+  "type" : "powerdns",
+  "logfile":"/var/log/system/pdns.info.log"
  },
  "ipamdb" : {
   "proxy" : "False",
