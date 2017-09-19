@@ -105,22 +105,19 @@ def dhcp_update(_):
 def dns_top(aDict):
  if PC.dnsdb_proxy == 'True':
   return REST.call(PC.dnsdb_url, "sdcp.site:ddi_dns_top", aDict)
- from collections import Counter
- count = int(aWeb.get_value('count',10))
+ count = int(aDict.get('count',10))
  fqdn_top = {}                
  fqdn_who = {}
- with open('/var/log/system/pdns.info.log','r') as log:
+ with open(PC.dnsdb_logfile,'r') as log:
   for line in log:
    parts = line.split()
    fqdn  = parts[8].split('|')[0][1:]
    fqdn_top[fqdn] = fqdn_top.get(fqdn,0)+1     
    fqdn_who[fqdn+"#"+parts[6]] = fqdn_who.get(fqdn+"#"+parts[6],0)+1
- top = []
- ordered = Counter(fqdn_top)
- return ordered.most_common(count)
- # ordered = Counter(fqdn_who)          
- #for (comp,val) in ordered.most_common(count):
- # (dns,void,who) = comp.partition('#')
+ from collections import Counter
+ top = map(lambda x: {'fqdn':x[0],'count':x[1]}, Counter(fqdn_top).most_common(count))
+ who = map(lambda x: {'fqdn':x[0].split('#')[0], 'who':x[0].split('#')[1], 'count':x[1]}, Counter(fqdn_who).most_common(count))    
+ return {'top':top,'who':who }
 
 
 #

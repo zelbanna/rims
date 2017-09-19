@@ -20,6 +20,8 @@ def server():
  from sys import stdout, stdin
  from json import loads, dumps
  apicall = getenv("HTTP_X_Z_APICALL")
+ if not apicall:
+  apicall = getenv("QUERY_STRING").partition("=")[2]
  try:
   (path,void,mod_fun) = apicall.partition(':')
   (module,void,func)  = mod_fun.partition('_')

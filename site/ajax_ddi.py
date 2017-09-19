@@ -55,35 +55,3 @@ def sync(aWeb):
 def load_infra(aWeb):
  from rest_ddi import load_infra
  print "<PRE>{}</PRE>".format(load_infra(None))
-
-#
-# DNS-TOP
-#
-
-def dns_top(aWeb):
- from collections import Counter
- count = int(aWeb.get_value('count',10))
- fqdn_top = {}
- fqdn_who = {}
- with open('/var/log/system/pdns.info.log','r') as log:
-  for line in log:
-   parts = line.split()
-   fqdn  = parts[8].split('|')[0][1:]
-   fqdn_top[fqdn] = fqdn_top.get(fqdn,0)+1
-   fqdn_who[fqdn+"#"+parts[6]] = fqdn_who.get(fqdn+"#"+parts[6],0)+1
-
- print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN</DIV>"
- print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
- print "<DIV CLASS=tbody>"
- ordered = Counter(fqdn_top)
- for (dns,val) in ordered.most_common(count):
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(val,dns)
- print "</DIV></DIV></DIV>"
- print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN per Client</DIV>"
- print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV><DIV CLASS=th>Who</DIV></DIV>"
- print "<DIV CLASS=tbody>"
- ordered = Counter(fqdn_who)
- for (comp,val) in ordered.most_common(count):
-  (dns,void,who) = comp.partition('#')
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(val,dns,who)
- print "</DIV></DIV></DIV>"
