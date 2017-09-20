@@ -37,7 +37,10 @@ def load_infra(aDict):
 #
 #
 def dhcp_leases(aDict):
- leases = { "active":[], "free":[] }    
+ if PC.dhcp_proxy == 'True':
+  return REST.call(PC.dhcp_url, "sdcp.site:ddi_dhcp_leases", aDict)
+ active = []
+ free   = []
  lease  = {}
  with open(PC.dhcp_leasefile,'r') as leasefile: 
   for line in leasefile:
@@ -47,8 +50,10 @@ def dhcp_leases(aDict):
    if   parts[0] == 'lease' and parts[2] == '{':
     lease['ip'] = parts[1]
    elif parts[0] == '}':
-    dlist = leases[lease.pop('binding','illegal_state')]
-    dlist.append(lease)
+    if lease.pop('binding') == "active":
+     active.append(lease)
+    else:
+     free.append(lease)
     lease = {}
    elif parts[0] == 'hardware' and parts[1] == 'ethernet':
     lease['mac'] = parts[2][:-1] 
@@ -58,7 +63,10 @@ def dhcp_leases(aDict):
     lease[parts[0]] = " ".join(parts[2:])[:-1]
    elif parts[0] == 'client-hostname':
     lease['hostname'] = parts[1][:-1]
-  return leases                                  
+  from sdcp.core.GenLib import ip2int
+  active.sort(key=lambda d: ip2int(d['ip']))
+  free.sort(  key=lambda d: ip2int(d['ip']))
+  return {"active":active, "free":free }                                
 
 def dhcp_entry(aDict):
  #
