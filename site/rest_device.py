@@ -67,7 +67,10 @@ def update_info(aDict):
   # fkey = table _ key
   (table, void, key) = fkey.partition('_')
   data = aDict.get(fkey)
-  if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
+  if key == 'mac' and GL.is_mac(data):
+   mac = GL.mac2int(data)
+   db.do("UPDATE {0} SET mac='{1}' WHERE {2} = '{3}'".format(table,mac,tbl_id[table],id))
+  elif not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
    if data == 'NULL':
     db.do("UPDATE {0} SET {1}=NULL WHERE {2} = '{3}'".format(table,key,tbl_id[table],id))
    else:
