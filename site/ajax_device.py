@@ -155,7 +155,7 @@ def device_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['a_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['ptr_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['ipam_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(GL.int2mac(device_data['mac']))
+ print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(GL.int2mac(device_data['mac']))
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={}></DIV></DIV>".format(GL.int2ip(device_data['subnet'] + 1))
  print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>" 
  print "</DIV></DIV></DIV>"
@@ -194,7 +194,7 @@ def device_info(aWeb):
     print "<DIV CLASS=tr><DIV CLASS=td>{0} Unit:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_{1}_pdu_unit TYPE=TEXT PLACEHOLDER='{2}'></DIV></DIV>".format(pem.upper(),pem,ri[pem + "_pdu_unit"])
   else:
    for index in range(0,4):
-    print "<DIV CLASS=tr><TD COLSPAN=2 style='width:200px'>&nbsp;</DIV></DIV>"
+    print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
   print "</DIV></DIV></DIV>"
  print "</FORM>"
  print "<!-- Controls -->"
@@ -349,7 +349,7 @@ def new(aWeb):
  else:
   db = GL.DB()
   db.connect()
-  db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet");
+  db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet")
   subnets = db.get_all_rows()
   db.do("SELECT id, name FROM domains")
   domains = db.get_all_rows()
