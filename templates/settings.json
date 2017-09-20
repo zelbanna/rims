@@ -35,7 +35,8 @@
   "proxy" : "False",
   "url" : "",
   "file": "",
-  "reload":"sudo /etc/init.d/isc-dhcp-server restart"
+  "reload":"sudo /etc/init.d/isc-dhcp-server restart",
+  "leasefile":"/path/to/lease/file.leases"
  },
  "loopia": {
   "username":"",

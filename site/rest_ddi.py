@@ -33,6 +33,32 @@ def load_infra(aDict):
  return { 'domains':len(domains), 'subnets':len(subnets) }
 
 ################################################# DDI - DHCP #################################################
+#
+#
+#
+def dhcp_leases(aDict):
+ leases = { "active":[], "free":[] }    
+ lease  = {}
+ with open(PC.dhcp_leasefile,'r') as leasefile: 
+  for line in leasefile:
+   if line == '\n':
+    continue
+   parts = line.split()
+   if   parts[0] == 'lease' and parts[2] == '{':
+    lease['ip'] = parts[1]
+   elif parts[0] == '}':
+    dlist = leases[lease.pop('binding','illegal_state')]
+    dlist.append(lease)
+    lease = {}
+   elif parts[0] == 'hardware' and parts[1] == 'ethernet':
+    lease['mac'] = parts[2][:-1] 
+   elif parts[0] == 'binding':
+    lease['binding'] = parts[2][:-1] 
+   elif parts[0] == 'starts' or parts[0] == 'ends':
+    lease[parts[0]] = " ".join(parts[2:])[:-1]
+   elif parts[0] == 'client-hostname':
+    lease['hostname'] = parts[1][:-1]
+  return leases                                  
 
 def dhcp_entry(aDict):
  #
