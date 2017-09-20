@@ -47,15 +47,15 @@ def server():
 # Make proper REST call with arg = body
 # - aURL = REST API link - complete
 # - aAPI= python-path-to-module (e.g. package.path:module_fun*)
-# - aArgs = body/content 
+# - aArgs = body/content if available
 #
 #  returns un-json:ed data
-def call(aURL, aAPI, aArgs):
+def call(aURL, aAPI, aArgs = None):
  from json import loads, dumps
  from urllib2 import urlopen, Request, HTTPError
  head = { 'Content-Type': 'application/json', 'X-Z-APICALL':aAPI }
  try:
-  req = Request(aURL, headers=head, data=dumps(aArgs))
+  req = Request(aURL, headers=head, data=dumps(aArgs) if aArgs else None)
   sock = urlopen(req)
   try: data = sock.read()
   except: data = '{ "rest_response":"no_data" }'
