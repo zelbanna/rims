@@ -188,9 +188,6 @@ def remove(aDict):
  if not ddi['ipam_id'] == '0':
   from rest_ddi import ipam_remove
   ret['ipam'] = ipam_remove({ 'ipam_id':ddi['ipam_id'] })
- if ddi['mac'] != 0:
-  from rest_ddi import dhcp_entry
-  ret['dhcp'] = dhcp_entry({'op':'remove', 'hostname':aDict.get('hostname')})
  return ret
 
 #

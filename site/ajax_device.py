@@ -89,7 +89,7 @@ def device_info(aWeb):
  # If inserts are return as x_op, update local db using newly constructed dict
  # 
  if op == 'update' and not name == 'unknown':
-  from rest_ddi import dns_update, ipam_update, dhcp_entry
+  from rest_ddi import dns_update, ipam_update
   from rest_device import update_info
   opres['ddi_sync'] = (device_data['ipam_id'] == '0')
   res   = dns_update( { 'ip':ip, 'name':name, 'a_dom_id': str(device_data['a_dom_id']), 'a_id':str(device_data['a_id']), 'ptr_id':str(device_data['ptr_id']) })
@@ -100,9 +100,6 @@ def device_info(aWeb):
   device_data['a_id']    = newop['devices_a_id']
   device_data['ptr_id']  = newop['devices_ptr_id']
   device_data['ipam_id'] = newop['devices_ipam_id']
-  if device_data['mac'] != 0:
-   mac = GL.int2mac(device_data['mac'])
-   opres['dhcp'] = dhcp_entry({'op':'add', 'hostname':name, 'mac':mac, 'ip':ip })
   if device_data['rack_id']:
    from rest_pdu import update_device_pdus
    ri['hostname'] = name
@@ -340,12 +337,7 @@ def new(aWeb):
   a_dom    = aWeb.get_value('a_dom_id')
   ipam_sub = aWeb.get_value('ipam_sub_id')
   params =  { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg } 
-  res = rest_new(params)
-  if mac != "00:00:00:00:00:00" and res['res'] == "added":
-   from rest_ddi import dhcp_entry
-   params['op'] = 'add'
-   res['dhcp'] = dhcp_entry(params)
-  print res
+  print rest_new(params)
  else:
   db = GL.DB()
   db.connect()

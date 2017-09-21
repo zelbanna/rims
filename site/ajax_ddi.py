@@ -11,6 +11,22 @@ __status__= "Production"
 #
 #
 #
+def dhcp_update(aWeb):
+ import sdcp.core.GenLib as GL
+ from rest_ddi import dhcp_update as rest_dhcp_update
+ db = GL.DB()
+ db.connect()
+ db.do("SELECT id,INET_NTOA(ip) as ipasc,hostname,mac,ipam_sub_id from devices where not mac = 0 ORDER BY ip")
+ db.close()
+ args = []
+ rows = db.get_all_rows()
+ for row in rows:
+  args.append({'ip':row['ipasc'],'hostname':row['hostname'],'mac':GL.int2mac(row['mac']),'id':row['id'],'subnet_id':row['ipam_sub_id']})
+ res = rest_dhcp_update({'entries':args})
+ print res
+#
+#
+#
 def sync(aWeb):
  import sdcp.core.GenLib as GL
  from rest_ddi import dns_lookup, ipam_lookup, dns_update, ipam_update
@@ -55,3 +71,5 @@ def sync(aWeb):
 def load_infra(aWeb):
  from rest_ddi import load_infra
  print "<PRE>{}</PRE>".format(load_infra(None))
+
+

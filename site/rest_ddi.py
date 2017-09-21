@@ -68,62 +68,21 @@ def dhcp_leases(aDict):
   free.sort(  key=lambda d: ip2int(d['ip']))
   return {"active":active, "free":free }                                
 
-def dhcp_entry(aDict):
- #
- # {'op':<add/update/remove>, 'hostname':<string>, 'mac':<string>, 'ip':<string>, 'extra':[list of extra entries] }
- #
- if PC.dhcp_proxy == 'True':
-  return REST.call(PC.dhcp_url, "sdcp.site:ddi_dhcp_entry", aDict)
- op = aDict['op']
- status = None
- dhcp_data = {}
- res  = "no_change"
- # Read content of file
- with open(PC.dhcp_file) as dhcp_file:
-  for line in dhcp_file:
-   host,_,info = line[5:].partition(' ')
-   dhcp_data[host] = info[:-1]
- old_info = dhcp_data.get(aDict['hostname'])
- # Which op?
- if (op == 'update' or op == 'add') and aDict['mac'] != "00:00:00:00:00:00":
-  new_info = '{ hardware ethernet ' + aDict['mac'] + "; fixed-address " + aDict['ip'] + '; }'
-  if old_info != new_info:
-   res = op
-   dhcp_data[aDict['hostname']] = new_info
- elif op == 'remove' and old_info:
-  res = op
-  dhcp_data.pop(aDict['hostname'])
-
- # Write config file if any changes
- if res != "no_change":
-  with open(PC.dhcp_file,'w') as dhcp_file:
-   for key,value in dhcp_data.iteritems():
-    dhcp_file.write("host " + key + " " + value + "\n")
-  if op == 'update':
-   # Use ajax lib call to update.. 
-   status = dhcp_update(_)
- return {'res':res, 'hostname':aDict.get('hostname'), 'status':status}
-
-def dhcp_fetch(aDict):
- #
- # { 'hostname':<string> }
- #
- if PC.dhcp_proxy == 'True':
-  return REST.call(PC.dhcp_url, "sdcp.site:ddi_dhcp_fetch", aDict)
- fetch_host = aDict.get('hostname')
- with open(PC.dhcp_file) as dhcp_file:
-  for line in dhcp_file:
-   host,_,info = line[5:].partition(' ')
-   if host == fetch_host:
-    return {'found': True , 'hostname':fetch_host, 'info':info}
- return {'found': False, 'hostname':fetch_host, 'info':None}
-
-def dhcp_update(_):
+def dhcp_update(aDict):
  #
  # Update function - reload the DHCP server to use new info
- #
+ # - entries is a list of dict objects containing hostname, mac, ip etc
  if PC.dhcp_proxy == 'True':
-  return REST.call(PC.dhcp_url, "sdcp.site:ddi_dhcp_update", "")
+  return REST.call(PC.dhcp_url, "sdcp.site:ddi_dhcp_update", aDict)
+
+ entries = aDict['entries']
+ # Create new file
+ with open(PC.dhcp_leasefile,'w') as leasefile:
+  for entry in entries:
+   leasefile.write("host {0: <20} \{ hardware ethernet {1}; fixed-address {2}; \} \# Subnet {3}".format(entry['hostname'],entry['mac'],entry['subnet_id'])) 
+
+ return True
+ # Reload
  from subprocess import check_output, CalledProcessError
  commands = PC.dhcp_reload.split()
  try:

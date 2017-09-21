@@ -545,7 +545,7 @@ def config(aWeb):
  print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
  print "<A CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=graph_sync&domain={0}'>Synch Graphing</A>".format(domain)
  print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_sync'>Synch DDI</A>"
- print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='rest.cgi?call=sdcp.site:ddi_dhcp_update'>Update DHCP</A>"
+ print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_dhcp_update'>Update DHCP</A>"
  print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_load_infra'>Load DDI Tables</A>"
  print "<A CLASS='z-btn' TARGET=_blank HREF='ajax.cgi?call=device_dump_db'>Dump DB to JSON</A>"
  print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=device_rack_info'>Device Rackinfo</A>"
