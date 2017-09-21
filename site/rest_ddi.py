@@ -150,7 +150,10 @@ def dns_top(aDict):
    fqdn_who[fqdn+"#"+parts[6]] = fqdn_who.get(fqdn+"#"+parts[6],0)+1
  from collections import Counter
  top = map(lambda x: {'fqdn':x[0],'count':x[1]}, Counter(fqdn_top).most_common(count))
- who = map(lambda x: {'fqdn':x[0].split('#')[0], 'who':x[0].split('#')[1], 'count':x[1]}, Counter(fqdn_who).most_common(count))    
+ who = []
+ for item in  Counter(fqdn_who).most_common(count):
+  parts = item[0].split('#')
+  who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL.get_host_name(parts[1]), 'count':item[1]})
  return {'top':top,'who':who }
 
 

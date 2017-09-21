@@ -12,4 +12,7 @@ To start, enter sdcp directory and copy template/settings.json (with appropriate
 
 Then run install to write site cgi files into doc-root, finally enter mysql structure (from mysql.txt) into database
 
+- Don't forgets:
+-- to be able to reload different services, please add something similar to /etc/sudoers (actually limit for pdns and isc-dhcp-server):
+www-data ALL=(ALL) NOPASSWD: /bin/systemctl
 

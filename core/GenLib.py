@@ -66,6 +66,13 @@ def get_host(ahost):
  except:
   return None
 
+def get_host_name(aIP):
+ from socket import gethostbyaddr
+ try:
+  return gethostbyaddr(aIP)[0]
+ except:
+  return None
+
 def is_ip(addr):
  from socket import inet_aton
  try:
