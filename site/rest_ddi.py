@@ -77,19 +77,23 @@ def dhcp_update(aDict):
 
  entries = aDict['entries']
  # Create new file
- with open(PC.dhcp_leasefile,'w') as leasefile:
+ with open(PC.dhcp_file,'w') as leasefile:
   for entry in entries:
-   leasefile.write("host {0: <20} \{ hardware ethernet {1}; fixed-address {2}; \} \# Subnet {3}".format(entry['hostname'],entry['mac'],entry['subnet_id'])) 
+   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Subnet {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['subnet_id'],entry['id'])) 
 
- return True
  # Reload
  from subprocess import check_output, CalledProcessError
  commands = PC.dhcp_reload.split()
+ result = {}
  try:
   status = check_output(commands)
+  result['res'] = "OK"
+  result['output'] = status
  except CalledProcessError, c:
-  status = "{} - {}".format(c.returncode,c.output)
- return status
+  result['res'] = "Error"
+  result['code'] = c.returncode
+  result['output'] = c.output
+ return result
 
 ################################################# DDI - DNS ##################################################
 #
