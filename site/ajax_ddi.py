@@ -16,12 +16,12 @@ def dhcp_update(aWeb):
  from rest_ddi import dhcp_update as rest_dhcp_update
  db = GL.DB()
  db.connect()
- db.do("SELECT id,INET_NTOA(ip) as ipasc,hostname,mac,ipam_sub_id from devices where not mac = 0 ORDER BY ip")
+ db.do("SELECT devices.id, hostname, INET_NTOA(ip) as ipasc, domains.name as domain, mac, ipam_sub_id from devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT  mac = 0 ORDER BY ip")
  db.close()
  args = []
  rows = db.get_all_rows()
  for row in rows:
-  args.append({'ip':row['ipasc'],'hostname':row['hostname'],'mac':GL.int2mac(row['mac']),'id':row['id'],'subnet_id':row['ipam_sub_id']})
+  args.append({'ip':row['ipasc'],'fqdn':"{}.{}".format(row['hostname'],row['domain']),'mac':GL.int2mac(row['mac']),'id':row['id'],'subnet_id':row['ipam_sub_id']})
  res = rest_dhcp_update({'entries':args})
  print res
 #
