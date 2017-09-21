@@ -219,10 +219,10 @@ def examine(aWeb):
     print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'])
    print "</DIV></DIV></DIV>"
    print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN per Client ({})</DIV>".format(svchost)
-   print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
+   print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
    print "<DIV CLASS=tbody>"
    for data in dnstop['who']:
-    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'],data['who'])
+    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'],data['who'],data['hostname'])
    print "</DIV></DIV></DIV>"
    print "</DIV>"
   print "</DIV>"
