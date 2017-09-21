@@ -97,6 +97,29 @@ def dhcp_update(aDict):
 
 ################################################# DDI - DNS ##################################################
 #
+# Call removes name duplicates.. (assume order by name => duplicate names :-))
+#
+def dns_cleanup(aDict):
+ if PC.dnsdb_proxy == 'True':
+  return REST.call(PC.dnsdb_url, "sdcp.site:ddi_dns_cleanup", aDict) 
+ db = GL.DB()
+ db.connect_details(PC.dnsdb_url,PC.dnsdb_username,PC.dnsdb_password,PC.dnsdb_dbname)
+ db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
+ rows = db.get_all_rows();
+ remove = []
+ previous = {'content':None,'name':None}
+ for row in rows:
+  if previous['content'] == row['content'] and previous['name'] == row['name']:
+   db.do("DELETE from records WHERE id = '{}'".format(row['id'] if row['id'] > previous['id'] else previous['id']))
+   row.pop('id')
+   remove.append(row)
+  else:              
+   previous = row
+ db.commit()
+ db.close()
+ return {'removed':remove}
+
+#
 # dns top lookups
 #
 def dns_top(aDict):
