@@ -1,15 +1,15 @@
 {
  "generic": {
+  "sitebase": "sdcp",
   "docroot":"/var/www",
   "logformat": "/var/log/system/system.log",
-  "sitebase": "sdcp"
- },
- "sdcp": {
-  "devicefile":"/var/www/devices.json",
   "db": "sdcp",
   "dbtype":"mysql",
   "dbuser":"sdcp",
-  "dbpass":"sdcp",
+  "dbpass":"sdcp"
+ },
+ "sdcp": {
+  "devicefile":"/var/www/devices.json",
   "dnssrv":"127.0.0.1",
   "ntpsrv":"127.0.0.1",
   "anonftp":"127.0.0.1/directory/to/archive/"
