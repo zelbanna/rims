@@ -372,7 +372,7 @@ def new(aWeb):
   for s in subnets:
    print "<OPTION VALUE={0}>{1}/{2} ({3})</OPTION>".format(s.get('id'),s.get('subasc'),s.get('mask'),s.get('subnet_description'))
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXR PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
+  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
   print "</DIV></DIV>"
   print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span URL=ajax.cgi?call=device_new FRM=device_new_form OP=load><IMG SRC='images/btn-start.png'></A>&nbsp;"
   print "<SPAN ID=device_new_span style='max-width:400px; font-size:9px; float:right'></SPAN>"
