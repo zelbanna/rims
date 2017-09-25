@@ -171,7 +171,6 @@ def examine(aWeb):
  aWeb.put_html_header('Services Pane')
  aWeb.put_listeners()
  import sdcp.PackageContainer as PC
- from ajax_examine import clear_logs
  from sdcp.tools.Grapher import Grapher
 
  domain  = aWeb.get_value('domain')
@@ -181,7 +180,7 @@ def examine(aWeb):
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
 
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-op' DIV=div_examine_log MSG='Clear Network Logs?' URL='ajax.cgi?call=examine_clear_logs&{}'>Clear Logs</A>".format(aWeb.get_args_except(['pane']))
+ print "<A CLASS='z-warning z-op' DIV=div_sys MSG='Clear Network Logs?' URL='rest.cgi?call=sdcp.site:sdcp_clear_logs&logs={},{}'>Clear Logs</A>".format(PC.generic_logformat,PC.sdcp_netlogs)
  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_sys URL='.z-system'>Logs</A>"
  if upshost:
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_ups URL='.z-system'>UPS</A>"
@@ -195,7 +194,13 @@ def examine(aWeb):
  print "<DIV CLASS='z-navcontent' ID=div_navcont>"
  
  print "<DIV CLASS=z-system id=div_sys title='System Logs' style='display:block;'>"
- clear_logs(aWeb, False)
+ from sdcp.site.rest_sdcp import examine_logs
+ logs = examine_logs({'count':10,'logs':"{},{}".format(PC.generic_logformat,PC.sdcp_netlogs)})
+ for file,res in logs.iteritems():
+  print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
+  for line in res:
+   print line
+  print "</PRE></DIV>"
  print "</DIV>"
  
  if upshost:

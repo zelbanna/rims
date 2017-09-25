@@ -12,6 +12,19 @@ __status__ = "Production"
 #
 #
 
+def clear_logs(aDict):
+ import sdcp.PackageContainer as PC
+ logfiles = aDict.get('logs',"").split(',')
+ result = {}
+ for logfile in logfiles:
+  try:
+   open(logfile,'w').close()
+   PC.log_msg("Emptied log [{}]".format(logfile))
+   result[logfile] = 'ok:cleared'
+  except Exception as err:
+   result[logfile] = 'error:{}'.format(str(err))
+ return result
+
 #
 # Examine log
 #
