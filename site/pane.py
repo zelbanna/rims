@@ -182,7 +182,7 @@ def examine(aWeb):
 
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
  print "<A CLASS='z-warning z-op' DIV=div_examine_log MSG='Clear Network Logs?' URL='ajax.cgi?call=examine_clear_logs&{}'>Clear Logs</A>".format(aWeb.get_args_except(['pane']))
- print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_examine_log URL='.z-system'>Logs</A>"
+ print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_sys URL='.z-system'>Logs</A>"
  if upshost:
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_ups URL='.z-system'>UPS</A>"
  if svchost:
@@ -194,7 +194,7 @@ def examine(aWeb):
  
  print "<DIV CLASS='z-navcontent' ID=div_navcont>"
  
- print "<DIV CLASS=z-system id=div_examine_log title='Network Logs' style='display:block;'>"
+ print "<DIV CLASS=z-system id=div_sys title='System Logs' style='display:block;'>"
  clear_logs(aWeb, False)
  print "</DIV>"
  
@@ -203,15 +203,11 @@ def examine(aWeb):
   graph.widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
   print "</DIV>"
  
- #
- # Loop across svc list
- #
  if svchost:
   from sdcp.core.rest import call as rest_call
 
-  print "<DIV CLASS=z-system id=div_dns title='DNS data' style='display:none;'>"
+  print "<DIV CLASS=z-system id=div_dns title='DNS data' style='display:none; width:100%'>"
   dnstop = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dns_top", {'count':20})
-  print "<DIV style='width:100%;'>"
   print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN ({})</DIV>".format(svchost)
   print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
   print "<DIV CLASS=tbody>"
@@ -225,11 +221,9 @@ def examine(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'],data['who'],data['hostname'])
   print "</DIV></DIV></DIV>"
   print "</DIV>"
-  print "</DIV>"
  
-  print "<DIV CLASS=z-system id=div_dhcp title='DHCP leases' style='display:none;'>"
+  print "<DIV CLASS=z-system id=div_dhcp title='DHCP leases' style='display:none; width:100%'>"
   dhcp = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dhcp_leases")
-  print "<DIV style='width:100%;'>"
   print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>DHCP Active Leases ({})</DIV>".format(svchost)
   print "<DIV CLASS=z-table style='padding:5px; width:100%; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ends</DIV></DIV>"
   print "<DIV CLASS=tbody>"
@@ -243,12 +237,14 @@ def examine(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
   print "</DIV></DIV></DIV>"
   print "</DIV>"
-  print "</DIV>"
  
-  print "<DIV CLASS=z-system id=div_svc title='System Logs' style='display:none;'>"
-  print "<DIV style='width:100%; float:left'>"
-  print "<DIV CLASS='z-logs'><H1>System Logs for {}</H1>{}</DIV>".format(svchost,aWeb.get_include("http://{}/ajax.cgi?call=examine_log".format(svchost)))
-  print "</DIV>"
+  print "<DIV CLASS=z-system id=div_svc title='System Logs' style='display:none; width:100%;'>"
+  logs = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:sdcp_examine_logs",{'count':20,'logs':PC.generic_logformat})
+  for file,res in logs.iteritems():
+   print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
+   for line in res:
+    print line
+   print "</PRE></DIV>"
   print "</DIV>"
  
  print "</DIV>"

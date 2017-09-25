@@ -10,6 +10,7 @@
  },
  "sdcp": {
   "devicefile":"/var/www/devices.json",
+  "svcsrv":"127.0.0.1",
   "dnssrv":"127.0.0.1",
   "ntpsrv":"127.0.0.1",
   "anonftp":"127.0.0.1/directory/to/archive/"

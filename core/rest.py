@@ -7,7 +7,8 @@ __author__= "Zacharias El Banna"
 __version__ = "17.6.2GA"
 __status__= "Production"
 
-import sdcp.PackageContainer as PC
+# import sdcp.PackageContainer as PC
+
 #
 # Make proper REST responses 
 #
@@ -29,7 +30,6 @@ def server():
    # From query string
    args = dict(map(lambda x: x.split('='),getenv("QUERY_STRING").split("&")))
    api  = args.pop('call')
-   PC.log_msg("REST: {}".format(args))
   (path,void,mod_fun) = api.partition(':')
   (module,void,func)  = mod_fun.partition('_')
   from importlib import import_module
