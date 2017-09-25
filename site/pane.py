@@ -169,13 +169,14 @@ def openstack_console(aWeb):
 #
 def examine(aWeb):
  aWeb.put_html_header('Services Pane')
- from ajax_examine import clear_logs
  aWeb.put_listeners()
+ import sdcp.PackageContainer as PC
+ from ajax_examine import clear_logs
+ from sdcp.tools.Grapher import Grapher
 
  domain  = aWeb.get_value('domain')
  upshost = aWeb.get_value('upshost')
- svclist = aWeb.get_list('svchost')
- from sdcp.tools.Grapher import Grapher
+ svchost = PC.sdcp_svcsrv
  graph = Grapher()  
  print "<DIV CLASS='z-navframe' ID=div_navframe>"
 
@@ -184,10 +185,10 @@ def examine(aWeb):
  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_examine_log URL='.z-system'>Logs</A>"
  if upshost:
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_ups URL='.z-system'>UPS</A>"
- if svclist:
+ if svchost:
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_dns  URL='.z-system'>DNS</A>"
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_dhcp URL='.z-system'>DHCP</A>"
-  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_external URL='.z-system'>External</A>"
+  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_svc URL='.z-system'>Services Logs</A>"
  print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
  print "</DIV>"
  
@@ -205,52 +206,49 @@ def examine(aWeb):
  #
  # Loop across svc list
  #
- if svclist:
+ if svchost:
   from sdcp.core.rest import call as rest_call
 
   print "<DIV CLASS=z-system id=div_dns title='DNS data' style='display:none;'>"
-  for svchost in svclist:
-   dnstop = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dns_top", {'count':20})
-   print "<DIV style='width:100%;'>"
-   print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN ({})</DIV>".format(svchost)
-   print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
-   print "<DIV CLASS=tbody>"
-   for data in dnstop['top']:
-    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'])
-   print "</DIV></DIV></DIV>"
-   print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN per Client ({})</DIV>".format(svchost)
-   print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
-   print "<DIV CLASS=tbody>"
-   for data in dnstop['who']:
-    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'],data['who'],data['hostname'])
-   print "</DIV></DIV></DIV>"
-   print "</DIV>"
+  dnstop = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dns_top", {'count':20})
+  print "<DIV style='width:100%;'>"
+  print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN ({})</DIV>".format(svchost)
+  print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
+  print "<DIV CLASS=tbody>"
+  for data in dnstop['top']:
+   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'])
+  print "</DIV></DIV></DIV>"
+  print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN per Client ({})</DIV>".format(svchost)
+  print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
+  print "<DIV CLASS=tbody>"
+  for data in dnstop['who']:
+   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'],data['who'],data['hostname'])
+  print "</DIV></DIV></DIV>"
+  print "</DIV>"
   print "</DIV>"
  
   print "<DIV CLASS=z-system id=div_dhcp title='DHCP leases' style='display:none;'>"
-  for svchost in svclist:
-   dhcp = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dhcp_leases")
-   print "<DIV style='width:100%;'>"
-   print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>DHCP Active Leases ({})</DIV>".format(svchost)
-   print "<DIV CLASS=z-table style='padding:5px; width:100%; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ends</DIV></DIV>"
-   print "<DIV CLASS=tbody>"
-   for data in dhcp['active']:
-    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
-   print "</DIV></DIV></DIV>"
-   print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>DHCP Free/Old Leases ({})</DIV>".format(svchost)
-   print "<DIV CLASS=z-table style='padding:5px; width:100%; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ended</DIV></DIV>"
-   print "<DIV CLASS=tbody>"
-   for data in dhcp['free']:
-    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
-   print "</DIV></DIV></DIV>"
-   print "</DIV>"
+  dhcp = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dhcp_leases")
+  print "<DIV style='width:100%;'>"
+  print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>DHCP Active Leases ({})</DIV>".format(svchost)
+  print "<DIV CLASS=z-table style='padding:5px; width:100%; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ends</DIV></DIV>"
+  print "<DIV CLASS=tbody>"
+  for data in dhcp['active']:
+   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
+  print "</DIV></DIV></DIV>"
+  print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>DHCP Free/Old Leases ({})</DIV>".format(svchost)
+  print "<DIV CLASS=z-table style='padding:5px; width:100%; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ended</DIV></DIV>"
+  print "<DIV CLASS=tbody>"
+  for data in dhcp['free']:
+   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
+  print "</DIV></DIV></DIV>"
+  print "</DIV>"
   print "</DIV>"
  
-  print "<DIV CLASS=z-system id=div_external title='System Logs' style='display:none;'>"
-  for svchost in svclist:
-   print "<DIV style='width:" + str(int(100/len(svclist))) + "%; float:left'>"
-   print "<DIV CLASS='z-logs'><H1>System Logs for {}.{}</H1>{}</DIV>".format(svchost,domain,aWeb.get_include("http://{}/ajax.cgi?call=examine_log".format(svchost)))
-   print "</DIV>"
+  print "<DIV CLASS=z-system id=div_svc title='System Logs' style='display:none;'>"
+  print "<DIV style='width:100%; float:left'>"
+  print "<DIV CLASS='z-logs'><H1>System Logs for {}</H1>{}</DIV>".format(svchost,aWeb.get_include("http://{}/ajax.cgi?call=examine_log".format(svchost)))
+  print "</DIV>"
   print "</DIV>"
  
  print "</DIV>"
