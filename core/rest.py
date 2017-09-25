@@ -7,6 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "17.6.2GA"
 __status__= "Production"
 
+import sdcp.PackageContainer as PC
 #
 # Make proper REST responses 
 #
@@ -19,18 +20,22 @@ def server():
  from os import getenv, environ
  from sys import stdout, stdin
  from json import loads, dumps
- apicall = getenv("HTTP_X_Z_APICALL")
- if not apicall:
-  apicall = getenv("QUERY_STRING").partition("=")[2]
+ api = getenv("HTTP_X_Z_APICALL")
  try:
-  (path,void,mod_fun) = apicall.partition(':')
+  if api:
+   body = stdin.read()
+   args = loads(body if len(body) > 0 else '{"args":"empty"}')
+  else:
+   # From query string
+   args = dict(map(lambda x: x.split('='),getenv("QUERY_STRING").split("&")))
+   api  = args.pop('call')
+   PC.log_msg("REST: {}".format(args))
+  (path,void,mod_fun) = api.partition(':')
   (module,void,func)  = mod_fun.partition('_')
-  body = stdin.read()
-  args = body if len(body) > 0 else '{"args":"empty"}'
   from importlib import import_module
-  mod = import_module(path + ".rest_" + module)
-  fun = getattr(mod,func,lambda x: { 'err':"No such function in module", 'args':x })
-  data = dumps(fun(loads(args)))
+  mod  = import_module(path + ".rest_" + module)
+  fun  = getattr(mod,func,lambda x: { 'err':"No such function in module", 'args':x })
+  data = dumps(fun(args)) 
   print "X-Z-Res:{}\r".format("OK")
   print "X-Z-Path:{}\r".format(path)
   print "X-Z-API:{}\r".format(module)

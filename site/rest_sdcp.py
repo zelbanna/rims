@@ -19,8 +19,8 @@ __status__ = "Production"
 # - logs: list of files to open locally
 #
 def examine_logs(aDict):
- count = aDict.get('count',15)
- logfiles = aDict.get('logs',[])
+ count = int(aDict.get('count',15))
+ logfiles = aDict.get('logs',"").split(',')
  result = {}
  for logfile in logfiles:
   logs = ["\r" for i in range(count)]
