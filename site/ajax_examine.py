@@ -28,13 +28,3 @@ def clear_logs(aWeb, aClear = True):
   print "<DIV CLASS='z-logs'><H1>System Logs</H1><PRE>{}</PRE></DIV>".format(syslogs)
  except Exception as err:
   print "<DIV CLASS='z-error'>{}</DIV>".format(str(err))
-
-def log(aWeb):
- try:
-  from subprocess import check_output
-  import sdcp.PackageContainer as PC
-  logfile = aWeb.get_value('logfile',PC.generic_logformat)
-  syslogs = check_output("tail -n 15 " + logfile + " | tac", shell=True)
-  print "<PRE>{}</PRE>".format(syslogs)
- except Exception as err:
-  print "<PRE>{}</PRE>".format(str(err))      
