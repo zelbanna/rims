@@ -10,6 +10,7 @@
  },
  "sdcp": {
   "devicefile":"/var/www/devices.json",
+  "netlogs":"/path/to/net.log",
   "svcsrv":"127.0.0.1",
   "dnssrv":"127.0.0.1",
   "ntpsrv":"127.0.0.1",
