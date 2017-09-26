@@ -9,6 +9,41 @@ __status__= "Production"
 
 ##################################################################################################
 #
+# SDCP "login"
+#
+def sdcp_login(aWeb):
+ #
+ # If token, redirect here
+ #
+ from sdcp.core.GenLib import DB
+ db = DB()
+ db.connect()
+ db.do("SELECT id,name FROM users")
+ db.close()
+ rows = db.get_all_rows()
+ aWeb.put_html_header("SDCP Portal")
+ aWeb.put_listeners()
+ 
+ print "<DIV CLASS='z-centered' style='height:100%;'>"
+ print "<DIV ID=div_sdcp_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
+ print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
+ print "<FORM ACTION=pane.cgi METHOD=POST ID=sdcp_login>"
+ print "<INPUT TYPE=HIDDEN NAME=view VALUE=sdcp_next>"
+ for row in rows:
+  print "<!-- {} - {} -->".format(row['id'],row['name'])
+ print "<DIV CLASS=z-table style='display:inline; float:left; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=sdcp_user>"
+ for row in rows:
+  print "<OPTION VALUE={0}>{1}</OPTION>".format(row['id'],row['name'])
+ print "</SELECT></DIV></DIV>"
+ print "</DIV></DIV>"
+ print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=sdcp_login>Enter</A>"
+ print "</FORM>"
+ print "</DIV></DIV>"
+
+
+
+#
 # Openstack
 #
 # Cookies:
