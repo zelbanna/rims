@@ -306,7 +306,7 @@ def mac_sync(aWeb):
  arps = load_macs()
  db = GL.DB()
  db.connect()
- db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices ORDER BY ip")
+ db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices WHERE hostname <> 'unknown' ORDER BY ip")
  rows = db.get_all_rows()
  print "<DIV CLASS=z-frame style='overflow-x:auto; width:400px;'><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
