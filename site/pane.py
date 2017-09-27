@@ -11,37 +11,58 @@ __status__= "Production"
 #
 # SDCP "login"
 #
+# - writes cookies for sdcp_user(name) and sdcp_id
+# - if passwords, then do proper checks
+#
 def sdcp_login(aWeb):
- #
- # If token, redirect here
- #
+ cookie    = aWeb.get_cookie()
+ referrer  = aWeb.get_value('referrer')
+ if cookie.get('sdcp_id'):
+  id,user = cookie.get('sdcp_id'),cookie.get('sdcp_user')
+ else:
+  id,user = aWeb.get_value('sdcp_login',"None_None").split('_')
+  if id != "None":
+   # "Login successful"
+   aWeb.put_cookie('sdcp_user', user, 86400)
+   aWeb.put_cookie('sdcp_id', id, 86400)
+
+ if id != "None":
+  import sdcp.PackageContainer as PC
+  PC.log_msg("Entering as [{}-{}]".format(id,user))
+  if referrer:
+   aWeb.put_header("Location","pane.cgi?view={}".format(referrer))
+   aWeb.put_html_header()
+  else:
+   aWeb.put_html_header("SDCP Portal")
+   print "<CENTER><H1>Welcome {} - please choose section to continue</H1></CENTER>".format(user)
+  return
+ 
  from sdcp.core.GenLib import DB
  db = DB()
  db.connect()
- db.do("SELECT id,name FROM users")
+ db.do("SELECT id,name FROM users ORDER BY name")
  db.close()
  rows = db.get_all_rows()
  aWeb.put_html_header("SDCP Portal")
  aWeb.put_listeners()
- 
+
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV ID=div_sdcp_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
- print "<FORM ACTION=pane.cgi METHOD=POST ID=sdcp_login>"
- print "<INPUT TYPE=HIDDEN NAME=view VALUE=sdcp_next>"
- for row in rows:
-  print "<!-- {} - {} -->".format(row['id'],row['name'])
+ print "<!-- {}_{} -->".format(id,user)
+ print "<FORM ACTION=pane.cgi METHOD=POST ID=sdcp_login_form>"
+ print "<INPUT TYPE=HIDDEN NAME=view VALUE=sdcp_login>"
+ if referrer:
+  print "<INPUT TYPE=HIDDEN NAME=referrer VALUE='{}'>".format(referrer)
  print "<DIV CLASS=z-table style='display:inline; float:left; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=sdcp_user>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=sdcp_login>"
  for row in rows:
-  print "<OPTION VALUE={0}>{1}</OPTION>".format(row['id'],row['name'])
+  print "<OPTION VALUE='{0}_{1}' {2}>{1}</OPTION>".format(row['id'],row['name'],'' if str(row['id']) != id else "selected=True")
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
- print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=sdcp_login>Enter</A>"
+ print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=sdcp_login_form>Enter</A>"
  print "</FORM>"
  print "</DIV></DIV>"
-
-
 
 #
 # Openstack
@@ -574,15 +595,18 @@ def config(aWeb):
  aWeb.put_html_header("Config and Settings")
  aWeb.put_listeners()
  domain    = aWeb.get_value('domain', None)
+ print "<DIV CLASS=z-content style='top:0px;' ID=div_content>"
  print "<DIV CLASS=z-frame ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
- print "<A CLASS='z-btn z-warning z-op' DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"
- print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
- print "<A CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=graph_sync&domain={0}'>Synch Graphing</A>".format(domain)
- print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_sync'>Synch DDI</A>"
- print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_dhcp_update'>Update DHCP</A>"
- print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_load_infra'>Load DDI Tables</A>"
- print "<A CLASS='z-btn' TARGET=_blank HREF='ajax.cgi?call=device_dump_db'>Dump DB to JSON</A>"
- print "<A CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=device_rack_info'>Device Rackinfo</A>"
- print "<A CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=device_mac_sync'>Sync MAC Info</A>"
+ print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-warning z-op' DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"
+ print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
+ print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=graph_sync&domain={0}'>Synch Graphing</A>".format(domain)
+ print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_sync'>Synch DDI</A>"
+ print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_dhcp_update'>Update DHCP</A>"
+ print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_load_infra'>Load DDI Tables</A>"
+ print "<A STYLE='width:192px; text-align:left' CLASS='z-btn' TARGET=_blank HREF='ajax.cgi?call=device_dump_db'>Dump DB to JSON</A>"
+ print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=device_rack_info'>Device Rackinfo</A>"
+ print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=device_mac_sync'>Sync MAC Info</A>"
+ print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_content          URL='ajax.cgi?call=sdcp_list_users'>Users</A>"
  print "</DIV>"
  print "<DIV ID=div_config style='min-width:600px; min-height:300px; display:inline;'></DIV>"
+ print "</DIV>"

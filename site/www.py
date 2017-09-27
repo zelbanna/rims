@@ -12,11 +12,12 @@ class Web(object):
  def __init__(self):
   from os import getenv
   cookie = getenv("HTTP_COOKIE")
-  self._browser_cookie = {} if not cookie else dict(map( lambda c: c.split("="), getenv("HTTP_COOKIE").replace(";",'').split()))
+  self._browser_cookie = {} if not cookie else dict(map( lambda c: c.split("="), cookie.split('; ')))
   self._header = {}
   self._cookie = {}
+  self._c_life = {}
   self._form = None
-
+ 
  ################################# AJAX #########################################
  #
  # call = <module>_<module_function>
@@ -65,15 +66,16 @@ class Web(object):
   self._header[aKey] = aValue
 
  # Cookie Name + Params, Data= main
- def put_cookie(self,aName,aData):
+ def put_cookie(self,aName,aData,aLife=3000):
   self._cookie[aName] = aData
+  self._c_life[aName] = aLife
 
  # Put a proper HTML header + body header (!) for the browser
  def put_html_header(self, aTitle = None):
   for key,value in self._header.iteritems():
    print "{}: {}\r".format(key,value)   
   for key,value in self._cookie.iteritems():
-   print "Set-Cookie: {}={}; Path=/; Max-Age=3000;\r".format(key,value)
+   print "Set-Cookie: {}={}; Path=/; Max-Age={};\r".format(key,value,self._c_life[key])
   self._header = None
   print "Content-Type: text/html\r\n"
   print "<HEAD>"

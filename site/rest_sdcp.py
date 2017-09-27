@@ -11,7 +11,17 @@ __status__ = "Production"
 #
 #
 #
+def remove_user(aDict):
+ import sdcp.core.GenLib as GL
+ db = GL.DB()
+ db.connect()
+ db.do("DELETE FROM users WHERE id = '{}'".format(aDict['id']))
+ res =db.commit()
+ return {'res':res}
 
+#
+# Clear logs
+#
 def clear_logs(aDict):
  import sdcp.PackageContainer as PC
  logfiles = aDict.get('logs',"").split(',')
