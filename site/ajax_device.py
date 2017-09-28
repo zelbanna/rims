@@ -65,7 +65,7 @@ def device_info(aWeb):
  elif op == 'update':
   from rest_device import update_info
   d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
-  if not d.get('devices_vm',None):
+  if not d.get('devices_vm'):
    d['devices_vm'] = 0
   opres['update'] = update_info(d)
 

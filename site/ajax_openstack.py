@@ -44,7 +44,7 @@ def result(aWeb):
   return
  from sdcp.devices.openstack import OpenstackRPC
  from json import dumps,loads
- cookie = aWeb.get_cookie()
+ cookie = aWeb.cookie
  token  = cookie.get('os_user_token')
  if not token:
   print "Not logged in"
@@ -82,7 +82,7 @@ def api(aWeb):
  print "<H3>OpenStack REST API inspection</H3>"
  print "Choose Service and enter API call: <SELECT style='overflow: visible; width:auto; height:22px;' NAME=os_service>"
  services = ['contrail']
- services.extend(aWeb.get_cookie()['os_services'].split(','))
+ services.extend(aWeb.cookie['os_services'].split(','))
  for service in services:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(service)
  print "</SELECT> <INPUT style='width:520px;' TYPE=TEXT NAME=os_call><BR>"
@@ -105,7 +105,7 @@ def fqname(aWeb):
  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL=ajax.cgi?call=openstack_fqname FRM=frm_os_uuid TITLE='Go'><IMG SRC=images/btn-start.png></A><BR>"
  if aWeb.get_value('os_uuid'):
   from json import dumps,loads
-  cookie = aWeb.get_cookie()
+  cookie = aWeb.cookie
   token  = cookie.get('os_user_token')
   if not token:
    print "Not logged in"

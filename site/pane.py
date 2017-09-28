@@ -14,26 +14,21 @@ __status__= "Production"
 # - writes cookies for sdcp_user(name) and sdcp_id
 # - if passwords, then do proper checks
 #
-def sdcp_login(aWeb):
- cookie    = aWeb.get_cookie()
- referrer  = aWeb.get_value('referrer')
- if cookie.get('sdcp_id'):
-  id,user = cookie.get('sdcp_id'),cookie.get('sdcp_user')
+def login(aWeb):
+ if aWeb.cookie.get('sdcp_id'):
+  id,user = aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user')
  else:
   id,user = aWeb.get_value('sdcp_login',"None_None").split('_')
   if id != "None":
    # "Login successful"
-   aWeb.add_cookie('sdcp_user', user, 300)
-   aWeb.add_cookie('sdcp_id', id, 300)
+   aWeb.add_cookie('sdcp_user', user, 86400)
+   aWeb.add_cookie('sdcp_id', id, 86400)
 
  if id != "None":
   import sdcp.PackageContainer as PC
   PC.log_msg("Entering as [{}-{}]".format(id,user))
-  if referrer:
-   aWeb.put_redirect("pane.cgi?view={}".format(referrer))
-  else:
-   aWeb.put_html_header("SDCP Portal")
-   print "<CENTER><H1>Welcome {} - please choose section to continue</H1></CENTER>".format(user)
+  aWeb.put_html_header("SDCP Portal")
+  print "<CENTER><H1>Welcome {} - please choose section to continue</H1></CENTER>".format(user)
   return
  
  from sdcp.core.GenLib import DB
@@ -44,15 +39,11 @@ def sdcp_login(aWeb):
  rows = db.get_all_rows()
  aWeb.put_html_header("SDCP Portal")
  aWeb.put_listeners()
-
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV ID=div_sdcp_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
- print "<!-- {}_{} -->".format(id,user)
  print "<FORM ACTION=pane.cgi METHOD=POST ID=sdcp_login_form>"
- print "<INPUT TYPE=HIDDEN NAME=view VALUE=sdcp_login>"
- if referrer:
-  print "<INPUT TYPE=HIDDEN NAME=referrer VALUE='{}'>".format(referrer)
+ print "<INPUT TYPE=HIDDEN NAME=view VALUE=login>"
  print "<DIV CLASS=z-table style='display:inline; float:left; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=sdcp_login>"
  for row in rows:
@@ -88,11 +79,10 @@ def openstack_login(aWeb):
  name = aWeb.get_value('name',"iaas")
  ctrl = aWeb.get_value('controller',"127.0.0.1")
  appf = aWeb.get_value('appformix',"127.0.0.1")
- cookie = aWeb.get_cookie()
- user = cookie.get("os_user_name")
- utok = cookie.get("os_user_token")
- mtok = cookie.get("os_main_token")
- prev = cookie.get("os_project_id")
+ user = aWeb.cookie.get("os_user_name")
+ utok = aWeb.cookie.get("os_user_token")
+ mtok = aWeb.cookie.get("os_main_token")
+ prev = aWeb.cookie.get("os_project_id")
  if utok:
   aWeb.put_redirect("pane.cgi?view=openstack_portal")
   return
@@ -136,9 +126,8 @@ def openstack_portal(aWeb):
  from json import dumps
  from sdcp.devices.openstack import OpenstackRPC
  import sdcp.PackageContainer as PC
- cookie   = aWeb.get_cookie()
- ctrl = cookie.get('os_controller')
- utok = cookie.get('os_user_token')
+ ctrl = aWeb.cookie.get('os_controller')
+ utok = aWeb.cookie.get('os_user_token')
 
  if not utok:
   username = aWeb.get_value('username')
@@ -167,9 +156,9 @@ def openstack_portal(aWeb):
 
   PC.log_msg("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
  else:
-  username = cookie.get("os_user_name")
-  pid      = cookie.get("os_project_id")
-  pname    = cookie.get("os_project_name")
+  username = aWeb.cookie.get("os_user_name")
+  pid      = aWeb.cookie.get("os_project_id")
+  pname    = aWeb.cookie.get("os_project_name")
   PC.log_msg("openstack_portal - using existing token for {}@{}".format(username,ctrl))
   openstack = OpenstackRPC(ctrl,utok)
 
@@ -181,7 +170,7 @@ def openstack_portal(aWeb):
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
- print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px'>Log out</A>".format(ctrl,cookie.get('os_demo_name'),cookie.get('af_controller'))
+ print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
  print "</DIV>"
  print "<DIV CLASS='z-navbar' style='top:60px; z-index:1001' ID=div_navbar>"
  print "<A CLASS='z-op'           DIV=div_os_frame URL='ajax.cgi?call=heat_list'>Orchestration</A>"
@@ -202,17 +191,16 @@ def openstack_portal(aWeb):
 #
 def openstack_console(aWeb):
  from sdcp.devices.openstack import OpenstackRPC
- cookie = aWeb.get_cookie()
- token = cookie.get('os_user_token')
+ token = aWeb.cookie.get('os_user_token')
  if token:
   id   = aWeb.get_value('id')
   name = aWeb.get_value('name')
-  controller = OpenstackRPC(cookie.get('os_controller'),token)
-  data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(id), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})
+  controller = OpenstackRPC(aWeb.cookie.get('os_controller'),token)
+  data = controller.call(aWeb.cookie.get('os_nova_port'), aWeb.cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(id), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})
   if data['code'] == 200:
    url = data['data']['remote_console']['url']
    # URL is #@?! inline URL.. remove http:// and replace IP (assume there is a port..) with controller IP
-   url = "http://" + cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
+   url = "http://" + aWeb.cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
    aWeb.put_redirect("{}&title={}".format(url,name))
  else:
   aWeb.put_html_header('Openstack Console')
@@ -223,8 +211,8 @@ def openstack_console(aWeb):
 # Examine pane
 #
 def examine(aWeb):
- if not aWeb.get_cookie().get('sdcp_id'):
-  aWeb.put_redirect("pane.cgi?referrer=examine&view=sdcp_login&{}".format(aWeb.get_args_except(['view'])))
+ if not aWeb.cookie.get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?view=login")
   return
 
  aWeb.put_html_header('Services Pane')
@@ -319,8 +307,8 @@ def examine(aWeb):
 # Munin
 #
 def munin(aWeb):
- if not aWeb.get_cookie().get('sdcp_id'):
-  aWeb.put_redirect("pane.cgi?referrer=munin&view=sdcp_login")
+ if not aWeb.cookie.get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?view=login")
   return
 
  aWeb.put_html_header('Munin')
@@ -357,6 +345,10 @@ def munin(aWeb):
 # Weathermap
 #
 def weathermap(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?view=login")
+  return
+
  page = aWeb.get_value('page')
  json = aWeb.get_value('json')
  
@@ -417,31 +409,14 @@ def weathermap(aWeb):
 
 ##################################################################################################
 #
-# Shutdown all
-#
-
-def shutdownall(aWeb):
- from sdcp.devices.ESXi import thread_shutdown_host
- from threading import Thread 
- aWeb.put_html_header('Shutdown All')
-
- domain    = aWeb.get_value('domain',None)
- srvlist   = aWeb.form.getlist('srvhost')
-  
- if domain and srvlist:
-  for host in srvlist:
-   fqdn = host+"."+domain
-   t = Thread(target = thread_shutdown_host, args=[fqdn, aWeb])
-   t.start()
- else:
-  print "<PRE>Shutdown system not starting</PRE>"
-
-##################################################################################################
-#
 # Rack
 #
 
 def rack(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?view=login")
+  return
+
  aWeb.put_html_header("Racks")
  from sdcp.core.GenLib import DB
  db = DB()
@@ -467,6 +442,10 @@ def rack(aWeb):
  print "</CENTER></DIV>"
 
 def rack_info(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?view=login")
+  return
+
  aWeb.put_html_header("Rack Info")
  aWeb.put_listeners()
  from sdcp.site.ajax_rack import info as ajax_info
@@ -502,6 +481,10 @@ def rack_info(aWeb):
 # ESXi
 #
 def esxi(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?view=login")
+  return
+
  aWeb.put_html_header("ESXi Operations")
  aWeb.put_listeners()
 
@@ -554,6 +537,10 @@ def esxi(aWeb):
 #
  
 def devices(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?view=login")
+  return
+
  aWeb.put_html_header("Device View")
  aWeb.put_listeners()
 
@@ -599,6 +586,10 @@ def devices(aWeb):
 #
 
 def config(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?view=login")
+  return
+
  aWeb.put_html_header("Config and Settings")
  aWeb.put_listeners()
  domain    = aWeb.get_value('domain', None)

@@ -14,7 +14,7 @@ from sdcp.site.ajax_openstack import dict2html
 ################################# Nova ###############################
 #
 def list(aWeb):
- cookie = aWeb.get_cookie()
+ cookie = aWeb.cookie
  token  = cookie.get('os_user_token')
  if not token:
   print "Not logged in"
@@ -60,7 +60,7 @@ def list(aWeb):
 
 
 def select_parameters(aWeb):
- cookie = aWeb.get_cookie()
+ cookie = aWeb.cookie
  token  = cookie.get('os_user_token')
  if not token:
   print "Not logged in"
@@ -129,7 +129,7 @@ def select_parameters(aWeb):
 #
 # 
 def action(aWeb):
- cookie = aWeb.get_cookie()
+ cookie = aWeb.cookie
  token  = cookie.get('os_user_token')
  if not token:
   print "Not logged in"
@@ -221,7 +221,7 @@ def action(aWeb):
   print "</DIV>"
 
 def console(aWeb):
- cookie = aWeb.get_cookie()
+ cookie = aWeb.cookie
  token = cookie.get('os_user_token')
  if not token:
   print "Not logged in"

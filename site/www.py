@@ -16,11 +16,11 @@ class Web(object):
  def __init__(self):
   from os import getenv
   bcookie = getenv("HTTP_COOKIE")
-  self._browser_cookie = {} if not bcookie else dict(map( lambda c: c.split("="), bcookie.split('; ')))
   self._header = {}
-  self._cookie = {}
+  self._c_stor = {}
   self._c_life = {}
   self.form = None  
+  self.cookie = {} if not bcookie else dict(map( lambda c: c.split("="), bcookie.split('; ')))
  
  # Header Key/Values
  def add_header(self,aKey,aValue):
@@ -28,13 +28,13 @@ class Web(object):
 
  # Cookie Param + Data and Life 
  def add_cookie(self,aParam,aData,aLife=3000):
-  self._cookie[aParam] = aData
+  self._c_stor[aParam] = aData
   self._c_life[aParam] = aLife
 
  def _put_headers(self):
   for key,value in self._header.iteritems():
    print "{}: {}\r".format(key,value)   
-  for key,value in self._cookie.iteritems():
+  for key,value in self._c_stor.iteritems():
    print "Set-Cookie: {}={}; Path=/; Max-Age={};\r".format(key,value,self._c_life.get(key,3000))   
   self._header = None
   print "Content-Type: text/html\r\n"
@@ -47,12 +47,10 @@ class Web(object):
  # Put a proper browser header + HTML header for the browser
  def put_html_header(self, aTitle = None):
   self._put_headers()
-  print "<HEAD>"
-  print "<META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>"
+  print "<HEAD><META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>"
   if aTitle:
    print "<TITLE>{}</TITLE>".format(aTitle)
-  print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>"
-  print "</HEAD>"
+  print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT></HEAD>"
   from sys import stdout
   stdout.flush()
 
@@ -77,7 +75,7 @@ class Web(object):
    fun = getattr(ajaxmod,call,None)
    fun(self)
   except Exception as err:
-   keys = self.get_keys()
+   keys = self.form.keys()
    if 'call' in keys:
     keys.remove('call')
    keys = ",".join(keys)
@@ -102,17 +100,7 @@ class Web(object):
     print " - possible panes:[{}]".format(", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
    print "</SPAN>"
 
- ################################# LOGIN #########################################
- #
- # login, www_login + entire field-store
- #
- # generic_sitebase + ".core.GenLib"
-
- 
  ############################## CGI/Web functions ###############################
-
- def get_cookie(self):
-  return self._browser_cookie
 
  def quote(self,aString):
   from urllib import quote_plus

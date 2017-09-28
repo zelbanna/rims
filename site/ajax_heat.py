@@ -14,7 +14,7 @@ from sdcp.site.ajax_openstack import dict2html
 ##################################### Heatstack ##################################
 #
 def list(aWeb):
- cookie = aWeb.get_cookie()
+ cookie = aWeb.cookie
  token  = cookie.get('os_user_token')
  if not token:
   print "Not logged in"
@@ -99,7 +99,7 @@ def enter_parameters(aWeb):
 # Heat Actions
 #
 def action(aWeb):
- cookie = aWeb.get_cookie()
+ cookie = aWeb.cookie
  token  = cookie.get('os_user_token')
  if not token:
   print "Not logged in"

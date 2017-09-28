@@ -39,9 +39,9 @@ def user_info(aWeb):
   if id == 'new':
    db.do("INSERT INTO users (alias,name,email) VALUES ('{}','{}','{}')".format(alias,name,email))
    db.commit()
-   id = db.get_last_id()
+   id  = db.get_last_id()
   else:
-   db.do("UPDATE users SET alias='{0}',name='{}',email='{}' WHERE id = {}".format(alias,name,email,id))
+   db.do("UPDATE users SET alias='{}',name='{}',email='{}' WHERE id = '{}'".format(alias,name,email,id))
    db.commit()
   db.close()
  elif id <> 'new':

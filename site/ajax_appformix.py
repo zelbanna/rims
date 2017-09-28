@@ -20,10 +20,9 @@ import sdcp.PackageContainer as PC
 def report(aWeb):
  from datetime import datetime
  from json import dumps
- cookie = aWeb.get_cookie()
- pid    = cookie.get('os_project_id')
- pname  = cookie.get('os_project_name')
- ctrl   = cookie.get('af_controller')
+ pid    = aWeb.cookie.get('os_project_id')
+ pname  = aWeb.cookie.get('os_project_name')
+ ctrl   = aWeb.cookie.get('af_controller')
  # First auth..
  controller  = AppformixRPC(ctrl)
  res = controller.auth({'username':PC.appformix_username, 'password':PC.appformix_password })
