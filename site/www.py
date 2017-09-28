@@ -7,17 +7,58 @@ __author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__= "Production"
 
+#
+# web handling object
+# - cookies are dictionaries which encodes
+#
 class Web(object):
 
  def __init__(self):
   from os import getenv
-  cookie = getenv("HTTP_COOKIE")
-  self._browser_cookie = {} if not cookie else dict(map( lambda c: c.split("="), cookie.split('; ')))
+  bcookie = getenv("HTTP_COOKIE")
+  self._browser_cookie = {} if not bcookie else dict(map( lambda c: c.split("="), bcookie.split('; ')))
   self._header = {}
   self._cookie = {}
   self._c_life = {}
-  self._form = None
+  self.form = None  
  
+ # Header Key/Values
+ def add_header(self,aKey,aValue):
+  self._header[aKey] = aValue
+
+ # Cookie Param + Data and Life 
+ def add_cookie(self,aParam,aData,aLife=3000):
+  self._cookie[aParam] = aData
+  self._c_life[aParam] = aLife
+
+ def _put_headers(self):
+  for key,value in self._header.iteritems():
+   print "{}: {}\r".format(key,value)   
+  for key,value in self._cookie.iteritems():
+   print "Set-Cookie: {}={}; Path=/; Max-Age={};\r".format(key,value,self._c_life.get(key,3000))   
+  self._header = None
+  print "Content-Type: text/html\r\n"
+
+ # Redirect will all cookies and headers set
+ def put_redirect(self,aLocation):
+  print "Location: {}\r".format(aLocation)
+  self._put_headers()
+
+ # Put a proper browser header + HTML header for the browser
+ def put_html_header(self, aTitle = None):
+  self._put_headers()
+  print "<HEAD>"
+  print "<META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>"
+  if aTitle:
+   print "<TITLE>{}</TITLE>".format(aTitle)
+  print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>"
+  print "</HEAD>"
+  from sys import stdout
+  stdout.flush()
+
+ def put_listeners(self):
+  print "<SCRIPT>$(function() { $(document.body).on('click','.z-op',btnoperation ); });</SCRIPT>"
+
  ################################# AJAX #########################################
  #
  # call = <module>_<module_function>
@@ -27,7 +68,7 @@ class Web(object):
   print "Content-Type: text/html\r\n"
   stdout.flush()
   import cgi
-  self._form = cgi.FieldStorage()
+  self.form = cgi.FieldStorage()
   ajaxcall = self.get_value('call','none_nocall')
   (module,void,call) = ajaxcall.partition('_')
   from importlib import import_module
@@ -49,7 +90,7 @@ class Web(object):
  #
  def pane(self):
   import cgi
-  self._form = cgi.FieldStorage()
+  self.form = cgi.FieldStorage()
   paneview = self.get_value('view')
   try:
    import pane as panemod
@@ -61,36 +102,15 @@ class Web(object):
     print " - possible panes:[{}]".format(", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
    print "</SPAN>"
 
- # Header Key/Values
- def put_header(self,aKey,aValue):
-  self._header[aKey] = aValue
+ ################################# LOGIN #########################################
+ #
+ # login, www_login + entire field-store
+ #
+ # generic_sitebase + ".core.GenLib"
 
- # Cookie Name + Params, Data= main
- def put_cookie(self,aName,aData,aLife=3000):
-  self._cookie[aName] = aData
-  self._c_life[aName] = aLife
-
- # Put a proper HTML header + body header (!) for the browser
- def put_html_header(self, aTitle = None):
-  for key,value in self._header.iteritems():
-   print "{}: {}\r".format(key,value)   
-  for key,value in self._cookie.iteritems():
-   print "Set-Cookie: {}={}; Path=/; Max-Age={};\r".format(key,value,self._c_life[key])
-  self._header = None
-  print "Content-Type: text/html\r\n"
-  print "<HEAD>"
-  print "<META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>"
-  if aTitle:
-   print "<TITLE>{}</TITLE>".format(aTitle)
-  print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>"
-  print "</HEAD>"
-  from sys import stdout
-  stdout.flush()
-
- def put_listeners(self):
-  print "<SCRIPT>$(function() { $(document.body).on('click','.z-op',btnoperation ); });</SCRIPT>"
  
  ############################## CGI/Web functions ###############################
+
  def get_cookie(self):
   return self._browser_cookie
 
@@ -98,32 +118,29 @@ class Web(object):
   from urllib import quote_plus
   return quote_plus(aString)
 
- def get_dict(self):
-  return dict(map(lambda x: (x,self._form.getfirst(x,None)), self._form.keys()))
-
- def get_keys(self):
-  return self._form.keys()
-
  def get_args2dict_except(self,aexceptlist = []):
-  keys = self._form.keys()
+  keys = self.form.keys()
   for exc in aexceptlist:
    try:
     keys.remove(exc)
    except:
     pass
-  return dict(map(lambda x: (x,self._form.getfirst(x,None)), keys))
+  return dict(map(lambda x: (x,self.form.getfirst(x,None)), keys))
 
  def get_value(self,aid,adefault = None):
-  return self._form.getfirst(aid,adefault)
+  return self.form.getfirst(aid,adefault)
 
- def get_list(self, aid):
-  return self._form.getlist(aid)
+ def get_args(self):
+  reload = ""
+  for key in self.form.keys():
+   reload = reload + "&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key))
+  return reload[1:]
   
  def get_args_except(self,aexceptlist = []):
   reload = ""
-  for key in self._form.keys():
+  for key in self.form.keys():
    if not key in aexceptlist:
-    reload = reload + "&{}=".format(key) + "&{}=".format(key).join(self._form.getlist(key))
+    reload = reload + "&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key))
   return reload[1:]
 
  def get_include(self,aurl):

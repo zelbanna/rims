@@ -20,7 +20,7 @@ def list(aWeb):
  print "<DIV CLASS=thead><DIV CLASS=th>Server</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>Device</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  domain = aWeb.get_value('domain')
- conlist = aWeb.get_list('consolelist')
+ conlist = aWeb.form.getlist('consolelist')
  config="https://{0}/?form=serialconfig&action=edit&ports={1}&start=&end="
  for con in conlist:
   console = OpenGear(con,domain)

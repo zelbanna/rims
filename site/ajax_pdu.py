@@ -17,7 +17,7 @@ from sdcp.devices.RackUtils import Avocent
 
 def list_units(aWeb):
  domain  = aWeb.get_value('domain')
- pdulist = aWeb.get_list('pdulist')
+ pdulist = aWeb.form.getlist('pdulist')
 
  # For Operations:
  slot    = aWeb.get_value('slot')

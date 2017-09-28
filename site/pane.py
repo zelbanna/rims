@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__= "Production"
 
-##################################################################################################
+#################################################################################################################
 #
 # SDCP "login"
 #
@@ -23,15 +23,14 @@ def sdcp_login(aWeb):
   id,user = aWeb.get_value('sdcp_login',"None_None").split('_')
   if id != "None":
    # "Login successful"
-   aWeb.put_cookie('sdcp_user', user, 86400)
-   aWeb.put_cookie('sdcp_id', id, 86400)
+   aWeb.add_cookie('sdcp_user', user, 300)
+   aWeb.add_cookie('sdcp_id', id, 300)
 
  if id != "None":
   import sdcp.PackageContainer as PC
   PC.log_msg("Entering as [{}-{}]".format(id,user))
   if referrer:
-   aWeb.put_header("Location","pane.cgi?view={}".format(referrer))
-   aWeb.put_html_header()
+   aWeb.put_redirect("pane.cgi?view={}".format(referrer))
   else:
    aWeb.put_html_header("SDCP Portal")
    print "<CENTER><H1>Welcome {} - please choose section to continue</H1></CENTER>".format(user)
@@ -64,6 +63,8 @@ def sdcp_login(aWeb):
  print "</FORM>"
  print "</DIV></DIV>"
 
+
+###################################################################################################################################
 #
 # Openstack
 #
@@ -93,18 +94,17 @@ def openstack_login(aWeb):
  mtok = cookie.get("os_main_token")
  prev = cookie.get("os_project_id")
  if utok:
-  aWeb.put_header("Location","pane.cgi?view=openstack_portal")
-  aWeb.put_html_header()
+  aWeb.put_redirect("pane.cgi?view=openstack_portal")
   return
 
- aWeb.put_cookie("os_demo_name",name)
- aWeb.put_cookie("os_controller",ctrl)
- aWeb.put_cookie("af_controller",appf)
+ aWeb.add_cookie("os_demo_name",name)
+ aWeb.add_cookie("os_controller",ctrl)
+ aWeb.add_cookie("af_controller",appf)
 
  if not mtok:
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':PC.openstack_project, 'username':PC.openstack_username,'password':PC.openstack_password })
-  aWeb.put_cookie("os_main_token",openstack.get_token())
+  aWeb.add_cookie("os_main_token",openstack.get_token())
   PC.log_msg("openstack_login - login result: {}".format(str(res['result'])))
  else:
   PC.log_msg("openstack_login - reusing token: {}".format(mtok))
@@ -153,17 +153,17 @@ def openstack_portal(aWeb):
    print "Error logging in - please try login again"
    return
   utok = openstack.get_token()
-  aWeb.put_cookie('os_user_token',utok)
-  aWeb.put_cookie('os_user_name',username)
-  aWeb.put_cookie("os_project_id",pid)
-  aWeb.put_cookie("os_project_name",pname)
-  aWeb.put_cookie("os_services",",".join(['heat','nova','neutron','glance']))
+  aWeb.add_cookie('os_user_token',utok)
+  aWeb.add_cookie('os_user_name',username)
+  aWeb.add_cookie("os_project_id",pid)
+  aWeb.add_cookie("os_project_name",pname)
+  aWeb.add_cookie("os_services",",".join(['heat','nova','neutron','glance']))
   for service in ['heat','nova','neutron','glance']:
    base = "os_" + service
    port,url,id = openstack.get_service(service,'public')
-   aWeb.put_cookie(base + "_port",port)
-   aWeb.put_cookie(base + "_url",url)
-   aWeb.put_cookie(base + "_id",id)
+   aWeb.add_cookie(base + "_port",port)
+   aWeb.add_cookie(base + "_url",url)
+   aWeb.add_cookie(base + "_id",id)
 
   PC.log_msg("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
  else:
@@ -213,10 +213,9 @@ def openstack_console(aWeb):
    url = data['data']['remote_console']['url']
    # URL is #@?! inline URL.. remove http:// and replace IP (assume there is a port..) with controller IP
    url = "http://" + cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
-   aWeb.put_header("Location","{}&title={}".format(url,name))
-   aWeb.put_html_header()
+   aWeb.put_redirect("{}&title={}".format(url,name))
  else:
-  aWeb.put_html_header()
+  aWeb.put_html_header('Openstack Console')
   print "Not logged in "
   
 ##################################################################################################
@@ -224,6 +223,10 @@ def openstack_console(aWeb):
 # Examine pane
 #
 def examine(aWeb):
+ if not aWeb.get_cookie().get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?referrer=examine&view=sdcp_login&{}".format(aWeb.get_args_except(['view'])))
+  return
+
  aWeb.put_html_header('Services Pane')
  aWeb.put_listeners()
  import sdcp.PackageContainer as PC
@@ -244,7 +247,7 @@ def examine(aWeb):
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_dns  URL='.z-system'>DNS</A>"
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_dhcp URL='.z-system'>DHCP</A>"
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_svc URL='.z-system'>Services Logs</A>"
- print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
  print "</DIV>"
  
  print "<DIV CLASS='z-navcontent' ID=div_navcont>"
@@ -316,6 +319,10 @@ def examine(aWeb):
 # Munin
 #
 def munin(aWeb):
+ if not aWeb.get_cookie().get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?referrer=munin&view=sdcp_login")
+  return
+
  aWeb.put_html_header('Munin')
  aWeb.put_listeners()
  print """
@@ -419,7 +426,7 @@ def shutdownall(aWeb):
  aWeb.put_html_header('Shutdown All')
 
  domain    = aWeb.get_value('domain',None)
- srvlist   = aWeb.get_list('srvhost')
+ srvlist   = aWeb.form.getlist('srvhost')
   
  if domain and srvlist:
   for host in srvlist:
@@ -465,7 +472,7 @@ def rack_info(aWeb):
  from sdcp.site.ajax_rack import info as ajax_info
  rack = aWeb.get_value('rack')
  con  = aWeb.get_value('console')
- pdus = aWeb.get_list('pdulist')
+ pdus = aWeb.form.getlist('pdulist')
  name = aWeb.get_value('name')
  print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
@@ -477,7 +484,7 @@ def rack_info(aWeb):
  if len(pdus) > 0:
   pdustring = "&pdulist=".join(pdus)
   print "<A CLASS='z-op' DIV=div_navleft SPIN=true URL='ajax.cgi?call=pdu_list_units&pdulist={}'>PDU</A>".format(pdustring)
- print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
  print "<A CLASS='z-op' style='float:right;' DIV=div_navleft URL='ajax.cgi?call=pdu_list_pdus'>PDUs</A>"
  print "<A CLASS='z-op' style='float:right;' DIV=div_navleft URL='ajax.cgi?call=console_list_consoles'>Consoles</A>"
  print "<A CLASS='z-op' style='float:right;' DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'>Racks</A>"
@@ -512,7 +519,7 @@ def esxi(aWeb):
  print "<A CLASS=z-op OP=toggle DIV=div_esxi_op   HREF='#'>VM OPs</A>"
  print "<A HREF=https://{0}/ui target=_blank>UI</A>".format(esxi._ip)
  print "<A HREF=http://{0}/index.html target=_blank>IPMI</A>".format(esxi.get_kvm_ip('ipmi'))
- print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
  print "</DIV>"
  
  print "<DIV CLASS='z-navcontent' ID=div_navcont>"
@@ -576,7 +583,7 @@ def devices(aWeb):
   print "<A CLASS='z-op' DIV=div_navleft URL='ajax.cgi?call=console_list&{}'>Console</A>".format(argdict.get('console'))
  if argdict.get('pdu',None):
   print "<A CLASS='z-op' DIV=div_navleft SPIN=true URL='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
- print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args_except())
+ print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
  print "<A CLASS='z-right z-op' DIV=div_navcont MSG='Discover devices?' URL='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
  print "</DIV>"
  print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
