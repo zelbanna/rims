@@ -20,10 +20,10 @@ def list_users(aWeb):
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=sdcp_list_users'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add User'    CLASS='z-btn z-small-btn z-op' DIV=div_right   URL='ajax.cgi?call=sdcp_user_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table style='width:99%'>"
- print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' DIV=div_right URL='ajax.cgi?call=sdcp_user_info&id={0}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' DIV=div_right URL='ajax.cgi?call=sdcp_user_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
  print "</DIV></DIV></DIV></DIV>"
  print "<DIV CLASS=z-os-right ID=div_right></DIV>"
 
@@ -53,7 +53,7 @@ def user_info(aWeb):
   alias,name,email = row[0]['alias'],row[0]['name'],row[0]['email']
 
  print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>Add User</DIV>"
+ print "<DIV CLASS=title>User Info</DIV>"
  print "<FORM ID=sdcp_user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
