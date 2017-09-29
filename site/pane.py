@@ -183,7 +183,7 @@ def openstack_portal(aWeb):
   print "<A CLASS='z-op z-right'  DIV=div_os_frame URL=ajax.cgi?call=openstack_api>API Debug</A>"
  print "</DIV>"
  print "</DIV>"
- print "<DIV CLASS=z-os-frame ID=div_os_frame></DIV>"
+ print "<DIV CLASS=z-content ID=div_os_frame style='top:94px;'></DIV>"
  print "</DIV>"
 
 #
@@ -224,8 +224,6 @@ def examine(aWeb):
  upshost = aWeb.get_value('upshost')
  svchost = PC.sdcp_svcsrv
  graph = Grapher()  
- print "<DIV CLASS='z-navframe' ID=div_navframe>"
-
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
  print "<A CLASS='z-warning z-op' DIV=div_sys MSG='Clear Network Logs?' URL='rest.cgi?call=sdcp.site:sdcp_clear_logs&logs={},{}'>Clear Logs</A>".format(PC.generic_logformat,PC.sdcp_netlogs)
  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_sys URL='.z-system'>Logs</A>"
@@ -238,7 +236,7 @@ def examine(aWeb):
  print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
  print "</DIV>"
  
- print "<DIV CLASS='z-navcontent' ID=div_navcont>"
+ print "<DIV CLASS=z-content ID=div_navcont>"
  
  print "<DIV CLASS=z-system id=div_sys title='System Logs' style='display:block;'>"
  from sdcp.site.rest_sdcp import examine_logs
@@ -300,7 +298,6 @@ def examine(aWeb):
   print "</DIV>"
  
  print "</DIV>"
- print "</DIV>"
 
 ##################################################################################################
 #
@@ -329,14 +326,12 @@ def munin(aWeb):
   }
  }
  </SCRIPT>
- <DIV CLASS=z-navframe ID=div_navframe>
  <DIV CLASS=z-navbar ID=div_navbar>
  <A onclick=toggleMuninNavigation()>Navigation</A>
  <A CLASS='z-reload z-op' OP=iload IFRAME=iframe_munin URL='/munin-cgi/munin-cgi-html/index.html'></A>
  </DIV>
- <DIV CLASS='z-navcontent' ID=div_navcont>
+ <DIV CLASS='z-content' ID=div_navcont>
  <IFRAME ID=iframe_munin src='/munin-cgi/munin-cgi-html/index.html'></IFRAME>
- </DIV>
  </DIV>
  """
 
@@ -355,7 +350,6 @@ def weathermap(aWeb):
  if page == 'main':
   aWeb.put_html_header('Weathermap')
   aWeb.put_listeners()
-  print "<DIV CLASS=z-navframe ID=div_navframe>"
   print "<DIV CLASS=z-navbar ID=div_navbar>"
  
   wmlist = []
@@ -379,9 +373,8 @@ def weathermap(aWeb):
    except Exception as err:
     print "weathermap.cgi: error finding config files in 'wm_configs/' [{}]".format(str(err))
   print "</DIV>"
-  print "<DIV CLASS='z-navcontent' ID=div_navcont NAME='Weathermap Content'>"
+  print "<DIV CLASS='z-content' ID=div_navcont NAME='Weathermap Content'>"
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"
-  print "</DIV>"
   print "</DIV>"
  
  elif page:
@@ -453,7 +446,6 @@ def rack_info(aWeb):
  con  = aWeb.get_value('console')
  pdus = aWeb.form.getlist('pdulist')
  name = aWeb.get_value('name')
- print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  if rack and name:
   print "<A CLASS='z-op' DIV=div_navcont URL='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(rack,name)
@@ -474,7 +466,6 @@ def rack_info(aWeb):
  if rack and name:
   ajax_info(aWeb)
  print "</DIV>"
- print "</DIV>"
 
 ##################################################################################################
 #
@@ -494,7 +485,6 @@ def esxi(aWeb):
  host   = aWeb.get_value('host')
  domain = aWeb.get_value('domain')
  esxi   = ESXi(host,domain)
- print "<DIV CLASS='z-navframe' ID=div_navframe>"
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
  print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.get_args_except(['pane']))
  print "<A CLASS=z-op OP=toggle DIV=div_esxi_pic   HREF='#'>Picture</A>"
@@ -505,7 +495,7 @@ def esxi(aWeb):
  print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
  print "</DIV>"
  
- print "<DIV CLASS='z-navcontent' ID=div_navcont>"
+ print "<DIV CLASS=z-content ID=div_navcont>"
  print "<DIV CLASS=z-system id=div_esxi_stats title='Device stats' style='display:none;'>"
  graph  = Grapher()
  graph.widget_cols([ "{1}/{0}/esxi_vm_info".format(esxi._fqdn,domain), "{1}/{0}/esxi_cpu_info".format(esxi._fqdn,domain), "{1}/{0}/esxi_mem_info".format(esxi._fqdn,domain) ])
@@ -525,8 +515,6 @@ def esxi(aWeb):
   print "<DIV CLASS='z-logs' ID=div_esxi_log><H1>{} operation logs</H1>{}</DIV>".format(esxi._fqdn,logs.replace('\n','<BR>'))
  except:
   pass
- 
- print "</DIV>"
  print "</DIV>"
 
 ##################################################################################################
@@ -562,7 +550,6 @@ def devices(aWeb):
     arglist = arglist + "&{}list=".format(type) + row['ip']
    argdict[type] = arglist
 
- print "<DIV CLASS=z-navframe ID=div_navframe>"
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS='z-op' DIV=div_navleft URL='ajax.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS='z-op' DIV=div_navleft URL='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
@@ -577,7 +564,6 @@ def devices(aWeb):
  print "<DIV CLASS=z-navright ID=div_navcont>" 
  print aWeb.get_include('README.devices.html')
  print "</DIV>"
- print "</DIV>" 
  db.close() 
 
 ##################################################################################################
@@ -605,6 +591,7 @@ def config(aWeb):
  print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=device_rack_info'>Device Rackinfo</A>"
  print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=device_mac_sync'>Sync MAC Info</A>"
  print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_content          URL='ajax.cgi?call=sdcp_list_users'>Users</A>"
+ print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_content          URL='ajax.cgi?call=sdcp_list_bookings'>Bookings</A>"
  print "</DIV>"
  print "<DIV ID=div_config style='min-width:600px; min-height:300px; display:inline;'></DIV>"
  print "</DIV>"

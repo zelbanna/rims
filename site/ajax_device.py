@@ -71,7 +71,17 @@ def device_info(aWeb):
 
  db  = GL.DB()
  db.connect()
- xist = db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name FROM devices LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
+
+ if op == 'book':
+  user_id = aWeb.cookie.get('sdcp_id')
+  db.do("INSERT INTO bookings (device_id,user_id,name) VALUES('{}','{}','{}')".format(id,user_id,"Not Yet"))
+  db.commit()
+
+ if op == 'unbook':
+  db.do("DELETE FROM bookings WHERE device_id = '{}'".format(id))
+  db.commit()
+
+ xist = db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name, bookings.user_id FROM devices LEFT JOIN bookings ON bookings.device_id = devices.id LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
  if xist > 0:
   device_data = db.get_row()
  else:
@@ -108,6 +118,7 @@ def device_info(aWeb):
  ########################## Data Tables ######################
  
  print "<DIV ID=div_devinfo CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
+ print "<!-- {} -->".format(device_data)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(1 if device_data['rack_id'] else 0)
@@ -154,7 +165,7 @@ def device_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['ipam_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(GL.int2mac(device_data['mac']))
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={}></DIV></DIV>".format(GL.int2ip(device_data['subnet'] + 1))
- print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>" 
+ print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['bookings.user_id'])
  print "</DIV></DIV></DIV>"
 
  print "<!-- Rack Info if such exists -->"
@@ -196,18 +207,23 @@ def device_info(aWeb):
  print "</FORM>"
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&id={} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_remove&id={}      OP=load MSG='Are you sure you want to delete device?'><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=lookup    FRM=info_form OP=load TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=update    FRM=info_form OP=load TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata URL=ajax.cgi?call=device_conf_gen                 FRM=info_form OP=load TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_remove&id={} MSG='Are you sure you want to delete device?' TITLE='Remove device'><IMG SRC='images/btn-remove.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=lookup    FRM=info_form TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=update    FRM=info_form TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
+ if device_data['bookings.user_id']:
+  if int(aWeb.cookie.get('sdcp_id')) == device_data['bookings.user_id']:
+   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=unbook&id={} MSG='Are you sure you want to drop booking?' TITLE='Unbook'><IMG SRC='images/btn-remove.png'></A>".format(id)
+ else:
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=book&id={}><IMG SRC='images/btn-add.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata URL=ajax.cgi?call=device_conf_gen                 FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
  import sdcp.PackageContainer as PC
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf_username,ip)
  if device_data['rack_id'] and (conip and not conip == '127.0.0.1' and ri['console_port'] and ri['console_port'] > 0):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+ri['console_port'])
  if (device_data['type'] == 'pdu' or device_data['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip'])) == 0:
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}' OP=load style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
- print "<SPAN ID=update_results style='text-overflow:ellipsis; overflow:hidden; float:right; font-size:9px;'>{}</SPAN>".format(str(opres) if len(opres) > 0 else "")
+ print "<SPAN ID=upd_results style='text-overflow:ellipsis; overflow:hidden; float:right; font-size:9px;'>{}</SPAN>".format(str(opres) if len(opres) > 0 else "")
  print "</DIV>"
  db.close()
  print "</DIV>"
@@ -234,7 +250,6 @@ def device_info(aWeb):
 #
 # View operation data / widgets
 #
-
 def conf_gen(aWeb):
  id = aWeb.get_value('id','0')
  gw = aWeb.get_value('devices_ipam_gw')

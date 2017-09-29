@@ -40,7 +40,7 @@ form{   display:inline; }
 
 div.z-header-left {   height :75px; width :440px; padding-left: 5px; float: left; }
 div.z-header-right {  height :75px; position: absolute; left: 440px; right: 0px; }
-div.z-content {       border-style: none; width : 100%; position: absolute; top: 75px; bottom : 0px; background-color:#9CA6B0; }
+div.z-main-content { border-style: none; width : 100%; position: absolute; top: 75px; bottom : 0px; background-color:#9CA6B0; }
 
 /*######################################## DIVs ###########################################*/
 
@@ -87,8 +87,6 @@ table.z-rack td.data { border: solid 2px grey; width:220px; font-size:12px; }
 
 /*############################################ NavBar ############################################*/
 
-div.z-navframe { position: relative; height: 100%; width:100%;}
-
 div.z-navbar { height: 34px; float: left; display: table; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99; cursor:pointer; position:fixed; top:0px; width:100%; z-index:1000; }
 div.z-navbar a { color:#FFFFFF; display:table-cell; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
 div.z-navbar a.z-right {   float:right; }
@@ -98,13 +96,11 @@ div.z-navbar a:hover{ color:#000000 ;background-color:#D5D9DD; }
 div.z-navleft {  display:block; position: fixed;    bottom:0px; top:34px; width:360px; overflow-y:auto; overflow-x:hidden; }
 div.z-navright { display:block; position: absolute; bottom:0px; top:34px; left: 360px; right:0px; overflow: auto; }
 
-div.z-navcontent {  position: absolute; top: 34px; bottom: 0px; left: 0px; right: 0px; box-sizing: border-box; display:block; overflow: auto;}
-
-/*######################################## Openstack Layout #######################################*/
+div.z-content {      position:absolute; top:34px; bottom:0px; width:100%; box-sizing: border-box; display:block; overflow: auto;}
 
 div.z-os-header {    position:fixed; top:0px; left:0px; right:0px; height:94px; z-index:1000; }
 div.z-os-head-info { position:fixed; top:0px; left:0px; right:0px; height:60px; display:block; z-index:1001; border-bottom: 1px solid black; }
-div.z-os-frame {     position:absolute; top:94px; bottom:0px; width:100%; }
+
 div.z-os-left {      position:absolute; top:0px;  bottom:0px; left:0px; width:400px; overflow-x:auto; }
 div.z-os-right {     position:absolute; top:0px;  bottom:0px; right:0px; left:400px; overflow:auto; }
 
@@ -119,10 +115,6 @@ a.z-btn {
  
  -webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;
  -webkit-transition:background-color .25s,color .15s,box-shadow .25s,opacity 0.25s,filter 0.25s,border 0.15s;transition:background-color .25s,color .15s,box-shadow .15s .15s,opacity .25s,filter .25s,border .15s;
-
- /* Comment in to get gray buttons instead
- -webkit-filter:grayscale(75%);filter:grayscale(75%);
- */
 }
 a.z-btn:hover {  box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19); font-weight: bold; border: 1px solid black;}
 a.z-btn:active { opacity:0.5} 
