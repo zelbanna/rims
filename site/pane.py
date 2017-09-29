@@ -164,14 +164,14 @@ def openstack_portal(aWeb):
 
  aWeb.put_html_header()
  aWeb.put_listeners()
- print "<DIV CLASS=z-os-header    ID=div_os_header>"
- print "<DIV CLASS=z-os-head-info ID=div_os_head_info>"
+ print "<DIV CLASS=z-content-head      ID=div_os_header>"
+ print "<DIV CLASS=z-content-head-info ID=div_os_head_info>"
  print "<DIV CLASS=z-table style='display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
- print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
  print "</DIV>"
+ print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
  print "<DIV CLASS='z-navbar' style='top:60px; z-index:1001' ID=div_navbar>"
  print "<A CLASS='z-op'           DIV=div_os_frame URL='ajax.cgi?call=heat_list'>Orchestration</A>"
  print "<A CLASS='z-op'           DIV=div_os_frame URL='ajax.cgi?call=neutron_list'>Virtual Networks</A>"
@@ -390,11 +390,11 @@ def weathermap(aWeb):
     graph  = Grapher()
     if graphs:
      graph.widget_rows(graphs)
-    print "<DIV CLASS='z-graph'>"
+    print "<DIV CLASS='z-frame'>"
     print aWeb.get_include('{}.html'.format(map))
     print "</DIV>"
   else:
-   print "<DIV CLASS='z-graph'>"
+   print "<DIV CLASS='z-frame'>"
    print aWeb.get_include('wm_{}.html'.format(page))
    print "</DIV>"
  else:
@@ -461,8 +461,8 @@ def rack_info(aWeb):
  print "<A CLASS='z-op' style='float:right;' DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'>Racks</A>"
  print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
- print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
- print "<DIV CLASS=z-navright ID=div_navcont>"
+ print "<DIV CLASS=z-content-left  ID=div_navleft></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_navcont>"
  if rack and name:
   ajax_info(aWeb)
  print "</DIV>"
@@ -560,8 +560,8 @@ def devices(aWeb):
  print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
  print "<A CLASS='z-right z-op' DIV=div_navcont MSG='Discover devices?' URL='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
  print "</DIV>"
- print "<DIV CLASS=z-navleft  ID=div_navleft></DIV>"
- print "<DIV CLASS=z-navright ID=div_navcont>" 
+ print "<DIV CLASS=z-content-left  ID=div_navleft></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_navcont>" 
  print aWeb.get_include('README.devices.html')
  print "</DIV>"
  db.close() 

@@ -23,7 +23,7 @@ def list_bookings(aWeb):
  res  = db.do("SELECT device_id, time_start, devices.hostname, users.name FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
  rows = db.get_all_rows()
  db.close()
- print "<DIV CLASS=z-os-left ID=div_left>"
+ print "<DIV CLASS=z-content-left ID=div_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Bookings</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=sdcp_list_bookings'><IMG SRC='images/btn-reboot.png'></A>"
  print "<DIV CLASS=z-table style='width:99%'>"
@@ -32,7 +32,7 @@ def list_bookings(aWeb):
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td><A CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=sdcp_list_bookings&op=unbook&id={3}'><IMG SRC='images/btn-remove.png'></A>&nbsp;</DIV></DIV>".format(row['name'],row['hostname'],row['time_start'],row['device_id'])
  print "</DIV></DIV></DIV></DIV>"
- print "<DIV CLASS=z-os-right ID=div_right></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_right></DIV>"
 
 def list_users(aWeb):
  db   = GL.DB()
@@ -40,7 +40,7 @@ def list_users(aWeb):
  res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
  rows = db.get_all_rows()
  db.close()
- print "<DIV CLASS=z-os-left ID=div_left>"
+ print "<DIV CLASS=z-content-left ID=div_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Users</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=sdcp_list_users'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add User'    CLASS='z-btn z-small-btn z-op' DIV=div_right   URL='ajax.cgi?call=sdcp_user_info&id=new'><IMG SRC='images/btn-add.png'></A>"
@@ -50,7 +50,7 @@ def list_users(aWeb):
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' DIV=div_right URL='ajax.cgi?call=sdcp_user_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
  print "</DIV></DIV></DIV></DIV>"
- print "<DIV CLASS=z-os-right ID=div_right></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_right></DIV>"
 
 def user_info(aWeb):
  id = aWeb.get_value('id','new')

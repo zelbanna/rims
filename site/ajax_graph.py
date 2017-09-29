@@ -18,7 +18,7 @@ def list(aWeb):
  if node and state:
   nstate = "yes" if state == "no" else "no"
   graph.update_entry(node, nstate)
- print "<DIV CLASS=z-frame><DIV CLASS=z-table style='width:330px'>"
+ print "<DIV CLASS=z-frame><DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Handler</DIV><DIV CLASS=th TITLE='Include in graphing?'>Include</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  keys = graph.get_keys()

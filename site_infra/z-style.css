@@ -50,14 +50,12 @@ div.z-frame .title { font-weight: bold; text-align:center; }
 
 div.z-system { margin:3px; overflow-x: hidden; position: relative}
 
-div.z-graph { border-radius: 6px!important; background-color:#F3F3F3!important; margin:3px; overflow:hidden; }
-div.z-graph:hover {box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19)}
-
 div.z-logs { background-color:#FFFFFF; color:grey; overflow: auto; padding: 4px; font-family: "Courier New", serif; font-size: 12px; margin: 3px; }
 div.z-logs:hover { color:#000000; }
 div.z-logs h1 {	margin: 5px; margin-bottom: 6px; text-align:center; font-size: 18px; }
 
 div.z-error { background-color:red }
+
 div.z-centered { display:flex; justify-content:center; align-items:center; }
 
 div.z-drag {   height:20px; width:390px; margin:5px; font-size:11px; cursor:move; -ms-touch-action: none; touch-action: none; border-radius: 5px!important; border: 1px solid #ccc; }
@@ -85,7 +83,7 @@ table.z-rack tr { line-height:14px; }
 table.z-rack td.indx { font-weight:bold; font-size:8px; color:grey; vertical-align:bottom; padding:2px; }
 table.z-rack td.data { border: solid 2px grey; width:220px; font-size:12px; }
 
-/*############################################ NavBar ############################################*/
+/*########################################## Content model ###########################################*/
 
 div.z-navbar { height: 34px; float: left; display: table; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99; cursor:pointer; position:fixed; top:0px; width:100%; z-index:1000; }
 div.z-navbar a { color:#FFFFFF; display:table-cell; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
@@ -93,16 +91,11 @@ div.z-navbar a.z-right {   float:right; }
 div.z-navbar a.z-reload { background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
 div.z-navbar a:hover{ color:#000000 ;background-color:#D5D9DD; }
 
-div.z-navleft {  display:block; position: fixed;    bottom:0px; top:34px; width:360px; overflow-y:auto; overflow-x:hidden; }
-div.z-navright { display:block; position: absolute; bottom:0px; top:34px; left: 360px; right:0px; overflow: auto; }
-
-div.z-content {      position:absolute; top:34px; bottom:0px; width:100%; box-sizing: border-box; display:block; overflow: auto;}
-
-div.z-os-header {    position:fixed; top:0px; left:0px; right:0px; height:94px; z-index:1000; }
-div.z-os-head-info { position:fixed; top:0px; left:0px; right:0px; height:60px; display:block; z-index:1001; border-bottom: 1px solid black; }
-
-div.z-os-left {      position:absolute; top:0px;  bottom:0px; left:0px; width:400px; overflow-x:auto; }
-div.z-os-right {     position:absolute; top:0px;  bottom:0px; right:0px; left:400px; overflow:auto; }
+div.z-content-head {      display:block; position:fixed;    top:0px;  height:94px; width:100%;  z-index:1000; }
+div.z-content-head-info { display:block; position:fixed;    top:0px;  height:60px; width:100%;  z-index:1001; border-bottom: 1px solid black; }
+div.z-content {           display:block; position:absolute; top:34px; bottom:0px;  width:100%;  box-sizing: border-box; overflow: auto;}
+div.z-content-left {      display:block; position:fixed;    top:34px; bottom:0px;  width:400px; overflow-y:auto; overflow-x:hidden; }
+div.z-content-right {     display:block; position:absolute; top:34px; bottom:0px;  right:0px;   left:400px; overflow: auto; }
 
 /*########################################### A(nything) ##########################################*/
 

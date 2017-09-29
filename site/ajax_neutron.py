@@ -28,7 +28,7 @@ def list(aWeb):
   print "Error retrieving list"
   return
  
- print "<DIV CLASS=z-os-left ID=div_os_left>"
+ print "<DIV CLASS=z-content-left ID=div_os_left style='top:94px;'>"
  print "<DIV CLASS=z-frame style='overflow:auto;'><DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead  style='height:20px'><DIV CLASS=th><CENTER>Contrail VNs</CENTER></DIV></DIV>"
  print "<DIV CLASS=tr  style='height:20px'><DIV CLASS=td COLSPAN=3>"
@@ -55,7 +55,7 @@ def list(aWeb):
   print "</DIV>"
  print "</DIV>"
  print "</DIV></DIV></DIV></DIV>"
- print "<DIV CLASS=z-os-right ID=div_os_right></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_os_right style='top:0px;'></DIV>"
 
 def action(aWeb):
  cookie = aWeb.cookie

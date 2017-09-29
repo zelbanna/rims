@@ -20,7 +20,7 @@ def list_racks(aWeb):
  print "<DIV CLASS=title>Rack</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=rack_unit_info&id=new'><IMG SRC='images/btn-add.png'></A>"
- print "<DIV CLASS=z-table style='width:330px'>"
+ print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  res  = db.do("SELECT * from racks ORDER by name")

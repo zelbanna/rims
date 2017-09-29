@@ -21,7 +21,7 @@ def view_devicelist(aWeb):
  print "<DIV CLASS=title>Devices</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?{}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=device_new&{}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args())
- print "<DIV CLASS=z-table style='width:330px'>"
+ print "<DIV CLASS=z-table style='width:99%;'>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
 
  db     = GL.DB()
@@ -228,7 +228,7 @@ def device_info(aWeb):
  db.close()
  print "</DIV>"
 
- print "<!-- Function navbar and navcontent -->"
+ print "<!-- Function navbar and content -->"
  print "<DIV CLASS='z-navbar' style='top:280px;'>"
  functions = device_get_widgets(device_data['type'])
  if functions:
@@ -242,7 +242,7 @@ def device_info(aWeb):
  else:
   print "&nbsp;"
  print "</DIV>"
- print "<DIV CLASS='z-navcontent' ID=div_navdata style='top:280px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>"
+ print "<DIV CLASS='z-content' ID=div_navdata style='top:280px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>"
 
 
 

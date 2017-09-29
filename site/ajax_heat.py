@@ -32,7 +32,7 @@ def list(aWeb):
   print "Error retrieving heat stacks ({})".format(ret['code'])
   return
 
- print "<DIV CLASS=z-os-left ID=div_os_left><DIV CLASS=z-frame style='width:394px;'>"
+ print "<DIV CLASS=z-content-left ID=div_os_left style='top:94px;'><DIV CLASS=z-frame style='width:394px;'>"
  print "<DIV CLASS=title>Heat Stacks</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_os_right URL='ajax.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
@@ -51,7 +51,7 @@ def list(aWeb):
   print "&nbsp;</DIV></DIV>"
  print "</DIV>"
  print "</DIV></DIV></DIV>"
- print "<DIV CLASS=z-os-right ID=div_os_right></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_os_right style='top:0px;'></DIV>"
 
 ######################### HEAT ADD ######################
 #

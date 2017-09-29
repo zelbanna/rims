@@ -29,7 +29,7 @@ def list_units(aWeb):
 
  if len(pdulist) == 0:
   pdulist.append(pduop)
- print "<DIV CLASS=z-frame><DIV CLASS=z-table style='width:330px;'>"
+ print "<DIV CLASS=z-frame><DIV CLASS=z-table style='width:99%;'>"
  print "<DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Entry</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th style='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for pdu in pdulist:

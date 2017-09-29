@@ -26,7 +26,7 @@ def list(aWeb):
   print "Error retrieving list {}".format(str(ret))
   return
 
- print "<DIV CLASS=z-os-left ID=div_os_left>"
+ print "<DIV CLASS=z-content-left ID=div_os_left style='top:94px;'>"
  print "<DIV CLASS=z-frame style='width:394px'>"
  print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead style='height:20px'><DIV CLASS=th><CENTER>Nova Servers</CENTER></DIV></DIV>"
@@ -56,7 +56,7 @@ def list(aWeb):
    print tmpl.format('VM info','info',"<IMG SRC='images/btn-info.png'>")
   print "</DIV></DIV>"
  print "</DIV>"
- print "</DIV></DIV></DIV><DIV CLASS=z-os-right ID=div_os_right></DIV>"
+ print "</DIV></DIV></DIV><DIV CLASS=z-content-right ID=div_os_right style='top:0px;'></DIV>"
 
 
 def select_parameters(aWeb):
