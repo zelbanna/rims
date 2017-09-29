@@ -164,27 +164,26 @@ def openstack_portal(aWeb):
 
  aWeb.put_html_header()
  aWeb.put_listeners()
- print "<DIV CLASS=z-content-head      ID=div_os_header>"
- print "<DIV CLASS=z-content-head-info ID=div_os_head_info>"
+ print "<DIV CLASS=z-content-head ID=div_content_head>"
+ print "<DIV CLASS=z-content-head-info ID=div_content_head_info>"
  print "<DIV CLASS=z-table style='display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
+ print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
  print "</DIV>"
- print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
  print "<DIV CLASS='z-navbar' style='top:60px; z-index:1001' ID=div_navbar>"
- print "<A CLASS='z-op'           DIV=div_os_frame URL='ajax.cgi?call=heat_list'>Orchestration</A>"
- print "<A CLASS='z-op'           DIV=div_os_frame URL='ajax.cgi?call=neutron_list'>Virtual Networks</A>"
- print "<A CLASS='z-op'           DIV=div_os_frame URL='ajax.cgi?call=nova_list'>Virtual Machines</A>"
- print "<A CLASS='z-op' SPIN=true DIV=div_os_frame URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
+ print "<A CLASS='z-op'           DIV=div_content URL='ajax.cgi?call=heat_list'>Orchestration</A>"
+ print "<A CLASS='z-op'           DIV=div_content URL='ajax.cgi?call=neutron_list'>Virtual Networks</A>"
+ print "<A CLASS='z-op'           DIV=div_content URL='ajax.cgi?call=nova_list'>Virtual Machines</A>"
+ print "<A CLASS='z-op' SPIN=true DIV=div_content URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
  print "<A CLASS='z-reload z-op'  OP=redirect URL='pane.cgi?view=openstack_portal'></A>"
  if username == 'admin':
-  print "<A CLASS='z-op z-right'  DIV=div_os_frame URL=ajax.cgi?call=openstack_fqname>FQDN</A>"
-  print "<A CLASS='z-op z-right'  DIV=div_os_frame URL=ajax.cgi?call=openstack_api>API Debug</A>"
+  print "<A CLASS='z-op z-right'  DIV=div_content URL=ajax.cgi?call=openstack_fqname>FQDN</A>"
+  print "<A CLASS='z-op z-right'  DIV=div_content URL=ajax.cgi?call=openstack_api>API Debug</A>"
  print "</DIV>"
  print "</DIV>"
- print "<DIV CLASS=z-content ID=div_os_frame style='top:94px;'></DIV>"
- print "</DIV>"
+ print "<DIV CLASS=z-content ID=div_content style='top:94px;'></DIV>"
 
 #
 # Console redirect - since ajax not able to do header manipulations 'yet'

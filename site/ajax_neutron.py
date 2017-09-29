@@ -2,7 +2,7 @@
 
 Ajax Openstack Neutron/Contrail calls module
 
-- left and right divs frames (div_os_left/right) needs to be created by ajax call
+- left and right divs frames (div_content_left/right) needs to be created by ajax call
 
 """
 __author__= "Zacharias El Banna"
@@ -28,11 +28,11 @@ def list(aWeb):
   print "Error retrieving list"
   return
  
- print "<DIV CLASS=z-content-left ID=div_os_left style='top:94px;'>"
+ print "<DIV CLASS=z-content-left ID=div_content_left style='top:94px;'>"
  print "<DIV CLASS=z-frame style='overflow:auto;'><DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead  style='height:20px'><DIV CLASS=th><CENTER>Contrail VNs</CENTER></DIV></DIV>"
  print "<DIV CLASS=tr  style='height:20px'><DIV CLASS=td COLSPAN=3>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "</DIV></DIV>"
  print "<DIV CLASS=thead><DIV CLASS=th>Network</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th></DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -41,7 +41,7 @@ def list(aWeb):
    continue
   print "<DIV CLASS=tr>"
   print "<!-- {} -->".format(net.get('href'))
-  print "<DIV CLASS=td style='max-width:200px; overflow-x:hidden;'><A TITLE='Info {1}' CLASS='z-op' DIV=div_os_right URL=ajax.cgi?call=neutron_action&id={0}&op=info SPIN=true>{1}</A></DIV>".format(net['uuid'],net['display_name'])
+  print "<DIV CLASS=td style='max-width:200px; overflow-x:hidden;'><A TITLE='Info {1}' CLASS='z-op' DIV=div_content_right URL=ajax.cgi?call=neutron_action&id={0}&op=info SPIN=true>{1}</A></DIV>".format(net['uuid'],net['display_name'])
   print "<DIV CLASS=td>"
   if net.get('network_ipam_refs'):
    for ipam in net['network_ipam_refs']:
@@ -49,13 +49,13 @@ def list(aWeb):
      print "{}/{}".format(sub['subnet']['ip_prefix'],sub['subnet']['ip_prefix_len'])
   print "</DIV>"
   print "<DIV CLASS=td>"
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=neutron_action&name=" + net['display_name'] + "&id=" + net['uuid'] + "&op={} {} SPIN=true>{}</A>&nbsp;"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=neutron_action&name=" + net['display_name'] + "&id=" + net['uuid'] + "&op={} {} SPIN=true>{}</A>&nbsp;"
   print tmpl.format('Remove','remove',"MSG='Really delete network?'", '<IMG SRC=images/btn-remove.png>')
   print "</DIV>"
   print "</DIV>"
  print "</DIV>"
  print "</DIV></DIV></DIV></DIV>"
- print "<DIV CLASS=z-content-right ID=div_os_right style='top:0px;'></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
 
 def action(aWeb):
  cookie = aWeb.cookie
@@ -103,7 +103,7 @@ def action(aWeb):
    print "<! -- {} -->".format(ip['href'])
    print "<! -- {} -->".format(iip['virtual_machine_interface_refs'][0]['href'])
    if vmi.get('virtual_machine_refs'):
-    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_os_right SPIN=true URL=ajax.cgi?call=nova_action&id={0}>{1}</A></DIV>".format(vmi['virtual_machine_refs'][0]['uuid'],iip['instance_ip_address'])
+    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=ajax.cgi?call=nova_action&id={0}>{1}</A></DIV>".format(vmi['virtual_machine_refs'][0]['uuid'],iip['instance_ip_address'])
    else:
     print "<DIV CLASS=td>{}</DIV>".format(iip['instance_ip_address'])
    print "<DIV CLASS=td>{}</DIV>".format(vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
@@ -139,8 +139,8 @@ def action(aWeb):
      # Do we select one or many VMI:s?
      print "<!-- {} -->".format(fip)
      vmi = controller.href(fip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
-     print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_os_right  URL=ajax.cgi?call=nova_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(vmi['virtual_machine_refs'][0]['to'][0],fixed)
-     print "<DIV CLASS=td><A TITLE='Network info' CLASS='z-op' DIV=div_os_right  URL=ajax.cgi?call=neutron_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
+     print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right  URL=ajax.cgi?call=nova_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(vmi['virtual_machine_refs'][0]['to'][0],fixed)
+     print "<DIV CLASS=td><A TITLE='Network info' CLASS='z-op' DIV=div_content_right  URL=ajax.cgi?call=neutron_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
      print "<DIV CLASS=td>"
      print "<A TITLE='Info' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=print&id={} SPIN=true><IMG SRC=images/btn-info.png></A>".format(fip['href'])
      print "<A TITLE='Disassociate floating IP' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fi_disassociate&id={} MSG='Are you sure?' SPIN=true><IMG SRC=images/btn-remove.png></A>".format(fip['uuid'])

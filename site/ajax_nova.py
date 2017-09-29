@@ -2,7 +2,7 @@
 
 Ajax Openstack NOVA calls module
 
-- left and right divs frames (div_os_left/right) needs to be created by ajax call
+- left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
@@ -26,26 +26,26 @@ def list(aWeb):
   print "Error retrieving list {}".format(str(ret))
   return
 
- print "<DIV CLASS=z-content-left ID=div_os_left style='top:94px;'>"
+ print "<DIV CLASS=z-content-left ID=div_content_left style='top:94px;'>"
  print "<DIV CLASS=z-frame style='width:394px'>"
  print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead style='height:20px'><DIV CLASS=th><CENTER>Nova Servers</CENTER></DIV></DIV>"
  print "<DIV CLASS=tbody><DIV CLASS=tr style='height:20px'><DIV CLASS=td>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=nova_list'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add server'   CLASS='z-btn z-small-btn z-op' DIV=div_os_right URL='ajax.cgi?call=nova_select_parameters'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=nova_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add server'   CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='ajax.cgi?call=nova_select_parameters'><IMG SRC='images/btn-add.png'></A>"
  print "</DIV></DIV></DIV>"
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th style='width:94px;'></DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for server in ret['data'].get('servers',None):
   qserver = aWeb.quote(server['name'])
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=nova_action&name=" + qserver + "&id=" + server['id'] + "&op={} SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=nova_action&name=" + qserver + "&id=" + server['id'] + "&op={} SPIN=true>{}</A>"
   print "<DIV CLASS=tr>"
   print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
-  print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_os_right URL=ajax.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
+  print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right URL=ajax.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
   print "<DIV CLASS=td>"
   print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	TARGET=_blank      HREF='pane.cgi?view=openstack_console&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
-  print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=nova_console&id={} OP=load><IMG SRC='images/btn-term-frame.png'></A>".format(server['id'])
-  print "<A TITLE='Remove VM'        CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=nova_action&id={}&op=remove MSG='Are you sure you want to delete VM?' SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(server['id'])
+  print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=nova_console&id={} OP=load><IMG SRC='images/btn-term-frame.png'></A>".format(server['id'])
+  print "<A TITLE='Remove VM'        CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=nova_action&id={}&op=remove MSG='Are you sure you want to delete VM?' SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(server['id'])
   if not server['OS-EXT-STS:task_state']:
    if   server['status'] == 'ACTIVE':
     print tmpl.format('Stop VM','stop',"<IMG SRC='images/btn-shutdown.png'>")
@@ -56,7 +56,7 @@ def list(aWeb):
    print tmpl.format('VM info','info',"<IMG SRC='images/btn-info.png'>")
   print "</DIV></DIV>"
  print "</DIV>"
- print "</DIV></DIV></DIV><DIV CLASS=z-content-right ID=div_os_right style='top:0px;'></DIV>"
+ print "</DIV></DIV></DIV><DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
 
 
 def select_parameters(aWeb):
@@ -122,7 +122,7 @@ def select_parameters(aWeb):
    print "<DIV ID=div_drag_{0} CLASS='z-drag z-drag-input' style='font-size:11px;'><INPUT ID=input_{0} NAME=unused TYPE=HIDDEN VALUE={0}>{1} ({2})</DIV>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
  print "</DIV>"
  print "<BR style='clear:left;'>"
- print "<A TITLE='Create VM' CLASS='z-btn z-op z-small-btn' FRM=frm_os_create_vm DIV=div_os_right URL=ajax.cgi?call=nova_action&id={}&op=add SPIN=true><IMG SRC='images/btn-start.png'></A>".format("new") 
+ print "<A TITLE='Create VM' CLASS='z-btn z-op z-small-btn' FRM=frm_os_create_vm DIV=div_content_right URL=ajax.cgi?call=nova_action&id={}&op=add SPIN=true><IMG SRC='images/btn-start.png'></A>".format("new") 
  print "</DIV>"
 
 ######################################## Actions ########################################
@@ -191,7 +191,7 @@ def action(aWeb):
    print "<!-- {} -->".format(vmir['href'])
    print "<DIV CLASS=td>{}</DIV>".format(vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
    print "<DIV CLASS=td>{}</DIV>".format(vmi['routing_instance_refs'][0]['to'][3])
-   print "<DIV CLASS=td><A CLASS='z-op' DIV=div_os_right SPIN=true URL=ajax.cgi?call=neutron_action&id={0}&op=info>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
+   print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=ajax.cgi?call=neutron_action&id={0}&op=info>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
    print "<DIV CLASS=td>{}</DIV>".format(ip['instance_ip_address'])
    if vmi.get('floating_ip_back_refs'):
     fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']

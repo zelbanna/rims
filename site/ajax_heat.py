@@ -2,7 +2,7 @@
 
 Ajax Openstack HEAT calls module
 
-- left and right divs frames (div_os_left/right) needs to be created by ajax call
+- left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
@@ -32,10 +32,10 @@ def list(aWeb):
   print "Error retrieving heat stacks ({})".format(ret['code'])
   return
 
- print "<DIV CLASS=z-content-left ID=div_os_left style='top:94px;'><DIV CLASS=z-frame style='width:394px;'>"
+ print "<DIV CLASS=z-content-left ID=div_content_left style='top:94px;'><DIV CLASS=z-frame style='width:394px;'>"
  print "<DIV CLASS=title>Heat Stacks</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL='ajax.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_os_right URL='ajax.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='ajax.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th style='width:94px;'></DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -44,14 +44,14 @@ def list(aWeb):
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_name'])
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_status'])
   print "<DIV CLASS=td>"
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} SPIN=true>{}</A>"
   print tmpl.format('Stack info','info','<IMG SRC=images/btn-info.png>')
   if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED" or stack['stack_status'] == "DELETE_FAILED":
-   print "<A TITLE='Remove stack' CLASS='z-btn z-op z-small-btn' DIV=div_os_right URL=ajax.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op=remove MSG='Are you sure' SPIN=true><IMG SRC=images/btn-remove.png></A>"
+   print "<A TITLE='Remove stack' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op=remove MSG='Are you sure' SPIN=true><IMG SRC=images/btn-remove.png></A>"
   print "&nbsp;</DIV></DIV>"
  print "</DIV>"
  print "</DIV></DIV></DIV>"
- print "<DIV CLASS=z-content-right ID=div_os_right style='top:0px;'></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
 
 ######################### HEAT ADD ######################
 #
@@ -92,7 +92,7 @@ def enter_parameters(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value)
  print "</DIV></DIV>"
  print "</FORM>"
- print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' SPIN=true FRM=frm_heat_template_parameters DIV=div_os_right URL='ajax.cgi?call=heat_action&op=create'><IMG SRC='images/btn-start.png'></A>"
+ print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' SPIN=true FRM=frm_heat_template_parameters DIV=div_content_right URL='ajax.cgi?call=heat_action&op=create'><IMG SRC='images/btn-start.png'></A>"
  print "</DIV>"
 
 #

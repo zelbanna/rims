@@ -42,6 +42,20 @@ div.z-header-left {   height :75px; width :440px; padding-left: 5px; float: left
 div.z-header-right {  height :75px; position: absolute; left: 440px; right: 0px; }
 div.z-main-content { border-style: none; width : 100%; position: absolute; top: 75px; bottom : 0px; background-color:#9CA6B0; }
 
+/*##################################### Content model #####################################*/
+
+div.z-navbar { display:table; height: 34px; float: left; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99; cursor:pointer; position:fixed; top:0px; width:100%; z-index:1000; }
+div.z-navbar a { color:#FFFFFF; display:table-cell; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
+div.z-navbar a.z-right {  float:right; }
+div.z-navbar a.z-reload { background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
+div.z-navbar a:hover{ color:#000000 ;background-color:#D5D9DD; }
+
+div.z-content-head {      display:block; position:fixed;    top:0px;  height:94px; width:100%;  z-index:1000; }
+div.z-content-head-info { display:block; position:fixed;    top:0px;  height:60px; width:100%;  z-index:1001; border-bottom: 1px solid black; }
+div.z-content {           display:block; position:absolute; top:34px; bottom:0px;  width:100%;  box-sizing: border-box; overflow: auto;}
+div.z-content-left {      display:block; position:fixed;    top:34px; bottom:0px;  width:400px; overflow-y:auto; overflow-x:hidden; }
+div.z-content-right {     display:block; position:absolute; top:34px; bottom:0px;  right:0px;   left:400px; overflow: auto; }
+
 /*######################################## DIVs ###########################################*/
 
 div.z-frame {	width:auto; border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; }
@@ -83,26 +97,12 @@ table.z-rack tr { line-height:14px; }
 table.z-rack td.indx { font-weight:bold; font-size:8px; color:grey; vertical-align:bottom; padding:2px; }
 table.z-rack td.data { border: solid 2px grey; width:220px; font-size:12px; }
 
-/*########################################## Content model ###########################################*/
-
-div.z-navbar { height: 34px; float: left; display: table; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99; cursor:pointer; position:fixed; top:0px; width:100%; z-index:1000; }
-div.z-navbar a { color:#FFFFFF; display:table-cell; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
-div.z-navbar a.z-right {   float:right; }
-div.z-navbar a.z-reload { background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
-div.z-navbar a:hover{ color:#000000 ;background-color:#D5D9DD; }
-
-div.z-content-head {      display:block; position:fixed;    top:0px;  height:94px; width:100%;  z-index:1000; }
-div.z-content-head-info { display:block; position:fixed;    top:0px;  height:60px; width:100%;  z-index:1001; border-bottom: 1px solid black; }
-div.z-content {           display:block; position:absolute; top:34px; bottom:0px;  width:100%;  box-sizing: border-box; overflow: auto;}
-div.z-content-left {      display:block; position:fixed;    top:34px; bottom:0px;  width:400px; overflow-y:auto; overflow-x:hidden; }
-div.z-content-right {     display:block; position:absolute; top:34px; bottom:0px;  right:0px;   left:400px; overflow: auto; }
-
 /*########################################### A(nything) ##########################################*/
 
 a{ color: black; background-color:transparent;-webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; }
 a:active,a:hover{ outline-width:0; }
 
-a.z-op { outline:none; cursor:pointer; }
+a.z-op { outline:none; cursor:pointer; z-index:10000;}
 a.z-btn { 
  background-color:#FFFFFF!important; background-position: center; background-repeat: no-repeat; border-radius:3px; border: 1px solid #ccc; cursor:pointer; display: inline-block; float: none; font-family: "Courier New", serif; font-size: 20px; vertical-align:top; outline:0; overflow:hidden; text-align:center; text-decoration:none!important; white-space:nowrap; padding:2px; margin:2px;
  

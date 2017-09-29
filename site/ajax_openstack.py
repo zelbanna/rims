@@ -2,7 +2,7 @@
 
 Ajax Openstack Generic calls module
 
-- left and right divs frames (div_os_left/right) needs to be created by ajax call
+- left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
@@ -24,7 +24,7 @@ def data2html(aData):
   for k,v in aData.iteritems():
    print "<DIV CLASS=tr><DIV CLASS=td style='padding:0px;'><I>{}</I>:</DIV><DIV CLASS=td style='white-space:normal; overflow:auto; width:100%'>".format(k)
    if 'href' in k:
-    print "<A CLASS=z-op DIV=div_os_frame URL=ajax.cgi?call=openstack_result&method=GET&os_href={0}>{0}</A>".format(v)
+    print "<A CLASS=z-op DIV=div_content URL=ajax.cgi?call=openstack_result&method=GET&os_href={0}>{0}</A>".format(v)
    else:
     data2html(v)
    print "</DIV></DIV>"
@@ -102,7 +102,7 @@ def api(aWeb):
 def fqname(aWeb):
  print "<DIV CLASS=z-frame ID=div_os_control>"
  print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT style='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb.get_value('os_uuid') if aWeb.get_value('os_uuid') else "")
- print "<A CLASS='z-btn z-small-btn z-op' DIV=div_os_frame URL=ajax.cgi?call=openstack_fqname FRM=frm_os_uuid TITLE='Go'><IMG SRC=images/btn-start.png></A><BR>"
+ print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content URL=ajax.cgi?call=openstack_fqname FRM=frm_os_uuid TITLE='Go'><IMG SRC=images/btn-start.png></A><BR>"
  if aWeb.get_value('os_uuid'):
   from json import dumps,loads
   cookie = aWeb.cookie
