@@ -31,7 +31,7 @@ def list(aWeb):
   else:
    print "<DIV CLASS=td>{0}</DIV>".format(key)
   print "<DIV CLASS=td>"+ entry['handler'] +"</DIV>"
-  print "<DIV CLASS=td TITLE='Include in graphing?'><A CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=graph_list&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A>&nbsp;</DIV>".format("start" if entry['update'] == "no" else "shutdown")
+  print "<DIV CLASS=td TITLE='Include in graphing?'><A CLASS='z-btn z-small-btn z-op' OP=load DIV=div_content_left URL='ajax.cgi?call=graph_list&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A>&nbsp;</DIV>".format("start" if entry['update'] == "no" else "shutdown")
   print "</DIV>"
  print "</DIV></DIV></DIV>"
 

@@ -37,7 +37,7 @@ def list_consoles(aWeb):
  db.connect()
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Consoles</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_content_left URL='ajax.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=console_device_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table style='width:99%;'>"
  res  = db.do("SELECT id, INET_NTOA(ip) as ip, name from consoles ORDER by name")

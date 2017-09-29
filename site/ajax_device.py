@@ -19,10 +19,10 @@ def view_devicelist(aWeb):
  sort   = aWeb.get_value('sort','ip')
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Devices</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navleft URL='ajax.cgi?{}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args())
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_content_left URL='ajax.cgi?{}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' OP=load DIV=div_navcont URL='ajax.cgi?call=device_new&{}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args())
  print "<DIV CLASS=z-table style='width:99%;'>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op OP=load DIV=div_navleft URL='ajax.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op OP=load DIV=div_content_left URL='ajax.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op OP=load DIV=div_content_left URL='ajax.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
 
  db     = GL.DB()
  db.connect()
