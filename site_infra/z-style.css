@@ -38,8 +38,8 @@ form{   display:inline; }
 
 /*###################################### Start page ########################################*/
 
-div.z-header-left {   height :75px; width :440px; padding-left: 5px; float: left; }
-div.z-header-right {  height :75px; position: absolute; left: 440px; right: 0px; }
+div.z-main-left {    height :75px; width :480px; padding-left: 5px; float: left; }
+div.z-main-right {   height :75px; position: absolute; left: 480px; right: 0px; }
 div.z-main-content { border-style: none; width : 100%; position: absolute; top: 75px; bottom : 0px; background-color:#9CA6B0; }
 
 /*##################################### Content model #####################################*/
@@ -54,7 +54,7 @@ div.z-content-head {      display:block; position:fixed;    top:0px;  height:94p
 div.z-content-head-info { display:block; position:fixed;    top:0px;  height:60px; width:100%;  z-index:1001; border-bottom: 1px solid black; }
 div.z-content {           display:block; position:absolute; top:34px; bottom:0px;  width:100%;  box-sizing: border-box; overflow: auto;}
 div.z-content-left {      display:block; position:fixed;    top:34px; bottom:0px;  width:400px; overflow-y:auto; overflow-x:hidden; }
-div.z-content-right {     display:block; position:absolute; top:34px; bottom:0px;  right:0px;   left:400px; overflow: auto; }
+div.z-content-right {     display:block; position:absolute; top:0px;  bottom:0px;  right:0px;   left:400px; overflow: auto; }
 
 /*######################################## DIVs ###########################################*/
 

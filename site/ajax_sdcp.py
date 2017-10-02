@@ -23,22 +23,20 @@ def list_bookings(aWeb):
   res = db.do("UPDATE bookings SET time_start = NOW() WHERE device_id = '{}'".format(id))
   db.commit()
 
- res  = db.do("SELECT device_id, time_start, ADDTIME(time_start, '30 0:0:0.0') as time_end, devices.hostname, users.name FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
+ res  = db.do("SELECT user_id, device_id, time_start, ADDTIME(time_start, '30 0:0:0.0') as time_end, devices.hostname, users.alias FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
  rows = db.get_all_rows()
  db.close()
- print "<DIV CLASS=z-content-left ID=div_left style='top:0px;'>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Bookings</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=sdcp_list_bookings'><IMG SRC='images/btn-reboot.png'></A>"
- print "<DIV CLASS=z-table style='width:99%'>"
- print "<DIV CLASS=thead><DIV CLASS=th>User</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Until</DIV><DIV CLASS=th>Op</DIV></DIV>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='ajax.cgi?call=sdcp_list_bookings'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<DIV CLASS=z-table style='width:99%;'>"
+ print "<DIV CLASS=thead><DIV CLASS=th>User (Id)</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Until</DIV><DIV CLASS=th>Op</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>".format(row['name'],row['hostname'],row['time_end'])
-  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content TITLE='Remove booking' URL='ajax.cgi?call=sdcp_list_bookings&op=unbook&id={0}'><IMG SRC='images/btn-remove.png'></A>".format(row['device_id'])
-  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content TITLE='Extend booking' URL='ajax.cgi?call=sdcp_list_bookings&op=extend&id={0}'><IMG SRC='images/btn-add.png'></A>".format(row['device_id'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='ajax.cgi?call=sdcp_user_info&id={3}'>{0}</A> ({3})</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='ajax.cgi?call=device_device_info&id={3}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>".format(row['alias'],row['hostname'],row['time_end'],row['user_id'])
+  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content_left TITLE='Remove booking' URL='ajax.cgi?call=sdcp_list_bookings&op=unbook&id={0}'><IMG SRC='images/btn-remove.png'></A>".format(row['device_id'])
+  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content_left TITLE='Extend booking' URL='ajax.cgi?call=sdcp_list_bookings&op=extend&id={0}'><IMG SRC='images/btn-add.png'></A>".format(row['device_id'])
   print "&nbsp;</DIV></DIV>"
- print "</DIV></DIV></DIV></DIV>"
- print "<DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
+ print "</DIV></DIV></DIV>"
 
 #
 #
@@ -49,17 +47,15 @@ def list_users(aWeb):
  res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
  rows = db.get_all_rows()
  db.close()
- print "<DIV CLASS=z-content-left ID=div_content_left style='top:0px;'>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Users</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=sdcp_list_users'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='ajax.cgi?call=sdcp_list_users'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add User'    CLASS='z-btn z-small-btn z-op' DIV=div_content_right   URL='ajax.cgi?call=sdcp_user_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table style='width:99%'>"
- print "<DIV CLASS=thead><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='ajax.cgi?call=sdcp_user_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
- print "</DIV></DIV></DIV></DIV>"
- print "<DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='ajax.cgi?call=sdcp_user_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
+ print "</DIV></DIV></DIV>"
 
 #
 #

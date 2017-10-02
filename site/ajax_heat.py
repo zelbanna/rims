@@ -51,7 +51,7 @@ def list(aWeb):
   print "&nbsp;</DIV></DIV>"
  print "</DIV>"
  print "</DIV></DIV></DIV>"
- print "<DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
 
 ######################### HEAT ADD ######################
 #

@@ -473,10 +473,11 @@ def devices(aWeb):
  print "<A CLASS='z-right z-op' DIV=div_content_left URL='ajax.cgi?call=rack_list_racks'>Racks</A>"
  print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
+ print "<DIV CLASS=z-content       ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right>" 
  print aWeb.get_include('README.devices.html')
- print "</DIV>"
+ print "</DIV></DIV>"
 
 ##################################################################################################
 #
@@ -508,8 +509,29 @@ def esxi(aWeb):
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  esxi_op(aWeb,data['ipasc'])
  print "</DIV>" 
- print "<DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
  print "</DIV>"
+
+##################################################################################################
+#
+# Settings/System pane
+#
+def users(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?view=login")
+  return
+
+ aWeb.put_html("Users")          
+
+ print "<DIV CLASS=z-navbar ID=div_navbar>"
+ print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_users'>Users</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_bookings'>Bookings</A>"
+ print "</DIV>"
+ print "<DIV CLASS=z-content ID=div_content>"
+ print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
+ print "</DIV>"
+
 
 ##################################################################################################
 #
@@ -534,8 +556,6 @@ def config(aWeb):
  print "<A STYLE='width:192px; text-align:left' CLASS='z-btn' TARGET=_blank HREF='ajax.cgi?call=device_dump_db'>Dump DB to JSON</A>"
  print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=device_rack_info'>Device Rackinfo</A>"
  print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=device_mac_sync'>Sync MAC Info</A>"
- print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_content          URL='ajax.cgi?call=sdcp_list_users'>Users</A>"
- print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_content          URL='ajax.cgi?call=sdcp_list_bookings'>Bookings</A>"
  print "</DIV>"
  print "<DIV ID=div_config style='min-width:600px; min-height:300px; display:inline;'></DIV>"
  print "</DIV>"

@@ -56,7 +56,7 @@ def list(aWeb):
    print tmpl.format('VM info','info',"<IMG SRC='images/btn-info.png'>")
   print "</DIV></DIV>"
  print "</DIV>"
- print "</DIV></DIV></DIV><DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
+ print "</DIV></DIV></DIV><DIV CLASS=z-content-right ID=div_content_right></DIV>"
 
 
 def select_parameters(aWeb):
