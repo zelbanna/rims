@@ -45,7 +45,7 @@ div.z-main-content { border-style: none; width : 100%; position: absolute; top: 
 /*##################################### Content model #####################################*/
 
 div.z-navbar { display:table; height: 34px; float: left; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99; cursor:pointer; position:fixed; top:0px; width:100%; z-index:1000; }
-div.z-navbar a { color:#FFFFFF; display:table-cell; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; width:auto; outline:none; float:left; }
+div.z-navbar a { color:#FFFFFF; display:table-cell; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; outline:none; float:left; }
 div.z-navbar a.z-right {  float:right; }
 div.z-navbar a.z-reload { background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
 div.z-navbar a:hover{ color:#000000 ;background-color:#D5D9DD; }
@@ -58,7 +58,7 @@ div.z-content-right {     display:block; position:absolute; top:0px;  bottom:0px
 
 /*######################################## DIVs ###########################################*/
 
-div.z-frame {	width:auto; border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; }
+div.z-frame {	border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; }
 div.z-frame:hover { box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }
 div.z-frame .title { font-weight: bold; text-align:center; }
 
