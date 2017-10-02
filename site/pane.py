@@ -489,23 +489,27 @@ def esxi(aWeb):
 
  aWeb.put_html("ESXi Operations")
  from ajax_esxi import op as esxi_op
+ from sdcp.core.GenLib import DB
  from sdcp.devices.ESXi import ESXi
- hostname = aWeb.get_value('hostname')
- domain = aWeb.get_value('domain')
- esxi   = ESXi(host,domain)
+ id = aWeb.get_value('id')
+ db = DB()
+ db.connect()
+ db.do("SELECT hostname, INET_NTOA(ip) as ipasc, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = '{}'".format(id))
+ data = db.get_row() 
+  
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.get_args())
- print "<A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=esxi_graph&{}>Stats</A>".format(aWeb.get_args())
- print "<A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=esxi_logs&{}>Logs</A>".format(aWeb.get_args())
- print "<A CLASS=z-op HREF=https://{0}/ui        target=_blank>UI</A>".format(esxi._ip)
- print "<A CLASS=z-op HREF=http://{0}/index.html target=_blank>IPMI</A>".format(esxi.get_kvm_ip('ipmi'))
+ print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&id={}'>Shutdown</A>".format(id)
+ print "<A CLASS=z-op DIV=div_content_right  URL=ajax.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A>".format(data['hostname'],data['domain'])
+ print "<A CLASS=z-op DIV=div_content_right  URL=ajax.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A>".format(data['hostname'],data['domain'])
+ print "<A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A>".format(data['ipasc'])
  print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left ID=div_content_left>"
- esxi_op(aWeb)
+ esxi_op(aWeb,data['ipasc'])
  print "</DIV>" 
  print "<DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
+ print "</DIV>"
 
 ##################################################################################################
 #

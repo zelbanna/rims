@@ -12,8 +12,8 @@ __status__= "Production"
 #
 def graph(aWeb):
  from sdcp.tools.Grapher import Grapher
- hostname   = aWeb.get_value('hostname')
- domain = aWeb.get_value('domain')
+ hostname = aWeb.get_value('hostname')
+ domain   = aWeb.get_value('domain')
  graph  = Grapher()
  print "<DIV CLASS=z-frame style='overflow-x:auto;'>"
  graph.widget_cols([ "{1}/{0}.{1}/esxi_vm_info".format(hostname,domain), "{1}/{0}.{1}/esxi_cpu_info".format(hostname,domain), "{1}/{0}.{1}/esxi_mem_info".format(hostname,domain) ])
@@ -22,12 +22,12 @@ def graph(aWeb):
 # Logs
 #
 def logs(aWeb):
- hostname   = aWeb.get_value('hostname')
- domain = aWeb.get_value('domain')
+ hostname = aWeb.get_value('hostname')
  try:
   from subprocess import check_output
-  logs = check_output("tail -n 30 /var/log/network/"+ hostname +".operations.log | tac", shell=True)
-  print "<DIV CLASS='z-logs'><H1>{} operation logs</H1>{}</DIV>".format("{}.{}".format(hostname,domain),logs.replace('\n','<BR>'))
+  import sdcp.PackageContainer as PC
+  logs = check_output("tail -n 30 " + PC.esxi_logformat.format(hostname) + " | tac", shell=True)
+  print "<DIV CLASS='z-logs'><H1>{} operation logs</H1>{}</DIV>".format("{}".format(hostname),logs.replace('\n','<BR>'))
  except:
   pass
 
@@ -35,21 +35,19 @@ def logs(aWeb):
 #
 # ESXi operations
 #
-def op(aWeb, aEsxi = None):
+def op(aWeb,aIP = None):
  from sdcp.devices.ESXi import ESXi
- hostname   = aWeb.get_value('hostname')
- domain = aWeb.get_value('domain')
+ ip     = aWeb.get_value('ip',aIP)
  excpt  = aWeb.get_value('except','-1')
  nstate = aWeb.get_value('nstate')
  vmid   = aWeb.get_value('vmid','-1')
  sort   = aWeb.get_value('sort','name')
- aEsxi  = ESXi(hostname,domain)
+ aEsxi  = ESXi(ip)
 
  if nstate:
   from subprocess import check_call, check_output
   import sdcp.PackageContainer as PC
   try:
-   PC.log_msg("ESXi: {} got command {}".format(aEsxi._fqdn,nstate))
    if nstate == 'vmsvc-snapshot.create':
     from time import strftime
     with aEsxi:
@@ -73,21 +71,19 @@ def op(aWeb, aEsxi = None):
      aEsxi.ssh_send("poweroff")
    elif nstate == 'vmsoff':
     excpt = "" if vmid == '-1' else vmid
-    check_call("/usr/local/sbin/ups-operations shutdown " + aEsxi._hostname + " " + excpt + " &", shell=True)
+    check_call("/usr/local/sbin/ups-operations shutdown " + ip + " " + excpt + " &", shell=True)
   except Exception as err:
    PC.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  statelist = aEsxi.get_vms(sort)
  # Formatting template (command, btn-xyz, vm-id, hover text)
- template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true DIV=div_content_left URL='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&hostname="+ aEsxi._hostname + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
+ template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip=" + ip + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
  print "<DIV CLASS=z-frame>"
- if not nstate:
-  print "<DIV CLASS=title>{}</DIV>".format(aEsxi._fqdn)
- else:
-  print "<DIV CLASS=title>{} <SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(aEsxi._fqdn,vmid, nstate.split('-')[1])
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='ajax.cgi?call=esxi_op&hostname={0}&domain={1}'><IMG SRC='images/btn-reboot.png'></A>".format(hostname,domain)
- print "<DIV CLASS=z-table>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=esxi_op&domain=" +  aEsxi._domain + "&hostname="+ aEsxi._hostname + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
+ if nstate:
+  print "<DIV CLASS=title>&nbsp;<SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(vmid, nstate.split('-')[1])
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip={0}'><IMG SRC='images/btn-reboot.png'></A>".format(ip)
+ print "<DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>"
  if nstate and nstate == 'vmsoff':
@@ -113,5 +109,3 @@ def op(aWeb, aEsxi = None):
    print template.format('vmsvc-snapshot.revert','revert', vm[0], "Snapshot revert to last")
   print "</DIV></DIV>"
  print "</DIV></DIV></DIV>"
-
-
