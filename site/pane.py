@@ -449,7 +449,7 @@ def rack_info(aWeb):
  name = aWeb.get_value('name')
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  if rack and name:
-  print "<A CLASS='z-op' DIV=div_navcont URL='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(rack,name)
+  print "<A CLASS='z-op' DIV=div_content_right URL='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(rack,name)
  print "<A CLASS='z-op'  DIV=div_content_left URL='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
  if con:
   print "<A CLASS='z-op' DIV=div_content_left URL='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)
@@ -462,40 +462,10 @@ def rack_info(aWeb):
  print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
- print "<DIV CLASS=z-content-right ID=div_navcont>"
+ print "<DIV CLASS=z-content-right ID=div_content_right>"
  if rack and name:
   ajax_info(aWeb)
  print "</DIV>"
-
-##################################################################################################
-#
-# ESXi
-#
-def esxi(aWeb):
- if not aWeb.cookie.get('sdcp_id'):
-  aWeb.put_redirect("pane.cgi?view=login")
-  return
-
- aWeb.put_html_header("ESXi Operations")
- aWeb.put_listeners()
- from ajax_esxi import op as esxi_op
- from sdcp.devices.ESXi import ESXi
- host   = aWeb.get_value('host')
- domain = aWeb.get_value('domain')
- esxi   = ESXi(host,domain)
- print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.get_args())
- print "<A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=esxi_graph&{}>Stats</A>".format(aWeb.get_args())
- print "<A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=esxi_logs&{}>Logs</A>".format(aWeb.get_args())
- print "<A CLASS=z-op HREF=https://{0}/ui        target=_blank>UI</A>".format(esxi._ip)
- print "<A CLASS=z-op HREF=http://{0}/index.html target=_blank>IPMI</A>".format(esxi.get_kvm_ip('ipmi'))
- print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
- print "</DIV>"
- print "<DIV CLASS=z-content ID=div_content>"
- print "<DIV CLASS=z-content-left ID=div_content_left>"
- esxi_op(aWeb)
- print "</DIV>" 
- print "<DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
 
 ##################################################################################################
 #
@@ -538,13 +508,43 @@ def devices(aWeb):
  if argdict.get('pdu',None):
   print "<A CLASS='z-op' DIV=div_content_left SPIN=true URL='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
  print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
- print "<A CLASS='z-right z-op' DIV=div_navcont MSG='Discover devices?' URL='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
+ print "<A CLASS='z-right z-op' DIV=div_content_right MSG='Discover devices?' URL='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
  print "</DIV>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
- print "<DIV CLASS=z-content-right ID=div_navcont>" 
+ print "<DIV CLASS=z-content-right ID=div_content_right>" 
  print aWeb.get_include('README.devices.html')
  print "</DIV>"
  db.close() 
+
+##################################################################################################
+#
+# ESXi
+#
+def esxi(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  aWeb.put_redirect("pane.cgi?view=login")
+  return
+
+ aWeb.put_html_header("ESXi Operations")
+ aWeb.put_listeners()
+ from ajax_esxi import op as esxi_op
+ from sdcp.devices.ESXi import ESXi
+ host   = aWeb.get_value('host')
+ domain = aWeb.get_value('domain')
+ esxi   = ESXi(host,domain)
+ print "<DIV CLASS=z-navbar ID=div_navbar>"
+ print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.get_args())
+ print "<A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=esxi_graph&{}>Stats</A>".format(aWeb.get_args())
+ print "<A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=esxi_logs&{}>Logs</A>".format(aWeb.get_args())
+ print "<A CLASS=z-op HREF=https://{0}/ui        target=_blank>UI</A>".format(esxi._ip)
+ print "<A CLASS=z-op HREF=http://{0}/index.html target=_blank>IPMI</A>".format(esxi.get_kvm_ip('ipmi'))
+ print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
+ print "</DIV>"
+ print "<DIV CLASS=z-content ID=div_content>"
+ print "<DIV CLASS=z-content-left ID=div_content_left>"
+ esxi_op(aWeb)
+ print "</DIV>" 
+ print "<DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
 
 ##################################################################################################
 #
