@@ -44,18 +44,16 @@ class Web(object):
   print "Location: {}\r".format(aLocation)
   self._put_headers()
 
- # Put a proper browser header + HTML header for the browser
- def put_html_header(self, aTitle = None):
+ # Put full header and listener
+ def put_html(self, aTitle = None):
   self._put_headers()
   print "<HEAD><META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>"
   if aTitle:
    print "<TITLE>{}</TITLE>".format(aTitle)
-  print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT></HEAD>"
+  print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>"
+  print "<SCRIPT>$(function() { $(document.body).on('click','.z-op',btnoperation ); });</SCRIPT></HEAD>"
   from sys import stdout
   stdout.flush()
-
- def put_listeners(self):
-  print "<SCRIPT>$(function() { $(document.body).on('click','.z-op',btnoperation ); });</SCRIPT>"
 
  ################################# AJAX #########################################
  #

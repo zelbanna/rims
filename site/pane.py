@@ -27,7 +27,7 @@ def login(aWeb):
  if id != "None":
   import sdcp.PackageContainer as PC
   PC.log_msg("Entering as [{}-{}]".format(id,user))
-  aWeb.put_html_header("SDCP Portal")
+  aWeb.put_html("SDCP Portal")
   print "<CENTER><H1>Welcome {} - please choose section to continue</H1></CENTER>".format(user)
   return
  
@@ -37,8 +37,7 @@ def login(aWeb):
  db.do("SELECT id,name FROM users ORDER BY name")
  db.close()
  rows = db.get_all_rows()
- aWeb.put_html_header("SDCP Portal")
- aWeb.put_listeners()
+ aWeb.put_html("SDCP Portal")
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV ID=div_sdcp_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
@@ -103,8 +102,7 @@ def openstack_login(aWeb):
  ret = openstack.call("5000","v3/projects")
  projects = [] if not ret['code'] == 200 else ret['data']['projects']
 
- aWeb.put_html_header("{} 2 Cloud".format(name.capitalize()))
- aWeb.put_listeners()
+ aWeb.put_html("{} 2 Cloud".format(name.capitalize()))
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV ID=div_os_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
@@ -137,7 +135,7 @@ def openstack_portal(aWeb):
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':pname, 'username':username,'password':password })
   if not res['result'] == "OK":
-   aWeb.put_html_header()
+   aWeb.put_html("Openstack Portal")
    PC.log_msg("openstack_portal - error during login for {}@{}".format(username,ctrl))
    print "Error logging in - please try login again"
    return
@@ -162,8 +160,7 @@ def openstack_portal(aWeb):
   PC.log_msg("openstack_portal - using existing token for {}@{}".format(username,ctrl))
   openstack = OpenstackRPC(ctrl,utok)
 
- aWeb.put_html_header()
- aWeb.put_listeners()
+ aWeb.put_html("Openstack Portal")
  print "<DIV CLASS=z-content-head ID=div_content_head>"
  print "<DIV CLASS=z-content-head-info ID=div_content_head_info>"
  print "<DIV CLASS=z-table style='display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
@@ -202,7 +199,7 @@ def openstack_console(aWeb):
    url = "http://" + aWeb.cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
    aWeb.put_redirect("{}&title={}".format(url,name))
  else:
-  aWeb.put_html_header('Openstack Console')
+  aWeb.put_html('Openstack Console')
   print "Not logged in "
   
 ##################################################################################################
@@ -214,8 +211,7 @@ def examine(aWeb):
   aWeb.put_redirect("pane.cgi?view=login")
   return
 
- aWeb.put_html_header('Services Pane')
- aWeb.put_listeners()
+ aWeb.put_html('Services Pane')
  import sdcp.PackageContainer as PC
  from sdcp.tools.Grapher import Grapher
 
@@ -307,8 +303,7 @@ def munin(aWeb):
   aWeb.put_redirect("pane.cgi?view=login")
   return
 
- aWeb.put_html_header('Munin')
- aWeb.put_listeners()
+ aWeb.put_html('Munin')
  print """
  <SCRIPT>
  function toggleMuninNavigation(){
@@ -347,8 +342,7 @@ def weathermap(aWeb):
  json = aWeb.get_value('json')
  
  if page == 'main':
-  aWeb.put_html_header('Weathermap')
-  aWeb.put_listeners()
+  aWeb.put_html('Weathermap')
   print "<DIV CLASS=z-navbar ID=div_navbar>"
  
   wmlist = []
@@ -377,7 +371,7 @@ def weathermap(aWeb):
   print "</DIV>"
  
  elif page:
-  aWeb.put_html_header("Weathermap")
+  aWeb.put_html("Weathermap")
   if json:
    from json import load
    from sdcp.tools.Grapher import Grapher
@@ -409,8 +403,7 @@ def rack(aWeb):
   aWeb.put_redirect("pane.cgi?view=login")
   return
 
- aWeb.put_html_header("Racks")
- aWeb.put_listeners()
+ aWeb.put_html("Racks")
 
  from sdcp.core.GenLib import DB
  db = DB()
@@ -435,13 +428,13 @@ def rack(aWeb):
  db.close()
  print "</CENTER></DIV>"
 
+
 def rack_info(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   aWeb.put_redirect("pane.cgi?view=login")
   return
 
- aWeb.put_html_header("Rack Info")
- aWeb.put_listeners()
+ aWeb.put_html("Rack Info")
  from sdcp.site.ajax_rack import info as ajax_info
  rack = aWeb.get_value('rack')
  con  = aWeb.get_value('console')
@@ -479,8 +472,7 @@ def devices(aWeb):
   aWeb.put_redirect("pane.cgi?view=login")
   return
 
- aWeb.put_html_header("Device View")
- aWeb.put_listeners()
+ aWeb.put_html("Device View")
 
  from sdcp.core.GenLib import DB
  op     = aWeb.get_value('op')
@@ -525,8 +517,7 @@ def esxi(aWeb):
   aWeb.put_redirect("pane.cgi?view=login")
   return
 
- aWeb.put_html_header("ESXi Operations")
- aWeb.put_listeners()
+ aWeb.put_html("ESXi Operations")
  from ajax_esxi import op as esxi_op
  from sdcp.devices.ESXi import ESXi
  host   = aWeb.get_value('host')
@@ -556,8 +547,7 @@ def config(aWeb):
   aWeb.put_redirect("pane.cgi?view=login")
   return
 
- aWeb.put_html_header("Config and Settings")
- aWeb.put_listeners()
+ aWeb.put_html("Config and Settings")
  domain    = aWeb.get_value('domain', None)
  print "<DIV CLASS=z-content style='top:0px;' ID=div_content>"
  print "<DIV CLASS=z-frame ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
