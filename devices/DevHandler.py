@@ -11,7 +11,7 @@ __status__  = "Production"
 # Returns current list of types
 #
 def device_types():
- return [ 'ex', 'mx', 'srx', 'qfx', 'wlc', 'linux', 'esxi', 'other', 'unknown', 'pdu', 'console']
+ return [ 'ex', 'mx', 'srx', 'qfx', 'wlc', 'linux', 'esxi', 'other', 'unknown', 'pdu', 'console','vcenter']
 
 #
 # Returns an instantiation of X type

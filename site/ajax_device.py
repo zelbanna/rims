@@ -118,7 +118,7 @@ def device_info(aWeb):
  ########################## Data Tables ######################
  
  print "<DIV ID=div_devinfo CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
- print "<!-- {} -->".format(device_data)
+ # print "<!-- {} -->".format(device_data)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(1 if device_data['rack_id'] else 0)

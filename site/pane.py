@@ -490,7 +490,7 @@ def esxi(aWeb):
  aWeb.put_html("ESXi Operations")
  from ajax_esxi import op as esxi_op
  from sdcp.devices.ESXi import ESXi
- host   = aWeb.get_value('host')
+ hostname = aWeb.get_value('hostname')
  domain = aWeb.get_value('domain')
  esxi   = ESXi(host,domain)
  print "<DIV CLASS=z-navbar ID=div_navbar>"
