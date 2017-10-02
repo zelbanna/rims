@@ -121,7 +121,7 @@ class Junos(GenDevice):
   from sdcp.tools.Grapher import Grapher
   graph = Grapher()
   graph.load_conf()
-  gdev = graph.get_entry(self._fqdn)
+  gdev = graph.get_entry(self._hostname + "." + self._domain)
   if gdev and gdev['update'] == 'yes':
    print "<DIV ID=graph_config></DIV>"
   print "<DIV CLASS='z-table' style='overflow-y:auto;'>"

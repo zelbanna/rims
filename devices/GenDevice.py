@@ -21,7 +21,6 @@ class GenDevice(object):
  # - _ip
  # - _hostname
  # - _domain
- # - _fqdn
  # - _logfile
  
  # Two options:
@@ -38,40 +37,38 @@ class GenDevice(object):
   if is_ip(ahost):
    self._ip = ahost
    try:
-    self._fqdn = getfqdn(ahost)
-    self._hostname = self._fqdn.partition('.')[0]
-    self._domain   = self._fqdn.partition('.')[2]
+    fqdn = getfqdn(ahost).partition('.')
+    self._hostname = fqdn[0]
+    self._domain   = fqdn[2]
    except:
-    self._fqdn = ahost
     self._hostname = ahost
     self._domain = adomain
   else:
    # ahost is a aname, if domain is not supplied, can it be part of host? 
    if adomain:
-    self._fqdn = ahost + "." + adomain
     self._hostname = ahost
     self._domain = adomain
     try:
-     self._ip = gethostbyname(self._fqdn)
+     self._ip = gethostbyname(ahost + "." + adomain)
     except:
      try:
       self._ip = gethostbyname(ahost)
      except:
       self._ip = ahost
    else:
-    self._fqdn = ahost
-    self._hostname = self._fqdn.partition('.')[0]
-    self._domain   = self._fqdn.partition('.')[2]
+    fqdn = ahost.partition('.')
+    self._hostname = fqdn[0]
+    self._domain   = fqdn[2]
     try:
      self._ip = gethostbyname(ahost)
     except:
      self._ip = ahost
   if self._domain == "":
    self._domain = None
-  self._logfile = PC.generic_logformat.format(self._fqdn)
+  self._logfile = PC.generic_logformat.format(self._hostname)
 
  def __str__(self):
-  return "FQDN: {} IP: {} Hostname: {} Domain: {} Type:{}".format(self._fqdn, self._ip, self._hostname, self._domain, self._type)
+  return "IP: {} Hostname: {} Domain: {} Type:{}".format(self._ip, self._hostname, self._domain, self._type)
  
  def ping_device(self):
   from os import system
@@ -90,4 +87,3 @@ class GenDevice(object):
 
  def print_conf(self,argdict):
   print "No config for device"
-
