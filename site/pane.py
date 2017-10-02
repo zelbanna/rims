@@ -410,7 +410,7 @@ def rack(aWeb):
  db.do("SELECT id,name,image_url from racks")
  db.close()
  racks = db.get_all_rows()
- print "<CENTER><H1>Rack Overview | <A HREF=pane.cgi?view=devices&target=vm&arg=1>Virtual Machines</A> <A TITLE='Non-racked devices' HREF=pane.cgi?view=rack_info&rack=NULL>*</A></H1><BR>"
+ print "<CENTER><H1>Rack Overview | <A HREF=pane.cgi?view=devices&target=vm&arg=1>Virtual Machines</A></H1><BR>"
  rackstr = "<A TARGET=main_cont TITLE='{1}' HREF=pane.cgi?view=devices&target=rack_id&arg={0}><IMG ALT='{1} ({2})' SRC='images/{2}'></A>&nbsp;"
  for index, rack in enumerate(racks):
   print rackstr.format(rack['id'], rack['name'], rack['image_url'])
@@ -455,7 +455,7 @@ def devices(aWeb):
    for row in rows:
     pdus = pdus + "&pdulist=" + row.get('ip')
    print "<A CLASS='z-op' DIV=div_content_left SPIN=true URL='ajax.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
-  print "<A CLASS='z-op' DIV=div_content_right URL='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(arg,data['name'])
+  print "<A CLASS='z-op' DIV=div_content_right URL='ajax.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
  else: 
   for type in ['pdu','console']:
    db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))

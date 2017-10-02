@@ -19,21 +19,21 @@ def list_racks(aWeb):
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Rack</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_content_left URL='ajax.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_content_right URL='ajax.cgi?call=rack_unit_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' OP=load DIV=div_content_right URL='ajax.cgi?call=rack_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  res  = db.do("SELECT * from racks ORDER by name")
  data = db.get_all_rows()
  for unit in data:
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' OP=load DIV=div_content_right URL='ajax.cgi?call=rack_unit_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['size'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' OP=load DIV=div_content_right URL='ajax.cgi?call=rack_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['size'])
  print "</DIV></DIV></DIV>"
  db.close()
 
 #
 # Basic rack info - right now only a display of a typical rack.. Change to table?
 #
-def info(aWeb):
+def inventory(aWeb):
  rack = aWeb.get_value('rack', 0)
  db = GL.DB()
  db.connect()
@@ -61,7 +61,7 @@ def info(aWeb):
      if rackunits.get(s_index):
       print "<!-- {} -->".format(rackunits[s_index].get('user_id'))
       rowspan = rackunits[s_index].get('rack_size')
-      print "<TD CLASS=data rowspan={2} style='background-color:{3}'><CENTER><A CLASS='z-op' TITLE='Show device info for {0}' OP=load DIV='div_content_right' URL='ajax.cgi?call=device_device_info&id={1}'>{0}</A></CENTER></TD>".format(rackunits[s_index]['hostname'],rackunits[s_index]['id'],rowspan,"#00cc66" if not rackunits[s_index].get('user_id') else "#df3620")
+      print "<TD CLASS=data rowspan={2} style='background-color:{3}'><CENTER><A CLASS='z-op' TITLE='Show device info for {0}' OP=load DIV='div_content_right' URL='ajax.cgi?call=device_info&id={1}'>{0}</A></CENTER></TD>".format(rackunits[s_index]['hostname'],rackunits[s_index]['id'],rowspan,"#00cc66" if not rackunits[s_index].get('user_id') else "#df3620")
       rowspan = rowspan - 1
      else:
       print "<TD CLASS=data style='line-height:14px;'>&nbsp;</TD>"
@@ -71,7 +71,7 @@ def info(aWeb):
 #
 #
 #
-def unit_info(aWeb):
+def info(aWeb):
  import sdcp.PackageContainer as PC
  from os import listdir, path
  id = aWeb.get_value('id')
@@ -83,7 +83,7 @@ def unit_info(aWeb):
   db.do("SELECT * from racks WHERE id = {}".format(id))
   rack = db.get_row()
  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
- print "<FORM ID=rack_unit_info_form>"
+ print "<FORM ID=rack_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=title>Rack Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<DIV CLASS=z-table style='width:100%'><DIV CLASS=tbody>"
@@ -109,8 +109,8 @@ def unit_info(aWeb):
  db.close()
  print "</DIV></DIV>"
  print "</FORM>"
- print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=rack_unit_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=rack_update FRM=rack_unit_info_form OP=load><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=rack_info&id={0} OP=load><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=rack_update FRM=rack_info_form OP=load><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
   print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=rack_remove&id={0} OP=load><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"

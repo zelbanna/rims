@@ -41,7 +41,7 @@ def view_devicelist(aWeb):
  
  print "<DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='Show device info for {0}' DIV=div_content_right URL='ajax.cgi?call=device_device_info&id={3}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='Show device info for {0}' DIV=div_content_right URL='ajax.cgi?call=device_info&id={3}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</DIV></DIV></DIV>"
 
 
@@ -50,7 +50,7 @@ def view_devicelist(aWeb):
 #
 #
 
-def device_info(aWeb):
+def info(aWeb):
  from sdcp.devices.DevHandler import device_types, device_get_widgets
  id    = aWeb.get_value('id')
  op    = aWeb.get_value('op',"")
@@ -207,22 +207,22 @@ def device_info(aWeb):
  print "</FORM>"
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=device_device_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=device_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=device_remove&id={} MSG='Are you sure you want to delete device?' TITLE='Remove device'><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=device_device_info&op=lookup    FRM=info_form TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=device_device_info&op=update    FRM=info_form TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=device_info&op=lookup    FRM=info_form TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=device_info&op=update    FRM=info_form TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
  if device_data['bookings.user_id']:
   if int(aWeb.cookie.get('sdcp_id')) == device_data['bookings.user_id']:
-   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=device_device_info&op=unbook&id={} MSG='Are you sure you want to drop booking?' TITLE='Unbook'><IMG SRC='images/btn-remove.png'></A>".format(id)
+   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=device_info&op=unbook&id={} MSG='Are you sure you want to drop booking?' TITLE='Unbook'><IMG SRC='images/btn-remove.png'></A>".format(id)
  else:
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=device_device_info&op=book&id={} TITLE='Book device'><IMG SRC='images/btn-add.png'></A>".format(id)
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=device_info&op=book&id={} TITLE='Book device'><IMG SRC='images/btn-add.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_device_data URL=ajax.cgi?call=device_conf_gen                 FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
  import sdcp.PackageContainer as PC
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf_username,ip)
  if device_data['rack_id'] and (conip and not conip == '127.0.0.1' and ri['console_port'] and ri['console_port'] > 0):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+ri['console_port'])
  if (device_data['type'] == 'pdu' or device_data['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip'])) == 0:
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL='ajax.cgi?call={0}_device_info&id=new&ip={1}&name={2}' style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL='ajax.cgi?call={0}_info&id=new&ip={1}&name={2}' style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
  print "<SPAN ID=upd_results style='text-overflow:ellipsis; overflow:hidden; float:right; font-size:9px;'>{}</SPAN>".format(str(opres) if len(opres) > 0 else "")
  print "</DIV>"
  db.close()
