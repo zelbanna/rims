@@ -40,11 +40,11 @@ class ESXi(GenDevice):
  def __init__(self,aHost,aDomain=None):
   GenDevice.__init__(self,aHost,aDomain,'esxi')
   # Override log file
-  self._logfile = PC.esxi_logformat.format(self._hostname)
+  self._logfile = PC.esxi['logformat'].format(self._hostname)
   self._kvmip  = None
   self._sshclient = None
   self.backuplist = []
-  self.statefile = PC.esxi_shutdownfile.format(self._hostname) 
+  self.statefile = PC.esxi['shutdownfile'].format(self._hostname) 
   self._threads = {}
  
  def __enter__(self):
@@ -102,7 +102,7 @@ class ESXi(GenDevice):
    try:
     self._sshclient = SSHClient()
     self._sshclient.set_missing_host_key_policy(AutoAddPolicy())
-    self._sshclient.connect(self._ip, username=PC.esxi_username, password=PC.esxi_password )
+    self._sshclient.connect(self._ip, username=PC.esxi['username'], password=PC.esxi['password'] )
    except AuthenticationException:
     self.log_msg("DEBUG: Authentication failed when connecting to %s" % self._ip)
     self._sshclient = None
@@ -135,7 +135,7 @@ class ESXi(GenDevice):
  def get_id_vm(self, aname):
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    for result in vmnameobjs:
     if result.val == aname:
@@ -147,7 +147,7 @@ class ESXi(GenDevice):
  def get_state_vm(self, aid):
   try:
    vmstateobj = VarList(Varbind(".1.3.6.1.4.1.6876.2.1.1.6." + str(aid)))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(vmstateobj)
    return vmstateobj[0].val
   except:
@@ -163,7 +163,7 @@ class ESXi(GenDevice):
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
    vmstateobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.6'))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for index,result in enumerate(vmnameobjs):

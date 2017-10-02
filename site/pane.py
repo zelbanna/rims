@@ -7,6 +7,13 @@ __author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__= "Production"
 
+
+#################################################################################################################
+#
+# Front view, reading settings JSON/web
+#
+
+
 #################################################################################################################
 #
 # SDCP "login"
@@ -92,7 +99,7 @@ def openstack_login(aWeb):
 
  if not mtok:
   openstack = OpenstackRPC(ctrl,None)
-  res = openstack.auth({'project':PC.openstack_project, 'username':PC.openstack_username,'password':PC.openstack_password })
+  res = openstack.auth({'project':PC.openstack['project'], 'username':PC.openstack['username'],'password':PC.openstack['password']})
   aWeb.add_cookie("os_main_token",openstack.get_token())
   PC.log_msg("openstack_login - login result: {}".format(str(res['result'])))
  else:
@@ -217,10 +224,10 @@ def examine(aWeb):
 
  domain  = aWeb.get_value('domain')
  upshost = aWeb.get_value('upshost')
- svchost = PC.sdcp_svcsrv
+ svchost = PC.sdcp['svcsrv']
  graph = Grapher()  
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-op' DIV=div_sys MSG='Clear Network Logs?' URL='rest.cgi?call=sdcp.site:sdcp_clear_logs&logs={},{}'>Clear Logs</A>".format(PC.generic_logformat,PC.sdcp_netlogs)
+ print "<A CLASS='z-warning z-op' DIV=div_sys MSG='Clear Network Logs?' URL='rest.cgi?call=sdcp.site:sdcp_clear_logs&logs={},{}'>Clear Logs</A>".format(PC.generic['logformat'],PC.sdcp['netlogs'])
  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_sys URL='.z-system'>Logs</A>"
  if upshost:
   print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_ups URL='.z-system'>UPS</A>"
@@ -235,7 +242,7 @@ def examine(aWeb):
  
  print "<DIV CLASS=z-system id=div_sys title='System Logs' style='display:block;'>"
  from sdcp.site.rest_sdcp import examine_logs
- logs = examine_logs({'count':10,'logs':"{},{}".format(PC.generic_logformat,PC.sdcp_netlogs)})
+ logs = examine_logs({'count':10,'logs':"{},{}".format(PC.generic['logformat'],PC.sdcp['netlogs'])})
  for file,res in logs.iteritems():
   print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
   for line in res:
@@ -284,7 +291,7 @@ def examine(aWeb):
   print "</DIV>"
  
   print "<DIV CLASS=z-system id=div_svc title='System Logs' style='display:none; width:100%;'>"
-  logs = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:sdcp_examine_logs",{'count':20,'logs':PC.generic_logformat})
+  logs = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:sdcp_examine_logs",{'count':20,'logs':PC.generic['logformat']})
   for file,res in logs.iteritems():
    print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
    for line in res:

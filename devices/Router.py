@@ -35,7 +35,7 @@ class Junos(GenDevice):
   GenDevice.__init__(self,ahost,adomain,atype)
   from jnpr.junos import Device
   from jnpr.junos.utils.config import Config
-  self._router = Device(self._ip, user=PC.netconf_username, password=PC.netconf_password, normalize=True)
+  self._router = Device(self._ip, user=PC.netconf['username'], password=PC.netconf['password'], normalize=True)
   self._config = Config(self._router)
   self._model = ""
   self._version = ""
@@ -147,7 +147,7 @@ class Junos(GenDevice):
  def quick_load(self):
   try:
    devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(devobjs)
    datalist = devobjs[0].val.split()
    self._model = datalist[3]
@@ -166,15 +166,15 @@ class Junos(GenDevice):
  def print_conf(self,argdict):
   import sdcp.PackageContainer as PC
   print "set system host-name {}<BR>".format(argdict['name'])
-  if PC.netconf_username == 'root':
-   print "set system root-authentication encrypted-password \"{}\"<BR>".format(PC.netconf_encrypted)
+  if PC.netconf['username'] == 'root':
+   print "set system root-authentication encrypted-password \"{}\"<BR>".format(PC.netconf['encrypted'])
   else:
-   print "set system login user {0} class super-user<BR>".format(PC.netconf_username)
-   print "set system login user {0} authentication encrypted-password \"{1}\"<BR>".format(PC.netconf_username,PC.netconf_encrypted)
+   print "set system login user {0} class super-user<BR>".format(PC.netconf['username'])
+   print "set system login user {0} authentication encrypted-password \"{1}\"<BR>".format(PC.netconf['username'],PC.netconf['encrypted'])
   base  = "set groups default_system "
   print base + "system domain-name {}<BR>".format(argdict['domain'])
   print base + "system domain-search {}<BR>".format(argdict['domain'])
-  print base + "system name-server {}<BR>".format(PC.sdcp_dnssrv)
+  print base + "system name-server {}<BR>".format(PC.sdcp['dnssrv'])
   print base + "system services ssh root-login allow<BR>"
   print base + "system services netconf ssh<BR>"
   print base + "system syslog user * any emergency<BR>"
@@ -182,12 +182,12 @@ class Junos(GenDevice):
   print base + "system syslog file messages authorization info<BR>"
   print base + "system syslog file interactive-commands interactive-commands any<BR>"
   print base + "system archival configuration transfer-on-commit<BR>"
-  print base + "system archival configuration archive-sites ftp://{}/<BR>".format(PC.sdcp_anonftp)
+  print base + "system archival configuration archive-sites ftp://{}/<BR>".format(PC.sdcp['anonftp'])
   print base + "system commit persist-groups-inheritance<BR>"
-  print base + "system ntp server {}<BR>".format(PC.sdcp_ntpsrv)
+  print base + "system ntp server {}<BR>".format(PC.sdcp['ntpsrv'])
   print base + "routing-options static route 0.0.0.0/0 next-hop {}<BR>".format(argdict['gateway'])
   print base + "routing-options static route 0.0.0.0/0 no-readvertise<BR>"
-  print base + "snmp community {} clients {}/{}<BR>".format(PC.snmp_read_community,argdict['subnet'],argdict['mask'])
+  print base + "snmp community {} clients {}/{}<BR>".format(PC.snmp['read_community'],argdict['subnet'],argdict['mask'])
   print base + " protocols lldp port-id-subtype interface-name<BR>"
   print base + " protocols lldp interface all<BR>"
   print base + " class-of-service host-outbound-traffic forwarding-class network-control<BR>"
@@ -217,7 +217,7 @@ class WLC(GenDevice):
    cssidobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.15"))
    cipobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.4"))
     
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp_read_community, UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(cssidobjs)
    session.walk(cipobjs)
   except:

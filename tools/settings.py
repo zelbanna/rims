@@ -13,10 +13,8 @@ def convertSettings(aFile):
   with open(aFile) as f:
    config = load(f)
   with open("PackageContainer.py",'w') as f:
-   for name,cathegory in config.iteritems():
-    for key, entry in cathegory.iteritems():
-     f.write("{}_{} = '{}'\n".format(name,key,entry))
-    f.write("\n")
+   for name,category in config.iteritems():
+    f.write(name + "=" + repr(category) + "\n")
    f.write("def log_msg(amsg):\n")
    f.write(" from time import localtime, strftime\n")
    f.write(" with open(generic_logformat, 'a') as f:\n")

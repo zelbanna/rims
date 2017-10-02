@@ -18,10 +18,10 @@ def set_loopia_ip(subdomain, newip):
  import xmlrpclib
  try:
   client = xmlrpclib.ServerProxy(uri = loopia_domain_server_url, encoding = 'utf-8')
-  data = client.getZoneRecords(PC.loopia_username, PC.loopia_password, PC.loopia_domain, subdomain)[0]
+  data = client.getZoneRecords(PC.loopia['username'], PC.loopia['password'], PC.loopia['domain'], subdomain)[0]
   oldip = data['rdata']
   data['rdata'] = newip
-  status = client.updateZoneRecord(PC.loopia_username, PC.loopia_password, PC.loopia_domain, subdomain, data)[0]
+  status = client.updateZoneRecord(PC.loopia['username'], PC.loopia['password'], PC.loopia['domain'], subdomain, data)[0]
  except Exception as exmlrpc:
   PC.log_msg("System Error - Loopia set: " + str(exmlrpc))
   return False
@@ -34,14 +34,14 @@ def get_loopia_ip(subdomain):
  import xmlrpclib
  try:
   client = xmlrpclib.ServerProxy(uri = loopia_domain_server_url, encoding = 'utf-8')
-  data = client.getZoneRecords(PC.loopia_username, PC.loopia_password, PC.loopia_domain, subdomain)[0]
+  data = client.getZoneRecords(PC.loopia['username'], PC.loopia['password'], PC.loopia['domain'], subdomain)[0]
   return data['rdata']
  except Exception as exmlrpc:
   PC.log_msg("System Error - Loopia get: " + str(exmlrpc))
   return False
 
 def get_loopia_suffix():
- return "." + PC.loopia_domain
+ return "." + PC.loopia['domain']
 
 ################################# OpenDNS ######################################
 #

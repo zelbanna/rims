@@ -101,7 +101,7 @@ def info(aWeb):
   print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=image_url>"
  print "<OPTION VALUE=NULL>No picture</OPTION>"
- for image in listdir(path.join(PC.generic_docroot,"images")):
+ for image in listdir(path.join(PC.generic['docroot'],"images")):
   extra = " selected" if (rack.get("image_url") == image) or (not rack.get('image_url') and image == 'NULL') else ""
   if image[-3:] == "png" or image[-3:] == "jpg":
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(image,extra,image[:-4])

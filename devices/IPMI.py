@@ -23,7 +23,7 @@ class IPMI(object):
   self.hostname = ahost
   
  def print_info(self, agrep):
-  readout = check_output("ipmitool -H " + self.hostname + " -U " + PC.ipmi_username + " -P " + PC.ipmi_password + " sdr | grep -E '" + agrep + "'",shell=True)
+  readout = check_output("ipmitool -H " + self.hostname + " -U " + PC.ipmi['username'] + " -P " + PC.ipmi['password'] + " sdr | grep -E '" + agrep + "'",shell=True)
   for fanline in readout.split('\n'):
    if fanline is not "":
     fan = fanline.split()
@@ -35,6 +35,6 @@ class IPMI(object):
   FNULL = open(devnull, 'w')
   rear  = str2hex(arear)
   front = str2hex(afront)
-  ipmistring = "ipmitool -H " + self.hostname + " -U " + PC.ipmi_username + " -P " + PC.ipmi_password + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
+  ipmistring = "ipmitool -H " + self.hostname + " -U " + PC.ipmi['username'] + " -P " + PC.ipmi['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
   res = check_call(ipmistring,stdout=FNULL,stderr=FNULL,shell=True)
   print get_results(res)

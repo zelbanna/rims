@@ -37,12 +37,12 @@ def load_infra(aDict):
 #
 #
 def dhcp_leases(aDict):
- if PC.dhcp_proxy == 'True':
-  return REST.call(PC.dhcp_url, "sdcp.site:ddi_dhcp_leases", aDict)
+ if PC.dhcp['proxy'] == 'True':
+  return REST.call(PC.dhcp['url'], "sdcp.site:ddi_dhcp_leases", aDict)
  active = []
  free   = []
  lease  = {}
- with open(PC.dhcp_leasefile,'r') as leasefile: 
+ with open(PC.dhcp['leasefile'],'r') as leasefile: 
   for line in leasefile:
    if line == '\n':
     continue
@@ -72,18 +72,18 @@ def dhcp_update(aDict):
  #
  # Update function - reload the DHCP server to use new info
  # - entries is a list of dict objects containing hostname, mac, ip etc
- if PC.dhcp_proxy == 'True':
-  return REST.call(PC.dhcp_url, "sdcp.site:ddi_dhcp_update", aDict)
+ if PC.dhcp['proxy'] == 'True':
+  return REST.call(PC.dhcp['url'], "sdcp.site:ddi_dhcp_update", aDict)
 
  entries = aDict['entries']
  # Create new file
- with open(PC.dhcp_file,'w') as leasefile:
+ with open(PC.dhcp['file'],'w') as leasefile:
   for entry in entries:
    leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Subnet {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['subnet_id'],entry['id'])) 
 
  # Reload
  from subprocess import check_output, CalledProcessError
- commands = PC.dhcp_reload.split()
+ commands = PC.dhcp['reload'].split()
  result = {}
  try:
   status = check_output(commands)
@@ -100,10 +100,10 @@ def dhcp_update(aDict):
 # Call removes name duplicates.. (assume order by name => duplicate names :-))
 #
 def dns_cleanup(aDict):
- if PC.dnsdb_proxy == 'True':
-  return REST.call(PC.dnsdb_url, "sdcp.site:ddi_dns_cleanup", aDict) 
+ if PC.dnsdb['proxy'] == 'True':
+  return REST.call(PC.dnsdb['url'], "sdcp.site:ddi_dns_cleanup", aDict) 
  db = GL.DB()
- db.connect_details(PC.dnsdb_url,PC.dnsdb_username,PC.dnsdb_password,PC.dnsdb_dbname)
+ db.connect_details('localhost',PC.dnsdb['username'],PC.dnsdb['password'],PC.dnsdb['dbname'])
  db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
  rows = db.get_all_rows();
  remove = []
@@ -123,12 +123,12 @@ def dns_cleanup(aDict):
 # dns top lookups
 #
 def dns_top(aDict):
- if PC.dnsdb_proxy == 'True':
-  return REST.call(PC.dnsdb_url, "sdcp.site:ddi_dns_top", aDict)
+ if PC.dnsdb['proxy'] == 'True':
+  return REST.call(PC.dnsdb['url'], "sdcp.site:ddi_dns_top", aDict)
  count = int(aDict.get('count',10))
  fqdn_top = {}                
  fqdn_who = {}
- with open(PC.dnsdb_logfile,'r') as log:
+ with open(PC.dnsdb['logfile'],'r') as log:
   for line in log:
    parts = line.split()
    fqdn  = parts[8].split('|')[0][1:]
@@ -147,10 +147,10 @@ def dns_top(aDict):
 # Should be domains(target, arg) to simpler select domain 
 #
 def dns_domains(aDict):
- if PC.dnsdb_proxy == 'True':
-  return REST.call(PC.dnsdb_url, "sdcp.site:ddi_dns_domains", aDict)
+ if PC.dnsdb['proxy'] == 'True':
+  return REST.call(PC.dnsdb['url'], "sdcp.site:ddi_dns_domains", aDict)
  db = GL.DB()
- db.connect_details('localhost',PC.dnsdb_username, PC.dnsdb_password, PC.dnsdb_dbname)
+ db.connect_details('localhost',PC.dnsdb['username'], PC.dnsdb['password'], PC.dnsdb['dbname'])
  res = db.do("SELECT id, name FROM domains")
  db.close()
  return db.get_all_rows()
@@ -159,12 +159,12 @@ def dns_domains(aDict):
 # lookup ( name, a_dom_id, ip)
 #
 def dns_lookup(aDict):
- if PC.dnsdb_proxy == 'True':
-  return REST.call(PC.dnsdb_url, "sdcp.site:ddi_dns_lookup", aDict)
+ if PC.dnsdb['proxy'] == 'True':
+  return REST.call(PC.dnsdb['url'], "sdcp.site:ddi_dns_lookup", aDict)
  ptr  = GL.ip2arpa(aDict['ip'])
  PC.log_msg("DNS  lookup - input:{}".format(aDict.values()))  
  db = GL.DB()
- db.connect_details('localhost',PC.dnsdb_username, PC.dnsdb_password, PC.dnsdb_dbname)
+ db.connect_details('localhost',PC.dnsdb['username'], PC.dnsdb['password'], PC.dnsdb['dbname'])
  res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr))
  domains = db.get_all_rows()
  if res == 2:
@@ -191,15 +191,15 @@ def dns_lookup(aDict):
 # update( ip, name, a_dom_id , a_id, ptr_id )
 #
 def dns_update(aDict):
- if PC.dnsdb_proxy == 'True':
-  return REST.call(PC.dnsdb_url, "sdcp.site:ddi_dns_update", aDict)
+ if PC.dnsdb['proxy'] == 'True':
+  return REST.call(PC.dnsdb['url'], "sdcp.site:ddi_dns_update", aDict)
  PC.log_msg("DNS  update - input:{}".format(aDict.values()))
  from time import strftime
  serial  = strftime("%Y%m%d%H")
  ptr     = GL.ip2ptr(aDict['ip'])
  retvals = {}
  db = GL.DB()
- db.connect_details('localhost',PC.dnsdb_username, PC.dnsdb_password, PC.dnsdb_dbname)
+ db.connect_details('localhost',PC.dnsdb['username'], PC.dnsdb['password'], PC.dnsdb['dbname'])
  res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr.partition('.')[2]))
  domains = db.get_all_rows()
  if res == 2:
@@ -234,11 +234,11 @@ def dns_update(aDict):
  return retvals
 
 def dns_remove(aDict):
- if PC.dnsdb_proxy == 'True':
-  return REST.call(PC.dnsdb_url, "sdcp.site:ddi_dns_remove", aDict)
+ if PC.dnsdb['proxy'] == 'True':
+  return REST.call(PC.dnsdb['url'], "sdcp.site:ddi_dns_remove", aDict)
  PC.log_msg("DNS  remove - input:{}".format(aDict.values()))
  db = GL.DB()
- db.connect_details('localhost',PC.dnsdb_username, PC.dnsdb_password, PC.dnsdb_dbname)
+ db.connect_details('localhost',PC.dnsdb['username'], PC.dnsdb['password'], PC.dnsdb['dbname'])
  ares = 0
  pres = 0
  if aDict['a_id'] != '0':
@@ -255,10 +255,10 @@ def dns_remove(aDict):
 # Should be subnets(target, arg)
 #
 def ipam_subnets(aDict):
- if PC.ipamdb_proxy == 'True':
-  return REST.call(PC.ipamdb_url, "sdcp.site:ddi_ipam_subnets", aDict)
+ if PC.ipamdb['proxy'] == 'True':
+  return REST.call(PC.ipamdb['url'], "sdcp.site:ddi_ipam_subnets", aDict)
  db = GL.DB()
- db.connect_details('localhost',PC.ipamdb_username, PC.ipamdb_password, PC.ipamdb_dbname)
+ db.connect_details('localhost',PC.ipamdb['username'], PC.ipamdb['password'], PC.ipamdb['dbname'])
  res = db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
  db.close()
  return db.get_all_rows()
@@ -267,13 +267,13 @@ def ipam_subnets(aDict):
 # lookup(ip,ipam_sub_id)
 #
 def ipam_lookup(aDict):
- if PC.ipamdb_proxy == 'True':
-  return REST.call(PC.ipamdb_url, "sdcp.site:ddi_ipam_lookup", aDict)
+ if PC.ipamdb['proxy'] == 'True':
+  return REST.call(PC.ipamdb['url'], "sdcp.site:ddi_ipam_lookup", aDict)
  PC.log_msg("IPAM lookup - input {}".format(aDict.values()))
  ipint   = GL.ip2int(aDict['ip'])
  retvals = { 'ipam_id':'0' }
  db = GL.DB()
- db.connect_details('localhost',PC.ipamdb_username, PC.ipamdb_password, PC.ipamdb_dbname)
+ db.connect_details('localhost',PC.ipamdb['username'], PC.ipamdb['password'], PC.ipamdb['dbname'])
  db.do("SELECT id, dns_name, PTR FROM ipaddresses WHERE ip_addr = {0} AND subnetId = {1}".format(ipint,aDict.get('ipam_sub_id')))
  db.close()
  ipam   = db.get_row()
@@ -287,11 +287,11 @@ def ipam_lookup(aDict):
 # update( ipam_sub_id, ipam_id, ip, fqdn, ptr_id )
 #
 def ipam_update(aDict):
- if PC.ipamdb_proxy == 'True':
-  return REST.call(PC.ipamdb_url, "sdcp.site:ddi_ipam_update", aDict)
+ if PC.ipamdb['proxy'] == 'True':
+  return REST.call(PC.ipamdb['url'], "sdcp.site:ddi_ipam_update", aDict)
  PC.log_msg("IPAM update - input:{}".format(aDict.values()))
  db = GL.DB()
- db.connect_details('localhost',PC.ipamdb_username, PC.ipamdb_password, PC.ipamdb_dbname)
+ db.connect_details('localhost',PC.ipamdb['username'], PC.ipamdb['password'], PC.ipamdb['dbname'])
  res = {}
 
  if aDict.get('ipam_id','0') != '0':
@@ -318,10 +318,10 @@ def ipam_update(aDict):
 # remove(ipam_id)
 #
 def ipam_remove(aDict):
- if PC.ipamdb_proxy == 'True':
-  return REST.call(PC.ipamdb_url, "sdcp.site:ddi_ipam_remove", aDict)
+ if PC.ipamdb['proxy'] == 'True':
+  return REST.call(PC.ipamdb['url'], "sdcp.site:ddi_ipam_remove", aDict)
  db = GL.DB()
- db.connect_details('localhost',PC.ipamdb_username, PC.ipamdb_password, PC.ipamdb_dbname)
+ db.connect_details('localhost',PC.ipamdb['username'], PC.ipamdb['password'], PC.ipamdb['dbname'])
  ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
  db.commit()
  db.close()
@@ -332,10 +332,10 @@ def ipam_remove(aDict):
 # ipam_find(ipam_sub_id, consecutive)
 #
 def ipam_find(aDict):
- if PC.ipamdb_proxy == 'True':
-  return REST.call(PC.ipamdb_url, "sdcp.site:ddi_ipam_find", aDict)
+ if PC.ipamdb['proxy'] == 'True':
+  return REST.call(PC.ipamdb['url'], "sdcp.site:ddi_ipam_find", aDict)
  db = GL.DB()
- db.connect_details('localhost',PC.ipamdb_username, PC.ipamdb_password, PC.ipamdb_dbname)
+ db.connect_details('localhost',PC.ipamdb['username'], PC.ipamdb['password'], PC.ipamdb['dbname'])
  db.do("SELECT subnet, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id'))) 
  sub = db.get_row()
  db.do("SELECT ip_addr FROM ipaddresses WHERE subnetId = {}".format(aDict.get('ipam_sub_id')))

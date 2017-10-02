@@ -21,7 +21,7 @@ class DB(object):
   import sdcp.PackageContainer as PC
   from pymysql import connect
   from pymysql.cursors import DictCursor
-  self._conn = connect(host='localhost', port=3306, user=PC.generic_dbuser, passwd=PC.generic_dbpass, db=PC.generic_db, cursorclass=DictCursor)
+  self._conn = connect(host='localhost', port=3306, user=PC.generic['dbuser'], passwd=PC.generic['dbpass'], db=PC.generic['db'], cursorclass=DictCursor)
   self._curs = self._conn.cursor()
 
  def connect_details(self, aHost, aUser, aPass, aDB):

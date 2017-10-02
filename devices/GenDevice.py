@@ -65,7 +65,7 @@ class GenDevice(object):
      self._ip = ahost
   if self._domain == "":
    self._domain = None
-  self._logfile = PC.generic_logformat.format(self._hostname)
+  self._logfile = PC.generic['logformat'].format(self._hostname)
 
  def __str__(self):
   return "IP: {} Hostname: {} Domain: {} Type:{}".format(self._ip, self._hostname, self._domain, self._type)

@@ -26,7 +26,7 @@ def logs(aWeb):
  try:
   from subprocess import check_output
   import sdcp.PackageContainer as PC
-  logs = check_output("tail -n 30 " + PC.esxi_logformat.format(hostname) + " | tac", shell=True)
+  logs = check_output("tail -n 30 " + PC.esxi['logformat'].format(hostname) + " | tac", shell=True)
   print "<DIV CLASS='z-logs'><H1>{} operation logs</H1>{}</DIV>".format("{}".format(hostname),logs.replace('\n','<BR>'))
  except:
   pass
@@ -81,6 +81,8 @@ def op(aWeb,aIP = None):
  print "<DIV CLASS=z-frame>"
  if nstate:
   print "<DIV CLASS=title>&nbsp;<SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(vmid, nstate.split('-')[1])
+ else:
+  print "<DIV CLASS=title>&nbsp;</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip={0}'><IMG SRC='images/btn-reboot.png'></A>".format(ip)
  print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"

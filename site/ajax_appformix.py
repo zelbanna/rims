@@ -25,7 +25,7 @@ def report(aWeb):
  ctrl   = aWeb.cookie.get('af_controller')
  # First auth..
  controller  = AppformixRPC(ctrl)
- res = controller.auth({'username':PC.appformix_username, 'password':PC.appformix_password })
+ res = controller.auth({'username':PC.appformix['username'], 'password':PC.appformix['password'] })
  
  if not res['result'] == "OK":
   print "Error logging in - {}".format(str(res))
