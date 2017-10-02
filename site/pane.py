@@ -404,61 +404,17 @@ def rack(aWeb):
   return
 
  aWeb.put_html("Racks")
-
  from sdcp.core.GenLib import DB
  db = DB()
  db.connect()
- db.do("SELECT * from racks")
- racks = db.get_all_rows()
- print "<DIV>"
- print "<CENTER><H1>Rack Overview | <A HREF=pane.cgi?view=devices&target=vm&arg=1>Virtual Machines</A> <A TITLE='Non-racked devices' HREF=pane.cgi?view=rack_info&rack=NULL>*</A></H1><BR>"
- rackstr = "<A TARGET=main_cont TITLE='{0}' HREF=pane.cgi?view=rack_info&name={0}&{2}><IMG ALT='{0} ({1})' SRC='images/{1}'></A>&nbsp;"
- for index, rack in enumerate(racks):
-  rackargs = "rack=" + str(rack['id'])
-  if rack.get('fk_console'):
-   res = db.do("SELECT INET_NTOA(ip) as ip, id FROM consoles WHERE consoles.id = {}".format(rack.get('fk_console')))
-   row = db.get_row()
-   rackargs = rackargs + "&console=" + row.get('ip')
-  if (rack.get('fk_pdu_1') or rack.get('fk_pdu_2')):
-   res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(rack.get('fk_pdu_1','0'),rack.get('fk_pdu_2','0')))
-   rows = db.get_all_rows()
-   for row in rows:
-    rackargs = rackargs + "&pdulist=" + row.get('ip')
-  print rackstr.format(rack['name'], rack['image_url'], rackargs)
+ db.do("SELECT id,name,image_url from racks")
  db.close()
+ racks = db.get_all_rows()
+ print "<CENTER><H1>Rack Overview | <A HREF=pane.cgi?view=devices&target=vm&arg=1>Virtual Machines</A> <A TITLE='Non-racked devices' HREF=pane.cgi?view=rack_info&rack=NULL>*</A></H1><BR>"
+ rackstr = "<A TARGET=main_cont TITLE='{1}' HREF=pane.cgi?view=devices&target=rack_id&arg={0}><IMG ALT='{1} ({2})' SRC='images/{2}'></A>&nbsp;"
+ for index, rack in enumerate(racks):
+  print rackstr.format(rack['id'], rack['name'], rack['image_url'])
  print "</CENTER></DIV>"
-
-
-def rack_info(aWeb):
- if not aWeb.cookie.get('sdcp_id'):
-  aWeb.put_redirect("pane.cgi?view=login")
-  return
-
- aWeb.put_html("Rack Info")
- from sdcp.site.ajax_rack import info as ajax_info
- rack = aWeb.get_value('rack')
- con  = aWeb.get_value('console')
- pdus = aWeb.form.getlist('pdulist')
- name = aWeb.get_value('name')
- print "<DIV CLASS=z-navbar ID=div_navbar>"
- if rack and name:
-  print "<A CLASS='z-op' DIV=div_content_right URL='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(rack,name)
- print "<A CLASS='z-op'  DIV=div_content_left URL='ajax.cgi?call=device_view_devicelist&target=rack_id&arg={0}'>Devices</A>".format(rack)
- if con:
-  print "<A CLASS='z-op' DIV=div_content_left URL='ajax.cgi?call=console_list&consolelist={}'>Console</A>".format(con)
- if len(pdus) > 0:
-  print "<A CLASS='z-op' DIV=div_content_left SPIN=true URL='ajax.cgi?call=pdu_list_units&pdulist={}'>PDU</A>".format("&pdulist=".join(pdus))
- print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
- print "<A CLASS='z-op' style='float:right;' DIV=div_content_left URL='ajax.cgi?call=pdu_list_pdus'>PDUs</A>"
- print "<A CLASS='z-op' style='float:right;' DIV=div_content_left URL='ajax.cgi?call=console_list_consoles'>Consoles</A>"
- print "<A CLASS='z-op' style='float:right;' DIV=div_content_left URL='ajax.cgi?call=rack_list_racks'>Racks</A>"
- print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
- print "</DIV>"
- print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
- print "<DIV CLASS=z-content-right ID=div_content_right>"
- if rack and name:
-  ajax_info(aWeb)
- print "</DIV>"
 
 ##################################################################################################
 #
@@ -477,36 +433,50 @@ def devices(aWeb):
  from sdcp.core.GenLib import DB
  op     = aWeb.get_value('op')
  domain = aWeb.get_value('domain')
+ # target = column name and arg = value, i.e. select all devices where vm = 1, rack_id = 5 :-)
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  
- db = DB() 
- db.connect()
- argdict = {}
- for type in ['pdu','console']:
-  db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
-  tprows = db.get_all_rows()
-  if len(tprows) > 0:
-   arglist = "call={}_list".format(type)
-   for row in tprows:
-    arglist = arglist + "&{}list=".format(type) + row['ip']
-   argdict[type] = arglist
-
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS='z-op' DIV=div_content_left URL='ajax.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS='z-op' DIV=div_content_left URL='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
- if argdict.get('console',None):
-  print "<A CLASS='z-op' DIV=div_content_left URL='ajax.cgi?call=console_list&{}'>Console</A>".format(argdict.get('console'))
- if argdict.get('pdu',None):
-  print "<A CLASS='z-op' DIV=div_content_left SPIN=true URL='ajax.cgi?call=pdu_list_units&{}'>PDU</A>".format(argdict.get('pdu'))
+
+ db = DB() 
+ db.connect()
+ if target == 'rack_id':
+  db.do("SELECT racks.name, fk_pdu_1, fk_pdu_2, INET_NTOA(consoles.ip) as con_ip FROM racks LEFT JOIN consoles ON consoles.id = racks.fk_console WHERE racks.id = '{}'".format(arg))
+  data = db.get_row()
+  if data.get('con_ip'):
+   print "<A CLASS='z-op' DIV=div_content_left SPIN=true URL='ajax.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
+  if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
+   res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
+   rows = db.get_all_rows()
+   pdus = ""
+   for row in rows:
+    pdus = pdus + "&pdulist=" + row.get('ip')
+   print "<A CLASS='z-op' DIV=div_content_left SPIN=true URL='ajax.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
+  print "<A CLASS='z-op' DIV=div_content_right URL='ajax.cgi?call=rack_info&rack={0}'>'{1}' info</A>".format(arg,data['name'])
+ else: 
+  for type in ['pdu','console']:
+   db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
+   tprows = db.get_all_rows()
+   if len(tprows) > 0:
+    arglist = "call={}_list".format(type)
+    for row in tprows:
+     arglist = arglist + "&{}list=".format(type) + row['ip']
+    print "<A CLASS='z-op' DIV=div_content_left SPIN=true URL='ajax.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
+ db.close() 
  print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
  print "<A CLASS='z-right z-op' DIV=div_content_right MSG='Discover devices?' URL='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
+ print "<A CLASS='z-right z-op' DIV=div_content_left URL='ajax.cgi?call=pdu_list_pdus'>PDUs</A>"
+ print "<A CLASS='z-right z-op' DIV=div_content_left URL='ajax.cgi?call=console_list_consoles'>Consoles</A>"
+ print "<A CLASS='z-right z-op' DIV=div_content_left URL='ajax.cgi?call=rack_list_racks'>Racks</A>"
+ print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right>" 
  print aWeb.get_include('README.devices.html')
  print "</DIV>"
- db.close() 
 
 ##################################################################################################
 #

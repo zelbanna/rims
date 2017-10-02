@@ -13,7 +13,7 @@ import sdcp.core.GenLib as GL
 # View Consoles
 #
 
-def list(aWeb):
+def inventory(aWeb):
  from sdcp.devices.RackUtils import OpenGear
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=z-table style='width:99%'>"

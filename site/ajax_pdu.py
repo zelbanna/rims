@@ -15,7 +15,7 @@ from sdcp.devices.RackUtils import Avocent
 # PDUs
 #
 
-def list_units(aWeb):
+def inventory(aWeb):
  domain  = aWeb.get_value('domain')
  pdulist = aWeb.form.getlist('pdulist')
 
@@ -25,7 +25,7 @@ def list_units(aWeb):
  nstate  = aWeb.get_value('nstate')
  pduop   = aWeb.get_value('pdu')
 
- optemplate = "<A CLASS='z-btn z-small-btn z-op' SPIN=true DIV=div_content_left URL='ajax.cgi?call=pdu_list_units&pdu={0}&nstate={1}&slot={2}&unit={3}'><IMG SRC='images/btn-{4}'></A>"
+ optemplate = "<A CLASS='z-btn z-small-btn z-op' SPIN=true DIV=div_content_left URL='ajax.cgi?call=pdu_inventory&pdu={0}&nstate={1}&slot={2}&unit={3}'><IMG SRC='images/btn-{4}'></A>"
 
  if len(pdulist) == 0:
   pdulist.append(pduop)
