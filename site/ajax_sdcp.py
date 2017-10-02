@@ -16,21 +16,27 @@ def list_bookings(aWeb):
  db   = GL.DB()
  db.connect()
 
- if op == 'unbook' and id:
+ if   op == 'unbook' and id:
   res = db.do("DELETE FROM bookings WHERE device_id = '{}'".format(id))
   db.commit()
+ elif op == 'extend' and id:
+  res = db.do("UPDATE bookings SET time_start = NOW() WHERE device_id = '{}'".format(id))
+  db.commit()
 
- res  = db.do("SELECT device_id, time_start, devices.hostname, users.name FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
+ res  = db.do("SELECT device_id, time_start, ADDTIME(time_start, '30 0:0:0.0') as time_end, devices.hostname, users.name FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
  rows = db.get_all_rows()
  db.close()
  print "<DIV CLASS=z-content-left ID=div_left style='top:0px;'>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Bookings</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=sdcp_list_bookings'><IMG SRC='images/btn-reboot.png'></A>"
  print "<DIV CLASS=z-table style='width:99%'>"
- print "<DIV CLASS=thead><DIV CLASS=th>User</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Timestamp</DIV><DIV CLASS=th>Op</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>User</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Until</DIV><DIV CLASS=th>Op</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td><A CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=sdcp_list_bookings&op=unbook&id={3}'><IMG SRC='images/btn-remove.png'></A>&nbsp;</DIV></DIV>".format(row['name'],row['hostname'],row['time_start'],row['device_id'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>".format(row['name'],row['hostname'],row['time_end'])
+  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content TITLE='Remove booking' URL='ajax.cgi?call=sdcp_list_bookings&op=unbook&id={0}'><IMG SRC='images/btn-remove.png'></A>".format(row['device_id'])
+  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content TITLE='Extend booking' URL='ajax.cgi?call=sdcp_list_bookings&op=extend&id={0}'><IMG SRC='images/btn-add.png'></A>".format(row['device_id'])
+  print "&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
 
@@ -92,7 +98,7 @@ def user_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT    NAME=name TYPE=TEXT STYLE='border:1px solid grey; width:200px;' VALUE='{}'></DIV></DIV>".format(name)
  print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV><DIV CLASS=td><INPUT NAME=email TYPE=TEXT STYLE='border:1px solid grey; width:200px;' VALUE='{}'></DIV></DIV>".format(email)
  print "</DIV></DIV>"
- if id != 'new':
+ if id != 'new' or op != 'view':
   print "<A TITLE='Remove user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=rest.cgi?call=sdcp.site:sdcp_remove_user&id={0}><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=sdcp_user_info&op=update FRM=sdcp_user_info_form OP=load><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"

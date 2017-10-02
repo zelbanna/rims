@@ -478,43 +478,24 @@ def esxi(aWeb):
 
  aWeb.put_html_header("ESXi Operations")
  aWeb.put_listeners()
-
  from ajax_esxi import op as esxi_op
  from sdcp.devices.ESXi import ESXi
- from sdcp.tools.Grapher import Grapher
  host   = aWeb.get_value('host')
  domain = aWeb.get_value('domain')
  esxi   = ESXi(host,domain)
- print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.get_args_except(['pane']))
- print "<A CLASS=z-op OP=toggle DIV=div_esxi_stats HREF='#'>Stats</A>"
- print "<A CLASS=z-op OP=toggle DIV=div_esxi_op    HREF='#'>VM OPs</A>"
- print "<A CLASS=z-op OP=toggle DIV=div_esxi_logs  HREF='#'>Logs</A>"
- print "<A HREF=https://{0}/ui target=_blank>UI</A>".format(esxi._ip)
- print "<A HREF=http://{0}/index.html target=_blank>IPMI</A>".format(esxi.get_kvm_ip('ipmi'))
+ print "<DIV CLASS=z-navbar ID=div_navbar>"
+ print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&{}'>Shutdown</A>".format(aWeb.get_args())
+ print "<A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=esxi_graph&{}>Stats</A>".format(aWeb.get_args())
+ print "<A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=esxi_logs&{}>Logs</A>".format(aWeb.get_args())
+ print "<A CLASS=z-op HREF=https://{0}/ui        target=_blank>UI</A>".format(esxi._ip)
+ print "<A CLASS=z-op HREF=http://{0}/index.html target=_blank>IPMI</A>".format(esxi.get_kvm_ip('ipmi'))
  print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
  print "</DIV>"
- 
  print "<DIV CLASS=z-content ID=div_content>"
- print "<DIV CLASS=z-frame ID=div_esxi_op style='float:left; display:block'>"
- esxi_op(aWeb,esxi)
- print "</DIV>"
-
- print "<DIV CLASS=z-system id=div_esxi_stats title='Device stats' style='display:none;'>"
- graph  = Grapher()
- graph.widget_cols([ "{1}/{0}/esxi_vm_info".format(esxi._fqdn,domain), "{1}/{0}/esxi_cpu_info".format(esxi._fqdn,domain), "{1}/{0}/esxi_mem_info".format(esxi._fqdn,domain) ])
- print "</DIV>"
-
- print "<DIV CLASS=z-system ID=div_esxi_logs style='display:none;'>"  
- try:
-  from subprocess import check_output
-  logs = check_output("tail -n 10 /var/log/network/"+ host +".operations.log | tac", shell=True)
-  print "<DIV CLASS='z-logs' ID=div_esxi_log><H1>{} operation logs</H1>{}</DIV>".format(esxi._fqdn,logs.replace('\n','<BR>'))
- except:
-  pass
- print "</DIV>"
-
- print "</DIV>"
+ print "<DIV CLASS=z-content-left ID=div_content_left>"
+ esxi_op(aWeb)
+ print "</DIV>" 
+ print "<DIV CLASS=z-content-right ID=div_content_right style='top:0px;'></DIV>"
 
 ##################################################################################################
 #

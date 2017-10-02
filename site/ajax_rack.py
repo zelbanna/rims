@@ -39,7 +39,7 @@ def info(aWeb):
  db.connect()
  db.do("SELECT name, size from racks where id = {}".format(rack))
  rackinfo = db.get_row() 
- db.do("SELECT devices.id, hostname, rackinfo.rack_unit, rackinfo.rack_size from devices LEFT JOIN rackinfo ON devices.id = rackinfo.device_id WHERE rack_id = {}".format(rack))
+ db.do("SELECT devices.id, hostname, rackinfo.rack_unit, rackinfo.rack_size, bookings.user_id FROM devices LEFT JOIN bookings ON devices.id = bookings.device_id LEFT JOIN rackinfo ON devices.id = rackinfo.device_id WHERE rack_id = {}".format(rack))
  rackunits = db.get_all_dict('rack_unit')
  db.close()
  print "<DIV style='margin:10px;'><SPAN style='font-size:20px; font-weight:bold'>{}</SPAN></DIV>".format(rackinfo['name'])
@@ -57,9 +57,11 @@ def info(aWeb):
     if rowspan > 0:
      rowspan = rowspan - 1
     else:
-     if rackunits.get(count*index,None):
-      rowspan = rackunits[count*index].get('rack_size')
-      print "<TD CLASS=data rowspan={2} style='background-color:green'><CENTER><A CLASS='z-op' TITLE='Show device info for {0}' OP=load DIV='div_navcont' URL='ajax.cgi?call=device_device_info&id={1}'>{0}</A></CENTER></TD>".format(rackunits[count*index]['hostname'],rackunits[count*index]['id'],rowspan)
+     s_index = count*index
+     if rackunits.get(s_index):
+      print "<!-- {} -->".format(rackunits[s_index].get('user_id'))
+      rowspan = rackunits[s_index].get('rack_size')
+      print "<TD CLASS=data rowspan={2} style='background-color:{3}'><CENTER><A CLASS='z-op' TITLE='Show device info for {0}' OP=load DIV='div_navcont' URL='ajax.cgi?call=device_device_info&id={1}'>{0}</A></CENTER></TD>".format(rackunits[s_index]['hostname'],rackunits[s_index]['id'],rowspan,"#00cc66" if not rackunits[s_index].get('user_id') else "#df3620")
       rowspan = rowspan - 1
      else:
       print "<TD CLASS=data style='line-height:14px;'>&nbsp;</TD>"

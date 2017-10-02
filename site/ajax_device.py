@@ -165,7 +165,7 @@ def device_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['ipam_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(GL.int2mac(device_data['mac']))
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={}></DIV></DIV>".format(GL.int2ip(device_data['subnet'] + 1))
- print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['bookings.user_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV><DIV CLASS=td STYLE='background-color:{0}'><A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=sdcp_user_info&id={1}&op=view>{1}</A></DIV></DIV>".format("#00cc66" if not device_data['bookings.user_id'] else "#df3620", device_data['bookings.user_id'])
  print "</DIV></DIV></DIV>"
 
  print "<!-- Rack Info if such exists -->"
@@ -215,7 +215,7 @@ def device_info(aWeb):
   if int(aWeb.cookie.get('sdcp_id')) == device_data['bookings.user_id']:
    print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=unbook&id={} MSG='Are you sure you want to drop booking?' TITLE='Unbook'><IMG SRC='images/btn-remove.png'></A>".format(id)
  else:
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=book&id={}><IMG SRC='images/btn-add.png'></A>".format(id)
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navcont URL=ajax.cgi?call=device_device_info&op=book&id={} TITLE='Book device'><IMG SRC='images/btn-add.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_navdata URL=ajax.cgi?call=device_conf_gen                 FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
  import sdcp.PackageContainer as PC
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf_username,ip)
