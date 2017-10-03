@@ -124,26 +124,28 @@ class Junos(GenDevice):
   gdev = graph.get_entry(self._hostname + "." + self._domain)
   if gdev and gdev['update'] == 'yes':
    print "<DIV ID=graph_config></DIV>"
-  print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
-  print "<TABLE style='margin:3px;'><TR><TH>Interface</TH><TH>State</TH><TH>SNMP</TH><TH>Description</TH></TR>"
+  print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
+  print "<DIV CLASS=thead><DIV CLASS=th>Interface</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>SNMP</DIV><DIV CLASS=th>Description</DIV></DIV>"
+  print "<DIV CLASS=tbody>"
   for entry in ifs:
-   print "<TR><TD>{}</TD><TD>{}</TD><TD>".format(entry[0],entry[1])
+   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(entry[0],entry[1])
    if gdev and gdev['update'] == 'yes':
     print "<A CLASS='z-op' DIV=graph_config URL='ajax.cgi?call=graph_wm&hostname={1}&domain={2}&index={0}'>{0}</A>".format(entry[2],self._hostname,self._domain)
    else:
     print entry[2]
-   print "</TD><TD>{}</TD></TR>\n".format(entry[3])
-  print "</TABLE></DIV>"
+   print "</DIV><DIV CLASS=td>{}</DIV></DIV>\n".format(entry[3])
+  print "</DIV></DIV></DIV>"
 
  def widget_lldp(self):
   if self.connect():
    neigh = self.get_lldp()
    self.close()
-   print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
-   print "<TABLE style='margin:3px;'><TR><TH>Neighbor</TH><TH>MAC</TH><TH>Local_Port</TH><TH>Destination_Port</TH></TR>"
+   print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
+   print "<DIV CLASS=thead><DIV CLASS=th>Neighbor</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Local_Port</DIV><DIV CLASS=th>Destination_Port</DIV></DIV>"
+   print "<DIV CLASS=tbody>"
    for entry in neigh:
-    print "<TR><TD>{0}</TD><TD>{1}</TD><TD>{2}</TD><TD>{3}</TD></TR>".format(entry[0],entry[1],entry[2],entry[3])
-   print "</TABLE></DIV>"  
+    print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(entry[0],entry[1],entry[2],entry[3])
+   print "</DIV></DIV></DIV>"  
   else:
    print "Could not connect"
  #
@@ -229,8 +231,9 @@ class WLC(GenDevice):
    return
         
   ipdict= dict(map(lambda res: (res.tag[33:], res.val) ,cipobjs))
-  print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
-  print "<TABLE style='margin:3px;'><TH>Name</TH><TH>IP</TH><TH>MAC</TH><TH>SSid</TH>"
+  print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
+  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>SSid</DIV></DIV>"
+  print "<DIV CLASS=tbody>"
   for res in cssidobjs:
    macbase=res.tag[34:]
    mac = (macbase+"."+res.iid).split(".")
@@ -239,8 +242,8 @@ class WLC(GenDevice):
     clientname = gethostbyaddr(ipdict[macbase])[0]
    except:
     clientname = "unknown"
-   print "<TR><TD>" + clientname + "&nbsp;</TD><TD>" + ipdict.get(macbase) + "&nbsp;</TD><TD>" + mac + "&nbsp;</TD><TD>" + res.val + "</TD></TR>"
-  print "</TABLE></DIV>"
+   print "<DIV CLASS=tr><DIV CLASS=td>" + clientname + "&nbsp;</DIV><DIV CLASS=td>" + ipdict.get(macbase) + "&nbsp;</DIV><DIV CLASS=td>" + mac + "&nbsp;</DIV><DIV CLASS=td>" + res.val + "</DIV></DIV>"
+  print "</DIV></DIV></DIV>"
 
 ################################ SRX Object #####################################
 
@@ -354,12 +357,13 @@ class EX(Junos):
   try:
    if self.connect():
     self.load_interfaces_name()
-    print "<DIV CLASS='z-table'>"
-    print "<TABLE style='margin:3px;'><TH>VLAN</TH><TH>MAC</TH><TH>Interface</TH><TH>Description</TH>"
+    print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
+    print "<DIV CLASS=thead><DIV CLASS=th>VLAN</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Interface</DIV><DIV CLASS=th>Description</DIV></DIV>"
+    print "<DIV CLASS=tbody>"
     fdb = self.get_switch_table()
     for entry in fdb:
-     print "<TR><TD>" + "&nbsp;</TD><TD>".join(entry) + "</TD></TR>\n"
-    print "</TABLE></DIV>"
+     print "<DIV CLASS=tr><DIV CLASS=td>" + "&nbsp;</DIV><DIV CLASS=td>".join(entry) + "</DIV></DIV>\n"
+    print "</DIV></DIV></DIV>"
     self.close()
    else:
     print "Could not connect"
@@ -412,13 +416,14 @@ class QFX(Junos):
     self.load_interfaces_name()
     fdb = self.get_switch_table()
     self.close()
-    print "<DIV CLASS='z-table'>"
-    print "<TABLE style='margin:3px;'><THEAD><TH>VLAN</TH><TH>MAC</TH><TH>Interface</TH><TH>Description</TH></THEAD>"
+    print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
+    print "<DIV CLASS=thead><DIV CLASS=th>VLAN</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Interface</DIV><DIV CLASS=th>Description</DIV></DIV>"
+    print "<DIV CLASS=tbody>"
     for n in fdb:
-     print "<TR><TD>{}</TD><TD>{}</TD><TD>{}</TD>".format(n[0],n[1],n[2])
-     print "<TD>{}</TD>".format(n[3]) if n[3] else "<TD style='border: 1px solid red'>No Description</TD>"
-     print "<TR>"
-    print "</TABLE></DIV>"
+     print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(n[0],n[1],n[2])
+     print "<DIV CLASS=td>{}</DIV>".format(n[3]) if n[3] else "<TD style='border: 1px solid red'>No Description</DIV>"
+     print "</DIV>"
+    print "</DIV></DIV></DIV>"
    else:
     print "Could not connect"
   except Exception as err:
