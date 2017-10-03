@@ -32,7 +32,7 @@ def list(aWeb):
   print "Error retrieving heat stacks ({})".format(ret['code'])
   return
 
- print "<DIV CLASS=z-content-left ID=div_content_left style='top:94px;'><DIV CLASS=z-frame style='width:394px;'>"
+ print "<DIV CLASS=z-content-left ID=div_content_left><DIV CLASS=z-frame style='width:394px;'>"
  print "<DIV CLASS=title>Heat Stacks</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='ajax.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='ajax.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"

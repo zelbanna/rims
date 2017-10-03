@@ -26,7 +26,7 @@ def list(aWeb):
   print "Error retrieving list {}".format(str(ret))
   return
 
- print "<DIV CLASS=z-content-left ID=div_content_left style='top:94px;'>"
+ print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame style='width:394px'>"
  print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead style='height:20px'><DIV CLASS=th><CENTER>Nova Servers</CENTER></DIV></DIV>"

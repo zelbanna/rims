@@ -68,7 +68,7 @@ class GenDevice(object):
   self._logfile = PC.generic['logformat'].format(self._hostname)
 
  def __str__(self):
-  return "IP: {} Hostname: {} Domain: {} Type:{}".format(self._ip, self._hostname, self._domain, self._type)
+  return "IP: {} Type:{}".format(self._ip, self._type)
  
  def ping_device(self):
   from os import system

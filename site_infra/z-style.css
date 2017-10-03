@@ -53,7 +53,7 @@ div.z-navbar a:hover{ color:#000000 ;background-color:#D5D9DD; }
 div.z-content-head {      display:block; position:fixed;    top:0px;  height:94px; width:100%;  z-index:1000; }
 div.z-content-head-info { display:block; position:fixed;    top:0px;  height:60px; width:100%;  z-index:1001; border-bottom: 1px solid black; }
 div.z-content {           display:block; position:absolute; top:34px; bottom:0px;  width:100%;  box-sizing: border-box; overflow: auto;}
-div.z-content-left {      display:block; position:fixed;    top:34px; bottom:0px;  width:400px; overflow-y:auto; overflow-x:hidden; }
+div.z-content-left {      display:block; position:absolute; top:0px;  bottom:0px;  width:400px; overflow-y:auto; overflow-x:hidden; }
 div.z-content-right {     display:block; position:absolute; top:0px;  bottom:0px;  right:0px;   left:400px; overflow: auto; }
 
 /*######################################## DIVs ###########################################*/
