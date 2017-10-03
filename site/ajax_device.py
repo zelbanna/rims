@@ -168,7 +168,7 @@ def info(aWeb):
  if not device_data['bookings.user_id']:
   print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV><DIV CLASS=td STYLE='background-color:#00cc66'>None</DIV></DIV>"
  else:
-  db.do("SELECT TIME_TO_SEC(TIMEDIFF(ADDTIME(time_start, '30 0:0:0.0'),NOW())) > 0 AS valid FROM bookings WHERE device_id ='{}'".format(id))
+  db.do("SELECT NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings WHERE device_id ='{}'".format(id))
   valid = db.get_row()['valid']
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td><A CLASS='z-op' DIV='div_content_left' URL='ajax.cgi?call=sdcp_list_bookings'>Booked by</A>:</DIV>"

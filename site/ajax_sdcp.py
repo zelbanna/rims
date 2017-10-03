@@ -93,7 +93,7 @@ def list_bookings(aWeb):
   res = db.do("UPDATE bookings SET time_start = NOW() WHERE device_id = '{}'".format(id))
   db.commit()
 
- res  = db.do("SELECT user_id, device_id, time_start, TIME_TO_SEC(TIMEDIFF(ADDTIME(time_start, '30 0:0:0.0'),NOW())) > 0 AS valid, ADDTIME(time_start, '30 0:0:0.0') as time_end, devices.hostname, users.alias FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
+ res  = db.do("SELECT user_id, device_id, time_start, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid, ADDTIME(time_start, '30 0:0:0.0') as time_end, devices.hostname, users.alias FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
  rows = db.get_all_rows()
  db.close()
  print "<DIV CLASS=z-frame><DIV CLASS=title>Bookings</DIV>"
