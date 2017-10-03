@@ -150,7 +150,7 @@ def action(aWeb):
      print "<DIV CLASS=td></DIV>"
      print "<DIV CLASS=td>"
      print "<A TITLE='Info' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=print&id={} SPIN=true><IMG SRC=images/btn-info.png></A>".format(fip['href'])
-     print "<A TITLE='Associate floating IP' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fi_associate_choose_vm&id={} OP=load><IMG SRC=images/btn-add.png></A>".format(fip['uuid'])
+     print "<A TITLE='Associate floating IP' CLASS='z-btn z-small-btn z-op' DIV=div_os_info  URL=ajax.cgi?call=neutron_action&op=fi_associate_choose_vm&id={}><IMG SRC=images/btn-add.png></A>".format(fip['uuid'])
      print "</DIV>"
     print "</DIV>"
   print "</DIV></DIV>" 

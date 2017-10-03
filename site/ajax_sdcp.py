@@ -96,6 +96,6 @@ def user_info(aWeb):
  print "</DIV></DIV>"
  if id != 'new' or op != 'view':
   print "<A TITLE='Remove user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=rest.cgi?call=sdcp.site:sdcp_remove_user&id={0}><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=sdcp_user_info&op=update FRM=sdcp_user_info_form OP=load><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=sdcp_user_info&op=update FRM=sdcp_user_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"

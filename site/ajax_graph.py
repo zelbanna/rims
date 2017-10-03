@@ -27,11 +27,11 @@ def list(aWeb):
   gdomain = key.partition(".")[2]
   print "<DIV CLASS=tr>"
   if entry['update'] == 'yes':
-   print "<DIV CLASS=td><A CLASS=z-op TITLE='Show graphs for {1}' OP=load DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html'>{1}</A></DIV>".format(gdomain,key)
+   print "<DIV CLASS=td><A CLASS=z-op TITLE='Show graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html'>{1}</A></DIV>".format(gdomain,key)
   else:
    print "<DIV CLASS=td>{0}</DIV>".format(key)
   print "<DIV CLASS=td>"+ entry['handler'] +"</DIV>"
-  print "<DIV CLASS=td TITLE='Include in graphing?'><A CLASS='z-btn z-small-btn z-op' OP=load DIV=div_content_left URL='ajax.cgi?call=graph_list&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A>&nbsp;</DIV>".format("start" if entry['update'] == "no" else "shutdown")
+  print "<DIV CLASS=td TITLE='Include in graphing?'><A CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='ajax.cgi?call=graph_list&node=" + key + "&state=" + entry['update'] + "'><IMG SRC=images/btn-{}.png></A>&nbsp;</DIV>".format("start" if entry['update'] == "no" else "shutdown")
   print "</DIV>"
  print "</DIV></DIV></DIV>"
 
