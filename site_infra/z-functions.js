@@ -9,14 +9,14 @@
 //  Set attribute log=true to log operation
 //
 // - [load]   div url spin(true/small/false) [msg = for confirmation] [frm = if doing a post]
+// - redirect url
+// - iload    iframe url
+// - logout   url
 // - toggle   div
 // - hide     div
 // - single   div select
 // - empty    div
-// - redirect url
-// - iload    iframe url
 // - submit   frm
-// - logout   url
 //
 
 function btnoperation(event) {
@@ -45,21 +45,12 @@ function btnoperation(event) {
    $.post(url, $("#"+frm).serialize() , function(result) { div.html(result); });
   else
    div.load(url, function(responseTxt, statusTxt, xhr){ div.css("overflow-y","auto"); });
- } else if (op == 'toggle') {
-  div.toggle();
- } else if (op == 'hide') {
-  div.hide();
- } else if (op == 'empty') {
-  div.html('');
- } else if (op == 'single') {
-  $(button.getAttribute("selector")).hide();
-  div.show();
  } else if (op == 'redirect') {
   location.replace(url);
- } else if (op == 'iload') {
-  $("#"+ button.getAttribute("iframe")).attr('src',url);
  } else if (op == 'submit') {
   $("#"+ button.getAttribute("frm")).submit();
+ } else if (op == 'iload') {
+  $("#"+ button.getAttribute("iframe")).attr('src',url);
  } else if (op == 'logout') {
   var cookies = document.cookie.split(";");
   for(var i=0; i < cookies.length; i++) {
@@ -68,5 +59,14 @@ function btnoperation(event) {
    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
   }
   location.replace(url);
+ } else if (op == 'single') {
+  $(button.getAttribute("selector")).hide();
+  div.show();
+ } else if (op == 'toggle') {
+  div.toggle();
+ } else if (op == 'hide') {
+  div.hide();
+ } else if (op == 'empty') {
+  div.html('');
  }
 };

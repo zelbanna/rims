@@ -345,60 +345,27 @@ def weathermap(aWeb):
   aWeb.put_redirect("pane.cgi?view=login")
   return
 
+ aWeb.put_html('Weathermap')
+ import sdcp.PackageContainer as PC
  page = aWeb.get_value('page')
- json = aWeb.get_value('json')
- 
- if page == 'main':
-  aWeb.put_html('Weathermap')
-  print "<DIV CLASS=z-navbar ID=div_navbar>"
- 
-  wmlist = []
-  if json:
-   try:
-    from json import load
-    with open(json) as conffile:
-     config = load(conffile)
-     for entry in config.keys():
-      name= config[entry]['map'][3:]
-      print "<A CLASS='z-op' OP=iload IFRAME=iframe_wm_cont URL=pane.cgi?view=weathermap&json={2}&page={0}>{1}</A>".format(name,name.capitalize(),json)
-   except :
-    print "<A CLASS='z-warning'>Error loading JSON file</A>"
-  else:
-   try:
-    from os import listdir
-    for file in listdir("wm_configs/"):
-     if file.startswith("wm_"):
-      name= file[3:-5]
-      print "<A CLASS='z-op' OP=iload IFRAME=iframe_wm_cont URL=pane.cgi?view=weathermap&page={0}>{1}</A>".format(name,name.capitalize())
-   except Exception as err:
-    print "weathermap.cgi: error finding config files in 'wm_configs/' [{}]".format(str(err))
+ if not page:
+  print "<DIV CLASS=z-navbar ID=div_navbar>" 
+  for map,entry in PC.weathermap.iteritems():
+   print "<A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=pane.cgi?view=weathermap&page={0}>{1}</A>".format(map,entry['name'])
   print "</DIV>"
   print "<DIV CLASS='z-content' ID=div_content NAME='Weathermap Content'>"
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"
-  print "</DIV>"
- 
- elif page:
-  aWeb.put_html("Weathermap")
-  if json:
-   from json import load
-   from sdcp.tools.Grapher import Grapher
-   with open(json) as conffile:
-    config = load(conffile)
-    entry  = config[page]
-    map    = entry['map']
-    graphs = entry.get('graphs',None)
-    graph  = Grapher()
-    if graphs:
-     graph.widget_rows(graphs)
-    print "<DIV CLASS='z-frame'>"
-    print aWeb.get_include('{}.html'.format(map))
-    print "</DIV>"
-  else:
-   print "<DIV CLASS='z-frame'>"
-   print aWeb.get_include('wm_{}.html'.format(page))
-   print "</DIV>"
+  print "</DIV>" 
  else:
-  print "Weathermap fetches config names from the<PRE> wm_configs/</PRE> directory, all names starting with wm_ and ending with .conf are mapped for navigation bar"
+  entry  = PC.weathermap[page]
+  graphs = entry.get('graphs')
+  if graphs:
+   from sdcp.tools.Grapher import Grapher
+   graph  = Grapher()
+   graph.widget_rows(graphs)
+  print "<DIV CLASS='z-frame'>"
+  print aWeb.get_include('{}.html'.format(page))
+  print "</DIV>"
 
 ##################################################################################################
 #
@@ -521,7 +488,7 @@ def esxi(aWeb):
 
 ##################################################################################################
 #
-# Userspane
+# Users pane
 #
 def users(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
@@ -533,6 +500,7 @@ def users(aWeb):
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_users'>Users</A>"
  print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_bookings'>Bookings</A>"
+ print "<A CLASS='z-op z-right' OP=logout  URL='pane.cgi?view=users' style='background-color:red;'>Log out</A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"

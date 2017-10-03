@@ -74,5 +74,9 @@
  "snmp": {
   "read_community":"public",
   "write_community":"private"
+ },
+ "weathermap": {
+  "wm_demo_iaas":{ "graphs":[], "name":"Demo IAAS" },
+  "wm_rack1":{ "graphs":[], "name":"Rack 1" }
  }
 }

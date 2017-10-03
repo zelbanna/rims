@@ -129,7 +129,7 @@ class Junos(GenDevice):
   for entry in ifs:
    print "<TR><TD>{}</TD><TD>{}</TD><TD>".format(entry[0],entry[1])
    if gdev and gdev['update'] == 'yes':
-    print "<A CLASS='z-op' DIV=graph_config OP=load URL='ajax.cgi?call=graph_wm&hostname={1}&domain={2}&index={0}'>{0}</A>".format(entry[2],self._hostname,self._domain)
+    print "<A CLASS='z-op' DIV=graph_config URL='ajax.cgi?call=graph_wm&hostname={1}&domain={2}&index={0}'>{0}</A>".format(entry[2],self._hostname,self._domain)
    else:
     print entry[2]
    print "</TD><TD>{}</TD></TR>\n".format(entry[3])
