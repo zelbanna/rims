@@ -127,7 +127,12 @@ class Junos(GenDevice):
   print "<DIV CLASS='z-table' style='overflow-y:auto;'>"
   print "<TABLE style='margin:3px;'><TR><TH>Interface</TH><TH>State</TH><TH>SNMP</TH><TH>Description</TH></TR>"
   for entry in ifs:
-   print "<TR><TD>{0}</TD><TD>{1}</TD><TD><A CLASS='z-op' DIV=graph_config OP=load URL='ajax.cgi?call=graph_wm&hostname={4}&domain={5}&index={2}'>{2}</A></TD><TD>{3}</TD></TR>\n".format(entry[0],entry[1],entry[2],entry[3],self._hostname,self._domain)
+   print "<TR><TD>{}</TD><TD>{}</TD><TD>".format(entry[0],entry[1])
+   if gdev and gdev['update'] == 'yes':
+    print "<A CLASS='z-op' DIV=graph_config OP=load URL='ajax.cgi?call=graph_wm&hostname={1}&domain={2}&index={0}'>{0}</A>".format(entry[2],self._hostname,self._domain)
+   else:
+    print entry[2]
+   print "</TD><TD>{}</TD></TR>\n".format(entry[3])
   print "</TABLE></DIV>"
 
  def widget_lldp(self):

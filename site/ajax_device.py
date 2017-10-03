@@ -117,7 +117,7 @@ def info(aWeb):
 
  ########################## Data Tables ######################
  
- print "<DIV ID=div_devinfo CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
+ print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
  # print "<!-- {} -->".format(device_data)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
@@ -165,7 +165,12 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['ipam_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(GL.int2mac(device_data['mac']))
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={}></DIV></DIV>".format(GL.int2ip(device_data['subnet'] + 1))
- print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV><DIV CLASS=td STYLE='background-color:{0}'><A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=sdcp_user_info&id={1}&op=view>{1}</A></DIV></DIV>".format("#00cc66" if not device_data['bookings.user_id'] else "#df3620", device_data['bookings.user_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV>"
+ if not device_data['bookings.user_id']:
+  print "<DIV CLASS=td STYLE='background-color:#00cc66'>None</DIV>"
+ else:
+  print "<DIV CLASS=td STYLE='background-color:#df3620'><A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=sdcp_user_info&id={0}&op=view>{0}</A></DIV>".format(device_data['bookings.user_id'])
+ print "</DIV>"
  print "</DIV></DIV></DIV>"
 
  print "<!-- Rack Info if such exists -->"

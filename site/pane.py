@@ -521,7 +521,7 @@ def esxi(aWeb):
 
 ##################################################################################################
 #
-# Settings/System pane
+# Userspane
 #
 def users(aWeb):
  if not aWeb.cookie.get('sdcp_id'):

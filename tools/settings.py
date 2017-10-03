@@ -17,7 +17,7 @@ def convertSettings(aFile):
     f.write(name + "=" + repr(category) + "\n")
    f.write("def log_msg(amsg):\n")
    f.write(" from time import localtime, strftime\n")
-   f.write(" with open(generic_logformat, 'a') as f:\n")
+   f.write(" with open(generic['logformat'], 'a') as f:\n")
    f.write(repr("  f.write(unicode('{} : {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), amsg)))")[1:-1] + "\n")
   # Brute way of compiling ...
   print "Parsed settings and wrote PackageContainer"
