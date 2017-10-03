@@ -165,12 +165,15 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['ipam_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(GL.int2mac(device_data['mac']))
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={}></DIV></DIV>".format(GL.int2ip(device_data['subnet'] + 1))
- print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV>"
  if not device_data['bookings.user_id']:
-  print "<DIV CLASS=td STYLE='background-color:#00cc66'>None</DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV><DIV CLASS=td STYLE='background-color:#00cc66'>None</DIV></DIV>"
  else:
-  print "<DIV CLASS=td STYLE='background-color:#df3620'><A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=sdcp_user_info&id={0}&op=view>{0}</A></DIV>".format(device_data['bookings.user_id'])
- print "</DIV>"
+  db.do("SELECT TIME_TO_SEC(TIMEDIFF(ADDTIME(time_start, '30 0:0:0.0'),NOW())) > 0 AS valid FROM bookings WHERE device_id ='{}'".format(id))
+  valid = db.get_row()['valid']
+  print "<DIV CLASS=tr>"
+  print "<DIV CLASS=td><A CLASS='z-op' DIV='div_content_left' URL='ajax.cgi?call=sdcp_list_bookings'>Booked by</A>:</DIV>"
+  print "<DIV CLASS=td STYLE='background-color:{0}'><A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=sdcp_user_info&id={1}&op=view>{1}</A> {2}</DIV>".format("#df3620" if valid == 1 else "orange",device_data['bookings.user_id'],'' if valid else "(obsolete)")
+  print "</DIV>"
  print "</DIV></DIV></DIV>"
 
  print "<!-- Rack Info if such exists -->"
