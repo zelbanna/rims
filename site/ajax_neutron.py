@@ -6,7 +6,7 @@ Ajax Openstack Neutron/Contrail calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "17.6.15GA"
+__version__ = "17.10.4"
 __status__= "Production"
 
 from sdcp.devices.openstack import OpenstackRPC

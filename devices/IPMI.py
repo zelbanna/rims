@@ -8,7 +8,7 @@ IPMI interworking module
 
 """
 __author__ = "Zacharias El Banna"                     
-__version__ = "17.6.1GA"
+__version__ = "17.10.4"
 __status__ = "Production"
 
 import sdcp.PackageContainer as PC

@@ -7,7 +7,7 @@ Application to discovery network hosts on a subnet and deduce model (and manufac
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "17.6.1GA"
+__version__ = "17.10.4"
 __status__ = "Production"
 
 from sys import argv, exit
