@@ -23,10 +23,9 @@ def examine_logs(aWeb):
   print "</PRE></DIV>"
 
 def examine_ups(aWeb):
- from sdcp.tools.Grapher import Grapher
+ from sdcp.tools.munin import widget_cols
  upshost,void,domain = aWeb.get_value('upshost').partition('.')
- graph = Grapher()
- graph.widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
+ widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
 
 def examine_dns(aWeb):
  from sdcp.core.rest import call as rest_call     

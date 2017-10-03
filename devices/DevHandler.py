@@ -51,6 +51,7 @@ def device_get_widgets(aType):
   from ESXi import ESXi as Dev
  return [] if not Dev else Dev.get_widgets()
 
+################################################# Detect #############################################
 #
 # Detect device info
 #

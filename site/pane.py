@@ -177,10 +177,10 @@ def openstack_portal(aWeb):
  print "<A CLASS='z-btn z-op' OP=logout URL='pane.cgi?view=openstack_login&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
  print "</DIV>"
  print "<DIV CLASS='z-navbar' style='top:60px; z-index:1001' ID=div_navbar>"
- print "<A CLASS='z-op'           DIV=div_content URL='ajax.cgi?call=heat_list'>Orchestration</A>"
- print "<A CLASS='z-op'           DIV=div_content URL='ajax.cgi?call=neutron_list'>Virtual Networks</A>"
- print "<A CLASS='z-op'           DIV=div_content URL='ajax.cgi?call=nova_list'>Virtual Machines</A>"
- print "<A CLASS='z-op' SPIN=true DIV=div_content URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
+ print "<A CLASS=z-op           DIV=div_content URL='ajax.cgi?call=heat_list'>Orchestration</A>"
+ print "<A CLASS=z-op           DIV=div_content URL='ajax.cgi?call=neutron_list'>Virtual Networks</A>"
+ print "<A CLASS=z-op           DIV=div_content URL='ajax.cgi?call=nova_list'>Virtual Machines</A>"
+ print "<A CLASS=z-op SPIN=true DIV=div_content URL='ajax.cgi?call=appformix_report'>Usage Report</A>"
  print "<A CLASS='z-reload z-op'  OP=redirect URL='pane.cgi?view=openstack_portal'></A>"
  if username == 'admin':
   print "<A CLASS='z-op z-right'  DIV=div_content URL=ajax.cgi?call=openstack_fqname>FQDN</A>"
@@ -295,9 +295,8 @@ def weathermap(aWeb):
   entry  = PC.weathermap[page]
   graphs = entry.get('graphs')
   if graphs:
-   from sdcp.tools.Grapher import Grapher
-   graph  = Grapher()
-   graph.widget_rows(graphs)
+   from sdcp.tools.munin import widget_rows
+   widget_rows(graphs)
   print "<DIV CLASS='z-frame'>"
   print aWeb.get_include('{}.html'.format(page))
   print "</DIV>"
@@ -340,15 +339,13 @@ def devices(aWeb):
  aWeb.put_html("Device View")
 
  from sdcp.core.GenLib import DB
- op     = aWeb.get_value('op')
- domain = aWeb.get_value('domain')
  # target = column name and arg = value, i.e. select all devices where vm = 1, rack_id = 5 :-)
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-op' DIV=div_content_left URL='ajax.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
- print "<A CLASS='z-op' DIV=div_content_left URL='ajax.cgi?call=graph_list&domain={}'>Graphing</A>".format(domain)
+ print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
+ print "<A CLASS=z-op DIV=div_content_left URL=ajax.cgi?call=graph_list>Graphing</A>"
 
  db = DB() 
  db.connect()
@@ -356,15 +353,15 @@ def devices(aWeb):
   db.do("SELECT racks.name, fk_pdu_1, fk_pdu_2, INET_NTOA(consoles.ip) as con_ip FROM racks LEFT JOIN consoles ON consoles.id = racks.fk_console WHERE racks.id = '{}'".format(arg))
   data = db.get_row()
   if data.get('con_ip'):
-   print "<A CLASS='z-op' DIV=div_content_left SPIN=true URL='ajax.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
+   print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='ajax.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
   if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
    res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
    rows = db.get_all_rows()
    pdus = ""
    for row in rows:
     pdus = pdus + "&pdulist=" + row.get('ip')
-   print "<A CLASS='z-op' DIV=div_content_left SPIN=true URL='ajax.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
-  print "<A CLASS='z-op' DIV=div_content_right URL='ajax.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
+   print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='ajax.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
+  print "<A CLASS=z-op DIV=div_content_right URL='ajax.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
  else: 
   for type in ['pdu','console']:
    db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
@@ -373,14 +370,14 @@ def devices(aWeb):
     arglist = "call={}_list".format(type)
     for row in tprows:
      arglist = arglist + "&{}list=".format(type) + row['ip']
-    print "<A CLASS='z-op' DIV=div_content_left SPIN=true URL='ajax.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
+    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='ajax.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
  db.close() 
  print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
- print "<A CLASS='z-right z-op' DIV=div_content_right MSG='Discover devices?' URL='ajax.cgi?call=device_discover&domain={0}'>Device Discovery</A>".format(domain)
+ print "<A CLASS='z-right z-op' DIV=div_content_right MSG='Discover devices?' URL='ajax.cgi?call=device_discover'>Device Discovery</A>"
  print "<A CLASS='z-right z-op' DIV=div_content_left URL='ajax.cgi?call=pdu_list_pdus'>PDUs</A>"
  print "<A CLASS='z-right z-op' DIV=div_content_left URL='ajax.cgi?call=console_list_consoles'>Consoles</A>"
  print "<A CLASS='z-right z-op' DIV=div_content_left URL='ajax.cgi?call=rack_list_racks'>Racks</A>"
- print "<SPAN STYLE='padding: 6px 4px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
+ print "<SPAN STYLE='padding: 6px; height:34px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
  print "</DIV>"
  print "<DIV CLASS=z-content       ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
@@ -416,7 +413,7 @@ def esxi(aWeb):
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left ID=div_content_left>"
- esxi_op(aWeb,data['ipasc'])
+ esxi_op(aWeb,data['ipasc'],data['hostname'])
  print "</DIV>" 
  print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
  print "</DIV>"
@@ -456,10 +453,8 @@ def config(aWeb):
  aWeb.put_html("Config and Settings")
  domain  = aWeb.get_value('domain')
  print "<DIV CLASS=z-content style='top:0px;' ID=div_content>"
- print "<DIV CLASS=z-frame ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
+ print "<DIV CLASS=z-frame ID=div_config_menu style='width:200px; float:left; min-height:100px;'>"
  print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-warning z-op' DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"
- print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=graph_find&domain={0}'>Graph Discovery</A>".format(domain)
- print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=graph_sync&domain={0}'>Synch Graphing</A>".format(domain)
  print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_sync'>Synch DDI</A>"
  print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_dhcp_update'>Update DHCP</A>"
  print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_load_infra'>Load DDI Tables</A>"

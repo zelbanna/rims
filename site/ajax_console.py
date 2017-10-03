@@ -19,17 +19,15 @@ def inventory(aWeb):
  print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead><DIV CLASS=th>Server</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>Device</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- domain = aWeb.get_value('domain')
  conlist = aWeb.form.getlist('consolelist')
  config="https://{0}/?form=serialconfig&action=edit&ports={1}&start=&end="
  for con in conlist:
-  console = OpenGear(con,domain)
+  console = OpenGear(con)
   console.load_snmp()
-  conip = console._ip
   for key in console.get_keys():
    port = str(6000 + key)
    value = console.get_entry(key)
-   print "<DIV CLASS=tr><DIV CLASS=td><A HREF='https://{0}/'>{1}</A></DIV><DIV CLASS=td><A TITLE='Edit port info' HREF={5}>{2}</A></DIV><DIV CLASS=td><A HREF='telnet://{0}:{3}'>{4}</A></DIV></DIV>".format(conip, con,str(key),port, value, config.format(conip,key))
+   print "<DIV CLASS=tr><DIV CLASS=td><A HREF='https://{0}/'>{0}</A></DIV><DIV CLASS=td><A TITLE='Edit port info' HREF={4}>{1}</A></DIV><DIV CLASS=td><A HREF='telnet://{0}:{2}'>{3}</A></DIV></DIV>".format(con,str(key),port, value, config.format(con,key))
  print "</DIV></DIV></DIV>"
 
 def list_consoles(aWeb):

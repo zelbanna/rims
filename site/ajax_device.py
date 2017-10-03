@@ -135,13 +135,10 @@ def info(aWeb):
   print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td style='max-width:150px;'>{}</DIV></DIV>".format(device_data['model'])
- if device_data['graphed'] == "yes":
+ if device_data['graph_update'] == 1:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='View graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</DIV><DIV CLASS=td>yes</DIV></DIV>".format(device_data['a_name'],device_data['hostname']+"."+ device_data['a_name'])
  else:
-  if not device_data['hostname'] == 'unknown':
-   print "<DIV CLASS=tr><DIV CLASS=td>Graphs:</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='ajax.cgi?call=graph_add&node={}&name={}&domain={}' TITLE='Add Graphs for node?'>no</A></DIV></DIV>".format(id, device_data['hostname'], device_data['a_name'])
-  else:
-   print "<DIV CLASS=tr><DIV CLASS=td>Graphs:</DIV><DIV CLASS=td>no</DIV></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Graphs:</DIV><DIV CLASS=td>no</DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm style='width:auto;' TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if device_data['vm'] == 1 else "") 
  print "</DIV></DIV></DIV>"
 

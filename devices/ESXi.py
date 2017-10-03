@@ -9,7 +9,6 @@ __status__ = "Production"
 
 import sdcp.PackageContainer as PC
 from GenDevice import GenDevice
-from sdcp.core.GenLib import get_host
 from sdcp.core.XtraLib import pidfile_lock, pidfile_release
 from netsnmp import VarList, Varbind, Session
 from select import select
@@ -32,21 +31,22 @@ class ESXi(GenDevice):
  def get_widgets(cls):
   return ['operated']
   
- #
- # Each ESXi Server has an IP and probably KVM means for out of band access.
- # Here I assume kvm IP is reachable through DNS by adding '-' and KVM type to FQDN:
- # <hostname>-[kvm|ipmi|amt].<domain>
- #
- def __init__(self,aHost,aDomain=None):
-  GenDevice.__init__(self,aHost,aDomain,'esxi')
+ def __init__(self,aIP,aID=None):
+  GenDevice.__init__(self,aIP,aID,'esxi')
+  from sdcp.core.GenLib import get_host_name
   # Override log file
+  self._hostname = get_host_name(aIP)
   self._logfile = PC.esxi['logformat'].format(self._hostname)
-  self._kvmip  = None
   self._sshclient = None
   self.backuplist = []
   self.statefile = PC.esxi['shutdownfile'].format(self._hostname) 
   self._threads = {}
- 
+
+ def set_name(self, aHostname):
+  self._hostname = aHostname
+  self._logfile = PC.esxi['logformat'].format(aHostname)
+  self.statefile = PC.esxi['shutdownfile'].format(aHostname) 
+
  def __enter__(self):
   if self.ssh_connect():
    return self
@@ -58,7 +58,7 @@ class ESXi(GenDevice):
   
  def __str__(self):
   return self._hostname + " SSHConnected:" + str(self._sshclient != None)  + " Backuplist:" + str(self.backuplist) + " statefile:" + self.statefile + " Threads:" + str(self._threads.keys())
-
+ 
  def threading(self, aOperation):
   from threading import Thread
   op = getattr(self, aOperation, None)
@@ -70,22 +70,6 @@ class ESXi(GenDevice):
    self.log_msg("threading: Started operation [{}]".format(aOperation))
   else:
    self.log_msg("threading: Illegal operation passed [{}]".format(aOperation))
-
- # Different FQDN for KVM types
- def get_kvm_ip(self, adefaulttype = 'kvm'):
-  if self._kvmip:
-   return self._kvmip
-  elif self._domain:
-   for type in ['amt','ipmi','kvm']:
-    ip = get_host("{0}-{1}.{2}".format(self._hostname,type,self._domain))
-    if ip:
-     self._kvmip = ip + ":16992" if type == 'amt' else ip
-     break
-   else:
-    # No DNS found
-    ip = "{}-{}.{}".format(self._hostname,adefaulttype,self._domain)
-    self._kvmip = ip + ":16992" if adefaulttype == "amt" else ip
-  return self._kvmip
 
  def create_lock(self,atime):
   pidfile_lock("/tmp/esxi." + self._hostname + ".vm.pid",atime)
@@ -305,9 +289,3 @@ class ESXi(GenDevice):
    self.log_msg("ERROR: " + str(vmerror))
 
 ###################################### End ESXi Class #####################################
-
-def thread_shutdown_host(afqdn, aWeb):
- print "<PRE>Shutting down host: {}</PRE>".format(afqdn)
- aWeb.log_msg("shutdownAll: Thread shutting down [{}]".format(afqdn))
- esxi = ESXi(afqdn)             
- esxi.shutdown_vms()                

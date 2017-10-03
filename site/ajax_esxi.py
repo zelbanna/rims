@@ -11,12 +11,11 @@ __status__= "Production"
 # Graphing
 #
 def graph(aWeb):
- from sdcp.tools.Grapher import Grapher
+ from sdcp.tools.munin import widget_cols
  hostname = aWeb.get_value('hostname')
  domain   = aWeb.get_value('domain')
- graph  = Grapher()
  print "<DIV CLASS=z-frame style='overflow-x:auto;'>"
- graph.widget_cols([ "{1}/{0}.{1}/esxi_vm_info".format(hostname,domain), "{1}/{0}.{1}/esxi_cpu_info".format(hostname,domain), "{1}/{0}.{1}/esxi_mem_info".format(hostname,domain) ])
+ widget_cols([ "{1}/{0}.{1}/esxi_vm_info".format(hostname,domain), "{1}/{0}.{1}/esxi_cpu_info".format(hostname,domain), "{1}/{0}.{1}/esxi_mem_info".format(hostname,domain) ])
  print "</DIV>"
 #
 # Logs
@@ -35,14 +34,16 @@ def logs(aWeb):
 #
 # ESXi operations
 #
-def op(aWeb,aIP = None):
+def op(aWeb,aIP = None, aName = None):
  from sdcp.devices.ESXi import ESXi
  ip     = aWeb.get_value('ip',aIP)
+ name   = aWeb.get_value('name',aName)
  excpt  = aWeb.get_value('except','-1')
  nstate = aWeb.get_value('nstate')
  vmid   = aWeb.get_value('vmid','-1')
  sort   = aWeb.get_value('sort','name')
  aEsxi  = ESXi(ip)
+ aEsxi.set_name(aName)
 
  if nstate:
   from subprocess import check_call, check_output
@@ -71,21 +72,21 @@ def op(aWeb,aIP = None):
      aEsxi.ssh_send("poweroff")
    elif nstate == 'vmsoff':
     excpt = "" if vmid == '-1' else vmid
-    check_call("/usr/local/sbin/ups-operations shutdown " + ip + " " + excpt + " &", shell=True)
+    check_call("/usr/local/sbin/ups-operations shutdown {} {} {} &".format(ip,name,excpt), shell=True)
   except Exception as err:
    PC.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  statelist = aEsxi.get_vms(sort)
  # Formatting template (command, btn-xyz, vm-id, hover text)
- template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip=" + ip + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
+ template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip=" + ip + "&name=" + name + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
  print "<DIV CLASS=z-frame>"
  if nstate:
-  print "<DIV CLASS=title>&nbsp;<SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(vmid, nstate.split('-')[1])
+  print "<DIV CLASS=title>{}<SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(name,vmid, nstate.split('-')[1])
  else:
-  print "<DIV CLASS=title>&nbsp;</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip={0}'><IMG SRC='images/btn-reboot.png'></A>".format(ip)
+  print "<DIV CLASS=title>{}</DIV>".format(name)
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip={0}&name={1}'><IMG SRC='images/btn-reboot.png'></A>".format(ip,name)
  print "<DIV CLASS=z-table style='width:99%'>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip=" + ip + "&name=" + name + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>"
  if nstate and nstate == 'vmsoff':

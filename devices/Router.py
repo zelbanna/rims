@@ -31,8 +31,8 @@ class Junos(GenDevice):
  def get_widgets(cls):
   return ['widget_up_interfaces','widget_lldp','widget_archive' ]
 
- def __init__(self,ahost,adomain = None, atype = 'Junos'):
-  GenDevice.__init__(self,ahost,adomain,atype)
+ def __init__(self,aIP,aID = None, atype = 'Junos'):
+  GenDevice.__init__(self,aIP,aID,atype)
   from jnpr.junos import Device
   from jnpr.junos.utils.config import Config
   self._router = Device(self._ip, user=PC.netconf['username'], password=PC.netconf['password'], normalize=True)
@@ -118,21 +118,13 @@ class Junos(GenDevice):
    return
   ifs = self.get_up_interfaces()
   self.close()
-  from sdcp.tools.Grapher import Grapher
-  graph = Grapher()
-  graph.load_conf()
-  gdev = graph.get_entry(self._hostname + "." + self._domain)
-  if gdev and gdev['update'] == 'yes':
-   print "<DIV ID=graph_config></DIV>"
+  print "<DIV ID=graph_config></DIV>"
   print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
   print "<DIV CLASS=thead><DIV CLASS=th>Interface</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>SNMP</DIV><DIV CLASS=th>Description</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for entry in ifs:
    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(entry[0],entry[1])
-   if gdev and gdev['update'] == 'yes':
-    print "<A CLASS='z-op' DIV=graph_config URL='ajax.cgi?call=graph_wm&hostname={1}&domain={2}&index={0}'>{0}</A>".format(entry[2],self._hostname,self._domain)
-   else:
-    print entry[2]
+   print "<A CLASS='z-op' DIV=graph_config URL='ajax.cgi?call=graph_wm&hostname={1}&domain={2}&index={0}'>{0}</A>".format(entry[2],self._hostname,self._domain)
    print "</DIV><DIV CLASS=td>{}</DIV></DIV>\n".format(entry[3])
   print "</DIV></DIV></DIV>"
 
@@ -211,8 +203,8 @@ class WLC(GenDevice):
  def get_widgets(cls):
   return ['widget_switch_table']
 
- def __init__(self,ahost, adomain = None):
-  GenDevice.__init__(self,ahost, adomain, 'wlc')
+ def __init__(self,aIP, aID = None):
+  GenDevice.__init__(self, aIP, aID, 'wlc')
   
  def __str__(self):
   return "WLC - {}".format(GenDevice.__str__(self))
@@ -253,8 +245,8 @@ class SRX(Junos):
  def get_widgets(cls):
   return Junos.get_widgets()
 
- def __init__(self,ahost,adomain=None):
-  Junos.__init__(self, ahost,adomain,'srx')
+ def __init__(self,aIP,aID=None):
+  Junos.__init__(self, aIP,aID,'srx')
   self.dnslist = []
   self.dhcpip = ""
   self.tunnels = 0
@@ -315,8 +307,8 @@ class EX(Junos):
   widgets.extend(Junos.get_widgets())
   return widgets
 
- def __init__(self,ahost,adomain=None):
-  Junos.__init__(self, ahost,adomain,'ex')
+ def __init__(self,aIP,aID=None):
+  Junos.__init__(self, aIP,aID,'ex')
   self._style  = None
   self._interfacenames = {}
 
@@ -381,8 +373,8 @@ class QFX(Junos):
   widgets.extend(Junos.get_widgets())
   return widgets
 
- def __init__(self,ahost,adomain=None):
-  Junos.__init__(self, ahost,adomain,'qfx')
+ def __init__(self,aIP,aID=None):
+  Junos.__init__(self, aIP,aID,'qfx')
   self._style  = 'els'
   self._interfacenames = {}
 
@@ -438,8 +430,8 @@ class MX(Junos):
  def get_widgets(cls):
   return Junos.get_widgets()
 
- def __init__(self,ahost,adomain=None):
-  Junos.__init__(self, ahost,adomain,'mx')
+ def __init__(self,aIP,aID=None):
+  Junos.__init__(self, aIP,aID,'mx')
   self._interfacenames = {}
 
  def __str__(self):

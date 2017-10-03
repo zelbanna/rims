@@ -50,8 +50,8 @@ class ConfObject(object):
 
 class OpenGear(GenDevice, ConfObject):
 
- def __init__(self, ahost, adomain = None):
-  GenDevice.__init__(self,ahost,adomain,'console')
+ def __init__(self, aIP, aID = None):
+  GenDevice.__init__(self,aIP, aID,'console')
   ConfObject.__init__(self)
 
  def __str__(self):
@@ -90,8 +90,8 @@ class Avocent(GenDevice, ConfObject):
  def set_outlet_state(cls,state):
   return cls._setstatemap.get(state,'1')
 
- def __init__(self, ahost, adomain = None):
-  GenDevice.__init__(self,ahost,adomain,'pdu')
+ def __init__(self, aIP, aID = None):
+  GenDevice.__init__(self,aIP, aID,'pdu')
   ConfObject.__init__(self)
 
  def __str__(self):
