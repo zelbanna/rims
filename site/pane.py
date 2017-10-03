@@ -220,87 +220,22 @@ def examine(aWeb):
 
  aWeb.put_html('Services Pane')
  import sdcp.PackageContainer as PC
- from sdcp.tools.Grapher import Grapher
 
- domain  = aWeb.get_value('domain')
- upshost = aWeb.get_value('upshost')
  svchost = PC.sdcp['svcsrv']
- graph = Grapher()  
+ upshost = PC.sdcp['upshost']
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-op' DIV=div_sys MSG='Clear Network Logs?' URL='rest.cgi?call=sdcp.site:sdcp_clear_logs&logs={},{}'>Clear Logs</A>".format(PC.generic['logformat'],PC.sdcp['netlogs'])
- print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_sys URL='.z-system'>Logs</A>"
+ print "<A CLASS='z-warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='rest.cgi?call=sdcp.site:sdcp_clear_logs&logs={},{}'>Clear Logs</A>".format(PC.generic['logformat'],PC.sdcp['netlogs'])
+ print "<A CLASS=z-op DIV=div_content URL='ajax.cgi?call=sdcp_examine_logs'>Logs</A>"
  if upshost:
-  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_ups URL='.z-system'>UPS</A>"
+  print "<A CLASS=z-op DIV=div_content URL='ajax.cgi?call=sdcp_examine_ups&upshost={}'>UPS</A>".format(upshost)
  if svchost:
-  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_dns  URL='.z-system'>DNS</A>"
-  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_dhcp URL='.z-system'>DHCP</A>"
-  print "<A CLASS=z-op OP=single SELECTOR='.z-system' DIV=div_svc URL='.z-system'>Services Logs</A>"
- print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
+  print "<A CLASS=z-op DIV=div_content URL='ajax.cgi?call=sdcp_examine_dns&svchost={}'>DNS</A>".format(svchost)
+  print "<A CLASS=z-op DIV=div_content URL='ajax.cgi?call=sdcp_examine_dhcp&svchost={}'>DHCP</A>".format(svchost)
+  print "<A CLASS=z-op DIV=div_content URL='ajax.cgi?call=sdcp_examine_svc&svchost={}'>Services Logs</A>".format(svchost)
+ print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?view=examine'></A>"
  print "</DIV>"
+ print "<DIV CLASS=z-content ID=div_content></DIV>"
  
- print "<DIV CLASS=z-content ID=div_content>"
- 
- print "<DIV CLASS=z-system id=div_sys title='System Logs' style='display:block;'>"
- from sdcp.site.rest_sdcp import examine_logs
- logs = examine_logs({'count':10,'logs':"{},{}".format(PC.generic['logformat'],PC.sdcp['netlogs'])})
- for file,res in logs.iteritems():
-  print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
-  for line in res:
-   print line
-  print "</PRE></DIV>"
- print "</DIV>"
- 
- if upshost:
-  print "<DIV CLASS=z-system id=div_ups title='UPS info' style='display:none;'>"
-  graph.widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
-  print "</DIV>"
- 
- if svchost:
-  from sdcp.core.rest import call as rest_call
-
-  print "<DIV CLASS=z-system id=div_dns title='DNS data' style='display:none; width:100%'>"
-  dnstop = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dns_top", {'count':20})
-  print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN ({})</DIV>".format(svchost)
-  print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
-  print "<DIV CLASS=tbody>"
-  for data in dnstop['top']:
-   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'])
-  print "</DIV></DIV></DIV>"
-  print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN per Client ({})</DIV>".format(svchost)
-  print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
-  print "<DIV CLASS=tbody>"
-  for data in dnstop['who']:
-   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'],data['who'],data['hostname'])
-  print "</DIV></DIV></DIV>"
-  print "</DIV>"
- 
-  print "<DIV CLASS=z-system id=div_dhcp title='DHCP leases' style='display:none; width:100%'>"
-  dhcp = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dhcp_leases")
-  print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>DHCP Active Leases ({})</DIV>".format(svchost)
-  print "<DIV CLASS=z-table style='padding:5px; width:100%; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ends</DIV></DIV>"
-  print "<DIV CLASS=tbody>"
-  for data in dhcp['active']:
-   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
-  print "</DIV></DIV></DIV>"
-  print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>DHCP Free/Old Leases ({})</DIV>".format(svchost)
-  print "<DIV CLASS=z-table style='padding:5px; width:100%; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ended</DIV></DIV>"
-  print "<DIV CLASS=tbody>"
-  for data in dhcp['free']:
-   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
-  print "</DIV></DIV></DIV>"
-  print "</DIV>"
- 
-  print "<DIV CLASS=z-system id=div_svc title='System Logs' style='display:none; width:100%;'>"
-  logs = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:sdcp_examine_logs",{'count':20,'logs':PC.generic['logformat']})
-  for file,res in logs.iteritems():
-   print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
-   for line in res:
-    print line
-   print "</PRE></DIV>"
-  print "</DIV>"
- 
- print "</DIV>"
-
 ##################################################################################################
 #
 # Munin
@@ -519,7 +454,7 @@ def config(aWeb):
   return
 
  aWeb.put_html("Config and Settings")
- domain    = aWeb.get_value('domain', None)
+ domain  = aWeb.get_value('domain')
  print "<DIV CLASS=z-content style='top:0px;' ID=div_content>"
  print "<DIV CLASS=z-frame ID=div_config_menu style='width:200px; float:left; min-height:300px;'>"
  print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-warning z-op' DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"

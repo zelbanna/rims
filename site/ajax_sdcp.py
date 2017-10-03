@@ -7,9 +7,79 @@ __author__= "Zacharias El Banna"
 __version__ = "17.6.1GA"
 __status__= "Production"
 
-import sdcp.core.GenLib as GL
 
+############################################ Bookings ##############################################
+#
+# Examine Logs
+#
+def examine_logs(aWeb):
+ import sdcp.PackageContainer as PC
+ from sdcp.site.rest_sdcp import examine_logs
+ logs = examine_logs({'count':10,'logs':"{},{}".format(PC.generic['logformat'],PC.sdcp['netlogs'])})
+ for file,res in logs.iteritems():
+  print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
+  for line in res:
+   print line
+  print "</PRE></DIV>"
+
+def examine_ups(aWeb):
+ from sdcp.tools.Grapher import Grapher
+ upshost,void,domain = aWeb.get_value('upshost').partition('.')
+ graph = Grapher()
+ graph.widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
+
+def examine_dns(aWeb):
+ from sdcp.core.rest import call as rest_call     
+ svchost = aWeb.get_value('svchost')
+
+ dnstop = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dns_top", {'count':20})
+ print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN ({})</DIV>".format(svchost)
+ print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
+ print "<DIV CLASS=tbody>"       
+ for data in dnstop['top']:
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'])
+ print "</DIV></DIV></DIV>"
+ print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>Top looked up FQDN per Client ({})</DIV>".format(svchost)
+ print "<DIV CLASS=z-table style='padding:5px; width:100%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for data in dnstop['who']:
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'],data['who'],data['hostname'])
+ print "</DIV></DIV></DIV>"
+
+def examine_dhcp(aWeb):
+ from sdcp.core.rest import call as rest_call      
+ svchost = aWeb.get_value('svchost')   
+
+ dhcp = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dhcp_leases")
+ print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>DHCP Active Leases ({})</DIV>".format(svchost)
+ print "<DIV CLASS=z-table style='padding:5px; width:100%; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ends</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for data in dhcp['active']:
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
+ print "</DIV></DIV></DIV>"
+ print "<DIV CLASS=z-frame STYLE='float:left; width:48%;'><DIV CLASS=title>DHCP Free/Old Leases ({})</DIV>".format(svchost)
+ print "<DIV CLASS=z-table style='padding:5px; width:100%; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ended</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for data in dhcp['free']:
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
+ print "</DIV></DIV></DIV>"
+
+def examine_svc(aWeb):
+ from sdcp.core.rest import call as rest_call      
+ import sdcp.PackageContainer as PC
+ svchost = aWeb.get_value('svchost')
+ logs = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:sdcp_examine_logs",{'count':20,'logs':PC.generic['logformat']})
+ for file,res in logs.iteritems():
+  print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
+  for line in res:
+   print line
+  print "</PRE></DIV>"
+
+############################################ Bookings ##############################################
+#
+#
 def list_bookings(aWeb):
+ import sdcp.core.GenLib as GL
  op = aWeb.get_value('op')
  id = aWeb.get_value('id')
 
@@ -38,10 +108,12 @@ def list_bookings(aWeb):
   print "&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
 
+############################################ Users ##############################################
 #
 #
 #
 def list_users(aWeb):
+ import sdcp.core.GenLib as GL
  db   = GL.DB()
  db.connect()
  res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
@@ -67,6 +139,7 @@ def user_info(aWeb):
  alias = aWeb.get_value('alias',"unknown")
  email = aWeb.get_value('email',"unknown")
  if op == 'update':
+  import sdcp.core.GenLib as GL
   db = GL.DB()
   db.connect()
   if id == 'new':
@@ -78,6 +151,7 @@ def user_info(aWeb):
    db.commit()
   db.close()
  elif id <> 'new':
+  import sdcp.core.GenLib as GL
   db = GL.DB()
   db.connect()
   db.do("SELECT alias,name,email FROM users WHERE id = '{}'".format(id))
