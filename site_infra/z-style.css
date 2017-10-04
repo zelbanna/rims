@@ -38,9 +38,8 @@ form{   display:inline; }
 
 /*###################################### Start page ########################################*/
 
-div.z-main-left {    height :75px; width :480px; padding-left: 5px; float: left; }
-div.z-main-right {   height :75px; position: absolute; left: 480px; right: 0px; }
-div.z-main-content { border-style: none; width : 100%; position: absolute; top: 75px; bottom : 0px; background-color:#9CA6B0; }
+div.z-main-menu{     border-style:none; width:100%; position:fixed; height :75px; padding-left: 5px; }
+div.z-main-content { border-style:none; width:100%; position:fixed; top:75px; bottom:0px; background-color:#9CA6B0; }
 
 /*##################################### Content model #####################################*/
 
@@ -110,7 +109,7 @@ a.z-btn {
 a.z-btn:hover {  box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19); font-weight: bold; border: 1px solid black;}
 a.z-btn:active { opacity:0.5} 
 
-a.z-menu-btn {   border-radius: 8px!important; padding: 4px; height: 52px; margin: 5px 0px; }
+a.z-menu-btn {   border-radius: 8px!important; padding: 4px; height: 52px; min-width:52px; margin: 5px 0px; }
 a.z-menu-btn > img {  max-height:43px; }
 
 a.z-small-btn {  border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; margin: 0px;}

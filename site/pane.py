@@ -10,9 +10,34 @@ __status__= "Production"
 
 #################################################################################################################
 #
-# Front view, reading settings JSON/web
+# Navigation
 #
 
+def navigate(aWeb):
+ import sdcp.core.GenLib as GL
+ type = aWeb.get_value('type')
+ db = GL.DB()
+ db.connect()
+ db.do("SELECT * FROM resources WHERE type = '{}'".format(type))
+ rows = db.get_all_rows() 
+ db.close()
+ aWeb.put_html("Navigate")
+ print "<DIV CLASS=z-content ID=div_content>"
+ index = 0;
+ for row in rows:
+  if index == 0:
+   print "<DIV style='float:left'>"
+  print "<A CLASS='z-btn z-menu-btn' style='min-width:52px; margin-left:40px'; TITLE='{}' TARGET=_blank HREF='{}'>".format(row['title'],row['href'])
+  print "<IMG SRC='images/{}'></A>".format(row['icon'])
+  print "</A>({})<BR>".format(row['title'])
+  if index == 3:
+   print "</DIV>"
+   index = 0
+  else:
+   index = index + 1
+ else:
+  print "</DIV>"
+ print "</DIV>"
 
 #################################################################################################################
 #
@@ -219,6 +244,7 @@ def examine(aWeb):
   return
 
  aWeb.put_html('Services Pane')
+
  import sdcp.PackageContainer as PC
 
  svchost = PC.sdcp['svcsrv']
@@ -235,41 +261,6 @@ def examine(aWeb):
  print "<A CLASS='z-reload z-op' OP=redirect URL='pane.cgi?view=examine'></A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content></DIV>"
- 
-##################################################################################################
-#
-# Munin
-#
-def munin(aWeb):
- if not aWeb.cookie.get('sdcp_id'):
-  aWeb.put_redirect("pane.cgi?view=login")
-  return
-
- aWeb.put_html('Munin')
- print """
- <SCRIPT>
- function toggleMuninNavigation(){
-  var iframe = document.getElementById('iframe_munin');
-  var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-  var nav = innerDoc.getElementById('nav');
-  var cont = innerDoc.getElementById('content');
-  if (nav.style.display == 'block') {
-   nav.style.display = 'none';
-   cont.style.marginLeft = '0px'
-  } else {
-   nav.style.display = 'block'; 
-   cont.style.marginLeft = '180px'
-  }
- }
- </SCRIPT>
- <DIV CLASS=z-navbar ID=div_navbar>
- <A onclick=toggleMuninNavigation()>Navigation</A>
- <A CLASS='z-reload z-op' OP=iload IFRAME=iframe_munin URL='/munin-cgi/munin-cgi-html/index.html'></A>
- </DIV>
- <DIV CLASS='z-content' ID=div_content>
- <IFRAME ID=iframe_munin src='/munin-cgi/munin-cgi-html/index.html'></IFRAME>
- </DIV>
- """
 
 ##################################################################################################
 #
@@ -427,7 +418,7 @@ def users(aWeb):
   aWeb.put_redirect("pane.cgi?view=login")
   return
 
- aWeb.put_html("Users")          
+ aWeb.put_html("Users")
 
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_users'>Users</A>"
@@ -439,28 +430,22 @@ def users(aWeb):
  print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
  print "</DIV>"
 
-
 ##################################################################################################
 #
-# Settings/System pane
+# Tools pane
 #
-
-def config(aWeb):
+def tools(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   aWeb.put_redirect("pane.cgi?view=login")
   return
 
- aWeb.put_html("Config and Settings")
- domain  = aWeb.get_value('domain')
- print "<DIV CLASS=z-content style='top:0px;' ID=div_content>"
- print "<DIV CLASS=z-frame ID=div_config_menu style='width:200px; float:left; min-height:100px;'>"
- print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-warning z-op' DIV=div_config SPIN=true MSG='Clear DB?' URL='ajax.cgi?call=device_clear_db'>Clear Database</A>"
- print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_sync'>Synch DDI</A>"
- print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_dhcp_update'>Update DHCP</A>"
- print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=ddi_load_infra'>Load DDI Tables</A>"
- print "<A STYLE='width:192px; text-align:left' CLASS='z-btn' TARGET=_blank HREF='ajax.cgi?call=device_dump_db'>Dump DB to JSON</A>"
- print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config SPIN=true URL='ajax.cgi?call=device_rack_info'>Device Rackinfo</A>"
- print "<A STYLE='width:192px; text-align:left' CLASS='z-btn z-op' DIV=div_config           URL='ajax.cgi?call=device_mac_sync'>Sync MAC Info</A>"
+ aWeb.put_html("Tools")
+
+ print "<DIV CLASS=z-navbar ID=div_navbar>"
+ print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_resources'>Resources</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_config'>Settings</A>"
  print "</DIV>"
- print "<DIV ID=div_config style='min-width:600px; min-height:300px; display:inline;'></DIV>"
+ print "<DIV CLASS=z-content ID=div_content>"
+ print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
  print "</DIV>"
