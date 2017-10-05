@@ -60,25 +60,23 @@ class Web(object):
  # call = <module>_<module_function>
  #
  def ajax(self,aSiteBase):
-  from sys import stdout
-  print "Content-Type: text/html\r\n"
-  stdout.flush()
   import cgi
   self.form = cgi.FieldStorage()
+
   ajaxcall = self.get_value('call','none_nocall')
   (module,void,call) = ajaxcall.partition('_')
-  from importlib import import_module
+
   try:
+   print "Content-Type: text/html\r\n"
+   from importlib import import_module
    ajaxmod = import_module(aSiteBase + ".site.ajax_" + module)
-   fun = getattr(ajaxmod,call,None)
-   fun(self)
+   getattr(ajaxmod,call,None)(self)
   except Exception as err:
+   print "Content-Type: text/html\r\n"
    keys = self.form.keys()
-   if 'call' in keys:
-    keys.remove('call')
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'ajax_module':module, 'call':call, 'args': keys, 'err':str(err) }, sort_keys=True)
+   print dumps({ 'module':module, 'args': keys, 'err':str(err) }, sort_keys=True)
 
  ################################# PANE #########################################
  #
@@ -87,16 +85,17 @@ class Web(object):
  def pane(self):
   import cgi
   self.form = cgi.FieldStorage()
-  paneview = self.get_value('view')
+
+  view = self.get_value('view')
   try:
    import pane as panemod
-   getattr(panemod,paneview,None)(self)
+   getattr(panemod,view,None)(self)
   except Exception as err:
    print "Content-Type: text/html\r\n"
-   print "<SPAN style='font-size:10px'>Pane view:[{}] error: [{}]".format(paneview, str(err))
-   if not paneview in dir(panemod):
-    print " - possible panes:[{}]".format(", ".join(filter(lambda p: p[:2] != "__", dir(panemod))))
-   print "</SPAN>"
+   keys = self.form.keys()
+   keys = ",".join(keys)
+   from json import dumps
+   print dumps({ 'module':view, 'args': keys, 'err':str(err) }, sort_keys=True)
 
  ############################## CGI/Web functions ###############################
 

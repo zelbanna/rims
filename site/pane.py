@@ -24,17 +24,14 @@ def navigate(aWeb):
  aWeb.put_html("Navigate")
  print "<DIV CLASS=z-content ID=div_content>"
  index = 0;
+ print "<DIV style='float:left'>"
  for row in rows:
-  if index == 0:
-   print "<DIV style='float:left'>"
   print "<A CLASS='z-btn z-menu-btn' style='min-width:52px; margin-left:40px'; TITLE='{}' TARGET=_blank HREF='{}'>".format(row['title'],row['href'])
   print "<IMG SRC='images/{}'></A>".format(row['icon'])
   print "</A>({})<BR>".format(row['title'])
   if index == 3:
-   print "</DIV>"
-   index = 0
-  else:
-   index = index + 1
+   print "</DIV><DIV style='float:left'>"
+  index = (index + 1) % 4
  else:
   print "</DIV>"
  print "</DIV>"
@@ -380,31 +377,49 @@ def devices(aWeb):
 #
 # ESXi
 #
+
 def esxi(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   aWeb.put_redirect("pane.cgi?view=login")
   return
 
  aWeb.put_html("ESXi Operations")
- from ajax_esxi import op as esxi_op
- from sdcp.core.GenLib import DB
- from sdcp.devices.ESXi import ESXi
- id = aWeb.get_value('id')
- db = DB()
- db.connect()
- db.do("SELECT hostname, INET_NTOA(ip) as ipasc, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = '{}'".format(id))
- data = db.get_row() 
-  
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&id={}'>Shutdown</A>".format(id)
- print "<A CLASS=z-op DIV=div_content_right  URL=ajax.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A>".format(data['hostname'],data['domain'])
- print "<A CLASS=z-op DIV=div_content_right  URL=ajax.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A>".format(data['hostname'],data['domain'])
- print "<A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A>".format(data['ipasc'])
- print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
- print "</DIV>"
- print "<DIV CLASS=z-content ID=div_content>"
- print "<DIV CLASS=z-content-left ID=div_content_left>"
- esxi_op(aWeb,data['ipasc'],data['hostname'])
+ import sdcp.core.GenLib as GL                   
+ db = GL.DB()
+ db.connect()
+ id = aWeb.get_value('id')
+ if id:
+  db.do("SELECT hostname, INET_NTOA(ip) as ipasc, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = '{}'".format(id))
+  data = db.get_row() 
+  print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='ajax.cgi?call=esxi_op&nstate=poweroff&id={}'>Shutdown</A>".format(id)
+  print "<A CLASS=z-op DIV=div_content_right  URL=ajax.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A>".format(data['hostname'],data['domain'])
+  print "<A CLASS=z-op DIV=div_content_right  URL=ajax.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A>".format(data['hostname'],data['domain'])
+  print "<A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A>".format(data['ipasc'])
+  print "<A CLASS='z-op z-reload' OP=redirect URL='pane.cgi?{}'></A>".format(aWeb.get_args())
+  print "</DIV>"
+  print "<DIV CLASS=z-content ID=div_content>"
+  print "<DIV CLASS=z-content-left ID=div_content_left>"
+  from ajax_esxi import op
+  op(aWeb,data['ipasc'],data['hostname'])
+ else:
+  db.do("SELECT id, INET_NTOA(ip) AS ipasc, hostname, type FROM devices WHERE type = 'esxi' OR type = 'vcenter' ORDER BY type,hostname")
+  rows = db.get_all_rows() 
+  print "&nbsp;</DIV>"
+  print "<DIV CLASS=z-content ID=div_content>"
+  print "<DIV CLASS=z-content-left ID=div_content_left>"
+  print "<DIV CLASS=z-frame><DIV CLASS=z-table style='width:99%'>"
+  print "<DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Hostname</DIV></DIV>"        
+  print "<DIV CLASS=tbody>"
+  for row in rows:
+   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(row['type'])
+   if row['type'] == 'esxi':                  
+    print "<A               HREF='pane.cgi?view=esxi&id={}'>{}</A>".format(row['id'],row['hostname'])
+   else:
+    print "<A TARGET=_blank HREF='https://{}:9443/vsphere-client/'>{}</A>".format(row['ipasc'],row['hostname'])
+   print "</DIV></DIV>"
+  print "</DIV></DIV></DIV>"
+ db.close()
  print "</DIV>" 
  print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
  print "</DIV>"

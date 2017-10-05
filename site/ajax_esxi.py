@@ -7,6 +7,8 @@ __author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
+########################################## ESXi Operations ##########################################
+
 #
 # Graphing
 #
@@ -17,6 +19,7 @@ def graph(aWeb):
  print "<DIV CLASS=z-frame style='overflow-x:auto;'>"
  widget_cols([ "{1}/{0}.{1}/esxi_vm_info".format(hostname,domain), "{1}/{0}.{1}/esxi_cpu_info".format(hostname,domain), "{1}/{0}.{1}/esxi_mem_info".format(hostname,domain) ])
  print "</DIV>"
+
 #
 # Logs
 #
@@ -30,7 +33,6 @@ def logs(aWeb):
  except:
   pass
 
-########################################## ESXi Operations ##########################################
 #
 # ESXi operations
 #
@@ -43,7 +45,7 @@ def op(aWeb,aIP = None, aName = None):
  vmid   = aWeb.get_value('vmid','-1')
  sort   = aWeb.get_value('sort','name')
  aEsxi  = ESXi(ip)
- aEsxi.set_name(aName)
+ aEsxi.set_name(name)
 
  if nstate:
   from subprocess import check_call, check_output
