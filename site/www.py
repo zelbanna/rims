@@ -63,7 +63,7 @@ class Web(object):
   import cgi
   self.form = cgi.FieldStorage()
 
-  headers  = self.get_value('headers','no')
+  headers  = self.get_value('headers','yes')
   ajaxcall = self.get_value('call','none_nocall')
   (module,void,call) = ajaxcall.partition('_')
   try: 
