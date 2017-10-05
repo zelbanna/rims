@@ -63,11 +63,11 @@ class Web(object):
   import cgi
   self.form = cgi.FieldStorage()
 
-  headers  = self.get_value('headers')
+  headers  = self.get_value('headers','no')
   ajaxcall = self.get_value('call','none_nocall')
   (module,void,call) = ajaxcall.partition('_')
   try: 
-   if not headers:
+   if headers == 'yes':
     print "Content-Type: text/html\r\n"
    from importlib import import_module
    ajaxmod = import_module(aSiteBase + ".site.ajax_" + module)

@@ -43,7 +43,7 @@ def list(aWeb):
   print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
   print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right URL=ajax.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
   print "<DIV CLASS=td>"
-  print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	    TARGET=_blank         HREF='ajax.cgi?call=nova_console&headers=no&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	    TARGET=_blank         HREF='ajax.cgi?call=nova_console&headers=yes&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
   print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=nova_console&id={}><IMG SRC='images/btn-term-frame.png'></A>".format(server['id'])
   print "<A TITLE='Remove VM'        CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=nova_action&id={}&op=remove MSG='Are you sure you want to delete VM?' SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(server['id'])
   if not server['OS-EXT-STS:task_state']:
