@@ -100,7 +100,7 @@ def discover():
   db = GL.DB()
   db.connect()
   db.do("SELECT type, hostname, domains.name AS domain, INET_NTOA(ip) as ip, INET_NTOA(graph_proxy) as handler FROM devices INNER JOIN domains ON devices.a_dom_id = domains.id WHERE graph_update = 1 AND model <> 'unknown'")
-  rows = db.get_all_rows()
+  rows = db.get_rows()
   db.close()
   for item in rows:
    sema.acquire()

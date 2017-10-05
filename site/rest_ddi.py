@@ -105,7 +105,7 @@ def dns_cleanup(aDict):
  db = GL.DB()
  db.connect_details('localhost',PC.dnsdb['username'],PC.dnsdb['password'],PC.dnsdb['dbname'])
  db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
- rows = db.get_all_rows();
+ rows = db.get_rows();
  remove = []
  previous = {'content':None,'name':None}
  for row in rows:
@@ -153,7 +153,7 @@ def dns_domains(aDict):
  db.connect_details('localhost',PC.dnsdb['username'], PC.dnsdb['password'], PC.dnsdb['dbname'])
  res = db.do("SELECT id, name FROM domains")
  db.close()
- return db.get_all_rows()
+ return db.get_rows()
 
 #
 # lookup ( name, a_dom_id, ip)
@@ -166,7 +166,7 @@ def dns_lookup(aDict):
  db = GL.DB()
  db.connect_details('localhost',PC.dnsdb['username'], PC.dnsdb['password'], PC.dnsdb['dbname'])
  res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr))
- domains = db.get_all_rows()
+ domains = db.get_rows()
  if res == 2:
   domain     = domains[0]['name'] if domains[1]['name'] == ptr else domains[1]['name']
   ptr_dom_id = domains[1]['id']   if domains[1]['name'] == ptr else domains[0]['id']
@@ -201,7 +201,7 @@ def dns_update(aDict):
  db = GL.DB()
  db.connect_details('localhost',PC.dnsdb['username'], PC.dnsdb['password'], PC.dnsdb['dbname'])
  res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr.partition('.')[2]))
- domains = db.get_all_rows()
+ domains = db.get_rows()
  if res == 2:
   domain     = domains[0]['name'] if domains[1]['name'] == ptr else domains[1]['name']
   ptr_dom_id = domains[1]['id']   if domains[1]['name'] == ptr else domains[0]['id']
@@ -261,7 +261,7 @@ def ipam_subnets(aDict):
  db.connect_details('localhost',PC.ipamdb['username'], PC.ipamdb['password'], PC.ipamdb['dbname'])
  res = db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
  db.close()
- return db.get_all_rows()
+ return db.get_rows()
 
 #
 # lookup(ip,ipam_sub_id)

@@ -137,7 +137,7 @@ def discover(aDict):
   db.commit()
  else:
   res  = db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(ip_start,ip_end))
-  rows = db.get_all_rows()
+  rows = db.get_rows()
   for item in rows:
    db_old[item.get('ip')] = True
  try:
@@ -202,7 +202,7 @@ def dump_db(aDict):
  res = db.do("SELECT {} FROM {}".format(cols,tbl))
  db.close()
  if res > 0:
-  return db.get_all_rows()
+  return db.get_rows()
  else:
   return []
 

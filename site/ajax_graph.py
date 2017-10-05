@@ -18,7 +18,7 @@ def list(aWeb):
  if id and state:
   db.do("UPDATE devices SET graph_update = '{1}' WHERE id = '{0}'".format(id,1 if state == '0' else 0))
  db.do("SELECT devices.id, INET_NTOA(ip) as ip, hostname, INET_NTOA(graph_proxy) AS proxy ,graph_update, domains.name AS domain FROM devices INNER JOIN domains ON devices.a_dom_id = domains.id ORDER BY hostname")
- rows = db.get_all_rows()
+ rows = db.get_rows()
  db.close()
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Graphing</DIV>"
@@ -83,7 +83,7 @@ def save(aWeb):
  db.connect()
  db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
  db.close()
- rows = db.get_all_rows()
+ rows = db.get_rows()
  with open(PC.sdcp['graph']['file'],'w') as output:
   for row in rows:
    output.write("[{}.{}]\n".format(row['hostname'],row['domain']))

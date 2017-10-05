@@ -98,7 +98,7 @@ def list_pdus(aWeb):
  print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  res  = db.do("SELECT id, name, INET_NTOA(ip) as ip from pdus ORDER by name")
- data = db.get_all_rows()
+ data = db.get_rows()
 
  for unit in data:
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='ajax.cgi?call=pdu_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['ip'])

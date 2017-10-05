@@ -40,7 +40,7 @@ class DB(object):
   return self._curs.fetchone()
 
  # Bug in fetchall, a tuple is not an empty list in contrary to func spec
- def get_all_rows(self):
+ def get_rows(self):
   rows = self._curs.fetchall()
   return rows if rows != () else []
 

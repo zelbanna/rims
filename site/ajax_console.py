@@ -39,7 +39,7 @@ def list_consoles(aWeb):
  print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='ajax.cgi?call=console_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table style='width:99%;'>"
  res  = db.do("SELECT id, INET_NTOA(ip) as ip, name from consoles ORDER by name")
- data = db.get_all_rows()
+ data = db.get_rows()
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for unit in data:

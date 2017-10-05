@@ -19,7 +19,7 @@ def navigate(aWeb):
  db = GL.DB()
  db.connect()
  db.do("SELECT * FROM resources WHERE type = '{}'".format(type))
- rows = db.get_all_rows() 
+ rows = db.get_rows() 
  db.close()
  aWeb.put_html("Navigate")
  print "<DIV CLASS=z-content ID=div_content>"
@@ -65,7 +65,7 @@ def login(aWeb):
  db.connect()
  db.do("SELECT id,name FROM users ORDER BY name")
  db.close()
- rows = db.get_all_rows()
+ rows = db.get_rows()
  aWeb.put_html("SDCP Portal")
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV ID=div_sdcp_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
@@ -305,7 +305,7 @@ def rack(aWeb):
  db.connect()
  db.do("SELECT id,name,image_url from racks")
  db.close()
- racks = db.get_all_rows()
+ racks = db.get_rows()
  print "<CENTER><H1>Rack Overview | <A HREF=pane.cgi?view=devices&target=vm&arg=1>Virtual Machines</A></H1><BR>"
  rackstr = "<A TARGET=main_cont TITLE='{1}' HREF=pane.cgi?view=devices&target=rack_id&arg={0}><IMG ALT='{1} ({2})' SRC='images/{2}'></A>&nbsp;"
  for index, rack in enumerate(racks):
@@ -344,7 +344,7 @@ def devices(aWeb):
    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='ajax.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
   if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
    res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
-   rows = db.get_all_rows()
+   rows = db.get_rows()
    pdus = ""
    for row in rows:
     pdus = pdus + "&pdulist=" + row.get('ip')
@@ -353,7 +353,7 @@ def devices(aWeb):
  else: 
   for type in ['pdu','console']:
    db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
-   tprows = db.get_all_rows()
+   tprows = db.get_rows()
    if len(tprows) > 0:
     arglist = "call={}_list".format(type)
     for row in tprows:
@@ -404,7 +404,7 @@ def esxi(aWeb):
   op(aWeb,data['ipasc'],data['hostname'])
  else:
   db.do("SELECT id, INET_NTOA(ip) AS ipasc, hostname, type FROM devices WHERE type = 'esxi' OR type = 'vcenter' ORDER BY type,hostname")
-  rows = db.get_all_rows() 
+  rows = db.get_rows() 
   print "&nbsp;</DIV>"
   print "<DIV CLASS=z-content ID=div_content>"
   print "<DIV CLASS=z-content-left ID=div_content_left>"

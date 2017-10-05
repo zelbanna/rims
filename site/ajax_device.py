@@ -36,7 +36,7 @@ def view_devicelist(aWeb):
   else: 
    tune = "WHERE {0} is NULL".format(target)
  res = db.do("SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort))
- rows = db.get_all_rows()
+ rows = db.get_rows()
  db.close()
  
  print "<DIV CLASS=tbody>"
@@ -150,7 +150,7 @@ def info(aWeb):
   print "<OPTION VALUE=NULL>Not used (VM)</OPTION>"
  else:
   db.do("SELECT * FROM racks")
-  racks = db.get_all_rows()
+  racks = db.get_rows()
   racks.append({ 'id':'NULL', 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
   for rack in racks:
    extra = " selected" if ((not device_data['rack_id'] and rack['id'] == 'NULL') or (device_data['rack_id'] and device_data['rack_id'] == rack['id'])) else ""
@@ -180,7 +180,7 @@ def info(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(ri['rack_size'])
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(ri['rack_unit'])
   if not device_data['type'] == 'console' and db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") > 0:
-   consoles = db.get_all_rows()
+   consoles = db.get_rows()
    consoles.append({ 'id':'NULL', 'name':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1' })
    print "<DIV CLASS=tr><DIV CLASS=td>TS:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_console_id>"
    for console in consoles:
@@ -195,7 +195,7 @@ def info(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
    print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
   if not device_data['type'] == 'pdu' and db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus") > 0:
-   pdus = db.get_all_rows()
+   pdus = db.get_rows()
    pdus.append({ 'id':'NULL', 'name':'No', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'PDU' })
    for pem in ['pem0','pem1']:
     print "<DIV CLASS=tr><DIV CLASS=td>{0} PDU:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_{1}_pdu_slot_id>".format(pem.upper(),pem)
@@ -292,7 +292,7 @@ def rack_info(aWeb):
  db = GL.DB()
  db.connect()
  res  = db.do("SELECT rackinfo.*, devices.hostname, devices.rack_id, devices.ip, INET_NTOA(devices.ip) as ipasc FROM rackinfo JOIN devices ON devices.id = rackinfo.device_id")
- devs = db.get_all_rows()
+ devs = db.get_rows()
  if res == 0:
   db.close()
   return
@@ -327,7 +327,7 @@ def mac_sync(aWeb):
  db = GL.DB()
  db.connect()
  db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices WHERE hostname <> 'unknown' ORDER BY ip")
- rows = db.get_all_rows()
+ rows = db.get_rows()
  print "<DIV CLASS=z-frame style='overflow-x:auto; width:400px;'><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -362,9 +362,9 @@ def new(aWeb):
   db = GL.DB()
   db.connect()
   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet")
-  subnets = db.get_all_rows()
+  subnets = db.get_rows()
   db.do("SELECT id, name FROM domains")
-  domains = db.get_all_rows()
+  domains = db.get_rows()
   db.close()
   print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:180px;'>"
   print "<FORM ID=device_new_form>"
@@ -428,9 +428,9 @@ def discover(aWeb):
   print "<DIV CLASS=z-frame>{}</DIV>".format(res)
  else:
   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet");
-  subnets = db.get_all_rows()
+  subnets = db.get_rows()
   db.do("SELECT id, name FROM domains")
-  domains  = db.get_all_rows()
+  domains  = db.get_rows()
   dom_name = aWeb.get_value('domain')
   print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
   print "<FORM ID=device_discover_form>"

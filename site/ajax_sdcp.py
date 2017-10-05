@@ -27,7 +27,7 @@ def list_resources(aWeb):
  db   = GL.DB()
  db.connect()
  res  = db.do("SELECT id, title, href,type FROM resources ORDER BY type,title")
- rows = db.get_all_rows()              
+ rows = db.get_rows()              
  db.close()               
  print "<DIV CLASS=z-frame><DIV CLASS=title>Resources</DIV>"
  print "<A TITLE='Reload List'  CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='ajax.cgi?call=sdcp_list_resources'><IMG SRC='images/btn-reboot.png'></A>"
@@ -200,7 +200,7 @@ def list_bookings(aWeb):
   db.commit()
 
  res  = db.do("SELECT user_id, device_id, time_start, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid, ADDTIME(time_start, '30 0:0:0.0') as time_end, devices.hostname, users.alias FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
- rows = db.get_all_rows()
+ rows = db.get_rows()
  db.close()
  print "<DIV CLASS=z-frame><DIV CLASS=title>Bookings</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='ajax.cgi?call=sdcp_list_bookings'><IMG SRC='images/btn-reboot.png'></A>"
@@ -236,7 +236,7 @@ def list_users(aWeb):
  db   = GL.DB()
  db.connect()
  res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
- rows = db.get_all_rows()
+ rows = db.get_rows()
  db.close()
  print "<DIV CLASS=z-frame><DIV CLASS=title>Users</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='ajax.cgi?call=sdcp_list_users'><IMG SRC='images/btn-reboot.png'></A>"

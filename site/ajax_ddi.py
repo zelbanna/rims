@@ -19,7 +19,7 @@ def dhcp_update(aWeb):
  db.do("SELECT devices.id, hostname, INET_NTOA(ip) as ipasc, domains.name as domain, mac, ipam_sub_id from devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT  mac = 0 ORDER BY ip")
  db.close()
  args = []
- rows = db.get_all_rows()
+ rows = db.get_rows()
  for row in rows:
   args.append({'ip':row['ipasc'],'fqdn':"{}.{}".format(row['hostname'],row['domain']),'mac':GL.int2mac(row['mac']),'id':row['id'],'subnet_id':row['ipam_sub_id']})
  res = rest_dhcp_update({'entries':args})
@@ -33,7 +33,7 @@ def sync(aWeb):
  db = GL.DB()
  db.connect()
  db.do("SELECT devices.id, ip, hostname, INET_NTOA(ip) as ipasc, ipam_sub_id, a_dom_id, domains.name as domain FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE (a_id = 0 or ptr_id = 0 or ipam_id = 0) ORDER BY ip")
- rows = db.get_all_rows()
+ rows = db.get_rows()
  print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
  print "<DIV CLASS=thead style='border: 1px solid grey'><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>A</DIV><DIV CLASS=th>PTR</DIV><DIV CLASS=th>IPAM</DIV><DIV CLASS=th>Extra</DIV></DIV>"
  print "<DIV CLASS=tbody>"

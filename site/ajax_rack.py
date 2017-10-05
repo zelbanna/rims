@@ -24,7 +24,7 @@ def list_racks(aWeb):
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  res  = db.do("SELECT * from racks ORDER by name")
- data = db.get_all_rows()
+ data = db.get_rows()
  for unit in data:
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='ajax.cgi?call=rack_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['size'])
  print "</DIV></DIV></DIV>"
@@ -92,7 +92,7 @@ def info(aWeb):
  for key in ['pdu_1','pdu_2','console']:
   dbname = key.partition('_')[0]
   db.do("SELECT id,name from {0}s".format(dbname))
-  rows = db.get_all_rows()
+  rows = db.get_rows()
   rows.append({'id':'NULL', 'name':"No {}".format(dbname.capitalize())})
   print "<DIV CLASS=tr><DIV CLASS=td>{0}:</DIV><DIV CLASS=td><SELECT NAME=fk_{1}>".format(key.capitalize(),key)
   for unit in rows:
@@ -147,7 +147,7 @@ def remove(aWeb):
  db   = GL.DB()
  db.connect()
  res  = db.do("SELECT id FROM devices WHERE rack_id = {0}".format(id))
- devs = db.get_all_rows()
+ devs = db.get_rows()
  for dev in devs:
   db.do("DELETE FROM rackinfo WHERE device_id = {0}".format(dev['id']))
  db.do("DELETE FROM racks WHERE id = {0}".format(id))
