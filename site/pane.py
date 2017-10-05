@@ -22,6 +22,7 @@ def navigate(aWeb):
  rows = db.get_rows() 
  db.close()
  aWeb.put_html("Navigate")
+ print "<DIV CLASS=z-navbar  ID=div_navbar>&nbsp;</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  index = 0;
  print "<DIV style='float:left'>"
@@ -457,8 +458,11 @@ def tools(aWeb):
  aWeb.put_html("Tools")
 
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_resources'>Resources</A>"
- print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_config'>Settings</A>"
+ print "<A CLASS=z-op           DIV=div_content_left  URL='ajax.cgi?call=sdcp_list_resources'>Resources</A>"
+ print "<A CLASS=z-op           DIV=div_content_left  URL='ajax.cgi?call=sdcp_list_options'>Options</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content_right URL='ajax.cgi?call=sdcp_list_resource_type&type=bookmark'>Bookmarks</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content_right URL='ajax.cgi?call=sdcp_list_resource_type&type=demo'>Demos</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content_right URL='ajax.cgi?call=sdcp_list_resource_type&type=tool'>Tools</A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"

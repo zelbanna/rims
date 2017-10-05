@@ -7,10 +7,10 @@ __author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
-############################################ Tools ##############################################
+############################################ Options ##############################################
 #
-def list_config(aWeb):
- print "<DIV CLASS=z-frame><DIV CLASS=title>Config Options</DIV>"
+def list_options(aWeb):
+ print "<DIV CLASS=z-frame><DIV CLASS=title>Options</DIV>"
  print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='ajax.cgi?call=ddi_sync'>Synch DDI</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='ajax.cgi?call=ddi_dhcp_update'>Update DHCP</A></DIV></DIV>"
@@ -101,6 +101,26 @@ def resource_info(aWeb):
  print "<A TITLE='Update resource'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=sdcp_resource_info&op=update FRM=sdcp_resource_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"
+
+#
+#
+#
+def list_resource_type(aWeb):
+ import sdcp.core.GenLib as GL
+ db = GL.DB()
+ db.connect()
+ type  = aWeb.get_value('type')
+ db.do("SELECT * FROM resources WHERE type = '{}'".format(type))
+ rows = db.get_rows() 
+ db.close()
+ index = 0;
+ for row in rows:
+  print "<DIV style='float:left; width:100px; margin:6px'>"
+  print "<A CLASS='z-btn z-menu-btn' style='min-width:52px;'; TITLE='{}' TARGET=_blank HREF='{}'>".format(row['title'],row['href'])
+  print "<IMG SRC='images/{}'></A>".format(row['icon'])
+  print "</A><BR>{}".format(row['title'])
+  print "</DIV>"
+
 
 
 ############################################ Examine ##############################################
