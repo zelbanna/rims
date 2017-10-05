@@ -212,26 +212,6 @@ def openstack_portal(aWeb):
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content style='top:94px;'></DIV>"
 
-#
-# Console redirect - since ajax not able to do header manipulations 'yet'
-#
-def openstack_console(aWeb):
- from sdcp.devices.openstack import OpenstackRPC
- token = aWeb.cookie.get('os_user_token')
- if token:
-  id   = aWeb.get_value('id')
-  name = aWeb.get_value('name')
-  controller = OpenstackRPC(aWeb.cookie.get('os_controller'),token)
-  data = controller.call(aWeb.cookie.get('os_nova_port'), aWeb.cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(id), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})
-  if data['code'] == 200:
-   url = data['data']['remote_console']['url']
-   # URL is #@?! inline URL.. remove http:// and replace IP (assume there is a port..) with controller IP
-   url = "http://" + aWeb.cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
-   aWeb.put_redirect("{}&title={}".format(url,name))
- else:
-  aWeb.put_html('Openstack Console')
-  print "Not logged in "
-  
 ##################################################################################################
 #
 # Examine pane

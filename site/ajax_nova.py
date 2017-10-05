@@ -43,7 +43,7 @@ def list(aWeb):
   print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
   print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right URL=ajax.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
   print "<DIV CLASS=td>"
-  print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	TARGET=_blank      HREF='pane.cgi?view=openstack_console&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
+  print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	    TARGET=_blank         HREF='ajax.cgi?call=nova_console&headers=no&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
   print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=nova_console&id={}><IMG SRC='images/btn-term-frame.png'></A>".format(server['id'])
   print "<A TITLE='Remove VM'        CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=nova_action&id={}&op=remove MSG='Are you sure you want to delete VM?' SPIN=true><IMG SRC='images/btn-remove.png'></A>".format(server['id'])
   if not server['OS-EXT-STS:task_state']:
@@ -221,16 +221,25 @@ def action(aWeb):
   print "</DIV>"
 
 def console(aWeb):
- cookie = aWeb.cookie
- token = cookie.get('os_user_token')
+ token = aWeb.cookie.get('os_user_token')
+ headers = aWeb.get_value('headers')
+
  if not token:
+  if headers == 'no':
+   aWeb.put_html('Openstack Nova')
   print "Not logged in"
   return
+
  id   = aWeb.get_value('id')
- controller = OpenstackRPC(cookie.get('os_controller'),token)
- data = controller.call(cookie.get('os_nova_port'), cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(id), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})
+ name = aWeb.get_value('name')
+ controller = OpenstackRPC(aWeb.cookie.get('os_controller'),token)
+ data = controller.call(aWeb.cookie.get('os_nova_port'), aWeb.cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(id), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})
  if data['code'] == 200:
   url = data['data']['remote_console']['url']
   # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
-  url = "http://" + cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
-  print "<iframe id='console_embed' src='{}' style='width: 100%; height: 100%;'></iframe>".format(url)
+  url = "http://" + aWeb.cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
+  if not headers:
+   print "<iframe id='console_embed' src='{}' style='width: 100%; height: 100%;'></iframe>".format(url)
+  else:
+   aWeb.put_redirect("{}&title={}".format(url,name))
+  
