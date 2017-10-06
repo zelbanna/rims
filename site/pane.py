@@ -14,27 +14,11 @@ __status__= "Production"
 #
 
 def navigate(aWeb):
- import sdcp.core.GenLib as GL
- type = aWeb.get_value('type')
- db = GL.DB()
- db.connect()
- db.do("SELECT * FROM resources WHERE type = '{}'".format(type))
- rows = db.get_rows() 
- db.close()
  aWeb.put_html("Navigate")
  print "<DIV CLASS=z-navbar  ID=div_navbar>&nbsp;</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
- index = 0;
- print "<DIV style='float:left'>"
- for row in rows:
-  print "<A CLASS='z-btn z-menu-btn' style='min-width:52px; margin-left:40px'; TITLE='{}' TARGET=_blank HREF='{}'>".format(row['title'],row['href'])
-  print "<IMG SRC='images/{}'></A>".format(row['icon'])
-  print "</A>({})<BR>".format(row['title'])
-  if index == 3:
-   print "</DIV><DIV style='float:left'>"
-  index = (index + 1) % 4
- else:
-  print "</DIV>"
+ from ajax_sdcp import list_resource_type
+ list_resource_type(aWeb)
  print "</DIV>"
 
 #################################################################################################################
