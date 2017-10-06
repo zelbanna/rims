@@ -118,9 +118,9 @@ def list_resource_type(aWeb):
  rows = db.get_rows() 
  db.close()
  index = 0;
- print "<DIV CLASS=z-centered>"
+ print "<DIV CLASS=z-centered style='align-items:initial'>"
  for row in rows:
-  print "<DIV style='float:left; width:100px; margin:6px'>"
+  print "<DIV style='float:left; width:100px; margin:6px;'>"
   print "<A CLASS='z-btn z-menu-btn' style='min-width:52px;'; TITLE='{}' TARGET=_blank HREF='{}'>".format(row['title'],row['href'])
   print "<IMG SRC='images/{}'></A>".format(row['icon'])
   print "</A><BR>{}".format(row['title'])
