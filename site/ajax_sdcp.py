@@ -10,6 +10,7 @@ __status__= "Production"
 ############################################ Options ##############################################
 #
 def list_options(aWeb):
+ print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Options</DIV>"
  print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='ajax.cgi?call=ddi_sync'>Synch DDI</A></DIV></DIV>"
@@ -18,7 +19,8 @@ def list_options(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TARGET=_blank                  HREF='ajax.cgi?call=device_dump_db'>Dump DB to JSON</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='ajax.cgi?call=device_rack_info'>Device Rackinfo</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='ajax.cgi?call=device_mac_sync'>Sync MAC Info</A></DIV></DIV>"
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV></DIV></DIV>"
+ print "<DIV CLASS=z-content-right ID =div_content_right></DIV>"
 
 ############################################ resources ##############################################
 #
@@ -29,6 +31,7 @@ def list_resources(aWeb):
  res  = db.do("SELECT id, title, href,type FROM resources ORDER BY type,title")
  rows = db.get_rows()              
  db.close()               
+ print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Resources</DIV>"
  print "<A TITLE='Reload List'  CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='ajax.cgi?call=sdcp_list_resources'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add Resource' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='ajax.cgi?call=sdcp_resource_info&id=new'><IMG SRC='images/btn-add.png'></A>"
@@ -39,7 +42,8 @@ def list_resources(aWeb):
   print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=ajax.cgi?call=sdcp_resource_info&id={0}><IMG SRC=images/btn-info.png></A>".format(row['id'])
   print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=ajax.cgi?call=sdcp_resource_remove&id={0} MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>&nbsp;".format(row['id'])
   print "</DIV></DIV>"
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV></DIV></DIV>"
+ print "<DIV CLASS=z-content-right ID =div_content_right></DIV>"
 
 #
 #
