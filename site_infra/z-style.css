@@ -43,7 +43,7 @@ div.z-main-content { border-style:none; width:100%; position:fixed; top:75px; bo
 
 /*##################################### Content model #####################################*/
 
-div.z-navbar { display:table; height: 34px; float: left; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99; cursor:pointer; position:fixed; top:0px; width:100%; z-index:1000; }
+div.z-navbar { display:table; height: 34px; float: left; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99; cursor:pointer; position:absolute; top:0px; width:100%; z-index:1000; }
 div.z-navbar a { color:#FFFFFF; display:table-cell; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; outline:none; float:left; }
 div.z-navbar a.z-right {  float:right; }
 div.z-navbar a.z-reload { background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 

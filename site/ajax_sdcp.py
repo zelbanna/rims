@@ -82,15 +82,9 @@ def resource_info(aWeb):
  print "<FORM ID=sdcp_resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=z-table style='float:left;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV CLASS=td><INPUT  NAME=title TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(title)
- print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV CLASS=td><INPUT  NAME=href TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(href)
- print "<DIV CLASS=tr><DIV CLASS=td>Icon:</DIV><DIV CLASS=td><SELECT NAME=icon>"
- print "<OPTION VALUE=NULL>No picture</OPTION>"
- for image in listdir(path.join(PC.generic['docroot'],"images")):
-  extra = " selected" if (icon == image) else ""
-  if image[-3:] == "png" or image[-3:] == "jpg":
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(image,extra,image[:-4])
- print "</SELECT></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV CLASS=td><INPUT   NAME=title TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(title)
+ print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV CLASS=td><INPUT     NAME=href TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(href)
+ print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(icon)
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT NAME=type>"
  for tp in ['bookmark','demo','tool']:
   print "<OPTION VALUE={} {}>{}</OPTION>".format(tp,"" if type != tp else 'selected',tp.title())
@@ -98,7 +92,7 @@ def resource_info(aWeb):
 
  print "</DIV></DIV>"
  if icon and icon != 'NULL':
-  print "<A CLASS=z-btn style='float:left; padding:6px; cursor:default;'><IMG ALT={0} SRC='images/{0}'></A>".format(icon)
+  print "<A CLASS=z-btn style='float:left; padding:6px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(icon)
  print "<BR style='clear:left'>"
  if id != 'new':
   print "<A TITLE='Remove resource' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=sdcp_resource_remove&id={0}  MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>".format(id)
@@ -120,10 +114,10 @@ def list_resource_type(aWeb):
  index = 0;
  print "<DIV CLASS=z-centered style='align-items:initial'>"
  for row in rows:
-  print "<DIV style='float:left; width:100px; margin:6px;'>"
+  print "<DIV style='float:left; min-width:100px; margin:6px;'>"
   print "<A CLASS='z-btn z-menu-btn' style='min-width:52px;'; TITLE='{}' TARGET=_blank HREF='{}'>".format(row['title'],row['href'])
-  print "<IMG SRC='images/{}'></A>".format(row['icon'])
-  print "</A><BR>{}".format(row['title'])
+  print "<IMG ALT='{0}' SRC='{0}'></A>".format(row['icon'])
+  print "</A><BR><SPAN style='width:100px; display:block;'>{}</SPAN>".format(row['title'])
   print "</DIV>"
  print "</DIV>"
 

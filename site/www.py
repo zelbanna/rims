@@ -31,7 +31,7 @@ class Web(object):
   self._c_stor[aParam] = aData
   self._c_life[aParam] = aLife
 
- def _put_headers(self):
+ def put_headers(self):
   for key,value in self._header.iteritems():
    print "{}: {}\r".format(key,value)   
   for key,value in self._c_stor.iteritems():
@@ -42,11 +42,11 @@ class Web(object):
  # Redirect will all cookies and headers set
  def put_redirect(self,aLocation):
   print "Location: {}\r".format(aLocation)
-  self._put_headers()
+  self.put_headers()
 
  # Put full header and listener
  def put_html(self, aTitle = None):
-  self._put_headers()
+  self.put_headers()
   print "<HEAD><META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>"
   if aTitle:
    print "<TITLE>{}</TITLE>".format(aTitle)
