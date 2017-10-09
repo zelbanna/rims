@@ -64,7 +64,7 @@ class Web(object):
   self.form = cgi.FieldStorage()
 
   headers  = self.get_value('headers','yes')
-  ajaxcall = self.get_value('call','none_nocall')
+  ajaxcall = self.get_value('call','pane_login')
   (module,void,call) = ajaxcall.partition('_')
   try: 
    if headers == 'yes' and module != 'pane':
@@ -78,25 +78,6 @@ class Web(object):
    keys = ",".join(keys)
    from json import dumps
    print dumps({ 'module':module, 'args': keys, 'err':str(err) }, sort_keys=True)
-
- ################################# PANE #########################################
- #
- # pane, view = <module>_<function>
- #
- def pane(self):
-  import cgi
-  self.form = cgi.FieldStorage()
-
-  view = self.get_value('view')
-  try:
-   import pane as panemod
-   getattr(panemod,view,None)(self)
-  except Exception as err:
-   print "Content-Type: text/html\r\n"
-   keys = self.form.keys()
-   keys = ",".join(keys)
-   from json import dumps
-   print dumps({ 'module':view, 'args': keys, 'err':str(err) }, sort_keys=True)
 
  ############################## CGI/Web functions ###############################
 

@@ -10,24 +10,6 @@ __status__= "Production"
 
 #################################################################################################################
 #
-# Navigation
-#
-
-def navigate(aWeb):
- if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login")
-  return
- else:
-  aWeb.put_headers()
-
- print "<DIV CLASS=z-navbar  ID=div_navbar>&nbsp;</DIV>"
- print "<DIV CLASS=z-content ID=div_content>"
- from ajax_sdcp import list_resource_type
- list_resource_type(aWeb)
- print "</DIV>"
-
-#################################################################################################################
-#
 # SDCP "login"
 #
 # - writes cookies for sdcp_user(name) and sdcp_id
@@ -48,8 +30,18 @@ def login(aWeb):
  if id != "None":
   import sdcp.PackageContainer as PC
   PC.log_msg("Entering as [{}-{}]".format(id,user))
-  aWeb.put_headers()
-  print "<CENTER><H1>Welcome {} - please choose section to continue</H1></CENTER>".format(user)
+  aWeb.put_html(PC.sdcp['name'])
+  print """<DIV class='z-main-menu' ID=div_main_menu>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='General'   URL=ajax.cgi?call=pane_navigate&type=demo><IMG SRC='images/icon-start.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Rack'      URL=ajax.cgi?call=pane_rack><IMG SRC='images/icon-rack.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Devices'   URL=ajax.cgi?call=pane_devices><IMG SRC='images/icon-network.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Examine'   URL=ajax.cgi?call=pane_examine><IMG SRC='images/icon-examine.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Users'     URL=ajax.cgi?call=pane_users><IMG SRC='images/icon-users.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Documents' URL=ajax.cgi?call=pane_navigate&type=bookmark><IMG SRC='images/icon-docs.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='ESXi'      URL=ajax.cgi?call=pane_esxi><IMG SRC='images/icon-servers.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Tool'      URL=ajax.cgi?call=pane_tools><IMG SRC='images/icon-tools.png'/></A>
+  </DIV>
+  <DIV CLASS=z-main-content ID=div_main_cont></DIV>"""
   return
  
  from sdcp.core.GenLib import DB
@@ -58,11 +50,11 @@ def login(aWeb):
  db.do("SELECT id,name FROM users ORDER BY name")
  db.close()
  rows = db.get_rows()
- aWeb.put_headers()
+ aWeb.put_html("Login")
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV CLASS='z-frame' ID=div_login style='border: solid 1px black; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
- print "<FORM ID=sdcp_login_form>"
+ print "<FORM ACTION=index.cgi METHOD=POST ID=sdcp_login_form>"
  print "<INPUT TYPE=HIDDEN NAME=call VALUE=pane_login>"
  print "<DIV CLASS=z-table style='display:inline; float:left; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=sdcp_login>"
@@ -70,21 +62,30 @@ def login(aWeb):
   print "<OPTION VALUE='{0}_{1}' {2}>{1}</OPTION>".format(row['id'],row['name'],'' if str(row['id']) != id else "selected=True")
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
- print "<A CLASS='z-btn z-op' OP=load DIV=div_main_cont style='margin:20px 20px 30px 40px;' FRM=sdcp_login_form URL=ajax.cgi>Enter</A>"
+ print "<A CLASS='z-btn z-op' OP=submit style='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
  print "</FORM>"
  print "</DIV></DIV>"
+
+#################################################################################################################
+#
+# Navigation
+#
+
+def navigate(aWeb):
+ aWeb.put_headers()
+
+ print "<DIV CLASS=z-navbar  ID=div_navbar>&nbsp;</DIV>"
+ print "<DIV CLASS=z-content ID=div_content>"
+ from ajax_sdcp import list_resource_type
+ list_resource_type(aWeb)
+ print "</DIV>"
 
 ##################################################################################################
 #
 # Examine pane
 #
 def examine(aWeb):
- if not aWeb.cookie.get('sdcp_id'):
-  aWeb.put_redirect("ajax.cgi?call=pane_login")
-  return
- else:
-  aWeb.put_headers()
-
+ aWeb.put_headers()
  import sdcp.PackageContainer as PC
 
  svchost = PC.sdcp['svcsrv']
@@ -107,13 +108,9 @@ def examine(aWeb):
 # Weathermap
 #
 def weathermap(aWeb):
- if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login")
-  return
- else:
-  aWeb.put_headers()
-
+ aWeb.put_html("Weathermap")
  import sdcp.PackageContainer as PC
+
  page = aWeb.get_value('page')
  if not page:
   print "<DIV CLASS=z-navbar ID=div_navbar>" 
@@ -139,11 +136,7 @@ def weathermap(aWeb):
 #
 
 def rack(aWeb):
- if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login")
-  return
- else:
-  aWeb.put_headers()
+ aWeb.put_headers()
 
  from sdcp.core.GenLib import DB
  db = DB()
@@ -165,11 +158,7 @@ def rack(aWeb):
 #
  
 def devices(aWeb):
- if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login")
-  return
- else:
-  aWeb.put_headers()
+ aWeb.put_headers()
 
  from sdcp.core.GenLib import DB
  # target = column name and arg = value, i.e. select all devices where vm = 1, rack_id = 5 :-)
@@ -224,17 +213,13 @@ def devices(aWeb):
 #
 
 def esxi(aWeb):
- if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login")
-  return
- else:
-  aWeb.put_headers()
+ aWeb.put_headers()
 
- print "<DIV CLASS=z-navbar ID=div_navbar>"
  import sdcp.core.GenLib as GL                   
  db = GL.DB()
  db.connect()
  id = aWeb.get_value('id')
+ print "<DIV CLASS=z-navbar ID=div_navbar>"
  if id:
   db.do("SELECT hostname, INET_NTOA(ip) as ipasc, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = '{}'".format(id))
   data = db.get_row() 
@@ -275,11 +260,7 @@ def esxi(aWeb):
 # Users pane
 #
 def users(aWeb):
- if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login")
-  return
- else:
-  aWeb.put_headers()
+ aWeb.put_headers()
 
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_users'>Users</A>"
@@ -296,11 +277,7 @@ def users(aWeb):
 # Tools pane
 #
 def tools(aWeb):
- if not aWeb.cookie.get('sdcp_id'):
-  aWeb.put_redirect("ajax.cgi?call=pane_login")
-  return
- else:
-  aWeb.put_headers()
+ aWeb.put_headers()
 
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op           DIV=div_content URL='ajax.cgi?call=sdcp_list_resources'>Resources</A>"
@@ -445,4 +422,3 @@ def openstack_portal(aWeb):
  print "</DIV>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content style='top:94px;'></DIV>"
-

@@ -21,7 +21,7 @@ else:
 import PackageContainer as PC
 remove("PackageContainer.py")
 
-for dest in [ 'ajax', 'pane', 'rest' ]:
+for dest in [ 'ajax','index','rest' ]:
  site = "{}/{}.cgi".format(PC.generic['docroot'],dest)
  with open(site,'w') as f:
   wr = f.write
@@ -35,10 +35,7 @@ for dest in [ 'ajax', 'pane', 'rest' ]:
   else:
    wr("from {}.site.www import Web\n".format(PC.generic['sitebase']))
    wr("web = Web()\n")
-   if dest == 'ajax':
-    wr("web.ajax('{}')\n".format(PC.generic['sitebase']))
-   else:
-    wr("web.{}()\n".format(dest))
+   wr("web.ajax('{}')\n".format(PC.generic['sitebase']))
  chmod(site,0755)
 
 #
