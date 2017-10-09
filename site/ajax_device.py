@@ -239,7 +239,7 @@ def info(aWeb):
  if functions:
   if functions[0] == 'operated':
    if device_data['type'] == 'esxi':
-    print "<A TARGET='main_cont' HREF='pane.cgi?view=esxi&id={}'>Manage</A></B></DIV>".format(id)
+    print "<A TARGET='main_cont' HREF='ajax.cgi?call=pane_esxi&id={}'>Manage</A></B></DIV>".format(id)
   else:
    for fun in functions:
     funname = " ".join(fun.split('_')[1:])

@@ -11,7 +11,7 @@
 // - [load]   div url spin(true/small/false) [msg = for confirmation] [frm = if doing a post]
 // - redirect url
 // - iload    iframe url
-// - logout   url
+// - logout   url/div
 // - toggle   div
 // - hide     div
 // - single   div select
@@ -41,9 +41,9 @@ function btnoperation(event) {
    div.append("<DIV CLASS='z-loader-small'></DIV>");
   }
   var frm  = button.getAttribute("frm");
-  if(frm)
-   $.post(url, $("#"+frm).serialize() , function(result) { div.html(result); });
-  else
+  if(frm) {
+   $.post(url, $("#"+frm).serializeArray() , function(result) { div.html(result); });
+  } else
    div.load(url, function(responseTxt, statusTxt, xhr){ div.css("overflow-y","auto"); });
  } else if (op == 'redirect') {
   location.replace(url);
@@ -58,7 +58,10 @@ function btnoperation(event) {
    var name = equals > -1 ? cookies[i].substr(0, equals) : cookies[i];
    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
   }
-  location.replace(url);
+  if(url)
+   location.replace(url);
+  else
+   div.html('')
  } else if (op == 'single') {
   $(button.getAttribute("selector")).hide();
   div.show();

@@ -67,7 +67,7 @@ class Web(object):
   ajaxcall = self.get_value('call','none_nocall')
   (module,void,call) = ajaxcall.partition('_')
   try: 
-   if headers == 'yes':
+   if headers == 'yes' and module != 'pane':
     print "Content-Type: text/html\r\n"
    from importlib import import_module
    ajaxmod = import_module(aSiteBase + ".site.ajax_" + module)

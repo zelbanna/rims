@@ -152,7 +152,7 @@ def action(aWeb):
   print tmpl.format('Details','details','VM Details')
   print tmpl.format('Diagnostics','diagnostics','Diagnostics')
   print tmpl.format('Networks','networks','Networks')
-  print "<A TITLE='New-tab Console'  CLASS='z-btn'  TARGET=_blank HREF='pane.cgi?view=openstack_console&name={0}&id={1}'>Console</A>".format(qserver,id)
+  print "<A TITLE='New-tab Console'  CLASS='z-btn'  TARGET=_blank HREF='ajax.cgi?call=pane_openstack_console&name={0}&id={1}'>Console</A>".format(qserver,id)
   print "</DIV>"
   print "<DIV CLASS=z-frame style='overflow:auto;' ID=div_os_info>"
   dict2html(server,server['name'])

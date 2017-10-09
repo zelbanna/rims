@@ -41,7 +41,7 @@ def login(aWeb):
  if id != "None":
   import sdcp.PackageContainer as PC
   PC.log_msg("Entering as [{}-{}]".format(id,user))
-  aWeb.put_html("SDCP Portal")
+  aWeb.put_html("sdcp portal")
   print "<CENTER><H1>Welcome {} - please choose section to continue</H1></CENTER>".format(user)
   return
  

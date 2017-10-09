@@ -15,8 +15,10 @@ __status__= "Production"
 
 def navigate(aWeb):
  if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login&headers=no")
+  aWeb.put_redirect("ajax.cgi?call=pane_login")
   return
+ else:
+  aWeb.put_headers()
 
  print "<DIV CLASS=z-navbar  ID=div_navbar>&nbsp;</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
@@ -58,18 +60,17 @@ def login(aWeb):
  rows = db.get_rows()
  aWeb.put_headers()
  print "<DIV CLASS='z-centered' style='height:100%;'>"
- print "<DIV ID=div_sdcp_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
+ print "<DIV CLASS='z-frame' ID=div_login style='border: solid 1px black; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
- print "<FORM ACTION=ajax.cgi METHOD=POST ID=sdcp_login_form>"
+ print "<FORM ID=sdcp_login_form>"
  print "<INPUT TYPE=HIDDEN NAME=call VALUE=pane_login>"
- print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
  print "<DIV CLASS=z-table style='display:inline; float:left; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=sdcp_login>"
  for row in rows:
   print "<OPTION VALUE='{0}_{1}' {2}>{1}</OPTION>".format(row['id'],row['name'],'' if str(row['id']) != id else "selected=True")
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
- print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=sdcp_login_form>Enter</A>"
+ print "<A CLASS='z-btn z-op' OP=load DIV=div_main_cont style='margin:20px 20px 30px 40px;' FRM=sdcp_login_form URL=ajax.cgi>Enter</A>"
  print "</FORM>"
  print "</DIV></DIV>"
 
@@ -79,8 +80,10 @@ def login(aWeb):
 #
 def examine(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
-  aWeb.put_redirect("ajax.cgi?call=pane_login&headers=no")
+  aWeb.put_redirect("ajax.cgi?call=pane_login")
   return
+ else:
+  aWeb.put_headers()
 
  import sdcp.PackageContainer as PC
 
@@ -105,8 +108,10 @@ def examine(aWeb):
 #
 def weathermap(aWeb):
  if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login&headers=no")
+  aWeb.put_redirect("ajax.cgi?call=pane_login")
   return
+ else:
+  aWeb.put_headers()
 
  import sdcp.PackageContainer as PC
  page = aWeb.get_value('page')
@@ -135,8 +140,10 @@ def weathermap(aWeb):
 
 def rack(aWeb):
  if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login&headers=no")
+  aWeb.put_redirect("ajax.cgi?call=pane_login")
   return
+ else:
+  aWeb.put_headers()
 
  from sdcp.core.GenLib import DB
  db = DB()
@@ -159,8 +166,10 @@ def rack(aWeb):
  
 def devices(aWeb):
  if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login&headers=no")
+  aWeb.put_redirect("ajax.cgi?call=pane_login")
   return
+ else:
+  aWeb.put_headers()
 
  from sdcp.core.GenLib import DB
  # target = column name and arg = value, i.e. select all devices where vm = 1, rack_id = 5 :-)
@@ -216,8 +225,10 @@ def devices(aWeb):
 
 def esxi(aWeb):
  if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login&headers=no")
+  aWeb.put_redirect("ajax.cgi?call=pane_login")
   return
+ else:
+  aWeb.put_headers()
 
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  import sdcp.core.GenLib as GL                   
@@ -265,13 +276,15 @@ def esxi(aWeb):
 #
 def users(aWeb):
  if not aWeb.cookie.get('sdcp_id'):            
-  aWeb.put_redirect("ajax.cgi?call=pane_login&headers=no")
+  aWeb.put_redirect("ajax.cgi?call=pane_login")
   return
+ else:
+  aWeb.put_headers()
 
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_users'>Users</A>"
  print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_bookings'>Bookings</A>"
- print "<A CLASS='z-op z-right' OP=logout  URL='ajax.cgi?call=pane_login' style='background-color:red;'>Log out</A>"
+ print "<A CLASS='z-op z-right' OP=logout DIV=div_main_cont style='background-color:red;'>Log out</A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
@@ -284,8 +297,10 @@ def users(aWeb):
 #
 def tools(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
-  aWeb.put_redirect("pane.cgi?view=login")
+  aWeb.put_redirect("ajax.cgi?call=pane_login")
   return
+ else:
+  aWeb.put_headers()
 
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op           DIV=div_content URL='ajax.cgi?call=sdcp_list_resources'>Resources</A>"
@@ -349,7 +364,7 @@ def openstack_login(aWeb):
 
  aWeb.put_html("{} 2 Cloud".format(name.capitalize()))
  print "<DIV CLASS='z-centered' style='height:100%;'>"
- print "<DIV ID=div_os_login style='background-color:#F3F3F3; display:block; border: solid 1px black; border-radius:8px; width:600px; height:180px;'>"
+ print "<DIV CLASS='z-frame' ID=div_login style='border: solid 1px black; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
  print "<FORM ACTION=ajax.cgi METHOD=POST ID=openstack_login>"
  print "<INPUT TYPE=HIDDEN NAME=call VALUE=pane_openstack_portal>"
@@ -416,7 +431,7 @@ def openstack_portal(aWeb):
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
- print "<A CLASS='z-btn z-op' OP=logout URL='ajax.cgi?pane_openstack_login&headers=no&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
+ print "<A CLASS='z-btn z-op' OP=logout URL='ajax.cgi?call=pane_openstack_login&headers=no&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
  print "</DIV>"
  print "<DIV CLASS='z-navbar' style='top:60px; z-index:1001' ID=div_navbar>"
  print "<A CLASS=z-op           DIV=div_content URL='ajax.cgi?call=heat_list'>Orchestration</A>"
