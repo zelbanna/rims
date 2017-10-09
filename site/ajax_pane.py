@@ -265,7 +265,7 @@ def users(aWeb):
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_users'>Users</A>"
  print "<A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=sdcp_list_bookings'>Bookings</A>"
- print "<A CLASS='z-op z-right' OP=logout DIV=div_main_cont style='background-color:red;'>Log out</A>"
+ print "<A CLASS='z-op z-right' OP=logout style='background-color:red;' URL=index.cgi>Log out</A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
