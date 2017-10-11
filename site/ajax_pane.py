@@ -38,8 +38,9 @@ def login(aWeb):
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Examine'   URL=ajax.cgi?call=pane_examine><IMG SRC='images/icon-examine.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Users'     URL=ajax.cgi?call=pane_users><IMG SRC='images/icon-users.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Documents' URL=ajax.cgi?call=pane_navigate&type=bookmark><IMG SRC='images/icon-docs.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Tools'     URL=ajax.cgi?call=pane_navigate&type=tool><IMG SRC='images/icon-tools.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='ESXi'      URL=ajax.cgi?call=pane_esxi><IMG SRC='images/icon-servers.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Tool'      URL=ajax.cgi?call=pane_tools><IMG SRC='images/icon-tools.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Config'    URL=ajax.cgi?call=pane_tools><IMG SRC='images/icon-config.png'/></A>
   </DIV>
   <DIV CLASS=z-main-content ID=div_main_cont></DIV>"""
   return
