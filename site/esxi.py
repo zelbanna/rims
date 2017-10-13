@@ -91,8 +91,8 @@ def op(aWeb,aIP = None, aName = None):
  nstate = aWeb.get_value('nstate')
  vmid   = aWeb.get_value('vmid','-1')
  sort   = aWeb.get_value('sort','name')
- aEsxi  = ESXi(ip)
- aEsxi.set_name(name)
+ esxi   = ESXi(ip)
+ esxi.set_name(name)
 
  if nstate:
   from subprocess import check_call, check_output
@@ -100,32 +100,32 @@ def op(aWeb,aIP = None, aName = None):
   try:
    if nstate == 'vmsvc-snapshot.create':
     from time import strftime
-    with aEsxi:
-     aEsxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")))
+    with esxi:
+     esxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")))
    elif nstate == 'vmsvc-snapshot.revert':
-    with aEsxi:
-     data = aEsxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid))
+    with esxi:
+     data = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid))
      s_last = 0
      for line in data.splitlines():
       if "Snapshot Id" in line:
        s_id = int(line.split()[3])
        s_last = s_last if s_last > s_id else s_id
      if s_last > 0:
-      aEsxi.ssh_send("vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff".format(vmid,s_last))
+      esxi.ssh_send("vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff".format(vmid,s_last))
    elif "vmsvc-" in nstate:
     vmop = nstate.partition('-')[2]
-    with aEsxi:
-     aEsxi.ssh_send("vim-cmd vmsvc/{} {}".format(vmop,vmid))
+    with esxi:
+     esxi.ssh_send("vim-cmd vmsvc/{} {}".format(vmop,vmid))
    elif nstate == 'poweroff':
-    with aEsxi:
-     aEsxi.ssh_send("poweroff")
+    with esxi:
+     esxi.ssh_send("poweroff")
    elif nstate == 'vmsoff':
     excpt = "" if vmid == '-1' else vmid
     check_call("/usr/local/sbin/ups-operations shutdown {} {} {} &".format(ip,name,excpt), shell=True)
   except Exception as err:
    PC.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
- statelist = aEsxi.get_vms(sort)
+ statelist = esxi.get_vms(sort)
  # Formatting template (command, btn-xyz, vm-id, hover text)
  template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true DIV=div_content_left URL='index.cgi?call=esxi_op&ip=" + ip + "&name=" + name + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
  print "<DIV CLASS=z-frame>"
@@ -158,6 +158,46 @@ def op(aWeb,aIP = None, aName = None):
   else:
    print template.format('vmsvc-power.on','start', vm[0], "Start")
    print template.format('vmsvc-snapshot.create','snapshot', vm[0], "Snapshot")
-   print template.format('vmsvc-snapshot.revert','revert', vm[0], "Snapshot revert to last")
+   print template.format('vmsvc-snapshot.revert','revert', vm[0], "Snapshot - Revert to Last")
+   print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right TITLE='Snapshot - Info' URL=index.cgi?call=esxi_snapshot&ip={}&vmid={}><IMG SRC='images/btn-info.png'></A>".format(ip,vm[0])
   print "</DIV></DIV>"
  print "</DIV></DIV></DIV>"
+
+#
+#
+#
+def snapshot(aWeb):
+ from sdcp.devices.ESXi import ESXi
+ ip   = aWeb.get_value('ip')
+ vmid = aWeb.get_value('vmid')
+ data = {}
+ id   = 0
+ print "<DIV CLASS=z-frame STYLE='width:500px;'>"
+ print "<DIV CLASS=title>Snapshots</DIV>"
+ print "<DIV CLASS=z-table STYLE='width:99%;'><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
+ with ESXi(ip) as esxi:
+  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid))
+  for field in snapshots.splitlines():
+   if "Snapshot" in field:
+    parts = field.partition(':')
+    key = parts[0].strip()
+    val = parts[2].strip()
+    if key[-4:] == 'Name':
+     data['name'] = val
+    elif key[-10:] == 'Desciption':
+     data['desc'] = val
+    elif key[-10:] == 'Created On':
+     data['created'] = val
+    elif key[-2:] == 'Id':
+     data['id'] = val
+     if int(val) > id:
+      id = int(val)
+    elif key[-5:] == 'State':
+     # Last!
+     data['state'] = val
+     print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['name'],data['id'],data['desc'],data['created'],data['state'])
+     data = {}
+
+ print "</DIV></DIV><SPAN STYLE='float:right; font-size:12px;'>[Highest ID:{}]</SPAN></DIV>".format(id)
