@@ -91,12 +91,12 @@ class ESXi(GenDevice):
     return False
   return True
 
- def ssh_send(self,amessage):
+ def ssh_send(self, aMessage, aID=None):
   from select import select
   if self._sshclient:
    output = ""
-   self.log_msg("ssh_send: [" + amessage + "]")
-   stdin, stdout, stderr = self._sshclient.exec_command(amessage)
+   self.log_msg("ssh_send ({}): [{}]".format(aID,aMessage))
+   stdin, stdout, stderr = self._sshclient.exec_command(aMessage)
    while not stdout.channel.exit_status_ready():
     if stdout.channel.recv_ready():
      rl, wl, xl = select([stdout.channel], [], [], 0.0)

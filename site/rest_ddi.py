@@ -124,7 +124,7 @@ def dns_cleanup(aDict):
 #
 def dns_top(aDict):
  if PC.dnsdb['proxy'] == 'True':
-  from sdcp.core.rest import call as rest_call             
+  from sdcp.core.rest import call as rest_call
   return rest_call(PC.dnsdb['url'], "sdcp.site:ddi_dns_top", aDict)
  import sdcp.core.genlib as GL
  count = int(aDict.get('count',10))

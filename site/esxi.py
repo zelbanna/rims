@@ -97,28 +97,29 @@ def op(aWeb,aIP = None, aName = None):
  if nstate:
   from subprocess import check_call, check_output
   import sdcp.PackageContainer as PC
+  userid = aWeb.cookie.get('sdcp_id')
   try:
    if nstate == 'vmsvc-snapshot.create':
     from time import strftime
     with esxi:
-     esxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")))
+     esxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")),userid)
    elif nstate == 'vmsvc-snapshot.revert':
     with esxi:
-     data = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid))
+     data = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),userid)
      s_last = 0
      for line in data.splitlines():
       if "Snapshot Id" in line:
        s_id = int(line.split()[3])
        s_last = s_last if s_last > s_id else s_id
      if s_last > 0:
-      esxi.ssh_send("vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff".format(vmid,s_last))
+      esxi.ssh_send("vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff".format(vmid,s_last),userid)
    elif "vmsvc-" in nstate:
     vmop = nstate.partition('-')[2]
     with esxi:
-     esxi.ssh_send("vim-cmd vmsvc/{} {}".format(vmop,vmid))
+     esxi.ssh_send("vim-cmd vmsvc/{} {}".format(vmop,vmid),userid)
    elif nstate == 'poweroff':
     with esxi:
-     esxi.ssh_send("poweroff")
+     esxi.ssh_send("poweroff",userid)
    elif nstate == 'vmsoff':
     excpt = "" if vmid == '-1' else vmid
     check_call("/usr/local/sbin/ups-operations shutdown {} {} {} &".format(ip,name,excpt), shell=True)
@@ -173,12 +174,12 @@ def snapshot(aWeb):
  data = {}
  id   = 0
  print "<DIV CLASS=z-frame STYLE='width:500px;'>"
- print "<DIV CLASS=title>Snapshots ({})</DIV>".format(id)
+ print "<DIV CLASS=title>Snapshots ({})</DIV>".format(vmid)
  print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
  print "<DIV CLASS=z-table STYLE='width:99%;'><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with ESXi(ip) as esxi:
-  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid))
+  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),aWeb.cookie.get('sdcp_id'))
   for field in snapshots.splitlines():
    if "Snapshot" in field:
     parts = field.partition(':')

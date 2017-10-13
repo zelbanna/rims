@@ -19,7 +19,8 @@ def get_host(ahost):
 def get_host_name(aIP):
  from socket import gethostbyaddr
  try:
-  return gethostbyaddr(aIP)[0]
+  # FQDN, ? , IP
+  return gethostbyaddr(aIP)[0].partition('.')[0]
  except:
   return None
 
