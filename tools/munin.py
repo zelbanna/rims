@@ -41,7 +41,7 @@ def widget_rows(asources):
 #
 def _detect(aentry, alock, asema):
  import sdcp.PackageContainer as PC
- import sdcp.core.GenLib as GL
+ import sdcp.core.genlib as GL
  if not GL.ping_os(aentry['ip']):
   asema.release()
   return False
@@ -86,7 +86,7 @@ def _detect(aentry, alock, asema):
 #
 def discover():
  import sdcp.PackageContainer as PC
- import sdcp.core.GenLib as GL
+ from sdcp.core.dbase import DB
  from os import chmod
  from time import time
  from threading import Lock, Thread, BoundedSemaphore
@@ -97,11 +97,9 @@ def discover():
   with open(PC.sdcp['graph']['plugins'], 'w') as f:
    f.write("#!/bin/bash\n")
   chmod(PC.sdcp['graph']['plugins'], 0o777)
-  db = GL.DB()
-  db.connect()
-  db.do("SELECT type, hostname, domains.name AS domain, INET_NTOA(ip) as ip, INET_NTOA(graph_proxy) as handler FROM devices INNER JOIN domains ON devices.a_dom_id = domains.id WHERE graph_update = 1 AND model <> 'unknown'")
-  rows = db.get_rows()
-  db.close()
+  with DB() as db:
+   db.do("SELECT type, hostname, domains.name AS domain, INET_NTOA(ip) as ip, INET_NTOA(graph_proxy) as handler FROM devices INNER JOIN domains ON devices.a_dom_id = domains.id WHERE graph_update = 1 AND model <> 'unknown'")
+   rows = db.get_rows()
   for item in rows:
    sema.acquire()
    t = Thread(target = _detect, args=[item, flock, sema])

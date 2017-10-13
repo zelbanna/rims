@@ -9,10 +9,6 @@ __status__ = "Production"
 
 import sdcp.PackageContainer as PC
 from GenDevice import GenDevice
-from sdcp.core.XtraLib import pidfile_lock, pidfile_release
-from netsnmp import VarList, Varbind, Session
-from select import select
-from os import remove, path
 
 ########################################### ESXi ############################################
 #
@@ -33,7 +29,7 @@ class ESXi(GenDevice):
   
  def __init__(self,aIP,aID=None):
   GenDevice.__init__(self,aIP,aID,'esxi')
-  from sdcp.core.GenLib import get_host_name
+  from sdcp.core.genlib import get_host_name
   # Override log file
   self._hostname = get_host_name(aIP)
   self._logfile = PC.esxi['logformat'].format(self._hostname)
@@ -72,9 +68,11 @@ class ESXi(GenDevice):
    self.log_msg("threading: Illegal operation passed [{}]".format(aOperation))
 
  def create_lock(self,atime):
+  from sdcp.core.XtraLib import pidfile_lock
   pidfile_lock("/tmp/esxi." + self._hostname + ".vm.pid",atime)
 
  def release_lock(self):
+  from sdcp.core.XtraLib import pidfile_release
   pidfile_release("/tmp/esxi." + self._hostname + ".vm.pid")
 
  #
@@ -94,6 +92,7 @@ class ESXi(GenDevice):
   return True
 
  def ssh_send(self,amessage):
+  from select import select
   if self._sshclient:
    output = ""
    self.log_msg("ssh_send: [" + amessage + "]")
@@ -117,6 +116,7 @@ class ESXi(GenDevice):
     self.log_msg( "Close error: " + str(err))
 
  def get_id_vm(self, aname):
+  from netsnmp import VarList, Varbind, Session
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
    session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
@@ -129,6 +129,7 @@ class ESXi(GenDevice):
   return -1
  
  def get_state_vm(self, aid):
+  from netsnmp import VarList, Varbind, Session
   try:
    vmstateobj = VarList(Varbind(".1.3.6.1.4.1.6876.2.1.1.6." + str(aid)))
    session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
@@ -143,6 +144,7 @@ class ESXi(GenDevice):
   # Returns a list with tuples of strings: [ vm.id, vm.name, vm.powerstate, vm.to_be_backedup ]
   #
   # aSort = 'id' or 'name'
+  from netsnmp import VarList, Varbind, Session
   statelist=[]
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
@@ -186,6 +188,7 @@ class ESXi(GenDevice):
  #
 
  def startup_vms(self):
+  from os import remove, path
   from time import sleep
   # Power up everything in the statefile
   if not path.isfile(self.statefile):
@@ -210,6 +213,7 @@ class ESXi(GenDevice):
   return True
 
  def shutdown_vms(self, aExceptlist):
+  from os import remove, path
   from time import sleep
   # Power down everything and save to the statefile, APCupsd statemachine:
   #

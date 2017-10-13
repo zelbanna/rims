@@ -59,7 +59,7 @@ def device_detect(aIP, aDict = {}, aSema = None):
  import sdcp.PackageContainer as PC
  from netsnmp import VarList, Varbind, Session
  from socket import gethostbyaddr
- from sdcp.core.GenLib import ping_os
+ from sdcp.core.genlib import ping_os
 
  if not ping_os(aIP):
   if aSema:

@@ -35,10 +35,10 @@ def load_infra(aDict):
 #
 #
 def dhcp_leases(aDict):
- import sdcp.core.genlib as GL
  if PC.dhcp['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call
   return rest_call(PC.dhcp['url'], "sdcp.site:ddi_dhcp_leases", aDict)
+ import sdcp.core.genlib as GL
  active = []
  free   = []
  lease  = {}
