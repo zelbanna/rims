@@ -22,9 +22,9 @@ def list(aWeb):
  db.close()
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Graphing</DIV>"
- print "<A TITLE='Reload'   CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='ajax.cgi?call=graph_list'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Save'     CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='ajax.cgi?call=graph_save'><IMG SRC='images/btn-save.png'></A>"
- print "<A TITLE='Discover' CLASS='z-btn z-small-btn z-op' DIV=div_content_right SPIN=true URL='ajax.cgi?call=graph_discover'><IMG SRC='images/btn-search.png'></A>"
+ print "<A TITLE='Reload'   CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='index.cgi?call=graph_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Save'     CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='index.cgi?call=graph_save'><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Discover' CLASS='z-btn z-small-btn z-op' DIV=div_content_right SPIN=true URL='index.cgi?call=graph_discover'><IMG SRC='images/btn-search.png'></A>"
  print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>Proxy</DIV><DIV CLASS=th TITLE='Include in graphing?'>Include</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -32,11 +32,11 @@ def list(aWeb):
   print "<DIV CLASS=tr>"
   if row['graph_update']:
    print "<DIV CLASS=td><A CLASS=z-op TITLE='Show graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html'>{1}.{0}</A></DIV>".format(row['domain'],row['hostname'])
-   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=ajax.cgi?call=graph_set_proxy&id={0}&proxy={1}&ip={2}>{1}</A></DIV>".format(row['id'],row['proxy'],row['ip'])
+   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=index.cgi?call=graph_set_proxy&id={0}&proxy={1}&ip={2}>{1}</A></DIV>".format(row['id'],row['proxy'],row['ip'])
   else:
    print "<DIV CLASS=td>{0}.{1}</DIV>".format(row['hostname'],row['domain'])
    print "<DIV CLASS=td>{0}</A></DIV>".format(row['proxy'])
-  print "<DIV CLASS=td TITLE='Include in graphing?'><A CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL=ajax.cgi?call=graph_list&id={}&state={}><IMG SRC=images/btn-{}.png></A>&nbsp;</DIV>".format(row['id'],row['graph_update'],"start" if row['graph_update'] else "shutdown")
+  print "<DIV CLASS=td TITLE='Include in graphing?'><A CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL=index.cgi?call=graph_list&id={}&state={}><IMG SRC=images/btn-{}.png></A>&nbsp;</DIV>".format(row['id'],row['graph_update'],"start" if row['graph_update'] else "shutdown")
   print "</DIV>"
  print "</DIV></DIV></DIV>"
 
@@ -63,7 +63,7 @@ def set_proxy(aWeb):
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=proxy STYLE='border:1px solid grey; width:200px;' VALUE='{}'></DIV></DIV>".format(proxy)
  print "</DIV></DIV>"
- print "<A TITLE='Update proxy' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=graph_set_proxy&op=update FRM=graph_proxy_form><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Update proxy' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=graph_set_proxy&op=update FRM=graph_proxy_form><IMG SRC='images/btn-save.png'></A>"
  print "</DIV>"
 
 #

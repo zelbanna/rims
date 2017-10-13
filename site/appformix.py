@@ -10,7 +10,6 @@ __status__= "Beta"
 
 ############################### Openstack #############################
 #
-# Assume we've created a token from the pane, so auth is done and we should pick up cookie template .. now username is the final thing .. before proper cookies in web reader
 #
 from sdcp.devices.appformix import AppformixRPC
 import sdcp.PackageContainer as PC

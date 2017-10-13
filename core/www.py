@@ -59,25 +59,25 @@ class Web(object):
  #
  # call = <module>_<module_function>
  #
- def ajax(self,aSiteBase):
+ def server(self,aSiteBase):
   import cgi
   self.form = cgi.FieldStorage()
 
   headers  = self.get_value('headers','yes')
-  ajaxcall = self.get_value('call','pane_login')
+  ajaxcall = self.get_value('call','front_login')
   (module,void,call) = ajaxcall.partition('_')
   try: 
-   if headers == 'yes' and module != 'pane':
+   if headers == 'yes' and module != 'front':
     print "Content-Type: text/html\r\n"
    from importlib import import_module
-   ajaxmod = import_module(aSiteBase + ".site.ajax_" + module)
+   ajaxmod = import_module(aSiteBase + ".site." + module)
    getattr(ajaxmod,call,None)(self)
   except Exception as err:
    print "Content-Type: text/html\r\n"
    keys = self.form.keys()
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'module':module, 'args': keys, 'err':str(err) }, sort_keys=True)
+   print dumps({ 'module':aSiteBase + ".site." + module, 'call':call, 'args': keys, 'err':str(err) }, sort_keys=True)
 
  ############################## CGI/Web functions ###############################
 

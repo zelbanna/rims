@@ -63,9 +63,8 @@ def dhcp_leases(aDict):
     lease[parts[0]] = " ".join(parts[2:])[:-1]
    elif parts[0] == 'client-hostname':
     lease['hostname'] = parts[1][:-1]
-  from sdcp.core.GenLib import ip2int
-  active.sort(key=lambda d: ip2int(d['ip']))
-  free.sort(  key=lambda d: ip2int(d['ip']))
+  active.sort(key=lambda d: GL.ip2int(d['ip']))
+  free.sort(  key=lambda d: GL.ip2int(d['ip']))
   return {"active":active, "free":free }                                
 
 def dhcp_update(aDict):

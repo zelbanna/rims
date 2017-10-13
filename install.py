@@ -21,7 +21,7 @@ else:
 import PackageContainer as PC
 remove("PackageContainer.py")
 
-for dest in [ 'ajax','index','rest' ]:
+for dest in [ 'index','rest' ]:
  site = "{}/{}.cgi".format(PC.generic['docroot'],dest)
  with open(site,'w') as f:
   wr = f.write
@@ -30,12 +30,12 @@ for dest in [ 'ajax','index','rest' ]:
   wr("from sys import path as syspath\n")
   wr("syspath.insert(1, '{}')\n".format(getcwd().rpartition('/')[0]))
   if dest == 'rest':
-   wr("import {}.core.rest as REST\n".format(PC.generic['sitebase']))
-   wr("REST.server()\n")
+   wr("import {}.core.rest as cgi\n".format(PC.generic['sitebase']))
+   wr("cgi.server()\n")
   else:
-   wr("from {}.site.www import Web\n".format(PC.generic['sitebase']))
-   wr("web = Web()\n")
-   wr("web.ajax('{}')\n".format(PC.generic['sitebase']))
+   wr("from {}.core.www import Web\n".format(PC.generic['sitebase']))
+   wr("cgi = Web()\n")
+   wr("cgi.server('{}')\n".format(PC.generic['sitebase']))
  chmod(site,0755)
 
 #

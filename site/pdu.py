@@ -25,7 +25,7 @@ def inventory(aWeb):
  nstate  = aWeb.get_value('nstate')
  pduop   = aWeb.get_value('pdu')
 
- optemplate = "<A CLASS='z-btn z-small-btn z-op' SPIN=true DIV=div_content_left URL='ajax.cgi?call=pdu_inventory&pdu={0}&nstate={1}&slot={2}&unit={3}'><IMG SRC='images/btn-{4}'></A>"
+ optemplate = "<A CLASS='z-btn z-small-btn z-op' SPIN=true DIV=div_content_left URL='index.cgi?call=pdu_inventory&pdu={0}&nstate={1}&slot={2}&unit={3}'><IMG SRC='images/btn-{4}'></A>"
 
  if len(pdulist) == 0:
   pdulist.append(pduop)
@@ -47,7 +47,7 @@ def inventory(aWeb):
   for key in avocent.get_keys(aSortKey = lambda x: int(x.split('.')[0])*100+int(x.split('.')[1])):
    value = avocent.get_entry(key)
    print "<DIV CLASS=tr><DIV CLASS=td TITLE='Open up a browser tab for {1}'><A TARGET='_blank' HREF='https://{0}:3502'>{1}</A></DIV><DIV CLASS=td>{2}</DIV>".format(avocent._ip,pdu,value['slotname']+'.'+value['unit'])
-   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='ajax.cgi?call=pdu_unit_info&pdu={0}&slot={1}&unit={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td>".format(pdu,value['slot'],value['unit'],value['name'], value['slotname'])
+   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='index.cgi?call=pdu_unit_info&pdu={0}&slot={1}&unit={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td>".format(pdu,value['slot'],value['unit'],value['name'], value['slotname'])
    if value['state'] == "off":
     print optemplate.format(pdu, "on", value['slot'],value['unit'], "start")
    else:
@@ -80,7 +80,7 @@ def unit_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Slot.Unit:</DIV><DIV CLASS=td>{0}.{1}</DIV></DIV>".format(slotname,unit)
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
  print "</DIV></DIV>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results URL=ajax.cgi?call=pdu_unit_info&op=update FRM=pdu_form><IMG SRC='images/btn-save.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results URL=index.cgi?call=pdu_unit_info&op=update FRM=pdu_form><IMG SRC='images/btn-save.png'></A>"
  print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
@@ -93,15 +93,15 @@ def list_pdus(aWeb):
  db.connect()
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>PDUs</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='ajax.cgi?call=pdu_list_pdus'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-op'     DIV=div_content_right URL='ajax.cgi?call=pdu_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='index.cgi?call=pdu_list_pdus'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-op'     DIV=div_content_right URL='index.cgi?call=pdu_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  res  = db.do("SELECT id, name, INET_NTOA(ip) as ip from pdus ORDER by name")
  data = db.get_rows()
 
  for unit in data:
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='ajax.cgi?call=pdu_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['ip'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='index.cgi?call=pdu_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['ip'])
  print "</DIV></DIV></DIV>"
  db.close()
 
@@ -175,10 +175,10 @@ def info(aWeb):
  db.close()
  print "</DIV></DIV>"
  if not id == 'new':
-  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=pdu_info&id={0}><IMG SRC='images/btn-reboot.png'></A>".format(id)
-  print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=pdu_remove&id={0}><IMG SRC='images/btn-remove.png'></A>".format(id)
-  print "<A TITLE='Fecth  info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=pdu_info&id={0}&op=lookup&ip={1}><IMG SRC='images/btn-search.png'></A>".format(id,ip)
- print "<A  TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=ajax.cgi?call=pdu_info&op=update FRM=pdu_info_form><IMG SRC='images/btn-save.png'></A>"
+  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=pdu_info&id={0}><IMG SRC='images/btn-reboot.png'></A>".format(id)
+  print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=pdu_remove&id={0}><IMG SRC='images/btn-remove.png'></A>".format(id)
+  print "<A TITLE='Fecth  info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=pdu_info&id={0}&op=lookup&ip={1}><IMG SRC='images/btn-search.png'></A>".format(id,ip)
+ print "<A  TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=pdu_info&op=update FRM=pdu_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"
 

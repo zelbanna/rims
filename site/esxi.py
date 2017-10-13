@@ -8,6 +8,50 @@ __version__ = "17.10.4"
 __status__= "Production"
 
 ########################################## ESXi Operations ##########################################
+#
+# Split into main and list ZEB
+#
+
+def main(aWeb):
+ import sdcp.core.GenLib as GL                   
+ db = GL.DB()
+ db.connect()
+ id = aWeb.get_value('id')
+ print "<DIV CLASS=z-navbar ID=div_navbar>"
+ if id:
+  db.do("SELECT hostname, INET_NTOA(ip) as ipasc, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = '{}'".format(id))
+  data = db.get_row() 
+  print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='index.cgi?call=esxi_op&nstate=poweroff&id={}'>Shutdown</A>".format(id)
+  print "<A CLASS=z-op DIV=div_content_right  URL=index.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A>".format(data['hostname'],data['domain'])
+  print "<A CLASS=z-op DIV=div_content_right  URL=index.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A>".format(data['hostname'],data['domain'])
+  print "<A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A>".format(data['ipasc'])
+  print "<A CLASS='z-op z-reload' DIV=div_main_cont URL='index.cgi?{}'></A>".format(aWeb.get_args())
+  print "</DIV>"
+  print "<DIV CLASS=z-content ID=div_content>"
+  print "<DIV CLASS=z-content-left ID=div_content_left>"
+  op(aWeb,data['ipasc'],data['hostname'])
+ else:
+  db.do("SELECT id, INET_NTOA(ip) AS ipasc, hostname, type FROM devices WHERE type = 'esxi' OR type = 'vcenter' ORDER BY type,hostname")
+  rows = db.get_rows() 
+  print "&nbsp;</DIV>"    
+  print "<DIV CLASS=z-content ID=div_content>"
+  print "<DIV CLASS=z-content-left ID=div_content_left>"
+  print "<DIV CLASS=z-frame><DIV CLASS=z-table style='width:99%'>"
+  print "<DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Hostname</DIV></DIV>"        
+  print "<DIV CLASS=tbody>"
+  for row in rows:
+   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(row['type'])
+   if row['type'] == 'esxi':                  
+    print "<A CLASS=z-op DIV=div_main_cont URL='index.cgi?call=esxi_main&id={}'>{}</A>".format(row['id'],row['hostname'])
+   else:        
+    print "<A TARGET=_blank HREF='https://{}:9443/vsphere-client/'>{}</A>".format(row['ipasc'],row['hostname'])
+   print "</DIV></DIV>"
+  print "</DIV></DIV></DIV>"
+ db.close()
+ print "</DIV>" 
+ print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
+ print "</DIV>"        
+
 
 #
 # Graphing
@@ -80,15 +124,15 @@ def op(aWeb,aIP = None, aName = None):
 
  statelist = aEsxi.get_vms(sort)
  # Formatting template (command, btn-xyz, vm-id, hover text)
- template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip=" + ip + "&name=" + name + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
+ template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true DIV=div_content_left URL='index.cgi?call=esxi_op&ip=" + ip + "&name=" + name + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
  print "<DIV CLASS=z-frame>"
  if nstate:
   print "<DIV CLASS=title>{}<SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(name,vmid, nstate.split('-')[1])
  else:
   print "<DIV CLASS=title>{}</DIV>".format(name)
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip={0}&name={1}'><IMG SRC='images/btn-reboot.png'></A>".format(ip,name)
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='index.cgi?call=esxi_op&ip={0}&name={1}'><IMG SRC='images/btn-reboot.png'></A>".format(ip,name)
  print "<DIV CLASS=z-table style='width:99%'>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='ajax.cgi?call=esxi_op&ip=" + ip + "&name=" + name + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='index.cgi?call=esxi_op&ip=" + ip + "&name=" + name + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>"
  if nstate and nstate == 'vmsoff':
