@@ -49,7 +49,7 @@ def main(aWeb):
  print "<A CLASS='z-right z-op' DIV=div_content_left URL='index.cgi?call=pdu_list_pdus'>PDUs</A>"
  print "<A CLASS='z-right z-op' DIV=div_content_left URL='index.cgi?call=console_list_consoles'>Consoles</A>"
  print "<A CLASS='z-right z-op' DIV=div_content_left URL='index.cgi?call=rack_list_racks'>Racks</A>"
- print "<A CLASS='z-right z-navinfo'>Configuration:</A"
+ print "<SPAN CLASS='z-right z-navinfo'>Configuration:</SPAN>"
  print "</DIV>"
  print "<DIV CLASS=z-content       ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
