@@ -174,9 +174,9 @@ def snapshot(aWeb):
  id   = 0
  print "<DIV CLASS=z-frame STYLE='width:500px;'>"
  print "<DIV CLASS=title>Snapshots</DIV>"
+ print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
  print "<DIV CLASS=z-table STYLE='width:99%;'><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
  with ESXi(ip) as esxi:
   snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid))
   for field in snapshots.splitlines():
@@ -199,5 +199,4 @@ def snapshot(aWeb):
      data['state'] = val
      print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['name'],data['id'],data['desc'],data['created'],data['state'])
      data = {}
-
  print "</DIV></DIV><SPAN STYLE='float:right; font-size:12px;'>[Highest ID:{}]</SPAN></DIV>".format(id)
