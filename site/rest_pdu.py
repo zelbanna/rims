@@ -7,8 +7,6 @@ __author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
-import sdcp.core.GenLib as GL
-
 #
 # Update PDU slot info (name basically)
 #
@@ -29,35 +27,33 @@ def unit_update(aDict):
 # Remove PDU from DB
 #
 def remove(aDict):
+ from sdcp.core.dbase import DB
  id = aDict.get('id')
- db = GL.DB()
- db.connect()
- db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
- db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
- db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
- db.commit()
- db.close()
+ with DB() as db:
+  db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
+  db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
+  db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
+  db.commit()
  return { 'res':'op_success' }
 
 #
 # Update PDU slot info for a device
 #
 def update_device_pdus(aDict):
+ from sdcp.core.dbase import DB
  hostname  = aDict.get('hostname')
  ret = {}
- db = GL.DB()
- db.connect()
- for p in ['0','1']:
-  ret[p] = None
-  id = aDict.get("pem{}_pdu_id".format(p))
-  if id:
-   slot = aDict.get("pem{}_pdu_slot".format(p))
-   unit = aDict.get("pem{}_pdu_unit".format(p))
-   if not (slot == 0 or unit == 0):
-    from sdcp.devices.RackUtils import Avocent
-    db.do("SELECT INET_NTOA(ip) as ip FROM pdus WHERE id = '{}'".format(id))
-    pdu = db.get_row()
-    avocent = Avocent(pdu['ip'])
-    ret["pem{}".format(p)] = avocent.set_name(slot,unit,hostname+"-P{}".format(p))
- db.close()
+ with DB() ad db:
+  for p in ['0','1']:
+   ret[p] = None
+   id = aDict.get("pem{}_pdu_id".format(p))
+   if id:
+    slot = aDict.get("pem{}_pdu_slot".format(p))
+    unit = aDict.get("pem{}_pdu_unit".format(p))
+    if not (slot == 0 or unit == 0):
+     from sdcp.devices.RackUtils import Avocent
+     db.do("SELECT INET_NTOA(ip) as ip FROM pdus WHERE id = '{}'".format(id))
+     pdu = db.get_row()
+     avocent = Avocent(pdu['ip'])
+     ret["pem{}".format(p)] = avocent.set_name(slot,unit,hostname+"-P{}".format(p))
  return ret

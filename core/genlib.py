@@ -7,62 +7,6 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
 
-############################################ Database ######################################
-#
-# Database Class
-#
-class DB(object):
-
- def __init__(self):
-  self._conn = None
-  self._curs = None
-
- def __enter__(self):
-  import sdcp.PackageContainer as PC
-  self.connect_details('localhost',PC.generic['dbuser'],PC.generic['dbpass'],PC.generic['db'])
-  return self
-
- def __exit__(self, ctx_type, ctx_value, ctx_traceback):
-  self._curs.close()
-  self._conn.close()
-
- def connect(self):
-  import sdcp.PackageContainer as PC
-  self.connect_details('localhost',PC.generic['dbuser'],PC.generic['dbpass'],PC.generic['db'])
-
- def connect_details(self, aHost, aUser, aPass, aDB):
-  from pymysql import connect
-  from pymysql.cursors import DictCursor
-  self._conn = connect(host=aHost, port=3306, user=aUser, passwd=aPass, db=aDB, cursorclass=DictCursor)
-  self._curs = self._conn.cursor()
-
- def close(self):
-  self._curs.close()
-  self._conn.close()
-
- def do(self,aStr):
-  return self._curs.execute(aStr)
-
- def commit(self):
-  self._conn.commit()
-
- def get_row(self):
-  return self._curs.fetchone()
-
- # Bug in fetchall, a tuple is not an empty list in contrary to func spec
- def get_rows(self):
-  rows = self._curs.fetchall()
-  return rows if rows != () else []
-
- def get_all_dict(self, aTarget):
-  return dict(map(lambda x: (x[aTarget],x),self._curs.fetchall()))
-
- def get_cursor(self):
-  return self._curs
-
- def get_last_id(self):
-  return self._curs.lastrowid
-
 ################################# Generics ####################################
 
 def get_host(ahost):

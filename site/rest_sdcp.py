@@ -11,11 +11,10 @@ __status__ = "Production"
 #
 #
 def remove_user(aDict):
- import sdcp.core.GenLib as GL
- db = GL.DB()
- db.connect()
- db.do("DELETE FROM users WHERE id = '{}'".format(aDict['id']))
- res =db.commit()
+ from sdcp.core.dbase import DB
+ with DB() as db:
+  db.do("DELETE FROM users WHERE id = '{}'".format(aDict['id']))
+  res = db.commit()
  return {'res':res}
 
 #

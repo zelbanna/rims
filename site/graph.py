@@ -10,16 +10,15 @@ __status__= "Production"
 ############################################ GRAPHS ##########################################
 #
 def list(aWeb):
- import sdcp.core.GenLib as GL
- db = GL.DB()
- db.connect()
+ from sdcp.core.dbase import DB
  id    = aWeb.get_value('id')
  state = aWeb.get_value('state')
- if id and state:
-  db.do("UPDATE devices SET graph_update = '{1}' WHERE id = '{0}'".format(id,1 if state == '0' else 0))
- db.do("SELECT devices.id, INET_NTOA(ip) as ip, hostname, INET_NTOA(graph_proxy) AS proxy ,graph_update, domains.name AS domain FROM devices INNER JOIN domains ON devices.a_dom_id = domains.id ORDER BY hostname")
- rows = db.get_rows()
- db.close()
+
+ with DB() as db:
+  if id and state:
+   db.do("UPDATE devices SET graph_update = '{1}' WHERE id = '{0}'".format(id,1 if state == '0' else 0))
+  db.do("SELECT devices.id, INET_NTOA(ip) as ip, hostname, INET_NTOA(graph_proxy) AS proxy ,graph_update, domains.name AS domain FROM devices INNER JOIN domains ON devices.a_dom_id = domains.id ORDER BY hostname")
+  rows = db.get_rows()
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Graphing</DIV>"
  print "<A TITLE='Reload'   CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='index.cgi?call=graph_list'><IMG SRC='images/btn-reboot.png'></A>"
@@ -49,12 +48,10 @@ def set_proxy(aWeb):
  ip    = aWeb.get_value('ip')
  op = aWeb.get_value('op')
  if op == 'update':
-  import sdcp.core.GenLib as GL
-  db = GL.DB()
-  db.connect()
-  db.do("UPDATE devices SET graph_proxy = INET_ATON('{0}') WHERE id = '{1}'".format(proxy,id))
-  db.commit()
-  db.close()
+  from sdcp.core.dbase import DB
+  with DB() as db:
+   db.do("UPDATE devices SET graph_proxy = INET_ATON('{0}') WHERE id = '{1}'".format(proxy,id))
+   db.commit()
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Update Proxy ({})</DIV>".format(ip)
  print "<FORM ID=graph_proxy_form>"
@@ -77,13 +74,11 @@ def discover(aWeb):
 # Generate output for munin, until we have other types
 #
 def save(aWeb):
- import sdcp.core.GenLib as GL
+ from sdcp.core.dbase import DB
  import sdcp.PackageContainer as PC
- db = GL.DB()
- db.connect()
- db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
- db.close()
- rows = db.get_rows()
+ with DB() as db:
+  db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
+  rows = db.get_rows()
  with open(PC.sdcp['graph']['file'],'w') as output:
   for row in rows:
    output.write("[{}.{}]\n".format(row['hostname'],row['domain']))

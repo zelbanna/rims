@@ -50,13 +50,11 @@ def login(aWeb):
   PC.log_msg("No login available")                                   
   aWeb.put_html("No Login")     
   return
- 
- import sdcp.core.GenLib as GL
- db = GL.DB()
- db.connect()
- db.do("SELECT id,name FROM users ORDER BY name")
- db.close()
- rows = db.get_rows()
+
+ from sdcp.core.dbase import DB
+ with DB() as db:
+  db.do("SELECT id,name FROM users ORDER BY name")
+  rows = db.get_rows()
  aWeb.put_html("Login")
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV CLASS='z-frame' ID=div_login style='border: solid 1px black; width:600px; height:180px;'>"

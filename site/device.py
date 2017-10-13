@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
-import sdcp.core.GenLib as GL
+from sdcp.core.dbase import DB
 
 ########################################## Device Operations ##########################################
 
@@ -20,32 +20,30 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content_left URL='index.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
 
  print "<A CLASS=z-op DIV=div_content_left URL=index.cgi?call=graph_list>Graphing</A>"
+ with DB() as db:
+  if target == 'rack_id':
+   db.do("SELECT racks.name, fk_pdu_1, fk_pdu_2, INET_NTOA(consoles.ip) as con_ip FROM racks LEFT JOIN consoles ON consoles.id = racks.fk_console WHERE racks.id= '{}'".format(arg))
+   data = db.get_row()
+   if data.get('con_ip'):
+    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='index.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
+   if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
+    res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
+    rows = db.get_rows()
+    pdus = ""
+    for row in rows:
+     pdus = pdus + "&pdulist=" + row.get('ip')
+    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='index.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
+   print "<A CLASS=z-op DIV=div_content_right URL='index.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
+  else: 
+   for type in ['pdu','console']:
+    db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
+    tprows = db.get_rows()
+    if len(tprows) > 0:
+     arglist = "call={}_list".format(type)
+     for row in tprows:
+      arglist = arglist + "&{}list=".format(type) + row['ip']
+     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='index.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
 
- db = GL.DB() 
- db.connect()
- if target == 'rack_id':
-  db.do("SELECT racks.name, fk_pdu_1, fk_pdu_2, INET_NTOA(consoles.ip) as con_ip FROM racks LEFT JOIN consoles ON consoles.id = racks.fk_console WHERE racks.id= '{}'".format(arg))
-  data = db.get_row()
-  if data.get('con_ip'):
-   print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='index.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
-  if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
-   res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
-   rows = db.get_rows()
-   pdus = ""
-   for row in rows:
-    pdus = pdus + "&pdulist=" + row.get('ip')
-   print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='index.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
-  print "<A CLASS=z-op DIV=div_content_right URL='index.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
- else: 
-  for type in ['pdu','console']:
-   db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
-   tprows = db.get_rows()
-   if len(tprows) > 0:
-    arglist = "call={}_list".format(type)
-    for row in tprows:
-     arglist = arglist + "&{}list=".format(type) + row['ip']
-    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='index.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
- db.close()
  print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='index.cgi?{}'></A>".format(aWeb.get_args())
  print "<A CLASS='z-right z-op' DIV=div_content_right MSG='Discover devices?' URL='index.cgi?call=device_discover'>Device Discovery</A>"
  print "<A CLASS='z-right z-op' DIV=div_content_left URL='index.cgi?call=pdu_list_pdus'>PDUs</A>"
@@ -74,8 +72,6 @@ def view_devicelist(aWeb):
  print "<DIV CLASS=z-table style='width:99%;'>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='index.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='index.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
 
- db     = GL.DB()
- db.connect()
  if not target or not arg:
   tune = ""
  elif target:
@@ -85,9 +81,10 @@ def view_devicelist(aWeb):
    tune = "WHERE vm = 0 AND rack_id is NULL" 
   else: 
    tune = "WHERE {0} is NULL".format(target)
- res = db.do("SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort))
- rows = db.get_rows()
- db.close()
+
+ with DB() as db:
+  res = db.do("SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort))
+  rows = db.get_rows()
  
  print "<DIV CLASS=tbody>"
  for row in rows:
@@ -101,6 +98,7 @@ def view_devicelist(aWeb):
 #
 
 def info(aWeb):
+ import sdcp.core.genlib as GL
  from sdcp.devices.DevHandler import device_types, device_get_widgets
  id    = aWeb.get_value('id')
  op    = aWeb.get_value('op',"")
@@ -119,7 +117,7 @@ def info(aWeb):
    d['devices_vm'] = 0
   opres['update'] = update_info(d)
 
- db  = GL.DB()
+ db = DB()
  db.connect()
 
  if op == 'book':
@@ -306,13 +304,12 @@ def info(aWeb):
 # View operation data / widgets
 #
 def conf_gen(aWeb):
+ import sdcp.core.genlib as GL
  id = aWeb.get_value('id','0')
  gw = aWeb.get_value('devices_ipam_gw')
- db = GL.DB()
- db.connect()
- db.do("SELECT INET_NTOA(ip) as ipasc, hostname,domains.name as domain, subnets.subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_sub_id WHERE devices.id = '{}'".format(id))
- row = db.get_row()
- db.close()
+ with DB() as db:
+  db.do("SELECT INET_NTOA(ip) as ipasc, hostname,domains.name as domain, subnets.subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_sub_id WHERE devices.id = '{}'".format(id))
+  row = db.get_row()
  type = aWeb.get_value('devices_type')
  print "<DIV CLASS=z-frame style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
  from sdcp.devices.DevHandler import device_get_instance
@@ -339,56 +336,52 @@ def op_function(aWeb):
 #
 #
 def rack_info(aWeb):
- db = GL.DB()
- db.connect()
- res  = db.do("SELECT rackinfo.*, devices.hostname, devices.rack_id, devices.ip, INET_NTOA(devices.ip) as ipasc FROM rackinfo JOIN devices ON devices.id = rackinfo.device_id")
- devs = db.get_rows()
- if res == 0:
-  db.close()
-  return
- order = devs[0].keys()
- order.sort()
- db.do("SELECT id, name FROM pdus")
- pdus  = db.get_all_dict('id')
- db.do("SELECT id, name FROM consoles")
- cons  = db.get_all_dict('id')
- db.do("SELECT id, name FROM racks")
- racks = db.get_all_dict('id')
- print "<DIV CLASS=z-frame style='overflow-x:auto;'><DIV CLASS=z-table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
- print "<DIV CLASS=tbody>" 
- for dev in devs:
-  if not dev['backup_ip']:
-   db.do("UPDATE rackinfo SET backup_ip = {} WHERE device_id = {}".format(dev['ip'],dev['device_id']))
-  print "<DIV CLASS=tr>"
-  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(dev['device_id'],dev['ipasc'],dev['hostname'])
-  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(cons.get(dev['console_id'],{}).get('name',None),dev['console_port'])
-  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(dev['pem0_pdu_id'],{}).get('name',None),dev['pem0_pdu_slot'],dev['pem0_pdu_unit'])
-  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(dev['pem1_pdu_id'],{}).get('name',None),dev['pem1_pdu_slot'],dev['pem1_pdu_unit'])
-  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(racks.get(dev['rack_id'],{}).get('name',None),dev['rack_size'],dev['rack_unit'])
-  print "</DIV>"
- print "</DIV></DIV></DIV>"
- db.commit()
- db.close()
+ with DB() as db:
+  res  = db.do("SELECT rackinfo.*, devices.hostname, devices.rack_id, devices.ip, INET_NTOA(devices.ip) as ipasc FROM rackinfo JOIN devices ON devices.id = rackinfo.device_id")
+  if res == 0:
+   return
+  devs = db.get_rows()
+  order = devs[0].keys()
+  order.sort()
+  db.do("SELECT id, name FROM pdus")
+  pdus  = db.get_all_dict('id')
+  db.do("SELECT id, name FROM consoles")
+  cons  = db.get_all_dict('id')
+  db.do("SELECT id, name FROM racks")
+  racks = db.get_all_dict('id')
+  print "<DIV CLASS=z-frame style='overflow-x:auto;'><DIV CLASS=z-table>"
+  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
+  print "<DIV CLASS=tbody>" 
+  for dev in devs:
+   if not dev['backup_ip']:
+    db.do("UPDATE rackinfo SET backup_ip = {} WHERE device_id = {}".format(dev['ip'],dev['device_id']))
+   print "<DIV CLASS=tr>"
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(dev['device_id'],dev['ipasc'],dev['hostname'])
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(cons.get(dev['console_id'],{}).get('name',None),dev['console_port'])
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(dev['pem0_pdu_id'],{}).get('name',None),dev['pem0_pdu_slot'],dev['pem0_pdu_unit'])
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(dev['pem1_pdu_id'],{}).get('name',None),dev['pem1_pdu_slot'],dev['pem1_pdu_unit'])
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(racks.get(dev['rack_id'],{}).get('name',None),dev['rack_size'],dev['rack_unit'])
+   print "</DIV>"
+  print "</DIV></DIV></DIV>"
+  db.commit()
 
 def mac_sync(aWeb):
+ import sdcp.core.genlib as GL
  from sdcp.tools.mac_tool import load_macs
  arps = load_macs()
- db = GL.DB()
- db.connect()
- db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices WHERE hostname <> 'unknown' ORDER BY ip")
- rows = db.get_rows()
  print "<DIV CLASS=z-frame style='overflow-x:auto; width:400px;'><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- for row in rows:
-  xist = arps.get(row['ipasc'],None)
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['id'],row['ipasc'],row['hostname'],xist)
-  if xist:
-   db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL.mac2int(xist),row['id']))
+ with DB() as db:
+  db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices WHERE hostname <> 'unknown' ORDER BY ip")
+  rows = db.get_rows()
+  for row in rows:
+   xist = arps.get(row['ipasc'],None)
+   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['id'],row['ipasc'],row['hostname'],xist)
+   if xist:
+    db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL.mac2int(xist),row['id']))
+  db.commit()
  print "</DIV></DIV></DIV>"
- db.commit()
- db.close()
 
 ##################################### Rest API #########################################
 
@@ -409,13 +402,11 @@ def new(aWeb):
   params =  { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg } 
   print rest_new(params)
  else:
-  db = GL.DB()
-  db.connect()
-  db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet")
-  subnets = db.get_rows()
-  db.do("SELECT id, name FROM domains")
-  domains = db.get_rows()
-  db.close()
+  with DB() as db:
+   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet")
+   subnets = db.get_rows()
+   db.do("SELECT id, name FROM domains")
+   domains = db.get_rows()
   print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:180px;'>"
   print "<FORM ID=device_new_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
@@ -466,8 +457,6 @@ def dump_db(aWeb):
 #
 def discover(aWeb):
  op = aWeb.get_value('op')
- db = GL.DB()
- db.connect()
  if op:
   from rest_device import discover
   clear = aWeb.get_value('clear',False)
@@ -477,10 +466,11 @@ def discover(aWeb):
   res = discover({ 'ipam_sub_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1])+2**(32-int(ipam[2])), 'a_dom_id':a_dom, 'clear':clear})
   print "<DIV CLASS=z-frame>{}</DIV>".format(res)
  else:
-  db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet");
-  subnets = db.get_rows()
-  db.do("SELECT id, name FROM domains")
-  domains  = db.get_rows()
+  with DB() as db:
+   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet");
+   subnets = db.get_rows()
+   db.do("SELECT id, name FROM domains")
+   domains  = db.get_rows()
   dom_name = aWeb.get_value('domain')
   print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
   print "<FORM ID=device_discover_form>"
@@ -501,15 +491,12 @@ def discover(aWeb):
   print "</DIV></DIV>"
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right SPIN=true URL=index.cgi?call=device_discover FRM=device_discover_form><IMG SRC='images/btn-start.png'></A>"
   print "</DIV>"
- db.close() 
 
 #
 # clear db
 #
 def clear_db(aWeb):
- db = GL.DB()
- db.connect()
- db.do("TRUNCATE TABLE devices")
- db.close()
+ with DB() as db:
+  db.do("TRUNCATE TABLE devices")
  print "<DIV CLASS=z-frame>Cleared DB</DIV>"
 

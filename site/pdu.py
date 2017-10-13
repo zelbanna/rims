@@ -7,8 +7,6 @@ __author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
-import sdcp.core.GenLib as GL
-from sdcp.devices.RackUtils import Avocent
 
 ############################################## PDUs ###################################################
 #
@@ -16,6 +14,7 @@ from sdcp.devices.RackUtils import Avocent
 #
 
 def inventory(aWeb):
+ from sdcp.devices.RackUtils import Avocent
  domain  = aWeb.get_value('domain')
  pdulist = aWeb.form.getlist('pdulist')
 
@@ -56,7 +55,11 @@ def inventory(aWeb):
    print "&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
 
+#
+#
+#
 def unit_info(aWeb):
+ from sdcp.devices.RackUtils import Avocent
  op = aWeb.get_value('op')
  pdu  = aWeb.get_value('pdu')
  slot = aWeb.get_value('slot')
@@ -89,76 +92,72 @@ def unit_info(aWeb):
 #
 #
 def list_pdus(aWeb):
- db   = GL.DB()
- db.connect()
+ from sdcp.core.dbase import DB
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>PDUs</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='index.cgi?call=pdu_list_pdus'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-op'     DIV=div_content_right URL='index.cgi?call=pdu_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- res  = db.do("SELECT id, name, INET_NTOA(ip) as ip from pdus ORDER by name")
- data = db.get_rows()
-
- for unit in data:
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='index.cgi?call=pdu_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['ip'])
+ with DB() as db:
+  res  = db.do("SELECT id, name, INET_NTOA(ip) as ip from pdus ORDER by name")
+  data = db.get_rows()
+  for unit in data:
+   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='index.cgi?call=pdu_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['ip'])
  print "</DIV></DIV></DIV>"
- db.close()
 
 #
 #
 #
 def info(aWeb):
+ from sdcp.core.dbase import DB
+ import sdcp.core.genlib as GL
  id = aWeb.get_value('id')
  ip = aWeb.get_value('ip')
  op = aWeb.get_value('op')
  name = aWeb.get_value('name')
- db = GL.DB()
- db.connect()
+ with DB() as db:
+  if op == 'lookup':
+   ipint = GL.ip2int(ip)
+   pdu   = Avocent(ip)
+   slotl = pdu.get_slot_names()
+   slotn = len(slotl)
+   if slotn == 1:
+    db.do("UPDATE pdus SET slots = 0, 0_slot_id = '{1}', 0_slot_name = '{2}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1]))
+   elif slotn == 2:
+    db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1],slotl[1][0],slotl[1][1]))
+   db.commit()
+  elif op == 'update':
+   ipint = GL.ip2int(ip)
+   slots = aWeb.get_value('slots','0')
+   if id == 'new':
+    sql = "INSERT into pdus (name, ip, slots) VALUES ('{0}','{1}','{2}')".format(name,ipint,slots)
+    res = db.do(sql)
+    db.commit()
+    id = db.get_last_id()
+   else:
+    sql = "UPDATE pdus SET name = '{0}', ip = '{1}', slots = '{2}' WHERE id = '{3}'".format(name,ipint,slots,id)
+    res = db.do(sql)
+    db.commit()
 
- if op == 'lookup':
-  ipint = GL.ip2int(ip)
-  pdu   = Avocent(ip)
-  slotl = pdu.get_slot_names()
-  slotn = len(slotl)
-  if slotn == 1:
-   db.do("UPDATE pdus SET slots = 0, 0_slot_id = '{1}', 0_slot_name = '{2}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1]))
-  elif slotn == 2:
-   db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1],slotl[1][0],slotl[1][1]))
-  db.commit()
- elif op == 'update':
-  ipint = GL.ip2int(ip)
-  slots = aWeb.get_value('slots','0')
   if id == 'new':
-   sql = "INSERT into pdus (name, ip, slots) VALUES ('{0}','{1}','{2}')".format(name,ipint,slots)
-   res = db.do(sql)
-   db.commit()
-   id = db.get_last_id()
+   pdudata = { 'id':'new', 'slots':0, '0_slot_name':'unknown', '0_slot_id':0, '1_slot_name':'unknown', '1_slot_id':1 }
+   ip =  '127.0.0.1' if not ip else ip
+   name = 'new-name' if not name else name
   else:
-   sql = "UPDATE pdus SET name = '{0}', ip = '{1}', slots = '{2}' WHERE id = '{3}'".format(name,ipint,slots,id)
-   res = db.do(sql)
-   db.commit()
+   if id:
+    db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus WHERE id = '{0}'".format(id))
+   else:
+    db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus WHERE ip = '{0}'".format(ipint))
+   pdudata = db.get_row()
+   ip   = pdudata['ipasc']
+   name = pdudata['name']
 
  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
  print "<DIV CLASS=title>PDU Device Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<FORM ID=pdu_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=z-table style='width:100%'><DIV CLASS=tbody>"
- if id == 'new':
-  pdudata = { 'id':'new', 'slots':0, '0_slot_name':'unknown', '0_slot_id':0, '1_slot_name':'unknown', '1_slot_id':1 }
-  if not ip:
-   ip ='127.0.0.1'
-  if not name:
-   name = 'new-name'
- else:
-  if id:
-   db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus WHERE id = '{0}'".format(id))
-  else:
-   db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus WHERE ip = '{0}'".format(ipint))
-  pdudata = db.get_row()
-  ip   = pdudata['ipasc']
-  name = pdudata['name']
-
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(ip)
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(name)
  if pdudata['slots'] == 1:
@@ -172,7 +171,6 @@ def info(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>Slot 1 Name:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(pdudata['0_slot_name'])
   print "<DIV CLASS=tr><DIV CLASS=td>Slot 1 ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(pdudata['0_slot_id'])
 
- db.close()
  print "</DIV></DIV>"
  if not id == 'new':
   print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=pdu_info&id={0}><IMG SRC='images/btn-reboot.png'></A>".format(id)
@@ -186,12 +184,11 @@ def info(aWeb):
 #
 #
 def remove(aWeb):
+ from sdcp.core.dbase import DB
  id = aWeb.get_value('id')
- db = GL.DB()
- db.connect()
- db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
- db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
- db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
- db.commit()
- print "<B>PDU {0} deleted<B>".format(id)
- db.close()
+ with DB() as db:
+  db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
+  db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
+  db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
+  db.commit()
+  print "<B>PDU {0} deleted<B>".format(id)
