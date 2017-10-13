@@ -49,7 +49,7 @@ def main(aWeb):
  print "<A CLASS='z-right z-op' DIV=div_content_left URL='index.cgi?call=pdu_list_pdus'>PDUs</A>"
  print "<A CLASS='z-right z-op' DIV=div_content_left URL='index.cgi?call=console_list_consoles'>Consoles</A>"
  print "<A CLASS='z-right z-op' DIV=div_content_left URL='index.cgi?call=rack_list_racks'>Racks</A>"
- print "<SPAN STYLE='padding: 6px; height:34px; font-size:16px; font-weight:bold; background-color:green; color:white; float:right;'>Configuration:</SPAN>"
+ print "<A CLASS='z-right z-navinfo'>Configuration:</A"
  print "</DIV>"
  print "<DIV CLASS=z-content       ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
@@ -282,7 +282,7 @@ def info(aWeb):
  print "</DIV>"
 
  print "<!-- Function navbar and content -->"
- print "<DIV CLASS='z-navbar' style='top:280px;'>"
+ print "<DIV CLASS='z-navbar' style='top:246px;'>"
  functions = device_get_widgets(device_data['type'])
  if functions:
   if functions[0] == 'operated':

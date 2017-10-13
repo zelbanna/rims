@@ -268,8 +268,9 @@ def list_bookings(aWeb):
  print "<DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='index.cgi?call=base_user_info&id={3}'>{0}</A> ({3})</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='index.cgi?call=device_info&id={4}'>{1}</A></DIV><DIV CLASS=td {5}>{2}</DIV><DIV CLASS=td>".format(row['alias'],row['hostname'],row['time_end'],row['user_id'],row['device_id'],'' if row['valid'] == 1 else "style='background-color:orange;'")
-  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content_left TITLE='Remove booking' URL='index.cgi?call=base_list_bookings&op=unbook&id={0}'><IMG SRC='images/btn-remove.png'></A>".format(row['device_id'])
-  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content_left TITLE='Extend booking' URL='index.cgi?call=base_list_bookings&op=extend&id={0}'><IMG SRC='images/btn-add.png'></A>".format(row['device_id'])
+  if int(aWeb.cookie.get('sdcp_id')) == row['user_id'] or row['valid'] == 0:
+   print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content_left TITLE='Extend booking' URL='index.cgi?call=base_list_bookings&op=extend&id={0}'><IMG SRC='images/btn-add.png'></A>".format(row['device_id'])
+   print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content_left TITLE='Remove booking' URL='index.cgi?call=base_list_bookings&op=unbook&id={0}'><IMG SRC='images/btn-remove.png'></A>".format(row['device_id'])
   print "&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
 
@@ -278,15 +279,16 @@ def list_bookings(aWeb):
 #
 #
 def users(aWeb):
- print """<DIV CLASS=z-navbar ID=div_navbar>
-<A CLASS=z-op DIV=div_content_left URL='index.cgi?call=base_list_users'>Users</A>
-<A CLASS=z-op DIV=div_content_left URL='index.cgi?call=base_list_bookings'>Bookings</A>
-<A CLASS='z-op z-right' OP=logout style='background-color:red;' URL=index.cgi>Log out</A>
-</DIV>
-<DIV CLASS=z-content ID=div_content>
-<DIV CLASS=z-content-left  ID=div_content_left></DIV>
-<DIV CLASS=z-content-right ID=div_content_right></DIV>
-</DIV>"""
+ print "<DIV CLASS=z-navbar ID=div_navbar>"
+ print "<A CLASS=z-op DIV=div_content_left URL='index.cgi?call=base_list_users'>Users</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='index.cgi?call=base_list_bookings'>Bookings</A>"
+ print "<A CLASS='z-right z-op' OP=logout style='background-color:red;' URL=index.cgi>Log out</A>"
+ print "<SPAN CLASS='z-right z-navinfo'>{}</SPAN>".format(aWeb.cookie.get('sdcp_user',None))
+ print "</DIV>"
+ print "<DIV CLASS=z-content ID=div_content>"
+ print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
+ print "</DIV>"
 
 
 def list_users(aWeb):
