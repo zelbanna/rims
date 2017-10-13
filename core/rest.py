@@ -28,6 +28,8 @@ def server():
    args = loads(body if len(body) > 0 else '{"args":"empty"}')
   else:
    # From query string
+   if not getenv("QUERY_STRING"):
+    raise  Exception('No CALL found for REST API')
    args = dict(map(lambda x: x.split('='),getenv("QUERY_STRING").split("&")))
    api  = args.pop('call')
   (path,void,mod_fun) = api.partition(':')
