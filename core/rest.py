@@ -27,10 +27,10 @@ def server():
    body = stdin.read()
    args = loads(body if len(body) > 0 else '{"args":"empty"}')
   else:
-   # From query string
-   if not getenv("QUERY_STRING"):
-    raise  Exception('No CALL found for REST API')
-   args = dict(map(lambda x: x.split('='),getenv("QUERY_STRING").split("&")))
+   try:
+    args = dict(map(lambda x: x.split('='),getenv("QUERY_STRING").split("&")))
+   except:
+    raise  Exception('No Module/Function found for REST API (Query String)')
    api  = args.pop('call')
   (path,void,mod_fun) = api.partition(':')
   (mod,void,fun)   = mod_fun.partition('_')

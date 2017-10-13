@@ -45,6 +45,11 @@ def login(aWeb):
   </DIV>
   <DIV CLASS=z-main-content ID=div_main_cont></DIV>"""
   return
+
+ if PC.generic['db'] == '':
+  PC.log_msg("No login available")                                   
+  aWeb.put_html("No Login")     
+  return
  
  import sdcp.core.GenLib as GL
  db = GL.DB()
