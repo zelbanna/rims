@@ -7,7 +7,6 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
 
-#import sdcp.PackageContainer as PC
 #
 #
 #
