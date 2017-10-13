@@ -173,7 +173,7 @@ def snapshot(aWeb):
  data = {}
  id   = 0
  print "<DIV CLASS=z-frame STYLE='width:500px;'>"
- print "<DIV CLASS=title>Snapshots</DIV>"
+ print "<DIV CLASS=title>Snapshots ({})</DIV>".format(id)
  print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
  print "<DIV CLASS=z-table STYLE='width:99%;'><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
