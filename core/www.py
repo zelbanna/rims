@@ -63,21 +63,23 @@ class Web(object):
   import cgi
   self.form = cgi.FieldStorage()
 
-  headers  = self.get_value('headers','yes')
-  ajaxcall = self.get_value('call','front_login')
-  (module,void,call) = ajaxcall.partition('_')
-  try: 
-   if headers == 'yes' and module != 'front':
-    print "Content-Type: text/html\r\n"
+  headers = self.get_value('headers','yes')
+  mod_fun = self.get_value('call','front_login')
+  (mod,void,fun) = mod_fun.partition('_')
+  try:
    from importlib import import_module
-   ajaxmod = import_module(aSiteBase + ".site." + module)
-   getattr(ajaxmod,call,None)(self)
+   module = import_module(aSiteBase + ".site." + mod)
+   print "X-Z-Mod:{}\r".format(mod)
+   print "X-Z-Fun:{}\r".format(fun)
+   if headers == 'yes' and mod != 'front':
+    print "Content-Type: text/html\r\n"
+   getattr(module,fun,None)(self)
   except Exception as err:
    print "Content-Type: text/html\r\n"
    keys = self.form.keys()
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'module':aSiteBase + ".site." + module, 'call':call, 'args': keys, 'err':str(err) }, sort_keys=True)
+   print dumps({ 'module':aSiteBase + ".site." + mod, 'function':fun, 'args': keys, 'err':str(err) }, sort_keys=True)
 
  ############################## CGI/Web functions ###############################
 

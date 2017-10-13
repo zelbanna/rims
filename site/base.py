@@ -15,6 +15,9 @@ def navigate(aWeb):
  list_resource_type(aWeb)
  print "</DIV>"
 
+#
+#
+#
 def list_resources(aWeb):
  import sdcp.core.GenLib as GL
  db   = GL.DB()
@@ -106,7 +109,7 @@ def list_resource_type(aWeb):
  print "<DIV CLASS=z-centered style='align-items:initial'>"
  for row in rows:
   print "<DIV style='float:left; min-width:100px; margin:6px;'>"
-  print "<A CLASS='z-btn z-menu-btn' style='min-width:52px;'; TITLE='{}' TARGET=_blank HREF='{}'>".format(row['title'],row['href'])
+  print "<A CLASS='z-btn z-menu-btn' style='min-width:52px; font-size:10px'; TITLE='{}' TARGET=_blank HREF='{}'>".format(row['title'],row['href'])
   print "<IMG ALT='{0}' SRC='{0}'></A>".format(row['icon'])
   print "</A><BR><SPAN style='width:100px; display:block;'>{}</SPAN>".format(row['title'])
   print "</DIV>"
