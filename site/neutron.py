@@ -29,12 +29,11 @@ def list(aWeb):
   return
  
  print "<DIV CLASS=z-content-left ID=div_content_left>"
- print "<DIV CLASS=z-frame style='overflow:auto;'><DIV CLASS=z-table>"
- print "<DIV CLASS=thead  style='height:20px'><DIV CLASS=th><CENTER>Contrail VNs</CENTER></DIV></DIV>"
- print "<DIV CLASS=tr  style='height:20px'><DIV CLASS=td COLSPAN=3>"
+ print "<DIV CLASS=z-frame style='overflow:auto;'>"
+ print "<DIV CLASS=title>Contrail VNs</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='sdcp.cgi?call=neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
- print "</DIV></DIV>"
- print "<DIV CLASS=thead><DIV CLASS=th>Network</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th></DIV></DIV>"
+ print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Network</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for net in ret['data']['virtual-networks']:
   if not net.get('display_name'):

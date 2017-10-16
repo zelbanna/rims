@@ -37,7 +37,7 @@ def list(aWeb):
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='sdcp.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th style='width:94px;'></DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th style='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for stack in ret['data'].get('stacks',None):
   print "<DIV CLASS=tr>"
