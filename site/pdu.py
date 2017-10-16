@@ -78,7 +78,7 @@ def unit_info(aWeb):
  print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(unit)
  print "<INPUT NAME=pdu    VALUE={} TYPE=HIDDEN>".format(pdu)
  print "<DIV CLASS=title>PDU Slot Info</DIV>"
- print "<DIV CLASS=z-table style='width:100%'><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>PDU:</DIV><DIV CLASS=td>{0}</DIV></DIV>".format(pdu)
  print "<DIV CLASS=tr><DIV CLASS=td>Slot.Unit:</DIV><DIV CLASS=td>{0}.{1}</DIV></DIV>".format(slotname,unit)
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
@@ -157,7 +157,7 @@ def info(aWeb):
  print "<DIV CLASS=title>PDU Device Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<FORM ID=pdu_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<DIV CLASS=z-table style='width:100%'><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(ip)
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(name)
  if pdudata['slots'] == 1:

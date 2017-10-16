@@ -56,7 +56,7 @@ def portal(aWeb):
  aWeb.put_html("Openstack Portal")
  print "<DIV CLASS=z-content-head ID=div_content_head>"
  print "<DIV CLASS=z-content-head-info ID=div_content_head_info>"
- print "<DIV CLASS=z-table style='display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table style='width:auto; display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
@@ -86,7 +86,7 @@ def dict2html(aData,aTitle=None):
 
 def data2html(aData):
  if isinstance(aData,dict):
-  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
+  print "<DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>"
   for k,v in aData.iteritems():
    print "<DIV CLASS=tr><DIV CLASS=td style='padding:0px;'><I>{}</I>:</DIV><DIV CLASS=td style='white-space:normal; overflow:auto; width:100%'>".format(k)
    if 'href' in k:
@@ -185,7 +185,7 @@ def result(aWeb):
    port,url = cookie.get("os_{}_port".format(service)),cookie.get("os_{}_url".format(service))
   ret = controller.call(port,url + aWeb.get_value('os_call'), args = arguments, method=aWeb.get_value('os_method'))
  print "<DIV CLASS=z-frame style='overflow:auto;'>"
- print "<DIV CLASS=z-table style=' width:100%;'>"
+ print "<DIV CLASS=z-table style='width:100%;'>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>Result</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['result'])
  print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>HTTP Code</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['code'])

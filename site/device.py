@@ -413,7 +413,7 @@ def new(aWeb):
   print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(target)
   print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(arg)
   print "<DIV CLASS=title>Add Device</DIV>"
-  print "<DIV CLASS=z-table style='width:100%'><DIV CLASS=tbody>"
+  print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
@@ -476,7 +476,7 @@ def discover(aWeb):
   print "<FORM ID=device_discover_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
   print "<DIV CLASS=title>Device Discovery</DIV>"
-  print "<DIV CLASS=z-table style='width:100%'><DIV CLASS=tbody>"
+  print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):

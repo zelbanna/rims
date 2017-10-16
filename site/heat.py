@@ -9,7 +9,7 @@ __version__ = "17.10.4"
 __status__= "Production"
 
 from sdcp.devices.openstack import OpenstackRPC
-from sdcp.site.ajax_openstack import dict2html
+from sdcp.site.openstack import dict2html
 
 ##################################### Heatstack ##################################
 #
@@ -84,7 +84,7 @@ def enter_parameters(aWeb):
  print "<DIV CLASS='z-frame' style='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_template_parameters>"
  print "<INPUT TYPE=hidden NAME=template VALUE={}>".format(template)
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=z-table style='width:99%'>"
  print "<DIV CLASS=thead><DIV CLASS=th>Parameter</DIV><DIV CLASS=th style='min-width:300px'>Value</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td><B>Unique Name</B></DIV><DIV CLASS=td><INPUT TYPE=text NAME=name PLACEHOLDER='change-this-name'></DIV></DIV>"
@@ -136,7 +136,7 @@ def action(aWeb):
   from json import dumps
   ret = controller.call(port,url + "/stacks/{}/{}/events".format(name,id))
   print "<!-- {} -->".format("/stacks/{}/{}/events".format(name,id) )
-  print "<DIV CLASS=z-table>"
+  print "<DIV CLASS=z-table style='width:99%'>"
   print "<DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>Resource</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th>Reason</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for event in ret['data']['events']:

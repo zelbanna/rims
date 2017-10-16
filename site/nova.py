@@ -9,7 +9,7 @@ __version__ = "17.10.4"
 __status__= "Production"
 
 from sdcp.devices.openstack import OpenstackRPC
-from sdcp.site.ajax_openstack import dict2html
+from sdcp.site.openstack import dict2html
 
 ################################# Nova ###############################
 #
@@ -181,7 +181,7 @@ def action(aWeb):
  elif op == 'networks':
   from json import dumps
   vm  = controller.call("8082","virtual-machine/{}".format(id))['data']['virtual-machine']
-  print "<DIV CLASS=z-table>"
+  print "<DIV CLASS=z-table style='width:auto'>"
   print "<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV>"
   for vmir in vm['virtual_machine_interface_back_refs']:
    vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']

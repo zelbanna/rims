@@ -87,7 +87,7 @@ def info(aWeb):
  print "<FORM ID=rack_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=title>Rack Info {}</DIV>".format("(new)" if id == 'new' else "")
- print "<DIV CLASS=z-table style='width:100%'><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
 
  with DB() as db:
   if id == 'new':

@@ -46,12 +46,12 @@ def report(aWeb):
     print "<!-- Ent -->"
     for key,value in ent.iteritems():
      if isinstance(value,dict):
-      print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><TD style='white-space:normal; overflow:auto;'><DIV CLASS=z-table><DIV CLASS=tbody>".format(key)
+      print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><TD style='white-space:normal; overflow:auto;'><DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>".format(key)
       for k,v in value.iteritems():
        print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(k,v)
       print "</DIV></DIV></DIV></DIV>"
      elif isinstance(value,list):
-      print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><TD style='white-space:normal; overflow:auto;'><DIV CLASS=z-table><DIV CLASS=tbody>".format(key)
+      print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><TD style='white-space:normal; overflow:auto;'><DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>".format(key)
       for v in value:
        print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV></DIV>".format(v)
       print "</DIV></DIV></DIV></DIV>"
