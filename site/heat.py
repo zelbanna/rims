@@ -34,8 +34,8 @@ def list(aWeb):
 
  print "<DIV CLASS=z-content-left ID=div_content_left><DIV CLASS=z-frame style='width:394px;'>"
  print "<DIV CLASS=title>Heat Stacks</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='index.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='index.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='sdcp.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th style='width:94px;'></DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -44,10 +44,10 @@ def list(aWeb):
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_name'])
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_status'])
   print "<DIV CLASS=td>"
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op={} SPIN=true>{}</A>"
   print tmpl.format('Stack info','info','<IMG SRC=images/btn-info.png>')
   if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED" or stack['stack_status'] == "DELETE_FAILED":
-   print "<A TITLE='Remove stack' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op=remove MSG='Are you sure' SPIN=true><IMG SRC=images/btn-remove.png></A>"
+   print "<A TITLE='Remove stack' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=heat_action&name=" + stack['stack_name'] + "&id=" + stack['id'] + "&op=remove MSG='Are you sure' SPIN=true><IMG SRC=images/btn-remove.png></A>"
   print "&nbsp;</DIV></DIV>"
  print "</DIV>"
  print "</DIV></DIV></DIV>"
@@ -71,8 +71,8 @@ def choose_template(aWeb):
  except Exception as err:
   print "openstack_choose_template: error finding template files in 'os_templates/' [{}]".format(str(err))
  print "</FORM>"
- print "<A TITLE='Enter parameters' CLASS='z-btn z-small-btn z-op' FRM=frm_heat_choose_template DIV=div_os_info URL='index.cgi?call=heat_enter_parameters'><IMG SRC='images/btn-document.png'></A>"
- print "<A TITLE='View template'    CLASS='z-btn z-small-btn z-op' FRM=frm_heat_choose_template DIV=div_os_info URL='index.cgi?call=heat_action&op=templateview'><IMG SRC='images/btn-info.png'></A>"
+ print "<A TITLE='Enter parameters' CLASS='z-btn z-small-btn z-op' FRM=frm_heat_choose_template DIV=div_os_info URL='sdcp.cgi?call=heat_enter_parameters'><IMG SRC='images/btn-document.png'></A>"
+ print "<A TITLE='View template'    CLASS='z-btn z-small-btn z-op' FRM=frm_heat_choose_template DIV=div_os_info URL='sdcp.cgi?call=heat_action&op=templateview'><IMG SRC='images/btn-info.png'></A>"
  print "</DIV>"
  print "<DIV ID=div_os_info></DIV>"
 
@@ -92,7 +92,7 @@ def enter_parameters(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value)
  print "</DIV></DIV>"
  print "</FORM>"
- print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' SPIN=true FRM=frm_heat_template_parameters DIV=div_content_right URL='index.cgi?call=heat_action&op=create'><IMG SRC='images/btn-start.png'></A>"
+ print "<A TITLE='Create' CLASS='z-btn z-small-btn z-op' style='float:right;' SPIN=true FRM=frm_heat_template_parameters DIV=div_content_right URL='sdcp.cgi?call=heat_action&op=create'><IMG SRC='images/btn-start.png'></A>"
  print "</DIV>"
 
 #
@@ -116,7 +116,7 @@ def action(aWeb):
  PC.log_msg("heat_action - project:{} id:{} name:{} op:{}".format(id,cookie.get('os_project_name'),name,op))
 
  if   op == 'info':
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=index.cgi?call=heat_action&name=" + name + "&id=" + id+ "&op={} SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=heat_action&name=" + name + "&id=" + id+ "&op={} SPIN=true>{}</A>"
   print "<DIV>"
   print tmpl.format('Stack Details','details','Stack Details')
   print tmpl.format('Stack Parameters','events','Events')

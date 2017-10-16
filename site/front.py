@@ -33,15 +33,15 @@ def login(aWeb):
   PC.log_msg("Entering as [{}-{}]".format(id,user))
   aWeb.put_html(PC.sdcp['name'])
   print """<DIV class='z-main-menu' ID=div_main_menu>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='General'   URL=index.cgi?call=base_navigate&type=demo><IMG SRC='images/icon-start.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Rack'      URL=index.cgi?call=rack_main><IMG SRC='images/icon-rack.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Devices'   URL=index.cgi?call=device_main><IMG SRC='images/icon-network.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Examine'   URL=index.cgi?call=base_examine><IMG SRC='images/icon-examine.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Users'     URL=index.cgi?call=base_users><IMG SRC='images/icon-users.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Documents' URL=index.cgi?call=base_navigate&type=bookmark><IMG SRC='images/icon-docs.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Tools'     URL=index.cgi?call=base_navigate&type=tool><IMG SRC='images/icon-tools.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='ESXi'      URL=index.cgi?call=esxi_main><IMG SRC='images/icon-servers.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Config'    URL=index.cgi?call=base_config><IMG SRC='images/icon-config.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='General'   URL=sdcp.cgi?call=base_navigate&type=demo><IMG SRC='images/icon-start.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Rack'      URL=sdcp.cgi?call=rack_main><IMG SRC='images/icon-rack.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Devices'   URL=sdcp.cgi?call=device_main><IMG SRC='images/icon-network.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Examine'   URL=sdcp.cgi?call=base_examine><IMG SRC='images/icon-examine.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Users'     URL=sdcp.cgi?call=base_users><IMG SRC='images/icon-users.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Documents' URL=sdcp.cgi?call=base_navigate&type=bookmark><IMG SRC='images/icon-docs.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Tools'     URL=sdcp.cgi?call=base_navigate&type=tool><IMG SRC='images/icon-tools.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='ESXi'      URL=sdcp.cgi?call=esxi_main><IMG SRC='images/icon-servers.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Config'    URL=sdcp.cgi?call=base_config><IMG SRC='images/icon-config.png'/></A>
   </DIV>
   <DIV CLASS=z-main-content ID=div_main_cont></DIV>"""
   return
@@ -59,7 +59,7 @@ def login(aWeb):
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV CLASS='z-frame' ID=div_login style='border: solid 1px black; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
- print "<FORM ACTION=index.cgi METHOD=POST ID=sdcp_login_form>"
+ print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
  print "<INPUT TYPE=HIDDEN NAME=call VALUE=front_login>"
  print "<DIV CLASS=z-table style='display:inline; float:left; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=sdcp_login>"
@@ -82,7 +82,7 @@ def weathermap(aWeb):
  if not page:
   print "<DIV CLASS=z-navbar ID=div_navbar>" 
   for map,entry in PC.weathermap.iteritems():
-   print "<A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=index.cgi?call=front_weathermap&page={0}>{1}</A>".format(map,entry['name'])
+   print "<A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=front_weathermap&page={0}>{1}</A>".format(map,entry['name'])
   print "</DIV>"
   print "<DIV CLASS='z-content' ID=div_content NAME='Weathermap Content'>"
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"
@@ -126,7 +126,7 @@ def openstack(aWeb):
  mtok = aWeb.cookie.get("os_main_token")
  prev = aWeb.cookie.get("os_project_id")
  if utok:
-  aWeb.put_redirect("index.cgi?call=openstack_portal")
+  aWeb.put_redirect("sdcp.cgi?call=openstack_portal")
   return
 
  aWeb.add_cookie("os_demo_name",name)
@@ -149,7 +149,7 @@ def openstack(aWeb):
  print "<DIV CLASS='z-centered' style='height:100%;'>"
  print "<DIV CLASS='z-frame' ID=div_login style='border: solid 1px black; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
- print "<FORM ACTION=index.cgi METHOD=POST ID=openstack_login>"
+ print "<FORM ACTION=sdcp.cgi METHOD=POST ID=openstack_login>"
  print "<INPUT TYPE=HIDDEN NAME=call VALUE=openstack_portal>"
  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
  print "<DIV CLASS=z-table style='display:inline; float:left; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"

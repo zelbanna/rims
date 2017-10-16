@@ -21,7 +21,7 @@ else:
 import PackageContainer as PC
 remove("PackageContainer.py")
 
-for dest in [ 'index','rest' ]:
+for dest in [ 'index','rest', PC.generic['sitebase'] ]:
  site = "{}/{}.cgi".format(PC.generic['docroot'],dest)
  with open(site,'w') as f:
   wr = f.write

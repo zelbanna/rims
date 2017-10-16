@@ -17,23 +17,23 @@ def main(aWeb):
  arg    = aWeb.get_value('arg')
  
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS=z-op DIV=div_content_left URL='index.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
+ print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
 
- print "<A CLASS=z-op DIV=div_content_left URL=index.cgi?call=graph_list>Graphing</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL=sdcp.cgi?call=graph_list>Graphing</A>"
  with DB() as db:
   if target == 'rack_id':
    db.do("SELECT racks.name, fk_pdu_1, fk_pdu_2, INET_NTOA(consoles.ip) as con_ip FROM racks LEFT JOIN consoles ON consoles.id = racks.fk_console WHERE racks.id= '{}'".format(arg))
    data = db.get_row()
    if data.get('con_ip'):
-    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='index.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
+    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
    if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
     res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
     rows = db.get_rows()
     pdus = ""
     for row in rows:
      pdus = pdus + "&pdulist=" + row.get('ip')
-    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='index.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
-   print "<A CLASS=z-op DIV=div_content_right URL='index.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
+    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
+   print "<A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
   else: 
    for type in ['pdu','console']:
     db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
@@ -42,13 +42,13 @@ def main(aWeb):
      arglist = "call={}_list".format(type)
      for row in tprows:
       arglist = arglist + "&{}list=".format(type) + row['ip']
-     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='index.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
+     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
 
- print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='index.cgi?{}'></A>".format(aWeb.get_args())
- print "<A CLASS='z-right z-op' DIV=div_content_right MSG='Discover devices?' URL='index.cgi?call=device_discover'>Device Discovery</A>"
- print "<A CLASS='z-right z-op' DIV=div_content_left URL='index.cgi?call=pdu_list_pdus'>PDUs</A>"
- print "<A CLASS='z-right z-op' DIV=div_content_left URL='index.cgi?call=console_list_consoles'>Consoles</A>"
- print "<A CLASS='z-right z-op' DIV=div_content_left URL='index.cgi?call=rack_list_racks'>Racks</A>"
+ print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
+ print "<A CLASS='z-right z-op' DIV=div_content_right MSG='Discover devices?' URL='sdcp.cgi?call=device_discover'>Device Discovery</A>"
+ print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=pdu_list_pdus'>PDUs</A>"
+ print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list_consoles'>Consoles</A>"
+ print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list_racks'>Racks</A>"
  print "<SPAN CLASS='z-right z-navinfo'>Configuration:</SPAN>"
  print "</DIV>"
  print "<DIV CLASS=z-content       ID=div_content>"
@@ -67,10 +67,10 @@ def view_devicelist(aWeb):
  sort   = aWeb.get_value('sort','ip')
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Devices</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='index.cgi?{}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args())
- print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='index.cgi?call=device_new&{}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args())
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?{}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args())
+ print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=device_new&{}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args())
  print "<DIV CLASS=z-table>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='index.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='index.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
 
  if not target or not arg:
   tune = ""
@@ -88,7 +88,7 @@ def view_devicelist(aWeb):
  
  print "<DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='Show device info for {0}' DIV=div_content_right URL='index.cgi?call=device_info&id={3}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='Show device info for {0}' DIV=div_content_right URL='sdcp.cgi?call=device_info&id={3}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</DIV></DIV></DIV>"
 
 
@@ -216,8 +216,8 @@ def info(aWeb):
   db.do("SELECT NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings WHERE device_id ='{}'".format(id))
   valid = db.get_row()['valid']
   print "<DIV CLASS=tr>"
-  print "<DIV CLASS=td><A CLASS='z-op' DIV='div_content_left' URL='index.cgi?call=base_list_bookings'>Booked by</A>:</DIV>"
-  print "<DIV CLASS=td STYLE='background-color:{0}'><A CLASS=z-op DIV=div_content_right URL=index.cgi?call=base_user_info&id={1}&op=view>{1}</A> {2}</DIV>".format("#df3620" if valid == 1 else "orange",device_data['bookings.user_id'],'' if valid else "(obsolete)")
+  print "<DIV CLASS=td><A CLASS='z-op' DIV='div_content_left' URL='sdcp.cgi?call=base_list_bookings'>Booked by</A>:</DIV>"
+  print "<DIV CLASS=td STYLE='background-color:{0}'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=base_user_info&id={1}&op=view>{1}</A> {2}</DIV>".format("#df3620" if valid == 1 else "orange",device_data['bookings.user_id'],'' if valid else "(obsolete)")
   print "</DIV>"
  print "</DIV></DIV></DIV>"
 
@@ -260,22 +260,22 @@ def info(aWeb):
  print "</FORM>"
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=device_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=device_remove&id={} MSG='Are you sure you want to delete device?' TITLE='Remove device'><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=device_info&op=lookup    FRM=info_form TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=device_info&op=update    FRM=info_form TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_remove&id={} MSG='Are you sure you want to delete device?' TITLE='Remove device'><IMG SRC='images/btn-remove.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=lookup    FRM=info_form TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=update    FRM=info_form TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
  if device_data['bookings.user_id']:
   if int(aWeb.cookie.get('sdcp_id')) == device_data['bookings.user_id']:
-   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=device_info&op=unbook&id={} MSG='Are you sure you want to drop booking?' TITLE='Unbook'><IMG SRC='images/btn-remove.png'></A>".format(id)
+   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=unbook&id={} MSG='Are you sure you want to drop booking?' TITLE='Unbook'><IMG SRC='images/btn-remove.png'></A>".format(id)
  else:
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=device_info&op=book&id={} TITLE='Book device'><IMG SRC='images/btn-add.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_device_data URL=index.cgi?call=device_conf_gen                 FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=book&id={} TITLE='Book device'><IMG SRC='images/btn-add.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_device_data URL=sdcp.cgi?call=device_conf_gen                 FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
  import sdcp.PackageContainer as PC
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf['username'],ip)
  if device_data['rack_id'] and (conip and not conip == '127.0.0.1' and ri['console_port'] and ri['console_port'] > 0):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+ri['console_port'])
  if (device_data['type'] == 'pdu' or device_data['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip'])) == 0:
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL='index.cgi?call={0}_info&id=new&ip={1}&name={2}' style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL='sdcp.cgi?call={0}_info&id=new&ip={1}&name={2}' style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
  print "<SPAN ID=upd_results style='text-overflow:ellipsis; overflow:hidden; float:right; font-size:9px;'>{}</SPAN>".format(str(opres) if len(opres) > 0 else "")
  print "</DIV>"
  db.close()
@@ -287,11 +287,11 @@ def info(aWeb):
  if functions:
   if functions[0] == 'operated':
    if device_data['type'] == 'esxi':
-    print "<A TARGET='main_cont' HREF='index.cgi?call=esxi_main&id={}'>Manage</A></B></DIV>".format(id)
+    print "<A TARGET='main_cont' HREF='sdcp.cgi?call=esxi_main&id={}'>Manage</A></B></DIV>".format(id)
   else:
    for fun in functions:
     funname = " ".join(fun.split('_')[1:])
-    print "<A CLASS=z-op DIV=div_device_data SPIN=true URL='index.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, device_data['type'], fun, funname.title())
+    print "<A CLASS=z-op DIV=div_device_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, device_data['type'], fun, funname.title())
  else:
   print "&nbsp;"
  print "</DIV>"
@@ -429,7 +429,7 @@ def new(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
   print "</FORM>"
   print "</DIV></DIV>"
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span URL=index.cgi?call=device_new FRM=device_new_form><IMG SRC='images/btn-start.png'></A>&nbsp;"
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span URL=sdcp.cgi?call=device_new FRM=device_new_form><IMG SRC='images/btn-start.png'></A>&nbsp;"
   print "<SPAN ID=device_new_span style='max-width:400px; font-size:9px; float:right'></SPAN>"
   print "</DIV>"
 
@@ -491,7 +491,7 @@ def discover(aWeb):
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Clear</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=clear VALUE=True></DIV></DIV>"
   print "</DIV></DIV>"
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right SPIN=true URL=index.cgi?call=device_discover FRM=device_discover_form><IMG SRC='images/btn-start.png'></A>"
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right SPIN=true URL=sdcp.cgi?call=device_discover FRM=device_discover_form><IMG SRC='images/btn-start.png'></A>"
   print "</DIV>"
 
 #

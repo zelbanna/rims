@@ -25,14 +25,14 @@ def list_resources(aWeb):
   rows = db.get_rows()
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Resources</DIV>"
- print "<A TITLE='Reload List'  CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='index.cgi?call=base_list_resources'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add Resource' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='index.cgi?call=base_resource_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Reload List'  CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=base_list_resources'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add Resource' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=base_resource_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A HREF={1} TARGET=blank_>{2}</A></DIV><DIV CLASS=td>".format(row['type'],row['href'],row['title'])
-  print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=index.cgi?call=base_resource_info&id={0}><IMG SRC=images/btn-info.png></A>".format(row['id'])
-  print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=index.cgi?call=base_resource_remove&id={0} MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>&nbsp;".format(row['id'])
+  print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_info&id={0}><IMG SRC=images/btn-info.png></A>".format(row['id'])
+  print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_remove&id={0} MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>&nbsp;".format(row['id'])
   print "</DIV></DIV>"
  print "</DIV></DIV></DIV></DIV>"
  print "<DIV CLASS=z-content-right ID =div_content_right></DIV>"
@@ -82,8 +82,8 @@ def resource_info(aWeb):
   print "<A CLASS=z-btn style='float:left; padding:6px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(icon)
  print "<BR style='clear:left'>"
  if id != 'new':
-  print "<A TITLE='Remove resource' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=base_resource_remove&id={0}  MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A TITLE='Update resource'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=base_resource_info&op=update FRM=sdcp_resource_info_form><IMG SRC='images/btn-save.png'></A>"
+  print "<A TITLE='Remove resource' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_remove&id={0}  MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>".format(id)
+ print "<A TITLE='Update resource'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_info&op=update FRM=sdcp_resource_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</DIV>"
 
 #
@@ -121,11 +121,11 @@ def resource_remove(aWeb):
 #
 def config(aWeb):
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS=z-op           DIV=div_content URL='index.cgi?call=base_list_resources'>Resources</A>"
- print "<A CLASS=z-op           DIV=div_content URL='index.cgi?call=base_list_options'>Options</A>"
- print "<A CLASS='z-op z-right' DIV=div_content URL='index.cgi?call=base_list_resource_type&type=bookmark'>Bookmarks</A>"
- print "<A CLASS='z-op z-right' DIV=div_content URL='index.cgi?call=base_list_resource_type&type=demo'>Demos</A>"
- print "<A CLASS='z-op z-right' DIV=div_content URL='index.cgi?call=base_list_resource_type&type=tool'>Tools</A>"
+ print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=base_list_resources'>Resources</A>"
+ print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=base_list_options'>Options</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=base_list_resource_type&type=bookmark'>Bookmarks</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=base_list_resource_type&type=demo'>Demos</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=base_list_resource_type&type=tool'>Tools</A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "</DIV>"
@@ -134,12 +134,12 @@ def list_options(aWeb):
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Options</DIV>"
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='index.cgi?call=ddi_sync'>Synch DDI</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='index.cgi?call=ddi_dhcp_update'>Update DHCP</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='index.cgi?call=ddi_load_infra'>Load DDI Tables</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TARGET=_blank                  HREF='index.cgi?call=device_dump_db'>Dump DB to JSON</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='index.cgi?call=device_rack_info'>Device Rackinfo</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='index.cgi?call=device_mac_sync'>Sync MAC Info</A></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=ddi_sync'>Synch DDI</A></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=ddi_dhcp_update'>Update DHCP</A></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=ddi_load_infra'>Load DDI Tables</A></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TARGET=_blank                  HREF='sdcp.cgi?call=device_dump_db'>Dump DB to JSON</A></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=device_rack_info'>Device Rackinfo</A></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=device_mac_sync'>Sync MAC Info</A></DIV></DIV>"
  print "</DIV></DIV></DIV></DIV>"
  print "<DIV CLASS=z-content-right ID =div_content_right></DIV>"
 
@@ -154,14 +154,14 @@ def examine(aWeb):
  upshost = PC.sdcp['upshost']
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
  print "<A CLASS='z-warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='rest.cgi?call=sdcp.site:sdcp_clear_logs&logs={},{}'>Clear Logs</A>".format(PC.generic['logformat'],PC.sdcp['netlogs'])
- print "<A CLASS=z-op DIV=div_content URL='index.cgi?call=base_examine_logs'>Logs</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_logs'>Logs</A>"
  if upshost:
-  print "<A CLASS=z-op DIV=div_content URL='index.cgi?call=base_examine_ups&upshost={}'>UPS</A>".format(upshost)
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_ups&upshost={}'>UPS</A>".format(upshost)
  if svchost:
-  print "<A CLASS=z-op DIV=div_content URL='index.cgi?call=base_examine_dns&svchost={}'>DNS</A>".format(svchost)
-  print "<A CLASS=z-op DIV=div_content URL='index.cgi?call=base_examine_dhcp&svchost={}'>DHCP</A>".format(svchost)
-  print "<A CLASS=z-op DIV=div_content URL='index.cgi?call=base_examine_svc&svchost={}'>Services Logs</A>".format(svchost)
- print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='index.cgi?call=base_examine'></A>"
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_dns&svchost={}'>DNS</A>".format(svchost)
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_dhcp&svchost={}'>DHCP</A>".format(svchost)
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_svc&svchost={}'>Services Logs</A>".format(svchost)
+ print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?call=base_examine'></A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content></DIV>"
 
@@ -261,15 +261,15 @@ def list_bookings(aWeb):
   rows = db.get_rows()
 
  print "<DIV CLASS=z-frame><DIV CLASS=title>Bookings</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='index.cgi?call=base_list_bookings'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=base_list_bookings'><IMG SRC='images/btn-reboot.png'></A>"
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>User (Id)</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Until</DIV><DIV CLASS=th>Op</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='index.cgi?call=base_user_info&id={3}'>{0}</A> ({3})</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='index.cgi?call=device_info&id={4}'>{1}</A></DIV><DIV CLASS=td {5}>{2}</DIV><DIV CLASS=td>".format(row['alias'],row['hostname'],row['time_end'],row['user_id'],row['device_id'],'' if row['valid'] == 1 else "style='background-color:orange;'")
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=base_user_info&id={3}'>{0}</A> ({3})</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=device_info&id={4}'>{1}</A></DIV><DIV CLASS=td {5}>{2}</DIV><DIV CLASS=td>".format(row['alias'],row['hostname'],row['time_end'],row['user_id'],row['device_id'],'' if row['valid'] == 1 else "style='background-color:orange;'")
   if int(aWeb.cookie.get('sdcp_id')) == row['user_id'] or row['valid'] == 0:
-   print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content_left TITLE='Extend booking' URL='index.cgi?call=base_list_bookings&op=extend&id={0}'><IMG SRC='images/btn-add.png'></A>".format(row['device_id'])
-   print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content_left TITLE='Remove booking' URL='index.cgi?call=base_list_bookings&op=unbook&id={0}'><IMG SRC='images/btn-remove.png'></A>".format(row['device_id'])
+   print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content_left TITLE='Extend booking' URL='sdcp.cgi?call=base_list_bookings&op=extend&id={0}'><IMG SRC='images/btn-add.png'></A>".format(row['device_id'])
+   print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content_left TITLE='Remove booking' URL='sdcp.cgi?call=base_list_bookings&op=unbook&id={0}'><IMG SRC='images/btn-remove.png'></A>".format(row['device_id'])
   print "&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
 
@@ -279,9 +279,9 @@ def list_bookings(aWeb):
 #
 def users(aWeb):
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS=z-op DIV=div_content_left URL='index.cgi?call=base_list_users'>Users</A>"
- print "<A CLASS=z-op DIV=div_content_left URL='index.cgi?call=base_list_bookings'>Bookings</A>"
- print "<A CLASS='z-right z-op' OP=logout style='background-color:red;' URL=index.cgi>Log out</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=base_list_users'>Users</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=base_list_bookings'>Bookings</A>"
+ print "<A CLASS='z-right z-op' OP=logout style='background-color:red;' URL=sdcp.cgi>Log out</A>"
  print "<SPAN CLASS='z-right z-navinfo'>{}</SPAN>".format(aWeb.cookie.get('sdcp_user',None))
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
@@ -296,13 +296,13 @@ def list_users(aWeb):
   res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
   rows = db.get_rows()
  print "<DIV CLASS=z-frame><DIV CLASS=title>Users</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='index.cgi?call=base_list_users'><IMG SRC='images/btn-reboot.png'></A>"
- print "<A TITLE='Add User'    CLASS='z-btn z-small-btn z-op' DIV=div_content_right   URL='index.cgi?call=base_user_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=base_list_users'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add User'    CLASS='z-btn z-small-btn z-op' DIV=div_content_right   URL='sdcp.cgi?call=base_user_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='index.cgi?call=base_user_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=base_user_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
  print "</DIV></DIV></DIV>"
 
 #
@@ -342,6 +342,6 @@ def user_info(aWeb):
  print "</DIV></DIV>"
  if id != 'new':
   print "<A TITLE='Remove user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=rest.cgi?call=sdcp.site:sdcp_remove_user&id={0} MSG='Really remove user?'><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=index.cgi?call=base_user_info&op=update          FRM=sdcp_user_info_form><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_user_info&op=update          FRM=sdcp_user_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"
