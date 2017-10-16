@@ -123,8 +123,7 @@ class Junos(GenDevice):
   print "<DIV CLASS=thead><DIV CLASS=th>Interface</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>SNMP</DIV><DIV CLASS=th>Description</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for entry in ifs:
-   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(entry[0],entry[1])
-   print "<A CLASS='z-op' DIV=graph_config URL='ajax.cgi?call=graph_wm&hostname={1}&domain={2}&index={0}'>{0}</A>".format(entry[2],self._hostname,self._domain)
+   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}".format(entry[0],entry[1],entry[2])
    print "</DIV><DIV CLASS=td>{}</DIV></DIV>\n".format(entry[3])
   print "</DIV></DIV></DIV>"
 
@@ -413,7 +412,7 @@ class QFX(Junos):
     print "<DIV CLASS=tbody>"
     for n in fdb:
      print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(n[0],n[1],n[2])
-     print "<DIV CLASS=td>{}</DIV>".format(n[3]) if n[3] else "<TD style='border: 1px solid red'>No Description</DIV>"
+     print "<DIV CLASS=td>{}</DIV>".format(n[3]) if n[3] else "<DIV CLASS=td style='border: 1px solid red'>No Description</DIV>"
      print "</DIV>"
     print "</DIV></DIV></DIV>"
    else:
