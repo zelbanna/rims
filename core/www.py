@@ -67,15 +67,16 @@ class Web(object):
   mod_fun = self.get_value('call','front_login')
   (mod,void,fun) = mod_fun.partition('_')
   try:
+   if headers == 'yes' and mod != 'front':
+    print "Content-Type: text/html\r\n"
    from importlib import import_module
    module = import_module(aSiteBase + ".site." + mod)
    print "X-Z-Mod:{}\r".format(mod)
    print "X-Z-Fun:{}\r".format(fun)
-   if headers == 'yes' and mod != 'front':
-    print "Content-Type: text/html\r\n"
    getattr(module,fun,None)(self)
   except Exception as err:
-   print "Content-Type: text/html\r\n"
+   if headers == 'no' or mod == 'front':
+    print "Content-Type: text/html\r\n"
    keys = self.form.keys()
    keys = ",".join(keys)
    from json import dumps
