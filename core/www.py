@@ -15,11 +15,12 @@ class Web(object):
 
  def __init__(self):
   from os import getenv
-  bcookie = getenv("HTTP_COOKIE")
   self._header = {}
   self._c_stor = {}
   self._c_life = {}
-  self.form = None  
+  self._base = None
+  self.form  = None  
+  bcookie = getenv("HTTP_COOKIE")
   self.cookie = {} if not bcookie else dict(map( lambda c: c.split("="), bcookie.split('; ')))
  
  # Header Key/Values
@@ -50,6 +51,7 @@ class Web(object):
   print "<HEAD><META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>"
   if aTitle:
    print "<TITLE>{}</TITLE>".format(aTitle)
+  print "<LINK REL='shortcut icon' TYPE='image/png' HREF='images/{}.png'/>".format(self._base)
   print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>"
   print "<SCRIPT>$(function() { $(document.body).on('click','.z-op',btnoperation ); });</SCRIPT></HEAD>"
   from sys import stdout
@@ -59,10 +61,10 @@ class Web(object):
  #
  # call = <module>_<module_function>
  #
- def server(self,aSiteBase):
+ def server(self,aBase):
   import cgi
-  self.form = cgi.FieldStorage()
-
+  self.form  = cgi.FieldStorage()
+  self._base = aBase
   headers = self.get_value('headers','yes')
   mod_fun = self.get_value('call','front_login')
   (mod,void,fun) = mod_fun.partition('_')
@@ -72,7 +74,7 @@ class Web(object):
    if headers == 'yes' and mod != 'front':
     print "Content-Type: text/html\r\n"
    from importlib import import_module
-   module = import_module(aSiteBase + ".site." + mod)
+   module = import_module(aBase + ".site." + mod)
    getattr(module,fun,None)(self)
   except Exception as err:
    if headers == 'no' or mod == 'front':
@@ -80,7 +82,7 @@ class Web(object):
    keys = self.form.keys()
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'module':aSiteBase + ".site." + mod, 'function':fun, 'args': keys, 'err':str(err) }, sort_keys=True)
+   print dumps({ 'module':aBase + ".site." + mod, 'function':fun, 'args': keys, 'err':str(err) }, sort_keys=True)
 
  ############################## CGI/Web functions ###############################
 

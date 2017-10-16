@@ -161,7 +161,7 @@ def snapshot(aWeb):
  data = {}
  id   = 0
  template="<A CLASS='z-btn z-small-btn z-op' TITLE='{0}' SPIN=true DIV=div_content_right URL='sdcp.cgi?call=esxi_snap_op&ip=" + ip + "&vmid=" + vmid + "&snapid={3}&op={2}'><IMG SRC=images/btn-{1}.png></A>"
- print "<DIV CLASS=z-frame STYLE='width:500px;'>"
+ print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Snapshots ({})</DIV>".format(vmid)
  print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
