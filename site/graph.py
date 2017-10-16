@@ -17,6 +17,7 @@ def list(aWeb):
  with DB() as db:
   if id and state:
    db.do("UPDATE devices SET graph_update = '{1}' WHERE id = '{0}'".format(id,1 if state == '0' else 0))
+   db.commit()
   db.do("SELECT devices.id, INET_NTOA(ip) as ip, hostname, INET_NTOA(graph_proxy) AS proxy ,graph_update, domains.name AS domain FROM devices INNER JOIN domains ON devices.a_dom_id = domains.id ORDER BY hostname")
   rows = db.get_rows()
  print "<DIV CLASS=z-frame>"
@@ -35,7 +36,7 @@ def list(aWeb):
   else:
    print "<DIV CLASS=td>{0}.{1}</DIV>".format(row['hostname'],row['domain'])
    print "<DIV CLASS=td>{0}</A></DIV>".format(row['proxy'])
-  print "<DIV CLASS=td TITLE='Include in graphing?'><A CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL=sdcp.cgi?call=graph_list&id={}&state={}><IMG SRC=images/btn-{}.png></A>&nbsp;</DIV>".format(row['id'],row['graph_update'],"start" if row['graph_update'] else "shutdown")
+  print "<DIV CLASS=td TITLE='Include in graphing?'><A CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL=sdcp.cgi?call=graph_list&id={}&state={}><IMG SRC=images/btn-{}.png></A>&nbsp;</DIV>".format(row['id'],row['graph_update'],"shutdown" if row['graph_update'] else "start")
   print "</DIV>"
  print "</DIV></DIV></DIV>"
 
@@ -84,7 +85,7 @@ def save(aWeb):
    output.write("[{}.{}]\n".format(row['hostname'],row['domain']))
    output.write("address {}\n".format(row['proxy']))
    output.write("update yes\n\n")
- print "<DIV CLASS=z-frame>Done updating devices' graphing to conf file</DIV>"
+ print "<DIV CLASS=z-frame>Done updating devices' graphing to conf file [{}]</DIV>".format(PC.sdcp['graph']['file'])
 
 #
 # Weathermap Link
