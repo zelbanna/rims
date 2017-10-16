@@ -56,7 +56,7 @@ def login(aWeb):
   db.do("SELECT id,name FROM users ORDER BY name")
   rows = db.get_rows()
  aWeb.put_html("Login")
- print "<DIV CLASS='z-centered' style='height:100%;'>"
+ print "<DIV CLASS=z-centered STYLE='height:100%;'>"
  print "<DIV CLASS='z-frame' ID=div_login style='border: solid 1px black; width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
