@@ -119,7 +119,7 @@ def op(aWeb,aIP = None):
  template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
  print "<DIV CLASS=z-frame>"
  if nstate:
-  print "<DIV CLASS=title>ESXi<SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(vmid, nstate.split('-')[1])
+  print "<DIV CLASS=title>ESXi <SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(vmid, nstate.split('-')[1])
  else:
   print "<DIV CLASS=title>ESXi</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip={0}'><IMG SRC='images/btn-reboot.png'></A>".format(ip)

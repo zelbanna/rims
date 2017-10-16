@@ -133,6 +133,8 @@ def dns_top(aDict):
  with open(PC.dnsdb['logfile'],'r') as log:
   for line in log:
    parts = line.split()
+   if not parts[5] == 'Remote':
+    continue
    fqdn  = parts[8].split('|')[0][1:]
    fqdn_top[fqdn] = fqdn_top.get(fqdn,0)+1     
    fqdn_who[fqdn+"#"+parts[6]] = fqdn_who.get(fqdn+"#"+parts[6],0)+1
