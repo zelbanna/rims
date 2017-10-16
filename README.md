@@ -15,6 +15,8 @@ Then run install to write site cgi files into doc-root, finally enter mysql stru
 - Don't forgets:
 -- to be able to reload different services, please add something similar to /etc/sudoers (actually limit for pdns and isc-dhcp-server):
 www-data ALL=(ALL) NOPASSWD: /bin/systemctl
+-- For Apache2 - update index files, e.g.: DirectoryIndex index.cgi index.html
 
 - Backup DB structure:
 mysqldump --no-data -u xyz -p sdcp 2>&1 | grep -vE "\/\*" > mysql.txt
+
