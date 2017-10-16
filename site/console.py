@@ -88,12 +88,11 @@ def info(aWeb):
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(ip)
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(name)
- print "</DIV></DIV>"
+ print "</DIV></DIV></FORM>"
  if not id == 'new':
   print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=console_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
   print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=console_remove&id={0}><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<A TITLE='Update unit'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=console_info&op=update FRM=console_info_form><IMG SRC='images/btn-save.png'></A>"
- print "</FORM>"
  print "</DIV>"
 
 #
