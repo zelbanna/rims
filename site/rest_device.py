@@ -85,7 +85,7 @@ def update_info(aDict):
 # new(ip, hostname, ipam_sub_id, a_dom_id, mac, target, arg)
 #
 def new(aDict):
- import sdcp.core.genLib as GL
+ import sdcp.core.genlib as GL
  ipint = GL.ip2int(aDict.get('ip'))
  ptr_dom = GL.ip2arpa(aDict.get('ip'))
  ret = {'res':'not_added', 'info':None}

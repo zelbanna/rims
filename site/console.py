@@ -16,7 +16,7 @@ from sdcp.core.dbase import DB
 def inventory(aWeb):
  from sdcp.devices.RackUtils import OpenGear
  print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Server</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>Device</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  conlist = aWeb.form.getlist('consolelist')
@@ -38,7 +38,7 @@ def list_consoles(aWeb):
  print "<DIV CLASS=title>Consoles</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='index.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='index.cgi?call=console_info&id=new'><IMG SRC='images/btn-add.png'></A>"
- print "<DIV CLASS=z-table style='width:99%;'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for unit in data:
@@ -84,7 +84,7 @@ def info(aWeb):
  print "<FORM ID=console_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=title>Consoles Info {}</DIV>".format("(new)" if id == 'new' else "")
- print "<DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(ip)
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(name)

@@ -36,7 +36,7 @@ def list(aWeb):
  print "<DIV CLASS=title>Heat Stacks</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='index.cgi?call=heat_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add service' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='index.cgi?call=heat_choose_template'><IMG SRC='images/btn-add.png'></A>"
- print "<DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th style='width:94px;'></DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for stack in ret['data'].get('stacks',None):
@@ -84,7 +84,7 @@ def enter_parameters(aWeb):
  print "<DIV CLASS='z-frame' style='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_template_parameters>"
  print "<INPUT TYPE=hidden NAME=template VALUE={}>".format(template)
- print "<DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Parameter</DIV><DIV CLASS=th style='min-width:300px'>Value</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td><B>Unique Name</B></DIV><DIV CLASS=td><INPUT TYPE=text NAME=name PLACEHOLDER='change-this-name'></DIV></DIV>"
@@ -136,7 +136,7 @@ def action(aWeb):
   from json import dumps
   ret = controller.call(port,url + "/stacks/{}/{}/events".format(name,id))
   print "<!-- {} -->".format("/stacks/{}/{}/events".format(name,id) )
-  print "<DIV CLASS=z-table style='width:99%'>"
+  print "<DIV CLASS=z-table>"
   print "<DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>Resource</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th>Reason</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for event in ret['data']['events']:

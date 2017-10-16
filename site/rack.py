@@ -29,7 +29,7 @@ def list_racks(aWeb):
  print "<DIV CLASS=title>Rack</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='index.cgi?call=rack_list_racks'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='index.cgi?call=rack_info&id=new'><IMG SRC='images/btn-add.png'></A>"
- print "<DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with DB() as db:
@@ -87,7 +87,7 @@ def info(aWeb):
  print "<FORM ID=rack_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=title>Rack Info {}</DIV>".format("(new)" if id == 'new' else "")
- print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table><DIV CLASS=tbody>"
 
  with DB() as db:
   if id == 'new':

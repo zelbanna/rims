@@ -40,7 +40,7 @@ def report(aWeb):
    print "<H2>Report: {}</H2>".format(report['ReportId'])
    print "<H3>{} -> {}</H3>".format(datetime.utcfromtimestamp(float(report['Start'])/1e3),datetime.utcfromtimestamp(float(report['End'])/1e3))
    # print "<H3>Created by: {}</H3>".format(report['CreatedBy']) 
-   print "<DIV CLASS=z-table style='width:99%; display:inline-block;'><DIV CLASS=tbody>"
+   print "<DIV CLASS=z-table style='display:inline-block;'><DIV CLASS=tbody>"
    for ent in report['Data']:
     #print "<THEAD><TH>Field</TH><TH>Data</TH></THEAD>"
     print "<!-- Ent -->"

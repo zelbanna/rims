@@ -28,7 +28,7 @@ def inventory(aWeb):
 
  if len(pdulist) == 0:
   pdulist.append(pduop)
- print "<DIV CLASS=z-frame><DIV CLASS=z-table style='width:99%;'>"
+ print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Entry</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th style='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for pdu in pdulist:
@@ -78,7 +78,7 @@ def unit_info(aWeb):
  print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(unit)
  print "<INPUT NAME=pdu    VALUE={} TYPE=HIDDEN>".format(pdu)
  print "<DIV CLASS=title>PDU Slot Info</DIV>"
- print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>PDU:</DIV><DIV CLASS=td>{0}</DIV></DIV>".format(pdu)
  print "<DIV CLASS=tr><DIV CLASS=td>Slot.Unit:</DIV><DIV CLASS=td>{0}.{1}</DIV></DIV>".format(slotname,unit)
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
@@ -97,7 +97,7 @@ def list_pdus(aWeb):
  print "<DIV CLASS=title>PDUs</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='index.cgi?call=pdu_list_pdus'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-op'     DIV=div_content_right URL='index.cgi?call=pdu_info&id=new'><IMG SRC='images/btn-add.png'></A>"
- print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
+ print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with DB() as db:
   res  = db.do("SELECT id, name, INET_NTOA(ip) as ip from pdus ORDER by name")
@@ -157,7 +157,7 @@ def info(aWeb):
  print "<DIV CLASS=title>PDU Device Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<FORM ID=pdu_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(ip)
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(name)
  if pdudata['slots'] == 1:

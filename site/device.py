@@ -69,7 +69,7 @@ def view_devicelist(aWeb):
  print "<DIV CLASS=title>Devices</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='index.cgi?{}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='index.cgi?call=device_new&{}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args())
- print "<DIV CLASS=z-table style='width:99%;'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='index.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='index.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
 
  if not target or not arg:
@@ -365,6 +365,7 @@ def rack_info(aWeb):
   print "</DIV></DIV></DIV>"
   db.commit()
 
+
 def mac_sync(aWeb):
  import sdcp.core.genlib as GL
  from sdcp.tools.mac_tool import load_macs
@@ -408,12 +409,12 @@ def new(aWeb):
    db.do("SELECT id, name FROM domains")
    domains = db.get_rows()
   print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:180px;'>"
+  print "<DIV CLASS=title>Add Device</DIV>"
+  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
   print "<FORM ID=device_new_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
   print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(target)
   print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(arg)
-  print "<DIV CLASS=title>Add Device</DIV>"
-  print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
@@ -426,6 +427,7 @@ def new(aWeb):
    print "<OPTION VALUE={0}>{1}/{2} ({3})</OPTION>".format(s.get('id'),s.get('subasc'),s.get('mask'),s.get('subnet_description'))
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
+  print "</FORM>"
   print "</DIV></DIV>"
   print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span URL=index.cgi?call=device_new FRM=device_new_form><IMG SRC='images/btn-start.png'></A>&nbsp;"
   print "<SPAN ID=device_new_span style='max-width:400px; font-size:9px; float:right'></SPAN>"
@@ -476,7 +478,7 @@ def discover(aWeb):
   print "<FORM ID=device_discover_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
   print "<DIV CLASS=title>Device Discovery</DIV>"
-  print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
+  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):

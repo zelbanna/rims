@@ -27,7 +27,7 @@ def list_resources(aWeb):
  print "<DIV CLASS=z-frame><DIV CLASS=title>Resources</DIV>"
  print "<A TITLE='Reload List'  CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='index.cgi?call=base_list_resources'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add Resource' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='index.cgi?call=base_resource_info&id=new'><IMG SRC='images/btn-add.png'></A>"
- print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A HREF={1} TARGET=blank_>{2}</A></DIV><DIV CLASS=td>".format(row['type'],row['href'],row['title'])
@@ -133,7 +133,7 @@ def config(aWeb):
 def list_options(aWeb):
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Options</DIV>"
- print "<DIV CLASS=z-table style='width:99%'><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='index.cgi?call=ddi_sync'>Synch DDI</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='index.cgi?call=ddi_dhcp_update'>Update DHCP</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='index.cgi?call=ddi_load_infra'>Load DDI Tables</A></DIV></DIV>"
@@ -195,13 +195,13 @@ def examine_dns(aWeb):
 
  dnstop = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dns_top", {'count':20})
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN ({})</DIV>".format(svchost)
- print "<DIV CLASS=z-table style='padding:5px; width:99%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
+ print "<DIV CLASS=z-table style='padding:5px; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
  print "<DIV CLASS=tbody>"       
  for data in dnstop['top']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'])
  print "</DIV></DIV></DIV>"
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN per Client ({})</DIV>".format(svchost)
- print "<DIV CLASS=z-table style='padding:5px; width:99%; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
+ print "<DIV CLASS=z-table style='padding:5px; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for data in dnstop['who']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'],data['who'],data['hostname'])
@@ -216,13 +216,13 @@ def examine_dhcp(aWeb):
 
  dhcp = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dhcp_leases")
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Active Leases ({})</DIV>".format(svchost)
- print "<DIV CLASS=z-table style='padding:5px; width:99%; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ends</DIV></DIV>"
+ print "<DIV CLASS=z-table style='padding:5px; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ends</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for data in dhcp['active']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
  print "</DIV></DIV></DIV>"
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Free/Old Leases ({})</DIV>".format(svchost)
- print "<DIV CLASS=z-table style='padding:5px; width:99%; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ended</DIV></DIV>"
+ print "<DIV CLASS=z-table style='padding:5px; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ended</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for data in dhcp['free']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
@@ -262,7 +262,7 @@ def list_bookings(aWeb):
 
  print "<DIV CLASS=z-frame><DIV CLASS=title>Bookings</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='index.cgi?call=base_list_bookings'><IMG SRC='images/btn-reboot.png'></A>"
- print "<DIV CLASS=z-table style='width:99%;'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>User (Id)</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Until</DIV><DIV CLASS=th>Op</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
@@ -298,7 +298,7 @@ def list_users(aWeb):
  print "<DIV CLASS=z-frame><DIV CLASS=title>Users</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='index.cgi?call=base_list_users'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add User'    CLASS='z-btn z-small-btn z-op' DIV=div_content_right   URL='index.cgi?call=base_user_info&id=new'><IMG SRC='images/btn-add.png'></A>"
- print "<DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:

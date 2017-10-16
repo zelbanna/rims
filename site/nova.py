@@ -28,7 +28,7 @@ def list(aWeb):
 
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame style='width:394px'>"
- print "<DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead style='height:20px'><DIV CLASS=th><CENTER>Nova Servers</CENTER></DIV></DIV>"
  print "<DIV CLASS=tbody><DIV CLASS=tr style='height:20px'><DIV CLASS=td>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='index.cgi?call=nova_list'><IMG SRC='images/btn-reboot.png'></A>"

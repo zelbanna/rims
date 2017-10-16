@@ -24,7 +24,7 @@ def list(aWeb):
  print "<A TITLE='Reload'   CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='index.cgi?call=graph_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Save'     CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='index.cgi?call=graph_save'><IMG SRC='images/btn-save.png'></A>"
  print "<A TITLE='Discover' CLASS='z-btn z-small-btn z-op' DIV=div_content_right SPIN=true URL='index.cgi?call=graph_discover'><IMG SRC='images/btn-search.png'></A>"
- print "<DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>Proxy</DIV><DIV CLASS=th TITLE='Include in graphing?'>Include</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:

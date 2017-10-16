@@ -21,7 +21,7 @@ def main(aWeb):
  print "&nbsp;</DIV>"    
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left ID=div_content_left>"
- print "<DIV CLASS=z-frame><DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Hostname</DIV></DIV>"        
  print "<DIV CLASS=tbody>"
  for row in rows:
@@ -135,7 +135,7 @@ def op(aWeb,aIP = None, aName = None):
  else:
   print "<DIV CLASS=title>{}</DIV>".format(name)
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='index.cgi?call=esxi_op&ip={0}&name={1}'><IMG SRC='images/btn-reboot.png'></A>".format(ip,name)
- print "<DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='index.cgi?call=esxi_op&ip=" + ip + "&name=" + name + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>"
@@ -176,7 +176,7 @@ def snapshot(aWeb):
  print "<DIV CLASS=z-frame STYLE='width:500px;'>"
  print "<DIV CLASS=title>Snapshots ({})</DIV>".format(vmid)
  print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
- print "<DIV CLASS=z-table STYLE='width:99%;'><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV></DIV>"
+ print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with ESXi(ip) as esxi:
   snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),aWeb.cookie.get('sdcp_id'))

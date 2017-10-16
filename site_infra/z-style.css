@@ -76,6 +76,7 @@ div.z-drop {   -ms-touch-action: none; touch-action: none; }
 
 /*############################### Tables #####################################*/ 
 
+div.z-frame > div.z-table { width:99%; }
 div.z-table {            display: table; }
 div.z-table .thead {     display: table-header-group; }
 div.z-table .thead .th { display: table-cell; border:none; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 4px; }

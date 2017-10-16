@@ -29,7 +29,7 @@ def list(aWeb):
   return
  
  print "<DIV CLASS=z-content-left ID=div_content_left>"
- print "<DIV CLASS=z-frame style='overflow:auto;'><DIV CLASS=z-table style='width:99%'>"
+ print "<DIV CLASS=z-frame style='overflow:auto;'><DIV CLASS=z-table>"
  print "<DIV CLASS=thead  style='height:20px'><DIV CLASS=th><CENTER>Contrail VNs</CENTER></DIV></DIV>"
  print "<DIV CLASS=tr  style='height:20px'><DIV CLASS=td COLSPAN=3>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='index.cgi?call=neutron_list'><IMG SRC='images/btn-reboot.png'></A>"
