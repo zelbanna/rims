@@ -51,7 +51,7 @@ def info(aWeb):
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left ID=div_content_left>"
- op(aWeb,data['ipasc'],data['hostname'])
+ op(aWeb,data['ipasc'])
  print "</DIV>" 
  print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
  print "</DIV>"        
@@ -83,16 +83,14 @@ def logs(aWeb):
 #
 # ESXi operations
 #
-def op(aWeb,aIP = None, aName = None):
+def op(aWeb,aIP = None):
  from sdcp.devices.ESXi import ESXi
  ip     = aWeb.get_value('ip',aIP)
- name   = aWeb.get_value('name',aName)
  excpt  = aWeb.get_value('except','-1')
  nstate = aWeb.get_value('nstate')
  vmid   = aWeb.get_value('vmid','-1')
  sort   = aWeb.get_value('sort','name')
  esxi   = ESXi(ip)
- esxi.set_name(name)
 
  if nstate:
   from subprocess import check_call, check_output
@@ -103,16 +101,6 @@ def op(aWeb,aIP = None, aName = None):
     from time import strftime
     with esxi:
      esxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")),userid)
-   elif nstate == 'vmsvc-snapshot.revert':
-    with esxi:
-     data = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),userid)
-     s_last = 0
-     for line in data.splitlines():
-      if "Snapshot Id" in line:
-       s_id = int(line.split()[3])
-       s_last = s_last if s_last > s_id else s_id
-     if s_last > 0:
-      esxi.ssh_send("vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff".format(vmid,s_last),userid)
    elif "vmsvc-" in nstate:
     vmop = nstate.partition('-')[2]
     with esxi:
@@ -122,21 +110,21 @@ def op(aWeb,aIP = None, aName = None):
      esxi.ssh_send("poweroff",userid)
    elif nstate == 'vmsoff':
     excpt = "" if vmid == '-1' else vmid
-    check_call("/usr/local/sbin/ups-operations shutdown {} {} {} &".format(ip,name,excpt), shell=True)
+    check_call("/usr/local/sbin/ups-operations shutdown {} {} {} &".format(ip,'none',excpt), shell=True)
   except Exception as err:
    PC.log_msg("ESXi: nstate error [{}]".format(str(err)))
 
  statelist = esxi.get_vms(sort)
  # Formatting template (command, btn-xyz, vm-id, hover text)
- template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&name=" + name + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
+ template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
  print "<DIV CLASS=z-frame>"
  if nstate:
-  print "<DIV CLASS=title>{}<SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(name,vmid, nstate.split('-')[1])
+  print "<DIV CLASS=title>ESXi<SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(vmid, nstate.split('-')[1])
  else:
-  print "<DIV CLASS=title>{}</DIV>".format(name)
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip={0}&name={1}'><IMG SRC='images/btn-reboot.png'></A>".format(ip,name)
+  print "<DIV CLASS=title>ESXi</DIV>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip={0}'><IMG SRC='images/btn-reboot.png'></A>".format(ip)
  print "<DIV CLASS=z-table>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&name=" + name + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>"
  if nstate and nstate == 'vmsoff':
@@ -159,7 +147,6 @@ def op(aWeb,aIP = None, aName = None):
   else:
    print template.format('vmsvc-power.on','start', vm[0], "Start")
    print template.format('vmsvc-snapshot.create','snapshot', vm[0], "Snapshot")
-   print template.format('vmsvc-snapshot.revert','revert', vm[0], "Snapshot - Revert to Last")
    print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right TITLE='Snapshot - Info' URL=sdcp.cgi?call=esxi_snapshot&ip={}&vmid={}><IMG SRC='images/btn-info.png'></A>".format(ip,vm[0])
   print "</DIV></DIV>"
  print "</DIV></DIV></DIV>"
@@ -173,10 +160,11 @@ def snapshot(aWeb):
  vmid = aWeb.get_value('vmid')
  data = {}
  id   = 0
+ template="<A CLASS='z-btn z-small-btn z-op' TITLE='{0}' SPIN=true DIV=div_content_right URL='sdcp.cgi?call=esxi_snap_op&ip=" + ip + "&vmid=" + vmid + "&snapid={3}&op={2}'><IMG SRC=images/btn-{1}.png></A>"
  print "<DIV CLASS=z-frame STYLE='width:500px;'>"
  print "<DIV CLASS=title>Snapshots ({})</DIV>".format(vmid)
  print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
- print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV></DIV>"
+ print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with ESXi(ip) as esxi:
   snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),aWeb.cookie.get('sdcp_id'))
@@ -198,6 +186,25 @@ def snapshot(aWeb):
     elif key[-5:] == 'State':
      # Last!
      data['state'] = val
-     print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['name'],data['id'],data['desc'],data['created'],data['state'])
+     print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(data['name'],data['id'],data['desc'],data['created'],data['state'])
+     print template.format("Revert","revert","revert",data['id'])
+     print template.format("Remove","remove","remove",data['id'])
+     print "</DIV></DIV>"
      data = {}
  print "</DIV></DIV><SPAN STYLE='float:right; font-size:12px;'>[Highest ID:{}]</SPAN></DIV>".format(id)
+
+#
+#
+#
+def snap_op(aWeb):
+ from sdcp.devices.ESXi import ESXi
+ ip   = aWeb.get_value('ip')
+ vmid = aWeb.get_value('vmid')
+ snap = aWeb.get_value('snapid')
+ op   = aWeb.get_value('op')
+ with ESXi(ip) as esxi:
+  if   op == 'revert':
+   esxi.ssh_send("vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff".format(vmid,snap),aWeb.cookie.get('sdcp_id'))
+  elif op == 'remove':
+   esxi.ssh_send("vim-cmd vmsvc/snapshot.remove {} {} ".format(vmid,snap),aWeb.cookie.get('sdcp_id'))
+ print "<DIV CLASS=z-frame>Carried out '{}' on '{}@{}'</DIV>".format(op,vmid,ip)

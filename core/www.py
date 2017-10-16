@@ -66,13 +66,13 @@ class Web(object):
   headers = self.get_value('headers','yes')
   mod_fun = self.get_value('call','front_login')
   (mod,void,fun) = mod_fun.partition('_')
+  print "X-Z-Mod:{}\r".format(mod)
+  print "X-Z-Fun:{}\r".format(fun)
   try:
    if headers == 'yes' and mod != 'front':
     print "Content-Type: text/html\r\n"
    from importlib import import_module
    module = import_module(aSiteBase + ".site." + mod)
-   print "X-Z-Mod:{}\r".format(mod)
-   print "X-Z-Fun:{}\r".format(fun)
    getattr(module,fun,None)(self)
   except Exception as err:
    if headers == 'no' or mod == 'front':
