@@ -25,7 +25,7 @@ def list_resources(aWeb):
   rows = db.get_rows()
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Resources</DIV>"
- print "<A TITLE='Reload List'  CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=base_list_resources'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List'  CLASS='z-btn z-small-btn z-op' DIV=div_content       URL='sdcp.cgi?call=base_list_resources'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add Resource' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=base_resource_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -35,7 +35,7 @@ def list_resources(aWeb):
   print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_remove&id={0} MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>&nbsp;".format(row['id'])
   print "</DIV></DIV>"
  print "</DIV></DIV></DIV></DIV>"
- print "<DIV CLASS=z-content-right ID =div_content_right></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_content_right>"
 
 #
 #
@@ -141,7 +141,7 @@ def list_options(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=device_rack_info'>Device Rackinfo</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=device_mac_sync'>Sync MAC Info</A></DIV></DIV>"
  print "</DIV></DIV></DIV></DIV>"
- print "<DIV CLASS=z-content-right ID =div_content_right></DIV>"
+ print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
 
 ############################################ Examine ##############################################
 #
