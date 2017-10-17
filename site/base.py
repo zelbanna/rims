@@ -21,7 +21,7 @@ def navigate(aWeb):
 def list_resources(aWeb):
  from sdcp.core.dbase import DB
  with DB() as db:
-  res  = db.do("SELECT id, title, href,type FROM resources ORDER BY type,title")
+  res  = db.do("SELECT id, title, href,type FROM resources WHERE (user_id = '{}' {}) ORDER BY type,title".format(aWeb.cookie['sdcp_id'],'' if aWeb.cookie['sdcp_view'] == '0' else 'OR private = 0'))
   rows = db.get_rows()
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Resources</DIV>"
@@ -43,46 +43,48 @@ def list_resources(aWeb):
 def resource_info(aWeb):
  from sdcp.core.dbase import DB
  from os import listdir, path
- id    = aWeb.get_value('id','new')
  op    = aWeb.get_value('op')
- title = aWeb.get_value('title',"unknown")
- href  = aWeb.get_value('href',"unknown")
- type  = aWeb.get_value('type')
- icon  = aWeb.get_value('icon')
+
+ data  = {}
+ data['id']    = aWeb.get_value('id','new')
  if op == 'update':
+  data['title'] = aWeb.get_value('title',"unknown")
+  data['href']  = aWeb.get_value('href',"unknown")
+  data['type']  = aWeb.get_value('type')
+  data['icon']  = aWeb.get_value('icon')
+  data['private'] = aWeb.get_value('private',"0")
   with DB() as db:   
    if id == 'new':
-    db.do("INSERT INTO resources (title,href,icon,type,user_id) VALUES ('{}','{}','{}','{}','{}')".format(title,href,icon,type,aWeb.cookie.get('sdcp_id')))
+    db.do("INSERT INTO resources (title,href,icon,type,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}')".format(data['title'],data['href'],data['icon'],data['type'],data['private'],aWeb.cookie.get('sdcp_id')))
     db.commit()
-    id  = db.get_last_id()
+    data['id']  = db.get_last_id()
    else:
-    db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}' WHERE id = '{}'".format(title,href,icon,type,id))
+    db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}', private='{}' WHERE id = '{}'".format(data['title'],data['href'],data['icon'],data['type'],data['private'],data['id']))
     db.commit()
  elif id <> 'new':
   with DB() as db:
-   db.do("SELECT title,href,icon,type FROM resources WHERE id = '{}'".format(id))
-   row = db.get_row()
-   title,href,icon,type = row['title'],row['href'],row['icon'],row['type']
+   db.do("SELECT id,title,href,icon,type,private FROM resources WHERE id = '{}'".format(data['id']))
+   data = db.get_row()
 
  print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>Resource entity ({})</DIV>".format(id)
+ print "<DIV CLASS=title>Resource entity ({})</DIV>".format(data['id'])
  print "<FORM ID=sdcp_resource_info_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<DIV CLASS=z-table style='float:left'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV CLASS=td><INPUT   NAME=title TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(title)
- print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV CLASS=td><INPUT     NAME=href TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(href)
- print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(icon)
- print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT NAME=type>"
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
+ print "<DIV CLASS=z-table style='float:left; width:auto;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV CLASS=td><INPUT   NAME=title STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['title'])
+ print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV CLASS=td><INPUT     NAME=href STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['href'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['icon'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT    NAME=type STYLE='border:1px solid grey; width:400px;'>"
  for tp in ['bookmark','demo','tool']:
-  print "<OPTION VALUE={} {}>{}</OPTION>".format(tp,"" if type != tp else 'selected',tp.title())
+  print "<OPTION VALUE={} {}>{}</OPTION>".format(tp,"" if data['type'] != tp else 'selected',tp.title())
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
  print "</FORM>"
- if icon and icon != 'NULL':
-  print "<A CLASS=z-btn style='float:left; padding:6px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(icon)
+ if data['icon'] and data['icon'] != 'NULL':
+  print "<A CLASS='z-btn z-menu-btn' style='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(data['icon'])
  print "<BR style='clear:left'>"
- if id != 'new':
-  print "<A TITLE='Remove resource' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_remove&id={0}  MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>".format(id)
+ if data['id'] != 'new':
+  print "<A TITLE='Remove resource' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_remove&id={0}  MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>".format(data['id'])
  print "<A TITLE='Update resource'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_info&op=update FRM=sdcp_resource_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</DIV>"
 
@@ -90,10 +92,12 @@ def resource_info(aWeb):
 #
 #
 def list_resource_type(aWeb):
+ #
+ #
+ # 
  from sdcp.core.dbase import DB
  with DB() as db:
-  type  = aWeb.get_value('type')
-  db.do("SELECT * FROM resources WHERE type = '{}'".format(type))
+  db.do("SELECT title,href,icon FROM resources WHERE type = '{}' AND ( user_id = {} {} )".format(aWeb.get_value('type'),aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
   rows = db.get_rows() 
  index = 0;
  print "<DIV CLASS=z-centered style='align-items:initial'>"

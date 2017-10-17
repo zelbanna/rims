@@ -27,20 +27,21 @@ def login(aWeb):
   return
 
  if aWeb.cookie.get('sdcp_id'):
-  id,user = aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user')
+  id,user,view = aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_view')
  else:
-  id,user = aWeb.get_value('sdcp_login',"None_None").split('_')
+  id,user,view = aWeb.get_value('sdcp_login',"None_None_1").split('_')
   if id != "None":
    # "Login successful"
+   aWeb.add_cookie('sdcp_id',  id, 86400)
    aWeb.add_cookie('sdcp_user', user, 86400)
-   aWeb.add_cookie('sdcp_id', id, 86400)
+   aWeb.add_cookie('sdcp_view', view, 86400)
 
  if id != "None":
   with DB() as db:
    res  = db.do("SELECT href FROM resources INNER JOIN users ON users.frontpage = resources.id WHERE users.id = '{}'".format(id))
    href = 'sdcp.cgi?call=base_navigate&type=demo' if not res else db.get_row()['href']
    
-  PC.log_msg("Entering as [{}-{}]".format(id,user))
+  PC.log_msg("Entering as {}-'{}' ({})".format(id,user,view))
   aWeb.put_html(PC.sdcp['name'])
   print "<DIV class='z-main-menu' ID=div_main_menu>"
   print "<A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Start'     URL='{}'><IMG SRC='images/icon-start.png'/></A>".format(href)
@@ -56,7 +57,7 @@ def login(aWeb):
   <DIV CLASS=z-main-content ID=div_main_cont></DIV>"""
  else:
   with DB() as db:
-   db.do("SELECT id,name FROM users ORDER BY name")
+   db.do("SELECT id,name,view_public FROM users ORDER BY name")
    rows = db.get_rows()
   aWeb.put_html("Login")
   print "<DIV CLASS=z-centered STYLE='height:100%;'>"
@@ -67,7 +68,7 @@ def login(aWeb):
   print "<DIV CLASS=z-table style='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=sdcp_login>"
   for row in rows:
-   print "<OPTION VALUE='{0}_{1}' {2}>{1}</OPTION>".format(row['id'],row['name'],'' if str(row['id']) != id else "selected=True")
+   print "<OPTION VALUE='{0}_{1}_{2}' {3}>{1}</OPTION>".format(row['id'],row['name'],row['view_public'],'' if str(row['id']) != id else "selected=True")
   print "</SELECT></DIV></DIV>"
   print "</DIV></DIV>"
   print "<A CLASS='z-btn z-op' OP=submit style='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
