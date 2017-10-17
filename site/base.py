@@ -21,7 +21,7 @@ def navigate(aWeb):
 def list_resources(aWeb):
  from sdcp.core.dbase import DB
  with DB() as db:
-  res  = db.do("SELECT id, title, href,type FROM resources WHERE (user_id = '{}' {}) ORDER BY type,title".format(aWeb.cookie['sdcp_id'],'' if aWeb.cookie['sdcp_view'] == '0' else 'OR private = 0'))
+  res  = db.do("SELECT id, title, href, type, inline, user_id FROM resources WHERE (user_id = '{}' {}) ORDER BY type,title".format(aWeb.cookie['sdcp_id'],'' if aWeb.cookie['sdcp_view'] == '0' else 'OR private = 0'))
   rows = db.get_rows()
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Resources</DIV>"
@@ -30,9 +30,15 @@ def list_resources(aWeb):
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A HREF={1} TARGET=blank_>{2}</A></DIV><DIV CLASS=td>".format(row['type'],row['href'],row['title'])
-  print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_info&id={0}><IMG SRC=images/btn-info.png></A>".format(row['id'])
-  print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_remove&id={0} MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>&nbsp;".format(row['id'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A TITLE='{}' ".format(row['type'],row['title'])
+  if row['inline'] == 0:
+   print "TARGET=_blank HREF='{}'>".format(row['href'])
+  else:
+   print "CLASS=z-op DIV=div_main_cont URL='{}'>".format(row['href'])
+  print "{}</A></DIV><DIV CLASS=td>".format(row['title'])
+  print "&nbsp;<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_info&id={0}><IMG SRC=images/btn-info.png></A>".format(row['id'])
+  if aWeb.cookie['sdcp_id'] == str(row['user_id']):
+   print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=base_resource_remove&id={0} MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>".format(row['id'])
   print "</DIV></DIV>"
  print "</DIV></DIV></DIV></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right>"
@@ -44,9 +50,8 @@ def resource_info(aWeb):
  from sdcp.core.dbase import DB
  from os import listdir, path
  op    = aWeb.get_value('op')
-
  data  = {}
- data['id']    = aWeb.get_value('id','new')
+ data['id'] = aWeb.get_value('id','new')
  if op == 'update' or data['id'] == 'new':
   data['title'] = aWeb.get_value('title',"unknown")
   data['href']  = aWeb.get_value('href',"unknown")
@@ -65,7 +70,7 @@ def resource_info(aWeb):
      db.commit()
  else:
   with DB() as db:
-   db.do("SELECT id,title,href,icon,type,inline,private FROM resources WHERE id = '{}'".format(data['id']))
+   db.do("SELECT id,title,href,icon,type,inline,private,user_id FROM resources WHERE id = '{}'".format(data['id']))
    data = db.get_row()
 
  print "<DIV CLASS=z-frame>"
@@ -76,7 +81,8 @@ def resource_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV    CLASS=td><INPUT NAME=title STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['title'])
  print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV     CLASS=td><INPUT NAME=href  STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['href'])
  print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon  STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['icon'])
- print "<DIV CLASS=tr><DIV CLASS=td>Inline:</DIV><DIV   CLASS=td><INPUT NAME=inline {}                 TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['inline'] == 1 or data['inline'] == "1" else '')
+ print "<DIV CLASS=tr><DIV CLASS=td>Inline:</DIV><DIV   CLASS=td><INPUT NAME=inline  {}                TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['inline'] == 1 or data['inline'] == "1" else '')
+ print "<DIV CLASS=tr><DIV CLASS=td>Private:</DIV><DIV  CLASS=td><INPUT NAME=private {} {}             TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['private'] == 1 or data['private'] == "1" else '',"disabled" if aWeb.cookie['sdcp_id'] <> str(data['user_id']) else "")
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV     CLASS=td><SELECT NAME=type STYLE='min-width:400px'>"
  for tp in ['bookmark','demo','tool']:
   print "<OPTION VALUE={} {}>{}</OPTION>".format(tp,"" if data['type'] != tp else 'selected',tp.title())
@@ -332,26 +338,31 @@ def user_info(aWeb):
    data['alias'] = aWeb.get_value('alias',"unknown")
    data['email'] = aWeb.get_value('email',"unknown")
    data['front'] = aWeb.get_value('front','NULL')
+   data['view']  = aWeb.get_value('view','0')
    if op == 'update':
     if data['id'] == 'new':
-     db.do("INSERT INTO users (alias,name,email,frontpage) VALUES ('{}','{}','{}',{})".format(data['alias'],data['name'],data['email'],data['front']))
+     db.do("INSERT INTO users (alias,name,email,frontpage,view_public) VALUES ('{}','{}','{}','{}',{})".format(data['alias'],data['name'],data['email'],data['front'],data['view']))
      data['id']  = db.get_last_id()
     else:
-     db.do("UPDATE users SET alias='{}',name='{}',email='{}',frontpage={} WHERE id = '{}'".format(data['alias'],data['name'],data['email'],data['front'],data['id']))
+     db.do("UPDATE users SET alias='{}',name='{}',email='{}',view_public='{}',frontpage={} WHERE id = '{}'".format(data['alias'],data['name'],data['email'],data['view'],data['front'],data['id']))
     db.commit()
+    aWeb.add_cookie('sdcp_view',data['view'],86400)
+    aWeb.put_headers()
   else:
    db.do("SELECT * FROM users WHERE id = '{}'".format(data['id']))
    data = db.get_row()
    data['front'] = str(data['frontpage'])
+   data['view']  = str(data['view_public'])
 
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>User Info ({})</DIV>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>     <DIV CLASS=td><INPUT NAME=alias  TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['alias'])
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>      <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name'])
- print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV>    <DIV CLASS=td><INPUT NAME=email  TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['email'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>  <DIV CLASS=td><INPUT NAME=alias  TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['alias'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>   <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name'])
+ print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV> <DIV CLASS=td><INPUT NAME=email  TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['email'])
+ print "<DIV CLASS=tr><DIV CLASS=td>View All:</DIV><DIV CLASS=td><INPUT NAME=view  TYPE=CHECKBOX VALUE=1                     {}></DIV></DIV>".format("checked=checked" if data['view'] == 1 or data['view'] == "1" else '')
  print "<DIV CLASS=tr><DIV CLASS=td>Front page:</DIV><DIV CLASS=td><SELECT NAME=front STYLE='min-width:400px'>"
  for resource in resources:
   print "<OPTION VALUE='{0}' {2}>{1}</OPTION>".format(resource['id'],resource['title'],"selected" if str(resource['id']) == data['front'] else '')
@@ -360,6 +371,6 @@ def user_info(aWeb):
  print "</DIV></DIV>"
  if data['id'] != 'new':
   print "<A TITLE='Remove user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=rest.cgi?call=sdcp.rest.base_remove_user&id={0} MSG='Really remove user?'><IMG SRC='images/btn-remove.png'></A>".format(data['id'])
- print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_user_info&op=update          FRM=sdcp_user_info_form><IMG SRC='images/btn-save.png'></A>"
+ print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_user_info&headers=no&op=update FRM=sdcp_user_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"
