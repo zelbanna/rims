@@ -153,7 +153,7 @@ def examine(aWeb):
  svchost = PC.sdcp['svcsrv']
  upshost = PC.sdcp['upshost']
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='rest.cgi?call=sdcp.site:sdcp_clear_logs&logs={},{}'>Clear Logs</A>".format(PC.generic['logformat'],PC.sdcp['netlogs'])
+ print "<A CLASS='z-warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='rest.cgi?call=sdcp.rest.base_clear_logs&logs={},{}'>Clear Logs</A>".format(PC.generic['logformat'],PC.sdcp['netlogs'])
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_logs'>Logs</A>"
  if upshost:
   print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_ups&upshost={}'>UPS</A>".format(upshost)
@@ -170,7 +170,7 @@ def examine(aWeb):
 #
 def examine_logs(aWeb):
  import sdcp.PackageContainer as PC
- from sdcp.site.rest_sdcp import examine_logs
+ from sdcp.rest.base import examine_logs
  logs = examine_logs({'count':10,'logs':"{},{}".format(PC.generic['logformat'],PC.sdcp['netlogs'])})
  for file,res in logs.iteritems():
   print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
@@ -193,7 +193,7 @@ def examine_dns(aWeb):
  from sdcp.core.rest import call as rest_call     
  svchost = aWeb.get_value('svchost')
 
- dnstop = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dns_top", {'count':20})
+ dnstop = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.rest.ddi_dns_top", {'count':20})
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN ({})</DIV>".format(svchost)
  print "<DIV CLASS=z-table style='padding:5px; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
  print "<DIV CLASS=tbody>"       
@@ -214,7 +214,7 @@ def examine_dhcp(aWeb):
  from sdcp.core.rest import call as rest_call      
  svchost = aWeb.get_value('svchost')   
 
- dhcp = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:ddi_dhcp_leases")
+ dhcp = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.rest.ddi_dhcp_leases")
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Active Leases ({})</DIV>".format(svchost)
  print "<DIV CLASS=z-table style='padding:5px; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ends</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -235,7 +235,7 @@ def examine_svc(aWeb):
  from sdcp.core.rest import call as rest_call      
  import sdcp.PackageContainer as PC
  svchost = aWeb.get_value('svchost')
- logs = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.site:sdcp_examine_logs",{'count':20,'logs':PC.generic['logformat']})
+ logs = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.rest.base_examine_logs",{'count':20,'logs':PC.generic['logformat']})
  for file,res in logs.iteritems():
   print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
   for line in res:
@@ -341,7 +341,7 @@ def user_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV><DIV CLASS=td><INPUT NAME=email TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(email)
  print "</DIV></DIV>"
  if id != 'new':
-  print "<A TITLE='Remove user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=rest.cgi?call=sdcp.site:sdcp_remove_user&id={0} MSG='Really remove user?'><IMG SRC='images/btn-remove.png'></A>".format(id)
+  print "<A TITLE='Remove user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=rest.cgi?call=sdcp.rest.base_remove_user&id={0} MSG='Really remove user?'><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_user_info&op=update          FRM=sdcp_user_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"

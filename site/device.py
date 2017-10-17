@@ -107,11 +107,11 @@ def info(aWeb):
 
  ###################### Data operations ###################
  if   op == 'lookup':
-  from rest_device import lookup_info
+  from sdcp.rest.device import lookup_info
   opres['lookup'] = lookup_info({'id':id})
 
  elif op == 'update':
-  from rest_device import update_info
+  from sdcp.rest.device import update_info
   d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
   if not d.get('devices_vm'):
    d['devices_vm'] = 0
@@ -147,8 +147,8 @@ def info(aWeb):
  # If inserts are return as x_op, update local db using newly constructed dict
  # 
  if op == 'update' and not name == 'unknown':
-  from rest_ddi import dns_update, ipam_update
-  from rest_device import update_info
+  from sdcp.rest.ddi import dns_update, ipam_update
+  from sdcp.rest.device import update_info
   opres['ddi_sync'] = (device_data['ipam_id'] == '0')
   res   = dns_update( { 'ip':ip, 'name':name, 'a_dom_id': str(device_data['a_dom_id']), 'a_id':str(device_data['a_id']), 'ptr_id':str(device_data['ptr_id']) })
   newop = { 'id':id, 'devices_a_id':res['a_id'], 'devices_ptr_id':res['ptr_id'] }
@@ -159,7 +159,7 @@ def info(aWeb):
   device_data['ptr_id']  = newop['devices_ptr_id']
   device_data['ipam_id'] = newop['devices_ipam_id']
   if device_data['rack_id']:
-   from rest_pdu import update_device_pdus
+   from sdcp.rest.pdu import update_device_pdus
    ri['hostname'] = name
    opres['pdu'] = update_device_pdus(ri)
 
@@ -397,7 +397,7 @@ def new(aWeb):
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  if op:
-  from rest_device import new as rest_new
+  from sdcp.rest.device import new as rest_new
   a_dom    = aWeb.get_value('a_dom_id')
   ipam_sub = aWeb.get_value('ipam_sub_id')
   params =  { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg } 
@@ -437,7 +437,7 @@ def new(aWeb):
 #
 #
 def remove(aWeb):
- from rest_device import remove
+ from sdcp.rest.device import remove
  id      = aWeb.get_value('id')
  print "<DIV CLASS=z-frame>"
  res = remove({ 'id':id })
@@ -449,7 +449,7 @@ def remove(aWeb):
 #
 def dump_db(aWeb):
  from json import dumps
- from rest_device import dump_db
+ from sdcp.rest.device import dump_db
  table = aWeb.get_value('table','devices')
  cols  = aWeb.get_value('columns','*')
  print "<PRE>{}</PRE>".format(dumps(dump_db({'table':table,'columns':cols}), indent=4, sort_keys=True))
@@ -460,7 +460,7 @@ def dump_db(aWeb):
 def discover(aWeb):
  op = aWeb.get_value('op')
  if op:
-  from rest_device import discover
+  from sdcp.rest.device import discover
   clear = aWeb.get_value('clear',False)
   a_dom = aWeb.get_value('a_dom_id')
   ipam  = aWeb.get_value('ipam_sub',"0_0_32").split('_')

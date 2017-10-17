@@ -37,7 +37,7 @@ def load_infra(aDict):
 def dhcp_leases(aDict):
  if PC.dhcp['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call
-  return rest_call(PC.dhcp['url'], "sdcp.site:ddi_dhcp_leases", aDict)
+  return rest_call(PC.dhcp['url'], "sdcp.rest.ddi_dhcp_leases", aDict)
  import sdcp.core.genlib as GL
  active = []
  free   = []
@@ -73,7 +73,7 @@ def dhcp_update(aDict):
  # - entries is a list of dict objects containing hostname, mac, ip etc
  if PC.dhcp['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call             
-  return rest_call(PC.dhcp['url'], "sdcp.site:ddi_dhcp_update", aDict)
+  return rest_call(PC.dhcp['url'], "sdcp.rest.ddi_dhcp_update", aDict)
 
  entries = aDict['entries']
  # Create new file
@@ -102,7 +102,7 @@ def dhcp_update(aDict):
 def dns_cleanup(aDict):
  if PC.dnsdb['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call             
-  return rest_call(PC.dnsdb['url'], "sdcp.site:ddi_dns_cleanup", aDict)
+  return rest_call(PC.dnsdb['url'], "sdcp.rest.ddi_dns_cleanup", aDict)
  from sdcp.core.dbase import DB
  with DB(PC.dnsdb['dbname'],'localhost',PC.dnsdb['username'],PC.dnsdb['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
@@ -125,7 +125,7 @@ def dns_cleanup(aDict):
 def dns_top(aDict):
  if PC.dnsdb['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call
-  return rest_call(PC.dnsdb['url'], "sdcp.site:ddi_dns_top", aDict)
+  return rest_call(PC.dnsdb['url'], "sdcp.rest.ddi_dns_top", aDict)
  import sdcp.core.genlib as GL
  count = int(aDict.get('count',10))
  fqdn_top = {}                
@@ -153,7 +153,7 @@ def dns_top(aDict):
 def dns_domains(aDict):
  if PC.dnsdb['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call             
-  return rest_call(PC.dnsdb['url'], "sdcp.site:ddi_dns_domains", aDict)
+  return rest_call(PC.dnsdb['url'], "sdcp.rest.ddi_dns_domains", aDict)
  from sdcp.core.dbase import DB
  with DB(PC.dnsdb['dbname'],'localhost',PC.dnsdb['username'],PC.dnsdb['password']) as db:
   res = db.do("SELECT id, name FROM domains")
@@ -166,7 +166,7 @@ def dns_domains(aDict):
 def dns_lookup(aDict):
  if PC.dnsdb['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call             
-  return rest_call(PC.dnsdb['url'], "sdcp.site:ddi_dns_lookup", aDict)
+  return rest_call(PC.dnsdb['url'], "sdcp.rest.ddi_dns_lookup", aDict)
  import sdcp.core.genlib as GL
  ptr  = GL.ip2arpa(aDict['ip'])
  PC.log_msg("DNS  lookup - input:{}".format(aDict.values()))  
@@ -199,7 +199,7 @@ def dns_lookup(aDict):
 def dns_update(aDict):
  if PC.dnsdb['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call             
-  return rest_call(PC.dnsdb['url'], "sdcp.site:ddi_dns_update", aDict)
+  return rest_call(PC.dnsdb['url'], "sdcp.rest.ddi_dns_update", aDict)
  PC.log_msg("DNS  update - input:{}".format(aDict.values()))
  import sdcp.core.genlib as GL
  from time import strftime
@@ -243,7 +243,7 @@ def dns_update(aDict):
 def dns_remove(aDict):
  if PC.dnsdb['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call             
-  return rest_call(PC.dnsdb['url'], "sdcp.site:ddi_dns_remove", aDict)
+  return rest_call(PC.dnsdb['url'], "sdcp.rest.ddi_dns_remove", aDict)
  PC.log_msg("DNS  remove - input:{}".format(aDict.values()))
  ares = 0
  pres = 0
@@ -264,7 +264,7 @@ def dns_remove(aDict):
 def ipam_subnets(aDict):
  if PC.ipamdb['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call             
-  return rest_call(PC.ipamdb['url'], "sdcp.site:ddi_ipam_subnets", aDict)
+  return rest_call(PC.ipamdb['url'], "sdcp.rest.ddi_ipam_subnets", aDict)
  from sdcp.core.dbase import DB
  with DB(PC.ipamdb['dbname'],'localhost',PC.ipamdb['username'],PC.ipamdb['password']) as db:
   db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
@@ -277,7 +277,7 @@ def ipam_subnets(aDict):
 def ipam_lookup(aDict):
  if PC.ipamdb['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call             
-  return rest_call(PC.ipamdb['url'], "sdcp.site:ddi_ipam_lookup", aDict)
+  return rest_call(PC.ipamdb['url'], "sdcp.rest.ddi_ipam_lookup", aDict)
  PC.log_msg("IPAM lookup - input {}".format(aDict.values()))
  import sdcp.core.genlib as GL
  ipint   = GL.ip2int(aDict['ip'])
@@ -298,7 +298,7 @@ def ipam_lookup(aDict):
 def ipam_update(aDict):
  if PC.ipamdb['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call             
-  return rest_call(PC.ipamdb['url'], "sdcp.site:ddi_ipam_update", aDict)
+  return rest_call(PC.ipamdb['url'], "sdcp.rest.ddi_ipam_update", aDict)
  PC.log_msg("IPAM update - input:{}".format(aDict.values()))
  res = {}
  import sdcp.core.genlib as GL
@@ -329,7 +329,7 @@ def ipam_update(aDict):
 def ipam_remove(aDict):
  if PC.ipamdb['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call             
-  return rest_call(PC.ipamdb['url'], "sdcp.site:ddi_ipam_remove", aDict)
+  return rest_call(PC.ipamdb['url'], "sdcp.rest.ddi_ipam_remove", aDict)
  from sdcp.core.dbase import DB
  with DB(PC.ipamdb['dbname'],'localhost',PC.ipamdb['username'],PC.ipamdb['password']) as db:
   ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
@@ -343,7 +343,7 @@ def ipam_remove(aDict):
 def ipam_find(aDict):
  if PC.ipamdb['proxy'] == 'True':
   from sdcp.core.rest import call as rest_call             
-  return rest_call(PC.ipamdb['url'], "sdcp.site:ddi_ipam_find", aDict)
+  return rest_call(PC.ipamdb['url'], "sdcp.rest.ddi_ipam_find", aDict)
  import sdcp.core.genlib as GL
  from sdcp.core.dbase import DB
  with DB(PC.ipamdb['dbname'],'localhost',PC.ipamdb['username'],PC.ipamdb['password']) as db:

@@ -30,7 +30,7 @@ def lookup_info(aDict):
    ret['base'] ='True'
  
   if not name == 'unknown':
-   from rest_ddi import dns_lookup, ipam_lookup
+   from ddi import dns_lookup, ipam_lookup
    vals   = dns_lookup({ 'ip':ip, 'name':name, 'a_dom_id':dev.get('a_dom_id') })
    a_id   = vals.get('a_id','0')
    ptr_id = vals.get('ptr_id','0')
@@ -124,7 +124,7 @@ def discover(aDict):
  import sdcp.PackageContainer as PC
  import sdcp.core.genlib as GL
  start_time = int(time())
- PC.log_msg("rest_device_discover: " + str(aDict))
+ PC.log_msg("device_discover: " + str(aDict))
  ip_start = aDict.get('start')
  ip_end   = aDict.get('end')
  with DB() as db:
@@ -175,12 +175,12 @@ def remove(aDict):
   ret = { 'device': res }
   db.commit()
  if (ddi['a_id'] != '0') or (ddi['ptr_id'] != '0'):
-  from rest_ddi import dns_remove
+  from ddi import dns_remove
   dres = dns_remove( { 'a_id':ddi['a_id'], 'ptr_id':ddi['ptr_id'] })
   ret['a'] = dres.get('a')
   ret['ptr'] = dres.get('ptr')
  if not ddi['ipam_id'] == '0':
-  from rest_ddi import ipam_remove
+  from ddi import ipam_remove
   ret['ipam'] = ipam_remove({ 'ipam_id':ddi['ipam_id'] })
  return ret
 

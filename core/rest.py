@@ -12,7 +12,7 @@ __status__= "Production"
 #
 # Make proper REST responses 
 #
-# - encoded as apicall=package.path:module_function
+# - encoded as apicall=package.path.module_function (module cannot contain '_', but function can)
 # - module file is prefixed with rest_ , use _ for function names but not module name (!)
 # - reads body to find input data
 # - returns json:ed response from function
@@ -32,13 +32,11 @@ def server():
    except:
     raise  Exception('No Module/Function found for REST API (Query String)')
    api  = args.pop('call')
-  (path,void,mod_fun) = api.partition(':')
-  (mod,void,fun)   = mod_fun.partition('_')
+  (mod,void,fun) = mod_fun.partition('_')
   from importlib import import_module
-  module = import_module(path + ".rest_" + mod)
+  module = import_module(mod)
   data   = dumps(getattr(module,fun,lambda x: { 'err':"No such function in module", 'args':x })(args))
   print "X-Z-Res:{}\r".format("OK")
-  print "X-Z-Path:{}\r".format(path)
   print "X-Z-Mod:{}\r".format(mod)
   print "X-Z-Fun:{}\r".format(fun)
  except Exception as err:

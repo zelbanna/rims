@@ -14,7 +14,7 @@ __status__= "Production"
 def dhcp_update(aWeb):
  from sdcp.core.dbase import DB
  import sdcp.core.genlib as GL
- from rest_ddi import dhcp_update as rest_dhcp_update
+ from sdcp.rest.ddi import dhcp_update as rest_dhcp_update
  with DB() as db:
   db.do("SELECT devices.id, hostname, INET_NTOA(ip) as ipasc, domains.name as domain, mac, ipam_sub_id from devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT  mac = 0 ORDER BY ip")
   rows = db.get_rows()
@@ -28,7 +28,7 @@ def dhcp_update(aWeb):
 #
 def sync(aWeb):
  from sdcp.core.dbase import DB
- from rest_ddi import dns_lookup, ipam_lookup, dns_update, ipam_update
+ from sdcp.rest.ddi import dns_lookup, ipam_lookup, dns_update, ipam_update
  print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
  print "<DIV CLASS=thead style='border: 1px solid grey'><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>A</DIV><DIV CLASS=th>PTR</DIV><DIV CLASS=th>IPAM</DIV><DIV CLASS=th>Extra</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -65,5 +65,5 @@ def sync(aWeb):
 #
 
 def load_infra(aWeb):
- from rest_ddi import load_infra
+ from sdcp.rest.ddi import load_infra
  print "<PRE>{}</PRE>".format(load_infra(None))
