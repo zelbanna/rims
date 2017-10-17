@@ -95,9 +95,13 @@ def weathermap(aWeb):
   entry  = PC.weathermap[page]
   graphs = entry.get('graphs')
   if graphs:
+   print "<DIV CLASS=z-content-left STYLE='width:420px'><DIV CLASS=z-frame>"
    from sdcp.tools.munin import widget_rows
    widget_rows(graphs)
-  print "<DIV CLASS='z-frame'>"
+   print "</DIV></DIV><DIV CLASS=z-content-right STYLE='left:420px'>"
+  else:
+   print "<DIV CLASS=z-content STYLE='top:0px;'>"
+  print "<DIV CLASS=z-frame STYLE='width:auto;'>"
   print aWeb.get_include('{}.html'.format(page))
   print "</DIV>"
 

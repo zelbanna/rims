@@ -28,11 +28,11 @@ CREATE TABLE `bookings` (
 DROP TABLE IF EXISTS `consoles`;
 CREATE TABLE `consoles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `device_id` int(10) unsigned DEFAULT NULL,
   `name` varchar(20) DEFAULT NULL,
   `ip` int(10) unsigned DEFAULT '2130706433',
+  `device_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `devices`
@@ -68,7 +68,7 @@ CREATE TABLE `devices` (
   CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`ptr_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`ipam_sub_id`) REFERENCES `subnets` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_4` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=147 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `domains`
@@ -89,7 +89,6 @@ CREATE TABLE `domains` (
 DROP TABLE IF EXISTS `pdus`;
 CREATE TABLE `pdus` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `device_id` int(10) unsigned DEFAULT NULL,
   `name` varchar(20) DEFAULT NULL,
   `ip` int(10) unsigned DEFAULT '2130706433',
   `0_slot_name` varchar(10) NOT NULL DEFAULT 'unknown',
@@ -97,8 +96,9 @@ CREATE TABLE `pdus` (
   `0_slot_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `1_slot_id` tinyint(3) unsigned NOT NULL DEFAULT '1',
   `slots` tinyint(1) NOT NULL DEFAULT '0',
+  `device_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `rackinfo`
@@ -141,8 +141,15 @@ CREATE TABLE `racks` (
   `fk_pdu_1` int(10) unsigned DEFAULT NULL,
   `fk_pdu_2` int(10) unsigned DEFAULT NULL,
   `image_url` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`),
+  KEY `fk_console` (`fk_console`),
+  KEY `fk_pdu_1` (`fk_pdu_1`),
+  KEY `fk_pdu_2` (`fk_pdu_2`),
+  CONSTRAINT `racks_ibfk_1` FOREIGN KEY (`fk_console`) REFERENCES `consoles` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `racks_ibfk_2` FOREIGN KEY (`fk_pdu_1`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `racks_ibfk_3` FOREIGN KEY (`fk_pdu_2`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `resources`
@@ -161,7 +168,7 @@ CREATE TABLE `resources` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `subnets`
@@ -191,7 +198,7 @@ CREATE TABLE `users` (
   `view_public` tinyint(1) unsigned DEFAULT '1',
   `frontpage` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=667 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=latin1;
 
 
--- Dump completed on 2017-10-17 23:23:13
+-- Dump completed on 2017-10-17 23:46:40

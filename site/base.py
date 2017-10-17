@@ -59,15 +59,15 @@ def resource_info(aWeb):
   data['icon']  = aWeb.get_value('icon')
   data['inline']  = aWeb.get_value('inline',"0")
   data['private'] = aWeb.get_value('private',"0")
+  data['user_id'] = aWeb.get_value('user_id',aWeb.cookie['sdcp_id'])
   if op == 'update':
    with DB() as db:   
-    if id == 'new':
-     db.do("INSERT INTO resources (title,href,icon,type,inline,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}','{}')".format(data['title'],data['href'],data['icon'],data['type'],data['inline'],data['private'],aWeb.cookie.get('sdcp_id')))
-     db.commit()
+    if data['id'] == 'new':
+     db.do("INSERT INTO resources (title,href,icon,type,inline,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}','{}')".format(data['title'],data['href'],data['icon'],data['type'],data['inline'],data['private'],data['user_id']))
      data['id']  = db.get_last_id()
     else:
      db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}', inline='{}', private='{}' WHERE id = '{}'".format(data['title'],data['href'],data['icon'],data['type'],data['inline'],data['private'],data['id']))
-     db.commit()
+    db.commit()
  else:
   with DB() as db:
    db.do("SELECT id,title,href,icon,type,inline,private,user_id FROM resources WHERE id = '{}'".format(data['id']))
@@ -77,12 +77,13 @@ def resource_info(aWeb):
  print "<DIV CLASS=title>Resource entity ({})</DIV>".format(data['id'])
  print "<FORM ID=sdcp_resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
+ print "<INPUT TYPE=HIDDEN NAME=user_id VALUE={}>".format(data['user_id'])
  print "<DIV CLASS=z-table style='float:left; width:auto;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV    CLASS=td><INPUT NAME=title STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['title'])
  print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV     CLASS=td><INPUT NAME=href  STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['href'])
  print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon  STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['icon'])
  print "<DIV CLASS=tr><DIV CLASS=td>Inline:</DIV><DIV   CLASS=td><INPUT NAME=inline  {}                TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['inline'] == 1 or data['inline'] == "1" else '')
- print "<DIV CLASS=tr><DIV CLASS=td>Private:</DIV><DIV  CLASS=td><INPUT NAME=private {} {}             TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['private'] == 1 or data['private'] == "1" else '',"disabled" if aWeb.cookie['sdcp_id'] <> str(data['user_id']) else "")
+ print "<DIV CLASS=tr><DIV CLASS=td>Private:</DIV><DIV  CLASS=td><INPUT NAME=private {} {}             TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['private'] == 1 or data['private'] == "1" else "","disabled" if aWeb.cookie['sdcp_id'] <> str(data['user_id']) else "")
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV     CLASS=td><SELECT NAME=type STYLE='min-width:400px'>"
  for tp in ['bookmark','demo','tool']:
   print "<OPTION VALUE={} {}>{}</OPTION>".format(tp,"" if data['type'] != tp else 'selected',tp.title())
@@ -200,7 +201,9 @@ def examine_logs(aWeb):
 def examine_ups(aWeb):
  from sdcp.tools.munin import widget_cols
  upshost,void,domain = aWeb.get_value('upshost').partition('.')
+ print "<DIV CLASS=z-frame STYLE='width:auto;'>"
  widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
+ print "</DIV>"
 
 #
 # DNS stats
