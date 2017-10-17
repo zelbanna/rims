@@ -32,7 +32,7 @@ def server():
    except:
     raise  Exception('No Module/Function found for REST API (Query String)')
    api  = args.pop('call')
-  (mod,void,fun) = mod_fun.partition('_')
+  (mod,void,fun) = api.partition('_')
   from importlib import import_module
   module = import_module(mod)
   data   = dumps(getattr(module,fun,lambda x: { 'err':"No such function in module", 'args':x })(args))
