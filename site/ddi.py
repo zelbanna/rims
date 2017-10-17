@@ -30,7 +30,7 @@ def sync(aWeb):
  from sdcp.core.dbase import DB
  from sdcp.rest.ddi import dns_lookup, ipam_lookup, dns_update, ipam_update
  print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
- print "<DIV CLASS=thead style='border: 1px solid grey'><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>A</DIV><DIV CLASS=th>PTR</DIV><DIV CLASS=th>IPAM</DIV><DIV CLASS=th>Extra</DIV></DIV>"
+ print "<DIV CLASS=thead style='border:solid 1px grey;'><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>A</DIV><DIV CLASS=th>PTR</DIV><DIV CLASS=th>IPAM</DIV><DIV CLASS=th>Extra</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with DB() as db:
   db.do("SELECT devices.id, ip, hostname, INET_NTOA(ip) as ipasc, ipam_sub_id, a_dom_id, domains.name as domain FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE (a_id = 0 or ptr_id = 0 or ipam_id = 0) ORDER BY ip")

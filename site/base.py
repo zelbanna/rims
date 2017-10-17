@@ -72,10 +72,10 @@ def resource_info(aWeb):
  print "<FORM ID=sdcp_resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=z-table style='float:left; width:auto;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV CLASS=td><INPUT   NAME=title STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['title'])
- print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV CLASS=td><INPUT     NAME=href STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['href'])
- print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['icon'])
- print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT    NAME=type STYLE='border:1px solid grey; width:400px;'>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV CLASS=td><INPUT   NAME=title STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['title'])
+ print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV CLASS=td><INPUT     NAME=href STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['href'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['icon'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT    NAME=type STYLE='min-width:400px'>"
  for tp in ['bookmark','demo','tool']:
   print "<OPTION VALUE={} {}>{}</OPTION>".format(tp,"" if data['type'] != tp else 'selected',tp.title())
  print "</SELECT></DIV></DIV>"
@@ -347,10 +347,10 @@ def user_info(aWeb):
  print "<FORM ID=sdcp_user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>     <DIV CLASS=td><INPUT NAME=alias  STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['alias'])
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>      <DIV CLASS=td><INPUT NAME=name   STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['name'])
- print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV>    <DIV CLASS=td><INPUT NAME=email  STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['email'])
- print "<DIV CLASS=tr><DIV CLASS=td>Front page:</DIV><DIV CLASS=td><SELECT NAME=front STYLE='border:1px solid grey; width:400px;'>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>     <DIV CLASS=td><INPUT NAME=alias  TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['alias'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>      <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name'])
+ print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV>    <DIV CLASS=td><INPUT NAME=email  TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['email'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Front page:</DIV><DIV CLASS=td><SELECT NAME=front STYLE='min-width:400px'>"
  for resource in resources:
   print "<OPTION VALUE='{0}' {2}>{1}</OPTION>".format(resource['id'],resource['title'],"selected" if str(resource['id']) == data['front'] else '')
  print "</SELECT></DIV></DIV>"

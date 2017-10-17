@@ -61,7 +61,7 @@ def login(aWeb):
    rows = db.get_rows()
   aWeb.put_html("Login")
   print "<DIV CLASS=z-centered STYLE='height:100%;'>"
-  print "<DIV CLASS='z-frame' ID=div_login style='border: solid 1px black; width:600px; height:180px;'>"
+  print "<DIV CLASS='z-frame z-border' ID=div_login style='width:600px; height:180px;'>"
   print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
   print "<INPUT TYPE=HIDDEN NAME=call VALUE=front_login>"
@@ -151,7 +151,7 @@ def openstack(aWeb):
 
  aWeb.put_html("{} 2 Cloud".format(name.capitalize()))
  print "<DIV CLASS='z-centered' style='height:100%;'>"
- print "<DIV CLASS='z-frame' ID=div_login style='border: solid 1px black; width:600px; height:180px;'>"
+ print "<DIV CLASS='z-frame z-border' ID=div_login style='width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=openstack_login>"
  print "<INPUT TYPE=HIDDEN NAME=call VALUE=openstack_portal>"
