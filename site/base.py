@@ -338,15 +338,16 @@ def user_info(aWeb):
    data['alias'] = aWeb.get_value('alias',"unknown")
    data['email'] = aWeb.get_value('email',"unknown")
    data['front'] = aWeb.get_value('front','NULL')
-   data['view']  = aWeb.get_value('view','0')
+   data['view']  = aWeb.get_value('view','1')
    if op == 'update':
     if data['id'] == 'new':
      db.do("INSERT INTO users (alias,name,email,frontpage,view_public) VALUES ('{}','{}','{}','{}',{})".format(data['alias'],data['name'],data['email'],data['front'],data['view']))
      data['id']  = db.get_last_id()
     else:
      db.do("UPDATE users SET alias='{}',name='{}',email='{}',view_public='{}',frontpage={} WHERE id = '{}'".format(data['alias'],data['name'],data['email'],data['view'],data['front'],data['id']))
+     if aWeb.cookie['sdcp_id'] == str(data['id']):
+      aWeb.add_cookie('sdcp_view',data['view'],86400)
     db.commit()
-    aWeb.add_cookie('sdcp_view',data['view'],86400)
     aWeb.put_headers()
   else:
    db.do("SELECT * FROM users WHERE id = '{}'".format(data['id']))
@@ -362,7 +363,7 @@ def user_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>  <DIV CLASS=td><INPUT NAME=alias  TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['alias'])
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>   <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name'])
  print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV> <DIV CLASS=td><INPUT NAME=email  TYPE=TEXT VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['email'])
- print "<DIV CLASS=tr><DIV CLASS=td>View All:</DIV><DIV CLASS=td><INPUT NAME=view  TYPE=CHECKBOX VALUE=1                     {}></DIV></DIV>".format("checked=checked" if data['view'] == 1 or data['view'] == "1" else '')
+ print "<DIV CLASS=tr><DIV CLASS=td>View All:</DIV><DIV CLASS=td><INPUT NAME=view  TYPE=CHECKBOX VALUE=1 {}                  {}></DIV></DIV>".format("checked=checked" if data['view'] == 1 or data['view'] == "1" else '',"disabled" if aWeb.cookie['sdcp_id'] <> str(data['id']) else "")
  print "<DIV CLASS=tr><DIV CLASS=td>Front page:</DIV><DIV CLASS=td><SELECT NAME=front STYLE='min-width:400px'>"
  for resource in resources:
   print "<OPTION VALUE='{0}' {2}>{1}</OPTION>".format(resource['id'],resource['title'],"selected" if str(resource['id']) == data['front'] else '')
