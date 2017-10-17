@@ -156,10 +156,12 @@ CREATE TABLE `resources` (
   `icon` varchar(200) DEFAULT NULL,
   `user_id` int(10) unsigned DEFAULT NULL,
   `type` varchar(10) DEFAULT 'bookmark',
+  `private` tinyint(1) unsigned DEFAULT '0',
+  `inline` tinyint(1) unsigned DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `subnets`
@@ -188,10 +190,8 @@ CREATE TABLE `users` (
   `alias` varchar(10) DEFAULT NULL,
   `view_public` tinyint(1) unsigned DEFAULT '1',
   `frontpage` int(10) unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `frontpage` (`frontpage`),
-  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`frontpage`) REFERENCES `resources` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=667 DEFAULT CHARSET=latin1;
 
 
--- Dump completed on 2017-10-17 13:16:17
+-- Dump completed on 2017-10-17 23:23:13
