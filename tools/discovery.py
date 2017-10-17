@@ -12,7 +12,7 @@ __status__ = "Production"
 
 from sys import argv, exit
 from sdcp.devices.DevHandler import device_discover
-from sdcp.core.XtraLib import simple_arg_parser
+from sdcp.core.extras import simple_arg_parser
 
 args = simple_arg_parser(argv)
 if len(args) < 2:

@@ -68,11 +68,11 @@ class ESXi(GenDevice):
    self.log_msg("threading: Illegal operation passed [{}]".format(aOperation))
 
  def create_lock(self,atime):
-  from sdcp.core.XtraLib import pidfile_lock
+  from sdcp.core.extras import pidfile_lock
   pidfile_lock("/tmp/esxi." + self._hostname + ".vm.pid",atime)
 
  def release_lock(self):
-  from sdcp.core.XtraLib import pidfile_release
+  from sdcp.core.extras import pidfile_release
   pidfile_release("/tmp/esxi." + self._hostname + ".vm.pid")
 
  #

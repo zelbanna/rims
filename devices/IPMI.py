@@ -12,7 +12,7 @@ __version__ = "17.10.4"
 __status__ = "Production"
 
 import sdcp.PackageContainer as PC
-from XtraLib import get_results, str2hex
+from sdcp.core.extras import get_results, str2hex
 from subprocess import check_output, check_call
 
 
