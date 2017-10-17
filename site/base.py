@@ -52,19 +52,20 @@ def resource_info(aWeb):
   data['href']  = aWeb.get_value('href',"unknown")
   data['type']  = aWeb.get_value('type')
   data['icon']  = aWeb.get_value('icon')
+  data['inline']  = aWeb.get_value('inline',"0")
   data['private'] = aWeb.get_value('private',"0")
   if op == 'update':
    with DB() as db:   
     if id == 'new':
-     db.do("INSERT INTO resources (title,href,icon,type,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}')".format(data['title'],data['href'],data['icon'],data['type'],data['private'],aWeb.cookie.get('sdcp_id')))
+     db.do("INSERT INTO resources (title,href,icon,type,inline,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}','{}')".format(data['title'],data['href'],data['icon'],data['type'],data['inline'],data['private'],aWeb.cookie.get('sdcp_id')))
      db.commit()
      data['id']  = db.get_last_id()
     else:
-     db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}', private='{}' WHERE id = '{}'".format(data['title'],data['href'],data['icon'],data['type'],data['private'],data['id']))
+     db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}', inline='{}', private='{}' WHERE id = '{}'".format(data['title'],data['href'],data['icon'],data['type'],data['inline'],data['private'],data['id']))
      db.commit()
  else:
   with DB() as db:
-   db.do("SELECT id,title,href,icon,type,private FROM resources WHERE id = '{}'".format(data['id']))
+   db.do("SELECT id,title,href,icon,type,inline,private FROM resources WHERE id = '{}'".format(data['id']))
    data = db.get_row()
 
  print "<DIV CLASS=z-frame>"
@@ -72,10 +73,11 @@ def resource_info(aWeb):
  print "<FORM ID=sdcp_resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=z-table style='float:left; width:auto;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV CLASS=td><INPUT   NAME=title STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['title'])
- print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV CLASS=td><INPUT     NAME=href STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['href'])
- print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['icon'])
- print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT    NAME=type STYLE='min-width:400px'>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV    CLASS=td><INPUT NAME=title STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['title'])
+ print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV     CLASS=td><INPUT NAME=href  STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['href'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon  STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['icon'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Inline:</DIV><DIV   CLASS=td><INPUT NAME=inline {}                 TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['inline'] == 1 or data['inline'] == "1" else '')
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV     CLASS=td><SELECT NAME=type STYLE='min-width:400px'>"
  for tp in ['bookmark','demo','tool']:
   print "<OPTION VALUE={} {}>{}</OPTION>".format(tp,"" if data['type'] != tp else 'selected',tp.title())
  print "</SELECT></DIV></DIV>"
