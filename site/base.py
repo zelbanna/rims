@@ -320,40 +320,39 @@ def user_info(aWeb):
  from sdcp.core.dbase import DB
  data = {}
  data['id'] = aWeb.get_value('id','new')
- op = aWeb.get_value('op',None)
+ op = aWeb.get_value('op')
  with DB() as db:
   db.do("SELECT id,title FROM resources")
   resources = db.get_rows()
   resources.insert(0,{'id':'NULL','title':'default'})
   if op == 'update' or data['id'] == 'new':
-   name = aWeb.get_value('name',"unknown")
-   alias = aWeb.get_value('alias',"unknown")
-   email = aWeb.get_value('email',"unknown")
-   front = aWeb.get_value('front','NULL')
+   data['name']  = aWeb.get_value('name',"unknown")
+   data['alias'] = aWeb.get_value('alias',"unknown")
+   data['email'] = aWeb.get_value('email',"unknown")
+   data['front'] = aWeb.get_value('front','NULL')
    if op == 'update':
     if data['id'] == 'new':
-     db.do("INSERT INTO users (alias,name,email,frontpage) VALUES ('{}','{}','{}',{})".format(alias,name,email,front))
-     db.commit()
+     db.do("INSERT INTO users (alias,name,email,frontpage) VALUES ('{}','{}','{}',{})".format(data['alias'],data['name'],data['email'],data['front']))
      data['id']  = db.get_last_id()
     else:
-     db.do("UPDATE users SET alias='{}',name='{}',email='{}',frontpage={} WHERE id = '{}'".format(alias,name,email,front,data['id']))
-     db.commit()
+     db.do("UPDATE users SET alias='{}',name='{}',email='{}',frontpage={} WHERE id = '{}'".format(data['alias'],data['name'],data['email'],data['front'],data['id']))
+    db.commit()
   else:
    db.do("SELECT * FROM users WHERE id = '{}'".format(data['id']))
-   row = db.get_row()
-   alias,name,email,front = row['alias'],row['name'],row['email'],str(row['frontpage'])
+   data = db.get_row()
+   data['front'] = str(data['frontpage'])
 
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>User Info ({})</DIV>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>     <DIV CLASS=td><INPUT NAME=alias  STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(alias)
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>      <DIV CLASS=td><INPUT NAME=name   STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(name)
- print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV>    <DIV CLASS=td><INPUT NAME=email  STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(email)
+ print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>     <DIV CLASS=td><INPUT NAME=alias  STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['alias'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>      <DIV CLASS=td><INPUT NAME=name   STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['name'])
+ print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV>    <DIV CLASS=td><INPUT NAME=email  STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['email'])
  print "<DIV CLASS=tr><DIV CLASS=td>Front page:</DIV><DIV CLASS=td><SELECT NAME=front STYLE='border:1px solid grey; width:400px;'>"
  for resource in resources:
-  print "<OPTION VALUE='{0}' {2}>{1}</OPTION>".format(resource['id'],resource['title'],"selected" if str(resource['id']) == front else '')
+  print "<OPTION VALUE='{0}' {2}>{1}</OPTION>".format(resource['id'],resource['title'],"selected" if str(resource['id']) == data['front'] else '')
  print "</SELECT></DIV></DIV>"
  
  print "</DIV></DIV>"
