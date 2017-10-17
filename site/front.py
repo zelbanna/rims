@@ -20,6 +20,12 @@ import sdcp.PackageContainer as PC
 # Now do referrer?
 #
 def login(aWeb):
+ from sdcp.core.dbase import DB
+ if PC.generic['db'] == '':
+  PC.log_msg("No Database available so login not possible")                                   
+  aWeb.put_html("Error")
+  return
+
  if aWeb.cookie.get('sdcp_id'):
   id,user = aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user')
  else:
@@ -30,11 +36,15 @@ def login(aWeb):
    aWeb.add_cookie('sdcp_id', id, 86400)
 
  if id != "None":
+  with DB() as db:
+   res  = db.do("SELECT href FROM resources INNER JOIN users ON users.frontpage = resources.id WHERE users.id = '{}'".format(id))
+   href = 'sdcp.cgi?call=base_navigate&type=demo' if not res else db.get_row()['href']
+   
   PC.log_msg("Entering as [{}-{}]".format(id,user))
   aWeb.put_html(PC.sdcp['name'])
-  print """<DIV class='z-main-menu' ID=div_main_menu>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='General'   URL=sdcp.cgi?call=base_navigate&type=demo><IMG SRC='images/icon-start.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Rack'      URL=sdcp.cgi?call=rack_main><IMG SRC='images/icon-rack.png'/></A>
+  print "<DIV class='z-main-menu' ID=div_main_menu>"
+  print "<A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Start'     URL='{}'><IMG SRC='images/icon-start.png'/></A>".format(href)
+  print """<A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Rack'      URL=sdcp.cgi?call=rack_main><IMG SRC='images/icon-rack.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Devices'   URL=sdcp.cgi?call=device_main><IMG SRC='images/icon-network.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Examine'   URL=sdcp.cgi?call=base_examine><IMG SRC='images/icon-examine.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Users'     URL=sdcp.cgi?call=base_users><IMG SRC='images/icon-users.png'/></A>
@@ -44,32 +54,25 @@ def login(aWeb):
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Config'    URL=sdcp.cgi?call=base_config><IMG SRC='images/icon-config.png'/></A>
   </DIV>
   <DIV CLASS=z-main-content ID=div_main_cont></DIV>"""
-  return
-
- if PC.generic['db'] == '':
-  PC.log_msg("No login available")                                   
-  aWeb.put_html("No Login")     
-  return
-
- from sdcp.core.dbase import DB
- with DB() as db:
-  db.do("SELECT id,name FROM users ORDER BY name")
-  rows = db.get_rows()
- aWeb.put_html("Login")
- print "<DIV CLASS=z-centered STYLE='height:100%;'>"
- print "<DIV CLASS='z-frame' ID=div_login style='border: solid 1px black; width:600px; height:180px;'>"
- print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
- print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
- print "<INPUT TYPE=HIDDEN NAME=call VALUE=front_login>"
- print "<DIV CLASS=z-table style='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=sdcp_login>"
- for row in rows:
-  print "<OPTION VALUE='{0}_{1}' {2}>{1}</OPTION>".format(row['id'],row['name'],'' if str(row['id']) != id else "selected=True")
- print "</SELECT></DIV></DIV>"
- print "</DIV></DIV>"
- print "<A CLASS='z-btn z-op' OP=submit style='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
- print "</FORM>"
- print "</DIV></DIV>"
+ else:
+  with DB() as db:
+   db.do("SELECT id,name FROM users ORDER BY name")
+   rows = db.get_rows()
+  aWeb.put_html("Login")
+  print "<DIV CLASS=z-centered STYLE='height:100%;'>"
+  print "<DIV CLASS='z-frame' ID=div_login style='border: solid 1px black; width:600px; height:180px;'>"
+  print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
+  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
+  print "<INPUT TYPE=HIDDEN NAME=call VALUE=front_login>"
+  print "<DIV CLASS=z-table style='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=sdcp_login>"
+  for row in rows:
+   print "<OPTION VALUE='{0}_{1}' {2}>{1}</OPTION>".format(row['id'],row['name'],'' if str(row['id']) != id else "selected=True")
+  print "</SELECT></DIV></DIV>"
+  print "</DIV></DIV>"
+  print "<A CLASS='z-btn z-op' OP=submit style='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
+  print "</FORM>"
+  print "</DIV></DIV>"
 
 ##################################################################################################
 #

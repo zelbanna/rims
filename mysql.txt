@@ -32,7 +32,7 @@ CREATE TABLE `consoles` (
   `name` varchar(20) DEFAULT NULL,
   `ip` int(10) unsigned DEFAULT '2130706433',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `devices`
@@ -68,7 +68,7 @@ CREATE TABLE `devices` (
   CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`ptr_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`ipam_sub_id`) REFERENCES `subnets` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_4` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=118 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=147 DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `domains`
@@ -142,7 +142,7 @@ CREATE TABLE `racks` (
   `fk_pdu_2` int(10) unsigned DEFAULT NULL,
   `image_url` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `resources`
@@ -153,11 +153,13 @@ CREATE TABLE `resources` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(25) NOT NULL,
   `href` varchar(200) NOT NULL,
-  `icon` varchar(25) DEFAULT NULL,
+  `icon` varchar(200) DEFAULT NULL,
   `user_id` int(10) unsigned DEFAULT NULL,
   `type` varchar(10) DEFAULT 'bookmark',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `subnets`
@@ -184,8 +186,12 @@ CREATE TABLE `users` (
   `name` varchar(20) NOT NULL DEFAULT 'error',
   `email` varchar(20) DEFAULT NULL,
   `alias` varchar(10) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=latin1;
+  `view_public` tinyint(1) unsigned DEFAULT '1',
+  `frontpage` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `frontpage` (`frontpage`),
+  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`frontpage`) REFERENCES `resources` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=667 DEFAULT CHARSET=latin1;
 
 
--- Dump completed on 2017-10-04 16:34:27
+-- Dump completed on 2017-10-17 13:16:17

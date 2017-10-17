@@ -282,7 +282,7 @@ def users(aWeb):
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=base_list_users'>Users</A>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=base_list_bookings'>Bookings</A>"
  print "<A CLASS='z-right z-op' OP=logout style='background-color:red;' URL=sdcp.cgi>Log out</A>"
- print "<SPAN CLASS='z-right z-navinfo'>{}</SPAN>".format(aWeb.cookie.get('sdcp_user',None))
+ print "<A CLASS='z-right z-op z-navinfo' DIV=div_content_right URL=sdcp.cgi?call=base_user_info&id={}>{}</A>".format(aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user'))
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
@@ -309,36 +309,43 @@ def list_users(aWeb):
 #
 #
 def user_info(aWeb):
+ from sdcp.core.dbase import DB
  id = aWeb.get_value('id','new')
  op = aWeb.get_value('op',None)
  name = aWeb.get_value('name',"unknown")
  alias = aWeb.get_value('alias',"unknown")
  email = aWeb.get_value('email',"unknown")
- if op == 'update':
-  from sdcp.core.dbase import DB
-  with DB() as db:
+ front = aWeb.get_value('front','NULL')
+ with DB() as db:
+  db.do("SELECT id,title FROM resources")
+  resources = db.get_rows()
+  resources.insert(0,{'id':'NULL','title':'default'})
+  if op == 'update':
    if id == 'new':
-    db.do("INSERT INTO users (alias,name,email) VALUES ('{}','{}','{}')".format(alias,name,email))
+    db.do("INSERT INTO users (alias,name,email,frontpage) VALUES ('{}','{}','{}',{})".format(alias,name,email,front))
     db.commit()
     id  = db.get_last_id()
    else:
-    db.do("UPDATE users SET alias='{}',name='{}',email='{}' WHERE id = '{}'".format(alias,name,email,id))
+    db.do("UPDATE users SET alias='{}',name='{}',email='{}',frontpage={} WHERE id = '{}'".format(alias,name,email,front,id))
     db.commit()
- elif id <> 'new':
-  from sdcp.core.dbase import DB
-  with DB() as db:
-   db.do("SELECT alias,name,email FROM users WHERE id = '{}'".format(id))
+  elif id <> 'new':
+   db.do("SELECT * FROM users WHERE id = '{}'".format(id))
    row = db.get_row()
-   alias,name,email = row['alias'],row['name'],row['email']
+   alias,name,email,front = row['alias'],row['name'],row['email'],str(row['frontpage'])
 
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>User Info ({})</DIV>".format(id)
  print "<FORM ID=sdcp_user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV><DIV CLASS=td><INPUT  NAME=alias TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(alias)
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT    NAME=name TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(name)
- print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV><DIV CLASS=td><INPUT NAME=email TYPE=TEXT STYLE='border:1px solid grey; width:400px;' VALUE='{}'></DIV></DIV>".format(email)
+ print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>     <DIV CLASS=td><INPUT NAME=alias  STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(alias)
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>      <DIV CLASS=td><INPUT NAME=name   STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(name)
+ print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV>    <DIV CLASS=td><INPUT NAME=email  STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(email)
+ print "<DIV CLASS=tr><DIV CLASS=td>Front page:</DIV><DIV CLASS=td><SELECT NAME=front STYLE='border:1px solid grey; width:400px;'>"
+ for resource in resources:
+  print "<OPTION VALUE='{0}' {2}>{1}</OPTION>".format(resource['id'],resource['title'],"selected" if str(resource['id']) == front else '')
+ print "</SELECT></DIV></DIV>"
+ 
  print "</DIV></DIV>"
  if id != 'new':
   print "<A TITLE='Remove user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=rest.cgi?call=sdcp.rest.base_remove_user&id={0} MSG='Really remove user?'><IMG SRC='images/btn-remove.png'></A>".format(id)
