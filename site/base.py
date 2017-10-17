@@ -47,21 +47,22 @@ def resource_info(aWeb):
 
  data  = {}
  data['id']    = aWeb.get_value('id','new')
- if op == 'update':
+ if op == 'update' or data['id'] == 'new':
   data['title'] = aWeb.get_value('title',"unknown")
   data['href']  = aWeb.get_value('href',"unknown")
   data['type']  = aWeb.get_value('type')
   data['icon']  = aWeb.get_value('icon')
   data['private'] = aWeb.get_value('private',"0")
-  with DB() as db:   
-   if id == 'new':
-    db.do("INSERT INTO resources (title,href,icon,type,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}')".format(data['title'],data['href'],data['icon'],data['type'],data['private'],aWeb.cookie.get('sdcp_id')))
-    db.commit()
-    data['id']  = db.get_last_id()
-   else:
-    db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}', private='{}' WHERE id = '{}'".format(data['title'],data['href'],data['icon'],data['type'],data['private'],data['id']))
-    db.commit()
- elif id <> 'new':
+  if op == 'update':
+   with DB() as db:   
+    if id == 'new':
+     db.do("INSERT INTO resources (title,href,icon,type,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}')".format(data['title'],data['href'],data['icon'],data['type'],data['private'],aWeb.cookie.get('sdcp_id')))
+     db.commit()
+     data['id']  = db.get_last_id()
+    else:
+     db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}', private='{}' WHERE id = '{}'".format(data['title'],data['href'],data['icon'],data['type'],data['private'],data['id']))
+     db.commit()
+ else:
   with DB() as db:
    db.do("SELECT id,title,href,icon,type,private FROM resources WHERE id = '{}'".format(data['id']))
    data = db.get_row()
@@ -97,13 +98,16 @@ def list_resource_type(aWeb):
  # 
  from sdcp.core.dbase import DB
  with DB() as db:
-  db.do("SELECT title,href,icon FROM resources WHERE type = '{}' AND ( user_id = {} {} )".format(aWeb.get_value('type'),aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
-  rows = db.get_rows() 
+  db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} )".format(aWeb.get_value('type'),aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
+  rows = db.get_rows()
  index = 0;
  print "<DIV CLASS=z-centered style='align-items:initial'>"
  for row in rows:
-  print "<DIV style='float:left; min-width:100px; margin:6px;'>"
-  print "<A CLASS='z-btn z-menu-btn' style='min-width:52px; font-size:10px'; TITLE='{}' TARGET=_blank HREF='{}'>".format(row['title'],row['href'])
+  print "<DIV style='float:left; min-width:100px; margin:6px;'><A STYLE='font-size:10px;' TITLE='{}'".format(row['title'])
+  if row['inline'] == 0:
+   print "CLASS='z-btn z-menu-btn' TARGET=_blank HREF='{}'>".format(row['href'])
+  else:
+   print "CLASS='z-op z-btn z-menu-btn' DIV=div_main_cont URL='{}'>".format(row['href'])
   print "<IMG ALT='{0}' SRC='{0}'></A>".format(row['icon'])
   print "</A><BR><SPAN style='width:100px; display:block;'>{}</SPAN>".format(row['title'])
   print "</DIV>"
@@ -314,33 +318,35 @@ def list_users(aWeb):
 #
 def user_info(aWeb):
  from sdcp.core.dbase import DB
- id = aWeb.get_value('id','new')
+ data = {}
+ data['id'] = aWeb.get_value('id','new')
  op = aWeb.get_value('op',None)
- name = aWeb.get_value('name',"unknown")
- alias = aWeb.get_value('alias',"unknown")
- email = aWeb.get_value('email',"unknown")
- front = aWeb.get_value('front','NULL')
  with DB() as db:
   db.do("SELECT id,title FROM resources")
   resources = db.get_rows()
   resources.insert(0,{'id':'NULL','title':'default'})
-  if op == 'update':
-   if id == 'new':
-    db.do("INSERT INTO users (alias,name,email,frontpage) VALUES ('{}','{}','{}',{})".format(alias,name,email,front))
-    db.commit()
-    id  = db.get_last_id()
-   else:
-    db.do("UPDATE users SET alias='{}',name='{}',email='{}',frontpage={} WHERE id = '{}'".format(alias,name,email,front,id))
-    db.commit()
-  elif id <> 'new':
-   db.do("SELECT * FROM users WHERE id = '{}'".format(id))
+  if op == 'update' or data['id'] == 'new':
+   name = aWeb.get_value('name',"unknown")
+   alias = aWeb.get_value('alias',"unknown")
+   email = aWeb.get_value('email',"unknown")
+   front = aWeb.get_value('front','NULL')
+   if op == 'update':
+    if data['id'] == 'new':
+     db.do("INSERT INTO users (alias,name,email,frontpage) VALUES ('{}','{}','{}',{})".format(alias,name,email,front))
+     db.commit()
+     data['id']  = db.get_last_id()
+    else:
+     db.do("UPDATE users SET alias='{}',name='{}',email='{}',frontpage={} WHERE id = '{}'".format(alias,name,email,front,data['id']))
+     db.commit()
+  else:
+   db.do("SELECT * FROM users WHERE id = '{}'".format(data['id']))
    row = db.get_row()
    alias,name,email,front = row['alias'],row['name'],row['email'],str(row['frontpage'])
 
  print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>User Info ({})</DIV>".format(id)
+ print "<DIV CLASS=title>User Info ({})</DIV>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>     <DIV CLASS=td><INPUT NAME=alias  STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(alias)
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>      <DIV CLASS=td><INPUT NAME=name   STYLE='border:1px solid grey; width:400px;' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(name)
@@ -351,8 +357,8 @@ def user_info(aWeb):
  print "</SELECT></DIV></DIV>"
  
  print "</DIV></DIV>"
- if id != 'new':
-  print "<A TITLE='Remove user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=rest.cgi?call=sdcp.rest.base_remove_user&id={0} MSG='Really remove user?'><IMG SRC='images/btn-remove.png'></A>".format(id)
+ if data['id'] != 'new':
+  print "<A TITLE='Remove user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=rest.cgi?call=sdcp.rest.base_remove_user&id={0} MSG='Really remove user?'><IMG SRC='images/btn-remove.png'></A>".format(data['id'])
  print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_user_info&op=update          FRM=sdcp_user_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"
