@@ -43,7 +43,7 @@ def update_device_pdus(aDict):
  from sdcp.core.dbase import DB
  hostname  = aDict.get('hostname')
  ret = {}
- with DB() ad db:
+ with DB() as db:
   for p in ['0','1']:
    ret[p] = None
    id = aDict.get("pem{}_pdu_id".format(p))
