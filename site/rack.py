@@ -40,14 +40,14 @@ def list_racks(aWeb):
  print "</DIV></DIV></DIV>"
 
 #
-# Basic rack info - right now only a display of a typical rack.. Change to table?
+#
 #
 def inventory(aWeb):
  rack = aWeb.get_value('rack', 0)
  with DB() as db:
   db.do("SELECT name, size from racks where id = {}".format(rack))
   rackinfo = db.get_row() 
-  db.do("SELECT devices.id, hostname, rackinfo.rack_unit, rackinfo.rack_size, bookings.user_id FROM devices LEFT JOIN bookings ON devices.id = bookings.device_id LEFT JOIN rackinfo ON devices.id = rackinfo.device_id WHERE rack_id = {}".format(rack))
+  db.do("SELECT devices.id, hostname, rackinfo.rack_unit, rackinfo.rack_size, bookings.user_id FROM devices LEFT JOIN bookings ON devices.id = bookings.device_id LEFT JOIN rackinfo ON devices.id = rackinfo.device_id WHERE rackinfo.rack_id = {}".format(rack))
   rackunits = db.get_all_dict('rack_unit')
  print "<DIV style='margin:10px;'><SPAN style='font-size:20px; font-weight:bold'>{}</SPAN></DIV>".format(rackinfo['name'])
 
@@ -151,10 +151,40 @@ def update(aWeb):
 def remove(aWeb):
  id   = aWeb.get_value('id')
  with DB() as db:
-  res  = db.do("SELECT id FROM devices WHERE rack_id = {0}".format(id))
-  devs = db.get_rows()
-  for dev in devs:
-   db.do("DELETE FROM rackinfo WHERE device_id = {0}".format(dev['id']))
   db.do("DELETE FROM racks WHERE id = {0}".format(id))
   db.commit()
   print "Rack {0} deleted".format(id)
+
+#
+#
+#
+def rackinfo(aWeb):
+ with DB() as db:
+  res  = db.do("SELECT rackinfo.*, devices.vm, devices.hostname, devices.ip, INET_NTOA(devices.ip) as ipasc FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.device_id")
+  if res == 0:
+   return 
+  ris = db.get_rows()
+  order = ris[0].keys()
+  order.sort()
+  db.do("SELECT id, name FROM pdus")
+  pdus  = db.get_all_dict('id')
+  db.do("SELECT id, name FROM consoles")
+  cons  = db.get_all_dict('id')
+  db.do("SELECT id, name FROM racks")
+  racks = db.get_all_dict('id')
+  print "<DIV CLASS=z-frame style='overflow-x:auto;'><DIV CLASS=z-table>"
+  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>VM</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
+  print "<DIV CLASS=tbody>"
+  for ri in ris:
+   if not ri['backup_ip']: 
+    db.do("UPDATE rackinfo SET backup_ip = {} WHERE device_id = {}".format(ri['ip'],ri['device_id']))
+   print "<DIV CLASS=tr>"
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(ri['device_id'],ri['ipasc'],ri['hostname'],ri['vm'])
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(cons.get(ri['console_id'],{}).get('name',None),ri['console_port'])
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(ri['pem0_pdu_id'],{}).get('name',None),ri['pem0_pdu_slot'],ri['pem0_pdu_unit'])
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(ri['pem1_pdu_id'],{}).get('name',None),ri['pem1_pdu_slot'],ri['pem1_pdu_unit'])
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(racks.get(ri['rack_id'],{}).get('name',None),ri['rack_size'],ri['rack_unit'])
+   print "</DIV>"
+  print "</DIV></DIV></DIV>"
+  db.commit()           
+

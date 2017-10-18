@@ -12,13 +12,12 @@ from sdcp.core.dbase import DB
 ########################################## Device Operations ##########################################
 
 def main(aWeb):
- # target = column name and arg = value, i.e. select all devices where vm = 1, rack_id = 5 :-)
+ # target rack_id or vm and arg = value, i.e. select all devices where vm = 1 or where rackinfo.device_id exists and rack_id = 5 :-)
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
-
  print "<A CLASS=z-op DIV=div_content_left URL=sdcp.cgi?call=graph_list>Graphing</A>"
  with DB() as db:
   if target == 'rack_id':
@@ -33,6 +32,7 @@ def main(aWeb):
     for row in rows:
      pdus = pdus + "&pdulist=" + row.get('ip')
     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
+   
    print "<A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
   else: 
    for type in ['pdu','console']:
@@ -75,18 +75,20 @@ def view_devicelist(aWeb):
  if not target or not arg:
   tune = ""
  elif target:
-  if not arg == 'NULL':
-   tune = "WHERE {0} = {1}".format(target,arg)
-  elif target == 'rack_id':
-   tune = "WHERE vm = 0 AND rack_id is NULL" 
+  if target == 'rack_id' and not arg == 'NULL':
+   tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(arg)
+  elif target == 'vm' and not arg == 'NULL':
+   tune = "WHERE vm = {}".format(arg)
   else: 
    tune = "WHERE {0} is NULL".format(target)
 
  with DB() as db:
-  res = db.do("SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort))
+  sql = "SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort)
+  db.do(sql)
   rows = db.get_rows()
  
  print "<DIV CLASS=tbody>"
+ print "<!-- {} -->".format(sql)
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='Show device info for {0}' DIV=div_content_right URL='sdcp.cgi?call=device_info&id={3}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</DIV></DIV></DIV>"
@@ -139,9 +141,8 @@ def info(aWeb):
 
  ip   = device_data['ipasc']
  name = device_data['hostname']
- if device_data['rack_id']:
-  rack_xist = db.do("SELECT * FROM rackinfo WHERE device_id = {}".format(id))
-  ri = db.get_row()
+ rack_xist = db.do("SELECT * FROM rackinfo WHERE device_id = {}".format(id))
+ ri = db.get_row()
 
  #
  # If inserts are return as x_op, update local db using newly constructed dict
@@ -158,7 +159,7 @@ def info(aWeb):
   device_data['a_id']    = newop['devices_a_id']
   device_data['ptr_id']  = newop['devices_ptr_id']
   device_data['ipam_id'] = newop['devices_ipam_id']
-  if device_data['rack_id']:
+  if ri:
    from sdcp.rest.pdu import update_device_pdus
    ri['hostname'] = name
    opres['pdu'] = update_device_pdus(ri)
@@ -168,8 +169,10 @@ def info(aWeb):
  print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
  # print "<!-- {} -->".format(device_data)
  print "<FORM ID=info_form>"
+ print "<!-- {} -->".format(rack_xist)
+ print "<!-- {} -->".format(ri)
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(1 if device_data['rack_id'] else 0)
+ print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(1 if ri else 0)
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Reachability Info</DIV>"
  print "<DIV CLASS=z-table style='width:210px;'><DIV CLASS=tbody>"
@@ -193,7 +196,7 @@ def info(aWeb):
  print "<!-- Additional info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Additional Info</DIV>"
  print "<DIV CLASS=z-table style='width:227px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=devices_rack_id>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_rack_id>"
  if device_data['vm']:
   print "<OPTION VALUE=NULL>Not used (VM)</OPTION>"
  else:
@@ -201,7 +204,7 @@ def info(aWeb):
   racks = db.get_rows()
   racks.append({ 'id':'NULL', 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
   for rack in racks:
-   extra = " selected" if ((not device_data['rack_id'] and rack['id'] == 'NULL') or (device_data['rack_id'] and device_data['rack_id'] == rack['id'])) else ""
+   extra = " selected" if ((rack_xist == 0 and rack['id'] == 'NULL') or (rack_xist == 1 and ri['rack_id'] == rack['id'])) else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>FQDN:</DIV><DIV CLASS=td style='{0}'>{1}</DIV></DIV>".format("border: solid 1px red;" if (name + "." + device_data['a_name'] != device_data['fqdn']) else "", device_data['fqdn'])
@@ -222,7 +225,7 @@ def info(aWeb):
  print "</DIV></DIV></DIV>"
 
  print "<!-- Rack Info if such exists -->"
- if device_data['rack_id'] and not device_data['type'] == 'pdu':
+ if rack_xist == 1 and not device_data['type'] == 'pdu':
   print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Rack Info</DIV>"
   print "<DIV CLASS=z-table style='width:210px;'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(ri['rack_size'])
@@ -272,7 +275,7 @@ def info(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_device_data URL=sdcp.cgi?call=device_conf_gen                 FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
  import sdcp.PackageContainer as PC
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf['username'],ip)
- if device_data['rack_id'] and (conip and not conip == '127.0.0.1' and ri['console_port'] and ri['console_port'] > 0):
+ if rack_xist == 1 and (conip and not conip == '127.0.0.1' and ri['console_port'] and ri['console_port'] > 0):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+ri['console_port'])
  if (device_data['type'] == 'pdu' or device_data['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip'])) == 0:
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL='sdcp.cgi?call={0}_info&id=new&ip={1}&name={2}' style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
@@ -331,39 +334,6 @@ def op_function(aWeb):
   fun()
  except Exception as err:
   print "<B>Error in devdata: {}</B>".format(str(err))
-
-#
-#
-#
-def rack_info(aWeb):
- with DB() as db:
-  res  = db.do("SELECT rackinfo.*, devices.hostname, devices.rack_id, devices.ip, INET_NTOA(devices.ip) as ipasc FROM rackinfo JOIN devices ON devices.id = rackinfo.device_id")
-  if res == 0:
-   return
-  devs = db.get_rows()
-  order = devs[0].keys()
-  order.sort()
-  db.do("SELECT id, name FROM pdus")
-  pdus  = db.get_all_dict('id')
-  db.do("SELECT id, name FROM consoles")
-  cons  = db.get_all_dict('id')
-  db.do("SELECT id, name FROM racks")
-  racks = db.get_all_dict('id')
-  print "<DIV CLASS=z-frame style='overflow-x:auto;'><DIV CLASS=z-table>"
-  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
-  print "<DIV CLASS=tbody>" 
-  for dev in devs:
-   if not dev['backup_ip']:
-    db.do("UPDATE rackinfo SET backup_ip = {} WHERE device_id = {}".format(dev['ip'],dev['device_id']))
-   print "<DIV CLASS=tr>"
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(dev['device_id'],dev['ipasc'],dev['hostname'])
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(cons.get(dev['console_id'],{}).get('name',None),dev['console_port'])
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(dev['pem0_pdu_id'],{}).get('name',None),dev['pem0_pdu_slot'],dev['pem0_pdu_unit'])
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(dev['pem1_pdu_id'],{}).get('name',None),dev['pem1_pdu_slot'],dev['pem1_pdu_unit'])
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(racks.get(dev['rack_id'],{}).get('name',None),dev['rack_size'],dev['rack_unit'])
-   print "</DIV>"
-  print "</DIV></DIV></DIV>"
-  db.commit()
 
 
 def mac_sync(aWeb):

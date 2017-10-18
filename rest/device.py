@@ -54,10 +54,10 @@ def update_info(aDict):
  racked = aDict.pop('racked',None)
  with DB() as db:
   if racked:
-   if racked == '0' and aDict.get('devices_rack_id') != 'NULL':
-    db.do("INSERT INTO rackinfo SET device_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(id))
+   if racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
+    db.do("INSERT INTO rackinfo SET device_id = {},rack_id={} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(id,aDict.get('rackinfo_rack_id')))
     db.commit()
-   elif racked == '1' and aDict.get('devices_rack_id') == 'NULL':
+   elif racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
     db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
     db.commit()
 
@@ -101,10 +101,10 @@ def new(aDict):
     res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ptr_dom))
     ptr_dom_id = db.get_row().get('id') if res > 0 else 'NULL'
     mac = 0 if not GL.is_mac(aDict.get('mac',False)) else GL.mac2int(aDict['mac'])
-    rack_id = "NULL" if (aDict.get('target') != 'rack_id' or aDict.get('arg') == 'None') else aDict.get('arg')
-    dbres = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,snmp,model,type,fqdn,rack_id) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown','unknown',{})".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_sub_id'),aDict.get('hostname'),rack_id))
+    dbres = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,snmp,model,type,fqdn) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown','unknown')".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_sub_id'),aDict.get('hostname')))
     devid = db.get_last_id()
-    rres  = db.do("INSERT INTO rackinfo SET device_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(devid))
+    if aDict.get('target') == 'rack_id' and aDict.get('arg'):
+     db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(devid,aDict.get('arg')))
     db.commit()
     ret['res']  = "added"
     ret['info'] = "DB:{} ID:{}".format(dbres,devid)
