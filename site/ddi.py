@@ -23,7 +23,7 @@ def dhcp_update(aWeb):
  for row in rows:
   args.append({'ip':row['ipasc'],'fqdn':"{}.{}".format(row['hostname'],row['domain']),'mac':GL.int2mac(row['mac']),'id':row['id'],'subnet_id':row['ipam_sub_id']})
  
- res = rest_call(PC.dhcp['url'],"sdcp.rest.{}_update".format(PC.dhcp['type']),{'entries':args})
+ res = rest_call(PC.dhcp['url'],"sdcp.rest.{}_update_server".format(PC.dhcp['type']),{'entries':args})
  print res
 #
 #
