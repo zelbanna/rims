@@ -35,13 +35,13 @@ def server():
   (mod,void,fun) = api.partition('_')
   from importlib import import_module
   module = import_module(mod)
-  data   = dumps(getattr(module,fun,lambda x: { 'err':"No such function in module", 'args':x })(args))
+  data   = dumps(getattr(module,fun,lambda x: { 'type':'rest_error_function', 'api':api, 'err':'No such function in module', 'args':x })(args))
   print "X-Z-Res:{}\r".format("OK")
   print "X-Z-Mod:{}\r".format(mod)
   print "X-Z-Fun:{}\r".format(fun)
  except Exception as err:
   print "X-Z-Res:{}\r".format(str(err))
-  data = dumps({ 'err':'module_error', 'res':str(err)  }, sort_keys=True)
+  data = dumps({ 'type':'rest_error', 'api':api, 'err':str(err), 'args':args  }, sort_keys=True)
  print "Content-Type: application/json\r"
  stdout.flush()
  print ""

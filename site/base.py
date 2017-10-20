@@ -166,19 +166,16 @@ def list_options(aWeb):
 #
 def examine(aWeb):
  import sdcp.PackageContainer as PC
-
- svchost = PC.sdcp['svcsrv']
  upshost = PC.sdcp['upshost']
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
  print "<A CLASS='z-warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=base_examine_clear'>Clear Logs</A>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_logs'>Logs</A>"
+ print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=base_examine_logs>Logs</A>"
  if upshost:
-  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_ups&upshost={}'>UPS</A>".format(upshost)
- if svchost:
-  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_dns&svchost={}'>DNS</A>".format(svchost)
-  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_dhcp&svchost={}'>DHCP</A>".format(svchost)
-  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_svc&svchost={}'>Services Logs</A>".format(svchost)
- print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?call=base_examine'></A>"
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=base_examine_ups>UPS</A>"
+ print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=base_examine_dns>DNS</A>"
+ print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=base_examine_dhcp>DHCP</A>"
+ print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=base_examine_svc>Services Logs</A>"
+ print "<A CLASS='z-reload z-op' DIV=div_main_cont URL=sdcp.cgi?call=base_examine'></A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content></DIV>"
 
@@ -188,16 +185,17 @@ def examine(aWeb):
 def examine_clear(aWeb):
  import sdcp.PackageContainer as PC
  from sdcp.core.rest import call as rest_call
- res = rest_call(PC.dnsdb['url'],'sdcp.rest.base_clear_logs',{ 'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})
- print "<DIV CLASS=z-frame>{}</DIV>".format(res)
+ res_dns  = rest_call(PC.dnsdb['url'],'sdcp.rest.base_clear_logs',{ 'logs':[PC.generic['logformat']]})
+ res_host = rest_call("http://127.0.0.1/rest.cgi",'sdcp.rest.base_clear_logs',{ 'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})
+ print "<DIV CLASS=z-frame>{}<BR>{}</DIV>".format(res_host,res_dns)
 
 #
 # Internal Logs
 #
 def examine_logs(aWeb):
  import sdcp.PackageContainer as PC
- from sdcp.rest.base import examine_logs
- logs = examine_logs({'count':10,'logs':"{},{}".format(PC.generic['logformat'],PC.sdcp['netlogs'])})
+ from sdcp.core.rest import call as rest_call
+ logs = rest_call('http://127.0.0.1/rest.cgi','sdcp.rest.base_examine_logs',{'count':10,'logs':"{},{}".format(PC.generic['logformat'],PC.sdcp['netlogs'])})
  for file,res in logs.iteritems():
   print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
   for line in res:
@@ -208,8 +206,9 @@ def examine_logs(aWeb):
 # UPS graphs
 #
 def examine_ups(aWeb):
+ import sdcp.PackageContainer as PC
  from sdcp.tools.munin import widget_cols
- upshost,void,domain = aWeb.get_value('upshost').partition('.')
+ upshost,void,domain = PC.sdcp['upshost'].partition('.')
  print "<DIV CLASS=z-frame STYLE='width:auto;'>"
  widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
  print "</DIV>"
@@ -218,17 +217,16 @@ def examine_ups(aWeb):
 # DNS stats
 #
 def examine_dns(aWeb):
- from sdcp.core.rest import call as rest_call     
- svchost = aWeb.get_value('svchost')
-
- dnstop = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.rest.ddi_dns_top", {'count':20})
- print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN ({})</DIV>".format(svchost)
+ import sdcp.PackageContainer as PC
+ from sdcp.core.rest import call as rest_call
+ dnstop = rest_call(PC.dnsdb['url'], "sdcp.rest.{}_top".format(PC.dnsdb['type']), {'count':20})
+ print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN</DIV>"
  print "<DIV CLASS=z-table style='padding:5px; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
  print "<DIV CLASS=tbody>"       
  for data in dnstop['top']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'])
  print "</DIV></DIV></DIV>"
- print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN per Client ({})</DIV>".format(svchost)
+ print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN per Client</DIV>"
  print "<DIV CLASS=z-table style='padding:5px; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for data in dnstop['who']:
@@ -239,17 +237,16 @@ def examine_dns(aWeb):
 # DHCP stats
 #
 def examine_dhcp(aWeb):
- from sdcp.core.rest import call as rest_call      
- svchost = aWeb.get_value('svchost')   
-
- dhcp = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.rest.ddi_dhcp_leases")
- print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Active Leases ({})</DIV>".format(svchost)
+ import sdcp.PackageContainer as PC
+ from sdcp.core.rest import call as rest_call
+ dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases",PC.dhcp['type'])
+ print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Active Leases</DIV>"
  print "<DIV CLASS=z-table style='padding:5px; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ends</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for data in dhcp['active']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
  print "</DIV></DIV></DIV>"
- print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Free/Old Leases ({})</DIV>".format(svchost)
+ print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Free/Old Leases</DIV>"
  print "<DIV CLASS=z-table style='padding:5px; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ended</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for data in dhcp['free']:
@@ -260,10 +257,9 @@ def examine_dhcp(aWeb):
 # Service logs
 #
 def examine_svc(aWeb):
- from sdcp.core.rest import call as rest_call      
  import sdcp.PackageContainer as PC
- svchost = aWeb.get_value('svchost')
- logs = rest_call("http://{}/rest.cgi".format(svchost), "sdcp.rest.base_examine_logs",{'count':20,'logs':PC.generic['logformat']})
+ from sdcp.core.rest import call as rest_call
+ logs = rest_call("http://{}/rest.cgi".format(PC.sdcp['svchost']), "sdcp.rest.base_examine_logs",{'count':20,'logs':PC.generic['logformat']})
  for file,res in logs.iteritems():
   print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
   for line in res:

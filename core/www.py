@@ -82,7 +82,7 @@ class Web(object):
    keys = self.form.keys()
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'module':aBase + ".site." + mod, 'function':fun, 'args': keys, 'err':str(err) }, sort_keys=True)
+   print dumps({ 'type':'ajax_error', 'module':aBase + ".site." + mod, 'function':fun, 'args': keys, 'err':str(err) }, sort_keys=True)
 
  ############################## CGI/Web functions ###############################
 
