@@ -20,8 +20,7 @@
   "graph":{ "type":"munin","file":"/etc/munin/munin-conf.d/sdcp.conf","plugins":"/var/www/device.graph.plugins" }
  },
  "dnsdb" : {
-  "proxy" : "http://<ip-if-using-rest>/rest.cgi",
-  "url" : "",
+  "url" : "http://<ip-if-using-rest>/rest.cgi",
   "username" : "",
   "password" : "",
   "dbname": "",
@@ -29,7 +28,6 @@
   "logfile":"/var/log/system/pdns.info.log"
  },
  "ipamdb" : {
-  "proxy" : "False",
   "url" : "http://<ip-if-using-rest>/rest.cgi",
   "username" : "username",
   "password" : "password",
@@ -37,11 +35,11 @@
   "type" : "phpipam"
  },
  "dhcp": {
-  "proxy" : "False",
-  "url" : "",
+  "url" : "http://<ip-if-using-rest>/rest.cgi",
   "file": "",
   "reload":"sudo /etc/init.d/isc-dhcp-server restart",
-  "leasefile":"/path/to/lease/file.leases"
+  "leasefile":"/path/to/lease/file.leases",
+  "type","iscdhcp"
  },
  "loopia": {
   "username":"",
