@@ -22,7 +22,7 @@ def remove_user(aDict):
 #
 def clear_logs(aDict):
  import sdcp.PackageContainer as PC
- logfiles = aDict.get('logs',"").split(',')
+ logfiles = aDict.get('logs')
  result = {}
  for logfile in logfiles:
   try:

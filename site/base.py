@@ -170,7 +170,7 @@ def examine(aWeb):
  svchost = PC.sdcp['svcsrv']
  upshost = PC.sdcp['upshost']
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
- print "<A CLASS='z-warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='rest.cgi?call=sdcp.rest.base_clear_logs&logs={},{}'>Clear Logs</A>".format(PC.generic['logformat'],PC.sdcp['netlogs'])
+ print "<A CLASS='z-warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=base_examine_clear'>Clear Logs</A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_logs'>Logs</A>"
  if upshost:
   print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=base_examine_ups&upshost={}'>UPS</A>".format(upshost)
@@ -181,6 +181,15 @@ def examine(aWeb):
  print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?call=base_examine'></A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content></DIV>"
+
+#
+#
+#
+def examine_clear(aWeb):
+ import sdcp.PackageContainer as PC
+ from sdcp.core.rest import call as rest_call
+ res = rest_call(PC.dnsdb['url'],'sdcp.rest.base_clear_logs',{ 'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})
+ print "<DIV CLASS=z-frame>{}</DIV>".format(res)
 
 #
 # Internal Logs

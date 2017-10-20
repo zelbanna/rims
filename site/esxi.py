@@ -147,7 +147,7 @@ def op(aWeb,aIP = None):
   else:
    print template.format('vmsvc-power.on','start', vm[0], "Start")
    print template.format('vmsvc-snapshot.create','snapshot', vm[0], "Snapshot")
-   print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right TITLE='Snapshot - Info' URL=sdcp.cgi?call=esxi_snapshot&ip={}&vmid={}><IMG SRC='images/btn-info.png'></A>".format(ip,vm[0])
+   print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right SPIN=true TITLE='Snapshot - Info' URL=sdcp.cgi?call=esxi_snapshot&ip={}&vmid={}><IMG SRC='images/btn-info.png'></A>".format(ip,vm[0])
   print "</DIV></DIV>"
  print "</DIV></DIV></DIV>"
 

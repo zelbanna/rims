@@ -53,8 +53,8 @@ def login(aWeb):
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Tools'     URL=sdcp.cgi?call=base_navigate&type=tool><IMG SRC='images/icon-tools.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='ESXi'      URL=sdcp.cgi?call=esxi_main><IMG SRC='images/icon-servers.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Config'    URL=sdcp.cgi?call=base_config><IMG SRC='images/icon-config.png'/></A>
-  </DIV>
-  <DIV CLASS=z-main-content ID=div_main_cont></DIV>"""
+  </DIV>"""
+  print "<DIV CLASS=z-main-content ID=div_main_cont></DIV>"
  else:
   with DB() as db:
    db.do("SELECT id,name,view_public FROM users ORDER BY name")

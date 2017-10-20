@@ -124,3 +124,8 @@ class Web(object):
    return html
   except Exception as err:
    return ""
+
+ def get_dict2table(self,aDict):
+  print "<DIV CLASS=z-table>"
+  # <DIV CLASS=thead>{}</DIV>".format("<DIV CLASS=th>{}</DIV>".
+  print "</DIV>"
