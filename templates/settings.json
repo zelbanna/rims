@@ -13,9 +13,6 @@
   "devicefile":"/var/www/devices.json",
   "netlogs":"/path/to/net.log",
   "svcsrv":"127.0.0.1",
-  "dnssrv":"127.0.0.1",
-  "ntpsrv":"127.0.0.1",
-  "anonftp":"127.0.0.1/directory/to/archive/",
   "upshost":"127.0.0.1",
   "graph":{ "type":"munin","file":"/etc/munin/munin-conf.d/sdcp.conf","plugins":"/var/www/device.graph.plugins" }
  },
@@ -49,7 +46,10 @@
  "netconf": {
   "username":"",
   "password":"",
-  "encrypted":""
+  "encrypted":"",
+  "dnssrv":"127.0.0.1",
+  "ntpsrv":"127.0.0.1",
+  "anonftp":"127.0.0.1/directory/to/archive/"
  },
  "esxi": {
   "username":"",
