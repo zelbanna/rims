@@ -12,7 +12,7 @@ import sdcp.PackageContainer as PC
 #
 # Should be subnets(target, arg)
 #
-def ipam_subnets(aDict):
+def subnets(aDict):
  from sdcp.core.dbase import DB
  with DB(PC.ipamdb['dbname'],'localhost',PC.ipamdb['username'],PC.ipamdb['password']) as db:
   db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
@@ -22,7 +22,7 @@ def ipam_subnets(aDict):
 #
 # lookup(ip,ipam_sub_id)
 #
-def ipam_lookup(aDict):
+def lookup(aDict):
  PC.log_msg("IPAM lookup - input {}".format(aDict.values()))
  import sdcp.core.genlib as GL
  ipint   = GL.ip2int(aDict['ip'])
@@ -40,7 +40,7 @@ def ipam_lookup(aDict):
 #
 # update( ipam_sub_id, ipam_id, ip, fqdn, ptr_id )
 #
-def ipam_update(aDict):
+def update(aDict):
  PC.log_msg("IPAM update - input:{}".format(aDict.values()))
  import sdcp.core.genlib as GL
  from sdcp.core.dbase import DB
@@ -68,7 +68,7 @@ def ipam_update(aDict):
 #
 # remove(ipam_id)
 #
-def ipam_remove(aDict):
+def remove(aDict):
  from sdcp.core.dbase import DB
  with DB(PC.ipamdb['dbname'],'localhost',PC.ipamdb['username'],PC.ipamdb['password']) as db:
   ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
@@ -77,11 +77,11 @@ def ipam_remove(aDict):
  return ires
 
 #
-# ipam_find(ipam_sub_id, consecutive)
+# find(ipam_sub_id, consecutive)
 #
 # - Find X consecutive ip from a particular subnet-id
 #
-def ipam_find(aDict):
+def find(aDict):
  import sdcp.core.genlib as GL
  from sdcp.core.dbase import DB
  with DB(PC.ipamdb['dbname'],'localhost',PC.ipamdb['username'],PC.ipamdb['password']) as db:

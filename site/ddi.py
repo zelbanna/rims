@@ -65,7 +65,9 @@ def sync(aWeb):
 #
 def load_infra(aWeb):
  domains = rest_call(PC.dnsdb['url'], "sdcp.rest.{}_domains".format(PC.dnsdb['type']))
+ print domains
  subnets = rest_call(PC.ipamdb['url'],"sdcp.rest.{}_subnets".format(PC.ipamdb['type']))
+ print subnets
  with DB() as db:
   for dom in domains:
    db.do("INSERT INTO domains(id,name) VALUES ({0},'{1}') ON DUPLICATE KEY UPDATE name='{1}'".format(dom['id'],dom['name']))
