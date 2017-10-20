@@ -30,12 +30,13 @@ def lookup_info(aDict):
    ret['base'] ='True'
  
   if not name == 'unknown':
-   from ddi import dns_lookup, ipam_lookup
-   vals   = dns_lookup({ 'ip':ip, 'name':name, 'a_dom_id':dev.get('a_dom_id') })
+   import sdcp.PackageContainer as PC
+   from sdcp.core.rest import call as rest_call
+   vals   = rest_call(PC.dnsdb['url'],"sdcp.rest.{}_lookup".format(PC.dnsdb['type']),{ 'ip':ip, 'name':name, 'a_dom_id':dev.get('a_dom_id') })
    a_id   = vals.get('a_id','0')
    ptr_id = vals.get('ptr_id','0')
    ret['dns'] = str(vals)
-   vals   = ipam_lookup({'ip':ip, 'ipam_sub_id':dev.get('ipam_sub_id') })
+   vals   = rest_call(PC.ipamdb['url'],"sdcp.rest.{}_lookup".format(PC.ipamdb['type']),{'ip':ip, 'ipam_sub_id':dev.get('ipam_sub_id') })
    ipam_id = vals.get('ipam_id','0')
    iptr_id = vals.get('ptr_id','0')
    ret['ipam'] = str(vals)
@@ -174,14 +175,14 @@ def remove(aDict):
   res = db.do("DELETE FROM devices WHERE id = '{0}'".format(aDict['id']))
   ret = { 'device': res }
   db.commit()
+ import sdcp.PackageContainer as PC
+ from sdcp.core.rest import call as rest_call
  if (ddi['a_id'] != '0') or (ddi['ptr_id'] != '0'):
-  from ddi import dns_remove
-  dres = dns_remove( { 'a_id':ddi['a_id'], 'ptr_id':ddi['ptr_id'] })
+  dres = rest_call(PC.dnsdb['url'],"sdcp.rest.{}_remove".format(PC.dnsdb['type']), { 'a_id':ddi['a_id'], 'ptr_id':ddi['ptr_id'] })
   ret['a'] = dres.get('a')
   ret['ptr'] = dres.get('ptr')
  if not ddi['ipam_id'] == '0':
-  from ddi import ipam_remove
-  ret['ipam'] = ipam_remove({ 'ipam_id':ddi['ipam_id'] })
+  ret['ipam'] = rest_call(PC.ipamdb['url'],"sdcp.rest.{}_remove".format(PC.ipamdb['type']),{ 'ipam_id':ddi['ipam_id'] })
  return ret
 
 #
