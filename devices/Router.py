@@ -172,7 +172,7 @@ class Junos(GenDevice):
   base  = "set groups default_system "
   print base + "system domain-name {}<BR>".format(argdict['domain'])
   print base + "system domain-search {}<BR>".format(argdict['domain'])
-  print base + "system name-server {}<BR>".format(PC.sdcp['dnssrv'])
+  print base + "system name-server {}<BR>".format(PC.netconf['dnssrv'])
   print base + "system services ssh root-login allow<BR>"
   print base + "system services netconf ssh<BR>"
   print base + "system syslog user * any emergency<BR>"
@@ -180,9 +180,9 @@ class Junos(GenDevice):
   print base + "system syslog file messages authorization info<BR>"
   print base + "system syslog file interactive-commands interactive-commands any<BR>"
   print base + "system archival configuration transfer-on-commit<BR>"
-  print base + "system archival configuration archive-sites ftp://{}/<BR>".format(PC.sdcp['anonftp'])
+  print base + "system archival configuration archive-sites ftp://{}/<BR>".format(PC.netconf['anonftp'])
   print base + "system commit persist-groups-inheritance<BR>"
-  print base + "system ntp server {}<BR>".format(PC.sdcp['ntpsrv'])
+  print base + "system ntp server {}<BR>".format(PC.netconf['ntpsrv'])
   print base + "routing-options static route 0.0.0.0/0 next-hop {}<BR>".format(argdict['gateway'])
   print base + "routing-options static route 0.0.0.0/0 no-readvertise<BR>"
   print base + "snmp community {} clients {}/{}<BR>".format(PC.snmp['read_community'],argdict['subnet'],argdict['mask'])
