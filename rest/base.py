@@ -12,10 +12,12 @@ __status__ = "Production"
 def reload(aDict):
  import sdcp.PackageContainer as PC
  from git import Repo
+ PC.log_msg("SDCP - reload request")
  repo   = Repo(PC.repo)
  origin = repo.remotes.origin
  fetch  = origin.pull()
- return {'res':fetch}
+ #output = fetch[0].__str__()
+ return {'res':True}
 
 #
 #
@@ -51,7 +53,7 @@ def clear_logs(aDict):
 #
 def examine_logs(aDict):
  count = int(aDict.get('count',15))
- logfiles = aDict.get('logs',"").split(',')
+ logfiles = aDict.get('logs')
  result = {}
  for logfile in logfiles:
   logs = ["\r" for i in range(count)]
