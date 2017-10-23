@@ -175,7 +175,7 @@ def examine(aWeb):
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=base_examine_dns>DNS</A>"
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=base_examine_dhcp>DHCP</A>"
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=base_examine_svc>Services Logs</A>"
- print "<A CLASS='z-reload z-op' DIV=div_main_cont URL=sdcp.cgi?call=base_examine'></A>"
+ print "<A CLASS='z-reload z-op' DIV=div_main_cont URL=sdcp.cgi?call=base_examine></A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content></DIV>"
 
