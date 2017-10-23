@@ -125,7 +125,16 @@ class Web(object):
   except Exception as err:
    return ""
 
- def get_dict2table(self,aDict):
-  print "<DIV CLASS=z-table>"
-  # <DIV CLASS=thead>{}</DIV>".format("<DIV CLASS=th>{}</DIV>".
+ def dict2table(self,aList):
+  print "<DIV CLASS=z-table><DIV CLASS=thead>"
+  head = aList[0].keys()
+  for th in head:
+   print "<DIV CLASS=th>{}</DIV>".format(th.title())
+  print "</DIV><DIV CLASS=tbody>"
+  for row in aList:
+   print "<DIV CLASS=tr>"
+   for td in head:
+    print "<DIV CLASS=td>{}</DIV>".format(row.get(td,'&nbsp;'))
+   print "</DIV>"
+  print "</DIV>"
   print "</DIV>"

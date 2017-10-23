@@ -176,8 +176,6 @@ def rackinfo(aWeb):
   print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>VM</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for ri in ris:
-   if not ri['backup_ip']: 
-    db.do("UPDATE rackinfo SET backup_ip = {} WHERE device_id = {}".format(ri['ip'],ri['device_id']))
    print "<DIV CLASS=tr>"
    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(ri['device_id'],ri['ipasc'],ri['hostname'],ri['vm'])
    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(cons.get(ri['console_id'],{}).get('name',None),ri['console_port'])

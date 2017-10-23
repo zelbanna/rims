@@ -222,17 +222,11 @@ def examine_dns(aWeb):
  from sdcp.core.rest import call as rest_call
  dnstop = rest_call(PC.dns['url'], "sdcp.rest.{}_top".format(PC.dns['type']), {'count':20})
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN</DIV>"
- print "<DIV CLASS=z-table style='padding:5px; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
- print "<DIV CLASS=tbody>"       
- for data in dnstop['top']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'])
- print "</DIV></DIV></DIV>"
+ aWeb.dict2table(dnstop['top'])
+ print "</DIV>"
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN per Client</DIV>"
- print "<DIV CLASS=z-table style='padding:5px; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
- print "<DIV CLASS=tbody>"
- for data in dnstop['who']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['count'],data['fqdn'],data['who'],data['hostname'])
- print "</DIV></DIV></DIV>"
+ aWeb.dict2table(dnstop['who'])
+ print "</DIV>"
 
 #
 # DHCP stats
@@ -241,19 +235,12 @@ def examine_dhcp(aWeb):
  import sdcp.PackageContainer as PC
  from sdcp.core.rest import call as rest_call
  dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))
- print "<!-- {} -->".format(dhcp)
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Active Leases</DIV>"
- print "<DIV CLASS=z-table style='padding:5px; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ends</DIV></DIV>"
- print "<DIV CLASS=tbody>"
- for data in dhcp['active']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
- print "</DIV></DIV></DIV>"
+ aWeb.dict2table(dhcp['active'])
+ print "</DIV>"
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Free/Old Leases</DIV>"
- print "<DIV CLASS=z-table style='padding:5px; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ended</DIV></DIV>"
- print "<DIV CLASS=tbody>"
- for data in dhcp['free']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['ip'],data['mac'],data['starts'],data['ends'])
- print "</DIV></DIV></DIV>"
+ aWeb.dict2table(dhcp['free']) 
+ print "</DIV>"
 
 #
 # Service logs
@@ -387,7 +374,9 @@ def user_info(aWeb):
  print "</DIV>"
 
 ############################################ Configuration ##############################################
-
+#
+# Beta attempt, not really working out that well...
+#
 def reload(aWeb):
  import sdcp.PackageContainer as PC
  print "<DIV CLASS=z-frame STYLE='width:600px;'>"
