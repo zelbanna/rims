@@ -12,7 +12,7 @@ __status__ = "Production"
 def reload(aDict):
  import sdcp.PackageContainer as PC
  from git import Repo
- repo   = repo(PC.repo)
+ repo   = Repo(PC.repo)
  origin = repo.remotes.origin
  fetch  = origin.pull()
  return {'res':fetch}
