@@ -157,7 +157,7 @@ def list_options(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TARGET=_blank                  HREF='sdcp.cgi?call=device_dump_db'>Dump DB to JSON</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=rack_rackinfo'>Rackinfo Table</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=device_mac_sync'>Sync MAC Info</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=base_reload'>Reload App</A></DIV></DIV>"
+ # print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=base_reload'>Reload App</A></DIV></DIV>"
  print "</DIV></DIV></DIV></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
 

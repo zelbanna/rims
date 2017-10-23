@@ -44,7 +44,7 @@ def login(aWeb):
   PC.log_msg("Entering as {}-'{}' ({})".format(id,user,view))
   aWeb.put_html(PC.sdcp['name'])
   print "<DIV class='z-main-menu' ID=div_main_menu>"
-  print "<A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Start'     URL='{}'><IMG SRC='images/icon-start.png'/></A>".format(href)
+  print "<A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Start'     URL='{}&headers=yes'><IMG SRC='images/icon-start.png'/></A>".format(href)
   print """<A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Rack'      URL=sdcp.cgi?call=rack_main><IMG SRC='images/icon-rack.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Devices'   URL=sdcp.cgi?call=device_main><IMG SRC='images/icon-network.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Examine'   URL=sdcp.cgi?call=base_examine><IMG SRC='images/icon-examine.png'/></A>
@@ -80,15 +80,18 @@ def login(aWeb):
 # Weathermap
 #
 def weathermap(aWeb):
- aWeb.put_html("Weathermap")
+ if aWeb.get_value('headers','no') == 'no':
+  aWeb.put_html("Weathermap")
+ else:
+  print "Content-Type: text/html\r\n"
 
  page = aWeb.get_value('page')
  if not page:
-  print "<DIV CLASS=z-navbar ID=div_navbar>" 
+  print "<DIV CLASS=z-navbar ID=div_wm_navbar>" 
   for map,entry in PC.weathermap.iteritems():
    print "<A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=front_weathermap&page={0}>{1}</A>".format(map,entry['name'])
   print "</DIV>"
-  print "<DIV CLASS='z-content' ID=div_content NAME='Weathermap Content'>"
+  print "<DIV CLASS='z-content' ID=div_wm_content NAME='Weathermap Content'>"
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"
   print "</DIV>" 
  else:
