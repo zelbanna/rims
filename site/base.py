@@ -239,7 +239,8 @@ def examine_dns(aWeb):
 def examine_dhcp(aWeb):
  import sdcp.PackageContainer as PC
  from sdcp.core.rest import call as rest_call
- dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases",PC.dhcp['type'])
+ dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))
+ print "<!-- {} -->".format(dhcp)
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Active Leases</DIV>"
  print "<DIV CLASS=z-table style='padding:5px; height:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Started</DIV><DIV CLASS=th>Ends</DIV></DIV>"
  print "<DIV CLASS=tbody>"
