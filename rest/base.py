@@ -12,12 +12,17 @@ __status__ = "Production"
 def reload(aDict):
  import sdcp.PackageContainer as PC
  from git import Repo
- PC.log_msg("SDCP - reload request")
- repo   = Repo(PC.repo)
- origin = repo.remotes.origin
- fetch  = origin.pull()
- #output = fetch[0].__str__()
- return {'res':True}
+ repo = Repo(PC.repo)
+ res = {}
+ try:
+  org   = repo.remotes.origin
+  fetch = org.pull()
+  res['info'] = fetch[0].__str__()
+  res['res']  ='OK'
+ except Exception as err:
+  res['info'] = str(err)
+  res['res']  = 'Failed'
+ return res
 
 #
 #
