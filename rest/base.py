@@ -9,6 +9,12 @@ __status__ = "Production"
 
 #
 #
+def reload(aDict):
+
+ return {'res':True}
+
+#
+#
 #
 def remove_user(aDict):
  from sdcp.core.dbase import DB

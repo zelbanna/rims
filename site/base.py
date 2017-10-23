@@ -385,3 +385,22 @@ def user_info(aWeb):
  print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_user_info&headers=no&op=update FRM=sdcp_user_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"
+
+############################################ Configuration ##############################################
+
+def reload(aWeb):
+ import sdcp.PackageContainer as PC
+ print "<DIV CLASS=z-frame>"
+ if aWeb.get_value('file'):
+  from sdcp.core.rest import call as rest_call
+  res = rest_call('http://127.0.0.1/rest.cgi','sdcp.rest.base_reload',{'file':aWeb.get_value('file')})
+  print "{}<BR>".format(res)
+  if PC.sdcp['svcsrv']:
+   res = rest_call("http://{}/rest.cgi".format(PC.sdcp['svcsrv']),'sdcp.rest.base_reload',{'file':aWeb.get_value('file')})
+   print "{}<BR>".format(res)
+ else:
+  print "<FORM ID=sdcp_reload>"
+  print "Reload: <INPUT NAME=file STYLE='border:none; overflow:visible; background-color: transparent;' TYPE=TEXT VALUE={}>".format(PC.file)
+  print "</FORM>"
+  print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_reload FRM=sdcp_reload><IMG SRC=images/btn-reboot.png></A>"
+ print "</DIV>"
