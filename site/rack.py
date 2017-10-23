@@ -46,34 +46,32 @@ def inventory(aWeb):
  rack = aWeb.get_value('rack', 0)
  with DB() as db:
   db.do("SELECT name, size from racks where id = {}".format(rack))
-  rackinfo = db.get_row() 
+  ri = db.get_row() 
   db.do("SELECT devices.id, hostname, rackinfo.rack_unit, rackinfo.rack_size, bookings.user_id FROM devices LEFT JOIN bookings ON devices.id = bookings.device_id LEFT JOIN rackinfo ON devices.id = rackinfo.device_id WHERE rackinfo.rack_id = {}".format(rack))
-  rackunits = db.get_all_dict('rack_unit')
- print "<DIV style='margin:10px;'><SPAN style='font-size:20px; font-weight:bold'>{}</SPAN></DIV>".format(rackinfo['name'])
+  devs = db.get_rows()
+ size = ri['size']
+ print "<DIV style='display:grid; justify-items:stretch; align-items:stretch; margin:10px; grid: repeat({}, 20px)/20px 220px 20px 20px 20px 220px 20px;'>".format(size)
+ # Create rack and some text, then place devs
+ print "<DIV STYLE='grid-column:1/4; grid-row:1; justify-self:center; font-weight:bold; font-size:14px;'>Front</DIV>"
+ print "<DIV STYLE='grid-column:5/8; grid-row:1; justify-self:center; font-weight:bold; font-size:14px;'>Back</DIV>"
+ print "<DIV STYLE='grid-column:2;   grid-row:2; text-align:center; background:yellow; border: solid 2px grey; font-size:12px;'>Panel</DIV>"
+ for idx in range(2,size+2):
+  ru = size-idx+2
+  print "<DIV CLASS=z-rack-indx STYLE='grid-column:1; grid-row:{0}; border-right:1px solid grey'>{1}</DIV>".format(idx,ru)
+  print "<DIV CLASS=z-rack-indx STYLE='grid-column:3; grid-row:{0};  border-left:1px solid grey'>{1}</DIV>".format(idx,ru)
+  print "<DIV CLASS=z-rack-indx STYLE='grid-column:5; grid-row:{0}; border-right:1px solid grey'>{1}</DIV>".format(idx,ru)
+  print "<DIV CLASS=z-rack-indx STYLE='grid-column:7; grid-row:{0};  border-left:1px solid grey'>{1}</DIV>".format(idx,ru)
 
- for side in ['Front','Back']:
-  print "<DIV style='margin:10px 20px; float:left;'><SPAN style='font-size: 16px; font-weight:bold'>{} side</SPAN>".format(side)
-  count = 1 if side == 'Front' else -1
-  print "<TABLE CLASS=z-rack>"
-  rowspan = 0
-  for index in range(rackinfo['size'],0,-1):
-   print "<TR><TD CLASS=indx>{0}</TD>".format(index)
-   if index == rackinfo['size'] and count == 1:
-    print "<TD CLASS=data style='background:yellow;'><CENTER>Patch Panel</CENTER></TD>"
-   else:
-    if rowspan > 0:
-     rowspan = rowspan - 1
-    else:
-     s_index = count*index
-     if rackunits.get(s_index):
-      print "<!-- {} -->".format(rackunits[s_index].get('user_id'))
-      rowspan = rackunits[s_index].get('rack_size')
-      print "<TD CLASS=data rowspan={2} style='background-color:{3}'><CENTER><A CLASS='z-op' TITLE='Show device info for {0}' DIV='div_content_right' URL='sdcp.cgi?call=device_info&id={1}'>{0}</A></CENTER></TD>".format(rackunits[s_index]['hostname'],rackunits[s_index]['id'],rowspan,"#00cc66" if not rackunits[s_index].get('user_id') else "#df3620")
-      rowspan = rowspan - 1
-     else:
-      print "<TD CLASS=data style='line-height:14px;'>&nbsp;</TD>"
-   print "<TD CLASS=indx>{0}</TD></TR>".format(index)
-  print "</TABLE></DIV>"
+ for dev in devs:
+  if dev['rack_unit'] == 0:
+   continue
+  rowstart = size-abs(dev['rack_unit'])+2
+  rowend   = rowstart + dev['rack_size']
+  col = "2" if dev['rack_unit'] > 0 else "6"
+  print "<DIV CLASS='z-rack-data z-centered' STYLE='grid-column:{0}; grid-row:{1}/{2}; background:{3};'>".format(col,rowstart,rowend,"#00cc66" if not dev.get('user_id') else "#df3620")
+  print "<A CLASS='z-op' TITLE='Show device info for {0}' DIV='div_content_right' URL='sdcp.cgi?call=device_info&id={1}'>{0}</A></CENTER>".format(dev['hostname'],dev['id'])
+  print "</DIV>"
+ print "</DIV>"
 
 #
 #

@@ -74,6 +74,9 @@ div.z-centered { align-items:center; justify-content:center; display:flex; flex-
 div.z-drag {   height:20px; width:390px; margin:5px; font-size:11px; cursor:move; -ms-touch-action: none; touch-action: none; border-radius: 5px!important; border: 1px solid #ccc; }
 div.z-drop {   -ms-touch-action: none; touch-action: none; }
 
+div.z-rack-indx { font-weight:bold; font-size:8px; color:grey; padding:2px; }
+div.z-rack-data { border: solid 2px grey; font-size:12px; text-align:center;}
+
 /*############################### Tables #####################################*/ 
 
 div.z-frame > form > div.z-table { width:99%; }
@@ -93,10 +96,6 @@ div.td > input::-webkit-input-placeholder { color: darkgrey; }
 div.td > input::-moz-placeholder { color: darkgrey; opacity:1; }
 div.td > input:-ms-input-placeholder {  color: darkgrey; }
 div.td > a { display:inline-block; }
-
-table.z-rack tr { line-height:14px; }
-table.z-rack td.indx { font-weight:bold; font-size:8px; color:grey; vertical-align:bottom; padding:2px; }
-table.z-rack td.data { border: solid 2px grey; width:220px; font-size:12px; }
 
 /*########################################### A(nything) ##########################################*/
 
