@@ -124,7 +124,7 @@ def info(aWeb):
 
  if op == 'book':
   user_id = aWeb.cookie.get('sdcp_id')
-  db.do("INSERT INTO bookings (device_id,user_id,name) VALUES('{}','{}','{}')".format(id,user_id,"Not Yet"))
+  db.do("INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')".format(id,user_id))
   db.commit()
 
  if op == 'unbook':
