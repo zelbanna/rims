@@ -185,7 +185,7 @@ def examine(aWeb):
 def examine_clear(aWeb):
  import sdcp.PackageContainer as PC
  from sdcp.core.rest import call as rest_call
- res_dns  = rest_call(PC.dnsdb['url'],'sdcp.rest.base_clear_logs',{ 'logs':[PC.generic['logformat']]})
+ res_dns  = rest_call(PC.dns['url'],'sdcp.rest.base_clear_logs',{ 'logs':[PC.generic['logformat']]})
  res_host = rest_call("http://127.0.0.1/rest.cgi",'sdcp.rest.base_clear_logs',{ 'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})
  print "<DIV CLASS=z-frame>{}<BR>{}</DIV>".format(res_host,res_dns)
 
@@ -219,7 +219,7 @@ def examine_ups(aWeb):
 def examine_dns(aWeb):
  import sdcp.PackageContainer as PC
  from sdcp.core.rest import call as rest_call
- dnstop = rest_call(PC.dnsdb['url'], "sdcp.rest.{}_top".format(PC.dnsdb['type']), {'count':20})
+ dnstop = rest_call(PC.dns['url'], "sdcp.rest.{}_top".format(PC.dns['type']), {'count':20})
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN</DIV>"
  print "<DIV CLASS=z-table style='padding:5px; height:600px'><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>What</DIV></DIV>"
  print "<DIV CLASS=tbody>"       

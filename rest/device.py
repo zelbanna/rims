@@ -32,11 +32,11 @@ def lookup_info(aDict):
   if not name == 'unknown':
    import sdcp.PackageContainer as PC
    from sdcp.core.rest import call as rest_call
-   vals   = rest_call(PC.dnsdb['url'],"sdcp.rest.{}_lookup".format(PC.dnsdb['type']),{ 'ip':ip, 'name':name, 'a_dom_id':dev.get('a_dom_id') })
+   vals   = rest_call(PC.dns['url'],"sdcp.rest.{}_lookup".format(PC.dns['type']),{ 'ip':ip, 'name':name, 'a_dom_id':dev.get('a_dom_id') })
    a_id   = vals.get('a_id','0')
    ptr_id = vals.get('ptr_id','0')
    ret['dns'] = str(vals)
-   vals   = rest_call(PC.ipamdb['url'],"sdcp.rest.{}_lookup".format(PC.ipamdb['type']),{'ip':ip, 'ipam_sub_id':dev.get('ipam_sub_id') })
+   vals   = rest_call(PC.ipam['url'],"sdcp.rest.{}_lookup".format(PC.ipam['type']),{'ip':ip, 'ipam_sub_id':dev.get('ipam_sub_id') })
    ipam_id = vals.get('ipam_id','0')
    iptr_id = vals.get('ptr_id','0')
    ret['ipam'] = str(vals)
@@ -178,11 +178,11 @@ def remove(aDict):
  import sdcp.PackageContainer as PC
  from sdcp.core.rest import call as rest_call
  if (ddi['a_id'] != '0') or (ddi['ptr_id'] != '0'):
-  dres = rest_call(PC.dnsdb['url'],"sdcp.rest.{}_remove".format(PC.dnsdb['type']), { 'a_id':ddi['a_id'], 'ptr_id':ddi['ptr_id'] })
+  dres = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']), { 'a_id':ddi['a_id'], 'ptr_id':ddi['ptr_id'] })
   ret['a'] = dres.get('a')
   ret['ptr'] = dres.get('ptr')
  if not ddi['ipam_id'] == '0':
-  ret['ipam'] = rest_call(PC.ipamdb['url'],"sdcp.rest.{}_remove".format(PC.ipamdb['type']),{ 'ipam_id':ddi['ipam_id'] })
+  ret['ipam'] = rest_call(PC.ipam['url'],"sdcp.rest.{}_remove".format(PC.ipam['type']),{ 'ipam_id':ddi['ipam_id'] })
  return ret
 
 #

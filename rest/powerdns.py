@@ -14,7 +14,7 @@ import sdcp.PackageContainer as PC
 #
 def cleanup(aDict):
  from sdcp.core.dbase import DB
- with DB(PC.dnsdb['dbname'],'localhost',PC.dnsdb['username'],PC.dnsdb['password']) as db:
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
   rows = db.get_rows();
   remove = []
@@ -37,7 +37,7 @@ def top(aDict):
  count = int(aDict.get('count',10))
  fqdn_top = {}                
  fqdn_who = {}
- with open(PC.dnsdb['logfile'],'r') as log:
+ with open(PC.dns['logfile'],'r') as log:
   for line in log:
    parts = line.split()
    if not parts[5] == 'Remote':
@@ -59,7 +59,7 @@ def top(aDict):
 #
 def domains(aDict):
  from sdcp.core.dbase import DB
- with DB(PC.dnsdb['dbname'],'localhost',PC.dnsdb['username'],PC.dnsdb['password']) as db:
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT id, name FROM domains")
   rows = db.get_rows()
  return rows
@@ -72,7 +72,7 @@ def lookup(aDict):
  PC.log_msg("DNS  lookup - input:{}".format(aDict.values()))  
  ptr  = GL.ip2arpa(aDict['ip'])
  from sdcp.core.dbase import DB
- with DB(PC.dnsdb['dbname'],'localhost',PC.dnsdb['username'],PC.dnsdb['password']) as db:
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr))
   domains = db.get_rows()
   if res == 2:
@@ -105,7 +105,7 @@ def update(aDict):
  ptr     = GL.ip2ptr(aDict['ip'])
  retvals = {}
  from sdcp.core.dbase import DB
- with DB(PC.dnsdb['dbname'],'localhost',PC.dnsdb['username'],PC.dnsdb['password']) as db:
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr.partition('.')[2]))
   domains = db.get_rows()
   if res == 2:
@@ -146,7 +146,7 @@ def remove(aDict):
  ares = 0
  pres = 0
  from sdcp.core.dbase import DB
- with DB(PC.dnsdb['dbname'],'localhost',PC.dnsdb['username'],PC.dnsdb['password']) as db:
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   if aDict['a_id'] != '0':
    ares = db.do("DELETE FROM records WHERE id = '{}' and type = 'A'".format(aDict['a_id']))
   if aDict['ptr_id'] != '0':

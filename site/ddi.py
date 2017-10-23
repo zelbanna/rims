@@ -40,20 +40,20 @@ def sync(aWeb):
    name = row['hostname']
    dom  = row['a_dom_id'] 
    dargs = { 'ip':ip, 'name':name, 'a_dom_id':dom }
-   retvals = rest_call(PC.dnsdb['url'],"sdcp.rest.{}_lookup".format(PC.dnsdb['type']), dargs)
+   retvals = rest_call(PC.dns['url'],"sdcp.rest.{}_lookup".format(PC.dns['type']), dargs)
    a_id    = retvals.get('a_id','0')
    ptr_id  = retvals.get('ptr_id','0')
 
-   retvals = rest_call(PC.ipamdb['url'],"sdcp.rest.{}_lookup".format(PC.ipamdb['type']),{'ip':ip, 'ipam_sub_id':row['ipam_sub_id']})
+   retvals = rest_call(PC.ipam['url'],"sdcp.rest.{}_lookup".format(PC.ipam['type']),{'ip':ip, 'ipam_sub_id':row['ipam_sub_id']})
    ipam_id = retvals.get('ipam_id','0')
    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(row['id'],ip,name,dom,a_id,ptr_id,ipam_id)
    if not name == 'unknown':
     print "updating"
     uargs = { 'ip':ip, 'name':name, 'a_dom_id':dom, 'a_id':a_id, 'ptr_id':ptr_id }
-    rest_call(PC.dnsdb['url'],"sdcp.rest.{}_update".format(PC.dnsdb['type']), uargs)
-    retvals = rest_call(PC.dnsdb['url'],"sdcp.rest.{}_lookup".format(PC.dnsdb['type']), dargs)
+    rest_call(PC.dns['url'],"sdcp.rest.{}_update".format(PC.dns['type']), uargs)
+    retvals = rest_call(PC.dns['url'],"sdcp.rest.{}_lookup".format(PC.dns['type']), dargs)
     uargs = { 'ip':ip, 'ipam_id':ipam_id, 'ipam_sub_id':row['ipam_sub_id'], 'ptr_id':retvals.get('ptr_id','0'), 'fqdn':name + '.' + row['domain'] }
-    rest_call(PC.ipamdb['url'],"sdcp.rest.{}_update".format(PC.ipamdb['type']),uargs)
+    rest_call(PC.ipam['url'],"sdcp.rest.{}_update".format(PC.ipam['type']),uargs)
     print str(retvals)
     db.do("UPDATE devices SET ipam_id = {}, a_id = {}, ptr_id = {}, ptr_dom_id = {}  WHERE id = {}".format(ipam_id, retvals.get('a_id','0'),retvals.get('ptr_id','0'), retvals.get('ptr_dom_id','NULL'), row['id']))
    print "</DIV></DIV>"
@@ -64,8 +64,8 @@ def sync(aWeb):
 #
 #
 def load_infra(aWeb):
- domains = rest_call(PC.dnsdb['url'], "sdcp.rest.{}_domains".format(PC.dnsdb['type']))
- subnets = rest_call(PC.ipamdb['url'],"sdcp.rest.{}_subnets".format(PC.ipamdb['type']))
+ domains = rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
+ subnets = rest_call(PC.ipam['url'],"sdcp.rest.{}_subnets".format(PC.ipam['type']))
  with DB() as db:
   for dom in domains:
    db.do("INSERT INTO domains(id,name) VALUES ({0},'{1}') ON DUPLICATE KEY UPDATE name='{1}'".format(dom['id'],dom['name']))

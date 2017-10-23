@@ -152,9 +152,9 @@ def info(aWeb):
   import sdcp.PackageContainer as PC
   from sdcp.core.rest import call as rest_call
   opres['ddi_sync'] = (device_data['ipam_id'] == '0')
-  res   = rest_call(PC.dnsdb['url'],"sdcp.rest.{}_update".format(PC.dnsdb['type']), { 'ip':ip, 'name':name, 'a_dom_id': str(device_data['a_dom_id']), 'a_id':str(device_data['a_id']), 'ptr_id':str(device_data['ptr_id']) })
+  res   = rest_call(PC.dns['url'],"sdcp.rest.{}_update".format(PC.dns['type']), { 'ip':ip, 'name':name, 'a_dom_id': str(device_data['a_dom_id']), 'a_id':str(device_data['a_id']), 'ptr_id':str(device_data['ptr_id']) })
   newop = { 'id':id, 'devices_a_id':res['a_id'], 'devices_ptr_id':res['ptr_id'] }
-  res   = rest_call(PC.ipamdb['url'],"sdcp.rest.{}_update".format(PC.ipamdb['type']),{ 'ip':ip, 'fqdn':name+"."+device_data['a_name'], 'a_dom_id': str(device_data['a_dom_id']), 'ipam_id':str(device_data['ipam_id']), 'ipam_sub_id':str(device_data['ipam_sub_id']),'ptr_id':str(device_data['ptr_id']) })
+  res   = rest_call(PC.ipam['url'],"sdcp.rest.{}_update".format(PC.ipam['type']),{ 'ip':ip, 'fqdn':name+"."+device_data['a_name'], 'a_dom_id': str(device_data['a_dom_id']), 'ipam_id':str(device_data['ipam_id']), 'ipam_sub_id':str(device_data['ipam_sub_id']),'ptr_id':str(device_data['ptr_id']) })
   newop['devices_ipam_id'] = res.get('ipam_id',0)
   update_info(newop)
   device_data['a_id']    = newop['devices_a_id']

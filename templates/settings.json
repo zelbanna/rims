@@ -16,7 +16,7 @@
   "upshost":"127.0.0.1",
   "graph":{ "type":"munin","file":"/etc/munin/munin-conf.d/sdcp.conf","plugins":"/var/www/device.graph.plugins" }
  },
- "dnsdb" : {
+ "dns" : {
   "url" : "http://<ip-if-using-rest>/rest.cgi",
   "username" : "",
   "password" : "",
@@ -24,7 +24,7 @@
   "type" : "powerdns",
   "logfile":"/var/log/system/pdns.info.log"
  },
- "ipamdb" : {
+ "ipam" : {
   "url" : "http://<ip-if-using-rest>/rest.cgi",
   "username" : "username",
   "password" : "password",

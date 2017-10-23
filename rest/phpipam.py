@@ -14,7 +14,7 @@ import sdcp.PackageContainer as PC
 #
 def subnets(aDict):
  from sdcp.core.dbase import DB
- with DB(PC.ipamdb['dbname'],'localhost',PC.ipamdb['username'],PC.ipamdb['password']) as db:
+ with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
   rows = db.get_rows()
  return rows
@@ -28,7 +28,7 @@ def lookup(aDict):
  ipint   = GL.ip2int(aDict['ip'])
  retvals = { 'ipam_id':'0' }
  from sdcp.core.dbase import DB
- with DB(PC.ipamdb['dbname'],'localhost',PC.ipamdb['username'],PC.ipamdb['password']) as db:
+ with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   db.do("SELECT id, dns_name, PTR FROM ipaddresses WHERE ip_addr = {0} AND subnetId = {1}".format(ipint,aDict.get('ipam_sub_id')))
   ipam   = db.get_row()
  if ipam:
@@ -45,7 +45,7 @@ def update(aDict):
  import sdcp.core.genlib as GL
  from sdcp.core.dbase import DB
  res = {}
- with DB(PC.ipamdb['dbname'],'localhost',PC.ipamdb['username'],PC.ipamdb['password']) as db:
+ with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   if aDict.get('ipam_id','0') != '0':
    db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict['ptr_id'],aDict['fqdn'],aDict['ipam_id']))
    res['ipam_op'] = 'update'
@@ -70,7 +70,7 @@ def update(aDict):
 #
 def remove(aDict):
  from sdcp.core.dbase import DB
- with DB(PC.ipamdb['dbname'],'localhost',PC.ipamdb['username'],PC.ipamdb['password']) as db:
+ with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
   db.commit()
  PC.log_msg("IPAM remove - {} -> {}".format(aDict,ires))
@@ -84,7 +84,7 @@ def remove(aDict):
 def find(aDict):
  import sdcp.core.genlib as GL
  from sdcp.core.dbase import DB
- with DB(PC.ipamdb['dbname'],'localhost',PC.ipamdb['username'],PC.ipamdb['password']) as db:
+ with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   db.do("SELECT subnet, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id'))) 
   sub = db.get_row()
   db.do("SELECT ip_addr FROM ipaddresses WHERE subnetId = {}".format(aDict.get('ipam_sub_id')))
