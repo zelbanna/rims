@@ -9,6 +9,7 @@ __status__ = "Production"
 
 def convertSettings(aFile):
  from json import load
+ from os import getcwd
  try:
   with open(aFile) as f:
    config = load(f)
@@ -16,6 +17,7 @@ def convertSettings(aFile):
    for name,category in config.iteritems():
     f.write("{}={}\n".format(name,repr(category)))
    f.write("file={}\n".format(repr(aFile)))
+   f.write("repo={}\n".format(repr(getcwd())))
    f.write("def log_msg(amsg):\n")
    f.write(" from time import localtime, strftime\n")
    f.write(" with open(generic['logformat'], 'a') as f:\n")
