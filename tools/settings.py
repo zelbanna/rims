@@ -14,7 +14,8 @@ def convertSettings(aFile):
    config = load(f)
   with open("PackageContainer.py",'w') as f:
    for name,category in config.iteritems():
-    f.write(name + "=" + repr(category) + "\n")
+    f.write("{}={}\n".format(name,repr(category)))
+   f.write("file={}\n".format(repr(aFile)))
    f.write("def log_msg(amsg):\n")
    f.write(" from time import localtime, strftime\n")
    f.write(" with open(generic['logformat'], 'a') as f:\n")
