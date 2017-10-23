@@ -390,7 +390,7 @@ def user_info(aWeb):
 
 def reload(aWeb):
  import sdcp.PackageContainer as PC
- print "<DIV CLASS=z-frame>"
+ print "<DIV CLASS=z-frame STYLE='width:600px;'>"
  if aWeb.get_value('file'):
   from sdcp.core.rest import call as rest_call
   res = rest_call('http://127.0.0.1/rest.cgi','sdcp.rest.base_reload',{'file':aWeb.get_value('file')})
@@ -399,8 +399,22 @@ def reload(aWeb):
    res = rest_call("http://{}/rest.cgi".format(PC.sdcp['svcsrv']),'sdcp.rest.base_reload',{'file':aWeb.get_value('file')})
    print "{}<BR>".format(res)
  else:
+  from git import Repo
+  repo = Repo(PC.repo)
   print "<FORM ID=sdcp_reload>"
   print "Reload: <INPUT NAME=file STYLE='border:none; overflow:visible; background-color: transparent;' TYPE=TEXT VALUE={}>".format(PC.file)
-  print "</FORM>"
   print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=base_reload FRM=sdcp_reload><IMG SRC=images/btn-reboot.png></A>"
+  if len(repo.index.diff(None)) > 0:
+   print "<DIV CLASS=title>Changes</DIV>"
+   print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Old File</DIV><DIV CLASS=th>New File</DIV><DIV CLASS=th>Diff</DIV></DIV><DIV CLASS=tbody>"
+   for info in repo.index.diff(None):
+    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(info.a_path,info.b_path,info.change_type)
+   print "</DIV></DIV>"
+  if len(repo.untracked_files) > 0:
+   print "<DIV CLASS=title>Untracked files</DIV>"
+   print "<DIV CLASS=z-table><DIV CLASS=tbody>"
+   for file in repo.untracked_files:
+    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV></DIV>".format(file)
+   print "</DIV></DIV>"
+  print "</FORM>"
  print "</DIV>"
