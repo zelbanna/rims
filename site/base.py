@@ -259,7 +259,7 @@ def examine_dhcp(aWeb):
 def examine_svc(aWeb):
  import sdcp.PackageContainer as PC
  from sdcp.core.rest import call as rest_call
- logs = rest_call("http://{}/rest.cgi".format(PC.sdcp['svchost']), "sdcp.rest.base_examine_logs",{'count':20,'logs':PC.generic['logformat']})
+ logs = rest_call("http://{}/rest.cgi".format(PC.sdcp['svcsrv']), "sdcp.rest.base_examine_logs",{'count':20,'logs':PC.generic['logformat']})
  for file,res in logs.iteritems():
   print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
   for line in res:

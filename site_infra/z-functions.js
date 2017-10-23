@@ -8,7 +8,7 @@
 // Button functions - accepts proper JScript object:
 //  Set attribute log=true to log operation
 //
-// - [load]   div url spin(true/small/false) [msg = for confirmation] [frm = if doing a post]
+// - [load]   div url [spin=true/div] [msg = for confirmation] [frm = if doing a post]
 // - redirect url
 // - iload    iframe url
 // - logout   url/div

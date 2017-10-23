@@ -78,12 +78,12 @@ div.z-drop {   -ms-touch-action: none; touch-action: none; }
 
 div.z-frame > form > div.z-table { width:99%; }
 div.z-frame > div.z-table {        width:99%; }
-div.z-table {            display: table; }
+div.z-table {            display: table; counter-reset:ztable; }
 div.z-table .thead {     display: table-header-group; }
 div.z-table .thead .th { display: table-cell; border:none; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 4px; }
 div.z-table .tbody {     display: table-row-group; }
-div.z-table .tbody .tr:nth-child(even) { display: table-row; background-color: #FFFFFF; font-size:11px; line-height:20px; }
-div.z-table .tbody .tr:nth-child(odd)  { display: table-row; background-color: #F3F3F3; font-size:11px; line-height:20px; }
+div.z-table .tbody .tr:nth-child(even) { display: table-row; background-color: #FFFFFF; font-size:11px; line-height:20px; counter-increment:ztable; }
+div.z-table .tbody .tr:nth-child(odd)  { display: table-row; background-color: #F3F3F3; font-size:11px; line-height:20px; counter-increment:ztable; }
 div.z-table .tbody .tr .td { display: table-cell; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding: 0px 0px 0px 6px; } 
 div.z-table .tfoot {     display: table-footer-group; }
 
@@ -129,8 +129,7 @@ a.z-warning {    background-color:red!important; }
 
 div.z-overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:1000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
 
-div.z-loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; z-index:1001; }
-div.z-loader-small  { border: 4px solid #D5DADD; border-radius: 50%; border-top: 4px solid #5C6870; width: 20px; height: 20px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; z-index:1001; }
+div.z-loader {        border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; z-index:1001; }
 /* Spin properties */
 @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
