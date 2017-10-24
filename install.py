@@ -44,8 +44,8 @@ def install_sdcp(aFile):
  funcdest  = "{}/".format(PC.generic['docroot'])
  for file in listdir('images'):
   copy("images/" + file, imagedest + file)
- for file in listdir('site_infra'):
-  copy("site_infra/" + file, funcdest + file)
+ for file in listdir('infra'):
+  copy("infra/" + file, funcdest + file)
  print "\nCopied necessary files\n"
 
  import pip
