@@ -74,3 +74,15 @@ def load_infra(aWeb):
    db.do("INSERT INTO subnets(id,subnet,mask,subnet_description,section_id,section_name) VALUES ({0},{1},{2},'{3}',{4},'{5}') ON DUPLICATE KEY UPDATE subnet={1},mask={2}".format(sub['id'],sub['subnet'],sub['mask'],sub['description'],sub['section_id'],sub['section_name']))
   db.commit()
  print "<DIV CLASS=z-frame>synced domains:{}, synced subnets:{}</DIV>".format(len(domains), len(subnets))
+
+#
+#
+#
+def ipam_discrepancy(aWeb):
+ import sdcp.PackageContainer as PC
+ import sdcp.core.extras as EXT
+ from sdcp.core.rest import call as rest_call
+ ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_get_addresses")
+ print "<DIV CLASS=z-frame>"
+ EXT.dict2table(ipam['addresses'])
+ print "</DIV>"

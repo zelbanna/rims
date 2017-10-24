@@ -54,8 +54,8 @@ class DB(object):
   rows = self._curs.fetchall()
   return rows if rows != () else []
 
- def get_all_dict(self, aTarget):
-  return dict(map(lambda x: (x[aTarget],x),self._curs.fetchall()))
+ def get_rows_dict(self, aTarget):
+  return { row[aTarget]: row for row in self._curs.fetchall() }
 
  def get_cursor(self):
   return self._curs

@@ -77,6 +77,16 @@ def remove(aDict):
  return ires
 
 #
+# 
+#
+def get_addresses(aDict):
+ from sdcp.core.dbase import DB
+ with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
+  ires  = db.do("SELECT id, ip_addr, INET_NTOA(ip_addr) as ipasc, description, dns_name FROM ipaddresses")
+  irows = db.get_rows()
+ return ires
+
+#
 # find(ipam_sub_id, consecutive)
 #
 # - Find X consecutive ip from a particular subnet-id
@@ -88,7 +98,7 @@ def find(aDict):
   db.do("SELECT subnet, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id'))) 
   sub = db.get_row()
   db.do("SELECT ip_addr FROM ipaddresses WHERE subnetId = {}".format(aDict.get('ipam_sub_id')))
-  iplist = db.get_all_dict('ip_addr')
+  iplist = db.get_rows_dict('ip_addr')
  subnet = int(sub.get('subnet'))
  start  = None
  ret    = { 'subnet':GL.int2ip(subnet) }

@@ -154,7 +154,7 @@ def discover(aDict):
    # We can do insert only (no update) as either we clear or we skip existing :-)
    sql = "INSERT INTO devices (ip, a_dom_id, ptr_dom_id, ipam_sub_id, hostname, snmp, model, type, fqdn) VALUES ({0},{1},{2},{3},'{4}','{5}','{6}','{7}','{8}')"
    res = db.do("SELECT id,name FROM domains WHERE name LIKE '%arpa%'")
-   ptr_doms = db.get_all_dict('name')
+   ptr_doms = db.get_rows_dict('name')
    for ip,entry in db_new.iteritems():
     ptr_dom_id = ptr_doms.get(GL.ip2arpa(ip),{ 'id':'NULL' })['id']
     db.do(sql.format(GL.ip2int(ip), aDict.get('a_dom_id'), ptr_dom_id, aDict.get('ipam_sub_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn']))
@@ -208,7 +208,7 @@ def find(aDict):
   db.do("SELECT subnet, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id')))
   sub = db.get_row()
   db.do("SELECT ip FROM devices WHERE ipam_sub_id = {}".format(aDict.get('ipam_sub_id')))
-  iplist = db.get_all_dict('ip')
+  iplist = db.get_rows_dict('ip')
  start = None
  ret = { 'subnet':GL.int2ip(sub.get('subnet')) }
  for ip in range(sub.get('subnet') + 1,sub.get('subnet') + 2**(32-sub.get('mask'))-1):
