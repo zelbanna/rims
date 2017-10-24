@@ -367,7 +367,7 @@ def new(aWeb):
  op     = aWeb.get_value('op')
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
- if op:
+ if op == 'new':
   import sdcp.PackageContainer as PC
   from sdcp.rest.device import new as rest_new
   a_dom    = aWeb.get_value('a_dom_id')
@@ -376,6 +376,11 @@ def new(aWeb):
   res  = rest_new(args)
   print res
   PC.log_msg("{} ({}): New device operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_id'),args,res))
+ elif op == 'find':
+  import sdcp.PackageContainer as PC
+  from sdcp.core.rest import call as rest_call
+  res = rest_call(PC.ipam['url'],"sdcp.rest.{}_find".format(PC.ipam['type']),{'ipam_sub_id':aWeb.get_value('ipam_sub_id')})
+  print res['ip']
  else:
   with DB() as db:
    db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet")
@@ -386,10 +391,9 @@ def new(aWeb):
   print "<DIV CLASS=title>Add Device</DIV>"
   print "<DIV CLASS=z-table><DIV CLASS=tbody>"
   print "<FORM ID=device_new_form>"
-  print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
   print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(target)
   print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(arg)
-  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(ip)
+  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT ID=nisse NAME=ip       TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
   for d in domains:
@@ -403,7 +407,8 @@ def new(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
   print "</FORM>"
   print "</DIV></DIV>"
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=device_new_span URL=sdcp.cgi?call=device_new FRM=device_new_form><IMG SRC='images/btn-start.png'></A>&nbsp;"
+  print "<A CLASS='z-btn z-op z-small-btn' TITLE='Create'  DIV=device_new_span URL=sdcp.cgi?call=device_new&op=new  FRM=device_new_form><IMG SRC='images/btn-start.png'></A>"
+  print "<A CLASS='z-btn z-op z-small-btn' TITLE='Find IP' DIV=device_new_span URL=sdcp.cgi?call=device_new&op=find FRM=device_new_form><IMG SRC='images/btn-search.png'></A>"
   print "<SPAN ID=device_new_span style='max-width:400px; font-size:9px; float:right'></SPAN>"
   print "</DIV>"
 

@@ -8,12 +8,13 @@ __version__ = "17.10.4"
 __status__ = "Production"
 
 import sdcp.PackageContainer as PC
+from sdcp.core.dbase import DB
 
 #
 # Call removes name duplicates.. (assume order by name => duplicate names :-))
 #
 def cleanup(aDict):
- from sdcp.core.dbase import DB
+ PC.log_msg("powerdns_cleanup({})".format(aDict))
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
   rows = db.get_rows();
@@ -33,6 +34,7 @@ def cleanup(aDict):
 # dns top lookups
 #
 def top(aDict):
+ PC.log_msg("powerdns_top({})".format(aDict))
  import sdcp.core.genlib as GL
  count = int(aDict.get('count',10))
  fqdn_top = {}                
@@ -58,7 +60,7 @@ def top(aDict):
 # Return domains name + id
 #
 def domains(aDict):
- from sdcp.core.dbase import DB
+ PC.log_msg("powerdns_domains({})".format(aDict))
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT id, name FROM domains")
   rows = db.get_rows()
@@ -68,10 +70,9 @@ def domains(aDict):
 # lookup ( name, a_dom_id, ip)
 #
 def lookup(aDict):
+ PC.log_msg("powerdns_lookup({})".format(aDict))
  import sdcp.core.genlib as GL
- PC.log_msg("DNS  lookup - input:{}".format(aDict.values()))  
  ptr  = GL.ip2arpa(aDict['ip'])
- from sdcp.core.dbase import DB
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr))
   domains = db.get_rows()
@@ -98,13 +99,12 @@ def lookup(aDict):
 # update( ip, name, a_dom_id , a_id, ptr_id )
 #
 def update(aDict):
+ PC.log_msg("powerdns_update({})".format(aDict))
  import sdcp.core.genlib as GL
- PC.log_msg("DNS  update - input:{}".format(aDict.values()))
  from time import strftime
  serial  = strftime("%Y%m%d%H")
  ptr     = GL.ip2ptr(aDict['ip'])
  retvals = {}
- from sdcp.core.dbase import DB
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr.partition('.')[2]))
   domains = db.get_rows()
@@ -135,17 +135,15 @@ def update(aDict):
    retvals['ptr_id'] = db.get_last_id()
 
   db.commit()
- PC.log_msg("DNS  update - results: " + str(retvals))
  return retvals
 
 #
 #
 #
 def remove(aDict):
- PC.log_msg("DNS  remove - input:{}".format(aDict.values()))
+ PC.log_msg("powerdns_remove({})".format(aDict))
  ares = 0
  pres = 0
- from sdcp.core.dbase import DB
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   if aDict['a_id'] != '0':
    ares = db.do("DELETE FROM records WHERE id = '{}' and type = 'A'".format(aDict['a_id']))
