@@ -79,20 +79,20 @@ def load_infra(aWeb):
 #
 #
 def ipam_discrepancy(aWeb):
- import sdcp.PackageContainer as PC
  import sdcp.core.extras as EXT
- from sdcp.core.dbase import DB
- from sdcp.core.rest import call as rest_call
  ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_get_addresses".format(PC.ipam['type']))
- with DB as db:
-  db.do("SELECT id,ip, INET_NTOA(ip) as ipasc, hostname FROM devices")
+ with DB() as db:
+  db.do("SELECT id, ip, INET_NTOA(ip) as ipasc, hostname FROM devices")
   devs = db.get_rows_dict('ip')
  print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=z-table><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>Exists</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
  for row in ipam['addresses']:
   print "<DIV CLASS=tr>"
-  print "<DIV CLASS=td>{}</DIV>".format(ip)
+  print "<DIV CLASS=td>{}</DIV>".format(row['ipasc'])
+  print "<DIV CLASS=td>{}</DIV>".format(row['fqdn'])
+  print "<DIV CLASS=td>{}</DIV>".format(devs.get(row['ip']))
   print "</DIV>"
-  print "</DIV>"
+
  EXT.dict2table(ipam['addresses'])
  print "</DIV></DIV></DIV>"

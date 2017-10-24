@@ -79,7 +79,7 @@ def remove(aDict):
 def get_addresses(aDict):
  PC.log_msg("phpipam_get_addresses({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
-  ires  = db.do("SELECT id, ip_addr, INET_NTOA(ip_addr) as ipasc, description, dns_name FROM ipaddresses")
+  ires  = db.do("SELECT id, ip_addr AS ip, INET_NTOA(ip_addr) as ipasc, description, dns_name AS fqdn FROM ipaddresses")
   irows = db.get_rows()
  return {'addresses':irows, 'res':'OK', 'info':ires }
 

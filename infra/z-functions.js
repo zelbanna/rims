@@ -37,14 +37,12 @@ function btnoperation(event) {
    div.scrollTop(0);
    div.css("overflow-y","hidden");
    div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
-  } else if (spin == "small"){
-   div.append("<DIV CLASS='z-loader-small'></DIV>");
   }
   var frm  = button.getAttribute("frm");
   if(frm) {
-   $.post(url, $("#"+frm).serializeArray() , function(result) { div.html(result); });
+   $.post(url, $("#"+frm).serializeArray() , function(result) { div.html(result); $("div").remove(".z-overlay"); });
   } else
-   div.load(url, function(responseTxt, statusTxt, xhr){ div.css("overflow-y","auto"); });
+   div.load(url, function(responseTxt, statusTxt, xhr){ div.css("overflow-y","auto"); $("div").remove(".z-overlay"); });
  } else if (op == 'redirect') {
   location.replace(url);
  } else if (op == 'submit') {
