@@ -8,12 +8,14 @@ __version__ = "17.10.4"
 __status__ = "Production"
 
 import sdcp.PackageContainer as PC
+import sdcp.core.genlib as GL
+from sdcp.core.dbase import DB
 
 #
 # Should be subnets(target, arg)
 #
 def subnets(aDict):
- from sdcp.core.dbase import DB
+ PC.log_msg("phpipam_subnet({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
   rows = db.get_rows()
@@ -23,11 +25,9 @@ def subnets(aDict):
 # lookup(ip,ipam_sub_id)
 #
 def lookup(aDict):
- PC.log_msg("IPAM lookup - input {}".format(aDict.values()))
- import sdcp.core.genlib as GL
+ PC.log_msg("phpipam_lookup({})".format(aDict))
  ipint   = GL.ip2int(aDict['ip'])
  retvals = { 'ipam_id':'0' }
- from sdcp.core.dbase import DB
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   db.do("SELECT id, dns_name, PTR FROM ipaddresses WHERE ip_addr = {0} AND subnetId = {1}".format(ipint,aDict.get('ipam_sub_id')))
   ipam   = db.get_row()
@@ -41,9 +41,7 @@ def lookup(aDict):
 # update( ipam_sub_id, ipam_id, ip, fqdn, ptr_id )
 #
 def update(aDict):
- PC.log_msg("IPAM update - input:{}".format(aDict.values()))
- import sdcp.core.genlib as GL
- from sdcp.core.dbase import DB
+ PC.log_msg("phpipam_update({})".format(aDict))
  res = {}
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   if aDict.get('ipam_id','0') != '0':
@@ -69,18 +67,17 @@ def update(aDict):
 # remove(ipam_id)
 #
 def remove(aDict):
- from sdcp.core.dbase import DB
+ PC.log_msg("phpipam_remove({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
   db.commit()
- PC.log_msg("IPAM remove - {} -> {}".format(aDict,ires))
  return ires
 
 #
 # 
 #
 def get_addresses(aDict):
- from sdcp.core.dbase import DB
+ PC.log_msg("phpipam_get_addresses({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   ires  = db.do("SELECT id, ip_addr, INET_NTOA(ip_addr) as ipasc, description, dns_name FROM ipaddresses")
   irows = db.get_rows()
@@ -90,29 +87,37 @@ def get_addresses(aDict):
 # find(ipam_sub_id, consecutive)
 #
 # - Find X consecutive ip from a particular subnet-id
-#
+# ipam_sub_id: X
+# consecutive: X
+
 def find(aDict):
- import sdcp.core.genlib as GL
- from sdcp.core.dbase import DB
+ PC.log_msg("phpipam_find({})".format(aDict))
+ sub_id = aDict.get('ipam_sub_id')
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
-  db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id'))) 
+  db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(sub_id))
   sub = db.get_row()
-  db.do("SELECT ip_addr FROM ipaddresses WHERE subnetId = {}".format(aDict.get('ipam_sub_id')))
+  db.do("SELECT ip_addr FROM ipaddresses WHERE subnetId = {}".format(sub_id))
   iplist = db.get_rows_dict('ip_addr')
  subnet = int(sub.get('subnet'))
  start  = None
- ret    = { 'subnet':sub['subasc'] }
+ ret    = { 'subnet':sub['subasc'], 'res':'NOT_OK' }
  for ip in range(subnet + 1, subnet + 2**(32-int(sub.get('mask')))-1):
-  if not iplist.get(str(ip),False):
-   if start:
-    count = count - 1
-    if count == 1:
-     ret['start'] = GL.int2ip(start)
-     ret['end'] = GL.int2ip(start+int(aDict.get('consecutive',1))-1)
-     break
+  if iplist.get(str(ip)):
+   start = None
+  elif not start:
+   count = int(aDict.get('consecutive',1))
+   if count > 1:
+    start = ip
    else:
-    count = int(aDict.get('consecutive'))          
-    start = ip       
-  else:     
-   start = None           
- return ret                            
+    ret['ip'] = GL.int2ip(ip)
+    ret['res'] = 'OK'
+    break
+  else:
+   if count == 2:
+    ret['start'] = GL.int2ip(start)
+    ret['end'] = GL.int2ip(start+int(aDict.get('consecutive'))-1)
+    ret['res'] = 'OK'
+    break
+   else:
+    count = count - 1
+ return ret
