@@ -85,7 +85,7 @@ def ipam_discrepancy(aWeb):
   db.do("SELECT id, ip, INET_NTOA(ip) as ipasc, hostname FROM devices")
   devs = db.get_rows_dict('ip')
  print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>Exists</DIV></DIV>"
+ print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>Exists</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in ipam['addresses']:
   print "<DIV CLASS=tr>"
@@ -93,6 +93,4 @@ def ipam_discrepancy(aWeb):
   print "<DIV CLASS=td>{}</DIV>".format(row['fqdn'])
   print "<DIV CLASS=td>{}</DIV>".format(devs.get(row['ip']))
   print "</DIV>"
-
- EXT.dict2table(ipam['addresses'])
  print "</DIV></DIV></DIV>"
