@@ -34,7 +34,7 @@ def main(aWeb):
     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
    
    print "<A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
-  else: 
+  elif target != 'vm':
    for type in ['pdu','console']:
     db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
     tprows = db.get_rows()
@@ -368,11 +368,14 @@ def new(aWeb):
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  if op:
+  import sdcp.PackageContainer as PC
   from sdcp.rest.device import new as rest_new
   a_dom    = aWeb.get_value('a_dom_id')
   ipam_sub = aWeb.get_value('ipam_sub_id')
-  params =  { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg } 
-  print rest_new(params)
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg } 
+  res  = rest_new(args)
+  print res
+  PC.log_msg("{} ({}): New device operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_id'),args,res))
  else:
   with DB() as db:
    db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet")
