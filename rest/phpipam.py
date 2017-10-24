@@ -95,20 +95,20 @@ def find(aDict):
  import sdcp.core.genlib as GL
  from sdcp.core.dbase import DB
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
-  db.do("SELECT subnet, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id'))) 
+  db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id'))) 
   sub = db.get_row()
   db.do("SELECT ip_addr FROM ipaddresses WHERE subnetId = {}".format(aDict.get('ipam_sub_id')))
   iplist = db.get_rows_dict('ip_addr')
  subnet = int(sub.get('subnet'))
  start  = None
- ret    = { 'subnet':GL.int2ip(subnet) }
+ ret    = { 'subnet':sub['subasc'] }
  for ip in range(subnet + 1, subnet + 2**(32-int(sub.get('mask')))-1):
   if not iplist.get(str(ip),False):
    if start:
     count = count - 1
     if count == 1:
      ret['start'] = GL.int2ip(start)
-     ret['end'] = GL.int2ip(start+int(aDict.get('consecutive'))-1)
+     ret['end'] = GL.int2ip(start+int(aDict.get('consecutive',1))-1)
      break
    else:
     count = int(aDict.get('consecutive'))          
