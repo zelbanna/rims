@@ -84,5 +84,6 @@ def ipam_discrepancy(aWeb):
  from sdcp.core.rest import call as rest_call
  ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_get_addresses".format(PC.ipam['type']))
  print "<DIV CLASS=z-frame>"
- EXT.dict2table(ipam['addresses'])
+ print ipam
+ # EXT.dict2table(ipam['addresses'])
  print "</DIV>"
