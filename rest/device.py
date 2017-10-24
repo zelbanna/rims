@@ -89,7 +89,7 @@ def new(aDict):
  import sdcp.core.genlib as GL
  ipint = GL.ip2int(aDict.get('ip'))
  ptr_dom = GL.ip2arpa(aDict.get('ip'))
- ret = {'res':'not_added', 'info':None}
+ ret = {'res':'NOT_OK', 'info':None}
  with DB() as db:
   in_sub = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(aDict.get('ipam_sub_id'),ipint))
   if in_sub == 0:
@@ -97,22 +97,28 @@ def new(aDict):
   elif aDict.get('hostname') == 'unknown':
    ret['info'] = "Hostname unknown not allowed"
   else:
-   xist = db.do("SELECT id, hostname, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND (ip = {} OR hostname = '{}')".format(aDict.get('ipam_sub_id'),ipint,aDict.get('hostname')))
+   xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND (ip = {} OR hostname = '{}')".format(aDict.get('ipam_sub_id'),ipint,aDict.get('hostname')))
    if xist == 0:
     res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ptr_dom))
     ptr_dom_id = db.get_row().get('id') if res > 0 else 'NULL'
     mac = 0 if not GL.is_mac(aDict.get('mac',False)) else GL.mac2int(aDict['mac'])
-    dbres = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,snmp,model,type,fqdn) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown','unknown')".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_sub_id'),aDict.get('hostname')))
-    devid = db.get_last_id()
+    ret['insert'] = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,snmp,model,type,fqdn) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown','unknown')".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_sub_id'),aDict.get('hostname')))
+    ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
-     db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(devid,aDict.get('arg')))
+     db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
+     ret['rack'] = aDict.get('arg')
+     ret['info'] = "rack"
+    elif aDict.get('target') == 'vm' and aDict.get('arg') == '1':
+     db.do("UPDATE devices SET vm = 1 WHERE id = {}".format(ret['id']))
+     ret['info'] = "vm"
     db.commit()
-    ret['res']  = "added"
-    ret['info'] = "DB:{} ID:{}".format(dbres,devid)
+    ret['res']  = "OK"
    else:
     dev = db.get_row()
-    ret['info']  = "existing"
-    ret['extra'] = "hostname:{0} id:{2} domain:{1}".format(dev['hostname'],dev['a_dom_id'],dev['id'])
+    ret['info']  = "existing"   
+    ret['hostname'] = dev['hostname']
+    ret['id'] = dev['id']
+    ret['ip'] = dev['ipasc']
  return ret
 
 #
