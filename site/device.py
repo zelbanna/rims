@@ -54,7 +54,8 @@ def main(aWeb):
  print "<DIV CLASS=z-content       ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right>" 
- print aWeb.get_include('README.devices.html')
+ from sdcp.core.extras import get_include
+ print get_include('README.devices.html')
  print "</DIV></DIV>"
 
 
@@ -167,11 +168,10 @@ def info(aWeb):
 
  ########################## Data Tables ######################
  
- print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:675px; z-index:101; height:240px; float:left;'>"
+ print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:{}px; z-index:101; height:240px; float:left;'>".format(675 if rack_xist == 1 and not device_data['type'] == 'pdu' else 465)
  # print "<!-- {} -->".format(device_data)
+ # print "<!-- {} -->".format(rack_xist)
  print "<FORM ID=info_form>"
- print "<!-- {} -->".format(rack_xist)
- print "<!-- {} -->".format(ri)
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(1 if ri else 0)
  print "<!-- Reachability Info -->"

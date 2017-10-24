@@ -95,6 +95,7 @@ def weathermap(aWeb):
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"
   print "</DIV>" 
  else:
+  from sdcp.core.extras import get_include
   entry  = PC.weathermap[page]
   graphs = entry.get('graphs')
   if graphs:
@@ -105,7 +106,7 @@ def weathermap(aWeb):
   else:
    print "<DIV CLASS=z-content STYLE='top:0px;'>"
   print "<DIV CLASS=z-frame STYLE='width:auto;'>"
-  print aWeb.get_include('{}.html'.format(page))
+  print get_include('{}.html'.format(page))
   print "</DIV>"
 
 

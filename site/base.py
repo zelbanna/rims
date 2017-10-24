@@ -219,13 +219,14 @@ def examine_ups(aWeb):
 #
 def examine_dns(aWeb):
  import sdcp.PackageContainer as PC
+ import sdcp.core.extras as EXT
  from sdcp.core.rest import call as rest_call
  dnstop = rest_call(PC.dns['url'], "sdcp.rest.{}_top".format(PC.dns['type']), {'count':20})
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN</DIV>"
- aWeb.dict2table(dnstop['top'])
+ EXT.dict2table(dnstop['top'])
  print "</DIV>"
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN per Client</DIV>"
- aWeb.dict2table(dnstop['who'])
+ EXT.dict2table(dnstop['who'])
  print "</DIV>"
 
 #
@@ -233,13 +234,14 @@ def examine_dns(aWeb):
 #
 def examine_dhcp(aWeb):
  import sdcp.PackageContainer as PC
+ import sdcp.core.extras as EXT
  from sdcp.core.rest import call as rest_call
  dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Active Leases</DIV>"
- aWeb.dict2table(dhcp['active'])
+ EXT.dict2table(dhcp['active'])
  print "</DIV>"
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Free/Old Leases</DIV>"
- aWeb.dict2table(dhcp['free']) 
+ EXT.dict2table(dhcp['free']) 
  print "</DIV>"
 
 #

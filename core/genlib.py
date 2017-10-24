@@ -9,13 +9,6 @@ __status__ = "Production"
 
 ################################# Generics ####################################
 
-def get_host(ahost):
- from socket import gethostbyname
- try:
-  return gethostbyname(ahost)
- except:
-  return None
-
 def get_host_name(aIP):
  from socket import gethostbyaddr
  try:
@@ -23,14 +16,6 @@ def get_host_name(aIP):
   return gethostbyaddr(aIP)[0].partition('.')[0]
  except:
   return None
-
-def is_ip(addr):
- from socket import inet_aton
- try:
-  inet_aton(addr)
-  return True
- except:
-  return False
 
 def ip2int(addr):
  from struct import unpack

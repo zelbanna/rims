@@ -1,11 +1,43 @@
 """Module docstring.
 
-Xtra Generic Library
+Extras  Library
 
 """
 __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
+
+
+################################### HTML ######################################
+
+def dict2table(aList):
+ print "<DIV CLASS=z-table><DIV CLASS=thead>"
+ head = aList[0].keys()
+ for th in head:
+  print "<DIV CLASS=th>{}</DIV>".format(th.title())
+ print "</DIV><DIV CLASS=tbody>"
+ for row in aList:
+  print "<DIV CLASS=tr>"
+  for td in head:
+   print "<DIV CLASS=td>{}</DIV>".format(row.get(td,'&nbsp;'))
+  print "</DIV>"
+ print "</DIV>"
+ print "</DIV>"
+
+def get_include(aURL):
+ from urllib import urlopen
+ try:
+  sock = urlopen(aURL)
+  html = sock.read()
+  sock.close()
+  return html
+ except Exception as err:
+  return ""
+
+def get_quote(aString):
+ from urllib import quote_plus
+ return quote_plus(aString)
+
 
 ################################# Generics ####################################
 

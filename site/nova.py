@@ -14,6 +14,7 @@ from sdcp.site.openstack import dict2html
 ################################# Nova ###############################
 #
 def list(aWeb):
+ from sdcp.core.extras import get_quote
  cookie = aWeb.cookie
  token  = cookie.get('os_user_token')
  if not token:
@@ -35,7 +36,7 @@ def list(aWeb):
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th style='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for server in ret['data'].get('servers',None):
-  qserver = aWeb.quote(server['name'])
+  qserver = get_quote(server['name'])
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=nova_action&name=" + qserver + "&id=" + server['id'] + "&op={} SPIN=true>{}</A>"
   print "<DIV CLASS=tr>"
   print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
@@ -143,8 +144,9 @@ def action(aWeb):
  PC.log_msg("nova_action - id:{} op:{} for project:{}".format(id,op,cookie.get('os_project_name')))
 
  if   op == 'info':
+  from sdcp.core.extras import get_quote
   server = controller.call(port,url + "/servers/{}".format(id))['data']['server']
-  qserver = aWeb.quote(server['name'])
+  qserver = get_quote(server['name'])
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=" + id+ "&op={} SPIN=true>{}</A>"
   print "<DIV>"
   print tmpl.format('Details','details','VM Details')

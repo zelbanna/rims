@@ -29,9 +29,9 @@ class ESXi(GenDevice):
   
  def __init__(self,aIP,aID=None):
   GenDevice.__init__(self,aIP,aID,'esxi')
-  from sdcp.core.genlib import get_host_name
+  import sdcp.core.genlib as GL
   # Override log file
-  self._hostname = get_host_name(aIP)
+  self._hostname = GL.get_host_name(aIP)
   self._logfile = PC.esxi['logformat'].format(self._hostname)
   self._sshclient = None
   self.backuplist = []

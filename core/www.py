@@ -86,10 +86,6 @@ class Web(object):
 
  ############################## CGI/Web functions ###############################
 
- def quote(self,aString):
-  from urllib import quote_plus
-  return quote_plus(aString)
-
  def get_args2dict_except(self,aexceptlist = []):
   keys = self.form.keys()
   for exc in aexceptlist:
@@ -114,27 +110,3 @@ class Web(object):
    if not key in aexceptlist:
     reload = reload + "&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key))
   return reload[1:]
-
- def get_include(self,aurl):
-  from urllib import urlopen
-  try:
-   sock = urlopen(aurl)
-   html = sock.read()
-   sock.close()
-   return html
-  except Exception as err:
-   return ""
-
- def dict2table(self,aList):
-  print "<DIV CLASS=z-table><DIV CLASS=thead>"
-  head = aList[0].keys()
-  for th in head:
-   print "<DIV CLASS=th>{}</DIV>".format(th.title())
-  print "</DIV><DIV CLASS=tbody>"
-  for row in aList:
-   print "<DIV CLASS=tr>"
-   for td in head:
-    print "<DIV CLASS=td>{}</DIV>".format(row.get(td,'&nbsp;'))
-   print "</DIV>"
-  print "</DIV>"
-  print "</DIV>"
