@@ -19,37 +19,40 @@ def main(aWeb):
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL=sdcp.cgi?call=graph_list{0}>Graphing</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
- with DB() as db:
-  if target == 'rack_id':
-   db.do("SELECT racks.name, fk_pdu_1, fk_pdu_2, INET_NTOA(consoles.ip) as con_ip FROM racks LEFT JOIN consoles ON consoles.id = racks.fk_console WHERE racks.id= '{}'".format(arg))
-   data = db.get_row()
-   if data.get('con_ip'):
-    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
-   if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
-    res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
-    rows = db.get_rows()
-    pdus = ""
-    for row in rows:
-     pdus = pdus + "&pdulist=" + row.get('ip')
-    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
-   
-   print "<A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
-  elif target != 'vm':
-   for type in ['pdu','console']:
-    db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
-    tprows = db.get_rows()
-    if len(tprows) > 0:
-     arglist = "call={}_list".format(type)
-     for row in tprows:
-      arglist = arglist + "&{}list=".format(type) + row['ip']
-     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
-
- print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
- print "<A CLASS='z-right z-op' DIV=div_content_right MSG='Discover devices?' URL='sdcp.cgi?call=device_discover'>Device Discovery</A>"
- print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=pdu_list_pdus'>PDUs</A>"
- print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list_consoles'>Consoles</A>"
- print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list_racks'>Racks</A>"
- print "<SPAN CLASS='z-right z-navinfo'>Configuration:</SPAN>"
+ print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=base_list_bookings'>Bookings</A>"
+ if target == 'vm':
+  print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
+ else:
+  with DB() as db:
+   if target == 'rack_id':
+    res = db.do("SELECT racks.name, fk_pdu_1, fk_pdu_2, INET_NTOA(consoles.ip) as con_ip FROM racks LEFT JOIN consoles ON consoles.id = racks.fk_console WHERE racks.id= '{}'".format(arg))
+    if res > 0:
+     data = db.get_row()
+     if data.get('con_ip'):
+      print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
+     if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
+      res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
+      rows = db.get_rows()
+      pdus = ""
+      for row in rows:
+       pdus = pdus + "&pdulist=" + row.get('ip')
+      print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)  
+     print "<A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
+   else:
+    for type in ['pdu','console']:
+     res = db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
+     if res > 0:
+      tprows = db.get_rows()
+      arglist = "call={}_list".format(type)
+      for row in tprows:
+       arglist = arglist + "&{}list=".format(type) + row['ip']
+      print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
+  print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
+  print "<A CLASS='z-right z-op' DIV=div_content_right MSG='Discover devices?' URL='sdcp.cgi?call=device_discover'>Device Discovery</A>"
+  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=pdu_list_pdus'>PDUs</A>"
+  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list_consoles'>Consoles</A>"
+  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list_racks'>Racks</A>"
+  print "<SPAN CLASS='z-right z-navinfo'>Configuration:</SPAN>"
  print "</DIV>"
  print "<DIV CLASS=z-content       ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
