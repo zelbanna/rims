@@ -368,14 +368,16 @@ def new(aWeb):
  name   = aWeb.get_value('hostname','unknown')
  mac    = aWeb.get_value('mac',"00:00:00:00:00:00")
  op     = aWeb.get_value('op')
- target = aWeb.get_value('target')
- arg    = aWeb.get_value('arg')
  if op == 'new':
   import sdcp.PackageContainer as PC
   from sdcp.rest.device import new as rest_new
-  a_dom    = aWeb.get_value('a_dom_id')
-  ipam_sub = aWeb.get_value('ipam_sub_id')
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg } 
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb.get_value('a_dom_id'), 'ipam_sub_id':aWeb.get_value('ipam_sub_id') }
+  if aWeb.get_value('vm'):
+   args['vm'] = 1
+  else:
+   args['target'] = aWeb.get_value('target')
+   args['arg']    = aWeb.get_value('arg')
+   args['vm'] = 0
   res  = rest_new(args)
   print res
   PC.log_msg("{} ({}): New device operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_id'),args,res))
@@ -390,15 +392,13 @@ def new(aWeb):
    subnets = db.get_rows()
    db.do("SELECT id, name FROM domains")
    domains = db.get_rows()
-  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:180px;'>"
+  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:200px;'>"
   print "<DIV CLASS=title>Add Device</DIV>"
   print "<DIV CLASS=z-table><DIV CLASS=tbody>"
   print "<FORM ID=device_new_form>"
-  print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(target)
-  print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(arg)
-  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT ID=nisse NAME=ip       TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(ip)
+  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
-  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):
     print "<OPTION VALUE={0}>{1}</OPTION>".format(d.get('id'),d.get('name'))
@@ -408,6 +408,11 @@ def new(aWeb):
    print "<OPTION VALUE={0}>{1}/{2} ({3})</OPTION>".format(s.get('id'),s.get('subasc'),s.get('mask'),s.get('subnet_description'))
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
+  if aWeb.get_value('target') == 'rack_id':
+   print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(aWeb.get_value('target'))
+   print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(aWeb.get_value('arg'))
+  else:
+   print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV  CLASS=td><INPUT NAME=vm  TYPE=CHECKBOX VALUE=1  {0} ></DIV></DIV>".format("checked" if aWeb.get_value('target') == 'vm' else '')
   print "</FORM>"
   print "</DIV></DIV>"
   print "<A CLASS='z-btn z-op z-small-btn' TITLE='Create'  DIV=device_new_span URL=sdcp.cgi?call=device_new&op=new  FRM=device_new_form><IMG SRC='images/btn-start.png'></A>"
