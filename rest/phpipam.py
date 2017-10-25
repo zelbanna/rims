@@ -42,26 +42,41 @@ def lookup(aDict):
 #
 def update(aDict):
  PC.log_msg("phpipam_update({})".format(aDict))
- res = {}
+ ret = {}
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   if aDict.get('ipam_id','0') != '0':
    db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict['ptr_id'],aDict['fqdn'],aDict['ipam_id']))
-   res['ipam_op'] = 'update'
-   res['ipam_id'] = aDict['ipam_id']
+   ret['ipam_op'] = 'update'
+   ret['ipam_id'] = aDict['ipam_id']
   else:
    ipint = GL.ip2int(aDict['ip'])
-   db.do("SELECT id FROM ipaddresses WHERE ip_addr = '{0}' AND subnetId = {1}".format(ipint,aDict['ipam_sub_id']))
-   entry = db.get_row()
-   if entry:
+   xist  = db.do("SELECT id FROM ipaddresses WHERE ip_addr = '{0}' AND subnetId = {1}".format(ipint,aDict['ipam_sub_id']))
+   if xist > 0:
+    entry = db.get_row()
     db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict['ptr_id'],aDict['fqdn'],entry['id']))
-    res['ipam_op'] = 'update_existed'
-    res['ipam_id'] = entry['id']
+    ret['ipam_op'] = 'update_existed'
+    ret['ipam_id'] = entry['id']
    else:
     db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name,PTR) VALUES('{}','{}','{}','{}')".format(aDict['ipam_sub_id'],ipint,aDict['fqdn'],aDict['ptr_id']))
-    res['ipam_op'] = "insert"
-    res['ipam_id'] = db.get_last_id()
+    ret['ipam_op'] = "insert"
+    ret['ipam_id'] = db.get_last_id()
   db.commit()
- return res
+ return ret
+
+#
+# new(ipint, ip, fqdn, ipam_sub_id)
+#
+def new(aDict):
+ PC.log_msg("phpipam_new({})".format(aDict))
+ ret = {'res':'NOT_OK'}
+ with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
+  ret['existed'] = db.do("SELECT id FROM ipaddresses WHERE ip_addr = '{0}' AND subnetId = {1}".format(aDict['ipint'],aDict['ipam_sub_id']))
+  if ret['existed'] == 0:
+   ret['insert'] = db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name) VALUES('{}','{}','{}')".format(aDict['ipam_sub_id'],aDict['ipint'],aDict['fqdn']))
+   ret['id']  = db.get_last_id()
+   ret['res'] = 'OK'
+   db.commit()
+ return ret        
 
 #
 # remove(ipam_id)
