@@ -19,37 +19,40 @@ def main(aWeb):
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL=sdcp.cgi?call=graph_list{0}>Graphing</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
- with DB() as db:
-  if target == 'rack_id':
-   db.do("SELECT racks.name, fk_pdu_1, fk_pdu_2, INET_NTOA(consoles.ip) as con_ip FROM racks LEFT JOIN consoles ON consoles.id = racks.fk_console WHERE racks.id= '{}'".format(arg))
-   data = db.get_row()
-   if data.get('con_ip'):
-    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
-   if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
-    res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
-    rows = db.get_rows()
-    pdus = ""
-    for row in rows:
-     pdus = pdus + "&pdulist=" + row.get('ip')
-    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)
-   
-   print "<A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
-  elif target != 'vm':
-   for type in ['pdu','console']:
-    db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
-    tprows = db.get_rows()
-    if len(tprows) > 0:
-     arglist = "call={}_list".format(type)
-     for row in tprows:
-      arglist = arglist + "&{}list=".format(type) + row['ip']
-     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
-
- print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
- print "<A CLASS='z-right z-op' DIV=div_content_right MSG='Discover devices?' URL='sdcp.cgi?call=device_discover'>Device Discovery</A>"
- print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=pdu_list_pdus'>PDUs</A>"
- print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list_consoles'>Consoles</A>"
- print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list_racks'>Racks</A>"
- print "<SPAN CLASS='z-right z-navinfo'>Configuration:</SPAN>"
+ print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=base_list_bookings'>Bookings</A>"
+ if target == 'vm':
+  print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
+ else:
+  with DB() as db:
+   if target == 'rack_id':
+    res = db.do("SELECT racks.name, fk_pdu_1, fk_pdu_2, INET_NTOA(consoles.ip) as con_ip FROM racks LEFT JOIN consoles ON consoles.id = racks.fk_console WHERE racks.id= '{}'".format(arg))
+    if res > 0:
+     data = db.get_row()
+     if data.get('con_ip'):
+      print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
+     if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
+      res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
+      rows = db.get_rows()
+      pdus = ""
+      for row in rows:
+       pdus = pdus + "&pdulist=" + row.get('ip')
+      print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)  
+     print "<A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
+   else:
+    for type in ['pdu','console']:
+     res = db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
+     if res > 0:
+      tprows = db.get_rows()
+      arglist = "call={}_list".format(type)
+      for row in tprows:
+       arglist = arglist + "&{}list=".format(type) + row['ip']
+      print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
+  print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
+  print "<A CLASS='z-right z-op' DIV=div_content_right MSG='Discover devices?' URL='sdcp.cgi?call=device_discover'>Device Discovery</A>"
+  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=pdu_list_pdus'>PDUs</A>"
+  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list_consoles'>Consoles</A>"
+  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list_racks'>Racks</A>"
+  print "<SPAN CLASS='z-right z-navinfo'>Configuration:</SPAN>"
  print "</DIV>"
  print "<DIV CLASS=z-content       ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
@@ -365,14 +368,16 @@ def new(aWeb):
  name   = aWeb.get_value('hostname','unknown')
  mac    = aWeb.get_value('mac',"00:00:00:00:00:00")
  op     = aWeb.get_value('op')
- target = aWeb.get_value('target')
- arg    = aWeb.get_value('arg')
  if op == 'new':
   import sdcp.PackageContainer as PC
   from sdcp.rest.device import new as rest_new
-  a_dom    = aWeb.get_value('a_dom_id')
-  ipam_sub = aWeb.get_value('ipam_sub_id')
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom, 'ipam_sub_id':ipam_sub, 'target':target, 'arg':arg } 
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb.get_value('a_dom_id'), 'ipam_sub_id':aWeb.get_value('ipam_sub_id') }
+  if aWeb.get_value('vm'):
+   args['vm'] = 1
+  else:
+   args['target'] = aWeb.get_value('target')
+   args['arg']    = aWeb.get_value('arg')
+   args['vm'] = 0
   res  = rest_new(args)
   print res
   PC.log_msg("{} ({}): New device operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_id'),args,res))
@@ -387,15 +392,13 @@ def new(aWeb):
    subnets = db.get_rows()
    db.do("SELECT id, name FROM domains")
    domains = db.get_rows()
-  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:180px;'>"
+  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:200px;'>"
   print "<DIV CLASS=title>Add Device</DIV>"
   print "<DIV CLASS=z-table><DIV CLASS=tbody>"
   print "<FORM ID=device_new_form>"
-  print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(target)
-  print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(arg)
-  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT ID=nisse NAME=ip       TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(ip)
+  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
-  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):
     print "<OPTION VALUE={0}>{1}</OPTION>".format(d.get('id'),d.get('name'))
@@ -405,6 +408,11 @@ def new(aWeb):
    print "<OPTION VALUE={0}>{1}/{2} ({3})</OPTION>".format(s.get('id'),s.get('subasc'),s.get('mask'),s.get('subnet_description'))
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
+  if aWeb.get_value('target') == 'rack_id':
+   print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(aWeb.get_value('target'))
+   print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(aWeb.get_value('arg'))
+  else:
+   print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV  CLASS=td><INPUT NAME=vm  TYPE=CHECKBOX VALUE=1  {0} ></DIV></DIV>".format("checked" if aWeb.get_value('target') == 'vm' else '')
   print "</FORM>"
   print "</DIV></DIV>"
   print "<A CLASS='z-btn z-op z-small-btn' TITLE='Create'  DIV=device_new_span URL=sdcp.cgi?call=device_new&op=new  FRM=device_new_form><IMG SRC='images/btn-start.png'></A>"

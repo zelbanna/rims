@@ -8,6 +8,7 @@ __version__ = "17.10.4"
 __status__ = "Production"
 
 from sdcp.core.dbase import DB
+import sdcp.PackageContainer as PC
 
 #
 # lookup_info(id)
@@ -30,7 +31,6 @@ def lookup_info(aDict):
    ret['base'] ='True'
  
   if not name == 'unknown':
-   import sdcp.PackageContainer as PC
    from sdcp.core.rest import call as rest_call
    vals   = rest_call(PC.dns['url'],"sdcp.rest.{}_lookup".format(PC.dns['type']),{ 'ip':ip, 'name':name, 'a_dom_id':dev.get('a_dom_id') })
    a_id   = vals.get('a_id','0')
@@ -50,7 +50,6 @@ def lookup_info(aDict):
 #
 def update_info(aDict):
  import sdcp.core.genlib as GL
- from sdcp.core.dbase import DB
  id     = aDict.pop('id',None)
  racked = aDict.pop('racked',None)
  with DB() as db:
@@ -86,31 +85,36 @@ def update_info(aDict):
 # new(ip, hostname, ipam_sub_id, a_dom_id, mac, target, arg)
 #
 def new(aDict):
+ PC.log_msg("device_new({})".format(aDict))
  import sdcp.core.genlib as GL
- ipint = GL.ip2int(aDict.get('ip'))
- ptr_dom = GL.ip2arpa(aDict.get('ip'))
+ ip    = aDict.get('ip')
+ ipint = GL.ip2int(ip)
+ ipam_sub_id = aDict.get('ipam_sub_id')
+ ptr_dom = GL.ip2arpa(ip)
  ret = {'res':'NOT_OK', 'info':None}
  with DB() as db:
-  in_sub = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(aDict.get('ipam_sub_id'),ipint))
+  in_sub = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(ipam_sub_id,ipint))
   if in_sub == 0:
    ret['info'] = "IP not in subnet range"
   elif aDict.get('hostname') == 'unknown':
    ret['info'] = "Hostname unknown not allowed"
   else:
-   xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND (ip = {} OR hostname = '{}')".format(aDict.get('ipam_sub_id'),ipint,aDict.get('hostname')))
+   xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND (ip = {} OR hostname = '{}')".format(ipam_sub_id,ipint,aDict.get('hostname')))
    if xist == 0:
+    from sdcp.core.rest import call as rest_call
+    res = db.do("SELECT name FROM domains WHERE id = '{}'".format(aDict.get('a_dom_id')))
+    dom = db.get_row()
+    fqdn = "{}.{}".format(aDict['hostname'],dom['name'])
+    ret['ipam'] = rest_call(PC.ipam['url'],"sdcp.rest.{}_new".format(PC.ipam['type']),{'ip':ip, 'ipint':ipint, 'ipam_sub_id': ipam_sub_id,'fqdn':fqdn } )
     res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ptr_dom))
     ptr_dom_id = db.get_row().get('id') if res > 0 else 'NULL'
     mac = 0 if not GL.is_mac(aDict.get('mac',False)) else GL.mac2int(aDict['mac'])
-    ret['insert'] = db.do("INSERT INTO devices (ip,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,snmp,model,type,fqdn) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown','unknown')".format(ipint,mac,aDict.get('a_dom_id'),ptr_dom_id,aDict.get('ipam_sub_id'),aDict.get('hostname')))
+    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,ptr_dom_id,ipam_sub_id,ipam_id,hostname,fqdn,snmp,model,type) VALUES({},{},{},{},{},{},{},'{}','{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict.get('a_dom_id'),ptr_dom_id,ipam_sub_id,ret['ipam'].get('id',0),aDict['hostname'],fqdn))
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
      db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
      ret['rack'] = aDict.get('arg')
      ret['info'] = "rack"
-    elif aDict.get('target') == 'vm' and aDict.get('arg') == '1':
-     db.do("UPDATE devices SET vm = 1 WHERE id = {}".format(ret['id']))
-     ret['info'] = "vm"
     db.commit()
     ret['res']  = "OK"
    else:
@@ -128,10 +132,9 @@ def discover(aDict):
  from time import time
  from threading import Thread, BoundedSemaphore
  from sdcp.devices.DevHandler import device_detect
- import sdcp.PackageContainer as PC
  import sdcp.core.genlib as GL
+ PC.log_msg("device_discover({})".format(aDict))
  start_time = int(time())
- PC.log_msg("device_discover: " + str(aDict))
  ip_start = aDict.get('start')
  ip_end   = aDict.get('end')
  with DB() as db:
@@ -175,13 +178,13 @@ def discover(aDict):
 # remove(id)
 #
 def remove(aDict):
+ PC.log_msg("device_remove({})".format(aDict))
  with DB() as db:
   res = db.do("SELECT hostname, mac, a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
   ddi = db.get_row()
   res = db.do("DELETE FROM devices WHERE id = '{0}'".format(aDict['id']))
   ret = { 'device': res }
   db.commit()
- import sdcp.PackageContainer as PC
  from sdcp.core.rest import call as rest_call
  if (ddi['a_id'] != '0') or (ddi['ptr_id'] != '0'):
   dres = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']), { 'a_id':ddi['a_id'], 'ptr_id':ddi['ptr_id'] })
@@ -209,6 +212,7 @@ def dump_db(aDict):
 # find(ipam_sub_id, consecutive)
 #
 def find(aDict):
+ PC.log_msg("device_find({})".format(aDict))
  import sdcp.core.genlib as GL
  with DB() as db:
   db.do("SELECT subnet, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id')))
