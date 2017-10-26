@@ -64,33 +64,75 @@ def sync(aWeb):
 #
 #
 def load_infra(aWeb):
- domains = rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
- subnets = rest_call(PC.ipam['url'],"sdcp.rest.{}_subnets".format(PC.ipam['type']))
+ dns_domains  = rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
+ ipam_subnets = rest_call(PC.ipam['url'],"sdcp.rest.{}_subnets".format(PC.ipam['type']))
+ print "<DIV CLASS=z-frame>"
  with DB() as db:
-  for dom in domains:
+  db.do("SELECT id,name FROM domains")
+  sdcp_domains = db.get_rows_dict('id')
+  for dom in dns_domains:
+   add = sdcp_domains.pop(dom['id'],None)
+   if not add:
+    print "Added: {}".format(dom)
    db.do("INSERT INTO domains(id,name) VALUES ({0},'{1}') ON DUPLICATE KEY UPDATE name='{1}'".format(dom['id'],dom['name']))
-  db.commit()
-  for sub in subnets:
+  print "<SPAN>Domains - Inserted:{}, Remaining old:{}</SPAN><BR>".format(len(dns_domains),len(sdcp_domains))
+  for dom,entry in sdcp_domains.iteritems():
+   print "Delete {} -> {}<BR>".format(dom,entry)
+   db.do("DELETE FROM domains WHERE id = '{}'".format(dom))
+  db.do("SELECT id,subnet,section_name FROM subnets")
+  sdcp_subnets = db.get_rows_dict('id')
+  for sub in ipam_subnets:
+   add = sdcp_subnets.pop(sub['id'],None)
+   if not add:
+    print "Added: {}".format(sub)
    db.do("INSERT INTO subnets(id,subnet,mask,subnet_description,section_id,section_name) VALUES ({0},{1},{2},'{3}',{4},'{5}') ON DUPLICATE KEY UPDATE subnet={1},mask={2}".format(sub['id'],sub['subnet'],sub['mask'],sub['description'],sub['section_id'],sub['section_name']))
+  print "<SPAN>Subnets - Inserted:{}, Remaining old:{}</SPAN><BR>".format(len(ipam_subnets),len(sdcp_subnets))
+  for sub,entry in sdcp_subnets.iteritems():
+   print "Delete {} -> {}<BR>".format(sub,entry)
+   db.do("DELETE FROM subnets WHERE id = '{}'".format(sub))
   db.commit()
- print "<DIV CLASS=z-frame>synced domains:{}, synced subnets:{}</DIV>".format(len(domains), len(subnets))
-
+ print "</DIV>"
 #
 #
 #
 def ipam_discrepancy(aWeb):
- import sdcp.core.extras as EXT
  ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_get_addresses".format(PC.ipam['type']))
  with DB() as db:
-  db.do("SELECT id, ip, INET_NTOA(ip) as ipasc, hostname FROM devices")
+  db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id ORDER BY ip")
   devs = db.get_rows_dict('ip')
  print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>Exists</DIV></DIV>"
+ print "<DIV CLASS=title>IPAM consistency</DIV>"
+ print "<SPAN ID=span_ipam STYLE='font-size:9px;'>&nbsp;</SPAN>"
+ print "<DIV CLASS=z-table STYLE='width:auto;'>"
  print "<DIV CLASS=tbody>"
  for row in ipam['addresses']:
-  print "<DIV CLASS=tr>"
-  print "<DIV CLASS=td>{}</DIV>".format(row['ipasc'])
-  print "<DIV CLASS=td>{}</DIV>".format(row['fqdn'])
-  print "<DIV CLASS=td>{}</DIV>".format(devs.get(row['ip']))
-  print "</DIV>"
- print "</DIV></DIV></DIV>"
+  dev = devs.pop(int(row['ip']),None)
+  if not dev or dev.get('fqdn') != row['fqdn']:
+   print "<DIV CLASS=tr>"
+   print "<!-- {} -->".format(row)
+   print "<DIV CLASS=td>{}</DIV>".format(row['ipasc'])
+   print "<DIV CLASS=td>{}</DIV>".format(row['fqdn'])
+   print "<DIV CLASS=td>{}</DIV>".format(row['id'])
+   print "<DIV CLASS=td>{}</DIV>".format(row['ipam_sub_id'])
+   print "<DIV CLASS=td>{}</DIV>".format(row['description'])
+   print "<DIV CLASS=td>&nbsp;"
+   print "<A CLASS='z-op z-btn z-small-btn' DIV=span_ipam MSG='Are you sure?' URL='sdcp.cgi?call=ddi_ipam_remove&id={}'><IMG SRC=images/btn-remove.png></A>".format(row['id'])
+   if row['fqdn']:
+    hostname,_,domain = row['fqdn'].partition('.')
+    print "<!-- {} -->".format(domain)
+    print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right URL='sdcp.cgi?call=device_new&ip={}&hostname={}&ipam_id={}&ipam_sub_id={}{}'><IMG SRC=images/btn-add.png></A>".format(row['ipasc'],hostname,row['id'],row['ipam_sub_id'],"&domain={}".format(domain) if domain else "")
+   print "</DIV></DIV>"
+ print "</DIV></DIV>"
+ if len(devs) > 0:
+  print "<DIV CLASS=title>Extra only in SDCP</DIV>"
+  import sdcp.core.extras as EXT
+  EXT.dict2table(devs)
+ print "</DIV>"
+ 
+#
+#
+#
+def ipam_remove(aWeb):
+ id = aWeb.get_value('id')
+ res = rest_call(PC.ipam['url'],"sdcp.rest.{}_remove".format(PC.ipam['type']),{'ipam_id':id})
+ print "Remove {} - Results:{}".format(id,res)

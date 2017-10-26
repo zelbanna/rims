@@ -368,10 +368,11 @@ def new(aWeb):
  name   = aWeb.get_value('hostname','unknown')
  mac    = aWeb.get_value('mac',"00:00:00:00:00:00")
  op     = aWeb.get_value('op')
+ sub_id = aWeb.get_value('ipam_sub_id')
  if op == 'new':
   import sdcp.PackageContainer as PC
   from sdcp.rest.device import new as rest_new
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb.get_value('a_dom_id'), 'ipam_sub_id':aWeb.get_value('ipam_sub_id') }
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb.get_value('a_dom_id'), 'ipam_sub_id':sub_id, 'ipam_id':aWeb.get_value('ipam_id') }
   if aWeb.get_value('vm'):
    args['vm'] = 1
   else:
@@ -384,9 +385,10 @@ def new(aWeb):
  elif op == 'find':
   import sdcp.PackageContainer as PC
   from sdcp.core.rest import call as rest_call
-  res = rest_call(PC.ipam['url'],"sdcp.rest.{}_find".format(PC.ipam['type']),{'ipam_sub_id':aWeb.get_value('ipam_sub_id')})
+  res = rest_call(PC.ipam['url'],"sdcp.rest.{}_find".format(PC.ipam['type']),{'ipam_sub_id':sub_id})
   print res['ip']
  else:
+  domain = aWeb.get_value('domain')
   with DB() as db:
    db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet")
    subnets = db.get_rows()
@@ -394,18 +396,20 @@ def new(aWeb):
    domains = db.get_rows()
   print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:200px;'>"
   print "<DIV CLASS=title>Add Device</DIV>"
+  print "<!-- {} -->".format(aWeb.get_args2dict_except())
   print "<DIV CLASS=z-table><DIV CLASS=tbody>"
   print "<FORM ID=device_new_form>"
+  print "<INPUT TYPE=HIDDEN NAME=ipam_id VALUE={}>".format(aWeb.get_value('ipam_id',0))
   print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):
-    print "<OPTION VALUE={0}>{1}</OPTION>".format(d.get('id'),d.get('name'))
+    print "<OPTION VALUE={} {}>{}</OPTION>".format(d['id'],"selected" if d['name'] == domain else "",d['name'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_sub_id>"
   for s in subnets:
-   print "<OPTION VALUE={0}>{1}/{2} ({3})</OPTION>".format(s.get('id'),s.get('subasc'),s.get('mask'),s.get('subnet_description'))
+   print "<OPTION VALUE={} {}>{}/{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == sub_id else "", s.get('subasc'),s.get('mask'),s.get('subnet_description'))
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
   if aWeb.get_value('target') == 'rack_id':
