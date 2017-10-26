@@ -64,15 +64,15 @@ def update(aDict):
  return ret
 
 #
-# new(ipint, ip, fqdn, ipam_sub_id)
+# new(ip, fqdn, ipam_sub_id)
 #
 def new(aDict):
  PC.log_msg("phpipam_new({})".format(aDict))
  ret = {'res':'NOT_OK'}
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
-  ret['existed'] = db.do("SELECT id FROM ipaddresses WHERE ip_addr = '{0}' AND subnetId = {1}".format(aDict['ipint'],aDict['ipam_sub_id']))
+  ret['existed'] = db.do("SELECT id FROM ipaddresses WHERE ip_addr = INET_ATON('{0}') AND subnetId = {1}".format(aDict['ip'],aDict['ipam_sub_id']))
   if ret['existed'] == 0:
-   ret['insert'] = db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name) VALUES('{}','{}','{}')".format(aDict['ipam_sub_id'],aDict['ipint'],aDict['fqdn']))
+   ret['insert'] = db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name) VALUES('{}',INET_ATON('{}'),'{}')".format(aDict['ipam_sub_id'],aDict['ip'],aDict['fqdn']))
    ret['id']  = db.get_last_id()
    ret['res'] = 'OK'
    db.commit()

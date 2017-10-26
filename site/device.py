@@ -379,10 +379,8 @@ def new(aWeb):
 
   if args['ipam_id'] == '0':
    from sdcp.core.rest import call as rest_call
-   import sdcp.core.genlib as GL
-   ipint = GL.ip2int(ip)
-   ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_new".format(PC.ipam['type']),{'ip':ip, 'ipint':ipint, 'ipam_sub_id':sub_id ,'fqdn':fqdn } )
-   args['ipam_id'] = str(ipam.get['id'])
+   ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_new".format(PC.ipam['type']),{'ip':ip, 'ipam_sub_id':sub_id ,'fqdn':fqdn } )
+   args['ipam_id'] = str(ipam.get('id'))
 
   if aWeb.get_value('vm'):
    args['vm'] = 1
@@ -392,7 +390,7 @@ def new(aWeb):
    args['vm'] = 0
   res  = rest_new(args)
   print "DB:{}".format(res)
-  PC.log_msg("{} ({}): New device operation:[{}] -> [{},{}]".format(aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_id'),args,res))
+  PC.log_msg("{} ({}): New device operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_id'),args,res))
  elif op == 'find':
   import sdcp.PackageContainer as PC
   from sdcp.core.rest import call as rest_call
