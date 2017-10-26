@@ -25,7 +25,7 @@ def cleanup(aDict):
     db.do("DELETE from records WHERE id = '{}'".format(row['id'] if row['id'] > previous['id'] else previous['id']))
     row.pop('id')
     remove.append(row)
-   else:              
+   else:
     previous = row
   db.commit()
  return {'removed':remove}
@@ -37,7 +37,7 @@ def top(aDict):
  PC.log_msg("powerdns_top({})".format(aDict))
  import sdcp.core.genlib as GL
  count = int(aDict.get('count',10))
- fqdn_top = {}                
+ fqdn_top = {}
  fqdn_who = {}
  with open(PC.dns['logfile'],'r') as log:
   for line in log:
@@ -45,7 +45,7 @@ def top(aDict):
    if not parts[5] == 'Remote':
     continue
    fqdn  = parts[8].split('|')[0][1:]
-   fqdn_top[fqdn] = fqdn_top.get(fqdn,0)+1     
+   fqdn_top[fqdn] = fqdn_top.get(fqdn,0)+1
    fqdn_who[fqdn+"#"+parts[6]] = fqdn_who.get(fqdn+"#"+parts[6],0)+1
  from collections import Counter
  top = map(lambda x: {'fqdn':x[0],'count':x[1]}, Counter(fqdn_top).most_common(count))
@@ -121,17 +121,17 @@ def update(aDict):
    retvals['a_id'] = aDict['a_id']
    db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(fqdn,aDict['ip'],serial,aDict['a_id']))
   else:
-   db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','A','{}',3600,'{}')".format(aDict['a_dom_id'],fqdn,aDict['ip'],serial))
    retvals['a_op'] = "insert"
+   db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','A','{}',3600,'{}')".format(aDict['a_dom_id'],fqdn,aDict['ip'],serial))
    retvals['a_id'] = db.get_last_id()
 
-  if atr(aDict.get('ptr_id','0')) != '0':
+  if str(aDict.get('ptr_id','0')) != '0':
    retvals['ptr_id'] = aDict['ptr_id']
    retvals['ptr_op'] = "update"
    db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(ptr,fqdn,serial,aDict['ptr_id']))
   elif ptr_dom_id:
-   db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','PTR','{}',3600,'{}')".format(ptr_dom_id,ptr,fqdn,serial))
    retvals['ptr_op'] = "insert"
+   db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','PTR','{}',3600,'{}')".format(ptr_dom_id,ptr,fqdn,serial))
    retvals['ptr_id'] = db.get_last_id()
 
   db.commit()
