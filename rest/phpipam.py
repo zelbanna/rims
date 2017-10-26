@@ -76,7 +76,10 @@ def new(aDict):
    ret['id']  = db.get_last_id()
    ret['res'] = 'OK'
    db.commit()
- return ret        
+  else:
+   data = db.get_row()
+   ret['id'] = data['id']
+ return ret
 
 #
 # remove(ipam_id)

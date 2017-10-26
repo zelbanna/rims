@@ -372,7 +372,18 @@ def new(aWeb):
  if op == 'new':
   import sdcp.PackageContainer as PC
   from sdcp.rest.device import new as rest_new
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb.get_value('a_dom_id'), 'ipam_sub_id':sub_id, 'ipam_id':aWeb.get_value('ipam_id') }
+
+  a_dom_id,_,domain = aWeb.get_value('a_dom_id').partition('_')
+  fqdn = "{}.{}".format(name,domain)
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'fqdn':fqdn, 'a_dom_id':a_dom_id, 'ipam_sub_id':sub_id, 'ipam_id':aWeb.get_value('ipam_id','0') }
+
+  if args['ipam_id'] == '0':
+   from sdcp.core.rest import call as rest_call
+   import sdcp.core.genlib as GL
+   ipint = GL.ip2int(ip)
+   ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_new".format(PC.ipam['type']),{'ip':ip, 'ipint':ipint, 'ipam_sub_id':sub_id ,'fqdn':fqdn } )
+   args['ipam_id'] = str(ipam.get['id'])
+
   if aWeb.get_value('vm'):
    args['vm'] = 1
   else:
@@ -380,8 +391,8 @@ def new(aWeb):
    args['arg']    = aWeb.get_value('arg')
    args['vm'] = 0
   res  = rest_new(args)
-  print res
-  PC.log_msg("{} ({}): New device operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_id'),args,res))
+  print "DB:{}".format(res)
+  PC.log_msg("{} ({}): New device operation:[{}] -> [{},{}]".format(aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_id'),args,res))
  elif op == 'find':
   import sdcp.PackageContainer as PC
   from sdcp.core.rest import call as rest_call
@@ -405,7 +416,7 @@ def new(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):
-    print "<OPTION VALUE={} {}>{}</OPTION>".format(d['id'],"selected" if d['name'] == domain else "",d['name'])
+    print "<OPTION VALUE={0}_{2} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == domain else "",d['name'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_sub_id>"
   for s in subnets:

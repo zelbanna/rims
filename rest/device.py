@@ -90,7 +90,6 @@ def new(aDict):
  ip    = aDict.get('ip')
  ipint = GL.ip2int(ip)
  ipam_sub_id = aDict.get('ipam_sub_id')
- ptr_dom = GL.ip2arpa(ip)
  ret = {'res':'NOT_OK', 'info':None}
  with DB() as db:
   in_sub = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(ipam_sub_id,ipint))
@@ -101,15 +100,12 @@ def new(aDict):
   else:
    xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND (ip = {} OR hostname = '{}')".format(ipam_sub_id,ipint,aDict.get('hostname')))
    if xist == 0:
-    from sdcp.core.rest import call as rest_call
     res = db.do("SELECT name FROM domains WHERE id = '{}'".format(aDict.get('a_dom_id')))
     dom = db.get_row()
-    fqdn = "{}.{}".format(aDict['hostname'],dom['name'])
-    ret['ipam'] = rest_call(PC.ipam['url'],"sdcp.rest.{}_new".format(PC.ipam['type']),{'ip':ip, 'ipint':ipint, 'ipam_sub_id': ipam_sub_id,'fqdn':fqdn } )
-    res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ptr_dom))
+    res = db.do("SELECT id FROM domains WHERE name = '{}'".format(GL.ip2arpa(ip)))
     ptr_dom_id = db.get_row().get('id') if res > 0 else 'NULL'
     mac = 0 if not GL.is_mac(aDict.get('mac',False)) else GL.mac2int(aDict['mac'])
-    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,ptr_dom_id,ipam_sub_id,ipam_id,hostname,fqdn,snmp,model,type) VALUES({},{},{},{},{},{},{},'{}','{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict.get('a_dom_id'),ptr_dom_id,ipam_sub_id,ret['ipam'].get('id',0),aDict['hostname'],fqdn))
+    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,ptr_dom_id,ipam_sub_id,ipam_id,hostname,fqdn,snmp,model,type) VALUES({},{},{},{},{},{},{},'{}','{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],ptr_dom_id,ipam_sub_id,aDict.get('ipam_id','0'),aDict['hostname'],aDict['fqdn']))
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
      db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))

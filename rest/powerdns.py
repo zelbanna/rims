@@ -96,7 +96,7 @@ def lookup(aDict):
  return retvals
 
 #
-# update( ip, name, a_dom_id , a_id, ptr_id )
+# update( ip, name, a_dom_id ,[ a_id, ptr_id ] )
 #
 def update(aDict):
  PC.log_msg("powerdns_update({})".format(aDict))
@@ -116,7 +116,7 @@ def update(aDict):
    ptr_dom_id = None
   fqdn    = aDict['name'] + "." + domain
 
-  if aDict['a_id'] != '0':
+  if str(aDict.get('a_id','0')) != '0':
    retvals['a_op'] = "update"
    retvals['a_id'] = aDict['a_id']
    db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(fqdn,aDict['ip'],serial,aDict['a_id']))
@@ -125,17 +125,29 @@ def update(aDict):
    retvals['a_op'] = "insert"
    retvals['a_id'] = db.get_last_id()
 
-  if aDict['ptr_id'] != '0':
+  if atr(aDict.get('ptr_id','0')) != '0':
    retvals['ptr_id'] = aDict['ptr_id']
    retvals['ptr_op'] = "update"
    db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(ptr,fqdn,serial,aDict['ptr_id']))
-  elif aDict['ptr_id'] == '0' and ptr_dom_id:
+  elif ptr_dom_id:
    db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','PTR','{}',3600,'{}')".format(ptr_dom_id,ptr,fqdn,serial))
    retvals['ptr_op'] = "insert"
    retvals['ptr_id'] = db.get_last_id()
 
   db.commit()
  return retvals
+
+#
+# get_records(type ['A'|'PTR'])
+#
+def get_records(aDict):
+ PC.log_msg("powerdns_get_records({})".format(aDict))
+ ret = {}
+ tune = aDict['type'].upper() if aDict.get('type') else "PTR' OR type = 'A"
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
+  ret['count'] = db.do("SELECT id, domain_id, name, type, content FROM records WHERE type = '{}' ORDER BY name".format(tune))
+  ret['records'] = db.get_rows()
+ return ret
 
 #
 #

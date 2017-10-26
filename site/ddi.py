@@ -100,11 +100,7 @@ def ipam_discrepancy(aWeb):
  with DB() as db:
   db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id ORDER BY ip")
   devs = db.get_rows_dict('ip')
- print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>IPAM consistency</DIV>"
- print "<SPAN ID=span_ipam STYLE='font-size:9px;'>&nbsp;</SPAN>"
- print "<DIV CLASS=z-table STYLE='width:auto;'>"
- print "<DIV CLASS=tbody>"
+ print "<DIV CLASS=z-frame><DIV CLASS=title>IPAM consistency</DIV><SPAN ID=span_ipam STYLE='font-size:9px;'>&nbsp;</SPAN><DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=tbody>"
  for row in ipam['addresses']:
   dev = devs.pop(int(row['ip']),None)
   if not dev or dev.get('fqdn') != row['fqdn']:
@@ -136,3 +132,15 @@ def ipam_remove(aWeb):
  id = aWeb.get_value('id')
  res = rest_call(PC.ipam['url'],"sdcp.rest.{}_remove".format(PC.ipam['type']),{'ipam_id':id})
  print "Remove {} - Results:{}".format(id,res)
+
+#
+#
+#
+def dns_discrepancy(aWeb):
+ dns = rest_call(PC.dns['url'],"sdcp.rest.{}_get_records".format(PC.dns['type']),{'type':'A'})
+ # print "<DIV CLASS=z-frame><DIV CLASS=title>IPAM consistency</DIV><SPAN ID=span_ipam STYLE='font-size:9px;'>&nbsp;</SPAN><DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=tbody>"
+
+ print "<DIV CLASS=z-frame>"
+ import sdcp.core.extras as EXT
+ EXT.dict2table(dns['records'])
+ print "</DIV>"
