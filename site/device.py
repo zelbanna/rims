@@ -104,6 +104,9 @@ def view_devicelist(aWeb):
 #
 
 def info(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
  import sdcp.core.genlib as GL
  from sdcp.devices.DevHandler import device_types, device_get_widgets
  id    = aWeb.get_value('id')

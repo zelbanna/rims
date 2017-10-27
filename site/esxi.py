@@ -93,9 +93,12 @@ def op(aWeb,aIP = None):
  esxi   = ESXi(ip)
 
  if nstate:
+  if not aWeb.cookie.get('sdcp_id'):
+   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+   return
+  userid = aWeb.cookie.get('sdcp_id')
   from subprocess import check_call, check_output
   import sdcp.PackageContainer as PC
-  userid = aWeb.cookie.get('sdcp_id')
   try:
    if nstate == 'vmsvc-snapshot.create':
     from time import strftime

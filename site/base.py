@@ -10,6 +10,9 @@ __status__= "Production"
 ############################################ Options ##############################################
 #
 def config(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=base_list_resources'>Resources</A>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=base_list_options'>Options</A>"
@@ -38,6 +41,9 @@ def list_options(aWeb):
 ############################################ resources ##############################################
 #
 def navigate(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
  print "<DIV CLASS=z-navbar  ID=div_navbar>&nbsp;</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  list_resource_type(aWeb)
@@ -166,6 +172,9 @@ def resource_remove(aWeb):
 # Examine Logs
 #
 def examine(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
  import sdcp.PackageContainer as PC
  upshost = PC.sdcp['upshost']
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
@@ -293,6 +302,9 @@ def list_bookings(aWeb):
 #
 #
 def users(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=base_list_users'>Users</A>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=base_list_bookings'>Bookings</A>"
