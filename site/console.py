@@ -30,13 +30,13 @@ def inventory(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td><A HREF='https://{0}/'>{0}</A></DIV><DIV CLASS=td><A TITLE='Edit port info' HREF={4}>{1}</A></DIV><DIV CLASS=td><A HREF='telnet://{0}:{2}'>{3}</A></DIV></DIV>".format(con,str(key),port, value, config.format(con,key))
  print "</DIV></DIV></DIV>"
 
-def list_consoles(aWeb):
+def list(aWeb):
  with DB() as db:
   res  = db.do("SELECT id, INET_NTOA(ip) as ip, name from consoles ORDER by name")
   data = db.get_rows()
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Consoles</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list_consoles'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add console' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=console_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
