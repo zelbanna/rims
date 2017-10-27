@@ -39,18 +39,18 @@ def login(aWeb):
  if id != "None":
   with DB() as db:
    res  = db.do("SELECT href FROM resources INNER JOIN users ON users.frontpage = resources.id WHERE users.id = '{}'".format(id))
-   href = 'sdcp.cgi?call=base_navigate&type=demo' if not res else db.get_row()['href']
-   
+   href = 'sdcp.cgi?call=resources_navigate&type=demo' if not res else db.get_row()['href']
+
   PC.log_msg("Entering as {}-'{}' ({})".format(id,user,view))
   aWeb.put_html(PC.sdcp['name'])
   print "<DIV class='z-main-menu' ID=div_main_menu>"
   print "<A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Start'     URL='{}&headers=yes'><IMG SRC='images/icon-start.png'/></A>".format(href)
   print """<A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Rack'      URL=sdcp.cgi?call=rack_main><IMG SRC='images/icon-rack.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Devices'   URL=sdcp.cgi?call=device_main><IMG SRC='images/icon-network.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Examine'   URL=sdcp.cgi?call=base_examine><IMG SRC='images/icon-examine.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Users'     URL=sdcp.cgi?call=base_users><IMG SRC='images/icon-users.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Documents' URL=sdcp.cgi?call=base_navigate&type=bookmark><IMG SRC='images/icon-docs.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Tools'     URL=sdcp.cgi?call=base_navigate&type=tool><IMG SRC='images/icon-tools.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Examine'   URL=sdcp.cgi?call=examine_main><IMG SRC='images/icon-examine.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Users'     URL=sdcp.cgi?call=users_main><IMG SRC='images/icon-users.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Documents' URL=sdcp.cgi?call=resources_navigate&type=bookmark><IMG SRC='images/icon-docs.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Tools'     URL=sdcp.cgi?call=resources_navigate&type=tool><IMG SRC='images/icon-tools.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='ESXi'      URL=sdcp.cgi?call=esxi_main><IMG SRC='images/icon-servers.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Config'    URL=sdcp.cgi?call=base_config><IMG SRC='images/icon-config.png'/></A>
   </DIV>"""

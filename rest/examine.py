@@ -1,38 +1,11 @@
 """Module docstring.
 
- SDCP generic REST API module
+ SDCP examine REST API module
 
 """
 __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
-
-#
-#
-def reload(aDict):
- import sdcp.PackageContainer as PC
- from git import Repo
- repo = Repo(PC.repo)
- res = {}
- try:
-  org   = repo.remotes.origin
-  fetch = org.pull()
-  res['info'] = fetch[0].__str__()
-  res['res']  ='OK'
- except Exception as err:
-  res['info'] = str(err)
-  res['res']  = 'Failed'
- return res
-
-#
-#
-#
-def remove_user(aDict):
- from sdcp.core.dbase import DB
- with DB() as db:
-  db.do("DELETE FROM users WHERE id = '{}'".format(aDict['id']))
-  res = db.commit()
- return {'res':res}
 
 #
 # Clear logs
@@ -56,7 +29,7 @@ def clear_logs(aDict):
 # - count: number of lines
 # - logs: list of files to open locally
 #
-def examine_logs(aDict):
+def get_logs(aDict):
  count = int(aDict.get('count',15))
  logfiles = aDict.get('logs')
  result = {}
