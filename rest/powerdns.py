@@ -145,7 +145,7 @@ def get_records(aDict):
  ret = {}
  tune = aDict['type'].upper() if aDict.get('type') else "PTR' OR type = 'A"
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  ret['count'] = db.do("SELECT id, domain_id, name, type, content FROM records WHERE type = '{}' ORDER BY name".format(tune))
+  ret['count'] = db.do("SELECT id, domain_id AS dom_id, name AS key, type, content AS value FROM records WHERE type = '{}' ORDER BY name".format(tune))
   ret['records'] = db.get_rows()
  return ret
 

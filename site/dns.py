@@ -35,27 +35,38 @@ def load(aWeb):
 #
 #
 #
-def dns_discrepancy(aWeb):
+def discrepancy(aWeb):
  dns = rest_call(PC.dns['url'],"sdcp.rest.{}_get_records".format(PC.dns['type']),{'type':'A'})
- # print "<DIV CLASS=z-frame><DIV CLASS=title>IPAM consistency</DIV><SPAN ID=span_ipam STYLE='font-size:9px;'>&nbsp;</SPAN><DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=tbody>"
-
- print "<DIV CLASS=z-frame>"
+ with DB() as db:
+  db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, hostname, domains.name as domain AS fqdn FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id ORDER BY ip")
+  devs = db.get_rows()
+ print "<DIV CLASS=z-frame>DIV CLASS=title>DNS consistency</DIV>SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
+ # print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=tbody>"
  import sdcp.core.extras as EXT
- EXT.dict2table(dns['records'])
+ EXT.dict2table(devs)
  print "</DIV>"
 
 #
 # DNS top
 #
 def top(aWeb):
- import sdcp.PackageContainer as PC
  import sdcp.core.extras as EXT
- from sdcp.core.rest import call as rest_call
  dnstop = rest_call(PC.dns['url'], "sdcp.rest.{}_top".format(PC.dns['type']), {'count':20})
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN</DIV>"
  EXT.dict2table(dnstop['top'])
  print "</DIV>"
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN per Client</DIV>"
- EXT.dict2table(dnstop['who'])                          
+ EXT.dict2table(dnstop['who'])
  print "</DIV>"
 
+#
+# Cleanup duplicate entries
+#
+def cleanup(aWeb):
+ dnsclean = rest_call(PC.dns['url'], "sdcp.rest.{}_cleanup".format(PC.dns['type']))
+ print "<DIV CLASS=z-frame><DIV CLASS=title>Cleanup</DIV>"
+ xist = len(dnsclean['removed'])
+ if xist > 0:
+  import sdcp.core.extras as EXT
+  EXT.dict2table(dnsclean['removed'])
+ print "</DIV>"

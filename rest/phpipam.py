@@ -18,8 +18,9 @@ def subnets(aDict):
  PC.log_msg("phpipam_subnet({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
-  rows = db.get_rows()
- return rows
+  ret = db.get_rows()
+  ret['res'] = 'OK'
+ return ret
 
 #
 # lookup(ip,ipam_sub_id)
@@ -28,8 +29,12 @@ def lookup(aDict):
  PC.log_msg("phpipam_lookup({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   xist = db.do("SELECT id as ipam_id, dns_name as fqdn, PTR as ptr_id FROM ipaddresses WHERE ip_addr = INET_ATON('{0}') AND subnetId = {1}".format(aDict['ip'],aDict.get('ipam_sub_id')))
-  return { 'ipam_id':'0' } if xist == 0 else db.get_row()
-
+  if xist > 0:
+   ret = db.get_row()  
+   ret['res'] = 'OK'
+  else:
+   ret = { 'res':'NOT_OK', 'ipam_id':'0' }
+ return ret
 #
 # update( ipam_sub_id, ipam_id, ip, fqdn, ptr_id )
 #
@@ -63,8 +68,8 @@ def new(aDict):
  PC.log_msg("phpipam_new({})".format(aDict))
  ret = {'res':'NOT_OK'}
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
-  ret['existed'] = db.do("SELECT id FROM ipaddresses WHERE ip_addr = INET_ATON('{0}') AND subnetId = {1}".format(aDict['ip'],aDict['ipam_sub_id']))
-  if ret['existed'] == 0:
+  ret['xist'] = db.do("SELECT id FROM ipaddresses WHERE ip_addr = INET_ATON('{0}') AND subnetId = {1}".format(aDict['ip'],aDict['ipam_sub_id']))
+  if ret['xist'] == 0:
    ret['insert'] = db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name) VALUES('{}',INET_ATON('{}'),'{}')".format(aDict['ipam_sub_id'],aDict['ip'],aDict['fqdn']))
    ret['id']  = db.get_last_id()
    ret['res'] = 'OK'
@@ -82,7 +87,7 @@ def remove(aDict):
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
   db.commit()
- return ires
+ return { 'res':'OK', 'info':(ires > 0) }
 
 #
 # 
@@ -93,6 +98,19 @@ def get_addresses(aDict):
   ires  = db.do("SELECT id, ip_addr AS ip, INET_NTOA(ip_addr) as ipasc, subnetId as ipam_sub_id, description, dns_name AS fqdn FROM ipaddresses ORDER BY ip_addr")
   irows = db.get_rows()
  return {'addresses':irows, 'res':'OK', 'info':ires }
+
+#
+# Check single IP is available in subnet
+#
+def free(aDict):
+ PC.log_msg("phpipam_free({})".format(aDict))
+ ret = {'res':'OK' } 
+ with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
+  xist = db.do("SELECT dns_name FROM ipaddress WHERE ip_addr = INET_ATON('{}') and subnetId = {}".format(aDict['ip'],aDict['ipam_sub_id']))
+  if xist > 0:
+   ret['res'] = 'NOT_OK'
+   ret['info'] = db.get_row()['dns_name']
+ return ret
 
 #
 # find(ipam_sub_id, consecutive)
