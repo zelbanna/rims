@@ -38,12 +38,12 @@ def load(aWeb):
 def discrepancy(aWeb):
  dns = rest_call(PC.dns['url'],"sdcp.rest.{}_get_records".format(PC.dns['type']),{'type':'A'})
  with DB() as db:
-  db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, hostname, domains.name as domain AS fqdn FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id ORDER BY ip")
+  db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, hostname, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id ORDER BY ip")
   devs = db.get_rows()
- print "<DIV CLASS=z-frame>DIV CLASS=title>DNS consistency</DIV>SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
+ print "<DIV CLASS=z-frame><DIV CLASS=title>DNS consistency</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
  # print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=tbody>"
  import sdcp.core.extras as EXT
- EXT.dict2table(devs)
+ EXT.dict2table(dns['records'])
  print "</DIV>"
 
 #
