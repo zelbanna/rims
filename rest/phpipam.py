@@ -26,16 +26,9 @@ def subnets(aDict):
 #
 def lookup(aDict):
  PC.log_msg("phpipam_lookup({})".format(aDict))
- ipint   = GL.ip2int(aDict['ip'])
- retvals = { 'ipam_id':'0' }
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
-  db.do("SELECT id, dns_name, PTR FROM ipaddresses WHERE ip_addr = {0} AND subnetId = {1}".format(ipint,aDict.get('ipam_sub_id')))
-  ipam   = db.get_row()
- if ipam:
-  retvals['ipam_id'] = ipam.get('id')
-  retvals['fqdn']    = ipam.get('dns_name',None)
-  retvals['ptr_id']  = ipam.get('PTR',0)
- return retvals
+  xist = db.do("SELECT id as ipam_id, dns_name as fqdn, PTR as ptr_id FROM ipaddresses WHERE ip_addr = INET_ATON('{0}') AND subnetId = {1}".format(aDict['ip'],aDict.get('ipam_sub_id')))
+  return { 'ipam_id':'0' } if xist == 0 else db.get_row()
 
 #
 # update( ipam_sub_id, ipam_id, ip, fqdn, ptr_id )
