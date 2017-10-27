@@ -3,7 +3,7 @@
 Ajax IPAM calls module
 
 """
-__author__= "Zacharias El Banna"                     
+__author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
@@ -60,16 +60,14 @@ def discrepancy(aWeb):
    print "</DIV></DIV>"
  print "</DIV></DIV>"
  if len(devs) > 0:
-  print "<DIV CLASS=title>Extra only in SDCP</DIV>"
-  import sdcp.core.extras as EXT
-  EXT.dict2table(devs)
+  print "<DIV CLASS=title>Extra only in SDCP ({})</DIV>".format(len(devs))
  print "</DIV>"
 
 
 #
 #
 #
-def ipam_remove(aWeb):
+def remove(aWeb):
  id = aWeb.get_value('id')
  res = rest_call(PC.ipam['url'],"sdcp.rest.{}_remove".format(PC.ipam['type']),{'ipam_id':id})
  print "Remove {} - Results:{}".format(id,res)

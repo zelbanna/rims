@@ -41,26 +41,31 @@ def discrepancy(aWeb):
   db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, hostname, a_id, ptr_id, a_dom_id FROM devices ORDER BY ip")
   devs = db.get_rows_dict('ipasc')
  print "<DIV CLASS=z-frame><DIV CLASS=title>DNS Consistency</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
- print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV></DIV><DIV CLASS=tbody>"
  for rec in dns['records']:
-  dev = devs.pop(rec['content'],None)
-  print "<DIV CLASS=tr>"
-  print "<!-- {} --> ".format(rec)
+  dev = devs.get(rec['content'])
   if not dev or dev['a_id'] != rec['id']:
+   print "<DIV CLASS=tr>"
+   print "<!-- {} --> ".format(rec)
    print "<DIV CLASS=td>{}</DIV>".format(rec['content'])
-   print "<DIV CLASS=td>{}</DIV>".format(rec['name'])
    print "<DIV CLASS=td>{}</DIV>".format(rec['type'])
+   print "<DIV CLASS=td>{}</DIV>".format(rec['name'])
+   print "<DIV CLASS=td>{}</DIV>".format(rec['id'])
    if dev:
-    print "<DIV CLASS=td>{} vs {}</DIV>".format(rec['id'],dev['a_id'])
-    print "<DIV CLASS=td>{}</DIV>".format(dev['hostname'])
+    print "<DIV CLASS=td>{}</DIV>".format(dev['a_id'])
+    print "<DIV CLASS=td>{0}</DIV>".format(dev['hostname'])
+    print "<DIV CLASS=td>{}</DIV>".format(dev.get('matched',False))
    else:
-    print "<DIV CLASS=td>&nbsp</DIV>"
-    print "<DIV CLASS=td>&nbsp</DIV>"
-  print "</DIV>"
+    print "<DIV CLASS=td>&nbsp</DIV><DIV CLASS=td>&nbsp</DIV><DIV CLASS=td>&nbsp</DIV>"
+   print "</DIV>"
+  elif dev:
+   dev['matched'] = True
+
+ print "</DIV></DIV>"
  if len(devs) > 0:
-  print "<DIV CLASS=title>Extra only in SDCP</DIV>"
-  import sdcp.core.extras as EXT
-  EXT.dict2table(devs)
+  print "<DIV CLASS=title>Extra only in SDCP ({})</DIV>".format(len(devs))
+  for key,value in  devs.iteritems():
+   print "{} -> {}<BR>".format(key,value)
  print "</DIV>"
 
 #
