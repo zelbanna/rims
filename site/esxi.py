@@ -205,9 +205,10 @@ def snap_op(aWeb):
  vmid = aWeb.get_value('vmid')
  snap = aWeb.get_value('snapid')
  op   = aWeb.get_value('op')
+ if   op == 'revert':
+  template = "vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff"
+ elif op == 'remove':
+  template = "vim-cmd vmsvc/snapshot.remove {} {}"
  with ESXi(ip) as esxi:
-  if   op == 'revert':
-   esxi.ssh_send("vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff".format(vmid,snap),aWeb.cookie.get('sdcp_id'))
-  elif op == 'remove':
-   esxi.ssh_send("vim-cmd vmsvc/snapshot.remove {} {} ".format(vmid,snap),aWeb.cookie.get('sdcp_id'))
+  esxi.ssh_send(template.format(vmid,snap),aWeb.cookie.get('sdcp_id'))
  print "<DIV CLASS=z-frame>Carried out '{}' on '{}@{}'</DIV>".format(op,vmid,ip)

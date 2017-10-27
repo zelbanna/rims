@@ -455,9 +455,7 @@ def remove(aWeb):
 def dump_db(aWeb):
  from json import dumps
  from sdcp.rest.device import dump_db
- table = aWeb.get_value('table','devices')
- cols  = aWeb.get_value('columns','*')
- print "<PRE>{}</PRE>".format(dumps(dump_db({'table':table,'columns':cols}), indent=4, sort_keys=True))
+ print "<PRE>{}</PRE>".format(dumps(dump_db({'table':aWeb.get_value('table','devices'),'columns':aWeb.get_value('columns','*')}), indent=4, sort_keys=True))
 
 #
 # find devices operations
@@ -506,4 +504,3 @@ def clear_db(aWeb):
  with DB() as db:
   db.do("TRUNCATE TABLE devices")
  print "<DIV CLASS=z-frame>Cleared DB</DIV>"
-
