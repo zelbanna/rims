@@ -3,7 +3,7 @@
 Front-End(s)
 
 """
-__author__= "Zacharias El Banna"                     
+__author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
@@ -22,7 +22,7 @@ import sdcp.PackageContainer as PC
 def login(aWeb):
  from sdcp.core.dbase import DB
  if PC.generic['db'] == '':
-  PC.log_msg("No Database available so login not possible")                                   
+  PC.log_msg("No Database available so login not possible")
   aWeb.put_html("Error")
   return
 

@@ -38,13 +38,29 @@ def load(aWeb):
 def discrepancy(aWeb):
  dns = rest_call(PC.dns['url'],"sdcp.rest.{}_get_records".format(PC.dns['type']),{'type':'A'})
  with DB() as db:
-  db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, hostname, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id ORDER BY ip")
-  devs = db.get_rows()
- print "<DIV CLASS=z-frame><DIV CLASS=title>DNS consistency</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
- # print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=tbody>"
- print  dns
- import sdcp.core.extras as EXT
- EXT.dict2table(dns['records'])
+  db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, hostname, a_id, ptr_id, a_dom_id FROM devices ORDER BY ip")
+  devs = db.get_rows_dict('ipasc')
+ print "<DIV CLASS=z-frame><DIV CLASS=title>DNS Consistency</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
+ print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=tbody>"
+ for rec in dns['records']:
+  dev = devs.pop(rec['content'],None)
+  print "<DIV CLASS=tr>"
+  print "<!-- {} --> ".format(rec)
+  if not dev or dev['a_id'] != rec['id']:
+   print "<DIV CLASS=td>{}</DIV>".format(rec['content'])
+   print "<DIV CLASS=td>{}</DIV>".format(rec['name'])
+   print "<DIV CLASS=td>{}</DIV>".format(rec['type'])
+   if dev:
+    print "<DIV CLASS=td>{} vs {}</DIV>".format(rec['id'],dev['a_id'])
+    print "<DIV CLASS=td>{}</DIV>".format(dev['hostname'])
+   else:
+    print "<DIV CLASS=td>&nbsp</DIV>"
+    print "<DIV CLASS=td>&nbsp</DIV>"
+  print "</DIV>"
+ if len(devs) > 0:
+  print "<DIV CLASS=title>Extra only in SDCP</DIV>"
+  import sdcp.core.extras as EXT
+  EXT.dict2table(devs)
  print "</DIV>"
 
 #

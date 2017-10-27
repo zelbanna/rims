@@ -83,7 +83,7 @@ def list(aWeb):
    tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(arg)
   elif target == 'vm' and not arg == 'NULL':
    tune = "WHERE vm = {}".format(arg)
-  else: 
+  else:
    tune = "WHERE {0} is NULL".format(target)
 
  with DB() as db:
@@ -225,9 +225,11 @@ def info(aWeb):
  else:
   db.do("SELECT NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings WHERE device_id ='{}'".format(id))
   valid = db.get_row()['valid']
+  db.do("SELECT alias FROM users WHERE id = '{}'".format(device_data['bookings.user_id']))
+  alias = db.get_row()['alias']
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td><A CLASS='z-op' DIV='div_content_left' URL='sdcp.cgi?call=bookings_list'>Booked by</A>:</DIV>"
-  print "<DIV CLASS=td STYLE='background-color:{0}'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={1}&op=view>{1}</A> {2}</DIV>".format("#df3620" if valid == 1 else "orange",device_data['bookings.user_id'],'' if valid else "(obsolete)")
+  print "<DIV CLASS=td STYLE='background-color:{0}'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={1}&op=view>{1}</A> {2}</DIV>".format("#df3620" if valid == 1 else "orange",alias,'' if valid else "(obsolete)")
   print "</DIV>"
  print "</DIV></DIV></DIV>"
 

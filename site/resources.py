@@ -15,7 +15,7 @@ def navigate(aWeb):
   return
  print "<DIV CLASS=z-navbar  ID=div_navbar>&nbsp;</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
- list(aWeb)
+ list_type(aWeb)
  print "</DIV>"
 
 #

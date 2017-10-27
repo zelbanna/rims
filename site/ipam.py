@@ -35,7 +35,7 @@ def load(aWeb):
 #
 #
 #
-def ipam_discrepancy(aWeb):
+def discrepancy(aWeb):
  ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_get_addresses".format(PC.ipam['type']))
  with DB() as db:
   db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id ORDER BY ip")
