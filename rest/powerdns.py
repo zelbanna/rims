@@ -160,5 +160,6 @@ def remove(aDict):
    ret['a'] = db.do("DELETE FROM records WHERE id = '{}' and type = 'A'".format(aDict['a_id']))
   if aDict.get('ptr_id','0') != '0':
    ret['ptr'] = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aDict['ptr_id']))
-  ret['info'] = db.commit()
+  db.commit()
+ ret['res'] = 'OK' if ret['a'] > 0 or ret['ptr'] > 0 else 'NOT_OK'
  return ret
