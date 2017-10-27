@@ -64,7 +64,8 @@ def ipam_discrepancy(aWeb):
   import sdcp.core.extras as EXT
   EXT.dict2table(devs)
  print "</DIV>"
- 
+
+
 #
 #
 #
