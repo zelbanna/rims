@@ -64,7 +64,7 @@ def discrepancy(aWeb):
  if len(devs) > 0:
   print "<DIV CLASS=title>Extra only in SDCP ({})</DIV>".format(len(devs))
   for key,value in  devs.iteritems():
-   print "{} -> {}<BR>".format(key,value)
+   print "{} -> {}<BR>".format(key,value['hostname'])
  print "</DIV>"
 
 #

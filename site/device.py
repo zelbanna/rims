@@ -174,7 +174,7 @@ def info(aWeb):
 
  ########################## Data Tables ######################
  
- print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:{}px; z-index:101; height:240px; float:left;'>".format(675 if rack_xist == 1 and not device_data['type'] == 'pdu' else 465)
+ print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:{}px; z-index:101; height:240px; float:left;'>".format(675 if rack_xist == 1 and not device_data['type'] == 'pdu' else 470)
  # print "<!-- {} -->".format(device_data)
  # print "<!-- {} -->".format(rack_xist)
  print "<FORM ID=info_form>"
