@@ -24,3 +24,20 @@ def update(aWeb):
   args.append({'ip':row['ipasc'],'fqdn':"{}.{}".format(row['hostname'],row['domain']),'mac':GL.int2mac(row['mac']),'id':row['id'],'subnet_id':row['ipam_sub_id']})
  res = rest_call(PC.dhcp['url'],"sdcp.rest.{}_update_server".format(PC.dhcp['type']),{'entries':args})
  print res
+
+#
+#
+#
+def leases(aWeb):
+ import sdcp.PackageContainer as PC
+ import sdcp.core.extras as EXT
+ from sdcp.core.rest import call as rest_call
+ dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))
+ print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Active Leases</DIV>"
+ EXT.dict2table(dhcp['active'])
+ print "</DIV>"
+ print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Free/Old Leases</DIV>"
+ EXT.dict2table(dhcp['free']) 
+ print "</DIV>"
+
+

@@ -43,3 +43,19 @@ def dns_discrepancy(aWeb):
  import sdcp.core.extras as EXT
  EXT.dict2table(dns['records'])
  print "</DIV>"
+
+#
+# DNS top
+#
+def top(aWeb):
+ import sdcp.PackageContainer as PC
+ import sdcp.core.extras as EXT
+ from sdcp.core.rest import call as rest_call
+ dnstop = rest_call(PC.dns['url'], "sdcp.rest.{}_top".format(PC.dns['type']), {'count':20})
+ print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN</DIV>"
+ EXT.dict2table(dnstop['top'])
+ print "</DIV>"
+ print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN per Client</DIV>"
+ EXT.dict2table(dnstop['who'])                          
+ print "</DIV>"
+
