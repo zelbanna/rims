@@ -42,6 +42,7 @@ def discrepancy(aWeb):
   devs = db.get_rows()
  print "<DIV CLASS=z-frame><DIV CLASS=title>DNS consistency</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
  # print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=tbody>"
+ print  dns
  import sdcp.core.extras as EXT
  EXT.dict2table(dns['records'])
  print "</DIV>"
