@@ -43,7 +43,7 @@ def discrepancy(aWeb):
  print "<DIV CLASS=z-frame><DIV CLASS=title>DNS Consistency</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
  print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV></DIV><DIV CLASS=tbody>"
  for rec in dns['records']:
-  dev = devs.get(rec['content'])
+  dev = devs.pop(rec['content'],None)
   if not dev or dev['a_id'] != rec['id']:
    print "<DIV CLASS=tr>"
    print "<!-- {} --> ".format(rec)
@@ -54,13 +54,12 @@ def discrepancy(aWeb):
    if dev:
     print "<DIV CLASS=td>{}</DIV>".format(dev['a_id'])
     print "<DIV CLASS=td>{0}</DIV>".format(dev['hostname'])
-    print "<DIV CLASS=td>{}</DIV>".format(dev.get('matched',False))
    else:
-    print "<DIV CLASS=td>&nbsp</DIV><DIV CLASS=td>&nbsp</DIV><DIV CLASS=td>&nbsp</DIV>"
+    print "<DIV CLASS=td>&nbsp</DIV><DIV CLASS=td>&nbsp</DIV>"
+   print "<DIV CLASS=td>&nbsp;"
+   print "<A CLASS='z-op z-btn z-small-btn' DIV=span_dns MSG='Are you sure?' URL='sdcp.cgi?call=dns_remove&id={}'><IMG SRC=images/btn-remove.png></A>".format(rec['id'])
    print "</DIV>"
-  elif dev:
-   dev['matched'] = True
-
+   print "</DIV>"
  print "</DIV></DIV>"
  if len(devs) > 0:
   print "<DIV CLASS=title>Extra only in SDCP ({})</DIV>".format(len(devs))
@@ -92,3 +91,11 @@ def cleanup(aWeb):
   import sdcp.core.extras as EXT
   EXT.dict2table(dnsclean['removed'])
  print "</DIV>"
+
+#
+# Remove from DNS DB
+#
+def remove(aWeb):
+ id = aWeb.get_value('id')
+ res = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']),{'a_id':id})
+ print "Remove {} - Results:{}".format(id,res)

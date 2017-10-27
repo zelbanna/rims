@@ -154,13 +154,11 @@ def get_records(aDict):
 #
 def remove(aDict):
  PC.log_msg("powerdns_remove({})".format(aDict))
- ares = 0
- pres = 0
+ ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  if aDict['a_id'] != '0':
-   ares = db.do("DELETE FROM records WHERE id = '{}' and type = 'A'".format(aDict['a_id']))
-  if aDict['ptr_id'] != '0':
-   pres = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aDict['ptr_id']))
-  db.commit()
- PC.log_msg("DNS  remove - A:{} PTR:{}".format(str(ares),str(pres)))
- return { 'a':ares, 'ptr':pres }
+  if aDict.get('a_id','0') != '0':
+   ret['a'] = db.do("DELETE FROM records WHERE id = '{}' and type = 'A'".format(aDict['a_id']))
+  if aDict.get('ptr_id','0') != '0':
+   ret['ptr'] = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aDict['ptr_id']))
+  ret['info'] = db.commit()
+ return ret
