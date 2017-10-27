@@ -17,7 +17,7 @@ def main(aWeb):
  arg    = aWeb.get_value('arg')
  
  print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_view_devicelist{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
+ print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_list{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL=sdcp.cgi?call=graph_list{0}>Graphing</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=base_list_bookings'>Bookings</A>"
  if target == 'vm':
@@ -65,7 +65,7 @@ def main(aWeb):
 #
 #
 #
-def view_devicelist(aWeb):
+def list(aWeb):
  target = aWeb.get_value('target')
  arg    = aWeb.get_value('arg')
  sort   = aWeb.get_value('sort','ip')
