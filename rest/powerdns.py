@@ -67,33 +67,39 @@ def domains(aDict):
  return rows
 
 #
-# lookup ( name, a_dom_id, ip)
+# lookup_a ( name, a_dom_id)
 #
-def lookup(aDict):
- PC.log_msg("powerdns_lookup({})".format(aDict))
- import sdcp.core.genlib as GL
- ptr  = GL.ip2arpa(aDict['ip'])
+def lookup_a(aDict):
+ PC.log_msg("powerdns_lookup_a({})".format(aDict))
+ ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr))
-  domains = db.get_rows()
-  if res == 2:
-   domain     = domains[0]['name'] if domains[1]['name'] == ptr else domains[1]['name']
-   ptr_dom_id = domains[1]['id']   if domains[1]['name'] == ptr else domains[0]['id']
+  res = db.do("SELECT name FROM domains WHERE id = '{}'".format(aDict['a_dom_id']))
+  ret['domain'] = db.get_row()['name'] if res > 0 else 'unknown'
+  ret['exist'] = db.do("SELECT id, content AS ip FROM records WHERE type = 'A' AND domain_id = {} AND name = '{}'".format(aDict['a_dom_id'],"{}.{}".format(aDict['name'],ret['domain'])))
+  if ret['exist'] > 0:
+   ret.update(db.get_row())
+   ret['res']  = 'OK'
   else:
-   domain     = domains[0]['name']
-   ptr_dom_id = '0'
-  fqdn    = aDict['name'] + "." + domain
-  db.do("SELECT id,content FROM records WHERE type = 'A' and domain_id = {} and name = '{}'".format(aDict['a_dom_id'],fqdn))
-  a_record = db.get_row()
-  db.do("SELECT id,content FROM records WHERE type = 'PTR' and domain_id = {} and name = '{}'".format(ptr_dom_id,GL.ip2ptr(aDict['ip']))) 
-  p_record = db.get_row()
- retvals = {}
- if a_record and (a_record.get('content',None) == aDict['ip']):
-  retvals['a_id'] = a_record.get('id') 
- if p_record and p_record.get('content',None):
-  retvals['ptr_id'] = p_record.get('id')
-  retvals['ptr_dom_id'] = ptr_dom_id
- return retvals
+   ret['res']  = 'NOT_OK'
+ return ret
+
+#
+# lookup_ptr (ip)
+#
+def lookup_ptr(aDict):
+ PC.log_msg("powerdns_lookup_ptr({})".format(aDict))
+ import sdcp.core.genlib as GL
+ ret = {'arpa':GL.ip2arpa(aDict['ip'])}
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
+  res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ret['arpa']))
+  ret['ptr_dom_id'] = db.get_row()['id']
+  ret['exist'] = db.do("SELECT id, content AS fqdn FROM records WHERE type = 'PTR' AND domain_id = {} AND name = '{}'".format(ret['ptr_dom_id'],GL.ip2ptr(aDict['ip'])))
+  if ret['exist'] > 0:
+   ret.update(db.get_row())
+   ret['res']  = 'OK'
+  else:
+   ret['res']  = 'NOT_OK'
+ return ret
 
 #
 # update( ip, name, a_dom_id ,[ a_id, ptr_id ] )
