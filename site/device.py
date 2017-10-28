@@ -457,10 +457,15 @@ def new(aWeb):
 #
 def remove(aWeb):
  from sdcp.rest.device import remove
- id      = aWeb.get_value('id')
+ id  = aWeb.get_value('id')
+ ret = remove({ 'id':id })
+ if ret['res'] == 'OK':
+  from sdcp.core.rest import call as rest_call
+  import sdcp.PackageContainer as PC
+  dns = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']),  ret)
+  ipam= rest_call(PC.ipam['url'],"sdcp.rest.{}_remove".format(PC.ipam['type']), ret)
  print "<DIV CLASS=z-frame>"
- res = remove({ 'id':id })
- print "Unit {0} deleted ({1})".format(id,str(res))
+ print "Unit {} deleted (DB:{},DNS:{},IPAM:{})".format(id,ret,dns,ipam)
  print "</DIV>"
 
 #

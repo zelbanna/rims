@@ -66,11 +66,6 @@ def new(aDict):
   else:
    xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND (ip = {} OR hostname = '{}')".format(ipam_sub_id,ipint,aDict.get('hostname')))
    if xist == 0:
-    #
-    # Que?
-    #
-    res = db.do("SELECT name FROM domains WHERE id = '{}'".format(aDict.get('a_dom_id')))
-    dom = db.get_row()
     res = db.do("SELECT id FROM domains WHERE name = '{}'".format(GL.ip2arpa(ip)))
     ptr_dom_id = db.get_row().get('id') if res > 0 else 'NULL'
     mac = 0 if not GL.is_mac(aDict.get('mac',False)) else GL.mac2int(aDict['mac'])
@@ -83,11 +78,8 @@ def new(aDict):
     db.commit()
     ret['res']  = "OK"
    else:
-    dev = db.get_row()
-    ret['info']  = "existing"   
-    ret['hostname'] = dev['hostname']
-    ret['id'] = dev['id']
-    ret['ip'] = dev['ipasc']
+    ret['info']  = "existing"
+    ret.update(db.get_row())
  return ret
 
 #
@@ -140,23 +132,19 @@ def discover(aDict):
  return { 'found':len(db_new) }
 
 #
-# remove(id)
+# remove(id) and pop dns and ipam info
 #
 def remove(aDict):
  PC.log_msg("device_remove({})".format(aDict))
  with DB() as db:
-  res = db.do("SELECT hostname, mac, a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
-  ddi = db.get_row()
-  res = db.do("DELETE FROM devices WHERE id = '{0}'".format(aDict['id']))
-  ret = { 'device': res }
-  db.commit()
- from sdcp.core.rest import call as rest_call
- if (ddi['a_id'] != '0') or (ddi['ptr_id'] != '0'):
-  dres = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']), { 'a_id':ddi['a_id'], 'ptr_id':ddi['ptr_id'] })
-  ret['a'] = dres.get('a')
-  ret['ptr'] = dres.get('ptr')
- if not ddi['ipam_id'] == '0':
-  ret['ipam'] = rest_call(PC.ipam['url'],"sdcp.rest.{}_remove".format(PC.ipam['type']),{ 'ipam_id':ddi['ipam_id'] })
+  xist = db.do("SELECT hostname, mac, a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
+  if xist == 0:
+   ret = { 'res':'NOT_OK', 'a_id':0, 'ptr_id':0, 'ipam_id':0 }
+  else:
+   ret = db.get_row()
+   ret['delete'] = db.do("DELETE FROM devices WHERE id = '{}'".format(aDict['id']))
+   db.commit()
+   ret['res'] = 'OK'
  return ret
 
 #
@@ -176,27 +164,42 @@ def dump_db(aDict):
 #
 # find(ipam_sub_id, consecutive)
 #
+#
+# find(ipam_sub_id, consecutive)
+#
+# - Find X consecutive ip from a particular subnet-id
+# ipam_sub_id: X
+# consecutive: X
+
 def find(aDict):
  PC.log_msg("device_find({})".format(aDict))
  import sdcp.core.genlib as GL
+ sub_id = aDict.get('ipam_sub_id')
  with DB() as db:
-  db.do("SELECT subnet, mask FROM subnets WHERE id = {}".format(aDict.get('ipam_sub_id')))
+  db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(sub_id))
   sub = db.get_row()
-  db.do("SELECT ip FROM devices WHERE ipam_sub_id = {}".format(aDict.get('ipam_sub_id')))
+  db.do("SELECT ip FROM devices WHERE ipam_sub_id = {}".format(sub_id))
   iplist = db.get_rows_dict('ip')
- start = None
- ret = { 'subnet':GL.int2ip(sub.get('subnet')) }
- for ip in range(sub.get('subnet') + 1,sub.get('subnet') + 2**(32-sub.get('mask'))-1):
-  if not iplist.get(ip,False):
-   if start:
-    count = count - 1
-    if count == 1:
-     ret['start'] = GL.int2ip(start)
-     ret['end'] = GL.int2ip(start+int(aDict.get('consecutive'))-1)
-     break
-   else:
-    count = int(aDict.get('consecutive'))
-    start = ip
-  else:
+ subnet = int(sub.get('subnet'))
+ start  = None
+ ret    = { 'subnet':sub['subasc'], 'res':'NOT_OK' }
+ for ip in range(subnet + 1, subnet + 2**(32-int(sub.get('mask')))-1):
+  if iplist.get(ip):
    start = None
+  elif not start:
+   count = int(aDict.get('consecutive',1))
+   if count > 1:
+    start = ip
+   else:
+    ret['ip'] = GL.int2ip(ip)
+    ret['res'] = 'OK'
+    break
+  else:
+   if count == 2:
+    ret['start'] = GL.int2ip(start)
+    ret['end'] = GL.int2ip(start+int(aDict.get('consecutive'))-1)
+    ret['res'] = 'OK'
+    break
+   else:
+    count = count - 1
  return ret
