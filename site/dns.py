@@ -63,9 +63,13 @@ def discrepancy(aWeb):
  print "</DIV></DIV>"
  if len(devs) > 0:
   print "<DIV CLASS=title>Extra only in SDCP ({})</DIV>".format(len(devs))
+  print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
   for key,value in  devs.iteritems():
-   print "{} -> {}<BR>".format(key,value['hostname'])
- print "</DIV>"
+   print "<DIV CLASS=tr>"
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A></DIV><DIV CLASS=td>".format(key,value['id'],value['hostname'])
+   print "&nbsp;</DIV>"
+   print "</DIV>"
+ print "</DIV></DIV></DIV>"
 
 #
 # DNS top
