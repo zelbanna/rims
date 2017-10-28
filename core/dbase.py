@@ -16,6 +16,7 @@ class DB(object):
  def __init__(self, aDB = None, aHost = None, aUser = None, aPass = None):
   self._conn = None
   self._curs = None
+  self._dirty = False
   if not aDB:
    import sdcp.PackageContainer as PC
    self._db, self._host, self._user, self._pass = PC.generic['db'],'localhost',PC.generic['dbuser'],PC.generic['dbpass']
@@ -41,10 +42,20 @@ class DB(object):
   self._conn.close()
 
  def do(self,aStr):
+  self._dirty = True
   return self._curs.execute(aStr)
 
  def commit(self):
+  self._dirty = False
   self._conn.commit()
+
+ def is_dirty(self):
+  return self._dirty
+
+ def do_commit(self,aStr):
+  res = self._curs.execute(aStr)
+  self._conn.commit()
+  return res
 
  def get_row(self):
   return self._curs.fetchone()

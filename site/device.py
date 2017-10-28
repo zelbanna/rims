@@ -152,6 +152,8 @@ def info(aWeb):
   db.do("DELETE FROM bookings WHERE device_id = '{}'".format(id))
   db.commit()
 
+ #
+ # Fetch all data
  xist = db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name, bookings.user_id FROM devices LEFT JOIN bookings ON bookings.device_id = devices.id LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
  if xist > 0:
   dev_data = db.get_row()
@@ -159,11 +161,21 @@ def info(aWeb):
   print "Stale info! Reload device list"
   db.close()
   return
-
  ip   = dev_data['ipasc']
  name = dev_data['hostname']
  rack_xist = db.do("SELECT * FROM rackinfo WHERE device_id = {}".format(id))
  ri = db.get_row()
+ if not dev_data['vm']:
+  db.do("SELECT * FROM racks")
+  racks = db.get_rows()
+ else:
+  racks = []
+ racks.append({ 'id':'NULL', 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
+ if dev_data['bookings.user_id']:
+  db.do("SELECT NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings WHERE device_id ='{}'".format(id))
+  dev_data.update(db.get_row())
+  db.do("SELECT alias FROM users WHERE id = '{}'".format(dev_data['bookings.user_id']))
+  dev_data.update(db.get_row())
 
  #
  # If inserts are return as x_op, update local db using newly constructed dict
@@ -189,7 +201,7 @@ def info(aWeb):
  ########################## Data Tables ######################
  
  print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:{}px; z-index:101; height:240px; float:left;'>".format(675 if rack_xist == 1 and not dev_data['type'] == 'pdu' else 470)
- # print "<!-- {} -->".format(dev_data)
+ print "<!-- {} -->".format(dev_data)
  # print "<!-- {} -->".format(rack_xist)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
@@ -218,15 +230,9 @@ def info(aWeb):
  print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Additional Info</DIV>"
  print "<DIV CLASS=z-table style='width:227px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_rack_id>"
- if dev_data['vm']:
-  print "<OPTION VALUE=NULL>Not used (VM)</OPTION>"
- else:
-  db.do("SELECT * FROM racks")
-  racks = db.get_rows()
-  racks.append({ 'id':'NULL', 'name':'Not used', 'size':'48', 'fk_pdu_1':'0', 'fk_pdu_2':'0','fk_console':'0'})
-  for rack in racks:
-   extra = " selected" if ((rack_xist == 0 and rack['id'] == 'NULL') or (rack_xist == 1 and ri['rack_id'] == rack['id'])) else ""
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
+ for rack in racks:
+  extra = " selected" if ((rack_xist == 0 and rack['id'] == 'NULL') or (rack_xist == 1 and ri['rack_id'] == rack['id'])) else ""
+  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>FQDN:</DIV><DIV CLASS=td style='{0}'>{1}</DIV></DIV>".format("border: solid 1px red;" if (name + "." + dev_data['a_name'] != dev_data['fqdn']) else "", dev_data['fqdn'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev_data['a_id'])
@@ -234,16 +240,11 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev_data['ipam_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(GL.int2mac(dev_data['mac']))
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={}></DIV></DIV>".format(GL.int2ip(dev_data['subnet'] + 1))
+ print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV>"
  if not dev_data['bookings.user_id']:
-  print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV><DIV CLASS=td STYLE='background-color:#00cc66'>None</DIV></DIV>"
+  print "<DIV CLASS=td STYLE='background-color:#00cc66'>None</DIV></DIV>"
  else:
-  db.do("SELECT NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings WHERE device_id ='{}'".format(id))
-  valid = db.get_row()['valid']
-  db.do("SELECT alias FROM users WHERE id = '{}'".format(dev_data['bookings.user_id']))
-  alias = db.get_row()['alias']
-  print "<DIV CLASS=tr>"
-  print "<DIV CLASS=td><A CLASS='z-op' DIV='div_content_left' URL='sdcp.cgi?call=bookings_list'>Booked by</A>:</DIV>"
-  print "<DIV CLASS=td STYLE='background-color:{0}'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={1}&op=view>{1}</A> {2}</DIV>".format("#df3620" if valid == 1 else "orange",alias,'' if valid else "(obsolete)")
+  print "<DIV CLASS=td STYLE='background-color:{0}'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={1}&op=view>{1}</A> {2}</DIV>".format("#df3620" if dev_data['valid'] == 1 else "orange",dev_data['alias'],'' if dev_data['valid'] else "(obsolete)")
   print "</DIV>"
  print "</DIV></DIV></DIV>"
 
