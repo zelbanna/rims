@@ -11,44 +11,10 @@ from sdcp.core.dbase import DB
 import sdcp.PackageContainer as PC
 
 #
-# lookup_info(id)
+# update(id,**key:value pairs)
 #
-#
-def lookup_info(aDict):
- from sdcp.devices.DevHandler import device_detect
- id  = aDict.get('id')
- ret = {}
- with DB() as db:
-  res = db.do("SELECT INET_NTOA(ip) as ipasc, hostname, ipam_sub_id, a_dom_id, ptr_dom_id FROM devices WHERE id = {}".format(id))
-  dev = db.get_row()
-  name = dev.get('hostname')
-  ip   = dev.get('ipasc')
-  entry = device_detect(ip)
-  if entry:
-   if entry['hostname'] != 'unknown':
-    name = entry['hostname']
-   db.do("UPDATE devices SET hostname = '{}', snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(name,entry['snmp'],entry['fqdn'],entry['model'],entry['type'],id))
-   ret['base'] ='True'
- 
-  if not name == 'unknown':
-   from sdcp.core.rest import call as rest_call
-   vals   = rest_call(PC.dns['url'],"sdcp.rest.{}_lookup".format(PC.dns['type']),{ 'ip':ip, 'name':name, 'a_dom_id':dev.get('a_dom_id') })
-   a_id   = vals.get('a_id','0')
-   ptr_id = vals.get('ptr_id','0')
-   ret['dns'] = str(vals)
-   vals   = rest_call(PC.ipam['url'],"sdcp.rest.{}_lookup".format(PC.ipam['type']),{'ip':ip, 'ipam_sub_id':dev.get('ipam_sub_id') })
-   ipam_id = vals.get('ipam_id','0')
-   iptr_id = vals.get('ptr_id','0')
-   ret['ipam'] = str(vals)
-   ret['out-of-sync'] = (iptr_id != '0' and iptr_id != ptr_id)
-   db.do("UPDATE devices SET ipam_id = {}, a_id = '{}', ptr_id = '{}' WHERE id = '{}'".format(ipam_id, a_id,ptr_id,id))
-  db.commit()
- return ret
-
-#
-# update_info(id,**key:value pairs)
-#
-def update_info(aDict):
+def update(aDict):
+ PC.log_msg("device_update({})".format(aDict))
  import sdcp.core.genlib as GL
  id     = aDict.pop('id',None)
  racked = aDict.pop('racked',None)
@@ -100,6 +66,9 @@ def new(aDict):
   else:
    xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND (ip = {} OR hostname = '{}')".format(ipam_sub_id,ipint,aDict.get('hostname')))
    if xist == 0:
+    #
+    # Que?
+    #
     res = db.do("SELECT name FROM domains WHERE id = '{}'".format(aDict.get('a_dom_id')))
     dom = db.get_row()
     res = db.do("SELECT id FROM domains WHERE name = '{}'".format(GL.ip2arpa(ip)))

@@ -115,19 +115,33 @@ def info(aWeb):
  conip = None
 
  ###################### Data operations ###################
- if   op == 'lookup':
-  from sdcp.rest.device import lookup_info
-  opres['lookup'] = lookup_info({'id':id})
-
- elif op == 'update':
-  from sdcp.rest.device import update_info
+ if op == 'update':
+  from sdcp.rest.device import update
   d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
   if not d.get('devices_vm'):
    d['devices_vm'] = 0
-  opres['update'] = update_info(d)
+  opres['update'] = update(d)
 
  db = DB()
  db.connect()
+
+ if op == 'lookup':
+  import sdcp.PackageContainer as PC
+  from sdcp.core.rest import call as rest_call
+  from sdcp.devices.DevHandler import device_detect
+  db.do("SELECT INET_NTOA(ip) as ipasc, hostname, a_dom_id, ipam_sub_id FROM devices WHERE id = {}".format(id))   
+  dev_data = db.get_row()
+  dev = device_detect(dev_data['ipasc'])
+  if dev:
+   db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(dev['snmp'],dev['fqdn'],dev['model'],dev['type'],id))
+   opres['lookup'] = dev
+  else:
+   opres['lookup'] = 'NOT_FOUND'
+  opres['a']   = rest_call(PC.dns['url'], "sdcp.rest.{}_lookup_a".format(PC.dns['type'])  ,{ 'name':dev_data['hostname'], 'a_dom_id':dev_data['a_dom_id'] })
+  opres['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_lookup_ptr".format(PC.dns['type']),{ 'ip':dev_data['ipasc'] })
+  opres['ipam']= rest_call(PC.ipam['url'],"sdcp.rest.{}_lookup".format(PC.ipam['type'])   ,{ 'ip':dev_data['ipasc'], 'ipam_sub_id':dev_data['ipam_sub_id'] })
+  db.do("UPDATE devices SET ipam_id = {}, a_id = '{}', ptr_id = '{}' WHERE id = '{}'".format(opres['ipam'].get('id',0), opres['a'].get('id',0),opres['ptr'].get('id',0),id))
+  db.commit()
 
  if op == 'book':
   user_id = aWeb.cookie.get('sdcp_id')
@@ -140,14 +154,14 @@ def info(aWeb):
 
  xist = db.do("SELECT *, INET_NTOA(ip) as ipasc, subnets.subnet, d2.name AS a_name, d1.name AS ptr_name, bookings.user_id FROM devices LEFT JOIN bookings ON bookings.device_id = devices.id LEFT JOIN domains AS d1 ON devices.ptr_dom_id = d1.id LEFT JOIN domains AS d2 ON devices.a_dom_id = d2.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
  if xist > 0:
-  device_data = db.get_row()
+  dev_data = db.get_row()
  else:
   print "Stale info! Reload device list"
   db.close()
   return
 
- ip   = device_data['ipasc']
- name = device_data['hostname']
+ ip   = dev_data['ipasc']
+ name = dev_data['hostname']
  rack_xist = db.do("SELECT * FROM rackinfo WHERE device_id = {}".format(id))
  ri = db.get_row()
 
@@ -155,18 +169,18 @@ def info(aWeb):
  # If inserts are return as x_op, update local db using newly constructed dict
  # 
  if op == 'update' and not name == 'unknown':
-  from sdcp.rest.device import update_info
+  from sdcp.rest.device import update
   import sdcp.PackageContainer as PC
   from sdcp.core.rest import call as rest_call
-  opres['ddi_sync'] = (device_data['ipam_id'] == '0')
-  res   = rest_call(PC.dns['url'],"sdcp.rest.{}_update".format(PC.dns['type']), { 'ip':ip, 'name':name, 'a_dom_id': str(device_data['a_dom_id']), 'a_id':str(device_data['a_id']), 'ptr_id':str(device_data['ptr_id']) })
+  opres['ddi_sync'] = (dev_data['ipam_id'] == '0')
+  res   = rest_call(PC.dns['url'],"sdcp.rest.{}_update".format(PC.dns['type']), { 'ip':ip, 'name':name, 'a_dom_id': str(dev_data['a_dom_id']), 'a_id':str(dev_data['a_id']), 'ptr_id':str(dev_data['ptr_id']) })
   newop = { 'id':id, 'devices_a_id':res['a_id'], 'devices_ptr_id':res['ptr_id'] }
-  res   = rest_call(PC.ipam['url'],"sdcp.rest.{}_update".format(PC.ipam['type']),{ 'ip':ip, 'fqdn':name+"."+device_data['a_name'], 'a_dom_id': str(device_data['a_dom_id']), 'ipam_id':str(device_data['ipam_id']), 'ipam_sub_id':str(device_data['ipam_sub_id']),'ptr_id':str(device_data['ptr_id']) })
+  res   = rest_call(PC.ipam['url'],"sdcp.rest.{}_update".format(PC.ipam['type']),{ 'ip':ip, 'fqdn':name+"."+dev_data['a_name'], 'a_dom_id': str(dev_data['a_dom_id']), 'ipam_id':str(dev_data['ipam_id']), 'ipam_sub_id':str(dev_data['ipam_sub_id']),'ptr_id':str(res['ptr_id']) })
   newop['devices_ipam_id'] = res.get('ipam_id',0)
-  update_info(newop)
-  device_data['a_id']    = newop['devices_a_id']
-  device_data['ptr_id']  = newop['devices_ptr_id']
-  device_data['ipam_id'] = newop['devices_ipam_id']
+  update(newop)
+  dev_data['a_id']    = newop['devices_a_id']
+  dev_data['ptr_id']  = newop['devices_ptr_id']
+  dev_data['ipam_id'] = newop['devices_ipam_id']
   if ri:
    from sdcp.rest.pdu import update_device_pdus
    ri['hostname'] = name
@@ -174,8 +188,8 @@ def info(aWeb):
 
  ########################## Data Tables ######################
  
- print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:{}px; z-index:101; height:240px; float:left;'>".format(675 if rack_xist == 1 and not device_data['type'] == 'pdu' else 470)
- # print "<!-- {} -->".format(device_data)
+ print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:{}px; z-index:101; height:240px; float:left;'>".format(675 if rack_xist == 1 and not dev_data['type'] == 'pdu' else 470)
+ # print "<!-- {} -->".format(dev_data)
  # print "<!-- {} -->".format(rack_xist)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
@@ -183,28 +197,28 @@ def info(aWeb):
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Reachability Info</DIV>"
  print "<DIV CLASS=z-table style='width:210px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(device_data['hostname'])
- print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['a_name'])
- print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['snmp'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev_data['hostname'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev_data['a_name'])
+ print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev_data['snmp'])
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ip)
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type>"
  for tp in device_types():
-  extra = " selected" if device_data['type'] == tp else ""
+  extra = " selected" if dev_data['type'] == tp else ""
   print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td style='max-width:150px;'>{}</DIV></DIV>".format(device_data['model'])
- if device_data['graph_update'] == 1:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='View graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</DIV><DIV CLASS=td>yes</DIV></DIV>".format(device_data['a_name'],device_data['hostname']+"."+ device_data['a_name'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td style='max-width:150px;'>{}</DIV></DIV>".format(dev_data['model'])
+ if dev_data['graph_update'] == 1:
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='View graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</DIV><DIV CLASS=td>yes</DIV></DIV>".format(dev_data['a_name'],dev_data['hostname']+"."+ dev_data['a_name'])
  else:
   print "<DIV CLASS=tr><DIV CLASS=td>Graphs:</DIV><DIV CLASS=td>no</DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm style='width:auto;' TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if device_data['vm'] == 1 else "") 
+ print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm style='width:auto;' TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev_data['vm'] == 1 else "") 
  print "</DIV></DIV></DIV>"
 
  print "<!-- Additional info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Additional Info</DIV>"
  print "<DIV CLASS=z-table style='width:227px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_rack_id>"
- if device_data['vm']:
+ if dev_data['vm']:
   print "<OPTION VALUE=NULL>Not used (VM)</OPTION>"
  else:
   db.do("SELECT * FROM racks")
@@ -214,18 +228,18 @@ def info(aWeb):
    extra = " selected" if ((rack_xist == 0 and rack['id'] == 'NULL') or (rack_xist == 1 and ri['rack_id'] == rack['id'])) else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>FQDN:</DIV><DIV CLASS=td style='{0}'>{1}</DIV></DIV>".format("border: solid 1px red;" if (name + "." + device_data['a_name'] != device_data['fqdn']) else "", device_data['fqdn'])
- print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['a_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['ptr_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(device_data['ipam_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(GL.int2mac(device_data['mac']))
- print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={}></DIV></DIV>".format(GL.int2ip(device_data['subnet'] + 1))
- if not device_data['bookings.user_id']:
+ print "<DIV CLASS=tr><DIV CLASS=td>FQDN:</DIV><DIV CLASS=td style='{0}'>{1}</DIV></DIV>".format("border: solid 1px red;" if (name + "." + dev_data['a_name'] != dev_data['fqdn']) else "", dev_data['fqdn'])
+ print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev_data['a_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev_data['ptr_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev_data['ipam_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(GL.int2mac(dev_data['mac']))
+ print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={}></DIV></DIV>".format(GL.int2ip(dev_data['subnet'] + 1))
+ if not dev_data['bookings.user_id']:
   print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV><DIV CLASS=td STYLE='background-color:#00cc66'>None</DIV></DIV>"
  else:
   db.do("SELECT NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings WHERE device_id ='{}'".format(id))
   valid = db.get_row()['valid']
-  db.do("SELECT alias FROM users WHERE id = '{}'".format(device_data['bookings.user_id']))
+  db.do("SELECT alias FROM users WHERE id = '{}'".format(dev_data['bookings.user_id']))
   alias = db.get_row()['alias']
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td><A CLASS='z-op' DIV='div_content_left' URL='sdcp.cgi?call=bookings_list'>Booked by</A>:</DIV>"
@@ -234,12 +248,12 @@ def info(aWeb):
  print "</DIV></DIV></DIV>"
 
  print "<!-- Rack Info if such exists -->"
- if rack_xist == 1 and not device_data['type'] == 'pdu':
+ if rack_xist == 1 and not dev_data['type'] == 'pdu':
   print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Rack Info</DIV>"
   print "<DIV CLASS=z-table style='width:210px;'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(ri['rack_size'])
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(ri['rack_unit'])
-  if not device_data['type'] == 'console' and db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") > 0:
+  if not dev_data['type'] == 'console' and db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") > 0:
    consoles = db.get_rows()
    consoles.append({ 'id':'NULL', 'name':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1' })
    print "<DIV CLASS=tr><DIV CLASS=td>TS:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_console_id>"
@@ -254,7 +268,7 @@ def info(aWeb):
   else:
    print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
    print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
-  if not device_data['type'] == 'pdu' and db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus") > 0:
+  if not dev_data['type'] == 'pdu' and db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus") > 0:
    pdus = db.get_rows()
    pdus.append({ 'id':'NULL', 'name':'No', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'PDU' })
    for pem in ['pem0','pem1']:
@@ -274,20 +288,20 @@ def info(aWeb):
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_remove&id={} MSG='Are you sure you want to delete device?' TITLE='Remove device'><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=lookup    FRM=info_form TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=lookup&id={} TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=update    FRM=info_form TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
- if device_data['bookings.user_id']:
-  if int(aWeb.cookie.get('sdcp_id')) == device_data['bookings.user_id']:
+ if dev_data['bookings.user_id']:
+  if int(aWeb.cookie.get('sdcp_id')) == dev_data['bookings.user_id']:
    print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=unbook&id={} MSG='Are you sure you want to drop booking?' TITLE='Unbook'><IMG SRC='images/btn-remove.png'></A>".format(id)
  else:
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=book&id={} TITLE='Book device'><IMG SRC='images/btn-add.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_device_data URL=sdcp.cgi?call=device_conf_gen                 FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_dev_data URL=sdcp.cgi?call=device_conf_gen                 FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
  import sdcp.PackageContainer as PC
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf['username'],ip)
  if rack_xist == 1 and (conip and not conip == '127.0.0.1' and ri['console_port'] and ri['console_port'] > 0):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(conip,6000+ri['console_port'])
- if (device_data['type'] == 'pdu' or device_data['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(device_data['type'],device_data['ip'])) == 0:
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL='sdcp.cgi?call={0}_info&id=new&ip={1}&name={2}' style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(device_data['type'],ip,device_data['hostname']) 
+ if (dev_data['type'] == 'pdu' or dev_data['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(dev_data['type'],dev_data['ip'])) == 0:
+  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL='sdcp.cgi?call={0}_info&id=new&ip={1}&name={2}' style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(dev_data['type'],ip,dev_data['hostname']) 
  print "<SPAN ID=upd_results style='text-overflow:ellipsis; overflow:hidden; float:right; font-size:9px;'>{}</SPAN>".format(str(opres) if len(opres) > 0 else "")
  print "</DIV>"
  db.close()
@@ -295,19 +309,19 @@ def info(aWeb):
 
  print "<!-- Function navbar and content -->"
  print "<DIV CLASS='z-navbar' style='top:246px;'>"
- functions = device_get_widgets(device_data['type'])
+ functions = device_get_widgets(dev_data['type'])
  if functions:
   if functions[0] == 'operated':
-   if device_data['type'] == 'esxi':
+   if dev_data['type'] == 'esxi':
     print "<A TARGET='main_cont' HREF='sdcp.cgi?call=esxi_main&id={}'>Manage</A></B></DIV>".format(id)
   else:
    for fun in functions:
     funname = " ".join(fun.split('_')[1:])
-    print "<A CLASS=z-op DIV=div_device_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, device_data['type'], fun, funname.title())
+    print "<A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, dev_data['type'], fun, funname.title())
  else:
   print "&nbsp;"
  print "</DIV>"
- print "<DIV CLASS='z-content' ID=div_device_data style='top:280px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>"
+ print "<DIV CLASS='z-content' ID=div_dev_data style='top:280px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>"
 
 
 
