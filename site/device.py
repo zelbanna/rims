@@ -113,34 +113,48 @@ def info(aWeb):
  op    = aWeb.get_value('op',"")
  opres = {}
 
+ db = DB()
+ db.connect()
+
  ###################### Data operations ###################
  if op == 'update':
   from sdcp.rest.device import update
+  import sdcp.PackageContainer as PC
+  from sdcp.core.rest import call as rest_call
   d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
   if not d.get('devices_vm'):
    d['devices_vm'] = 0
-
-  opres['update'] = update(d)
-
- db = DB()
- db.connect()
+  if d['devices_hostname'] != 'unknown':
+   db.do("SELECT INET_NTOA(ip) as ip, a_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
+   lookup = db.get_row()
+   ddi = {}
+   ddi['a']   = rest_call(PC.dns['url'], "sdcp.rest.{}_lookup_a".format(PC.dns['type'])  ,{ 'name':d['devices_hostname'], 'a_dom_id':lookup['a_dom_id'] })
+   ddi['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_lookup_ptr".format(PC.dns['type']),{ 'ip':lookup['ip'] })
+   ddi['ipam']= rest_call(PC.ipam['url'],"sdcp.rest.{}_lookup".format(PC.ipam['type'])   ,{ 'ip':lookup['ip'], 'ipam_sub_id':lookup['ipam_sub_id'] })
+   lookup.update({ 'name': d['devices_hostname'], 'fqdn':d['devices_hostname'] + '.' + lookup['domain'], 'a_id':str(ddi['a'].get('id',0)), 'ptr_id':str(ddi['ptr'].get('id',0)) })
+   dns  = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']), lookup)
+   lookup.update({ 'fqdn':d['devices_hostname'] + '.' + lookup['domain'], 'ipam_id':str(ddi['ipam'].get('id',0)) })
+   ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_update".format(PC.ipam['type']),lookup)
+   d.update({'devices_a_id':dns['a_id'], 'devices_ptr_id':dns['ptr_id'], 'devices_ipam_id':ipam['ipam_id'] })
+   opres['update'] = update(d)
+   # Now there is a rackinfo item
+   if d['rackinfo_rack_id'] != 'NULL':
+    from sdcp.rest.pdu import update_device_pdus
+    db.do("SELECT pem0_pdu_id, pem0_pdu_slot, pem0_pdu_unit, pem1_pdu_id, pem1_pdu_slot, pem1_pdu_unit FROM rackinfo WHERE device_id = '{}'".format(id))
+    pdu_update = db.get_row()
+    pdu_update['hostname'] = d['devices_hostname']
+    opres['pdu'] = update_device_pdus(pdu_update)
 
  if op == 'lookup':
   import sdcp.PackageContainer as PC
   from sdcp.core.rest import call as rest_call
   from sdcp.devices.DevHandler import device_detect
-  db.do("SELECT INET_NTOA(ip) as ipasc, hostname, a_dom_id, ipam_sub_id FROM devices WHERE id = {}".format(id))   
-  lookup = db.get_row()
-  dev = device_detect(lookup['ipasc'])
+  dev = device_detect(aWeb.get_value('ip'))
   if dev:
    db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(dev['snmp'],dev['fqdn'],dev['model'],dev['type'],id))
    opres['lookup'] = dev
   else:
    opres['lookup'] = 'NOT_FOUND'
-  opres['a']   = rest_call(PC.dns['url'], "sdcp.rest.{}_lookup_a".format(PC.dns['type'])  ,{ 'name':lookup['hostname'], 'a_dom_id':lookup['a_dom_id'] })
-  opres['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_lookup_ptr".format(PC.dns['type']),{ 'ip':lookup['ipasc'] })
-  opres['ipam']= rest_call(PC.ipam['url'],"sdcp.rest.{}_lookup".format(PC.ipam['type'])   ,{ 'ip':lookup['ipasc'], 'ipam_sub_id':lookup['ipam_sub_id'] })
-  db.do("UPDATE devices SET ipam_id = {}, a_id = '{}', ptr_id = '{}' WHERE id = '{}'".format(opres['ipam'].get('id',0), opres['a'].get('id',0),opres['ptr'].get('id',0),id))
 
  if op == 'book':
   db.do("INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')".format(id,aWeb.cookie.get('sdcp_id')))
@@ -150,7 +164,6 @@ def info(aWeb):
 
  if db.is_dirty():
   db.commit()
-
 
  from sdcp.rest.device import info as rest_info
  dev = rest_info({'id':id})
@@ -174,27 +187,6 @@ def info(aWeb):
 
  db.close()
 
- #
- # If inserts are return as x_op, update local db using newly constructed dict
- # 
- # update part 2 needs to know that we have all ip, name, fqdn, dom_id etc in memory
- #
- if op == 'update' and not dev['info']['hostname'] == 'unknown':
-  from sdcp.rest.device import update
-  import sdcp.PackageContainer as PC
-  from sdcp.core.rest import call as rest_call
-  res   = rest_call(PC.dns['url'],"sdcp.rest.{}_update".format(PC.dns['type']), { 'ip':dev['ip'], 'name':dev['info']['hostname'], 'a_dom_id': str(dev['info']['a_dom_id']), 'a_id':str(dev['info']['a_id']), 'ptr_id':str(dev['info']['ptr_id']) })
-  newop = { 'id':id, 'devices_a_id':res['a_id'], 'devices_ptr_id':res['ptr_id'] }
-  res   = rest_call(PC.ipam['url'],"sdcp.rest.{}_update".format(PC.ipam['type']),{ 'ip':dev['ip'], 'fqdn':dev['fqdn'], 'a_dom_id': str(dev['info']['a_dom_id']), 'ipam_id':str(dev['info']['ipam_id']), 'ipam_sub_id':str(dev['info']['ipam_sub_id']),'ptr_id':str(res['ptr_id']) })
-  newop['devices_ipam_id'] = res.get('ipam_id',0)
-  update(newop)
-  dev['info']['a_id']    = newop['devices_a_id']
-  dev['info']['ptr_id']  = newop['devices_ptr_id']
-  dev['info']['ipam_id'] = newop['devices_ipam_id']
-  if dev['racked']:
-   from sdcp.rest.pdu import update_device_pdus
-   dev['rack']['hostname'] = dev['info']['hostname']
-   opres['pdu'] = update_device_pdus(dev['rack'])
 
  ########################## Data Tables ######################
  
@@ -286,7 +278,7 @@ def info(aWeb):
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_remove&id={} MSG='Are you sure you want to delete device?' TITLE='Remove device'><IMG SRC='images/btn-remove.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=lookup&id={} TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=lookup&id={}&ip={} TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(id,dev['info']['ipasc'])
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=update    FRM=info_form TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
  if dev['booked']:
   if int(aWeb.cookie.get('sdcp_id')) == dev['booking']['user_id']:
