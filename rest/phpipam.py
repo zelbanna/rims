@@ -105,7 +105,7 @@ def free(aDict):
  PC.log_msg("phpipam_free({})".format(aDict))
  ret = {'res':'OK' } 
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
-  xist = db.do("SELECT dns_name FROM ipaddress WHERE ip_addr = INET_ATON('{}') and subnetId = {}".format(aDict['ip'],aDict['ipam_sub_id']))
+  xist = db.do("SELECT dns_name FROM ipaddresses WHERE ip_addr = INET_ATON('{}') and subnetId = {}".format(aDict['ip'],aDict['ipam_sub_id']))
   if xist > 0:
    ret['res'] = 'NOT_OK'
    ret['info'] = db.get_row()['dns_name']
