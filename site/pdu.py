@@ -146,9 +146,9 @@ def info(aWeb):
    name = 'new-name' if not name else name
   else:
    if id:
-    db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus WHERE id = '{0}'".format(id))
+    db.do("SELECT pdus.*, INET_NTOA(ip) as ipasc FROM pdus WHERE id = '{0}'".format(id))
    else:
-    db.do("SELECT *, INET_NTOA(ip) as ipasc FROM pdus WHERE ip = '{0}'".format(ipint))
+    db.do("SELECT pdus.*, INET_NTOA(ip) as ipasc FROM pdus WHERE ip = '{0}'".format(ipint))
    pdudata = db.get_row()
    ip   = pdudata['ipasc']
    name = pdudata['name']

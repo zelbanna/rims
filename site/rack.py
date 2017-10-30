@@ -35,7 +35,7 @@ def list(aWeb):
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with DB() as db:
-  res  = db.do("SELECT * from racks ORDER by name")
+  res  = db.do("SELECT racks.* from racks ORDER by name")
   data = db.get_rows()
   for unit in data:
    print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=rack_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['size'])
@@ -93,7 +93,7 @@ def info(aWeb):
   if id == 'new':
    rack = { 'id':'new', 'name':'new-name', 'size':'48', 'fk_pdu_1':None, 'fk_pdu_2':None, 'fk_console':None }
   else:
-   db.do("SELECT * from racks WHERE id = {}".format(id))
+   db.do("SELECT racks.* from racks WHERE id = {}".format(id))
    rack = db.get_row()
   print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(rack['name'])
   print "<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(rack['size'])

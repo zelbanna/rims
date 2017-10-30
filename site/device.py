@@ -181,9 +181,9 @@ def info(aWeb):
   from sdcp.rest.device import update
   import sdcp.PackageContainer as PC
   from sdcp.core.rest import call as rest_call
-  res   = rest_call(PC.dns['url'],"sdcp.rest.{}_update".format(PC.dns['type']), { 'ip':dev['info']['ipasc'], 'name':dev['info']['hostname'], 'a_dom_id': str(dev['info']['a_dom_id']), 'a_id':str(dev['info']['a_id']), 'ptr_id':str(dev['info']['ptr_id']) })
+  res   = rest_call(PC.dns['url'],"sdcp.rest.{}_update".format(PC.dns['type']), { 'ip':dev['ip'], 'name':dev['info']['hostname'], 'a_dom_id': str(dev['info']['a_dom_id']), 'a_id':str(dev['info']['a_id']), 'ptr_id':str(dev['info']['ptr_id']) })
   newop = { 'id':id, 'devices_a_id':res['a_id'], 'devices_ptr_id':res['ptr_id'] }
-  res   = rest_call(PC.ipam['url'],"sdcp.rest.{}_update".format(PC.ipam['type']),{ 'ip':dev['info']['ipasc'], 'fqdn':dev['fqdn'], 'a_dom_id': str(dev['info']['a_dom_id']), 'ipam_id':str(dev['info']['ipam_id']), 'ipam_sub_id':str(dev['info']['ipam_sub_id']),'ptr_id':str(res['ptr_id']) })
+  res   = rest_call(PC.ipam['url'],"sdcp.rest.{}_update".format(PC.ipam['type']),{ 'ip':dev['ip'], 'fqdn':dev['fqdn'], 'a_dom_id': str(dev['info']['a_dom_id']), 'ipam_id':str(dev['info']['ipam_id']), 'ipam_sub_id':str(dev['info']['ipam_sub_id']),'ptr_id':str(res['ptr_id']) })
   newop['devices_ipam_id'] = res.get('ipam_id',0)
   update(newop)
   dev['info']['a_id']    = newop['devices_a_id']
@@ -207,7 +207,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['info']['hostname'])
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['a_name'])
  print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['snmp'])
- print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ipasc'])
+ print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['ip'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type>"
  for tp in device_types():
   extra = " selected" if dev['info']['type'] == tp else ""
@@ -287,7 +287,7 @@ def info(aWeb):
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=book&id={} TITLE='Book device'><IMG SRC='images/btn-add.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_dev_data URL=sdcp.cgi?call=device_conf_gen                 FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
  import sdcp.PackageContainer as PC
- print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf['username'],dev['info']['ipasc'])
+ print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf['username'],dev['ip'])
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(dev['rack']['console_ip'],6000+dev['rack']['console_port'])
  if (dev['info']['type'] == 'pdu' or dev['info']['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(dev['info']['type'],dev['info']['ip'])) == 0:
