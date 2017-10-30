@@ -37,14 +37,14 @@ def load(aWeb):
 #
 def discrepancy(aWeb):
  print "<DIV CLASS=Z-frame>"
+ print "<DIV CLASS=title>DNS Consistency</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
+ print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>Value</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Key</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for type in ['a','ptr']:
   dns = rest_call(PC.dns['url'],"sdcp.rest.{}_get_records".format(PC.dns['type']),{'type':type})
   tid = "{}_id".format(type)
   with DB() as db:
    db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, {0}_id, CONCAT(hostname,'.',name) as fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id ORDER BY ip".format(type))
    devs = db.get_rows_dict("ipasc" if type == 'a' else "fqdn")
-  print "<DIV CLASS=title>{0} Consistency</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>".format(type.upper())
-  print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV></DIV><DIV CLASS=tbody>"
   for rec in dns['records']:
    dev = devs.pop(rec['content'],None)
    if not dev or dev[tid] != rec['id']:
@@ -59,21 +59,16 @@ def discrepancy(aWeb):
      print "<DIV CLASS=td>{0}</DIV>".format(dev['fqdn'])
     else:
      print "<DIV CLASS=td>&nbsp</DIV><DIV CLASS=td>&nbsp</DIV>"
-    print "<DIV CLASS=td>&nbsp;"
-    print "<A CLASS='z-op z-btn z-small-btn' DIV=span_dns MSG='Are you sure?' URL='sdcp.cgi?call=dns_remove&type={}&id={}'><IMG SRC=images/btn-remove.png></A>".format(type,rec['id'])
+    print "<DIV CLASS=td>&nbsp;<A CLASS='z-op z-btn z-small-btn' DIV=span_dns MSG='Are you sure?' URL='sdcp.cgi?call=dns_remove&type={}&id={}'><IMG SRC=images/btn-remove.png></A></DIV>".format(type,rec['id'])
     print "</DIV>"
-    print "</DIV>"
-  print "</DIV></DIV>"
   if len(devs) > 0:
-   print "<DIV CLASS=title>Extra only in SDCP ({})</DIV>".format(len(devs))
-   print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
    for key,value in  devs.iteritems():
     print "<DIV CLASS=tr>"
-    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A></DIV><DIV CLASS=td>".format(key,value['id'],value['fqdn'])
-    print "&nbsp;</DIV>"
+    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;</DIV>".format(key)
+    print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={0}>{1}</A></DIV><DIV CLASS=td>{0}</DIV><DIV CLASS=td>{1}</DIV>".format(value['id'],value['fqdn'])
+    print "<DIV CLASS=td>&nbsp;</DIV>"
     print "</DIV>"
-  print "</DIV></DIV>"
- print "</DIV>"
+ print "</DIV></DIV></DIV>"
 
 
 #
