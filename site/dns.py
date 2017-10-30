@@ -36,40 +36,45 @@ def load(aWeb):
 #
 #
 def discrepancy(aWeb):
- dns = rest_call(PC.dns['url'],"sdcp.rest.{}_get_records".format(PC.dns['type']),{'type':'A'})
- with DB() as db:
-  db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, hostname, a_id, ptr_id, a_dom_id FROM devices ORDER BY ip")
-  devs = db.get_rows_dict('ipasc')
- print "<DIV CLASS=z-frame><DIV CLASS=title>DNS Consistency</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
- print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV></DIV><DIV CLASS=tbody>"
- for rec in dns['records']:
-  dev = devs.pop(rec['content'],None)
-  if not dev or dev['a_id'] != rec['id']:
-   print "<DIV CLASS=tr>"
-   print "<!-- {} --> ".format(rec)
-   print "<DIV CLASS=td>{}</DIV>".format(rec['content'])
-   print "<DIV CLASS=td>{}</DIV>".format(rec['type'])
-   print "<DIV CLASS=td>{}</DIV>".format(rec['name'])
-   print "<DIV CLASS=td>{}</DIV>".format(rec['id'])
-   if dev:
-    print "<DIV CLASS=td>{}</DIV>".format(dev['a_id'])
-    print "<DIV CLASS=td>{0}</DIV>".format(dev['hostname'])
-   else:
-    print "<DIV CLASS=td>&nbsp</DIV><DIV CLASS=td>&nbsp</DIV>"
-   print "<DIV CLASS=td>&nbsp;"
-   print "<A CLASS='z-op z-btn z-small-btn' DIV=span_dns MSG='Are you sure?' URL='sdcp.cgi?call=dns_remove&id={}'><IMG SRC=images/btn-remove.png></A>".format(rec['id'])
-   print "</DIV>"
-   print "</DIV>"
- print "</DIV></DIV>"
- if len(devs) > 0:
-  print "<DIV CLASS=title>Extra only in SDCP ({})</DIV>".format(len(devs))
-  print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
-  for key,value in  devs.iteritems():
-   print "<DIV CLASS=tr>"
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A></DIV><DIV CLASS=td>".format(key,value['id'],value['hostname'])
-   print "&nbsp;</DIV>"
-   print "</DIV>"
- print "</DIV></DIV></DIV>"
+ print "<DIV CLASS=Z-frame>"
+ for type in ['a','ptr']:
+  dns = rest_call(PC.dns['url'],"sdcp.rest.{}_get_records".format(PC.dns['type']),{'type':type})
+  tid = "{}_id".format(type)
+  with DB() as db:
+   db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, {0}_id, CONCAT(hostname,'.',name) as fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id ORDER BY ip".format(type))
+   devs = db.get_rows_dict("ipasc" if type == 'a' else "fqdn")
+  print "<DIV CLASS=title>{0} Consistency</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>".format(type.upper())
+  print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV></DIV><DIV CLASS=tbody>"
+  for rec in dns['records']:
+   dev = devs.pop(rec['content'],None)
+   if not dev or dev[tid] != rec['id']:
+    print "<DIV CLASS=tr>"
+    print "<!-- {} --> ".format(rec)
+    print "<DIV CLASS=td>{}</DIV>".format(rec['content'])
+    print "<DIV CLASS=td>{}</DIV>".format(rec['type'])
+    print "<DIV CLASS=td>{}</DIV>".format(rec['name'])
+    print "<DIV CLASS=td>{}</DIV>".format(rec['id'])
+    if dev:
+     print "<DIV CLASS=td>{}</DIV>".format(dev[tid])
+     print "<DIV CLASS=td>{0}</DIV>".format(dev['fqdn'])
+    else:
+     print "<DIV CLASS=td>&nbsp</DIV><DIV CLASS=td>&nbsp</DIV>"
+    print "<DIV CLASS=td>&nbsp;"
+    print "<A CLASS='z-op z-btn z-small-btn' DIV=span_dns MSG='Are you sure?' URL='sdcp.cgi?call=dns_remove&type={}&id={}'><IMG SRC=images/btn-remove.png></A>".format(type,rec['id'])
+    print "</DIV>"
+    print "</DIV>"
+  print "</DIV></DIV>"
+  if len(devs) > 0:
+   print "<DIV CLASS=title>Extra only in SDCP ({})</DIV>".format(len(devs))
+   print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
+   for key,value in  devs.iteritems():
+    print "<DIV CLASS=tr>"
+    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A></DIV><DIV CLASS=td>".format(key,value['id'],value['fqdn'])
+    print "&nbsp;</DIV>"
+    print "</DIV>"
+  print "</DIV></DIV>"
+ print "</DIV>"
+
 
 #
 # DNS top
@@ -100,6 +105,7 @@ def cleanup(aWeb):
 # Remove from DNS DB
 #
 def remove(aWeb):
- id = aWeb.get_value('id')
- res = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']),{'a_id':id})
+ id   = aWeb.get_value('id')
+ type = aWeb.get_value('type') 
+ res = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']),{"{}_id".format(type):id})
  print "Remove {} - Results:{}".format(id,res)
