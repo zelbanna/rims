@@ -17,14 +17,15 @@ def update(aDict):
  PC.log_msg("device_update({})".format(aDict))
  import sdcp.core.genlib as GL
  id     = aDict.pop('id',None)
- racked = aDict.pop('racked','0')
+ racked = aDict.pop('racked',None)
  with DB() as db:
-  if   racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
-   db.do("INSERT IGNORE INTO rackinfo SET device_id = {},rack_id={}".format(id,aDict.get('rackinfo_rack_id')))
-   db.commit()
-  elif racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
-   db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
-   db.commit()
+  if racked:
+   if   racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
+    db.do("INSERT IGNORE INTO rackinfo SET device_id = {},rack_id={}".format(id,aDict.get('rackinfo_rack_id')))
+    db.commit()
+   elif racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
+    db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
+    db.commit()
 
   tbl_id = { 'devices':'id', 'rackinfo':'device_id' } 
   for fkey in aDict.keys():
