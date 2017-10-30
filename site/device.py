@@ -92,7 +92,6 @@ def list(aWeb):
   rows = db.get_rows()
  
  print "<DIV CLASS=tbody>"
- print "<!-- {} -->".format(sql)
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='Show device info for {0}' DIV=div_content_right URL='sdcp.cgi?call=device_info&id={3}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</DIV></DIV></DIV>"
@@ -124,6 +123,8 @@ def info(aWeb):
   d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
   if not d.get('devices_vm'):
    d['devices_vm'] = 0
+  if not d.get('devices_comment'):
+   d['devices_comment'] = 'NULL'
   if d['devices_hostname'] != 'unknown':
    db.do("SELECT INET_NTOA(ip) as ip, a_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
    lookup = db.get_row()
@@ -189,14 +190,16 @@ def info(aWeb):
 
 
  ########################## Data Tables ######################
- 
- print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:{}px; z-index:101; height:240px; float:left;'>".format(675 if dev['racked'] == 1 and not dev['info']['type'] == 'pdu' else 470)
+
+ width= 675 if dev['racked'] == 1 and not dev['info']['type'] == 'pdu' else 470
+
+ print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:{}px; z-index:101; height:255px; float:left;'>".format(width)
  print "<!-- {} -->".format(dev['info'])
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
  print "<!-- Reachability Info -->"
- print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Reachability Info</DIV>"
+ print "<DIV style='margin:3px; float:left; height:185px;'><DIV CLASS=title>Reachability Info</DIV>"
  print "<DIV CLASS=z-table style='width:210px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['info']['hostname'])
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['a_name'])
@@ -216,7 +219,7 @@ def info(aWeb):
  print "</DIV></DIV></DIV>"
 
  print "<!-- Additional info -->"
- print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Additional Info</DIV>"
+ print "<DIV style='margin:3px; float:left; height:185px;'><DIV CLASS=title>Additional Info</DIV>"
  print "<DIV CLASS=z-table style='width:227px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td>"
  if dev['info']['vm']:
@@ -244,7 +247,7 @@ def info(aWeb):
 
  print "<!-- Rack Info if such exists -->"
  if dev['racked'] == 1 and not dev['info']['type'] == 'pdu':
-  print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Rack Info</DIV>"
+  print "<DIV style='margin:3px; float:left; height:185px;'><DIV CLASS=title>Rack Info</DIV>"
   print "<DIV CLASS=z-table style='width:210px;'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_size'])
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_unit'])
@@ -272,6 +275,7 @@ def info(aWeb):
    for index in range(0,4):
     print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
   print "</DIV></DIV></DIV>"
+ print "<DIV STYLE='display:block; font-size:11px; clear:both; margin-bottom:10px; width:99%'><SPAN>Comments:</SPAN><INPUT STYLE='width:{}px; border:none; background-color:white; overflow-x:auto; font-size:11px;' TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV>".format(width-90,"" if not dev['info']['comment'] else dev['info']['comment'])
  print "</FORM>"
 
  print "<!-- Controls -->"
@@ -297,7 +301,7 @@ def info(aWeb):
  print "</DIV>"
 
  print "<!-- Function navbar and content -->"
- print "<DIV CLASS='z-navbar' style='top:246px;'>"
+ print "<DIV CLASS='z-navbar' style='top:260px;'>"
  functions = device_get_widgets(dev['info']['type'])
  if functions:
   if functions[0] == 'operated':
