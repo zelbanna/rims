@@ -41,9 +41,10 @@ class DB(object):
   self._curs.close()
   self._conn.close()
 
- def do(self,aStr):
-  self._dirty = True
-  return self._curs.execute(aStr)
+ def do(self,aQuery):
+  op = aQuery[0:6].upper()
+  self._dirty = (op == 'UPDATE' or op == 'INSERT')
+  return self._curs.execute(aQuery)
 
  def commit(self):
   self._dirty = False
@@ -53,9 +54,9 @@ class DB(object):
   return self._dirty
 
  def do_commit(self,aStr):
-  res = self._curs.execute(aStr)
+  self._dirty = False
+  self._curs.execute(aStr)
   self._conn.commit()
-  return res
 
  def get_row(self):
   return self._curs.fetchone()

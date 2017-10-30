@@ -86,11 +86,11 @@ def new(aDict):
 # discover(start, end, clear, a_dom_id, ipam_sub_id)
 #
 def discover(aDict):
+ PC.log_msg("device_discover({})".format(aDict))
  from time import time
  from threading import Thread, BoundedSemaphore
  from sdcp.devices.DevHandler import device_detect
  import sdcp.core.genlib as GL
- PC.log_msg("device_discover({})".format(aDict))
  start_time = int(time())
  ip_start = aDict.get('start')
  ip_end   = aDict.get('end')
@@ -162,17 +162,14 @@ def dump_db(aDict):
   return []
 
 #
-# find(ipam_sub_id, consecutive)
-#
-#
-# find(ipam_sub_id, consecutive)
+# find_ip(ipam_sub_id, consecutive)
 #
 # - Find X consecutive ip from a particular subnet-id
 # ipam_sub_id: X
 # consecutive: X
 
-def find(aDict):
- PC.log_msg("device_find({})".format(aDict))
+def find_ip(aDict):
+ PC.log_msg("device_find_ip({})".format(aDict))
  import sdcp.core.genlib as GL
  sub_id = aDict.get('ipam_sub_id')
  with DB() as db:
@@ -203,3 +200,27 @@ def find(aDict):
    else:
     count = count - 1
  return ret
+
+#
+# info(id)
+#
+def info(aDict):
+ PC.log_msg("device_info({})".format(aDict))
+ id = aDict['id']
+ ret = {}
+ with DB() as db:
+  ret['exist'] = db.do("SELECT devices.*, subnets.subnet, a.name as a_name, INET_NTOA(ip) as ipasc FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
+  if ret['exist'] > 0:
+   ret['info'] = db.get_row()
+   ret['fqdn'] = ret['info']['hostname'] + "." + ret['info']['a_name']
+   ret['res'] = 'OK'
+   ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(id))
+   if ret['booked'] > 0:
+    ret['booking'] = db.get_row()
+   ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(consoles.ip) AS console_ip, consoles.name AS console_name FROM rackinfo LEFT JOIN consoles ON consoles.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(id))
+   if ret['racked'] > 0:
+    ret['rack'] = db.get_row()
+  else:
+   ret['res'] = 'NOT_OK'
+ return ret
+
