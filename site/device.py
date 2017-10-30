@@ -238,7 +238,7 @@ def info(aWeb):
  if int(dev['booked']) == 0:
   print "<DIV CLASS=td STYLE='background-color:#00cc66'>None</DIV></DIV>"
  else:
-  print "<DIV CLASS=td STYLE='background-color:{0}'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={1}&op=view>{1}</A> {2}</DIV>".format("#df3620" if dev['booking']['valid'] == 1 else "orange",dev['booking']['alias'],'' if dev['booking']['valid'] else "(obsolete)")
+  print "<DIV CLASS=td STYLE='background-color:{0}'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={1}&op=view>{2}</A> {3}</DIV>".format("#df3620" if dev['booking']['valid'] == 1 else "orange",dev['booking']['user_id'],dev['booking']['alias'],'' if dev['booking']['valid'] else "(obsolete)")
   print "</DIV>"
  print "</DIV></DIV></DIV>"
 
