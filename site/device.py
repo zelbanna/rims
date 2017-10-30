@@ -119,6 +119,7 @@ def info(aWeb):
   d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
   if not d.get('devices_vm'):
    d['devices_vm'] = 0
+
   opres['update'] = update(d)
 
  db = DB()
@@ -150,6 +151,7 @@ def info(aWeb):
  if db.is_dirty():
   db.commit()
 
+
  from sdcp.rest.device import info as rest_info
  dev = rest_info({'id':id})
  if dev['exist'] == 0:
@@ -160,9 +162,7 @@ def info(aWeb):
  if not dev['info']['vm']:
   db.do("SELECT racks.* FROM racks")
   racks = db.get_rows()
- else:
-  racks = []
- racks.append({ 'id':'NULL', 'name':'Not used'})
+  racks.append({ 'id':'NULL', 'name':'Not used'})
  
  if dev['racked']:
   db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") 
@@ -177,6 +177,8 @@ def info(aWeb):
  #
  # If inserts are return as x_op, update local db using newly constructed dict
  # 
+ # update part 2 needs to know that we have all ip, name, fqdn, dom_id etc in memory
+ #
  if op == 'update' and not dev['info']['hostname'] == 'unknown':
   from sdcp.rest.device import update
   import sdcp.PackageContainer as PC
@@ -224,11 +226,16 @@ def info(aWeb):
  print "<!-- Additional info -->"
  print "<DIV style='margin:3px; float:left; height:190px;'><DIV CLASS=title>Additional Info</DIV>"
  print "<DIV CLASS=z-table style='width:227px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_rack_id>"
- for rack in racks:
-  extra = " selected" if ((dev['racked'] == 0 and rack['id'] == 'NULL') or (dev['racked'] == 1 and dev['rack']['rack_id'] == rack['id'])) else ""
-  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
- print "</SELECT></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td>"
+ if dev['info']['vm']:
+  print "Not used <INPUT TYPE=hidden NAME=rackinfo_rack_id VALUE=NULL>"
+ else:
+  print "<SELECT NAME=rackinfo_rack_id>"
+  for rack in racks:
+   extra = " selected" if ((dev['racked'] == 0 and rack['id'] == 'NULL') or (dev['racked'] == 1 and dev['rack']['rack_id'] == rack['id'])) else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
+  print "</SELECT>"
+ print "</DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td style='{0}'>{1}</DIV></DIV>".format("border: solid 1px red;" if (dev['fqdn'] != dev['info']['fqdn']) else "", dev['info']['fqdn'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['a_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ptr_id'])
@@ -274,6 +281,7 @@ def info(aWeb):
     print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
   print "</DIV></DIV></DIV>"
  print "</FORM>"
+
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)

@@ -21,12 +21,12 @@ def update(aDict):
  with DB() as db:
   if racked:
    if   racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
-    db.do("INSERT IGNORE INTO rackinfo SET device_id = {},rack_id={}".format(id,aDict.get('rackinfo_rack_id')))
+    db.do("INSERT IGNORE INTO rackinfo SET device_id = {},rack_id={}".format(id,aDict.pop('rackinfo_rack_id',None)))
     db.commit()
    elif racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
+    aDict.pop('rackinfo_rack_id',None)
     db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
     db.commit()
-
   tbl_id = { 'devices':'id', 'rackinfo':'device_id' } 
   for fkey in aDict.keys():
    # fkey = table _ key
