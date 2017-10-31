@@ -18,6 +18,7 @@ def update(aDict):
  import sdcp.core.genlib as GL
  id     = aDict.pop('id',None)
  racked = aDict.pop('racked',None)
+ ret    = {'res':'OK'}
  with DB() as db:
   if racked:
    if   racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
@@ -27,6 +28,7 @@ def update(aDict):
     aDict.pop('rackinfo_rack_id',None)
     db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
     db.commit()
+
   tbl_id = { 'devices':'id', 'rackinfo':'device_id' } 
   for fkey in aDict.keys():
    # fkey = table _ key
@@ -34,18 +36,18 @@ def update(aDict):
    data = aDict.get(fkey)
    if key == 'mac' and GL.is_mac(data):
     mac = GL.mac2int(data)
-    db.do("UPDATE {0} SET mac='{1}' WHERE {2} = '{3}'".format(table,mac,tbl_id[table],id))
+    ret['fkey']= db.do("UPDATE {0} SET mac='{1}' WHERE {2} = '{3}'".format(table,mac,tbl_id[table],id))
    elif not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
     if data == 'NULL':
-     db.do("UPDATE {0} SET {1}=NULL WHERE {2} = '{3}'".format(table,key,tbl_id[table],id))
+     ret[fkey] = db.do("UPDATE {0} SET {1}=NULL WHERE {2} = '{3}'".format(table,key,tbl_id[table],id))
     else:
-     db.do("UPDATE {0} SET {1}='{4}' WHERE {2} = '{3}'".format(table,key,tbl_id[table],id,data))
+     ret[fkey] = db.do("UPDATE {0} SET {1}='{4}' WHERE {2} = '{3}'".format(table,key,tbl_id[table],id,data))
    else:
     pem = key[:4]
     [pemid,pemslot] = data.split('.')
-    db.do("UPDATE rackinfo SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE device_id = '{3}'".format(pem,pemid,pemslot,id))
+    ret[fkey] = db.do("UPDATE rackinfo SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE device_id = '{3}'".format(pem,pemid,pemslot,id))
   db.commit()
- return { 'res':'update','keys':aDict.keys() }
+ return ret
 
 #
 # new(ip, hostname, ipam_sub_id, a_dom_id, mac, target, arg)

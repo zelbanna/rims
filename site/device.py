@@ -126,17 +126,18 @@ def info(aWeb):
   if not d.get('devices_comment'):
    d['devices_comment'] = 'NULL'
   if d['devices_hostname'] != 'unknown':
-   db.do("SELECT INET_NTOA(ip) as ip, a_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
-   lookup = db.get_row()
-   ddi = {}
-   ddi['a']   = rest_call(PC.dns['url'], "sdcp.rest.{}_lookup_a".format(PC.dns['type'])  ,{ 'name':d['devices_hostname'], 'a_dom_id':lookup['a_dom_id'] })
-   ddi['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_lookup_ptr".format(PC.dns['type']),{ 'ip':lookup['ip'] })
-   ddi['ipam']= rest_call(PC.ipam['url'],"sdcp.rest.{}_lookup".format(PC.ipam['type'])   ,{ 'ip':lookup['ip'], 'ipam_sub_id':lookup['ipam_sub_id'] })
-   lookup.update({ 'name': d['devices_hostname'], 'fqdn':d['devices_hostname'] + '.' + lookup['domain'], 'a_id':str(ddi['a'].get('id',0)), 'ptr_id':str(ddi['ptr'].get('id',0)) })
-   dns  = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']), lookup)
-   lookup.update({ 'fqdn':d['devices_hostname'] + '.' + lookup['domain'], 'ipam_id':str(ddi['ipam'].get('id',0)) })
-   ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_update".format(PC.ipam['type']),lookup)
-   d.update({'devices_a_id':dns['a_id'], 'devices_ptr_id':dns['ptr_id'], 'devices_ipam_id':ipam['ipam_id'] })
+   # Update 
+
+   db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, ipam_id, a_dom_id, ptr_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
+   ddi = db.get_row()
+   fqdn = d['devices_hostname'] + "." + ddi['domain']
+   opres['a'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']),   { 'type':'a',   'id':ddi['a_id'],   'domain_id':ddi['a_dom_id'],   'ip':ddi['ip'], 'fqdn':fqdn })
+   d['devices_a_id'] = opres['a']['id']
+   opres['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']), { 'type':'ptr', 'id':ddi['ptr_id'], 'domain_id':ddi['ptr_dom_id'], 'ip':ddi['ip'], 'fqdn':fqdn })
+   d['devices_ptr_id'] = opres['ptr']['id']
+   opres['ipam'] = rest_call(PC.ipam['url'],"sdcp.rest.{}_{}".format(PC.ipam['type'],"update" if ddi['ipam_id'] > 0 else "new"),{ 'id':ddi['ipam_id'], 'ipam_sub_id':ddi['ipam_sub_id'], 'ip':ddi['ip'], 'fqdn':fqdn, 'ptr_id':opres['ptr']['id'] } )
+   d['devices_ipam_id'] = opres['ipam']['id']
+
    opres['update'] = update(d)
    # Now there is a rackinfo item
    if d['rackinfo_rack_id'] != 'NULL':
@@ -150,6 +151,7 @@ def info(aWeb):
   import sdcp.PackageContainer as PC
   from sdcp.core.rest import call as rest_call
   from sdcp.devices.DevHandler import device_detect
+  db.do("SELECT INET_NTOA(ip) as ip, ptr_id, a_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
   dev = device_detect(aWeb.get_value('ip'))
   if dev:
    db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(dev['snmp'],dev['fqdn'],dev['model'],dev['type'],id))
@@ -194,7 +196,8 @@ def info(aWeb):
  width= 675 if dev['racked'] == 1 and not dev['info']['type'] == 'pdu' else 470
 
  print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:{}px; z-index:101; height:255px; float:left;'>".format(width)
- print "<!-- {} -->".format(dev['info'])
+ print "<!-- DEV:{} -->".format(dev['info'])
+ print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
@@ -275,7 +278,7 @@ def info(aWeb):
    for index in range(0,4):
     print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
   print "</DIV></DIV></DIV>"
- print "<DIV STYLE='display:block; font-size:11px; clear:both; margin-bottom:10px; width:99%'><SPAN>Comments:</SPAN><INPUT STYLE='width:{}px; border:none; background-color:white; overflow-x:auto; font-size:11px;' TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV>".format(width-90,"" if not dev['info']['comment'] else dev['info']['comment'])
+ print "<DIV STYLE='display:block; font-size:11px; clear:both; margin-bottom:3px; width:99%'><SPAN>Comments:</SPAN><INPUT STYLE='width:{}px; border:none; background-color:white; overflow-x:auto; font-size:11px;' TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV>".format(width-90,"" if not dev['info']['comment'] else dev['info']['comment'])
  print "</FORM>"
 
  print "<!-- Controls -->"
@@ -294,9 +297,12 @@ def info(aWeb):
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf['username'],dev['ip'])
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(dev['rack']['console_ip'],6000+dev['rack']['console_port'])
- if (dev['info']['type'] == 'pdu' or dev['info']['type'] == 'console') and db.do("SELECT id FROM {0}s WHERE ip = '{1}'".format(dev['info']['type'],dev['info']['ip'])) == 0:
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL='sdcp.cgi?call={0}_info&id=new&ip={1}&name={2}' style='float:right;' TITLE='Add {0}'><IMG SRC='images/btn-add.png'></A>".format(dev['info']['type'],ip,dev['info']['hostname']) 
- print "<SPAN ID=upd_results style='text-overflow:ellipsis; overflow:hidden; float:right; font-size:9px;'>{}</SPAN>".format(str(opres) if len(opres) > 0 else "")
+
+ res = ""
+ for key,value in opres.iteritems():
+  if value['res'] != 'OK':
+   res = res + "{}({})".format(key,value)
+ print "<SPAN ID=upd_results style='text-overflow:ellipsis; overflow:hidden; float:right; font-size:9px;'>{}</SPAN>".format(res)
  print "</DIV>"
  print "</DIV>"
 
