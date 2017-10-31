@@ -19,7 +19,6 @@ def list(aWeb):
  with DB() as db:
   if id and state:
    db.do("UPDATE devices SET graph_update = '{1}' WHERE id = '{0}'".format(id,1 if state == '0' else 0))
-   db.commit()
   if not target or not arg:
    tune = ""
   elif target:
@@ -63,7 +62,6 @@ def set_proxy(aWeb):
   from sdcp.core.dbase import DB
   with DB() as db:
    db.do("UPDATE devices SET graph_proxy = INET_ATON('{0}') WHERE id = '{1}'".format(proxy,id))
-   db.commit()
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Update Proxy ({})</DIV>".format(ip)
  print "<FORM ID=graph_proxy_form>"

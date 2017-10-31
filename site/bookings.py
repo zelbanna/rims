@@ -18,10 +18,8 @@ def list(aWeb):
  with DB() as db:
   if   op == 'unbook' and id:
    res = db.do("DELETE FROM bookings WHERE device_id = '{}'".format(id))
-   db.commit()
   elif op == 'extend' and id:
    res = db.do("UPDATE bookings SET time_start = NOW() WHERE device_id = '{}'".format(id))
-   db.commit()
   res  = db.do("SELECT user_id, device_id, time_start, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid, ADDTIME(time_start, '30 0:0:0.0') as time_end, devices.hostname, users.alias FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
   rows = db.get_rows()
 

@@ -52,7 +52,6 @@ def update(aDict):
     ret['res'] = 'NOT_OK'
   else:
    ret['id'] = aDict['id']
-  db.commit()
  return ret
 
 #
@@ -67,7 +66,6 @@ def new(aDict):
    ret['insert'] = db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name) VALUES('{}',INET_ATON('{}'),'{}')".format(aDict['ipam_sub_id'],aDict['ip'],aDict['fqdn']))
    ret['id']  = db.get_last_id()
    ret['res'] = 'OK'
-   db.commit()
   else:
    data = db.get_row()
    ret['id'] = data['id']
@@ -80,7 +78,6 @@ def remove(aDict):
  PC.log_msg("phpipam_remove({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
-  db.commit()
  return { 'res':'OK', 'info':(ires > 0) }
 
 #

@@ -29,7 +29,6 @@ def load(aWeb):
   for sub,entry in sdcp_subnets.iteritems():
    print "Delete {} -> {}<BR>".format(sub,entry)
    db.do("DELETE FROM subnets WHERE id = '{}'".format(sub))
-  db.commit()
  print "</DIV>"
 
 #

@@ -33,7 +33,6 @@ def remove(aDict):
   db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
   db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
   db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
-  db.commit()
  return { 'res':'op_success' }
 
 #

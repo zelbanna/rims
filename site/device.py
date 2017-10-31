@@ -373,7 +373,6 @@ def mac_sync(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['id'],row['ipasc'],row['hostname'],xist)
    if xist:
     db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL.mac2int(xist),row['id']))
-  db.commit()
  print "</DIV></DIV></DIV>"
 
 ##################################### Rest API #########################################

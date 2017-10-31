@@ -23,11 +23,10 @@ def update(aDict):
   if racked:
    if   racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
     db.do("INSERT IGNORE INTO rackinfo SET device_id = {},rack_id={}".format(id,aDict.pop('rackinfo_rack_id',None)))
-    db.commit()
    elif racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
     aDict.pop('rackinfo_rack_id',None)
     db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
-    db.commit()
+
 
   tbl_id = { 'devices':'id', 'rackinfo':'device_id' } 
   for fkey in aDict.keys():
@@ -46,7 +45,6 @@ def update(aDict):
     pem = key[:4]
     [pemid,pemslot] = data.split('.')
     ret[fkey] = db.do("UPDATE rackinfo SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE device_id = '{3}'".format(pem,pemid,pemslot,id))
-  db.commit()
  return ret
 
 #
@@ -77,7 +75,6 @@ def new(aDict):
      db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
      ret['rack'] = aDict.get('arg')
      ret['info'] = "rack"
-    db.commit()
     ret['res']  = "OK"
    else:
     ret['info']  = "existing"
@@ -100,9 +97,8 @@ def discover(aDict):
   db_old, db_new = {}, {}
   if aDict.get('clear',False):
    db.do("TRUNCATE TABLE devices")
-   db.commit()
   else:
-   res  = db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(ip_start,ip_end))
+   db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(ip_start,ip_end))
    rows = db.get_rows()
    for item in rows:
     db_old[item.get('ip')] = True
@@ -121,13 +117,11 @@ def discover(aDict):
     sema.acquire()
    # We can do insert only (no update) as either we clear or we skip existing :-)
    sql = "INSERT INTO devices (ip, a_dom_id, ptr_dom_id, ipam_sub_id, hostname, snmp, model, type, fqdn) VALUES ({0},{1},{2},{3},'{4}','{5}','{6}','{7}','{8}')"
-   res = db.do("SELECT id,name FROM domains WHERE name LIKE '%arpa%'")
+   db.do("SELECT id,name FROM domains WHERE name LIKE '%arpa%'")
    ptr_doms = db.get_rows_dict('name')
    for ip,entry in db_new.iteritems():
     ptr_dom_id = ptr_doms.get(GL.ip2arpa(ip),{ 'id':'NULL' })['id']
     db.do(sql.format(GL.ip2int(ip), aDict.get('a_dom_id'), ptr_dom_id, aDict.get('ipam_sub_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn']))
-   else:
-    db.commit()
   except Exception as err:
    PC.log_msg("device discover: Error [{}]".format(str(err)))
  PC.log_msg("device discover: Total time spent: {} seconds".format(int(time()) - start_time))
@@ -145,7 +139,6 @@ def remove(aDict):
   else:
    ret = db.get_row()
    ret['delete'] = db.do("DELETE FROM devices WHERE id = '{}'".format(aDict['id']))
-   db.commit()
    ret['res'] = 'OK'
  return ret
 

@@ -143,7 +143,6 @@ def update(aWeb):
   sql = "UPDATE racks SET name = '{}', size = '{}', fk_pdu_1 = {}, fk_pdu_2 = {}, fk_console = {}, image_url='{}' WHERE id = '{}'".format(name,size,fk_pdu_1,fk_pdu_2,fk_console,image_url,id)
  with DB() as db:
   res = db.do(sql)
-  db.commit()
 
 #
 #
@@ -152,7 +151,6 @@ def remove(aWeb):
  id   = aWeb.get_value('id')
  with DB() as db:
   db.do("DELETE FROM racks WHERE id = {0}".format(id))
-  db.commit()
   print "Rack {0} deleted".format(id)
 
 #
@@ -184,5 +182,4 @@ def rackinfo(aWeb):
    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(racks.get(ri['rack_id'],{}).get('name',None),ri['rack_size'],ri['rack_unit'])
    print "</DIV>"
   print "</DIV></DIV></DIV>"
-  db.commit()           
 

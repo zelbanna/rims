@@ -126,19 +126,16 @@ def info(aWeb):
     db.do("UPDATE pdus SET slots = 0, 0_slot_id = '{1}', 0_slot_name = '{2}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1]))
    elif slotn == 2:
     db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1],slotl[1][0],slotl[1][1]))
-   db.commit()
   elif op == 'update':
    ipint = GL.ip2int(ip)
    slots = aWeb.get_value('slots','0')
    if id == 'new':
     sql = "INSERT into pdus (name, ip, slots) VALUES ('{0}','{1}','{2}')".format(name,ipint,slots)
     res = db.do(sql)
-    db.commit()
     id = db.get_last_id()
    else:
     sql = "UPDATE pdus SET name = '{0}', ip = '{1}', slots = '{2}' WHERE id = '{3}'".format(name,ipint,slots,id)
     res = db.do(sql)
-    db.commit()
 
   if id == 'new':
    pdudata = { 'id':'new', 'slots':0, '0_slot_name':'unknown', '0_slot_id':0, '1_slot_name':'unknown', '1_slot_id':1 }
@@ -190,5 +187,4 @@ def remove(aWeb):
   db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
   db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
   db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
-  db.commit()
   print "<B>PDU {0} deleted<B>".format(id)

@@ -29,7 +29,6 @@ def load(aWeb):
   for dom,entry in sdcp_domains.iteritems():
    print "Delete {} -> {}<BR>".format(dom,entry)
    db.do("DELETE FROM domains WHERE id = '{}'".format(dom))
-  db.commit()
  print "</DIV>"
 
 #

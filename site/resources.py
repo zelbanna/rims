@@ -70,7 +70,6 @@ def info(aWeb):
      data['id']  = db.get_last_id()
     else:
      db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}', inline='{}', private='{}' WHERE id = '{}'".format(data['title'],data['href'],data['icon'],data['type'],data['inline'],data['private'],data['id']))
-    db.commit()
  else:
   with DB() as db:
    db.do("SELECT id,title,href,icon,type,inline,private,user_id FROM resources WHERE id = '{}'".format(data['id']))
@@ -133,5 +132,4 @@ def remove(aWeb):
  with DB() as db:
   id = aWeb.get_value('id')
   res = db.do("DELETE FROM resources WHERE id = '{}'".format(id))
-  db.commit()
  print "<DIV CLASS=z-frame>Result: {}</DIV>".format("OK" if res == 1 else "Not OK:{}".format(res))

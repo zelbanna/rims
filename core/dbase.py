@@ -28,6 +28,9 @@ class DB(object):
   return self
 
  def __exit__(self, ctx_type, ctx_value, ctx_traceback):
+  if self._dirty:
+   self._conn.commit()
+   self._dirty = False
   self._curs.close()
   self._conn.close()
 
@@ -47,16 +50,11 @@ class DB(object):
   return self._curs.execute(aQuery)
 
  def commit(self):
-  self._dirty = False
   self._conn.commit()
+  self._dirty = False
 
  def is_dirty(self):
   return self._dirty
-
- def do_commit(self,aStr):
-  self._dirty = False
-  self._curs.execute(aStr)
-  self._conn.commit()
 
  def get_row(self):
   return self._curs.fetchone()

@@ -27,7 +27,6 @@ def cleanup(aDict):
     remove.append(row)
    else:
     previous = row
-  db.commit()
  return {'removed':remove}
 
 #
@@ -136,7 +135,6 @@ def update(aDict):
   else:
    ret['insert']= db.do("INSERT INTO records (name,content,type,domain_id,ttl,change_date) VALUES('{}','{}','{}','{}',3600,'{}')".format(name,cont,type,aDict['domain_id'],serial))
    ret['id']    = db.get_last_id()
-  db.commit()
  return ret
 
 #
@@ -162,6 +160,5 @@ def remove(aDict):
    ret['a'] = db.do("DELETE FROM records WHERE id = '{}' and type = 'A'".format(aDict['a_id']))
   if aDict.get('ptr_id','0') != '0':
    ret['ptr'] = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aDict['ptr_id']))
-  db.commit()
  ret['res'] = 'OK' if ret.get('a',0) > 0 or ret.get('ptr',0) > 0 else 'NOT_OK'
  return ret

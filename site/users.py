@@ -65,7 +65,6 @@ def info(aWeb):
      db.do("UPDATE users SET alias='{}',name='{}',email='{}',view_public='{}',frontpage={} WHERE id = '{}'".format(data['alias'],data['name'],data['email'],data['view'],data['front'],data['id']))
      if aWeb.cookie['sdcp_id'] == str(data['id']):
       aWeb.add_cookie('sdcp_view',data['view'],86400)
-    db.commit()
     aWeb.put_headers()
   else:
    db.do("SELECT users.* FROM users WHERE id = '{}'".format(data['id']))
@@ -100,6 +99,5 @@ def info(aWeb):
 def remove(aWeb):
  from sdcp.core.dbase import DB
  with DB() as db:
-  db.do("DELETE FROM users WHERE id = '{}'".format(aWEB['id']))
-  res = db.commit()
- print "<DIV CLASS=z-frame>DB:{}</DIV>".format(res)
+  res = db.do("DELETE FROM users WHERE id = '{}'".format(aWeb.get_value('id')))
+ print "<DIV CLASS=z-frame>User with id {} removed ({})</DIV>".format(aWeb.get_value('id'),"OK" if res == 1 else "NOT_OK")
