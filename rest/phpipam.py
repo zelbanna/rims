@@ -39,11 +39,19 @@ def lookup(aDict):
 #
 def update(aDict):
  PC.log_msg("phpipam_update({})".format(aDict))
- ret = {}
+ ret = {'res':'OK'}
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
-  ret['xist'] = db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict.get('ptr_id',0), aDict['fqdn'],aDict['id']))
-  ret['res']  = "OK" if ret['xist'] == 1 else "NOT_OK"
-  ret['id']   = aDict['id']
+  ret['update'] = db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict.get('ptr_id',0), aDict['fqdn'],aDict['id']))
+  if ret['update'] == 0:
+   ret['xist'] = db.do("SELECT id FROM ipaddresses WHERE dns_name = '{}'".format(aDict['fqdn']))
+   if ret['xist'] == 1:
+    ret['id']  = db.get_row()['id']
+    ret['res'] = "OK" if (ret['id'] == int(aDict['id'])) else "NOT_OK"
+   else:
+    ret['id']  = 0
+    ret['res'] = 'NOT_OK'
+  else:
+   ret['id'] = aDict['id']
   db.commit()
  return ret
 
