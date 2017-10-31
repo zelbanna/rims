@@ -8,7 +8,6 @@ __version__ = "17.10.4"
 __status__ = "Production"
 
 import sdcp.PackageContainer as PC
-import sdcp.core.genlib as GL
 from sdcp.core.dbase import DB
 
 #
@@ -34,29 +33,25 @@ def lookup(aDict):
   else:
    ret = { 'res':'NOT_OK', 'id':'0' }
  return ret
+
 #
-# update( ipam_sub_id, ipam_id, ip, fqdn, ptr_id )
+# update(id, fqdn, ptr_id)
 #
 def update(aDict):
  PC.log_msg("phpipam_update({})".format(aDict))
- ret = {}
+ ret = {'res':'OK'}
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
-  if aDict.get('ipam_id','0') != '0':
-   db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict['ptr_id'],aDict['fqdn'],aDict['ipam_id']))
-   ret['ipam_op'] = 'update'
-   ret['ipam_id'] = aDict['ipam_id']
-  else:
-   ipint = GL.ip2int(aDict['ip'])
-   xist  = db.do("SELECT id FROM ipaddresses WHERE ip_addr = '{0}' AND subnetId = {1}".format(ipint,aDict['ipam_sub_id']))
-   if xist > 0:
-    entry = db.get_row()
-    db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict['ptr_id'],aDict['fqdn'],entry['id']))
-    ret['ipam_op'] = 'update_existed'
-    ret['ipam_id'] = entry['id']
+  ret['update'] = db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict.get('ptr_id',0), aDict['fqdn'],aDict['id']))
+  if ret['update'] == 0:
+   ret['xist'] = db.do("SELECT id FROM ipaddresses WHERE dns_name = '{}'".format(aDict['fqdn']))
+   if ret['xist'] == 1:
+    ret['id']  = db.get_row()['id']
+    ret['res'] = "OK" if (ret['id'] == int(aDict['id'])) else "NOT_OK"
    else:
-    db.do("INSERT INTO ipaddresses (subnetId,ip_addr,dns_name,PTR) VALUES('{}','{}','{}','{}')".format(aDict['ipam_sub_id'],ipint,aDict['fqdn'],aDict['ptr_id']))
-    ret['ipam_op'] = "insert"
-    ret['ipam_id'] = db.get_last_id()
+    ret['id']  = 0
+    ret['res'] = 'NOT_OK'
+  else:
+   ret['id'] = aDict['id']
   db.commit()
  return ret
 
@@ -120,6 +115,7 @@ def free(aDict):
 
 def find(aDict):
  PC.log_msg("phpipam_find({})".format(aDict))
+ import sdcp.core.genlib as GL
  sub_id = aDict.get('ipam_sub_id')
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(sub_id))
