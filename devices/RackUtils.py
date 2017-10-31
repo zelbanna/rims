@@ -11,7 +11,7 @@ __author__  = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__  = "Production"
 
-from GenDevice import GenDevice
+from generic import GenericDevice
 import sdcp.PackageContainer as PC
 
 #
@@ -48,14 +48,14 @@ class ConfObject(object):
 # Opengear :-)
 #
 
-class OpenGear(GenDevice, ConfObject):
+class OpenGear(GenericDevice, ConfObject):
 
  def __init__(self, aIP, aID = None):
-  GenDevice.__init__(self,aIP, aID,'console')
+  GenericDevice.__init__(self,aIP, aID,'console')
   ConfObject.__init__(self)
 
  def __str__(self):
-  return "OpenGear - {}".format(GenDevice.__str__(self))
+  return "OpenGear - {}".format(GenericDevice.__str__(self))
 
  def load_snmp(self):
   from netsnmp import VarList, Varbind, Session
@@ -77,7 +77,7 @@ class OpenGear(GenDevice, ConfObject):
 #
 
 # Sort key function: lambda x: int(x.split('.')[0])*100+int(x.split('.')[1])
-class Avocent(GenDevice, ConfObject):
+class Avocent(GenericDevice, ConfObject):
 
  _getstatemap = { '1':'off', '2':'on' }
  _setstatemap = { 'off':'3', 'on':'2', 'reboot':'4' }
@@ -91,11 +91,11 @@ class Avocent(GenDevice, ConfObject):
   return cls._setstatemap.get(state,'1')
 
  def __init__(self, aIP, aID = None):
-  GenDevice.__init__(self,aIP, aID,'pdu')
+  GenericDevice.__init__(self,aIP, aID,'pdu')
   ConfObject.__init__(self)
 
  def __str__(self):
-  return "Avocent - {}".format(GenDevice.__str__(self))
+  return "Avocent - {}".format(GenericDevice.__str__(self))
 
  def set_state(self,slot,unit,state):
   from netsnmp import VarList, Varbind, Session

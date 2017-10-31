@@ -8,14 +8,12 @@ __version__ = "17.10.4"
 __status__ = "Production"
 
 import sdcp.PackageContainer as PC
-from GenDevice import GenDevice
+from generic import GenericDevice
 
 ########################################### ESXi ############################################
 #
-# ESXi command interaction
-#
 
-class ESXi(GenDevice):
+class Device(GenericDevice):
 
  _vmstatemap  = { "1" : "powered on", "2" : "powered off", "3" : "suspended", "powered on" : "1", "powered off" : "2", "suspended" : "3" }
 
@@ -26,9 +24,9 @@ class ESXi(GenDevice):
  @classmethod
  def get_widgets(cls):
   return ['operated']
-  
+
  def __init__(self,aIP,aID=None):
-  GenDevice.__init__(self,aIP,aID,'esxi')
+  GenericDevice.__init__(self,aIP,aID,'esxi')
   import sdcp.core.genlib as GL
   # Override log file
   self._hostname = GL.get_host_name(aIP)
@@ -153,7 +151,7 @@ class ESXi(GenDevice):
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for index,result in enumerate(vmnameobjs):
-    statetuple = [result.iid, result.val, ESXi.get_state_str(vmstateobjs[index].val)]
+    statetuple = [result.iid, result.val, Device.get_state_str(vmstateobjs[index].val)]
     statetuple.append(result.val in self.backuplist)
     statelist.append(statetuple)
   except:
@@ -206,7 +204,7 @@ class ESXi(GenDevice):
    else:
     vm = line.strip('\n').split(',')
     if vm[2] == "1":
-     esxi.ssh_send("vim-cmd vmsvc/power.on " + vm[0])
+     self.ssh_send("vim-cmd vmsvc/power.on " + vm[0])
   remove(sfile)
   self.ssh_close()
   self.release_lock()
@@ -291,5 +289,3 @@ class ESXi(GenDevice):
    self.log_msg("shutdown_vms: Done! Ready for powerloss, awaiting system halt")
   except Exception as vmerror:
    self.log_msg("ERROR: " + str(vmerror))
-
-###################################### End ESXi Class #####################################

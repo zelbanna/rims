@@ -84,13 +84,13 @@ def logs(aWeb):
 # ESXi operations
 #
 def op(aWeb,aIP = None):
- from sdcp.devices.ESXi import ESXi
+ from sdcp.devices.esxi import Device
  ip     = aWeb.get_value('ip',aIP)
  excpt  = aWeb.get_value('except','-1')
  nstate = aWeb.get_value('nstate')
  vmid   = aWeb.get_value('vmid','-1')
  sort   = aWeb.get_value('sort','name')
- esxi   = ESXi(ip)
+ esxi   = Device(ip)
 
  if nstate:
   if not aWeb.cookie.get('sdcp_id'):
@@ -115,7 +115,7 @@ def op(aWeb,aIP = None):
     excpt = "" if vmid == '-1' else vmid
     check_call("/usr/local/sbin/ups-operations shutdown {} {} {} &".format(ip,'none',excpt), shell=True)
   except Exception as err:
-   PC.log_msg("ESXi: nstate error [{}]".format(str(err)))
+   PC.log_msg("esxi: nstate error [{}]".format(str(err)))
 
  statelist = esxi.get_vms(sort)
  # Formatting template (command, btn-xyz, vm-id, hover text)
@@ -158,7 +158,7 @@ def op(aWeb,aIP = None):
 #
 #
 def snapshot(aWeb):
- from sdcp.devices.ESXi import ESXi
+ from sdcp.devices.esxi import Device
  ip   = aWeb.get_value('ip')
  vmid = aWeb.get_value('vmid')
  data = {}
@@ -169,7 +169,7 @@ def snapshot(aWeb):
  print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- with ESXi(ip) as esxi:
+ with Device(ip) as esxi:
   snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),aWeb.cookie.get('sdcp_id'))
   for field in snapshots.splitlines():
    if "Snapshot" in field:
@@ -200,7 +200,7 @@ def snapshot(aWeb):
 #
 #
 def snap_op(aWeb):
- from sdcp.devices.ESXi import ESXi
+ from sdcp.devices.esxi import Device
  ip   = aWeb.get_value('ip')
  vmid = aWeb.get_value('vmid')
  snap = aWeb.get_value('snapid')
@@ -209,6 +209,6 @@ def snap_op(aWeb):
   template = "vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff"
  elif op == 'remove':
   template = "vim-cmd vmsvc/snapshot.remove {} {}"
- with ESXi(ip) as esxi:
+ with Device(ip) as esxi:
   esxi.ssh_send(template.format(vmid,snap),aWeb.cookie.get('sdcp_id'))
  print "<DIV CLASS=z-frame>Carried out '{}' on '{}@{}'</DIV>".format(op,vmid,ip)

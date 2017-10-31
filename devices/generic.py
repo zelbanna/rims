@@ -7,7 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
 
-class GenDevice(object):
+class GenericDevice(object):
  
  # set a number of entries:
  # - _ip

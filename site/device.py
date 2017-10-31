@@ -320,7 +320,7 @@ def info(aWeb):
  else:
   print "&nbsp;"
  print "</DIV>"
- print "<DIV CLASS='z-content' ID=div_dev_data style='top:280px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>"
+ print "<DIV CLASS='z-content' ID=div_dev_data style='top:294px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>"
 
 
 

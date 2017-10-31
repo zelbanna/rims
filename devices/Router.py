@@ -14,7 +14,7 @@ __version__ = "17.10.4"
 __status__ = "Production"
 
 import sdcp.PackageContainer as PC
-from GenDevice import GenDevice
+from generic import GenericDevice
 from netsnmp import VarList, Varbind, Session
 
 #
@@ -25,17 +25,17 @@ from netsnmp import VarList, Varbind, Session
 # Connect to Router, a couple of RPCs will be issued from there
 #
 
-class Junos(GenDevice):
+class Junos(GenericDevice):
 
  @classmethod
  def get_widgets(cls):
   return ['widget_up_interfaces','widget_lldp','widget_archive' ]
 
  def __init__(self,aIP,aID = None, atype = 'Junos'):
-  GenDevice.__init__(self,aIP,aID,atype)
-  from jnpr.junos import Device
+  GenericDevice.__init__(self,aIP,aID,atype)
+  from jnpr.junos import Device as JunosDevice
   from jnpr.junos.utils.config import Config
-  self._router = Device(self._ip, user=PC.netconf['username'], password=PC.netconf['password'], normalize=True)
+  self._router = JunosDevice(self._ip, user=PC.netconf['username'], password=PC.netconf['password'], normalize=True)
   self._config = Config(self._router)
   self._model = ""
   self._version = ""
@@ -196,17 +196,17 @@ class Junos(GenDevice):
 # Simpler WLC class
 #
 
-class WLC(GenDevice):
+class WLC(GenericDevice):
 
  @classmethod
  def get_widgets(cls):
   return ['widget_switch_table']
 
  def __init__(self,aIP, aID = None):
-  GenDevice.__init__(self, aIP, aID, 'wlc')
+  GenericDevice.__init__(self, aIP, aID, 'wlc')
   
  def __str__(self):
-  return "WLC - {}".format(GenDevice.__str__(self))
+  return "WLC - {}".format(GenericDevice.__str__(self))
 
  def widget_switch_table(self):
   from socket import gethostbyaddr
