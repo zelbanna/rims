@@ -155,9 +155,9 @@ def info(aWeb):
   dev = device_detect(aWeb.get_value('ip'))
   if dev:
    db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(dev['snmp'],dev['fqdn'],dev['model'],dev['type'],id))
-   opres['lookup'] = dev
+   opres['lookup'] = {'res':'OK', 'info':dev }
   else:
-   opres['lookup'] = 'NOT_FOUND'
+   opres['lookup'] = {'res':'NOT_OK'}
 
  if op == 'book':
   db.do("INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')".format(id,aWeb.cookie.get('sdcp_id')))
@@ -300,7 +300,7 @@ def info(aWeb):
 
  res = ""
  for key,value in opres.iteritems():
-  if value['res'] != 'OK':
+  if value.get('res','NOT_FOUND') != 'OK':
    res = res + "{}({})".format(key,value)
  print "<SPAN ID=upd_results style='text-overflow:ellipsis; overflow:hidden; float:right; font-size:9px;'>{}</SPAN>".format(res)
  print "</DIV>"
@@ -316,7 +316,7 @@ def info(aWeb):
   else:
    for fun in functions:
     funname = " ".join(fun.split('_')[1:])
-    print "<A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(ip, dev['info']['type'], fun, funname.title())
+    print "<A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(dev['ip'], dev['info']['type'], fun, funname.title())
  else:
   print "&nbsp;"
  print "</DIV>"
