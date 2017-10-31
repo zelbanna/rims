@@ -75,12 +75,34 @@ def lookup_a(aDict):
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT name FROM domains WHERE id = '{}'".format(aDict['a_dom_id']))
   ret['domain'] = db.get_row()['name'] if res > 0 else 'unknown'
-  ret['exist'] = db.do("SELECT id, content AS ip FROM records WHERE type = 'A' AND domain_id = {} AND name = '{}'".format(aDict['a_dom_id'],"{}.{}".format(aDict['name'],ret['domain'])))
-  if ret['exist'] > 0:
+  ret['xist'] = db.do("SELECT id, content AS ip FROM records WHERE type = 'A' AND domain_id = {} AND name = '{}'".format(aDict['a_dom_id'],"{}.{}".format(aDict['name'],ret['domain'])))
+  if ret['xist'] > 0:
    ret.update(db.get_row())
    ret['res']  = 'OK'
   else:
    ret['res']  = 'NOT_OK'
+ return ret
+
+#
+# update_a( id, ip, fqdn, domain_id)
+#
+def update_a(aDict):
+ PC.log_msg("powerdns_update_a({})".format(aDict))
+ from time import strftime
+ serial  = strftime("%Y%m%d%H")
+ ret = {}
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
+  if str(aDict.get('a_id','0')) != '0':
+   ret['xist'] = db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(aDict['fqdn'],aDict['ip'],serial,aDict['id']))
+   ret['op']   = "update"
+   ret['id']   = aDict['id']
+   ret['res']  = "OK" if ret['xist'] == 1 else "NOT_OK"
+  else:
+   ret['xist']= db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','A','{}',3600,'{}')".format(aDict['domain_id'],aDict['fqdn'],aDict['ip'],serial))
+   ret['op']  = "insert"
+   ret['id']  = db.get_last_id()
+   ret['res'] = "OK"
+  db.commit()
  return ret
 
 #
@@ -89,59 +111,40 @@ def lookup_a(aDict):
 def lookup_ptr(aDict):
  PC.log_msg("powerdns_lookup_ptr({})".format(aDict))
  import sdcp.core.genlib as GL
- ret = {'arpa':GL.ip2arpa(aDict['ip'])}
+ ret = {'domain':GL.ip2arpa(aDict['ip'])}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ret['arpa']))
-  ret['ptr_dom_id'] = db.get_row()['id']
-  ret['exist'] = db.do("SELECT id, content AS fqdn FROM records WHERE type = 'PTR' AND domain_id = {} AND name = '{}'".format(ret['ptr_dom_id'],GL.ip2ptr(aDict['ip'])))
-  if ret['exist'] > 0:
+  res = db.do("SELECT id FROM domains WHERE name = '{}'".format(ret['domain']))
+  ret['domain_id'] = db.get_row()['id']
+  ret['xist'] = db.do("SELECT id, content AS fqdn FROM records WHERE type = 'PTR' AND domain_id = {} AND name = '{}'".format(ret['domain_id'],GL.ip2ptr(aDict['ip'])))
+  if ret['xist'] > 0:
    ret.update(db.get_row())
-   ret['res']  = 'OK'
+   ret['res'] = 'OK'
   else:
-   ret['res']  = 'NOT_OK'
+   ret['res'] = 'NOT_OK'
  return ret
 
 #
-# update( ip, name, a_dom_id ,[ a_id, ptr_id ] )
+# update_ptr( id, ip, fqdn, domain_id)
 #
-def update(aDict):
- PC.log_msg("powerdns_update({})".format(aDict))
- import sdcp.core.genlib as GL
+def update_ptr(aDict):
+ PC.log_msg("powerdns_update_ptr({})".format(aDict))
+ ptr = GL.ip2ptr(aDict['ip'])
  from time import strftime
  serial  = strftime("%Y%m%d%H")
- ptr     = GL.ip2ptr(aDict['ip'])
- retvals = {}
+ ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  res = db.do("SELECT id,name FROM domains WHERE id = {} OR name = '{}'".format(aDict['a_dom_id'],ptr.partition('.')[2]))
-  domains = db.get_rows()
-  if res == 2:
-   domain     = domains[0]['name'] if domains[1]['name'] == ptr else domains[1]['name']
-   ptr_dom_id = domains[1]['id']   if domains[1]['name'] == ptr else domains[0]['id']
+  if str(aDict.get('id','0')) != '0':
+   ret['xist'] = db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(ptr,aDict['fqdn'],serial,aDict['id']))
+   ret['op']   = "update"
+   ret['id']   = aDict['id']
+   ret['res']  = "OK" if ret['xist'] == 1 else "NOT_OK"
   else:
-   domain     = domains[0]['name']
-   ptr_dom_id = None
-  fqdn    = aDict['name'] + "." + domain
-
-  if str(aDict.get('a_id','0')) != '0':
-   retvals['a_op'] = "update"
-   retvals['a_id'] = aDict['a_id']
-   db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(fqdn,aDict['ip'],serial,aDict['a_id']))
-  else:
-   retvals['a_op'] = "insert"
-   db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','A','{}',3600,'{}')".format(aDict['a_dom_id'],fqdn,aDict['ip'],serial))
-   retvals['a_id'] = db.get_last_id()
-
-  if str(aDict.get('ptr_id','0')) != '0':
-   retvals['ptr_id'] = aDict['ptr_id']
-   retvals['ptr_op'] = "update"
-   db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE id ='{}'".format(ptr,fqdn,serial,aDict['ptr_id']))
-  elif ptr_dom_id:
-   retvals['ptr_op'] = "insert"
-   db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','PTR','{}',3600,'{}')".format(ptr_dom_id,ptr,fqdn,serial))
-   retvals['ptr_id'] = db.get_last_id()
-
+   ret['xist']= db.do("INSERT INTO records (domain_id,name,type,content,ttl,change_date) VALUES('{}','{}','PTR','{}',3600,'{}')".format(aDict['domain_id'],ptr,aDict['fqdn'],serial))
+   ret['op']  = "insert"
+   ret['id']  = db.get_last_id()
+   ret['res'] = "OK"
   db.commit()
- return retvals
+ return ret
 
 #
 # get_records(type ['A'|'PTR'])
