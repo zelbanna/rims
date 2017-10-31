@@ -68,7 +68,7 @@ def info(aWeb):
     db.commit()
     aWeb.put_headers()
   else:
-   db.do("SELECT * FROM users WHERE id = '{}'".format(data['id']))
+   db.do("SELECT users.* FROM users WHERE id = '{}'".format(data['id']))
    data = db.get_row()
    data['front'] = str(data['frontpage'])
    data['view']  = str(data['view_public'])

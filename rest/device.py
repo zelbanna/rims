@@ -20,13 +20,13 @@ def update(aDict):
  racked = aDict.pop('racked',None)
  with DB() as db:
   if racked:
-   if racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
-    db.do("INSERT INTO rackinfo SET device_id = {},rack_id={} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(id,aDict.get('rackinfo_rack_id')))
+   if   racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
+    db.do("INSERT IGNORE INTO rackinfo SET device_id = {},rack_id={}".format(id,aDict.pop('rackinfo_rack_id',None)))
     db.commit()
    elif racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
+    aDict.pop('rackinfo_rack_id',None)
     db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
     db.commit()
-
   tbl_id = { 'devices':'id', 'rackinfo':'device_id' } 
   for fkey in aDict.keys():
    # fkey = table _ key
@@ -213,6 +213,7 @@ def info(aDict):
   if ret['exist'] > 0:
    ret['info'] = db.get_row()
    ret['fqdn'] = ret['info']['hostname'] + "." + ret['info']['a_name']
+   ret['ip']  = ret['info']['ipasc']
    ret['res'] = 'OK'
    ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(id))
    if ret['booked'] > 0:

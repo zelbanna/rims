@@ -36,11 +36,12 @@ def load(aWeb):
 #
 #
 def discrepancy(aWeb):
+ print "<DIV CLASS=z-frame><DIV CLASS=title>IPAM consistency</DIV><SPAN ID=span_ipam STYLE='font-size:9px;'>&nbsp;</SPAN>"
+ print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>ID</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_get_addresses".format(PC.ipam['type']))
  with DB() as db:
   db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id ORDER BY ip")
   devs = db.get_rows_dict('ip')
- print "<DIV CLASS=z-frame><DIV CLASS=title>IPAM consistency</DIV><SPAN ID=span_ipam STYLE='font-size:9px;'>&nbsp;</SPAN><DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=tbody>"
  for row in ipam['addresses']:
   dev = devs.pop(int(row['ip']),None)
   if not dev or dev.get('fqdn') != row['fqdn']:
@@ -49,7 +50,6 @@ def discrepancy(aWeb):
    print "<DIV CLASS=td>{}</DIV>".format(row['ipasc'])
    print "<DIV CLASS=td>{}</DIV>".format(row['fqdn'])
    print "<DIV CLASS=td>{}</DIV>".format(row['id'])
-   print "<DIV CLASS=td>{}</DIV>".format(row['ipam_sub_id'])
    print "<DIV CLASS=td>{}</DIV>".format(row['description'])
    print "<DIV CLASS=td>&nbsp;"
    print "<A CLASS='z-op z-btn z-small-btn' DIV=span_ipam MSG='Are you sure?' URL='sdcp.cgi?call=ipam_remove&id={}'><IMG SRC=images/btn-remove.png></A>".format(row['id'])
@@ -58,10 +58,16 @@ def discrepancy(aWeb):
     print "<!-- {} -->".format(domain)
     print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right URL='sdcp.cgi?call=device_new&ip={}&hostname={}&ipam_id={}&ipam_sub_id={}{}'><IMG SRC=images/btn-add.png></A>".format(row['ipasc'],hostname,row['id'],row['ipam_sub_id'],"&domain={}".format(domain) if domain else "")
    print "</DIV></DIV>"
- print "</DIV></DIV>"
  if len(devs) > 0:
-  print "<DIV CLASS=title>Extra only in SDCP ({})</DIV>".format(len(devs))
- print "</DIV>"
+  for dev in devs:
+   print "<DIV CLASS=tr>"
+   print "<DIV CLASS=td>{}</DIV>".format(dev['ipasc'])
+   print "<DIV CLASS=td>{}</DIV>".format(dev['fqdn'])
+   print "<DIV CLASS=td>{}</DIV>".format(dev['id'])
+   print "<DIV CLASS=td>&nbsp</DIV>"
+   print "<DIV CLASS=td>&nbsp</DIV>"
+   print "</DIV>"
+ print "</DIV></DIV></DIV>"
 
 
 #

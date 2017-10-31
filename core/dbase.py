@@ -43,7 +43,7 @@ class DB(object):
 
  def do(self,aQuery):
   op = aQuery[0:6].upper()
-  self._dirty = (op == 'UPDATE' or op == 'INSERT')
+  self._dirty = (op == 'UPDATE' or op == 'INSERT' or op =='DELETE')
   return self._curs.execute(aQuery)
 
  def commit(self):

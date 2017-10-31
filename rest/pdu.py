@@ -40,6 +40,8 @@ def remove(aDict):
 # Update PDU slot info for a device
 #
 def update_device_pdus(aDict):
+ import sdcp.PackageContainer as PC
+ PC.log_msg("pdu_update_device_pdus({})".format(aDict))
  from sdcp.core.dbase import DB
  hostname  = aDict.get('hostname')
  ret = {}
@@ -48,8 +50,8 @@ def update_device_pdus(aDict):
    ret[p] = None
    id = aDict.get("pem{}_pdu_id".format(p))
    if id:
-    slot = aDict.get("pem{}_pdu_slot".format(p))
-    unit = aDict.get("pem{}_pdu_unit".format(p))
+    slot = int(aDict.get("pem{}_pdu_slot".format(p),0))
+    unit = int(aDict.get("pem{}_pdu_unit".format(p),0))
     if not (slot == 0 or unit == 0):
      from sdcp.devices.RackUtils import Avocent
      db.do("SELECT INET_NTOA(ip) as ip FROM pdus WHERE id = '{}'".format(id))
