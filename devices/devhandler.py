@@ -17,39 +17,24 @@ def device_types():
 # Returns an instantiation of X type
 #
 def device_get_instance(aIP,aType):
- Dev = None
- if   aType == 'ex':
-  from Router import EX as Dev
- elif aType == 'qfx':
-  from Router import QFX as Dev
- elif aType == 'srx':
-  from Router import SRX as Dev
- elif aType == 'mx':
-  from Router import MX as Dev
- elif aType == 'wlc':
-  from Router import WLC as Dev
- elif aType == 'esxi':
-  from ESXi  import ESXi as Dev
- return None if not Dev else Dev(aIP)
+ try:
+  from importlib import import_module
+  module = import_module("sdcp.devices.{}".format(aType))
+  return getattr(module,'Device',lambda x: None)(aIP)
+ except:
+  return None
 
 #
 #  Return widgets for a give type
 #
 def device_get_widgets(aType):
- Dev = None
- if   aType == 'ex':
-  from Router import EX as Dev
- elif aType == 'qfx':
-  from Router import QFX as Dev
- elif aType == 'srx':
-  from Router import SRX as Dev
- elif aType == 'mx':
-  from Router import MX as Dev
- elif aType == 'wlc':
-  from Router import WLC as Dev
- elif aType == 'esxi':
-  from ESXi import ESXi as Dev
- return [] if not Dev else Dev.get_widgets()
+ try:
+  from importlib import import_module
+  module = import_module("sdcp.devices.{}".format(aType))
+  Device = getattr(module,'Device',None)
+  return Device.get_widgets() if Device else []
+ except:
+  return []
 
 ################################################# Detect #############################################
 #

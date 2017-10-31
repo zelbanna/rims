@@ -11,7 +11,7 @@ __status__= "Beta"
 ############################### Openstack #############################
 #
 #
-from sdcp.devices.appformix import AppformixRPC
+from sdcp.devices.appformix import Device
 import sdcp.PackageContainer as PC
 
 ##################################### Report ##################################
@@ -23,7 +23,7 @@ def report(aWeb):
  pname  = aWeb.cookie.get('os_project_name')
  ctrl   = aWeb.cookie.get('af_controller')
  # First auth..
- controller  = AppformixRPC(ctrl)
+ controller  = Device(ctrl)
  res = controller.auth({'username':PC.appformix['username'], 'password':PC.appformix['password'] })
  
  if not res['result'] == "OK":

@@ -11,7 +11,7 @@ __status__ = "Production"
 #
 # AppformixRPC Class
 #
-class AppformixRPC(object):
+class Device(object):
 
  def __init__(self, aIP, aToken = None):
   self._token = aToken

@@ -107,7 +107,7 @@ def info(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  import sdcp.core.genlib as GL
- from sdcp.devices.DevHandler import device_types, device_get_widgets
+ from sdcp.devices.devhandler import device_types, device_get_widgets, device_detect
  id    = aWeb.get_value('id')
  op    = aWeb.get_value('op',"")
  opres = {}
@@ -150,7 +150,6 @@ def info(aWeb):
  if op == 'lookup':
   import sdcp.PackageContainer as PC
   from sdcp.core.rest import call as rest_call
-  from sdcp.devices.DevHandler import device_detect
   db.do("SELECT INET_NTOA(ip) as ip, ptr_id, a_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
   dev = device_detect(aWeb.get_value('ip'))
   if dev:
@@ -337,7 +336,7 @@ def conf_gen(aWeb):
   row = db.get_row()
  type = aWeb.get_value('devices_type')
  print "<DIV CLASS=z-frame style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
- from sdcp.devices.DevHandler import device_get_instance
+ from sdcp.devices.devhandler import device_get_instance
  try:
   dev  = device_get_instance(row['ipasc'],type)
   dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':GL.int2ip(int(row['subnet'])), 'mask':row['mask']})
@@ -349,7 +348,7 @@ def conf_gen(aWeb):
 #
 #
 def op_function(aWeb):
- from sdcp.devices.DevHandler import device_get_instance
+ from sdcp.devices.devhandler import device_get_instance
  try:
   dev = device_get_instance(aWeb.get_value('ip'),aWeb.get_value('type'))
   fun = getattr(dev,aWeb.get_value('op'),None)

@@ -18,7 +18,7 @@ from subprocess import check_output, check_call
 
 ################################### IPMI #######################################
 
-class IPMI(object):
+class Device(object):
  def __init__(self, ahost):
   self.hostname = ahost
   

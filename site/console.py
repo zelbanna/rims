@@ -14,7 +14,7 @@ from sdcp.core.dbase import DB
 #
 
 def inventory(aWeb):
- from sdcp.devices.RackUtils import OpenGear
+ from sdcp.devices.opengear import Device
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Server</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>Device</DIV></DIV>"
@@ -22,7 +22,7 @@ def inventory(aWeb):
  conlist = aWeb.form.getlist('consolelist')
  config="https://{0}/?form=serialconfig&action=edit&ports={1}&start=&end="
  for con in conlist:
-  console = OpenGear(con)
+  console = Device(con)
   console.load_snmp()
   for key in console.get_keys():
    port = str(6000 + key)

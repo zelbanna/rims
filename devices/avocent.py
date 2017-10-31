@@ -1,75 +1,14 @@
 """Module docstring.
 
-Module for Rack Utility Classes (Power, UPS, Console)
-
-Exports:
-- PDU
-- Console
+Avocent PDU module
 
 """  
 __author__  = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__  = "Production"
 
-from generic import GenericDevice
+from generic import GenericDevice, ConfObject
 import sdcp.PackageContainer as PC
-
-#
-# Generic SNMP Configuration Class
-#
-class ConfObject(object):
-
- def __init__(self):
-  self._configitems = {}
-
- def __str__(self):
-  return "Configuration: - {}".format(str(self._configitems))
-
- def load_snmp(self):
-  pass
-
- def get_keys(self, aTargetName = None, aTargetValue = None, aSortKey = None):
-  if not aTargetName:
-   keys = self._configitems.keys()       
-  else:        
-   keys = []
-   for key, entry in self._configitems.iteritems():
-    if entry[aTargetName] == aTargetValue:
-     keys.append(key) 
-  keys.sort(key = aSortKey)
-  return keys         
-
- def get_entry(self, aKey):
-  return self._configitems.get(aKey,None)
-
-
-######################################## Console ########################################
-#
-# Opengear :-)
-#
-
-class OpenGear(GenericDevice, ConfObject):
-
- def __init__(self, aIP, aID = None):
-  GenericDevice.__init__(self,aIP, aID,'console')
-  ConfObject.__init__(self)
-
- def __str__(self):
-  return "OpenGear - {}".format(GenericDevice.__str__(self))
-
- def load_snmp(self):
-  from netsnmp import VarList, Varbind, Session
-  try:
-   portobjs = VarList(Varbind('.1.3.6.1.4.1.25049.17.2.1.2'))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   session.walk(portobjs)
-   self._configitems.clear()
-   for result in portobjs:
-    # [ Port ] = Name
-    self._configitems[ int(result.iid) ] = result.val
-  except Exception as exception_error:
-   self.log_msg("OpenGear : error loading conf " + str(exception_error), aPrint = True)
-
 
 ######################################## PDU ########################################
 #
@@ -77,7 +16,7 @@ class OpenGear(GenericDevice, ConfObject):
 #
 
 # Sort key function: lambda x: int(x.split('.')[0])*100+int(x.split('.')[1])
-class Avocent(GenericDevice, ConfObject):
+class Device(GenericDevice, ConfObject):
 
  _getstatemap = { '1':'off', '2':'on' }
  _setstatemap = { 'off':'3', 'on':'2', 'reboot':'4' }
@@ -102,7 +41,7 @@ class Avocent(GenericDevice, ConfObject):
   try:
    # node = "pdu.outlet"
    session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.6.1.{}.{}".format(slot,unit) , Avocent.set_outlet_state(state) ,"INTEGER"))
+   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.6.1.{}.{}".format(slot,unit) , Device.set_outlet_state(state) ,"INTEGER"))
    session.set(setobj)
    entry = self.get_entry("{}.{}".format(slot,unit))
    if entry:
@@ -144,7 +83,7 @@ class Avocent(GenericDevice, ConfObject):
     # outlet.iid = outlet number
     slot = outlet.tag[34:]
     node = slot + "." + outlet.iid
-    self._configitems[ node ] = { 'name': outlet.val, 'state':Avocent.get_outlet_state(statedict[node]), 'slotname':slotdict.get(slot,"unknown"), 'slot':slot, 'unit':outlet.iid }
+    self._configitems[ node ] = { 'name': outlet.val, 'state':Device.get_outlet_state(statedict[node]), 'slotname':slotdict.get(slot,"unknown"), 'slot':slot, 'unit':outlet.iid }
   except Exception as exception_error:
    self.log_msg("Avocent : error loading conf " + str(exception_error))
  

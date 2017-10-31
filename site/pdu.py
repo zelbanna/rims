@@ -14,7 +14,7 @@ __status__= "Production"
 #
 
 def inventory(aWeb):
- from sdcp.devices.RackUtils import Avocent
+ from sdcp.devices.avocent import Device
  domain  = aWeb.get_value('domain')
  pdulist = aWeb.form.getlist('pdulist')
 
@@ -32,7 +32,7 @@ def inventory(aWeb):
  print "<DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Entry</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th style='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for pdu in pdulist:
-  avocent = Avocent(pdu)
+  avocent = Device(pdu)
   avocent.load_snmp()
 
   # Ops
@@ -59,14 +59,14 @@ def inventory(aWeb):
 #
 #
 def unit_info(aWeb):
- from sdcp.devices.RackUtils import Avocent
+ from sdcp.devices.avocent import Device
  op = aWeb.get_value('op')
  pdu  = aWeb.get_value('pdu')
  slot = aWeb.get_value('slot')
  unit = aWeb.get_value('unit')
  if op == 'update':
   name = aWeb.get_value('name')
-  avocent = Avocent(pdu)
+  avocent = Device(pdu)
   avocent.set_name(slot,unit,name)
   print "Updated name: {} for {} slot {}".format(name,pdu,slot)
   return
@@ -110,6 +110,7 @@ def list(aWeb):
 #
 #
 def info(aWeb):
+ from sdcp.devices.avocent import Device
  from sdcp.core.dbase import DB
  import sdcp.core.genlib as GL
  id = aWeb.get_value('id')
@@ -119,7 +120,7 @@ def info(aWeb):
  with DB() as db:
   if op == 'lookup':
    ipint = GL.ip2int(ip)
-   pdu   = Avocent(ip)
+   pdu   = Device(ip)
    slotl = pdu.get_slot_names()
    slotn = len(slotl)
    if slotn == 1:
