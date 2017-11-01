@@ -7,6 +7,8 @@ __author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
+from sdcp.core.dbase import DB
+
 ############################################ resources ##############################################
 #
 def navigate(aWeb):
@@ -22,7 +24,6 @@ def navigate(aWeb):
 #
 #
 def list(aWeb):
- from sdcp.core.dbase import DB
  with DB() as db:
   res  = db.do("SELECT id, title, href, type, inline, user_id FROM resources WHERE (user_id = '{}' {}) ORDER BY type,title".format(aWeb.cookie['sdcp_id'],'' if aWeb.cookie['sdcp_view'] == '0' else 'OR private = 0'))
   rows = db.get_rows()
@@ -50,7 +51,6 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- from sdcp.core.dbase import DB
  from os import listdir, path
  op    = aWeb.get_value('op')
  data  = {}
@@ -104,10 +104,6 @@ def info(aWeb):
 #
 #
 def list_type(aWeb):
- #
- #
- # 
- from sdcp.core.dbase import DB
  with DB() as db:
   db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} )".format(aWeb.get_value('type'),aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
   rows = db.get_rows()
@@ -128,7 +124,6 @@ def list_type(aWeb):
 #
 #
 def remove(aWeb):
- from sdcp.core.dbase import DB
  with DB() as db:
   id = aWeb.get_value('id')
   res = db.do("DELETE FROM resources WHERE id = '{}'".format(id))

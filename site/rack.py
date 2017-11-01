@@ -79,7 +79,7 @@ def inventory(aWeb):
 #
 #
 def info(aWeb):
- import sdcp.PackageContainer as PC
+ from sdcp import PackageContainer as PC
  from os import listdir, path
  id = aWeb.get_value('id')
 

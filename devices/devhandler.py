@@ -41,10 +41,10 @@ def device_get_widgets(aType):
 # Detect device info
 #
 def device_detect(aIP, aDict = {}, aSema = None):
- import sdcp.PackageContainer as PC
+ from sdcp import PackageContainer as PC
  from netsnmp import VarList, Varbind, Session
  from socket import gethostbyaddr
- import sdcp.core.genlib as GL
+ from sdcp.core import genlib as GL
 
  if not GL.ping_os(aIP):
   if aSema:

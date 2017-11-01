@@ -112,7 +112,7 @@ def list(aWeb):
 def info(aWeb):
  from sdcp.devices.avocent import Device
  from sdcp.core.dbase import DB
- import sdcp.core.genlib as GL
+ from sdcp.core import genlib as GL
  id = aWeb.get_value('id')
  ip = aWeb.get_value('ip')
  op = aWeb.get_value('op')

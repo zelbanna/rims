@@ -7,7 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
 
-import sdcp.PackageContainer as PC
+from sdcp import PackageContainer as PC
 from sdcp.core.dbase import DB
 
 #
@@ -34,7 +34,7 @@ def cleanup(aDict):
 #
 def top(aDict):
  PC.log_msg("powerdns_top({})".format(aDict))
- import sdcp.core.genlib as GL
+ from sdcp.core import genlib as GL
  count = int(aDict.get('count',10))
  fqdn_top = {}
  fqdn_who = {}
@@ -87,7 +87,7 @@ def lookup_a(aDict):
 #
 def lookup_ptr(aDict):
  PC.log_msg("powerdns_lookup_ptr({})".format(aDict))
- import sdcp.core.genlib as GL
+ from sdcp.core import genlib as GL
  ret = {'domain':GL.ip2arpa(aDict['ip'])}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT id FROM domains WHERE type = 'PTR' AND name = '{}'".format(ret['domain']))
@@ -115,7 +115,7 @@ def update(aDict):
   cont = aDict['ip']
   name = aDict['fqdn']
  else:
-  import sdcp.core.genlib as GL
+  from sdcp.core import genlib as GL
   cont = aDict['fqdn']
   name = GL.ip2ptr(aDict['ip'])
  ret = {'res':'OK', 'type':type }

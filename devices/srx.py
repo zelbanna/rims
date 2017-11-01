@@ -7,7 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
 
-import sdcp.PackageContainer as PC
+from sdcp import PackageContainer as PC
 from junos import Junos
 
 ################################ SRX Object #####################################
@@ -19,7 +19,7 @@ class Device(Junos):
   return Junos.get_widgets()
 
  def __init__(self,aIP,aID=None):
-  Junos.__init__(self, aIP,aID,'srx')
+  Junos.__init__(self, aIP,aID)
   self.dnslist = []
   self.dhcpip = ""
   self.tunnels = 0

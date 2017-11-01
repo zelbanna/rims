@@ -58,7 +58,7 @@ def get_results(test):
 
 def log_msg(amsg):
  if _debug: print "Log: " + amsg
- import sdcp.PackageContainer as PC
+ from sdcp import PackageContainer as PC
  PC.log_msg(amsg)
 
 #

@@ -7,10 +7,10 @@ __author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
-import sdcp.PackageContainer as PC
+from sdcp import PackageContainer as PC
 from sdcp.core.dbase import DB
 from sdcp.core.rest import call as rest_call
-import sdcp.core.genlib as GL
+from sdcp.core import genlib as GL
 
 #
 #
@@ -29,8 +29,8 @@ def update(aWeb):
 #
 #
 def leases(aWeb):
- import sdcp.PackageContainer as PC
- import sdcp.core.extras as EXT
+ from sdcp import PackageContainer as PC
+ from sdcp.core import extras as EXT
  from sdcp.core.rest import call as rest_call
  dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Active Leases</DIV>"

@@ -16,7 +16,7 @@ __status__= "Production"
 def portal(aWeb):
  from json import dumps
  from sdcp.devices.openstack import OpenstackRPC
- import sdcp.PackageContainer as PC
+ from sdcp import PackageContainer as PC
  ctrl = aWeb.cookie.get('os_controller')
  utok = aWeb.cookie.get('os_user_token')
 

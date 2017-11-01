@@ -7,13 +7,13 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
 
-import sdcp.PackageContainer as PC
+from sdcp import PackageContainer as PC
 
 #
 #
 #
 def get_leases(aDict):
- import sdcp.core.genlib as GL
+ from sdcp.core import genlib as GL
  active = []
  free   = []
  lease  = {}

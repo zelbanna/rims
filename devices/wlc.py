@@ -7,7 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
 
-import sdcp.PackageContainer as PC
+from sdcp import PackageContainer as PC
 from generic import GenericDevice
 from netsnmp import VarList, Varbind, Session
 
@@ -20,7 +20,7 @@ class Device(GenericDevice):
 
  @classmethod
  def get_widgets(cls):
-  return ['widget_switch_table']
+  return ['get_switch_table']
 
  def __init__(self,aIP, aID = None):
   GenericDevice.__init__(self, aIP, aID)
@@ -31,7 +31,7 @@ class Device(GenericDevice):
  def get_type(self):
   return 'wlc'
 
- def widget_switch_table(self):
+ def get_switch_table(self):
   from socket import gethostbyaddr
   try:
    # Length of below is used to offset ip address (32) + 1 and mac base (33) + 1 
@@ -45,9 +45,7 @@ class Device(GenericDevice):
    return
         
   ipdict= dict(map(lambda res: (res.tag[33:], res.val) ,cipobjs))
-  print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
-  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>SSid</DIV></DIV>"
-  print "<DIV CLASS=tbody>"
+  ret = []
   for res in cssidobjs:
    macbase=res.tag[34:]
    mac = (macbase+"."+res.iid).split(".")
@@ -56,5 +54,5 @@ class Device(GenericDevice):
     clientname = gethostbyaddr(ipdict[macbase])[0]
    except:
     clientname = "unknown"
-   print "<DIV CLASS=tr><DIV CLASS=td>" + clientname + "&nbsp;</DIV><DIV CLASS=td>" + ipdict.get(macbase) + "&nbsp;</DIV><DIV CLASS=td>" + mac + "&nbsp;</DIV><DIV CLASS=td>" + res.val + "</DIV></DIV>"
-  print "</DIV></DIV></DIV>"
+   ret.append({'Name':clientname, 'IP':ipdict.get(macbase), 'MAC':mac, 'SSID': res.val})
+  return ret

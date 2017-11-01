@@ -41,15 +41,9 @@ def list(aWeb):
  print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
 
 def mysql(aWeb):
- import sdcp.PackageContainer as PC
- print "<DIV CLASS=z-frame><DIV CLASS=z-logs>"
- try:
-  from subprocess import check_output
-  import sdcp.PackageContainer as PC
-  mysql = check_output(['mysqldump','--no-data',"-u{}".format(PC.generic['dbuser']),"-p{}".format(PC.generic['dbpass']),PC.generic['db']])
-  for line in mysql.split('\n'):
-   if not line[:2] in [ '/*','--']:
-    print line + "<BR>"
- except: 
-  pass
- print "</DIV></DIV>"
+ from sdcp.tools.mysqldump import dump
+ print "<DIV CLASS=z-logs>"
+ for line in dump().split('\n'):
+  if not line[:2] in [ '/*','--']:
+   print line + "<BR>"
+ print "</DIV>"

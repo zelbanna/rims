@@ -40,8 +40,8 @@ def widget_rows(asources):
 # Device must answer to ping(!) for system to continue
 #
 def _detect(aentry, alock, asema):
- import sdcp.PackageContainer as PC
- import sdcp.core.genlib as GL
+ from sdcp import PackageContainer as PC
+ from sdcp.core import genlib as GL
  if not GL.ping_os(aentry['ip']):
   asema.release()
   return False
@@ -61,7 +61,7 @@ def _detect(aentry, alock, asema):
     graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')
     graphfile.write('ln -s /usr/share/munin/plugins/snmp__users  /etc/munin/plugins/snmp_' + fqdn + '_users\n')
     for ifd in activeinterfaces:
-     graphfile.write('ln -s /usr/share/munin/plugins/snmp__if_    /etc/munin/plugins/snmp_' + fqdn + '_if_'+ ifd[2] +'\n')
+     graphfile.write('ln -s /usr/share/munin/plugins/snmp__if_    /etc/munin/plugins/snmp_' + fqdn + '_if_'+ ifd['SNMP'] +'\n')
    alock.release()
   elif type == "esxi":
    alock.acquire()
@@ -81,7 +81,7 @@ def _detect(aentry, alock, asema):
 # Writes plugin info for devices found with DeviceHandler
 #
 def discover():
- import sdcp.PackageContainer as PC
+ from sdcp import PackageContainer as PC
  from sdcp.core.dbase import DB
  from os import chmod
  from time import time

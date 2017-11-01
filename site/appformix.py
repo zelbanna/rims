@@ -12,7 +12,7 @@ __status__= "Beta"
 #
 #
 from sdcp.devices.appformix import Device
-import sdcp.PackageContainer as PC
+from sdcp import PackageContainer as PC
 
 ##################################### Report ##################################
 #

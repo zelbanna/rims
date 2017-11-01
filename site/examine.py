@@ -7,6 +7,8 @@ __author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
+from sdcp import PackageContainer as PC
+
 ############################################ Examine ##############################################
 #
 # Examine Logs
@@ -15,7 +17,6 @@ def main(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- import sdcp.PackageContainer as PC
  upshost = PC.sdcp['upshost']
  print "<DIV CLASS='z-navbar' ID=div_navbar>"
  print "<A CLASS='z-warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=examine_clear'>Clear Logs</A>"
@@ -33,7 +34,6 @@ def main(aWeb):
 #
 #
 def clear(aWeb):
- import sdcp.PackageContainer as PC
  from sdcp.core.rest import call as rest_call
  res_dns  = rest_call(PC.dns['url'],'sdcp.rest.examine_clear_logs',{ 'logs':[PC.generic['logformat']]})
  res_host = rest_call("http://127.0.0.1/rest.cgi",'sdcp.rest.examine_clear_logs',{ 'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})
@@ -43,7 +43,6 @@ def clear(aWeb):
 # Internal Logs
 #
 def logs(aWeb):
- import sdcp.PackageContainer as PC
  from sdcp.core.rest import call as rest_call
  logs = rest_call('http://127.0.0.1/rest.cgi','sdcp.rest.examine_get_logs',{'count':10,'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})
  for file,res in logs.iteritems():
@@ -56,7 +55,6 @@ def logs(aWeb):
 # UPS graphs
 #
 def ups(aWeb):
- import sdcp.PackageContainer as PC
  from sdcp.tools.munin import widget_cols
  upshost,void,domain = PC.sdcp['upshost'].partition('.')
  print "<DIV CLASS=z-frame STYLE='width:auto;'>"
@@ -67,7 +65,6 @@ def ups(aWeb):
 # Service logs
 #
 def svc(aWeb):
- import sdcp.PackageContainer as PC
  from sdcp.core.rest import call as rest_call
  logs = rest_call("http://{}/rest.cgi".format(PC.sdcp['svcsrv']), "sdcp.rest.examine_get_logs",{'count':20,'logs':[PC.generic['logformat']]})
  for file,res in logs.iteritems():

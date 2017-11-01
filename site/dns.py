@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
-import sdcp.PackageContainer as PC
+from sdcp import PackageContainer as PC
 from sdcp.core.dbase import DB
 from sdcp.core.rest import call as rest_call
 
@@ -74,7 +74,7 @@ def discrepancy(aWeb):
 # DNS top
 #
 def top(aWeb):
- import sdcp.core.extras as EXT
+ from sdcp.core import extras as EXT
  dnstop = rest_call(PC.dns['url'], "sdcp.rest.{}_top".format(PC.dns['type']), {'count':20})
  print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>Top looked up FQDN</DIV>"
  EXT.dict2table(dnstop['top'])
@@ -91,7 +91,7 @@ def cleanup(aWeb):
  print "<DIV CLASS=z-frame><DIV CLASS=title>Cleanup</DIV>"
  xist = len(dnsclean['removed'])
  if xist > 0:
-  import sdcp.core.extras as EXT
+  from sdcp.core import extras as EXT
   EXT.dict2table(dnsclean['removed'])
  print "</DIV>"
 

@@ -7,7 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
 
-import sdcp.PackageContainer as PC
+from sdcp import PackageContainer as PC
 from sdcp.core.dbase import DB
 
 #
@@ -112,7 +112,7 @@ def free(aDict):
 
 def find(aDict):
  PC.log_msg("phpipam_find({})".format(aDict))
- import sdcp.core.genlib as GL
+ from sdcp.core import genlib as GL
  sub_id = aDict.get('ipam_sub_id')
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(sub_id))

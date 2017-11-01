@@ -112,7 +112,7 @@ def action(aWeb):
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
 
- import sdcp.PackageContainer as PC
+ from sdcp import PackageContainer as PC
  PC.log_msg("heat_action - project:{} id:{} name:{} op:{}".format(id,cookie.get('os_project_name'),name,op))
 
  if   op == 'info':

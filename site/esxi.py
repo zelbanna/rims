@@ -74,7 +74,7 @@ def logs(aWeb):
  hostname = aWeb.get_value('hostname')
  try:
   from subprocess import check_output
-  import sdcp.PackageContainer as PC
+  from sdcp import PackageContainer as PC
   logs = check_output("tail -n 30 " + PC.esxi['logformat'].format(hostname) + " | tac", shell=True)
   print "<DIV CLASS='z-logs'><H1>{} operation logs</H1>{}</DIV>".format("{}".format(hostname),logs.replace('\n','<BR>'))
  except:
@@ -98,7 +98,7 @@ def op(aWeb,aIP = None):
    return
   userid = aWeb.cookie.get('sdcp_id')
   from subprocess import check_call, check_output
-  import sdcp.PackageContainer as PC
+  from sdcp import PackageContainer as PC
   try:
    if nstate == 'vmsvc-snapshot.create':
     from time import strftime

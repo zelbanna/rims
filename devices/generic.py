@@ -15,7 +15,7 @@ class GenericDevice(object):
  # - _logfile
  
  def __init__(self, aIP, aID = None):
-  import sdcp.PackageContainer as PC
+  from sdcp import PackageContainer as PC
   self._id = aID
   self._ip = aIP
   self._logfile = PC.generic['logformat']

@@ -140,7 +140,7 @@ def action(aWeb):
  id   = aWeb.get_value('id')
  op   = aWeb.get_value('op','info')
 
- import sdcp.PackageContainer as PC
+ from sdcp import PackageContainer as PC
  PC.log_msg("nova_action - id:{} op:{} for project:{}".format(id,op,cookie.get('os_project_name')))
 
  if   op == 'info':

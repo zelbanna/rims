@@ -7,7 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
 
-import sdcp.PackageContainer as PC
+from sdcp import PackageContainer as PC
 from junos import Junos
 
 ################################ MX Object #####################################
@@ -19,7 +19,7 @@ class Device(Junos):
   return Junos.get_widgets()
 
  def __init__(self,aIP,aID=None):
-  Junos.__init__(self, aIP,aID,'mx')
+  Junos.__init__(self, aIP,aID)
   self._interfacenames = {}
 
  def __str__(self):

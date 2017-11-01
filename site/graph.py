@@ -85,7 +85,7 @@ def discover(aWeb):
 #
 def save(aWeb):
  from sdcp.core.dbase import DB
- import sdcp.PackageContainer as PC
+ from sdcp import PackageContainer as PC
  with DB() as db:
   db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
   rows = db.get_rows()

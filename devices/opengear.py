@@ -7,7 +7,7 @@ __version__ = "17.10.4"
 __status__  = "Production"
 
 from generic import GenericDevice, ConfObject
-import sdcp.PackageContainer as PC
+from sdcp import PackageContainer as PC
 
 ######################################## Console ########################################
 #

@@ -11,7 +11,7 @@ __status__ = "Production"
 # Clear logs
 #
 def clear_logs(aDict):
- import sdcp.PackageContainer as PC
+ from sdcp import PackageContainer as PC
  logfiles = aDict.get('logs')
  result = {}
  for logfile in logfiles:

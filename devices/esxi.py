@@ -7,7 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__ = "Production"
 
-import sdcp.PackageContainer as PC
+from sdcp import PackageContainer as PC
 from generic import GenericDevice
 
 ########################################### ESXi ############################################
@@ -27,7 +27,7 @@ class Device(GenericDevice):
 
  def __init__(self,aIP,aID=None):
   GenericDevice.__init__(self,aIP,aID)
-  import sdcp.core.genlib as GL
+  from sdcp.core import genlib as GL
   # Override log file
   self._hostname = GL.get_host_name(aIP)
   self._logfile = PC.esxi['logformat'].format(self._hostname)

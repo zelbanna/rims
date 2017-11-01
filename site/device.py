@@ -106,7 +106,7 @@ def info(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- import sdcp.core.genlib as GL
+ from sdcp.core import genlib as GL
  from sdcp.devices.devhandler import device_types, device_get_widgets, device_detect
  id    = aWeb.get_value('id')
  op    = aWeb.get_value('op',"")
@@ -118,7 +118,7 @@ def info(aWeb):
  ###################### Data operations ###################
  if op == 'update':
   from sdcp.rest.device import update
-  import sdcp.PackageContainer as PC
+  from sdcp import PackageContainer as PC
   from sdcp.core.rest import call as rest_call
   d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
   if not d.get('devices_vm'):
@@ -148,7 +148,7 @@ def info(aWeb):
     opres['pdu'] = update_device_pdus(pdu_update)
 
  if op == 'lookup':
-  import sdcp.PackageContainer as PC
+  from sdcp import PackageContainer as PC
   from sdcp.core.rest import call as rest_call
   db.do("SELECT INET_NTOA(ip) as ip, ptr_id, a_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
   dev = device_detect(aWeb.get_value('ip'))
@@ -292,7 +292,7 @@ def info(aWeb):
  else:
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=book&id={} TITLE='Book device'><IMG SRC='images/btn-add.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_dev_data URL=sdcp.cgi?call=device_conf_gen                 FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
- import sdcp.PackageContainer as PC
+ from sdcp import PackageContainer as PC
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf['username'],dev['ip'])
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
   print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(dev['rack']['console_ip'],6000+dev['rack']['console_port'])
@@ -328,7 +328,7 @@ def info(aWeb):
 # View operation data / widgets
 #
 def conf_gen(aWeb):
- import sdcp.core.genlib as GL
+ from sdcp.core import genlib as GL
  id = aWeb.get_value('id','0')
  gw = aWeb.get_value('devices_ipam_gw')
  with DB() as db:
@@ -349,16 +349,19 @@ def conf_gen(aWeb):
 #
 def op_function(aWeb):
  from sdcp.devices.devhandler import device_get_instance
+ from sdcp.core import extras as EXT
+ print "<DIV CLASS=z-frame>"
  try:
   dev = device_get_instance(aWeb.get_value('ip'),aWeb.get_value('type'))
-  fun = getattr(dev,aWeb.get_value('op'),None)
-  fun()
+  with dev:
+   EXT.dict2table(getattr(dev,aWeb.get_value('op'),None)())
  except Exception as err:
   print "<B>Error in devdata: {}</B>".format(str(err))
+ print "</DIV>"
 
 
 def mac_sync(aWeb):
- import sdcp.core.genlib as GL
+ from sdcp.core import genlib as GL
  from sdcp.tools.mac_tool import load_macs
  arps = load_macs()
  print "<DIV CLASS=z-frame style='overflow-x:auto; width:400px;'><DIV CLASS=z-table>"
@@ -386,7 +389,7 @@ def new(aWeb):
  op     = aWeb.get_value('op')
  sub_id = aWeb.get_value('ipam_sub_id')
  if op == 'new':
-  import sdcp.PackageContainer as PC
+  from sdcp import PackageContainer as PC
   from sdcp.rest.device import new as rest_new
 
   a_dom_id,_,domain = aWeb.get_value('a_dom_id').partition('_')
@@ -408,7 +411,7 @@ def new(aWeb):
   print "DB:{}".format(res)
   PC.log_msg("{} ({}): New device operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_id'),args,res))
  elif op == 'find':
-  import sdcp.PackageContainer as PC
+  from sdcp import PackageContainer as PC
   from sdcp.core.rest import call as rest_call
   from sdcp.rest.device import find_ip as rest_find_ip
   res  = rest_find_ip({'ipam_sub_id':sub_id})
@@ -460,7 +463,7 @@ def remove(aWeb):
  ret = remove({ 'id':id })
  if ret['res'] == 'OK':
   from sdcp.core.rest import call as rest_call
-  import sdcp.PackageContainer as PC
+  from sdcp import PackageContainer as PC
   dns = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']),  ret)
   ipam= rest_call(PC.ipam['url'],"sdcp.rest.{}_remove".format(PC.ipam['type']), ret)
  print "<DIV CLASS=z-frame>"
