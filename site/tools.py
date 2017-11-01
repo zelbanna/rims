@@ -36,5 +36,20 @@ def list(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TARGET=_blank                  HREF='sdcp.cgi?call=device_dump_db'>Dump Device Table to JSON</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=rack_rackinfo'>View Rackinfo Table</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_mysql'>Dump DB Structure</A></DIV></DIV>"
  print "</DIV></DIV></DIV></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
+
+def mysql(aWeb):
+ import sdcp.PackageContainer as PC
+ print "<DIV CLASS=z-frame><DIV CLASS=z-logs>"
+ try:
+  from subprocess import check_output
+  import sdcp.PackageContainer as PC
+  mysql = check_output(['mysqldump','--no-data',"-u{}".format(PC.generic['dbuser']),"-p{}".format(PC.generic['dbpass']),PC.generic['db']])
+  for line in mysql.split('\n'):
+   if not line[:2] in [ '/*','--']:
+    print line + "<BR>"
+ except: 
+  pass
+ print "</DIV></DIV>"

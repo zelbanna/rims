@@ -22,7 +22,3 @@ www-data ALL=(ALL) NOPASSWD: /bin/systemctl
 apt-get install graphviz libgraphviz-dev
 pip install pygraphviz --install-option="--include-path=/usr/include/graphviz" --install-option="--library-path=/usr/lib/graphviz/"
 eralchemy -i 'mysql+pymysql://user:pass@127.0.0.1:3306/sdcp' -o sdcp-db.pdf
-
-- Backup DB structure:
-mysqldump --no-data -u xyz -p sdcp 2>&1 | grep -vE "\/\*" > mysql.txt
-
