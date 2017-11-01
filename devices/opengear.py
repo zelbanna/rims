@@ -17,7 +17,7 @@ import sdcp.PackageContainer as PC
 class Device(GenericDevice, ConfObject):
 
  def __init__(self, aIP, aID = None):
-  GenericDevice.__init__(self,aIP, aID,'console')
+  GenericDevice.__init__(self,aIP, aID,'opengear')
   ConfObject.__init__(self)
 
  def __str__(self):

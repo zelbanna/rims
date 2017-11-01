@@ -30,7 +30,7 @@ class Device(GenericDevice, ConfObject):
   return cls._setstatemap.get(state,'1')
 
  def __init__(self, aIP, aID = None):
-  GenericDevice.__init__(self,aIP, aID,'pdu')
+  GenericDevice.__init__(self,aIP, aID,'avocent')
   ConfObject.__init__(self)
 
  def __str__(self):

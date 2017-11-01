@@ -20,8 +20,8 @@ class Junos(GenericDevice):
  def get_widgets(cls):
   return ['widget_up_interfaces','widget_lldp','widget_archive' ]
 
- def __init__(self,aIP,aID = None, atype = 'Junos'):
-  GenericDevice.__init__(self,aIP,aID,atype)
+ def __init__(self,aIP,aID = None, aType = 'junos'):
+  GenericDevice.__init__(self,aIP,aID, aType)
   from jnpr.junos import Device as JunosDevice
   from jnpr.junos.utils.config import Config
   self._router = JunosDevice(self._ip, user=PC.netconf['username'], password=PC.netconf['password'], normalize=True)
