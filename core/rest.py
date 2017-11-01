@@ -18,6 +18,7 @@ __status__= "Production"
 # -- Response model
 # --- res: OK/NOT_OK, ERROR, NO_DATA
 # --- type: of ERROR
+# --- exception: type of Exception
 # --- info: data from api or ERROR info
 # --- anything-else: up to developer
 #
@@ -46,7 +47,7 @@ def server():
   print "X-Z-Fun:{}\r".format(fun)
  except Exception, e:
   print "X-Z-Res:{}\r".format(str(e))
-  data = dumps({ 'res':'ERROR', 'type':'REST_SERVER', 'api':api, 'info':str(e), 'args':args  }, sort_keys=True)
+  data = dumps({ 'res':'ERROR', 'type':'REST_SERVER', 'exception':type(e).__name, 'api':api, 'info':str(e), 'args':args  }, sort_keys=True)
  print "Content-Type: application/json\r"
  stdout.flush()
  print ""
@@ -72,9 +73,9 @@ def call(aURL, aAPI, aArgs = None):
  except HTTPError, h:
   try: body = loads(h.read())
   except: body = None
-  data = { 'res':'ERROR', 'type':'REST_CALL_HTTP', 'body':body, 'info':dict(h.info()), 'code': h.code }
+  data = { 'res':'ERROR', 'type':'REST_CALL_HTTP', 'exception':'HTTPError', 'body':body, 'info':dict(h.info()), 'code': h.code }
  except Exception, e:
-  data = { 'res':'ERROR', 'type':'REST_CALL', 'info':str(e) }
+  data = { 'res':'ERROR', 'type':'REST_CALL', 'exception':type(e).__name__, 'info':str(e) }
  if data['res'] == 'ERROR':
   raise Exception(data)
  else:
