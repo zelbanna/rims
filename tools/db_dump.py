@@ -4,10 +4,9 @@ __author__ = "Zacharias El Banna"
 __version__ = "1.1GA"
 __status__ = "Production"
 
-from os import path
-from inspect import currentframe, getfile
+from os import path as ospath
 from sys import path as syspath
-syspath.append(path.abspath(path.join(path.dirname(getfile(currentframe())),'..')))
+syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..')))
 
 import PackageContainer as PC
 
