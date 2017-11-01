@@ -5,7 +5,7 @@ Ajax Openstack NOVA calls module
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
-__version__ = "17.10.4"
+__version__ = "17.11.01GA"
 __status__= "Production"
 
 from sdcp.devices.openstack import OpenstackRPC

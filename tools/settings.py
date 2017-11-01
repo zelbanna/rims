@@ -4,7 +4,7 @@
 Creates a package specific container, partly using settings from a .json file
 """
 __author__ = "Zacharias El Banna"
-__version__ = "17.10.4"
+__version__ = "17.11.01GA"
 __status__ = "Production"
 
 def convertSettings(aFile):

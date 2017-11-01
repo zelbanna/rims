@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
-__version__ = "1.1GA"
+__version__ = "17.11.01GA"
 __status__ = "Production"
 
 
