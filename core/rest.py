@@ -47,7 +47,7 @@ def server():
   print "X-Z-Fun:{}\r".format(fun)
  except Exception, e:
   print "X-Z-Res:{}\r".format(str(e))
-  data = dumps({ 'res':'ERROR', 'type':'REST_SERVER', 'exception':type(e).__name, 'api':api, 'info':str(e), 'args':args  }, sort_keys=True)
+  data = dumps({ 'res':'ERROR', 'type':'REST_SERVER', 'exception':type(e).__name__, 'api':api, 'info':str(e), 'args':args  }, sort_keys=True)
  print "Content-Type: application/json\r"
  stdout.flush()
  print ""
