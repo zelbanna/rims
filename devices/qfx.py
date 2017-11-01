@@ -28,6 +28,9 @@ class Device(Junos):
  def __str__(self):
   return Junos.__str__(self) + " Style:" + str(self._style)
 
+ def get_type(self):
+  return 'qfx'
+
  #
  # should prep for ELS only and send "instance = 'default-instance'" - then id could be retrieved too
  # since grouping is different

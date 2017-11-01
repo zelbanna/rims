@@ -51,14 +51,10 @@ def _detect(aentry, alock, asema):
  fqdn = aentry['hostname'] + "." + aentry['domain']
  try:
   if type in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-   from sdcp.devices.Router import Junos
+   from sdcp.devices.junos import Junos
    if not type == 'wlc':
-    jdev = Junos(aentry['ip'])
-    if jdev.connect():
+    with Junos(aentry['ip']) as jdev:
      activeinterfaces = jdev.get_up_interfaces()
-     jdev.close()
-    else:
-     PC.log_msg("Graph detect: impossible to connect to {}! [{} - {}]".format(aentry['ip'],type,model))
    alock.acquire()
    with open(PC.sdcp['graph']['plugins'], 'a') as graphfile:
     graphfile.write('ln -s /usr/local/sbin/plugins/snmp__{0} /etc/munin/plugins/snmp_{1}_{0}\n'.format(type,fqdn))

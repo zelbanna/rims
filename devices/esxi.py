@@ -26,7 +26,7 @@ class Device(GenericDevice):
   return ['operated']
 
  def __init__(self,aIP,aID=None):
-  GenericDevice.__init__(self,aIP,aID,'esxi')
+  GenericDevice.__init__(self,aIP,aID)
   import sdcp.core.genlib as GL
   # Override log file
   self._hostname = GL.get_host_name(aIP)
@@ -41,13 +41,16 @@ class Device(GenericDevice):
   self._logfile = PC.esxi['logformat'].format(aHostname)
   self.statefile = PC.esxi['shutdownfile'].format(aHostname) 
 
+ def get_type(self):
+  return 'esxi'
+
  def __enter__(self):
   if self.ssh_connect():
    return self
   else:
    raise RuntimeError("Error connecting to host")
   
- def __exit__(self, ctx_type, ctx_value, ctx_traceback):
+ def __exit__(self, *ctx_info):
   self.ssh_close()
   
  def __str__(self):

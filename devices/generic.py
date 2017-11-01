@@ -14,22 +14,27 @@ class GenericDevice(object):
  # - _id
  # - _logfile
  
- def __init__(self, aIP, aID = None, aType = 'generic'):
+ def __init__(self, aIP, aID = None):
   import sdcp.PackageContainer as PC
-  self._type = aType
   self._id = aID
   self._ip = aIP
   self._logfile = PC.generic['logformat']
 
  def __str__(self):
-  return "IP:{} ID:{} Type:{}".format(self._ip, self._id, self._type)
+  return "IP:{} ID:{} Type:{}".format(self._ip, self._id, self.get_type())
+
+ def __enter__(self):
+  return self
+
+ def __exit__(self, *ctx_info):
+  pass
  
+ def get_type(self):
+  return "generic"
+
  def ping_device(self):
   from os import system
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
-
- def get_type(self):
-  return self._type
 
  def log_msg(self, aMsg, aPrint = False):
   from time import localtime, strftime
@@ -42,6 +47,7 @@ class GenericDevice(object):
  def print_conf(self,argdict):
   print "No config for device"
 
+######################################################################################
 #
 # Generic SNMP Configuration Class
 #
@@ -51,7 +57,13 @@ class ConfObject(object):
   self._configitems = {}
 
  def __str__(self):
-  return "Configuration: - {}".format(str(self._configitems))
+  return "ConfObject:{}".format(str(self._configitems))
+
+ def __enter__(self):
+  return self
+
+ def __exit__(self, *ctx_info):
+  pass
 
  def load_snmp(self):
   pass

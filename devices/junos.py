@@ -20,8 +20,8 @@ class Junos(GenericDevice):
  def get_widgets(cls):
   return ['widget_up_interfaces','widget_lldp','widget_archive' ]
 
- def __init__(self,aIP,aID = None, aType = 'junos'):
-  GenericDevice.__init__(self,aIP,aID, aType)
+ def __init__(self,aIP,aID = None):
+  GenericDevice.__init__(self,aIP,aID)
   from jnpr.junos import Device as JunosDevice
   from jnpr.junos.utils.config import Config
   self._router = JunosDevice(self._ip, user=PC.netconf['username'], password=PC.netconf['password'], normalize=True)
@@ -32,6 +32,18 @@ class Junos(GenericDevice):
  
  def __str__(self):
   return "{} Type:{} Model:{} Version:{}".format(str(self._router),  self._type, self._model, self._version)
+
+ def get_type(self):
+  return 'junos'
+
+ def __enter__(self):
+  if self.connect():
+   return self
+  else:
+   raise RuntimeError("Error connecting to host")
+ 
+ def __exit__(self, *ctx_info):
+  self.close()
 
  def connect(self):
   try:

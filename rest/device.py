@@ -88,7 +88,7 @@ def discover(aDict):
  PC.log_msg("device_discover({})".format(aDict))
  from time import time
  from threading import Thread, BoundedSemaphore
- from sdcp.devices.DevHandler import device_detect
+ from sdcp.devices.devhandler import device_detect
  import sdcp.core.genlib as GL
  start_time = int(time())
  ip_start = aDict.get('start')

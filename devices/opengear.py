@@ -17,11 +17,14 @@ import sdcp.PackageContainer as PC
 class Device(GenericDevice, ConfObject):
 
  def __init__(self, aIP, aID = None):
-  GenericDevice.__init__(self,aIP, aID,'opengear')
+  GenericDevice.__init__(self,aIP, aID)
   ConfObject.__init__(self)
 
  def __str__(self):
   return "OpenGear - {}".format(GenericDevice.__str__(self))
+
+ def get_type(self):
+  return 'opengear'
 
  def load_snmp(self):
   from netsnmp import VarList, Varbind, Session

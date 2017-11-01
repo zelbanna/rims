@@ -24,3 +24,7 @@ class Device(Junos):
 
  def __str__(self):
   return Junos.__str__(self) + " Style:" + str(self._style)
+
+ def get_type(self):
+  return 'mx'
+

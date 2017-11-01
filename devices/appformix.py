@@ -22,6 +22,9 @@ class Device(object):
  def __str__(self):
   return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._token_utc)
 
+ def get_type(self):
+  return 'appformix'
+
  #
  # Basic POST  authentication
  # { 'username','password' }

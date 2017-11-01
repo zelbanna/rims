@@ -23,10 +23,13 @@ class Device(GenericDevice):
   return ['widget_switch_table']
 
  def __init__(self,aIP, aID = None):
-  GenericDevice.__init__(self, aIP, aID, 'wlc')
+  GenericDevice.__init__(self, aIP, aID)
   
  def __str__(self):
   return "WLC - {}".format(GenericDevice.__str__(self))
+
+ def get_type(self):
+  return 'wlc'
 
  def widget_switch_table(self):
   from socket import gethostbyaddr

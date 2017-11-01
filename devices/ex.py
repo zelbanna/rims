@@ -21,9 +21,12 @@ class Device(Junos):
   return widgets
 
  def __init__(self,aIP,aID=None):
-  Junos.__init__(self, aIP,aID,'ex')
+  Junos.__init__(self, aIP,aID)
   self._style  = None
   self._interfacenames = {}
+
+ def get_type(self):
+  return 'ex'
 
  def __str__(self):
   return Junos.__str__(self) + " Style:" + str(self._style)

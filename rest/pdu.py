@@ -12,12 +12,12 @@ __status__= "Production"
 #
 def unit_update(aDict):
  if aDict.get('name'):
-  from sdcp.devices.RackUtils import Avocent
+  from sdcp.devices.avocent import Device
   name = aDict.get('name')
-  pdu  = aDict.get('pdu','0')
+  ip   = aDict.get('pdu')
   slot = aDict.get('slot','0')
   unit = aDict.get('unit','0')
-  avocent = Avocent(pdu)
+  avocent = Device(ip)
   res = avocent.set_name(slot,unit,name)
   return { 'res':'op_success', 'info':res }
  else:
@@ -52,9 +52,9 @@ def update_device_pdus(aDict):
     slot = int(aDict.get("pem{}_pdu_slot".format(p),0))
     unit = int(aDict.get("pem{}_pdu_unit".format(p),0))
     if not (slot == 0 or unit == 0):
-     from sdcp.devices.RackUtils import Avocent
+     from sdcp.devices.avocent import Device
      db.do("SELECT INET_NTOA(ip) as ip FROM pdus WHERE id = '{}'".format(id))
      pdu = db.get_row()
-     avocent = Avocent(pdu['ip'])
+     avocent = Device(pdu['ip'])
      ret["pem{}".format(p)] = avocent.set_name(slot,unit,hostname+"-P{}".format(p))
  return ret
