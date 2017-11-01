@@ -13,10 +13,15 @@ __status__= "Production"
 # Make proper REST responses 
 #
 # - encoded as apicall=package.path.module_function (module cannot contain '_', but function can)
-# - module file is prefixed with rest_ , use _ for function names but not module name (!)
 # - reads body to find input data
 # - returns json:ed response from function
-# 
+# -- Response model
+# --- res: OK/NOT_OK, ERROR, NO_DATA
+# --- type: of ERROR
+# --- info: data from api or ERROR info
+# --- anything-else: up to developer
+#
+
 def server():
  from os import getenv, environ
  from sys import stdout, stdin
@@ -35,13 +40,13 @@ def server():
   (mod,void,fun) = api.partition('_')
   from importlib import import_module
   module = import_module(mod)
-  data   = dumps(getattr(module,fun,lambda x: { 'type':'rest_error_function', 'api':api, 'err':'No such function in module', 'args':x })(args))
+  data   = dumps(getattr(module,fun,lambda x: { 'res':'ERROR', 'type':'REST_SERVER_FUNCTION', 'api':api, 'info':'No such function in module', 'args':x })(args))
   print "X-Z-Res:{}\r".format("OK")
   print "X-Z-Mod:{}\r".format(mod)
   print "X-Z-Fun:{}\r".format(fun)
- except Exception as err:
+ except Exception, e:
   print "X-Z-Res:{}\r".format(str(err))
-  data = dumps({ 'type':'rest_error', 'api':api, 'err':str(err), 'args':args  }, sort_keys=True)
+  data = dumps({ 'res':'ERROR', 'type':'REST_SERVER', 'api':api, 'info':str(e), 'args':args  }, sort_keys=True)
  print "Content-Type: application/json\r"
  stdout.flush()
  print ""
@@ -61,13 +66,13 @@ def call(aURL, aAPI, aArgs = None):
  try:
   req = Request(aURL, headers=head, data=dumps(aArgs) if aArgs else None)
   sock = urlopen(req)
-  try: data = sock.read()
-  except: data = '{ "rest_response":"no_data" }'
+  try: data = loads(sock.read())
+  except: data = { 'res':'NO_DATA' }
   sock.close()
  except HTTPError, h:
   try: body = loads(h.read())
   except: body = None
-  data = { 'rest_response':'httperror', 'body':body, 'info':dict(h.info()), 'code': h.code }
+  data = { 'res':'ERROR', 'type':'REST_CALL_HTTP', 'body':body, 'info':dict(h.info()), 'code': h.code }
  except Exception, e:
-  data = { 'rest_response':'error', 'error':str(e) }
- return loads(data)
+  data = { 'res':'ERROR', 'type':'REST_CALL', 'info':str(e) }
+ return data
