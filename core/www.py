@@ -76,13 +76,13 @@ class Web(object):
    from importlib import import_module
    module = import_module(aBase + ".site." + mod)
    getattr(module,fun,None)(self)
-  except Exception as err:
+  except Exception, e:
    if headers == 'no' or mod == 'front':
     print "Content-Type: text/html\r\n"
    keys = self.form.keys()
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'type':'ajax_error', 'module':aBase + ".site." + mod, 'function':fun, 'args': keys, 'err':str(err) }, sort_keys=True)
+   print dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(aBase,mod_fun), 'args': keys, 'info':"{}:{}".format(type(e).__name__,str(e)) }, sort_keys=True)
 
  ############################## CGI/Web functions ###############################
 

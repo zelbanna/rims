@@ -75,4 +75,7 @@ def call(aURL, aAPI, aArgs = None):
   data = { 'res':'ERROR', 'type':'REST_CALL_HTTP', 'body':body, 'info':dict(h.info()), 'code': h.code }
  except Exception, e:
   data = { 'res':'ERROR', 'type':'REST_CALL', 'info':str(e) }
- return data
+ if data['res'] == 'ERROR':
+  raise Exception(data)
+ else:
+  return data
