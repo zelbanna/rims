@@ -7,7 +7,8 @@ __author__= "Zacharias El Banna"
 __version__ = "17.10.4"
 __status__= "Production"
 
-# import sdcp.PackageContainer as PC
+class RestException(Exception):
+ '''Raise REST exceptions'''
 
 #
 # Make proper REST responses 
@@ -67,16 +68,16 @@ def call(aURL, aAPI, aArgs = None):
  try:
   req = Request(aURL, headers=head, data=dumps(aArgs) if aArgs else None)
   sock = urlopen(req)
-  try: data = loads(sock.read())
+  try:    data = loads(sock.read())
   except: data = { 'res':'NO_DATA' }
   sock.close()
  except HTTPError, h:
-  try: body = loads(h.read())
+  try:    body = loads(h.read())
   except: body = None
   data = { 'res':'ERROR', 'type':'REST_CALL_HTTP', 'exception':'HTTPError', 'body':body, 'info':dict(h.info()), 'code': h.code }
  except Exception, e:
   data = { 'res':'ERROR', 'type':'REST_CALL', 'exception':type(e).__name__, 'info':str(e) }
- if data['res'] == 'ERROR':
-  raise Exception(data)
+ if data.get('res') == 'ERROR':
+  raise RestException(data)
  else:
   return data

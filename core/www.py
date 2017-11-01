@@ -82,7 +82,7 @@ class Web(object):
    keys = self.form.keys()
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(aBase,mod_fun), 'args': keys, 'info':"{}:{}".format(type(e).__name__,str(e)) }, sort_keys=True)
+   print dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(aBase,mod_fun), 'args': keys, 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True) if not type(e).__name__ == 'RestException' else str(e)
 
  ############################## CGI/Web functions ###############################
 
