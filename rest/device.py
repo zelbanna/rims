@@ -193,7 +193,7 @@ def detect(aDict):
    model = "esxi"
    type  = "esxi"
   elif infolist[0] == "Linux":
-   type = "linux"
+   type = "generic"
    if "Debian" in devobjs[0].val:
     model = "debian"
    else:
@@ -294,29 +294,29 @@ def info(aDict):
  ret = {}
  id = aDict.get('id',0)
  with DB() as db:
-  ret['exist'] = db.do("SELECT devices.*, subnets.subnet, a.name as a_name, INET_NTOA(ip) as ipasc FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
+  ret['exist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, subnets.subnet, a.name as a_name, INET_NTOA(ip) as ipasc FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id JOIN subnets ON devices.ipam_sub_id = subnets.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id WHERE devices.id ='{}'".format(id))
   if ret['exist'] > 0:
    ret['info'] = db.get_row()
    ret['fqdn'] = ret['info']['hostname'] + "." + ret['info']['a_name']
-   ret['ip']  = ret['info']['ipasc']
-   ret['res'] = 'OK'
-   ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(id))
+   ret['ip']   = ret['info']['ipasc']
+   ret['type'] = ret['info']['type_base']
+   ret['res']  = 'OK'
+   ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['info']['id']))
    if ret['booked'] > 0:
     ret['booking'] = db.get_row()
-   ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(consoles.ip) AS console_ip, consoles.name AS console_name FROM rackinfo LEFT JOIN consoles ON consoles.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(id))
+   ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(consoles.ip) AS console_ip, consoles.name AS console_name FROM rackinfo LEFT JOIN consoles ON consoles.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(ret['info']['id']))
    if ret['racked'] > 0:
     ret['rack'] = db.get_row()
   else:
    ret['res'] = 'NOT_OK'
  return ret
 
-
 #
 #
 #
 def types(aDict):
  with DB() as db:
-  db.do("SELECT id, name, type FROM devicetypes") 
+  db.do("SELECT id, name, base FROM devicetypes") 
   types = db.get_rows_dict('id')
  return { 'res':'OK', 'types':types }
 
@@ -337,14 +337,14 @@ def sync_types(aDict):
     module = import_module("sdcp.devices.{}".format(pyfile))
     dev = getattr(module,'Device',None)
     if dev:
-     types.append({'device':pyfile, 'type':dev.get_type() })
+     types.append({'name':pyfile, 'base':dev.get_type() })
    except:
     pass
  with DB() as db:
-  sql ="INSERT INTO devicetypes(name,type) VALUES ('{}','{}') ON DUPLICATE KEY UPDATE id = id"
+  sql ="INSERT INTO devicetypes(name,base) VALUES ('{}','{}') ON DUPLICATE KEY UPDATE id = id"
   for type in types:
    try:
-    type['db'] = db.do(sql.format(type['device'],type['type']))
+    type['db'] = db.do(sql.format(type['name'],type['base']))
     new = new + type['db']
    except Exception,e :
     print "DB:{}".format(str(e))

@@ -187,10 +187,9 @@ def info(aWeb):
 
  db.close()
 
-
  ########################## Data Tables ######################
 
- width= 675 if dev['racked'] == 1 and not dev['info']['type'] == 'pdu' else 470
+ width= 675 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
  print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:{}px; z-index:101; height:255px; float:left;'>".format(width)
  print "<!-- DEV:{} -->".format(dev['info'])
@@ -246,12 +245,12 @@ def info(aWeb):
  print "</DIV></DIV></DIV>"
 
  print "<!-- Rack Info if such exists -->"
- if dev['racked'] == 1 and not dev['info']['type'] == 'pdu':
+ if dev['racked'] == 1 and not dev['type'] == 'pdu':
   print "<DIV style='margin:3px; float:left; height:185px;'><DIV CLASS=title>Rack Info</DIV>"
   print "<DIV CLASS=z-table style='width:210px;'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_size'])
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_unit'])
-  if not dev['info']['type'] == 'console' and len(consoles) > 1:
+  if not dev['type'] == 'console' and len(consoles) > 1:
    print "<DIV CLASS=tr><DIV CLASS=td>TS:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_console_id>"
    for console in consoles:
     extra = " selected='selected'" if (dev['rack']['console_id'] == console['id']) or (not dev['rack']['console_id'] and console['id'] == 'NULL') else ""
@@ -262,7 +261,7 @@ def info(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
    print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
 
-  if not dev['info']['type'] == 'pdu' and len(pdus) > 1:
+  if not dev['type'] == 'pdu' and len(pdus) > 1:
    for pem in ['pem0','pem1']:
     print "<DIV CLASS=tr><DIV CLASS=td>{0} PDU:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_{1}_pdu_slot_id>".format(pem.upper(),pem)
     for pdu in pdus:
@@ -305,15 +304,15 @@ def info(aWeb):
 
  print "<!-- Function navbar and content -->"
  print "<DIV CLASS='z-navbar' style='top:260px;'>"
- functions = device_get_widgets(dev['info']['type'])
+ functions = device_get_widgets(dev['info']['type_name'])
  if functions:
   if functions[0] == 'operated':
-   if dev['info']['type'] == 'esxi':
-    print "<A TARGET='main_cont' HREF='sdcp.cgi?call=esxi_main&id={}'>Manage</A></B></DIV>".format(id)
+   if dev['info']['type_name'] == 'esxi':
+    print "<A CLASS=z-op DIV=div_main_cont URL='sdcp.cgi?call=esxi_info&id={}'>Manage</A></B></DIV>".format(id)
   else:
    for fun in functions:
     funname = " ".join(fun.split('_')[1:])
-    print "<A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(dev['ip'], dev['info']['type'], fun, funname.title())
+    print "<A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(dev['ip'], dev['info']['type_name'], fun, funname.title())
  else:
   print "&nbsp;"
  print "</DIV>"
