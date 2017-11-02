@@ -165,11 +165,11 @@ def rackinfo(aWeb):
   order = ris[0].keys()
   order.sort()
   db.do("SELECT id, name FROM pdus")
-  pdus  = db.get_rows_dict('id')
+  pdus  = db.get_dict('id')
   db.do("SELECT id, name FROM consoles")
-  cons  = db.get_rows_dict('id')
+  cons  = db.get_dict('id')
   db.do("SELECT id, name FROM racks")
-  racks = db.get_rows_dict('id')
+  racks = db.get_dict('id')
   print "<DIV CLASS=z-frame style='overflow-x:auto;'><DIV CLASS=z-table>"
   print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>VM</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
   print "<DIV CLASS=tbody>"

@@ -19,7 +19,7 @@ def load(aWeb):
  print "<DIV CLASS=z-frame>"
  with DB() as db:
   db.do("SELECT id,subnet,section_name FROM subnets")
-  sdcp_subnets = db.get_rows_dict('id')
+  sdcp_subnets = db.get_dict('id')
   for sub in ipam_subnets:
    add = sdcp_subnets.pop(sub['id'],None)
    if not add:
@@ -40,7 +40,7 @@ def discrepancy(aWeb):
  ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_get_addresses".format(PC.ipam['type']))
  with DB() as db:
   db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id ORDER BY ip")
-  devs = db.get_rows_dict('ip')
+  devs = db.get_dict('ip')
  for row in ipam['addresses']:
   dev = devs.pop(int(row['ip']),None)
   if not dev or dev.get('fqdn') != row['fqdn']:

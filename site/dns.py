@@ -19,7 +19,7 @@ def load(aWeb):
  print "<DIV CLASS=z-frame>"
  with DB() as db:
   db.do("SELECT id,name FROM domains")
-  sdcp_domains = db.get_rows_dict('id')
+  sdcp_domains = db.get_dict('id')
   for dom in dns_domains:
    add = sdcp_domains.pop(dom['id'],None)
    if not add:
@@ -43,7 +43,7 @@ def discrepancy(aWeb):
   tid = "{}_id".format(type)
   with DB() as db:
    db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, {0}_id, CONCAT(hostname,'.',name) as fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id ORDER BY ip".format(type))
-   devs = db.get_rows_dict("ipasc" if type == 'a' else "fqdn")
+   devs = db.get_dict("ipasc" if type == 'a' else "fqdn")
   for rec in dns['records']:
    dev = devs.pop(rec['content'],None)
    if not dev or dev[tid] != rec['id']:

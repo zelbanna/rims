@@ -104,7 +104,7 @@ def discover(aDict):
  with DB() as db:
 
   db.do("SELECT id,name FROM devicetypes")
-  devtypes = db.get_rows_dict('name')
+  devtypes = db.get_dict('name')
 
   db_old, db_new = {}, {}
   if aDict.get('clear',False):
@@ -130,7 +130,7 @@ def discover(aDict):
    # We can now do inserts only (no update) as either we clear or we skip existing :-)
    sql = "INSERT INTO devices (ip, a_dom_id, ptr_dom_id, ipam_sub_id, hostname, snmp, model, type_id, fqdn) VALUES ({},"+aDict['a_dom_id']+",{},{},'{}','{}','{}','{}','{}')"
    db.do("SELECT id,name FROM domains WHERE name LIKE '%arpa%'")
-   ptr_doms = db.get_rows_dict('name')
+   ptr_doms = db.get_dict('name')
    for ip,entry in db_new.iteritems():
     PC.log_msg("device_discover - adding:{}->{}".format(ip,entry))
     ptr_dom_id = ptr_doms.get(GL.ip2arpa(ip),{ 'id':'NULL' })['id']
@@ -259,7 +259,7 @@ def find_ip(aDict):
   db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(sub_id))
   sub = db.get_row()
   db.do("SELECT ip FROM devices WHERE ipam_sub_id = {}".format(sub_id))
-  iplist = db.get_rows_dict('ip')
+  iplist = db.get_dict('ip')
  subnet = int(sub.get('subnet'))
  start  = None
  ret    = { 'subnet':sub['subasc'], 'res':'NOT_OK' }
@@ -315,7 +315,7 @@ def info(aDict):
 def types(aDict):
  with DB() as db:
   db.do("SELECT id, name, base FROM devicetypes") 
-  types = db.get_rows_dict('id')
+  types = db.get_dict('id')
  return { 'res':'OK', 'types':types }
 
 #

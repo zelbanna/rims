@@ -62,7 +62,7 @@ class DB(object):
   rows = self._curs.fetchall()
   return rows if rows != () else []
 
- def get_rows_dict(self, aTarget):
+ def get_dict(self, aTarget):
   return { row[aTarget]: row for row in self._curs.fetchall() }
 
  def get_cursor(self):

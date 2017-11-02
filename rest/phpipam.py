@@ -118,7 +118,7 @@ def find(aDict):
   db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(sub_id))
   sub = db.get_row()
   db.do("SELECT ip_addr FROM ipaddresses WHERE subnetId = {}".format(sub_id))
-  iplist = db.get_rows_dict('ip_addr')
+  iplist = db.get_dict('ip_addr')
  subnet = int(sub.get('subnet'))
  start  = None
  ret    = { 'subnet':sub['subasc'], 'res':'NOT_OK' }
