@@ -39,7 +39,7 @@ def login(aWeb):
  if id != "None":
   with DB() as db:
    res  = db.do("SELECT href FROM resources INNER JOIN users ON users.frontpage = resources.id WHERE users.id = '{}'".format(id))
-   href = 'sdcp.cgi?call=resources_navigate&type=demo' if not res else db.get_row()['href']
+   href = 'sdcp.cgi?call=resources_navigate&type=demo' if not res else db.get_val('href')
 
   PC.log_msg("Entering as {}-'{}' ({})".format(id,user,view))
   aWeb.put_html(PC.sdcp['name'])

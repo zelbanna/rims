@@ -45,7 +45,7 @@ def update(aDict):
   if ret['update'] == 0:
    ret['xist'] = db.do("SELECT id FROM ipaddresses WHERE dns_name = '{}'".format(aDict['fqdn']))
    if ret['xist'] == 1:
-    ret['id']  = db.get_row()['id']
+    ret['id']  = db.get_val('id')
     ret['res'] = "OK" if (ret['id'] == int(aDict['id'])) else "NOT_OK"
    else:
     ret['id']  = 0
@@ -100,7 +100,7 @@ def free(aDict):
   xist = db.do("SELECT dns_name FROM ipaddresses WHERE ip_addr = INET_ATON('{}') and subnetId = {}".format(aDict['ip'],aDict['ipam_sub_id']))
   if xist > 0:
    ret['res'] = 'NOT_OK'
-   ret['info'] = db.get_row()['dns_name']
+   ret['info'] = db.get_val('dns_name')
  return ret
 
 #

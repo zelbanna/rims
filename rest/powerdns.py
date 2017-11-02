@@ -73,7 +73,7 @@ def lookup_a(aDict):
  ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT name FROM domains WHERE id = '{}'".format(aDict['a_dom_id']))
-  ret['domain'] = db.get_row()['name'] if res > 0 else 'unknown'
+  ret['domain'] = db.get_val('name') if res > 0 else 'unknown'
   ret['xist'] = db.do("SELECT id, content AS ip FROM records WHERE type = 'A' AND domain_id = {} AND name = '{}'".format(aDict['a_dom_id'],"{}.{}".format(aDict['name'],ret['domain'])))
   if ret['xist'] > 0:
    ret.update(db.get_row())
@@ -91,7 +91,7 @@ def lookup_ptr(aDict):
  ret = {'domain':GL.ip2arpa(aDict['ip'])}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT id FROM domains WHERE type = 'PTR' AND name = '{}'".format(ret['domain']))
-  ret['domain_id'] = db.get_row()['id']
+  ret['domain_id'] = db.get_val('id')
   ret['xist'] = db.do("SELECT id, content AS fqdn FROM records WHERE type = 'PTR' AND domain_id = {} AND name = '{}'".format(ret['domain_id'],GL.ip2ptr(aDict['ip'])))
   if ret['xist'] > 0:
    ret.update(db.get_row())
@@ -125,7 +125,7 @@ def update(aDict):
    if ret['update'] == 0:
     ret['xist']= db.do("SELECT id FROM records WHERE name = '{}' AND content = '{}' AND type = '{}'".format(name,cont,type))
     if ret['xist'] == 1:
-     ret['id']  = db.get_row()['id']
+     ret['id']  = db.get_val('id')
      ret['res'] = "OK" if (ret['id'] == int(aDict['id'])) else "NOT_OK"
     else:
      ret['id']  = 0

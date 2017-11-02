@@ -54,6 +54,8 @@ class DB(object):
  def is_dirty(self):
   return self._dirty
 
+ ################# Fetch info ##################
+
  def get_row(self):
   return self._curs.fetchone()
 
@@ -65,8 +67,8 @@ class DB(object):
  def get_dict(self, aTarget):
   return { row[aTarget]: row for row in self._curs.fetchall() }
 
- def get_cursor(self):
-  return self._curs
+ def get_val(self, aTarget):
+  return self._curs.fetchone().get(aTarget)
 
  def get_last_id(self):
   return self._curs.lastrowid

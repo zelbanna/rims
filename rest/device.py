@@ -65,7 +65,7 @@ def new(aDict):
    xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id, ptr_dom_id FROM devices WHERE ipam_sub_id = {} AND (ip = {} OR hostname = '{}')".format(ipam_sub_id,ipint,aDict.get('hostname')))
    if xist == 0:
     res = db.do("SELECT id FROM domains WHERE name = '{}'".format(GL.ip2arpa(ip)))
-    ptr_dom_id = db.get_row().get('id') if res > 0 else 'NULL'
+    ptr_dom_id = db.get_val('id') if res > 0 else 'NULL'
     mac = 0 if not GL.is_mac(aDict.get('mac',False)) else GL.mac2int(aDict['mac'])
     ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,ptr_dom_id,ipam_sub_id,ipam_id,hostname,fqdn,snmp,model,type) VALUES({},{},{},{},{},{},{},'{}','{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],ptr_dom_id,ipam_sub_id,aDict.get('ipam_id','0'),aDict['hostname'],aDict['fqdn']))
     ret['id']   = db.get_last_id()
@@ -206,7 +206,7 @@ def detect(aDict):
   from sdcp.core.dbase import DB
   with DB() as db:
    xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(type))
-   type_id = db.get_row()['id'] if xist > 0 else None
+   type_id = db.get_val('id') if xist > 0 else None
   
  return { 'res':'OK', 'info':{ 'name':name, 'snmp':snmp, 'model':model, 'type_id':type_id, 'type_name':type ,'fqdn':fqdn }}
 
