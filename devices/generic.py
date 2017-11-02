@@ -13,6 +13,10 @@ class Device(object):
  # - _ip
  # - _id
  # - _logfile
+
+ @classmethod
+ def get_type(cls):
+  return 'generic'
  
  def __init__(self, aIP, aID = None):
   from sdcp import PackageContainer as PC
@@ -29,9 +33,6 @@ class Device(object):
  def __exit__(self, *ctx_info):
   pass
  
- def get_type(self):
-  return "generic"
-
  def ping_device(self):
   from os import system
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0

@@ -13,6 +13,10 @@ __status__ = "Production"
 #
 class OpenstackRPC(object):
 
+ @classmethod
+ def get_type(cls):
+  return 'linux'
+
  def __init__(self, aIP, aToken = None):
   self._token = aToken
   self._token_expire = None
@@ -25,9 +29,6 @@ class OpenstackRPC(object):
  def __str__(self):
   return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._ip, self._token, self._token_utc, self._project,self._project_id)
  
- def get_type(self):
-  return 'linux'
-
  #
  # Keystone v3 authentication - using v2.0 compatible domain (default), project = admin unless specified
  # { 'username','password', 'project' }

@@ -22,7 +22,7 @@ def update(aDict):
  with DB() as db:
   if racked:
    if   racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
-    db.do("INSERT IGNORE INTO rackinfo SET device_id = {},rack_id={}".format(id,aDict.pop('rackinfo_rack_id',None)))
+    db.do("INSERT INTO rackinfo SET device_id = {},rack_id={} ON DUPLICATE KEY UPDATE rack_id = rack_id".format(id,aDict.pop('rackinfo_rack_id',None)))
    elif racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
     aDict.pop('rackinfo_rack_id',None)
     db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
@@ -221,8 +221,12 @@ def remove(aDict):
 # - columns is a string list
 #
 def dump_db(aDict):
- cols = aDict.get('columns','*')
- tbl  = aDict.get('table','devices')
+ if aDict:
+  cols = aDict.get('columns','*')
+  tbl  = aDict.get('table','devices')
+ else:
+  cols = '*'
+  tbl  = 'devices'
  with DB() as db:
   res = db.do("SELECT {} FROM {}".format(cols,tbl))
  if res > 0:
@@ -275,8 +279,8 @@ def find_ip(aDict):
 #
 def info(aDict):
  PC.log_msg("device_info({})".format(aDict))
- id = aDict['id']
  ret = {}
+ id = aDict.get('id',0)
  with DB() as db:
   ret['exist'] = db.do("SELECT devices.*, subnets.subnet, a.name as a_name, INET_NTOA(ip) as ipasc FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id JOIN subnets ON devices.ipam_sub_id = subnets.id WHERE devices.id ='{}'".format(id))
   if ret['exist'] > 0:
@@ -294,3 +298,34 @@ def info(aDict):
    ret['res'] = 'NOT_OK'
  return ret
 
+#
+# Sync
+#
+def sync_types(aDict):
+ from sdcp.core.dbase import DB
+ from os import listdir, path as ospath
+ from importlib import import_module
+ path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '../devices'))
+ types = []
+ new   = 0
+ for file in listdir(path):
+  pyfile = file[:-3]
+  if file[-3:] == ".py" and pyfile[:2] != "__":
+   try:
+    module = import_module("sdcp.devices.{}".format(pyfile))
+    dev = getattr(module,'Device',None)
+    if dev:
+     types.append({'device':pyfile, 'type':dev.get_type() })
+   except:
+    pass
+ with DB() as db:
+  sql ="INSERT INTO devicetypes(name,type) VALUES ('{}','{}') ON DUPLICATE KEY UPDATE id = id"
+  for type in types:
+   try:
+    type['db'] = db.do(sql.format(type['device'],type['type']))
+    new = new + type['db']
+   except Exception,e :
+    print "DB:{}".format(str(e))
+
+ ret = {'res':'OK', 'types':types, 'found':len(types), 'new':new, 'path':path }
+ return ret

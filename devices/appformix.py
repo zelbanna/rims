@@ -13,6 +13,10 @@ __status__ = "Production"
 #
 class Device(object):
 
+ @classmethod 
+ def get_type(cls):   
+  return 'linux'
+
  def __init__(self, aIP, aToken = None):
   self._token = aToken
   self._token_expire = None
@@ -21,9 +25,6 @@ class Device(object):
 
  def __str__(self):
   return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._token_utc)
-
- def get_type(self):
-  return 'linux'
 
  #
  # Basic POST  authentication

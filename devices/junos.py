@@ -17,6 +17,10 @@ from netsnmp import VarList, Varbind, Session
 class Junos(GenericDevice):
 
  @classmethod
+ def get_type(cls):
+  return 'network'
+
+ @classmethod
  def get_widgets(cls):
   return ['get_up_interfaces','get_lldp' ]
 
@@ -32,9 +36,6 @@ class Junos(GenericDevice):
  
  def __str__(self):
   return "{} Type:{} Model:{} Version:{}".format(str(self._router),  self.get_type(), self._model, self._version)
-
- def get_type(self):
-  return 'network'
 
  def __enter__(self):
   if self.connect():

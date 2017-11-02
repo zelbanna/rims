@@ -43,11 +43,11 @@ def server():
   from importlib import import_module
   module = import_module(mod)
   data   = dumps(getattr(module,fun,lambda x: { 'res':'ERROR', 'type':'REST_SERVER_FUNCTION', 'api':api, 'info':'No such function in module', 'args':x })(args))
-  print "X-Z-Res:{}\r".format("OK")
+  print "X-Z-Res:OK\r"
   print "X-Z-Mod:{}\r".format(mod)
   print "X-Z-Fun:{}\r".format(fun)
  except Exception, e:
-  print "X-Z-Res:{}\r".format(str(e))
+  print "X-Z-Res:ERROR\r"
   data = dumps({ 'res':'ERROR', 'type':'REST_SERVER', 'exception':type(e).__name__, 'api':api, 'info':str(e), 'args':args  }, sort_keys=True)
  print "Content-Type: application/json\r"
  stdout.flush()

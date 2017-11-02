@@ -17,6 +17,10 @@ class Device(GenericDevice):
 
  _vmstatemap  = { "1" : "powered on", "2" : "powered off", "3" : "suspended", "powered on" : "1", "powered off" : "2", "suspended" : "3" }
 
+ @classmethod 
+ def get_type(cls):
+  return 'hypervisor'
+
  @classmethod
  def get_state_str(cls,astate):
   return cls._vmstatemap[astate]
@@ -40,9 +44,6 @@ class Device(GenericDevice):
   self._hostname = aHostname
   self._logfile = PC.esxi['logformat'].format(aHostname)
   self.statefile = PC.esxi['shutdownfile'].format(aHostname) 
-
- def get_type(self):
-  return 'hypervisor'
 
  def __enter__(self):
   if self.ssh_connect():

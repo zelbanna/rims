@@ -37,13 +37,23 @@ def list(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=rack_rackinfo'>View Rackinfo Table</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_mysql'>Dump DB Structure</A></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_sync_types'>Load New Types</A></DIV></DIV>"
  print "</DIV></DIV></DIV></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
 
 def mysql(aWeb):
- from sdcp.tools.mysqldump import dump
+ from sdcp.tools.mysql_dump import dump
  print "<DIV CLASS=z-logs>"
  for line in dump().split('\n'):
   if not line[:2] in [ '/*','--']:
    print line + "<BR>"
+ print "</DIV>"
+
+def sync_types(aWeb):
+ from sdcp.core import extras as EXT
+ from sdcp.rest.device import sync_types as rest_sync_types
+ res = rest_sync_types(None)
+ print "<DIV CLASS=z-frame>"
+ print "<!-- {} -->".format(res)
+ EXT.dict2table(res['types'])
  print "</DIV>"

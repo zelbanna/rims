@@ -22,6 +22,10 @@ class Device(GenericDevice, ConfObject):
  _setstatemap = { 'off':'3', 'on':'2', 'reboot':'4' }
 
  @classmethod 
+ def get_type(cls):
+  return 'pdu'
+
+ @classmethod 
  def get_outlet_state(cls,state):
   return cls._getstatemap.get(state,'unknown')
 
@@ -32,9 +36,6 @@ class Device(GenericDevice, ConfObject):
  def __init__(self, aIP, aID = None):
   GenericDevice.__init__(self,aIP, aID)
   ConfObject.__init__(self)
-
- def get_type(self):
-  return 'pdu'
 
  def __str__(self):
   return "Avocent - {}".format(GenericDevice.__str__(self))

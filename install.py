@@ -12,8 +12,9 @@ from sys import exit,argv
 def install_sdcp(aFile):
  from sys import path as syspath
  from os import chmod,getcwd,remove
- syspath.insert(1, './')
+ syspath.insert(1, '../')
  from tools.settings import convertSettings
+
  convertSettings(aFile)
  import PackageContainer as PC
  remove("PackageContainer.py")
@@ -35,9 +36,6 @@ def install_sdcp(aFile):
     wr("cgi.server('{}')\n".format(PC.generic['sitebase']))
   chmod(site,0755)
 
- #
- # Final copying of files
- #
  from os import listdir
  from shutil import copy
  imagedest = "{}/images/".format(PC.generic['docroot'])
@@ -46,16 +44,20 @@ def install_sdcp(aFile):
   copy("images/" + file, imagedest + file)
  for file in listdir('infra'):
   copy("infra/" + file, funcdest + file)
- print "\nCopied necessary files\n"
+ print "\nCopied necessary files\n\nInstalling necessary modules:"
 
  import pip
  pip.main(['install','pymysql','gitpython'])
- print "Please install mysql.txt to complete database installation"
+
+ from rest.device import sync_types
+ res = sync_types(None)
+ print "\nInserted {} device types".format(res['new'])
 
 if __name__ == "__main__":
  from sys import argv
  if len(argv) < 2:
   print "Usage: {} <json file>".format(argv[0])
+  print "\n!!! Please import DB structure from mysql.txt before installing !!!\n"
   exit(0)
  else:
   install_sdcp(argv[1])
