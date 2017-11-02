@@ -45,13 +45,9 @@ class DB(object):
  def do(self,aQuery):
   op = aQuery[0:6].upper()
   self._dirty = (self._dirty or op == 'UPDATE' or op == 'INSERT' or op == 'DELETE')
-  from sdcp import PackageContainer as PC
-  PC.log_msg("DB.DO({}.{})".format(self._dirty, aQuery))
   return self._curs.execute(aQuery)
 
  def commit(self):
-  from sdcp import PackageContainer as PC
-  PC.log_msg("DB.commit({})".format(self._dirty))
   self._conn.commit()
   self._dirty = False
 
