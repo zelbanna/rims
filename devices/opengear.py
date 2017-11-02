@@ -6,7 +6,7 @@ __author__  = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__  = "Production"
 
-from generic import GenericDevice, ConfObject
+from generic import Device as GenericDevice, ConfObject
 from sdcp import PackageContainer as PC
 
 ######################################## Console ########################################
@@ -24,7 +24,7 @@ class Device(GenericDevice, ConfObject):
   return "OpenGear - {}".format(GenericDevice.__str__(self))
 
  def get_type(self):
-  return 'opengear'
+  return 'console'
 
  def load_snmp(self):
   from netsnmp import VarList, Varbind, Session

@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 
 from sdcp import PackageContainer as PC
-from generic import GenericDevice
+from generic import Device as GenericDevice
 from netsnmp import VarList, Varbind, Session
 
 ################################ JUNOS Object #####################################
@@ -34,7 +34,7 @@ class Junos(GenericDevice):
   return "{} Type:{} Model:{} Version:{}".format(str(self._router),  self.get_type(), self._model, self._version)
 
  def get_type(self):
-  return 'junos'
+  return 'network'
 
  def __enter__(self):
   if self.connect():

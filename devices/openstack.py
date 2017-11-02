@@ -26,7 +26,7 @@ class OpenstackRPC(object):
   return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._ip, self._token, self._token_utc, self._project,self._project_id)
  
  def get_type(self):
-  return 'openstack'
+  return 'linux'
 
  #
  # Keystone v3 authentication - using v2.0 compatible domain (default), project = admin unless specified

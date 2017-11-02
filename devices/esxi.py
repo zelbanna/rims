@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 
 from sdcp import PackageContainer as PC
-from generic import GenericDevice
+from generic import Device as GenericDevice
 
 ########################################### ESXi ############################################
 #
@@ -42,7 +42,7 @@ class Device(GenericDevice):
   self.statefile = PC.esxi['shutdownfile'].format(aHostname) 
 
  def get_type(self):
-  return 'esxi'
+  return 'hypervisor'
 
  def __enter__(self):
   if self.ssh_connect():

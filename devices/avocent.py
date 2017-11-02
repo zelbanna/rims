@@ -7,7 +7,7 @@ __author__  = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__  = "Production"
 
-from generic import GenericDevice, ConfObject
+from generic import Device as GenericDevice, ConfObject
 from sdcp import PackageContainer as PC
 
 ######################################## PDU ########################################
@@ -34,7 +34,7 @@ class Device(GenericDevice, ConfObject):
   ConfObject.__init__(self)
 
  def get_type(self):
-  return 'avocent'
+  return 'pdu'
 
  def __str__(self):
   return "Avocent - {}".format(GenericDevice.__str__(self))

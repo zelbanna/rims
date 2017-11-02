@@ -25,9 +25,6 @@ class Device(Junos):
   self._style  = None
   self._interfacenames = {}
 
- def get_type(self):
-  return 'ex'
-
  def __str__(self):
   return Junos.__str__(self) + " Style:" + str(self._style)
 

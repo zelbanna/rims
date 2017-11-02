@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 
 from sdcp import PackageContainer as PC
-from generic import GenericDevice
+from generic import Device as GenericDevice
 from netsnmp import VarList, Varbind, Session
 
 ################################ WLC Object #####################################
@@ -27,9 +27,6 @@ class Device(GenericDevice):
   
  def __str__(self):
   return "WLC - {}".format(GenericDevice.__str__(self))
-
- def get_type(self):
-  return 'wlc'
 
  def get_switch_table(self):
   from socket import gethostbyaddr

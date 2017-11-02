@@ -27,9 +27,6 @@ class Device(Junos):
  def __str__(self):
   return Junos.__str__(self) + " Resolvers:" + str(self.dnslist) + " IP:" + self.dhcpip + " IPsec:" + str(self.tunnels)
 
- def get_type(self):
-  return 'srx'
-
  def load_dhcp(self):
   try:
    result = self._router.rpc.get_dhcp_client_information() 

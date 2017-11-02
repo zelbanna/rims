@@ -23,7 +23,7 @@ class Device(object):
   return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._token_utc)
 
  def get_type(self):
-  return 'appformix'
+  return 'linux'
 
  #
  # Basic POST  authentication
