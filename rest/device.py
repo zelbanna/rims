@@ -84,15 +84,25 @@ def new(aDict):
 #
 # discover(start, end, clear, a_dom_id, ipam_sub_id)
 #
+# - subnet can cross ptr_dom_id so need to deduce per ip..
+#
 def discover(aDict):
  PC.log_msg("device_discover({})".format(aDict))
  from time import time
  from threading import Thread, BoundedSemaphore
- from sdcp.devices.devhandler import device_detect
  from sdcp.core import genlib as GL
  start_time = int(time())
  ip_start = aDict.get('start')
  ip_end   = aDict.get('end')
+
+ def tdetect(aip,adict,asema):
+  res = detect({'ip':aip})
+  if res['res'] == 'OK':
+   adict[aip] = res['info']
+  asema.release()
+  return True
+
+ ret = { 'res':'OK', 'errors':0 }
  with DB() as db:
   db_old, db_new = {}, {}
   if aDict.get('clear',False):
@@ -108,24 +118,88 @@ def discover(aDict):
     if db_old.get(GL.ip2int(ip),None):
      continue
     sema.acquire()
-    t = Thread(target = device_detect, args=[ip, db_new, sema])
+    t = Thread(target = tdetect, args=[ip, db_new, sema])
     t.name = "Detect " + ip
     t.start()
   
    # Join all threads by acquiring all semaphore resources
    for i in range(10):
     sema.acquire()
-   # We can do insert only (no update) as either we clear or we skip existing :-)
-   sql = "INSERT INTO devices (ip, a_dom_id, ptr_dom_id, ipam_sub_id, hostname, snmp, model, type, fqdn) VALUES ({0},{1},{2},{3},'{4}','{5}','{6}','{7}','{8}')"
+   # We can now do inserts only (no update) as either we clear or we skip existing :-)
+   sql = "INSERT INTO devices (ip, a_dom_id, ptr_dom_id, ipam_sub_id, hostname, snmp, model, type, fqdn) VALUES ({},"+aDict['a_dom_id']+",{},{},'{}','{}','{}','{}','{}')"
    db.do("SELECT id,name FROM domains WHERE name LIKE '%arpa%'")
    ptr_doms = db.get_rows_dict('name')
    for ip,entry in db_new.iteritems():
+    PC.log_msg("device_discover - adding:{}->{}".format(ip,entry))
     ptr_dom_id = ptr_doms.get(GL.ip2arpa(ip),{ 'id':'NULL' })['id']
-    db.do(sql.format(GL.ip2int(ip), aDict.get('a_dom_id'), ptr_dom_id, aDict.get('ipam_sub_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn']))
+    db.do(sql.format(GL.ip2int(ip), ptr_dom_id, aDict.get('ipam_sub_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn']))
   except Exception as err:
    PC.log_msg("device discover: Error [{}]".format(str(err)))
- PC.log_msg("device discover: Total time spent: {} seconds".format(int(time()) - start_time))
- return { 'found':len(db_new) }
+   ret['res']    = 'NOT_OK'
+   ret['info']   = "Error:{}".format(str(err))
+   ret['errors'] = ret['errors'] + 1 
+
+  ret['info'] = "Time spent:{}".format(int(time()) - start_time)
+  ret['found']= len(db_new)
+ return ret
+
+#
+def detect(aDict):
+ PC.log_msg("device_detect({})".format(aDict))
+ from netsnmp import VarList, Varbind, Session
+ from socket import gethostbyaddr
+ from os import system
+
+ if system("ping -c 1 -w 1 {} > /dev/null 2>&1".format(aDict['ip'])) != 0:
+  return {'res':'NOT_OK' }
+
+ try:
+  # .1.3.6.1.2.1.1.1.0 : Device info
+  # .1.3.6.1.2.1.1.5.0 : Device name
+  devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'))
+  session = Session(Version = 2, DestHost = aDict['ip'], Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+  session.get(devobjs)
+ except:
+  pass
+   
+ fqdn,hostname,model,type = 'unknown','unknown','unknown','unknown'
+ snmp = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
+ try:   
+  fqdn     = gethostbyaddr(aDict['ip'])[0]
+  hostname = fqdn.partition('.')[0].lower()
+ except:
+  pass
+
+ if devobjs[0].val:
+  infolist = devobjs[0].val.split()
+  if infolist[0] == "Juniper":
+   if infolist[1] == "Networks,":
+    model = infolist[3].lower()
+    for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
+     if tp in model:
+      type = tp
+      break
+    else:
+     type = "other"
+   else:
+    subinfolist = infolist[1].split(",")
+    model = subinfolist[2]
+    type  = "other"
+  elif infolist[0] == "VMware":
+   model = "esxi"
+   type  = "esxi"
+  elif infolist[0] == "Linux":
+   type = "linux"
+   if "Debian" in devobjs[0].val:
+    model = "debian"
+   else:
+    model = "generic"
+  else:
+   type  = "other"
+   model = " ".join(infolist[0:4])
+
+ return { 'res':'OK', 'info':{ 'hostname':hostname, 'snmp':snmp, 'model':model, 'type':type, 'fqdn':fqdn }}
+
 
 #
 # remove(id) and pop dns and ipam info

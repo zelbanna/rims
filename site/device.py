@@ -107,7 +107,7 @@ def info(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  from sdcp.core import genlib as GL
- from sdcp.devices.devhandler import device_types, device_get_widgets, device_detect
+ from sdcp.devices.devhandler import device_types, device_get_widgets
  id    = aWeb.get_value('id')
  op    = aWeb.get_value('op',"")
  opres = {}
@@ -148,15 +148,13 @@ def info(aWeb):
     opres['pdu'] = update_device_pdus(pdu_update)
 
  if op == 'lookup':
-  from sdcp import PackageContainer as PC
-  from sdcp.core.rest import call as rest_call
+  from sdcp.rest.device import detect as rest_detect
   db.do("SELECT INET_NTOA(ip) as ip, ptr_id, a_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
-  dev = device_detect(aWeb.get_value('ip'))
-  if dev:
+  opres['lookup'] = rest_detect({'ip':aWeb.get_value('ip')})
+  if opres['lookup']['res'] == 'OK':
+   dev = opres['lookup']['info']
    db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(dev['snmp'],dev['fqdn'],dev['model'],dev['type'],id))
-   opres['lookup'] = {'res':'OK', 'info':dev }
-  else:
-   opres['lookup'] = {'res':'NOT_OK'}
+
 
  if op == 'book':
   db.do("INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')".format(id,aWeb.cookie.get('sdcp_id')))
@@ -489,7 +487,7 @@ def discover(aWeb):
   a_dom = aWeb.get_value('a_dom_id')
   ipam  = aWeb.get_value('ipam_sub',"0_0_32").split('_')
   # id, subnet int, subnet mask
-  res = discover({ 'ipam_sub_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1])+2**(32-int(ipam[2])), 'a_dom_id':a_dom, 'clear':clear})
+  res = discover({ 'ipam_sub_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':a_dom, 'clear':clear})
   print "<DIV CLASS=z-frame>{}</DIV>".format(res)
  else:
   with DB() as db:
