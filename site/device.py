@@ -107,7 +107,6 @@ def info(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  from sdcp.core import genlib as GL
- from sdcp.devices.devhandler import device_types, device_get_widgets
  id    = aWeb.get_value('id')
  op    = aWeb.get_value('op',"")
  opres = {}
@@ -294,7 +293,7 @@ def info(aWeb):
    print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=unbook&id={} MSG='Are you sure you want to drop booking?' TITLE='Unbook'><IMG SRC='images/btn-remove.png'></A>".format(id)
  else:
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=book&id={} TITLE='Book device'><IMG SRC='images/btn-add.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_dev_data URL=sdcp.cgi?call=device_conf_gen                 FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>"
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_dev_data URL=sdcp.cgi?call=device_conf_gen&type_name={}  FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>".format(dev['info']['type_name'])
  from sdcp import PackageContainer as PC
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf['username'],dev['ip'])
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
@@ -310,41 +309,46 @@ def info(aWeb):
 
  print "<!-- Function navbar and content -->"
  print "<DIV CLASS='z-navbar' style='top:260px;'>"
- functions = device_get_widgets(dev['info']['type_name'])
- if functions:
-  if functions[0] == 'operated':
-   if dev['info']['type_name'] == 'esxi':
-    print "<A CLASS=z-op DIV=div_main_cont URL='sdcp.cgi?call=esxi_info&id={}'>Manage</A></B></DIV>".format(id)
-  else:
-   for fun in functions:
-    funname = " ".join(fun.split('_')[1:])
-    print "<A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(dev['ip'], dev['info']['type_name'], fun, funname.title())
- else:
+ try:
+  from importlib import import_module
+  module = import_module("sdcp.devices.{}".format(dev['info']['type_name']))
+  Device = getattr(module,'Device',None)
+  functions = Device.get_widgets() if Device else []
+  if functions:
+   if functions[0] == 'operated':
+    if dev['info']['type_name'] == 'esxi':
+     print "<A CLASS=z-op DIV=div_main_cont URL='sdcp.cgi?call=esxi_info&id={}'>Manage</A></B></DIV>".format(id)
+   else:
+    for fun in functions:
+     funname = " ".join(fun.split('_')[1:])
+     print "<A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(dev['ip'], dev['info']['type_name'], fun, funname.title())
+ except:
   print "&nbsp;"
  print "</DIV>"
  print "<DIV CLASS='z-content' ID=div_dev_data style='top:294px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>"
-
 
 
 ####################################################### Functions #######################################################
 #
 # View operation data / widgets
 #
+
 def conf_gen(aWeb):
+ from importlib import import_module
  from sdcp.core import genlib as GL
  id = aWeb.get_value('id','0')
  gw = aWeb.get_value('devices_ipam_gw')
+ type = aWeb.get_value('type_name')
+ print "<DIV CLASS=z-frame style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
  with DB() as db:
   db.do("SELECT INET_NTOA(ip) as ipasc, hostname,domains.name as domain, subnets.subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_sub_id WHERE devices.id = '{}'".format(id))
   row = db.get_row()
- type = aWeb.get_value('devices_type')
- print "<DIV CLASS=z-frame style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
- from sdcp.devices.devhandler import device_get_instance
  try:
-  dev  = device_get_instance(row['ipasc'],type)
+  module = import_module("sdcp.devices.{}".format(type))
+  dev = getattr(module,'Device',lambda x: None)(row['ipasc'])
   dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':GL.int2ip(int(row['subnet'])), 'mask':row['mask']})
  except Exception as err:
-  print "No instance config specification for {} type".format(row.get('type','unknown'))
+  print "No instance config specification for type:[{}]".format(type)
  print "</DIV>"
 
 #
@@ -353,16 +357,20 @@ def conf_gen(aWeb):
 def op_function(aWeb):
  from sdcp.devices.devhandler import device_get_instance
  from sdcp.core import extras as EXT
+ from importlib import import_module
  print "<DIV CLASS=z-frame>"
  try:
-  dev = device_get_instance(aWeb.get_value('ip'),aWeb.get_value('type'))
+  module = import_module("sdcp.devices.{}".format(aWeb.get_value('type')))
+  dev = getattr(module,'Device',lambda x: None)(aWeb.get_value('ip'))
   with dev:
    EXT.dict2table(getattr(dev,aWeb.get_value('op'),None)())
  except Exception as err:
   print "<B>Error in devdata: {}</B>".format(str(err))
  print "</DIV>"
 
-
+#
+#
+#
 def mac_sync(aWeb):
  from sdcp.core import genlib as GL
  print "<DIV CLASS=z-frame style='overflow-x:auto; width:400px;'><DIV CLASS=z-table>"
@@ -387,8 +395,6 @@ def mac_sync(aWeb):
  except:
   pass
  print "</DIV></DIV></DIV>"
-
-##################################### Rest API #########################################
 
 #
 # new device:
