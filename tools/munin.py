@@ -47,7 +47,7 @@ def _detect(aentry, alock, asema):
   return False
 
  activeinterfaces = []
- type = aentry['type']
+ type = aentry['type_name']
  fqdn = aentry['hostname'] + "." + aentry['domain']
  try:
   if type in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
@@ -94,7 +94,7 @@ def discover():
    f.write("#!/bin/bash\n")
   chmod(PC.sdcp['graph']['plugins'], 0o777)
   with DB() as db:
-   db.do("SELECT type, hostname, domains.name AS domain, INET_NTOA(ip) as ip, INET_NTOA(graph_proxy) as handler FROM devices INNER JOIN domains ON devices.a_dom_id = domains.id WHERE graph_update = 1 AND model <> 'unknown'")
+   db.do("SELECT devicetypes.name, hostname, domains.name AS domain, INET_NTOA(ip) as ip, INET_NTOA(graph_proxy) as handler FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id INNER JOIN domains ON devices.a_dom_id = domains.id WHERE graph_update = 1 AND model <> 'unknown'")
    rows = db.get_rows()
   for item in rows:
    sema.acquire()
@@ -105,3 +105,4 @@ def discover():
  except Exception as err:
   PC.log_msg("Munin: failure in processing Device entries: [{}]".format(str(err)))
  PC.log_msg("Munin: Total time spent: {} seconds".format(int(time()) - start_time))
+
