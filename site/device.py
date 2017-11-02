@@ -112,12 +112,9 @@ def info(aWeb):
  op    = aWeb.get_value('op',"")
  opres = {}
 
- db = DB()
- db.connect()
-
- ###################### Data operations ###################
+ ###################### Update ###################
  if op == 'update':
-  from sdcp.rest.device import update
+  from sdcp.rest.device import update as rest_update
   from sdcp import PackageContainer as PC
   from sdcp.core.rest import call as rest_call
   d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
@@ -128,25 +125,34 @@ def info(aWeb):
   if d['devices_hostname'] != 'unknown':
    # Update 
 
-   db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, ipam_id, a_dom_id, ptr_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
-   ddi = db.get_row()
+   with DB() as db:
+    db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, ipam_id, a_dom_id, ptr_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
+    ddi = db.get_row()
    fqdn = d['devices_hostname'] + "." + ddi['domain']
    opres['a'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']),   { 'type':'a',   'id':ddi['a_id'],   'domain_id':ddi['a_dom_id'],   'ip':ddi['ip'], 'fqdn':fqdn })
-   d['devices_a_id'] = opres['a']['id']
+   if opres['a']['id'] != ddi['a_id']:
+    d['devices_a_id'] = opres['a']['id']
    opres['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']), { 'type':'ptr', 'id':ddi['ptr_id'], 'domain_id':ddi['ptr_dom_id'], 'ip':ddi['ip'], 'fqdn':fqdn })
-   d['devices_ptr_id'] = opres['ptr']['id']
+   if opres['ptr']['id'] != ddi['ptr_id']:
+    d['devices_ptr_id'] = opres['ptr']['id']
    opres['ipam'] = rest_call(PC.ipam['url'],"sdcp.rest.{}_{}".format(PC.ipam['type'],"update" if ddi['ipam_id'] > 0 else "new"),{ 'id':ddi['ipam_id'], 'ipam_sub_id':ddi['ipam_sub_id'], 'ip':ddi['ip'], 'fqdn':fqdn, 'ptr_id':opres['ptr']['id'] } )
-   d['devices_ipam_id'] = opres['ipam']['id']
+   if opres['ipam']['id'] != ddi['ipam_id']:
+    d['devices_ipam_id'] = opres['ipam']['id']
 
-   opres['update'] = update(d)
-   # Now there is a rackinfo item
-   if d['rackinfo_rack_id'] != 'NULL':
-    from sdcp.rest.pdu import update_device_pdus
-    db.do("SELECT pem0_pdu_id, pem0_pdu_slot, pem0_pdu_unit, pem1_pdu_id, pem1_pdu_slot, pem1_pdu_unit FROM rackinfo WHERE device_id = '{}'".format(id))
-    pdu_update = db.get_row()
-    pdu_update['hostname'] = d['devices_hostname']
-    opres['pdu'] = update_device_pdus(pdu_update)
+   opres['update'] = rest_update(d)
+   # Now there is a rackinfo item... update pdu if there are pdu:s attached. PAss by reference prevents pop of rackinfo_rack_id in rest_update  
+   if not d.get('rackinfo_rack_id') == 'NULL':
+    with DB() as db:
+     db.do("SELECT pem0_pdu_id, pem0_pdu_slot, pem0_pdu_unit, pem1_pdu_id, pem1_pdu_slot, pem1_pdu_unit FROM rackinfo WHERE device_id = {}".format(id)) 
+     pdu_update = db.get_row() 
+    if pdu_update['pem0_pdu_id'] or pdu_update['pem1_pdu_id']:
+     from sdcp.rest.pdu import update_device_pdus
+     pdu_update['hostname'] = d['devices_hostname']
+     opres['pdu'] = update_device_pdus(pdu_update)
 
+ #################### Operations ###################
+ db = DB()
+ db.connect()
  if op == 'lookup':
   from sdcp.rest.device import detect as rest_detect
   opres['lookup'] = rest_detect({'ip':aWeb.get_value('ip')})

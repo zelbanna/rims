@@ -29,10 +29,8 @@ class DB(object):
 
  def __exit__(self, ctx_type, ctx_value, ctx_traceback):
   if self._dirty:
-   self._conn.commit()
-   self._dirty = False
-  self._curs.close()
-  self._conn.close()
+   self.commit()
+  self.close()
 
  def connect(self):
   from pymysql import connect
@@ -46,10 +44,14 @@ class DB(object):
 
  def do(self,aQuery):
   op = aQuery[0:6].upper()
-  self._dirty = (op == 'UPDATE' or op == 'INSERT' or op =='DELETE')
+  self._dirty = (self._dirty or op == 'UPDATE' or op == 'INSERT' or op == 'DELETE')
+  from sdcp import PackageContainer as PC
+  PC.log_msg("DB.DO({}.{})".format(self._dirty, aQuery))
   return self._curs.execute(aQuery)
 
  def commit(self):
+  from sdcp import PackageContainer as PC
+  PC.log_msg("DB.commit({})".format(self._dirty))
   self._conn.commit()
   self._dirty = False
 

@@ -44,7 +44,7 @@ def clear(aWeb):
 #
 def logs(aWeb):
  from sdcp.core.rest import call as rest_call
- logs = rest_call('http://127.0.0.1/rest.cgi','sdcp.rest.examine_get_logs',{'count':10,'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})
+ logs = rest_call('http://127.0.0.1/rest.cgi','sdcp.rest.examine_get_logs',{'count':18,'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})
  for file,res in logs.iteritems():
   print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
   for line in res:

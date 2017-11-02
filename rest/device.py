@@ -22,29 +22,27 @@ def update(aDict):
  with DB() as db:
   if racked:
    if   racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
-    db.do("INSERT INTO rackinfo SET device_id = {},rack_id={} ON DUPLICATE KEY UPDATE rack_id = rack_id".format(id,aDict.pop('rackinfo_rack_id',None)))
+    db.do("INSERT INTO rackinfo SET device_id = {},rack_id={} ON DUPLICATE KEY UPDATE rack_id = rack_id".format(id,aDict['rackinfo_rack_id']))
    elif racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
-    aDict.pop('rackinfo_rack_id',None)
     db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
-
 
   tbl_id = { 'devices':'id', 'rackinfo':'device_id' } 
   for fkey in aDict.keys():
+   change = 0
    # fkey = table _ key
    (table, void, key) = fkey.partition('_')
    data = aDict.get(fkey)
-   if key == 'mac' and GL.is_mac(data):
-    mac = GL.mac2int(data)
-    ret['fkey']= db.do("UPDATE {0} SET mac='{1}' WHERE {2} = '{3}'".format(table,mac,tbl_id[table],id))
-   elif not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
-    if data == 'NULL':
-     ret[fkey] = db.do("UPDATE {0} SET {1}=NULL WHERE {2} = '{3}'".format(table,key,tbl_id[table],id))
-    else:
-     ret[fkey] = db.do("UPDATE {0} SET {1}='{4}' WHERE {2} = '{3}'".format(table,key,tbl_id[table],id,data))
+   if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
+    if key == 'mac':
+     data = GL.mac2int(data)
+    sql = "UPDATE " + table + " SET {0}=" + ("'{3}'" if data != 'NULL' else "NULL") + " WHERE {1} = '{2}'"
+    change = db.do(sql.format(key,tbl_id[table],id,data))
    else:
     pem = key[:4]
     [pemid,pemslot] = data.split('.')
-    ret[fkey] = db.do("UPDATE rackinfo SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE device_id = '{3}'".format(pem,pemid,pemslot,id))
+    change = db.do("UPDATE rackinfo SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE device_id = '{3}'".format(pem,pemid,pemslot,id))
+   if change > 0:
+    ret[key] = 'CHANGED'
  return ret
 
 #
@@ -292,9 +290,9 @@ def find_ip(aDict):
 def info(aDict):
  PC.log_msg("device_info({})".format(aDict))
  ret = {}
- id = aDict.get('id',0)
+ search = "devices.id = {}".format(aDict['id']) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
  with DB() as db:
-  ret['exist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, subnets.subnet, a.name as a_name, INET_NTOA(ip) as ipasc FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id JOIN subnets ON devices.ipam_sub_id = subnets.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id WHERE devices.id ='{}'".format(id))
+  ret['exist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, subnets.subnet, a.name as a_name, INET_NTOA(ip) as ipasc FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id JOIN subnets ON devices.ipam_sub_id = subnets.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id WHERE {}".format(search))
   if ret['exist'] > 0:
    ret['info'] = db.get_row()
    ret['fqdn'] = ret['info']['hostname'] + "." + ret['info']['a_name']
