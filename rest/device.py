@@ -66,7 +66,7 @@ def new(aDict):
    if xist == 0:
     res = db.do("SELECT id FROM domains WHERE name = '{}'".format(GL.ip2arpa(ip)))
     ptr_dom_id = db.get_val('id') if res > 0 else 'NULL'
-    mac = 0 if not GL.is_mac(aDict.get('mac',False)) else GL.mac2int(aDict['mac'])
+    mac = GL.mac2int(aDict.get('mac',0))
     ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,ptr_dom_id,ipam_sub_id,ipam_id,hostname,fqdn,snmp,model,type) VALUES({},{},{},{},{},{},{},'{}','{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],ptr_dom_id,ipam_sub_id,aDict.get('ipam_id','0'),aDict['hostname'],aDict['fqdn']))
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):

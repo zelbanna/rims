@@ -56,13 +56,6 @@ def mac2int(aMAC):
  except:
   return 0
 
-def is_mac(aMAC):           
- try:
-  aMAC = aMAC.replace(":","")
-  return len(aMAC) == 12 and int(aMAC,16)
- except:         
-  return False
-
 def ping_os(ip):
  from os import system
  return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
