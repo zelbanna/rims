@@ -360,19 +360,27 @@ def op_function(aWeb):
 
 def mac_sync(aWeb):
  from sdcp.core import genlib as GL
- from sdcp.tools.mac_tool import load_macs
- arps = load_macs()
  print "<DIV CLASS=z-frame style='overflow-x:auto; width:400px;'><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- with DB() as db:
-  db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices WHERE hostname <> 'unknown' ORDER BY ip")
-  rows = db.get_rows()
-  for row in rows:
-   xist = arps.get(row['ipasc'],None)
-   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['id'],row['ipasc'],row['hostname'],xist)
-   if xist:
-    db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL.mac2int(xist),row['id']))
+ try:
+  arps = {}
+  with open('/proc/net/arp') as f:
+   _ = f.readline()
+   for data in f:
+    ( ip, _, _, mac, _, _ ) = data.split()
+    if not mac == '00:00:00:00:00:00':
+     arps[ip] = mac
+  with DB() as db:
+   db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices WHERE hostname <> 'unknown' ORDER BY ip")
+   rows = db.get_rows()
+   for row in rows:
+    xist = arps.get(row['ipasc'],None)
+    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['id'],row['ipasc'],row['hostname'],xist)
+    if xist:
+     db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL.mac2int(xist),row['id']))
+ except:
+  pass
  print "</DIV></DIV></DIV>"
 
 ##################################### Rest API #########################################
