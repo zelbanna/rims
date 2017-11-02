@@ -94,16 +94,20 @@ def discover(aDict):
  start_time = int(time())
  ip_start = aDict.get('start')
  ip_end   = aDict.get('end')
+ ret = { 'res':'OK', 'errors':0 }
 
- def tdetect(aip,adict,asema):
-  res = detect({'ip':aip})
+ def _tdetect(aip,adict,asema,atypes):
+  res = detect({'ip':aip,'types':atypes})
   if res['res'] == 'OK':
    adict[aip] = res['info']
   asema.release()
   return True
 
- ret = { 'res':'OK', 'errors':0 }
  with DB() as db:
+
+  db.do("SELECT id,name FROM devicetypes")
+  devtypes = db.get_rows_dict('name')
+
   db_old, db_new = {}, {}
   if aDict.get('clear',False):
    db.do("TRUNCATE TABLE devices")
@@ -118,7 +122,7 @@ def discover(aDict):
     if db_old.get(GL.ip2int(ip),None):
      continue
     sema.acquire()
-    t = Thread(target = tdetect, args=[ip, db_new, sema])
+    t = Thread(target = _tdetect, args=[ip, db_new, sema, devtypes])
     t.name = "Detect " + ip
     t.start()
   
@@ -126,13 +130,13 @@ def discover(aDict):
    for i in range(10):
     sema.acquire()
    # We can now do inserts only (no update) as either we clear or we skip existing :-)
-   sql = "INSERT INTO devices (ip, a_dom_id, ptr_dom_id, ipam_sub_id, hostname, snmp, model, type, fqdn) VALUES ({},"+aDict['a_dom_id']+",{},{},'{}','{}','{}','{}','{}')"
+   sql = "INSERT INTO devices (ip, a_dom_id, ptr_dom_id, ipam_sub_id, hostname, snmp, model, type_id, fqdn) VALUES ({},"+aDict['a_dom_id']+",{},{},'{}','{}','{}','{}','{}')"
    db.do("SELECT id,name FROM domains WHERE name LIKE '%arpa%'")
    ptr_doms = db.get_rows_dict('name')
    for ip,entry in db_new.iteritems():
     PC.log_msg("device_discover - adding:{}->{}".format(ip,entry))
     ptr_dom_id = ptr_doms.get(GL.ip2arpa(ip),{ 'id':'NULL' })['id']
-    db.do(sql.format(GL.ip2int(ip), ptr_dom_id, aDict.get('ipam_sub_id'), entry['hostname'],entry['snmp'],entry['model'],entry['type'],entry['fqdn']))
+    db.do(sql.format(GL.ip2int(ip), ptr_dom_id, aDict.get('ipam_sub_id'), entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['fqdn']))
   except Exception as err:
    PC.log_msg("device discover: Error [{}]".format(str(err)))
    ret['res']    = 'NOT_OK'
@@ -161,12 +165,12 @@ def detect(aDict):
   session.get(devobjs)
  except:
   pass
-   
- fqdn,hostname,model,type = 'unknown','unknown','unknown','unknown'
+
+ fqdn,name,model,type = 'unknown','unknown','unknown','generic'
  snmp = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
  try:   
-  fqdn     = gethostbyaddr(aDict['ip'])[0]
-  hostname = fqdn.partition('.')[0].lower()
+  fqdn = gethostbyaddr(aDict['ip'])[0]
+  name = fqdn.partition('.')[0].lower()
  except:
   pass
 
@@ -198,7 +202,15 @@ def detect(aDict):
    type  = "other"
    model = " ".join(infolist[0:4])
 
- return { 'res':'OK', 'info':{ 'hostname':hostname, 'snmp':snmp, 'model':model, 'type':type, 'fqdn':fqdn }}
+ if aDict.get('types'):
+  type_id = aDict['types'][type]['id']
+ else:
+  from sdcp.core.dbase import DB
+  with DB() as db:
+   xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(type))
+   type_id = db.get_row()['id'] if xist > 0 else None
+  
+ return { 'res':'OK', 'info':{ 'name':name, 'snmp':snmp, 'model':model, 'type_id':type_id, 'type_name':type ,'fqdn':fqdn }}
 
 
 #
@@ -297,6 +309,16 @@ def info(aDict):
   else:
    ret['res'] = 'NOT_OK'
  return ret
+
+
+#
+#
+#
+def types(aDict):
+ with DB() as db:
+  db.do("SELECT id, name, type FROM devicetypes") 
+  types = db.get_rows_dict('id')
+ return { 'res':'OK', 'types':types }
 
 #
 # Sync

@@ -149,12 +149,10 @@ def info(aWeb):
 
  if op == 'lookup':
   from sdcp.rest.device import detect as rest_detect
-  db.do("SELECT INET_NTOA(ip) as ip, ptr_id, a_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
   opres['lookup'] = rest_detect({'ip':aWeb.get_value('ip')})
   if opres['lookup']['res'] == 'OK':
    dev = opres['lookup']['info']
-   db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type = '{}' WHERE id = '{}'".format(dev['snmp'],dev['fqdn'],dev['model'],dev['type'],id))
-
+   db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(dev['snmp'],dev['fqdn'],dev['model'],dev['type_id'],id))
 
  if op == 'book':
   db.do("INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')".format(id,aWeb.cookie.get('sdcp_id')))
@@ -165,8 +163,10 @@ def info(aWeb):
  if db.is_dirty():
   db.commit()
 
- from sdcp.rest.device import info as rest_info
- dev = rest_info({'id':id})
+ from sdcp.rest.device import info as rest_info, types as rest_types
+ dev   = rest_info({'id':id})
+ types = rest_types(None)['types']
+
  if dev['exist'] == 0:
   db.close()
   print "Stale info! Reload device list"
@@ -205,10 +205,10 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['a_name'])
  print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['snmp'])
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['ip'])
- print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type>"
- for tp in device_types():
-  extra = " selected" if dev['info']['type'] == tp else ""
-  print "<OPTION VALUE={0} {1}>{0}</OPTION>".format(str(tp),extra)
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type_id>"
+ for key,value in types.iteritems():
+  extra = " selected" if dev['info']['type_id'] == key or (not dev['info']['type_id'] and value['name'] == 'generic') else ""
+  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(key,extra,value['name'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td style='max-width:150px;'>{}</DIV></DIV>".format(dev['info']['model'])
  if dev['info']['graph_update'] == 1:
