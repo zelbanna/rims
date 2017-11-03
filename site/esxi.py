@@ -38,7 +38,7 @@ def main(aWeb):
 
 def info(aWeb):
  from sdcp.core.dbase import DB
- id = aWeb.get_value('id')
+ id = aWeb['id']
  with DB() as db:
   db.do("SELECT hostname, INET_NTOA(ip) as ipasc, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = '{}'".format(id))
   data = db.get_row() 
@@ -61,8 +61,8 @@ def info(aWeb):
 #
 def graph(aWeb):
  from sdcp.tools.munin import widget_cols
- hostname = aWeb.get_value('hostname')
- domain   = aWeb.get_value('domain')
+ hostname = aWeb['hostname']
+ domain   = aWeb['domain']
  print "<DIV CLASS=z-frame style='overflow-x:auto;'>"
  widget_cols([ "{1}/{0}.{1}/esxi_vm_info".format(hostname,domain), "{1}/{0}.{1}/esxi_cpu_info".format(hostname,domain), "{1}/{0}.{1}/esxi_mem_info".format(hostname,domain) ])
  print "</DIV>"
@@ -71,7 +71,7 @@ def graph(aWeb):
 # Logs
 #
 def logs(aWeb):
- hostname = aWeb.get_value('hostname')
+ hostname = aWeb['hostname']
  try:
   from subprocess import check_output
   from sdcp import PackageContainer as PC
@@ -85,11 +85,11 @@ def logs(aWeb):
 #
 def op(aWeb,aIP = None):
  from sdcp.devices.esxi import Device
- ip     = aWeb.get_value('ip',aIP)
- excpt  = aWeb.get_value('except','-1')
- nstate = aWeb.get_value('nstate')
- vmid   = aWeb.get_value('vmid','-1')
- sort   = aWeb.get_value('sort','name')
+ ip     = aWeb.get('ip',aIP)
+ excpt  = aWeb.get('except','-1')
+ nstate = aWeb['nstate']
+ vmid   = aWeb.get('vmid','-1')
+ sort   = aWeb.get('sort','name')
  esxi   = Device(ip)
 
  if nstate:
@@ -159,8 +159,8 @@ def op(aWeb,aIP = None):
 #
 def snapshot(aWeb):
  from sdcp.devices.esxi import Device
- ip   = aWeb.get_value('ip')
- vmid = aWeb.get_value('vmid')
+ ip   = aWeb['ip']
+ vmid = aWeb['vmid']
  data = {}
  id   = 0
  template="<A CLASS='z-btn z-small-btn z-op' TITLE='{0}' SPIN=true DIV=div_content_right URL='sdcp.cgi?call=esxi_snap_op&ip=" + ip + "&vmid=" + vmid + "&snapid={3}&op={2}'><IMG SRC=images/btn-{1}.png></A>"
@@ -201,10 +201,10 @@ def snapshot(aWeb):
 #
 def snap_op(aWeb):
  from sdcp.devices.esxi import Device
- ip   = aWeb.get_value('ip')
- vmid = aWeb.get_value('vmid')
- snap = aWeb.get_value('snapid')
- op   = aWeb.get_value('op')
+ ip   = aWeb['ip']
+ vmid = aWeb['vmid']
+ snap = aWeb['snapid']
+ op   = aWeb['op']
  if   op == 'revert':
   template = "vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff"
  elif op == 'remove':
