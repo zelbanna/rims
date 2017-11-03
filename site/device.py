@@ -432,8 +432,9 @@ def new(aWeb):
   from sdcp.core.rest import call as rest_call
   from sdcp.rest.device import find_ip as rest_find_ip
   res  = rest_find_ip({'ipam_sub_id':sub_id})
-  ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_free".format(PC.ipam['type']),{'ipam_sub_id':sub_id,'ip':res['ip']})
-  print "Sync:{} IP:{}".format(ipam['res'],res['ip'])
+  ipam_free = rest_call(PC.ipam['url'],"sdcp.rest.{}_free".format(PC.ipam['type']),{'ipam_sub_id':sub_id,'ip':res['ip']})
+  ipam_find = rest_call(PC.ipam['url'],"sdcp.rest.{}_find".format(PC.ipam['type']),{'ipam_sub_id':sub_id})
+  print "Sync:{} IP:{}".format(ipam_free['res'],ipam_find['ip'])
  else:
   domain = aWeb['domain']
   with DB() as db:
