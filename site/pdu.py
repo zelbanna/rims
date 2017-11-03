@@ -15,19 +15,12 @@ __status__= "Production"
 
 def inventory(aWeb):
  from sdcp.devices.avocent import Device
- domain  = aWeb.get_value('domain')
  pdulist = aWeb.form.getlist('pdulist')
-
- # For Operations:
- slot    = aWeb.get_value('slot')
- unit    = aWeb.get_value('unit')
- nstate  = aWeb.get_value('nstate')
- pduop   = aWeb.get_value('pdu')
 
  optemplate = "<A CLASS='z-btn z-small-btn z-op' SPIN=true DIV=div_content_left URL='sdcp.cgi?call=pdu_inventory&pdu={0}&nstate={1}&slot={2}&unit={3}'><IMG SRC='images/btn-{4}'></A>"
 
  if len(pdulist) == 0:
-  pdulist.append(pduop)
+  pdulist.append(aWeb['pduop'])
  print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Entry</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th style='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -36,10 +29,10 @@ def inventory(aWeb):
   avocent.load_snmp()
 
   # Ops
-  if pdu == pduop and slot and unit and nstate:
-   avocent.set_state(slot,unit,nstate)
+  if pdu == aWeb['pduop'] and aWeb['slot'] and aWeb['unit'] and aWeb['nstate']:
+   avocent.set_state(aWeb['slot'],aWeb['unit'],aWeb['nstate'])
    # Avocent is not fast enough to execute something immediately after reboot op, halt output then :-)
-   if nstate == 'reboot':
+   if aWeb['nstate'] == 'reboot':
     from time import sleep
     sleep(10)
 
@@ -60,28 +53,21 @@ def inventory(aWeb):
 #
 def unit_info(aWeb):
  from sdcp.devices.avocent import Device
- op = aWeb.get_value('op')
- pdu  = aWeb.get_value('pdu')
- slot = aWeb.get_value('slot')
- unit = aWeb.get_value('unit')
- if op == 'update':
-  name = aWeb.get_value('name')
-  avocent = Device(pdu)
-  avocent.set_name(slot,unit,name)
-  print "Updated name: {} for {} slot {}".format(name,pdu,slot)
+ if aWeb['op'] == 'update':
+  avocent = Device(aWeb['pdu'])
+  avocent.set_name(aWeb['slot'],aWeb['unit'],aWeb['name'])
+  print "Updated name: {} for {} slot {}".format(aWeb['name'],aWeb['pdu'],aWeb['slot'])
   return
- slotname = aWeb.get_value('slotname')
- name = aWeb.get_value('name')
  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
  print "<FORM ID=pdu_form>"
- print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(slot)
- print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(unit)
- print "<INPUT NAME=pdu    VALUE={} TYPE=HIDDEN>".format(pdu)
+ print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(aWeb['slot'])
+ print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(aWeb['unit'])
+ print "<INPUT NAME=pdu    VALUE={} TYPE=HIDDEN>".format(aWeb['pdu'])
  print "<DIV CLASS=title>PDU Slot Info</DIV>"
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>PDU:</DIV><DIV CLASS=td>{0}</DIV></DIV>".format(pdu)
- print "<DIV CLASS=tr><DIV CLASS=td>Slot.Unit:</DIV><DIV CLASS=td>{0}.{1}</DIV></DIV>".format(slotname,unit)
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(name)
+ print "<DIV CLASS=tr><DIV CLASS=td>PDU:</DIV><DIV CLASS=td>{0}</DIV></DIV>".format(aWeb['pdu'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Slot.Unit:</DIV><DIV CLASS=td>{0}.{1}</DIV></DIV>".format(aWeb['slotname'],aWeb['unit'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(aWeb['name'])
  print "</DIV></DIV>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results URL=sdcp.cgi?call=pdu_unit_info&op=update FRM=pdu_form><IMG SRC='images/btn-save.png'></A>"
  print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>"
@@ -113,12 +99,11 @@ def info(aWeb):
  from sdcp.devices.avocent import Device
  from sdcp.core.dbase import DB
  from sdcp.core import genlib as GL
- id = aWeb.get_value('id')
- ip = aWeb.get_value('ip')
- op = aWeb.get_value('op')
- name = aWeb.get_value('name')
+ id = aWeb['id']
+ ip = aWeb['ip']
+ name = aWeb['name']
  with DB() as db:
-  if op == 'lookup':
+  if aWeb['op'] == 'lookup':
    ipint = GL.ip2int(ip)
    pdu   = Device(ip)
    slotl = pdu.get_slot_names()
@@ -127,9 +112,9 @@ def info(aWeb):
     db.do("UPDATE pdus SET slots = 0, 0_slot_id = '{1}', 0_slot_name = '{2}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1]))
    elif slotn == 2:
     db.do("UPDATE pdus SET slots = 1, 0_slot_id = '{1}', 0_slot_name = '{2}', 1_slot_id = '{3}', 1_slot_name = '{4}' WHERE ip = '{0}'".format(ipint,slotl[0][0],slotl[0][1],slotl[1][0],slotl[1][1]))
-  elif op == 'update':
+  elif aWeb['op'] == 'update':
    ipint = GL.ip2int(ip)
-   slots = aWeb.get_value('slots','0')
+   slots = aWeb.get('slots','0')
    if id == 'new':
     sql = "INSERT into pdus (name, ip, slots) VALUES ('{0}','{1}','{2}')".format(name,ipint,slots)
     res = db.do(sql)
@@ -183,9 +168,8 @@ def info(aWeb):
 #
 def remove(aWeb):
  from sdcp.core.dbase import DB
- id = aWeb.get_value('id')
  with DB() as db:
-  db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
-  db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
-  db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
-  print "<B>PDU {0} deleted<B>".format(id)
+  db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(aWeb['id']))
+  db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(aWeb['id']))
+  db.do("DELETE FROM pdus WHERE id = '{0}'".format(aWeb['id']))
+  print "<B>PDU {0} deleted<B>".format(aWeb['id'])
