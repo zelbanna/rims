@@ -20,7 +20,7 @@ def load(aWeb):
  with DB() as db:
   db.do("SELECT id,subnet,section_name FROM subnets")
   sdcp_subnets = db.get_dict('id')
-  for sub in ipam_subnets:
+  for sub in ipam_subnets['subnets']:
    add = sdcp_subnets.pop(sub['id'],None)
    if not add:
     print "Added: {}".format(sub)
