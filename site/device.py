@@ -13,8 +13,8 @@ from sdcp.core.dbase import DB
 
 def main(aWeb):
  # target rack_id or vm and arg = value, i.e. select all devices where vm = 1 or where rackinfo.device_id exists and rack_id = 5 :-)
- target = aWeb.get_value('target')
- arg    = aWeb.get_value('arg')
+ target = aWeb['target']
+ arg    = aWeb['arg']
  
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_list{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
@@ -66,9 +66,9 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- target = aWeb.get_value('target')
- arg    = aWeb.get_value('arg')
- sort   = aWeb.get_value('sort','ip')
+ target = aWeb['target']
+ arg    = aWeb['arg']
+ sort   = aWeb.get('sort','ip')
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Devices</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?{}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args())
@@ -107,8 +107,8 @@ def info(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  from sdcp.core import genlib as GL
- id    = aWeb.get_value('id')
- op    = aWeb.get_value('op',"")
+ id    = aWeb['id']
+ op    = aWeb.get('op',"")
  opres = {}
 
  ###################### Update ###################
@@ -154,7 +154,7 @@ def info(aWeb):
  db.connect()
  if op == 'lookup':
   from sdcp.rest.device import detect as rest_detect
-  opres['lookup'] = rest_detect({'ip':aWeb.get_value('ip')})
+  opres['lookup'] = rest_detect({'ip':aWeb['ip']})
   if opres['lookup']['res'] == 'OK':
    dev = opres['lookup']['info']
    db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(dev['snmp'],dev['fqdn'],dev['model'],dev['type_id'],id))
@@ -336,9 +336,9 @@ def info(aWeb):
 def conf_gen(aWeb):
  from importlib import import_module
  from sdcp.core import genlib as GL
- id = aWeb.get_value('id','0')
- gw = aWeb.get_value('devices_ipam_gw')
- type = aWeb.get_value('type_name')
+ id = aWeb.get('id','0')
+ gw = aWeb['devices_ipam_gw']
+ type = aWeb['type_name']
  print "<DIV CLASS=z-frame style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
  with DB() as db:
   db.do("SELECT INET_NTOA(ip) as ipasc, hostname,domains.name as domain, subnets.subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_sub_id WHERE devices.id = '{}'".format(id))
@@ -360,10 +360,10 @@ def op_function(aWeb):
  from importlib import import_module
  print "<DIV CLASS=z-frame>"
  try:
-  module = import_module("sdcp.devices.{}".format(aWeb.get_value('type')))
-  dev = getattr(module,'Device',lambda x: None)(aWeb.get_value('ip'))
+  module = import_module("sdcp.devices.{}".format(aWeb['type']))
+  dev = getattr(module,'Device',lambda x: None)(aWeb['ip'])
   with dev:
-   EXT.dict2table(getattr(dev,aWeb.get_value('op'),None)())
+   EXT.dict2table(getattr(dev,aWeb['op'],None)())
  except Exception as err:
   print "<B>Error in devdata: {}</B>".format(str(err))
  print "</DIV>"
@@ -400,29 +400,29 @@ def mac_sync(aWeb):
 # new device:
 #
 def new(aWeb):
- ip     = aWeb.get_value('ip',"127.0.0.1")
- name   = aWeb.get_value('hostname','unknown')
- mac    = aWeb.get_value('mac',"00:00:00:00:00:00")
- op     = aWeb.get_value('op')
- sub_id = aWeb.get_value('ipam_sub_id')
+ ip     = aWeb.get('ip',"127.0.0.1")
+ name   = aWeb.get('hostname','unknown')
+ mac    = aWeb.get('mac',"00:00:00:00:00:00")
+ op     = aWeb['op']
+ sub_id = aWeb['ipam_sub_id']
  if op == 'new':
   from sdcp import PackageContainer as PC
   from sdcp.rest.device import new as rest_new
 
-  a_dom_id,_,domain = aWeb.get_value('a_dom_id').partition('_')
+  a_dom_id,_,domain = aWeb['a_dom_id'].partition('_')
   fqdn = "{}.{}".format(name,domain)
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'fqdn':fqdn, 'a_dom_id':a_dom_id, 'ipam_sub_id':sub_id, 'ipam_id':aWeb.get_value('ipam_id','0') }
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'fqdn':fqdn, 'a_dom_id':a_dom_id, 'ipam_sub_id':sub_id, 'ipam_id':aWeb.get('ipam_id','0') }
 
   if args['ipam_id'] == '0':
    from sdcp.core.rest import call as rest_call
    ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_new".format(PC.ipam['type']),{'ip':ip, 'ipam_sub_id':sub_id ,'fqdn':fqdn } )
    args['ipam_id'] = str(ipam.get('id'))
 
-  if aWeb.get_value('vm'):
+  if aWeb['vm']:
    args['vm'] = 1
   else:
-   args['target'] = aWeb.get_value('target')
-   args['arg']    = aWeb.get_value('arg')
+   args['target'] = aWeb['target']
+   args['arg']    = aWeb['arg']
    args['vm'] = 0
   res  = rest_new(args)
   print "DB:{}".format(res)
@@ -435,7 +435,7 @@ def new(aWeb):
   ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_free".format(PC.ipam['type']),{'ipam_sub_id':sub_id,'ip':res['ip']})
   print "Sync:{} IP:{}".format(ipam['res'],res['ip'])
  else:
-  domain = aWeb.get_value('domain')
+  domain = aWeb['domain']
   with DB() as db:
    db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet")
    subnets = db.get_rows()
@@ -446,7 +446,7 @@ def new(aWeb):
   print "<!-- {} -->".format(aWeb.get_args2dict_except())
   print "<DIV CLASS=z-table><DIV CLASS=tbody>"
   print "<FORM ID=device_new_form>"
-  print "<INPUT TYPE=HIDDEN NAME=ipam_id VALUE={}>".format(aWeb.get_value('ipam_id',0))
+  print "<INPUT TYPE=HIDDEN NAME=ipam_id VALUE={}>".format(aWeb.get('ipam_id',0))
   print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT VALUE={}></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE={}></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
@@ -459,11 +459,11 @@ def new(aWeb):
    print "<OPTION VALUE={} {}>{}/{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == sub_id else "", s.get('subasc'),s.get('mask'),s.get('subnet_description'))
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
-  if aWeb.get_value('target') == 'rack_id':
-   print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(aWeb.get_value('target'))
-   print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(aWeb.get_value('arg'))
+  if aWeb['target'] == 'rack_id':
+   print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(aWeb['target'])
+   print "<INPUT TYPE=HIDDEN NAME=arg VALUE={}>".format(aWeb['arg'])
   else:
-   print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV  CLASS=td><INPUT NAME=vm  TYPE=CHECKBOX VALUE=1  {0} ></DIV></DIV>".format("checked" if aWeb.get_value('target') == 'vm' else '')
+   print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV  CLASS=td><INPUT NAME=vm  TYPE=CHECKBOX VALUE=1  {0} ></DIV></DIV>".format("checked" if aWeb['target'] == 'vm' else '')
   print "</FORM>"
   print "</DIV></DIV>"
   print "<A CLASS='z-btn z-op z-small-btn' TITLE='Create'  DIV=device_new_span URL=sdcp.cgi?call=device_new&op=new  FRM=device_new_form><IMG SRC='images/btn-start.png'></A>"
@@ -476,7 +476,7 @@ def new(aWeb):
 #
 def remove(aWeb):
  from sdcp.rest.device import remove
- id  = aWeb.get_value('id')
+ id  = aWeb['id']
  ret = remove({ 'id':id })
  if ret['res'] == 'OK':
   from sdcp.core.rest import call as rest_call
@@ -493,18 +493,18 @@ def remove(aWeb):
 def dump_db(aWeb):
  from json import dumps
  from sdcp.rest.device import dump_db
- print "<PRE>{}</PRE>".format(dumps(dump_db({'table':aWeb.get_value('table','devices'),'columns':aWeb.get_value('columns','*')}), indent=4, sort_keys=True))
+ print "<PRE>{}</PRE>".format(dumps(dump_db({'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')}), indent=4, sort_keys=True))
 
 #
 # find devices operations
 #
 def discover(aWeb):
- op = aWeb.get_value('op')
+ op = aWeb['op']
  if op:
   from sdcp.rest.device import discover
-  clear = aWeb.get_value('clear',False)
-  a_dom = aWeb.get_value('a_dom_id')
-  ipam  = aWeb.get_value('ipam_sub',"0_0_32").split('_')
+  clear = aWeb.get('clear',False)
+  a_dom = aWeb['a_dom_id']
+  ipam  = aWeb.get('ipam_sub',"0_0_32").split('_')
   # id, subnet int, subnet mask
   res = discover({ 'ipam_sub_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':a_dom, 'clear':clear})
   print "<DIV CLASS=z-frame>{}</DIV>".format(res)
@@ -514,7 +514,7 @@ def discover(aWeb):
    subnets = db.get_rows()
    db.do("SELECT id, name FROM domains")
    domains  = db.get_rows()
-  dom_name = aWeb.get_value('domain')
+  dom_name = aWeb['domain']
   print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
   print "<FORM ID=device_discover_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"

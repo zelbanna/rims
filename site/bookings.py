@@ -12,14 +12,12 @@ __status__= "Production"
 #
 def list(aWeb):
  from sdcp.core.dbase import DB
- op = aWeb.get_value('op')
- id = aWeb.get_value('id')
  
  with DB() as db:
-  if   op == 'unbook' and id:
-   res = db.do("DELETE FROM bookings WHERE device_id = '{}'".format(id))
-  elif op == 'extend' and id:
-   res = db.do("UPDATE bookings SET time_start = NOW() WHERE device_id = '{}'".format(id))
+  if   aWeb['op'] == 'unbook' and aWeb['id']:
+   res = db.do("DELETE FROM bookings WHERE device_id = '{}'".format(aWeb['id']))
+  elif aWeb['op'] == 'extend' and aWeb['id']:
+   res = db.do("UPDATE bookings SET time_start = NOW() WHERE device_id = '{}'".format(aWeb['id']))
   res  = db.do("SELECT user_id, device_id, time_start, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid, ADDTIME(time_start, '30 0:0:0.0') as time_end, devices.hostname, users.alias FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
   rows = db.get_rows()
 

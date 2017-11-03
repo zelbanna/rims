@@ -50,10 +50,10 @@ def list(aWeb):
 #
 def info(aWeb):
  from sdcp.core import genlib as GL
- id = aWeb.get_value('id')
- ip = aWeb.get_value('ip')
- op = aWeb.get_value('op')
- name = aWeb.get_value('name')
+ id = aWeb['id']
+ ip = aWeb['ip']
+ op = aWeb['op']
+ name = aWeb['name']
  with DB() as db:
   if op == 'update':
    ipint = GL.ip2int(ip)
@@ -97,8 +97,7 @@ def info(aWeb):
 #
 #
 def remove(aWeb):
- id   = aWeb.get_value('id')
  with DB() as db:
-  db.do("UPDATE rackinfo SET console_port = 0 WHERE console_id = '{0}'".format(id))
-  db.do("DELETE FROM consoles WHERE id = '{0}'".format(id))
-  print "<B>Console {0} deleted</B>".format(id)
+  db.do("UPDATE rackinfo SET console_port = 0 WHERE console_id = '{0}'".format(aWeb['id']))
+  db.do("DELETE FROM consoles WHERE id = '{0}'".format(aWeb['id']))
+  print "<B>Console {0} deleted</B>".format(aWeb['id'])
