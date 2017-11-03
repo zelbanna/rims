@@ -11,10 +11,10 @@ __status__= "Production"
 #
 def list(aWeb):
  from sdcp.core.dbase import DB
- id    = aWeb.get_value('id')
- state = aWeb.get_value('state')
- target= aWeb.get_value('target')
- arg   = aWeb.get_value('arg')
+ id    = aWeb['id']
+ state = aWeb['state']
+ target= aWeb['target']
+ arg   = aWeb['arg']
 
  with DB() as db:
   if id and state:
@@ -54,10 +54,10 @@ def list(aWeb):
 # Modify proxy
 #
 def set_proxy(aWeb):
- id    = aWeb.get_value('id')
- proxy = aWeb.get_value('proxy')
- ip    = aWeb.get_value('ip')
- op = aWeb.get_value('op')
+ id    = aWeb['id']
+ proxy = aWeb['proxy']
+ ip    = aWeb['ip']
+ op = aWeb['op']
  if op == 'update':
   from sdcp.core.dbase import DB
   with DB() as db:
@@ -100,11 +100,11 @@ def save(aWeb):
 # Weathermap Link
 #
 def wm(aWeb):
- indx = aWeb.get_value('index')
- name = aWeb.get_value('hostname')
+ indx = aWeb['index']
+ name = aWeb['hostname']
  snmpname = name.replace('-','_')
- dom  = aWeb.get_value('domain')
- desc = aWeb.get_value('desc',"LNK"+indx)
+ dom  = aWeb['domain']
+ desc = aWeb.get('desc',"LNK"+indx)
  gstr = "munin-cgi/munin-cgi-graph/{1}/{0}.{1}/snmp_{2}_{1}_if_{3}-day.png".format(name,dom,snmpname,indx)
  print "<DIV CLASS=z-frame><PRE style='font-size:10px;'>"
  print "LINK {}-{}".format(name,desc)

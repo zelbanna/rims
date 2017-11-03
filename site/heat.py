@@ -23,9 +23,9 @@ def list(aWeb):
 
  port  = cookie.get('os_heat_port')
  url   = cookie.get('os_heat_url')
- name = aWeb.get_value('name')
- id   = aWeb.get_value('id')
- op   = aWeb.get_value('op','info')
+ name = aWeb['name']
+ id   = aWeb['id']
+ op   = aWeb.get('op','info')
 
  ret = controller.call(cookie.get('os_heat_port'),cookie.get('os_heat_url') + "/stacks") 
  if not ret['result'] == "OK":
@@ -78,7 +78,7 @@ def choose_template(aWeb):
 
 def enter_parameters(aWeb):
  from json import load,dumps
- template = aWeb.get_value('template')
+ template = aWeb['template']
  with open("os_templates/"+template) as f:
   data = load(f)
  print "<DIV CLASS='z-frame' style='display:inline-block; padding:6px'>"
@@ -108,9 +108,9 @@ def action(aWeb):
 
  port = cookie.get('os_heat_port')
  url  = cookie.get('os_heat_url')
- name = aWeb.get_value('name')
- id   = aWeb.get_value('id')
- op   = aWeb.get_value('op','info')
+ name = aWeb['name']
+ id   = aWeb['id']
+ op   = aWeb.get('op','info')
 
  from sdcp import PackageContainer as PC
  PC.log_msg("heat_action - project:{} id:{} name:{} op:{}".format(id,cookie.get('os_project_name'),name,op))
@@ -159,7 +159,7 @@ def action(aWeb):
   print "<PRE>" + dumps(data, indent=4) + "</PRE>"
 
  elif op == 'create':
-  template = aWeb.get_value('template')
+  template = aWeb['template']
   print "<DIV CLASS='z-frame'>"
   if name and template:
    from json import load,dumps
@@ -190,7 +190,7 @@ def action(aWeb):
   print "</DIV>"
 
  if op == 'templateview':
-  template = aWeb.get_value('template')
+  template = aWeb['template']
   from json import load,dumps
   with open("os_templates/"+template) as f:
    data = load(f)
