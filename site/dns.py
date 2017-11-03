@@ -99,7 +99,5 @@ def cleanup(aWeb):
 # Remove from DNS DB
 #
 def remove(aWeb):
- id   = aWeb.get_value('id')
- type = aWeb.get_value('type') 
- res = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']),{"{}_id".format(type):id})
- print "Remove {} - Results:{}".format(id,res)
+ res = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']),{"{}_id".format(aWeb['type']): aWeb['id']})
+ print "Remove {} - Results:{}".format(aWeb['id'],res)
