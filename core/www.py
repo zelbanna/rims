@@ -22,6 +22,9 @@ class Web(object):
   self.form  = None  
   bcookie = getenv("HTTP_COOKIE")
   self.cookie = {} if not bcookie else dict(map( lambda c: c.split("="), bcookie.split('; ')))
+
+ def __getitem__(self,aKey):
+  return self.form.getfirst(aKey,None)
  
  # Header Key/Values
  def add_header(self,aKey,aValue):
