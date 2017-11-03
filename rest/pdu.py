@@ -19,9 +19,9 @@ def unit_update(aDict):
   unit = aDict.get('unit','0')
   avocent = Device(ip)
   res = avocent.set_name(slot,unit,name)
-  return { 'res':'op_success', 'info':res }
+  return { 'res':'OK', 'info':res }
  else:
-  return { 'res':'op_failed' }
+  return { 'res':'NOT_OK', 'info':'No name supplied' }
 
 #
 # Remove PDU from DB
@@ -33,7 +33,7 @@ def remove(aDict):
   db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
   db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
   db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
- return { 'res':'op_success' }
+ return { 'res':'OK' }
 
 #
 # Update PDU slot info for a device
@@ -43,7 +43,7 @@ def update_device_pdus(aDict):
  PC.log_msg("pdu_update_device_pdus({})".format(aDict))
  from sdcp.core.dbase import DB
  hostname  = aDict.get('hostname')
- ret = {}
+ ret = {'res':'OK'}
  with DB() as db:
   for p in ['0','1']:
    ret[p] = None
@@ -54,7 +54,6 @@ def update_device_pdus(aDict):
     if not (slot == 0 or unit == 0):
      from sdcp.devices.avocent import Device
      db.do("SELECT INET_NTOA(ip) as ip FROM pdus WHERE id = '{}'".format(id))
-     pdu = db.get_row()
-     avocent = Device(pdu['ip'])
+     avocent = Device(db.get_val('ip'))
      ret["pem{}".format(p)] = avocent.set_name(slot,unit,hostname+"-P{}".format(p))
  return ret

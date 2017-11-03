@@ -88,7 +88,7 @@ def get_addresses(aDict):
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   ires  = db.do("SELECT id, ip_addr AS ip, INET_NTOA(ip_addr) as ipasc, subnetId as ipam_sub_id, description, dns_name AS fqdn FROM ipaddresses ORDER BY ip_addr")
   irows = db.get_rows()
- return {'addresses':irows, 'res':'OK', 'info':ires }
+ return {'res':'OK', 'addresses':irows, 'info':ires }
 
 #
 # Check single IP is available in subnet

@@ -27,7 +27,7 @@ def cleanup(aDict):
     remove.append(row)
    else:
     previous = row
- return {'removed':remove}
+ return {'res':'OK', 'removed':remove}
 
 #
 # dns top lookups
@@ -52,7 +52,7 @@ def top(aDict):
  for item in  Counter(fqdn_who).most_common(count):
   parts = item[0].split('#')
   who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL.get_host_name(parts[1]), 'count':item[1]})
- return {'top':top,'who':who }
+ return {'res':'OK', 'top':top,'who':who }
 
 
 #
@@ -142,7 +142,7 @@ def update(aDict):
 #
 def get_records(aDict):
  PC.log_msg("powerdns_get_records({})".format(aDict))
- ret = {}
+ ret = {'res':'OK'}
  tune = aDict['type'].upper() if aDict.get('type') else "PTR' OR type = 'A"
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   ret['count'] = db.do("SELECT id, domain_id AS dom_id, name, type, content FROM records WHERE type = '{}' ORDER BY name".format(tune))

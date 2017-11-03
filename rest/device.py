@@ -222,7 +222,7 @@ def remove(aDict):
    ret = { 'res':'NOT_OK', 'a_id':0, 'ptr_id':0, 'ipam_id':0 }
   else:
    ret = db.get_row()
-   ret['delete'] = db.do("DELETE FROM devices WHERE id = '{}'".format(aDict['id']))
+   ret['deleted'] = db.do("DELETE FROM devices WHERE id = '{}'".format(aDict['id']))
    ret['res'] = 'OK'
  return ret
 
