@@ -16,7 +16,6 @@ __status__= "Production"
 def portal(aWeb):
  from json import dumps
  from sdcp.devices.openstack import OpenstackRPC
- from sdcp import PackageContainer as PC
  ctrl = aWeb.cookie.get('os_controller')
  utok = aWeb.cookie.get('os_user_token')
 
@@ -29,7 +28,7 @@ def portal(aWeb):
   res = openstack.auth({'project':pname, 'username':username,'password':password })
   if not res['result'] == "OK":
    aWeb.put_html("Openstack Portal")
-   PC.log_msg("openstack_portal - error during login for {}@{}".format(username,ctrl))
+   aWeb.log("openstack_portal - error during login for {}@{}".format(username,ctrl))
    print "Error logging in - please try login again"
    return
   utok = openstack.get_token()
@@ -45,12 +44,12 @@ def portal(aWeb):
    aWeb.add_cookie(base + "_url",url)
    aWeb.add_cookie(base + "_id",id)
 
-  PC.log_msg("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
+  aWeb.log("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
  else:
   username = aWeb.cookie.get("os_user_name")
   pid      = aWeb.cookie.get("os_project_id")
   pname    = aWeb.cookie.get("os_project_name")
-  PC.log_msg("openstack_portal - using existing token for {}@{}".format(username,ctrl))
+  aWeb.log("openstack_portal - using existing token for {}@{}".format(username,ctrl))
   openstack = OpenstackRPC(ctrl,utok)
 
  aWeb.put_html("Openstack Portal")

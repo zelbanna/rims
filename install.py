@@ -19,6 +19,16 @@ def install_sdcp(aFile):
  import PackageContainer as PC
  remove("PackageContainer.py")
 
+ with open("core/logger.py",'w') as f:
+  f.write("def log(aMsg,aID=None):\n")
+  f.write(" from time import localtime, strftime\n")
+  f.write(" with open('" + PC.generic['logformat'] + "', 'w') as f:\n")
+  f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
+ from core.logger import log
+ remove("core/logger.py")
+
+ log("Installing SDCP with settings from {}".format(aFile))
+
  for dest in [ 'index','rest', PC.generic['sitebase'] ]:
   site = "{}/{}.cgi".format(PC.generic['docroot'],dest)
   with open(site,'w') as f:
@@ -28,12 +38,11 @@ def install_sdcp(aFile):
    wr("from sys import path as syspath\n")
    wr("syspath.insert(1, '{}')\n".format(getcwd().rpartition('/')[0]))
    if dest == 'rest':
-    wr("import {}.core.rest as cgi\n".format(PC.generic['sitebase']))
-    wr("cgi.server()\n")
+    wr("from {0}.core import rest as cgi\n".format(PC.generic['sitebase']))
    else:
-    wr("from {}.core.www import Web\n".format(PC.generic['sitebase']))
-    wr("cgi = Web()\n")
-    wr("cgi.server('{}')\n".format(PC.generic['sitebase']))
+    wr("from {0}.core.www import Web\n".format(PC.generic['sitebase']))
+    wr("cgi = Web('{}')\n".format(PC.generic['sitebase']))
+   wr("cgi.server()\n")
   chmod(site,0755)
 
  from os import listdir

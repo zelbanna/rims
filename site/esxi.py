@@ -98,7 +98,6 @@ def op(aWeb,aIP = None):
    return
   userid = aWeb.cookie.get('sdcp_id')
   from subprocess import check_call, check_output
-  from sdcp import PackageContainer as PC
   try:
    if nstate == 'vmsvc-snapshot.create':
     from time import strftime
@@ -115,7 +114,7 @@ def op(aWeb,aIP = None):
     excpt = "" if vmid == '-1' else vmid
     check_call("/usr/local/sbin/ups-operations shutdown {} {} {} &".format(ip,'none',excpt), shell=True)
   except Exception as err:
-   PC.log_msg("esxi: nstate error [{}]".format(str(err)))
+   aWeb.log("esxi: nstate error [{}]".format(str(err)))
 
  statelist = esxi.get_vms(sort)
  # Formatting template (command, btn-xyz, vm-id, hover text)

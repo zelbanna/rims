@@ -9,16 +9,16 @@ __status__= "Production"
 
 #
 # web handling object
-# - cookies are dictionaries which encodes
+# - cookies are dictionaries which encodes type and TTL
 #
 class Web(object):
 
- def __init__(self):
+ def __init__(self,aBase):
   from os import getenv
   self._header = {}
   self._c_stor = {}
   self._c_life = {}
-  self._base = None
+  self._base = aBase
   self.form  = None  
   bcookie = getenv("HTTP_COOKIE")
   self.cookie = {} if not bcookie else dict(map( lambda c: c.split("="), bcookie.split('; ')))
@@ -28,6 +28,10 @@ class Web(object):
 
  def get(self,aKey,aDefault = None):
   return self.form.getfirst(aKey,aDefault)
+
+ def log(self, aMsg):
+  from logger import log
+  log(aMsg,self.cookie.get("{}_id".format(self._base)))
  
  # Header Key/Values
  def add_header(self,aKey,aValue):
@@ -67,12 +71,11 @@ class Web(object):
  #
  # call = <module>_<module_function>
  #
- def server(self,aBase):
+ def server(self):
   import cgi
-  self.form  = cgi.FieldStorage()
-  self._base = aBase
-  headers = self.get_value('headers','yes')
-  mod_fun = self.get_value('call','front_login')
+  self.form = cgi.FieldStorage()
+  headers   = self.get('headers','yes')
+  mod_fun   = self.get('call','front_login')
   (mod,void,fun) = mod_fun.partition('_')
   print "X-Z-Mod:{}\r".format(mod)
   print "X-Z-Fun:{}\r".format(fun)
@@ -80,7 +83,7 @@ class Web(object):
    if headers == 'yes' and mod != 'front':
     print "Content-Type: text/html\r\n"
    from importlib import import_module
-   module = import_module(aBase + ".site." + mod)
+   module = import_module(self._base + ".site." + mod)
    getattr(module,fun,None)(self)
   except Exception, e:
    if headers == 'no' or mod == 'front':
@@ -88,7 +91,7 @@ class Web(object):
    keys = self.form.keys()
    keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(aBase,mod_fun), 'args': keys, 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True) if not type(e).__name__ == 'RestException' else str(e)
+   print dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(self._base,mod_fun), 'args': keys, 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True) if not type(e).__name__ == 'RestException' else str(e)
 
  ############################## CGI/Web functions ###############################
 
@@ -100,9 +103,6 @@ class Web(object):
    except:
     pass
   return dict(map(lambda x: (x,self.form.getfirst(x,None)), keys))
-
- def get_value(self,aid,adefault = None):
-  return self.form.getfirst(aid,adefault)
 
  def get_args(self):
   reload = ""

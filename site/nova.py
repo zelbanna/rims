@@ -139,8 +139,7 @@ def action(aWeb):
  url  = cookie.get('os_nova_url')
  op   = aWeb.get('op','info')
 
- from sdcp import PackageContainer as PC
- PC.log_msg("nova_action - id:{} op:{} for project:{}".format(aWeb['id'],op,cookie.get('os_project_name')))
+ aWeb.log("nova_action - id:{} op:{} for project:{}".format(aWeb['id'],op,cookie.get('os_project_name')))
 
  if   op == 'info':
   from sdcp.core.extras import get_quote

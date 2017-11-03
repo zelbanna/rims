@@ -426,7 +426,7 @@ def new(aWeb):
    args['vm'] = 0
   res  = rest_new(args)
   print "DB:{}".format(res)
-  PC.log_msg("{} ({}): New device operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_id'),args,res))
+  aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),args,res))
  elif op == 'find':
   from sdcp import PackageContainer as PC
   from sdcp.core.rest import call as rest_call

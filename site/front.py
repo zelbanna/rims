@@ -22,7 +22,7 @@ from sdcp import PackageContainer as PC
 def login(aWeb):
  from sdcp.core.dbase import DB
  if PC.generic['db'] == '':
-  PC.log_msg("No Database available so login not possible")
+  aWeb.log("No Database available so login not possible")
   aWeb.put_html("Error")
   return
 
@@ -41,7 +41,7 @@ def login(aWeb):
    res  = db.do("SELECT href FROM resources INNER JOIN users ON users.frontpage = resources.id WHERE users.id = '{}'".format(id))
    href = 'sdcp.cgi?call=resources_navigate&type=demo' if not res else db.get_val('href')
 
-  PC.log_msg("Entering as {}-'{}' ({})".format(id,user,view))
+  aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
   aWeb.put_html(PC.sdcp['name'])
   print "<DIV class='z-main-menu' ID=div_main_menu>"
   print "<A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Start'     URL='{}&headers=yes'><IMG SRC='images/icon-start.png'/></A>".format(href)
@@ -149,9 +149,9 @@ def openstack(aWeb):
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':PC.openstack['project'], 'username':PC.openstack['username'],'password':PC.openstack['password']})
   aWeb.add_cookie("os_main_token",openstack.get_token())
-  PC.log_msg("openstack_login - login result: {}".format(str(res['result'])))
+  aWeb.log("openstack_login - login result: {}".format(str(res['result'])))
  else:
-  PC.log_msg("openstack_login - reusing token: {}".format(mtok))
+  aWeb.log("openstack_login - reusing token: {}".format(mtok))
   openstack = OpenstackRPC(ctrl,mtok)
 
  ret = openstack.call("5000","v3/projects")
