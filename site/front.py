@@ -29,7 +29,7 @@ def login(aWeb):
  if aWeb.cookie.get('sdcp_id'):
   id,user,view = aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_view')
  else:
-  id,user,view = aWeb.get_value('sdcp_login',"None_None_1").split('_')
+  id,user,view = aWeb.get('sdcp_login',"None_None_1").split('_')
   if id != "None":
    # "Login successful"
    aWeb.add_cookie('sdcp_id',  id, 86400)
@@ -80,7 +80,7 @@ def login(aWeb):
 # Weathermap
 #
 def weathermap(aWeb):
- if aWeb.get_value('headers','no') == 'no':
+ if aWeb.get('headers','no') == 'no':
   aWeb.put_html("Weathermap")
  else:
   print "Content-Type: text/html\r\n"
@@ -130,9 +130,9 @@ def weathermap(aWeb):
 
 def openstack(aWeb):
  from sdcp.devices.openstack import OpenstackRPC
- name = aWeb.get_value('name',"iaas")
- ctrl = aWeb.get_value('controller',"127.0.0.1")
- appf = aWeb.get_value('appformix',"127.0.0.1")
+ name = aWeb.get('name',"iaas")
+ ctrl = aWeb.get('controller',"127.0.0.1")
+ appf = aWeb.get('appformix',"127.0.0.1")
  user = aWeb.cookie.get("os_user_name")
  utok = aWeb.cookie.get("os_user_token")
  mtok = aWeb.cookie.get("os_main_token")
