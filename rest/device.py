@@ -231,18 +231,13 @@ def remove(aDict):
 # - columns is a string list
 #
 def dump_db(aDict):
- if aDict:
-  cols = aDict.get('columns','*')
-  tbl  = aDict.get('table','devices')
- else:
-  cols = '*'
-  tbl  = 'devices'
+ cols = aDict.get('columns','*')
+ tbl  = aDict.get('table','devices')
+ ret  = {'res':'OK'} 
  with DB() as db:
-  res = db.do("SELECT {} FROM {}".format(cols,tbl))
- if res > 0:
-  return db.get_rows()
- else:
-  return []
+  ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
+  ret['db'] = db.get_rows() if ret['found'] > 0 else []
+ return ret
 
 #
 # find_ip(ipam_sub_id, consecutive)

@@ -494,7 +494,7 @@ def remove(aWeb):
 def dump_db(aWeb):
  from json import dumps
  from sdcp.rest.device import dump_db
- print "<PRE>{}</PRE>".format(dumps(dump_db({'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')}), indent=4, sort_keys=True))
+ print "<PRE>{}</PRE>".format(dumps(dump_db({'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db'], indent=4, sort_keys=True))
 
 #
 # find devices operations
