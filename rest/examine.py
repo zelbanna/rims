@@ -44,5 +44,5 @@ def get_logs(aDict):
      pos = (pos + 1) % count
     ret['logs'][logfile] = [logs[(pos + n) % count][:-1] for n in reversed(range(count))]
   except Exception as err:
-   ret['logs'][logfile] = str(err)
+   ret['logs'][logfile] = ['ERROR: {}'.format(str(err))]
  return ret
