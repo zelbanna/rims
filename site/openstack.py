@@ -21,9 +21,9 @@ def portal(aWeb):
  utok = aWeb.cookie.get('os_user_token')
 
  if not utok:
-  username = aWeb.get_value('username')
-  password = aWeb.get_value('password')
-  project  = aWeb.get_value('project','none_none')
+  username = aWeb['username']
+  password = aWeb['password']
+  project  = aWeb.get('project','none_none')
   (pid,pname) = project.split('_')
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':pname, 'username':username,'password':password })
@@ -136,9 +136,9 @@ def api(aWeb):
 #
 def fqname(aWeb):
  print "<DIV CLASS=z-frame ID=div_os_control>"
- print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT style='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb.get_value('os_uuid') if aWeb.get_value('os_uuid') else "")
+ print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT style='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else "")
  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_content URL=sdcp.cgi?call=openstack_fqname FRM=frm_os_uuid TITLE='Go'><IMG SRC=images/btn-start.png></A><BR>"
- if aWeb.get_value('os_uuid'):
+ if aWeb['os_uuid']:
   from json import dumps,loads
   cookie = aWeb.cookie
   token  = cookie.get('os_user_token')
@@ -147,7 +147,7 @@ def fqname(aWeb):
   else:
    from sdcp.devices.openstack import OpenstackRPC
    controller = OpenstackRPC(cookie.get('os_controller'),token)
-   argument   = {'uuid':aWeb.get_value('os_uuid')}
+   argument   = {'uuid':aWeb['os_uuid']}
    ret  = controller.call("8082","id-to-fqname",args=argument,method='POST')
    data = ret['data']
    if ret['result'] == 'OK':
@@ -162,7 +162,7 @@ def fqname(aWeb):
 #
 #
 def result(aWeb):
- if not aWeb.get_value('os_call') and not aWeb.get_value('os_href'):
+ if not aWeb['os_call'] and not aWeb['os_href']:
   return
  from sdcp.devices.openstack import OpenstackRPC
  from json import dumps,loads
@@ -172,18 +172,18 @@ def result(aWeb):
   print "Not logged in"
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
- try:    arguments = loads(aWeb.get_value('os_args'))
+ try:    arguments = loads(aWeb['os_args'])
  except: arguments = None
  ret = {} 
- if aWeb.get_value('os_href'):
-  ret = controller.href(aWeb.get_value('os_href'), args = arguments, method=aWeb.get_value('os_method'))
+ if aWeb['os_href']:
+  ret = controller.href(aWeb['os_href'], args = arguments, method=aWeb['os_method'])
  else:
-  service = aWeb.get_value('os_service')
+  service = aWeb['os_service']
   if service == 'contrail':
    port,url = "8082",""
   else:
    port,url = cookie.get("os_{}_port".format(service)),cookie.get("os_{}_url".format(service))
-  ret = controller.call(port,url + aWeb.get_value('os_call'), args = arguments, method=aWeb.get_value('os_method'))
+  ret = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])
  print "<DIV CLASS=z-frame style='overflow:auto;'>"
  print "<DIV CLASS=z-table style='width:100%;'>"
  print "<DIV CLASS=tbody>"
