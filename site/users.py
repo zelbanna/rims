@@ -46,7 +46,7 @@ def info(aWeb):
  from sdcp.core.dbase import DB
  data = {}
  data['id'] = aWeb.get_value('id','new')
- op = aWeb.get_value('op')
+ op = aWeb['op']
  with DB() as db:
   db.do("SELECT id,title FROM resources")
   resources = db.get_rows()
@@ -99,5 +99,5 @@ def info(aWeb):
 def remove(aWeb):
  from sdcp.core.dbase import DB
  with DB() as db:
-  res = db.do("DELETE FROM users WHERE id = '{}'".format(aWeb.get_value('id')))
- print "<DIV CLASS=z-frame>User with id {} removed ({})</DIV>".format(aWeb.get_value('id'),"OK" if res == 1 else "NOT_OK")
+  res = db.do("DELETE FROM users WHERE id = '{}'".format(aWeb['id']))
+ print "<DIV CLASS=z-frame>User with id {} removed ({})</DIV>".format(aWeb['id'],"OK" if res == 1 else "NOT_OK")
