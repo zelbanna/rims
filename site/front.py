@@ -85,7 +85,7 @@ def weathermap(aWeb):
  else:
   print "Content-Type: text/html\r\n"
 
- page = aWeb.get_value('page')
+ page = aWeb['page']
  if not page:
   print "<DIV CLASS=z-navbar ID=div_wm_navbar>" 
   for map,entry in PC.weathermap.iteritems():
