@@ -27,10 +27,13 @@ class DB(object):
   self.connect()
   return self
 
- def __exit__(self, ctx_type, ctx_value, ctx_traceback):
+ def __exit__(self, *ctx_info):
   if self._dirty:
    self.commit()
   self.close()
+
+ def __str__(self):
+  return "DB:{} Host:{} Uncommited:{}".format(self._db,self._host,self._dirty)
 
  def connect(self):
   from pymysql import connect
