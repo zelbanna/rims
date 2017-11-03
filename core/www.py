@@ -25,6 +25,9 @@ class Web(object):
 
  def __getitem__(self,aKey):
   return self.form.getfirst(aKey,None)
+
+ def get(self,aKey,aDefault = None):
+  return self.form.getfirst(aKey,aDefault)
  
  # Header Key/Values
  def add_header(self,aKey,aValue):

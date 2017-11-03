@@ -45,18 +45,18 @@ def list(aWeb):
 def info(aWeb):
  from sdcp.core.dbase import DB
  data = {}
- data['id'] = aWeb.get_value('id','new')
+ data['id'] = aWeb.get('id','new')
  op = aWeb['op']
  with DB() as db:
   db.do("SELECT id,title FROM resources")
   resources = db.get_rows()
   resources.insert(0,{'id':'NULL','title':'default'})
   if op == 'update' or data['id'] == 'new':
-   data['name']  = aWeb.get_value('name',"unknown")
-   data['alias'] = aWeb.get_value('alias',"unknown")
-   data['email'] = aWeb.get_value('email',"unknown")
-   data['front'] = aWeb.get_value('front','NULL')
-   data['view']  = aWeb.get_value('view','1')
+   data['name']  = aWeb.get('name',"unknown")
+   data['alias'] = aWeb.get('alias',"unknown")
+   data['email'] = aWeb.get('email',"unknown")
+   data['front'] = aWeb.get('front','NULL')
+   data['view']  = aWeb.get('view','1')
    if op == 'update':
     if data['id'] == 'new':
      db.do("INSERT INTO users (alias,name,email,frontpage,view_public) VALUES ('{}','{}','{}','{}',{})".format(data['alias'],data['name'],data['email'],data['front'],data['view']))
