@@ -6,7 +6,7 @@
 __author__ = "Zacharias El Banna"                     
 __version__ = "17.11.01GA"
 __status__ = "Production"
-from sdcp import PackageContainer as PC
+from sdcp.core.logger import log
 
 ################################ LOOPIA DNS ###################################
 #
@@ -15,6 +15,7 @@ from sdcp import PackageContainer as PC
 loopia_domain_server_url = 'https://api.loopia.se/RPCSERV' 
 
 def set_loopia_ip(subdomain, newip):
+ from sdcp import PackageContainer as PC
  import xmlrpclib
  try:
   client = xmlrpclib.ServerProxy(uri = loopia_domain_server_url, encoding = 'utf-8')
@@ -23,7 +24,7 @@ def set_loopia_ip(subdomain, newip):
   data['rdata'] = newip
   status = client.updateZoneRecord(PC.loopia['username'], PC.loopia['password'], PC.loopia['domain'], subdomain, data)[0]
  except Exception as exmlrpc:
-  PC.log_msg("System Error - Loopia set: " + str(exmlrpc))
+  log("System Error - Loopia set: " + str(exmlrpc))
   return False
  return True
 
@@ -31,16 +32,18 @@ def set_loopia_ip(subdomain, newip):
 # Get Loopia settings for subdomain
 #
 def get_loopia_ip(subdomain):
+ from sdcp import PackageContainer as PC
  import xmlrpclib
  try:
   client = xmlrpclib.ServerProxy(uri = loopia_domain_server_url, encoding = 'utf-8')
   data = client.getZoneRecords(PC.loopia['username'], PC.loopia['password'], PC.loopia['domain'], subdomain)[0]
   return data['rdata']
  except Exception as exmlrpc:
-  PC.log_msg("System Error - Loopia get: " + str(exmlrpc))
+  log("System Error - Loopia get: " + str(exmlrpc))
   return False
 
 def get_loopia_suffix():
+ from sdcp import PackageContainer as PC
  return "." + PC.loopia['domain']
 
 ################################# OpenDNS ######################################
@@ -56,7 +59,7 @@ def opendns_my_ip():
   myiplookup = opendns.query("myip.opendns.com",'A').response.answer[0]
   return str(myiplookup).split()[4]
  except Exception as exresolve:
-  PC.log_msg("OpenDNS Error - Resolve: " + str(exresolve))
+  log("OpenDNS Error - Resolve: " + str(exresolve))
   return False
  
 ############################### PDNS SYSTEM FUNCTIONS ##################################
@@ -77,12 +80,12 @@ def pdns_sync(dnslist):
  if not pdns in dnslist:
   from subprocess import check_call
   from time import sleep
-  PC.log_msg("System Info - updating recursor to " + dnslist[0])
+  log("System Info - updating recursor to " + dnslist[0])
   file_replace('/etc/powerdns/pdns.conf', pdns, dnslist[0])
   try:
    check_call(["/bin/systemctl","restart","pdns"])
    sleep(1)
   except Exception as svcerr:
-   PC.log_msg("System Error - Reloading PowerDNS: " + str(svcerr))
+   log("System Error - Reloading PowerDNS: " + str(svcerr))
   return False
  return True  

@@ -58,8 +58,8 @@ def get_results(test):
 
 def log_msg(amsg):
  if _debug: print "Log: " + amsg
- from sdcp import PackageContainer as PC
- PC.log_msg(amsg)
+ from logger import log
+ log(amsg)
 
 #
 # Lightweight argument parser, returns a dictionary with found arguments - { arg : value }

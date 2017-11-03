@@ -18,11 +18,6 @@ def convertSettings(aFile):
     f.write("{}={}\n".format(name,repr(category)))
    f.write("file={}\n".format(repr(aFile)))
    f.write("repo={}\n".format(repr(getcwd())))
-   f.write("def log_msg(amsg):\n")
-   f.write(" from time import localtime, strftime\n")
-   f.write(" with open(generic['logformat'], 'a') as f:\n")
-   f.write(repr("  f.write(unicode('{} : {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), amsg)))")[1:-1] + "\n")
-  # Brute way of compiling ...
   print "Parsed settings and wrote PackageContainer"
  except Exception as err:
   print "Error handling settings files: {}".format(str(err))

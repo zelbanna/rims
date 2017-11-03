@@ -39,9 +39,9 @@ def remove(aDict):
 # Update PDU slot info for a device
 #
 def update_device_pdus(aDict):
- from sdcp import PackageContainer as PC
- PC.log_msg("pdu_update_device_pdus({})".format(aDict))
- from sdcp.core.dbase import DB
+ from sdcp.core.logger import log
+ from sdcp.core.dbase import DB 
+ log("pdu_update_device_pdus({})".format(aDict))
  hostname  = aDict.get('hostname')
  ret = {'res':'OK'}
  with DB() as db:

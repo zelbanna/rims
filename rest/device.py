@@ -8,13 +8,13 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 
 from sdcp.core.dbase import DB
-from sdcp import PackageContainer as PC
+from sdcp.core.logger import log
 
 #
 # update(id,**key:value pairs)
 #
 def update(aDict):
- PC.log_msg("device_update({})".format(aDict))
+ log("device_update({})".format(aDict))
  from sdcp.core import genlib as GL
  id     = aDict.pop('id',None)
  racked = aDict.pop('racked',None)
@@ -49,7 +49,7 @@ def update(aDict):
 # new(ip, hostname, ipam_sub_id, a_dom_id, mac, target, arg)
 #
 def new(aDict):
- PC.log_msg("device_new({})".format(aDict))
+ log("device_new({})".format(aDict))
  from sdcp.core import genlib as GL
  ip    = aDict.get('ip')
  ipint = GL.ip2int(ip)
@@ -85,7 +85,7 @@ def new(aDict):
 # - subnet can cross ptr_dom_id so need to deduce per ip..
 #
 def discover(aDict):
- PC.log_msg("device_discover({})".format(aDict))
+ log("device_discover({})".format(aDict))
  from time import time
  from threading import Thread, BoundedSemaphore
  from sdcp.core import genlib as GL
@@ -132,11 +132,11 @@ def discover(aDict):
    db.do("SELECT id,name FROM domains WHERE name LIKE '%arpa%'")
    ptr_doms = db.get_dict('name')
    for ip,entry in db_new.iteritems():
-    PC.log_msg("device_discover - adding:{}->{}".format(ip,entry))
+    log("device_discover - adding:{}->{}".format(ip,entry))
     ptr_dom_id = ptr_doms.get(GL.ip2arpa(ip),{ 'id':'NULL' })['id']
     db.do(sql.format(GL.ip2int(ip), ptr_dom_id, aDict.get('ipam_sub_id'), entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['fqdn']))
   except Exception as err:
-   PC.log_msg("device discover: Error [{}]".format(str(err)))
+   log("device discover: Error [{}]".format(str(err)))
    ret['res']    = 'NOT_OK'
    ret['info']   = "Error:{}".format(str(err))
    ret['errors'] = ret['errors'] + 1 
@@ -147,7 +147,8 @@ def discover(aDict):
 
 #
 def detect(aDict):
- PC.log_msg("device_detect({})".format(aDict))
+ log("device_detect({})".format(aDict))
+ from sdcp import PackageContainer as PC
  from netsnmp import VarList, Varbind, Session
  from socket import gethostbyaddr
  from os import system
@@ -215,7 +216,7 @@ def detect(aDict):
 # remove(id) and pop dns and ipam info
 #
 def remove(aDict):
- PC.log_msg("device_remove({})".format(aDict))
+ log("device_remove({})".format(aDict))
  with DB() as db:
   xist = db.do("SELECT hostname, mac, a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
   if xist == 0:
@@ -247,7 +248,7 @@ def dump_db(aDict):
 # consecutive: X
 
 def find_ip(aDict):
- PC.log_msg("device_find_ip({})".format(aDict))
+ log("device_find_ip({})".format(aDict))
  from sdcp.core import genlib as GL
  sub_id = aDict.get('ipam_sub_id')
  with DB() as db:
@@ -283,7 +284,7 @@ def find_ip(aDict):
 # info(id)
 #
 def info(aDict):
- PC.log_msg("device_info({})".format(aDict))
+ log("device_info({})".format(aDict))
  ret = {}
  search = "devices.id = {}".format(aDict['id']) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
  with DB() as db:

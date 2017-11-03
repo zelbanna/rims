@@ -9,12 +9,13 @@ __status__ = "Production"
 
 from sdcp import PackageContainer as PC
 from sdcp.core.dbase import DB
+from sdcp.core.logger import log
 
 #
 # Should be subnets(target, arg)
 #
 def subnets(aDict):
- PC.log_msg("phpipam_subnet({})".format(aDict))
+ log("phpipam_subnet({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
   rows = db.get_rows()
@@ -24,7 +25,7 @@ def subnets(aDict):
 # lookup(ip,ipam_sub_id)
 #
 def lookup(aDict):
- PC.log_msg("phpipam_lookup({})".format(aDict))
+ log("phpipam_lookup({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   xist = db.do("SELECT id, dns_name as fqdn, PTR as ptr_id FROM ipaddresses WHERE ip_addr = INET_ATON('{0}') AND subnetId = {1}".format(aDict['ip'],aDict.get('ipam_sub_id')))
   if xist > 0:
@@ -38,7 +39,7 @@ def lookup(aDict):
 # update(id, fqdn, ptr_id)
 #
 def update(aDict):
- PC.log_msg("phpipam_update({})".format(aDict))
+ log("phpipam_update({})".format(aDict))
  ret = {'res':'OK'}
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   ret['update'] = db.do("UPDATE ipaddresses SET PTR = '{}', dns_name = '{}' WHERE id = '{}'".format(aDict.get('ptr_id',0), aDict['fqdn'],aDict['id']))
@@ -58,7 +59,7 @@ def update(aDict):
 # new(ip, fqdn, ipam_sub_id)
 #
 def new(aDict):
- PC.log_msg("phpipam_new({})".format(aDict))
+ log("phpipam_new({})".format(aDict))
  ret = {'res':'NOT_OK'}
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   ret['xist'] = db.do("SELECT id FROM ipaddresses WHERE ip_addr = INET_ATON('{0}') AND subnetId = {1}".format(aDict['ip'],aDict['ipam_sub_id']))
@@ -75,7 +76,7 @@ def new(aDict):
 # remove(ipam_id)
 #
 def remove(aDict):
- PC.log_msg("phpipam_remove({})".format(aDict))
+ log("phpipam_remove({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   ires = db.do("DELETE FROM ipaddresses WHERE id = '{}'".format(aDict['ipam_id']))
  return { 'res':'OK', 'info':(ires > 0) }
@@ -84,7 +85,7 @@ def remove(aDict):
 # 
 #
 def get_addresses(aDict):
- PC.log_msg("phpipam_get_addresses({})".format(aDict))
+ log("phpipam_get_addresses({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   ires  = db.do("SELECT id, ip_addr AS ip, INET_NTOA(ip_addr) as ipasc, subnetId as ipam_sub_id, description, dns_name AS fqdn FROM ipaddresses ORDER BY ip_addr")
   irows = db.get_rows()
@@ -94,7 +95,7 @@ def get_addresses(aDict):
 # Check single IP is available in subnet
 #
 def free(aDict):
- PC.log_msg("phpipam_free({})".format(aDict))
+ log("phpipam_free({})".format(aDict))
  ret = {'res':'OK' } 
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   xist = db.do("SELECT dns_name FROM ipaddresses WHERE ip_addr = INET_ATON('{}') and subnetId = {}".format(aDict['ip'],aDict['ipam_sub_id']))
@@ -111,7 +112,7 @@ def free(aDict):
 # consecutive: X
 
 def find(aDict):
- PC.log_msg("phpipam_find({})".format(aDict))
+ log("phpipam_find({})".format(aDict))
  from sdcp.core import genlib as GL
  sub_id = aDict.get('ipam_sub_id')
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:

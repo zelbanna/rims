@@ -9,12 +9,13 @@ __status__ = "Production"
 
 from sdcp import PackageContainer as PC
 from sdcp.core.dbase import DB
+from sdcp.core.logger import log
 
 #
 # Call removes name duplicates.. (assume order by name => duplicate names :-))
 #
 def cleanup(aDict):
- PC.log_msg("powerdns_cleanup({})".format(aDict))
+ log("powerdns_cleanup({})".format(aDict))
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
   rows = db.get_rows();
@@ -33,7 +34,7 @@ def cleanup(aDict):
 # dns top lookups
 #
 def top(aDict):
- PC.log_msg("powerdns_top({})".format(aDict))
+ log("powerdns_top({})".format(aDict))
  from sdcp.core import genlib as GL
  count = int(aDict.get('count',10))
  fqdn_top = {}
@@ -59,7 +60,7 @@ def top(aDict):
 # Return domains name + id
 #
 def domains(aDict):
- PC.log_msg("powerdns_domains({})".format(aDict))
+ log("powerdns_domains({})".format(aDict))
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT id, name FROM domains")
   rows = db.get_rows()
@@ -69,7 +70,7 @@ def domains(aDict):
 # lookup_a ( name, a_dom_id)
 #
 def lookup_a(aDict):
- PC.log_msg("powerdns_lookup_a({})".format(aDict))
+ log("powerdns_lookup_a({})".format(aDict))
  ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT name FROM domains WHERE id = '{}'".format(aDict['a_dom_id']))
@@ -86,7 +87,7 @@ def lookup_a(aDict):
 # lookup_ptr (ip)
 #
 def lookup_ptr(aDict):
- PC.log_msg("powerdns_lookup_ptr({})".format(aDict))
+ log("powerdns_lookup_ptr({})".format(aDict))
  from sdcp.core import genlib as GL
  ret = {'domain':GL.ip2arpa(aDict['ip'])}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
@@ -107,7 +108,7 @@ def lookup_ptr(aDict):
 # PTR content = fqdn, name = ip2ptr(ip)
 #
 def update(aDict):
- PC.log_msg("powerdns_update({})".format(aDict))
+ log("powerdns_update({})".format(aDict))
  from time import strftime
  serial  = strftime("%Y%m%d%H")
  type = aDict['type'].upper()
@@ -141,7 +142,7 @@ def update(aDict):
 # get_records(type ['A'|'PTR'])
 #
 def get_records(aDict):
- PC.log_msg("powerdns_get_records({})".format(aDict))
+ log("powerdns_get_records({})".format(aDict))
  ret = {'res':'OK'}
  tune = aDict['type'].upper() if aDict.get('type') else "PTR' OR type = 'A"
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
@@ -153,7 +154,7 @@ def get_records(aDict):
 #
 #
 def remove(aDict):
- PC.log_msg("powerdns_remove({})".format(aDict))
+ log("powerdns_remove({})".format(aDict))
  ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   if aDict.get('a_id','0') != '0':

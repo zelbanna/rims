@@ -70,7 +70,8 @@ def _detect(aentry, alock, asema):
     graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + fqdn + '_esxi\n')
    alock.release()
  except Exception as err:
-  PC.log_msg("Graph detect - error: [{}]".format(str(err)))
+  from sdcp.core.logger import log
+  log("Graph detect - error: [{}]".format(str(err)))
   
  asema.release()
  return True
@@ -82,6 +83,7 @@ def _detect(aentry, alock, asema):
 #
 def discover():
  from sdcp import PackageContainer as PC
+ from sdcp.core.logger import log
  from sdcp.core.dbase import DB
  from os import chmod
  from time import time
@@ -103,6 +105,6 @@ def discover():
   for i in range(10):
    sema.acquire()       
  except Exception as err:
-  PC.log_msg("Munin: failure in processing Device entries: [{}]".format(str(err)))
- PC.log_msg("Munin: Total time spent: {} seconds".format(int(time()) - start_time))
+  log("Munin: failure in processing Device entries: [{}]".format(str(err)))
+ log("Munin: Total time spent: {} seconds".format(int(time()) - start_time))
 
