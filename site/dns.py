@@ -20,7 +20,7 @@ def load(aWeb):
  with DB() as db:
   db.do("SELECT id,name FROM domains")
   sdcp_domains = db.get_dict('id')
-  for dom in dns_domains:
+  for dom in dns_domains['domains']:
    add = sdcp_domains.pop(dom['id'],None)
    if not add:
     print "Added: {}".format(dom)

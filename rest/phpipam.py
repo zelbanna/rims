@@ -17,8 +17,8 @@ def subnets(aDict):
  PC.log_msg("phpipam_subnet({})".format(aDict))
  with DB(PC.ipam['dbname'],'localhost',PC.ipam['username'],PC.ipam['password']) as db:
   db.do("SELECT subnets.id, subnet, mask, subnets.description, name as section_name, sectionId as section_id FROM subnets INNER JOIN sections on subnets.sectionId = sections.id") 
-  ret = db.get_rows()
- return ret
+  rows = db.get_rows()
+ return { 'res':'OK', 'subnets':rows }
 
 #
 # lookup(ip,ipam_sub_id)
