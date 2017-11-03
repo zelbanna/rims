@@ -20,4 +20,7 @@ def dump():
 if __name__ == "__main__":
  for line in dump().split('\n'):
   if not line[:2] in [ '/*','--']:
-   print line
+   if "AUTO_INCREMENT=" in line:
+    print "{} # ZEB fix auto".format(line)
+   else:
+    print line

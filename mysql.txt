@@ -20,7 +20,7 @@ CREATE TABLE `consoles` (
   `ip` int(10) unsigned DEFAULT '2130706433',
   `device_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1; # ZEB fix auto
 
 
 DROP TABLE IF EXISTS `devices`;
@@ -51,17 +51,17 @@ CREATE TABLE `devices` (
   CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`a_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`ptr_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`ipam_sub_id`) REFERENCES `subnets` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=latin1; # ZEB fix auto
 
 
 DROP TABLE IF EXISTS `devicetypes`;
 CREATE TABLE `devicetypes` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(20) DEFAULT NULL,
-  `type` varchar(20) DEFAULT NULL,
+  `base` varchar(40) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=latin1; # ZEB fix auto
 
 
 DROP TABLE IF EXISTS `domains`;
@@ -96,7 +96,7 @@ CREATE TABLE `pdus` (
   `slots` tinyint(1) NOT NULL DEFAULT '0',
   `device_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1; # ZEB fix auto
 
 
 DROP TABLE IF EXISTS `rackinfo`;
@@ -143,7 +143,7 @@ CREATE TABLE `racks` (
   CONSTRAINT `racks_ibfk_1` FOREIGN KEY (`fk_console`) REFERENCES `consoles` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `racks_ibfk_2` FOREIGN KEY (`fk_pdu_1`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `racks_ibfk_3` FOREIGN KEY (`fk_pdu_2`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1; # ZEB fix auto
 
 
 DROP TABLE IF EXISTS `resources`;
@@ -159,7 +159,7 @@ CREATE TABLE `resources` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=latin1; # ZEB fix auto
 
 
 DROP TABLE IF EXISTS `subnets`;
@@ -183,7 +183,7 @@ CREATE TABLE `users` (
   `view_public` tinyint(1) unsigned DEFAULT '1',
   `frontpage` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=latin1; # ZEB fix auto
 
 
 
