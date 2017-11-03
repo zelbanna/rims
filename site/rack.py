@@ -25,7 +25,6 @@ def main(aWeb):
 
 #
 #
-#
 def list(aWeb):
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Rack</DIV>"
@@ -43,9 +42,8 @@ def list(aWeb):
 
 #
 #
-#
 def inventory(aWeb):
- rack = aWeb.get_value('rack', 0)
+ rack = aWeb.get('rack', 0)
  with DB() as db:
   db.do("SELECT name, size from racks where id = {}".format(rack))
   ri = db.get_row() 
@@ -81,7 +79,7 @@ def inventory(aWeb):
 def info(aWeb):
  from sdcp import PackageContainer as PC
  from os import listdir, path
- id = aWeb.get_value('id')
+ id = aWeb['id']
 
  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
  print "<FORM ID=rack_info_form>"
@@ -126,34 +124,23 @@ def info(aWeb):
 
 #
 #
-#
 def update(aWeb):
- id = aWeb.get_value('id')
- name       = aWeb.get_value('name')
- size       = aWeb.get_value('size')
- fk_pdu_1   = aWeb.get_value('fk_pdu_1')
- fk_pdu_2   = aWeb.get_value('fk_pdu_2')
- fk_console = aWeb.get_value('fk_console')
- image_url  = aWeb.get_value('image_url')
- if id == 'new':
-  print "Creating new rack [new:{}]".format(name)
-  sql = "INSERT into racks (name, size, fk_pdu_1, fk_pdu_2, fk_console, image_url) VALUES ('{}','{}',{},{},{},'{}')".format(name,size,fk_pdu_1,fk_pdu_2,fk_console,image_url)
+ if aWeb['id'] == 'new':
+  print "Creating new rack [new:{}]".format(aWeb['name'])
+  sql = "INSERT into racks (name, size, fk_pdu_1, fk_pdu_2, fk_console, image_url) VALUES ('{}','{}',{},{},{},'{}')"
  else:
-  print "Updating rack [{}:{}]".format(id,name)
-  sql = "UPDATE racks SET name = '{}', size = '{}', fk_pdu_1 = {}, fk_pdu_2 = {}, fk_console = {}, image_url='{}' WHERE id = '{}'".format(name,size,fk_pdu_1,fk_pdu_2,fk_console,image_url,id)
+  print "Updating rack [{}:{}]".format(aWeb['id'],aWeb['name'])
+  sql = "UPDATE racks SET name = '{}', size = '{}', fk_pdu_1 = {}, fk_pdu_2 = {}, fk_console = {}, image_url='{}' WHERE id = '{}'"
  with DB() as db:
-  res = db.do(sql)
+  res = db.do(sql.format(aWeb['name'],aWeb['size'],aWeb['fk_pdu_1'],aWeb['fk_pdu_2'],aWeb['fk_console'],aWeb['image_url'],aWeb['id']))
 
-#
 #
 #
 def remove(aWeb):
- id   = aWeb.get_value('id')
  with DB() as db:
-  db.do("DELETE FROM racks WHERE id = {0}".format(id))
-  print "Rack {0} deleted".format(id)
+  db.do("DELETE FROM racks WHERE id = {0}".format(aWeb['id']))
+  print "Rack {0} deleted".format(aWeb['id'])
 
-#
 #
 #
 def rackinfo(aWeb):
