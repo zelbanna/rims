@@ -73,6 +73,5 @@ def discrepancy(aWeb):
 #
 #
 def remove(aWeb):
- id = aWeb.get_value('id')
- res = rest_call(PC.ipam['url'],"sdcp.rest.{}_remove".format(PC.ipam['type']),{'ipam_id':id})
- print "Remove {} - Results:{}".format(id,res)
+ res = rest_call(PC.ipam['url'],"sdcp.rest.{}_remove".format(PC.ipam['type']),{'ipam_id':aWeb['id']})
+ print "Remove {} - Results:{}".format(aWeb['id'],res)

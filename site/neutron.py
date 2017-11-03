@@ -64,8 +64,8 @@ def action(aWeb):
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
 
- id   = aWeb.get_value('id')
- op   = aWeb.get_value('op')
+ id   = aWeb['id']
+ op   = aWeb['op']
 
  print "<!-- action - op:{} - id:{} -->".format(op,id)
  if   op == 'info':
@@ -125,7 +125,7 @@ def action(aWeb):
  #
  #
  elif op == 'floating-ip':
-  fipools = aWeb.get_value('fipool').split(',')
+  fipools = aWeb['fipool'].split(',')
   print "<DIV CLASS=z-table style='width:500px'><DIV CLASS=thead><DIV CLASS=th>Pool</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Fixed IP</DIV><DIV CLASS=th>Fixed Network</DIV><DIV CLASS=th>Operations</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for fipool in fipools:
@@ -177,7 +177,7 @@ def action(aWeb):
   print "<A TITLE='Choose interface' CLASS='z-btn z-small-btn z-op'  DIV=div_os_info FRM=frm_fi_assoc_vm URL=sdcp.cgi?call=neutron_action&op=fi_associate_choose_interface><IMG SRC=images/btn-start.png></A>"
 
  elif op == 'fi_associate_choose_interface':
-  vm_name,_,vm_id = aWeb.get_value('vm').partition('#')
+  vm_name,_,vm_id = aWeb['vm'].partition('#')
   vmis = controller.call("8082","virtual-machine/{}".format(vm_id))['data']['virtual-machine']['virtual_machine_interface_back_refs']
   print "<FORM ID=frm_fi_assoc_vmi>"
   print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
@@ -194,8 +194,8 @@ def action(aWeb):
 
  elif op == 'fi_associate':
   from json import dumps
-  vmid  = aWeb.get_value('vm')
-  vmiid,_,ip = aWeb.get_value('vmi').partition('#')
+  vmid  = aWeb['vm']
+  vmiid,_,ip = aWeb['vmi'].partition('#')
   vmi = controller.call("8082","virtual-machine-interface/{}".format(vmiid))['data']['virtual-machine-interface']
   fip = { 'floating-ip':{ 'floating_ip_fixed_ip_address':ip, 'virtual_machine_interface_refs':[ {'href':vmi['href'],'attr':None,'uuid':vmi['uuid'],'to':vmi['fq_name'] } ] } }
   res = controller.call("8082","floating-ip/{}".format(id),args=fip,method='PUT')
