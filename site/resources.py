@@ -52,10 +52,9 @@ def list(aWeb):
 #
 def info(aWeb):
  from os import listdir, path
- op    = aWeb['op']
  data  = {}
  data['id'] = aWeb.get('id','new')
- if op == 'update' or data['id'] == 'new':
+ if aWeb['op'] == 'update' or data['id'] == 'new':
   data['title'] = aWeb.get('title',"unknown")
   data['href']  = aWeb.get('href',"unknown")
   data['type']  = aWeb['type']
@@ -63,7 +62,7 @@ def info(aWeb):
   data['inline']  = aWeb.get('inline',"0")
   data['private'] = aWeb.get('private',"0")
   data['user_id'] = aWeb.get('user_id',aWeb.cookie['sdcp_id'])
-  if op == 'update':
+  if aWeb['op'] == 'update':
    with DB() as db:   
     if data['id'] == 'new':
      db.do("INSERT INTO resources (title,href,icon,type,inline,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}','{}')".format(data['title'],data['href'],data['icon'],data['type'],data['inline'],data['private'],data['user_id']))
