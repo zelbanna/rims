@@ -63,7 +63,7 @@ def domains(aDict):
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   res = db.do("SELECT id, name FROM domains")
   rows = db.get_rows()
- return rows
+ return {'res':'OK', 'domains':rows }
 
 #
 # lookup_a ( name, a_dom_id)
