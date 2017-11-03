@@ -137,50 +137,49 @@ def action(aWeb):
 
  port = cookie.get('os_nova_port')
  url  = cookie.get('os_nova_url')
- id   = aWeb.get_value('id')
- op   = aWeb.get_value('op','info')
+ op   = aWeb.get('op','info')
 
  from sdcp import PackageContainer as PC
- PC.log_msg("nova_action - id:{} op:{} for project:{}".format(id,op,cookie.get('os_project_name')))
+ PC.log_msg("nova_action - id:{} op:{} for project:{}".format(aWeb['id'],op,cookie.get('os_project_name')))
 
  if   op == 'info':
   from sdcp.core.extras import get_quote
-  server = controller.call(port,url + "/servers/{}".format(id))['data']['server']
+  server = controller.call(port,url + "/servers/{}".format(aWeb['id']))['data']['server']
   qserver = get_quote(server['name'])
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=" + id+ "&op={} SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=" + aWeb['id']+ "&op={} SPIN=true>{}</A>"
   print "<DIV>"
   print tmpl.format('Details','details','VM Details')
   print tmpl.format('Diagnostics','diagnostics','Diagnostics')
   print tmpl.format('Networks','networks','Networks')
-  print "<A TITLE='New-tab Console'  CLASS='z-btn'  TARGET=_blank HREF='sdcp.cgi?call=nova_console&name={0}&id={1}'>Console</A>".format(qserver,id)
+  print "<A TITLE='New-tab Console'  CLASS='z-btn'  TARGET=_blank HREF='sdcp.cgi?call=nova_console&name={0}&id={1}'>Console</A>".format(qserver,aWeb['id'])
   print "</DIV>"
   print "<DIV CLASS=z-frame style='overflow:auto;' ID=div_os_info>"
   dict2html(server,server['name'])
   print "</DIV>"
 
  elif op == 'details':
-  server = controller.call(port,url + "/servers/{}".format(id))['data']['server']
+  server = controller.call(port,url + "/servers/{}".format(aWeb['id']))['data']['server']
   dict2html(server,server['name'])
 
  elif op == 'stop' or op == 'start' or op == 'reboot':
   arg = {"os-"+op:None} if op != 'reboot' else {"reboot":{ "type":"SOFT" }}
-  ret = controller.call(port,url + "/servers/{}/action".format(id),args=arg)
+  ret = controller.call(port,url + "/servers/{}/action".format(aWeb['id']),args=arg)
   if ret.get('code') == 202:
    print "Command executed successfully [{}]".format(str(arg))
   else:
    print "Error executing command [{}]".format(str(arg))
 
  elif op == 'diagnostics':
-  ret = controller.call(port,url + "/servers/{}/diagnostics".format(id))
+  ret = controller.call(port,url + "/servers/{}/diagnostics".format(aWeb['id']))
   dict2html(ret['data'])
 
  elif op == 'print':
   from json import dumps
-  print "<PRE>{}</PRE>".format(dumps(controller.href(id)['data'],indent=4))
+  print "<PRE>{}</PRE>".format(dumps(controller.href(aWeb['id'])['data'],indent=4))
 
  elif op == 'networks':
   from json import dumps
-  vm  = controller.call("8082","virtual-machine/{}".format(id))['data']['virtual-machine']
+  vm  = controller.call("8082","virtual-machine/{}".format(aWeb['id']))['data']['virtual-machine']
   print "<DIV CLASS=z-table style='width:auto'>"
   print "<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV>"
   for vmir in vm['virtual_machine_interface_back_refs']:
@@ -208,7 +207,7 @@ def action(aWeb):
   print "TBD"
 
  elif op == 'remove':
-  ret = controller.call(port,url + "/servers/{}".format(id), method='DELETE')
+  ret = controller.call(port,url + "/servers/{}".format(aWeb['id']), method='DELETE')
   if not ret['result'] == "OK":
    print "Error performing op {}".format(str(ret))
    return
@@ -222,18 +221,15 @@ def action(aWeb):
 
 def console(aWeb):
  token = aWeb.cookie.get('os_user_token')
- headers = aWeb.get_value('headers')
 
  if not token:
-  if headers == 'no':
+  if aWeb['headers'] == 'no':
    aWeb.put_html('Openstack Nova')
   print "Not logged in"
   return
 
- id   = aWeb.get_value('id')
- name = aWeb.get_value('name')
  controller = OpenstackRPC(aWeb.cookie.get('os_controller'),token)
- data = controller.call(aWeb.cookie.get('os_nova_port'), aWeb.cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(id), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})
+ data = controller.call(aWeb.cookie.get('os_nova_port'), aWeb.cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(aWeb['id']), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})
  if data['code'] == 200:
   url = data['data']['remote_console']['url']
   # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
@@ -241,5 +237,5 @@ def console(aWeb):
   if not headers:
    print "<iframe id='console_embed' src='{}' style='width: 100%; height: 100%;'></iframe>".format(url)
   else:
-   aWeb.put_redirect("{}&title={}".format(url,name))
+   aWeb.put_redirect("{}&title={}".format(url,aWeb['name']))
   
