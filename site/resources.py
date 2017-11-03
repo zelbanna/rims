@@ -52,17 +52,17 @@ def list(aWeb):
 #
 def info(aWeb):
  from os import listdir, path
- op    = aWeb.get_value('op')
+ op    = aWeb['op']
  data  = {}
- data['id'] = aWeb.get_value('id','new')
+ data['id'] = aWeb.get('id','new')
  if op == 'update' or data['id'] == 'new':
-  data['title'] = aWeb.get_value('title',"unknown")
-  data['href']  = aWeb.get_value('href',"unknown")
-  data['type']  = aWeb.get_value('type')
-  data['icon']  = aWeb.get_value('icon')
-  data['inline']  = aWeb.get_value('inline',"0")
-  data['private'] = aWeb.get_value('private',"0")
-  data['user_id'] = aWeb.get_value('user_id',aWeb.cookie['sdcp_id'])
+  data['title'] = aWeb.get('title',"unknown")
+  data['href']  = aWeb.get('href',"unknown")
+  data['type']  = aWeb['type']
+  data['icon']  = aWeb['icon']
+  data['inline']  = aWeb.get('inline',"0")
+  data['private'] = aWeb.get('private',"0")
+  data['user_id'] = aWeb.get('user_id',aWeb.cookie['sdcp_id'])
   if op == 'update':
    with DB() as db:   
     if data['id'] == 'new':
@@ -105,7 +105,7 @@ def info(aWeb):
 #
 def list_type(aWeb):
  with DB() as db:
-  db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} )".format(aWeb.get_value('type'),aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
+  db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} )".format(aWeb['type'],aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
   rows = db.get_rows()
  index = 0;
  print "<DIV CLASS=z-centered style='align-items:initial'>"
@@ -125,6 +125,6 @@ def list_type(aWeb):
 #
 def remove(aWeb):
  with DB() as db:
-  id = aWeb.get_value('id')
+  id = aWeb['id']
   res = db.do("DELETE FROM resources WHERE id = '{}'".format(id))
  print "<DIV CLASS=z-frame>Result: {}</DIV>".format("OK" if res == 1 else "Not OK:{}".format(res))
