@@ -19,14 +19,16 @@ def install_sdcp(aFile):
  import PackageContainer as PC
  remove("PackageContainer.py")
 
+ try:
+  remove("core/logger.py")
+ except:
+  pass
  with open("core/logger.py",'w') as f:
   f.write("def log(aMsg,aID=None):\n")
   f.write(" from time import localtime, strftime\n")
   f.write(" with open('" + PC.generic['logformat'] + "', 'w') as f:\n")
   f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
  from core.logger import log
- remove("core/logger.py")
-
  log("Installing SDCP with settings from {}".format(aFile))
 
  for dest in [ 'index','rest', PC.generic['sitebase'] ]:
