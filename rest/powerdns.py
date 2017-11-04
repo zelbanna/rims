@@ -39,8 +39,8 @@ def top(aDict):
  count = int(aDict.get('count',10))
  fqdn_top = {}
  fqdn_who = {}
- with open(PC.dns['logfile'],'r') as log:
-  for line in log:
+ with open(PC.dns['logfile'],'r') as logfile:
+  for line in logfile:
    parts = line.split()
    if not parts[5] == 'Remote':
     continue
