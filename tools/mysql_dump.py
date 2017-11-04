@@ -21,6 +21,10 @@ if __name__ == "__main__":
  for line in dump().split('\n'):
   if not line[:2] in [ '/*','--']:
    if "AUTO_INCREMENT=" in line:
-    print "{} # ZEB fix auto".format(line)
+    parts = line.split();
+    for index, part in enumerate(parts):
+     if part.partition('=')[0] == 'AUTO_INCREMENT':
+      parts[index] = ''
+    print " ".join(parts)
    else:
     print line
