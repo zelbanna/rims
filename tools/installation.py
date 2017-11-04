@@ -1,45 +1,52 @@
-# -*- coding: utf-8 -*-
-"""Program docstring.
-Creates a settings container from a .json file
+"""Module docstring.
+Install Package content
 """
 __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
-def install(aFile):
- from os import chmod, getcwd, remove, listdir
- from json import load
+def install(aDict):
+ from sys import path as syspath
+ from os import chmod, getcwd, remove, listdir, path as ospath
  from shutil import copy
  import pip
-
+ ret = {'res':'NOT_OK'}
+ basedir    = ospath.abspath(ospath.join(ospath.dirname(__file__),'../..'))
+ packagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
+ pcfile  = "{}/PackageContainer.py".format(packagedir)
+ logger  = "{}/core/logger.py".format(packagedir)
+ syspath.append(basedir)
+ #
+ # Write Package Container
  try:
-  with open(aFile) as f:
-   config = load(f)
-  with open("PackageContainer.py",'w') as f:
-   for name,category in config.iteritems():
+  with open(pcfile,'w') as f:
+   for name,category in aDict.iteritems():
     f.write("{}={}\n".format(name,repr(category)))
-   f.write("file={}\n".format(repr(aFile)))
    f.write("repo={}\n".format(repr(getcwd())))
-  print "Parsed settings and wrote PackageContainer"
+  import sdcp.PackageContainer as PC
+  remove(pcfile)
+  ret['pc'] = 'OK'
  except Exception as err:
-  print "Error handling settings files: {}".format(str(err))
-  return 1
+  ret['pc'] = 'NOT_OK'
+  ret['error'] = str(err)
+  return ret
 
- import PackageContainer as PC
- remove("PackageContainer.py")
-
+ #
+ # Write Logger
  try:
-  remove("core/logger.py")
+  remove(logger)
  except:
   pass
- with open("core/logger.py",'w') as f:
+ with open(logger,'w') as f:
   f.write("def log(aMsg,aID=None):\n")
   f.write(" from time import localtime, strftime\n")
   f.write(" with open('" + PC.generic['logformat'] + "', 'w') as f:\n")
   f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
- from core.logger import log
- log("Installing SDCP with settings from {}".format(aFile))
+ from sdcp.core.logger import log
+ log("installation({})".format(aDict))
 
+ #
+ # Write CGI files
  for dest in [ 'index','rest', PC.generic['sitebase'] ]:
   site = "{}/{}.cgi".format(PC.generic['docroot'],dest)
   with open(site,'w') as f:
@@ -47,7 +54,7 @@ def install(aFile):
    wr("#!/usr/bin/python\n")
    wr("# -*- coding: utf-8 -*-\n")
    wr("from sys import path as syspath\n")
-   wr("syspath.insert(1, '{}')\n".format(getcwd().rpartition('/')[0]))
+   wr("syspath.insert(1, '{}')\n".format(basedir))
    if dest == 'rest':
     wr("from {0}.core import rest as cgi\n".format(PC.generic['sitebase']))
    else:
@@ -55,21 +62,30 @@ def install(aFile):
     wr("cgi = Web('{}')\n".format(PC.generic['sitebase']))
    wr("cgi.server()\n")
   chmod(site,0755)
+  ret["cgi_{}".format(dest)] = 'OK'
 
- imagedest = "{}/images/".format(PC.generic['docroot'])
- funcdest  = "{}/".format(PC.generic['docroot'])
- for file in listdir('images'):
-  copy("images/" + file, imagedest + file)
- for file in listdir('infra'):
-  copy("infra/" + file, funcdest + file)
- print "\nCopied necessary files\n\nInstalling necessary modules:"
+ #
+ # Copy files
+ for type,dest in [('images',ospath.join(PC.generic['docroot'],'images')), ('infra',PC.generic['docroot'])]:
+  for file in listdir(ospath.join(packagedir,type)):
+   copy(ospath.join(packagedir,type,file), ospath.join(dest,file))
+  ret[type] = 'OK'
 
- pip.main(['install','pymysql','gitpython'])
+ #
+ # Verify necessary modules
+ try: import pymysql
+ except ImportError:
+  ret['pymysql'] = 'install'
+  pip.main(["install", "-q","pymysql"])
+ try: import git
+ except ImportError:
+  ret['gitpython'] = 'install'
+  pip.main(["install","-q","gitpython"])
 
+ #
+ # Insert correct types into modules DB
  if PC.generic.get('db'):
-  from rest.device import sync_types
-  res = sync_types(None)
-  print "\nInserted {} device types".format(res['new'])
- 
- return 0
- 
+  from sdcp.rest.device import sync_types 
+  ret['new_device_types'] = sync_types(None)['new']
+ ret['res'] = 'OK'
+ return ret

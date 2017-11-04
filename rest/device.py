@@ -3,7 +3,7 @@
  Device restAPI module
 
 """
-__author__ = "Zacharias El Banna"                     
+__author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
@@ -318,7 +318,6 @@ def types(aDict):
 # Sync
 #
 def sync_types(aDict):
- from sdcp.core.dbase import DB
  from os import listdir, path as ospath
  from importlib import import_module
  path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '../devices'))

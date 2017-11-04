@@ -41,6 +41,8 @@ def list(aWeb):
  print "</DIV></DIV></DIV></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
 
+#
+#
 def mysql(aWeb):
  from sdcp.tools.mysql_dump import dump
  print "<DIV CLASS=z-logs>"
@@ -49,6 +51,8 @@ def mysql(aWeb):
    print line + "<BR>"
  print "</DIV>"
 
+#
+#
 def sync_types(aWeb):
  from sdcp.core import extras as EXT
  from sdcp.rest.device import sync_types as rest_sync_types
