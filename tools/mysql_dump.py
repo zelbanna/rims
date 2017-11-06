@@ -8,9 +8,6 @@ __status__ = "Production"
 def db_structure():
  try:
   from subprocess import check_output
-  from os import path as ospath
-  from sys import path as syspath
-  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '../..')))
   from sdcp import PackageContainer as PC
   return check_output(['mysqldump','--no-data',"-u{}".format(PC.generic['dbuser']),"-p{}".format(PC.generic['dbpass']),PC.generic['db']])
  except Exception,e: 
@@ -18,6 +15,11 @@ def db_structure():
  return ""
 
 if __name__ == "__main__":
+ from os import path as ospath
+ from sys import path as syspath
+ syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '../..')))
+ from sdcp import PackageContainer as PC
+ print "USE {};".format(PC.generic['db'])
  for line in db_structure().split('\n'):
   if not line[:2] in [ '/*','--']:
    if "AUTO_INCREMENT=" in line:
