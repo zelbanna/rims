@@ -18,12 +18,12 @@ if __name__ == "__main__":
  from sdcp.core import mysql
 
  if   argv[1] == '-d':
-  print "DROP DATABASE IF EXISTS {0};\nCREATE DATABASE {0};\nUSE {0};".format(PC.generic['db'])
+  print "DROP DATABASE IF EXISTS {0};\nCREATE DATABASE {0};".format(PC.generic['db'])
   mysql.dump({'mode':'database','full':True})
  elif argv[1] == '-v':
   mysql.dump({'mode':'database','full':False})
  elif argv[1] == '-s':
-  print "DROP DATABASE IF EXISTS {0};\nCREATE DATABASE {0};\nUSE {0};".format(PC.generic['db'])
+  print "DROP DATABASE IF EXISTS {0};\nCREATE DATABASE {0};".format(PC.generic['db'])
   mysql.dump({'mode':'structure','file':ospath.join(PC.repo,'mysql.txt')})
  elif argv[1] == '-r' and len(argv) == 3:
   from os import  path as ospath, getcwd

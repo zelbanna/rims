@@ -1,9 +1,9 @@
 DROP DATABASE IF EXISTS sdcp;
 CREATE DATABASE sdcp;
-USE sdcp;
 --
 -- Command: mysqldump -usdcp -psdcp sdcp --no-data --add-drop-database
 --
+USE sdcp;
 
 
 
