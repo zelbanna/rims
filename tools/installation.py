@@ -22,7 +22,7 @@ def install(aDict):
   with open(pcfile,'w') as f:
    for name,category in aDict.iteritems():
     f.write("{}={}\n".format(name,repr(category)))
-   f.write("repo={}\n".format(repr(getcwd())))
+   f.write("repo={}\n".format(repr(packagedir)))
   import sdcp.PackageContainer as PC
   remove(pcfile)
   ret['pc'] = 'OK'

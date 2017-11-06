@@ -18,6 +18,8 @@ else:
  from tools.installation import install
  with open(argv[1]) as settingsfile:
   settings = load(settingsfile)
+ settings['file'] = str(argv[1])
+ print dumps(settings,indent=4, sort_keys=True)
  res = install(settings)
  print dumps(res,indent=4)
  exit(0 if res.get('res') == 'OK' else 1)

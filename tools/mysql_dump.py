@@ -23,7 +23,7 @@ if __name__ == "__main__":
    if "AUTO_INCREMENT=" in line:
     parts = line.split();
     for index, part in enumerate(parts):
-     if part.partition('=')[0] == 'AUTO_INCREMENT':
+     if "AUTO_INCREMENT=" in part:
       parts[index] = ''
     print " ".join(parts)
    else:
