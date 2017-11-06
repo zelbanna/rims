@@ -48,14 +48,13 @@ def list(aWeb):
 #
 #
 def db_structure(aWeb):
- from sdcp.tools.mysql_dump import db_structure
+ from sdcp.tools.mysql_dump import db_dump
  print "<DIV CLASS=z-logs>"
- for line in db_structure().split('\n'):
+ for line in db_dump({'mode':'structure'}).split('\n'):
   if not line[:2] in [ '/*','--']:
    print line + "<BR>"
  print "</DIV>"
 
-#
 #
 #
 def db_table(aWeb):
