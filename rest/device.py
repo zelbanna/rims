@@ -300,11 +300,3 @@ def info(aDict):
   else:
    ret['res'] = 'NOT_OK'
  return ret
-
-#
-#
-def types(aDict):
- with DB() as db:
-  db.do("SELECT id, name, base FROM devicetypes") 
-  types = db.get_dict('id')
- return { 'res':'OK', 'types':types }
