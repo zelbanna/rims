@@ -296,6 +296,7 @@ def info(aDict):
     ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(consoles.ip) AS console_ip, consoles.name AS console_name FROM rackinfo LEFT JOIN consoles ON consoles.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(ret['info']['id']))
     if ret['racked'] > 0:
      ret['rack'] = db.get_row()
+     ret['rack']['hostname'] = ret['info']['hostname']
   else:
    ret['res'] = 'NOT_OK'
  return ret

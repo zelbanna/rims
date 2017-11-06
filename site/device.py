@@ -112,6 +112,10 @@ def info(aWeb):
  opres = {}
 
  ###################### Update ###################
+ if op == 'lookup':
+  from sdcp.rest.device import detect as rest_detect
+  opres['lookup'] = rest_detect({'ip':aWeb['ip'],'update':True,'id':id})
+
  if op == 'update':
   from sdcp.rest.device import update as rest_update
   from sdcp import PackageContainer as PC
@@ -139,20 +143,8 @@ def info(aWeb):
     d['devices_ipam_id'] = opres['ipam']['id']
 
    opres['update'] = rest_update(d)
-   # Now there is a rackinfo item... update pdu if there are pdu:s attached. PAss by reference prevents pop of rackinfo_rack_id in rest_update  
-   if not d.get('rackinfo_rack_id') == 'NULL':
-    with DB() as db:
-     db.do("SELECT pem0_pdu_id, pem0_pdu_slot, pem0_pdu_unit, pem1_pdu_id, pem1_pdu_slot, pem1_pdu_unit FROM rackinfo WHERE device_id = {}".format(id)) 
-     pdu_update = db.get_row() 
-    if pdu_update['pem0_pdu_id'] or pdu_update['pem1_pdu_id']:
-     from sdcp.rest.pdu import update_device_pdus
-     pdu_update['hostname'] = d['devices_hostname']
-     opres['pdu'] = update_device_pdus(pdu_update)
 
  #################### Operations ###################
- if op == 'lookup':
-  from sdcp.rest.device import detect as rest_detect
-  opres['lookup'] = rest_detect({'ip':aWeb['ip'],'update':True,'id':id})
 
  db = DB()
  db.connect()
@@ -169,12 +161,14 @@ def info(aWeb):
 
  from sdcp.rest.device import info as rest_info, types as rest_types
  dev   = rest_info({'id':id})
- types = rest_types(None)['types']
-
  if dev['exist'] == 0:
   db.close()
   print "Stale info! Reload device list"
   return
+ if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
+  from sdcp.rest.pdu import update_device_pdus
+  opres['pdu'] = update_device_pdus(dev['rack'])
+ types = rest_types(None)['types']
 
  if not dev['info']['vm']:
   db.do("SELECT racks.* FROM racks")
