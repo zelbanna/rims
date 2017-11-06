@@ -82,5 +82,4 @@ def db_table(aDict):
  with DB() as db:
   ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
   ret['db'] = db.get_rows() if ret['found'] > 0 else []
- return ret                 
-
+ return ret

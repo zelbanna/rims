@@ -48,12 +48,10 @@ def list(aWeb):
 #
 #
 def db_structure(aWeb):
- from sdcp.tools.mysql_dump import db_dump
- print "<DIV CLASS=z-logs>"
- for line in db_dump({'mode':'structure'}).split('\n'):
-  if not line[:2] in [ '/*','--']:
-   print line + "<BR>"
- print "</DIV>"
+ from sdcp.core.mysql import dump
+ print "<DIV CLASS=z-logs><PRE>"
+ dump({'mode':'structure'})
+ print "</PRE></DIV>"
 
 #
 #
@@ -80,4 +78,3 @@ def install(aWeb):
  res = rest_call("http://{}/rest.cgi".format(aWeb['host']),"sdcp.rest.tools_installation")
  print dumps(res,indent=4)
  print "</PRE></DIV>"
-

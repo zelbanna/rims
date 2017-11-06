@@ -7,7 +7,7 @@ __status__ = "Production"
 
 def install(aDict):
  from sys import path as syspath
- from os import chmod, getcwd, remove, listdir, path as ospath
+ from os import chmod, remove, listdir, path as ospath
  from shutil import copy
  import pip
  ret = {'res':'NOT_OK'}

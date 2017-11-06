@@ -1,3 +1,9 @@
+DROP DATABASE IF EXISTS sdcp;
+CREATE DATABASE sdcp;
+USE sdcp;
+--
+-- Command: mysqldump -usdcp -psdcp sdcp --no-data --add-drop-database
+--
 
 
 
@@ -20,7 +26,7 @@ CREATE TABLE `consoles` (
   `ip` int(10) unsigned DEFAULT '2130706433',
   `device_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
 DROP TABLE IF EXISTS `devices`;
@@ -34,15 +40,15 @@ CREATE TABLE `devices` (
   `ptr_dom_id` int(10) unsigned DEFAULT NULL,
   `ipam_id` int(10) unsigned DEFAULT '0',
   `ipam_sub_id` int(10) unsigned DEFAULT NULL,
-  `fqdn` varchar(40) DEFAULT NULL,
+  `type_id` int(10) unsigned DEFAULT NULL,
   `model` varchar(20) DEFAULT NULL,
+  `fqdn` varchar(40) DEFAULT NULL,
   `snmp` varchar(20) DEFAULT NULL,
   `mac` bigint(20) unsigned DEFAULT '0',
-  `vm` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `graph_update` tinyint(3) unsigned DEFAULT '0',
+  `vm` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `graph_update` tinyint(1) unsigned DEFAULT '0',
   `graph_proxy` int(10) unsigned DEFAULT '2130706433',
   `comment` text,
-  `type_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ip` (`ip`,`ipam_sub_id`),
   KEY `a_dom_id` (`a_dom_id`),
@@ -96,7 +102,7 @@ CREATE TABLE `pdus` (
   `slots` tinyint(1) NOT NULL DEFAULT '0',
   `device_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
 DROP TABLE IF EXISTS `rackinfo`;
