@@ -36,7 +36,7 @@ def list(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=rack_rackinfo'>View Rackinfo Table</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_mysql'>Dump DB Structure</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_sync_types'>Load New Types</A></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_sync_devicetypes'>Load New Types</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_install&host=127.0.0.1'>Reinstall Host</A></DIV></DIV>"
  from sdcp import PackageContainer as PC
  if PC.sdcp['svcsrv']:
@@ -56,10 +56,10 @@ def mysql(aWeb):
 
 #
 #
-def sync_types(aWeb):
+def sync_devicetypes(aWeb):
  from sdcp.core import extras as EXT
- from sdcp.rest.device import sync_types as rest_sync_types
- res = rest_sync_types(None)
+ from sdcp.rest.tools import sync_devicetypes as rest_sync_devicetypes
+ res = rest_sync_devicetypes(None)
  print "<DIV CLASS=z-frame>"
  EXT.dict2table(res['types'])
  print "</DIV>"

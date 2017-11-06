@@ -157,11 +157,12 @@ def info(aWeb):
  db = DB()
  db.connect()
 
- if op == 'book':
-  db.do("INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')".format(id,aWeb.cookie.get('sdcp_id')))
+ if "book" in op:
+  if op == 'book':
+   db.do("INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')".format(id,aWeb.cookie.get('sdcp_id')))
 
- if op == 'unbook':
-  db.do("DELETE FROM bookings WHERE device_id = '{}'".format(id))
+  if op == 'unbook':
+   db.do("DELETE FROM bookings WHERE device_id = '{}'".format(id))
 
  if db.is_dirty():
   db.commit()

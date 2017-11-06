@@ -85,7 +85,7 @@ def install(aDict):
  #
  # Insert correct types into modules DB
  if PC.generic.get('db'):
-  from sdcp.rest.device import sync_types 
-  ret['new_device_types'] = sync_types(None)['new']
+  from sdcp.rest.tools import sync_devicetypes 
+  ret['new_devicetypes'] = sync_devicetypes(None)['new']
  ret['res'] = 'OK'
  return ret
