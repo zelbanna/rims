@@ -116,7 +116,7 @@ def info(aWeb):
   from sdcp.rest.device import detect as rest_detect
   opres['lookup'] = rest_detect({'ip':aWeb['ip'],'update':True,'id':id})
 
- if op == 'update':
+ elif op == 'update':
   from sdcp.rest.device import update as rest_update
   from sdcp import PackageContainer as PC
   from sdcp.core.rest import call as rest_call
@@ -144,21 +144,9 @@ def info(aWeb):
 
    opres['update'] = rest_update(d)
 
- #################### Operations ###################
-
- db = DB()
- db.connect()
-
- if "book" in op:
-  if op == 'book':
-   db.do("INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')".format(id,aWeb.cookie.get('sdcp_id')))
-
-  if op == 'unbook':
-   db.do("DELETE FROM bookings WHERE device_id = '{}'".format(id))
-
- if db.is_dirty():
-  db.commit()
- db.close()
+ elif "book" in op:
+  from sdcp.rest.booking import booking
+  booking({'device_id':id, 'user_id':aWeb.cookie['sdcp_id'], 'op':op})
 
  from sdcp.rest.device import info as rest_info
  from sdcp.rest.tools  import infra as rest_infra
@@ -269,7 +257,7 @@ def info(aWeb):
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=update    FRM=info_form TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
  if dev['booked']:
   if int(aWeb.cookie.get('sdcp_id')) == dev['booking']['user_id']:
-   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=unbook&id={} MSG='Are you sure you want to drop booking?' TITLE='Unbook'><IMG SRC='images/btn-remove.png'></A>".format(id)
+   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=debook&id={} MSG='Are you sure you want to drop booking?' TITLE='Unbook'><IMG SRC='images/btn-remove.png'></A>".format(id)
  else:
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=book&id={} TITLE='Book device'><IMG SRC='images/btn-add.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_dev_data URL=sdcp.cgi?call=device_conf_gen&type_name={}  FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>".format(dev['info']['type_name'])
