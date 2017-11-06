@@ -220,19 +220,6 @@ def remove(aDict):
  return ret
 
 #
-# dump(columns)
-# - columns is a string list
-#
-def dump_db(aDict):
- cols = aDict.get('columns','*')
- tbl  = aDict.get('table','devices')
- ret  = {'res':'OK'} 
- with DB() as db:
-  ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
-  ret['db'] = db.get_rows() if ret['found'] > 0 else []
- return ret
-
-#
 # find_ip(ipam_sub_id, consecutive)
 #
 # - Find X consecutive ip from a particular subnet-id

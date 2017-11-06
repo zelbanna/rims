@@ -5,7 +5,7 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 
 
-def dump():
+def db_structure():
  try:
   from subprocess import check_output
   from os import path as ospath
@@ -18,7 +18,7 @@ def dump():
  return ""
 
 if __name__ == "__main__":
- for line in dump().split('\n'):
+ for line in db_structure().split('\n'):
   if not line[:2] in [ '/*','--']:
    if "AUTO_INCREMENT=" in line:
     parts = line.split();

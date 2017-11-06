@@ -69,3 +69,18 @@ def infra(aDict):
   ret['pdus'] = db.get_rows()
   ret['pdus'].append({ 'id':'NULL', 'name':'No PDU', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':'' })
  return ret
+
+#
+# db_table(columns)
+# - columns is a string list x,y,z,..
+#
+def db_table(aDict):
+ from sdcp.core.dbase import DB
+ cols = aDict.get('columns','*')
+ tbl  = aDict.get('table','devices')
+ ret  = {'res':'OK'}
+ with DB() as db:
+  ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
+  ret['db'] = db.get_rows() if ret['found'] > 0 else []
+ return ret                 
+

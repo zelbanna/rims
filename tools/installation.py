@@ -32,6 +32,21 @@ def install(aDict):
   return ret
 
  #
+ # Verify necessary modules
+ try: import pymysql
+ except ImportError:
+  ret['pymysql'] = 'install'
+  pip.main(["install", "-q","pymysql"])
+ try: import git
+ except ImportError:
+  ret['gitpython'] = 'install'
+  pip.main(["install","-q","gitpython"])
+ try: import eralchemy
+ except ImportError:
+  ret['gitpython'] = 'install'
+  pip.main(["install","-q","eralchemy"])
+
+ #
  # Write Logger
  try:
   remove(logger)
@@ -65,22 +80,23 @@ def install(aDict):
   ret["cgi_{}".format(dest)] = 'OK'
 
  #
+ # Generate ERD
+ try:
+  from eralchemy import render_er
+  erd_input = "mysql+pymysql://{}:{}@127.0.0.1/{}".format(PC.generic['dbuser'],PC.generic['dbpass'],PC.generic['db'])
+  erd_output= ospath.join(PC.generic['docroot'],PC.generic['sitebase']) + ".pdf"
+  render_er(erd_input,erd_output)
+  ret['ERD'] = 'OK'
+ except Exception, e:
+  ret['error'] = str(e)
+  ret['ERD'] = 'NOT_OK'
+ 
+ #
  # Copy files
  for type,dest in [('images',ospath.join(PC.generic['docroot'],'images')), ('infra',PC.generic['docroot'])]:
   for file in listdir(ospath.join(packagedir,type)):
    copy(ospath.join(packagedir,type,file), ospath.join(dest,file))
   ret[type] = 'OK'
-
- #
- # Verify necessary modules
- try: import pymysql
- except ImportError:
-  ret['pymysql'] = 'install'
-  pip.main(["install", "-q","pymysql"])
- try: import git
- except ImportError:
-  ret['gitpython'] = 'install'
-  pip.main(["install","-q","gitpython"])
 
  #
  # Insert correct types into modules DB
