@@ -88,7 +88,6 @@ def select_parameters(aWeb):
 				console.log("Restoring drop to: " + $(elem).attr("name"));
 				$("#" + $(elem).attr("name")).addClass("z-drop");
 			}
-			
 			input.attr("name",$(this).prop("id"));
 		}
    });
@@ -233,8 +232,8 @@ def console(aWeb):
   url = data['data']['remote_console']['url']
   # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
   url = "http://" + aWeb.cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
-  if not headers:
+  if not aWeb['headers']:
    print "<iframe id='console_embed' src='{}' style='width: 100%; height: 100%;'></iframe>".format(url)
   else:
    aWeb.put_redirect("{}&title={}".format(url,aWeb['name']))
-  
+
