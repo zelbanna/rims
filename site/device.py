@@ -150,14 +150,12 @@ def info(aWeb):
      opres['pdu'] = update_device_pdus(pdu_update)
 
  #################### Operations ###################
- db = DB()
- db.connect()
  if op == 'lookup':
   from sdcp.rest.device import detect as rest_detect
-  opres['lookup'] = rest_detect({'ip':aWeb['ip']})
-  if opres['lookup']['res'] == 'OK':
-   dev = opres['lookup']['info']
-   db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(dev['snmp'],dev['fqdn'],dev['model'],dev['type_id'],id))
+  opres['lookup'] = rest_detect({'ip':aWeb['ip'],'update':True,'id':id})
+
+ db = DB()
+ db.connect()
 
  if op == 'book':
   db.do("INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')".format(id,aWeb.cookie.get('sdcp_id')))

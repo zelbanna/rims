@@ -40,7 +40,7 @@ def install(aDict):
  with open(logger,'w') as f:
   f.write("def log(aMsg,aID=None):\n")
   f.write(" from time import localtime, strftime\n")
-  f.write(" with open('" + PC.generic['logformat'] + "', 'w') as f:\n")
+  f.write(" with open('" + PC.generic['logformat'] + "', 'a') as f:\n")
   f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
  from sdcp.core.logger import log
  log("installation({})".format(aDict))

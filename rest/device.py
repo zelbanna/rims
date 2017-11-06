@@ -139,7 +139,7 @@ def discover(aDict):
    log("device discover: Error [{}]".format(str(err)))
    ret['res']    = 'NOT_OK'
    ret['info']   = "Error:{}".format(str(err))
-   ret['errors'] = ret['errors'] + 1 
+   ret['errors'] = ret['errors'] + 1
 
   ret['info'] = "Time spent:{}".format(int(time()) - start_time)
   ret['found']= len(db_new)
@@ -152,9 +152,8 @@ def detect(aDict):
  from netsnmp import VarList, Varbind, Session
  from socket import gethostbyaddr
  from os import system
-
  if system("ping -c 1 -w 1 {} > /dev/null 2>&1".format(aDict['ip'])) != 0:
-  return {'res':'NOT_OK' }
+  return {'res':'NOT_OK'}
 
  try:
   # .1.3.6.1.2.1.1.1.0 : Device info
@@ -165,11 +164,11 @@ def detect(aDict):
  except:
   pass
 
- fqdn,name,model,type = 'unknown','unknown','unknown','generic'
- snmp = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
- try:   
-  fqdn = gethostbyaddr(aDict['ip'])[0]
-  name = fqdn.partition('.')[0].lower()
+ info = {'fqdn':'unknown','name':'unknown','model':'unknown', 'type_name':'generic'}
+ info['snmp'] = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
+ try:
+  info['fqdn'] = gethostbyaddr(aDict['ip'])[0]
+  info['name'] = info['fqdn'].partition('.')[0].lower()
  except:
   pass
 
@@ -177,40 +176,33 @@ def detect(aDict):
   infolist = devobjs[0].val.split()
   if infolist[0] == "Juniper":
    if infolist[1] == "Networks,":
-    model = infolist[3].lower()
+    info['model'] = infolist[3].lower()
     for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-     if tp in model:
-      type = tp
+     if tp in info['model']:
+      info['type_name'] = tp
       break
-    else:
-     type = "other"
    else:
     subinfolist = infolist[1].split(",")
-    model = subinfolist[2]
-    type  = "other"
+    info['model'] = subinfolist[2]
   elif infolist[0] == "VMware":
-   model = "esxi"
-   type  = "esxi"
+   info['model'] = "esxi"
+   info['type_name']  = "esxi"
   elif infolist[0] == "Linux":
-   type = "generic"
-   if "Debian" in devobjs[0].val:
-    model = "debian"
-   else:
-    model = "generic"
+   info['model'] = 'debian' if "Debian" in devobjs[0].val else 'generic'
   else:
-   type  = "other"
-   model = " ".join(infolist[0:4])
+   info['model'] = " ".join(infolist[0:4])
 
- if aDict.get('types'):
-  type_id = aDict['types'][type]['id']
+ update = aDict.get('update',False)
+ if aDict.get('types') and not update:
+  info['type_id'] = aDict['types'][info['type_name']]['id']
  else:
   from sdcp.core.dbase import DB
   with DB() as db:
-   xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(type))
-   type_id = db.get_val('id') if xist > 0 else None
-  
- return { 'res':'OK', 'info':{ 'name':name, 'snmp':snmp, 'model':model, 'type_id':type_id, 'type_name':type ,'fqdn':fqdn }}
-
+   xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(info['type_name']))
+   info['type_id'] = db.get_val('id') if xist > 0 else None
+   if update:
+    update = db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(info['snmp'],info['fqdn'],info['model'],info['type_id'],aDict['id'])) > 0
+ return { 'res':'OK', 'update':update, 'info':info}
 
 #
 # remove(id) and pop dns and ipam info
@@ -291,16 +283,19 @@ def info(aDict):
   ret['exist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, subnets.subnet, a.name as a_name, INET_NTOA(ip) as ipasc FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id JOIN subnets ON devices.ipam_sub_id = subnets.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id WHERE {}".format(search))
   if ret['exist'] > 0:
    ret['info'] = db.get_row()
-   ret['fqdn'] = ret['info']['hostname'] + "." + ret['info']['a_name']
+   ret['fqdn'] = "{}.{}".format(ret['info']['hostname'],ret['info']['a_name'])
    ret['ip']   = ret['info']['ipasc']
    ret['type'] = ret['info']['type_base']
    ret['res']  = 'OK'
    ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['info']['id']))
    if ret['booked'] > 0:
     ret['booking'] = db.get_row()
-   ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(consoles.ip) AS console_ip, consoles.name AS console_name FROM rackinfo LEFT JOIN consoles ON consoles.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(ret['info']['id']))
-   if ret['racked'] > 0:
-    ret['rack'] = db.get_row()
+   if ret['info']['vm'] == 1:
+    ret['racked'] = 0
+   else:
+    ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(consoles.ip) AS console_ip, consoles.name AS console_name FROM rackinfo LEFT JOIN consoles ON consoles.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(ret['info']['id']))
+    if ret['racked'] > 0:
+     ret['rack'] = db.get_row()
   else:
    ret['res'] = 'NOT_OK'
  return ret
