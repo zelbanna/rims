@@ -108,30 +108,6 @@ class Junos(GenericDevice):
    ret.append({ 'Neighbor':neigh[fields].text, 'MAC':neigh[3].text if neigh[2].text == "Mac address" else '-','Local_port':neigh[0].text,'Destination_port':neigh[fields-1].text })
   return ret
 
- #
- # End of NETCONF crap
- # 
- # SNMP is much smoother than Netconf for some things :-)
- #
- def quick_load(self):
-  try:
-   devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   session.get(devobjs)
-   datalist = devobjs[0].val.split()
-   self._model = datalist[3]
-   self._version = datalist[datalist.index('JUNOS') + 1].strip(',')
-   if "ex" in self._model:
-    self._type = "ex"
-   elif "srx" in self._model:
-    self._type = "srx"
-   elif "qfx" in self._model:
-    self._type = "qfx"
-   elif "mx" in self._model:
-    self._type = "mx"
-  except:
-   pass
-
  def print_conf(self,argdict):
   from sdcp import PackageContainer as PC
   print "set system host-name {}<BR>".format(argdict['name'])

@@ -37,7 +37,6 @@ class Device(GenericDevice):
   self._logfile = PC.esxi['logformat'].format(self._hostname)
   self._sshclient = None
   self.statefile = PC.esxi['shutdownfile'].format(self._hostname) 
-  self._threads = {}
 
  def set_name(self, aHostname):
   self._hostname = aHostname
@@ -54,7 +53,7 @@ class Device(GenericDevice):
   self.ssh_close()
   
  def __str__(self):
-  return self._hostname + " SSHConnected:" + str(self._sshclient != None)  + " statefile:" + self.statefile + " Threads:" + str(self._threads.keys())
+  return self._hostname + " SSHConnected:" + str(self._sshclient != None)  + " statefile:" + self.statefile
 
  def log_msg(self, aMsg):                
   from time import localtime, strftime
@@ -62,18 +61,6 @@ class Device(GenericDevice):
   with open(self._logfile, 'a') as f:
    f.write(output + "\n")
  
- def threading(self, aOperation):
-  from threading import Thread
-  op = getattr(self, aOperation, None)
-  if op:
-   thread = Thread(target = op)
-   self._threads['aOperation'] = thread
-   thread.name = aOperation
-   thread.start()
-   self.log_msg("threading: Started operation [{}]".format(aOperation))
-  else:
-   self.log_msg("threading: Illegal operation passed [{}]".format(aOperation))
-
  def create_lock(self,atime):
   from sdcp.core.extras import pidfile_lock
   pidfile_lock("/tmp/esxi." + self._hostname + ".vm.pid",atime)

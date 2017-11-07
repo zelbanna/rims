@@ -44,7 +44,7 @@ def sync_devicetypes(aDict):
   for type in types:
    try:
     type['db'] = db.do(sql.format(type['name'],type['base']))
-    new = new + type['db']
+    new += type['db']
    except Exception,e :
     print "DB:{}".format(str(e))
 

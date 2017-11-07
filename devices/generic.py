@@ -32,6 +32,20 @@ class Device(object):
 
  def __exit__(self, *ctx_info):
   pass
+
+ #
+ # Alt create a list of threads running..
+ def threading(self, aOperation, aArgs = None):
+  try:
+   from threading import Thread
+   op = getattr(self, aOperation, None)
+   thread = Thread(target = op, args=aArgs)
+   thread.name = aOperation
+   thread.start()
+   self.log_msg("threading started: {}({})".format(aOperation,aArgs))
+  else:
+   self.log_msg("threading error: Illegal operation passed ({})".format(aOperation))
+  return thread
  
  def ping_device(self):
   from os import system

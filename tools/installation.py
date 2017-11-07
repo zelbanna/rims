@@ -104,4 +104,10 @@ def install(aDict):
   from sdcp.rest.tools import sync_devicetypes 
   ret['new_devicetypes'] = sync_devicetypes(None)['new']
  ret['res'] = 'OK'
+
+ #
+ # Verify MYSQL db
+ 
+
+ # Done
  return ret

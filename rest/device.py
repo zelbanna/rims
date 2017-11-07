@@ -183,7 +183,7 @@ def discover(aDict):
    log("device discover: Error [{}]".format(str(err)))
    ret['res']    = 'NOT_OK'
    ret['info']   = "Error:{}".format(str(err))
-   ret['errors'] = ret['errors'] + 1
+   ret['errors'] += 1
 
   ret['info'] = "Time spent:{}".format(int(time()) - start_time)
   ret['found']= len(db_new)
@@ -299,13 +299,13 @@ def list(aDict):
   else:
    tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(aDict['rack'])
   if aDict.get('filter'):
-   tune = tune + " AND type_id = {}".format(aDict['filter'])
+   tune += " AND type_id = {}".format(aDict['filter'])
  elif aDict.get('filter'):
   tune = "WHERE type_id = {}".format(aDict['filter'])
  else:
   tune = ""
 
- ret = {'res':'OK','sort':aDict.get('sort','devices.id'), 'tune':tune}
+ ret = {'res':'OK','sort':aDict.get('sort','devices.id')}
  with DB() as db:
   sql = "SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model, type_id FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
   ret['xist'] = db.do(sql)

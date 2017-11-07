@@ -89,30 +89,27 @@ class Web(object):
    if headers == 'no' or mod == 'front':
     print "Content-Type: text/html\r\n"
    keys = self.form.keys()
-   keys = ",".join(keys)
    from json import dumps
-   print dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(self._base,mod_fun), 'args': keys, 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True) if not type(e).__name__ == 'RestException' else str(e)
+   print dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(self._base,mod_fun), 'args':",".join(keys) , 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True) if not type(e).__name__ == 'RestException' else str(e)
 
  ############################## CGI/Web functions ###############################
 
  def get_args2dict_except(self,aexceptlist = []):
   keys = self.form.keys()
   for exc in aexceptlist:
-   try:
-    keys.remove(exc)
-   except:
-    pass
+   try:    keys.remove(exc)
+   except: pass
   return dict(map(lambda x: (x,self.form.getfirst(x,None)), keys))
 
  def get_args(self):
   reload = ""
   for key in self.form.keys():
-   reload = reload + "&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key))
+   reload += ("&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key)))
   return reload[1:]
   
  def get_args_except(self,aexceptlist = []):
   reload = ""
   for key in self.form.keys():
    if not key in aexceptlist:
-    reload = reload + "&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key))
+    reload += ("&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key)))
   return reload[1:]

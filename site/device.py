@@ -246,7 +246,7 @@ def info(aWeb):
  res = ""
  for key,value in opres.iteritems():
   if value.get('res','NOT_FOUND') != 'OK':
-   res = res + "{}({})".format(key,value)
+   res += "{}({})".format(key,value)
  print "<SPAN ID=upd_results style='text-overflow:ellipsis; overflow:hidden; float:right; font-size:9px;'>{}</SPAN>".format(res)
  print "</DIV>"
  print "</DIV>"
