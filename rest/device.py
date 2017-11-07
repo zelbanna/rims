@@ -96,7 +96,7 @@ def new(aDict):
     res = db.do("SELECT id FROM domains WHERE name = '{}'".format(GL.ip2arpa(ip)))
     ptr_dom_id = db.get_val('id') if res > 0 else 'NULL'
     mac = GL.mac2int(aDict.get('mac',0))
-    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,ptr_dom_id,ipam_sub_id,ipam_id,hostname,fqdn,snmp,model,type) VALUES({},{},{},{},{},{},{},'{}','{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],ptr_dom_id,ipam_sub_id,aDict.get('ipam_id','0'),aDict['hostname'],aDict['fqdn']))
+    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,ptr_dom_id,ipam_sub_id,ipam_id,hostname,fqdn,snmp,model) VALUES({},{},{},{},{},{},{},'{}','{}','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],ptr_dom_id,ipam_sub_id,aDict.get('ipam_id','0'),aDict['hostname'],aDict['fqdn']))
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
      db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
@@ -300,11 +300,16 @@ def list(aDict):
     tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(aDict['arg'])
    else:
     tune = "WHERE vm = {}".format(aDict['arg'])
+  if aDict.get('filter'):
+   tune = tune + " AND type_id = {}".format(aDict['filter'])
+ elif aDict.get('filter'):
+  tune = "WHERE type_id = {}".format(aDict['filter'])
  else:
   tune = ""
- ret = {'res':'OK','sort':aDict.get('sort','devices.id')}
+
+ ret = {'res':'OK','sort':aDict.get('sort','devices.id'), 'tune':tune}
  with DB() as db:
-  sql = "SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
+  sql = "SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model, type_id FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
   ret['xist'] = db.do(sql)
   ret['devices']= db.get_rows()
  return ret
