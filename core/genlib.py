@@ -11,17 +11,14 @@ __status__ = "Production"
 
 def get_host_name(aIP):
  from socket import gethostbyaddr
- try:
-  # FQDN, ? , IP
-  return gethostbyaddr(aIP)[0].partition('.')[0]
- except:
-  return None
+ try:    return gethostbyaddr(aIP)[0].partition('.')[0]
+ except: return None
 
 def ip2int(addr):
  from struct import unpack
  from socket import inet_aton
  return unpack("!I", inet_aton(addr))[0]
- 
+
 def int2ip(addr):
  from struct import pack
  from socket import inet_ntoa
@@ -51,10 +48,8 @@ def int2mac(aInt):
  return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
 
 def mac2int(aMAC):
- try:
-  return int(aMAC.replace(":",""),16)
- except:
-  return 0
+ try:    return int(aMAC.replace(":",""),16)
+ except: return 0
 
 def ping_os(ip):
  from os import system
