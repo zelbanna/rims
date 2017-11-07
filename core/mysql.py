@@ -2,28 +2,29 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
-from subprocess import check_output
-from sdcp import PackageContainer as PC
 
 #
 # dump(file | pointer)
 def dump(aDict):
+ from subprocess import check_output
+ from sdcp import PackageContainer as PC
  try:
+  db = PC.generic['db']
   mode = aDict.get('mode','structure')
-  cmd  = ["mysqldump", "-u" + PC.generic['dbuser'], "-p" + PC.generic['dbpass'], PC.generic['db']]
+  cmd  = ["mysqldump", "-u" + PC.generic['dbuser'], "-p" + PC.generic['dbpass'], db]
 
   if   mode == 'structure':
    cmd.extend(['--no-data','--add-drop-database'])
   elif mode == 'database':
    cmd.extend(['-c','--skip-extended-insert'])
 
-  output = ""
+  output = []
   if aDict.get('full',True):
-   output += "DROP DATABASE IF EXISTS {0};\nCREATE DATABASE {0};\nUSE {0};\n".format(PC.generic['db'])
+   output.extend(["DROP DATABASE IF EXISTS "+db+";","CREATE DATABASE "+db+";","USE "+db+";"])
   else:
    cmd.extend(['--no-create-info','--skip-triggers'])
 
-  output += ("--\n-- Command:" + " ".join(cmd) + "n--\n")
+  output.extend(["--","-- Command: " + " ".join(cmd),"--"])
   data = check_output(cmd)
   for line in data.split('\n'):
    if not line[:2] in [ '/*','--']:
@@ -33,27 +34,31 @@ def dump(aDict):
       if "AUTO_INCREMENT=" in part:
        parts[index] = ''
      line = " ".join(parts)
-    output += (line + '\n')
+    output.append(line)
   res = 'OK'
  except Exception,e:
-  print "DumpError:{}".format(str(e))
+  output = ["DumpError:{}".format(str(e))]
   res = 'NOT_OK'
  return {'res':res, 'output':output}
 
 #
 #
 def restore(aDict):
+ from subprocess import check_output
+ from sdcp import PackageContainer as PC
  try:
-  cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u{}".format(PC.generic['dbuser']), "-p{}".format(PC.generic['dbpass']), '<',aDict['file']]
-  output = check_output("{}".format(" ".join(cmd)), shell=True)
-  return { 'res':'OK','output':output }
+  cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u" + PC.generic['dbuser'], "-p" + PC.generic['dbpass'], '<',aDict['file']]
+  output = check_output(" ".join(cmd), shell=True)
+  return { 'res':'OK','output':output.split('\n') }
  except Exception,e:
-  print "DumpError:{}".format(str(e))
-  return {'res':'NOT_OK', 'output':str(e) }
+  return {'res':'NOT_OK', 'output':[str(e)] }
 
 #
 #
 def diff(aDict):
- from tempfile import NamedTemporaryFile
- with NamedTemporaryFile() as f:
-  res = dump({'pointer':f,'mode':'structure'})
+ from difflib import unified_diff
+ with open(aDict['file']) as f:
+  data = f.read() 
+ res = dump({'mode':'structure'})
+ for line in unified_diff(data.split('\n'),res['output']):
+  print line

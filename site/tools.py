@@ -49,9 +49,9 @@ def list(aWeb):
 #
 def db_structure(aWeb):
  from sdcp.core.mysql import dump
- print "<DIV CLASS=z-logs><PRE>"
- print dump({'mode':'structure'})['output']
- print "</PRE></DIV>"
+ print "<DIV CLASS=z-logs>"
+ print "<BR>".join(dump({'mode':'structure'})['output'])
+ print "</DIV>"
 
 #
 #

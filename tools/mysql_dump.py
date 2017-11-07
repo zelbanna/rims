@@ -27,4 +27,4 @@ if __name__ == "__main__":
   res = mysql.dump({'mode':'structure'})
  elif argv[1] == '-r' and len(argv) == 3:
   res = mysql.restore({'file':file})
- print res['output']
+ print "\n".join(res['output'])
