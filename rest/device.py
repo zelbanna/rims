@@ -11,6 +11,35 @@ from sdcp.core.dbase import DB
 from sdcp.core.logger import log
 
 #
+# info(id)
+#
+def info(aDict):
+ log("device_info({})".format(aDict))
+ ret = {}
+ search = "devices.id = {}".format(aDict['id']) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
+ with DB() as db:
+  ret['exist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, subnets.subnet, a.name as a_name, INET_NTOA(ip) as ipasc FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id JOIN subnets ON devices.ipam_sub_id = subnets.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id WHERE {}".format(search))
+  if ret['exist'] > 0:
+   ret['info'] = db.get_row()
+   ret['fqdn'] = "{}.{}".format(ret['info']['hostname'],ret['info']['a_name'])
+   ret['ip']   = ret['info']['ipasc']
+   ret['type'] = ret['info']['type_base']
+   ret['res']  = 'OK'
+   ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['info']['id']))
+   if ret['booked'] > 0:
+    ret['booking'] = db.get_row()
+   if ret['info']['vm'] == 1:
+    ret['racked'] = 0
+   else:
+    ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(consoles.ip) AS console_ip, consoles.name AS console_name FROM rackinfo LEFT JOIN consoles ON consoles.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(ret['info']['id']))
+    if ret['racked'] > 0:
+     ret['rack'] = db.get_row()
+     ret['rack']['hostname'] = ret['info']['hostname']
+  else:
+   ret['res'] = 'NOT_OK'
+ return ret
+
+#
 # update(id,**key:value pairs)
 #
 def update(aDict):
@@ -80,6 +109,21 @@ def new(aDict):
  return ret
 
 #
+# remove(id) and pop dns and ipam info
+#
+def remove(aDict):
+ log("device_remove({})".format(aDict))
+ with DB() as db:
+  xist = db.do("SELECT hostname, mac, a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
+  if xist == 0:
+   ret = { 'res':'NOT_OK', 'a_id':0, 'ptr_id':0, 'ipam_id':0 }
+  else:
+   ret = db.get_row()
+   ret['deleted'] = db.do("DELETE FROM devices WHERE id = '{}'".format(aDict['id']))
+   ret['res'] = 'OK'
+ return ret
+
+#
 # discover(start, end, clear, a_dom_id, ipam_sub_id)
 #
 # - subnet can cross ptr_dom_id so need to deduce per ip..
@@ -123,7 +167,7 @@ def discover(aDict):
     t = Thread(target = _tdetect, args=[ip, db_new, sema, devtypes])
     t.name = "Detect " + ip
     t.start()
-  
+
    # Join all threads by acquiring all semaphore resources
    for i in range(10):
     sema.acquire()
@@ -205,21 +249,6 @@ def detect(aDict):
  return { 'res':'OK', 'update':update, 'info':info}
 
 #
-# remove(id) and pop dns and ipam info
-#
-def remove(aDict):
- log("device_remove({})".format(aDict))
- with DB() as db:
-  xist = db.do("SELECT hostname, mac, a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
-  if xist == 0:
-   ret = { 'res':'NOT_OK', 'a_id':0, 'ptr_id':0, 'ipam_id':0 }
-  else:
-   ret = db.get_row()
-   ret['deleted'] = db.do("DELETE FROM devices WHERE id = '{}'".format(aDict['id']))
-   ret['res'] = 'OK'
- return ret
-
-#
 # find_ip(ipam_sub_id, consecutive)
 #
 # - Find X consecutive ip from a particular subnet-id
@@ -260,30 +289,7 @@ def find_ip(aDict):
  return ret
 
 #
-# info(id)
 #
-def info(aDict):
- log("device_info({})".format(aDict))
- ret = {}
- search = "devices.id = {}".format(aDict['id']) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
- with DB() as db:
-  ret['exist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, subnets.subnet, a.name as a_name, INET_NTOA(ip) as ipasc FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id JOIN subnets ON devices.ipam_sub_id = subnets.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id WHERE {}".format(search))
-  if ret['exist'] > 0:
-   ret['info'] = db.get_row()
-   ret['fqdn'] = "{}.{}".format(ret['info']['hostname'],ret['info']['a_name'])
-   ret['ip']   = ret['info']['ipasc']
-   ret['type'] = ret['info']['type_base']
-   ret['res']  = 'OK'
-   ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['info']['id']))
-   if ret['booked'] > 0:
-    ret['booking'] = db.get_row()
-   if ret['info']['vm'] == 1:
-    ret['racked'] = 0
-   else:
-    ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(consoles.ip) AS console_ip, consoles.name AS console_name FROM rackinfo LEFT JOIN consoles ON consoles.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(ret['info']['id']))
-    if ret['racked'] > 0:
-     ret['rack'] = db.get_row()
-     ret['rack']['hostname'] = ret['info']['hostname']
-  else:
-   ret['res'] = 'NOT_OK'
- return ret
+#
+def list(aDict):
+ return {}

@@ -17,7 +17,7 @@ def navigate(aWeb):
   return
  print "<DIV CLASS=z-navbar  ID=div_navbar>&nbsp;</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
- list_type(aWeb)
+ view(aWeb)
  print "</DIV>"
 
 #
@@ -63,7 +63,7 @@ def info(aWeb):
   data['private'] = aWeb.get('private',"0")
   data['user_id'] = aWeb.get('user_id',aWeb.cookie['sdcp_id'])
   if aWeb['op'] == 'update':
-   with DB() as db:   
+   with DB() as db:
     if data['id'] == 'new':
      db.do("INSERT INTO resources (title,href,icon,type,inline,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}','{}')".format(data['title'],data['href'],data['icon'],data['type'],data['inline'],data['private'],data['user_id']))
      data['id']  = db.get_last_id()
@@ -102,9 +102,9 @@ def info(aWeb):
 #
 #
 #
-def list_type(aWeb):
+def view(aWeb):
  with DB() as db:
-  db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} )".format(aWeb['type'],aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
+  db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} ) ORDER BY title".format(aWeb['type'],aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
   rows = db.get_rows()
  index = 0;
  print "<DIV CLASS=z-centered style='align-items:initial'>"

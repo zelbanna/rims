@@ -16,9 +16,9 @@ def main(aWeb):
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=tools_list'>Options</A>"
- print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_list_type&type=bookmark'>Bookmarks</A>"
- print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_list_type&type=demo'>Demos</A>"
- print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_list_type&type=tool'>Tools</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>Bookmarks</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>Demos</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>Tools</A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content></DIV>"
 
