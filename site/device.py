@@ -15,7 +15,7 @@ def main(aWeb):
  # target rack_id or vm and arg = value, i.e. select all devices where vm = 1 or where rackinfo.device_id exists and rack_id = 5 :-)
  target = aWeb['target']
  arg    = aWeb['arg']
- 
+
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_list{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL=sdcp.cgi?call=graph_list{0}>Graphing</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
@@ -126,8 +126,6 @@ def info(aWeb):
   if not d.get('devices_comment'):
    d['devices_comment'] = 'NULL'
   if d['devices_hostname'] != 'unknown':
-   # Update 
-
    with DB() as db:
     db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, ipam_id, a_dom_id, ptr_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
     ddi = db.get_row()
@@ -141,7 +139,6 @@ def info(aWeb):
    opres['ipam'] = rest_call(PC.ipam['url'],"sdcp.rest.{}_{}".format(PC.ipam['type'],"update" if ddi['ipam_id'] > 0 else "new"),{ 'id':ddi['ipam_id'], 'ipam_sub_id':ddi['ipam_sub_id'], 'ip':ddi['ip'], 'fqdn':fqdn, 'ptr_id':opres['ptr']['id'] } )
    if opres['ipam']['id'] != ddi['ipam_id']:
     d['devices_ipam_id'] = opres['ipam']['id']
-
    opres['update'] = rest_update(d)
 
  elif "book" in op:
@@ -302,18 +299,17 @@ def info(aWeb):
 
 def conf_gen(aWeb):
  from importlib import import_module
- from sdcp.core import genlib as GL
  id = aWeb.get('id','0')
  gw = aWeb['devices_ipam_gw']
  type = aWeb['type_name']
  print "<DIV CLASS=z-frame style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
  with DB() as db:
-  db.do("SELECT INET_NTOA(ip) as ipasc, hostname,domains.name as domain, subnets.subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_sub_id WHERE devices.id = '{}'".format(id))
+  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname,domains.name as domain, INET_NTOA(subnets.subnet) AS subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_sub_id WHERE devices.id = '{}'".format(id))
   row = db.get_row()
  try:
   module = import_module("sdcp.devices.{}".format(type))
   dev = getattr(module,'Device',lambda x: None)(row['ipasc'])
-  dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':GL.int2ip(int(row['subnet'])), 'mask':row['mask']})
+  dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':row['subnet'], 'mask':row['mask']})
  except Exception as err:
   print "No instance config specification for type:[{}]".format(type)
  print "</DIV>"
