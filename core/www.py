@@ -58,13 +58,13 @@ class Web(object):
  # Put full header and listener
  def put_html(self, aTitle = None):
   self.put_headers()
-  print "<HEAD><META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>"
-  if aTitle:
-   print "<TITLE>{}</TITLE>".format(aTitle)
-  print "<LINK REL='shortcut icon' TYPE='image/png' HREF='images/{}.png'/>".format(self._base)
-  print "<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>"
-  print "<SCRIPT>$(function() { $(document.body).on('click','.z-op',btnoperation ); });</SCRIPT></HEAD>"
   from sys import stdout
+  stdout.write("<HEAD><META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>")
+  if aTitle:
+   stdout.write("<TITLE>" + aTitle + "</TITLE>")
+  stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/" + self._base + ".png'/>")
+  stdout.write("<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='z-functions.js'></SCRIPT>")
+  stdout.write("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btnoperation ); });</SCRIPT></HEAD>")
   stdout.flush()
 
  ################################# AJAX #########################################
@@ -90,7 +90,7 @@ class Web(object):
     print "Content-Type: text/html\r\n"
    keys = self.form.keys()
    from json import dumps
-   print dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(self._base,mod_fun), 'args':",".join(keys) , 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True) if not type(e).__name__ == 'RestException' else str(e)
+   print "<PRE>" + (dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(self._base,mod_fun), 'args':",".join(keys) , 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True, indent=4) if not type(e).__name__ == 'RestException' else str(e)) + "</PRE>"
 
  ############################## CGI/Web functions ###############################
 
