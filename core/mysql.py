@@ -59,6 +59,12 @@ def diff(aDict):
  from difflib import unified_diff
  with open(aDict['file']) as f:
   data = f.read() 
- res = dump({'mode':'structure'})
- for line in unified_diff(data.split('\n'),res['output']):
-  print line
+ ret = {}
+ db = dump({'mode':'structure'})
+ ret['db'] = db['res']
+ ret['output'] = [line for line in unified_diff(db['output'],data.split('\n'),fromfile='dbase',tofile=aDict['file'])]
+ ret['diffs'] = 0
+ for line in ret['output']:
+  if "@@" in line:
+   ret['diffs'] += 1
+ return ret

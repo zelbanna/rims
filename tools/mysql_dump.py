@@ -7,7 +7,7 @@ __status__ = "Production"
 #
 #
 if __name__ == "__main__":
- from sys import path as syspath, argv, exit
+ from sys import path as syspath, argv, exit,stdout
  if len(argv) < 2 or not argv[1] in ['-s','-d','-v','-r']:
   print argv[0] + " -d(atabase)|-s(tructure)|-v(alues|-r(estore) [io-file]"
   exit(0)
@@ -27,4 +27,4 @@ if __name__ == "__main__":
   res = mysql.dump({'mode':'structure'})
  elif argv[1] == '-r' and len(argv) == 3:
   res = mysql.restore({'file':file})
- print "\n".join(res['output'])
+ stdout.write("\n".join(res['output']))

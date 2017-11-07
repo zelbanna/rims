@@ -103,11 +103,12 @@ def install(aDict):
  if PC.generic.get('db'):
   from sdcp.rest.tools import sync_devicetypes 
   ret['new_devicetypes'] = sync_devicetypes(None)['new']
- ret['res'] = 'OK'
 
  #
  # Verify MYSQL db
- 
+ from sdcp.core.mysql import diff
+ ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
 
  # Done
+ ret['res'] = 'OK'
  return ret
