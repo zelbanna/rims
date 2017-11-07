@@ -61,47 +61,24 @@ def main(aWeb):
  print get_include('README.devices.html')
  print "</DIV></DIV>"
 
-
-#
 #
 #
 def list(aWeb):
- target = aWeb['target']
- arg    = aWeb['arg']
- sort   = aWeb.get('sort','ip')
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Devices</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?{}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=device_new&{}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args())
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
-
- if not target or not arg:
-  tune = ""
- elif target:
-  if target == 'rack_id' and not arg == 'NULL':
-   tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(arg)
-  elif target == 'vm' and not arg == 'NULL':
-   tune = "WHERE vm = {}".format(arg)
-  else:
-   tune = "WHERE {0} is NULL".format(target)
-
- with DB() as db:
-  sql = "SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort)
-  db.do(sql)
-  rows = db.get_rows()
- 
+ from sdcp.rest.device import list as rest_list
+ res = rest_list({'target':aWeb['target'],'arg':aWeb['arg'],'sort':aWeb.get('sort','ip')})
  print "<DIV CLASS=tbody>"
- for row in rows:
+ for row in res['devices']:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='Show device info for {0}' DIV=div_content_right URL='sdcp.cgi?call=device_info&id={3}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</DIV></DIV></DIV>"
 
-
 ################################ Gigantic Device info and Ops function #################################
 #
-#
-#
-
 def info(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"

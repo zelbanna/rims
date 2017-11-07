@@ -15,7 +15,7 @@ __status__= "Production"
 def main(aWeb):
  from sdcp.core.dbase import DB
  with DB() as db:
-  db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.name = 'esxi' OR devicetypes.name = 'vcenter' ORDER BY type_name,hostname")
+  db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'hypervisor' ORDER BY type_name,hostname")
   rows = db.get_rows() 
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "&nbsp;</DIV>"    
@@ -26,9 +26,9 @@ def main(aWeb):
  print "<DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(row['type_name'])
-  if row['type_name'] == 'esxi':
+  if   row['type_name'] == 'esxi':
    print "<A CLASS=z-op DIV=div_main_cont URL='sdcp.cgi?call=esxi_info&id={}'>{}</A>".format(row['id'],row['hostname'])
-  else:        
+  elif row['type_name'] == 'vcenter':
    print "<A TARGET=_blank HREF='https://{}:9443/vsphere-client/'>{}</A>".format(row['ipasc'],row['hostname'])
   print "</DIV></DIV>"
  print "</DIV></DIV></DIV>"

@@ -37,13 +37,9 @@ class Device(object):
   from os import system
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
 
- def log_msg(self, aMsg, aPrint = False):
-  from time import localtime, strftime
-  output = unicode("{} : {}".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg))
-  if aPrint:
-   print output
-  with open(self._logfile, 'a') as f:
-   f.write(output + "\n")
+ def log_msg(self, aMsg):
+  from sdcp.core.logger import log
+  log(aMsg)
 
  def print_conf(self,argdict):
   print "No config for device"

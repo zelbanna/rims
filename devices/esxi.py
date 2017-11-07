@@ -36,7 +36,6 @@ class Device(GenericDevice):
   self._hostname = GL.get_host_name(aIP)
   self._logfile = PC.esxi['logformat'].format(self._hostname)
   self._sshclient = None
-  self.backuplist = []
   self.statefile = PC.esxi['shutdownfile'].format(self._hostname) 
   self._threads = {}
 
@@ -55,7 +54,13 @@ class Device(GenericDevice):
   self.ssh_close()
   
  def __str__(self):
-  return self._hostname + " SSHConnected:" + str(self._sshclient != None)  + " Backuplist:" + str(self.backuplist) + " statefile:" + self.statefile + " Threads:" + str(self._threads.keys())
+  return self._hostname + " SSHConnected:" + str(self._sshclient != None)  + " statefile:" + self.statefile + " Threads:" + str(self._threads.keys())
+
+ def log_msg(self, aMsg):                
+  from time import localtime, strftime
+  output = unicode("{} : {}".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg))
+  with open(self._logfile, 'a') as f:
+   f.write(output + "\n")
  
  def threading(self, aOperation):
   from threading import Thread
@@ -156,33 +161,12 @@ class Device(GenericDevice):
    session.walk(vmstateobjs)
    for index,result in enumerate(vmnameobjs):
     statetuple = [result.iid, result.val, Device.get_state_str(vmstateobjs[index].val)]
-    statetuple.append(result.val in self.backuplist)
     statelist.append(statetuple)
   except:
    pass
   if aSort == 'name':
    statelist.sort(key = lambda x: x[1])
   return statelist
-
- #
- # Simple backup schema for ghettoVCB - assumption is that there is a file on the ESXi <abackupfile> that
- #  contains a list of names of virtual machines to backup
- # 
- def backup_load_file(self, abackupfile):
-  try:
-   data = self.ssh_send("cat " + abackupfile)
-   self.backuplist = data.split()
-  except:
-   return False
-  return True   
- 
- def backup_add_vm(self, abackupfile, avmname):
-  try:
-   self.backup_load_file(abackupfile)
-   if not avmname in self.backuplist:
-    self.ssh_send("echo '" + avmname + "' >> " + abackupfile)
-  except:
-   pass
 
  #
  # Shutdown methods to/from default statefile

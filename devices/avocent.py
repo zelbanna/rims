@@ -101,7 +101,8 @@ class Device(GenericDevice, ConfObject):
    for slot in slotobjs:
     slots.append([slot.iid, slot.val])
   except Exception as exception_error:
-   self.log_msg("Avocent : error loading pdu member names " + str(exception_error), aPrint = True)
+   self.log_msg("Avocent : error loading pdu member names " + str(exception_error))
+   print "Avocent : error loading pdu member names " + str(exception_error)
   return slots
 
  def get_slotunit(self, aSlot, aUnit):

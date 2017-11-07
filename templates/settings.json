@@ -54,7 +54,6 @@
  "esxi": {
   "username":"",
   "password":"",
-  "backupfile":"/vmfs/volumes/esxi-ssd1/vms_to_backup",
   "logformat":"/var/log/network/{}.operations.log",
   "shutdownfile":"/var/tmp/esxi.{}.vmstate.log"
  },

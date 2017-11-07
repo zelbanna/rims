@@ -38,5 +38,5 @@ class Device(GenericDevice, ConfObject):
     # [ Port ] = Name
     self._configitems[ int(result.iid) ] = result.val
   except Exception as exception_error:
-   self.log_msg("OpenGear : error loading conf " + str(exception_error), aPrint = True)
-
+   self.log_msg("OpenGear : error loading conf " + str(exception_error))
+   print "OpenGear : error loading conf " + str(exception_error)

@@ -14,7 +14,6 @@ from sdcp.core.logger import log
 # info(id)
 #
 def info(aDict):
- log("device_info({})".format(aDict))
  ret = {}
  search = "devices.id = {}".format(aDict['id']) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
  with DB() as db:
@@ -257,7 +256,6 @@ def detect(aDict):
 # consecutive: X
 
 def find_ip(aDict):
- log("device_find_ip({})".format(aDict))
  from sdcp.core import genlib as GL
  sub_id = aDict.get('ipam_sub_id')
  with DB() as db:
@@ -290,7 +288,23 @@ def find_ip(aDict):
  return ret
 
 #
-#
+# list(target:rack_id,vm, arg:X, sort:)
 #
 def list(aDict):
- return {}
+ ret = { 'res':'OK' }
+ if aDict.get('target'):
+  if aDict.get('arg','NULL') == 'NULL':
+   tune = "WHERE {0} IS NULL".format(aDict['target'])
+  else:
+   if aDict.get('target') == 'rack_id':
+    tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(aDict['arg'])
+   else:
+    tune = "WHERE vm = {}".format(aDict['arg'])
+ else:
+  tune = ""
+ ret = {'res':'OK','sort':aDict.get('sort','devices.id')}
+ with DB() as db:
+  sql = "SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
+  ret['xist'] = db.do(sql)
+  ret['devices']= db.get_rows()
+ return ret
