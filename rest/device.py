@@ -288,18 +288,16 @@ def find_ip(aDict):
  return ret
 
 #
-# list(target:rack_id,vm, arg:X, sort:)
+# list(rack:[rack_id,vm], sort:)
 #
 def list(aDict):
  ret = { 'res':'OK' }
- if aDict.get('target'):
-  if aDict.get('arg','NULL') == 'NULL':
-   tune = "WHERE {0} IS NULL".format(aDict['target'])
+ aDict.get('rack')
+ if aDict.get('rack'):
+  if aDict['rack'] == 'vm':
+   tune = "WHERE vm = 1"
   else:
-   if aDict.get('target') == 'rack_id':
-    tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(aDict['arg'])
-   else:
-    tune = "WHERE vm = {}".format(aDict['arg'])
+   tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(aDict['rack'])
   if aDict.get('filter'):
    tune = tune + " AND type_id = {}".format(aDict['filter'])
  elif aDict.get('filter'):

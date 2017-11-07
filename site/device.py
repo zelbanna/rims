@@ -70,8 +70,11 @@ def list(aWeb):
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=device_new&{}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args())
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
+ args = {'sort':aWeb.get('sort','ip')}
+ if aWeb['target']:
+  args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
  from sdcp.rest.device import list as rest_list
- res = rest_list({'target':aWeb['target'],'arg':aWeb['arg'],'sort':aWeb.get('sort','ip')})
+ res = rest_list(args)
  print "<DIV CLASS=tbody>"
  for row in res['devices']:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='Show device info for {0}' DIV=div_content_right URL='sdcp.cgi?call=device_info&id={3}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
