@@ -175,10 +175,9 @@ CREATE TABLE `subnets` (
   `mask` tinyint(3) unsigned NOT NULL DEFAULT '24',
   `gateway` int(10) unsigned DEFAULT NULL,
   `subnet_description` text,
-  `section_id` int(10) unsigned NOT NULL,
-  `section_name` varchar(20) DEFAULT NULL,
+  `external_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 
 DROP TABLE IF EXISTS `users`;
