@@ -7,14 +7,62 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
-from sdcp import PackageContainer as PC
 from sdcp.core.dbase import DB
-from sdcp.core.rest import call as rest_call
+from sdcp.rest import sdcpipam
 
 #
 #
+def list(aWeb):
+ res = sdcpipam.list(None)  
+ print "<DIV CLASS=z-frame>"
+ print "<DIV CLASS=title>Subnets</DIV>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=ipam_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Add Subnet'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>Gateway</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for net in res['subnets']:
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV></DIV>".format(net['id'],net['id'],net['subnet'],net['gateway'])
+ print "</DIV></DIV></DIV>"
+
+#
+#
+def info(aWeb):
+ id = aWeb['id']
+ with DB() as db:
+  if id == 'new':
+   ipamdata = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'subnet_description':'New' }
+   lock = ""
+  else:
+   db.do("SELECT id, mask, subnet_description, INET_NTOA(subnet) AS subnet, INET_NTOA(gateway) AS gateway FROM subnets WHERE id = " + id)
+   ipamdata = db.get_row()
+   lock = "disabled"
+
+ print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
+ print "<DIV CLASS=title>Subnet Info {}</DIV>".format("(new)" if id == 'new' else "")
+ print "<!-- {} -->".format(ipamdata)
+ print "<FORM ID=ipam_info_form>"
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
+ print "<DIV CLASS=z-table><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=subnet_description VALUE={}></DIV></DIV>".format(ipamdata['subnet_description'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=subnet VALUE={} {}></DIV></DIV>".format(ipamdata['subnet'],lock)
+ print "<DIV CLASS=tr><DIV CLASS=td>Mask:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=mask VALUE={} {}></DIV></DIV>".format(ipamdata['mask'],lock)
+ print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=gateway VALUE={}></DIV></DIV>".format(ipamdata['gateway'])
+ print "</DIV></DIV>"
+ print "</FORM>"
+ print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=ipam_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results    URL=sdcp.cgi?call=ipam_update_net FRM=ipam_info_form><IMG SRC='images/btn-save.png'></A>"
+ if not id == 'new':
+  print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right MSG='Are you really sure' URL=sdcp.cgi?call=ipam_remove_net&id={}><IMG SRC='images/btn-remove.png'></A>".format(id)
+ print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
+ print "</DIV></DIV>"
+
+
+#
 #
 def load(aWeb):
+ from sdcp.core.rest import call as rest_call
+ from sdcp import PackageContainer as PC
  ipam_subnets = rest_call(PC.ipam['url'],"sdcp.rest.{}_subnets".format(PC.ipam['type']))
  print "<DIV CLASS=z-frame>"
  with DB() as db:
@@ -33,8 +81,9 @@ def load(aWeb):
 
 #
 #
-#
 def discrepancy(aWeb):
+ from sdcp.core.rest import call as rest_call
+ from sdcp import PackageContainer as PC
  print "<DIV CLASS=z-frame><DIV CLASS=title>IPAM consistency</DIV><SPAN ID=span_ipam STYLE='font-size:9px;'>&nbsp;</SPAN>"
  print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>ID</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_get_addresses".format(PC.ipam['type']))
@@ -68,10 +117,10 @@ def discrepancy(aWeb):
    print "</DIV>"
  print "</DIV></DIV></DIV>"
 
-
-#
 #
 #
 def remove(aWeb):
+ from sdcp.core.rest import call as rest_call
+ from sdcp import PackageContainer as PC
  res = rest_call(PC.ipam['url'],"sdcp.rest.{}_remove".format(PC.ipam['type']),{'ipam_id':aWeb['id']})
  print "Remove {} - Results:{}".format(aWeb['id'],res)
