@@ -24,13 +24,6 @@
   "type" : "powerdns",
   "logfile":"/var/log/system/pdns.info.log"
  },
- "ipam" : {
-  "url" : "http://<ip-if-using-rest>/rest.cgi",
-  "username" : "username",
-  "password" : "password",
-  "dbname": "dbname",
-  "type" : "phpipam"
- },
  "dhcp": {
   "url" : "http://<ip-if-using-rest>/rest.cgi",
   "file": "",
