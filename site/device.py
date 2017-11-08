@@ -102,11 +102,11 @@ def info(aWeb):
   from sdcp import PackageContainer as PC
   from sdcp.core.rest import call as rest_call
   d = aWeb.get_args2dict_except(['call','op'])
-  if not d.get('devices_vm'):
-   d['devices_vm'] = 0
-  if not d.get('devices_comment'):
-   d['devices_comment'] = 'NULL'
   if d['devices_hostname'] != 'unknown':
+   if not d.get('devices_vm'):
+    d['devices_vm'] = 0
+   if not d.get('devices_comment'):
+    d['devices_comment'] = 'NULL'
    with DB() as db:
     db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, a_dom_id, ptr_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
     ddi = db.get_row()
