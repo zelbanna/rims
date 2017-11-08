@@ -135,7 +135,7 @@ def op(aWeb,aIP = None):
   print "SHUTDOWN ALL VMs!"
  print "</DIV><DIV CLASS=td><CENTER>" + template.format('vmsoff','shutdown',excpt, "Shutdown all VMs") + "&nbsp;</CENTER></DIV></DIV>"
  for vm in statelist:
-  print "<DIV CLASS=tr><DIV CLASS=td style='padding:0px;'>"
+  print "<DIV CLASS=tr ID=div_vm_{}><DIV CLASS=td style='padding:0px;'>".format(vm[0])
   print "<B>{}</B>".format(vm[1]) if vm[0] == vmid else vm[1]
   print "</DIV><DIV CLASS=td style='padding:0px;'>"
   if vm[2] == "1":
