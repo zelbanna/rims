@@ -26,7 +26,7 @@ CREATE TABLE `consoles` (
   `ip` int(10) unsigned DEFAULT '2130706433',
   `device_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 
 DROP TABLE IF EXISTS `devices`;
@@ -101,7 +101,7 @@ CREATE TABLE `pdus` (
   `slots` tinyint(1) NOT NULL DEFAULT '0',
   `device_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 
 DROP TABLE IF EXISTS `rackinfo`;

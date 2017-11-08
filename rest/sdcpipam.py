@@ -37,17 +37,16 @@ def subnet(aDict):
 def update(aDict):
  ret = {'res':'OK'}
  from sdcp.core import genlib as GL
-
  # Check gateway
  low   = GL.ip2int(aDict['subnet'])
  high  = low + 2**(32-int(aDict['mask'])) - 1
  try:    gwint = GL.ip2int(aDict['gateway'])
- except: gwint = low + 1
+ except: gwint = 0
  if (low < gwint and gwint < high):
   ret['gateway'] = aDict['gateway']
  else:
-  ret['gateway'] = GL.int2ip(low + 1)
   gwint = low + 1
+  ret['gateway'] = GL.int2ip(gwint)
   ret['info'] = "defaulted illegal gateway"
  with DB() as db:
   if aDict['id'] == 'new':
