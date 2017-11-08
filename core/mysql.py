@@ -4,7 +4,7 @@ __status__ = "Production"
 
 
 #
-# dump(file | pointer)
+# dump(mode,full)
 def dump(aDict):
  from subprocess import check_output
  from sdcp import PackageContainer as PC
@@ -18,13 +18,12 @@ def dump(aDict):
   elif mode == 'database':
    cmd.extend(['-c','--skip-extended-insert'])
 
-  output = []
+  output = ["--","-- Command: " + " ".join(cmd),"--"]
   if aDict.get('full',True):
-   output.extend(["DROP DATABASE IF EXISTS "+db+";","CREATE DATABASE "+db+";","USE "+db+";"])
+   output.extend(["DROP DATABASE IF EXISTS "+db+";","CREATE DATABASE "+db+";"])
   else:
    cmd.extend(['--no-create-info','--skip-triggers'])
-
-  output.extend(["--","-- Command: " + " ".join(cmd),"--"])
+  output.append("USE " + db + ";")
   data = check_output(cmd)
   for line in data.split('\n'):
    if not line[:2] in [ '/*','--']:

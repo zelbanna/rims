@@ -29,32 +29,32 @@ def list(aWeb):
 #
 def info(aWeb):
  from sdcp.rest import sdcpipam
- id   = aWeb['id']
  if aWeb['op'] == 'update':
-  args = aWeb.get_args2dict()
-  res = sdcpipam.update(args)
-  res['data'] = args
-  res['data']['gateway'] = res['gateway']
+  data = aWeb.get_args2dict()
+  res = sdcpipam.update(data)
+  data['gateway'] = res['gateway']
+  data['id']      = res['id']
  else:
-  res = sdcpipam.subnet({'id':id})
- lock = "readonly" if not aWeb['id'] == 'new' else ""
+  res = sdcpipam.subnet({'id':aWeb['id']})
+  data = res['data']
+ lock = "readonly" if not data['id'] == 'new' else ""
 
  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
  print "<DIV CLASS=title>Subnet Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<!-- {} -->".format(res)
  print "<FORM ID=ipam_info_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=subnet_description VALUE={}></DIV></DIV>".format(res['data']['subnet_description'])
- print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=subnet  VALUE={} {}></DIV></DIV>".format(res['data']['subnet'],lock)
- print "<DIV CLASS=tr><DIV CLASS=td>Mask:</DIV><DIV CLASS=td><INPUT    TYPE=TEXT NAME=mask    VALUE={} {}></DIV></DIV>".format(res['data']['mask'],lock)
- print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=gateway VALUE={}></DIV></DIV>".format(res['data']['gateway'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=subnet_description VALUE={}></DIV></DIV>".format(data['subnet_description'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=subnet  VALUE={} {}></DIV></DIV>".format(data['subnet'],lock)
+ print "<DIV CLASS=tr><DIV CLASS=td>Mask:</DIV><DIV CLASS=td><INPUT    TYPE=TEXT NAME=mask    VALUE={} {}></DIV></DIV>".format(data['mask'],lock)
+ print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=gateway VALUE={}></DIV></DIV>".format(data['gateway'])
  print "</DIV></DIV>"
  print "</FORM>"
- print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=ipam_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=ipam_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(data['id'])
  print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=ipam_info&op=update FRM=ipam_info_form><IMG SRC='images/btn-save.png'></A>"
- if not id == 'new':
-  print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right MSG='Are you really sure' URL=sdcp.cgi?call=ipam_remove_net&id={}><IMG SRC='images/btn-remove.png'></A>".format(id)
+ if not data['id'] == 'new':
+  print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right MSG='Are you really sure' URL=sdcp.cgi?call=ipam_remove_net&id={}><IMG SRC='images/btn-remove.png'></A>".format(data['id'])
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
  print "</DIV></DIV>"
 
