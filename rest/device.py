@@ -96,7 +96,7 @@ def new(aDict):
     res = db.do("SELECT id FROM domains WHERE name = '{}'".format(GL.ip2arpa(ip)))
     ptr_dom_id = db.get_val('id') if res > 0 else 'NULL'
     mac = GL.mac2int(aDict.get('mac',0))
-    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,ptr_dom_id,ipam_sub_id,ipam_id,hostname,fqdn,snmp,model) VALUES({},{},{},{},{},{},{},'{}','{}','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],ptr_dom_id,ipam_sub_id,aDict.get('ipam_id','0'),aDict['hostname'],aDict['fqdn']))
+    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,ptr_dom_id,ipam_sub_id,hostname,fqdn,snmp,model) VALUES({},{},{},{},{},{},'{}','{}','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],ptr_dom_id,ipam_sub_id,aDict['hostname'],aDict['fqdn']))
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
      db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
@@ -114,9 +114,9 @@ def new(aDict):
 def remove(aDict):
  log("device_remove({})".format(aDict))
  with DB() as db:
-  xist = db.do("SELECT hostname, mac, a_id, ptr_id, ipam_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
+  xist = db.do("SELECT hostname, mac, a_id, ptr_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
   if xist == 0:
-   ret = { 'res':'NOT_OK', 'a_id':0, 'ptr_id':0, 'ipam_id':0 }
+   ret = { 'res':'NOT_OK', 'a_id':0, 'ptr_id':0 }
   else:
    ret = db.get_row()
    ret['deleted'] = db.do("DELETE FROM devices WHERE id = '{}'".format(aDict['id']))
@@ -247,45 +247,6 @@ def detect(aDict):
    if update:
     update = db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(info['snmp'],info['fqdn'],info['model'],info['type_id'],aDict['id'])) > 0
  return { 'res':'OK', 'update':update, 'info':info}
-
-#
-# find_ip(ipam_sub_id, consecutive)
-#
-# - Find X consecutive ip from a particular subnet-id
-# ipam_sub_id: X
-# consecutive: X
-
-def find_ip(aDict):
- from sdcp.core import genlib as GL
- sub_id = aDict.get('ipam_sub_id')
- with DB() as db:
-  db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(sub_id))
-  sub = db.get_row()
-  db.do("SELECT ip FROM devices WHERE ipam_sub_id = {}".format(sub_id))
-  iplist = db.get_dict('ip')
- subnet = int(sub.get('subnet'))
- start  = None
- ret    = { 'subnet':sub['subasc'], 'res':'NOT_OK' }
- for ip in range(subnet + 1, subnet + 2**(32-int(sub.get('mask')))-1):
-  if iplist.get(ip):
-   start = None
-  elif not start:
-   count = int(aDict.get('consecutive',1))
-   if count > 1:
-    start = ip
-   else:
-    ret['ip'] = GL.int2ip(ip)
-    ret['res'] = 'OK'
-    break
-  else:
-   if count == 2:
-    ret['start'] = GL.int2ip(start)
-    ret['end'] = GL.int2ip(start+int(aDict.get('consecutive'))-1)
-    ret['res'] = 'OK'
-    break
-   else:
-    count = count - 1
- return ret
 
 #
 # list(rack:[rack_id,vm], sort:)

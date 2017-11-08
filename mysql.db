@@ -174,8 +174,7 @@ CREATE TABLE `subnets` (
   `subnet` int(10) unsigned NOT NULL,
   `mask` tinyint(3) unsigned NOT NULL DEFAULT '24',
   `gateway` int(10) unsigned DEFAULT NULL,
-  `subnet_description` text,
-  `external_id` int(10) unsigned DEFAULT NULL,
+  `description` text,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 

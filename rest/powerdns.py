@@ -55,7 +55,6 @@ def top(aDict):
   who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL.get_host_name(parts[1]), 'count':item[1]})
  return {'res':'OK', 'top':top,'who':who }
 
-
 #
 # Return domains name + id
 #
@@ -88,10 +87,10 @@ def lookup_a(aDict):
 #
 def lookup_ptr(aDict):
  log("powerdns_lookup_ptr({})".format(aDict))
- from sdcp.core import genlib as GL
- ret = {'domain':GL.ip2arpa(aDict['ip'])}
+ ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  res = db.do("SELECT id FROM domains WHERE type = 'PTR' AND name = '{}'".format(ret['domain']))
+  from sdcp.core import genlib as GL
+  res = db.do("SELECT id FROM domains WHERE type = 'PTR' AND name = '{}'".format( GL.ip2arpa(aDict['ip']) ))
   ret['domain_id'] = db.get_val('id')
   ret['xist'] = db.do("SELECT id, content AS fqdn FROM records WHERE type = 'PTR' AND domain_id = {} AND name = '{}'".format(ret['domain_id'],GL.ip2ptr(aDict['ip'])))
   if ret['xist'] > 0:
@@ -150,7 +149,6 @@ def get_records(aDict):
   ret['records'] = db.get_rows()
  return ret
 
-#
 #
 #
 def remove(aDict):

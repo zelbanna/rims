@@ -101,14 +101,14 @@ def info(aWeb):
   from sdcp.rest.device import update as rest_update
   from sdcp import PackageContainer as PC
   from sdcp.core.rest import call as rest_call
-  d = aWeb.get_args2dict_except(['devices_ipam_gw','call','op'])
+  d = aWeb.get_args2dict_except(['call','op'])
   if not d.get('devices_vm'):
    d['devices_vm'] = 0
   if not d.get('devices_comment'):
    d['devices_comment'] = 'NULL'
   if d['devices_hostname'] != 'unknown':
    with DB() as db:
-    db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, ipam_id, a_dom_id, ptr_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
+    db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, a_dom_id, ptr_dom_id, ipam_sub_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
     ddi = db.get_row()
    fqdn = d['devices_hostname'] + "." + ddi['domain']
    opres['a'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']),   { 'type':'a',   'id':ddi['a_id'],   'domain_id':ddi['a_dom_id'],   'ip':ddi['ip'], 'fqdn':fqdn })
@@ -117,9 +117,6 @@ def info(aWeb):
    opres['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']), { 'type':'ptr', 'id':ddi['ptr_id'], 'domain_id':ddi['ptr_dom_id'], 'ip':ddi['ip'], 'fqdn':fqdn })
    if opres['ptr']['id'] != ddi['ptr_id']:
     d['devices_ptr_id'] = opres['ptr']['id']
-   opres['ipam'] = rest_call(PC.ipam['url'],"sdcp.rest.{}_{}".format(PC.ipam['type'],"update" if ddi['ipam_id'] > 0 else "new"),{ 'id':ddi['ipam_id'], 'ipam_sub_id':ddi['ipam_sub_id'], 'ip':ddi['ip'], 'fqdn':fqdn, 'ptr_id':opres['ptr']['id'] } )
-   if opres['ipam']['id'] != ddi['ipam_id']:
-    d['devices_ipam_id'] = opres['ipam']['id']
    opres['update'] = rest_update(d)
 
  elif "book" in op:
@@ -183,9 +180,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td style='{0}'>{1}</DIV></DIV>".format("border: solid 1px red;" if (dev['fqdn'] != dev['info']['fqdn']) else "", dev['info']['fqdn'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['a_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ptr_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ipam_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])
- print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={} readonly></DIV></DIV>".format(dev['info']['gateway'])
  print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV>"
  if int(dev['booked']) == 0:
   print "<DIV CLASS=td STYLE='background-color:#00cc66'>None</DIV></DIV>"
@@ -348,18 +343,14 @@ def new(aWeb):
  mac    = aWeb.get('mac',"00:00:00:00:00:00")
  op     = aWeb['op']
  sub_id = aWeb['ipam_sub_id']
+ from sdcp.rest import sdcpipam
+
  if op == 'new':
-  from sdcp import PackageContainer as PC
   from sdcp.rest.device import new as rest_new
 
   a_dom_id,_,domain = aWeb['a_dom_id'].partition('_')
   fqdn = "{}.{}".format(name,domain)
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'fqdn':fqdn, 'a_dom_id':a_dom_id, 'ipam_sub_id':sub_id, 'ipam_id':aWeb.get('ipam_id','0') }
-
-  if args['ipam_id'] == '0':
-   from sdcp.core.rest import call as rest_call
-   ipam = rest_call(PC.ipam['url'],"sdcp.rest.{}_new".format(PC.ipam['type']),{'ip':ip, 'ipam_sub_id':sub_id ,'fqdn':fqdn } )
-   args['ipam_id'] = str(ipam.get('id'))
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'fqdn':fqdn, 'a_dom_id':a_dom_id, 'ipam_sub_id':sub_id }
 
   if aWeb['vm']:
    args['vm'] = 1
@@ -371,18 +362,12 @@ def new(aWeb):
   print "DB:{}".format(res)
   aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),args,res))
  elif op == 'find':
-  from sdcp import PackageContainer as PC
-  from sdcp.core.rest import call as rest_call
-  from sdcp.rest.device import find_ip as rest_find_ip
-  res  = rest_find_ip({'ipam_sub_id':sub_id})
-  ipam_free = rest_call(PC.ipam['url'],"sdcp.rest.{}_free".format(PC.ipam['type']),{'ipam_sub_id':sub_id,'ip':res['ip']})
-  ipam_find = rest_call(PC.ipam['url'],"sdcp.rest.{}_find".format(PC.ipam['type']),{'ipam_sub_id':sub_id})
-  print "Sync:{} IP:{}".format(ipam_free['res'],ipam_find['ip'])
+  res  = sdcpipam.find({'id':sub_id})
+  print "IP:{}".format(res['ip'])
  else:
   domain = aWeb['domain']
+  subnets = sdcpipam.list(None)['subnets']
   with DB() as db:
-   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet")
-   subnets = db.get_rows()
    db.do("SELECT id, name FROM domains")
    domains = db.get_rows()
   print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:200px;'>"
@@ -390,7 +375,6 @@ def new(aWeb):
   print "<!-- {} -->".format(aWeb.get_args2dict_except())
   print "<DIV CLASS=z-table><DIV CLASS=tbody>"
   print "<FORM ID=device_new_form>"
-  print "<INPUT TYPE=HIDDEN NAME=ipam_id VALUE={}>".format(aWeb.get('ipam_id',0))
   print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT VALUE={}></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE={}></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
@@ -400,7 +384,7 @@ def new(aWeb):
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_sub_id>"
   for s in subnets:
-   print "<OPTION VALUE={} {}>{}/{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == sub_id else "", s.get('subasc'),s.get('mask'),s.get('subnet_description'))
+   print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == sub_id else "", s['subnet'],s['description'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
   if aWeb['target'] == 'rack_id':
@@ -426,7 +410,6 @@ def remove(aWeb):
   from sdcp.core.rest import call as rest_call
   from sdcp import PackageContainer as PC
   dns = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']),  ret)
-  ipam= rest_call(PC.ipam['url'],"sdcp.rest.{}_remove".format(PC.ipam['type']), ret)
  print "<DIV CLASS=z-frame>"
  print "Unit {} deleted (DB:{},DNS:{},IPAM:{})".format(id,ret,dns,ipam)
  print "</DIV>"
@@ -446,7 +429,7 @@ def discover(aWeb):
   print "<DIV CLASS=z-frame>{}</DIV>".format(res)
  else:
   with DB() as db:
-   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, subnet_description, section_name FROM subnets ORDER BY subnet");
+   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, description FROM subnets ORDER BY subnet");
    subnets = db.get_rows()
    db.do("SELECT id, name FROM domains")
    domains  = db.get_rows()
@@ -464,7 +447,7 @@ def discover(aWeb):
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_sub>"
   for s in subnets:
-   print "<OPTION VALUE={0}_{1}_{3}>{2}/{3} ({4})</OPTION>".format(s.get('id'),s.get('subnet'),s.get('subasc'),s.get('mask'),s.get('subnet_description'))
+   print "<OPTION VALUE={0}_{1}_{3}>{2}/{3} ({4})</OPTION>".format(s.get('id'),s.get('subnet'),s.get('subasc'),s.get('mask'),s.get('description'))
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Clear</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=clear VALUE=True></DIV></DIV>"
   print "</DIV></DIV>"
