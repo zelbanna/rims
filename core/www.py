@@ -26,6 +26,9 @@ class Web(object):
  def __getitem__(self,aKey):
   return self.form.getfirst(aKey,None)
 
+ def __str__(self):
+  return "Base:{} Cookie:[{}] Form:{}".format(self._base,self.cookie,self.form)
+ 
  def get(self,aKey,aDefault = None):
   return self.form.getfirst(aKey,aDefault)
 
@@ -94,12 +97,15 @@ class Web(object):
 
  ############################## CGI/Web functions ###############################
 
+ def get_args2dict(self):
+  return { key: self.form.getfirst(key,None) for key in self.form.keys() }
+
  def get_args2dict_except(self,aexceptlist = []):
   keys = self.form.keys()
   for exc in aexceptlist:
    try:    keys.remove(exc)
    except: pass
-  return dict(map(lambda x: (x,self.form.getfirst(x,None)), keys))
+  return { key: self.form.getfirst(key,None) for key in keys }
 
  def get_args(self):
   reload = ""

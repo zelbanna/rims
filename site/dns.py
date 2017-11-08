@@ -16,16 +16,18 @@ from sdcp.core.rest import call as rest_call
 #
 def load(aWeb):
  dns_domains  = rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
+ added = 0
  print "<DIV CLASS=z-frame>"
  with DB() as db:
   db.do("SELECT id,name FROM domains")
   sdcp_domains = db.get_dict('id')
   for dom in dns_domains['domains']:
-   add = sdcp_domains.pop(dom['id'],None)
-   if not add:
+   exist = sdcp_domains.pop(dom['id'],None)
+   if not exist:
+    added += 1
     print "Added: {}".format(dom)
    db.do("INSERT INTO domains(id,name) VALUES ({0},'{1}') ON DUPLICATE KEY UPDATE name='{1}'".format(dom['id'],dom['name']))
-  print "<SPAN>Domains - Inserted:{}, Remaining old:{}</SPAN><BR>".format(len(dns_domains),len(sdcp_domains))
+  print "<SPAN>Domains - Inserted:{}, New:{}, Old:{}</SPAN><BR>".format(len(dns_domains['domains']),added,len(sdcp_domains))
   for dom,entry in sdcp_domains.iteritems():
    print "Delete {} -> {}<BR>".format(dom,entry)
    db.do("DELETE FROM domains WHERE id = '{}'".format(dom))

@@ -185,7 +185,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ptr_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ipam_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])
- print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={}></DIV></DIV>".format(GL.int2ip(dev['info']['subnet'] + 1))
+ print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ipam_gw VALUE={} readonly></DIV></DIV>".format(dev['info']['gateway'])
  print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV>"
  if int(dev['booked']) == 0:
   print "<DIV CLASS=td STYLE='background-color:#00cc66'>None</DIV></DIV>"
@@ -238,7 +238,7 @@ def info(aWeb):
    print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=debook&id={} MSG='Are you sure you want to drop booking?' TITLE='Unbook'><IMG SRC='images/btn-remove.png'></A>".format(id)
  else:
   print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=book&id={} TITLE='Book device'><IMG SRC='images/btn-add.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_dev_data URL=sdcp.cgi?call=device_conf_gen&type_name={}  FRM=info_form TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>".format(dev['info']['type_name'])
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_dev_data URL=sdcp.cgi?call=device_conf_gen&type_name={}&id={} TITLE='Generate System Conf'><IMG SRC='images/btn-document.png'></A>".format(dev['info']['type_name'],id)
  from sdcp import PackageContainer as PC
  print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf['username'],dev['ip'])
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
@@ -281,16 +281,15 @@ def info(aWeb):
 def conf_gen(aWeb):
  from importlib import import_module
  id = aWeb.get('id','0')
- gw = aWeb['devices_ipam_gw']
  type = aWeb['type_name']
  print "<DIV CLASS=z-frame style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
  with DB() as db:
-  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname,domains.name as domain, INET_NTOA(subnets.subnet) AS subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_sub_id WHERE devices.id = '{}'".format(id))
+  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname,domains.name as domain, INET_NTOA(subnets.gateway) as gateway, INET_NTOA(subnets.subnet) AS subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_sub_id WHERE devices.id = '{}'".format(id))
   row = db.get_row()
  try:
   module = import_module("sdcp.devices.{}".format(type))
   dev = getattr(module,'Device',lambda x: None)(row['ipasc'])
-  dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':gw, 'subnet':row['subnet'], 'mask':row['mask']})
+  dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':row['gateway'], 'subnet':row['subnet'], 'mask':row['mask']})
  except Exception as err:
   print "No instance config specification for type:[{}]".format(type)
  print "</DIV>"

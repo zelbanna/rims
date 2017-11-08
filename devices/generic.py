@@ -43,7 +43,7 @@ class Device(object):
    thread.name = aOperation
    thread.start()
    self.log_msg("threading started: {}({})".format(aOperation,aArgs))
-  else:
+  except:
    self.log_msg("threading error: Illegal operation passed ({})".format(aOperation))
   return thread
  
