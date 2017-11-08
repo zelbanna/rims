@@ -13,16 +13,16 @@ from sdcp.core.dbase import DB
 #
 def list(aWeb):
  from sdcp.rest import sdcpipam
- res = sdcpipam.list(None)  
+ res = sdcpipam.list(None)
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Subnets</DIV>"
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=ipam_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add Subnet'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table>"
- print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>Gateway</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>Description</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for net in res['subnets']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV></DIV>".format(net['id'],net['id'],net['subnet'],net['gateway'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV></DIV>".format(net['id'],net['id'],net['subnet'],net['description'])
  print "</DIV></DIV></DIV>"
 
 #

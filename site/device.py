@@ -12,7 +12,6 @@ from sdcp.core.dbase import DB
 ########################################## Device Operations ##########################################
 
 def main(aWeb):
- # target rack_id or vm and arg = value, i.e. select all devices where vm = 1 or where rackinfo.device_id exists and rack_id = 5 :-)
  target = aWeb['target']
  arg    = aWeb['arg']
 
@@ -20,6 +19,7 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_list{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL=sdcp.cgi?call=graph_list{0}>Graphing</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A>"
+ print "<A CLASS='z-op'         DIV=div_content_right MSG='Discover devices?' URL='sdcp.cgi?call=device_discover'>Discover</A>"
  if target == 'vm':
   print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
  else:
@@ -47,7 +47,6 @@ def main(aWeb):
       for row in tprows:
        arglist = arglist + "&{}list=".format(type) + row['ip']
       print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
-  print "<A CLASS='z-op'         DIV=div_content_right MSG='Discover devices?' URL='sdcp.cgi?call=device_discover'>Discover</A>"
   print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=ipam_list'>IPAM</A>"
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=pdu_list'>PDUs</A>"
