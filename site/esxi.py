@@ -7,12 +7,8 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
-########################################## ESXi Operations ##########################################
-#
-# Split into main and list ZEB
-#
 
-def main(aWeb):
+def hypervisors(aWeb):
  from sdcp.core.dbase import DB
  with DB() as db:
   db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'hypervisor' ORDER BY type_name,hostname")
@@ -22,21 +18,24 @@ def main(aWeb):
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Hostname</DIV></DIV>"        
+ print "<DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(row['type_name'])
   if   row['type_name'] == 'esxi':
-   print "<A CLASS=z-op DIV=div_main_cont URL='sdcp.cgi?call=esxi_info&id={}'>{}</A>".format(row['id'],row['hostname'])
+   print "<A CLASS=z-op DIV=div_main_cont URL='sdcp.cgi?call=esxi_main&id={}'>{}</A>".format(row['id'],row['hostname'])
   elif row['type_name'] == 'vcenter':
    print "<A TARGET=_blank HREF='https://{}:9443/vsphere-client/'>{}</A>".format(row['ipasc'],row['hostname'])
   print "</DIV></DIV>"
  print "</DIV></DIV></DIV>"
- print "</DIV>" 
- print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
- print "</DIV>"        
+ print "</DIV>"
+ print "</DIV>"
 
-def info(aWeb):
+########################################## ESXi Operations ##########################################
+#
+#
+#
+def main(aWeb):
  from sdcp.core.dbase import DB
  id = aWeb['id']
  with DB() as db:
@@ -48,13 +47,85 @@ def info(aWeb):
  print "<A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A>".format(data['hostname'],data['domain'])
  print "<A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A>".format(data['ipasc'])
  print "<A CLASS='z-op z-reload' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
+ print "<SPAN CLASS='z-right z-navinfo'>{}</SPAN>".format(data['hostname'])
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left ID=div_content_left>"
- op(aWeb,data['ipasc'])
+ list(aWeb,data['ipasc'])
  print "</DIV>" 
  print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
  print "</DIV>"        
+
+#
+#
+def list(aWeb,aIP = None):
+ from sdcp.devices.esxi import Device
+ ip     = aWeb.get('ip',aIP)
+ sort   = aWeb.get('sort','name')
+ esxi   = Device(ip)
+ print "<DIV CLASS=z-frame>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=esxi_list&ip={}&sort={}'><IMG SRC='images/btn-reboot.png'></A>".format(ip,sort)
+ print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ statelist = esxi.get_vms(sort)
+ for vm in statelist:
+  print "<DIV CLASS=tr style='padding:0px;' ID=div_vm_{}>".format(vm[0])
+  _vm_options(ip,vm[0],vm[1],vm[2],False)
+  print "</DIV>"
+ print "</DIV></DIV></DIV>"
+
+#
+#
+def _vm_options(aIP,aVMid,aVMname,aState,aHighlight):
+ template="<A CLASS='z-btn z-small-btn z-op' TITLE='{2}' DIV=div_vm_"+aVMid+" SPIN=div_content_left URL='sdcp.cgi?call=esxi_vmop&ip=" + aIP + "&nstate={0}&vmname="+aVMname+"&vmid="+aVMid+"'><IMG SRC=images/btn-{1}.png></A>"
+ print "<DIV CLASS=td style='padding:0px;'>{}</DIV><DIV CLASS=td style='width:150px'>".format("<B>{}</B>".format(aVMname) if aHighlight else aVMname)
+ if int(aState) == 1:
+  print template.format('vmsvc-power.shutdown','shutdown', "Soft shutdown")
+  print template.format('vmsvc-power.reboot','reboot', "Soft reboot")
+  print template.format('vmsvc-power.suspend','suspend', "Suspend")
+  print template.format('vmsvc-power.off','off', "Hard power off")
+ elif int(aState) == 3:
+  print template.format('vmsvc-power.on','start', "Start")
+  print template.format('vmsvc-power.off','off', "Hard power off")
+ elif int(aState) == 2:
+  print template.format('vmsvc-power.on','start', "Start")
+  print template.format('vmsvc-snapshot.create','snapshot', "Snapshot")
+  print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right SPIN=true TITLE='Snapshot - Info' URL=sdcp.cgi?call=esxi_snapshot&ip={}&vmid={}><IMG SRC='images/btn-info.png'></A>".format(aIP,aVMid)
+ else:
+  print "Unknown state [{}]".format(aState)
+ print "</DIV>"
+
+#
+#
+def vmop(aWeb):
+ from sdcp.devices.esxi import Device
+ from time import sleep
+ ip     = aWeb.get('ip')
+ nstate = aWeb['nstate']
+ vmid   = aWeb.get('vmid','-1')
+ name   = aWeb['vmname'] 
+ userid = aWeb.cookie.get('sdcp_id')
+ if not userid:
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
+ esxi   = Device(ip)
+ try:
+  if nstate == 'vmsvc-snapshot.create':
+   from time import strftime
+   with esxi:
+    esxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")),userid)
+  elif "vmsvc-" in nstate:
+   vmop = nstate.partition('-')[2]
+   with esxi:
+    esxi.ssh_send("vim-cmd vmsvc/{} {}".format(vmop,vmid),userid)
+    sleep(4)
+  elif nstate == 'poweroff':
+   with esxi:
+    esxi.ssh_send("poweroff",userid)
+ except Exception as err:
+  aWeb.log("esxi: nstate error [{}]".format(str(err)))
+ _vm_options(ip,vmid,name,esxi.get_state_vm(vmid),True)
 
 #
 # Graphing
@@ -68,7 +139,6 @@ def graph(aWeb):
  print "</DIV>"
 
 #
-# Logs
 #
 def logs(aWeb):
  hostname = aWeb['hostname']
@@ -77,83 +147,8 @@ def logs(aWeb):
   from sdcp import PackageContainer as PC
   logs = check_output("tail -n 30 " + PC.esxi['logformat'].format(hostname) + " | tac", shell=True)
   print "<DIV CLASS='z-logs'><H1>{} operation logs</H1>{}</DIV>".format("{}".format(hostname),logs.replace('\n','<BR>'))
- except:
-  pass
+ except: pass
 
-#
-# ESXi operations
-#
-def op(aWeb,aIP = None):
- from sdcp.devices.esxi import Device
- ip     = aWeb.get('ip',aIP)
- excpt  = aWeb.get('except','-1')
- nstate = aWeb['nstate']
- vmid   = aWeb.get('vmid','-1')
- sort   = aWeb.get('sort','name')
- esxi   = Device(ip)
-
- if nstate:
-  if not aWeb.cookie.get('sdcp_id'):
-   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
-   return
-  userid = aWeb.cookie.get('sdcp_id')
-  from subprocess import check_call, check_output
-  try:
-   if nstate == 'vmsvc-snapshot.create':
-    from time import strftime
-    with esxi:
-     esxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")),userid)
-   elif "vmsvc-" in nstate:
-    vmop = nstate.partition('-')[2]
-    with esxi:
-     esxi.ssh_send("vim-cmd vmsvc/{} {}".format(vmop,vmid),userid)
-   elif nstate == 'poweroff':
-    with esxi:
-     esxi.ssh_send("poweroff",userid)
-   elif nstate == 'vmsoff':
-    excpt = "" if vmid == '-1' else vmid
-    check_call("/usr/local/sbin/ups-operations shutdown {} {} {} &".format(ip,'none',excpt), shell=True)
-  except Exception as err:
-   aWeb.log("esxi: nstate error [{}]".format(str(err)))
-
- statelist = esxi.get_vms(sort)
- # Formatting template (command, btn-xyz, vm-id, hover text)
- template="<A CLASS='z-btn z-small-btn z-op' TITLE='{3}' SPIN=true DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&nstate={0}&vmid={2}&sort=" + sort + "'><IMG SRC=images/btn-{1}.png></A>"
- print "<DIV CLASS=z-frame>"
- if nstate:
-  print "<DIV CLASS=title>ESXi <SPAN style='font-size:12px'>{}:{}</SPAN></DIV>".format(vmid, nstate.split('-')[1])
- else:
-  print "<DIV CLASS=title>ESXi</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip={0}'><IMG SRC='images/btn-reboot.png'></A>".format(ip)
- print "<DIV CLASS=z-table>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
- print "<DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>"
- if nstate and nstate == 'vmsoff':
-  print "<B>SHUTDOWN ALL VMs!</B>"
- else:
-  print "SHUTDOWN ALL VMs!"
- print "</DIV><DIV CLASS=td><CENTER>" + template.format('vmsoff','shutdown',excpt, "Shutdown all VMs") + "&nbsp;</CENTER></DIV></DIV>"
- for vm in statelist:
-  print "<DIV CLASS=tr ID=div_vm_{}><DIV CLASS=td style='padding:0px;'>".format(vm[0])
-  print "<B>{}</B>".format(vm[1]) if vm[0] == vmid else vm[1]
-  print "</DIV><DIV CLASS=td style='padding:0px;'>"
-  if vm[2] == "1":
-   print template.format('vmsvc-power.shutdown','shutdown', vm[0], "Soft shutdown")
-   print template.format('vmsvc-power.reboot','reboot', vm[0], "Soft reboot")
-   print template.format('vmsvc-power.suspend','suspend', vm[0], "Suspend")
-   print template.format('vmsvc-power.off','off', vm[0], "Hard power off")
-  elif vm[2] == "3":
-   print template.format('vmsvc-power.on','start', vm[0], "Start")
-   print template.format('vmsvc-power.off','off', vm[0], "Hard power off")
-  else:
-   print template.format('vmsvc-power.on','start', vm[0], "Start")
-   print template.format('vmsvc-snapshot.create','snapshot', vm[0], "Snapshot")
-   print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right SPIN=true TITLE='Snapshot - Info' URL=sdcp.cgi?call=esxi_snapshot&ip={}&vmid={}><IMG SRC='images/btn-info.png'></A>".format(ip,vm[0])
-  print "</DIV></DIV>"
- print "</DIV></DIV></DIV>"
-
-#
 #
 #
 def snapshot(aWeb):

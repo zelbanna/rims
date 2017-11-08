@@ -51,7 +51,7 @@ def login(aWeb):
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Users'     URL=sdcp.cgi?call=users_main><IMG SRC='images/icon-users.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Documents' URL=sdcp.cgi?call=resources_navigate&type=bookmark><IMG SRC='images/icon-docs.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Tools'     URL=sdcp.cgi?call=resources_navigate&type=tool><IMG SRC='images/icon-tools.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='ESXi'      URL=sdcp.cgi?call=esxi_main><IMG SRC='images/icon-servers.png'/></A>
+  <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='ESXi'      URL=sdcp.cgi?call=esxi_hypervisors><IMG SRC='images/icon-servers.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=div_main_cont TITLE='Config'    URL=sdcp.cgi?call=tools_main><IMG SRC='images/icon-config.png'/></A>
   </DIV>"""
   print "<DIV CLASS=z-main-content ID=div_main_cont></DIV>"

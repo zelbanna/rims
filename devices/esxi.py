@@ -128,7 +128,7 @@ class Device(GenericDevice):
    vmstateobj = VarList(Varbind(".1.3.6.1.4.1.6876.2.1.1.6." + str(aid)))
    session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(vmstateobj)
-   return vmstateobj[0].val
+   return Device.get_state_str(vmstateobj[0].val)
   except:
    pass
   return "unknown"
