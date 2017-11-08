@@ -23,6 +23,7 @@ def main(aWeb):
  print "<DIV CLASS=z-content ID=div_content></DIV>"
 
 def list(aWeb):
+ from sdcp import PackageContainer as PC
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Tools</DIV>"
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
@@ -37,7 +38,6 @@ def list(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_db_structure'>DB - View Structure</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TARGET=_blank                  HREF='sdcp.pdf'>DB - View relational diagram</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=tools_install&host=127.0.0.1'>Reinstall Host</A></DIV></DIV>"
- from sdcp import PackageContainer as PC
  if PC.sdcp['svcsrv']:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right  URL='sdcp.cgi?call=tools_install&host={}'>Reinstall SVC</A></DIV></DIV>".format(PC.sdcp['svcsrv'])
  print "</DIV></DIV></DIV></DIV>"
@@ -77,3 +77,7 @@ def install(aWeb):
  print dumps(res,indent=4)
  print "</PRE></DIV>"
 
+def test_sleep(aWeb):
+ from time import sleep
+ sleep(int(aWeb['time']))
+ print "Done"

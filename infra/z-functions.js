@@ -33,16 +33,31 @@ function btnoperation(event) {
   var msg  = button.getAttribute("msg");
   if (msg && !confirm(msg)) return;
   var spin = button.getAttribute("spin");
-  if (spin == "true"){
-   div.scrollTop(0);
-   div.css("overflow-y","hidden");
-   div.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
+  if (spin){
+    if(spin == 'true')
+     spin = div;
+    else
+     spin = $("#"+spin);
+    spin.scrollTop(0);
+    spin.css("overflow-y","hidden");
+    spin.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
   }
   var frm  = button.getAttribute("frm");
-  if(frm) {
-   $.post(url, $("#"+frm).serializeArray() , function(result) { div.html(result); $("div").remove(".z-overlay"); });
-  } else
-   div.load(url, function(responseTxt, statusTxt, xhr){ div.css("overflow-y","auto"); $("div").remove(".z-overlay"); });
+  if(frm)
+   $.post(url, $("#"+frm).serializeArray() , function(result) { 
+    div.html(result); 
+    if(spin){
+     $(".z-overlay").remove();
+     spin.css("overflow-y","auto");
+    }
+   });
+  else
+   div.load(url, function(responseTxt, statusTxt, xhr){
+    if (spin) {
+     $(".z-overlay").remove();
+     spin.css("overflow-y","auto");
+    }
+   });
  } else if (op == 'redirect') {
   location.replace(url);
  } else if (op == 'submit') {
