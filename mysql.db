@@ -38,7 +38,6 @@ CREATE TABLE `devices` (
   `a_dom_id` int(10) unsigned DEFAULT NULL,
   `ptr_id` int(10) unsigned DEFAULT '0',
   `ptr_dom_id` int(10) unsigned DEFAULT NULL,
-  `ipam_id` int(10) unsigned DEFAULT '0',
   `ipam_sub_id` int(10) unsigned DEFAULT NULL,
   `type_id` int(10) unsigned DEFAULT NULL,
   `model` varchar(20) DEFAULT NULL,
