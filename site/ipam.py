@@ -19,10 +19,12 @@ def list(aWeb):
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=ipam_list'><IMG SRC='images/btn-reboot.png'></A>"
  print "<A TITLE='Add Subnet'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table>"
- print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>Description</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for net in res['subnets']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV></DIV>".format(net['id'],net['id'],net['subnet'],net['description'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(net['id'],net['id'],net['subnet'],net['description'])
+  print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=ipam_layout&id={}><IMG SRC=images/btn-info.png></A>".format(net['id'])
+  print "</DIV></DIV>"
  print "</DIV></DIV></DIV>"
 
 #
@@ -58,6 +60,12 @@ def info(aWeb):
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
  print "</DIV></DIV>"
 
+#
+#
+def layout(aWeb):
+ from sdcp.rest import sdcpipam
+ print "<DIV CLASS=z-frame>"
+ print "</DIV>"
 #
 #
 def remove(aWeb):

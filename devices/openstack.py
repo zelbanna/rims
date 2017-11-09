@@ -121,8 +121,7 @@ class OpenstackRPC(object):
   except HTTPError, h:
    result,info,code = "HTTPError",dict(h.info()),h.code
    raw = h.read()
-   try:
-    data = loads(raw)
+   try:    data = loads(raw)
    except: data = raw
   except URLError, u:
    result,info,data,code = "URLError",u,None,None

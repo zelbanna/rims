@@ -16,9 +16,10 @@ def main(aWeb):
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=tools_list'>Options</A>"
- print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>Bookmarks</A>"
- print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>Demos</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A>"
  print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>Tools</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>Demos</A>"
+ print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>Bookmarks</A>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content></DIV>"
 
@@ -77,7 +78,40 @@ def install(aWeb):
  print dumps(res,indent=4)
  print "</PRE></DIV>"
 
+#
+#
 def test_sleep(aWeb):
  from time import sleep
  sleep(int(aWeb['time']))
  print "Done"
+
+#
+#
+def rest_main(aWeb):
+ from sdcp import PackageContainer as PC
+ print "<DIV CLASS=z-frame><FORM ID=frm_sdcp_rest>"
+ print "<H3> REST API inspection</H3>"
+ print "Choose host and enter API:<SELECT style='overflow: visible; width:auto; height:22px;' NAME=sdcp_host>"
+ print "<OPTION VALUE=127.0.0.1>Local Host</A>"
+ if PC.sdcp['svcsrv']:
+  print "<OPTION VALUE={0}>Service Host</OPTION>".format(PC.sdcp['svcsrv'])
+ print "</SELECT> <INPUT style='width:520px;' TYPE=TEXT NAME=sdcp_api><BR>"
+ print "Call 'Method': <SELECT style='overflow: visible; width:auto; height:22px;' NAME=sdcp_method>"
+ for method in ['GET','POST','DELETE','PUT']:
+  print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
+ print "</SELECT>"
+ print "<A CLASS='z-btn z-small-btn z-op' DIV=div_rest_info URL=sdcp.cgi?call=tools_rest_execute FRM=frm_sdcp_rest TITLE='Go'><IMG SRC=images/btn-start.png></A>"
+ print "<A CLASS='z-btn z-small-btn z-op' DIV=div_rest_info OP=empty TITLE='Clear results view'><IMG SRC=images/btn-remove.png></A><BR>"
+ print "Arguments/Body<BR>"
+ print "<TEXTAREA style='width:100%; height:100px;' NAME=sdcp_args></TEXTAREA>"
+ print "</FORM>"
+ print "</DIV>"
+ print "<DIV ID=div_rest_info></DIV>"
+
+#
+#
+def rest_execute(aWeb):
+ from json import dumps,loads
+ try:    arguments = loads(aWeb['sdcp_args'])
+ except: arguments = None
+ ret = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])

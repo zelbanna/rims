@@ -11,10 +11,8 @@ def execute(argv):
  from importlib import import_module 
  rest = argv[1]
  fun  = argv[2]
- try:
-  args = loads(argv[3])
- except:
-  args = None
+ try:    args = loads(argv[3])
+ except: args = None
  print "Executing:{}_{}({})".format(rest,fun,args)
 
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '../..')))

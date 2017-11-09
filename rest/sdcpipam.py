@@ -34,6 +34,16 @@ def subnet(aDict):
 
 #
 #
+def subnets(aDict):
+ ret = {'res':'OK'}
+ with DB() as db:
+  ret['xist_subnet'] = db.do("SELECT mask, subnet, gateway FROM devices WHERE ipam_sub_id = {} ORDER BY ip".format(aDict['id']))
+  ret['subnet'] = db.get_row()
+  ret['xist_devices'] = db.do("SELECT ip,id,hostname FROM devices WHERE ipam_sub_id = {} ORDER BY ip".format(aDict['id']))
+  ret['devices'] = db.get_rows()
+ return ret
+#
+#
 def update(aDict):
  ret = {'res':'OK'}
  from sdcp.core import genlib as GL

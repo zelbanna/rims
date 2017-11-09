@@ -28,28 +28,28 @@ class Web(object):
 
  def __str__(self):
   return "Base:{} Cookie:[{}] Form:{}".format(self._base,self.cookie,self.form)
- 
+
  def get(self,aKey,aDefault = None):
   return self.form.getfirst(aKey,aDefault)
 
  def log(self, aMsg):
   from logger import log
   log(aMsg,self.cookie.get("{}_id".format(self._base)))
- 
+
  # Header Key/Values
  def add_header(self,aKey,aValue):
   self._header[aKey] = aValue
 
- # Cookie Param + Data and Life 
+ # Cookie Param + Data and Life
  def add_cookie(self,aParam,aData,aLife=3000):
   self._c_stor[aParam] = aData
   self._c_life[aParam] = aLife
 
  def put_headers(self):
   for key,value in self._header.iteritems():
-   print "{}: {}\r".format(key,value)   
+   print "{}: {}\r".format(key,value)
   for key,value in self._c_stor.iteritems():
-   print "Set-Cookie: {}={}; Path=/; Max-Age={};\r".format(key,value,self._c_life.get(key,3000))   
+   print "Set-Cookie: {}={}; Path=/; Max-Age={};\r".format(key,value,self._c_life.get(key,3000))
   self._header = None
   print "Content-Type: text/html\r\n"
 
@@ -75,6 +75,7 @@ class Web(object):
  # call = <module>_<module_function>
  #
  def server(self):
+  # Do something about field storage...
   import cgi
   self.form = cgi.FieldStorage()
   headers   = self.get('headers','yes')
@@ -89,11 +90,12 @@ class Web(object):
    module = import_module(self._base + ".site." + mod)
    getattr(module,fun,None)(self)
   except Exception, e:
+   from sys import stdout
    if headers == 'no' or mod == 'front':
-    print "Content-Type: text/html\r\n"
+    stdout.write("Content-Type: text/html\r\n")
    keys = self.form.keys()
    from json import dumps
-   print "<PRE>" + (dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(self._base,mod_fun), 'args':",".join(keys) , 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True, indent=4) if not type(e).__name__ == 'RestException' else str(e)) + "</PRE>"
+   stdout.write("<PRE STYLE='font-size:9px; font-weight:bold;'>" + (dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(self._base,mod_fun), 'args':",".join(keys) , 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True, indent=4) if not type(e).__name__ == 'RestException' else str(e)) + "</PRE>")
 
  ############################## CGI/Web functions ###############################
 
@@ -112,7 +114,7 @@ class Web(object):
   for key in self.form.keys():
    reload += ("&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key)))
   return reload[1:]
-  
+
  def get_args_except(self,aexceptlist = []):
   reload = ""
   for key in self.form.keys():
