@@ -19,7 +19,7 @@ class Web(object):
   self._c_stor = {}
   self._c_life = {}
   self._base = aBase
-  self.form  = None  
+  self.form  = None
   bcookie = getenv("HTTP_COOKIE")
   self.cookie = {} if not bcookie else dict(map( lambda c: c.split("="), bcookie.split('; ')))
 

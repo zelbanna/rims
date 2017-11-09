@@ -9,9 +9,17 @@ __status__= "Production"
 
 class RestException(Exception):
  '''Raise REST exceptions'''
+ def __init__(self,args):
+  self._args = args
+
+ def __str__(self):
+  return self._args
+
+ def get(self,aKey = None):
+  return self._args if not aKey else self._args.get(aKey,None)
 
 #
-# Make proper REST responses 
+# Make proper REST responses
 #
 # - encoded as apicall=package.path.module_function (module cannot contain '_', but function can)
 # - reads body to find input data
@@ -68,7 +76,7 @@ def call(aURL, aAPI, aArgs = None, aMethod = None):
  try:
   req = Request(aURL, headers=head, data=dumps(aArgs) if aArgs else None)
   if aMethod:
-   req.get_method = lambda: method
+   req.get_method = lambda: aMethod
   sock = urlopen(req)
   try:    data = loads(sock.read())
   except: data = { 'res':'NO_DATA' }

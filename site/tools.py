@@ -96,7 +96,7 @@ def rest_main(aWeb):
  if PC.sdcp['svcsrv']:
   print "<OPTION VALUE={0}>Service Host</OPTION>".format(PC.sdcp['svcsrv'])
  print "</SELECT> <INPUT style='width:520px;' TYPE=TEXT NAME=sdcp_api><BR>"
- print "Call 'Method': <SELECT style='overflow: visible; width:auto; height:22px;' NAME=sdcp_method>"
+ print "Call 'Method': <SELECT style='overflow: visible; width:70px; height:22px;' NAME=sdcp_method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
@@ -111,7 +111,23 @@ def rest_main(aWeb):
 #
 #
 def rest_execute(aWeb):
- from json import dumps,loads
+ from sdcp.core.rest import call as rest_call, RestException
  try:    arguments = loads(aWeb['sdcp_args'])
  except: arguments = None
- ret = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])
+
+ print "<DIV CLASS=z-frame>"
+ try:
+  ret = rest_call("http://{}/rest.cgi".format(aWeb['sdcp_host']),aWeb['sdcp_api'],arguments,aWeb['sdcp_method'])
+  print "<DIV style='border:solid 1px black; background:#FFFFFF'>"
+  from json import dumps
+  output = dumps(ret,indent=4, sort_keys=True)
+  print "<PRE style='margin:0px;'>{}</PRE>".format(output)
+ except RestException,re:
+  data = re.get()
+  data.pop('res',None)
+  print "<DIV CLASS=z-table style='width:100%;'><DIV CLASS=tbody>"
+  for key in data.keys():
+   print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),data[key])
+  print "</DIV></DIV>"
+ print "</DIV>"
+
