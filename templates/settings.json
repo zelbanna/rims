@@ -10,7 +10,6 @@
  },
  "sdcp": {
   "name":"SCDP Portal",
-  "devicefile":"/var/www/devices.json",
   "netlogs":"/path/to/net.log",
   "svcsrv":"127.0.0.1",
   "upshost":"127.0.0.1",
@@ -47,8 +46,7 @@
  "esxi": {
   "username":"",
   "password":"",
-  "logformat":"/var/log/network/{}.operations.log",
-  "shutdownfile":"/var/tmp/esxi.{}.vmstate.log"
+  "logformat":"/var/log/network/{}.operations.log"
  },
  "openstack":{
   "project":"",

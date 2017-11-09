@@ -79,7 +79,7 @@ def list(aWeb,aIP = None):
 #
 def _vm_options(aIP,aVMid,aVMname,aState,aHighlight):
  template="<A CLASS='z-btn z-small-btn z-op' TITLE='{2}' DIV=div_vm_"+aVMid+" SPIN=div_content_left URL='sdcp.cgi?call=esxi_vmop&ip=" + aIP + "&nstate={0}&vmname="+aVMname+"&vmid="+aVMid+"'><IMG SRC=images/btn-{1}.png></A>"
- print "<DIV CLASS=td style='padding:0px;'>{}</DIV><DIV CLASS=td style='width:150px'>".format("<B>{}</B>".format(aVMname) if aHighlight else aVMname)
+ print "<DIV CLASS=td style='padding:0px;'>{}</DIV><DIV CLASS=td style='width:150px'>&nbsp;".format("<B>{}</B>".format(aVMname) if aHighlight else aVMname)
  if int(aState) == 1:
   print template.format('vmsvc-power.shutdown','shutdown', "Soft shutdown")
   print template.format('vmsvc-power.reboot','reboot', "Soft reboot")
