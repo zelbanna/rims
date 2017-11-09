@@ -104,7 +104,7 @@ a:active,a:hover{ outline-width:0; }
 
 a.z-op { outline:none; cursor:pointer; z-index:10000;}
 a.z-btn { 
- background-color:#FFFFFF!important; background-position: center; background-repeat: no-repeat; border-radius:3px; border: 1px solid #ccc; cursor:pointer; display: inline-block; float: none; font-family: "Courier New", serif; font-size: 20px; vertical-align:top; outline:0; overflow:hidden; text-align:center; text-decoration:none!important; white-space:nowrap; padding:2px; margin:2px;
+ background-color:#FFFFFF!important; background-position: center; background-repeat: no-repeat; border-radius:4px; border: 1px solid #ccc; cursor:pointer; display: inline-block; float: none; font-family: "Courier New", serif; font-size: 20px; vertical-align:top; outline:0; overflow:hidden; text-align:center; text-decoration:none!important; white-space:nowrap; padding:2px; margin:2px;
  
  -webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;
  -webkit-transition:background-color .25s,color .15s,box-shadow .25s,opacity 0.25s,filter 0.25s,border 0.15s;transition:background-color .25s,color .15s,box-shadow .15s .15s,opacity .25s,filter .25s,border .15s;
@@ -115,12 +115,12 @@ a.z-btn:active { opacity:0.5}
 a.z-menu-btn {   border-radius: 8px!important; padding: 4px; height: 52px; min-width:52px; margin: 5px 0px; }
 a.z-menu-btn > img {  max-height:43px; }
 
-a.z-small-btn {  border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; margin: 0px;}
+a.z-small-btn {  padding: 0px; height: 24px; width: 24px; margin: 0px; font-size:9px; }
 a.z-small-btn > img { height:22px; }
 
-a.z-low-btn {    border-radius: 5px!important; padding: 0px; height: 24px; width: 24px; position: relative; bottom: -26px; }
+a.z-low-btn {    padding: 0px; height: 24px; width: 24px; position: relative; bottom: -26px; }
 
-a.z-icon-txt-btn {	width:54px; font-weight:bold; font-size:12px; text-align: right; text-shadow: 2px 1px grey }
+a.z-small-text { height: 24px; width: 24px; font-size:9px; }
 
 a.z-warning {    background-color:red!important; }
 

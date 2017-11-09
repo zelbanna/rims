@@ -34,14 +34,25 @@ def subnet(aDict):
 
 #
 #
-def subnets(aDict):
+def allocation(aDict):
  ret = {'res':'OK'}
  with DB() as db:
-  ret['xist_subnet'] = db.do("SELECT mask, subnet, gateway FROM devices WHERE ipam_sub_id = {} ORDER BY ip".format(aDict['id']))
-  ret['subnet'] = db.get_row()
-  ret['xist_devices'] = db.do("SELECT ip,id,hostname FROM devices WHERE ipam_sub_id = {} ORDER BY ip".format(aDict['id']))
-  ret['devices'] = db.get_rows()
+  db.do("SELECT mask, subnet, INET_NTOA(subnet) as subasc, gateway, INET_NTOA(gateway) as gwasc FROM subnets WHERE id = {}".format(aDict['id']))
+  subnet = db.get_row()
+  ret['start']  = subnet['subnet']
+  ret['no']     = 2**(32-subnet['mask'])
+  ret['mask']   = subnet['mask']
+  ret['subnet'] = subnet['subasc']
+  ret['gateway']= subnet['gwasc']
+  ret['xist_devices'] = db.do("SELECT ip,id,hostname,0 AS gateway FROM devices WHERE ipam_sub_id = {} ORDER BY ip".format(aDict['id']))
+  ret['devices'] = db.get_dict('ip')
+  gw = ret['devices'].get(subnet['gateway'])
+  if gw:
+   gw['gateway'] = 1
+  else:
+   ret['devices'][subnet['gateway']] = {'id':None,'ip':subnet['gateway'],'hostname':'gateway','gateway':1}
  return ret
+
 #
 #
 def update(aDict):
@@ -86,10 +97,10 @@ def find(aDict):
   db.do("SELECT ip FROM devices WHERE ipam_sub_id = {}".format(aDict['id']))
   iplist = db.get_dict('ip')
  subnet = int(sub.get('subnet'))
- start  = None           
+ start  = None
  ret    = { 'subnet':sub['subasc'], 'res':'NOT_OK' }
  for ip in range(subnet + 1, subnet + 2**(32-int(sub.get('mask')))-1):
-  if iplist.get(ip):       
+  if iplist.get(ip):
    start = None
   elif not start:
    count = int(aDict.get('consecutive',1))

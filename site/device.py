@@ -126,7 +126,7 @@ def info(aWeb):
  from sdcp.rest.tools  import infra as rest_infra
  dev   = rest_info({'id':id})
  if dev['exist'] == 0:
-  print "Stale info! Reload device list"
+  print "<DIV CLASS=z-frame>Warning - device with id:[{}] does not exist</DIV>".format(id)
   return
  if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
   from sdcp.rest.pdu import update_device_pdus
@@ -337,11 +337,14 @@ def mac_sync(aWeb):
 # new device:
 #
 def new(aWeb):
- ip     = aWeb.get('ip',"127.0.0.1")
+ ip     = aWeb.get('ip',None)
  name   = aWeb.get('hostname','unknown')
  mac    = aWeb.get('mac',"00:00:00:00:00:00")
  op     = aWeb['op']
  sub_id = aWeb['ipam_sub_id']
+ if not ip:
+  from sdcp.core import genlib as GL
+  ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
  from sdcp.rest import sdcpipam
 
  if op == 'new':
