@@ -102,8 +102,7 @@ def rest_main(aWeb):
  print "</SELECT>"
  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_rest_info URL=sdcp.cgi?call=tools_rest_execute FRM=frm_sdcp_rest TITLE='Go'><IMG SRC=images/btn-start.png></A>"
  print "<A CLASS='z-btn z-small-btn z-op' DIV=div_rest_info OP=empty TITLE='Clear results view'><IMG SRC=images/btn-remove.png></A><BR>"
- print "Arguments/Body<BR>"
- print "<TEXTAREA style='width:100%; height:100px;' NAME=sdcp_args></TEXTAREA>"
+ print "Arguments/Body<BR><TEXTAREA style='width:100%; height:100px;' NAME=sdcp_args></TEXTAREA>"
  print "</FORM>"
  print "</DIV>"
  print "<DIV ID=div_rest_info></DIV>"
@@ -112,14 +111,13 @@ def rest_main(aWeb):
 #
 def rest_execute(aWeb):
  from sdcp.core.rest import call as rest_call, RestException
+ from json import loads,dumps
  try:    arguments = loads(aWeb['sdcp_args'])
  except: arguments = None
-
  print "<DIV CLASS=z-frame>"
  try:
   ret = rest_call("http://{}/rest.cgi".format(aWeb['sdcp_host']),aWeb['sdcp_api'],arguments,aWeb['sdcp_method'])
   print "<DIV style='border:solid 1px black; background:#FFFFFF'>"
-  from json import dumps
   output = dumps(ret,indent=4, sort_keys=True)
   print "<PRE style='margin:0px;'>{}</PRE>".format(output)
  except RestException,re:
@@ -130,4 +128,3 @@ def rest_execute(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),data[key])
   print "</DIV></DIV>"
  print "</DIV>"
-
