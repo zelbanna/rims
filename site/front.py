@@ -138,7 +138,7 @@ def openstack(aWeb):
  mtok = aWeb.cookie.get("os_main_token")
  prev = aWeb.cookie.get("os_project_id")
  if utok:
-  aWeb.put_redirect("sdcp.cgi?call=openstack_portal")
+  aWeb.put_redirect("sdcp.cgi?call=openstack_portal&headers=no")
   return
 
  aWeb.add_cookie("os_demo_name",name)
