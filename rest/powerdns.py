@@ -61,7 +61,7 @@ def top(aDict):
 def domains(aDict):
  log("powerdns_domains({})".format(aDict))
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  res = db.do("SELECT id, name FROM domains")
+  res = db.do("SELECT id, name, master, type, notified_serial FROM domains")
   rows = db.get_rows()
  return {'res':'OK', 'domains':rows }
 
@@ -138,9 +138,9 @@ def update(aDict):
  return ret
 
 #
-# get_records(type ['A'|'PTR'])
+# records(type ['A'|'PTR'])
 #
-def get_records(aDict):
+def records(aDict):
  log("powerdns_get_records({})".format(aDict))
  ret = {'res':'OK'}
  tune = aDict['type'].upper() if aDict.get('type') else "PTR' OR type = 'A"
