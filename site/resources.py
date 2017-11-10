@@ -29,7 +29,7 @@ def list(aWeb):
   rows = db.get_rows()
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Resources</DIV>"
- print "<A TITLE='Reload List'  CLASS='z-btn z-small-btn z-op' DIV=div_content       URL='sdcp.cgi?call=resources_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List'  CLASS='z-btn z-small-btn z-op' DIV=div_content       URL='sdcp.cgi?call=resources_list'><IMG SRC='images/btn-reload.png'></A>"
  print "<A TITLE='Add Resource' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=resources_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"

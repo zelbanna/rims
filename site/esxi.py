@@ -64,7 +64,7 @@ def list(aWeb,aIP = None):
  sort   = aWeb.get('sort','name')
  esxi   = Device(ip)
  print "<DIV CLASS=z-frame>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=esxi_list&ip={}&sort={}'><IMG SRC='images/btn-reboot.png'></A>".format(ip,sort)
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=esxi_list&ip={}&sort={}'><IMG SRC='images/btn-reload.png'></A>".format(ip,sort)
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
  print "<DIV CLASS=tbody>"

@@ -15,7 +15,7 @@ def list(aWeb):
  from sdcp.core.dbase import DB
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>PDUs</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=pdu_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=pdu_list'><IMG SRC='images/btn-reload.png'></A>"
  print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-op'     DIV=div_content_right URL='sdcp.cgi?call=pdu_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -81,7 +81,7 @@ def info(aWeb):
 
  print "</DIV></DIV>"
  if not id == 'new':
-  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
+  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_info&id={}><IMG SRC='images/btn-reload.png'></A>".format(id)
   print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_remove&id={}><IMG SRC='images/btn-remove.png'></A>".format(id)
   print "<A TITLE='Fetch  info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_info&id={}&op=lookup&ip={}><IMG SRC='images/btn-search.png'></A>".format(id,pdudata['ipasc'])
  print "<A  TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_info&id={}&op=update FRM=pdu_info_form><IMG SRC='images/btn-save.png'></A>".format(id)
@@ -132,7 +132,7 @@ def inventory(aWeb):
   pdulist.append(aWeb['pduop'])
 
  print "<DIV CLASS=z-frame>"
- print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_left SPIN=true  URL='sdcp.cgi?{}'><IMG SRC=images/btn-reboot.png></A>".format(aWeb.get_args())
+ print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_left SPIN=true  URL='sdcp.cgi?{}'><IMG SRC=images/btn-reload.png></A>".format(aWeb.get_args())
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th style='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  from sdcp.devices.avocent import Device

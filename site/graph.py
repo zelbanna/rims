@@ -32,7 +32,7 @@ def list(aWeb):
   rows = db.get_rows()
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Graphing</DIV>"
- print "<A TITLE='Reload'   CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=graph_list&{0}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args_except(['call','id','state']))
+ print "<A TITLE='Reload'   CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=graph_list&{0}'><IMG SRC='images/btn-reload.png'></A>".format(aWeb.get_args_except(['call','id','state']))
  print "<A TITLE='Save'     CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=graph_save'><IMG SRC='images/btn-save.png'></A>"
  print "<A TITLE='Discover' CLASS='z-btn z-small-btn z-op' DIV=div_content_right SPIN=true URL='sdcp.cgi?call=graph_discover'><IMG SRC='images/btn-search.png'></A>"
  print "<DIV CLASS=z-table>"

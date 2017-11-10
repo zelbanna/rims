@@ -13,6 +13,29 @@ from sdcp.core.rest import call as rest_call
 
 #
 #
+def list(aWeb):
+ dns = rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
+ with DB() as db:
+  db.do("SELECT id, name FROM domains")
+  local = db.get_dict('id')
+ print "<DIV CLASS=z-frame>"
+ print "<DIV CLASS=title>Domains</DIV>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=dns_list'><IMG SRC='images/btn-reload.png'></A>"
+ print "<A TITLE='Add Subnet'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=dns_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for dom in dns['domains']:
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=dns_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],dom['id'],dom['name'],dom['type'],dom['notified_serial'])
+  if not local.pop(dom['id'],None):
+   print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=dns_sync&id={}><IMG SRC=images/btn-reload.png></A>".format(dom['id'])
+  print "</DIV></DIV>"
+ print "</DIV></DIV>"
+ print "Remaining:{}".format(len(local))
+ print "</DIV>"
+
+#
+#
 #
 def load(aWeb):
  dns_domains  = rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
@@ -26,7 +49,7 @@ def load(aWeb):
    if not exist:
     added += 1
     print "Added: {}".format(dom)
-   db.do("INSERT INTO domains(id,name) VALUES ({0},'{1}') ON DUPLICATE KEY UPDATE name='{1}'".format(dom['id'],dom['name']))
+   db.do("INSERT INTO domains(id,name) VALUES ({0},'{1}') ON DUPLICATE KEY UPDATE name = '{1}'".format(dom['id'],dom['name']))
   print "<SPAN>Domains - Inserted:{}, New:{}, Old:{}</SPAN><BR>".format(len(dns_domains['domains']),added,len(sdcp_domains))
   for dom,entry in sdcp_domains.iteritems():
    print "Delete {} -> {}<BR>".format(dom,entry)
@@ -41,7 +64,7 @@ def discrepancy(aWeb):
  print "<DIV CLASS=title>DNS Consistency</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
  print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>Value</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Key</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for type in ['a','ptr']:
-  dns = rest_call(PC.dns['url'],"sdcp.rest.{}_get_records".format(PC.dns['type']),{'type':type})
+  dns = rest_call(PC.dns['url'],"sdcp.rest.{}_records".format(PC.dns['type']),{'type':type})
   tid = "{}_id".format(type)
   with DB() as db:
    db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, {0}_id, CONCAT(hostname,'.',name) as fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id ORDER BY ip".format(type))

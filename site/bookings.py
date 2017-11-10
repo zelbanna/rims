@@ -21,7 +21,7 @@ def list(aWeb):
   rows = db.get_rows()
 
  print "<DIV CLASS=z-frame><DIV CLASS=title>Bookings</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=bookings_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=bookings_list'><IMG SRC='images/btn-reload.png'></A>"
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>User (Id)</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Until</DIV><DIV CLASS=th>Op</DIV></DIV>"
  print "<DIV CLASS=tbody>"

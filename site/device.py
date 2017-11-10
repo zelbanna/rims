@@ -49,6 +49,7 @@ def main(aWeb):
       print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
   print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=ipam_list'>IPAM</A>"
+  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=dns_list'>DNS</A>"
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=pdu_list'>PDUs</A>"
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list'>Consoles</A>"
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list'>Racks</A>"
@@ -66,7 +67,7 @@ def main(aWeb):
 def list(aWeb):
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Devices</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?{}'><IMG SRC='images/btn-reboot.png'></A>".format(aWeb.get_args())
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?{}'><IMG SRC='images/btn-reload.png'></A>".format(aWeb.get_args())
  print "<A TITLE='Add Device'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=device_new&{}'><IMG SRC='images/btn-add.png'></A>".format(aWeb.get_args())
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
@@ -223,7 +224,7 @@ def info(aWeb):
 
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}><IMG SRC='images/btn-reboot.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}><IMG SRC='images/btn-reload.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_remove&id={} MSG='Are you sure you want to delete device?' TITLE='Remove device'><IMG SRC='images/btn-remove.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=lookup&id={}&ip={} TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(id,dev['info']['ipasc'])
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=update    FRM=info_form TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"

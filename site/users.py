@@ -30,7 +30,7 @@ def list(aWeb):
   res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
   rows = db.get_rows()
  print "<DIV CLASS=z-frame><DIV CLASS=title>Users</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=users_list'><IMG SRC='images/btn-reboot.png'></A>"
+ print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=users_list'><IMG SRC='images/btn-reload.png'></A>"
  print "<A TITLE='Add User'    CLASS='z-btn z-small-btn z-op' DIV=div_content_right   URL='sdcp.cgi?call=users_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV>"
