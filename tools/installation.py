@@ -81,15 +81,16 @@ def install(aDict):
 
  #
  # Generate ERD
- try:
-  from eralchemy import render_er
-  erd_input = "mysql+pymysql://{}:{}@127.0.0.1/{}".format(PC.generic['dbuser'],PC.generic['dbpass'],PC.generic['db'])
-  erd_output= ospath.join(PC.generic['docroot'],PC.generic['sitebase']) + ".pdf"
-  render_er(erd_input,erd_output)
-  ret['ERD'] = 'OK'
- except Exception, e:
-  ret['error'] = str(e)
-  ret['ERD'] = 'NOT_OK'
+ if PC.generic.get('db'):
+  try:
+   from eralchemy import render_er
+   erd_input = "mysql+pymysql://{}:{}@127.0.0.1/{}".format(PC.generic['dbuser'],PC.generic['dbpass'],PC.generic['db'])
+   erd_output= ospath.join(PC.generic['docroot'],PC.generic['sitebase']) + ".pdf"
+   render_er(erd_input,erd_output)
+   ret['ERD'] = 'OK'
+  except Exception, e:
+   ret['error'] = str(e)
+   ret['ERD'] = 'NOT_OK'
  
  #
  # Copy files
@@ -104,10 +105,10 @@ def install(aDict):
   from sdcp.rest.tools import sync_devicetypes 
   ret['new_devicetypes'] = sync_devicetypes(None)['new']
 
- #
- # Verify MYSQL db
- from sdcp.core.mysql import diff
- ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
+  #
+  # Verify MYSQL db
+  from sdcp.core.mysql import diff
+  ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
 
  # Done
  ret['res'] = 'OK'
