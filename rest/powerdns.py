@@ -101,21 +101,6 @@ def lookup_ptr(aDict):
  return ret
 
 #
-# lookup_id (id)
-#
-def lookup_id(aDict):
- log("powerdns_lookup_id({})".format(aDict))
- ret = {}
- with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  ret['xist'] = db.do("SELECT domains.* FROM domains WHERE id = '{}'".format(aDict['id']))
-  if ret['xist'] > 0:
-   ret['data'] = db.get_row()
-   ret['res'] = 'OK'
-  else:
-   ret['res'] = 'NOT_OK'
- return ret
-
-#
 # update( id, ip, fqdn, domain_id, type)
 #
 # A:  content = ip, name = fqdn
@@ -168,11 +153,42 @@ def records(aDict):
  return ret
 
 #
+# record_lookup (id, domain_id)
+#
+def record_lookup(aDict):
+ log("powerdns_record_lookup({})".format(aDict))
+ ret = {}
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
+  ret['xist'] = db.do("SELECT records.* FROM records WHERE id = '{}' AND domain_id = '{}'".format(aDict['id'],aDict['domain_id']))
+  if ret['xist'] > 0:
+   ret['data'] = db.get_row()
+   ret['res'] = 'OK'
+  else:
+   ret['data'] = {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
+   ret['res'] = 'NOT_OK'
+ return ret
+
+#
+#
+def record_update(aDict):
+ log("powerdns_records_update({})".format(aDict))
+ ret = {'res':'OK'}
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
+  if aDict['id'] == 'new':
+   ret['xist'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, prio) VALUES ({},'{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'],aDict['ttl']))
+   ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
+  else:
+   ret['xist'] = db.do("UPDATE records SET domain_id = {}, name = '{}', content = '{}', type = '{}', ttl = '{}', prio = 0 WHERE id = {}".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'],aDict['ttl'],aDict['id']))
+   ret['id']   = aDict['id']
+ return ret
+
+#
 #
 def record_remove(aDict):
- log("powerdns_remove({})".format(aDict))
+ log("powerdns_record_remove({})".format(aDict))
  ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   ret['xist'] = db.do("DELETE FROM records WHERE id = '{}'".format(aDict['id']))
   ret['res'] = 'OK' if ret['xist'] > 0 else 'NOT_OK'
  return ret
+
