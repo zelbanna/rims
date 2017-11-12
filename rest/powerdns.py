@@ -109,7 +109,7 @@ def lookup_id(aDict):
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE id = '{}'".format(aDict['id']))
   if ret['xist'] > 0:
-   ret.update(db.get_row())
+   ret['data'] = db.get_row()
    ret['res'] = 'OK'
   else:
    ret['res'] = 'NOT_OK'
