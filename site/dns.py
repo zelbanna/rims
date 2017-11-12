@@ -26,8 +26,9 @@ def list(aWeb):
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for dom in dns['domains']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=dns_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],dom['id'],dom['name'],dom['notified_serial'])
-  print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_records&id={}'.format(dom['id'])],'info')
+  print "<DIV CLASS=tr><!-- {} -->".format(dom)
+  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],dom['name'],dom['notified_serial'])
+  print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_records&type={}&id={}'.format("a" if not 'arpa' in dom['name'] else "ptr",dom['id'])],'info')
   if not local.pop(dom['id'],None):
    print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_sync&id={}'.format(dom['id'])],'reload')
   print "</DIV></DIV>"
@@ -36,13 +37,66 @@ def list(aWeb):
  print "</DIV>"
 
 #
+# Domain info
+def info(aWeb):
+ data = {}
+ data['id'] = aWeb.get('id','new')
+ op = aWeb['op']
+ print "<DIV CLASS=z-frame>"
+ print "<DIV CLASS=z-table>"
+
+ print "</DIV>"
+ print "</DIV>"
+
+#
 #
 def records(aWeb):
  dns = rest_call(PC.dns['url'], "sdcp.rest.{}_records".format(PC.dns['type']),{'domain_id':aWeb['id']})
- orint 
- print dns
- print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_records','SPIN=true'],'reload')
-#
+ print "<DIV CLASS=z-frame>"
+ print "<DIV CLASS=title>Records</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
+ print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>TTL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for rec in dns['records']:
+  print "<DIV CLASS=tr><!-- {} -->".format(rec)
+  print "<DIV CLASS=td>%i</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;"%(rec['id'],rec['name'],rec['content'],rec['type'],rec['ttl'])
+  print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_record_info&id=%i&domain_id=%s'%(rec['id'],aWeb['id'])],'info')
+  if rec['type'] in ['A','CNAME','PTR']:
+   print aWeb.button(['DIV=span_dns','URL=sdcp.cgi?call=dns_record_remove&id=%i'%(rec['id'])],'delete')
+  print "</DIV></DIV>"
+ print "</DIV></DIV>"
+ print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_records&id=%s'%(aWeb['id'])],'reload')
+ print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_record_info&id=new&domain_id=%s'%(aWeb['id'])],'add')
+ print "</DIV>"
+
+
+def record_info(aWeb):
+ if aWeb['op'] == 'update':
+  data = aWeb.get_args2dict_except(['call','op'])
+  res = rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']),data)
+ else:
+  res = rest_call(PC.dns['url'], "sdcp.rest.{}_record_lookup".format(PC.dns['type']),{'id':aWeb['id'],'domain_id':aWeb['domain_id']})
+  data = res['data']
+ lock = "readonly" if not data['id'] == 'new' else ""
+ print "<DIV CLASS='z-frame z-info' STYLE='height:200px;'>"
+ print "<DIV CLASS=title>Record Info {} (Domain {})</DIV>".format("(new)" if data['id'] == 'new' else "",data['domain_id'])
+ print "<!-- {} -->".format(res)
+ print "<FORM ID=dns_info_form>"
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
+ print "<DIV CLASS=z-table><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=name VALUE={}></DIV></DIV>".format(data['name'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Content:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=content VALUE={}></DIV></DIV>".format(data['content'])
+ print "<DIV CLASS=tr><DIV CLASS=td>TTL:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=ttl VALUE={}></DIV></DIV>".format(data['ttl'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE={}></DIV></DIV>".format(data['type'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Domain (id):</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=domain_id VALUE={}></DIV></DIV>".format(data['domain_id'])
+ print "</DIV></DIV>"
+ print "</FORM>"
+ print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_record_info&id={}'.format(data['id'])],'reload')
+ print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_record_info&op=update','FRM=dns_info_form'],'save')
+ if not data['id'] == 'new':
+  print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_record_remove&id={}'.format(data['id'])],'delete')
+ print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
+
+
 #
 #
 def load(aWeb):
@@ -91,7 +145,7 @@ def discrepancy(aWeb):
      print "<DIV CLASS=td>{0}</DIV>".format(dev['fqdn'])
     else:
      print "<DIV CLASS=td>&nbsp</DIV><DIV CLASS=td>&nbsp</DIV>"
-    print "<DIV CLASS=td>&nbsp;<A CLASS='z-op z-btn z-small-btn' DIV=span_dns MSG='Are you sure?' URL='sdcp.cgi?call=dns_remove&type={}&id={}'><IMG SRC=images/btn-delete.png></A></DIV>".format(type,rec['id'])
+    print "<DIV CLASS=td>&nbsp;<A CLASS='z-op z-btn z-small-btn' DIV=span_dns MSG='Are you sure?' URL='sdcp.cgi?call=dns_record_remove&id={}'><IMG SRC=images/btn-delete.png></A></DIV>".format(rec['id'])
     print "</DIV>"
   if len(devs) > 0:
    for key,value in  devs.iteritems():
@@ -128,9 +182,9 @@ def cleanup(aWeb):
   EXT.dict2table(dnsclean['removed'])
  print "</DIV>"
 
+
 #
-# Remove from DNS DB
 #
-def remove(aWeb):
- res = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']),{"{}_id".format(aWeb['type']): aWeb['id']})
+def record_remove(aWeb):
+ res = rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id': aWeb['id']})
  print "Remove {} - Results:{}".format(aWeb['id'],res)

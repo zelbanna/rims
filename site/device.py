@@ -412,9 +412,12 @@ def remove(aWeb):
  if ret['res'] == 'OK':
   from sdcp.core.rest import call as rest_call
   from sdcp import PackageContainer as PC
-  dns = rest_call(PC.dns['url'],"sdcp.rest.{}_remove".format(PC.dns['type']),  ret)
+  if ret['a_id']:
+   arec = rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['a_id']})
+  if ret['ptr_id']:
+   prec = rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['ptr_id']})
  print "<DIV CLASS=z-frame>"
- print "Unit {} deleted (DB:{},DNS:{},IPAM:{})".format(id,ret,dns,ipam)
+ print "Unit {} deleted (DB:{},A:{},PTR:{})".format(id,ret,arec,prec)
  print "</DIV>"
 
 #
