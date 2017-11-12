@@ -41,7 +41,7 @@ def info(aWeb):
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
 
- print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
+ print "<DIV CLASS='z-frame z-info' STYLE='height:200px;'>"
  print "<DIV CLASS=title>Subnet Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<!-- {} -->".format(res)
  print "<FORM ID=ipam_info_form>"

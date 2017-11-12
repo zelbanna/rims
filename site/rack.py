@@ -81,7 +81,7 @@ def info(aWeb):
  from os import listdir, path
  id = aWeb['id']
 
- print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
+ print "<DIV CLASS='z-frame z-info' STYLE='height:200px;'>"
  print "<FORM ID=rack_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=title>Rack Info {}</DIV>".format("(new)" if id == 'new' else "")

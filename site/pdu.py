@@ -62,7 +62,7 @@ def info(aWeb):
     db.do("SELECT pdus.*, INET_NTOA(ip) as ipasc FROM pdus WHERE ip = INET_ATON('{}')".format(ip))
    pdudata = db.get_row()
 
- print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:200px;'>"
+ print "<DIV CLASS='z-frame z-info' STYLE='height:200px;'>"
  print "<DIV CLASS=title>PDU Device Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<FORM ID=pdu_info_form>"
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
@@ -108,7 +108,7 @@ def unit_info(aWeb):
   avocent.set_name(aWeb['slot'],aWeb['unit'],aWeb['name'])
   print "Updated name: {} for {} slot {}".format(aWeb['name'],aWeb['pdu'],aWeb['slot'])
   return
- print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:150px;'>"
+ print "<DIV CLASS='z-frame z-info' STYLE='height:150px;'>"
  print "<FORM ID=pdu_form>"
  print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(aWeb['slot'])
  print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(aWeb['unit'])

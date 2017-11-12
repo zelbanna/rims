@@ -78,7 +78,7 @@ def info(aWeb):
     ip   = condata['ip']
     name = condata['name']
 
- print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; width:420px; z-index:101; height:185px;'>"
+ print "<DIV CLASS='z-frame z-info' STYLE='height:185px;'>"
  print "<FORM ID=console_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=title>Consoles Info {}</DIV>".format("(new)" if id == 'new' else "")

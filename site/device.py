@@ -177,7 +177,7 @@ def info(aWeb):
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
   print "</SELECT>"
  print "</DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td style='{0}'>{1}</DIV></DIV>".format("border: solid 1px red;" if (dev['fqdn'] != dev['info']['fqdn']) else "", dev['info']['fqdn'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['fqdn'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['a_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ptr_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])

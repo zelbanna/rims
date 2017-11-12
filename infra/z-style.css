@@ -57,13 +57,13 @@ div.z-content-right {     display:block; position:absolute; top:0px;  bottom:0px
 
 /*######################################## DIVs ###########################################*/
 
-div.z-frame {	border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; }
+div.z-content-left > .z-frame { width:99%; }
+div.z-frame {	border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; width:auto; }
 div.z-frame:hover { box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }
 div.z-frame .title { font-weight: bold; text-align:center; }
 
+div.z-info {    resize:horizontal; margin-left:0px; width:420px; }
 div.z-border {  border:solid 1px black; }
-
-div.z-system { margin:3px; overflow-x: hidden; position: relative}
 
 div.z-logs { background-color:#FFFFFF; color:grey; overflow: auto; padding: 4px; font-family: "Courier New", serif; font-size: 12px; margin: 3px; }
 div.z-logs:hover { color:#000000; }
