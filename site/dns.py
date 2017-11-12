@@ -20,16 +20,16 @@ def list(aWeb):
   local = db.get_dict('id')
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Domains</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=dns_list'><IMG SRC='images/btn-reload.png'></A>"
- print "<A TITLE='Add Subnet'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=dns_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print  aWeb.button(['DIV=div_content_left','URL=sdcp.cgi?call=dns_list'],'reload')
+ print  aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_info&id=new'],'add')
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for dom in dns['domains']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=dns_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],dom['id'],dom['name'],dom['notified_serial'])
-  print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=dns_records&id={}><IMG SRC=images/btn-info.png></A>".format(dom['id'])
+  print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_records&id={}'.format(dom['id'])],'info')
   if not local.pop(dom['id'],None):
-   print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=dns_sync&id={}><IMG SRC=images/btn-reload.png></A>".format(dom['id'])
+   print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_sync&id={}'.format(dom['id'])],'reload')
   print "</DIV></DIV>"
  print "</DIV></DIV>"
  print "Remaining:{}".format(len(local))
@@ -38,8 +38,8 @@ def list(aWeb):
 #
 #
 def records(aWeb):
- print "hej"
  dns = rest_call(PC.dns['url'], "sdcp.rest.{}_records".format(PC.dns['type']),{'domain_id':aWeb['id']})
+ orint 
  print dns
  print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_records','SPIN=true'],'reload')
 #

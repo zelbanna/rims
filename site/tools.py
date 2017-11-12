@@ -117,7 +117,7 @@ def rest_execute(aWeb):
  print "<DIV CLASS=z-frame>"
  try:
   ret = rest_call("http://{}/rest.cgi".format(aWeb['sdcp_host']),aWeb['sdcp_api'],arguments,aWeb['sdcp_method'])
-  print "<DIV style='border:solid 1px black; background:#FFFFFF'>"
+  print "<DIV CLASS=z-border>"
   output = dumps(ret,indent=4, sort_keys=True)
   print "<PRE style='margin:0px;'>{}</PRE>".format(output)
  except RestException,re:
