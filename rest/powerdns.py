@@ -138,14 +138,17 @@ def update(aDict):
  return ret
 
 #
-# records(type ['A'|'PTR'])
+# records(type <'A'|'PTR'> | domain_id )
 #
 def records(aDict):
  log("powerdns_get_records({})".format(aDict))
  ret = {'res':'OK'}
- tune = aDict['type'].upper() if aDict.get('type') else "PTR' OR type = 'A"
+ try:    tune = ["domain_id = {}".format(aDict['domain_id'])]
+ except: tune = []
+ if aDict.get('type'):
+  tune.append("type = '{}'".format(aDict['type'].upper()))
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  ret['count'] = db.do("SELECT id, domain_id AS dom_id, name, type, content FROM records WHERE type = '{}' ORDER BY name".format(tune))
+  ret['count'] = db.do("SELECT id, domain_id AS dom_id, name, type, content,ttl,change_date FROM records WHERE {} ORDER BY name".format(" AND ".join(tune)))
   ret['records'] = db.get_rows()
  return ret
 
