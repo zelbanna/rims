@@ -56,14 +56,14 @@ def top(aDict):
  return {'res':'OK', 'top':top,'who':who }
 
 #
-# Return domains name + id
 #
 def domains(aDict):
  log("powerdns_domains({})".format(aDict))
+ ret = {'res':'OK'}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  res = db.do("SELECT id, name, master, type, notified_serial FROM domains")
-  rows = db.get_rows()
- return {'res':'OK', 'domains':rows }
+  ret['xist'] = db.do("SELECT domains.* FROM domains {} ORDER BY name".format('' if not aDict.get('id') else "WHERE id = {}".format(aDict['id'])))
+  ret['domains'] = db.get_rows()
+ return ret
 
 #
 # lookup_a ( name, a_dom_id)
@@ -95,6 +95,21 @@ def lookup_ptr(aDict):
   ret['xist'] = db.do("SELECT id, content AS fqdn FROM records WHERE type = 'PTR' AND domain_id = {} AND name = '{}'".format(ret['domain_id'],GL.ip2ptr(aDict['ip'])))
   if ret['xist'] > 0:
    ret.update(db.get_row())
+   ret['res'] = 'OK'
+  else:
+   ret['res'] = 'NOT_OK'
+ return ret
+
+#
+# lookup_id (id)
+#
+def lookup_id(aDict):
+ log("powerdns_lookup_id({})".format(aDict))
+ ret = {}
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
+  ret['xist'] = db.do("SELECT domains.* FROM domains WHERE id = '{}'".format(aDict['id']))
+  if ret['xist'] > 0:
+   ret['data'] = db.get_row()
    ret['res'] = 'OK'
   else:
    ret['res'] = 'NOT_OK'
@@ -148,19 +163,16 @@ def records(aDict):
  if aDict.get('type'):
   tune.append("type = '{}'".format(aDict['type'].upper()))
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  ret['count'] = db.do("SELECT id, domain_id AS dom_id, name, type, content,ttl,change_date FROM records WHERE {} ORDER BY name".format(" AND ".join(tune)))
+  ret['count'] = db.do("SELECT id, domain_id AS dom_id, name, type, content,ttl,change_date FROM records WHERE {} ORDER BY type DESC, name".format(" AND ".join(tune)))
   ret['records'] = db.get_rows()
  return ret
 
 #
 #
-def remove(aDict):
+def record_remove(aDict):
  log("powerdns_remove({})".format(aDict))
  ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  if aDict.get('a_id','0') != '0':
-   ret['a'] = db.do("DELETE FROM records WHERE id = '{}' and type = 'A'".format(aDict['a_id']))
-  if aDict.get('ptr_id','0') != '0':
-   ret['ptr'] = db.do("DELETE FROM records WHERE id = '{}' and type = 'PTR'".format(aDict['ptr_id']))
- ret['res'] = 'OK' if ret.get('a',0) > 0 or ret.get('ptr',0) > 0 else 'NOT_OK'
+  ret['xist'] = db.do("DELETE FROM records WHERE id = '{}'".format(aDict['id']))
+  ret['res'] = 'OK' if ret['xist'] > 0 else 'NOT_OK'
  return ret
