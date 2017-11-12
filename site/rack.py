@@ -118,7 +118,7 @@ def info(aWeb):
  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=rack_info&id={0}><IMG SRC='images/btn-reload.png'></A>".format(id)
  print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results URL=sdcp.cgi?call=rack_update FRM=rack_info_form><IMG SRC='images/btn-save.png'></A>"
  if not id == 'new':
-  print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=rack_remove&id={0}><IMG SRC='images/btn-remove.png'></A>".format(id)
+  print "<A TITLE='Delete unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=rack_remove&id={0}><IMG SRC='images/btn-delete.png'></A>".format(id)
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
  print "</DIV>"
 

@@ -121,3 +121,6 @@ class Web(object):
    if not key in aexceptlist:
     reload += ("&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key)))
   return reload[1:]
+
+ def button(self,aList,aImg):
+  return "<A CLASS='z-op z-btn z-small-btn' %s><IMG SRC=images/btn-%s.png></A>" % (' '.join(aList),aImg)

@@ -56,7 +56,7 @@ def info(aWeb):
  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=ipam_info&id={}><IMG SRC='images/btn-reload.png'></A>".format(data['id'])
  print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=ipam_info&op=update FRM=ipam_info_form><IMG SRC='images/btn-save.png'></A>"
  if not data['id'] == 'new':
-  print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right MSG='Are you really sure' URL=sdcp.cgi?call=ipam_remove&id={}><IMG SRC='images/btn-remove.png'></A>".format(data['id'])
+  print "<A TITLE='Delete unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right MSG='Are you really sure' URL=sdcp.cgi?call=ipam_remove&id={}><IMG SRC='images/btn-delete.png'></A>".format(data['id'])
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
  print "</DIV></DIV>"
 

@@ -88,7 +88,7 @@ def info(aWeb):
 
  print "</DIV></DIV>"
  if data['id'] != 'new':
-  print "<A TITLE='Remove user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=users_remove&id={0} MSG='Really remove user?'><IMG SRC='images/btn-remove.png'></A>".format(data['id'])
+  print "<A TITLE='Delete user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=users_remove&id={0} MSG='Really remove user?'><IMG SRC='images/btn-delete.png'></A>".format(data['id'])
  print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=users_info&headers=no&op=update FRM=sdcp_user_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</FORM>"
  print "</DIV>"

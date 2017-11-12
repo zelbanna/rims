@@ -23,10 +23,11 @@ def list(aWeb):
  print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=dns_list'><IMG SRC='images/btn-reload.png'></A>"
  print "<A TITLE='Add Subnet'  CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=dns_info&id=new'><IMG SRC='images/btn-add.png'></A>"
  print "<DIV CLASS=z-table>"
- print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for dom in dns['domains']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=dns_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],dom['id'],dom['name'],dom['type'],dom['notified_serial'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=dns_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],dom['id'],dom['name'],dom['notified_serial'])
+  print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=dns_records&id={}><IMG SRC=images/btn-info.png></A>".format(dom['id'])
   if not local.pop(dom['id'],None):
    print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=dns_sync&id={}><IMG SRC=images/btn-reload.png></A>".format(dom['id'])
   print "</DIV></DIV>"
@@ -34,6 +35,13 @@ def list(aWeb):
  print "Remaining:{}".format(len(local))
  print "</DIV>"
 
+#
+#
+def records(aWeb):
+ print "hej"
+ dns = rest_call(PC.dns['url'], "sdcp.rest.{}_records".format(PC.dns['type']),{'domain_id':aWeb['id']})
+ print dns
+ print aWeb.button(['DIV=div_content_right','URL=sdcp.cgi?call=dns_records','SPIN=true'],'reload')
 #
 #
 #
@@ -83,7 +91,7 @@ def discrepancy(aWeb):
      print "<DIV CLASS=td>{0}</DIV>".format(dev['fqdn'])
     else:
      print "<DIV CLASS=td>&nbsp</DIV><DIV CLASS=td>&nbsp</DIV>"
-    print "<DIV CLASS=td>&nbsp;<A CLASS='z-op z-btn z-small-btn' DIV=span_dns MSG='Are you sure?' URL='sdcp.cgi?call=dns_remove&type={}&id={}'><IMG SRC=images/btn-remove.png></A></DIV>".format(type,rec['id'])
+    print "<DIV CLASS=td>&nbsp;<A CLASS='z-op z-btn z-small-btn' DIV=span_dns MSG='Are you sure?' URL='sdcp.cgi?call=dns_remove&type={}&id={}'><IMG SRC=images/btn-delete.png></A></DIV>".format(type,rec['id'])
     print "</DIV>"
   if len(devs) > 0:
    for key,value in  devs.iteritems():

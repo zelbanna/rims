@@ -225,7 +225,7 @@ def info(aWeb):
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}><IMG SRC='images/btn-reload.png'></A>".format(id)
- print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_remove&id={} MSG='Are you sure you want to delete device?' TITLE='Remove device'><IMG SRC='images/btn-remove.png'></A>".format(id)
+ print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_remove&id={} MSG='Are you sure you want to delete device?' TITLE='Delete device'><IMG SRC='images/btn-delete.png'></A>".format(id)
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=lookup&id={}&ip={} TITLE='Lookup and Detect Device information'><IMG SRC='images/btn-search.png'></A>".format(id,dev['info']['ipasc'])
  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=device_info&op=update    FRM=info_form TITLE='Save Device Information and Update DDI and PDU'><IMG SRC='images/btn-save.png'></A>"
  if dev['booked']:

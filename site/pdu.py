@@ -82,7 +82,7 @@ def info(aWeb):
  print "</DIV></DIV>"
  if not id == 'new':
   print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_info&id={}><IMG SRC='images/btn-reload.png'></A>".format(id)
-  print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_remove&id={}><IMG SRC='images/btn-remove.png'></A>".format(id)
+  print "<A TITLE='Delete unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_remove&id={}><IMG SRC='images/btn-delete.png'></A>".format(id)
   print "<A TITLE='Fetch  info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_info&id={}&op=lookup&ip={}><IMG SRC='images/btn-search.png'></A>".format(id,pdudata['ipasc'])
  print "<A  TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_info&id={}&op=update FRM=pdu_info_form><IMG SRC='images/btn-save.png'></A>".format(id)
  print "</FORM>"

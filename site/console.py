@@ -89,14 +89,14 @@ def info(aWeb):
  print "</DIV></DIV></FORM>"
  if not id == 'new':
   print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=console_info&id={}><IMG SRC='images/btn-reload.png'></A>".format(id)
-  print "<A TITLE='Remove unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=console_remove&id={0}><IMG SRC='images/btn-remove.png'></A>".format(id)
+  print "<A TITLE='Delete unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=console_delete&id={0}><IMG SRC='images/btn-delete.png'></A>".format(id)
  print "<A TITLE='Update unit'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=console_info&op=update FRM=console_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</DIV>"
 
 #
 #
 #
-def remove(aWeb):
+def delete(aWeb):
  with DB() as db:
   db.do("UPDATE rackinfo SET console_port = 0 WHERE console_id = '{0}'".format(aWeb['id']))
   db.do("DELETE FROM consoles WHERE id = '{0}'".format(aWeb['id']))

@@ -49,7 +49,7 @@ def list(aWeb):
   print "</DIV>"
   print "<DIV CLASS=td>"
   tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=neutron_action&name=" + net['display_name'] + "&id=" + net['uuid'] + "&op={} {} SPIN=true>{}</A>&nbsp;"
-  print tmpl.format('Remove','remove',"MSG='Really delete network?'", '<IMG SRC=images/btn-remove.png>')
+  print tmpl.format('Remove','remove',"MSG='Really delete network?'", '<IMG SRC=images/btn-delete.png>')
   print "</DIV>"
   print "</DIV>"
  print "</DIV>"

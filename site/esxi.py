@@ -119,7 +119,7 @@ def vmop(aWeb):
    vmop = nstate.partition('-')[2]
    with esxi:
     esxi.ssh_send("vim-cmd vmsvc/{} {}".format(vmop,vmid),userid)
-    sleep(4)
+    sleep(2)
   elif nstate == 'poweroff':
    with esxi:
     esxi.ssh_send("poweroff",userid)

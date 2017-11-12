@@ -42,7 +42,7 @@ def list(aWeb):
   print "{}</A></DIV><DIV CLASS=td>".format(row['title'])
   print "&nbsp;<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=resources_info&id={0}><IMG SRC=images/btn-info.png></A>".format(row['id'])
   if aWeb.cookie['sdcp_id'] == str(row['user_id']):
-   print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=resources_remove&id={0} MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>".format(row['id'])
+   print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=resources_delete&id={0} MSG='Really delete resource?'><IMG SRC='images/btn-delete.png'></A>".format(row['id'])
   print "</DIV></DIV>"
  print "</DIV></DIV></DIV></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right>"
@@ -95,7 +95,7 @@ def info(aWeb):
   print "<A CLASS='z-btn z-menu-btn' style='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(data['icon'])
  print "<BR style='clear:left'>"
  if data['id'] != 'new':
-  print "<A TITLE='Remove resource' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=resources_remove&id={0}  MSG='Really remove resource?'><IMG SRC='images/btn-remove.png'></A>".format(data['id'])
+  print "<A TITLE='Delete resource' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=resources_delete&id={0}  MSG='Really delete resource?'><IMG SRC='images/btn-delete.png'></A>".format(data['id'])
  print "<A TITLE='Update resource'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=resources_info&op=update FRM=sdcp_resource_info_form><IMG SRC='images/btn-save.png'></A>"
  print "</DIV>"
 
@@ -122,7 +122,7 @@ def view(aWeb):
 #
 #
 #
-def remove(aWeb):
+def delete(aWeb):
  with DB() as db:
   id = aWeb['id']
   res = db.do("DELETE FROM resources WHERE id = '{}'".format(id))
