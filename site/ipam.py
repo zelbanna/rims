@@ -69,7 +69,7 @@ def layout(aWeb):
  startn  = int(ret['start'])
  starta  = int(ret['subnet'].split('.')[3])
  devices = ret['devices']
- green = "<A CLASS='z-op z-btn z-small-text' STYLE='float:left; background-color:#00cc66!important' TITLE='New' DIV=div_content_right URL=sdcp.cgi?call=device_new&ipam_sub_id="+ aWeb['id'] +"&ipint={}>{}</A>"
+ green = "<A CLASS='z-op z-btn z-small-text' STYLE='float:left; background-color:#00cc66!important' TITLE='New' DIV=div_content_right URL=sdcp.cgi?call=device_new&subnet_id="+ aWeb['id'] +"&ipint={}>{}</A>"
  red   = "<A CLASS='z-op z-btn z-small-text' STYLE='float:left; background-color:#df3620!important' TITLE='{}' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A>"
  blue  = "<A CLASS='z-btn z-small-text'      STYLE='float:left; background-color:#33CAFF!important' TITLE='{}'>{}</A>"
  print blue.format('network',starta % 256)

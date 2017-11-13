@@ -44,7 +44,7 @@ def allocation(aDict):
   ret['mask']   = subnet['mask']
   ret['subnet'] = subnet['subasc']
   ret['gateway']= subnet['gwasc']
-  ret['xist_devices'] = db.do("SELECT ip,id,hostname,0 AS gateway FROM devices WHERE ipam_sub_id = {} ORDER BY ip".format(aDict['id']))
+  ret['xist_devices'] = db.do("SELECT ip,id,hostname,0 AS gateway FROM devices WHERE subnet_id = {} ORDER BY ip".format(aDict['id']))
   ret['devices'] = db.get_dict('ip')
   gw = ret['devices'].get(subnet['gateway'])
   if gw:
@@ -83,7 +83,7 @@ def update(aDict):
 def remove(aDict):
  ret = {'res':'OK'}
  with DB() as db:
-  ret['devices'] = db.do("DELETE FROM devices WHERE ipam_sub_id = " + aDict['id'])
+  ret['devices'] = db.do("DELETE FROM devices WHERE subnet_id = " + aDict['id'])
   ret['xist']    = db.do("DELETE FROM subnets WHERE id = " + aDict['id'])
  return ret
  
@@ -94,7 +94,7 @@ def find(aDict):
  with DB() as db:
   db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(aDict['id']))
   sub = db.get_row()
-  db.do("SELECT ip FROM devices WHERE ipam_sub_id = {}".format(aDict['id']))
+  db.do("SELECT ip FROM devices WHERE subnet_id = {}".format(aDict['id']))
   iplist = db.get_dict('ip')
  subnet = int(sub.get('subnet'))
  start  = None

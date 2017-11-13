@@ -280,7 +280,7 @@ def conf_gen(aWeb):
  type = aWeb['type_name']
  print "<DIV CLASS=z-frame style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
  with DB() as db:
-  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname,domains.name as domain, INET_NTOA(subnets.gateway) as gateway, INET_NTOA(subnets.subnet) AS subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.ipam_sub_id WHERE devices.id = '{}'".format(id))
+  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname,domains.name as domain, INET_NTOA(subnets.gateway) as gateway, INET_NTOA(subnets.subnet) AS subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = '{}'".format(id))
   row = db.get_row()
  try:
   module = import_module("sdcp.devices.{}".format(type))
@@ -343,7 +343,7 @@ def new(aWeb):
  name   = aWeb.get('hostname','unknown')
  mac    = aWeb.get('mac',"00:00:00:00:00:00")
  op     = aWeb['op']
- ipam_sub_id = aWeb['ipam_sub_id']
+ subnet_id = aWeb['subnet_id']
  if not ip:
   from sdcp.core import genlib as GL
   ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
@@ -354,7 +354,7 @@ def new(aWeb):
 
   a_dom_id,_,domain = aWeb['a_dom_id'].partition('_')
   fqdn = "{}.{}".format(name,domain)
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'fqdn':fqdn, 'a_dom_id':a_dom_id, 'ipam_sub_id':ipam_sub_id }
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'fqdn':fqdn, 'a_dom_id':a_dom_id, 'subnet_id':subnet_id }
 
   if aWeb['vm']:
    args['vm'] = 1
@@ -366,7 +366,7 @@ def new(aWeb):
   print "DB:{}".format(res)
   aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),args,res))
  elif op == 'find':
-  res  = sdcpipam.find({'id':ipam_sub_id})
+  res  = sdcpipam.find({'id':subnet_id})
   print "IP:{}".format(res['ip'])
  else:
   domain = aWeb['domain']
@@ -386,9 +386,9 @@ def new(aWeb):
    if not "in-addr.arpa" in d.get('name'):
     print "<OPTION VALUE={0}_{2} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == domain else "",d['name'])
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_sub_id>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=subnet_id>"
   for s in subnets:
-   print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == ipam_sub_id else "", s['subnet'],s['description'])
+   print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == subnet_id else "", s['subnet'],s['description'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
   if aWeb['target'] == 'rack_id':
@@ -432,7 +432,7 @@ def discover(aWeb):
   a_dom = aWeb['a_dom_id']
   ipam  = aWeb.get('ipam_subnet',"0_0_32").split('_')
   # id, subnet int, subnet mask
-  res = discover({ 'ipam_sub_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':a_dom, 'clear':clear})
+  res = discover({ 'subnet_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':a_dom, 'clear':clear})
   print "<DIV CLASS=z-frame>{}</DIV>".format(res)
  else:
   with DB() as db:
