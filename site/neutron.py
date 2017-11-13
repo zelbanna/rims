@@ -190,7 +190,7 @@ def action(aWeb):
    print "<OPTION VALUE={0}#{1}>{2} ({1})</OPTION>".format(uuid,iip['instance_ip_address'],iip['virtual_network_refs'][0]['to'][2])
   print "</SELECT></FORM>"
   print "<A TITLE='Change VM' CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=neutron_action&op=fi_associate_choose_vm&id={}><IMG SRC=images/btn-back.png></A>".format(id)
-  print "<A TITLE='Commit'    CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=neutron_action&op=fi_associate FRM=frm_fi_assoc_vmi><IMG SRC=images/btn-start.png></A>"
+  print "<A TITLE='Commit'    CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=neutron_action&op=fi_associate FRM=frm_fi_assoc_vmi><IMG SRC=images/btn-next.png></A>"
 
  elif op == 'fi_associate':
   from json import dumps
