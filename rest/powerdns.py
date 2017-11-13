@@ -56,41 +56,6 @@ def top(aDict):
  return {'res':'OK', 'top':top,'who':who }
 
 #
-# lookup_a ( name, a_dom_id)
-#
-def lookup_a(aDict):
- log("powerdns_lookup_a({})".format(aDict))
- ret = {}
- with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  res = db.do("SELECT name FROM domains WHERE id = '{}'".format(aDict['a_dom_id']))
-  ret['domain'] = db.get_val('name') if res > 0 else 'unknown'
-  ret['xist'] = db.do("SELECT id, content AS ip FROM records WHERE type = 'A' AND domain_id = {} AND name = '{}'".format(aDict['a_dom_id'],"{}.{}".format(aDict['name'],ret['domain'])))
-  if ret['xist'] > 0:
-   ret.update(db.get_row())
-   ret['res']  = 'OK'
-  else:
-   ret['res']  = 'NOT_OK'
- return ret
-
-#
-# lookup_ptr (ip)
-#
-def lookup_ptr(aDict):
- log("powerdns_lookup_ptr({})".format(aDict))
- ret = {}
- with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  from sdcp.core import genlib as GL
-  res = db.do("SELECT id FROM domains WHERE type = 'PTR' AND name = '{}'".format( GL.ip2arpa(aDict['ip']) ))
-  ret['domain_id'] = db.get_val('id')
-  ret['xist'] = db.do("SELECT id, content AS fqdn FROM records WHERE type = 'PTR' AND domain_id = {} AND name = '{}'".format(ret['domain_id'],GL.ip2ptr(aDict['ip'])))
-  if ret['xist'] > 0:
-   ret.update(db.get_row())
-   ret['res'] = 'OK'
-  else:
-   ret['res'] = 'NOT_OK'
- return ret
-
-#
 # update( id, ip, fqdn, domain_id, type)
 #
 # A:  content = ip, name = fqdn
