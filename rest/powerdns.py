@@ -56,16 +56,6 @@ def top(aDict):
  return {'res':'OK', 'top':top,'who':who }
 
 #
-#
-def domains(aDict):
- log("powerdns_domains({})".format(aDict))
- ret = {'res':'OK'}
- with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  ret['xist'] = db.do("SELECT domains.* FROM domains {} ORDER BY name".format('' if not aDict.get('id') else "WHERE id = {}".format(aDict['id'])))
-  ret['domains'] = db.get_rows()
- return ret
-
-#
 # lookup_a ( name, a_dom_id)
 #
 def lookup_a(aDict):
@@ -137,6 +127,57 @@ def update(aDict):
    ret['id']    = db.get_last_id()
  return ret
 
+#################################### Domains #######################################
+#
+#
+def domains(aDict):
+ log("powerdns_domains({})".format(aDict))
+ ret = {'res':'OK'}
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
+  ret['xist'] = db.do("SELECT domains.* FROM domains {} ORDER BY name".format('' if not aDict.get('id') else "WHERE id = {}".format(aDict['id'])))
+  ret['domains'] = db.get_rows()
+ return ret
+
+#
+# domain_lookup (id, domain_id)
+#
+def domain_lookup(aDict):
+ log("powerdns_domain_lookup({})".format(aDict))
+ ret = {}
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
+  ret['xist'] = db.do("SELECT domains.* FROM domains WHERE id = '{}'".format(aDict['id']))
+  if ret['xist'] > 0:
+   ret['data'] = db.get_row()
+   ret['res'] = 'OK'
+  else:
+   ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER' }
+   ret['res'] = 'NOT_OK'
+ return ret
+
+#
+#
+def domain_update(aDict):
+ log("powerdns_domain_update({})".format(aDict))
+ ret = {'res':'OK'}
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
+  if aDict['id'] == 'new':
+   ret['xist'] = db.do("INSERT INTO domains(name, master, type) VALUES ('{}','{}','{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['name'],aDict['master'],aDict['type']))
+   ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
+  else:
+   ret['xist'] = db.do("UPDATE domains SET name = '{}', master = '{}', type = '{}' WHERE id = {}".format(aDict['name'],aDict['master'],aDict['type'],aDict['id']))
+   ret['id']   = aDict['id']
+ return ret
+
+#
+#
+def domain_delete(aDict):
+ log("powerdns_domain_delete({})".format(aDict))
+ ret = {'res':'OK'}
+ with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
+  ret['xist'] = db.do("DELETE FROM domains WHERE id = %i"%(int(aDict['id'])))
+ return ret
+   
+#################################### Records #######################################
 #
 # records(type <'A'|'PTR'> | domain_id )
 #
