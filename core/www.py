@@ -122,5 +122,5 @@ class Web(object):
     reload += ("&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key)))
   return reload[1:]
 
- def button(self,aList,aImg):
-  return "<A CLASS='z-op z-btn z-small-btn' %s><IMG SRC=images/btn-%s.png></A>" % (' '.join(aList),aImg)
+ def button(self,aImg,**kwargs):
+  return " ".join(["<A CLASS='z-op z-btn z-small-btn'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC=images/btn-%s.png></A>"%(aImg)])
