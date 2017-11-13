@@ -258,7 +258,7 @@ def info(aWeb):
   if functions:
    if functions[0] == 'operated':
     if dev['info']['type_name'] == 'esxi':
-     print "<A CLASS=z-op DIV=div_main_cont URL='sdcp.cgi?call=esxi_info&id={}'>Manage</A></B></DIV>".format(id)
+     print "<A CLASS=z-op DIV=div_main_cont URL='sdcp.cgi?call=esxi_main&id={}'>Manage</A></B></DIV>".format(id)
    else:
     for fun in functions:
      funname = " ".join(fun.split('_')[1:])

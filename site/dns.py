@@ -61,7 +61,7 @@ def domain_info(aWeb):
  print "</FORM>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id={}'.format(data['id']))
  print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&op=update',FRM='dns_info_form')
- if not data['id'] == 'new':
+ if not data['id'] == 'new' and not "arpa" in data['name']:
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete&id={}'.format(data['id']))
  print "<SPAN style='float:right; font-size:9px;'ID=update_results>{}/{}</SPAN>".format("lookup" if not aWeb.get('op') else aWeb['op'],res['res'])
 
