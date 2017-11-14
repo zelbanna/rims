@@ -37,12 +37,14 @@ def ipint2range(start,end):
 def ip2ptr(addr):
  octets = addr.split('.')
  octets.reverse()
- return ".".join(octets) + ".in-addr.arpa"
+ octets.append(".in-addr.arpa")
+ return ".".join(octets)
 
 def ip2arpa(addr):
  octets = addr.split('.')[:3]
  octets.reverse()
- return ".".join(octets) + ".in-addr.arpa"
+ octets.append(".in-addr.arpa")
+ return ".".join(octets)
 
 def int2mac(aInt):
  return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()

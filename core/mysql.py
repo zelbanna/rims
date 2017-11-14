@@ -31,7 +31,8 @@ def dump(aDict):
      parts = line.split();
      for index, part in enumerate(parts):
       if "AUTO_INCREMENT=" in part:
-       parts[index] = ''
+       parts.remove(part)
+       break
      line = " ".join(parts)
     output.append(line)
   res = 'OK'
