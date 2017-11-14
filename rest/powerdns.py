@@ -55,6 +55,8 @@ def top(aDict):
   who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL.get_host_name(parts[1]), 'count':item[1]})
  return {'res':'OK', 'top':top,'who':who }
 
+
+
 #
 # update( id, ip, fqdn, domain_id, type)
 #
@@ -126,8 +128,16 @@ def domain_update(aDict):
  ret = {'res':'OK'}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   if aDict['id'] == 'new':
+   # Create and insert a lot of records
    ret['xist'] = db.do("INSERT INTO domains(name, master, type) VALUES ('{}','{}','{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['name'],aDict['master'],aDict['type']))
    ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
+   if ret['id'] != 'new':
+    from time import strftime
+    ret['serial'] = strftime("%Y%m%d%H")
+    xist = db.do("SELECT records.name AS server, domains.name AS domain FROM records INNER JOIN domains ON domains.id = domain_id WHERE content = '{}'".format(aDict['master']))
+    ret['soa'] = db.get_row() if xist > 0 else {'server':'server.local','domain':'local'}
+    db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','SOA',25200,'{}',0)".format(ret['id'],aDict['name'],"{} hostmaster.{} 0 21600 300 3600".format(ret['soa']['server'],ret['soa']['domain']),ret['serial'])) 
+    db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','NS' ,25200,'{}',0)".format(ret['id'],aDict['name'],ret['soa']['server'],ret['serial'])) 
   else:
    ret['xist'] = db.do("UPDATE domains SET name = '{}', master = '{}', type = '{}' WHERE id = {}".format(aDict['name'],aDict['master'],aDict['type'],aDict['id']))
    ret['id']   = aDict['id']
@@ -175,16 +185,17 @@ def record_lookup(aDict):
  return ret
 
 #
-#
+# id/0/'new',dom_id,name,content,type (ttl)
 def record_update(aDict):
  log("powerdns_records_update({})".format(aDict))
- ret = {'res':'OK'}
+ from time import strftime
+ ret = {'res':'OK','serial':strftime("%Y%m%d%H")}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  if aDict['id'] == 'new':
-   ret['xist'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, prio) VALUES ({},'{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'],aDict['ttl']))
+  if aDict['id'] == 'new' or str(aDict['id']) == '0':
+   ret['xist'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date,prio) VALUES ({},'{}','{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'].upper(),aDict.get('ttl','3600'),ret['serial']))
    ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
   else:
-   ret['xist'] = db.do("UPDATE records SET domain_id = {}, name = '{}', content = '{}', type = '{}', ttl = '{}', prio = 0 WHERE id = {}".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'],aDict['ttl'],aDict['id']))
+   ret['xist'] = db.do("UPDATE records SET domain_id = {}, name = '{}', content = '{}', type = '{}', ttl = '{}', change_date = '{}',prio = 0 WHERE id = {}".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'].upper(),aDict.get('ttl','3600'),ret['serial'],aDict['id']))
    ret['id']   = aDict['id']
  return ret
 
