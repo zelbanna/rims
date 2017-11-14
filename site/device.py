@@ -111,20 +111,13 @@ def info(aWeb):
     db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, a_dom_id, subnets.ptr_dom_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id LEFT JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = {}".format(id))
     ddi = db.get_row()
    fqdn = ".".join([d['devices_hostname'],ddi.get('domain','local')])
-
-   if ddi['a_dom_id']:
-    opres['a'] = rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':'A', 'id':ddi['a_id'], 'domain_id':ddi['a_dom_id'], 'name':fqdn, 'content':ddi['ip'] })
-    if not str(opres['a']['id']) == str(ddi['a_id']):
-     d['devices_a_id'] = opres['a']['id']
-   if ddi['ptr_dom_id']:
-    from sdcp.core import genlib as GL
-    opres['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':'PTR', 'id':ddi['ptr_id'], 'domain_id':ddi['ptr_dom_id'], 'name':GL.ip2ptr(ddi['ip']), 'content':fqdn })
-    if not str(opres['ptr']['id']) == str(ddi['ptr_id']):
-     d['devices_ptr_id'] = opres['ptr']['id']
- 
+   from sdcp.core import genlib as GL
+   for type,name,content in [('a',fqdn,ddi['ip']),('ptr',GL.ip2ptr(ddi['ip']),fqdn)]:
+    if ddi['%s_dom_id'%(type)]:
+     opres[type] = rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':type.upper(), 'id':ddi['%s_id'%(type)], 'domain_id':ddi['%s_dom_id'%(type)], 'name':name, 'content':content })
+     if not str(opres[type]['id']) == str(ddi['%s_id'%(type)]):
+      d['devices_%s_id'%(type)] = opres[type]['id']
    opres['update'] = rest_update(d)
-   print opres
-   print "<BR>"
 
  elif "book" in op:
   from sdcp.rest.booking import booking
