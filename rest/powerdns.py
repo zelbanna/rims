@@ -15,8 +15,8 @@ from sdcp.core.logger import log
 #
 # Call removes name duplicates.. (assume order by name => duplicate names :-))
 #
-def cleanup(aDict):
- log("powerdns_cleanup({})".format(aDict))
+def dedup(aDict):
+ log("powerdns_dedup({})".format(aDict))
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
   rows = db.get_rows();
