@@ -189,14 +189,16 @@ def record_lookup(aDict):
 def record_update(aDict):
  log("powerdns_records_update({})".format(aDict))
  from time import strftime
- ret = {'res':'OK','serial':strftime("%Y%m%d%H")}
+ aDict['change_date'] = strftime("%Y%m%d%H")
+ aDict['ttl']  = aDict.get('ttl','3600')
+ aDict['type'] = aDict['type'].upper() 
+ ret = {'res':'OK','id':aDict.pop('id',None)}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  if aDict['id'] == 'new' or str(aDict['id']) == '0':
-   ret['xist'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date,prio) VALUES ({},'{}','{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'].upper(),aDict.get('ttl','3600'),ret['serial']))
+  if ret['id'] == 'new' or str(ret['id']) == '0':
+   ret['xist'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date,prio) VALUES ({},'{}','{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'],aDict['ttl'],aDict['change_date']))
    ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
   else:
-   ret['xist'] = db.do("UPDATE records SET domain_id = {}, name = '{}', content = '{}', type = '{}', ttl = '{}', change_date = '{}',prio = 0 WHERE id = {}".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'].upper(),aDict.get('ttl','3600'),ret['serial'],aDict['id']))
-   ret['id']   = aDict['id']
+   ret['xist'] = db.do("UPDATE records SET domain_id = {}, name = '{}', content = '{}', type = '{}', ttl = '{}', change_date = '{}',prio = 0 WHERE id = {}".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'],aDict['ttl'],aDict['change_date'],ret['id']))
  return ret
 
 #
