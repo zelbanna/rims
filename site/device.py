@@ -108,16 +108,20 @@ def info(aWeb):
    if not d.get('devices_comment'):
     d['devices_comment'] = 'NULL'
    with DB() as db:
-    db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, a_dom_id, ptr_dom_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
+    db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, a_dom_id, subnets.ptr_dom_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id LEFT JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = {}".format(id))
     ddi = db.get_row()
+   print ddi
+   # Update to use records_update function instead   
    fqdn = d['devices_hostname'] + "." + ddi['domain']
-   opres['a'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']),   { 'type':'a',   'id':ddi['a_id'],   'domain_id':ddi['a_dom_id'],   'ip':ddi['ip'], 'fqdn':fqdn })
+   opres['a'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']),   { 'type':'A',   'id':ddi['a_id'],   'domain_id':ddi['a_dom_id'],   'ip':ddi['ip'], 'fqdn':fqdn })
    if opres['a']['id'] != ddi['a_id']:
     d['devices_a_id'] = opres['a']['id']
-   opres['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']), { 'type':'ptr', 'id':ddi['ptr_id'], 'domain_id':ddi['ptr_dom_id'], 'ip':ddi['ip'], 'fqdn':fqdn })
-   if opres['ptr']['id'] != ddi['ptr_id']:
-    d['devices_ptr_id'] = opres['ptr']['id']
+   if ddi['ptr_dom_id']:
+    opres['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']), { 'type':'PTR', 'id':ddi['ptr_id'], 'domain_id':ddi['ptr_dom_id'], 'ip':ddi['ip'], 'fqdn':fqdn })
+    if opres['ptr']['id'] != ddi['ptr_id']:
+     d['devices_ptr_id'] = opres['ptr']['id']
    opres['update'] = rest_update(d)
+   print opres
 
  elif "book" in op:
   from sdcp.rest.booking import booking

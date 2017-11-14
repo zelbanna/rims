@@ -43,13 +43,13 @@ def domain_info(aWeb):
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict_except(['call','op'])
   res = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_update".format(PC.dns['type']),data)
-  data['id'] = res['id']
+  data['id'] = res['id']  
  else:
   res = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_lookup".format(PC.dns['type']),{'id':aWeb['id']})
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  print "<DIV CLASS='z-frame z-info' STYLE='height:200px;'>"
- print "<DIV CLASS=title>Domain Info {}</DIV>".format("(new)" if data['id'] == 'new' else "")
+ print "<DIV CLASS=title>Domain Info{}</DIV>".format(" (new<SPAN TITLE='A zone, PTR zone is created from IPAM'>*</SPAN>)" if data['id'] == 'new' else "")
  print "<!-- {} -->".format(res)
  print "<FORM ID=dns_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
@@ -99,9 +99,10 @@ def domain_transfer(aWeb):
 def records(aWeb):
  dns = rest_call(PC.dns['url'], "sdcp.rest.{}_records".format(PC.dns['type']),{'domain_id':aWeb['id']})
  print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>Records</DIV><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
+ print "<DIV CLASS=title>Records</DIV>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_records&id=%s'%(aWeb['id']))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id=new&domain_id=%s'%(aWeb['id']))
+ print "<SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>TTL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for rec in dns['records']:
@@ -128,13 +129,14 @@ def record_info(aWeb):
  print "<DIV CLASS=title>Record Info {} (Domain {})</DIV>".format("(new)" if data['id'] == 'new' else "",data['domain_id'])
  print "<!-- {} -->".format(res)
  print "<FORM ID=dns_info_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
+ print "<INPUT TYPE=HIDDEN NAME=id        VALUE={}>".format(data['id'])
+ print "<INPUT TYPE=HIDDEN NAME=domain_id VALUE={}>".format(data['domain_id'])
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=name VALUE={}></DIV></DIV>".format(data['name'])
- print "<DIV CLASS=tr><DIV CLASS=td>Content:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=content VALUE={}></DIV></DIV>".format(data['content'])
+ print "<DIV CLASS=tr><DIV CLASS=td TITLE='E.g. A:FQDN, PTR:x.y.z.in-addr.arpa'>Name:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=name VALUE={}></DIV></DIV>".format(data['name'])
+ print "<DIV CLASS=tr><DIV CLASS=td TITLE='E.g. A:IP, PTR:FQDN'>Content:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=content VALUE={}></DIV></DIV>".format(data['content'])
  print "<DIV CLASS=tr><DIV CLASS=td>TTL:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=ttl VALUE={}></DIV></DIV>".format(data['ttl'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE={}></DIV></DIV>".format(data['type'])
- print "<DIV CLASS=tr><DIV CLASS=td>Domain (id):</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=domain_id VALUE={}></DIV></DIV>".format(data['domain_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Domain (id):</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['domain_id'])
  print "</DIV></DIV>"
  print "</FORM>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id={}'.format(data['id']))

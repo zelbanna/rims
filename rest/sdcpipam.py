@@ -24,11 +24,11 @@ def list(aDict):
 def subnet(aDict):
  ret = {'res':'OK'}
  if aDict['id'] == 'new':
-   ret['data'] = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }
+   ret['data'] = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New', 'ptr_dom_id':None }
    ret['xist'] = 0
  else:
   with DB() as db:
-   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(subnet) AS subnet, INET_NTOA(gateway) AS gateway FROM subnets WHERE id = " + aDict['id'])
+   ret['xist'] = db.do("SELECT subnets.id, mask, description, INET_NTOA(subnet) AS subnet, ptr_dom_id, INET_NTOA(gateway) AS gateway, domains.name AS domain FROM subnets LEFT JOIN domains on domains.id = subnets.ptr_dom_id WHERE subnets.id = " + aDict['id'])
    ret['data'] = db.get_row()
  return ret
 

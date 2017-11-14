@@ -33,9 +33,16 @@ def info(aWeb):
  from sdcp.rest import sdcpipam
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict()
+  if data['ptr'] == 'true' and data['ptr_dom_id'] == 'NULL':
+   # Create PTR and 
+   print "Add PTR"
+  if data['ptr'] =='false' and data['ptr_dom_id'] != 'NULL':
+   print "Remove PTR" 
   res = sdcpipam.update(data)
   data['gateway'] = res['gateway']
   data['id']      = res['id']
+  # ZEB: Remove when ptr update is working
+  data['ptr_dom_id'] = None if data['ptr_dom_id'] == 'NULL' else data['ptr_dom_id']
  else:
   res = sdcpipam.subnet({'id':aWeb['id']})
   data = res['data']
@@ -46,11 +53,16 @@ def info(aWeb):
  print "<!-- {} -->".format(res)
  print "<FORM ID=ipam_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
+ print "<INPUT TYPE=HIDDEN NAME=ptr_dom_id VALUE={}>".format(data['ptr_dom_id'] if data['ptr_dom_id'] else 'NULL')
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=description VALUE={}></DIV></DIV>".format(data['description'])
  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=subnet  VALUE={} {}></DIV></DIV>".format(data['subnet'],lock)
  print "<DIV CLASS=tr><DIV CLASS=td>Mask:</DIV><DIV CLASS=td><INPUT    TYPE=TEXT NAME=mask    VALUE={} {}></DIV></DIV>".format(data['mask'],lock)
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=gateway VALUE={}></DIV></DIV>".format(data['gateway'])
+ print "<DIV CLASS=tr><DIV CLASS=td>PTR Domain:</DIV><DIV CLASS=td>"
+ print "Yes<INPUT TYPE=RADIO NAME=ptr VALUE=true STYLE='width:auto' {}>".format("checked" if     data['ptr_dom_id'] else "")
+ print "No<INPUT TYPE=RADIO NAME=ptr VALUE=false STYLE='width:auto' {}>".format("checked" if not data['ptr_dom_id'] else "")
+ print "</DIV></DIV>"
  print "</DIV></DIV>"
  print "</FORM>"
  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=ipam_info&id={}><IMG SRC='images/btn-reload.png'></A>".format(data['id'])
