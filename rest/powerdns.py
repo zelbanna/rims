@@ -11,6 +11,7 @@ from sdcp import PackageContainer as PC
 from sdcp.core.dbase import DB
 from sdcp.core.logger import log
 
+############################### Tools #################################
 #
 # Call removes name duplicates.. (assume order by name => duplicate names :-))
 #
@@ -54,45 +55,6 @@ def top(aDict):
   parts = item[0].split('#')
   who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL.get_host_name(parts[1]), 'count':item[1]})
  return {'res':'OK', 'top':top,'who':who }
-
-
-
-#
-# update( id, ip, fqdn, domain_id, type)
-#
-# A:  content = ip, name = fqdn
-# PTR content = fqdn, name = ip2ptr(ip)
-#
-def update(aDict):
- log("powerdns_update({})".format(aDict))
- from time import strftime
- serial  = strftime("%Y%m%d%H")
- type = aDict['type'].upper()
- if type == 'A':
-  cont = aDict['ip']
-  name = aDict['fqdn']
- else:
-  from sdcp.core import genlib as GL
-  cont = aDict['fqdn']
-  name = GL.ip2ptr(aDict['ip'])
- ret = {'res':'OK', 'type':type }
- with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  if str(aDict.get('id','0')) != '0':
-   ret['update'] = db.do("UPDATE records SET name = '{}', content = '{}', change_date='{}' WHERE type = '{}' AND id ='{}'".format(name,cont,serial,type,aDict['id']))
-   if ret['update'] == 0:
-    ret['xist']= db.do("SELECT id FROM records WHERE name = '{}' AND content = '{}' AND type = '{}'".format(name,cont,type))
-    if ret['xist'] == 1:
-     ret['id']  = db.get_val('id')
-     ret['res'] = "OK" if (ret['id'] == int(aDict['id'])) else "NOT_OK"
-    else:
-     ret['id']  = 0
-     ret['res'] = 'NOT_OK'
-   else:
-    ret['id'] = aDict['id']
-  else:
-   ret['insert']= db.do("INSERT INTO records (name,content,type,domain_id,ttl,change_date) VALUES('{}','{}','{}','{}',3600,'{}')".format(name,cont,type,aDict['domain_id'],serial))
-   ret['id']    = db.get_last_id()
- return ret
 
 #################################### Domains #######################################
 #
@@ -210,4 +172,3 @@ def record_remove(aDict):
   ret['xist'] = db.do("DELETE FROM records WHERE id = '{}'".format(aDict['id']))
   ret['res'] = 'OK' if ret['xist'] > 0 else 'NOT_OK'
  return ret
-
