@@ -75,3 +75,9 @@ class DB(object):
 
  def get_last_id(self):
   return self._curs.lastrowid
+
+ ################# Extras ##################
+
+ @classmethod
+ def dict2string(cls, aDict):
+  return ", ".join(["%s='%s'"%(key,value) for key,value in aDict.iteritems()])

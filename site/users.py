@@ -15,8 +15,8 @@ def main(aWeb):
  print "<DIV CLASS=z-navbar ID=div_navbar>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=users_list'>Users</A>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A>"
- print "<A CLASS='z-right z-op' OP=logout style='background-color:red;' URL=sdcp.cgi>Log out</A>"
- print "<A CLASS='z-right z-op z-navinfo' DIV=div_content_right URL=sdcp.cgi?call=users_info&id={}>{}</A>".format(aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user'))
+ print "<A CLASS='z-op z-right z-warning' OP=logout URL=sdcp.cgi>Log out</A>"
+ print "<A CLASS='z-op z-right z-navinfo' DIV=div_content_right URL=sdcp.cgi?call=users_info&id={}>{}</A>".format(aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user'))
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
@@ -30,8 +30,8 @@ def list(aWeb):
   res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
   rows = db.get_rows()
  print "<DIV CLASS=z-frame><DIV CLASS=title>Users</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=users_list'><IMG SRC='images/btn-reload.png'></A>"
- print "<A TITLE='Add User'    CLASS='z-btn z-small-btn z-op' DIV=div_content_right   URL='sdcp.cgi?call=users_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=users_list')
+ print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?call=users_info&id=new')
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -88,8 +88,8 @@ def info(aWeb):
 
  print "</DIV></DIV>"
  if data['id'] != 'new':
-  print "<A TITLE='Delete user' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=users_remove&id={0} MSG='Really remove user?'><IMG SRC='images/btn-delete.png'></A>".format(data['id'])
- print "<A TITLE='Update user'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=users_info&headers=no&op=update FRM=sdcp_user_info_form><IMG SRC='images/btn-save.png'></A>"
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_remove&id={0}'.format(data['id']), MSG='Really remove user?')
+ print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&headers=no&op=update', FRM='sdcp_user_info_form')
  print "</FORM>"
  print "</DIV>"
 

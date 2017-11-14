@@ -28,8 +28,8 @@ def main(aWeb):
 def list(aWeb):
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Rack</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list'><IMG SRC='images/btn-reload.png'></A>"
- print "<A TITLE='Add rack' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=rack_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=rack_list')
+ print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=rack_info&id=new')
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -115,10 +115,10 @@ def info(aWeb):
 
  print "</DIV></DIV>"
  print "</FORM>"
- print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=rack_info&id={0}><IMG SRC='images/btn-reload.png'></A>".format(id)
- print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=update_results URL=sdcp.cgi?call=rack_update FRM=rack_info_form><IMG SRC='images/btn-save.png'></A>"
+ print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?call=rack_info&id={0}'.format(id))
+ print aWeb.button('save', DIV='update_results', URL='sdcp.cgi?call=rack_update', FRM='rack_info_form')
  if not id == 'new':
-  print "<A TITLE='Delete unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=rack_remove&id={0}><IMG SRC='images/btn-delete.png'></A>".format(id)
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_remove&id={0}'.format(id))
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
  print "</DIV>"
 
