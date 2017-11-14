@@ -34,15 +34,27 @@ def info(aWeb):
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict()
   if data['ptr'] == 'true' and data['ptr_dom_id'] == 'NULL':
-   # Create PTR and 
-   print "Add PTR"
-  if data['ptr'] =='false' and data['ptr_dom_id'] != 'NULL':
-   print "Remove PTR" 
+   from sdcp.core.rest import call as rest_call
+   from sdcp import PackageContainer as PC
+   from sdcp.core import genlib as GL
+   arpa = GL.ip2arpa(data['subnet'])
+   dns = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_update".format(PC.dns['type']),{'id':'new','name':arpa,'master':PC.dns['master'],'type':'MASTER'})   
+   data['ptr_dom_id'] = dns['id']
+   with DB() as db:
+    db.do("INSERT INTO domains SET id = {}, name = '{}'".format(data['ptr_dom_id'],arpa))
+  elif data['ptr'] =='false' and data['ptr_dom_id'] != 'NULL':
+   from sdcp.core.rest import call as rest_call
+   from sdcp import PackageContainer as PC
+   dns = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':data['ptr_dom_id']})
+   with DB() as db:
+    db.do("DELETE FROM domains WHERE id = {}".format(data['ptr_dom_id']))
+   data['ptr_dom_id'] = None
+  elif data['ptr_dom_id'] == 'NULL':
+   data['ptr_dom_id'] = None
+
   res = sdcpipam.update(data)
   data['gateway'] = res['gateway']
   data['id']      = res['id']
-  # ZEB: Remove when ptr update is working
-  data['ptr_dom_id'] = None if data['ptr_dom_id'] == 'NULL' else data['ptr_dom_id']
  else:
   res = sdcpipam.subnet({'id':aWeb['id']})
   data = res['data']
@@ -60,15 +72,15 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Mask:</DIV><DIV CLASS=td><INPUT    TYPE=TEXT NAME=mask    VALUE={} {}></DIV></DIV>".format(data['mask'],lock)
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=gateway VALUE={}></DIV></DIV>".format(data['gateway'])
  print "<DIV CLASS=tr><DIV CLASS=td>PTR Domain:</DIV><DIV CLASS=td>"
- print "Yes<INPUT TYPE=RADIO NAME=ptr VALUE=true STYLE='width:auto' {}>".format("checked" if     data['ptr_dom_id'] else "")
- print "No<INPUT TYPE=RADIO NAME=ptr VALUE=false STYLE='width:auto' {}>".format("checked" if not data['ptr_dom_id'] else "")
+ print "Yes<INPUT TYPE=RADIO NAME=ptr VALUE=true STYLE='width:auto' {}>".format("checked='checked'" if     data['ptr_dom_id'] else "")
+ print "No<INPUT TYPE=RADIO NAME=ptr VALUE=false STYLE='width:auto' {}>".format("checked='checked'" if not data['ptr_dom_id'] else "")
  print "</DIV></DIV>"
  print "</DIV></DIV>"
  print "</FORM>"
  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=ipam_info&id={}><IMG SRC='images/btn-reload.png'></A>".format(data['id'])
  print "<A TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=ipam_info&op=update FRM=ipam_info_form><IMG SRC='images/btn-save.png'></A>"
  if not data['id'] == 'new':
-  print "<A TITLE='Delete unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right MSG='Are you really sure' URL=sdcp.cgi?call=ipam_remove&id={}><IMG SRC='images/btn-delete.png'></A>".format(data['id'])
+  print "<A TITLE='Delete unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right MSG='Are you really sure' URL=sdcp.cgi?call=ipam_delete&id={}><IMG SRC='images/btn-delete.png'></A>".format(data['id'])
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
  print "</DIV></DIV>"
 
@@ -95,9 +107,13 @@ def layout(aWeb):
  print "</DIV>"
 #
 #
-def remove(aWeb):
+def delete(aWeb):
  from sdcp.rest import sdcpipam
  print "<DIV CLASS=z-frame>"
  ret = sdcpipam.remove({'id':aWeb['id']})
+ if ret['ptr_dom_id']:
+  from sdcp.core.rest import call as rest_call
+  from sdcp import PackageContainer as PC
+  ret['ptr_dom_remove'] = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':ret['ptr_dom_id']})
  print ret
  print "</DIV>"

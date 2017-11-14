@@ -61,17 +61,20 @@ def domain_info(aWeb):
  print "</FORM>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id={}'.format(data['id']))
  print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&op=update',FRM='dns_info_form')
- if not data['id'] == 'new' and not "arpa" in data['name']:
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete&id={}'.format(data['id']))
+ if not data['id'] == 'new':
+  if not "arpa" in data['name']:
+   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_transfer&id={}'.format(data['id']))
+  else:
+   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete&id={}'.format(data['id']))
  print "<SPAN style='float:right; font-size:9px;'ID=update_results>{}/{}</SPAN>".format("lookup" if not aWeb.get('op') else aWeb['op'],res['res'])
 
 #
 #
-def domain_delete(aWeb):
+def domain_transfer(aWeb):
  domains = rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
  print "<DIV CLASS=z-frame>"
- print "<FORM ID=dns_transfer><INPUT TYPE=HIDDEN NAME=from VALUE=%s>"%(aWeb['id'])
- print "Transfer all records to <SELECT STYLE='border:none; overflow:visible; background-color:transparent; color:black;' NAME=to>"
+ print "<FORM ID=dns_transfer><INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
+ print "Transfer all records to <SELECT STYLE='border:none; overflow:visible; background-color:transparent; color:black;' NAME=transfer>"
  for domain in domains['domains']:
   if (str(domain['id']) == aWeb['id']):
    old = domain['name']
@@ -80,16 +83,18 @@ def domain_delete(aWeb):
     print "<OPTION VALUE={}>{}</OPTION>".format(domain['id'],domain['name'])
  print "</SELECT> from previous domain ({})".format(old)
  print aWeb.button('back',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=%s'%(aWeb['id']))
- print aWeb.button('next',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_transfer',FRM='dns_transfer')
+ print aWeb.button('next',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete',FRM='dns_transfer')
  print "</DIV>"
 
-def domain_transfer(aWeb):
- with DB() as db:
-  updates = db.do("UPDATE devices SET a_dom_id = %s WHERE a_dom_id = %s"%(aWeb['to'],aWeb['from']))
-  dbase   = db.do("DELETE FROM domains WHERE id = %s"%(aWeb['from']))
- res = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':aWeb['from']})
+def domain_delete(aWeb):
  print "<DIV CLASS=z-frame>"
- print "Updated [%i] devices and removed domain [%s,%s]" % (updates,"OK" if dbase > 0 else "NOT_OK",str(res))
+ with DB() as db:
+  if aWeb['transfer']:
+   exist = db.do("UPDATE devices SET a_dom_id = %s WHERE a_dom_id = %s"%(aWeb['transfer'],aWeb['id']))
+   print "Transfered %i devices. "%(exist)
+  dbase   = db.do("DELETE FROM domains WHERE id = %s"%(aWeb['id']))
+ res = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':aWeb['id']})
+ print "Removed domain [%s,%s]" % ("OK" if dbase > 0 else "NOT_OK",str(res))
  print "</DIV>"
 
 

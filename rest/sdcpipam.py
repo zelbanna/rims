@@ -56,8 +56,8 @@ def allocation(aDict):
 #
 #
 def update(aDict):
- ret = {'res':'OK'}
  from sdcp.core import genlib as GL
+ ret = {'res':'OK'}
  # Check gateway
  low   = GL.ip2int(aDict['subnet'])
  high  = low + 2**(32-int(aDict['mask'])) - 1
@@ -69,12 +69,13 @@ def update(aDict):
   gwint = low + 1
   ret['gateway'] = GL.int2ip(gwint)
   ret['info'] = "defaulted illegal gateway"
+ ptr_dom_id = aDict['ptr_dom_id'] if aDict.get('ptr_dom_id',None) else 'NULL'
  with DB() as db:
   if aDict['id'] == 'new':
-   ret['xist'] = db.do("INSERT INTO subnets(subnet,mask,gateway,description) VALUES (INET_ATON('{}'),{},{},'{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['subnet'],aDict['mask'],gwint,aDict['description']))
+   ret['xist'] = db.do("INSERT INTO subnets(subnet,mask,gateway,description,ptr_dom_id) VALUES (INET_ATON('{}'),{},{},'{}',{}) ON DUPLICATE KEY UPDATE id = id".format(aDict['subnet'],aDict['mask'],gwint,aDict['description'],ptr_dom_id))
    ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
   else:
-   ret['xist'] = db.do("UPDATE subnets SET subnet = INET_ATON('{}'), mask = {}, gateway = {}, description = '{}' WHERE id = {}".format(aDict['subnet'],aDict['mask'],gwint,aDict['description'],aDict['id']))
+   ret['xist'] = db.do("UPDATE subnets SET subnet = INET_ATON('{}'), mask = {}, gateway = {}, description = '{}', ptr_dom_id = {} WHERE id = {}".format(aDict['subnet'],aDict['mask'],gwint,aDict['description'],ptr_dom_id,aDict['id']))
    ret['id']   = aDict['id']
  return ret
 
@@ -83,6 +84,9 @@ def update(aDict):
 def remove(aDict):
  ret = {'res':'OK'}
  with DB() as db:
+  ptr_dom_xist = db.do("SELECT ptr_dom_id FROM subnets WHERE id = " + aDict['id'])
+  if ptr_dom_xist > 0:
+   ret['ptr_dom_id'] = db.get_val('ptr_dom_id')
   ret['devices'] = db.do("DELETE FROM devices WHERE subnet_id = " + aDict['id'])
   ret['xist']    = db.do("DELETE FROM subnets WHERE id = " + aDict['id'])
  return ret
