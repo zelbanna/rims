@@ -22,7 +22,9 @@ def domains(aWeb):
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Domains</DIV>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_domains')
- print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=new')
+ print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=new',TITLE='Add domain')
+ print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?call=dns_discrepancy',TITLE='Backend Discrepancy',SPIN='true')
+ print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=dns_dedup',TITLE='Find Duplicates',SPIN='true')
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -258,10 +260,10 @@ def top(aWeb):
 #
 # Cleanup duplicate entries
 #
-def cleanup(aWeb):
- dnsclean = rest_call(PC.dns['url'], "sdcp.rest.{}_cleanup".format(PC.dns['type']))
- print "<DIV CLASS=z-frame><DIV CLASS=title>Cleanup</DIV>"
- xist = len(dnsclean['removed'])
+def dedup(aWeb):
+ dns = rest_call(PC.dns['url'], "sdcp.rest.{}_dedup".format(PC.dns['type']))
+ print "<DIV CLASS=z-frame><DIV CLASS=title>Duplicate Removal</DIV>"
+ xist = len(dns['removed'])
  if xist > 0:
   from sdcp.core import extras as EXT
   EXT.dict2table(dnsclean['removed'])
