@@ -112,18 +112,15 @@ def info(aWeb):
     ddi = db.get_row()
    fqdn = ".".join([d['devices_hostname'],ddi.get('domain','local')])
 
-
-
    if ddi['a_dom_id']:
-    opres['a'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']),   { 'type':'A',   'id':ddi['a_id'],   'domain_id':ddi['a_dom_id'],   'ip':ddi['ip'], 'fqdn':fqdn })
-    if opres['a']['id'] != ddi['a_id']:
+    opres['a'] = rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':'A', 'id':ddi['a_id'], 'domain_id':ddi['a_dom_id'], 'name':fqdn, 'content':ddi['ip'] })
+    if not str(opres['a']['id']) == str(ddi['a_id']):
      d['devices_a_id'] = opres['a']['id']
    if ddi['ptr_dom_id']:
-    opres['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_update".format(PC.dns['type']), { 'type':'PTR', 'id':ddi['ptr_id'], 'domain_id':ddi['ptr_dom_id'], 'ip':ddi['ip'], 'fqdn':fqdn })
-    if opres['ptr']['id'] != ddi['ptr_id']:
+    from sdcp.core import genlib as GL
+    opres['ptr'] = rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':'PTR', 'id':ddi['ptr_id'], 'domain_id':ddi['ptr_dom_id'], 'name':GL.ip2ptr(ddi['ip']), 'content':fqdn })
+    if not str(opres['ptr']['id']) == str(ddi['ptr_id']):
      d['devices_ptr_id'] = opres['ptr']['id']
-
-
  
    opres['update'] = rest_update(d)
    print opres
@@ -417,18 +414,18 @@ def new(aWeb):
 #
 #
 def remove(aWeb):
- from sdcp.rest.device import remove
+ from sdcp.rest.device import remove as rest_remove
  id  = aWeb['id']
- ret = remove({ 'id':id })
+ ret = rest_remove({ 'id':id })
+ print "<DIV CLASS=z-frame>"
+ print "Unit {} deleted (DB:{}".format(id,ret['deleted'])
  if ret['res'] == 'OK':
   from sdcp.core.rest import call as rest_call
   from sdcp import PackageContainer as PC
-  if ret['a_id']:
-   arec = rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['a_id']})
-  if ret['ptr_id']:
-   prec = rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['ptr_id']})
- print "<DIV CLASS=z-frame>"
- print "Unit {} deleted (DB:{},A:{},PTR:{})".format(id,ret,arec,prec)
+  arec = rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['a_id']})   if ret['a_id']   else 0
+  prec = rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['ptr_id']}) if ret['ptr_id'] else 0
+  print ",A:{},PTR:{}".format(arec,prec)
+ print ")"
  print "</DIV>"
 
 #

@@ -91,12 +91,10 @@ def new(aDict):
   elif aDict.get('hostname') == 'unknown':
    ret['info'] = "Hostname unknown not allowed"
   else:
-   xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id, ptr_dom_id FROM devices WHERE subnet_id = {} AND (ip = {} OR hostname = '{}')".format(subnet_id,ipint,aDict.get('hostname')))
+   xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE subnet_id = {} AND (ip = {} OR hostname = '{}')".format(subnet_id,ipint,aDict.get('hostname')))
    if xist == 0:
-    res = db.do("SELECT id FROM domains WHERE name = '{}'".format(GL.ip2arpa(ip)))
-    ptr_dom_id = db.get_val('id') if res > 0 else 'NULL'
     mac = GL.mac2int(aDict.get('mac',0))
-    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,ptr_dom_id,subnet_id,hostname,fqdn,snmp,model) VALUES({},{},{},{},{},{},'{}','{}','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],ptr_dom_id,subnet_id,aDict['hostname'],aDict['fqdn']))
+    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,fqdn,snmp,model) VALUES({},{},{},{},{},'{}','{}','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname'],aDict['fqdn']))
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
      db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
