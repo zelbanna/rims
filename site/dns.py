@@ -31,10 +31,14 @@ def domains(aWeb):
   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=dns_domain_info&id={}>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],dom['id'],dom['name'],dom['notified_serial'])
   print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?call=dns_records&type={}&id={}'.format("a" if not 'arpa' in dom['name'] else "ptr",dom['id']))
   if not local.pop(dom['id'],None):
-   print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_load&id={}'.format(dom['id']))
+   print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_cache_add&id={}&name={}'.format(dom['id'],dom['name']))
+  print "</DIV></DIV>"
+ for dom in local.values():
+  print "<DIV CLASS=tr><!-- {} -->".format(dom)
+  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],dom['name'])
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_cache_delete&id={}'.format(dom['id']))
   print "</DIV></DIV>"
  print "</DIV></DIV>"
- print "<SPAN>Remaining:{}</SPAN>".format(len(local))
  print "</DIV>"
 
 #
@@ -86,17 +90,39 @@ def domain_transfer(aWeb):
  print aWeb.button('next',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete',FRM='dns_transfer')
  print "</DIV>"
 
+#
+#
 def domain_delete(aWeb):
  print "<DIV CLASS=z-frame>"
  with DB() as db:
   if aWeb['transfer']:
    exist = db.do("UPDATE devices SET a_dom_id = %s WHERE a_dom_id = %s"%(aWeb['transfer'],aWeb['id']))
    print "Transfered %i devices. "%(exist)
+  else:
+   exist = db.do("UPDATE subnets SET ptr_dom_id = NULL WHERE ptr_dom_id = %s"%(aWeb['id']))
+   print "Removed PTR reference from subnet. " if exist > 0 else "No subnet with PTR domain registered. "
   dbase   = db.do("DELETE FROM domains WHERE id = %s"%(aWeb['id']))
  res = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':aWeb['id']})
  print "Removed domain [%s,%s]" % ("OK" if dbase > 0 else "NOT_OK",str(res))
  print "</DIV>"
 
+#
+#
+def domain_cache_add(aWeb):
+ print "<DIV CLASS=z-frame>"
+ with DB() as db:
+  xist = db.do("INSERT INTO domains SET id = %s, name = '%s'"%(aWeb['id'],aWeb['name']))
+  print "Inserted (%s:%s): %i"%(aWeb['id'],aWeb['name'],xist)
+ print "</DIV>"
+
+#
+#
+def domain_cache_delete(aWeb):
+ print "<DIV CLASS=z-frame>"
+ with DB() as db:
+  xist = db.do("DELETE FROM domains WHERE id = %s"%(aWeb['id']))
+  print "Delete %s: %i"%(aWeb['id'],xist)
+ print "</DIV>"
 
 ############################################ Records ###########################################
 #

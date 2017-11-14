@@ -115,5 +115,7 @@ def delete(aWeb):
   from sdcp.core.rest import call as rest_call
   from sdcp import PackageContainer as PC
   ret['ptr_dom_remove'] = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':ret['ptr_dom_id']})
+  with DB() as db:
+   ret['dns_cache']= db.do("DELETE FROM domains WHERE id = %s"%(ret['ptr_dom_id']))
  print ret
  print "</DIV>"
