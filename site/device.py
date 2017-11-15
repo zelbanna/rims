@@ -144,7 +144,7 @@ def info(aWeb):
  print "<!-- DEV:{} -->".format(dev['info'])
  print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['info']['id'])
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:185px;'><DIV CLASS=title>Reachability Info</DIV>"
@@ -232,20 +232,20 @@ def info(aWeb):
 
  print "<!-- Controls -->"
  print "<DIV ID=device_control style='clear:left;'>"
- print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=device_info&id={}'.format(dev['info']['id']))
- print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=device_remove&id={}'.format(dev['info']['id']), MSG='Are you sure you want to delete device?', TITLE='Delete device')
- print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=lookup&id={}&ip={}'.format(dev['info']['id'],dev['info']['ipasc']), TITLE='Lookup and Detect Device information')
+ print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=device_info&id=%i'%dev['id'])
+ print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=device_remove&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
+ print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=lookup&id={}&ip={}'.format(dev['id'],dev['ip']), TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
  if dev['booked']:
   if int(aWeb.cookie.get('sdcp_id')) == dev['booking']['user_id']:
-   print aWeb.button('remove',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=debook&id={}'.format(dev['info']['id']),TITLE='Unbook')
+   print aWeb.button('remove',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=debook&id=%i'%dev['id'],TITLE='Unbook')
  else:
-   print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=book&id={}'.format(dev['info']['id']),TITLE='Book')   
- print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&type_name={}&id={}'.format(dev['info']['type_name'],dev['info']['id']),TITLE='Generate System Conf')
+   print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=book&id=%i'%dev['id'],TITLE='Book')   
+ print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&type_name=%s&id=%i'%(dev['info']['type_name'],dev['id']),TITLE='Generate System Conf')
  from sdcp import PackageContainer as PC
- print "<A CLASS='z-btn z-small-btn' HREF='ssh://{}@{}' TITLE='SSH'><IMG SRC='images/btn-term.png'></A>".format(PC.netconf['username'],dev['ip'])
+ print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(PC.netconf['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
-  print "<A CLASS='z-btn z-small-btn' HREF='telnet://{}:{}' TITLE='Console'><IMG SRC='images/btn-term.png'></A>".format(dev['rack']['console_ip'],6000+dev['rack']['console_port'])
+  print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
 
  res = ""
  for key,value in opres.iteritems():
