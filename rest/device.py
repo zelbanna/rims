@@ -124,8 +124,6 @@ def remove(aDict):
 #
 # discover(start, end, clear, a_dom_id, subnet_id)
 #
-# - subnet can cross ptr_dom_id so need to deduce per ip..
-#
 def discover(aDict):
  log("device_discover({})".format(aDict))
  from time import time
@@ -170,13 +168,10 @@ def discover(aDict):
    for i in range(10):
     sema.acquire()
    # We can now do inserts only (no update) as either we clear or we skip existing :-)
-   sql = "INSERT INTO devices (ip, a_dom_id, ptr_dom_id, subnet_id, hostname, snmp, model, type_id, fqdn) VALUES ({},"+aDict['a_dom_id']+",{},{},'{}','{}','{}','{}','{}')"
-   db.do("SELECT id,name FROM domains WHERE name LIKE '%arpa%'")
-   ptr_doms = db.get_dict('name')
+   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, hostname, snmp, model, type_id, fqdn) VALUES ({},"+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
    for ip,entry in db_new.iteritems():
     log("device_discover - adding:{}->{}".format(ip,entry))
-    ptr_dom_id = ptr_doms.get(GL.ip2arpa(ip),{ 'id':'NULL' })['id']
-    db.do(sql.format(GL.ip2int(ip), ptr_dom_id, aDict.get('subnet_id'), entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['fqdn']))
+    db.do(sql.format(GL.ip2int(ip), aDict.get('subnet_id'), entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['fqdn']))
   except Exception as err:
    log("device discover: Error [{}]".format(str(err)))
    ret['res']    = 'NOT_OK'

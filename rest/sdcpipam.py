@@ -24,11 +24,11 @@ def list(aDict):
 def subnet(aDict):
  ret = {'res':'OK'}
  if aDict['id'] == 'new':
-   ret['data'] = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New', 'ptr_dom_id':None }
+   ret['data'] = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }
    ret['xist'] = 0
  else:
   with DB() as db:
-   ret['xist'] = db.do("SELECT subnets.id, mask, description, INET_NTOA(subnet) AS subnet, ptr_dom_id, INET_NTOA(gateway) AS gateway, domains.name AS domain FROM subnets LEFT JOIN domains on domains.id = subnets.ptr_dom_id WHERE subnets.id = " + aDict['id'])
+   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(subnet) AS subnet, INET_NTOA(gateway) AS gateway FROM subnets WHERE id = " + aDict['id'])
    ret['data'] = db.get_row()
  return ret
 
@@ -69,13 +69,12 @@ def update(aDict):
   gwint = low + 1
   ret['gateway'] = GL.int2ip(gwint)
   ret['info'] = "defaulted illegal gateway"
- ptr_dom_id = aDict['ptr_dom_id'] if aDict.get('ptr_dom_id',None) else 'NULL'
  with DB() as db:
   if aDict['id'] == 'new':
-   ret['xist'] = db.do("INSERT INTO subnets(subnet,mask,gateway,description,ptr_dom_id) VALUES (INET_ATON('{}'),{},{},'{}',{}) ON DUPLICATE KEY UPDATE id = id".format(aDict['subnet'],aDict['mask'],gwint,aDict['description'],ptr_dom_id))
+   ret['xist'] = db.do("INSERT INTO subnets(subnet,mask,gateway,description) VALUES (INET_ATON('{}'),{},{},'{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['subnet'],aDict['mask'],gwint,aDict['description']))
    ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
   else:
-   ret['xist'] = db.do("UPDATE subnets SET subnet = INET_ATON('{}'), mask = {}, gateway = {}, description = '{}', ptr_dom_id = {} WHERE id = {}".format(aDict['subnet'],aDict['mask'],gwint,aDict['description'],ptr_dom_id,aDict['id']))
+   ret['xist'] = db.do("UPDATE subnets SET subnet = INET_ATON('{}'), mask = {}, gateway = {}, description = '{}' WHERE id = {}".format(aDict['subnet'],aDict['mask'],gwint,aDict['description'],aDict['id']))
    ret['id']   = aDict['id']
  return ret
 
@@ -84,9 +83,6 @@ def update(aDict):
 def remove(aDict):
  ret = {'res':'OK'}
  with DB() as db:
-  ptr_dom_xist = db.do("SELECT ptr_dom_id FROM subnets WHERE id = " + aDict['id'])
-  if ptr_dom_xist > 0:
-   ret['ptr_dom_id'] = db.get_val('ptr_dom_id')
   ret['devices'] = db.do("DELETE FROM devices WHERE subnet_id = " + aDict['id'])
   ret['xist']    = db.do("DELETE FROM subnets WHERE id = " + aDict['id'])
  return ret

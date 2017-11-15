@@ -55,7 +55,7 @@ def domain_info(aWeb):
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  print "<DIV CLASS='z-frame z-info' STYLE='height:200px;'>"
- print "<DIV CLASS=title>Domain Info{}</DIV>".format(" (new<SPAN TITLE='A zone, PTR zone is created from IPAM'>*</SPAN>)" if data['id'] == 'new' else "")
+ print "<DIV CLASS=title>Domain Info{}</DIV>".format(" (new)" if data['id'] == 'new' else "")
  print "<!-- {} -->".format(res)
  print "<FORM ID=dns_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
@@ -100,9 +100,6 @@ def domain_delete(aWeb):
   if aWeb['transfer']:
    exist = db.do("UPDATE devices SET a_dom_id = %s WHERE a_dom_id = %s"%(aWeb['transfer'],aWeb['id']))
    print "Transfered %i devices. "%(exist)
-  else:
-   exist = db.do("UPDATE subnets SET ptr_dom_id = NULL WHERE ptr_dom_id = %s"%(aWeb['id']))
-   print "Removed PTR reference from subnet. " if exist > 0 else "No subnet with PTR domain registered. "
   dbase   = db.do("DELETE FROM domains WHERE id = %s"%(aWeb['id']))
  res = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':aWeb['id']})
  print "Removed domain [%s,%s]" % ("OK" if dbase > 0 else "NOT_OK",str(res))

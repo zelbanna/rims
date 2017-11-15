@@ -107,11 +107,13 @@ def info(aWeb):
     d['devices_vm'] = 0
    if not d.get('devices_comment'):
     d['devices_comment'] = 'NULL'
-   with DB() as db:
-    db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, a_dom_id, subnets.ptr_dom_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id LEFT JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = {}".format(id))
-    ddi = db.get_row()
-   fqdn = ".".join([d['devices_hostname'],ddi.get('domain','local')])
    from sdcp.core import genlib as GL
+   with DB() as db:
+    db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id, a_dom_id, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = {}".format(id))
+    ddi  = db.get_row()
+    xist = db.do("SELECT id FROM domains WHERE name = '{}'".format(GL.ip2arpa(ddi['ip'])))
+    ddi['ptr_dom_id'] = db.get_val('id') if xist > 0 else None
+   fqdn = ".".join([d['devices_hostname'],ddi.get('domain','local')])
    for type,name,content in [('a',fqdn,ddi['ip']),('ptr',GL.ip2ptr(ddi['ip']),fqdn)]:
     if ddi['%s_dom_id'%(type)]:
      opres[type] = rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':type.upper(), 'id':ddi['%s_id'%(type)], 'domain_id':ddi['%s_dom_id'%(type)], 'name':name, 'content':content })

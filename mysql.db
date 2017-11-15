@@ -172,7 +172,6 @@ CREATE TABLE `subnets` (
   `mask` tinyint(3) unsigned NOT NULL DEFAULT '24',
   `gateway` int(10) unsigned DEFAULT NULL,
   `description` text,
-  `ptr_dom_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

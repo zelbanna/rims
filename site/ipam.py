@@ -33,25 +33,6 @@ def info(aWeb):
  from sdcp.rest import sdcpipam
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict()
-  if data['ptr'] == 'true' and data['ptr_dom_id'] == 'NULL':
-   from sdcp.core.rest import call as rest_call
-   from sdcp import PackageContainer as PC
-   from sdcp.core import genlib as GL
-   arpa = GL.ip2arpa(data['subnet'])
-   dns = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_update".format(PC.dns['type']),{'id':'new','name':arpa,'master':PC.dns['master'],'type':'MASTER'})   
-   data['ptr_dom_id'] = dns['id']
-   with DB() as db:
-    db.do("INSERT INTO domains SET id = {}, name = '{}'".format(data['ptr_dom_id'],arpa))
-  elif data['ptr'] =='false' and data['ptr_dom_id'] != 'NULL':
-   from sdcp.core.rest import call as rest_call
-   from sdcp import PackageContainer as PC
-   dns = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':data['ptr_dom_id']})
-   with DB() as db:
-    db.do("DELETE FROM domains WHERE id = {}".format(data['ptr_dom_id']))
-   data['ptr_dom_id'] = None
-  elif data['ptr_dom_id'] == 'NULL':
-   data['ptr_dom_id'] = None
-
   res = sdcpipam.update(data)
   data['gateway'] = res['gateway']
   data['id']      = res['id']
@@ -65,16 +46,11 @@ def info(aWeb):
  print "<!-- {} -->".format(res)
  print "<FORM ID=ipam_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
- print "<INPUT TYPE=HIDDEN NAME=ptr_dom_id VALUE={}>".format(data['ptr_dom_id'] if data['ptr_dom_id'] else 'NULL')
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=description VALUE={}></DIV></DIV>".format(data['description'])
  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=subnet  VALUE={} {}></DIV></DIV>".format(data['subnet'],lock)
  print "<DIV CLASS=tr><DIV CLASS=td>Mask:</DIV><DIV CLASS=td><INPUT    TYPE=TEXT NAME=mask    VALUE={} {}></DIV></DIV>".format(data['mask'],lock)
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=gateway VALUE={}></DIV></DIV>".format(data['gateway'])
- print "<DIV CLASS=tr><DIV CLASS=td>PTR Domain:</DIV><DIV CLASS=td>"
- print "Yes<INPUT TYPE=RADIO NAME=ptr VALUE=true STYLE='width:auto' {}>".format("checked='checked'" if     data['ptr_dom_id'] else "")
- print "No<INPUT TYPE=RADIO NAME=ptr VALUE=false STYLE='width:auto' {}>".format("checked='checked'" if not data['ptr_dom_id'] else "")
- print "</DIV></DIV>"
  print "</DIV></DIV>"
  print "</FORM>"
  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=ipam_info&id={}><IMG SRC='images/btn-reload.png'></A>".format(data['id'])
@@ -111,11 +87,5 @@ def delete(aWeb):
  from sdcp.rest import sdcpipam
  print "<DIV CLASS=z-frame>"
  ret = sdcpipam.remove({'id':aWeb['id']})
- if ret['ptr_dom_id']:
-  from sdcp.core.rest import call as rest_call
-  from sdcp import PackageContainer as PC
-  ret['ptr_dom_remove'] = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':ret['ptr_dom_id']})
-  with DB() as db:
-   ret['dns_cache']= db.do("DELETE FROM domains WHERE id = %s"%(ret['ptr_dom_id']))
  print ret
  print "</DIV>"
