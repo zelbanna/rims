@@ -23,8 +23,9 @@ def info(aDict):
    ret['fqdn'] = "{}.{}".format(ret['info']['hostname'],ret['info']['a_name'])
    ret['ip']   = ret['info']['ipasc']
    ret['type'] = ret['info']['type_base']
-   ret['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
+   ret['mac']  = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
    ret['res']  = 'OK'
+   ret['id']   = ret['info']['id']
    ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['info']['id']))
    if ret['booked'] > 0:
     ret['booking'] = db.get_row()
