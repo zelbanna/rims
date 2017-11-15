@@ -32,9 +32,9 @@ def list(aWeb):
   rows = db.get_rows()
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Graphing</DIV>"
- print "<A TITLE='Reload'   CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=graph_list&{0}'><IMG SRC='images/btn-reload.png'></A>".format(aWeb.get_args_except(['call','id','state']))
- print "<A TITLE='Save'     CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=graph_save'><IMG SRC='images/btn-save.png'></A>"
- print "<A TITLE='Discover' CLASS='z-btn z-small-btn z-op' DIV=div_content_right SPIN=true URL='sdcp.cgi?call=graph_discover'><IMG SRC='images/btn-search.png'></A>"
+ print aWeb.button('reload',DIV='div_content_left',  URL='sdcp.cgi?call=graph_list&%s'%(aWeb.get_args_except(['call','id','state'])))
+ print aWeb.button('save'  ,DIV='div_content_right', URL='sdcp.cgi?call=graph_save')
+ print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=graph_discover', SPIN='true')
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>Proxy</DIV><DIV CLASS=th TITLE='Include in graphing?'>Include</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -46,8 +46,9 @@ def list(aWeb):
   else:
    print "<DIV CLASS=td>{0}.{1}</DIV>".format(row['hostname'],row['domain'])
    print "<DIV CLASS=td>{0}</A></DIV>".format(row['proxy'])
-  print "<DIV CLASS=td TITLE='Include in graphing?'><A CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL=sdcp.cgi?call=graph_list&{}&id={}&state={}><IMG SRC=images/btn-{}.png></A>&nbsp;</DIV>".format(aWeb.get_args_except(['call','id','state']),row['id'],row['graph_update'],"shutdown" if row['graph_update'] else "start")
-  print "</DIV>"
+  print "<DIV CLASS=td TITLE='Include in graphing?'>&nbsp;"
+  print aWeb.button("shutdown" if row['graph_update'] else "start", DIV='div_content_left', URL='sdcp.cgi?call=graph_list&{}&id={}&state={}'.format(aWeb.get_args_except(['call','id','state']),row['id'],row['graph_update']))
+  print "</DIV></DIV>"
  print "</DIV></DIV></DIV>"
 
 #
@@ -70,7 +71,7 @@ def set_proxy(aWeb):
  print "<DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=proxy STYLE='border:solid 1px grey; width:200px;' VALUE='{}'></DIV></DIV>".format(proxy)
  print "</DIV></DIV>"
- print "<A TITLE='Update proxy' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=graph_set_proxy&op=update FRM=graph_proxy_form><IMG SRC='images/btn-save.png'></A>"
+ print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=graph_set_proxy&op=update', FRM='graph_proxy_form')
  print "</DIV>"
 
 #
