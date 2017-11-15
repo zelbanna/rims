@@ -64,34 +64,35 @@ def list(aWeb,aIP = None):
  sort   = aWeb.get('sort','name')
  esxi   = Device(ip)
  print "<DIV CLASS=z-frame>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left URL='sdcp.cgi?call=esxi_list&ip={}&sort={}'><IMG SRC='images/btn-reload.png'></A>".format(ip,sort)
+ print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='sdcp.cgi?call=esxi_list&ip={}&sort={}'.format(ip,sort))
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  statelist = esxi.get_vms(sort)
  for vm in statelist:
   print "<DIV CLASS=tr style='padding:0px;' ID=div_vm_{}>".format(vm[0])
-  _vm_options(ip,vm[0],vm[1],vm[2],False)
+  _vm_options(aWeb,ip,vm[0],vm[1],vm[2],False)
   print "</DIV>"
  print "</DIV></DIV></DIV>"
 
 #
 #
-def _vm_options(aIP,aVMid,aVMname,aState,aHighlight):
- template="<A CLASS='z-btn z-small-btn z-op' TITLE='{2}' DIV=div_vm_"+aVMid+" SPIN=div_content_left URL='sdcp.cgi?call=esxi_vmop&ip=" + aIP + "&nstate={0}&vmname="+aVMname+"&vmid="+aVMid+"'><IMG SRC=images/btn-{1}.png></A>"
+def _vm_options(aWeb,aIP,aVMid,aVMname,aState,aHighlight):
+ div = "div_vm_%s"%aVMid
+ url = "sdcp.cgi?call=esxi_vmop&ip=%s&nstate={0}&vmname=%s&vmid=%s"%(aIP,aVMname,aVMid)
  print "<DIV CLASS=td style='padding:0px;'>{}</DIV><DIV CLASS=td style='width:150px'>&nbsp;".format("<B>{}</B>".format(aVMname) if aHighlight else aVMname)
  if int(aState) == 1:
-  print template.format('vmsvc-power.shutdown','shutdown', "Soft shutdown")
-  print template.format('vmsvc-power.reboot','reboot', "Soft reboot")
-  print template.format('vmsvc-power.suspend','suspend', "Suspend")
-  print template.format('vmsvc-power.off','off', "Hard power off")
+  print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.shutdown'), TITLE='Soft shutdown')
+  print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.reboot'), TITLE='Soft reboot')
+  print aWeb.button('suspend', DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.suspend'),TITLE='Suspend')
+  print aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off')
  elif int(aState) == 3:
-  print template.format('vmsvc-power.on','start', "Start")
-  print template.format('vmsvc-power.off','off', "Hard power off")
+  print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start')
+  print aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off')
  elif int(aState) == 2:
-  print template.format('vmsvc-power.on','start', "Start")
-  print template.format('vmsvc-snapshot.create','snapshot', "Snapshot")
-  print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_right SPIN=true TITLE='Snapshot - Info' URL=sdcp.cgi?call=esxi_snapshot&ip={}&vmid={}><IMG SRC='images/btn-info.png'></A>".format(aIP,aVMid)
+  print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start')
+  print aWeb.button('snapshot',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-snapshot.create'), TITLE='Snapshot')
+  print aWeb.button('info',    DIV='div_content_right',SPIN='true',URL='sdcp.cgi?call=esxi_snapshot&ip={}&vmid={}'.format(aIP,aVMid), TITLE='Snapshot info')
  else:
   print "Unknown state [{}]".format(aState)
  print "</DIV>"
@@ -125,7 +126,7 @@ def vmop(aWeb):
     esxi.ssh_send("poweroff",userid)
  except Exception as err:
   aWeb.log("esxi: nstate error [{}]".format(str(err)))
- _vm_options(ip,vmid,name,esxi.get_state_vm(vmid),True)
+ _vm_options(aWeb,ip,vmid,name,esxi.get_state_vm(vmid),True)
 
 #
 # Graphing
@@ -157,7 +158,6 @@ def snapshot(aWeb):
  vmid = aWeb['vmid']
  data = {}
  id   = 0
- template="<A CLASS='z-btn z-small-btn z-op' TITLE='{0}' SPIN=true DIV=div_content_right URL='sdcp.cgi?call=esxi_snap_op&ip=" + ip + "&vmid=" + vmid + "&snapid={3}&op={2}'><IMG SRC=images/btn-{1}.png></A>"
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>Snapshots ({})</DIV>".format(vmid)
  print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
@@ -184,8 +184,8 @@ def snapshot(aWeb):
      # Last!
      data['state'] = val
      print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(data['name'],data['id'],data['desc'],data['created'],data['state'])
-     print template.format("Revert","revert","revert",data['id'])
-     print template.format("Remove","remove","remove",data['id'])
+     print aWeb.button('revert', TITLE='Revert', DIV='div_content_right',SPIN='true', URL='sdcp.cgi?call=esxi_snap_op&ip=%s&vmid=%s&op=revert&snapid=%s'%(ip,vmid,data['id']))
+     print aWeb.button('delete', TITLE='Delete', DIV='div_content_right',SPIN='true', URL='sdcp.cgi?call=esxi_snap_op&ip=%s&vmid=%s&op=remove&snapid=%s'%(ip,vmid,data['id']))
      print "</DIV></DIV>"
      data = {}
  print "</DIV></DIV><SPAN STYLE='float:right; font-size:12px;'>[Highest ID:{}]</SPAN></DIV>".format(id)
