@@ -87,21 +87,19 @@ def info(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- from sdcp.core import genlib as GL
- id    = aWeb['id']
+
  op    = aWeb.get('op',"")
  opres = {}
-
  ###################### Update ###################
  if op == 'lookup':
   from sdcp.rest.device import detect as rest_detect
-  opres['lookup'] = rest_detect({'ip':aWeb['ip'],'update':True,'id':id})
+  opres['lookup'] = rest_detect({'ip':aWeb['ip'],'update':True,'id':aWeb['id']})
 
  elif op == 'update':
   from sdcp.rest.device import update as rest_update
   from sdcp import PackageContainer as PC
   from sdcp.core.rest import call as rest_call
-  d = aWeb.get_args2dict_except(['call','op'])
+  d = aWeb.get_args2dict_except(['call','op','ip'])
   if d['devices_hostname'] != 'unknown':
    if not d.get('devices_vm'):
     d['devices_vm'] = 0
@@ -109,12 +107,12 @@ def info(aWeb):
     d['devices_comment'] = 'NULL'
    from sdcp.core import genlib as GL
    with DB() as db:
-    db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id FROM devices WHERE devices.id = {}".format(id))
+    db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id FROM devices WHERE devices.id = {}".format(aWeb['id']))
     ddi  = db.get_row()
     xist = db.do("SELECT id FROM domains WHERE name = '{}'".format(GL.ip2arpa(ddi['ip'])))
     ddi['ptr_dom_id'] = db.get_val('id') if xist > 0 else None
     ddi['a_dom_id']   = d['devices_a_dom_id']
-    xist = db.do("SELECT name FROM domains WHERE id = '{}'".format(ddi['a_dom_id'])) 
+    xist = db.do("SELECT name FROM domains WHERE id = '{}'".format(ddi['a_dom_id']))
     fqdn = ".".join([d['devices_hostname'],db.get_val('name') if xist > 0 else 'local'])
    for type,name,content in [('a',fqdn,ddi['ip']),('ptr',GL.ip2ptr(ddi['ip']),fqdn)]:
     if ddi['%s_dom_id'%(type)]:
@@ -125,13 +123,13 @@ def info(aWeb):
 
  elif "book" in op:
   from sdcp.rest.booking import booking
-  booking({'device_id':id, 'user_id':aWeb.cookie['sdcp_id'], 'op':op})
+  booking({'device_id':aWeb['id'], 'user_id':aWeb.cookie['sdcp_id'], 'op':op})
 
  from sdcp.rest.device import info as rest_info
  from sdcp.rest.tools  import infra as rest_infra
- dev   = rest_info({'id':id})
+ dev   = rest_info({'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
  if dev['exist'] == 0:
-  print "<DIV CLASS=z-frame>Warning - device with id:[{}] does not exist</DIV>".format(id)
+  print "<DIV CLASS=z-frame>Warning - device with either id:[{}]/ip[{}]: does not exist</DIV>".format(aWeb['id'],aWeb['ip'])
   return
  if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
   from sdcp.rest.pdu import update_device_pdus
@@ -146,7 +144,7 @@ def info(aWeb):
  print "<!-- DEV:{} -->".format(dev['info'])
  print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['info']['id'])
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:185px;'><DIV CLASS=title>Reachability Info</DIV>"

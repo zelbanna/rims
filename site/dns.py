@@ -136,8 +136,9 @@ def records(aWeb):
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>TTL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for rec in dns['records']:
-  print "<DIV CLASS=tr><!-- {} -->".format(rec)
-  print "<DIV CLASS=td>%i</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;"%(rec['id'],rec['name'],rec['content'],rec['type'],rec['ttl'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%i</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(rec['id'],rec['name'])
+  print rec['content'] if not rec['type'] == 'A' else "<A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&ip=%s>%s</A>"%(rec['content'],rec['content'])
+  print "</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;"%(rec['type'],rec['ttl'])
   print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id=%i&domain_id=%s'%(rec['id'],aWeb['id']))
   if rec['type'] in ['A','CNAME','PTR']:
    print aWeb.button('delete',DIV='span_dns',URL='sdcp.cgi?call=dns_record_remove&id=%i'%(rec['id']))
