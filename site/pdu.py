@@ -146,7 +146,7 @@ def inventory(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td TITLE='Open up a browser tab for {1}'><A TARGET='_blank' HREF='https://{0}:3502'>{1}</A></DIV><DIV CLASS=td>{2}</DIV>".format(avocent._ip,pdu,value['slotname']+'.'+value['unit'])
    print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=pdu_unit_info&pdu={0}&slot={1}&unit={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td ID=div_pdu_{5}>&nbsp;".format(pdu,value['slot'],value['unit'],value['name'], value['slotname'],counter)
    url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(pdu,value['slot'],value['unit'],counter)
-   div = 'div_pdu_%s'%aWeb['id']
+   div = 'div_pdu_%i'%counter
    if value['state'] == "off":
     print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
    else:
@@ -164,8 +164,9 @@ def op(aWeb):
  # Avocent is not fast enough to execute something immediately after op, halt output then :-)
  from time import sleep
  sleep(10 if aWeb['nstate'] == 'reboot' else 4)
- url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(aWeb['ip'],aWeb['slot'],aWeb['unit'],aWeb['id'])
+ url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%s&nstate={}'%(aWeb['ip'],aWeb['slot'],aWeb['unit'],aWeb['id'])
  div = 'div_pdu_%s'%aWeb['id']
+ print "&nbsp;"
  if avocent.get_state(aWeb['slot'],aWeb['unit'])['state'] == "off":
   print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
  else:
