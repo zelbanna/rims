@@ -30,29 +30,29 @@ def list(aWeb):
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title><CENTER>Nova Servers</CENTER></DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content URL='sdcp.cgi?call=nova_list'><IMG SRC='images/btn-reload.png'></A>"
- print "<A TITLE='Add server'   CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=nova_select_parameters'><IMG SRC='images/btn-add.png'></A>"
+ print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=nova_list')
+ print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=nova_select_parameters')
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th style='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for server in ret['data'].get('servers',None):
-  qserver = get_quote(server['name'])
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=nova_action&name=" + qserver + "&id=" + server['id'] + "&op={} SPIN=true>{}</A>"
   print "<DIV CLASS=tr>"
   print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
   print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right URL=sdcp.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
   print "<DIV CLASS=td>"
-  print "<A TITLE='New-tab Console'  CLASS='z-btn z-small-btn'	    TARGET=_blank         HREF='sdcp.cgi?call=nova_console&headers=no&name={}&id={}'><IMG SRC='images/btn-term.png'></A>".format(qserver,server['id'])
-  print "<A TITLE='Embedded Console' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=nova_console&id={}><IMG SRC='images/btn-term-frame.png'></A>".format(server['id'])
-  print "<A TITLE='Delete VM'        CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=nova_action&id={}&op=remove MSG='Are you sure you want to delete VM?' SPIN=true><IMG SRC='images/btn-delete.png'></A>".format(server['id'])
+  qserver = get_quote(server['name'])
+  actionurl = 'sdcp.cgi?call=nova_action&name=%s&id=%s&op={}'%(qserver,server['id'])
+  print aWeb.button('term', TARGET='_blank', HREF='sdcp.cgi?call=nova_console&headers=no&name=%s&id=%s'%(qserver,server['id']), TITLE='New window console')
+  print aWeb.button('term-frame', DIV='div_content_right', URL='sdcp.cgi?call=nova_console&id=%s'%server['id'], TITLE='Embedded console')
+  print aWeb.button('delete', DIV='div_content_right', URL=actionurl.format('remove'), MSG='Are you sure you want to delete VM?', SPIN='true')
   if not server['OS-EXT-STS:task_state']:
    if   server['status'] == 'ACTIVE':
-    print tmpl.format('Stop VM','stop',"<IMG SRC='images/btn-shutdown.png'>")
-    print tmpl.format('Reboot','reboot',"<IMG SRC='images/btn-reboot.png'>")
+    print aWeb.button('shutdown', DIV='div_content_right', URL=actionurl.format('stop'), SPIN='true', TITLE='Stop VM')
+    print aWeb.button('reboot', DIV='div_content_right', URL=actionurl.format('reboot'), SPIN='true', TITLE='Reboot')
    elif server['status'] == 'SHUTOFF':
-    print tmpl.format('Start VM','start',"<IMG SRC='images/btn-start.png'>")
+    print aWeb.button('start', DIV='div_content_right', URL=actionurl.format('start'), SPIN='true', TITLE='Start VM')
   else:
-   print tmpl.format('VM info','info',"<IMG SRC='images/btn-info.png'>")
+   print aWeb.button('info', DIV='div_content_right', URL=actionurl.format('info'), SPIN='true', TITLE='VM info')
   print "</DIV></DIV>"
  print "</DIV>"
  print "</DIV></DIV></DIV><DIV CLASS=z-content-right ID=div_content_right></DIV>"
@@ -120,12 +120,11 @@ def select_parameters(aWeb):
    print "<DIV ID=div_drag_{0} CLASS='z-drag z-drag-input' style='font-size:11px;'><INPUT ID=input_{0} NAME=unused TYPE=HIDDEN VALUE={0}>{1} ({2})</DIV>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
  print "</DIV>"
  print "<BR style='clear:left;'>"
- print "<A TITLE='Create VM' CLASS='z-btn z-op z-small-btn' FRM=frm_os_create_vm DIV=div_content_right URL=sdcp.cgi?call=nova_action&id={}&op=add SPIN=true><IMG SRC='images/btn-start.png'></A>".format("new") 
+ print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=nova_action&id=new&op=add', SPIN='true')
  print "</DIV>"
 
 ######################################## Actions ########################################
 #
-# 
 def action(aWeb):
  cookie = aWeb.cookie
  token  = cookie.get('os_user_token')
@@ -144,7 +143,7 @@ def action(aWeb):
   from sdcp.core.extras import get_quote
   server = controller.call(port,url + "/servers/{}".format(aWeb['id']))['data']['server']
   qserver = get_quote(server['name'])
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=" + aWeb['id']+ "&op={} SPIN=true>{}</A>"
+  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=%s&op={} SPIN=true>{}</A>"%aWeb['id']
   print "<DIV>"
   print tmpl.format('Details','details','VM Details')
   print tmpl.format('Diagnostics','diagnostics','Diagnostics')
@@ -193,7 +192,9 @@ def action(aWeb):
    if vmi.get('floating_ip_back_refs'):
     fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
     print "<DIV CLASS=td>{} ({})</DIV>".format(fip['floating_ip_address'],fip['fq_name'][2])
-    print "<DIV CLASS=td><A TITLE='Disassociate' CLASS='z-btn z-small-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=neutron_action&op=fi_disassociate&id={} SPIN=true><IMG SRC=images/btn-remove.png></A>&nbsp;</DIV>".format(fip['uuid'])
+    print "<DIV CLASS=td>&nbsp;"
+    print aWeb.button('remove',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], SPIN='true')
+    print "</DIV>"
    else:
     print "<DIV CLASS=td></DIV>"
     print "<DIV CLASS=td></DIV>"
@@ -236,4 +237,3 @@ def console(aWeb):
    print "<iframe id='console_embed' src='{}' style='width: 100%; height: 100%;'></iframe>".format(url)
   else:
    aWeb.put_redirect("{}&title={}".format(url,aWeb['name']))
-
