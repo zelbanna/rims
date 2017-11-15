@@ -98,9 +98,9 @@ def rest_main(aWeb):
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
- print "<A CLASS='z-btn z-small-btn z-op' DIV=div_rest_info URL=sdcp.cgi?call=tools_rest_execute FRM=frm_sdcp_rest TITLE='Go'><IMG SRC=images/btn-start.png></A>"
- print "<A CLASS='z-btn z-small-btn z-op' DIV=div_rest_info OP=empty TITLE='Clear results view'><IMG SRC=images/btn-remove.png></A><BR>"
- print "Arguments/Body<BR><TEXTAREA style='width:100%; height:100px;' NAME=sdcp_args></TEXTAREA>"
+ print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=tools_rest_execute', FRM='frm_sdcp_rest')
+ print aWeb.button('remove', DIV='div_rest_info', OP='empty', TITLE='Clear results view')
+ print "<BR>Arguments/Body<BR><TEXTAREA style='width:100%; height:100px;' NAME=sdcp_args></TEXTAREA>"
  print "</FORM>"
  print "</DIV>"
  print "<DIV ID=div_rest_info></DIV>"

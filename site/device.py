@@ -405,8 +405,8 @@ def new(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV  CLASS=td><INPUT NAME=vm  TYPE=CHECKBOX VALUE=1  {0} ></DIV></DIV>".format("checked" if aWeb['target'] == 'vm' else '')
   print "</FORM>"
   print "</DIV></DIV>"
-  print "<A CLASS='z-btn z-op z-small-btn' TITLE='Create'  DIV=device_new_span URL=sdcp.cgi?call=device_new&op=new  FRM=device_new_form><IMG SRC='images/btn-start.png'></A>"
-  print "<A CLASS='z-btn z-op z-small-btn' TITLE='Find IP' DIV=device_new_span URL=sdcp.cgi?call=device_new&op=find FRM=device_new_form><IMG SRC='images/btn-search.png'></A>"
+  print aWeb.button('start', DIV='device_new_span', URL='sdcp.cgi?call=device_new&op=new',  FRM='device_new_form', TITLE='Create')
+  print aWeb.button('search',DIV='device_new_span', URL='sdcp.cgi?call=device_new&op=find', FRM='device_new_form', TITLE='Find IP')
   print "<SPAN ID=device_new_span style='max-width:400px; font-size:9px; float:right'></SPAN>"
   print "</DIV>"
 
@@ -465,7 +465,7 @@ def discover(aWeb):
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Clear</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=clear VALUE=True></DIV></DIV>"
   print "</DIV></DIV>"
-  print "<A CLASS='z-btn z-op z-small-btn' DIV=div_content_right SPIN=true URL=sdcp.cgi?call=device_discover FRM=device_discover_form><IMG SRC='images/btn-start.png'></A>"
+  print aWeb.button('search', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=device_discover', FRM='device_discover_form')
   print "</DIV>"
 
 #

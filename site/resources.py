@@ -29,8 +29,8 @@ def list(aWeb):
   rows = db.get_rows()
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=title>Resources</DIV>"
- print "<A TITLE='Reload List'  CLASS='z-btn z-small-btn z-op' DIV=div_content       URL='sdcp.cgi?call=resources_list'><IMG SRC='images/btn-reload.png'></A>"
- print "<A TITLE='Add Resource' CLASS='z-btn z-small-btn z-op' DIV=div_content_right URL='sdcp.cgi?call=resources_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list')
+ print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=new')
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
@@ -39,10 +39,10 @@ def list(aWeb):
    print "TARGET=_blank HREF='{}'>".format(row['href'])
   else:
    print "CLASS=z-op DIV=div_main_cont URL='{}'>".format(row['href'])
-  print "{}</A></DIV><DIV CLASS=td>".format(row['title'])
-  print "&nbsp;<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=resources_info&id={0}><IMG SRC=images/btn-info.png></A>".format(row['id'])
+  print "{}</A></DIV><DIV CLASS=td>&nbsp;".format(row['title'])
+  print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=%i'%row['id'])
   if aWeb.cookie['sdcp_id'] == str(row['user_id']):
-   print "<A CLASS='z-op z-small-btn z-btn' DIV=div_content_right URL=sdcp.cgi?call=resources_delete&id={0} MSG='Really delete resource?'><IMG SRC='images/btn-delete.png'></A>".format(row['id'])
+   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%i'%row['id'], MSG='Delete resource?')
   print "</DIV></DIV>"
  print "</DIV></DIV></DIV></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right>"
@@ -95,8 +95,8 @@ def info(aWeb):
   print "<A CLASS='z-btn z-menu-btn' style='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(data['icon'])
  print "<BR style='clear:left'>"
  if data['id'] != 'new':
-  print "<A TITLE='Delete resource' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=resources_delete&id={0}  MSG='Really delete resource?'><IMG SRC='images/btn-delete.png'></A>".format(data['id'])
- print "<A TITLE='Update resource'  CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=resources_info&op=update FRM=sdcp_resource_info_form><IMG SRC='images/btn-save.png'></A>"
+  print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%s'%data['id'], MSG='Delete resource?')
+ print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='sdcp_resource_info_form')
  print "</DIV>"
 
 #
