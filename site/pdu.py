@@ -15,8 +15,8 @@ def list(aWeb):
  from sdcp.core.dbase import DB
  print "<DIV CLASS=z-frame>"
  print "<DIV CLASS=title>PDUs</DIV>"
- print "<A TITLE='Reload List' CLASS='z-btn z-small-btn z-op' DIV=div_content_left  URL='sdcp.cgi?call=pdu_list'><IMG SRC='images/btn-reload.png'></A>"
- print "<A TITLE='Add PDU' CLASS='z-btn z-small-btn z-op'     DIV=div_content_right URL='sdcp.cgi?call=pdu_info&id=new'><IMG SRC='images/btn-add.png'></A>"
+ print aWeb.button('reload',DIV='div_content_left',  URL='sdcp.cgi?call=pdu_list')
+ print aWeb.button('add',   DIV='div_content_right', URL='sdcp.cgi?call=pdu_info&id=new')
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with DB() as db:
@@ -81,10 +81,10 @@ def info(aWeb):
 
  print "</DIV></DIV>"
  if not id == 'new':
-  print "<A TITLE='Reload info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_info&id={}><IMG SRC='images/btn-reload.png'></A>".format(id)
-  print "<A TITLE='Delete unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_remove&id={}><IMG SRC='images/btn-delete.png'></A>".format(id)
-  print "<A TITLE='Fetch  info' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_info&id={}&op=lookup&ip={}><IMG SRC='images/btn-search.png'></A>".format(id,pdudata['ipasc'])
- print "<A  TITLE='Update unit' CLASS='z-btn z-op z-small-btn' DIV=div_content_right URL=sdcp.cgi?call=pdu_info&id={}&op=update FRM=pdu_info_form><IMG SRC='images/btn-save.png'></A>".format(id)
+  print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?call=pdu_info&id=%s'%id)
+  print aWeb.button('delete',DIV='div_content_right', URL='sdcp.cgi?call=pdu_remove&id=%s'%id)
+  print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=pdu_info&id=%s&op=lookup&ip=%s'%(id,pdudata['ipasc']), TITLE='Fetch info')
+ print aWeb.button('save',  DIV='div_content_right', URL='sdcp.cgi?call=pdu_info&id=%s&op=update'%id, TITLE='Fetch info', FRM='pdu_info_form')
  print "</FORM>"
  print "</DIV>"
 
@@ -119,7 +119,7 @@ def unit_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Slot.Unit:</DIV><DIV CLASS=td>{0}.{1}</DIV></DIV>".format(aWeb['slotname'],aWeb['unit'])
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(aWeb['name'])
  print "</DIV></DIV>"
- print "<A CLASS='z-btn z-op z-small-btn' DIV=update_results URL=sdcp.cgi?call=pdu_unit_info&op=update FRM=pdu_form><IMG SRC='images/btn-save.png'></A>"
+ print aWeb.button('save',DIV='update_results', URL='sdcp.cgi?call=pdu_unit_info&op=update', FRM='pdu_form')
  print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>"
  print "</FORM>"
  print "</DIV>"
@@ -132,7 +132,7 @@ def inventory(aWeb):
   pdulist.append(aWeb['pduop'])
 
  print "<DIV CLASS=z-frame>"
- print "<A CLASS='z-op z-btn z-small-btn' DIV=div_content_left SPIN=true  URL='sdcp.cgi?{}'><IMG SRC=images/btn-reload.png></A>".format(aWeb.get_args())
+ print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='sdcp.cgi?%s'%aWeb.get_args())
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th style='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  from sdcp.devices.avocent import Device
@@ -144,8 +144,14 @@ def inventory(aWeb):
    counter += 1
    value = avocent.get_entry(key)
    print "<DIV CLASS=tr><DIV CLASS=td TITLE='Open up a browser tab for {1}'><A TARGET='_blank' HREF='https://{0}:3502'>{1}</A></DIV><DIV CLASS=td>{2}</DIV>".format(avocent._ip,pdu,value['slotname']+'.'+value['unit'])
-   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=pdu_unit_info&pdu={0}&slot={1}&unit={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td ID=div_pdu_{5}>".format(pdu,value['slot'],value['unit'],value['name'], value['slotname'],counter)
-   _pdu_options(pdu,value['slot'],value['unit'],value['state'],counter)
+   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=pdu_unit_info&pdu={0}&slot={1}&unit={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td ID=div_pdu_{5}>&nbsp;".format(pdu,value['slot'],value['unit'],value['name'], value['slotname'],counter)
+   url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(pdu,value['slot'],value['unit'],counter)
+   div = 'div_pdu_%s'%aWeb['id']
+   if value['state'] == "off":
+    print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
+   else:
+    print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
+    print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
    print "</DIV></DIV>"
  print "</DIV></DIV></DIV>"
 
@@ -158,15 +164,10 @@ def op(aWeb):
  # Avocent is not fast enough to execute something immediately after op, halt output then :-)
  from time import sleep
  sleep(10 if aWeb['nstate'] == 'reboot' else 4)
- _pdu_options(aWeb['ip'],aWeb['slot'],aWeb['unit'],avocent.get_state(aWeb['slot'],aWeb['unit'])['state'],aWeb['id'])
-
-#
-#
-def _pdu_options(aIP,aSlot,aUnit,aState,aID):
- optemplate = "<A CLASS='z-btn z-small-btn z-op' SPIN=div_content_left DIV=div_pdu_"+str(aID)+" URL='sdcp.cgi?call=pdu_op&ip="+aIP+"&slot="+aSlot+"&unit="+aUnit+"&id="+str(aID)+"&nstate={0}'><IMG SRC='images/btn-{1}'></A>"
- print "&nbsp;"
- if aState == "off":
-  print optemplate.format("on", "start")
+ url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(aWeb['ip'],aWeb['slot'],aWeb['unit'],aWeb['id'])
+ div = 'div_pdu_%s'%aWeb['id']
+ if avocent.get_state(aWeb['slot'],aWeb['unit'])['state'] == "off":
+  print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
  else:
-  print optemplate.format("off", "shutdown")
-  print optemplate.format("reboot", "reboot")
+  print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
+  print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
