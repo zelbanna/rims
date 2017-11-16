@@ -17,7 +17,7 @@ def main(aWeb):
 
  print "<nav>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_list{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
- print "<A CLASS=z-op DIV=div_content_left URL=sdcp.cgi?call=graph_list{0}>Graphing</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
+ print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=graph_list{0}'>Graphing</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A>"
  print "<A CLASS='z-op'         DIV=div_content_right MSG='Discover devices?' URL='sdcp.cgi?call=device_discover'>Discover</A>"
  if target == 'vm':
