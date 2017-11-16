@@ -1,8 +1,7 @@
 """Module docstring.
 
-Ajax Appformix calls module
+HTML5 Ajax Appformix calls module
 
-- left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
@@ -36,7 +35,7 @@ def report(aWeb):
   reportid = rep['ReportId']
   report = controller.call("reports/project/{}".format(reportid))['data'].get('UsageReport',None)
   if report['ProjectId'] == pid:
-   print "<DIV CLASS=z-frame style='overflow:auto; display:block' ID=div_appformix_info>"
+   print "<ARTICLE style='overflow:auto;' ID=div_appformix_info>"
    print "<H2>Report: {}</H2>".format(report['ReportId'])
    print "<H3>{} -> {}</H3>".format(datetime.utcfromtimestamp(float(report['Start'])/1e3),datetime.utcfromtimestamp(float(report['End'])/1e3))
    # print "<H3>Created by: {}</H3>".format(report['CreatedBy']) 
@@ -58,4 +57,4 @@ def report(aWeb):
      else:
       print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><TD style='white-space:normal; overflow:auto;'>{}</DIV></DIV>".format(key,value)
    print "</DIV></DIV>"
-   print "</DIV>"
+   print "</ARTICLE>"

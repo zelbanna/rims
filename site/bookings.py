@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax Bookings calls module
+HTML5 Ajax Bookings calls module
 
 """
 __author__= "Zacharias El Banna"
@@ -20,7 +20,7 @@ def list(aWeb):
   res  = db.do("SELECT user_id, device_id, time_start, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid, ADDTIME(time_start, '30 0:0:0.0') as time_end, devices.hostname, users.alias FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
   rows = db.get_rows()
 
- print "<DIV CLASS=z-frame><DIV CLASS=title>Bookings</DIV>"
+ print "<ARTICLE><P CLASS=title>Bookings</P>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=bookings_list')
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>User (Id)</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Until</DIV><DIV CLASS=th>Op</DIV></DIV>"
@@ -31,4 +31,5 @@ def list(aWeb):
    print aWeb.button('add',    DIV='div_content_left', TITLE='Extend booking', URL='sdcp.cgi?call=bookings_list&op=extend&device_id=%i&user_id=%i'%(row['device_id'],row['user_id']))
    print aWeb.button('remove', DIV='div_content_left', TITLE='Remove booking', URL='sdcp.cgi?call=bookings_list&op=debook&device_id=%i&user_id=%i'%(row['device_id'],row['user_id']))
   print "&nbsp;</DIV></DIV>"
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV>"
+ print "</ARTICLE>"
