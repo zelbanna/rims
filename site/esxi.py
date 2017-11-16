@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax ESXi calls module
+HTML5 Ajax ESXi calls module
 
 """
 __author__= "Zacharias El Banna"                     
