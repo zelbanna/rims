@@ -54,13 +54,13 @@ def login(aWeb):
   <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='ESXi'      URL=sdcp.cgi?call=esxi_hypervisors><IMG SRC='images/icon-servers.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Config'    URL=sdcp.cgi?call=tools_main><IMG SRC='images/icon-config.png'/></A>
   </header>"""
-  print "<section ID=main></section>"
+  print "<main ID=main></main>"
  else:
   with DB() as db:
    db.do("SELECT id,name,view_public FROM users ORDER BY name")
    rows = db.get_rows()
   aWeb.put_html("Login")
-  print "<DIV CLASS=z-centered STYLE='height:100%;'>"
+  print "<DIV CLASS=z-overlay>"
   print "<DIV CLASS='z-frame z-border' ID=div_login style='width:600px; height:180px;'>"
   print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
@@ -158,7 +158,7 @@ def openstack(aWeb):
  projects = [] if not ret['code'] == 200 else ret['data']['projects']
 
  aWeb.put_html("{} 2 Cloud".format(name.capitalize()))
- print "<DIV CLASS='z-centered' style='height:100%;'>"
+ print "<DIV CLASS='z-overlay' style='height:100%;'>"
  print "<DIV CLASS='z-frame z-border' ID=div_login style='width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=openstack_login>"

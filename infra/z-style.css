@@ -19,8 +19,8 @@ form{   display:inline; }
 
 /*###################################### Content Model ########################################*/
 
-header {  border-style:none; width:100%; position:fixed; height:75px; padding-left:5px; }
-section { border-style:none; width:100%; position:fixed; top:75px; bottom:0px; }
+header {         position:fixed; height:75px;          width:100%; padding-left:5px;}
+main {           position:fixed; top:75px; bottom:0px; width:100%}
 
 nav {            height:34px; background-color: #808D99; width:100%; z-index:1000; clear:both; }
 nav a {          height:34px; color:#FFFFFF; padding:8px; text-decoration:none!important; font-weight: normal; outline:none; float:left; }
@@ -30,9 +30,18 @@ nav .z-right   { float:right; }
 nav .z-warning { background-color:red!important; font-weight:bold; }
 nav .z-reload {  background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
 
-div.z-content {       display:block; position:absolute; top:34px; bottom:0px;  width:100%;  box-sizing: border-box; overflow: auto;}
-div.z-content-left {  display:block; position:absolute; top:0px;  bottom:0px;  width:400px; overflow-y:auto; overflow-x:hidden; }
-div.z-content-right { display:block; position:absolute; top:0px;  bottom:0px;  right:0px;   left:400px; overflow: auto; }
+section.content {       position:absolute; top:34px; bottom:0px; width:100%;  box-sizing: border-box; overflow: auto;}
+section.content-left {  position:absolute; top:0px;  bottom:0px; width:400px; overflow-y:auto; overflow-x:hidden; }
+section.content-right { position:absolute; top:0px;  bottom:0px; right:0px; left:400px; overflow: auto; }
+section.content-left > .z-frame { width:99%; }
+
+article.frame {	border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; width:auto; }
+article.frame:hover { box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }
+article.frame .title { font-weight: bold; text-align:center; }
+
+div.z-content {       position:absolute; top:34px; bottom:0px;  width:100%;  box-sizing: border-box; overflow: auto;}
+div.z-content-left {  position:absolute; top:0px;  bottom:0px;  width:400px; overflow-y:auto; overflow-x:hidden; }
+div.z-content-right { position:absolute; top:0px;  bottom:0px;  right:0px;   left:400px; overflow: auto; }
 
 /*######################################## DIVs ###########################################*/
 
@@ -57,6 +66,9 @@ div.z-rack-indx { font-weight:bold; font-size:8px; color:grey; padding:2px; }
 div.z-rack-data { border: solid 2px grey; font-size:12px; text-align:center;}
 
 /*############################### Tables #####################################*/ 
+
+article.frame > form > div.z-table { width:99%; }
+article.frame > div.z-table {        width:99%; }
 
 div.z-frame > form > div.z-table { width:99%; }
 div.z-frame > div.z-table {        width:99%; }

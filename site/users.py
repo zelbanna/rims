@@ -18,10 +18,10 @@ def main(aWeb):
  print "<A CLASS='z-op z-right z-warning' OP=logout URL=sdcp.cgi>Log out</A>"
  print "<A CLASS='z-op z-right z-navinfo' DIV=div_content_right URL=sdcp.cgi?call=users_info&id={}>{}</A>".format(aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user'))
  print "</nav>"
- print "<DIV CLASS=z-content ID=div_content>"
- print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
- print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
- print "</DIV>"
+ print "<section CLASS=content       ID=div_content>"
+ print "<section CLASS=content-left  ID=div_content_left></section>"
+ print "<section CLASS=content-right ID=div_content_right></section>"
+ print "</section>"
 
 
 def list(aWeb):
@@ -29,7 +29,7 @@ def list(aWeb):
  with DB() as db:
   res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
   rows = db.get_rows()
- print "<DIV CLASS=z-frame><DIV CLASS=title>Users</DIV>"
+ print "<article CLASS=frame><DIV CLASS=title>Users</DIV>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=users_list')
  print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?call=users_info&id=new')
  print "<DIV CLASS=z-table>"
@@ -37,7 +37,7 @@ def list(aWeb):
  print "<DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=users_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV></article>"
 
 #
 #

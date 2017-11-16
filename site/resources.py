@@ -16,19 +16,18 @@ def navigate(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  print "<nav>&nbsp;</nav>"
- print "<DIV CLASS=z-content ID=div_content>"
+ print "<section CLASS=content ID=div_content>"
  view(aWeb)
- print "</DIV>"
+ print "</section>"
 
-#
 #
 #
 def list(aWeb):
  with DB() as db:
   res  = db.do("SELECT id, title, href, type, inline, user_id FROM resources WHERE (user_id = '{}' {}) ORDER BY type,title".format(aWeb.cookie['sdcp_id'],'' if aWeb.cookie['sdcp_view'] == '0' else 'OR private = 0'))
   rows = db.get_rows()
- print "<DIV CLASS=z-content-left ID=div_content_left>"
- print "<DIV CLASS=z-frame><DIV CLASS=title>Resources</DIV>"
+ print "<section CLASS=content-left ID=div_content_left>"
+ print "<article CLASS=frame><DIV CLASS=title>Resources</DIV>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=new')
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
@@ -44,10 +43,9 @@ def list(aWeb):
   if aWeb.cookie['sdcp_id'] == str(row['user_id']):
    print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%i'%row['id'], MSG='Delete resource?')
   print "</DIV></DIV>"
- print "</DIV></DIV></DIV></DIV>"
- print "<DIV CLASS=z-content-right ID=div_content_right>"
+ print "</DIV></DIV></article></section>"
+ print "<section CLASS=content-right ID=div_content_right></section>"
 
-#
 #
 #
 def info(aWeb):
@@ -74,7 +72,7 @@ def info(aWeb):
    db.do("SELECT id,title,href,icon,type,inline,private,user_id FROM resources WHERE id = '{}'".format(data['id']))
    data = db.get_row()
 
- print "<DIV CLASS=z-frame>"
+ print "<article CLASS=frame>"
  print "<DIV CLASS=title>Resource entity ({})</DIV>".format(data['id'])
  print "<FORM ID=sdcp_resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
@@ -97,7 +95,7 @@ def info(aWeb):
  if data['id'] != 'new':
   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%s'%data['id'], MSG='Delete resource?')
  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='sdcp_resource_info_form')
- print "</DIV>"
+ print "</article>"
 
 #
 #
@@ -126,4 +124,4 @@ def delete(aWeb):
  with DB() as db:
   id = aWeb['id']
   res = db.do("DELETE FROM resources WHERE id = '{}'".format(id))
- print "<DIV CLASS=z-frame>Result: {}</DIV>".format("OK" if res == 1 else "Not OK:{}".format(res))
+ print "<article CLASS=frame>Result: {}</article>".format("OK" if res == 1 else "Not OK:{}".format(res))
