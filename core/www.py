@@ -62,7 +62,7 @@ class Web(object):
  def put_html(self, aTitle = None):
   self.put_headers()
   from sys import stdout
-  stdout.write("<HEAD><META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>")
+  stdout.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='z-style.css'>")
   if aTitle:
    stdout.write("<TITLE>" + aTitle + "</TITLE>")
   stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/" + self._base + ".png'/>")

@@ -18,7 +18,7 @@ def main(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  upshost = PC.sdcp['upshost']
- print "<DIV CLASS='z-navbar' ID=div_navbar>"
+ print "<nav>"
  print "<A CLASS='z-warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=examine_clear'>Clear Logs</A>"
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_logs&ip=127.0.0.1>Logs</A>"
  if upshost:
@@ -26,8 +26,8 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dns_top>DNS</A>"
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases>DHCP</A>"
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_logs&ip={}>Services Logs</A>".format(PC.sdcp['svcsrv'])
- print "<A CLASS='z-reload z-op' DIV=div_main_cont URL=sdcp.cgi?call=examine_main></A>"
- print "</DIV>"
+ print "<A CLASS='z-reload z-op' DIV=main URL=sdcp.cgi?call=examine_main></A>"
+ print "</nav>"
  print "<DIV CLASS=z-content ID=div_content></DIV>"
 
 #

@@ -15,13 +15,13 @@ def main(aWeb):
  target = aWeb['target']
  arg    = aWeb['arg']
 
- print "<DIV CLASS=z-navbar ID=div_navbar>"
+ print "<nav>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_list{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL=sdcp.cgi?call=graph_list{0}>Graphing</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A>"
  print "<A CLASS='z-op'         DIV=div_content_right MSG='Discover devices?' URL='sdcp.cgi?call=device_discover'>Discover</A>"
  if target == 'vm':
-  print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
+  print "<A CLASS='z-reload z-op' DIV=main URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
  else:
   with DB() as db:
    if target == 'rack_id':
@@ -47,14 +47,14 @@ def main(aWeb):
       for row in tprows:
        arglist = arglist + "&{}list=".format(type) + row['ip']
       print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
-  print "<A CLASS='z-reload z-op' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
+  print "<A CLASS='z-reload z-op' DIV=main URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=ipam_list'>IPAM</A>"
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=dns_domains'>DNS</A>"
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=pdu_list'>PDUs</A>"
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list'>Consoles</A>"
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list'>Racks</A>"
   print "<SPAN CLASS='z-right z-navinfo'>Configuration:</SPAN>"
- print "</DIV>"
+ print "</nav>"
  print "<DIV CLASS=z-content       ID=div_content>"
  print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
  print "<DIV CLASS=z-content-right ID=div_content_right>" 
@@ -256,7 +256,7 @@ def info(aWeb):
  print "</DIV>"
 
  print "<!-- Function navbar and content -->"
- print "<DIV CLASS='z-navbar' style='top:260px;'>"
+ print "<nav STYLE='top:260px;'>"
  try:
   from importlib import import_module
   module = import_module("sdcp.devices.{}".format(dev['info']['type_name']))
@@ -265,14 +265,14 @@ def info(aWeb):
   if functions:
    if functions[0] == 'operated':
     if dev['info']['type_name'] == 'esxi':
-     print "<A CLASS=z-op DIV=div_main_cont URL='sdcp.cgi?call=esxi_main&id={}'>Manage</A></B></DIV>".format(id)
+     print "<A CLASS=z-op DIV=main URL='sdcp.cgi?call=esxi_main&id={}'>Manage</A></B></DIV>".format(id)
    else:
     for fun in functions:
      funname = " ".join(fun.split('_')[1:])
      print "<A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(dev['ip'], dev['info']['type_name'], fun, funname.title())
  except:
   print "&nbsp;"
- print "</DIV>"
+ print "</nav>"
  print "<DIV CLASS='z-content' ID=div_dev_data style='top:294px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>"
 
 

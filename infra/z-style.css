@@ -38,8 +38,18 @@ form{   display:inline; }
 
 /*###################################### Content Model ########################################*/
 
-div.z-main-menu{     border-style:none; width:100%; position:fixed; height :75px; padding-left: 5px; }
-div.z-main-content { border-style:none; width:100%; position:fixed; top:75px; bottom:0px; background-color:#9CA6B0; }
+header {  border-style:none; width:100%; position:fixed; height :75px; padding-left: 5px; }
+section { border-style:none; width:100%; position:fixed; top:75px; bottom:0px; background-color:#9CA6B0; }
+
+nav { height: 34px; background-color: #808D99; width:100%; z-index:1000; clear:both; }
+nav a { color:#FFFFFF; display:table-cell; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; outline:none; float:left; }
+nav a.z-navinfo { padding: 6px; height:34px; font-size:16px; font-weight:bold; background-color:green; color:white; }
+nav  .z-navinfo { padding: 6px; height:34px; font-size:16px; font-weight:bold; background-color:green; color:white; }
+nav a.z-right   {  float:right; }
+nav a.z-warning {  background-color:red!important; font-weight:bold; }
+nav a.z-reload { background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
+nav a:hover{ color:#000000 ;background-color:#D5D9DD; }
+
 
 div.z-navbar { height: 34px; float: left; clear:both; margin:0; padding:0; overflow:hidden; background-color: #808D99; cursor:pointer; position:absolute; top:0px; width:100%; z-index:1000; }
 div.z-navbar a { color:#FFFFFF; display:table-cell; padding:8px 10px 9px 10px; text-decoration:none!important; font-weight: normal; outline:none; float:left; }

@@ -15,10 +15,11 @@ def main(aWeb):
  with DB() as db:
   db.do("SELECT id,name,image_url from racks")
   racks = db.get_rows()
+ print "<nav>&nbsp;</nav>"
  print "<CENTER><H1>Rack Overview</H1></CENTER>"
  print "<DIV CLASS=z-centered>"
- rackstr = "<DIV STYLE='float:left; margin:6px;'><A TITLE='{0}' CLASS=z-op DIV=div_main_cont URL=sdcp.cgi?call=device_main&target=rack_id&arg={0}><IMG STYLE='max-height:400px; max-width:200px;' ALT='{1} ({2})' SRC='images/{2}'></A></DIV>"
- print "<DIV STYLE='float:left; margin:6px;'><A CLASS=z-op DIV=div_main_cont URL=sdcp.cgi?call=device_main&target=vm&arg=1><IMG STYLE='max-height:400px; max-width:200px;' ALT='VMs' SRC='images/hypervisor.png'></A></DIV>"
+ rackstr = "<DIV STYLE='float:left; margin:6px;'><A TITLE='{1}' CLASS=z-op DIV=main URL=sdcp.cgi?call=device_main&target=rack_id&arg={0}><IMG STYLE='max-height:400px; max-width:200px;' ALT='{1} ({2})' SRC='images/{2}'></A></DIV>"
+ print "<DIV STYLE='float:left; margin:6px;'><A CLASS=z-op DIV=main URL=sdcp.cgi?call=device_main&target=vm&arg=1><IMG STYLE='max-height:400px; max-width:200px;' ALT='VMs' SRC='images/hypervisor.png'></A></DIV>"
  for rack in racks:
   print rackstr.format(rack['id'], rack['name'], rack['image_url'])
  print "</DIV>"

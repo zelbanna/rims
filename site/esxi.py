@@ -13,8 +13,7 @@ def hypervisors(aWeb):
  with DB() as db:
   db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'hypervisor' ORDER BY type_name,hostname")
   rows = db.get_rows() 
- print "<DIV CLASS=z-navbar ID=div_navbar>"
- print "&nbsp;</DIV>"    
+ print "<nav>&nbsp;</nav>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
@@ -23,7 +22,7 @@ def hypervisors(aWeb):
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(row['type_name'])
   if   row['type_name'] == 'esxi':
-   print "<A CLASS=z-op DIV=div_main_cont URL='sdcp.cgi?call=esxi_main&id={}'>{}</A>".format(row['id'],row['hostname'])
+   print "<A CLASS=z-op DIV=main URL='sdcp.cgi?call=esxi_main&id={}'>{}</A>".format(row['id'],row['hostname'])
   elif row['type_name'] == 'vcenter':
    print "<A TARGET=_blank HREF='https://{}:9443/vsphere-client/'>{}</A>".format(row['ipasc'],row['hostname'])
   print "</DIV></DIV>"
@@ -41,14 +40,14 @@ def main(aWeb):
  with DB() as db:
   db.do("SELECT hostname, INET_NTOA(ip) as ipasc, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = '{}'".format(id))
   data = db.get_row() 
- print "<DIV CLASS=z-navbar ID=div_navbar>"
+ print "<nav>"
  print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='sdcp.cgi?call=esxi_op&nstate=poweroff&id={}'>Shutdown</A>".format(id)
  print "<A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A>".format(data['hostname'],data['domain'])
  print "<A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A>".format(data['hostname'],data['domain'])
  print "<A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A>".format(data['ipasc'])
- print "<A CLASS='z-op z-reload' DIV=div_main_cont URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
+ print "<A CLASS='z-op z-reload' DIV=main URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
  print "<SPAN CLASS='z-right z-navinfo'>{}</SPAN>".format(data['hostname'])
- print "</DIV>"
+ print "</nav>"
  print "<DIV CLASS=z-content ID=div_content>"
  print "<DIV CLASS=z-content-left ID=div_content_left>"
  list(aWeb,data['ipasc'])

@@ -15,7 +15,7 @@ def navigate(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- print "<DIV CLASS=z-navbar  ID=div_navbar>&nbsp;</DIV>"
+ print "<nav>&nbsp;</nav>"
  print "<DIV CLASS=z-content ID=div_content>"
  view(aWeb)
  print "</DIV>"
@@ -38,7 +38,7 @@ def list(aWeb):
   if row['inline'] == 0:
    print "TARGET=_blank HREF='{}'>".format(row['href'])
   else:
-   print "CLASS=z-op DIV=div_main_cont URL='{}'>".format(row['href'])
+   print "CLASS=z-op DIV=main URL='{}'>".format(row['href'])
   print "{}</A></DIV><DIV CLASS=td>&nbsp;".format(row['title'])
   print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=%i'%row['id'])
   if aWeb.cookie['sdcp_id'] == str(row['user_id']):
@@ -113,7 +113,7 @@ def view(aWeb):
   if row['inline'] == 0:
    print "CLASS='z-btn z-menu-btn' TARGET=_blank HREF='{}'>".format(row['href'])
   else:
-   print "CLASS='z-op z-btn z-menu-btn' DIV=div_main_cont URL='{}'>".format(row['href'])
+   print "CLASS='z-op z-btn z-menu-btn' DIV=main URL='{}'>".format(row['href'])
   print "<IMG ALT='{0}' SRC='{0}'></A>".format(row['icon'])
   print "</A><BR><SPAN style='width:100px; display:block;'>{}</SPAN>".format(row['title'])
   print "</DIV>"

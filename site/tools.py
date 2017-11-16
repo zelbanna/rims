@@ -13,14 +13,14 @@ def main(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- print "<DIV CLASS=z-navbar ID=div_navbar>"
+ print "<nav>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=tools_list'>Options</A>"
  print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A>"
  print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>Tools</A>"
  print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>Demos</A>"
  print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>Bookmarks</A>"
- print "</DIV>"
+ print "</nav>"
  print "<DIV CLASS=z-content ID=div_content></DIV>"
 
 def list(aWeb):

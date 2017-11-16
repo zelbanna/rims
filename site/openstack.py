@@ -61,7 +61,7 @@ def portal(aWeb):
  print "</DIV></DIV>"
  print "<A CLASS='z-btn z-op ' OP=logout URL='sdcp.cgi?call=front_openstack&headers=no&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
  print "</DIV>"
- print "<DIV CLASS='z-navbar' style='top:60px; z-index:1001' ID=div_navbar>"
+ print "<nav STYLE='top:60px; z-index:1001'>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A>"
@@ -70,7 +70,7 @@ def portal(aWeb):
  if username == 'admin':
   print "<A CLASS='z-op z-right'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
   print "<A CLASS='z-op z-right'  DIV=div_content URL=sdcp.cgi?call=openstack_api>API Debug</A>"
- print "</DIV>"
+ print "</nav>"
  print "</DIV>"
  print "<DIV CLASS=z-content ID=div_content style='top:94px;'></DIV>"
 
