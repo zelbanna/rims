@@ -1,6 +1,6 @@
 """Module docstring.
 
-Front-End(s)
+HTML5 Front-End(s)
 
 """
 __author__= "Zacharias El Banna"
@@ -43,8 +43,8 @@ def login(aWeb):
 
   aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
   aWeb.put_html(PC.sdcp['name'])
-  print "<header>"
-  print "<A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Start'     URL='{}&headers=yes'><IMG SRC='images/icon-start.png'/></A>".format(href)
+  print "<HEADER>"
+  print "<A CLASS='z-btn z-menu-btn z-op'   DIV=main TITLE='Start'     URL='{}&headers=yes'><IMG SRC='images/icon-start.png'/></A>".format(href)
   print """<A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Rack'      URL=sdcp.cgi?call=rack_main><IMG SRC='images/icon-rack.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Devices'   URL=sdcp.cgi?call=device_main><IMG SRC='images/icon-network.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Examine'   URL=sdcp.cgi?call=examine_main><IMG SRC='images/icon-examine.png'/></A>
@@ -53,7 +53,7 @@ def login(aWeb):
   <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Tools'     URL=sdcp.cgi?call=resources_navigate&type=tool><IMG SRC='images/icon-tools.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='ESXi'      URL=sdcp.cgi?call=esxi_hypervisors><IMG SRC='images/icon-servers.png'/></A>
   <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Config'    URL=sdcp.cgi?call=tools_main><IMG SRC='images/icon-config.png'/></A>
-  </header>"""
+  </HEADER>"""
   print "<main ID=main></main>"
  else:
   with DB() as db:
@@ -61,7 +61,7 @@ def login(aWeb):
    rows = db.get_rows()
   aWeb.put_html("Login")
   print "<DIV CLASS=z-overlay>"
-  print "<DIV CLASS='z-frame z-border' ID=div_login style='width:600px; height:180px;'>"
+  print "<ARTICLE CLASS='z-border' ID=div_login style='width:600px; height:180px;'>"
   print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
   print "<INPUT TYPE=HIDDEN NAME=call VALUE=front_login>"
@@ -73,7 +73,7 @@ def login(aWeb):
   print "</DIV></DIV>"
   print "<A CLASS='z-btn z-op' OP=submit style='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
   print "</FORM>"
-  print "</DIV></DIV>"
+  print "</ARTICLE></DIV>"
 
 ##################################################################################################
 #
@@ -87,28 +87,33 @@ def weathermap(aWeb):
 
  page = aWeb['page']
  if not page:
-  print "<nav>" 
+  print "<NAV>" 
   for map,entry in PC.weathermap.iteritems():
    print "<A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=front_weathermap&page={0}>{1}</A>".format(map,entry['name'])
-  print "</nav>"
-  print "<DIV CLASS='z-content' ID=div_wm_content NAME='Weathermap Content'>"
+  print "</NAV>"
+  print "<SECTION CLASS='content' ID='div_wm_content' NAME='Weathermap Content' STYLE='overflow:hidden;'>"
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"
-  print "</DIV>" 
+  print "</SECTION>" 
  else:
   from sdcp.core.extras import get_include
   entry  = PC.weathermap[page]
   graphs = entry.get('graphs')
+  print "<SECTION CLASS=content STYLE='top:0px;'>"
   if graphs:
-   print "<DIV CLASS=z-content-left STYLE='width:420px'><DIV CLASS=z-frame>"
    from sdcp.tools.munin import widget_rows
+   print "<SECTION CLASS=content-left STYLE='width:420px'><ARTICLE>"
    widget_rows(graphs)
-   print "</DIV></DIV><DIV CLASS=z-content-right STYLE='left:420px'>"
+   print "</ARTICLE></SECTION><SECTION CLASS=content-right STYLE='left:420px'>"
+   print "<ARTICLE>"
+   print get_include('%s.html'%page)
+   print "</ARTICLE>"
+   print "</SECTION>"
   else:
-   print "<DIV CLASS=z-content STYLE='top:0px;'>"
-  print "<DIV CLASS=z-frame STYLE='width:auto;'>"
-  print get_include('{}.html'.format(page))
-  print "</DIV>"
-
+   print "<SECTION CLASS=content STYLE='top:0px;'>"
+   print "<ARTICLE>"
+   print get_include('%s.html'%page)
+   print "</ARTICLE>"
+  print "</SECTION>"
 
 ###################################################################################################################################
 #
@@ -159,7 +164,7 @@ def openstack(aWeb):
 
  aWeb.put_html("{} 2 Cloud".format(name.capitalize()))
  print "<DIV CLASS='z-overlay' style='height:100%;'>"
- print "<DIV CLASS='z-frame z-border' ID=div_login style='width:600px; height:180px;'>"
+ print "<ARTICLE CLASS='z-border' ID=div_login style='width:600px; height:180px;'>"
  print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=openstack_login>"
  print "<INPUT TYPE=HIDDEN NAME=call VALUE=openstack_portal>"
@@ -174,4 +179,4 @@ def openstack(aWeb):
  print "</DIV></DIV>"
  print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
  print "</FORM>"
- print "</DIV></DIV>"
+ print "</ARTICLE></DIV>"
