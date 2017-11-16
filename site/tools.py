@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax Tools calls module
+HTML5 Ajax Tools calls module
 
 """
 __author__= "Zacharias El Banna"
@@ -13,20 +13,20 @@ def main(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- print "<nav>"
+ print "<NAV>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=tools_list'>Options</A>"
  print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A>"
  print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>Tools</A>"
  print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>Demos</A>"
  print "<A CLASS='z-op z-right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>Bookmarks</A>"
- print "</nav>"
- print "<DIV CLASS=z-content ID=div_content></DIV>"
+ print "</NAV>"
+ print "<SECTION CLASS=content ID=div_content></SECTION>"
 
 def list(aWeb):
  from sdcp import PackageContainer as PC
- print "<DIV CLASS=z-content-left ID=div_content_left>"
- print "<DIV CLASS=z-frame><DIV CLASS=title>Tools</DIV>"
+ print "<SECTION CLASS=content-left ID=div_content_left>"
+ print "<ARTICLE><P CLASS=title>Tools</P>"
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=dns_load'>DNS - Load Cache</A></DIV></DIV>"
@@ -39,16 +39,16 @@ def list(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=tools_install&host=127.0.0.1'>Reinstall Host</A></DIV></DIV>"
  if PC.sdcp['svcsrv']:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right  URL='sdcp.cgi?call=tools_install&host={}'>Reinstall SVC</A></DIV></DIV>".format(PC.sdcp['svcsrv'])
- print "</DIV></DIV></DIV></DIV>"
- print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
+ print "</DIV></DIV></ARTICLE></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 #
 #
 def db_structure(aWeb):
  from sdcp.core.mysql import dump
- print "<DIV CLASS=z-logs>"
+ print "<ARTICLE><P CLASS='machine-text'>"
  print "<BR>".join(dump({'mode':'structure'})['output'])
- print "</DIV>"
+ print "</P></ARTICLE>"
 
 #
 #
@@ -63,18 +63,18 @@ def sync_devicetypes(aWeb):
  from sdcp.core import extras as EXT
  from sdcp.rest.tools import sync_devicetypes as rest_sync_devicetypes
  res = rest_sync_devicetypes(None)
- print "<DIV CLASS=z-frame>"
+ print "<ARTICLE>"
  EXT.dict2table(res['types'])
- print "</DIV>"
+ print "</ARTICLE>"
 #
 #
 def install(aWeb):
  from sdcp.core.rest import call as rest_call
  from json import dumps
- print "<DIV CLASS=z-frame><PRE>"
+ print "<ARTICLE><PRE>"
  res = rest_call("http://{}/rest.cgi".format(aWeb['host']),"sdcp.rest.tools_installation")
  print dumps(res,indent=4)
- print "</PRE></DIV>"
+ print "</PRE></ARTICLE>"
 
 #
 #
@@ -87,8 +87,8 @@ def test_sleep(aWeb):
 #
 def rest_main(aWeb):
  from sdcp import PackageContainer as PC
- print "<DIV CLASS=z-frame><FORM ID=frm_sdcp_rest>"
- print "<H3> REST API inspection</H3>"
+ print "<ARTICLE><FORM ID=frm_sdcp_rest>"
+ print "<P CLASS=title> REST API inspection</P>"
  print "Choose host and enter API:<SELECT style='overflow: visible; width:auto; height:22px;' NAME=sdcp_host>"
  print "<OPTION VALUE=127.0.0.1>Local Host</A>"
  if PC.sdcp['svcsrv']:
@@ -102,7 +102,7 @@ def rest_main(aWeb):
  print aWeb.button('remove', DIV='div_rest_info', OP='empty', TITLE='Clear results view')
  print "<BR>Arguments/Body<BR><TEXTAREA style='width:100%; height:100px;' NAME=sdcp_args></TEXTAREA>"
  print "</FORM>"
- print "</DIV>"
+ print "</ARTICLE>"
  print "<DIV ID=div_rest_info></DIV>"
 
 #
@@ -112,12 +112,12 @@ def rest_execute(aWeb):
  from json import loads,dumps
  try:    arguments = loads(aWeb['sdcp_args'])
  except: arguments = None
- print "<DIV CLASS=z-frame>"
+ print "<ARTICLE>"
  try:
   ret = rest_call("http://{}/rest.cgi".format(aWeb['sdcp_host']),aWeb['sdcp_api'],arguments,aWeb['sdcp_method'])
   print "<DIV CLASS=z-border>"
-  output = dumps(ret,indent=4, sort_keys=True)
-  print "<PRE style='margin:0px;'>{}</PRE>".format(output)
+  print "<PRE style='margin:0px;'>%s</PRE>"%dumps(ret,indent=4, sort_keys=True)
+  print "</DIV>"
  except RestException,re:
   data = re.get()
   data.pop('res',None)
@@ -125,4 +125,4 @@ def rest_execute(aWeb):
   for key in data.keys():
    print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),data[key])
   print "</DIV></DIV>"
- print "</DIV>"
+ print "</ARTICLE>"

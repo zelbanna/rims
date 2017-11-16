@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax resources calls module
+HTML5 Ajax resources calls module
 
 """
 __author__= "Zacharias El Banna"
@@ -16,9 +16,9 @@ def navigate(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  print "<nav>&nbsp;</nav>"
- print "<section CLASS=content ID=div_content>"
+ print "<SECTION CLASS=content ID=div_content>"
  view(aWeb)
- print "</section>"
+ print "</SECTION>"
 
 #
 #
@@ -26,8 +26,8 @@ def list(aWeb):
  with DB() as db:
   res  = db.do("SELECT id, title, href, type, inline, user_id FROM resources WHERE (user_id = '{}' {}) ORDER BY type,title".format(aWeb.cookie['sdcp_id'],'' if aWeb.cookie['sdcp_view'] == '0' else 'OR private = 0'))
   rows = db.get_rows()
- print "<section CLASS=content-left ID=div_content_left>"
- print "<article CLASS=frame><DIV CLASS=title>Resources</DIV>"
+ print "<SECTION CLASS=content-left ID=div_content_left>"
+ print "<ARTICLE><P CLASS=title>Resources</P>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=new')
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
@@ -43,8 +43,8 @@ def list(aWeb):
   if aWeb.cookie['sdcp_id'] == str(row['user_id']):
    print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%i'%row['id'], MSG='Delete resource?')
   print "</DIV></DIV>"
- print "</DIV></DIV></article></section>"
- print "<section CLASS=content-right ID=div_content_right></section>"
+ print "</DIV></DIV></ARTICLE></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 #
 #
@@ -72,8 +72,8 @@ def info(aWeb):
    db.do("SELECT id,title,href,icon,type,inline,private,user_id FROM resources WHERE id = '{}'".format(data['id']))
    data = db.get_row()
 
- print "<article CLASS=frame>"
- print "<DIV CLASS=title>Resource entity ({})</DIV>".format(data['id'])
+ print "<ARTICLE>"
+ print "<P CLASS=title>Resource entity ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<INPUT TYPE=HIDDEN NAME=user_id VALUE={}>".format(data['user_id'])
@@ -91,11 +91,11 @@ def info(aWeb):
  print "</FORM>"
  if data['icon'] and data['icon'] != 'NULL':
   print "<A CLASS='z-btn z-menu-btn' style='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(data['icon'])
- print "<BR style='clear:left'>"
+ print "<BR>"
  if data['id'] != 'new':
   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%s'%data['id'], MSG='Delete resource?')
  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='sdcp_resource_info_form')
- print "</article>"
+ print "</ARTICLE>"
 
 #
 #
@@ -124,4 +124,4 @@ def delete(aWeb):
  with DB() as db:
   id = aWeb['id']
   res = db.do("DELETE FROM resources WHERE id = '{}'".format(id))
- print "<article CLASS=frame>Result: {}</article>".format("OK" if res == 1 else "Not OK:{}".format(res))
+ print "<ARTICLE>Result: {}</ARTICLE>".format("OK" if res == 1 else "Not OK:{}".format(res))

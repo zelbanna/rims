@@ -1,6 +1,7 @@
 """Module docstring.
 
-Ajax Users calls module
+HTML5 Ajax Users calls module
+
 
 """
 __author__= "Zacharias El Banna"
@@ -12,16 +13,16 @@ def main(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- print "<nav>"
+ print "<NAV>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=users_list'>Users</A>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A>"
  print "<A CLASS='z-op z-right z-warning' OP=logout URL=sdcp.cgi>Log out</A>"
  print "<A CLASS='z-op z-right z-navinfo' DIV=div_content_right URL=sdcp.cgi?call=users_info&id={}>{}</A>".format(aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user'))
- print "</nav>"
- print "<section CLASS=content       ID=div_content>"
- print "<section CLASS=content-left  ID=div_content_left></section>"
- print "<section CLASS=content-right ID=div_content_right></section>"
- print "</section>"
+ print "</NAV>"
+ print "<SECTION CLASS=content       ID=div_content>"
+ print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+ print "</SECTION>"
 
 
 def list(aWeb):
@@ -29,7 +30,7 @@ def list(aWeb):
  with DB() as db:
   res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
   rows = db.get_rows()
- print "<article CLASS=frame><DIV CLASS=title>Users</DIV>"
+ print "<ARTICLE><P CLASS=title>Users</P>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=users_list')
  print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?call=users_info&id=new')
  print "<DIV CLASS=z-table>"
@@ -37,7 +38,7 @@ def list(aWeb):
  print "<DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=users_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
- print "</DIV></DIV></article>"
+ print "</DIV></DIV></ARTICLE>"
 
 #
 #
@@ -72,8 +73,8 @@ def info(aWeb):
    data['front'] = str(data['frontpage'])
    data['view']  = str(data['view_public'])
 
- print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>User Info ({})</DIV>".format(data['id'])
+ print "<ARTICLE>"
+ print "<P CLASS=title>User Info ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>"
@@ -85,13 +86,12 @@ def info(aWeb):
  for resource in resources:
   print "<OPTION VALUE='{0}' {2}>{1}</OPTION>".format(resource['id'],resource['title'],"selected" if str(resource['id']) == data['front'] else '')
  print "</SELECT></DIV></DIV>"
-
  print "</DIV></DIV>"
  if data['id'] != 'new':
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_remove&id={0}'.format(data['id']), MSG='Really remove user?')
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&headers=no&op=update', FRM='sdcp_user_info_form')
  print "</FORM>"
- print "</DIV>"
+ print "</ARTICLE"
 
 #
 #
@@ -100,4 +100,4 @@ def remove(aWeb):
  from sdcp.core.dbase import DB
  with DB() as db:
   res = db.do("DELETE FROM users WHERE id = '{}'".format(aWeb['id']))
- print "<DIV CLASS=z-frame>User with id {} removed ({})</DIV>".format(aWeb['id'],"OK" if res == 1 else "NOT_OK")
+ print "<ARTICLE>User with id {} removed ({})</ARTICLE>".format(aWeb['id'],"OK" if res == 1 else "NOT_OK")
