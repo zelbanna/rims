@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax DHCP calls module
+HTML5 Ajax DHCP calls module
 
 """
 __author__= "Zacharias El Banna"
@@ -8,14 +8,14 @@ __version__ = "17.11.01GA"
 __status__= "Production"
 
 from sdcp import PackageContainer as PC
-from sdcp.core.dbase import DB
 from sdcp.core.rest import call as rest_call
-from sdcp.core import genlib as GL
 
 #
 #
 #
 def update(aWeb):
+ from sdcp.core.dbase import DB
+ from sdcp.core import genlib as GL
  with DB() as db:
   db.do("SELECT devices.id, hostname, INET_NTOA(ip) as ipasc, domains.name as domain, mac, subnet_id from devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT  mac = 0 ORDER BY ip")
   rows = db.get_rows()
@@ -29,15 +29,13 @@ def update(aWeb):
 #
 #
 def leases(aWeb):
- from sdcp import PackageContainer as PC
  from sdcp.core import extras as EXT
- from sdcp.core.rest import call as rest_call
  dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))
- print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Active Leases</DIV>"
+ print "<ARTICLE STYLE='float:left; width:49%;'><P CLASS=title>DHCP Active Leases</P>"
  EXT.dict2table(dhcp['active'])
- print "</DIV>"
- print "<DIV CLASS=z-frame STYLE='float:left; width:49%;'><DIV CLASS=title>DHCP Free/Old Leases</DIV>"
+ print "</ARTICLE>"
+ print "<ARTICLE STYLE='float:left; width:49%;'><P CLASS=title>DHCP Free/Old Leases</P>"
  EXT.dict2table(dhcp['free']) 
- print "</DIV>"
+ print "</ARTICLE>"
 
 
