@@ -13,10 +13,10 @@ def hypervisors(aWeb):
  with DB() as db:
   db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'hypervisor' ORDER BY type_name,hostname")
   rows = db.get_rows() 
- print "<nav>&nbsp;</nav>"
- print "<DIV CLASS=z-content ID=div_content>"
- print "<DIV CLASS=z-content-left ID=div_content_left>"
- print "<DIV CLASS=z-frame><DIV CLASS=z-table>"
+ print "<NAV>&nbsp;</NAV>"
+ print "<SECTION CLASS=content ID=div_content>"
+ print "<SECTION CLASS=content-left ID=div_content_left>"
+ print "<ARTICLE><DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
@@ -26,9 +26,9 @@ def hypervisors(aWeb):
   elif row['type_name'] == 'vcenter':
    print "<A TARGET=_blank HREF='https://{}:9443/vsphere-client/'>{}</A>".format(row['ipasc'],row['hostname'])
   print "</DIV></DIV>"
- print "</DIV></DIV></DIV>"
- print "</DIV>"
- print "</DIV>"
+ print "</DIV></DIV></ARTICLE>"
+ print "</SECTION>"
+ print "</SECTION>"
 
 ########################################## ESXi Operations ##########################################
 #
@@ -40,20 +40,20 @@ def main(aWeb):
  with DB() as db:
   db.do("SELECT hostname, INET_NTOA(ip) as ipasc, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = '{}'".format(id))
   data = db.get_row() 
- print "<nav>"
+ print "<NAV>"
  print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='sdcp.cgi?call=esxi_op&nstate=poweroff&id={}'>Shutdown</A>".format(id)
  print "<A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A>".format(data['hostname'],data['domain'])
  print "<A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A>".format(data['hostname'],data['domain'])
  print "<A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A>".format(data['ipasc'])
  print "<A CLASS='z-op z-reload' DIV=main URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
  print "<SPAN CLASS='z-right z-navinfo'>{}</SPAN>".format(data['hostname'])
- print "</nav>"
- print "<DIV CLASS=z-content ID=div_content>"
- print "<DIV CLASS=z-content-left ID=div_content_left>"
+ print "</NAV>"
+ print "<SECTION CLASS=content ID=div_content>"
+ print "<SECTION CLASS=content-left ID=div_content_left>"
  list(aWeb,data['ipasc'])
- print "</DIV>" 
- print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
- print "</DIV>"        
+ print "</SECTION>" 
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+ print "</SECTION>"
 
 #
 #
@@ -62,7 +62,7 @@ def list(aWeb,aIP = None):
  ip     = aWeb.get('ip',aIP)
  sort   = aWeb.get('sort','name')
  esxi   = Device(ip)
- print "<DIV CLASS=z-frame>"
+ print "<ARTICLE>"
  print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='sdcp.cgi?call=esxi_list&ip={}&sort={}'.format(ip,sort))
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
@@ -72,7 +72,7 @@ def list(aWeb,aIP = None):
   print "<DIV CLASS=tr style='padding:0px;' ID=div_vm_{}>".format(vm[0])
   _vm_options(aWeb,ip,vm[0],vm[1],vm[2],False)
   print "</DIV>"
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV></ARTICLE>"
 
 #
 #
@@ -134,9 +134,9 @@ def graph(aWeb):
  from sdcp.tools.munin import widget_cols
  hostname = aWeb['hostname']
  domain   = aWeb['domain']
- print "<DIV CLASS=z-frame style='overflow-x:auto;'>"
+ print "<ARTICLE STYLE='overflow-x:auto;'>"
  widget_cols([ "{1}/{0}.{1}/esxi_vm_info".format(hostname,domain), "{1}/{0}.{1}/esxi_cpu_info".format(hostname,domain), "{1}/{0}.{1}/esxi_mem_info".format(hostname,domain) ])
- print "</DIV>"
+ print "</ARTICLE>"
 
 #
 #
@@ -157,8 +157,8 @@ def snapshot(aWeb):
  vmid = aWeb['vmid']
  data = {}
  id   = 0
- print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>Snapshots ({})</DIV>".format(vmid)
+ print "<ARTICLE>"
+ print "<P CLASS=title>Snapshots ({})</P>".format(vmid)
  print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -187,7 +187,8 @@ def snapshot(aWeb):
      print aWeb.button('delete', TITLE='Delete', DIV='div_content_right',SPIN='true', URL='sdcp.cgi?call=esxi_snap_op&ip=%s&vmid=%s&op=remove&snapid=%s'%(ip,vmid,data['id']))
      print "</DIV></DIV>"
      data = {}
- print "</DIV></DIV><SPAN STYLE='float:right; font-size:12px;'>[Highest ID:{}]</SPAN></DIV>".format(id)
+ print "</DIV></DIV>"
+ print "<SPAN STYLE='float:right; font-size:12px;'>[Highest ID:{}]</SPAN></ARTICLE>".format(id)
 
 #
 #
@@ -204,4 +205,4 @@ def snap_op(aWeb):
   template = "vim-cmd vmsvc/snapshot.remove {} {}"
  with Device(ip) as esxi:
   esxi.ssh_send(template.format(vmid,snap),aWeb.cookie.get('sdcp_id'))
- print "<DIV CLASS=z-frame>Carried out '{}' on '{}@{}'</DIV>".format(op,vmid,ip)
+ print "<ARTICLE>Carried out '{}' on '{}@{}'</ARTICLE>".format(op,vmid,ip)
