@@ -93,7 +93,7 @@ def rest_main(aWeb):
  print "<OPTION VALUE=127.0.0.1>Local Host</A>"
  if PC.sdcp['svcsrv']:
   print "<OPTION VALUE={0}>Service Host</OPTION>".format(PC.sdcp['svcsrv'])
- print "</SELECT> <INPUT style='width:500px; background-color:white' TYPE=TEXT NAME=sdcp_api><BR>"
+ print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=sdcp_api><BR>"
  print "Call 'Method': <SELECT STYLE='width:70px; height:22px;' NAME=sdcp_method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
