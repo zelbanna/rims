@@ -45,11 +45,11 @@ def info(aWeb):
   elif aWeb['op'] == 'update':
    slots = aWeb.get('slots','0')
    if id == 'new':
-    sql = "INSERT into pdus (name, ip, slots) VALUES ('{}',INET_ATON('{}'),'{}')".format(name,aWeb['ip'],slots)
+    sql = "INSERT into pdus (name, ip, slots) VALUES ('{}',INET_ATON('{}'),'{}')".format(aWeb['name'],aWeb['ip'],slots)
     res = db.do(sql)
     id = db.get_last_id()
    else:
-    sql = "UPDATE pdus SET name = '{}', ip = INET_ATON('{}'), slots = '{}' WHERE id = '{}'".format(name,aWeb['ip'],slots,id)
+    sql = "UPDATE pdus SET name = '{}', ip = INET_ATON('{}'), slots = '{}' WHERE id = '{}'".format(aWeb['name'],aWeb['ip'],slots,id)
     res = db.do(sql)
 
   if id == 'new':

@@ -147,7 +147,7 @@ def info(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
  print "<!-- Reachability Info -->"
- print "<DIV style='margin:3px; float:left; height:185px;'>"
+ print "<DIV style='margin:3px; float:left; height:170px;'>"
  print "<DIV CLASS=table style='width:210px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['info']['hostname'])
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['ip'])
@@ -169,7 +169,7 @@ def info(aWeb):
  print "</DIV></DIV></DIV>"
 
  print "<!-- Additional info -->"
- print "<DIV style='margin:3px; float:left; height:185px;'>"
+ print "<DIV style='margin:3px; float:left; height:170px;'>"
  print "<DIV CLASS=table style='width:227px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td>"
  if dev['info']['vm']:
@@ -199,7 +199,7 @@ def info(aWeb):
 
  print "<!-- Rack Info if such exists -->"
  if dev['racked'] == 1 and not dev['type'] == 'pdu':
-  print "<DIV style='margin:3px; float:left; height:185px;'>"
+  print "<DIV style='margin:3px; float:left; height:170px;'>"
   print "<DIV CLASS=table style='width:210px;'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_size'])
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_unit'])
@@ -273,7 +273,7 @@ def info(aWeb):
  except:
   print "&nbsp;"
  print "</NAV>"
- print "<SECTION CLASS='content' ID=div_dev_data style='top:310px; overflow-x:hidden; overflow-y:auto; z-index:100'></SECTION>"
+ print "<SECTION CLASS='content' ID=div_dev_data style='top:298px; overflow-x:hidden; overflow-y:auto; z-index:100'></SECTION>"
 
 
 ####################################################### Functions #######################################################
