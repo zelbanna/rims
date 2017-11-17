@@ -117,7 +117,7 @@ def unit_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(aWeb['name'])
  print "</DIV></DIV>"
  print aWeb.button('save',DIV='update_results', URL='sdcp.cgi?call=pdu_unit_info&op=update', FRM='pdu_form')
- print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>"
+ print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</FORM>"
  print "</ARTICLE>"
 

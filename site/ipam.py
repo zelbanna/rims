@@ -53,7 +53,7 @@ def info(aWeb):
  print aWeb.button('save'  ,DIV='div_content_right',URL='sdcp.cgi?call=ipam_info&op=update', FRM='ipam_info_form')
  if not data['id'] == 'new':
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=ipam_delete&id=%s'%data['id'],MSG='Are you really sure')
- print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
+ print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</ARTICLE>"
 
 #
@@ -65,9 +65,9 @@ def layout(aWeb):
  startn  = int(ret['start'])
  starta  = int(ret['subnet'].split('.')[3])
  devices = ret['devices']
- green = "<A CLASS='z-op z-btn z-small-text' STYLE='float:left; background-color:#00cc66!important' TITLE='New' DIV=div_content_right URL=sdcp.cgi?call=device_new&subnet_id="+ aWeb['id'] +"&ipint={}>{}</A>"
- red   = "<A CLASS='z-op z-btn z-small-text' STYLE='float:left; background-color:#df3620!important' TITLE='{}' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A>"
- blue  = "<A CLASS='z-btn z-small-text'      STYLE='float:left; background-color:#33CAFF!important' TITLE='{}'>{}</A>"
+ green = "<A CLASS='z-op z-btn ipam-icon' STYLE='background-color:#00cc66!important' TITLE='New' DIV=div_content_right URL=sdcp.cgi?call=device_new&subnet_id="+ aWeb['id'] +"&ipint={}>{}</A>"
+ red   = "<A CLASS='z-op z-btn ipam-icon' STYLE='background-color:#df3620!important' TITLE='{}' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A>"
+ blue  = "<A CLASS='z-op z-btn ipam-icon' STYLE='background-color:#33CAFF!important' TITLE='{}'>{}</A>"
  print blue.format('network',starta % 256)
  for cnt in range(1,int(ret['no'])-1):
   dev = devices.get(cnt + startn)

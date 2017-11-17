@@ -46,7 +46,7 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A>".format(data['hostname'],data['domain'])
  print "<A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A>".format(data['ipasc'])
  print "<A CLASS='z-op z-reload' DIV=main URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
- print "<SPAN CLASS='z-right z-navinfo'>{}</SPAN>".format(data['hostname'])
+ print "<SPAN CLASS='right z-navinfo'>{}</SPAN>".format(data['hostname'])
  print "</NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
@@ -188,7 +188,7 @@ def snapshot(aWeb):
      print "</DIV></DIV>"
      data = {}
  print "</DIV></DIV>"
- print "<SPAN STYLE='float:right; font-size:12px;'>[Highest ID:{}]</SPAN></ARTICLE>".format(id)
+ print "<SPAN CLASS='results'>[Highest ID:{}]</SPAN></ARTICLE>".format(id)
 
 #
 #

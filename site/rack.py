@@ -119,7 +119,7 @@ def info(aWeb):
  print aWeb.button('save', DIV='update_results', URL='sdcp.cgi?call=rack_update', FRM='rack_info_form')
  if not id == 'new':
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_remove&id={0}'.format(id))
- print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
+ print "<SPAN CLASS='right small-text' ID=update_results></SPAN>"
  print "</ARTICLE>"
 
 #

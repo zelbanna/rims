@@ -47,12 +47,12 @@ def main(aWeb):
        arglist = arglist + "&{}list=".format(type) + row['ip']
       print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
   print "<A CLASS='z-reload z-op' DIV=main URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
-  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=ipam_list'>IPAM</A>"
-  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=dns_domains'>DNS</A>"
-  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=pdu_list'>PDUs</A>"
-  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list'>Consoles</A>"
-  print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list'>Racks</A>"
-  print "<SPAN CLASS='z-right z-navinfo'>Configuration:</SPAN>"
+  print "<A CLASS='right z-op' DIV=div_content_left URL='sdcp.cgi?call=ipam_list'>IPAM</A>"
+  print "<A CLASS='right z-op' DIV=div_content_left URL='sdcp.cgi?call=dns_domains'>DNS</A>"
+  print "<A CLASS='right z-op' DIV=div_content_left URL='sdcp.cgi?call=pdu_list'>PDUs</A>"
+  print "<A CLASS='right z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list'>Consoles</A>"
+  print "<A CLASS='right z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list'>Racks</A>"
+  print "<SPAN CLASS='right navinfo'>Configuration:</SPAN>"
  print "</NAV>"
  print "<SECTION CLASS=content       ID=div_content>"
  print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
@@ -251,7 +251,7 @@ def info(aWeb):
  for key,value in opres.iteritems():
   if value.get('res','NOT_FOUND') != 'OK':
    res += "{}({})".format(key,value)
- print "<SPAN ID=upd_results style='text-overflow:ellipsis; overflow:hidden; float:right; font-size:9px;'>{}</SPAN>".format(res)
+ print "<SPAN CLASS='results' ID=update_results>%s</SPAN>"%res
  print "</DIV>"
  print "</ARTICLE>"
 
@@ -406,7 +406,7 @@ def new(aWeb):
   print "</FORM>"
   print aWeb.button('start', DIV='device_new_span', URL='sdcp.cgi?call=device_new&op=new',  FRM='device_new_form', TITLE='Create')
   print aWeb.button('search',DIV='device_new_span', URL='sdcp.cgi?call=device_new&op=find', FRM='device_new_form', TITLE='Find IP')
-  print "<SPAN ID=device_new_span style='max-width:400px; font-size:9px; float:right'></SPAN>"
+  print "<SPAN CLASS='results' ID=device_new_span style='max-width:400px;'></SPAN>"
   print "</ARTICLE>"
 
 #

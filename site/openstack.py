@@ -66,8 +66,8 @@ def portal(aWeb):
  print "<A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_report'>Usage Report</A>"
  print "<A CLASS='z-reload z-op'  OP=redirect URL='sdcp.cgi?call=openstack_portal&headers=no'></A>"
  if username == 'admin':
-  print "<A CLASS='z-op z-right'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
-  print "<A CLASS='z-op z-right'  DIV=div_content URL=sdcp.cgi?call=openstack_api>API Debug</A>"
+  print "<A CLASS='z-op right'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
+  print "<A CLASS='z-op right'  DIV=div_content URL=sdcp.cgi?call=openstack_api>API Debug</A>"
  print "</NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION></MAIN>"
 
