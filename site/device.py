@@ -68,7 +68,7 @@ def list(aWeb):
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?{}'.format(aWeb.get_args()))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=device_new&{}'.format(aWeb.get_args()))
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_discover',MSG='Run device discovery?')
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
  args = {'sort':aWeb.get('sort','ip')}
  if aWeb['target']:
@@ -148,7 +148,7 @@ def info(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
  print "<!-- Reachability Info -->"
  print "<DIV style='margin:3px; float:left; height:185px;'>"
- print "<DIV CLASS=z-table style='width:210px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=table style='width:210px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['info']['hostname'])
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['ip'])
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=devices_a_dom_id>"
@@ -170,7 +170,7 @@ def info(aWeb):
 
  print "<!-- Additional info -->"
  print "<DIV style='margin:3px; float:left; height:185px;'>"
- print "<DIV CLASS=z-table style='width:227px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=table style='width:227px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td>"
  if dev['info']['vm']:
   print "Not used <INPUT TYPE=hidden NAME=rackinfo_rack_id VALUE=NULL>"
@@ -200,7 +200,7 @@ def info(aWeb):
  print "<!-- Rack Info if such exists -->"
  if dev['racked'] == 1 and not dev['type'] == 'pdu':
   print "<DIV style='margin:3px; float:left; height:185px;'>"
-  print "<DIV CLASS=z-table style='width:210px;'><DIV CLASS=tbody>"
+  print "<DIV CLASS=table style='width:210px;'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_size'])
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_unit'])
   if not dev['type'] == 'console' and infra['consolexist'] > 0:
@@ -319,7 +319,7 @@ def op_function(aWeb):
 def mac_sync(aWeb):
  from sdcp.core import genlib as GL
  print "<ARTICLE CLASS=info>"
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  try:
@@ -384,7 +384,7 @@ def new(aWeb):
   print "<ARTICLE CLASS=info><P>Add Device</P>"
   print "<!-- {} -->".format(aWeb.get_args2dict_except())
   print "<FORM ID=device_new_form>"
-  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
+  print "<DIV CLASS=table><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT VALUE={}></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE={}></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
@@ -449,7 +449,7 @@ def discover(aWeb):
   print "<ARTICLE CLASS=info><P>Device Discovery</P>"
   print "<FORM ID=device_discover_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
-  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
+  print "<DIV CLASS=table><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):

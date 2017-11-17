@@ -16,7 +16,7 @@ def hypervisors(aWeb):
  print "<NAV>&nbsp;</NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
- print "<ARTICLE><DIV CLASS=z-table>"
+ print "<ARTICLE><DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
@@ -64,7 +64,7 @@ def list(aWeb,aIP = None):
  esxi   = Device(ip)
  print "<ARTICLE>"
  print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='sdcp.cgi?call=esxi_list&ip={}&sort={}'.format(ip,sort))
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  statelist = esxi.get_vms(sort)
@@ -160,7 +160,7 @@ def snapshot(aWeb):
  print "<ARTICLE>"
  print "<P>Snapshots ({})</P>".format(vmid)
  print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
- print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with Device(ip) as esxi:
   snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),aWeb.cookie.get('sdcp_id'))

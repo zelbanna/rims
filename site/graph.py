@@ -34,7 +34,7 @@ def list(aWeb):
  print aWeb.button('reload',DIV='div_content_left',  URL='sdcp.cgi?call=graph_list&%s'%(aWeb.get_args_except(['call','id','state'])))
  print aWeb.button('save'  ,DIV='div_content_right', URL='sdcp.cgi?call=graph_save')
  print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=graph_discover', SPIN='true')
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>Proxy</DIV><DIV CLASS=th TITLE='Include in graphing?'>Include</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
@@ -67,7 +67,7 @@ def set_proxy(aWeb):
  print "<FORM ID=graph_proxy_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=ip VALUE={}>".format(ip)
- print "<DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>"
+ print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=proxy STYLE='border:solid 1px grey; width:200px;' VALUE='{}'></DIV></DIV>".format(proxy)
  print "</DIV></DIV>"
  print "</FORM>"

@@ -27,7 +27,7 @@ def list(aWeb):
  from sdcp import PackageContainer as PC
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Tools</P>"
- print "<DIV CLASS=z-table><DIV CLASS=tbody>"
+ print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=dns_load'>DNS - Load Cache</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_sync_devicetypes'>Devices - Load New Types</A></DIV></DIV>"
@@ -115,13 +115,13 @@ def rest_execute(aWeb):
  print "<ARTICLE>"
  try:
   ret = rest_call("http://{}/rest.cgi".format(aWeb['sdcp_host']),aWeb['sdcp_api'],arguments,aWeb['sdcp_method'])
-  print "<DIV CLASS=z-border>"
+  print "<DIV CLASS='border'>"
   print "<PRE style='margin:0px;'>%s</PRE>"%dumps(ret,indent=4, sort_keys=True)
   print "</DIV>"
  except RestException,re:
   data = re.get()
   data.pop('res',None)
-  print "<DIV CLASS=z-table style='width:100%;'><DIV CLASS=tbody>"
+  print "<DIV CLASS=table style='width:100%;'><DIV CLASS=tbody>"
   for key in data.keys():
    print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),data[key])
   print "</DIV></DIV>"

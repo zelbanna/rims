@@ -35,7 +35,7 @@ def list(aWeb):
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE STYLE='width:394px;'><P>Heat Stacks</P>"
  print aWeb.button('reload',DIV='div_content',URL='sdcp.cgi?call=heat_list')
  print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=heat_choose_template')
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th style='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for stack in ret['data'].get('stacks',None):
@@ -81,7 +81,7 @@ def enter_parameters(aWeb):
   data = load(f)
  print "<FORM ID=frm_heat_template_parameters>"
  print "<INPUT TYPE=hidden NAME=template VALUE={}>".format(template)
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Parameter</DIV><DIV CLASS=th style='min-width:300px'>Value</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td><B>Unique Name</B></DIV><DIV CLASS=td><INPUT TYPE=text NAME=name PLACEHOLDER='change-this-name'></DIV></DIV>"
@@ -131,7 +131,7 @@ def action(aWeb):
   from json import dumps
   ret = controller.call(port,url + "/stacks/{}/{}/events".format(name,id))
   print "<!-- {} -->".format("/stacks/{}/{}/events".format(name,id) )
-  print "<DIV CLASS=z-table>"
+  print "<DIV CLASS=table>"
   print "<DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>Resource</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th>Reason</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for event in ret['data']['events']:

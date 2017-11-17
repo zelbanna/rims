@@ -36,21 +36,21 @@ section.content-left > article { width:99%; }
 article {        border-radius: 6px; border: none; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; width:auto; }
 article:hover {  box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }      
 article > p:first-child { font-weight: bold; text-align:center; margin:4px 0px 4px 0px;}
-article > form > div.z-table { width:99%; }      
-article > div.z-table {        width:99%; }      
+article > form > div.table { width:99%; }      
+article > div.table {        width:99%; }      
 article.info {   resize:horizontal; margin-left:0px; width:420px; }
 article.login {  border:solid 1px black; width:600px; height:180px;}
 
 /*############################### Tables #####################################*/ 
 
-div.z-table {            display: table; counter-reset:ztable; }
-div.z-table .thead {     display: table-header-group; }
-div.z-table .thead .th { display: table-cell; border:none; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 4px; }
-div.z-table .tbody {     display: table-row-group; }
-div.z-table .tbody .tr:nth-child(even) { display: table-row; background-color: #FFFFFF; font-size:11px; line-height:20px; counter-increment:ztable; }
-div.z-table .tbody .tr:nth-child(odd)  { display: table-row; background-color: #F3F3F3; font-size:11px; line-height:20px; counter-increment:ztable; }
-div.z-table .tbody .tr .td { display: table-cell; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding: 0px 0px 0px 6px; } 
-div.z-table .tfoot {     display: table-footer-group; }
+div.table {            display: table; counter-reset:ztable; }
+div.table .thead {     display: table-header-group; }
+div.table .thead .th { display: table-cell; border:none; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 4px; }
+div.table .tbody {     display: table-row-group; }
+div.table .tbody .tr:nth-child(even) { display: table-row; background-color: #FFFFFF; font-size:11px; line-height:20px; counter-increment:ztable; }
+div.table .tbody .tr:nth-child(odd)  { display: table-row; background-color: #F3F3F3; font-size:11px; line-height:20px; counter-increment:ztable; }
+div.table .tbody .tr .td { display: table-cell; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding: 0px 0px 0px 6px; } 
+div.table .tfoot {     display: table-footer-group; }
 
 div.td > select { width:100%; border:none; overflow:visible; background-color: transparent; color: black; }
 div.td > input  { width:100%; border:none; overflow:visible; background-color: transparent; color: black; }

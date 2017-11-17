@@ -30,7 +30,7 @@ def list(aWeb):
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Nova Servers</P>"
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=nova_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=nova_select_parameters')
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th style='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for server in ret['data'].get('servers',None):
@@ -95,7 +95,7 @@ def select_parameters(aWeb):
  """
  print "<H2>New VM parameters</H2>"
  print "<FORM ID=frm_os_create_vm>"
- print "<DIV ID=div_os_form CLASS='z-table' style='float:left;'><DIV CLASS=tbody>"
+ print "<DIV ID=div_os_form CLASS='table' style='float:left;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name</DIV><DIV CLASS=td><INPUT NAME=os_name PLACEHOLDER='Unique Name'></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=os_image>"
  images = controller.call(cookie.get('os_glance_port'),cookie.get('os_glance_url') + "/v2/images?sort=name:asc")['data']['images']
@@ -104,7 +104,7 @@ def select_parameters(aWeb):
  print "</SELECT></DIV></DIV>"
 
  flavors = controller.call(port,url + "/flavors/detail?sort_key=name")['data']['flavors']
- print "<DIV CLASS=tr><DIV CLASS=td>Flavor</DIV><DIV CLASS='z-table-val td'><SELECT NAME=os_flavor>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Flavor</DIV><DIV CLASS='table-val td'><SELECT NAME=os_flavor>"
  for fl in flavors:
   print "<OPTION VALUE={}>{} (Ram: {}Mb, vCPUs: {}, Disk: {}Gb</OPTION>".format(fl['id'],fl['name'],fl['ram'],fl['vcpus'],fl['disk'])
  print "</SELECT></DIV></DIV>"
@@ -173,7 +173,7 @@ def action(aWeb):
  elif op == 'networks':
   from json import dumps
   vm  = controller.call("8082","virtual-machine/{}".format(aWeb['id']))['data']['virtual-machine']
-  print "<DIV CLASS=z-table style='width:auto'>"
+  print "<DIV CLASS=table style='width:auto'>"
   print "<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV>"
   for vmir in vm['virtual_machine_interface_back_refs']:
    vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']

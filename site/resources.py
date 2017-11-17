@@ -30,7 +30,7 @@ def list(aWeb):
  print "<ARTICLE><P>Resources</P>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=new')
- print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A TITLE='{}' ".format(row['type'],row['title'])
@@ -77,7 +77,7 @@ def info(aWeb):
  print "<FORM ID=sdcp_resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<INPUT TYPE=HIDDEN NAME=user_id VALUE={}>".format(data['user_id'])
- print "<DIV CLASS=z-table style='float:left; width:auto;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=table style='float:left; width:auto;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV    CLASS=td><INPUT NAME=title STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['title'])
  print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV     CLASS=td><INPUT NAME=href  STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['href'])
  print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon  STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['icon'])

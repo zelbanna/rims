@@ -31,7 +31,7 @@ def list(aWeb):
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=rack_list')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=rack_info&id=new')
  print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?call=rack_mappings')
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with DB() as db:
@@ -85,7 +85,7 @@ def info(aWeb):
  print "<ARTICLE CLASS=info><P>Rack Info {}</P>".format("(new)" if id == 'new' else "")
  print "<FORM ID=rack_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<DIV CLASS=z-table><DIV CLASS=tbody>"
+ print "<DIV CLASS=table><DIV CLASS=tbody>"
 
  with DB() as db:
   if id == 'new':
@@ -159,7 +159,7 @@ def mappings(aWeb):
   racks = db.get_dict('id')
   print "<ARTICLE style='overflow-x:auto;'>"
   print "<P>Mappings</P>"
-  print "<DIV CLASS=z-table>"
+  print "<DIV CLASS=table>"
   print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>VM</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for ri in ris:

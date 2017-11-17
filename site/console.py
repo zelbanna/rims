@@ -16,7 +16,7 @@ from sdcp.core.dbase import DB
 def inventory(aWeb):
  from sdcp.devices.opengear import Device
  print "<ARTICLE>"
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Server</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>Device</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  conlist = aWeb.form.getlist('consolelist')
@@ -38,7 +38,7 @@ def list(aWeb):
  print "<P>Consoles</P>"
  print  aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=console_list')
  print  aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=console_info&id=new')
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for unit in data:
@@ -82,7 +82,7 @@ def info(aWeb):
  print "<FORM ID=console_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<P>Consoles Info {}</P>".format("(new)" if id == 'new' else "")
- print "<DIV CLASS=z-table>"
+ print "<DIV CLASS=table>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(ip)
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(name)

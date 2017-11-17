@@ -16,7 +16,7 @@ def list(aWeb):
  print "<ARTICLE><P>PDUs</P>"
  print aWeb.button('reload',DIV='div_content_left',  URL='sdcp.cgi?call=pdu_list')
  print aWeb.button('add',   DIV='div_content_right', URL='sdcp.cgi?call=pdu_info&id=new')
- print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with DB() as db:
   res  = db.do("SELECT id, name, INET_NTOA(ip) as ip from pdus ORDER by name")
@@ -63,7 +63,7 @@ def info(aWeb):
 
  print "<ARTICLE CLASS=info><P>PDU Device Info {}</P>".format("(new)" if id == 'new' else "")
  print "<FORM ID=pdu_info_form>"
- print "<DIV CLASS=z-table><DIV CLASS=tbody>"
+ print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(pdudata['ipasc'])
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(pdudata['name'])
  if pdudata['slots'] == 1:
@@ -111,7 +111,7 @@ def unit_info(aWeb):
  print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(aWeb['slot'])
  print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(aWeb['unit'])
  print "<INPUT NAME=pdu    VALUE={} TYPE=HIDDEN>".format(aWeb['pdu'])
- print "<DIV CLASS=z-table><DIV CLASS=tbody>"
+ print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>PDU:</DIV><DIV CLASS=td>{0}</DIV></DIV>".format(aWeb['pdu'])
  print "<DIV CLASS=tr><DIV CLASS=td>Slot.Unit:</DIV><DIV CLASS=td>{0}.{1}</DIV></DIV>".format(aWeb['slotname'],aWeb['unit'])
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(aWeb['name'])
@@ -130,7 +130,7 @@ def inventory(aWeb):
 
  print "<ARTICLE>"
  print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='sdcp.cgi?%s'%aWeb.get_args())
- print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th style='width:63px;'>State</DIV></DIV>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th style='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  from sdcp.devices.avocent import Device
  counter = 0

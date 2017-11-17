@@ -11,7 +11,7 @@ __status__ = "Production"
 ################################### HTML ######################################
 
 def dict2table(aList):
- print "<DIV CLASS=z-table><DIV CLASS=thead>"
+ print "<DIV CLASS=table><DIV CLASS=thead>"
  head = aList[0].keys()
  for th in head:
   print "<DIV CLASS=th>{}</DIV>".format(th.title())
