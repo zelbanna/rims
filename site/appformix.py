@@ -35,7 +35,7 @@ def report(aWeb):
   reportid = rep['ReportId']
   report = controller.call("reports/project/{}".format(reportid))['data'].get('UsageReport',None)
   if report['ProjectId'] == pid:
-   print "<ARTICLE style='overflow:auto;' ID=div_appformix_info>"
+   print "<ARTICLE STYLE='overflow:auto;'>"
    print "<H2>Report: {}</H2>".format(report['ReportId'])
    print "<H3>{} -> {}</H3>".format(datetime.utcfromtimestamp(float(report['Start'])/1e3),datetime.utcfromtimestamp(float(report['End'])/1e3))
    # print "<H3>Created by: {}</H3>".format(report['CreatedBy']) 

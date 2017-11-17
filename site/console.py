@@ -78,7 +78,7 @@ def info(aWeb):
     ip   = condata['ip']
     name = condata['name']
 
- print "<ARTICLE CLASS='z-info'>"
+ print "<ARTICLE CLASS=info>"
  print "<FORM ID=console_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<P>Consoles Info {}</P>".format("(new)" if id == 'new' else "")

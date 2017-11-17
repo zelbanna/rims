@@ -38,7 +38,7 @@ def info(aWeb):
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
 
- print "<ARTICLE CLASS='z-info'><P>Subnet Info {}</P>".format("(new)" if data['id'] == 'new' else "")
+ print "<ARTICLE CLASS=info><P>Subnet Info {}</P>".format("(new)" if data['id'] == 'new' else "")
  print "<!-- {} -->".format(res)
  print "<FORM ID=ipam_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])

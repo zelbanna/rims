@@ -82,7 +82,7 @@ def info(aWeb):
  from os import listdir, path
  id = aWeb['id']
 
- print "<ARTICLE CLASS='z-info'><P>Rack Info {}</P>".format("(new)" if id == 'new' else "")
+ print "<ARTICLE CLASS=info><P>Rack Info {}</P>".format("(new)" if id == 'new' else "")
  print "<FORM ID=rack_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"

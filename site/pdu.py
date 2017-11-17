@@ -61,7 +61,7 @@ def info(aWeb):
     db.do("SELECT pdus.*, INET_NTOA(ip) as ipasc FROM pdus WHERE ip = INET_ATON('{}')".format(ip))
    pdudata = db.get_row()
 
- print "<ARTICLE CLASS='z-info'><P>PDU Device Info {}</P>".format("(new)" if id == 'new' else "")
+ print "<ARTICLE CLASS=info><P>PDU Device Info {}</P>".format("(new)" if id == 'new' else "")
  print "<FORM ID=pdu_info_form>"
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(pdudata['ipasc'])
@@ -106,7 +106,7 @@ def unit_info(aWeb):
   avocent.set_name(aWeb['slot'],aWeb['unit'],aWeb['name'])
   print "Updated name: {} for {} slot {}".format(aWeb['name'],aWeb['pdu'],aWeb['slot'])
   return
- print "<ARTICLE CLASS='z-info'>"
+ print "<ARTICLE CLASS=info>"
  print "<FORM ID=pdu_form>"
  print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(aWeb['slot'])
  print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(aWeb['unit'])

@@ -317,7 +317,7 @@ def op_function(aWeb):
 #
 def mac_sync(aWeb):
  from sdcp.core import genlib as GL
- print "<ARTICLE CLASS='z-info'>"
+ print "<ARTICLE CLASS=info>"
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -380,7 +380,7 @@ def new(aWeb):
   with DB() as db:
    db.do("SELECT id, name FROM domains")
    domains = db.get_rows()
-  print "<ARTICLE CLASS='z-info'><P>Add Device</P>"
+  print "<ARTICLE CLASS=info><P>Add Device</P>"
   print "<!-- {} -->".format(aWeb.get_args2dict_except())
   print "<FORM ID=device_new_form>"
   print "<DIV CLASS=z-table><DIV CLASS=tbody>"
@@ -445,7 +445,7 @@ def discover(aWeb):
    db.do("SELECT id, name FROM domains")
    domains  = db.get_rows()
   dom_name = aWeb['domain']
-  print "<ARTICLE CLASS='z-info'><P>Device Discovery</P>"
+  print "<ARTICLE CLASS=info><P>Device Discovery</P>"
   print "<FORM ID=device_discover_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
   print "<DIV CLASS=z-table><DIV CLASS=tbody>"

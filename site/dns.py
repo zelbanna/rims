@@ -54,7 +54,7 @@ def domain_info(aWeb):
   res = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_lookup".format(PC.dns['type']),{'id':aWeb['id']})
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
- print "<ARTICLE CLASS='z-info'>"
+ print "<ARTICLE CLASS=info>"
  print "<P>Domain Info{}</P>".format(" (new)" if data['id'] == 'new' else "")
  print "<!-- {} -->".format(res)
  print "<FORM ID=dns_info_form>"
@@ -157,7 +157,7 @@ def record_info(aWeb):
   res = rest_call(PC.dns['url'], "sdcp.rest.{}_record_lookup".format(PC.dns['type']),{'id':aWeb['id'],'domain_id':aWeb['domain_id']})
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
- print "<ARTICLE CLASS='z-info'>"
+ print "<ARTICLE CLASS=info>"
  print "<P>Record Info {} (Domain {})</P>".format("(new)" if data['id'] == 'new' else "",data['domain_id'])
  print "<!-- {} -->".format(res)
  print "<FORM ID=dns_info_form>"
