@@ -13,8 +13,9 @@ iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 div {    z-index:100; }
 br {     clear:left; }
 form {   display:inline; }
-select{  border:none; overflow:visible; background-color: transparent; color: black; }
-input{   border:none; overflow:visible; background-color: transparent; color: black; }
+select { border:none; overflow:visible; background-color: transparent; color: black; }
+input {  border:none; overflow:visible; background-color: transparent; color: black; }
+pre {    margin:0px; }
 
 /*###################################### Content Model ########################################*/
 

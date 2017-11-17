@@ -116,7 +116,7 @@ def rest_execute(aWeb):
  try:
   ret = rest_call("http://{}/rest.cgi".format(aWeb['sdcp_host']),aWeb['sdcp_api'],arguments,aWeb['sdcp_method'])
   print "<DIV CLASS='border'>"
-  print "<PRE style='margin:0px;'>%s</PRE>"%dumps(ret,indent=4, sort_keys=True)
+  print "<PRE CLASS='white'>%s</PRE>"%dumps(ret,indent=4, sort_keys=True)
   print "</DIV>"
  except RestException,re:
   data = re.get()
