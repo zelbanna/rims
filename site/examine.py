@@ -19,7 +19,7 @@ def main(aWeb):
   return
  upshost = PC.sdcp['upshost']
  print "<NAV>"
- print "<A CLASS='z-warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=examine_clear'>Clear Logs</A>"
+ print "<A CLASS='warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=examine_clear'>Clear Logs</A>"
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_logs&ip=127.0.0.1>Logs</A>"
  if upshost:
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_ups>UPS</A>"

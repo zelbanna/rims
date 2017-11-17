@@ -41,12 +41,12 @@ def main(aWeb):
   db.do("SELECT hostname, INET_NTOA(ip) as ipasc, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = '{}'".format(id))
   data = db.get_row() 
  print "<NAV>"
- print "<A CLASS='z-warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='sdcp.cgi?call=esxi_op&nstate=poweroff&id={}'>Shutdown</A>".format(id)
+ print "<A CLASS='warning z-op' DIV=div_esxi_op MSG='Really shut down?' URL='sdcp.cgi?call=esxi_op&nstate=poweroff&id={}'>Shutdown</A>".format(id)
  print "<A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A>".format(data['hostname'],data['domain'])
  print "<A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A>".format(data['hostname'],data['domain'])
  print "<A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A>".format(data['ipasc'])
  print "<A CLASS='z-op z-reload' DIV=main URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
- print "<SPAN CLASS='right z-navinfo'>{}</SPAN>".format(data['hostname'])
+ print "<SPAN CLASS='right navinfo'>{}</SPAN>".format(data['hostname'])
  print "</NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
