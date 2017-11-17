@@ -68,7 +68,7 @@ def action(aWeb):
  if   op == 'info':
   vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
   name = vn['display_name']
-  tmpl = "<A CLASS='z-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=neutron_action&name=%s&id=%s&op={} SPIN=true>{}</A>"%(name,id)
+  tmpl = "<A CLASS='btn z-op' DIV=div_os_info URL=sdcp.cgi?call=neutron_action&name=%s&id=%s&op={} SPIN=true>{}</A>"%(name,id)
   print "<DIV>"
   print tmpl.format('details','Network details')
   if vn.get('instance_ip_back_refs'):

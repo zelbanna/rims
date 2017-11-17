@@ -44,15 +44,15 @@ def login(aWeb):
   aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
   aWeb.put_html(PC.sdcp['name'])
   print "<HEADER>"
-  print "<A CLASS='z-btn z-menu-btn z-op'   DIV=main TITLE='Start'     URL='{}&headers=yes'><IMG SRC='images/icon-start.png'/></A>".format(href)
-  print """<A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Rack'      URL=sdcp.cgi?call=rack_main><IMG SRC='images/icon-rack.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Devices'   URL=sdcp.cgi?call=device_main><IMG SRC='images/icon-network.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Examine'   URL=sdcp.cgi?call=examine_main><IMG SRC='images/icon-examine.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Users'     URL=sdcp.cgi?call=users_main><IMG SRC='images/icon-users.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Documents' URL=sdcp.cgi?call=resources_navigate&type=bookmark><IMG SRC='images/icon-docs.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Tools'     URL=sdcp.cgi?call=resources_navigate&type=tool><IMG SRC='images/icon-tools.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='ESXi'      URL=sdcp.cgi?call=esxi_hypervisors><IMG SRC='images/icon-servers.png'/></A>
-  <A CLASS='z-btn z-menu-btn z-op' DIV=main TITLE='Config'    URL=sdcp.cgi?call=tools_main><IMG SRC='images/icon-config.png'/></A>
+  print "<A CLASS='btn menu-btn z-op'   DIV=main TITLE='Start'     URL='{}&headers=yes'><IMG SRC='images/icon-start.png'/></A>".format(href)
+  print """<A CLASS='btn menu-btn z-op' DIV=main TITLE='Rack'      URL=sdcp.cgi?call=rack_main><IMG SRC='images/icon-rack.png'/></A>
+  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Devices'   URL=sdcp.cgi?call=device_main><IMG SRC='images/icon-network.png'/></A>
+  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Examine'   URL=sdcp.cgi?call=examine_main><IMG SRC='images/icon-examine.png'/></A>
+  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Users'     URL=sdcp.cgi?call=users_main><IMG SRC='images/icon-users.png'/></A>
+  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Documents' URL=sdcp.cgi?call=resources_navigate&type=bookmark><IMG SRC='images/icon-docs.png'/></A>
+  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Tools'     URL=sdcp.cgi?call=resources_navigate&type=tool><IMG SRC='images/icon-tools.png'/></A>
+  <A CLASS='btn menu-btn z-op' DIV=main TITLE='ESXi'      URL=sdcp.cgi?call=esxi_hypervisors><IMG SRC='images/icon-servers.png'/></A>
+  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Config'    URL=sdcp.cgi?call=tools_main><IMG SRC='images/icon-config.png'/></A>
   </HEADER>"""
   print "<main ID=main></main>"
  else:
@@ -71,7 +71,7 @@ def login(aWeb):
    print "<OPTION VALUE='{0}_{1}_{2}' {3}>{1}</OPTION>".format(row['id'],row['name'],row['view_public'],'' if str(row['id']) != id else "selected=True")
   print "</SELECT></DIV></DIV>"
   print "</DIV></DIV>"
-  print "<A CLASS='z-btn z-op' OP=submit style='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
+  print "<A CLASS='btn z-op' OP=submit style='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
   print "</FORM>"
   print "</ARTICLE></DIV>"
 
@@ -177,6 +177,6 @@ def openstack(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><INPUT TYPE=text NAME=username {}></DIV></DIV>".format('' if not user else "VALUE={}".format(user))
  print "<DIV CLASS=tr><DIV CLASS=td>Password:</DIV><DIV CLASS=td><INPUT TYPE=password NAME=password></DIV></DIV>"
  print "</DIV></DIV>"
- print "<A CLASS='z-btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
+ print "<A CLASS='btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
  print "</FORM>"
  print "</ARTICLE></DIV>"

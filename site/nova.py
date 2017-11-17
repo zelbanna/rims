@@ -142,12 +142,12 @@ def action(aWeb):
   from sdcp.core.extras import get_quote
   server = controller.call(port,url + "/servers/{}".format(aWeb['id']))['data']['server']
   qserver = get_quote(server['name'])
-  tmpl = "<A TITLE='{}' CLASS='z-btn z-op' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=%s&op={} SPIN=true>{}</A>"%aWeb['id']
+  tmpl = "<A TITLE='{}' CLASS='btn z-op' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=%s&op={} SPIN=true>{}</A>"%aWeb['id']
   print "<DIV>"
   print tmpl.format('Details','details','VM Details')
   print tmpl.format('Diagnostics','diagnostics','Diagnostics')
   print tmpl.format('Networks','networks','Networks')
-  print "<A TITLE='New-tab Console'  CLASS='z-btn'  TARGET=_blank HREF='sdcp.cgi?call=nova_console&name={0}&id={1}'>Console</A>".format(qserver,aWeb['id'])
+  print "<A TITLE='New-tab Console'  CLASS='btn'  TARGET=_blank HREF='sdcp.cgi?call=nova_console&name={0}&id={1}'>Console</A>".format(qserver,aWeb['id'])
   print "</DIV>"
   print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
   dict2html(server,server['name'])

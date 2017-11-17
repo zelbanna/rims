@@ -124,4 +124,4 @@ class Web(object):
 
  @classmethod
  def button(cls,aImg,**kwargs):
-  return " ".join(["<A CLASS='z-op z-btn z-small-btn'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC=images/btn-%s.png></A>"%(aImg)])
+  return " ".join(["<A CLASS='z-op btn small-btn'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC=images/btn-%s.png></A>"%(aImg)])
