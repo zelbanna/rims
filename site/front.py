@@ -66,7 +66,7 @@ def login(aWeb):
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
   print "<INPUT TYPE=HIDDEN NAME=call VALUE=front_login>"
   print "<DIV CLASS=table style='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=sdcp_login>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT NAME=sdcp_login>"
   for row in rows:
    print "<OPTION VALUE='{0}_{1}_{2}' {3}>{1}</OPTION>".format(row['id'],row['name'],row['view_public'],'' if str(row['id']) != id else "selected=True")
   print "</SELECT></DIV></DIV>"
@@ -170,7 +170,7 @@ def openstack(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=call VALUE=openstack_portal>"
  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
  print "<DIV CLASS=table style='display:inline; float:left; width:auto; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Customer:</DIV><DIV CLASS=td><SELECT style='border:none; display:inline; color:black' NAME=project>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Customer:</DIV><DIV CLASS=td><SELECT NAME=project>"
  for p in projects:
   print "<OPTION VALUE={0}_{1} {2}>{1}</OPTION>".format(p['id'],p['name'],'' if not p['id'] == prev else "selected")
  print "</SELECT></DIV></DIV>"

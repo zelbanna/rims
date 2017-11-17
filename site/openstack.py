@@ -107,14 +107,14 @@ def data2html(aData):
 def api(aWeb):
  print "<ARTICLE><P>OpenStack REST API inspection</P>"
  print "<FORM ID=frm_os_api>"
- print "Choose Service and enter API call: <SELECT style='overflow: visible; width:auto; height:22px;' NAME=os_service>"
+ print "Choose Service and enter API call: <SELECT STYLE='background-color:white width:auto; height:22px;' NAME=os_service>"
  services = ['contrail']
  services.extend(aWeb.cookie['os_services'].split(','))
  for service in services:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(service)
- print "</SELECT> <INPUT style='width:520px;' TYPE=TEXT NAME=os_call><BR>"
- print "Or enter HREF: <DIV ID=div_href style='display:inline-block;'><INPUT style='width:736px;' TYPE=TEXT NAME=os_href></DIV><BR>"
- print "Call 'Method': <SELECT style='overflow: visible; width:auto; height:22px;' NAME=os_method>"
+ print "</SELECT> <INPUT style='width:500px; background-color:white' TYPE=TEXT NAME=os_call><BR>"
+ print "Or enter HREF: <DIV ID=div_href style='display:inline-block;'><INPUT style='width:716px;' TYPE=TEXT NAME=os_href></DIV><BR>"
+ print "Call 'Method': <SELECT STYLE='width:auto; height:22px;' NAME=os_method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
