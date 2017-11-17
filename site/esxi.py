@@ -158,7 +158,7 @@ def snapshot(aWeb):
  data = {}
  id   = 0
  print "<ARTICLE>"
- print "<P CLASS=title>Snapshots ({})</P>".format(vmid)
+ print "<P>Snapshots ({})</P>".format(vmid)
  print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"

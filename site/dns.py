@@ -20,7 +20,7 @@ def domains(aWeb):
   db.do("SELECT id, name FROM domains")
   local = db.get_dict('id')
  print "<ARTICLE>"
- print "<P CLASS=title>Domains</P>"
+ print "<P>Domains</P>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_domains')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=new',TITLE='Add domain')
  print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?call=dns_discrepancy',TITLE='Backend Discrepancy',SPIN='true')
@@ -55,7 +55,7 @@ def domain_info(aWeb):
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  print "<ARTICLE CLASS='z-info' STYLE='height:200px;'>"
- print "<P CLASS=title>Domain Info{}</P>".format(" (new)" if data['id'] == 'new' else "")
+ print "<P>Domain Info{}</P>".format(" (new)" if data['id'] == 'new' else "")
  print "<!-- {} -->".format(res)
  print "<FORM ID=dns_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
@@ -130,7 +130,7 @@ def domain_cache_delete(aWeb):
 def records(aWeb):
  dns = rest_call(PC.dns['url'], "sdcp.rest.{}_records".format(PC.dns['type']),{'domain_id':aWeb['id']})
  print "<ARTICLE>"
- print "<P CLASS=title>Records</P>"
+ print "<P>Records</P>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_records&id=%s'%(aWeb['id']))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id=new&domain_id=%s'%(aWeb['id']))
  print "<SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
@@ -158,7 +158,7 @@ def record_info(aWeb):
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  print "<ARTICLE CLASS='z-info' STYLE='height:200px;'>"
- print "<P CLASS=title>Record Info {} (Domain {})</P>".format("(new)" if data['id'] == 'new' else "",data['domain_id'])
+ print "<P>Record Info {} (Domain {})</P>".format("(new)" if data['id'] == 'new' else "",data['domain_id'])
  print "<!-- {} -->".format(res)
  print "<FORM ID=dns_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id        VALUE={}>".format(data['id'])
@@ -211,7 +211,7 @@ def load(aWeb):
 #
 def discrepancy(aWeb):
  print "<ARTICLE>"
- print "<P CLASS=title>DNS Consistency</P><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
+ print "<P>DNS Consistency</P><SPAN ID=span_dns STYLE='font-size:9px;'>&nbsp;</SPAN>"
  print "<DIV CLASS=z-table STYLE='width:auto;'><DIV CLASS=thead><DIV CLASS=th>Value</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Key</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for type in ['a','ptr']:
   dns = rest_call(PC.dns['url'],"sdcp.rest.{}_records".format(PC.dns['type']),{'type':type})
@@ -251,10 +251,10 @@ def discrepancy(aWeb):
 def top(aWeb):
  from sdcp.core import extras as EXT
  dnstop = rest_call(PC.dns['url'], "sdcp.rest.{}_top".format(PC.dns['type']), {'count':20})
- print "<ARTICLE STYLE='float:left; width:49%;'><P CLASS=title>Top looked up FQDN</P>"
+ print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>"
  EXT.dict2table(dnstop['top'])
  print "</ARTICLE>"
- print "<ARTICLE STYLE='float:left; width:49%;'><P CLASS=title>Top looked up FQDN per Client</P>"
+ print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN per Client</P>"
  EXT.dict2table(dnstop['who'])
  print "</ARTICLE>"
 
@@ -263,7 +263,7 @@ def top(aWeb):
 #
 def dedup(aWeb):
  dns = rest_call(PC.dns['url'], "sdcp.rest.{}_dedup".format(PC.dns['type']))
- print "<ARTICLE><P CLASS=title>Duplicate Removal</P>"
+ print "<ARTICLE><P>Duplicate Removal</P>"
  xist = len(dns['removed'])
  if xist > 0:
   from sdcp.core import extras as EXT

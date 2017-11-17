@@ -35,7 +35,7 @@ def list(aWeb):
   res  = db.do("SELECT id, INET_NTOA(ip) as ip, name from consoles ORDER by name")
   data = db.get_rows()
  print "<ARTICLE>"
- print "<P CLASS=title>Consoles</P>"
+ print "<P>Consoles</P>"
  print  aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=console_list')
  print  aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=console_info&id=new')
  print "<DIV CLASS=z-table>"
@@ -81,7 +81,7 @@ def info(aWeb):
  print "<ARTICLE CLASS='z-info' STYLE='height:185px;'>"
  print "<FORM ID=console_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<P CLASS=title>Consoles Info {}</P>".format("(new)" if id == 'new' else "")
+ print "<P>Consoles Info {}</P>".format("(new)" if id == 'new' else "")
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(ip)

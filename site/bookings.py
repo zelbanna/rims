@@ -20,7 +20,7 @@ def list(aWeb):
   res  = db.do("SELECT user_id, device_id, time_start, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid, ADDTIME(time_start, '30 0:0:0.0') as time_end, devices.hostname, users.alias FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
   rows = db.get_rows()
 
- print "<ARTICLE><P CLASS=title>Bookings</P>"
+ print "<ARTICLE><P>Bookings</P>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=bookings_list')
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>User (Id)</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Until</DIV><DIV CLASS=th>Op</DIV></DIV>"

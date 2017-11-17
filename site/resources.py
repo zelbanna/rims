@@ -27,7 +27,7 @@ def list(aWeb):
   res  = db.do("SELECT id, title, href, type, inline, user_id FROM resources WHERE (user_id = '{}' {}) ORDER BY type,title".format(aWeb.cookie['sdcp_id'],'' if aWeb.cookie['sdcp_view'] == '0' else 'OR private = 0'))
   rows = db.get_rows()
  print "<SECTION CLASS=content-left ID=div_content_left>"
- print "<ARTICLE><P CLASS=title>Resources</P>"
+ print "<ARTICLE><P>Resources</P>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=new')
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
@@ -73,7 +73,7 @@ def info(aWeb):
    data = db.get_row()
 
  print "<ARTICLE>"
- print "<P CLASS=title>Resource entity ({})</P>".format(data['id'])
+ print "<P>Resource entity ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<INPUT TYPE=HIDDEN NAME=user_id VALUE={}>".format(data['user_id'])

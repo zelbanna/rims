@@ -26,11 +26,10 @@ def main(aWeb):
 def list(aWeb):
  from sdcp import PackageContainer as PC
  print "<SECTION CLASS=content-left ID=div_content_left>"
- print "<ARTICLE><P CLASS=title>Tools</P>"
+ print "<ARTICLE><P>Tools</P>"
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=dns_load'>DNS - Load Cache</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=rack_rackinfo'>Device - View Rackinfo Table</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_sync_devicetypes'>Devices - Load New Types</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TARGET=_blank                  HREF='sdcp.cgi?call=tools_db_table'>DB - Dump Device Table to JSON</A></DIV></DIV>"
@@ -88,7 +87,7 @@ def test_sleep(aWeb):
 def rest_main(aWeb):
  from sdcp import PackageContainer as PC
  print "<ARTICLE><FORM ID=frm_sdcp_rest>"
- print "<P CLASS=title> REST API inspection</P>"
+ print "<P> REST API inspection</P>"
  print "Choose host and enter API:<SELECT style='overflow: visible; width:auto; height:22px;' NAME=sdcp_host>"
  print "<OPTION VALUE=127.0.0.1>Local Host</A>"
  if PC.sdcp['svcsrv']:

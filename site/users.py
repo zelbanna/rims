@@ -30,7 +30,7 @@ def list(aWeb):
  with DB() as db:
   res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
   rows = db.get_rows()
- print "<ARTICLE><P CLASS=title>Users</P>"
+ print "<ARTICLE><P>Users</P>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=users_list')
  print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?call=users_info&id=new')
  print "<DIV CLASS=z-table>"
@@ -74,7 +74,7 @@ def info(aWeb):
    data['view']  = str(data['view_public'])
 
  print "<ARTICLE>"
- print "<P CLASS=title>User Info ({})</P>".format(data['id'])
+ print "<P>User Info ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>"

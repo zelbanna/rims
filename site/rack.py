@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax Racks calls module
+HTML5 Ajax Racks calls module
 
 """
 __author__= "Zacharias El Banna"                     
@@ -15,7 +15,7 @@ def main(aWeb):
  with DB() as db:
   db.do("SELECT id,name,image_url from racks")
   racks = db.get_rows()
- print "<nav>&nbsp;</nav>"
+ print "<NAV>&nbsp;</NAV>"
  print "<CENTER><H1>Rack Overview</H1></CENTER>"
  print "<DIV CLASS=z-centered>"
  rackstr = "<DIV STYLE='float:left; margin:6px;'><A TITLE='{1}' CLASS=z-op DIV=main URL=sdcp.cgi?call=device_main&target=rack_id&arg={0}><IMG STYLE='max-height:400px; max-width:200px;' ALT='{1} ({2})' SRC='images/{2}'></A></DIV>"
@@ -27,10 +27,10 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>Rack</DIV>"
+ print "<ARTICLE><P>Rack</P>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=rack_list')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=rack_info&id=new')
+ print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?call=rack_mappings')
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -39,7 +39,7 @@ def list(aWeb):
   data = db.get_rows()
   for unit in data:
    print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=rack_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['size'])
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV></ARTICLE>"
 
 #
 #
@@ -58,10 +58,10 @@ def inventory(aWeb):
  print "<DIV STYLE='grid-column:2;   grid-row:2; text-align:center; background:yellow; border: solid 2px grey; font-size:12px;'>Panel</DIV>"
  for idx in range(2,size+2):
   ru = size-idx+2
-  print "<DIV CLASS=z-rack-indx STYLE='grid-column:1; grid-row:{0}; border-right:1px solid grey'>{1}</DIV>".format(idx,ru)
-  print "<DIV CLASS=z-rack-indx STYLE='grid-column:3; grid-row:{0};  border-left:1px solid grey'>{1}</DIV>".format(idx,ru)
-  print "<DIV CLASS=z-rack-indx STYLE='grid-column:5; grid-row:{0}; border-right:1px solid grey'>{1}</DIV>".format(idx,ru)
-  print "<DIV CLASS=z-rack-indx STYLE='grid-column:7; grid-row:{0};  border-left:1px solid grey'>{1}</DIV>".format(idx,ru)
+  print "<DIV CLASS=z-rack-indx STYLE='grid-column:1; grid-row:%i; border-right:1px solid grey'>%i</DIV>"%(idx,ru)
+  print "<DIV CLASS=z-rack-indx STYLE='grid-column:3; grid-row:%i;  border-left:1px solid grey'>%i</DIV>"%(idx,ru)
+  print "<DIV CLASS=z-rack-indx STYLE='grid-column:5; grid-row:%i; border-right:1px solid grey'>%i</DIV>"%(idx,ru)
+  print "<DIV CLASS=z-rack-indx STYLE='grid-column:7; grid-row:%i;  border-left:1px solid grey'>%i</DIV>"%(idx,ru)
 
  for dev in devs:
   if dev['rack_unit'] == 0:
@@ -82,10 +82,9 @@ def info(aWeb):
  from os import listdir, path
  id = aWeb['id']
 
- print "<DIV CLASS='z-frame z-info' STYLE='height:200px;'>"
+ print "<ARTICLE CLASS='z-info'><P>Rack Info {}</P>".format("(new)" if id == 'new' else "")
  print "<FORM ID=rack_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
- print "<DIV CLASS=title>Rack Info {}</DIV>".format("(new)" if id == 'new' else "")
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
 
  with DB() as db:
@@ -121,7 +120,7 @@ def info(aWeb):
  if not id == 'new':
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_remove&id={0}'.format(id))
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
- print "</DIV>"
+ print "</ARTICLE>"
 
 #
 #
@@ -140,11 +139,11 @@ def update(aWeb):
 def remove(aWeb):
  with DB() as db:
   db.do("DELETE FROM racks WHERE id = {0}".format(aWeb['id']))
-  print "Rack {0} deleted".format(aWeb['id'])
+  print "<ARTICLE>Rack {0} deleted</ARTICLE>".format(aWeb['id'])
 
 #
 #
-def rackinfo(aWeb):
+def mappings(aWeb):
  with DB() as db:
   res  = db.do("SELECT rackinfo.*, devices.vm, devices.hostname, devices.ip, INET_NTOA(devices.ip) as ipasc FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.device_id")
   if res == 0:
@@ -158,7 +157,9 @@ def rackinfo(aWeb):
   cons  = db.get_dict('id')
   db.do("SELECT id, name FROM racks")
   racks = db.get_dict('id')
-  print "<DIV CLASS=z-frame style='overflow-x:auto;'><DIV CLASS=z-table>"
+  print "<ARTICLE style='overflow-x:auto;'>"
+  print "<P>Mappings</P>"
+  print "<DIV CLASS=z-table>"
   print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>VM</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for ri in ris:
@@ -169,5 +170,5 @@ def rackinfo(aWeb):
    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(ri['pem1_pdu_id'],{}).get('name',None),ri['pem1_pdu_slot'],ri['pem1_pdu_unit'])
    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(racks.get(ri['rack_id'],{}).get('name',None),ri['rack_size'],ri['rack_unit'])
    print "</DIV>"
-  print "</DIV></DIV></DIV>"
+  print "</DIV></DIV></ARTICLE>"
 
