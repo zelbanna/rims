@@ -44,12 +44,9 @@ def clear(aWeb):
 #
 def logs(aWeb):
  from sdcp.core.rest import call as rest_call
- logs = rest_call("http://{}/rest.cgi".format(aWeb['ip']),'sdcp.rest.examine_get_logs',{'count':18,'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})
- for file,res in logs['logs'].iteritems():
-  print "<DIV CLASS='z-logs'><H1>{}</H1><PRE>".format(file)
-  for line in res:
-   print line
-  print "</PRE></DIV>"
+ res = rest_call("http://{}/rest.cgi".format(aWeb['ip']),'sdcp.rest.examine_get_logs',{'count':18,'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})
+ for file,logs in res['logs'].iteritems():
+  print "<ARTICLE><P>%s</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(file,"<BR>".join(logs))
 
 #
 # UPS graphs

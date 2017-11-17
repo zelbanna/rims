@@ -146,7 +146,7 @@ def logs(aWeb):
   from subprocess import check_output
   from sdcp import PackageContainer as PC
   logs = check_output("tail -n 30 " + PC.esxi['logformat'].format(hostname) + " | tac", shell=True)
-  print "<DIV CLASS='z-logs'><H1>{} operation logs</H1>{}</DIV>".format("{}".format(hostname),logs.replace('\n','<BR>'))
+  print "<ARTICLE><P>%s operation logs</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(hostname,logs.replace('\n','<BR>'))
  except: pass
 
 #
