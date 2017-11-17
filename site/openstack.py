@@ -53,13 +53,13 @@ def portal(aWeb):
   openstack = OpenstackRPC(ctrl,utok)
 
  aWeb.put_html("Openstack Portal")
- print "<main>"
+ print "<HEADER>"
  print "<DIV CLASS=z-table style='width:auto; display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
  print "<A CLASS='z-btn z-op' OP=logout URL='sdcp.cgi?call=front_openstack&headers=no&controller={}&name={}&appformix={}' style='float:right; background-color:red!important; margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
- print "</header><main ID=main><nav>"
+ print "</HEADER><MAIN ID=main><NAV>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A>"
  print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A>"
@@ -68,8 +68,8 @@ def portal(aWeb):
  if username == 'admin':
   print "<A CLASS='z-op z-right'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
   print "<A CLASS='z-op z-right'  DIV=div_content URL=sdcp.cgi?call=openstack_api>API Debug</A>"
- print "</nav>"
- print "<DIV CLASS=z-content ID=div_content></DIV></section>"
+ print "</NAV>"
+ print "<SECTION CLASS=content ID=div_content></SECTION></MAIN>"
 
 ############################################## Formatting ##############################################
 #

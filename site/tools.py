@@ -45,7 +45,8 @@ def list(aWeb):
 #
 def db_structure(aWeb):
  from sdcp.core.mysql import dump
- print "<ARTICLE><P CLASS='machine-text'>"
+ print "<ARTICLE><P>Database Structure</A>"
+ print "<P CLASS='machine-text'>"
  print "<BR>".join(dump({'mode':'structure'})['output'])
  print "</P></ARTICLE>"
 
@@ -86,8 +87,8 @@ def test_sleep(aWeb):
 #
 def rest_main(aWeb):
  from sdcp import PackageContainer as PC
- print "<ARTICLE><FORM ID=frm_sdcp_rest>"
- print "<P> REST API inspection</P>"
+ print "<ARTICLE><P>REST API inspection</P>"
+ print "<FORM ID=frm_sdcp_rest>"
  print "Choose host and enter API:<SELECT style='overflow: visible; width:auto; height:22px;' NAME=sdcp_host>"
  print "<OPTION VALUE=127.0.0.1>Local Host</A>"
  if PC.sdcp['svcsrv']:
