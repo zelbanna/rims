@@ -81,7 +81,7 @@ def domain_transfer(aWeb):
  domains = rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
  print "<ARTICLE>"
  print "<FORM ID=dns_transfer><INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
- print "Transfer all records to <SELECT STYLE='border:none; overflow:visible; background-color:transparent; color:black;' NAME=transfer>"
+ print "Transfer all records to <SELECT NAME=transfer>"
  for domain in domains['domains']:
   if (str(domain['id']) == aWeb['id']):
    old = domain['name']

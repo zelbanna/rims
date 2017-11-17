@@ -68,7 +68,7 @@ def set_proxy(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=ip VALUE={}>".format(ip)
  print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=proxy STYLE='border:solid 1px grey; width:200px;' VALUE='{}'></DIV></DIV>".format(proxy)
+ print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT CLASS='border' TYPE=TEXT NAME=proxy STYLE='width:200px;' VALUE='{}'></DIV></DIV>".format(proxy)
  print "</DIV></DIV>"
  print "</FORM>"
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=graph_set_proxy&op=update', FRM='graph_proxy_form')
