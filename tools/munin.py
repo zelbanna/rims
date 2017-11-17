@@ -22,14 +22,14 @@ def _print_graph_link(asource, aX = "399", aY = "224"):
 
 def widget_cols(asources):
  lwidth = 3 if len(asources) < 3 else len(asources)
- print "<DIV CLASS='z-graph' style='padding:5px; width:{}px; height:240px; float:left;'>".format(str(lwidth * 410))
+ print "<DIV STYLE='padding:5px; width:{}px; height:240px; float:left;'>".format(str(lwidth * 410))
  for src in asources:
   _print_graph_link(src)
  print "</DIV>"
 
 def widget_rows(asources):
  lheight = 3 if len(asources) < 3 else len(asources)
- print "<DIV CLASS='z-graph' style='padding-top:10px; padding-left:5px; width:420px; height:{}px; float:left;'>".format(str(lheight * 230))
+ print "<DIV STYLE='padding-top:10px; padding-left:5px; width:420px; height:{}px; float:left;'>".format(str(lheight * 230))
  for src in asources:         
   _print_graph_link(src)      
  print "</DIV>"

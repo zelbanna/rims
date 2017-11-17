@@ -40,21 +40,21 @@ function btnoperation(event) {
      spin = $("#"+spin);
     spin.scrollTop(0);
     spin.css("overflow-y","hidden");
-    spin.append("<DIV CLASS='z-overlay'><DIV CLASS='z-loader'></DIV></DIV>");
+    spin.append("<DIV CLASS='overlay'><DIV CLASS='loader'></DIV></DIV>");
   }
   var frm  = button.getAttribute("frm");
   if(frm)
    $.post(url, $("#"+frm).serializeArray() , function(result) { 
     div.html(result); 
     if(spin){
-     $(".z-overlay").remove();
+     $(".overlay").remove();
      spin.css("overflow-y","auto");
     }
    });
   else
    div.load(url, function(responseTxt, statusTxt, xhr){
     if (spin) {
-     $(".z-overlay").remove();
+     $(".overlay").remove();
      spin.css("overflow-y","auto");
     }
    });
