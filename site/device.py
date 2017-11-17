@@ -139,7 +139,7 @@ def info(aWeb):
 
  width= 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
- print "<ARTICLE style='position:relative; resize:horizontal; margin-left:0px; width:{}px;'><P>Device Info</P>".format(width)
+ print "<ARTICLE CLASS='info' style='position:relative; resize:horizontal; margin-left:0px; width:{}px;'><P>Device Info</P>".format(width)
  print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
@@ -163,7 +163,7 @@ def info(aWeb):
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id'],extra,type['name'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td style='max-width:150px;'>{}</DIV></DIV>".format(dev['info']['model'])
- print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm style='width:auto;' TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
+ print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
  print "</DIV></DIV></DIV>"
 
  print "<!-- Additional info -->"
