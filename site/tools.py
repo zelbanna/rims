@@ -89,7 +89,7 @@ def rest_main(aWeb):
  from sdcp import PackageContainer as PC
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_sdcp_rest>"
- print "Choose host and enter API:<SELECT STYLE='width:auto; height:22px;' NAME=sdcp_host>"
+ print "Choose host and enter API:<SELECT STYLE='height:22px;' NAME=sdcp_host>"
  print "<OPTION VALUE=127.0.0.1>Local Host</A>"
  if PC.sdcp['svcsrv']:
   print "<OPTION VALUE={0}>Service Host</OPTION>".format(PC.sdcp['svcsrv'])
