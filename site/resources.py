@@ -72,8 +72,7 @@ def info(aWeb):
    db.do("SELECT id,title,href,icon,type,inline,private,user_id FROM resources WHERE id = '{}'".format(data['id']))
    data = db.get_row()
 
- print "<ARTICLE>"
- print "<P>Resource entity ({})</P>".format(data['id'])
+ print "<ARTICLE><P>Resource entity ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<INPUT TYPE=HIDDEN NAME=user_id VALUE={}>".format(data['user_id'])

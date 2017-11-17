@@ -73,8 +73,7 @@ def info(aWeb):
    data['front'] = str(data['frontpage'])
    data['view']  = str(data['view_public'])
 
- print "<ARTICLE CLASS='info'>"
- print "<P>User Info ({})</P>".format(data['id'])
+ print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=table><DIV CLASS=tbody>"

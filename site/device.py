@@ -137,11 +137,9 @@ def info(aWeb):
 
  ########################## Data Tables ######################
 
- width= 675 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
+ width= 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
- print "<ARTICLE style='position:relative; resize:horizontal; margin-left:0px; width:{}px;'>".format(width)
- print "<P>Device Info</P>"
- print "<!-- DEV:{} -->".format(dev['info'])
+ print "<ARTICLE style='position:relative; resize:horizontal; margin-left:0px; width:{}px;'><P>Device Info</P>".format(width)
  print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])

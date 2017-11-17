@@ -19,8 +19,7 @@ def domains(aWeb):
  with DB() as db:
   db.do("SELECT id, name FROM domains")
   local = db.get_dict('id')
- print "<ARTICLE>"
- print "<P>Domains</P>"
+ print "<ARTICLE><P>Domains</P>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_domains')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=new',TITLE='Add domain')
  print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?call=dns_discrepancy',TITLE='Backend Discrepancy',SPIN='true')
@@ -54,8 +53,7 @@ def domain_info(aWeb):
   res = rest_call(PC.dns['url'], "sdcp.rest.{}_domain_lookup".format(PC.dns['type']),{'id':aWeb['id']})
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
- print "<ARTICLE CLASS=info>"
- print "<P>Domain Info{}</P>".format(" (new)" if data['id'] == 'new' else "")
+ print "<ARTICLE CLASS=info><P>Domain Info{}</P>".format(" (new)" if data['id'] == 'new' else "")
  print "<!-- {} -->".format(res)
  print "<FORM ID=dns_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
@@ -129,8 +127,7 @@ def domain_cache_delete(aWeb):
 #
 def records(aWeb):
  dns = rest_call(PC.dns['url'], "sdcp.rest.{}_records".format(PC.dns['type']),{'domain_id':aWeb['id']})
- print "<ARTICLE>"
- print "<P>Records</P>"
+ print "<ARTICLE><P>Records</P>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_records&id=%s'%(aWeb['id']))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id=new&domain_id=%s'%(aWeb['id']))
  print "<SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
@@ -157,8 +154,7 @@ def record_info(aWeb):
   res = rest_call(PC.dns['url'], "sdcp.rest.{}_record_lookup".format(PC.dns['type']),{'id':aWeb['id'],'domain_id':aWeb['domain_id']})
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
- print "<ARTICLE CLASS=info>"
- print "<P>Record Info {} (Domain {})</P>".format("(new)" if data['id'] == 'new' else "",data['domain_id'])
+ print "<ARTICLE CLASS=info><P>Record Info {} (Domain {})</P>".format("(new)" if data['id'] == 'new' else "",data['domain_id'])
  print "<!-- {} -->".format(res)
  print "<FORM ID=dns_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id        VALUE={}>".format(data['id'])
@@ -210,8 +206,7 @@ def load(aWeb):
 #
 #
 def discrepancy(aWeb):
- print "<ARTICLE>"
- print "<P>DNS Consistency</P><SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
+ print "<ARTICLE><P>DNS Consistency</P><SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Value</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Key</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for type in ['a','ptr']:
   dns = rest_call(PC.dns['url'],"sdcp.rest.{}_records".format(PC.dns['type']),{'type':type})

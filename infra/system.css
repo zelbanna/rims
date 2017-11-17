@@ -38,7 +38,7 @@ article:hover {  box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0
 article > p:first-child { font-weight: bold; text-align:center; margin:4px 0px 4px 0px;}
 article > form > div.table { width:99%; }      
 article > div.table {        width:99%; }      
-article.info {   resize:horizontal; margin-left:0px; width:420px; }
+article.info {   resize:horizontal; margin-left:0px; width:500px; }
 article.login {  border:solid 1px black; width:600px; height:180px;}
 
 /*############################### Tables #####################################*/ 
@@ -52,9 +52,11 @@ div.table .tbody .tr:nth-child(odd)  { display: table-row; background-color: #F3
 div.table .tbody .tr .td { display: table-cell; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding: 0px 0px 0px 6px; } 
 div.table .tfoot {     display: table-footer-group; }
 
+article.info div.td:first-child { font-weight:bold; }
+article.info div.td:last-child { width:100%; }
+div.td > select,input[type='text'] { width:100%; -webkit-appearance: none;; }
 div.td > input::-webkit-input-placeholder { color: darkgrey; }
 div.td > input::-moz-placeholder {          color: darkgrey; opacity:1; }
-div.td > input:-ms-input-placeholder {      color: darkgrey; }
 div.td > a { display:inline-block; }
 
 /*#############################################################################*/
