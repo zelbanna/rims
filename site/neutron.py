@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax Openstack Neutron/Contrail calls module
+HTML5 Ajax Openstack Neutron/Contrail calls module
 
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 
@@ -28,9 +28,8 @@ def list(aWeb):
   print "Error retrieving list"
   return
 
- print "<DIV CLASS=z-content-left ID=div_content_left>"
- print "<DIV CLASS=z-frame style='overflow:auto;'>"
- print "<DIV CLASS=title>Contrail VNs</DIV>"
+ print "<SECTION CLASS=content-left ID=div_content_left>"
+ print "<ARTICLE STYLE='overflow:auto;'><P>Contrail VNs</P>"
  print aWeb.button('reload',DIV='div_content',  URL='sdcp.cgi?call=neutron_list')
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Network</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
@@ -51,9 +50,8 @@ def list(aWeb):
   print aWeb.button('delete',DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=neutron_action&name=%s&id=%s&op=remove'%(net['display_name'],net['uuid']), MSG='Delete network?')
   print "</DIV>"
   print "</DIV>"
- print "</DIV>"
- print "</DIV></DIV></DIV></DIV>"
- print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
+ print "</DIV></DIV></ARTICLE></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def action(aWeb):
  cookie = aWeb.cookie
@@ -79,11 +77,10 @@ def action(aWeb):
    # create a list of floating-ips
    fipool = ",".join(map(lambda x: x.get('uuid'), vn.get('floating_ip_pools')))
    print tmpl.format('floating-ip&fipool=%s'%fipool,'Floating IPs')
-
   print "</DIV>"
-  print "<DIV CLASS=z-frame style='overflow:auto;' ID=div_os_info>"
+  print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
   dict2html(vn,"{} ({})".format(name,id))
-  print "</DIV>"
+  print "</ARTICLE>"
 
  elif op == 'details':
   vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
@@ -159,7 +156,7 @@ def action(aWeb):
 
  elif op == 'remove':
   ret = controller.call("8082","virtual-network/{}".format(id), method='DELETE')
-  print "<DIV CLASS=z-framee>{}</DIV>".format(ret)
+  print "<ARTICLE>{}</ARTICLE>".format(ret)
 
  elif op == 'fi_disassociate':
   fip = {'floating-ip':{'virtual_machine_interface_refs':None,'floating_ip_fixed_ip_address':None }}
@@ -198,7 +195,4 @@ def action(aWeb):
   vmi = controller.call("8082","virtual-machine-interface/{}".format(vmiid))['data']['virtual-machine-interface']
   fip = { 'floating-ip':{ 'floating_ip_fixed_ip_address':ip, 'virtual_machine_interface_refs':[ {'href':vmi['href'],'attr':None,'uuid':vmi['uuid'],'to':vmi['fq_name'] } ] } }
   res = controller.call("8082","floating-ip/{}".format(id),args=fip,method='PUT')
-  if res['code'] == 200:
-   print "Floating IP association created"
-  else:
-   print "Error - [{}]".format(res)
+  print "Floating IP association created" if res['code'] == 200 else "Error - [{}]".format(res)

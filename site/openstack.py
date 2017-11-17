@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax Openstack Generic calls module
+HTML5 Ajax Openstack Generic calls module
 
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
@@ -105,8 +105,8 @@ def data2html(aData):
 #
 #
 def api(aWeb):
- print "<DIV CLASS=z-frame ID=div_os_control><FORM ID=frm_os_api>"
- print "<H3>OpenStack REST API inspection</H3>"
+ print "<ARTICLE><P>OpenStack REST API inspection</P>"
+ print "<FORM ID=frm_os_api>"
  print "Choose Service and enter API call: <SELECT style='overflow: visible; width:auto; height:22px;' NAME=os_service>"
  services = ['contrail']
  services.extend(aWeb.cookie['os_services'].split(','))
@@ -123,14 +123,14 @@ def api(aWeb):
  print "Arguments/Body<BR>"
  print "<TEXTAREA style='width:100%; height:100px;' NAME=os_args></TEXTAREA>"
  print "</FORM>"
- print "</DIV>"
+ print "</ARTICLE>"
  print "<DIV ID=div_os_info></DIV>"
 
 #
 #
 #
 def fqname(aWeb):
- print "<DIV CLASS=z-frame ID=div_os_control>"
+ print "<ARTICLE>"
  print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT style='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else "")
  print aWeb.button('start',  DIV='div_content', URL='sdcp.cgi?call=openstack_fqname', FRM='frm_os_uuid')
  if aWeb['os_uuid']:
@@ -150,7 +150,7 @@ def fqname(aWeb):
     print "<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(data['fq_name']))
     print "<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?call=openstack_result&os_service=contrail&os_call={0}/{1}>{0}</A></DIV></DIV>".format(data['type'],argument['uuid'])
     print "</DIV></DIV><BR>"
- print "</DIV>"
+ print "</ARTICLE>"
  print "<DIV ID=div_os_info></DIV>"
 
 #
@@ -179,9 +179,8 @@ def result(aWeb):
   else:
    port,url = cookie.get("os_{}_port".format(service)),cookie.get("os_{}_url".format(service))
   ret = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])
- print "<DIV CLASS=z-frame style='overflow:auto;'>"
- print "<DIV CLASS=z-table style='width:100%;'>"
- print "<DIV CLASS=tbody>"
+ print "<ARTICLE STYLE='overflow:auto;'>"
+ print "<DIV CLASS=z-table style='width:100%;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>Result</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['result'])
  print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>HTTP Code</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['code'])
  print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>Header</DIV><DIV CLASS=td>"
@@ -189,7 +188,5 @@ def result(aWeb):
   print "{}:{}<BR>".format(key,value)
  print "</DIV></DIV>"
  print "</DIV></DIV>"
- print "<DIV style='border:solid 1px black; background:#FFFFFF'>"
- output = dumps(ret['data'],indent=4, sort_keys=True)
- print "<PRE style='margin:0px;'>{}</PRE>".format(output)
- print "</DIV></DIV>"
+ print "<DIV CLASS='z-border'><PRE style='margin:0px;'>%s</PRE></DIV>"%(dumps(ret['data'],indent=4, sort_keys=True))
+ print "</ARTICLE>"

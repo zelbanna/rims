@@ -1,21 +1,18 @@
 """Module docstring.
 
-Ajax IPAM calls module
+HTML5 Ajax IPAM calls module
 
 """
 __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
-from sdcp.core.dbase import DB
-
 #
 #
 def list(aWeb):
  from sdcp.rest import sdcpipam
  res = sdcpipam.list(None)
- print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>Subnets</DIV>"
+ print "<ARTICLE><P>Subnets</P>"
  print aWeb.button('reload', DIV='div_content_left',  URL='sdcp.cgi?call=ipam_list')
  print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?call=ipam_info&id=new')
  print "<DIV CLASS=z-table>"
@@ -25,7 +22,7 @@ def list(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(net['id'],net['id'],net['subnet'],net['description'])
   print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=ipam_layout&id=%i'%net['id'])
   print "</DIV></DIV>"
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV></ARTICLE>"
 
 #
 #
@@ -41,8 +38,7 @@ def info(aWeb):
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
 
- print "<DIV CLASS='z-frame z-info' STYLE='height:200px;'>"
- print "<DIV CLASS=title>Subnet Info {}</DIV>".format("(new)" if data['id'] == 'new' else "")
+ print "<ARTICLE CLASS='z-info'><P>Subnet Info {}</P>".format("(new)" if data['id'] == 'new' else "")
  print "<!-- {} -->".format(res)
  print "<FORM ID=ipam_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
@@ -58,13 +54,13 @@ def info(aWeb):
  if not data['id'] == 'new':
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=ipam_delete&id=%s'%data['id'],MSG='Are you really sure')
  print "<SPAN style='float:right; font-size:9px;'ID=update_results></SPAN>"
- print "</DIV></DIV>"
+ print "</ARTICLE>"
 
 #
 #
 def layout(aWeb):
  from sdcp.rest import sdcpipam
- print "<DIV CLASS=z-frame>"
+ print "<ARTICLE>"
  ret = sdcpipam.allocation({'id':aWeb['id']})
  startn  = int(ret['start'])
  starta  = int(ret['subnet'].split('.')[3])
@@ -80,12 +76,10 @@ def layout(aWeb):
   else:
    print green.format(cnt + startn,(cnt + starta) % 256)
  print blue.format('broadcast',(starta + int(ret['no'])-1)% 256)
- print "</DIV>"
+ print "</ARTICLE>"
+
 #
 #
 def delete(aWeb):
  from sdcp.rest import sdcpipam
- print "<DIV CLASS=z-frame>"
- ret = sdcpipam.remove({'id':aWeb['id']})
- print ret
- print "</DIV>"
+ print "<ARTICLE>%s</ARTICLE"%(sdcpipam.remove({'id':aWeb['id']}))

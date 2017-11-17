@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax Device calls module
+HTML5 Ajax Device calls module
 
 """
 __author__= "Zacharias El Banna"
@@ -15,11 +15,10 @@ def main(aWeb):
  target = aWeb['target']
  arg    = aWeb['arg']
 
- print "<nav>"
+ print "<NAV>"
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_list{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=graph_list{0}'>Graphing</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A>"
- print "<A CLASS='z-op'         DIV=div_content_right MSG='Discover devices?' URL='sdcp.cgi?call=device_discover'>Discover</A>"
  if target == 'vm':
   print "<A CLASS='z-reload z-op' DIV=main URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
  else:
@@ -54,21 +53,21 @@ def main(aWeb):
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list'>Consoles</A>"
   print "<A CLASS='z-right z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list'>Racks</A>"
   print "<SPAN CLASS='z-right z-navinfo'>Configuration:</SPAN>"
- print "</nav>"
- print "<DIV CLASS=z-content       ID=div_content>"
- print "<DIV CLASS=z-content-left  ID=div_content_left></DIV>"
- print "<DIV CLASS=z-content-right ID=div_content_right>" 
+ print "</NAV>"
+ print "<SECTION CLASS=content       ID=div_content>"
+ print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right>"
  from sdcp.core.extras import get_include
  print get_include('README.devices.html')
- print "</DIV></DIV>"
+ print "</SECTION></SECTION>"
 
 #
 #
 def list(aWeb):
- print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>Devices</DIV>"
+ print "<ARTICLE><P>Devices</P>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?{}'.format(aWeb.get_args()))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=device_new&{}'.format(aWeb.get_args()))
+ print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_discover',MSG='Run device discovery?')
  print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
  args = {'sort':aWeb.get('sort','ip')}
@@ -79,7 +78,7 @@ def list(aWeb):
  print "<DIV CLASS=tbody>"
  for row in res['devices']:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='Show device info for {0}' DIV=div_content_right URL='sdcp.cgi?call=device_info&id={3}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV></ARTICLE>"
 
 ################################ Gigantic Device info and Ops function #################################
 #
@@ -129,7 +128,7 @@ def info(aWeb):
  from sdcp.rest.tools  import infra as rest_infra
  dev   = rest_info({'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
  if dev['exist'] == 0:
-  print "<DIV CLASS=z-frame>Warning - device with either id:[{}]/ip[{}]: does not exist</DIV>".format(aWeb['id'],aWeb['ip'])
+  print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
   return
  if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
   from sdcp.rest.pdu import update_device_pdus
@@ -140,7 +139,7 @@ def info(aWeb):
 
  width= 675 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
- print "<DIV CLASS=z-frame style='position:relative; resize:horizontal; margin-left:0px; width:{}px; z-index:101; height:255px; float:left;'>".format(width)
+ print "<ARTICLE style='position:relative; resize:horizontal; margin-left:0px; width:{}px; height:255px; float:left;'>".format(width)
  print "<!-- DEV:{} -->".format(dev['info'])
  print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
@@ -231,7 +230,7 @@ def info(aWeb):
  print "</FORM>"
 
  print "<!-- Controls -->"
- print "<DIV ID=device_control style='clear:left;'>"
+ print "<DIV STYLE='clear:left;'>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=device_info&id=%i'%dev['id'])
  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=device_remove&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=lookup&id={}&ip={}'.format(dev['id'],dev['ip']), TITLE='Lookup and Detect Device information')
@@ -253,10 +252,10 @@ def info(aWeb):
    res += "{}({})".format(key,value)
  print "<SPAN ID=upd_results style='text-overflow:ellipsis; overflow:hidden; float:right; font-size:9px;'>{}</SPAN>".format(res)
  print "</DIV>"
- print "</DIV>"
+ print "</ARTICLE>"
 
  print "<!-- Function navbar and content -->"
- print "<nav STYLE='top:260px;'>"
+ print "<NAv STYLE='top:260px;'>"
  try:
   from importlib import import_module
   module = import_module("sdcp.devices.{}".format(dev['info']['type_name']))
@@ -272,8 +271,8 @@ def info(aWeb):
      print "<A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(dev['ip'], dev['info']['type_name'], fun, funname.title())
  except:
   print "&nbsp;"
- print "</nav>"
- print "<DIV CLASS='z-content' ID=div_dev_data style='top:294px; overflow-x:hidden; overflow-y:auto; z-index:100'></DIV>"
+ print "</NAV>"
+ print "<SECTION CLASS='content' ID=div_dev_data style='top:294px; overflow-x:hidden; overflow-y:auto; z-index:100'></SECTION>"
 
 
 ####################################################### Functions #######################################################
@@ -285,7 +284,7 @@ def conf_gen(aWeb):
  from importlib import import_module
  id = aWeb.get('id','0')
  type = aWeb['type_name']
- print "<DIV CLASS=z-frame style='margin-left:0px; z-index:101; width:100%; float:left; bottom:0px;'>"
+ print "<ARTICLE>"
  with DB() as db:
   db.do("SELECT INET_NTOA(ip) AS ipasc, hostname,domains.name as domain, INET_NTOA(subnets.gateway) as gateway, INET_NTOA(subnets.subnet) AS subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = '{}'".format(id))
   row = db.get_row()
@@ -295,16 +294,15 @@ def conf_gen(aWeb):
   dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':row['gateway'], 'subnet':row['subnet'], 'mask':row['mask']})
  except Exception as err:
   print "No instance config specification for type:[{}]".format(type)
- print "</DIV>"
+ print "</ARTICLE>"
 
 #
 #
 #
 def op_function(aWeb):
- from sdcp.devices.devhandler import device_get_instance
  from sdcp.core import extras as EXT
  from importlib import import_module
- print "<DIV CLASS=z-frame>"
+ print "<ARTICLE>"
  try:
   module = import_module("sdcp.devices.{}".format(aWeb['type']))
   dev = getattr(module,'Device',lambda x: None)(aWeb['ip'])
@@ -312,14 +310,15 @@ def op_function(aWeb):
    EXT.dict2table(getattr(dev,aWeb['op'],None)())
  except Exception as err:
   print "<B>Error in devdata: {}</B>".format(str(err))
- print "</DIV>"
+ print "</ARTICLE>"
 
 #
 #
 #
 def mac_sync(aWeb):
  from sdcp.core import genlib as GL
- print "<DIV CLASS=z-frame style='overflow-x:auto; width:400px;'><DIV CLASS=z-table>"
+ print "<ARTICLE CLASS='z-info'>"
+ print "<DIV CLASS=z-table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  try:
@@ -340,7 +339,7 @@ def mac_sync(aWeb):
      db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL.mac2int(xist),row['id']))
  except:
   pass
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV></ARTICLE>"
 
 #
 # new device:
@@ -381,8 +380,7 @@ def new(aWeb):
   with DB() as db:
    db.do("SELECT id, name FROM domains")
    domains = db.get_rows()
-  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:430px; height:200px;'>"
-  print "<DIV CLASS=title>Add Device</DIV>"
+  print "<ARTICLE CLASS='z-info'><P>Add Device</P>"
   print "<!-- {} -->".format(aWeb.get_args2dict_except())
   print "<FORM ID=device_new_form>"
   print "<DIV CLASS=z-table><DIV CLASS=tbody>"
@@ -408,7 +406,7 @@ def new(aWeb):
   print aWeb.button('start', DIV='device_new_span', URL='sdcp.cgi?call=device_new&op=new',  FRM='device_new_form', TITLE='Create')
   print aWeb.button('search',DIV='device_new_span', URL='sdcp.cgi?call=device_new&op=find', FRM='device_new_form', TITLE='Find IP')
   print "<SPAN ID=device_new_span style='max-width:400px; font-size:9px; float:right'></SPAN>"
-  print "</DIV>"
+  print "</ARTICLE>"
 
 #
 #
@@ -417,16 +415,15 @@ def remove(aWeb):
  from sdcp.rest.device import remove as rest_remove
  id  = aWeb['id']
  ret = rest_remove({ 'id':id })
- print "<DIV CLASS=z-frame>"
- print "Unit {} deleted (DB:{}".format(id,ret['deleted'])
+ print "<ARTICLE>"
+ print "Unit {} deleted, DB:{}".format(id,ret['deleted'])
  if ret['res'] == 'OK':
   from sdcp.core.rest import call as rest_call
   from sdcp import PackageContainer as PC
   arec = rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['a_id']})   if ret['a_id']   else 0
   prec = rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['ptr_id']}) if ret['ptr_id'] else 0
   print ",A:{},PTR:{}".format(arec,prec)
- print ")"
- print "</DIV>"
+ print "</ARTICLE>"
 
 #
 # find devices operations
@@ -440,7 +437,7 @@ def discover(aWeb):
   ipam  = aWeb.get('ipam_subnet',"0_0_32").split('_')
   # id, subnet int, subnet mask
   res = discover({ 'subnet_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':a_dom, 'clear':clear})
-  print "<DIV CLASS=z-frame>{}</DIV>".format(res)
+  print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
   with DB() as db:
    db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, description FROM subnets ORDER BY subnet");
@@ -448,10 +445,9 @@ def discover(aWeb):
    db.do("SELECT id, name FROM domains")
    domains  = db.get_rows()
   dom_name = aWeb['domain']
-  print "<DIV CLASS=z-frame style='resize: horizontal; margin-left:0px; z-index:101; width:350px; height:160px;'>"
+  print "<ARTICLE CLASS='z-info'><P>Device Discovery</P>"
   print "<FORM ID=device_discover_form>"
   print "<INPUT TYPE=HIDDEN NAME=op VALUE=json>"
-  print "<DIV CLASS=title>Device Discovery</DIV>"
   print "<DIV CLASS=z-table><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
   for d in domains:
@@ -463,10 +459,10 @@ def discover(aWeb):
   for s in subnets:
    print "<OPTION VALUE={0}_{1}_{3}>{2}/{3} ({4})</OPTION>".format(s.get('id'),s.get('subnet'),s.get('subasc'),s.get('mask'),s.get('description'))
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Clear</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=clear VALUE=True></DIV></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Clear DB<B>??</B>:</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=clear VALUE=True></DIV></DIV>"
   print "</DIV></DIV>"
-  print aWeb.button('search', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=device_discover', FRM='device_discover_form')
-  print "</DIV>"
+  print aWeb.button('start', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=device_discover', FRM='device_discover_form')
+  print "</ARTICLE>"
 
 #
 # clear db
@@ -474,4 +470,4 @@ def discover(aWeb):
 def clear_db(aWeb):
  with DB() as db:
   db.do("TRUNCATE TABLE devices")
- print "<DIV CLASS=z-frame>Cleared DB</DIV>"
+ print "<<ARTICLE>Cleared DB</ARTICLE>"

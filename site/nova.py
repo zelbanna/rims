@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax Openstack NOVA calls module
+HTML5 Ajax Openstack NOVA calls module
 
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
@@ -27,9 +27,7 @@ def list(aWeb):
   print "Error retrieving list {}".format(str(ret))
   return
 
- print "<DIV CLASS=z-content-left ID=div_content_left>"
- print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title><CENTER>Nova Servers</CENTER></DIV>"
+ print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Nova Servers</P>"
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=nova_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=nova_select_parameters')
  print "<DIV CLASS=z-table>"
@@ -54,8 +52,9 @@ def list(aWeb):
   else:
    print aWeb.button('info', DIV='div_content_right', URL=actionurl.format('info'), SPIN='true', TITLE='VM info')
   print "</DIV></DIV>"
- print "</DIV>"
- print "</DIV></DIV></DIV><DIV CLASS=z-content-right ID=div_content_right></DIV>"
+ print "</DIV></DIV>"
+ print "</ARTICLE></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 
 def select_parameters(aWeb):
@@ -66,7 +65,7 @@ def select_parameters(aWeb):
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
  port,url = cookie.get('os_nova_port'),cookie.get('os_nova_url')
- print "<DIV CLASS=z-frame>"
+ print "<ARTICLE>"
  print """
  <script>
   $( function() {
@@ -119,9 +118,9 @@ def select_parameters(aWeb):
   if net.get('contrail:subnet_ipam'):
    print "<DIV ID=div_drag_{0} CLASS='z-drag z-drag-input' style='font-size:11px;'><INPUT ID=input_{0} NAME=unused TYPE=HIDDEN VALUE={0}>{1} ({2})</DIV>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
  print "</DIV>"
- print "<BR style='clear:left;'>"
+ print "<BR>"
  print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=nova_action&id=new&op=add', SPIN='true')
- print "</DIV>"
+ print "</ARTICLE>"
 
 ######################################## Actions ########################################
 #
@@ -150,9 +149,9 @@ def action(aWeb):
   print tmpl.format('Networks','networks','Networks')
   print "<A TITLE='New-tab Console'  CLASS='z-btn'  TARGET=_blank HREF='sdcp.cgi?call=nova_console&name={0}&id={1}'>Console</A>".format(qserver,aWeb['id'])
   print "</DIV>"
-  print "<DIV CLASS=z-frame style='overflow:auto;' ID=div_os_info>"
+  print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
   dict2html(server,server['name'])
-  print "</DIV>"
+  print "</ARTICLE>"
 
  elif op == 'details':
   server = controller.call(port,url + "/servers/{}".format(aWeb['id']))['data']['server']
@@ -161,10 +160,7 @@ def action(aWeb):
  elif op == 'stop' or op == 'start' or op == 'reboot':
   arg = {"os-"+op:None} if op != 'reboot' else {"reboot":{ "type":"SOFT" }}
   ret = controller.call(port,url + "/servers/{}/action".format(aWeb['id']),args=arg)
-  if ret.get('code') == 202:
-   print "Command executed successfully [{}]".format(str(arg))
-  else:
-   print "Error executing command [{}]".format(str(arg))
+  print "Command executed successfully [{}]".format(str(arg)) if ret.get('code') == 202 else "Error executing command [{}]".format(str(arg))
 
  elif op == 'diagnostics':
   ret = controller.call(port,url + "/servers/{}/diagnostics".format(aWeb['id']))
@@ -199,8 +195,7 @@ def action(aWeb):
     print "<DIV CLASS=td></DIV>"
     print "<DIV CLASS=td></DIV>"
    print "</DIV>"
-  print "</DIV>"
-  print "</DIV>"
+  print "</DIV></DIV>"
 
  elif op == 'add':
   print "TBD"
@@ -210,13 +205,9 @@ def action(aWeb):
   if not ret['result'] == "OK":
    print "Error performing op {}".format(str(ret))
    return
-  print "<DIV CLASS='z-frame'>"
-  print "<H2>Removing VM</H2>"
-  if ret['code'] == 204:
-   print "VM removed"
-  else:
-   print "Error code: {}".format(ret['code'])
-  print "</DIV>"
+  print "<ARTICLE><P>Removing VM</P>"
+  print "VM removed" if ret['code'] == 204 else "Error code: %s"%(ret['code'])
+  print "</ARTICLE>"
 
 def console(aWeb):
  token = aWeb.cookie.get('os_user_token')

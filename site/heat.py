@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax Openstack HEAT calls module
+HTML5 Ajax Openstack HEAT calls module
 
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
@@ -32,8 +32,7 @@ def list(aWeb):
   print "Error retrieving heat stacks ({})".format(ret['code'])
   return
 
- print "<DIV CLASS=z-content-left ID=div_content_left><DIV CLASS=z-frame style='width:394px;'>"
- print "<DIV CLASS=title>Heat Stacks</DIV>"
+ print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE STYLE='width:394px;'><P>Heat Stacks</P>"
  print aWeb.button('reload',DIV='div_content',URL='sdcp.cgi?call=heat_list')
  print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=heat_choose_template')
  print "<DIV CLASS=z-table>"
@@ -48,16 +47,16 @@ def list(aWeb):
   if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED" or stack['stack_status'] == "DELETE_FAILED":
    print aWeb.button('delete', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=heat_action&name=%s&id=%s&op=remove'%(stack['stack_name'],stack['id']), MSG='Are you sure?')
   print "&nbsp;</DIV></DIV>"
- print "</DIV>"
- print "</DIV></DIV></DIV>"
- print "<DIV CLASS=z-content-right ID=div_content_right></DIV>"
+ print "</DIV></DIV>"
+ print "</ARTICLE></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 ######################### HEAT ADD ######################
 #
 # Add instantiation
 #
 def choose_template(aWeb):
- print "<DIV CLASS='z-frame' style='display:inline-block; padding:6px'>"
+ print "<ARTICLE STYLE='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_choose_template>"
  try:
   print "Add solution from template:<SELECT NAME=template style='border: none; overflow: visible; background-color: transparent; height:22px; width:auto;'>"
@@ -73,7 +72,7 @@ def choose_template(aWeb):
  print aWeb.button('document', DIV='div_os_info', URL='sdcp.cgi?call=heat_enter_parameters',   FRM='frm_heat_choose_template', TITLE='Enter parameters')
  print aWeb.button('info', DIV='div_os_info', URL='sdcp.cgi?call=heat_action&op=templateview', FRM='frm_heat_choose_template', TITLE='View Template')
  print "<BR><DIV ID=div_os_info></DIV>"
- print "</DIV>"
+ print "</ARTICLE>"
 
 def enter_parameters(aWeb):
  from json import load,dumps
@@ -120,9 +119,9 @@ def action(aWeb):
   print tmpl.format('Stack Parameters','parameters','Parameters')
   print "</DIV>"
   ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
-  print "<DIV CLASS=z-frame style='overflow:auto;' ID=div_os_info>"
+  print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
   dict2html(ret['data']['stack'],name)
-  print "</DIV>"
+  print "</ARTICLE>"
 
  elif op == 'details':
   ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
@@ -137,13 +136,12 @@ def action(aWeb):
   print "<DIV CLASS=tbody>"
   for event in ret['data']['events']:
    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(event['event_time'].replace("T"," "),event['resource_name'],event['physical_resource_id'],event['resource_status'],event['resource_status_reason'])
-  print "</DIV>"
-  print "</DIV>"
+  print "</DIV></DIV>"
 
  elif op == 'template':
   from json import dumps
   ret = controller.call(port,url + "/stacks/{}/{}/template".format(name,id))
-  print "<PRE>" + dumps(ret['data'], indent=4) + "</PRE>"
+  print "<PRE>%s</PRE>"%(dumps(ret['data'], indent=4))
 
  elif op == 'parameters':
   from json import dumps
@@ -152,11 +150,11 @@ def action(aWeb):
   data.pop('OS::project_id')
   data.pop('OS::stack_name')
   data.pop('OS::stack_id')
-  print "<PRE>" + dumps(data, indent=4) + "</PRE>"
+  print "<PRE>%s</PRE>"%(dumps(data, indent=4))
 
  elif op == 'create':
   template = aWeb['template']
-  print "<DIV CLASS='z-frame'>"
+  print "<ARTICLE>"
   if name and template:
    from json import load,dumps
    with open("os_templates/"+template) as f:
@@ -173,17 +171,13 @@ def action(aWeb):
     print "<PRE>Error instantiating stack:" + str(ret) + "</PRE>"
   else:
    print "Error - need to provide a name for the instantiation"
-  print "</DIV>"
+  print "</ARTICLE>"
 
  elif op == 'remove':
   ret = controller.call(port,url + "/stacks/{}/{}".format(name,id), method='DELETE')
-  print "<DIV CLASS='z-frame'>"
-  print "<H3>Removing {}</H3>".format(name)
-  if ret['code'] == 204:
-   print "Removing stack"
-  else:
-   print "Error code: {}".format(ret['code'])
-  print "</DIV>"
+  print "<ARTICLE><P>Removing {}</P>".format(name)
+  print "Removing stack" if ret['code'] == 204 else "Error code: %s"%ret['code']
+  print "</ARTICLE>"
 
  if op == 'templateview':
   template = aWeb['template']

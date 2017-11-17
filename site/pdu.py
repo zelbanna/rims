@@ -1,6 +1,6 @@
 """Moduledocstring.
 
-Ajax calls module
+HTML5 Ajax calls module
 
 """
 __author__= "Zacharias El Banna"
@@ -13,8 +13,7 @@ __status__= "Production"
 #
 def list(aWeb):
  from sdcp.core.dbase import DB
- print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>PDUs</DIV>"
+ print "<ARTICLE><P>PDUs</P>"
  print aWeb.button('reload',DIV='div_content_left',  URL='sdcp.cgi?call=pdu_list')
  print aWeb.button('add',   DIV='div_content_right', URL='sdcp.cgi?call=pdu_info&id=new')
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
@@ -24,7 +23,7 @@ def list(aWeb):
   data = db.get_rows()
   for unit in data:
    print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=pdu_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['ip'])
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV></ARTICLE>"
 
 #
 #
@@ -62,8 +61,7 @@ def info(aWeb):
     db.do("SELECT pdus.*, INET_NTOA(ip) as ipasc FROM pdus WHERE ip = INET_ATON('{}')".format(ip))
    pdudata = db.get_row()
 
- print "<DIV CLASS='z-frame z-info' STYLE='height:200px;'>"
- print "<DIV CLASS=title>PDU Device Info {}</DIV>".format("(new)" if id == 'new' else "")
+ print "<ARTICLE CLASS='z-info'><P>PDU Device Info {}</P>".format("(new)" if id == 'new' else "")
  print "<FORM ID=pdu_info_form>"
  print "<DIV CLASS=z-table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(pdudata['ipasc'])
@@ -86,7 +84,7 @@ def info(aWeb):
   print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=pdu_info&id=%s&op=lookup&ip=%s'%(id,pdudata['ipasc']), TITLE='Fetch info')
  print aWeb.button('save',  DIV='div_content_right', URL='sdcp.cgi?call=pdu_info&id=%s&op=update'%id, TITLE='Fetch info', FRM='pdu_info_form')
  print "</FORM>"
- print "</DIV>"
+ print "</ARTICLE>"
 
 #
 #
@@ -108,7 +106,7 @@ def unit_info(aWeb):
   avocent.set_name(aWeb['slot'],aWeb['unit'],aWeb['name'])
   print "Updated name: {} for {} slot {}".format(aWeb['name'],aWeb['pdu'],aWeb['slot'])
   return
- print "<DIV CLASS='z-frame z-info' STYLE='height:150px;'>"
+ print "<ARTICLE CLASS='z-info'>"
  print "<FORM ID=pdu_form>"
  print "<INPUT NAME=slot   VALUE={} TYPE=HIDDEN>".format(aWeb['slot'])
  print "<INPUT NAME=unit   VALUE={} TYPE=HIDDEN>".format(aWeb['unit'])
@@ -122,7 +120,7 @@ def unit_info(aWeb):
  print aWeb.button('save',DIV='update_results', URL='sdcp.cgi?call=pdu_unit_info&op=update', FRM='pdu_form')
  print "<SPAN style='float:right; font-size:9px;' ID=update_results></SPAN>"
  print "</FORM>"
- print "</DIV>"
+ print "</ARTICLE>"
 
 #
 #
@@ -131,7 +129,7 @@ def inventory(aWeb):
  if len(pdulist) == 0:
   pdulist.append(aWeb['pduop'])
 
- print "<DIV CLASS=z-frame>"
+ print "<ARTICLE>"
  print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='sdcp.cgi?%s'%aWeb.get_args())
  print "<DIV CLASS=z-table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th style='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -153,7 +151,7 @@ def inventory(aWeb):
     print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
     print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
    print "</DIV></DIV>"
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV></ARTICLE>"
 
 #
 #

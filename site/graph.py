@@ -1,6 +1,6 @@
 """Module docstring.
 
-Ajax Graph calls module
+HTML5 Ajax Graph calls module
 
 """
 __author__= "Zacharias El Banna"                     
@@ -30,8 +30,7 @@ def list(aWeb):
     tune = "WHERE {0} is NULL".format(target)
   db.do("SELECT devices.id, INET_NTOA(ip) as ip, hostname, INET_NTOA(graph_proxy) AS proxy ,graph_update, domains.name AS domain FROM devices INNER JOIN domains ON devices.a_dom_id = domains.id {} ORDER BY hostname".format(tune))
   rows = db.get_rows()
- print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>Graphing</DIV>"
+ print "<ARTICLE><P>Graphing</P>"
  print aWeb.button('reload',DIV='div_content_left',  URL='sdcp.cgi?call=graph_list&%s'%(aWeb.get_args_except(['call','id','state'])))
  print aWeb.button('save'  ,DIV='div_content_right', URL='sdcp.cgi?call=graph_save')
  print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=graph_discover', SPIN='true')
@@ -49,7 +48,8 @@ def list(aWeb):
   print "<DIV CLASS=td TITLE='Include in graphing?'>&nbsp;"
   print aWeb.button("shutdown" if row['graph_update'] else "start", DIV='div_content_left', URL='sdcp.cgi?call=graph_list&{}&id={}&state={}'.format(aWeb.get_args_except(['call','id','state']),row['id'],row['graph_update']))
   print "</DIV></DIV>"
- print "</DIV></DIV></DIV>"
+ print "</DIV></DIV>"
+ print "</ARTICLE>"
 
 #
 # Modify proxy
@@ -63,16 +63,16 @@ def set_proxy(aWeb):
   from sdcp.core.dbase import DB
   with DB() as db:
    db.do("UPDATE devices SET graph_proxy = INET_ATON('{0}') WHERE id = '{1}'".format(proxy,id))
- print "<DIV CLASS=z-frame>"
- print "<DIV CLASS=title>Update Proxy ({})</DIV>".format(ip)
+ print "<ARTICLE><P>Update Proxy for {}</DIV>".format(ip)
  print "<FORM ID=graph_proxy_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=ip VALUE={}>".format(ip)
  print "<DIV CLASS=z-table style='width:auto'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=proxy STYLE='border:solid 1px grey; width:200px;' VALUE='{}'></DIV></DIV>".format(proxy)
  print "</DIV></DIV>"
+ print "</FORM>"
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=graph_set_proxy&op=update', FRM='graph_proxy_form')
- print "</DIV>"
+ print "</ARTICLE>"
 
 #
 # Find graphs
@@ -95,7 +95,7 @@ def save(aWeb):
    output.write("[{}.{}]\n".format(row['hostname'],row['domain']))
    output.write("address {}\n".format(row['proxy']))
    output.write("update yes\n\n")
- print "<DIV CLASS=z-frame>Done updating devices' graphing to conf file [{}]</DIV>".format(PC.sdcp['graph']['file'])
+ print "<ARTICLE>Done updating devices' graphing to conf file [{}]</ARTICLE>".format(PC.sdcp['graph']['file'])
 
 #
 # Weathermap Link
@@ -107,10 +107,10 @@ def wm(aWeb):
  dom  = aWeb['domain']
  desc = aWeb.get('desc',"LNK"+indx)
  gstr = "munin-cgi/munin-cgi-graph/{1}/{0}.{1}/snmp_{2}_{1}_if_{3}-day.png".format(name,dom,snmpname,indx)
- print "<DIV CLASS=z-frame><PRE style='font-size:10px;'>"
+ print "<ARTICLE><PRE style='font-size:10px;'>"
  print "LINK {}-{}".format(name,desc)
  print "\tINFOURL " +  gstr
  print "\tOVERLIBGRAPH " + gstr
  print "\tBWLABEL bits"
  print "\tTARGET {1}/{0}.{1}-snmp_{2}_{1}_if_{3}-recv-d.rrd {1}/{0}.{1}-snmp_{2}_{1}_if_{3}-send-d.rrd:-:42".format(name,dom,snmpname,indx)
- print "</PRE></DIV>"
+ print "</PRE></ARTICLE>"
