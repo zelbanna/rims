@@ -168,7 +168,7 @@ def action(aWeb):
 
  elif op == 'print':
   from json import dumps
-  print "<PRE>{}</PRE>".format(dumps(controller.href(aWeb['id'])['data'],indent=4))
+  print "<CODE>{}</CODE>".format(dumps(controller.href(aWeb['id'])['data'],indent=4))
 
  elif op == 'networks':
   from json import dumps

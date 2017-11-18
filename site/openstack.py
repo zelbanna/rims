@@ -188,5 +188,5 @@ def result(aWeb):
   print "{}:{}<BR>".format(key,value)
  print "</DIV></DIV>"
  print "</DIV></DIV>"
- print "<DIV CLASS='border'><PRE>%s</PRE></DIV>"%(dumps(ret['data'],indent=4, sort_keys=True))
+ print "<DIV CLASS='border'><CODE>%s</CODE></DIV>"%(dumps(ret['data'],indent=4, sort_keys=True))
  print "</ARTICLE>"

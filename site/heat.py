@@ -141,7 +141,7 @@ def action(aWeb):
  elif op == 'template':
   from json import dumps
   ret = controller.call(port,url + "/stacks/{}/{}/template".format(name,id))
-  print "<PRE>%s</PRE>"%(dumps(ret['data'], indent=4))
+  print "<CODE>%s</CODE>"%(dumps(ret['data'], indent=4))
 
  elif op == 'parameters':
   from json import dumps
@@ -150,7 +150,7 @@ def action(aWeb):
   data.pop('OS::project_id')
   data.pop('OS::stack_name')
   data.pop('OS::stack_id')
-  print "<PRE>%s</PRE>"%(dumps(data, indent=4))
+  print "<CODE>%s</CODE>"%(dumps(data, indent=4))
 
  elif op == 'create':
   template = aWeb['template']
@@ -168,7 +168,7 @@ def action(aWeb):
     print "<H2>Starting instantiation of '{}' solution</H2>".format(template.partition('.')[0])
     print "Name: {}<BR>Id:{}".format(name,ret['data']['stack']['id'])
    else:
-    print "<PRE>Error instantiating stack:" + str(ret) + "</PRE>"
+    print "<CODE>Error instantiating stack:" + str(ret) + "</CODE>"
   else:
    print "Error - need to provide a name for the instantiation"
   print "</ARTICLE>"
@@ -185,4 +185,4 @@ def action(aWeb):
   with open("os_templates/"+template) as f:
    data = load(f)
   data['stack_name'] = name if name else "Need_to_specify_name"
-  print "<PRE>{}</PRE>".format(dumps(data, indent=4, sort_keys=True))
+  print "<CODE>{}</CODE>".format(dumps(data, indent=4, sort_keys=True))

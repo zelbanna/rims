@@ -95,7 +95,7 @@ class Web(object):
     stdout.write("Content-Type: text/html\r\n")
    keys = self.form.keys()
    from json import dumps
-   stdout.write("<PRE STYLE='font-size:9px; font-weight:bold;'>" + (dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(self._base,mod_fun), 'args':",".join(keys) , 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True, indent=4) if not type(e).__name__ == 'RestException' else str(e)) + "</PRE>")
+   stdout.write("<PRE STYLE='font-size:9px; font-weight:bold;'>" + (dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(self._base,mod_fun), 'args':",".join(keys) , 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True, indent=4) if not type(e).__name__ == 'RestException' else str(e)) + "</CODE>")
 
  ############################## CGI/Web functions ###############################
 

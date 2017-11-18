@@ -152,7 +152,7 @@ def action(aWeb):
 
  elif op == 'print':
   from json import dumps
-  print "<PRE>{}</PRE>".format(dumps(controller.href(id)['data'],indent=4))
+  print "<CODE>{}</CODE>".format(dumps(controller.href(id)['data'],indent=4))
 
  elif op == 'remove':
   ret = controller.call("8082","virtual-network/{}".format(id), method='DELETE')

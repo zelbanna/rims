@@ -55,7 +55,7 @@ def db_structure(aWeb):
 def db_table(aWeb):
  from json import dumps
  from sdcp.rest.tools import db_table
- print "<PRE>{}</PRE>".format(dumps(db_table({'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db'], indent=4, sort_keys=True))
+ print "<CODE>{}</CODE>".format(dumps(db_table({'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db'], indent=4, sort_keys=True))
 
 #
 #
@@ -71,10 +71,10 @@ def sync_devicetypes(aWeb):
 def install(aWeb):
  from sdcp.core.rest import call as rest_call
  from json import dumps
- print "<ARTICLE><PRE>"
+ print "<ARTICLE><CODE>"
  res = rest_call("http://{}/rest.cgi".format(aWeb['host']),"sdcp.rest.tools_installation")
  print dumps(res,indent=4)
- print "</PRE></ARTICLE>"
+ print "</CODE></ARTICLE>"
 
 #
 #
@@ -116,7 +116,7 @@ def rest_execute(aWeb):
  try:
   ret = rest_call("http://{}/rest.cgi".format(aWeb['sdcp_host']),aWeb['sdcp_api'],arguments,aWeb['sdcp_method'])
   print "<DIV CLASS='border'>"
-  print "<PRE CLASS='white'>%s</PRE>"%dumps(ret,indent=4, sort_keys=True)
+  print "<PRE CLASS='white'>%s</CODE>"%dumps(ret,indent=4, sort_keys=True)
   print "</DIV>"
  except RestException,re:
   data = re.get()
