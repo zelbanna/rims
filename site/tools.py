@@ -13,14 +13,14 @@ def main(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- print "<NAV>"
- print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A>"
- print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=tools_list'>Options</A>"
- print "<A CLASS='z-op right' DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A>"
- print "<A CLASS='z-op right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>Tools</A>"
- print "<A CLASS='z-op right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>Demos</A>"
- print "<A CLASS='z-op right' DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>Bookmarks</A>"
- print "</NAV>"
+ print "<NAV><UL>"
+ print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A></LI>"
+ print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=tools_list'>Options</A></LI>"
+ print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A></LI>"
+ print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>Tools</A></LI>"
+ print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>Demos</A></LI>"
+ print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>Bookmarks</A></LI>"
+ print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
 
 def list(aWeb):

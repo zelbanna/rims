@@ -18,16 +18,16 @@ def main(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  upshost = PC.sdcp['upshost']
- print "<NAV>"
- print "<A CLASS='warning z-op' DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=examine_clear'>Clear Logs</A>"
- print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_logs&ip=127.0.0.1>Logs</A>"
+ print "<NAV><UL>"
+ print "<LI CLASS='warning'><A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=examine_clear'>Clear Logs</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_logs&ip=127.0.0.1>Logs</A></LI>"
  if upshost:
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_ups>UPS</A>"
- print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dns_top>DNS</A>"
- print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases>DHCP</A>"
- print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_logs&ip={}>Services Logs</A>".format(PC.sdcp['svcsrv'])
- print "<A CLASS='z-reload z-op' DIV=main URL=sdcp.cgi?call=examine_main></A>"
- print "</NAV>"
+  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_ups>UPS</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dns_top>DNS</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases>DHCP</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_logs&ip={}>Services Logs</A></LI>".format(PC.sdcp['svcsrv'])
+ print "<LI><A CLASS='z-op reload' DIV=main URL=sdcp.cgi?call=examine_main></A></LI>"
+ print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
 
 #

@@ -15,9 +15,9 @@ def main(aWeb):
  with DB() as db:
   db.do("SELECT id,name,image_url from racks")
   racks = db.get_rows()
- print "<NAV>&nbsp;</NAV>"
- print "<CENTER><H1>Rack Overview</H1></CENTER>"
- print "<DIV CLASS=centered>"
+ print "<NAV><UL>&nbsp;</UL></NAV>"
+ print "<H1 CLASS='centered'>Rack Overview</H1>"
+ print "<DIV CLASS='centered'>"
  rackstr = "<DIV STYLE='float:left; margin:6px;'><A TITLE='{1}' CLASS=z-op DIV=main URL=sdcp.cgi?call=device_main&target=rack_id&arg={0}><IMG STYLE='max-height:400px; max-width:200px;' ALT='{1} ({2})' SRC='images/{2}'></A></DIV>"
  print "<DIV STYLE='float:left; margin:6px;'><A CLASS=z-op DIV=main URL=sdcp.cgi?call=device_main&target=vm&arg=1><IMG STYLE='max-height:400px; max-width:200px;' ALT='VMs' SRC='images/hypervisor.png'></A></DIV>"
  for rack in racks:

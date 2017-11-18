@@ -59,16 +59,16 @@ def portal(aWeb):
  print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
  print "<A CLASS='z-op btn right red' OP=logout URL='sdcp.cgi?call=front_openstack&headers=no&controller={}&name={}&appformix={}' style='margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
- print "</HEADER><MAIN ID=main><NAV>"
- print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A>"
- print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A>"
- print "<A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A>"
- print "<A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_report'>Usage Report</A>"
- print "<A CLASS='z-reload z-op'  OP=redirect URL='sdcp.cgi?call=openstack_portal&headers=no'></A>"
+ print "</HEADER><MAIN ID=main><NAV><UL>"
+ print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
+ print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
+ print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
+ print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_report'>Usage Report</A></LI>"
+ print "<LI><A CLASS='z-op reload'  OP=redirect URL='sdcp.cgi?call=openstack_portal&headers=no'></A></LI>"
  if username == 'admin':
-  print "<A CLASS='z-op right'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
-  print "<A CLASS='z-op right'  DIV=div_content URL=sdcp.cgi?call=openstack_api>API Debug</A>"
- print "</NAV>"
+  print "<LI CLASS='right'><A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A></LI>"
+  print "<LI CLASS='right'><A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>API Debug</A></LI>"
+ print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION></MAIN>"
 
 ############################################## Formatting ##############################################

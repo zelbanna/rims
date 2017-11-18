@@ -15,12 +15,12 @@ def main(aWeb):
  target = aWeb['target']
  arg    = aWeb['arg']
 
- print "<NAV>"
- print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_list{0}'>Devices</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
- print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=graph_list{0}'>Graphing</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
- print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A>"
+ print "<NAV><UL>"
+ print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_list{0}'>Devices</A></LI>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
+ print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=graph_list{0}'>Graphing</A></LI>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
+ print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A></LI>"
  if target == 'vm':
-  print "<A CLASS='z-reload z-op' DIV=main URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
+  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  else:
   with DB() as db:
    if target == 'rack_id':
@@ -28,15 +28,15 @@ def main(aWeb):
     if res > 0:
      data = db.get_row()
      if data.get('con_ip'):
-      print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=console_inventory&consolelist={0}'>Console</A>".format(data['con_ip'])
+      print "<LI><A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=console_inventory&consolelist={0}'>Console</A></LI>".format(data['con_ip'])
      if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
       res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
       rows = db.get_rows()
       pdus = ""
       for row in rows:
        pdus = pdus + "&pdulist=" + row.get('ip')
-      print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory{0}'>Pdu</A>".format(pdus)  
-     print "<A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=rack_inventory&rack={0}'>'{1}' info</A>".format(arg,data['name'])
+      print "<LI><A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory{0}'>Pdu</A></LI>".format(pdus)  
+     print "<LI><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=rack_inventory&rack={0}'>'{1}' info</A></LI>".format(arg,data['name'])
    else:
     for type in ['pdu','console']:
      res = db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
@@ -45,15 +45,14 @@ def main(aWeb):
       arglist = "call={}_list".format(type)
       for row in tprows:
        arglist = arglist + "&{}list=".format(type) + row['ip']
-      print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,arglist,type.title())
-  print "<A CLASS='z-reload z-op' DIV=main URL='sdcp.cgi?{}'></A>".format(aWeb.get_args())
-  print "<A CLASS='right z-op' DIV=div_content_left URL='sdcp.cgi?call=ipam_list'>IPAM</A>"
-  print "<A CLASS='right z-op' DIV=div_content_left URL='sdcp.cgi?call=dns_domains'>DNS</A>"
-  print "<A CLASS='right z-op' DIV=div_content_left URL='sdcp.cgi?call=pdu_list'>PDUs</A>"
-  print "<A CLASS='right z-op' DIV=div_content_left URL='sdcp.cgi?call=console_list'>Consoles</A>"
-  print "<A CLASS='right z-op' DIV=div_content_left URL='sdcp.cgi?call=rack_list'>Racks</A>"
-  print "<SPAN CLASS='right navinfo'>Configuration:</SPAN>"
- print "</NAV>"
+      print "<LI><A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A></LI>".format(type,arglist,type.title())
+  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
+  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=ipam_list'>IPAM</A></LI>"
+  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=dns_domains'>DNS</A></LI>"
+  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=pdu_list'>PDUs</A></LI>"
+  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=console_list'>Consoles</A></LI>"
+  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=rack_list'>Racks</A></LI>"
+ print "</UL></NAV>"
  print "<SECTION CLASS=content       ID=div_content>"
  print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right>"
@@ -254,7 +253,7 @@ def info(aWeb):
  print "</ARTICLE>"
 
  print "<!-- Function navbar and content -->"
- print "<NAV>"
+ print "<NAV><UL>"
  try:
   from importlib import import_module
   module = import_module("sdcp.devices.{}".format(dev['info']['type_name']))
@@ -263,14 +262,14 @@ def info(aWeb):
   if functions:
    if functions[0] == 'operated':
     if dev['info']['type_name'] == 'esxi':
-     print "<A CLASS=z-op DIV=main URL='sdcp.cgi?call=esxi_main&id=%i'>Manage</A></B></DIV>"%dev['id']
+     print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?call=esxi_main&id=%i'>Manage</A></LI>"%dev['id']
    else:
     for fun in functions:
      funname = " ".join(fun.split('_')[1:])
-     print "<A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A>".format(dev['ip'], dev['info']['type_name'], fun, funname.title())
+     print "<LI><A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A></LI>".format(dev['ip'], dev['info']['type_name'], fun, funname.title())
  except:
   print "&nbsp;"
- print "</NAV>"
+ print "</UL></NAV>"
  print "<SECTION CLASS='content' ID=div_dev_data style='top:298px; overflow-x:hidden; overflow-y:auto; z-index:100'></SECTION>"
 
 

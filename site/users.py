@@ -13,12 +13,12 @@ def main(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- print "<NAV>"
- print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=users_list'>Users</A>"
- print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A>"
- print "<A CLASS='z-op right warning' OP=logout URL=sdcp.cgi>Log out</A>"
- print "<A CLASS='z-op right navinfo' DIV=div_content_right URL=sdcp.cgi?call=users_info&id={}>{}</A>".format(aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user'))
- print "</NAV>"
+ print "<NAV><UL>"
+ print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=users_list'>Users</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A></LI>"
+ print "<LI CLASS='right warning'><A CLASS=z-op OP=logout URL=sdcp.cgi>Log out</A></LI>"
+ print "<LI CLASS='right navinfo'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={}>{}</A></LI>".format(aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user'))
+ print "</UL></NAV>"
  print "<SECTION CLASS=content       ID=div_content>"
  print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"

@@ -60,9 +60,9 @@ def login(aWeb):
    db.do("SELECT id,name,view_public FROM users ORDER BY name")
    rows = db.get_rows()
   aWeb.put_html("Login")
-  print "<DIV CLASS='overlay'>"
+  print "<DIV CLASS='grey overlay'>"
   print "<ARTICLE CLASS='login'>"
-  print "<CENTER><H1>Welcome to the management portal</H1></CENTER>"
+  print "<H1 CLASS='centered'>Welcome to the management portal</H1>"
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
   print "<INPUT TYPE=HIDDEN NAME=call VALUE=front_login>"
   print "<DIV CLASS=table style='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
@@ -87,10 +87,10 @@ def weathermap(aWeb):
 
  page = aWeb['page']
  if not page:
-  print "<NAV>" 
+  print "<NAV><UL>" 
   for map,entry in PC.weathermap.iteritems():
-   print "<A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=front_weathermap&page={0}>{1}</A>".format(map,entry['name'])
-  print "</NAV>"
+   print "<LI><A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=front_weathermap&page={0}>{1}</A></LI>".format(map,entry['name'])
+  print "</UL></NAV>"
   print "<SECTION CLASS='content' ID='div_wm_content' NAME='Weathermap Content' STYLE='overflow:hidden;'>"
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"
   print "</SECTION>" 
@@ -163,9 +163,9 @@ def openstack(aWeb):
  projects = [] if not ret['code'] == 200 else ret['data']['projects']
 
  aWeb.put_html("{} 2 Cloud".format(name.capitalize()))
- print "<DIV CLASS='overlay'>"
+ print "<DIV CLASS='grey overlay'>"
  print "<ARTICLE CLASS='login'>"
- print "<CENTER><H1>Welcome to '{}' Cloud portal</H1></CENTER>".format(name.capitalize())
+ print "<H1 CLASS='centered'>Welcome to '{}' Cloud portal</H1>".format(name.capitalize())
  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=openstack_login>"
  print "<INPUT TYPE=HIDDEN NAME=call VALUE=openstack_portal>"
  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
