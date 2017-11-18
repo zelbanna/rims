@@ -13,7 +13,7 @@ def hypervisors(aWeb):
  with DB() as db:
   db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'hypervisor' ORDER BY type_name,hostname")
   rows = db.get_rows() 
- print "<NAV></UL>&nbsp;</UL></NAV>"
+ print "<NAV><UL>&nbsp;</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><DIV CLASS=table>"
