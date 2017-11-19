@@ -19,7 +19,7 @@
 // - submit   frm
 //
 
-function btnoperation(event) {
+function btnfunction(event) {
  button = event.currentTarget;
  var op  = $(button).attr("op");
  var div = $("#"+$(button).attr("div"));
@@ -85,4 +85,12 @@ function btnoperation(event) {
  } else if (op == 'empty') {
   div.html('');
  }
+};
+
+//
+//
+//
+function focusfunction(event){
+ console.log("Log Focus In Event:" + event.originalEvent.type);
+ input = event.currentTarget;
 };
