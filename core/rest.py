@@ -27,10 +27,10 @@ class RestException(Exception):
 # -- Response model
 # --- res: OK/NOT_OK, ERROR, NO_DATA
 # --- type: of ERROR
+# --- info: ERROR info
 # --- exception: type of Exception
-# --- info: data from api or ERROR info
-# --- anything-else: up to developer
-#
+# --- data: single row data
+# --- items: list of data
 
 def server():
  from os import getenv, environ
@@ -45,6 +45,7 @@ def server():
    try:
     args = dict(map(lambda x: x.split('='),getenv("QUERY_STRING").split("&")))
    except:
+    args = None
     raise  Exception('No Module/Function found for REST API (Query String)')
    api  = args.pop('call')
   (mod,void,fun) = api.partition('_')

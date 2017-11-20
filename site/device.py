@@ -12,6 +12,7 @@ from sdcp.core.dbase import DB
 ########################################## Device Operations ##########################################
 
 def main(aWeb):
+ from sdcp.rest.racks import rackinfo 
  target = aWeb['target']
  arg    = aWeb['arg']
 
@@ -22,35 +23,20 @@ def main(aWeb):
  if target == 'vm':
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  else:
-  with DB() as db:
-   if target == 'rack_id':
-    res = db.do("SELECT racks.name, fk_pdu_1, fk_pdu_2, INET_NTOA(consoles.ip) as con_ip FROM racks LEFT JOIN consoles ON consoles.id = racks.fk_console WHERE racks.id= '{}'".format(arg))
-    if res > 0:
-     data = db.get_row()
-     if data.get('con_ip'):
-      print "<LI><A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=console_inventory&consolelist={0}'>Console</A></LI>".format(data['con_ip'])
-     if (data.get('fk_pdu_1') or data.get('fk_pdu_2')):
-      res = db.do("SELECT INET_NTOA(ip) as ip, id FROM pdus WHERE (pdus.id = {0}) OR (pdus.id = {1})".format(data.get('fk_pdu_1','0'),data.get('fk_pdu_2','0')))
-      rows = db.get_rows()
-      pdus = ""
-      for row in rows:
-       pdus = pdus + "&pdulist=" + row.get('ip')
-      print "<LI><A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory{0}'>Pdu</A></LI>".format(pdus)  
-     print "<LI><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=rack_inventory&rack={0}'>'{1}' info</A></LI>".format(arg,data['name'])
-   else:
-    for type in ['pdu','console']:
-     res = db.do("SELECT id, INET_NTOA(ip) as ip FROM {}s".format(type))
-     if res > 0:
-      tprows = db.get_rows()
-      arglist = "call={}_list".format(type)
-      for row in tprows:
-       arglist = arglist + "&{}list=".format(type) + row['ip']
-      print "<LI><A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A></LI>".format(type,arglist,type.title())
+  res = rackinfo({'id':arg} if target == 'rack_id' else {})
+  data = res['data']
+  for type in ['console','pdu']:
+   if len(data[type]) > 0:
+    print "<LI CLASS='dropdown'><A>%s</A><DIV CLASS='dropdown-content'>"%(type.title())
+    for row in data[type]:
+     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,row['ipasc'],row['name'])
+    print "</DIV></LI>"
+  if data.get('name'):
+   print "<LI><A CLASS='z-op' DIV=div_content_right  URL='sdcp.cgi?call=rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,res['data']['name'])
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
   print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=ipam_list'>IPAM</A></LI>"
   print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=dns_domains'>DNS</A></LI>"
-  print "<LI CLASS=right><A CLASS=z-op DIV=div_dropdown OP=toggle>Rackinfo</A>"
-  print "<DIV CLASS=dropdown ID=div_dropdown>"
+  print "<LI CLASS='right dropdown'><A>Rackinfo</A><DIV CLASS='dropdown-content'>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=pdu_list'>PDUs</A>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=console_list'>Consoles</A>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=rack_list'>Racks</A>"
@@ -127,7 +113,7 @@ def info(aWeb):
   booking({'device_id':aWeb['id'], 'user_id':aWeb.cookie['sdcp_id'], 'op':op})
 
  from sdcp.rest.device import info as rest_info
- from sdcp.rest.tools  import infra as rest_infra
+ from sdcp.rest.racks  import infra as rest_infra
  dev   = rest_info({'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
  if dev['exist'] == 0:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
