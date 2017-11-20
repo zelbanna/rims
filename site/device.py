@@ -172,7 +172,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ptr_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])
  if dev['info']['graph_update'] == 1:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='View graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</DIV><DIV CLASS=td>yes</DIV></DIV>".format(dev['info']['a_name'],dev['info']['hostname']+"."+ dev['info']['a_name'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='View graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</DIV><DIV CLASS=td>yes</DIV></DIV>".format(dev['info']['domain'],dev['info']['hostname']+"."+ dev['info']['domain'])
  else:
   print "<DIV CLASS=tr><DIV CLASS=td>Graphs:</DIV><DIV CLASS=td>no</DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV>"
@@ -269,16 +269,16 @@ def info(aWeb):
 
 def conf_gen(aWeb):
  from importlib import import_module
- id = aWeb.get('id','0')
+ from sdcp.rest.device import info as rest_info
  type = aWeb['type_name']
+ res  = rest_info({'id':aWeb.get('id','0')})
+ data = res['info']
+ subnet,void,mask = data['subnet'].partition('/')
  print "<ARTICLE>"
- with DB() as db:
-  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname,domains.name as domain, INET_NTOA(subnets.gateway) as gateway, INET_NTOA(subnets.subnet) AS subnet, subnets.mask FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = '{}'".format(id))
-  row = db.get_row()
  try:
   module = import_module("sdcp.devices.{}".format(type))
-  dev = getattr(module,'Device',lambda x: None)(row['ipasc'])
-  dev.print_conf({'name':row['hostname'], 'domain':row['domain'], 'gateway':row['gateway'], 'subnet':row['subnet'], 'mask':row['mask']})
+  dev = getattr(module,'Device',lambda x: None)(res['ip'])
+  dev.print_conf({'name':data['hostname'], 'domain':data['domain'], 'gateway':data['gateway'], 'subnet':subnet, 'mask':mask})
  except Exception as err:
   print "No instance config specification for type:[{}]".format(type)
  print "</ARTICLE>"
