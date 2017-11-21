@@ -9,10 +9,8 @@ __status__= "Production"
 
 
 def hypervisors(aWeb):
- from sdcp.core.dbase import DB
- with DB() as db:
-  db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'hypervisor' ORDER BY type_name,hostname")
-  rows = db.get_rows() 
+ from sdcp.rest.device import list_type
+ rows = list_type({'base':'hypervisor'})['data']
  print "<NAV><UL>&nbsp;</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
@@ -35,22 +33,20 @@ def hypervisors(aWeb):
 #
 #
 def main(aWeb):
- from sdcp.core.dbase import DB
+ from sdcp.rest.device import info as rest_info
  id = aWeb['id']
- with DB() as db:
-  db.do("SELECT hostname, INET_NTOA(ip) as ipasc, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = '{}'".format(id))
-  data = db.get_row() 
+ data = rest_info({'id':id})
  print "<NAV><UL>"
  print "<LI CLASS=warning><A CLASS=z-op DIV=div_esxi_op MSG='Really shut down?' URL='sdcp.cgi?call=esxi_op&nstate=poweroff&id={}'>Shutdown</A></LI>".format(id)
- print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['hostname'],data['domain'])
- print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A></LI>".format(data['hostname'],data['domain'])
- print "<LI><A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A></LI>".format(data['ipasc'])
+ print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['info']['hostname'],data['info']['domain'])
+ print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A></LI>".format(data['info']['hostname'],data['info']['domain'])
+ print "<LI><A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A></LI>".format(data['ip'])
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
- print "<LI CLASS='right navinfo'><A>{}</A></LI>".format(data['hostname'])
+ print "<LI CLASS='right navinfo'><A>{}</A></LI>".format(data['info']['hostname'])
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
- list(aWeb,data['ipasc'])
+ list(aWeb,data['ip'])
  print "</SECTION>" 
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
  print "</SECTION>"

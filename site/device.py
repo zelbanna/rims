@@ -64,7 +64,7 @@ def list(aWeb):
   args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
  res = rest_list(args)
  print "<DIV CLASS=tbody>"
- for row in res['devices']:
+ for row in res['data']:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='Show device info for {0}' DIV=div_content_right URL='sdcp.cgi?call=device_info&id={3}'>{0}</A></DIV><DIV CLASS=td>{1}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(row['ipasc'], row['hostname']+"."+row['domain'], row['model'],row['id'])
  print "</DIV></DIV></ARTICLE>"
 
