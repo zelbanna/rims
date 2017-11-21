@@ -38,6 +38,7 @@ def list(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=tools_install&host=127.0.0.1'>Reinstall Host</A></DIV></DIV>"
  if PC.sdcp['svcsrv']:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right  URL='sdcp.cgi?call=tools_install&host={}'>Reinstall SVC</A></DIV></DIV>".format(PC.sdcp['svcsrv'])
+ print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_test_rest'>Test</A></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
@@ -71,16 +72,20 @@ def sync_devicetypes(aWeb):
 def install(aWeb):
  from sdcp.core.rest import call as rest_call
  from json import dumps
- print "<ARTICLE><CODE>"
- res = rest_call("http://{}/rest.cgi".format(aWeb['host']),"sdcp.rest.tools_installation")
- print dumps(res,indent=4)
- print "</CODE></ARTICLE>"
+ print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(rest_call("http://{}/rest.cgi".format(aWeb['host']),"sdcp.rest.tools_installation"),indent = 4)
 
 #
 #
 def test_sleep(aWeb):
  from time import sleep
  sleep(int(aWeb['time']))
+ print "Done"
+
+#
+#
+def test_rest(aWeb):
+ from sdcp.core.rest import call as rest_call
+ res = rest_call("http://127.0.0.1/rest.cgi","tools_test")
  print "Done"
 
 #

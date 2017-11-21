@@ -13,7 +13,7 @@ class RestException(Exception):
   self._args = args
 
  def __str__(self):
-  return self._args
+  return "RestException(%s)"%self._args
 
  def get(self,aKey = None):
   return self._args if not aKey else self._args.get(aKey,None)

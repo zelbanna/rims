@@ -94,9 +94,9 @@ class Web(object):
    from sys import stdout
    if headers == 'no' or mod == 'front':
     stdout.write("Content-Type: text/html\r\n")
-   keys = self.form.keys()
-   from json import dumps
-   stdout.write("<PRE STYLE='font-size:9px; font-weight:bold;'>" + (dumps({ 'res':'ERROR', 'type':'AJAX', 'api':"{}.site.{}".format(self._base,mod_fun), 'args':",".join(keys) , 'exception':type(e).__name__, 'info':str(e) }, sort_keys=True, indent=4) if not type(e).__name__ == 'RestException' else str(e)) + "</CODE>")
+   keys    = self.form.keys()
+   details = ("AJAX",self._base,mod_fun,",".join(keys),type(e).__name__,str(e)) if not type(e).__name__ == 'RestException' else (e.get('type'),self._base,e.get('api'),e.get('args'),e.get('exception'),e.get('info')) 
+   stdout.write("<DETAILS CLASS='machine-text'><SUMMARY CLASS='red' STYLE='font-weight:bold;'>ERROR</SUMMARY><CODE>Type: %s<BR>API: %s.site.%s<BR>Arguments: %s<BR>Exception: %s<BR>Info: %s</CODE></DETAILS>"%details)
 
  ############################## CGI/Web functions ###############################
 
