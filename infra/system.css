@@ -82,6 +82,8 @@ div.td > a { display:inline-block; }
 div.rack-indx { font-weight:bold; font-size:8px; color:grey; padding:2px; }
 div.rack-data { border: solid 2px grey; font-size:12px; text-align:center;}
 
+input.highlight { border: 1px solid #33CAFF }
+
 /*############################## A(nything) ###################################*/
 
 a{        color:#000000; background-color:transparent;-webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; }
@@ -112,7 +114,7 @@ span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidd
 
 /*################################ Spinner overlay ####################################*/
 
-div.overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:1000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
+div.overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:100000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
 
 div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; z-index:1001; }
  /* Spin properties */
@@ -126,7 +128,6 @@ div#footer { display:none; }
 div#nav    { display:none; }
 div#content { margin-left: 20px; }
 div#content > h2{ display:none; }
-
 
 /*############################### Experimental ######################################*/
 div.z-drag {   height:20px; width:390px; margin:5px; font-size:11px; cursor:move; -ms-touch-action: none; touch-action: none; border-radius: 5px!important; border: 1px solid #ccc; }

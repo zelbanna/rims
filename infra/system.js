@@ -20,19 +20,18 @@
 //
 
 function btnfunction(event) {
- button = event.currentTarget;
- var op  = $(button).attr("op");
- var div = $("#"+$(button).attr("div"));
- var url = $(button).attr("url");
- var log = $(button).attr("log");
+ var op  = $(this).attr("op");
+ var div = $("#"+$(this).attr("div"));
+ var url = $(this).attr("url");
+ var log = $(this).attr("log");
 
  if (log)
   console.log("Log OP:"+op);
 
  if (!op || op == 'load') {
-  var msg  = button.getAttribute("msg");
+  var msg  = this.getAttribute("msg");
   if (msg && !confirm(msg)) return;
-  var spin = button.getAttribute("spin");
+  var spin = this.getAttribute("spin");
   if (spin){
     if(spin == 'true')
      spin = div;
@@ -42,7 +41,7 @@ function btnfunction(event) {
     spin.css("overflow-y","hidden");
     spin.append("<DIV CLASS='overlay'><DIV CLASS='loader'></DIV></DIV>");
   }
-  var frm  = button.getAttribute("frm");
+  var frm  = this.getAttribute("frm");
   if(frm)
    $.post(url, $("#"+frm).serializeArray() , function(result) { 
     div.html(result); 
@@ -61,9 +60,9 @@ function btnfunction(event) {
  } else if (op == 'redirect') {
   location.replace(url);
  } else if (op == 'submit') {
-  $("#"+ button.getAttribute("frm")).submit();
+  $("#"+ this.getAttribute("frm")).submit();
  } else if (op == 'iload') {
-  $("#"+ button.getAttribute("iframe")).attr('src',url);
+  $("#"+ this.getAttribute("iframe")).attr('src',url);
  } else if (op == 'logout') {
   var cookies = document.cookie.split(";");
   for(var i=0; i < cookies.length; i++) {
@@ -76,7 +75,7 @@ function btnfunction(event) {
   else
    div.html('')
  } else if (op == 'single') {
-  $(button.getAttribute("selector")).hide();
+  $(this.getAttribute("selector")).hide();
   div.show();
  } else if (op == 'toggle') {
   div.toggle();
@@ -89,8 +88,9 @@ function btnfunction(event) {
 
 //
 //
-//
 function focusfunction(event){
- console.log("Log Focus In Event:" + event.originalEvent.type);
- input = event.currentTarget;
+ if (event.originalEvent.type == 'focus')
+  $(this).addClass('highlight');
+ else if (event.originalEvent.type == 'blur')
+  $(this).removeClass('highlight');
 };
