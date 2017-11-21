@@ -29,7 +29,7 @@ def list(aWeb):
 
  ret = controller.call(cookie.get('os_heat_port'),cookie.get('os_heat_url') + "/stacks") 
  if not ret['result'] == "OK":
-  print "Error retrieving heat stacks ({})".format(ret['code'])
+  print "<ARTICLE>Error retrieving heat stacks <DETAILS STYLE='display:inline' TITLE='Details'><SUMMARY>%s</SUMMARY>%s</DETAILS></ARTICLE>"%(ret['code'],ret)
   return
 
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE STYLE='width:394px;'><P>Heat Stacks</P>"
