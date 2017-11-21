@@ -31,7 +31,7 @@ def list(aWeb):
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=nova_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=nova_select_parameters')
  print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th style='width:94px;'>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for server in ret['data'].get('servers',None):
   print "<DIV CLASS=tr>"
@@ -95,7 +95,7 @@ def select_parameters(aWeb):
  """
  print "<H2>New VM parameters</H2>"
  print "<FORM ID=frm_os_create_vm>"
- print "<DIV ID=div_os_form CLASS='table' style='float:left;'><DIV CLASS=tbody>"
+ print "<DIV ID=div_os_form CLASS='table' STYLE='float:left;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name</DIV><DIV CLASS=td><INPUT NAME=os_name PLACEHOLDER='Unique Name'></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=os_image>"
  images = controller.call(cookie.get('os_glance_port'),cookie.get('os_glance_url') + "/v2/images?sort=name:asc")['data']['images']
@@ -112,11 +112,11 @@ def select_parameters(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Network</DIV><DIV CLASS='td z-drop' ID=os_network1></DIV></DIV>"
  print "</DIV></DIV></FORM>"
 
- print "<DIV ID=div_os_nets style='float:left; height:200px; overflow:auto;'>"
+ print "<DIV ID=div_os_nets STYLE='float:left; height:200px; overflow:auto;'>"
  networks = controller.call(cookie.get('os_neutron_port'),cookie.get('os_neutron_url') + "/v2.0/networks?sort_key=name")['data']['networks']
  for net in networks:
   if net.get('contrail:subnet_ipam'):
-   print "<DIV ID=div_drag_{0} CLASS='z-drag z-drag-input' style='font-size:11px;'><INPUT ID=input_{0} NAME=unused TYPE=HIDDEN VALUE={0}>{1} ({2})</DIV>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
+   print "<DIV ID=div_drag_{0} CLASS='z-drag z-drag-input' STYLE='font-size:11px;'><INPUT ID=input_{0} NAME=unused TYPE=HIDDEN VALUE={0}>{1} ({2})</DIV>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
  print "</DIV>"
  print "<BR>"
  print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=nova_action&id=new&op=add', SPIN='true')
@@ -173,7 +173,7 @@ def action(aWeb):
  elif op == 'networks':
   from json import dumps
   vm  = controller.call("8082","virtual-machine/{}".format(aWeb['id']))['data']['virtual-machine']
-  print "<DIV CLASS=table style='width:auto'>"
+  print "<DIV CLASS=table STYLE='width:auto'>"
   print "<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV>"
   for vmir in vm['virtual_machine_interface_back_refs']:
    vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']
@@ -225,6 +225,6 @@ def console(aWeb):
   # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
   url = "http://" + aWeb.cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
   if not aWeb['headers']:
-   print "<iframe id='console_embed' src='{}' style='width: 100%; height: 100%;'></iframe>".format(url)
+   print "<iframe id='console_embed' src='{}' STYLE='width: 100%; height: 100%;'></iframe>".format(url)
   else:
    aWeb.put_redirect("{}&title={}".format(url,aWeb['name']))

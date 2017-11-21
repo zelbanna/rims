@@ -67,7 +67,7 @@ def set_proxy(aWeb):
  print "<FORM ID=graph_proxy_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<INPUT TYPE=HIDDEN NAME=ip VALUE={}>".format(ip)
- print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>"
+ print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT CLASS='border' TYPE=TEXT NAME=proxy STYLE='width:200px;' VALUE='{}'></DIV></DIV>".format(proxy)
  print "</DIV></DIV>"
  print "</FORM>"
@@ -107,7 +107,7 @@ def wm(aWeb):
  dom  = aWeb['domain']
  desc = aWeb.get('desc',"LNK"+indx)
  gstr = "munin-cgi/munin-cgi-graph/{1}/{0}.{1}/snmp_{2}_{1}_if_{3}-day.png".format(name,dom,snmpname,indx)
- print "<ARTICLE><PRE style='font-size:10px;'>"
+ print "<ARTICLE><PRE STYLE='font-size:10px;'>"
  print "LINK {}-{}".format(name,desc)
  print "\tINFOURL " +  gstr
  print "\tOVERLIBGRAPH " + gstr

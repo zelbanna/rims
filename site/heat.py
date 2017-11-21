@@ -36,7 +36,7 @@ def list(aWeb):
  print aWeb.button('reload',DIV='div_content',URL='sdcp.cgi?call=heat_list')
  print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=heat_choose_template')
  print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th style='width:94px;'>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for stack in ret['data'].get('stacks',None):
   print "<DIV CLASS=tr>"
@@ -59,7 +59,7 @@ def choose_template(aWeb):
  print "<ARTICLE STYLE='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_choose_template>"
  try:
-  print "Add solution from template:<SELECT NAME=template style='height:22px; width:auto;'>"
+  print "Add solution from template:<SELECT NAME=template STYLE='height:22px; width:auto;'>"
   from os import listdir
   for file in listdir("os_templates/"):
    name,_,suffix = file.partition('.')
@@ -82,7 +82,7 @@ def enter_parameters(aWeb):
  print "<FORM ID=frm_heat_template_parameters>"
  print "<INPUT TYPE=hidden NAME=template VALUE={}>".format(template)
  print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Parameter</DIV><DIV CLASS=th style='min-width:300px'>Value</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Parameter</DIV><DIV CLASS=th STYLE='min-width:300px'>Value</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td><B>Unique Name</B></DIV><DIV CLASS=td><INPUT TYPE=text NAME=name PLACEHOLDER='change-this-name'></DIV></DIV>"
  for key,value in data['parameters'].iteritems():

@@ -54,11 +54,11 @@ def portal(aWeb):
 
  aWeb.put_html("Openstack Portal")
  print "<HEADER>"
- print "<DIV CLASS=table style='width:auto; display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
- print "<DIV CLASS=tr style='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
+ print "<DIV CLASS=table STYLE='width:auto; display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
+ print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
- print "<A CLASS='z-op btn right red' OP=logout URL='sdcp.cgi?call=front_openstack&headers=no&controller={}&name={}&appformix={}' style='margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
+ print "<A CLASS='z-op btn right red' OP=logout URL='sdcp.cgi?call=front_openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
  print "</HEADER><MAIN ID=main><NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
@@ -81,9 +81,9 @@ def dict2html(aData,aTitle=None):
 
 def data2html(aData):
  if isinstance(aData,dict):
-  print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>"
+  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
   for k,v in aData.iteritems():
-   print "<DIV CLASS=tr><DIV CLASS=td style='padding:0px;'><I>{}</I>:</DIV><DIV CLASS=td style='white-space:normal; overflow:auto; width:100%'>".format(k)
+   print "<DIV CLASS=tr><DIV CLASS=td STYLE='padding:0px;'><I>{}</I>:</DIV><DIV CLASS=td STYLE='white-space:normal; overflow:auto; width:100%'>".format(k)
    if 'href' in k:
     print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=openstack_result&method=GET&os_href={0}>{0}</A>".format(v)
    else:
@@ -91,9 +91,9 @@ def data2html(aData):
    print "</DIV></DIV>"
   print "</DIV></DIV>"
  elif isinstance(aData,list):
-  print "<DIV CLASS=table style='width:100%;'><DIV CLASS=tbody>"
+  print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=tbody>"
   for v in aData:
-   print "<DIV CLASS=tr><DIV CLASS=td style='padding:0px;'>"
+   print "<DIV CLASS=tr><DIV CLASS=td STYLE='padding:0px;'>"
    data2html(v)
    print "</DIV></DIV>"
   print "</DIV></DIV>"
@@ -112,8 +112,8 @@ def api(aWeb):
  services.extend(aWeb.cookie['os_services'].split(','))
  for service in services:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(service)
- print "</SELECT> <INPUT CLASS='white' style='width:500px;' TYPE=TEXT NAME=os_call><BR>"
- print "Or enter HREF: <DIV ID=div_href style='display:inline-block;'><INPUT style='width:716px;' TYPE=TEXT NAME=os_href></DIV><BR>"
+ print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_call><BR>"
+ print "Or enter HREF: <DIV ID=div_href STYLE='display:inline-block;'><INPUT STYLE='width:716px;' TYPE=TEXT NAME=os_href></DIV><BR>"
  print "Call 'Method': <SELECT STYLE='width:auto; height:22px;' NAME=os_method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
@@ -121,7 +121,7 @@ def api(aWeb):
  print aWeb.button('start',  DIV='div_os_info', URL='sdcp.cgi?call=openstack_result', FRM='frm_os_api')
  print aWeb.button('remove', DIV='div_os_info', OP='empty', TITLE='Clear results view')
  print "Arguments/Body<BR>"
- print "<TEXTAREA style='width:100%; height:100px;' NAME=os_args></TEXTAREA>"
+ print "<TEXTAREA STYLE='width:100%; height:100px;' NAME=os_args></TEXTAREA>"
  print "</FORM>"
  print "</ARTICLE>"
  print "<DIV ID=div_os_info></DIV>"
@@ -131,7 +131,7 @@ def api(aWeb):
 #
 def fqname(aWeb):
  print "<ARTICLE>"
- print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT style='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else "")
+ print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT STYLE='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else "")
  print aWeb.button('start',  DIV='div_content', URL='sdcp.cgi?call=openstack_fqname', FRM='frm_os_uuid')
  if aWeb['os_uuid']:
   from json import dumps,loads
@@ -146,7 +146,7 @@ def fqname(aWeb):
    ret  = controller.call("8082","id-to-fqname",args=argument,method='POST')
    data = ret['data']
    if ret['result'] == 'OK':
-    print "<DIV CLASS=table style='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
+    print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
     print "<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(data['fq_name']))
     print "<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?call=openstack_result&os_service=contrail&os_call={0}/{1}>{0}</A></DIV></DIV>".format(data['type'],argument['uuid'])
     print "</DIV></DIV><BR>"
@@ -180,10 +180,10 @@ def result(aWeb):
    port,url = cookie.get("os_{}_port".format(service)),cookie.get("os_{}_url".format(service))
   ret = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])
  print "<ARTICLE STYLE='overflow:auto;'>"
- print "<DIV CLASS=table style='width:100%;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>Result</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['result'])
- print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>HTTP Code</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['code'])
- print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>Header</DIV><DIV CLASS=td>"
+ print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>Result</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['result'])
+ print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>HTTP Code</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['code'])
+ print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>Header</DIV><DIV CLASS=td>"
  for key,value in ret['header'].iteritems():
   print "{}:{}<BR>".format(key,value)
  print "</DIV></DIV>"

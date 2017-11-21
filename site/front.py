@@ -65,13 +65,13 @@ def login(aWeb):
   print "<H1 CLASS='centered'>Welcome to the management portal</H1>"
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
   print "<INPUT TYPE=HIDDEN NAME=call VALUE=front_login>"
-  print "<DIV CLASS=table style='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
+  print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT NAME=sdcp_login>"
   for row in rows:
    print "<OPTION VALUE='{0}_{1}_{2}' {3}>{1}</OPTION>".format(row['id'],row['name'],row['view_public'],'' if str(row['id']) != id else "selected=True")
   print "</SELECT></DIV></DIV>"
   print "</DIV></DIV>"
-  print "<A CLASS='btn z-op' OP=submit style='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
+  print "<A CLASS='btn z-op' OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
   print "</FORM>"
   print "</ARTICLE></DIV>"
 
@@ -169,7 +169,7 @@ def openstack(aWeb):
  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=openstack_login>"
  print "<INPUT TYPE=HIDDEN NAME=call VALUE=openstack_portal>"
  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
- print "<DIV CLASS=table style='display:inline; float:left; width:auto; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=table STYLE='display:inline; float:left; width:auto; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Customer:</DIV><DIV CLASS=td><SELECT NAME=project>"
  for p in projects:
   print "<OPTION VALUE={0}_{1} {2}>{1}</OPTION>".format(p['id'],p['name'],'' if not p['id'] == prev else "selected")
@@ -177,6 +177,6 @@ def openstack(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><INPUT TYPE=text NAME=username {}></DIV></DIV>".format('' if not user else "VALUE={}".format(user))
  print "<DIV CLASS=tr><DIV CLASS=td>Password:</DIV><DIV CLASS=td><INPUT TYPE=password NAME=password></DIV></DIV>"
  print "</DIV></DIV>"
- print "<A CLASS='btn z-op' style='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
+ print "<A CLASS='btn z-op' STYLE='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
  print "</FORM>"
  print "</ARTICLE></DIV>"

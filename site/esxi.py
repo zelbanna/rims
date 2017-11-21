@@ -65,7 +65,7 @@ def list(aWeb,aIP = None):
  print "<DIV CLASS=tbody>"
  statelist = esxi.get_vms(sort)
  for vm in statelist:
-  print "<DIV CLASS=tr style='padding:0px;' ID=div_vm_{}>".format(vm[0])
+  print "<DIV CLASS=tr STYLE='padding:0px;' ID=div_vm_{}>".format(vm[0])
   _vm_options(aWeb,ip,vm[0],vm[1],vm[2],False)
   print "</DIV>"
  print "</DIV></DIV></ARTICLE>"
@@ -75,7 +75,7 @@ def list(aWeb,aIP = None):
 def _vm_options(aWeb,aIP,aVMid,aVMname,aState,aHighlight):
  div = "div_vm_%s"%aVMid
  url = "sdcp.cgi?call=esxi_vmop&ip=%s&nstate={0}&vmname=%s&vmid=%s"%(aIP,aVMname,aVMid)
- print "<DIV CLASS=td style='padding:0px;'>{}</DIV><DIV CLASS=td style='width:150px'>&nbsp;".format("<B>{}</B>".format(aVMname) if aHighlight else aVMname)
+ print "<DIV CLASS=td STYLE='padding:0px;'>{}</DIV><DIV CLASS=td STYLE='width:150px'>&nbsp;".format("<B>{}</B>".format(aVMname) if aHighlight else aVMname)
  if int(aState) == 1:
   print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.shutdown'), TITLE='Soft shutdown')
   print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.reboot'), TITLE='Soft reboot')

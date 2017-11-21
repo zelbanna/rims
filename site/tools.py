@@ -105,7 +105,7 @@ def rest_main(aWeb):
  print "</SELECT>"
  print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=tools_rest_execute', FRM='frm_sdcp_rest')
  print aWeb.button('remove', DIV='div_rest_info', OP='empty', TITLE='Clear results view')
- print "<BR>Arguments/Body<BR><TEXTAREA style='width:100%; height:100px;' NAME=sdcp_args></TEXTAREA>"
+ print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:100px;' NAME=sdcp_args></TEXTAREA>"
  print "</FORM>"
  print "</ARTICLE>"
  print "<DIV ID=div_rest_info></DIV>"
@@ -126,8 +126,8 @@ def rest_execute(aWeb):
  except RestException,re:
   data = re.get()
   data.pop('res',None)
-  print "<DIV CLASS=table style='width:100%;'><DIV CLASS=tbody>"
+  print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=tbody>"
   for key in data.keys():
-   print "<DIV CLASS=tr><DIV CLASS=td style='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),data[key])
+   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),data[key])
   print "</DIV></DIV>"
  print "</ARTICLE>"

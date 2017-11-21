@@ -127,14 +127,14 @@ def info(aWeb):
 
  width = 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
- print "<ARTICLE CLASS='info' style='position:relative; resize:horizontal; margin-left:0px; width:{}px;'><P>Device Info</P>".format(width)
+ print "<ARTICLE CLASS='info' STYLE='position:relative; resize:horizontal; margin-left:0px; width:{}px;'><P>Device Info</P>".format(width)
  print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
  print "<!-- Reachability Info -->"
- print "<DIV style='margin:3px; float:left; height:172px;'>"
- print "<DIV CLASS=table style='width:210px;'><DIV CLASS=tbody>"
+ print "<DIV STYLE='margin:3px; float:left; height:172px;'>"
+ print "<DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['info']['hostname'])
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['ip'])
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=devices_a_dom_id>"
@@ -150,13 +150,13 @@ def info(aWeb):
   extra = " selected" if dev['info']['type_id'] == type['id'] or (not dev['info']['type_id'] and type['name'] == 'generic') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id'],extra,type['name'])
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td style='max-width:150px;'>{}</DIV></DIV>".format(dev['info']['model'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td STYLE='max-width:150px;'>{}</DIV></DIV>".format(dev['info']['model'])
  print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
  print "</DIV></DIV></DIV>"
 
  print "<!-- Additional info -->"
- print "<DIV style='margin:3px; float:left; height:172px;'>"
- print "<DIV CLASS=table style='width:227px;'><DIV CLASS=tbody>"
+ print "<DIV STYLE='margin:3px; float:left; height:172px;'>"
+ print "<DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td>"
  if dev['info']['vm']:
   print "Not used <INPUT TYPE=hidden NAME=rackinfo_rack_id VALUE=NULL>"
@@ -185,8 +185,8 @@ def info(aWeb):
 
  print "<!-- Rack Info if such exists -->"
  if dev['racked'] == 1 and not dev['type'] == 'pdu':
-  print "<DIV style='margin:3px; float:left; height:172px;'>"
-  print "<DIV CLASS=table style='width:210px;'><DIV CLASS=tbody>"
+  print "<DIV STYLE='margin:3px; float:left; height:172px;'>"
+  print "<DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_size'])
   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_unit'])
   if not dev['type'] == 'console' and infra['consolexist'] > 0:
@@ -259,7 +259,7 @@ def info(aWeb):
  except:
   print "&nbsp;"
  print "</UL></NAV>"
- print "<SECTION CLASS='content' ID=div_dev_data style='top:307px; overflow-x:hidden; overflow-y:auto;'></SECTION>"
+ print "<SECTION CLASS='content' ID=div_dev_data STYLE='top:307px; overflow-x:hidden; overflow-y:auto;'></SECTION>"
 
 
 ####################################################### Functions #######################################################
@@ -393,7 +393,7 @@ def new(aWeb):
   print "</FORM>"
   print aWeb.button('start', DIV='device_new_span', URL='sdcp.cgi?call=device_new&op=new',  FRM='device_new_form', TITLE='Create')
   print aWeb.button('search',DIV='device_new_span', URL='sdcp.cgi?call=device_new&op=find', FRM='device_new_form', TITLE='Find IP')
-  print "<SPAN CLASS='results' ID=device_new_span style='max-width:400px;'></SPAN>"
+  print "<SPAN CLASS='results' ID=device_new_span STYLE='max-width:400px;'></SPAN>"
   print "</ARTICLE>"
 
 #

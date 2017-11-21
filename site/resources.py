@@ -76,7 +76,7 @@ def info(aWeb):
  print "<FORM ID=sdcp_resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<INPUT TYPE=HIDDEN NAME=user_id VALUE={}>".format(data['user_id'])
- print "<DIV CLASS=table style='float:left; width:auto;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV    CLASS=td><INPUT NAME=title TYPE=TEXT VALUE='%s' REQUIRED></DIV></DIV>"%data['title']
  print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV     CLASS=td><INPUT NAME=href  TYPE=URL  VALUE='%s' REQUIRED></DIV></DIV>"%data['href']
  print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon  TYPE=URL  VALUE='%s'></DIV></DIV>"%data['icon']
@@ -89,7 +89,7 @@ def info(aWeb):
  print "</DIV></DIV>"
  print "</FORM>"
  if data['icon'] and data['icon'] != 'NULL':
-  print "<A CLASS='btn menu-btn' style='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(data['icon'])
+  print "<A CLASS='btn menu-btn' STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(data['icon'])
  print "<BR>"
  if data['id'] != 'new':
   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%s'%data['id'], MSG='Delete resource?')
@@ -104,7 +104,7 @@ def view(aWeb):
   db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} ) ORDER BY title".format(aWeb['type'],aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
   rows = db.get_rows()
  index = 0;
- print "<DIV CLASS=centered style='align-items:initial'>"
+ print "<DIV CLASS=centered STYLE='align-items:initial'>"
  for row in rows:
   print "<DIV STYLE='float:left; min-width:100px; margin:6px;'><A STYLE='font-size:10px;' TITLE='{}'".format(row['title'])
   if row['inline'] == 0:
@@ -112,7 +112,7 @@ def view(aWeb):
   else:
    print "CLASS='z-op btn menu-btn' DIV=main URL='{}'>".format(row['href'])
   print "<IMG ALT='{0}' SRC='{0}'></A>".format(row['icon'])
-  print "</A><BR><SPAN style='width:100px; display:block;'>{}</SPAN>".format(row['title'])
+  print "</A><BR><SPAN STYLE='width:100px; display:block;'>{}</SPAN>".format(row['title'])
   print "</DIV>"
  print "</DIV>"
 

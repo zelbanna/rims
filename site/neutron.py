@@ -39,7 +39,7 @@ def list(aWeb):
    continue
   print "<DIV CLASS=tr>"
   print "<!-- {} -->".format(net.get('href'))
-  print "<DIV CLASS=td style='max-width:200px; overflow-x:hidden;'><A TITLE='Info {1}' CLASS='z-op' DIV=div_content_right URL=sdcp.cgi?call=neutron_action&id={0}&op=info SPIN=true>{1}</A></DIV>".format(net['uuid'],net['display_name'])
+  print "<DIV CLASS=td STYLE='max-width:200px; overflow-x:hidden;'><A TITLE='Info {1}' CLASS='z-op' DIV=div_content_right URL=sdcp.cgi?call=neutron_action&id={0}&op=info SPIN=true>{1}</A></DIV>".format(net['uuid'],net['display_name'])
   print "<DIV CLASS=td>"
   if net.get('network_ipam_refs'):
    for ipam in net['network_ipam_refs']:
@@ -89,7 +89,7 @@ def action(aWeb):
 
  elif op == 'interfaces':
   vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
-  print "<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Interface</DIV></DIV>"
+  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Interface</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for ip in vn['instance_ip_back_refs']:
    iip = controller.href(ip['href'])['data']['instance-ip']
@@ -122,7 +122,7 @@ def action(aWeb):
  #
  elif op == 'floating-ip':
   fipools = aWeb['fipool'].split(',')
-  print "<DIV CLASS=table style='width:500px'><DIV CLASS=thead><DIV CLASS=th>Pool</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Fixed IP</DIV><DIV CLASS=th>Fixed Network</DIV><DIV CLASS=th>Operations</DIV></DIV>"
+  print "<DIV CLASS=table STYLE='width:500px'><DIV CLASS=thead><DIV CLASS=th>Pool</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Fixed IP</DIV><DIV CLASS=th>Fixed Network</DIV><DIV CLASS=th>Operations</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for fipool in fipools:
    pool  = controller.call("8082","floating-ip-pool/{}".format(fipool))['data']['floating-ip-pool']
@@ -166,7 +166,7 @@ def action(aWeb):
  elif op == 'fi_associate_choose_vm':
   vms = controller.call(cookie.get('os_nova_port'),cookie.get('os_nova_url') + "/servers")['data']['servers']
   print "<FORM ID=frm_fi_assoc_vm><INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
-  print "VM: <SELECT style='width:auto; height:22px;' NAME=vm>"
+  print "VM: <SELECT STYLE='width:auto; height:22px;' NAME=vm>"
   for vm in vms:
    print "<OPTION VALUE={0}#{1}>{0}</OPTION>".format(vm['name'],vm['id'])
   print "</SELECT></FORM>"
@@ -178,7 +178,7 @@ def action(aWeb):
   print "<FORM ID=frm_fi_assoc_vmi>"
   print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
   print "<INPUT TYPE=HIDDEN NAME=vm VALUE={}>".format(vm_id)
-  print "VM: <INPUT style='width:auto;' TYPE=TEXT VALUE={} disabled> Interface:<SELECT style='width:auto; height:22px;' NAME=vmi>".format(vm_name)
+  print "VM: <INPUT STYLE='width:auto;' TYPE=TEXT VALUE={} disabled> Interface:<SELECT STYLE='width:auto; height:22px;' NAME=vmi>".format(vm_name)
   for vmi in vmis:
    uuid = vmi['uuid']
    vmi = controller.href(vmi['href'])['data']['virtual-machine-interface']
