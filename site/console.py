@@ -19,15 +19,14 @@ def inventory(aWeb):
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Server</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>Device</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- conlist = aWeb.form.getlist('consolelist')
+ con = aWeb['ip']
  config="https://{0}/?form=serialconfig&action=edit&ports={1}&start=&end="
- for con in conlist:
-  console = Device(con)
-  console.load_snmp()
-  for key in console.get_keys():
-   port = str(6000 + key)
-   value = console.get_entry(key)
-   print "<DIV CLASS=tr><DIV CLASS=td><A HREF='https://{0}/'>{0}</A></DIV><DIV CLASS=td><A TITLE='Edit port info' HREF={4}>{1}</A></DIV><DIV CLASS=td><A HREF='telnet://{0}:{2}'>{3}</A></DIV></DIV>".format(con,str(key),port, value, config.format(con,key))
+ console = Device(con)
+ console.load_snmp()
+ for key in console.get_keys():
+  port = str(6000 + key)
+  value = console.get_entry(key)
+  print "<DIV CLASS=tr><DIV CLASS=td><A HREF='https://{0}/'>{0}</A></DIV><DIV CLASS=td><A TITLE='Edit port info' HREF={4}>{1}</A></DIV><DIV CLASS=td><A HREF='telnet://{0}:{2}'>{3}</A></DIV></DIV>".format(con,str(key),port, value, config.format(con,key))
  print "</DIV></DIV></ARTICLE>"
 
 def list(aWeb):

@@ -30,7 +30,7 @@ def main(aWeb):
    if len(data[type]) > 0:
     print "<LI CLASS='dropdown'><A>%s</A><DIV CLASS='dropdown-content'>"%(type.title())
     for row in data[type]:
-     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call={0}_inventory&{1}'>{2}</A>".format(type,row['ipasc'],row['name'])
+     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=%s_inventory&ip=%s'>%s</A>"%(type,row['ipasc'],row['name'])
     print "</DIV></LI>"
   if data.get('name'):
    print "<LI><A CLASS='z-op' DIV=div_content_right  URL='sdcp.cgi?call=rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,res['data']['name'])
