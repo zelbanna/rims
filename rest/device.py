@@ -266,3 +266,13 @@ def list(aDict):
   ret['xist'] = db.do(sql)
   ret['devices']= db.get_rows()
  return ret
+ 
+#
+#
+#
+def clear(aDict):
+ ret = { 'res':'OK' }
+ with DB() as db:
+  db.do("TRUNCATE TABLE devices")
+ return ret
+

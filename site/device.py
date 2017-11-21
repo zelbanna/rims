@@ -13,6 +13,7 @@ from sdcp.core.dbase import DB
 
 def main(aWeb):
  from sdcp.rest.racks import rackinfo 
+ from sdcp.core.extras import get_include
  target = aWeb['target']
  arg    = aWeb['arg']
 
@@ -45,13 +46,13 @@ def main(aWeb):
  print "<SECTION CLASS=content       ID=div_content>"
  print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right>"
- from sdcp.core.extras import get_include
  print get_include('README.devices.html')
  print "</SECTION></SECTION>"
 
 #
 #
 def list(aWeb):
+ from sdcp.rest.device import list as rest_list
  print "<ARTICLE><P>Devices</P>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?{}'.format(aWeb.get_args()))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=device_new&{}'.format(aWeb.get_args()))
@@ -61,7 +62,6 @@ def list(aWeb):
  args = {'sort':aWeb.get('sort','ip')}
  if aWeb['target']:
   args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
- from sdcp.rest.device import list as rest_list
  res = rest_list(args)
  print "<DIV CLASS=tbody>"
  for row in res['devices']:
@@ -75,15 +75,17 @@ def info(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
 
+
+ from sdcp.rest.device import info as rest_info, update as rest_update
+ from sdcp.rest.racks  import infra as rest_infra
+
  op    = aWeb.get('op',"")
  opres = {}
  ###################### Update ###################
  if op == 'lookup':
-  from sdcp.rest.device import detect as rest_detect
   opres['lookup'] = rest_detect({'ip':aWeb['ip'],'update':True,'id':aWeb['id']})
 
  elif op == 'update':
-  from sdcp.rest.device import update as rest_update
   from sdcp import PackageContainer as PC
   from sdcp.core.rest import call as rest_call
   d = aWeb.get_args2dict_except(['call','op','ip'])
@@ -112,8 +114,6 @@ def info(aWeb):
   from sdcp.rest.booking import booking
   booking({'device_id':aWeb['id'], 'user_id':aWeb.cookie['sdcp_id'], 'op':op})
 
- from sdcp.rest.device import info as rest_info
- from sdcp.rest.racks  import infra as rest_infra
  dev   = rest_info({'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
  if dev['exist'] == 0:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
@@ -125,7 +125,7 @@ def info(aWeb):
 
  ########################## Data Tables ######################
 
- width= 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
+ width = 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
  print "<ARTICLE CLASS='info' style='position:relative; resize:horizontal; margin-left:0px; width:{}px;'><P>Device Info</P>".format(width)
  print "<!-- OP:{} -->".format(opres)
@@ -287,8 +287,8 @@ def conf_gen(aWeb):
 #
 #
 def op_function(aWeb):
- from sdcp.core import extras as EXT
  from importlib import import_module
+ from sdcp.core import extras as EXT
  print "<ARTICLE>"
  try:
   module = import_module("sdcp.devices.{}".format(aWeb['type']))
@@ -340,7 +340,6 @@ def new(aWeb):
  if not ip:
   from sdcp.core import genlib as GL
   ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
- from sdcp.rest import sdcpipam
 
  if op == 'new':
   from sdcp.rest.device import new as rest_new
@@ -359,9 +358,11 @@ def new(aWeb):
   print "DB:{}".format(res)
   aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),args,res))
  elif op == 'find':
+  from sdcp.rest import sdcpipam
   res  = sdcpipam.find({'id':subnet_id})
   print "IP:{}".format(res['ip'])
  else:
+  from sdcp.rest import sdcpipam
   domain = aWeb['domain']
   subnets = sdcpipam.list(None)['subnets']
   with DB() as db:
@@ -455,6 +456,5 @@ def discover(aWeb):
 # clear db
 #
 def clear_db(aWeb):
- with DB() as db:
-  db.do("TRUNCATE TABLE devices")
- print "<<ARTICLE>Cleared DB</ARTICLE>"
+ from sdcp.rest.device import clear as rest_clear
+ print "<<ARTICLE>%s</ARTICLE>"%(rest_clear(None))
