@@ -15,7 +15,7 @@ def navigate(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- print "<nav>&nbsp;</nav>"
+ print "<NAV><UL>&nbsp;</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  view(aWeb)
  print "</SECTION>"
@@ -78,7 +78,7 @@ def info(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=user_id VALUE={}>".format(data['user_id'])
  print "<DIV CLASS=table style='float:left; width:auto;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV    CLASS=td><INPUT NAME=title STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['title'])
- print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV     CLASS=td><INPUT NAME=href  STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['href'])
+ print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV     CLASS=td><INPUT NAME=href  STYLE='min-width:400px' TYPE=URL  VALUE='{}'></DIV></DIV>".format(data['href'])
  print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon  STYLE='min-width:400px' TYPE=TEXT VALUE='{}'></DIV></DIV>".format(data['icon'])
  print "<DIV CLASS=tr><DIV CLASS=td>Inline:</DIV><DIV   CLASS=td><INPUT NAME=inline  {}                TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['inline'] == 1 or data['inline'] == "1" else '')
  print "<DIV CLASS=tr><DIV CLASS=td>Private:</DIV><DIV  CLASS=td><INPUT NAME=private {} {}             TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['private'] == 1 or data['private'] == "1" else "","disabled" if aWeb.cookie['sdcp_id'] <> str(data['user_id']) else "")
@@ -106,7 +106,7 @@ def view(aWeb):
  index = 0;
  print "<DIV CLASS=centered style='align-items:initial'>"
  for row in rows:
-  print "<DIV style='float:left; min-width:100px; margin:6px;'><A STYLE='font-size:10px;' TITLE='{}'".format(row['title'])
+  print "<DIV STYLE='float:left; min-width:100px; margin:6px;'><A STYLE='font-size:10px;' TITLE='{}'".format(row['title'])
   if row['inline'] == 0:
    print "CLASS='btn menu-btn' TARGET=_blank HREF='{}'>".format(row['href'])
   else:

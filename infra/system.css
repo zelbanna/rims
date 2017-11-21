@@ -8,7 +8,7 @@ SECTION/ARTICLE/DIV ID naming: div_xyz ('_':s)
 */
 
 html {   box-sizing:border-box; }*,*:before,*:after{box-sizing:inherit}
-body {   margin:0px; padding:0px; font-family: Verdana,sans-serif;font-size: 14px; z-index:1;}
+body {   margin:0px; padding:0px; z-index:1; font-family:Verdana,sans-serif;}
 iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 div {    z-index:100; }
 br {     clear:left; }
@@ -16,13 +16,16 @@ form {   display:inline; }
 select { border:none; overflow:visible; background-color: transparent; color: black; }
 input {  border:none; overflow:visible; background-color: transparent; color: black; }
 pre {    margin:0px; }
+details{ display:inline; }
+span {   font-size:11px; }
+input{   font-size:11px; }
 
 /*###################################### Content Model ########################################*/
 
 header {        background-color: #9CA6B0; position:fixed; height:75px;          width:100%; padding-left:5px; }
 main {          background-color: #9CA6B0; position:fixed; top:75px; bottom:0px; width:100%}
 
-nav {           clear:both;}
+nav {           clear:both; font-size:14px;}
 nav ul {        list-style-type:none; margin:0px ;padding:0px; overflow:hidden; background-color:#808D99; height:34px; }
 nav li {        float:left; }
 nav li a {      padding:8px; outline:none; font-weight:normal; display:inline-block; position:relative; text-align:center; color:#FFFFFF; cursor:pointer; }
@@ -53,9 +56,9 @@ div.table {            display: table; counter-reset:ztable; }
 div.table .thead {     display: table-header-group; }
 div.table .thead .th { display: table-cell; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 4px; }
 div.table .tbody {     display: table-row-group; }
-div.table .tbody .tr:nth-child(even) { display: table-row; background-color: #FFFFFF; font-size:11px; line-height:20px; counter-increment:ztable; }
-div.table .tbody .tr:nth-child(odd)  { display: table-row; background-color: #F3F3F3; font-size:11px; line-height:20px; counter-increment:ztable; }
-div.table .tbody .tr .td { display: table-cell; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding: 0px 0px 0px 6px; } 
+div.table .tbody .tr:nth-child(even) { display: table-row; background-color: #FFFFFF; line-height:22px; counter-increment:ztable; }
+div.table .tbody .tr:nth-child(odd)  { display: table-row; background-color: #F3F3F3; line-height:22px; counter-increment:ztable; }
+div.table .tbody .tr .td { display:table-cell; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:0px 0px 0px 6px; font-size:11px; }
 div.table .tfoot {     display: table-footer-group; }
 
 article.info div.td:first-child { font-weight:bold; }
@@ -71,6 +74,7 @@ div.td > a { display:inline-block; }
 .border {      border:solid 1px black; }
 .small-text {  font-size:9px; }
 .centered {    align-items:center; justify-content:center; display:flex; flex-wrap:wrap }
+.machine-text { font-family: "Courier New", serif; font-size: 12px; margin: 0px; }
 
 .blue {  background-color:#33CAFF!important; }
 .red {   background-color:#DF3620!important; }
@@ -82,7 +86,17 @@ div.td > a { display:inline-block; }
 div.rack-indx { font-weight:bold; font-size:8px; color:grey; padding:2px; }
 div.rack-data { border: solid 2px grey; font-size:12px; text-align:center;}
 
+/*################################ JS tools ####################################*/
+
 input.highlight { border: 1px solid #33CAFF }
+
+div.overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:100000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
+
+div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; z-index:1001; }
+ /* Spin properties */
+ @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
+ @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } 
+}
 
 /*############################## A(nything) ###################################*/
 
@@ -101,26 +115,14 @@ a.btn:active { opacity:0.5}
 a.menu-btn {   border-radius: 8px!important; padding: 4px; height: 52px; min-width:52px; margin: 5px 0px; }
 a.menu-btn > img {  max-height:43px; }
 
-a.small-btn {  padding: 0px; height: 24px; width: 24px; margin: 0px; font-size:9px; }
+a.small-btn { height: 24px; width: 24px; margin: 0px; font-size:9px; padding:0px;}
 a.small-btn > img { height:22px; }
 
-a.low-btn {    padding: 0px; height: 24px; width: 24px; position: relative; bottom: -26px; }
+a.low-btn {   height: 24px; width: 24px; position: relative; bottom: -26px; padding:0px: }
 
 a.ipam-icon { height: 24px; width: 24px; font-size:9px; float:left; font-family: Verdana,sans-serif;}
 
-p.machine-text { font-family: "Courier New", serif; font-size: 12px; margin: }
-
 span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; font-family: Verdana,sans-serif; }
-
-/*################################ Spinner overlay ####################################*/
-
-div.overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:100000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
-
-div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; z-index:1001; }
- /* Spin properties */
- @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
- @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } 
-}
 
 /*################################ Inframe munin ####################################*/
 div#header { display:none; }
@@ -132,4 +134,4 @@ div#content > h2{ display:none; }
 /*############################### Experimental ######################################*/
 div.z-drag {   height:20px; width:390px; margin:5px; font-size:11px; cursor:move; -ms-touch-action: none; touch-action: none; border-radius: 5px!important; border: 1px solid #ccc; }
 div.z-drop {   -ms-touch-action: none; touch-action: none; }
-div.tools {     position:sticky; position: -webkit-sticky; top:0px; z-index:1000; }
+div.tools {    position:-webkit-sticky; position: sticky; top:0px; z-index:1000; }
