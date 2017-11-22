@@ -113,4 +113,4 @@ def wm(aWeb):
  print "\tOVERLIBGRAPH " + gstr
  print "\tBWLABEL bits"
  print "\tTARGET {1}/{0}.{1}-snmp_{2}_{1}_if_{3}-recv-d.rrd {1}/{0}.{1}-snmp_{2}_{1}_if_{3}-send-d.rrd:-:42".format(name,dom,snmpname,indx)
- print "</CODE></ARTICLE>"
+ print "</PRE></ARTICLE>"

@@ -169,7 +169,7 @@ def result(aWeb):
  controller = OpenstackRPC(cookie.get('os_controller'),token)
  try:    arguments = loads(aWeb['os_args'])
  except: arguments = None
- ret = {} 
+ ret = {}
  if aWeb['os_href']:
   ret = controller.href(aWeb['os_href'], args = arguments, method=aWeb['os_method'])
  else:
@@ -188,5 +188,5 @@ def result(aWeb):
   print "{}:{}<BR>".format(key,value)
  print "</DIV></DIV>"
  print "</DIV></DIV>"
- print "<DIV CLASS='border'><CODE>%s</CODE></DIV>"%(dumps(ret['data'],indent=4, sort_keys=True))
+ print "<DIV CLASS='border'><PRE>%s</PRE></DIV>"%(dumps(ret['data'],indent=4, sort_keys=True))
  print "</ARTICLE>"
