@@ -134,4 +134,4 @@ div#content > h2{ display:none; }
 /*############################### Experimental ######################################*/
 div.z-drag {   height:20px; width:390px; margin:5px; font-size:11px; cursor:move; -ms-touch-action: none; touch-action: none; border-radius: 5px!important; border: 1px solid #ccc; }
 div.z-drop {   -ms-touch-action: none; touch-action: none; }
-div.tools {    position:-webkit-sticky; position: sticky; top:0px; z-index:1000; }
+div.tools {    -webkit-position:sticky; position: sticky; top:0px; z-index:1000; }

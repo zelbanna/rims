@@ -37,7 +37,7 @@ def list(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TARGET=_blank                  HREF='sdcp.pdf'>DB - View relational diagram</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=tools_install&host=127.0.0.1'>Reinstall Host</A></DIV></DIV>"
  if PC.sdcp['svcsrv']:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right  URL='sdcp.cgi?call=tools_install&host={}'>Reinstall SVC</A></DIV></DIV>".format(PC.sdcp['svcsrv'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=tools_install&host={}'>Reinstall SVC</A></DIV></DIV>".format(PC.sdcp['svcsrv'])
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_test_rest'>Test</A></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"

@@ -32,10 +32,12 @@ def leases(aWeb):
  from sdcp.core import extras as EXT
  dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))
  print "<ARTICLE STYLE='float:left; width:49%;'><P>DHCP Active Leases</P>"
- EXT.dict2table(dhcp['active'])
+ try: EXT.dict2table(dhcp['active'])
+ except: pass
  print "</ARTICLE>"
  print "<ARTICLE STYLE='float:left; width:49%;'><P>DHCP Free/Old Leases</P>"
- EXT.dict2table(dhcp['free']) 
+ try: EXT.dict2table(dhcp['free']) 
+ except: pass
  print "</ARTICLE>"
 
 
