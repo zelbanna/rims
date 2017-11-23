@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__= "Production"
 
 
-def hypervisors(aWeb):
+def main(aWeb):
  from sdcp.rest.device import list_type
  rows = list_type({'base':'hypervisor'})['data']
  print "<NAV><UL>&nbsp;</UL></NAV>"
@@ -20,7 +20,7 @@ def hypervisors(aWeb):
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(row['type_name'])
   if   row['type_name'] == 'esxi':
-   print "<A CLASS=z-op DIV=main URL='sdcp.cgi?call=esxi_main&id={}'>{}</A>".format(row['id'],row['hostname'])
+   print "<A CLASS=z-op DIV=main URL='sdcp.cgi?call=esxi_inventory&id={}'>{}</A>".format(row['id'],row['hostname'])
   elif row['type_name'] == 'vcenter':
    print "<A TARGET=_blank HREF='https://{}:9443/vsphere-client/'>{}</A>".format(row['ipasc'],row['hostname'])
   print "</DIV></DIV>"
@@ -32,7 +32,7 @@ def hypervisors(aWeb):
 #
 #
 #
-def main(aWeb):
+def inventory(aWeb):
  from sdcp.rest.device import info as rest_info
  id = aWeb['id']
  data = rest_info({'id':id})

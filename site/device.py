@@ -12,7 +12,7 @@ from sdcp.core.dbase import DB
 ########################################## Device Operations ##########################################
 
 def main(aWeb):
- from sdcp.rest.racks import rackinfo 
+ from sdcp.rest.racks import rackinfo
  from sdcp.core.extras import get_include
  target = aWeb['target']
  arg    = aWeb['arg']
@@ -251,7 +251,7 @@ def info(aWeb):
   if functions:
    if functions[0] == 'operated':
     if dev['info']['type_name'] == 'esxi':
-     print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?call=esxi_main&id=%i'>Manage</A></LI>"%dev['id']
+     print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?call=esxi_inventory&id=%i'>Manage</A></LI>"%dev['id']
    else:
     for fun in functions:
      funname = " ".join(fun.split('_')[1:])

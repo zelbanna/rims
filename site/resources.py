@@ -101,7 +101,7 @@ def info(aWeb):
 #
 def view(aWeb):
  with DB() as db:
-  db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} ) ORDER BY title".format(aWeb['type'],aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
+  db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} ) ORDER BY title".format(aWeb.get('type','bookmarks'),aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
   rows = db.get_rows()
  index = 0;
  print "<DIV CLASS=centered STYLE='align-items:initial'>"
