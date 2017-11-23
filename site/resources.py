@@ -24,16 +24,15 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- with DB() as db:
-  res  = db.do("SELECT id, title, href, type, inline, user_id FROM resources WHERE (user_id = '{}' {}) ORDER BY type,title".format(aWeb.cookie['sdcp_id'],'' if aWeb.cookie['sdcp_view'] == '0' else 'OR private = 0'))
-  rows = db.get_rows()
+ from sdcp.rest.resources import list as rest_list
+ res = rest_list({'user_id':aWeb.cookie['sdcp_id'],'view':aWeb.cookie['sdcp_view']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=new')
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- for row in rows:
+ for row in res['data']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A TITLE='{}' ".format(row['type'],row['title'])
   if row['inline'] == 0:
    print "TARGET=_blank HREF='{}'>".format(row['href'])
@@ -106,12 +105,11 @@ def info(aWeb):
 #
 #
 def view(aWeb):
- with DB() as db:
-  db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} ) ORDER BY title".format(aWeb.get('type','tools'),aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
-  rows = db.get_rows()
+ from sdcp.rest.resources import list as rest_list
+ res = rest_list({'type':aWeb.get('type','tools'),'user_id':aWeb.cookie['sdcp_id'],'view':aWeb.cookie['sdcp_view']})
  index = 0;
  print "<DIV CLASS=centered STYLE='align-items:initial'>"
- for row in rows:
+ for row in res['data']:
   print "<DIV STYLE='float:left; min-width:100px; margin:6px;'><A STYLE='font-size:10px;' TITLE='{}'".format(row['title'])
   if row['inline'] == 0:
    print "CLASS='btn menu-btn' TARGET=_blank HREF='{}'>".format(row['href'])
@@ -122,7 +120,6 @@ def view(aWeb):
   print "</DIV>"
  print "</DIV>"
 
-#
 #
 #
 def delete(aWeb):
