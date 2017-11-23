@@ -5,13 +5,14 @@ HTML5 Ajax resources calls module
 """
 __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
-__status__= "Production"
+__status__ = "Production"
+__icon__ = 'images/icon-tools.png'
 
 from sdcp.core.dbase import DB
 
 ############################################ resources ##############################################
 #
-def navigate(aWeb):
+def main(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
@@ -77,21 +78,25 @@ def info(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<INPUT TYPE=HIDDEN NAME=user_id VALUE={}>".format(data['user_id'])
  print "<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV    CLASS=td><INPUT NAME=title TYPE=TEXT VALUE='%s' REQUIRED></DIV></DIV>"%data['title']
+ print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV    CLASS=td><INPUT NAME=title TYPE=TEXT VALUE='%s' REQUIRED STYLE='min-width:400px'></DIV></DIV>"%data['title']
  print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV     CLASS=td><INPUT NAME=href  TYPE=URL  VALUE='%s' REQUIRED></DIV></DIV>"%data['href']
  print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon  TYPE=URL  VALUE='%s'></DIV></DIV>"%data['icon']
  print "<DIV CLASS=tr><DIV CLASS=td>Inline:</DIV><DIV   CLASS=td><INPUT NAME=inline  {}                TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['inline'] == 1 or data['inline'] == "1" else '')
  print "<DIV CLASS=tr><DIV CLASS=td>Private:</DIV><DIV  CLASS=td><INPUT NAME=private {} {}             TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['private'] == 1 or data['private'] == "1" else "","disabled" if aWeb.cookie['sdcp_id'] <> str(data['user_id']) else "")
- print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV     CLASS=td><SELECT NAME=type STYLE='min-width:400px'>"
- for tp in ['bookmark','demo','tool']:
-  print "<OPTION VALUE={} {}>{}</OPTION>".format(tp,"" if data['type'] != tp else 'selected',tp.title())
- print "</SELECT></DIV></DIV>"
- print "</DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV>"
+ if data['type'] == 'menuitem':
+  print "<DIV CLASS=td><INPUT  NAME=type TYPE=TEXT VALUE='menuitem' STYLE='font-style:italic' readonly></DIV>"
+ else:
+  print "<DIV CLASS=td><SELECT NAME=type>"
+  for tp in ['bookmark','demo','tool']:
+   print "<OPTION VALUE={} {}>{}</OPTION>".format(tp,"" if data['type'] != tp else 'selected',tp.title())
+  print "</SELECT></DIV>"
+ print "</DIV></DIV></DIV>"
  print "</FORM>"
  if data['icon'] and data['icon'] != 'NULL':
   print "<A CLASS='btn menu-btn' STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(data['icon'])
  print "<BR>"
- if data['id'] != 'new':
+ if data['id'] != 'new' and aWeb.cookie['sdcp_id'] == str(data['user_id']):
   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%s'%data['id'], MSG='Delete resource?')
  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='sdcp_resource_info_form')
  print "</ARTICLE>"
@@ -101,7 +106,7 @@ def info(aWeb):
 #
 def view(aWeb):
  with DB() as db:
-  db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} ) ORDER BY title".format(aWeb.get('type','bookmarks'),aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
+  db.do("SELECT title,href,icon,inline FROM resources WHERE type = '{}' AND ( user_id = {} {} ) ORDER BY title".format(aWeb.get('type','tools'),aWeb.cookie['sdcp_id'],'' if aWeb.cookie.get('sdcp_view') == '0' else "OR private = 0"))
   rows = db.get_rows()
  index = 0;
  print "<DIV CLASS=centered STYLE='align-items:initial'>"

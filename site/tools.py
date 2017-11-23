@@ -6,6 +6,7 @@ HTML5 Ajax Tools calls module
 __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
+__icon__ = 'images/icon-config.png'
 
 ############################################ Options ##############################################
 #
@@ -30,7 +31,6 @@ def list(aWeb):
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=dns_load'>DNS - Load Cache</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_sync_devicetypes'>Devices - Load New Types</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TARGET=_blank                  HREF='sdcp.cgi?call=tools_db_table'>DB - Dump Device Table to JSON</A></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_db_structure'>DB - View Structure</A></DIV></DIV>"
@@ -58,15 +58,6 @@ def db_table(aWeb):
  from sdcp.rest.tools import db_table
  print "<PRE>{}</PRE>".format(dumps(db_table({'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db'], indent=4, sort_keys=True))
 
-#
-#
-def sync_devicetypes(aWeb):
- from sdcp.core import extras as EXT
- from sdcp.rest.tools import sync_devicetypes as rest_sync_devicetypes
- res = rest_sync_devicetypes(None)
- print "<ARTICLE>"
- EXT.dict2table(res['types'])
- print "</ARTICLE>"
 #
 #
 def install(aWeb):

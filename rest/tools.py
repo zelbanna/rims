@@ -52,6 +52,32 @@ def sync_devicetypes(aDict):
  return ret
 
 #
+def sync_menuitems(aDict):
+ from os import listdir, path as ospath
+ from importlib import import_module
+ from sdcp.core.dbase import DB
+ path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '../site'))
+ items = []
+ for file in listdir(path):
+  pyfile = file[:-3]
+  if file[-3:] == ".py" and pyfile[:2] != "__":
+   try:
+    mod  = import_module("sdcp.site.{}".format(pyfile))
+    icon = getattr(mod,'__icon__',None)
+    if not icon: continue
+    else:  items.append({'name':pyfile, 'icon':icon})
+   except: pass
+ new   = 0
+ with DB() as db:
+  sql ="INSERT INTO resources(title,href,icon,type,user_id) VALUES ('{}','{}','{}','menuitem',1) ON DUPLICATE KEY UPDATE id = id"
+  for item in items:
+   try:
+    item['db'] = db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon']))
+    new += item['db']
+   except: pass
+ return {'res':'OK', 'menuitems':items, 'found':len(items), 'new':new, 'path':path }
+
+#
 # db_table(columns)
 # - columns is a string list x,y,z,..
 #

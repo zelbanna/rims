@@ -6,7 +6,8 @@ HTML5 Ajax Users calls module
 """
 __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
-__status__= "Production"
+__status__ = "Production"
+__icon__ = 'images/icon-users.png'
 
 ############################################ Users ##############################################
 def main(aWeb):

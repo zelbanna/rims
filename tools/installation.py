@@ -102,13 +102,18 @@ def install(aDict):
  #
  # Insert correct types into modules DB
  if PC.generic.get('db'):
-  from sdcp.rest.tools import sync_devicetypes 
+  from sdcp.core.dbase import DB
+  from sdcp.core.mysql import diff
+  ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
+  with DB() as db:
+   ret['DB_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
+
+  from sdcp.rest.tools import sync_devicetypes, sync_menuitems
   ret['new_devicetypes'] = sync_devicetypes(None)['new']
+  ret['new_menuitems']   = sync_menuitems(None)['new']
 
   #
   # Verify MYSQL db
-  from sdcp.core.mysql import diff
-  ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
 
  # Done
  ret['res'] = 'OK'

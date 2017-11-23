@@ -118,7 +118,7 @@ a.menu-btn > img {  max-height:43px; }
 a.small-btn { height: 24px; width: 24px; margin: 0px; font-size:9px; padding:0px;}
 a.small-btn > img { height:22px; }
 
-a.low-btn {   height: 24px; width: 24px; position: relative; bottom: -26px; padding:0px: }
+a.low-btn {   height: 24px; width: 24px; position: relative; bottom: -26px; padding:0px; }
 
 a.ipam-icon { height: 24px; width: 24px; font-size:9px; float:left; font-family: Verdana,sans-serif;}
 

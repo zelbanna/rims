@@ -5,7 +5,8 @@ HTML5 Ajax generic SDCP calls module
 """
 __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
-__status__= "Production"
+__status__ = "Production"
+__icon__ = 'images/icon-examine.png'
 
 from sdcp import PackageContainer as PC
 

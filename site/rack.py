@@ -5,7 +5,8 @@ HTML5 Ajax Racks calls module
 """
 __author__= "Zacharias El Banna"                     
 __version__ = "17.11.01GA"
-__status__= "Production"
+__status__ = "Production"
+__icon__ = 'images/icon-rack.png'
 
 from sdcp.core.dbase import DB
 

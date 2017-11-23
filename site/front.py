@@ -39,21 +39,17 @@ def login(aWeb):
  if id != "None":
   with DB() as db:
    res  = db.do("SELECT href FROM resources INNER JOIN users ON users.frontpage = resources.id WHERE users.id = '{}'".format(id))
-   href = 'sdcp.cgi?call=resources_navigate&type=demo' if not res else db.get_val('href')
+   href = 'sdcp.cgi?call=resources_main&type=demo' if not res else db.get_val('href')
+   res  = db.do("SELECT title,href,icon FROM resources WHERE type = 'menuitem' ORDER BY title")
+   menuitems = db.get_rows()
 
   aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
   aWeb.put_html(PC.sdcp['name'])
   print "<HEADER>"
   print "<A CLASS='btn menu-btn z-op'   DIV=main TITLE='Start'     URL='{}&headers=yes'><IMG SRC='images/icon-start.png'/></A>".format(href)
-  print """<A CLASS='btn menu-btn z-op' DIV=main TITLE='Rack'      URL=sdcp.cgi?call=rack_main><IMG SRC='images/icon-rack.png'/></A>
-  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Devices'   URL=sdcp.cgi?call=device_main><IMG SRC='images/icon-network.png'/></A>
-  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Examine'   URL=sdcp.cgi?call=examine_main><IMG SRC='images/icon-examine.png'/></A>
-  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Users'     URL=sdcp.cgi?call=users_main><IMG SRC='images/icon-users.png'/></A>
-  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Documents' URL=sdcp.cgi?call=resources_navigate&type=bookmark><IMG SRC='images/icon-docs.png'/></A>
-  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Tools'     URL=sdcp.cgi?call=resources_navigate&type=tool><IMG SRC='images/icon-tools.png'/></A>
-  <A CLASS='btn menu-btn z-op' DIV=main TITLE='ESXi'      URL=sdcp.cgi?call=esxi_main><IMG SRC='images/icon-servers.png'/></A>
-  <A CLASS='btn menu-btn z-op' DIV=main TITLE='Config'    URL=sdcp.cgi?call=tools_main><IMG SRC='images/icon-config.png'/></A>
-  </HEADER>"""
+  for item in menuitems:
+   print "<A CLASS='btn menu-btn z-op' DIV=main TITLE='%s' URL='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
+  print "</HEADER>"
   print "<main ID=main></main>"
  else:
   with DB() as db:
