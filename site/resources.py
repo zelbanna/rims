@@ -96,9 +96,10 @@ def info(aWeb):
  if data['icon'] and data['icon'] != 'NULL':
   print "<A CLASS='btn menu-btn' STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(data['icon'])
  print "<BR>"
- if data['id'] != 'new' and aWeb.cookie['sdcp_id'] == str(data['user_id']):
-  print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%s'%data['id'], MSG='Delete resource?')
- print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='sdcp_resource_info_form')
+ if aWeb.cookie['sdcp_id'] == str(data['user_id']):
+  if data['id'] != 'new':
+   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%s'%data['id'], MSG='Delete resource?')
+  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='sdcp_resource_info_form')
  print "</ARTICLE>"
 
 #
