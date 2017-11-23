@@ -14,33 +14,27 @@ def main(aWeb):
  if not aWeb.cookie.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
+ from sdcp import PackageContainer as PC
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A></LI>"
- print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=tools_list'>Options</A></LI>"
+ print "<LI CLASS='dropdown'><A>Options</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A>"
+ print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dns_load'>DNS - Load Cache</A>"
+ print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
+ print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.cgi?call=tools_db_table'>DB - Dump Device Table to JSON</A>"
+ print "<A CLASS=z-op DIV=div_content           URL='sdcp.cgi?call=tools_db_structure'>DB - View Structure</A>"
+ print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
+ print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host=127.0.0.1'>Reinstall Host</A>"
+ if PC.sdcp['svcsrv']:
+  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host={}'>Reinstall SVC</A>".format(PC.sdcp['svcsrv'])
+ print "<A CLASS=z-op DIV=div_content            URL='sdcp.cgi?call=tools_test_rest'>Test</A>"
+ print "</DIV></LI>"
  print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A></LI>"
  print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>Tools</A></LI>"
  print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>Demos</A></LI>"
  print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>Bookmarks</A></LI>"
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
-
-def list(aWeb):
- from sdcp import PackageContainer as PC
- print "<SECTION CLASS=content-left ID=div_content_left>"
- print "<ARTICLE><P>Tools</P>"
- print "<DIV CLASS=table><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=dns_load'>DNS - Load Cache</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TARGET=_blank                  HREF='sdcp.cgi?call=tools_db_table'>DB - Dump Device Table to JSON</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_db_structure'>DB - View Structure</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TARGET=_blank                  HREF='sdcp.pdf'>DB - View relational diagram</A></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=tools_install&host=127.0.0.1'>Reinstall Host</A></DIV></DIV>"
- if PC.sdcp['svcsrv']:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN=true URL='sdcp.cgi?call=tools_install&host={}'>Reinstall SVC</A></DIV></DIV>".format(PC.sdcp['svcsrv'])
- print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right           URL='sdcp.cgi?call=tools_test_rest'>Test</A></DIV></DIV>"
- print "</DIV></DIV></ARTICLE></SECTION>"
- print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 #
 #
