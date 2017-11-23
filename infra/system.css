@@ -88,7 +88,7 @@ div.rack-data { border: solid 2px grey; font-size:12px; text-align:center;}
 
 /*################################ JS tools ####################################*/
 
-input.highlight { border: 1px solid #33CAFF }
+.highlight { border: 1px solid #33CAFF }
 
 div.overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:100000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
 

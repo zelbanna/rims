@@ -1,11 +1,15 @@
 """Module docstring.
 
-DB
+DB module
+
+- also exports PC for dbase settings
 
 """
 __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
+
+from sdcp import PackageContainer as PC
 
 ############################################ Database ######################################
 #
@@ -18,7 +22,6 @@ class DB(object):
   self._curs = None
   self._dirty = False
   if not aDB:
-   from sdcp import PackageContainer as PC
    self._db, self._host, self._user, self._pass = PC.generic['db'],'localhost',PC.generic['dbuser'],PC.generic['dbpass']
   else:
    self._db, self._host, self._user, self._pass = aDB, aHost, aUser, aPass
