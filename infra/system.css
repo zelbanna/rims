@@ -8,7 +8,7 @@ SECTION/ARTICLE/DIV ID naming: div_xyz ('_':s)
 */
 
 html {   box-sizing:border-box; }*,*:before,*:after{box-sizing:inherit}
-body {   margin:0px; padding:0px; z-index:1; font-family:Verdana,sans-serif; height:100%; width:100%;}
+body {   margin:0px; padding:0px; z-index:1; font-family:Verdana,sans-serif; position:relative; height:100%; width:100%;}
 iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 div {    z-index:100; }
 br {     clear:left; }
@@ -25,12 +25,12 @@ input{   font-size:11px; }
 header {        background-color: #9CA6B0; position:fixed; height:75px;          width:100%; padding-left:5px; }
 main {          background-color: #9CA6B0; position:fixed; top:75px; bottom:0px; width:100%}
 
-nav {           clear:both; font-size:14px;}
-nav ul {        list-style-type:none; margin:0px ;padding:0px; overflow:hidden; background-color:#808D99; height:34px; }
-nav li {        float:left; }
+nav {           clear:both; font-size:14px; height:34px; background-color:#808D99; display:block;}
+nav ul {        list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
+nav li {        float:left; height:34px; }
 nav li a {      padding:8px; outline:none; font-weight:normal; display:inline-block; position:relative; text-align:center; color:#FFFFFF; cursor:pointer; }
 nav li a:hover{ color:#000000; background-color:#D5D9DD;}
-nav li a.reload {   background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; height:34px; margin: 0px 10px; } 
+nav li a.reload {   background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; margin: 0px 10px; height:100%; } 
 nav li.navinfo {  background-color:#00CC66;       font-weight:bold; color:#FFFFFF }
 nav li.warning {  background-color:red!important; font-weight:bold; color:#FFFFFF }
 nav li.dropdown:hover .dropdown-content{ display:block; }
