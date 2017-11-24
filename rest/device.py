@@ -48,31 +48,32 @@ def update(aDict):
  from sdcp.core import genlib as GL
  id     = aDict.pop('id',None)
  racked = aDict.pop('racked',None)
- ret    = {'res':'OK'}
+ ret    = {'res':'OK', 'data':{}}
  with DB() as db:
+  # specials
+  aDict['devices_mac'] = GL.mac2int(aDict['device_mac']) if aDict.get('device_mac') else 0
+
   if racked:
-   if   racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
-    db.do("INSERT INTO rackinfo SET device_id = {},rack_id={} ON DUPLICATE KEY UPDATE rack_id = rack_id".format(id,aDict['rackinfo_rack_id']))
-   elif racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
+   if   racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
     db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
+    aDict.pop('rackinfo_pem0_pdu_slot_id',None)
+    aDict.pop('rackinfo_pem1_pdu_slot_id',None)
+   elif racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
+    db.do("INSERT INTO rackinfo SET device_id = {},rack_id={} ON DUPLICATE KEY UPDATE rack_id = rack_id".format(id,aDict['rackinfo_rack_id']))
+   elif racked == '1': 
+    for pem in ['pem0','pem1']:
+     try:
+      pem_pdu_slot_id = aDict.pop('rackinfo_%s_pdu_slot_id'%pem,None)
+      (aDict['rackinfo_%s_pdu_id'%pem],aDict['rackinfo_%s_pdu_slot'%pem]) = pem_pdu_slot_id.split('.')
+     except: pass
 
   tbl_id = { 'devices':'id', 'rackinfo':'device_id' }
-  for fkey in aDict.keys():
-   change = 0
-   # fkey = table _ key
-   (table, void, key) = fkey.partition('_')
-   data = aDict.get(fkey)
-   if not (key[0:3] == 'pem' and key[5:] == 'pdu_slot_id'):
-    if key == 'mac':
-     data = GL.mac2int(data)
-    sql = "UPDATE " + table + " SET {0}=" + ("'{3}'" if data != 'NULL' else "NULL") + " WHERE {1} = '{2}'"
-    change = db.do(sql.format(key,tbl_id[table],id,data))
-   else:
-    pem = key[:4]
-    [pemid,pemslot] = data.split('.')
-    change = db.do("UPDATE rackinfo SET {0}_pdu_id={1}, {0}_pdu_slot ='{2}' WHERE device_id = '{3}'".format(pem,pemid,pemslot,id))
-   if change > 0:
-    ret[key] = 'CHANGED'
+  for tkey in aDict.keys():
+   (table, void, key) = tkey.partition('_')
+   data = aDict[tkey]
+   sql = "UPDATE %s SET {0}=%s WHERE {1} = '{2}'"%(table,"'{3}'" if data != 'NULL' else "NULL")
+   if db.do(sql.format(key,tbl_id[table],id,data)) > 0:
+    ret['data'][key] = 'CHANGED'
  return ret
 
 #
