@@ -87,7 +87,7 @@ def info(aWeb):
   print "<OPTION VALUE='{0}' {2}>{1}</OPTION>".format(resource['id'],resource['title'],"selected" if str(resource['id']) == data['front'] else '')
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
- if data['id'] != 'new':
+ if data['id'] != 'new' and (aWeb.cookie.get('sdcp_id') == str(data['id'])):
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_remove&id={0}'.format(data['id']), MSG='Really remove user?')
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&headers=no&op=update', FRM='sdcp_user_info_form')
  print "</FORM>"
