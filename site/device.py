@@ -168,7 +168,7 @@ def info(aWeb):
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
   print "</SELECT>"
  print "</DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['fqdn'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['lookup'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['a_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ptr_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])
@@ -345,9 +345,8 @@ def new(aWeb):
  if op == 'new':
   from sdcp.rest.device import new as rest_new
 
-  a_dom_id,_,domain = aWeb['a_dom_id'].partition('_')
-  fqdn = "{}.{}".format(name,domain)
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'fqdn':fqdn, 'a_dom_id':a_dom_id, 'subnet_id':subnet_id }
+  a_dom_id = aWeb['a_dom_id']
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom_id, 'subnet_id':subnet_id }
 
   if aWeb['vm']:
    args['vm'] = 1
@@ -378,7 +377,7 @@ def new(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
   for d in domains:
    if not "in-addr.arpa" in d.get('name'):
-    print "<OPTION VALUE={0}_{2} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == domain else "",d['name'])
+    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == domain else "",d['name'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=subnet_id>"
   for s in subnets:

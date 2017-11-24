@@ -214,7 +214,7 @@ def discrepancy(aWeb):
   dns = rest_call(PC.dns['url'],"sdcp.rest.{}_records".format(PC.dns['type']),{'type':type})
   tid = "{}_id".format(type)
   with DB() as db:
-   db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, {0}_id, CONCAT(hostname,'.',name) as fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id ORDER BY ip".format(type))
+   db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, {0}_id, CONCAT(devices.hostname,'.',domains.name) as fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id ORDER BY ip".format(type))
    devs = db.get_dict("ipasc" if type == 'a' else "fqdn")
   for rec in dns['records']:
    dev = devs.pop(rec['content'],None)

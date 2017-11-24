@@ -96,7 +96,7 @@ def new(aDict):
    xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE subnet_id = {} AND (ip = {} OR hostname = '{}')".format(subnet_id,ipint,aDict.get('hostname')))
    if xist == 0:
     mac = GL.mac2int(aDict.get('mac',0))
-    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,fqdn,snmp,model) VALUES({},{},{},{},{},'{}','{}','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname'],aDict['fqdn']))
+    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,lookup,snmp,model) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname']))
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
      db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
@@ -170,10 +170,10 @@ def discover(aDict):
    for i in range(10):
     sema.acquire()
    # We can now do inserts only (no update) as either we clear or we skip existing :-)
-   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, hostname, snmp, model, type_id, fqdn) VALUES ({},"+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
+   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, hostname, snmp, model, type_id, lookup) VALUES ({},"+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
    for ip,entry in db_new.iteritems():
     log("device_discover - adding:{}->{}".format(ip,entry))
-    db.do(sql.format(GL.ip2int(ip), aDict.get('subnet_id'), entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['fqdn']))
+    db.do(sql.format(GL.ip2int(ip), aDict.get('subnet_id'), entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['lookup']))
   except Exception as err:
    log("device discover: Error [{}]".format(str(err)))
    ret['res']    = 'NOT_OK'
@@ -206,11 +206,11 @@ def detect(aDict):
  except:
   pass
 
- info = {'fqdn':'unknown','name':'unknown','model':'unknown', 'type_name':'generic'}
+ info = {'lookup':'unknown','name':'unknown','model':'unknown', 'type_name':'generic'}
  info['snmp'] = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
  try:
-  info['fqdn'] = gethostbyaddr(aDict['ip'])[0]
-  info['name'] = info['fqdn'].partition('.')[0].lower()
+  info['lookup'] = gethostbyaddr(aDict['ip'])[0]
+  info['name'] = info['lookup'].partition('.')[0].lower()
  except:
   pass
 
@@ -243,7 +243,7 @@ def detect(aDict):
    xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(info['type_name']))
    info['type_id'] = db.get_val('id') if xist > 0 else None
    if update:
-    update = db.do("UPDATE devices SET snmp = '{}', fqdn = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(info['snmp'],info['fqdn'],info['model'],info['type_id'],aDict['id'])) > 0
+    update = db.do("UPDATE devices SET snmp = '{}', lookup = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(info['snmp'],info['lookup'],info['model'],info['type_id'],aDict['id'])) > 0
  return { 'res':'OK', 'update':update, 'info':info}
 
 #
