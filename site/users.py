@@ -76,24 +76,11 @@ def info(aWeb):
 
  print """
  <script>
-  $( function() {
-        $(".drag").attr("draggable","true");
-        $(".drag").on("dragstart", function(e){
-                console.log("Drag " + $(this).prop("id") + " FROM " + $(this).parent().prop("id"));
-                e.originalEvent.dataTransfer.setData("Text",$(this).prop("id"));
-                e.originalEvent.dataTransfer.effectAllowed = 'move';
-                
-        });
-
-        $(document.body).on("drop dragover", ".drop", function(e){ e.preventDefault();
-                if (e.type == 'drop') {
-                        var elem_id = e.originalEvent.dataTransfer.getData("Text");
-                        var elem    = document.getElementById(elem_id);
-                        console.log("Drop " + elem_id + " INTO " + $(this).prop("id"));
-                        e.target.appendChild(elem);
-                }
-   });
- });
+  $( function() { 
+   $("li.drag").attr("draggable","true");
+   $("li.drag").on("dragstart", dragfunction);
+   $(document.body).on("drop dragover", "ul.drop", dropfunction);
+  });
 </script>
  """
  print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])
@@ -109,7 +96,7 @@ def info(aWeb):
   print "<OPTION VALUE='{0}' {2}>{1}</OPTION>".format(resource['id'],resource['title'],"selected" if str(resource['id']) == data['front'] else '')
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
- print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='display:block;width:100%' ID=ul_drag CLASS='drop'>"
+ print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_drag CLASS='drop'>"
  for resource in resources:
   print "<LI CLASS='drag' ID=li_%s><A CLASS='btn menu-btn' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(resource['id'],resource['title'],resource['icon'])
  print "</UL></DIV>"

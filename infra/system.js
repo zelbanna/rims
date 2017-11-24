@@ -94,3 +94,23 @@ function focusfunction(event){
  else if (event.originalEvent.type == 'blur')
   $(this).removeClass('highlight');
 };
+
+//
+//
+function dragfunction(event){
+ console.log("Drag " + $(this).prop("id") + " FROM " + $(this).parent().prop("id"));
+ event.originalEvent.dataTransfer.setData("Text",$(this).prop("id"));
+ event.originalEvent.dataTransfer.effectAllowed = 'move';
+}
+
+//
+//
+function dropfunction(event){
+ event.preventDefault();
+ if (event.type == 'drop') {
+  var elem_id = event.originalEvent.dataTransfer.getData("Text");
+  var elem    = document.getElementById(elem_id);
+  console.log("Drop " + elem_id + " INTO " + $(this).prop("id"));
+  event.target.appendChild(elem); 
+ }
+}
