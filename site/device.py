@@ -54,10 +54,11 @@ def main(aWeb):
 #
 def list(aWeb):
  from sdcp.rest.device import list as rest_list
- print "<ARTICLE><P>Devices</P>"
+ print "<ARTICLE><P>Devices</P><DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?{}'.format(aWeb.get_args()))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=device_new&{}'.format(aWeb.get_args()))
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_discover',MSG='Run device discovery?')
+ print "</DIV>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
  args = {'sort':aWeb.get('sort','ip')}
@@ -218,7 +219,7 @@ def info(aWeb):
  print "</FORM>"
 
  print "<!-- Controls -->"
- print "<DIV>"
+ print "<DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=device_info&id=%i'%dev['id'])
  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=device_remove&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=lookup&id={}&ip={}'.format(dev['id'],dev['ip']), TITLE='Lookup and Detect Device information')

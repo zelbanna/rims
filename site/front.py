@@ -40,7 +40,7 @@ def login(aWeb):
   with DB() as db:
    res  = db.do("SELECT href FROM resources INNER JOIN users ON users.frontpage = resources.id WHERE users.id = '{}'".format(id))
    href = 'sdcp.cgi?call=resources_main&type=demo' if not res else db.get_val('href')
-   res  = db.do("SELECT title,href,icon FROM resources WHERE type = 'menuitem' ORDER BY title")
+   res  = db.do("SELECT id,title,href,icon FROM resources WHERE type = 'menuitem' ORDER BY title")
    menuitems = db.get_rows()
 
   aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))

@@ -12,9 +12,10 @@ __status__= "Production"
 def list(aWeb):
  from sdcp.rest import sdcpipam
  res = sdcpipam.list(None)
- print "<ARTICLE><P>Subnets</P>"
+ print "<ARTICLE><P>Subnets</P><DIV CLASS='controls'>"
  print aWeb.button('reload', DIV='div_content_left',  URL='sdcp.cgi?call=ipam_list')
  print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?call=ipam_info&id=new')
+ print "</DIV>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"

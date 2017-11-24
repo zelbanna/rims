@@ -20,7 +20,7 @@ def domains(aWeb):
   db.do("SELECT id, name FROM domains")
   local = db.get_dict('id')
  print "<ARTICLE><P>Domains</P>"
- print "<DIV CLASS='tools'>"
+ print "<DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_domains')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=new',TITLE='Add domain')
  print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?call=dns_discrepancy',TITLE='Backend Discrepancy',SPIN='true')

@@ -8,17 +8,18 @@ SECTION/ARTICLE/DIV ID naming: div_xyz ('_':s)
 */
 
 html {   box-sizing:border-box; }*,*:before,*:after{box-sizing:inherit}
-body {   margin:0px; padding:0px; z-index:1; font-family:Verdana,sans-serif; position:relative; height:100%; width:100%;}
+body {   margin:0px; padding:0px; z-index:1; font-family:Verdana,sans-serif;}
 iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 div {    z-index:100; }
 br {     clear:left; }
 form {   display:inline; }
-select { border:none; overflow:visible; background-color: transparent; color: black; }
-input {  border:none; overflow:visible; background-color: transparent; color: black; }
+select { border:none; overflow:visible; background-color: transparent; color: black; font-size:11px; }
+input {  border:none; overflow:visible; background-color: transparent; color: black; font-size:11px; }
 pre {    margin:0px; }
 details{ display:inline; }
 span {   font-size:11px; }
-input{   font-size:11px; }
+li {     display:inline-block; }
+ul {     list-style-type:none; margin:0px ;padding:0px; }
 
 /*###################################### Content Model ########################################*/
 
@@ -26,8 +27,8 @@ header {        background-color: #9CA6B0; position:fixed; height:75px;         
 main {          background-color: #9CA6B0; position:fixed; top:75px; bottom:0px; width:100%}
 
 nav {           clear:both; font-size:14px; height:34px; background-color:#808D99; display:block;}
-nav ul {        list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
-nav li {        float:left; height:34px; }
+nav ul {        overflow:hidden; }
+nav li {        height:34px; float:left; }
 nav li a {      padding:8px; outline:none; font-weight:normal; display:inline-block; position:relative; text-align:center; color:#FFFFFF; cursor:pointer; }
 nav li a:hover{ color:#000000; background-color:#D5D9DD;}
 nav li a.reload {   background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; margin: 0px 10px; height:100%; } 
@@ -56,9 +57,10 @@ div.table {            display: table; counter-reset:ztable; }
 div.table .thead {     display: table-header-group; }
 div.table .thead .th { display: table-cell; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 4px; }
 div.table .tbody {     display: table-row-group; }
-div.table .tbody .tr:nth-child(even) { display: table-row; background-color: #FFFFFF; line-height:22px; counter-increment:ztable; }
-div.table .tbody .tr:nth-child(odd)  { display: table-row; background-color: #F3F3F3; line-height:22px; counter-increment:ztable; }
-div.table .tbody .tr .td { display:table-cell; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:0px 0px 0px 6px; font-size:11px; }
+div.table .tbody .tr { display: table-row; line-height:22px; counter-increment:ztable; font-size:11px; }
+div.table .tbody .tr:nth-child(even) { background-color: #FFFFFF; }
+div.table .tbody .tr:nth-child(odd)  { background-color: #F3F3F3; }
+div.table .tbody .tr .td { display:table-cell; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:0px 0px 0px 6px; }
 div.table .tfoot {     display: table-footer-group; }
 
 article.info div.td:first-child { font-weight:bold; }
@@ -66,7 +68,7 @@ article.info div.td:last-child { width:100%; }
 div.td > select,input[type='text'],input[type='url'] { width:99%; -webkit-appearance: none; }
 div.td > input::-webkit-input-placeholder { color: darkgrey; }
 div.td > input::-moz-placeholder {          color: darkgrey; opacity:1; }
-div.td > a { display:inline-block; }
+div.controls { font-size:5px; }
 
 /*#############################################################################*/
 
@@ -98,6 +100,8 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } 
 }
 
+[draggable] { -moz-user-select: none; -khtml-user-select: none; -webkit-user-select: none; user-select: none; }
+
 /*############################## A(nything) ###################################*/
 
 a{        color:#000000; background-color:transparent;-webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; }
@@ -105,17 +109,17 @@ a:active,a:hover{ outline-width:0; }
 
 a.z-op {  outline:none; cursor:pointer; z-index:10000;}
 
-a.btn { background-color:#FFFFFF; background-position: center; background-repeat: no-repeat; border-radius:4px; border: 1px solid #ccc; cursor:pointer; display: inline-block; float: none; font-family: "Courier New", serif; font-size: 20px; vertical-align:top; outline:0; overflow:hidden; text-align:center; text-decoration:none!important; white-space:nowrap; padding:2px; margin:2px;
+a.btn { background-color:#FFFFFF; background-position: center; background-repeat: no-repeat; border-radius:4px; border: 1px solid #ccc; cursor:pointer; display: inline-block; font-family: "Courier New", serif; font-size: 20px; vertical-align:top; outline:0; overflow:hidden; text-align:center; text-decoration:none!important; white-space:nowrap; padding:2px; margin:2px;
  -webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;
  -webkit-transition:background-color .25s,color .15s,box-shadow .25s,opacity 0.25s,filter 0.25s,border 0.15s;transition:background-color .25s,color .15s,box-shadow .15s .15s,opacity .25s,filter .25s,border .15s;
 }
 a.btn:hover {  box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19); font-weight: bold; border: 1px solid black;}
 a.btn:active { opacity:0.5} 
 
-a.menu-btn {   border-radius: 8px!important; padding: 4px; height: 52px; min-width:52px; margin: 5px 0px; }
+a.menu-btn {   float:left; border-radius: 8px!important; padding: 4px; height: 52px; min-width:52px; margin: 5px 2px; }
 a.menu-btn > img {  max-height:43px; }
 
-a.small-btn { height: 24px; width: 24px; margin: 0px; font-size:9px; padding:0px;}
+a.small-btn { height: 24px; width: 24px; margin:0px; font-size:9px; padding:0px;}
 a.small-btn > img { height:22px; }
 
 a.low-btn {   height: 24px; width: 24px; position: relative; bottom: -26px; padding:0px; }
@@ -134,4 +138,3 @@ div#content > h2{ display:none; }
 /*############################### Experimental ######################################*/
 div.z-drag {   height:20px; width:390px; margin:5px; font-size:11px; cursor:move; -ms-touch-action: none; touch-action: none; border-radius: 5px!important; border: 1px solid #ccc; }
 div.z-drop {   -ms-touch-action: none; touch-action: none; }
-div.tools {    -webkit-position:sticky; position: sticky; top:0px; z-index:1000; }

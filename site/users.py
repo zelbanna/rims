@@ -50,9 +50,9 @@ def info(aWeb):
  data['id'] = aWeb.get('id','new')
  op = aWeb['op']
  with DB() as db:
-  db.do("SELECT id,title FROM resources")
+  db.do("SELECT id,title,icon FROM resources")
   resources = db.get_rows()
-  resources.insert(0,{'id':'NULL','title':'default'})
+  resources.insert(0,{'id':'NULL','title':'default','icon':'None'})
   if op == 'update' or data['id'] == 'new':
    data['name']  = aWeb.get('name',"unknown")
    data['alias'] = aWeb.get('alias',"unknown")
@@ -74,6 +74,28 @@ def info(aWeb):
    data['front'] = str(data['frontpage'])
    data['view']  = str(data['view_public'])
 
+ print """
+ <script>
+  $( function() {
+        $(".drag").attr("draggable","true");
+        $(".drag").on("dragstart", function(e){
+                console.log("Drag " + $(this).prop("id") + " FROM " + $(this).parent().prop("id"));
+                e.originalEvent.dataTransfer.setData("Text",$(this).prop("id"));
+                e.originalEvent.dataTransfer.effectAllowed = 'move';
+                
+        });
+
+        $(document.body).on("drop dragover", ".drop", function(e){ e.preventDefault();
+                if (e.type == 'drop') {
+                        var elem_id = e.originalEvent.dataTransfer.getData("Text");
+                        var elem    = document.getElementById(elem_id);
+                        console.log("Drop " + elem_id + " INTO " + $(this).prop("id"));
+                        e.target.appendChild(elem);
+                }
+   });
+ });
+</script>
+ """
  print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
@@ -87,11 +109,16 @@ def info(aWeb):
   print "<OPTION VALUE='{0}' {2}>{1}</OPTION>".format(resource['id'],resource['title'],"selected" if str(resource['id']) == data['front'] else '')
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
+ print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='display:block;width:100%' ID=ul_drag CLASS='drop'>"
+ for resource in resources:
+  print "<LI CLASS='drag' ID=li_%s><A CLASS='btn menu-btn' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(resource['id'],resource['title'],resource['icon'])
+ print "</UL></DIV>"
+ print "</FORM>"
+ print "<DIV CLASS='controls'>"
  if data['id'] != 'new' and (aWeb.cookie.get('sdcp_id') == str(data['id'])):
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_remove&id={0}'.format(data['id']), MSG='Really remove user?')
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&headers=no&op=update', FRM='sdcp_user_info_form')
- print "</FORM>"
- print "</ARTICLE"
+ print "</DIV></ARTICLE>"
 
 #
 #
