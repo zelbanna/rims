@@ -50,7 +50,7 @@ def info(aWeb):
  data['id'] = aWeb.get('id','new')
  op = aWeb['op']
  with DB() as db:
-  db.do("SELECT id,title,icon FROM resources")
+  db.do("SELECT id,title,icon FROM resources ORDER BY title")
   resources = db.get_rows()
   resources.insert(0,{'id':'NULL','title':'default','icon':'None'})
   if op == 'update' or data['id'] == 'new':
@@ -58,7 +58,7 @@ def info(aWeb):
    data['alias'] = aWeb.get('alias',"unknown")
    data['email'] = aWeb.get('email',"unknown")
    data['front'] = aWeb.get('front','NULL')
-   data['view']  = aWeb.get('view','1')
+   data['view']  = aWeb.get('view','0')
    if op == 'update':
     if data['id'] == 'new':
      db.do("INSERT INTO users (alias,name,email,frontpage,view_public) VALUES ('{}','{}','{}','{}',{})".format(data['alias'],data['name'],data['email'],data['front'],data['view']))
@@ -68,6 +68,7 @@ def info(aWeb):
      if aWeb.cookie['sdcp_id'] == str(data['id']):
       aWeb.add_cookie('sdcp_view',data['view'],86400)
     aWeb.put_headers()
+    print aWeb
   else:
    db.do("SELECT users.* FROM users WHERE id = '{}'".format(data['id']))
    data = db.get_row()
@@ -78,8 +79,11 @@ def info(aWeb):
  <script>
   $( function() { 
    $("li.drag").attr("draggable","true");
-   $("li.drag").on("dragstart", dragfunction);
-   $(document.body).on("drop dragover", "ul.drop", dropfunction);
+   $("li.drag").on("dragstart", dragstart);
+   $("ul.drop").on("dragover", dragover);
+   $("ul.drop").on("drop", drop);
+   $("ul.drop").on("dragenter", dragenter);
+   $("ul.drop").on("dragleave", dragleave);
   });
 </script>
  """
@@ -90,22 +94,24 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>  <DIV CLASS=td><INPUT NAME=alias  TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['alias'])
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>   <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name'])
  print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV> <DIV CLASS=td><INPUT NAME=email  TYPE=email VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['email'])
- print "<DIV CLASS=tr><DIV CLASS=td>View All:</DIV><DIV CLASS=td><INPUT NAME=view  TYPE=CHECKBOX VALUE=1 {}                  {}></DIV></DIV>".format("checked=checked" if data['view'] == 1 or data['view'] == "1" else '',"disabled" if aWeb.cookie['sdcp_id'] <> str(data['id']) else "")
+ print "<DIV CLASS=tr><DIV CLASS=td>View All:</DIV><DIV CLASS=td><INPUT NAME=view  TYPE=CHECKBOX VALUE=1 {}                  {}></DIV></DIV>".format("checked=checked" if str(data['view']) == "1" else "","disabled" if aWeb.cookie['sdcp_id'] <> str(data['id']) else "")
  print "<DIV CLASS=tr><DIV CLASS=td>Front page:</DIV><DIV CLASS=td><SELECT NAME=front STYLE='min-width:400px'>"
  for resource in resources:
   print "<OPTION VALUE='{0}' {2}>{1}</OPTION>".format(resource['id'],resource['title'],"selected" if str(resource['id']) == data['front'] else '')
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
- print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_drag CLASS='drop'>"
- for resource in resources:
-  print "<LI CLASS='drag' ID=li_%s><A CLASS='btn menu-btn' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(resource['id'],resource['title'],resource['icon'])
- print "</UL></DIV>"
- print "</FORM>"
  print "<DIV CLASS='controls'>"
  if data['id'] != 'new' and (aWeb.cookie.get('sdcp_id') == str(data['id'])):
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_remove&id={0}'.format(data['id']), MSG='Really remove user?')
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&headers=no&op=update', FRM='sdcp_user_info_form')
- print "</DIV></ARTICLE>"
+ print "</DIV>"
+ print "<DIV CLASS='border' STYLE='display:flex; flex-wrap:wrap; min-height:100px;'><UL STYLE='width:100%' ID=ul_menu  CLASS='drop'></UL></DIV>"
+ print "</FORM>"
+ print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>"
+ for resource in resources:
+  print "<LI CLASS='drag' ID=li_%s VALUE=li_%s><A CLASS='btn menu-btn' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(resource['id'],resource['id'],resource['title'],resource['icon'])
+ print "</UL></DIV>"
+ print "</ARTICLE>"
 
 #
 #
