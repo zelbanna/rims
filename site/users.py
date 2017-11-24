@@ -68,7 +68,6 @@ def info(aWeb):
      if aWeb.cookie['sdcp_id'] == str(data['id']):
       aWeb.add_cookie('sdcp_view',data['view'],86400)
     aWeb.put_headers()
-    print aWeb
   else:
    db.do("SELECT users.* FROM users WHERE id = '{}'".format(data['id']))
    data = db.get_row()
@@ -101,7 +100,7 @@ def info(aWeb):
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
  print "<DIV CLASS='controls'>"
- if data['id'] != 'new' and (aWeb.cookie.get('sdcp_id') == str(data['id'])):
+ if data['id'] != 'new' and ((aWeb.cookie.get('sdcp_id') == str(data['id']) or aWeb.cookie.get('sdcp_id') == "1")):
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_remove&id={0}'.format(data['id']), MSG='Really remove user?')
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&headers=no&op=update', FRM='sdcp_user_info_form')
  print "</DIV>"

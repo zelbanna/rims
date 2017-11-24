@@ -24,10 +24,10 @@ class Web(object):
   self.cookie = {} if not bcookie else dict(map( lambda c: c.split("="), bcookie.split('; ')))
 
  def __getitem__(self,aKey):
-  return self.form.getfirst(aKey,None)
+  return self.get(aKey,None)
 
  def __str__(self):
-  return "Base:{} Cookie:[{}] Form:{}".format(self._base,self.cookie,self.form)
+  return "Base:{} Cookie:[{}] Form:{}".format(self._base,str(self.cookie),self.form)
 
  def get(self,aKey,aDefault = None):
   return self.form.getfirst(aKey,aDefault)
@@ -101,27 +101,24 @@ class Web(object):
  ############################## CGI/Web functions ###############################
 
  def get_args2dict(self):
-  return { key: self.form.getfirst(key,None) for key in self.form.keys() }
+  return { key: self[key] for key in self.form.keys() }
 
  def get_args2dict_except(self,aexceptlist = []):
   keys = self.form.keys()
   for exc in aexceptlist:
    try:    keys.remove(exc)
    except: pass
-  return { key: self.form.getfirst(key,None) for key in keys }
+  return { key: self[key] for key in keys }
 
  def get_args(self):
-  reload = ""
-  for key in self.form.keys():
-   reload += ("&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key)))
-  return reload[1:]
+  return "&".join(["%s=%s"%(key,self[key]) for key in self.form.keys()])
 
  def get_args_except(self,aexceptlist = []):
-  reload = ""
-  for key in self.form.keys():
-   if not key in aexceptlist:
-    reload += ("&{}=".format(key) + "&{}=".format(key).join(self.form.getlist(key)))
-  return reload[1:]
+  keys = self.form.keys()
+  for exc in aexceptlist:
+   try:    keys.remove(exc)
+   except: pass
+  return "&".join(["%s=%s"%(key,self[key]) for key in keys])
 
  @classmethod
  def button(cls,aImg,**kwargs):
