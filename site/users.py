@@ -91,6 +91,11 @@ def info(aWeb):
     resource = resources.pop(int(key),None)
     print "<LI CLASS='drag' ID=%s><A CLASS='btn menu-btn' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(key,resource['title'],resource['icon'])
    except: pass
+ else:
+  for key in resources.keys():
+   if resources[key]['type'] == 'menuitem':
+    resource = resources.pop(key,None)
+    print "<LI CLASS='drag' ID=%s><A CLASS='btn menu-btn' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(key,resource['title'],resource['icon'])    
  print "</UL></DIV>"
  print "<DIV CLASS='controls'>"
  if data['id'] != 'new' and ((aWeb.cookie.get('sdcp_id') == str(data['id']) or aWeb.cookie.get('sdcp_id') == "1")):
