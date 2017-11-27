@@ -69,7 +69,7 @@ def sync_menuitems(aDict):
    except: pass
  new   = 0
  with DB() as db:
-  sql ="INSERT INTO resources(title,href,icon,type,user_id) VALUES ('{}','{}','{}','menuitem',1) ON DUPLICATE KEY UPDATE id = id"
+  sql ="INSERT INTO resources(title,href,icon,type,user_id,inline) VALUES ('{}','{}','{}','menuitem',1,1) ON DUPLICATE KEY UPDATE id = id"
   for item in items:
    try:
     item['db'] = db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon']))

@@ -184,7 +184,7 @@ CREATE TABLE `users` (
   `email` varchar(40) DEFAULT NULL,
   `alias` varchar(10) DEFAULT NULL,
   `view_public` tinyint(1) unsigned DEFAULT '1',
-  `frontpage` int(10) unsigned DEFAULT NULL,
+  `menulist` varchar(60) DEFAULT 'default',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

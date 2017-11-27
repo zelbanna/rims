@@ -37,18 +37,24 @@ def login(aWeb):
    aWeb.add_cookie('sdcp_view', view, 86400)
 
  if id != "None":
-  with DB() as db:
-   res  = db.do("SELECT href FROM resources INNER JOIN users ON users.frontpage = resources.id WHERE users.id = '{}'".format(id))
-   href = 'sdcp.cgi?call=resources_main&type=demo' if not res else db.get_val('href')
-   res  = db.do("SELECT id,title,href,icon FROM resources WHERE type = 'menuitem' ORDER BY title")
-   menuitems = db.get_rows()
-
-  aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
   aWeb.put_html(PC.sdcp['name'])
+  aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
+  with DB() as db:
+   db.do("SELECT menulist FROM users WHERE id = '{}'".format(id))
+   menulist = db.get_val('menulist')
+
+  from sdcp.rest.resources import list as resource_list
+  resources = resource_list({'id':id,'dict':'id'})['data']
   print "<HEADER>"
-  print "<A CLASS='btn menu-btn z-op'   DIV=main TITLE='Start'     URL='{}&headers=yes'><IMG SRC='images/icon-start.png'/></A>".format(href)
-  for item in menuitems:
-   print "<A CLASS='btn menu-btn z-op' DIV=main TITLE='%s' URL='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
+  if menulist == 'default':
+   for key,item in resources.iteritems():
+    item = resources.get(int(key))
+    if item['type'] == 'menuitem':
+     print "<A CLASS='btn menu-btn z-op' DIV=main TITLE='%s' URL='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
+  else:
+   for key in menulist.split(','):
+    item = resources.get(int(key))
+    print "<A CLASS='btn menu-btn z-op' DIV=main TITLE='%s' URL='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
   print "</HEADER>"
   print "<main ID=main></main>"
  else:
