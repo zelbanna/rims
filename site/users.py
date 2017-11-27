@@ -24,6 +24,17 @@ def main(aWeb):
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
  print "</SECTION>"
 
+def user(aWeb):
+ if not aWeb.cookie.get('sdcp_id'):
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
+ print "<NAV><UL></UL></NAV>"
+ print "<SECTION CLASS=content       ID=div_content>"
+ print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right>"
+ info(aWeb)
+ print "</SECTION>"
+ print "</SECTION>"
 
 def list(aWeb):
  from sdcp.core.dbase import DB
@@ -49,7 +60,6 @@ def info(aWeb):
  data['id'] = aWeb.get('id','new')
  op = aWeb['op']
  from sdcp.rest.resources import list as resource_list
- resources = resource_list({'id':aWeb.cookie['sdcp_id'], 'dict':'id'})['data']
  with DB() as db:
   if op == 'update' or data['id'] == 'new':
    data['name']  = aWeb.get('name',"unknown")
@@ -71,11 +81,13 @@ def info(aWeb):
    data = db.get_row()
    data['view']  = str(data['view_public'])
 
+ resources = resource_list({'id':aWeb.cookie['sdcp_id'], 'dict':'id'})['data']
+ print "<!-- %s -->"%(resources)
  print aWeb.dragndrop()
  print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
- print "<INPUT TYPE=HIDDEN NAME=menulist ID=menulist>"
+ print "<INPUT TYPE=HIDDEN NAME=menulist ID=menulist VALUE='{}'>".format(data['menulist'])
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>  <DIV CLASS=td><INPUT NAME=alias  TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['alias'])
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>   <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name'])

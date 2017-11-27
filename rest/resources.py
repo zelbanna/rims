@@ -11,7 +11,7 @@ def list(aDict):
  from sdcp.core.dbase import DB
  ret = {'res':'OK'}
  ret['user_id'] = aDict.get('user_id',"1")
- ret['view'] = aDict.get('view',"0")
+ ret['view'] = aDict.get('view',"1")
  ret['type'] = aDict.get('type')
  select = "%s(user_id = %s %s)"%("type = '%s' AND "%ret['type'] if ret['type'] else "", ret['user_id'],"" if ret['view'] == '0' else 'OR private = 0')
  with DB() as db:

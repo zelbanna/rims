@@ -87,7 +87,7 @@ def info(aWeb):
   print "<DIV CLASS=td><INPUT  NAME=type TYPE=TEXT VALUE='menuitem' STYLE='font-style:italic' readonly></DIV>"
  else:
   print "<DIV CLASS=td><SELECT NAME=type>"
-  for tp in ['bookmark','demo','tool']:
+  for tp in ['bookmark','demo','tool','menuitem']:
    print "<OPTION VALUE={} {}>{}</OPTION>".format(tp,"" if data['type'] != tp else 'selected',tp.title())
   print "</SELECT></DIV>"
  print "</DIV></DIV></DIV>"

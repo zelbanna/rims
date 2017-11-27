@@ -46,17 +46,22 @@ def login(aWeb):
   from sdcp.rest.resources import list as resource_list
   resources = resource_list({'id':id,'dict':'id'})['data']
   print "<HEADER>"
-  button = "<A CLASS='btn menu-btn z-op' DIV=main TITLE='%s' URL='%s'><IMG SRC='%s'/></A>"
+  inline = "<A CLASS='btn menu-btn z-op' DIV=main      TITLE='%s' URL='%s' ><IMG SRC='%s'/></A>"
+  extern = "<A CLASS='btn menu-btn z-op' TARGET=_blank TITLE='%s' HREF='%s'><IMG SRC='%s'/></A>"
   if menulist == 'default':
    for key,item in resources.iteritems():
     item = resources.get(int(key))
     if item['type'] == 'menuitem':
-     print button%(item['title'],item['href'],item['icon'])
+     print inline%(item['title'],item['href'],item['icon'])
   else:
    for key in menulist.split(','):
     item = resources.get(int(key))
-    print button%(item['title'],item['href'],item['icon'])
+    if item['inline'] == 1:
+     print inline%(item['title'],item['href'],item['icon'])
+    else:
+     print extern%(item['title'],item['href'],item['icon'])
   print "<A CLASS='btn menu-btn z-op right warning' OP=logout URL=sdcp.cgi>Log out</A>"
+  print "<A CLASS='btn menu-btn z-op right' DIV=main TITLE='%s' URL=sdcp.cgi?call=users_user&id=%s><IMG SRC='images/icon-users.png'></A>"%(user,id)
   print "</HEADER>"
   print "<main ID=main></main>"
  else:
