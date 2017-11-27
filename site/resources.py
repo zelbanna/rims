@@ -106,7 +106,7 @@ def info(aWeb):
 #
 def view(aWeb):
  from sdcp.rest.resources import list as rest_list
- res = rest_list({'type':aWeb.get('type','tools'),'user_id':aWeb.cookie['sdcp_id'],'view':aWeb.cookie['sdcp_view']})
+ res = rest_list({'type':aWeb.get('type','tool'),'user_id':aWeb.cookie['sdcp_id'],'view':aWeb.cookie['sdcp_view']})
  index = 0;
  print "<DIV CLASS=centered STYLE='align-items:initial'>"
  for row in res['data']:
