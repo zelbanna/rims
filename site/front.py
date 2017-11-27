@@ -32,7 +32,7 @@ def login(aWeb):
   id,user,view = aWeb.get('sdcp_login',"None_None_1").split('_')
   if id != "None":
    # "Login successful"
-   aWeb.add_cookie('sdcp_id',  id, 86400)
+   aWeb.add_cookie('sdcp_id',   id,   86400)
    aWeb.add_cookie('sdcp_user', user, 86400)
    aWeb.add_cookie('sdcp_view', view, 86400)
 
