@@ -46,15 +46,17 @@ def login(aWeb):
   from sdcp.rest.resources import list as resource_list
   resources = resource_list({'id':id,'dict':'id'})['data']
   print "<HEADER>"
+  button = "<A CLASS='btn menu-btn z-op' DIV=main TITLE='%s' URL='%s'><IMG SRC='%s'/></A>"
   if menulist == 'default':
    for key,item in resources.iteritems():
     item = resources.get(int(key))
     if item['type'] == 'menuitem':
-     print "<A CLASS='btn menu-btn z-op' DIV=main TITLE='%s' URL='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
+     print button%(item['title'],item['href'],item['icon'])
   else:
    for key in menulist.split(','):
     item = resources.get(int(key))
-    print "<A CLASS='btn menu-btn z-op' DIV=main TITLE='%s' URL='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
+    print button%(item['title'],item['href'],item['icon'])
+  print "<A CLASS='btn menu-btn z-op right warning' OP=logout URL=sdcp.cgi>Log out</A>"
   print "</HEADER>"
   print "<main ID=main></main>"
  else:

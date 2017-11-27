@@ -17,7 +17,6 @@ def main(aWeb):
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=users_list'>Users</A></LI>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A></LI>"
- print "<LI CLASS='right warning'><A CLASS=z-op OP=logout URL=sdcp.cgi>Log out</A></LI>"
  print "<LI CLASS='right navinfo'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={}>{}</A></LI>".format(aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user'))
  print "</UL></NAV>"
  print "<SECTION CLASS=content       ID=div_content>"
