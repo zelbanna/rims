@@ -19,7 +19,7 @@
 // - submit   frm
 //
 
-function btnfunction(event) {
+function btn(event) {
  var op  = $(this).attr("op");
  var div = $("#"+$(this).attr("div"));
  var url = $(this).attr("url");
@@ -88,7 +88,7 @@ function btnfunction(event) {
 
 //
 //
-function focusfunction(event){
+function focus(event){
  if (event.originalEvent.type == 'focus')
   $(this).addClass('highlight');
  else if (event.originalEvent.type == 'blur')
@@ -96,21 +96,54 @@ function focusfunction(event){
 };
 
 //
+// Drag-n'-drop
+// - updating a list of element id's on attribute "dest" on drop element
 //
-function dragfunction(event){
- console.log("Drag " + $(this).prop("id") + " FROM " + $(this).parent().prop("id"));
- event.originalEvent.dataTransfer.setData("Text",$(this).prop("id"));
+function dragndrop(){
+ $("li.drag").off();
+ $("ul.drop").off();
+ $("li.drag").attr("draggable","true");
+ $("li.drag").on("dragstart", dragstart);
+ $("ul.drop").on("dragover", dragover);
+ $("ul.drop").on("drop", drop);
+ $("ul.drop").on("dragenter", dragenter);
+ $("ul.drop").on("dragleave", dragleave);
+}
+
+//
+function dragstart(event){
+ console.log("Drag " + this.id + " FROM " + this.parentElement.id);
+ this.style.opacity = '0.4';
+ event.originalEvent.dataTransfer.setData("Text",this.id);
  event.originalEvent.dataTransfer.effectAllowed = 'move';
 }
 
 //
+function dragover(event){
+ if(event.preventDefault)
+  event.preventDefault();
+ return false;
+}
+function dragenter(event){ this.classList.add('highlight'); }
+function dragleave(event){ this.classList.remove('highlight'); }
+
 //
-function dropfunction(event){
+function drop(event){
  event.preventDefault();
- if (event.type == 'drop') {
-  var elem_id = event.originalEvent.dataTransfer.getData("Text");
-  var elem    = document.getElementById(elem_id);
-  console.log("Drop " + elem_id + " INTO " + $(this).prop("id"));
-  event.target.appendChild(elem); 
- }
+ var el_id = event.originalEvent.dataTransfer.getData("Text");
+ var el    = document.getElementById(el_id);
+ var parent= el.parentElement;
+ el.style.opacity = '';
+ this.appendChild(el);
+ console.log("Drop " + el_id + " INTO " + this.id + " FROM " + parent.id);
+ updatelist(this);
+ updatelist(parent);
+ this.classList.remove('highlight');
+}
+
+//
+function updatelist(obj){
+ var list = [];
+ for (i = 0; i < obj.children.length; i++){ list.push(obj.children[i].id); }
+ $("#" + obj.getAttribute("dest")).attr("value",list);
 }

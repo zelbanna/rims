@@ -74,21 +74,11 @@ def info(aWeb):
    data['front'] = str(data['frontpage'])
    data['view']  = str(data['view_public'])
 
- print """
- <script>
-  $( function() { 
-   $("li.drag").attr("draggable","true");
-   $("li.drag").on("dragstart", dragstart);
-   $("ul.drop").on("dragover", dragover);
-   $("ul.drop").on("drop", drop);
-   $("ul.drop").on("dragenter", dragenter);
-   $("ul.drop").on("dragleave", dragleave);
-  });
-</script>
- """
+ print aWeb.dragndrop()
  print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
+ print "<INPUT TYPE=HIDDEN NAME=menulist ID=menulist>"
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>  <DIV CLASS=td><INPUT NAME=alias  TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['alias'])
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>   <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name'])
@@ -104,7 +94,7 @@ def info(aWeb):
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_remove&id={0}'.format(data['id']), MSG='Really remove user?')
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&headers=no&op=update', FRM='sdcp_user_info_form')
  print "</DIV>"
- print "<DIV CLASS='border' STYLE='display:flex; flex-wrap:wrap; min-height:100px;'><UL STYLE='width:100%' ID=ul_menu  CLASS='drop'></UL></DIV>"
+ print "<DIV CLASS='border' STYLE='display:flex; flex-wrap:wrap; min-height:100px;'><UL STYLE='width:100%' ID=ul_menu DEST=menulist CLASS='drop'></UL></DIV>"
  print "</FORM>"
  print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>"
  for resource in resources:
