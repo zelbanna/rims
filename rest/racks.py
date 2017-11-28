@@ -37,14 +37,17 @@ def rackinfo(aDict):
   if aDict.get('id'):
    data = {'name': None, 'console':[], 'pdu':[] }
    res = db.do("SELECT racks.name, fk_pdu_1 AS pdu_1, fk_pdu_2 AS pdu_2, fk_console AS console_1 FROM racks WHERE racks.id=%s"%aDict['id'])
-   if res > 0:
+   try:
     select = db.get_row()
-    data['name'] = select.pop('name',None)
+    data['name'] = select.pop('name',"Noname")
+    if select.get('pdu_1') == select.get('pdu_2'):
+     select.pop('pdu_2',None)
     for type_no,value in select.iteritems():
+     type,void,no = type_no.partition('_')
      if value:
-      type,void,no = type_no.partition('_')
       db.do("SELECT id, name, INET_NTOA(ip) AS ipasc FROM %ss WHERE id = %i"%(type,value))
       data[type].append(db.get_row())
+   except: pass
   else:
    data = {}
    for type in ['pdu','console']:
