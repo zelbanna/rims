@@ -56,7 +56,6 @@ def list(aWeb):
  print "</ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
-
 def select_parameters(aWeb):
  cookie = aWeb.cookie
  token  = cookie.get('os_user_token')
@@ -65,59 +64,33 @@ def select_parameters(aWeb):
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
  port,url = cookie.get('os_nova_port'),cookie.get('os_nova_url')
- print "<ARTICLE>"
- print """
- <script>
-  $( function() {
-	$(".z-drag").attr("draggable","true");
-	$(".z-drag").on("dragstart", function(e){
-		console.log("Drag " + $(this).prop("id") + " FROM " + $(this).parent().prop("id"));
-		e.originalEvent.dataTransfer.setData("Text",e.target.id);
-	});
-
-	$(document.body).on("drop dragover", ".z-drop", function(e){ e.preventDefault();
-		if (e.type == 'drop') {
-			var elem_id = e.originalEvent.dataTransfer.getData("Text");
-			var elem    = document.getElementById(elem_id);
-			var input   = $("#" + elem_id + " input");
-			console.log("Drop " + elem_id + " INTO " + $(this).prop("id"));
-			e.target.appendChild(elem);
-			$(this).removeClass("z-drop");
-			if ($(elem).attr("name")) {
-				console.log("Restoring drop to: " + $(elem).attr("name"));
-				$("#" + $(elem).attr("name")).addClass("z-drop");
-			}
-			input.attr("name",$(this).prop("id"));
-		}
-   });
- });
-</script>
- """
- print "<H2>New VM parameters</H2>"
+ images   = controller.call(cookie.get('os_glance_port'),cookie.get('os_glance_url') + "/v2/images?sort=name:asc")['data']['images']
+ flavors  = controller.call(port,url + "/flavors/detail?sort_key=name")['data']['flavors']
+ networks = controller.call(cookie.get('os_neutron_port'),cookie.get('os_neutron_url') + "/v2.0/networks?sort_key=name")['data']['networks']
+ print aWeb.dragndrop()
+ print "<ARTICLE CLASS='info'><P>New VM parameters</P>"
  print "<FORM ID=frm_os_create_vm>"
- print "<DIV ID=div_os_form CLASS='table' STYLE='float:left;'><DIV CLASS=tbody>"
+ print "<INPUT TYPE=HIDDEN NAME=os_network ID=os_network>"
+ print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name</DIV><DIV CLASS=td><INPUT NAME=os_name PLACEHOLDER='Unique Name'></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=os_image>"
- images = controller.call(cookie.get('os_glance_port'),cookie.get('os_glance_url') + "/v2/images?sort=name:asc")['data']['images']
  for img in images:
   print "<OPTION VALUE={}>{} (Min Ram: {}Mb)</OPTION>".format(img['id'],img['name'],img['min_ram'])
  print "</SELECT></DIV></DIV>"
 
- flavors = controller.call(port,url + "/flavors/detail?sort_key=name")['data']['flavors']
  print "<DIV CLASS=tr><DIV CLASS=td>Flavor</DIV><DIV CLASS='table-val td'><SELECT NAME=os_flavor>"
  for fl in flavors:
   print "<OPTION VALUE={}>{} (Ram: {}Mb, vCPUs: {}, Disk: {}Gb</OPTION>".format(fl['id'],fl['name'],fl['ram'],fl['vcpus'],fl['disk'])
  print "</SELECT></DIV></DIV>"
+ print "</DIV></DIV>"
+ print "<DIV CLASS='border'><UL CLASS='drop' ID=ul_network DEST=os_network></UL></DIV>"
+ print "</FORM>"
 
- print "<DIV CLASS=tr><DIV CLASS=td>Network</DIV><DIV CLASS='td z-drop' ID=os_network1></DIV></DIV>"
- print "</DIV></DIV></FORM>"
-
- print "<DIV ID=div_os_nets STYLE='float:left; height:200px; overflow:auto;'>"
- networks = controller.call(cookie.get('os_neutron_port'),cookie.get('os_neutron_url') + "/v2.0/networks?sort_key=name")['data']['networks']
+ print "<DIV CLASS='border'><UL CLASS='drop' ID=ul_avail>"
  for net in networks:
   if net.get('contrail:subnet_ipam'):
-   print "<DIV ID=div_drag_{0} CLASS='z-drag z-drag-input' STYLE='font-size:11px;'><INPUT ID=input_{0} NAME=unused TYPE=HIDDEN VALUE={0}>{1} ({2})</DIV>".format(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
- print "</DIV>"
+   print "<LI ID=net_%s CLASS='drag' STYLE='display:block'>%s (%s)</LI>"%(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
+ print "</UL></DIV>"
  print "<BR>"
  print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=nova_action&id=new&op=add', SPIN='true')
  print "</ARTICLE>"

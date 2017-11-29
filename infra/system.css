@@ -19,7 +19,7 @@ pre {    margin:0px; }
 details{ display:inline; }
 span {   font-size:11px; }
 li {     display:inline-block; }
-ul {     list-style-type:none; margin:0px ;padding:0px; }
+ul {     list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
 
 /*###################################### Content Model ########################################*/
 
@@ -102,6 +102,8 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
 
 [draggable] { -moz-user-select: none; -khtml-user-select: none; -webkit-user-select: none; user-select: none; -ms-touch-action: none; touch-action: none; cursor:move!important; }
 
+ul.drop { -ms-touch-action: none; touch-action: none; display:flex; flex-wrap:wrap; min-height:20px; width:100%;}
+
 /*############################## A(nything) ###################################*/
 
 a{        color:#000000; background-color:transparent;-webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; }
@@ -134,6 +136,3 @@ div#footer { display:none; }
 div#nav    { display:none; }
 div#content { margin-left: 20px; }
 div#content > h2{ display:none; }
-
-/*############################### Experimental ######################################*/
-ul.drop { -ms-touch-action: none; touch-action: none; }
