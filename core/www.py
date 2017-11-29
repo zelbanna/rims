@@ -27,7 +27,7 @@ class Web(object):
   return self.get(aKey,None)
 
  def __str__(self):
-  return "Base:{} Cookie:[{}] Form:{}".format(self._base,str(self.cookie),self.form)
+  return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Base: %s<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(self._base,str(self.cookie),self.form)
 
  def get(self,aKey,aDefault = None):
   return self.form.getfirst(aKey,aDefault)
@@ -95,8 +95,8 @@ class Web(object):
    if headers == 'no' or mod == 'front':
     stdout.write("Content-Type: text/html\r\n")
    keys    = self.form.keys()
-   details = ("AJAX",self._base,mod_fun,",".join(keys),type(e).__name__,str(e)) if not type(e).__name__ == 'RestException' else (e.get('type'),self._base,e.get('api'),e.get('args'),e.get('exception'),e.get('info')) 
-   stdout.write("<DETAILS CLASS='machine-text'><SUMMARY CLASS='red' STYLE='font-weight:bold;'>ERROR</SUMMARY><CODE>Type: %s<BR>API: %s.site.%s<BR>Arguments: %s<BR>Exception: %s<BR>Info: %s</CODE></DETAILS>"%details)
+   details = ("AJAX",self._base,mod_fun,",".join(keys),type(e).__name__,str(e)) if not type(e).__name__ == 'RestException' else (e.get('type'),self._base,e.get('api'),e.get('exception'),e.get('args'),e.get('info')) 
+   stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>Type: %s<BR>API: %s.site.%s<BR>Excpt: %s<BR><DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%details)
 
  ############################## CGI/Web functions ###############################
 

@@ -48,6 +48,10 @@ article > p:first-child { font-weight: bold; text-align:center; margin:4px 0px 4
 article.info {   resize:horizontal; margin-left:0px; width:500px; }
 article.login {  border:solid 1px black; width:600px; height:180px;}
 
+details.web { font-family: "Courier New", serif; font-size: 12px; margin: 0px; }
+details.web > summary { font-weight:bold; }
+details.web > details { display:block; }
+
 /*############################### Tables #####################################*/ 
 
 article > form > div.table { width:99%; }

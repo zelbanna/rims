@@ -28,10 +28,11 @@ def list(aWeb):
   return
 
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Nova Servers</P>"
+ print "<DIV CLASS=controls>"
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=nova_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=nova_select_parameters')
- print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
+ print "</DIV>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for server in ret['data'].get('servers',None):
   print "<DIV CLASS=tr>"
@@ -171,7 +172,7 @@ def action(aWeb):
   print "</DIV></DIV>"
 
  elif op == 'add':
-  print "TBD"
+  print aWeb
 
  elif op == 'remove':
   ret = controller.call(port,url + "/servers/{}".format(aWeb['id']), method='DELETE')
