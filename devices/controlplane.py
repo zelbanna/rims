@@ -11,7 +11,7 @@ class Device(object):
 
  @classmethod
  def get_type(cls):
-  return 'control plane'
+  return 'controlplane'
 
  def __init__(self, aIP, aID = None):
   pass

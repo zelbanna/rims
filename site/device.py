@@ -77,10 +77,8 @@ def info(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
 
-
  from sdcp.rest.device import info as rest_info, update as rest_update
  from sdcp.rest.racks  import infra as rest_infra
-
  op    = aWeb.get('op',"")
  opres = {}
  ###################### Update ###################
@@ -159,16 +157,16 @@ def info(aWeb):
  print "<!-- Additional info -->"
  print "<DIV STYLE='margin:3px; float:left; height:172px;'>"
  print "<DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV>"
  if dev['info']['vm']:
-  print "Not used <INPUT TYPE=hidden NAME=rackinfo_rack_id VALUE=NULL>"
+  print "<DIV CLASS=td>Not used <INPUT TYPE=hidden NAME=rackinfo_rack_id VALUE=NULL></DIV>"
  else:
-  print "<SELECT NAME=rackinfo_rack_id>"
+  print "<DIV CLASS=td><SELECT NAME=rackinfo_rack_id>"
   for rack in infra['racks']:
    extra = " selected" if ((dev['racked'] == 0 and rack['id'] == 'NULL') or (dev['racked'] == 1 and dev['rack']['rack_id'] == rack['id'])) else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
-  print "</SELECT>"
- print "</DIV></DIV>"
+  print "</SELECT></DIV>"
+ print "</DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['lookup'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['a_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ptr_id'])
@@ -177,15 +175,17 @@ def info(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='View graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</DIV><DIV CLASS=td>yes</DIV></DIV>".format(dev['info']['domain'],dev['info']['hostname']+"."+ dev['info']['domain'])
  else:
   print "<DIV CLASS=tr><DIV CLASS=td>Graphs:</DIV><DIV CLASS=td>no</DIV></DIV>"
- print "".join(["<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV>","<DIV CLASS='td {0}'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={1}&op=view>{2}</A> {3}</DIV>".format("red" if dev['booking']['valid'] == 1 else "orange",dev['booking']['user_id'],dev['booking']['alias'],'' if dev['booking']['valid'] else "(obsolete)") if int(dev['booked']) > 0 else "<DIV CLASS='td green'>None</DIV>","</DIV>"])
+ print ''.join(["<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV>","<DIV CLASS='td {0}'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={1}&op=view>{2}</A> {3}</DIV>".format("red" if dev['booking']['valid'] == 1 else "orange",dev['booking']['user_id'],dev['booking']['alias'],'' if dev['booking']['valid'] else "(obsolete)") if int(dev['booked']) > 0 else "<DIV CLASS='td green'>None</DIV>","</DIV>"])
  print "</DIV></DIV></DIV>"
 
  print "<!-- Rack Info if such exists -->"
  if dev['racked'] == 1 and not dev['type'] == 'pdu':
+  print "<!-- %s -->"%dev['type']
   print "<DIV STYLE='margin:3px; float:left; height:172px;'>"
   print "<DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_size'])
-  print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_unit'])
+  if not dev['type'] == 'controlplane':
+   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_size'])
+   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_unit'])
   if not dev['type'] == 'console' and infra['consolexist'] > 0:
    print "<DIV CLASS=tr><DIV CLASS=td>TS:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_console_id>"
    for console in infra['consoles']:
@@ -193,8 +193,7 @@ def info(aWeb):
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['name'])
    print "</SELECT></DIV></DIV>"
    print "<DIV CLASS=tr><DIV CLASS=td>TS Port:</DIV><DIV CLASS=td TITLE='Console port in rack TS'><INPUT NAME=rackinfo_console_port TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['console_port'])
-
-  if infra['pduxist'] > 0:
+  if not dev['type'] == 'controlplane' and infra['pduxist'] > 0:
    for pem in ['pem0','pem1']:
     print "<DIV CLASS=tr><DIV CLASS=td>{0} PDU:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_{1}_pdu_slot_id>".format(pem.upper(),pem)
     for pdu in infra['pdus']:
