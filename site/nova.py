@@ -89,7 +89,7 @@ def select_parameters(aWeb):
  print "<DIV CLASS='border'><UL CLASS='drop' ID=ul_avail>"
  for net in networks:
   if net.get('contrail:subnet_ipam'):
-   print "<LI ID=net_%s CLASS='drag' STYLE='display:block'>%s (%s)</LI>"%(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
+   print "<LI ID=net_%s CLASS='drag'>%s (%s)</LI>"%(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
  print "</UL></DIV>"
  print "<BR>"
  print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=nova_action&id=new&op=add', SPIN='true')
