@@ -83,10 +83,10 @@ def select_parameters(aWeb):
   print "<OPTION VALUE={}>{} (Ram: {}Mb, vCPUs: {}, Disk: {}Gb</OPTION>".format(fl['id'],fl['name'],fl['ram'],fl['vcpus'],fl['disk'])
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
- print "<DIV CLASS='border'><UL CLASS='drop' ID=ul_network DEST=os_network></UL></DIV>"
+ print "<DIV CLASS='border'><UL CLASS='drop vertical' ID=ul_network DEST=os_network></UL></DIV>"
  print "</FORM>"
 
- print "<DIV CLASS='border'><UL CLASS='drop' ID=ul_avail>"
+ print "<DIV CLASS='border'><UL CLASS='drop vertical' ID=ul_avail>"
  for net in networks:
   if net.get('contrail:subnet_ipam'):
    print "<LI ID=net_%s CLASS='drag'>%s (%s)</LI>"%(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])

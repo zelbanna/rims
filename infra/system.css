@@ -18,8 +18,8 @@ input {  border:none; overflow:visible; background-color: transparent; color: bl
 pre {    margin:0px; }
 details{ display:inline; }
 span {   font-size:11px; }
-li {     display:inline-block; }
 ul {     list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
+li {     display:inline-block; }
 
 /*###################################### Content Model ########################################*/
 
@@ -102,7 +102,10 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
 
 [draggable] { -moz-user-select: none; -khtml-user-select: none; -webkit-user-select: none; user-select: none; -ms-touch-action: none; touch-action: none; cursor:move!important; }
 
-ul.drop { -ms-touch-action: none; touch-action: none; display:flex; flex-wrap:wrap; min-height:20px; width:100%;}
+ul.drop {        -ms-touch-action: none; touch-action: none; display:flex; flex-wrap:wrap; min-height:20px; width:100%;}
+ul.drop li {     font-size:11px; }
+ul.vertical {    display:block!important; }
+ul.vertical li { display:table!important; }
 
 /*############################## A(nything) ###################################*/
 
