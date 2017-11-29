@@ -105,6 +105,9 @@ def data2html(aData):
 #
 #
 def api(aWeb):
+ if not aWeb.cookie.get('os_user_token'):
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
  print "<ARTICLE><P>OpenStack REST API inspection</P>"
  print "<FORM ID=frm_os_api>"
  print "Choose Service and enter API call: <SELECT CLASS='white' STYLE='width:auto; height:22px;' NAME=os_service>"

@@ -93,7 +93,7 @@ def select_parameters(aWeb):
    print "<LI ID=net_%s CLASS='drag'>%s (%s)</LI>"%(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
  print "</UL></DIV>"
  print "<BR>"
- print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=nova_action&id=new&op=add', SPIN='true')
+ print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=nova_action&id=new&op=add',FRM='frm_os_create_vm', SPIN='true')
  print "</ARTICLE>"
 
 ######################################## Actions ########################################
@@ -114,7 +114,7 @@ def action(aWeb):
 
  if   op == 'info':
   from sdcp.core.extras import get_quote
-  server = controller.call(port,url + "/servers/{}".format(aWeb['id']))['data']['server']
+  server = controller.call(port,url + "/servers/%s"%aWeb['id'])['data']['server']
   qserver = get_quote(server['name'])
   tmpl = "<A TITLE='{}' CLASS='btn z-op' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=%s&op={} SPIN=true>{}</A>"%aWeb['id']
   print "<DIV>"
