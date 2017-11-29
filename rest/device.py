@@ -51,7 +51,8 @@ def update(aDict):
  ret    = {'res':'OK', 'data':{}}
  with DB() as db:
   # specials
-  aDict['devices_mac'] = GL.mac2int(aDict['device_mac']) if aDict.get('device_mac') else 0
+  try: aDict['devices_mac'] = GL.mac2int(aDict.pop('devices_mac','00:00:00:00:00:00'))
+  except: pass
 
   if racked:
    if   racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
@@ -60,7 +61,7 @@ def update(aDict):
     aDict.pop('rackinfo_pem1_pdu_slot_id',None)
    elif racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
     db.do("INSERT INTO rackinfo SET device_id = {},rack_id={} ON DUPLICATE KEY UPDATE rack_id = rack_id".format(id,aDict['rackinfo_rack_id']))
-   elif racked == '1': 
+   elif racked == '1':
     for pem in ['pem0','pem1']:
      try:
       pem_pdu_slot_id = aDict.pop('rackinfo_%s_pdu_slot_id'%pem,None)
