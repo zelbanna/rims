@@ -8,10 +8,16 @@ __version__ = "17.11.01GA"
 __status__  = "Production"
 __type__    = "controller"
 
-class VeraRPC(object):
+from generic import Device as GenericDevice
 
- def __init__(self, aIP):
-  self._ip = aIP
+class Device(GenericDevice):
+
+ def __init__(self,aIP,aID=None):
+  GenericDevice.__init__(self,aIP,aID)
+
+ @classmethod
+ def get_widgets(cls):
+  return ['operated']
 
  def __str__(self):
   return "Controller[{}]".format(self._ip)

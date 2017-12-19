@@ -240,8 +240,7 @@ def info(aWeb):
   functions = Device.get_widgets() if Device else []
   if functions:
    if functions[0] == 'operated':
-    if dev['info']['type_name'] == 'esxi':
-     print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?call=esxi_inventory&id=%i'>Manage</A></LI>"%dev['id']
+    print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?call=%s_inventory&id=%i'>Manage</A></LI>"%(dev['info']['type_name'],dev['id'])
    else:
     for fun in functions:
      funname = " ".join(fun.split('_')[1:])
