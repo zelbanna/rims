@@ -6,6 +6,7 @@ MX module
 __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
+__type__ = "network"
 
 from sdcp import PackageContainer as PC
 from junos import Junos

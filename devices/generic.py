@@ -3,9 +3,10 @@
 Generic Device
 
 """
-__author__ = "Zacharias El Banna"
+__author__  = "Zacharias El Banna"
 __version__ = "17.11.01GA"
-__status__ = "Production"
+__status__  = "Production"
+__type__    = "generic"
 
 class Device(object):
  
@@ -13,10 +14,6 @@ class Device(object):
  # - _ip
  # - _id
  # - _logfile
-
- @classmethod
- def get_type(cls):
-  return 'generic'
  
  def __init__(self, aIP, aID = None):
   from sdcp import PackageContainer as PC
@@ -25,7 +22,7 @@ class Device(object):
   self._logfile = PC.generic['logformat']
 
  def __str__(self):
-  return "IP:{} ID:{} Type:{}".format(self._ip, self._id, self.get_type())
+  return "IP:%s ID:%s"%(self._ip, self._id)
 
  def __enter__(self):
   return self

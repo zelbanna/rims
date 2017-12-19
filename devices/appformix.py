@@ -6,16 +6,13 @@ Appformix Library
 __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
+__type__ = "controller"
 
 ############################################ AppformixRPC ######################################
 #
 # AppformixRPC Class
 #
 class Device(object):
-
- @classmethod 
- def get_type(cls):   
-  return 'linux'
 
  def __init__(self, aIP, aToken = None):
   self._token = aToken

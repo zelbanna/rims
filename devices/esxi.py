@@ -3,9 +3,10 @@
 The ESXi interworking module
 
 """
-__author__ = "Zacharias El Banna"
+__author__  = "Zacharias El Banna"
 __version__ = "17.11.01GA"
-__status__ = "Production"
+__status__  = "Production"
+__type__    = "hypervisor"
 
 from sdcp import PackageContainer as PC
 from generic import Device as GenericDevice
@@ -16,10 +17,6 @@ from generic import Device as GenericDevice
 class Device(GenericDevice):
 
  _vmstatemap  = { "1" : "powered on", "2" : "powered off", "3" : "suspended", "powered on" : "1", "powered off" : "2", "suspended" : "3" }
-
- @classmethod 
- def get_type(cls):
-  return 'hypervisor'
 
  @classmethod
  def get_state_str(cls,astate):

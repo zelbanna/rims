@@ -33,10 +33,10 @@ def sync_devicetypes(aDict):
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
-    module = import_module("sdcp.devices.{}".format(pyfile))
-    dev = getattr(module,'Device',None)
-    if dev:
-     types.append({'name':pyfile, 'base':dev.get_type() })
+    mod = import_module("sdcp.devices.{}".format(pyfile))
+    type = getattr(mod,'__type__',None)
+    if type:
+     types.append({'name':pyfile, 'base':type })
    except:
     pass
  with DB() as db:

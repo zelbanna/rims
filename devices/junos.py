@@ -3,9 +3,10 @@
 Junos Router Base Class
 
 """
-__author__ = "Zacharias El Banna"
+__author__  = "Zacharias El Banna"
 __version__ = "17.11.01GA"
-__status__ = "Production"
+__status__  = "Production"
+__type__    = "network"
 
 from sdcp import PackageContainer as PC
 from generic import Device as GenericDevice
@@ -15,10 +16,6 @@ from netsnmp import VarList, Varbind, Session
 #
 
 class Junos(GenericDevice):
-
- @classmethod
- def get_type(cls):
-  return 'network'
 
  @classmethod
  def get_widgets(cls):
@@ -35,7 +32,7 @@ class Junos(GenericDevice):
   self._interfacesname = {}
  
  def __str__(self):
-  return "{} Type:{} Model:{} Version:{}".format(str(self._router),  self.get_type(), self._model, self._version)
+  return "{} Model:{} Version:{}".format(str(self._router), self._model, self._version)
 
  def __enter__(self):
   if self.connect():

@@ -3,19 +3,16 @@
 Openstack Library
 
 """
-__author__ = "Zacharias El Banna"
+__author__  = "Zacharias El Banna"
 __version__ = "17.11.01GA"
-__status__ = "Production"
+__status__  = "Production"
+__type__    = "controller"
 
 ############################################ OpenstackRPC ######################################
 #
 # OpenstackRPC Class
 #
 class OpenstackRPC(object):
-
- @classmethod
- def get_type(cls):
-  return 'linux'
 
  def __init__(self, aIP, aToken = None):
   self._token = aToken
@@ -107,9 +104,8 @@ class OpenstackRPC(object):
   from urllib2 import urlopen, Request, URLError, HTTPError
   try:
    head = { 'Content-Type': 'application/json', 'X-Auth-Token':self._token }
-   if header:
-    for key,value in header.iteritems():
-     head[key] = value
+   try:    head.update(header)
+   except: pass
    req  = Request(href, headers=head, data = dumps(args) if args else None)
    if method:
     req.get_method = lambda: method

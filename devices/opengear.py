@@ -5,6 +5,7 @@ OpenGear Console module
 __author__  = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__  = "Production"
+__type__    = "console"
 
 from generic import Device as GenericDevice, ConfObject
 from sdcp import PackageContainer as PC
@@ -15,10 +16,6 @@ from sdcp import PackageContainer as PC
 #
 
 class Device(GenericDevice, ConfObject):
-
- @classmethod
- def get_type(cls):
-  return 'console'
 
  def __init__(self, aIP, aID = None):
   GenericDevice.__init__(self,aIP, aID)

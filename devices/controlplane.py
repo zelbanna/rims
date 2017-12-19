@@ -3,15 +3,12 @@
 Control Plane Device
 
 """
-__author__ = "Zacharias El Banna"
+__author__  = "Zacharias El Banna"
 __version__ = "17.11.01GA"
-__status__ = "Production"
+__status__  = "Production"
+__type__    = "controlplane"
 
 class Device(object):
-
- @classmethod
- def get_type(cls):
-  return 'controlplane'
 
  def __init__(self, aIP, aID = None):
   pass

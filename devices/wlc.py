@@ -3,9 +3,10 @@
 WLC Base Class
 
 """
-__author__ = "Zacharias El Banna"
+__author__  = "Zacharias El Banna"
 __version__ = "17.11.01GA"
-__status__ = "Production"
+__status__  = "Production"
+__type__    = "network"
 
 from sdcp import PackageContainer as PC
 from generic import Device as GenericDevice

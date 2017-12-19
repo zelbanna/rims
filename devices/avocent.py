@@ -6,6 +6,7 @@ Avocent PDU module
 __author__  = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__  = "Production"
+__type__    = "pdu"
 
 from generic import Device as GenericDevice, ConfObject
 from sdcp import PackageContainer as PC
@@ -20,10 +21,6 @@ class Device(GenericDevice, ConfObject):
 
  _getstatemap = { '1':'off', '2':'on' }
  _setstatemap = { 'off':'3', 'on':'2', 'reboot':'4' }
-
- @classmethod
- def get_type(cls):
-  return 'pdu'
 
  @classmethod
  def get_outlet_state(cls,state):
