@@ -95,35 +95,16 @@ class OpenstackRPC(object):
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  # - header = send additional headers as dictionary
  # 
+
  def call(self,port,url,args = None, method = None, header = None):
   return self.href("http://{}:{}/{}".format(self._ip,port,url), aArgs=args, aMethod=method, aHeader = header)
 
- # Native href from openstack - simplify formatting
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
-  from json import loads, dumps
-  from urllib2 import urlopen, Request, URLError, HTTPError
-  try:
-   head = { 'Content-Type': 'application/json', 'X-Auth-Token':self._token }
-   try:    head.update(aHeader)
-   except: pass
-   req  = Request(aURL, headers=head, data = dumps(aArgs) if aArgs else None)
-   if aMethod:
-    req.get_method = lambda: aMethod
-   sock = urlopen(req)
-   result,info,code = "OK", dict(sock.info()), sock.code
-   try: data = loads(sock.read())
-   except: data = None
-   sock.close()
-  except HTTPError, h:
-   result,info,code = "HTTPError",dict(h.info()),h.code
-   raw = h.read()
-   try:    data = loads(raw)
-   except: data = raw
-  except URLError, u:
-   result,info,data,code = "URLError",str(u),None,None
-  except Exception, e:
-   result,info,data,code = "Error",str(e),None,None
-  return { 'header':info, 'result':result, 'data':data, 'code':code }
+  from sdcp.core.rest import call as rest_call
+  head = { 'X-Auth-Token':self._token }
+  try: head.update(aHeader)
+  except: pass
+  return rest_call(aURL, "X-Z-Openstack", aArgs, aMethod, head)
 
  #################################### File OPs ####################################
  #

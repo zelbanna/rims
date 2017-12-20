@@ -22,15 +22,14 @@ def update(aWeb):
  args = []
  for row in rows:
   args.append({'ip':row['ipasc'],'fqdn':"{}.{}".format(row['hostname'],row['domain']),'mac':GL.int2mac(row['mac']),'id':row['id'],'subnet_id':row['subnet_id']})
- res = rest_call(PC.dhcp['url'],"sdcp.rest.{}_update_server".format(PC.dhcp['type']),{'entries':args})
- print res
+ print rest_call(PC.dhcp['url'],"sdcp.rest.{}_update_server".format(PC.dhcp['type']),{'entries':args})['data']
 
 #
 #
 #
 def leases(aWeb):
  from sdcp.core import extras as EXT
- dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))
+ dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))['data']
  print "<ARTICLE STYLE='float:left; width:49%;'><P>DHCP Active Leases</P>"
  try: EXT.dict2table(dhcp['active'])
  except: pass

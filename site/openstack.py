@@ -146,13 +146,14 @@ def fqname(aWeb):
    from sdcp.devices.openstack import OpenstackRPC
    controller = OpenstackRPC(cookie.get('os_controller'),token)
    argument   = {'uuid':aWeb['os_uuid']}
-   ret  = controller.call("8082","id-to-fqname",args=argument,method='POST')
-   data = ret['data']
-   if ret['result'] == 'OK':
+   try:
+    data = controller.call("8082","id-to-fqname",args=argument,method='POST')['data']
     print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
     print "<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(data['fq_name']))
     print "<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?call=openstack_result&os_service=contrail&os_call={0}/{1}>{0}</A></DIV></DIV>".format(data['type'],argument['uuid'])
     print "</DIV></DIV><BR>"
+   except ResteException as re:
+    print re
  print "</ARTICLE>"
  print "<DIV ID=div_os_info></DIV>"
 
@@ -160,36 +161,32 @@ def fqname(aWeb):
 #
 #
 def result(aWeb):
- if not aWeb['os_call'] and not aWeb['os_href']:
+ if (not aWeb['os_call'] and not aWeb['os_href']) or not cookie.get('os_user_token'):
   return
+ from sdcp.core.rest import RestException
  from sdcp.devices.openstack import OpenstackRPC
  from json import dumps,loads
  cookie = aWeb.cookie
- token  = cookie.get('os_user_token')
- if not token:
-  print "Not logged in"
-  return
- controller = OpenstackRPC(cookie.get('os_controller'),token)
+ controller = OpenstackRPC(cookie.get('os_controller'),cookie.get('os_user_token'))
  try:    arguments = loads(aWeb['os_args'])
  except: arguments = None
- ret = {}
- if aWeb['os_href']:
-  ret = controller.href(aWeb['os_href'], aArgs = arguments, aMethod=aWeb['os_method'])
- else:
-  service = aWeb['os_service']
-  if service == 'contrail':
-   port,url = "8082",""
+ print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"          
+ try:
+  if aWeb['os_href']:
+   data = controller.href(aWeb['os_href'], aArgs = arguments, aMethod=aWeb['os_method'])
   else:
-   port,url = cookie.get("os_{}_port".format(service)),cookie.get("os_{}_url".format(service))
-  ret = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])
- print "<ARTICLE STYLE='overflow:auto;'>"
- print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>Result</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['result'])
- print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>HTTP Code</DIV><DIV CLASS=td>{}</DIV></DIV>".format(ret['code'])
- print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>Header</DIV><DIV CLASS=td>"
- for key,value in ret['header'].iteritems():
-  print "{}:{}<BR>".format(key,value)
- print "</DIV></DIV>"
- print "</DIV></DIV>"
- print "<DIV CLASS='border'><PRE>%s</PRE></DIV>"%(dumps(ret['data'],indent=4, sort_keys=True))
- print "</ARTICLE>"
+   service = aWeb['os_service']
+   if service == 'contrail':
+    port,url = "8082",""
+   else:
+    port,url = cookie.get("os_{}_port".format(service)),cookie.get("os_{}_url".format(service))
+   data = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])['data']
+  print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True) 
+ except RestException, re:   
+  print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>" 
+  for key,value in re.get().iteritems():
+   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)    
+  print "</DIV></DIV>" 
+ except Exception,e:
+  print "<PRE>%s</PRE>"%str(e)
+ print "</DIV></ARTICLE>"

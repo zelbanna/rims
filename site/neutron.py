@@ -23,9 +23,10 @@ def list(aWeb):
  controller = OpenstackRPC(cookie.get('os_controller'),token)
  pname = cookie.get("os_project_name")
 
- ret = controller.call("8082","virtual-networks?fields=name,display_name,virtual_network_properties,network_ipam_refs")
- if not ret['result'] == "OK":
-  print "Error retrieving list"
+ try:
+  data = controller.call("8082","virtual-networks?fields=name,display_name,virtual_network_properties,network_ipam_refs")['data']
+ except Exception as e:
+  print "<!-- %s -->Error retrieving list"%str(e)
   return
 
  print "<SECTION CLASS=content-left ID=div_content_left>"
@@ -34,7 +35,7 @@ def list(aWeb):
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Network</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- for net in ret['data']['virtual-networks']:
+ for net in data['virtual-networks']:
   if not net.get('display_name'):
    continue
   print "<DIV CLASS=tr>"
@@ -92,8 +93,8 @@ def action(aWeb):
   print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Interface</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for ip in vn['instance_ip_back_refs']:
-   iip = controller.href(ip['href'])['data']['instance-ip']
-   vmi = controller.href(iip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
+   iip = controller.href(ip['href'])['instance-ip']
+   vmi = controller.href(iip['virtual_machine_interface_refs'][0]['href'])['virtual-machine-interface']
    print "<DIV CLASS=tr>"
    print "<! -- {} -->".format(ip['href'])
    print "<! -- {} -->".format(iip['virtual_machine_interface_refs'][0]['href'])
@@ -127,13 +128,13 @@ def action(aWeb):
   for fipool in fipools:
    pool  = controller.call("8082","floating-ip-pool/{}".format(fipool))['data']['floating-ip-pool']
    for fips in pool['floating_ips']:
-    fip = controller.href(fips['href'])['data']['floating-ip']
+    fip = controller.href(fips['href'])['floating-ip']
     fixed =  fip.get('floating_ip_fixed_ip_address')
     print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(pool['display_name'],fip['floating_ip_address'])
     if fixed:
      # Do we select one or many VMI:s?
      print "<!-- {} -->".format(fip)
-     vmi = controller.href(fip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
+     vmi = controller.href(fip['virtual_machine_interface_refs'][0]['href'])['virtual-machine-interface']
      print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?call=nova_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(vmi['virtual_machine_refs'][0]['to'][0],fixed)
      print "<DIV CLASS=td><A TITLE='Network info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?call=neutron_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
      print "<DIV CLASS=td>"
@@ -152,16 +153,19 @@ def action(aWeb):
 
  elif op == 'print':
   from json import dumps
-  print "<PRE>{}</PRE>".format(dumps(controller.href(id)['data'],indent=4))
+  print "<PRE>{}</PRE>".format(dumps(controller.href(id),indent=4))
 
  elif op == 'remove':
-  ret = controller.call("8082","virtual-network/{}".format(id), method='DELETE')
-  print "<ARTICLE>{}</ARTICLE>".format(ret)
+  res = controller.call("8082","virtual-network/{}".format(id), method='DELETE')['data']
+  print "<ARTICLE>{}</ARTICLE>".format(res)
 
  elif op == 'fi_disassociate':
   fip = {'floating-ip':{'virtual_machine_interface_refs':None,'floating_ip_fixed_ip_address':None }}
-  res = controller.call("8082","floating-ip/{}".format(id),args=fip,method='PUT')
-  print "Floating IP association removed" if res['code'] == 200 else "Error - [{}]".format(res)
+  try:
+   res = controller.call("8082","floating-ip/{}".format(id),args=fip,method='PUT')['data']
+   print "Floating IP association removed"
+  except Exception as e:
+   print "Error - [%s]"%str(e)
 
  elif op == 'fi_associate_choose_vm':
   vms = controller.call(cookie.get('os_nova_port'),cookie.get('os_nova_url') + "/servers")['data']['servers']
@@ -181,8 +185,8 @@ def action(aWeb):
   print "VM: <INPUT STYLE='width:auto;' TYPE=TEXT VALUE={} disabled> Interface:<SELECT STYLE='width:auto; height:22px;' NAME=vmi>".format(vm_name)
   for vmi in vmis:
    uuid = vmi['uuid']
-   vmi = controller.href(vmi['href'])['data']['virtual-machine-interface']
-   iip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
+   vmi = controller.href(vmi['href'])['virtual-machine-interface']
+   iip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['instance-ip']
    print "<OPTION VALUE={0}#{1}>{2} ({1})</OPTION>".format(uuid,iip['instance_ip_address'],iip['virtual_network_refs'][0]['to'][2])
   print "</SELECT></FORM>"
   print aWeb.button('back', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_vm&id=%s'%id, TITLE='Change VM')
@@ -194,5 +198,8 @@ def action(aWeb):
   vmiid,_,ip = aWeb['vmi'].partition('#')
   vmi = controller.call("8082","virtual-machine-interface/{}".format(vmiid))['data']['virtual-machine-interface']
   fip = { 'floating-ip':{ 'floating_ip_fixed_ip_address':ip, 'virtual_machine_interface_refs':[ {'href':vmi['href'],'attr':None,'uuid':vmi['uuid'],'to':vmi['fq_name'] } ] } }
-  res = controller.call("8082","floating-ip/{}".format(id),args=fip,method='PUT')
-  print "Floating IP association created" if res['code'] == 200 else "Error - [{}]".format(res)
+  try:
+   res = controller.call("8082","floating-ip/{}".format(id),args=fip,method='PUT')
+   print "Floating IP association created"
+  except Exception as e:
+   print "Error - [%s]"%str(e)

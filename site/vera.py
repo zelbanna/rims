@@ -48,24 +48,22 @@ def rest_main(aWeb):
 #
 #
 def rest_execute(aWeb):
- from sdcp.rest.vera import execute as rest_execute
+ from sdcp.rest.vera import execute as rest_execute, RestException
  from json import loads,dumps
  try:    arguments = loads(aWeb['vera_args'])
  except: arguments = None
- print "<ARTICLE CLASS=info STYLE='width:auto'>"
+ print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"
  try:
   ret = rest_execute({'ip':aWeb['vera_host'], 'api':aWeb['vera_api'],'args':arguments,'method':aWeb['vera_method']})
-  data = ret.pop('data',None)
-  print "<DIV CLASS='border'><!-- %s -->"%(ret.keys())
+  print "<PRE CLASS='white'>%s</PRE>"%dumps(ret,indent=4, sort_keys=True)
+ except RestException, re:
   print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>"
-  for key in ret.keys():
-   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),ret[key])
+  for key,value in re.get().iteritems():
+   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)
   print "</DIV></DIV>"
-  print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True)
-  print "</DIV>"
  except Exception,e:
-  print "<DIV CLASS='border'><PRE>%s</PRE></DIV>"%str(e)
- print "</ARTICLE>"
+  print "<PRE>%s</PRE>"%str(e)
+ print "</DIV></ARTICLE>"
 
 #
 #
@@ -128,9 +126,9 @@ def rooms(aWeb):
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Section</DIV></DIV><DIV CLASS=tbody>"
- for room in res['rooms']:
-   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%room['id']
-   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_room_info&ip=%s&id=%s>%s</A></DIV>"%(ip,room['id'],room['name'])
-   print "<DIV CLASS=td>%s</DIV></DIV>"%(room['section'])
+ for room in res['data']['rooms']:
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%room['id']
+  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_room_info&ip=%s&id=%s>%s</A></DIV>"%(ip,room['id'],room['name'])
+  print "<DIV CLASS=td>%s</DIV></DIV>"%(room['section'])
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"

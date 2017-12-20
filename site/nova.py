@@ -22,9 +22,10 @@ def list(aWeb):
   return
  controller = OpenstackRPC(cookie.get('os_controller'),token)
 
- ret = controller.call(cookie.get('os_nova_port'),cookie.get('os_nova_url') + "/servers/detail")
- if not ret['result'] == "OK":
-  print "Error retrieving list {}".format(str(ret))
+ try:
+  data = controller.call(cookie.get('os_nova_port'),cookie.get('os_nova_url') + "/servers/detail")['data']
+ except Exception as e:
+  print "Error retrieving list %s"%str(e)
   return
 
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Nova Servers</P>"
@@ -34,7 +35,7 @@ def list(aWeb):
  print "</DIV>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- for server in ret['data'].get('servers',None):
+ for server in data.get('servers',None):
   print "<DIV CLASS=tr>"
   print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
   print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right URL=sdcp.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
@@ -133,16 +134,19 @@ def action(aWeb):
 
  elif op == 'stop' or op == 'start' or op == 'reboot':
   arg = {"os-"+op:None} if op != 'reboot' else {"reboot":{ "type":"SOFT" }}
-  ret = controller.call(port,url + "/servers/{}/action".format(aWeb['id']),args=arg)
-  print "Command executed successfully [{}]".format(str(arg)) if ret.get('code') == 202 else "Error executing command [{}]".format(str(arg))
+  try:
+   ret = controller.call(port,url + "/servers/{}/action".format(aWeb['id']),args=arg)
+   print "Command executed successfully [{}]".format(str(arg))
+  except Exception as e:
+   print "Error executing command [%s]"%str(e)
 
  elif op == 'diagnostics':
-  ret = controller.call(port,url + "/servers/{}/diagnostics".format(aWeb['id']))
-  dict2html(ret['data'])
+  data = controller.call(port,url + "/servers/{}/diagnostics".format(aWeb['id']))['data']
+  dict2html(data)
 
  elif op == 'print':
   from json import dumps
-  print "<PRE>{}</PRE>".format(dumps(controller.href(aWeb['id'])['data'],indent=4))
+  print "<PRE>{}</PRE>".format(dumps(controller.href(aWeb['id']),indent=4))
 
  elif op == 'networks':
   from json import dumps
@@ -150,8 +154,8 @@ def action(aWeb):
   print "<DIV CLASS=table STYLE='width:auto'>"
   print "<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV>"
   for vmir in vm['virtual_machine_interface_back_refs']:
-   vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']
-   ip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
+   vmi = controller.href(vmir['href'])['virtual-machine-interface']
+   ip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['instance-ip']
    print "<DIV CLASS=tbody>"
    print "<DIV CLASS=tr>"
    print "<!-- {} -->".format(vmir['href'])
@@ -160,7 +164,7 @@ def action(aWeb):
    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=sdcp.cgi?call=neutron_action&id={0}&op=info>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
    print "<DIV CLASS=td>{}</DIV>".format(ip['instance_ip_address'])
    if vmi.get('floating_ip_back_refs'):
-    fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
+    fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['floating-ip']
     print "<DIV CLASS=td>{} ({})</DIV>".format(fip['floating_ip_address'],fip['fq_name'][2])
     print "<DIV CLASS=td>&nbsp;"
     print aWeb.button('remove',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], SPIN='true')
@@ -175,13 +179,13 @@ def action(aWeb):
   print aWeb
 
  elif op == 'remove':
-  ret = controller.call(port,url + "/servers/{}".format(aWeb['id']), method='DELETE')
-  if not ret['result'] == "OK":
-   print "Error performing op {}".format(str(ret))
-   return
-  print "<ARTICLE><P>Removing VM</P>"
-  print "VM removed" if ret['code'] == 204 else "Error code: %s"%(ret['code'])
-  print "</ARTICLE>"
+  try:
+   ret = controller.call(port,url + "/servers/{}".format(aWeb['id']), method='DELETE')
+   print "<ARTICLE><P>Removing VM</P>"
+   print "VM removed" if ret['code'] == 204 else "Error code: %s"%(ret['code'])
+   print "</ARTICLE>"
+  except Exception as e:
+   print "Error performing op %s"%str(e)
 
 def console(aWeb):
  token = aWeb.cookie.get('os_user_token')
@@ -193,12 +197,13 @@ def console(aWeb):
   return
 
  controller = OpenstackRPC(aWeb.cookie.get('os_controller'),token)
- data = controller.call(aWeb.cookie.get('os_nova_port'), aWeb.cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(aWeb['id']), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})
- if data['code'] == 200:
-  url = data['data']['remote_console']['url']
+ try:
+  data = controller.call(aWeb.cookie.get('os_nova_port'), aWeb.cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(aWeb['id']), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})['data']
+  url = data['remote_console']['url']
   # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
   url = "http://" + aWeb.cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
   if not aWeb['headers']:
    print "<iframe id='console_embed' src='{}' STYLE='width: 100%; height: 100%;'></iframe>".format(url)
   else:
    aWeb.put_redirect("{}&title={}".format(url,aWeb['name']))
+ except: pass

@@ -27,9 +27,10 @@ def list(aWeb):
  id   = aWeb['id']
  op   = aWeb.get('op','info')
 
- ret = controller.call(cookie.get('os_heat_port'),cookie.get('os_heat_url') + "/stacks") 
- if not ret['result'] == "OK":
-  print "<ARTICLE>Error retrieving heat stacks <DETAILS STYLE='display:inline' TITLE='Details'><SUMMARY>%s</SUMMARY>%s</DETAILS></ARTICLE>"%(ret['code'],ret)
+ try: 
+  data = controller.call(cookie.get('os_heat_port'),cookie.get('os_heat_url') + "/stacks")['data']
+ except Exception as e:
+  print "<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e)
   return
 
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE STYLE='width:394px;'><P>Heat Stacks</P>"
@@ -38,7 +39,7 @@ def list(aWeb):
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- for stack in ret['data'].get('stacks',None):
+ for stack in data.get('stacks',None):
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_name'])
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_status'])
@@ -118,35 +119,34 @@ def action(aWeb):
   print tmpl.format('Stack Template','template','Template')
   print tmpl.format('Stack Parameters','parameters','Parameters')
   print "</DIV>"
-  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
   print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
-  dict2html(ret['data']['stack'],name)
+  data = controller.call(port,url + "/stacks/{}/{}".format(name,id))['data']
+  dict2html(data['stack'],name)
   print "</ARTICLE>"
 
  elif op == 'details':
-  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
-  dict2html(ret['data']['stack'],name)
+  data = controller.call(port,url + "/stacks/{}/{}".format(name,id))['data']
+  dict2html(data['stack'],name)
 
  elif op == 'events':
   from json import dumps
-  ret = controller.call(port,url + "/stacks/{}/{}/events".format(name,id))
+  data = controller.call(port,url + "/stacks/{}/{}/events".format(name,id))['data']
   print "<!-- {} -->".format("/stacks/{}/{}/events".format(name,id) )
   print "<DIV CLASS=table>"
   print "<DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>Resource</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th>Reason</DIV></DIV>"
   print "<DIV CLASS=tbody>"
-  for event in ret['data']['events']:
+  for data['events']:
    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(event['event_time'].replace("T"," "),event['resource_name'],event['physical_resource_id'],event['resource_status'],event['resource_status_reason'])
   print "</DIV></DIV>"
 
  elif op == 'template':
   from json import dumps
-  ret = controller.call(port,url + "/stacks/{}/{}/template".format(name,id))
-  print "<PRE>%s</PREE>"%(dumps(ret['data'], indent=4))
+  data = controller.call(port,url + "/stacks/{}/{}/template".format(name,id))['data']
+  print "<PRE>%s</PREE>"%(dumps(data, indent=4))
 
  elif op == 'parameters':
   from json import dumps
-  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id))
-  data = ret['data']['stack']['parameters']
+  data = controller.call(port,url + "/stacks/{}/{}".format(name,id))['data']['stack']['parameters']
   data.pop('OS::project_id')
   data.pop('OS::stack_name')
   data.pop('OS::stack_id')
@@ -163,6 +163,9 @@ def action(aWeb):
    params  = aWeb.get_args2dict_except(['op','call','template','name'])
    for key,value in params.iteritems():
     data['parameters'][key[6:]] = value
+
+   # Code...
+
    ret = controller.call(port,url + "/stacks",args=data)
    if ret['code'] == 201:
     print "<H2>Starting instantiation of '{}' solution</H2>".format(template.partition('.')[0])

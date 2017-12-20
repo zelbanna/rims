@@ -29,8 +29,7 @@ class RestException(Exception):
 # --- type: of ERROR
 # --- info: ERROR info
 # --- exception: type of Exception
-# --- data: single row data
-# --- items: list of data
+# --- data: data
 
 def server():
  from os import getenv, environ
@@ -81,10 +80,11 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   if aMethod:
    req.get_method = lambda: aMethod
   sock = urlopen(req)
-  result,info,code = "OK", dict(sock.info()), sock.code
-  try:    output = loads(sock.read())
-  except: output = { 'result':'NO_DATA' }
+  output = {'result':'OK', 'info':dict(sock.info()), 'code':sock.code }
+  try:    output['data']   = loads(sock.read())
+  except: output['result'] = 'NO_DATA'
   sock.close()
+  return  output
  except HTTPError, h:
   raw = h.read()
   try:    data = loads(raw)
@@ -94,7 +94,4 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   output = { 'result':'ERROR', 'type':'REST_CALL_URL',  'exception':'URLError',       'info':str(u), 'code':590 }
  except Exception, e:
   output = { 'result':'ERROR', 'type':'REST_CALL',      'exception':type(e).__name__, 'info':str(e), 'code':591 }
- if output.get('result') == 'ERROR':
-  raise RestException(output)
- else:
-  return output
+ raise RestException(output)

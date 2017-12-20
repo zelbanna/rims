@@ -8,6 +8,7 @@ __version__ = "17.11.01GA"
 __status__  = "Production"
 __type__    = "controller"
 
+from sdcp.core.rest import call as rest_call, RestException
 from sdcp.devices.generic import Device as GenericDevice
 
 class Device(GenericDevice):
@@ -23,5 +24,4 @@ class Device(GenericDevice):
   return "Controller[{}]".format(self._ip)
  
  def call(self,port,query,args = None, method = None):
-  from sdcp.core.rest import call as rest_call
   return rest_call("http://%s:%i/data_request?%s"%(self._ip,port,query), "X-Z-Vera", aArgs=args, aMethod=method)
