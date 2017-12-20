@@ -111,6 +111,7 @@ def rest_execute(aWeb):
  except RestException,re:
   data = re.get()
   data.pop('res',None)
+  print "<!-- %s -->"%(data.keys())
   print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=tbody>"
   for key in data.keys():
    print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),data[key])

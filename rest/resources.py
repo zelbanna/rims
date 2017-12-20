@@ -9,7 +9,7 @@ __status__ = "Production"
 
 def list(aDict):
  from sdcp.core.dbase import DB
- ret = {'res':'OK'}
+ ret = {'result':'OK'}
  ret['user_id'] = aDict.get('user_id',"1")
  ret['view'] = aDict.get('view',"1")
  ret['type'] = aDict.get('type')

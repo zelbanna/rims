@@ -40,7 +40,7 @@ def get_leases(aDict):
     lease['hostname'] = parts[1][:-1]
   active.sort(key=lambda d: GL.ip2int(d['ip']))
   free.sort(  key=lambda d: GL.ip2int(d['ip']))
-  return { 'res':'OK', 'active':active, 'free':free }                                
+  return { 'result':'OK', 'active':active, 'free':free }                                
 
 #
 # Update function - reload the DHCP server to use new info
@@ -57,10 +57,10 @@ def update_server(aDict):
  commands = PC.dhcp['reload'].split()
  ret = {}
  try:
-  ret['res'] = "OK"
+  ret['result'] = "OK"
   ret['output'] = check_output(commands)
  except CalledProcessError, c:
-  ret['res'] = "NOT_OK"
+  ret['result'] = "NOT_OK"
   ret['code'] = c.returncode
   ret['output'] = c.output
  return ret

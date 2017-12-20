@@ -13,7 +13,7 @@ __status__ = "Production"
 def clear_logs(aDict):
  from sdcp.core.logger import log
  logfiles = aDict.get('logs')
- result = {'res':'OK'}
+ result = {'result':'OK'}
  for logfile in logfiles:
   try:
    open(logfile,'w').close()
@@ -21,7 +21,7 @@ def clear_logs(aDict):
    result[logfile] = 'CLEARED'
   except Exception as err:
    result[logfile] = 'ERROR:{}'.format(str(err))
-   result['res'] = 'NOT_OK'
+   result['result'] = 'NOT_OK'
  return result
 
 #
@@ -33,7 +33,7 @@ def clear_logs(aDict):
 def get_logs(aDict):
  count = int(aDict.get('count',15))
  logfiles = aDict['logs']
- ret = {'res':'OK', 'logs':{}}
+ ret = {'result':'OK', 'logs':{}}
  for logfile in logfiles:
   logs = ["\r" for i in range(count)]
   pos = 0

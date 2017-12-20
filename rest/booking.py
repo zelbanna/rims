@@ -12,7 +12,7 @@ __status__ = "Production"
 #
 def booking(aDict):
  from sdcp.core.dbase import DB
- ret = {'res':'NOT_OK', 'op':aDict['op']}
+ ret = {'result':'NOT_OK', 'op':aDict['op']}
  if aDict['op'] == 'book':
   sql = "INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')"
  elif aDict['op'] == 'debook':
@@ -21,5 +21,5 @@ def booking(aDict):
   sql = "UPDATE bookings SET time_start = NOW() WHERE device_id = '{}' AND user_id = '{}'"
  with DB() as db:
   ret['update'] = db.do(sql.format(aDict['device_id'],aDict['user_id']))
-  ret['res']    = 'OK' if ret['update'] > 0 else 'NOT_OK'
+  ret['result']    = 'OK' if ret['update'] > 0 else 'NOT_OK'
  return ret

@@ -14,6 +14,7 @@ class Device(GenericDevice):
 
  def __init__(self,aIP,aID=None):
   GenericDevice.__init__(self,aIP,aID)
+  self._token = None
 
  @classmethod
  def get_widgets(cls):
@@ -38,7 +39,7 @@ class Device(GenericDevice):
   from json import loads, dumps
   from urllib2 import urlopen, Request, URLError, HTTPError
   try:
-   head = { 'Content-Type': 'application/json' }
+   head = { 'Content-Type': 'application/json', 'X-Auth-Token':self._token }
    try:    head.update(header)
    except: pass
    req  = Request(href, headers=head, data = dumps(args) if args else None)

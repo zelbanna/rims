@@ -29,7 +29,7 @@ def dedup(aDict):
     remove.append(row)
    else:
     previous = row
- return {'res':'OK', 'removed':remove}
+ return {'result':'OK', 'removed':remove}
 
 #
 # dns top lookups
@@ -54,14 +54,14 @@ def top(aDict):
  for item in  Counter(fqdn_who).most_common(count):
   parts = item[0].split('#')
   who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL.get_host_name(parts[1]), 'count':item[1]})
- return {'res':'OK', 'top':top,'who':who }
+ return {'result':'OK', 'top':top,'who':who }
 
 #################################### Domains #######################################
 #
 #
 def domains(aDict):
  log("powerdns_domains({})".format(aDict))
- ret = {'res':'OK'}
+ ret = {'result':'OK'}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   ret['xist'] = db.do("SELECT domains.* FROM domains {} ORDER BY name".format('' if not aDict.get('id') else "WHERE id = {}".format(aDict['id'])))
   ret['domains'] = db.get_rows()
@@ -77,17 +77,17 @@ def domain_lookup(aDict):
   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE id = '{}'".format(aDict['id']))
   if ret['xist'] > 0:
    ret['data'] = db.get_row()
-   ret['res'] = 'OK'
+   ret['result'] = 'OK'
   else:
    ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER' }
-   ret['res'] = 'NOT_OK'
+   ret['result'] = 'NOT_OK'
  return ret
 
 #
 #
 def domain_update(aDict):
  log("powerdns_domain_update({})".format(aDict))
- ret = {'res':'OK'}
+ ret = {'result':'OK'}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   if aDict['id'] == 'new':
    # Create and insert a lot of records
@@ -109,7 +109,7 @@ def domain_update(aDict):
 #
 def domain_delete(aDict):
  log("powerdns_domain_delete({})".format(aDict))
- ret = {'res':'OK'}
+ ret = {'result':'OK'}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   ret['xist'] = db.do("DELETE FROM domains WHERE id = %i"%(int(aDict['id'])))
  return ret
@@ -120,7 +120,7 @@ def domain_delete(aDict):
 #
 def records(aDict):
  log("powerdns_get_records({})".format(aDict))
- ret = {'res':'OK'}
+ ret = {'result':'OK'}
  try:    tune = ["domain_id = {}".format(aDict['domain_id'])]
  except: tune = []
  if aDict.get('type'):
@@ -140,10 +140,10 @@ def record_lookup(aDict):
   ret['xist'] = db.do("SELECT records.* FROM records WHERE id = '{}' AND domain_id = '{}'".format(aDict['id'],aDict['domain_id']))
   if ret['xist'] > 0:
    ret['data'] = db.get_row()
-   ret['res'] = 'OK'
+   ret['result'] = 'OK'
   else:
    ret['data'] = {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
-   ret['res'] = 'NOT_OK'
+   ret['result'] = 'NOT_OK'
  return ret
 
 #
@@ -154,7 +154,7 @@ def record_update(aDict):
  aDict['change_date'] = strftime("%Y%m%d%H")
  aDict['ttl']  = aDict.get('ttl','3600')
  aDict['type'] = aDict['type'].upper() 
- ret = {'res':'OK','id':aDict.pop('id',None)}
+ ret = {'result':'OK','id':aDict.pop('id',None)}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   if ret['id'] == 'new' or str(ret['id']) == '0':
    ret['xist'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date,prio) VALUES ({},'{}','{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'],aDict['ttl'],aDict['change_date']))
@@ -170,5 +170,5 @@ def record_remove(aDict):
  ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   ret['xist'] = db.do("DELETE FROM records WHERE id = '{}'".format(aDict['id']))
-  ret['res'] = 'OK' if ret['xist'] > 0 else 'NOT_OK'
+  ret['result'] = 'OK' if ret['xist'] > 0 else 'NOT_OK'
  return ret

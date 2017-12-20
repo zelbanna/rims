@@ -11,7 +11,7 @@ __status__ = "Production"
 #
 def infra(aDict):
  from sdcp.core.dbase import DB
- ret =  {'res':'OK' }
+ ret =  {'result':'OK' }
  with DB() as db:
   ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes") 
   ret['types']    = db.get_rows()
@@ -32,7 +32,7 @@ def infra(aDict):
 # rackinf([id:<rackid>])
 def rackinfo(aDict):
  from sdcp.core.dbase import DB
- ret  =  {'res':'OK'}
+ ret  =  {'result':'OK'}
  with DB() as db:
   if aDict.get('id'):
    data = {'name': None, 'console':[], 'pdu':[] }

@@ -55,13 +55,13 @@ def rest_execute(aWeb):
  print "<ARTICLE CLASS=info STYLE='width:auto'>"
  try:
   ret = rest_execute({'ip':aWeb['vera_host'], 'api':aWeb['vera_api'],'args':arguments,'method':aWeb['vera_method']})
+  data = ret.pop('data',None)
   print "<DIV CLASS='border'><!-- %s -->"%(ret.keys())
   print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Code</DIV><DIV CLASS=td>%s</DIV></DIV>"%(ret['code'])
-  print "<DIV CLASS=tr><DIV CLASS=td>Result</DIV><DIV CLASS=td>%s</DIV></DIV>"%(ret['result'])
-  print "<DIV CLASS=tr><DIV CLASS=td>Header</DIV><DIV CLASS=td>%s</DIV></DIV>"%(ret['header'])
+  for key in ret.keys():
+   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),ret[key])
   print "</DIV></DIV>"
-  print "<PRE CLASS='white'>%s</PRE>"%dumps(ret['data'],indent=4, sort_keys=True)
+  print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True)
   print "</DIV>"
  except Exception,e:
   print "<DIV CLASS='border'><PRE>%s</PRE></DIV>"%str(e)

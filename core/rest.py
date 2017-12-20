@@ -39,8 +39,8 @@ def server():
  api = getenv("HTTP_X_Z_APICALL")
  try:
   if api:
-   body = stdin.read()
-   args = loads(body if len(body) > 0 else '{"args":"empty"}')
+   data = stdin.read()
+   args = loads(data if len(data) > 0 else '{"args":"empty"}')
   else:
    try:
     args = dict(map(lambda x: x.split('='),getenv("QUERY_STRING").split("&")))
@@ -57,39 +57,41 @@ def server():
   stdout.write("X-Z-Fun:{}\r\n".format(fun))
  except Exception, e:
   stdout.write("X-Z-Res:ERROR\r\n")
-  data = dumps({ 'res':'ERROR', 'type':'REST_SERVER', 'exception':type(e).__name__, 'api':api, 'info':str(e), 'args':args })
+  data = dumps({ 'result':'ERROR', 'type':'REST_SERVER', 'exception':type(e).__name__, 'api':api, 'info':str(e), 'args':args })
  stdout.write("Content-Type: application/json\r\n")
  stdout.flush()
  stdout.write("\r\n")
  stdout.write(data)
 
 #
-# Make proper REST call with arg = body
+# Make proper REST call with arg = data
 # - aURL = REST API link - complete
 # - aAPI= python-path-to-module (e.g. package.path:module_fun*)
-# - aArgs = body/content if available
+# - aArgs = data/content if available
 #
 #  returns un-json:ed data
-def call(aURL, aAPI, aArgs = None, aMethod = None):
+def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
  from json import loads, dumps
- from urllib2 import urlopen, Request, HTTPError
+ from urllib2 import urlopen, Request, URLError, HTTPError
  head = { 'Content-Type': 'application/json', 'X-Z-APICALL':aAPI }
  try:
-  req = Request(aURL, headers=head, data=dumps(aArgs) if aArgs else None)
+  req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
   if aMethod:
    req.get_method = lambda: aMethod
   sock = urlopen(req)
-  try:    data = loads(sock.read())
-  except: data = { 'res':'NO_DATA' }
+  try:    output = loads(sock.read())
+  except: output = { 'result':'NO_DATA' }
   sock.close()
  except HTTPError, h:
   raw = h.read()
-  try:    body = loads(raw)
-  except: body = raw
-  data = { 'res':'ERROR', 'type':'REST_CALL_HTTP', 'exception':'HTTPError', 'body':body, 'info':dict(h.info()), 'code': h.code }
+  try:    data = loads(raw)
+  except: data = raw
+  output = { 'result':'ERROR', 'type':'REST_CALL_HTTP', 'exception':'HTTPError', 'data':data, 'info':dict(h.info()), 'code': h.code }
+ except URLError, u:
+  output = { 'result':'ERROR', 'type':'REST_CALL_URL', 'exception':'URLError', 'info':u }
  except Exception, e:
-  data = { 'res':'ERROR', 'type':'REST_CALL', 'exception':type(e).__name__, 'info':str(e) }
- if data.get('res') == 'ERROR':
-  raise RestException(data)
+  output = { 'result':'ERROR', 'type':'REST_CALL', 'exception':type(e).__name__, 'info':str(e) }
+ if output.get('result') == 'ERROR':
+  raise RestException(output)
  else:
-  return data
+  return output
