@@ -12,18 +12,19 @@ __status__ = "Production"
 #
 #
 def inventory(aWeb):
- from sdcp.rest.device import info as rest_info
- id = aWeb['id']
- data = rest_info({'id':id})
+ if aWeb['ip']:
+  ip = aWeb['ip']
+ else:
+  from sdcp.rest.device import info as rest_info
+  data = rest_info({'id':id})
+  ip = data['ip']
  print "<NAV><UL>"
- print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='sdcp.cgi?call=vera_op&nstate=poweroff&ip=%s'>Shutdown</A></LI>"%(id)
- print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_status&ip=%s>Status</A></LI>"%(data['ip'])
- print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&ip=%s>Devices</A></LI>"%(data['ip'])
- print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rooms&ip=%s>Rooms</A></LI>"%(data['ip'])
+ print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='sdcp.cgi?call=vera_op&nstate=poweroff&ip=%s'>Shutdown</A></LI>"%(ip)
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_status&ip=%s>Status</A></LI>"%ip
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&ip=%s>Devices</A></LI>"%ip
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rooms&ip=%s>Rooms</A></LI>"%ip
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
- print "<LI CLASS='right navinfo'><A>%s</A></LI>"%data['info']['hostname']
- print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rest_main&ip=%s>REST</A></LI>"%data['ip']
-
+ print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rest_main&ip=%s>REST</A></LI>"%ip
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
 
@@ -47,14 +48,13 @@ def rest_main(aWeb):
 #
 #
 def rest_execute(aWeb):
- from sdcp.devices.vera import Device
+ from sdcp.rest.vera import execute as rest_execute
  from json import loads,dumps
  try:    arguments = loads(aWeb['vera_args'])
  except: arguments = None
- ctrl = Device(aWeb['vera_host'])
- print "<ARTICLE>"
+ print "<ARTICLE CLASS=info STYLE='width:auto'>"
  try:
-  ret = ctrl.call(3480,aWeb['vera_api'],arguments,aWeb['vera_method'])
+  ret = rest_execute({'ip':aWeb['vera_host'], 'api':aWeb['vera_api'],'args':arguments,'method':aWeb['vera_method']})
   print "<DIV CLASS='border'><!-- %s -->"%(ret.keys())
   print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Code</DIV><DIV CLASS=td>%s</DIV></DIV>"%(ret['code'])
@@ -70,26 +70,24 @@ def rest_execute(aWeb):
 #
 #
 def status(aWeb):
- from sdcp.devices.vera import Device
- ctrl = Device(aWeb['ip'])
- data = ctrl.call(3480,"id=sdata")['data']
+ from sdcp.rest.vera import status as rest_status
+ data = rest_status({'ip':aWeb['ip']})['data']
  print "<ARTICLE>"
  print "<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- for key,value in res['data'].iteritems():
+ for key,value in data.iteritems():
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value)
  print "</DIV></DIV></ARTICLE>"
 
 #
 #
 def devices(aWeb):
- from sdcp.devices.vera import Device
+ from sdcp.rest.vera import status as rest_status
  ip   = aWeb.get('ip')
- ctrl = Device(ip)
- res  = ctrl.call(3480,"id=sdata")
- devs = res['data']['devices']
- cats = { data['id']: data['name'] for data in res['data']['categories'] }
- rooms= { data['id']: data['name'] for data in res['data']['rooms'] }
+ data = rest_status({'ip':ip})['data']
+ devs = data['devices']
+ cats = { d['id']: d['name'] for d in data['categories'] }
+ rooms= { d['id']: d['name'] for d in data['rooms'] }
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
  print "<DIV CLASS=table>"
@@ -105,16 +103,21 @@ def devices(aWeb):
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def device_info(aWeb):
- from sdcp.devices.vera import Device
- from json import dumps
- ip   = aWeb.get('ip')
- ctrl = Device(ip)
- res  = ctrl.call(3480,"id=status&DeviceNum=%s"%aWeb['id'])
+ from sdcp.rest.vera import dev_info as rest_dev_info
+ ip,id = aWeb.get('ip'), aWeb['id']
+ data  = rest_dev_info({'ip':ip,'id':id})['data']
+ dev   = data['Device_Num_%s'%id]
  print "<ARTICLE>"
- print "<PRE>%s</PRE>"%(dumps(res['data'],indent=4))
- print "</ARTICLE>"
+ print "<DIV CLASS=title>Device %s</DIV>"%id
+ print "<DIV>%s</DIV>"%dev.keys()
+ print "<DIV CLASS=table>"
+ print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Variable</DIV><DIV CLASS=th>Service</DIV><DIV CLASS=th>Value</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for row in dev['states']:
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['variable'],row['service'],row['value'])
+ print "</DIV></DIV></ARTICLE>"
 
-
+############################################### To Do ##############################################
 #
 #
 def rooms(aWeb):
