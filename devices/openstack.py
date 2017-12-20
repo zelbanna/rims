@@ -96,7 +96,7 @@ class OpenstackRPC(object):
  # - header = send additional headers as dictionary
  # 
  def call(self,port,url,args = None, method = None, header = None):
-  return self.href("http://{}:{}/{}".format(self._ip,port,url), aArgs=args, aMethod=method, aHeader=header)
+  return self.href("http://{}:{}/{}".format(self._ip,port,url), aArgs=args, aMethod=method, aHeader=head)
 
  # Native href from openstack - simplify formatting
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
@@ -120,9 +120,9 @@ class OpenstackRPC(object):
    try:    data = loads(raw)
    except: data = raw
   except URLError, u:
-   result,info,data,code = "URLError",u,None,None
+   result,info,data,code = "URLError",str(u),None,None
   except Exception, e:
-   result,info,data,code = "Error",e,None,None
+   result,info,data,code = "Error",str(e),None,None
   return { 'header':info, 'result':result, 'data':data, 'code':code }
 
  #################################### File OPs ####################################

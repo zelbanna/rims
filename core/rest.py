@@ -51,17 +51,17 @@ def server():
   (mod,void,fun) = api.partition('_')
   from importlib import import_module
   module = import_module(mod)
-  data   = dumps(getattr(module,fun,lambda x: { 'res':'ERROR', 'type':'REST_SERVER_FUNCTION', 'api':api, 'info':'No such function in module', 'args':x })(args))
+  output = dumps(getattr(module,fun,lambda x: { 'res':'ERROR', 'type':'REST_SERVER_FUNCTION', 'api':api, 'info':'No such function in module', 'args':x })(args))
   stdout.write("X-Z-Res:OK\r\n")
   stdout.write("X-Z-Mod:{}\r\n".format(mod))
   stdout.write("X-Z-Fun:{}\r\n".format(fun))
  except Exception, e:
   stdout.write("X-Z-Res:ERROR\r\n")
-  data = dumps({ 'result':'ERROR', 'type':'REST_SERVER', 'exception':type(e).__name__, 'api':api, 'info':str(e), 'args':args })
+  output= dumps({ 'result':'ERROR', 'type':'REST_SERVER', 'exception':type(e).__name__, 'api':api, 'info':str(e), 'code':None, 'args':args })
  stdout.write("Content-Type: application/json\r\n")
  stdout.flush()
  stdout.write("\r\n")
- stdout.write(data)
+ stdout.write(output)
 
 #
 # Make proper REST call with arg = data
@@ -73,12 +73,13 @@ def server():
 def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
  from json import loads, dumps
  from urllib2 import urlopen, Request, URLError, HTTPError
- head = { 'Content-Type': 'application/json', 'X-Z-APICALL':aAPI }
  try:
+  head = { 'Content-Type': 'application/json', 'X-Z-APICALL':aAPI }
   req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
   if aMethod:
    req.get_method = lambda: aMethod
   sock = urlopen(req)
+  result,info,code = "OK", dict(sock.info()), sock.code
   try:    output = loads(sock.read())
   except: output = { 'result':'NO_DATA' }
   sock.close()
@@ -86,11 +87,11 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   raw = h.read()
   try:    data = loads(raw)
   except: data = raw
-  output = { 'result':'ERROR', 'type':'REST_CALL_HTTP', 'exception':'HTTPError', 'data':data, 'info':dict(h.info()), 'code': h.code }
+  output = { 'result':'ERROR', 'type':'REST_CALL_HTTP', 'exception':'HTTPError',      'info':dict(h.info()), 'code': h.code, 'data':data }
  except URLError, u:
-  output = { 'result':'ERROR', 'type':'REST_CALL_URL', 'exception':'URLError', 'info':u }
+  output = { 'result':'ERROR', 'type':'REST_CALL_URL',  'exception':'URLError',       'info':str(u), 'code':None }
  except Exception, e:
-  output = { 'result':'ERROR', 'type':'REST_CALL', 'exception':type(e).__name__, 'info':str(e) }
+  output = { 'result':'ERROR', 'type':'REST_CALL',      'exception':type(e).__name__, 'info':str(e), 'code':None }
  if output.get('result') == 'ERROR':
   raise RestException(output)
  else:

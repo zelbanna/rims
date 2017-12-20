@@ -71,7 +71,7 @@ def rest_execute(aWeb):
 #
 def status(aWeb):
  from sdcp.rest.vera import status as rest_status
- data = rest_status({'ip':aWeb['ip']})['data']
+ data = rest_status({'ip':aWeb['ip']})
  print "<ARTICLE>"
  print "<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -84,7 +84,7 @@ def status(aWeb):
 def devices(aWeb):
  from sdcp.rest.vera import status as rest_status
  ip   = aWeb.get('ip')
- data = rest_status({'ip':ip})['data']
+ data = rest_status({'ip':ip})
  devs = data['devices']
  cats = { d['id']: d['name'] for d in data['categories'] }
  rooms= { d['id']: d['name'] for d in data['rooms'] }
@@ -105,7 +105,7 @@ def devices(aWeb):
 def device_info(aWeb):
  from sdcp.rest.vera import dev_info as rest_dev_info
  ip,id = aWeb.get('ip'), aWeb['id']
- data  = rest_dev_info({'ip':ip,'id':id})['data']
+ data  = rest_dev_info({'ip':ip,'id':id})
  dev   = data['Device_Num_%s'%id]
  print "<ARTICLE>"
  print "<DIV CLASS=title>Device %s</DIV>"%id
@@ -128,7 +128,7 @@ def rooms(aWeb):
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Section</DIV></DIV><DIV CLASS=tbody>"
- for room in res['data']['rooms']:
+ for room in res['rooms']:
    print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%room['id']
    print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_room_info&ip=%s&id=%s>%s</A></DIV>"%(ip,room['id'],room['name'])
    print "<DIV CLASS=td>%s</DIV></DIV>"%(room['section'])

@@ -174,7 +174,7 @@ def result(aWeb):
  except: arguments = None
  ret = {}
  if aWeb['os_href']:
-  ret = controller.href(aWeb['os_href'], args = arguments, method=aWeb['os_method'])
+  ret = controller.href(aWeb['os_href'], aArgs = arguments, aMethod=aWeb['os_method'])
  else:
   service = aWeb['os_service']
   if service == 'contrail':
