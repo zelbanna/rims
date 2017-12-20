@@ -22,6 +22,6 @@ class Device(GenericDevice):
  def __str__(self):
   return "Controller[{}]".format(self._ip)
  
- def call(self,port,query,args = None, method = None, header = None):
+ def call(self,port,query,args = None, method = None):
   from sdcp.core.rest import call as rest_call
-  return rest_call("http://%s:%i/data_request?%s"%(self._ip,port,query), "X-Z-Vera", aArgs=args, aMethod=method, aHeader=header)
+  return rest_call("http://%s:%i/data_request?%s"%(self._ip,port,query), "X-Z-Vera", aArgs=args, aMethod=method)

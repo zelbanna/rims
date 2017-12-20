@@ -75,6 +75,8 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
  from urllib2 import urlopen, Request, URLError, HTTPError
  try:
   head = { 'Content-Type': 'application/json', 'X-Z-APICALL':aAPI }
+  try:    head.update(aHeader)
+  except: pass
   req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
   if aMethod:
    req.get_method = lambda: aMethod

@@ -160,15 +160,15 @@ def openstack(aWeb):
  aWeb.add_cookie("af_controller",appf)
 
  if not mtok:
-  openstack = OpenstackRPC(ctrl,None)
-  res = openstack.auth({'project':PC.openstack['project'], 'username':PC.openstack['username'],'password':PC.openstack['password']})
-  aWeb.add_cookie("os_main_token",openstack.get_token())
+  controller = OpenstackRPC(ctrl,None)
+  res = controller.auth({'project':PC.openstack['project'], 'username':PC.openstack['username'],'password':PC.openstack['password']})
+  aWeb.add_cookie("os_main_token",controller.get_token())
   aWeb.log("openstack_login - login result: {}".format(str(res['result'])))
  else:
   aWeb.log("openstack_login - reusing token: {}".format(mtok))
-  openstack = OpenstackRPC(ctrl,mtok)
+  controller = OpenstackRPC(ctrl,mtok)
 
- ret = openstack.call("5000","v3/projects")
+ ret = controller.call("5000","v3/projects")
  projects = [] if not ret['code'] == 200 else ret['data']['projects']
 
  aWeb.put_html("{} 2 Cloud".format(name.capitalize()))
