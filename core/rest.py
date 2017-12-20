@@ -57,7 +57,7 @@ def server():
   stdout.write("X-Z-Fun:{}\r\n".format(fun))
  except Exception, e:
   stdout.write("X-Z-Res:ERROR\r\n")
-  output= dumps({ 'result':'ERROR', 'type':'REST_SERVER', 'exception':type(e).__name__, 'api':api, 'info':str(e), 'code':None, 'args':args })
+  output= dumps({ 'result':'ERROR', 'type':'REST_SERVER', 'exception':type(e).__name__, 'api':api, 'info':str(e), 'code':592, 'args':args })
  stdout.write("Content-Type: application/json\r\n")
  stdout.flush()
  stdout.write("\r\n")
@@ -89,9 +89,9 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   except: data = raw
   output = { 'result':'ERROR', 'type':'REST_CALL_HTTP', 'exception':'HTTPError',      'info':dict(h.info()), 'code': h.code, 'data':data }
  except URLError, u:
-  output = { 'result':'ERROR', 'type':'REST_CALL_URL',  'exception':'URLError',       'info':str(u), 'code':None }
+  output = { 'result':'ERROR', 'type':'REST_CALL_URL',  'exception':'URLError',       'info':str(u), 'code':590 }
  except Exception, e:
-  output = { 'result':'ERROR', 'type':'REST_CALL',      'exception':type(e).__name__, 'info':str(e), 'code':None }
+  output = { 'result':'ERROR', 'type':'REST_CALL',      'exception':type(e).__name__, 'info':str(e), 'code':591 }
  if output.get('result') == 'ERROR':
   raise RestException(output)
  else:
