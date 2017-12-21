@@ -8,7 +8,6 @@ __version__ = "17.11.01GA"
 __status__= "Production"
 
 from sdcp import PackageContainer as PC
-from sdcp.core.rest import call as rest_call
 
 #
 #
@@ -22,14 +21,14 @@ def update(aWeb):
  args = []
  for row in rows:
   args.append({'ip':row['ipasc'],'fqdn':"{}.{}".format(row['hostname'],row['domain']),'mac':GL.int2mac(row['mac']),'id':row['id'],'subnet_id':row['subnet_id']})
- print rest_call(PC.dhcp['url'],"sdcp.rest.{}_update_server".format(PC.dhcp['type']),{'entries':args})['data']
+ print aWeb.rest_call(PC.dhcp['url'],"sdcp.rest.{}_update_server".format(PC.dhcp['type']),{'entries':args})['data']
 
 #
 #
 #
 def leases(aWeb):
  from sdcp.core import extras as EXT
- dhcp = rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))['data']
+ dhcp = aWeb.rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))['data']
  print "<ARTICLE STYLE='float:left; width:49%;'><P>DHCP Active Leases</P>"
  try: EXT.dict2table(dhcp['active'])
  except: pass

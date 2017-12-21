@@ -35,9 +35,10 @@ class OpenstackRPC(object):
   from urllib2 import urlopen, Request, URLError, HTTPError
   from time import mktime, strptime
   try:
-   head = { 'Content-Type': 'application/json' }
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
-   sock = urlopen(Request("http://{}:{}/{}".format(self._ip,"5000","v3/auth/tokens"), headers=head, data=dumps(auth)))
+   aURL = "http://{}:{}/{}".format(self._ip,"5000","v3/auth/tokens")
+   head = { 'Content-Type': 'application/json' }
+   sock = urlopen(Request(aURL, headers=head, data=dumps(auth)))
    # If sock code is created (201), not ok (200) - we can expect to find a token
    if sock.code == 201:
     data = loads(sock.read())
@@ -104,7 +105,7 @@ class OpenstackRPC(object):
   head = { 'X-Auth-Token':self._token }
   try: head.update(aHeader)
   except: pass
-  return rest_call(aURL, "X-Z-Openstack", aArgs, aMethod, head)
+  return rest_call(aURL, "openstack", aArgs, aMethod, head)
 
  #################################### File OPs ####################################
  #

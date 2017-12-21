@@ -24,6 +24,7 @@ def inventory(aWeb):
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&ip=%s>Devices</A></LI>"%ip
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rooms&ip=%s>Rooms</A></LI>"%ip
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
+ print "<LI CLASS='right navinfo'><A CLASS=z-op TARGET=_blank HREF='http://%s/cmh/'>UI</A></LI>"%(ip)
  print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rest_main&ip=%s>REST</A></LI>"%ip
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
@@ -59,7 +60,7 @@ def rest_execute(aWeb):
  except RestException, re:
   print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>"
   for key,value in re.get().iteritems():
-   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)
+   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key.upper(),value)
   print "</DIV></DIV>"
  except Exception,e:
   print "<PRE>%s</PRE>"%str(e)

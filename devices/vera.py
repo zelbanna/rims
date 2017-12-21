@@ -24,4 +24,4 @@ class Device(GenericDevice):
   return "Controller[{}]".format(self._ip)
  
  def call(self,port,query,args = None, method = None):
-  return rest_call("http://%s:%i/data_request?%s"%(self._ip,port,query), "X-Z-Vera", aArgs=args, aMethod=method)
+  return rest_call("http://%s:%i/data_request?%s"%(self._ip,port,query), "vera", aArgs=args, aMethod=method)

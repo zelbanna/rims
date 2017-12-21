@@ -50,13 +50,13 @@ def server():
   (mod,void,fun) = api.partition('_')
   from importlib import import_module
   module = import_module(mod)
-  output = dumps(getattr(module,fun,lambda x: { 'res':'ERROR', 'type':'REST_SERVER_FUNCTION', 'api':api, 'info':'No such function in module', 'args':x })(args))
+  output = dumps(getattr(module,fun,lambda x: { 'result':'ERROR', 'type':'REST_SERVER_FUNCTION', 'api':api, 'exception':'no_such_dunction', 'info':'No such function in module', 'args':x })(args))
   stdout.write("X-Z-Res:OK\r\n")
   stdout.write("X-Z-Mod:{}\r\n".format(mod))
   stdout.write("X-Z-Fun:{}\r\n".format(fun))
  except Exception, e:
   stdout.write("X-Z-Res:ERROR\r\n")
-  output= dumps({ 'result':'ERROR', 'type':'REST_SERVER', 'exception':type(e).__name__, 'api':api, 'info':str(e), 'code':592, 'args':args })
+  output= dumps({ 'result':'SERVER_ERROR', 'exception':type(e).__name__, 'api':api, 'info':str(e), 'code':592, 'args':args })
  stdout.write("Content-Type: application/json\r\n")
  stdout.flush()
  stdout.write("\r\n")
@@ -80,18 +80,21 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   if aMethod:
    req.get_method = lambda: aMethod
   sock = urlopen(req)
-  output = {'result':'OK', 'info':dict(sock.info()), 'code':sock.code }
+  output = {'result':'CALL_OK', 'info':dict(sock.info()), 'code':sock.code }
   try:    output['data']   = loads(sock.read())
-  except: output['result'] = 'NO_DATA'
+  except: output['result'] = 'CALL_OK_NO_DATA'
+  if output['data'].get('result') == 'SERVER_ERROR':
+   output = output['data']
   sock.close()
-  return  output
  except HTTPError, h:
   raw = h.read()
   try:    data = loads(raw)
   except: data = raw
-  output = { 'result':'ERROR', 'type':'REST_CALL_HTTP', 'exception':'HTTPError',      'info':dict(h.info()), 'code': h.code, 'data':data }
+  output = { 'result':'CALL_ERROR', 'exception':'HTTPError',      'info':dict(h.info()), 'code': h.code, 'data':data }
  except URLError, u:
-  output = { 'result':'ERROR', 'type':'REST_CALL_URL',  'exception':'URLError',       'info':str(u), 'code':590 }
+  output = { 'result':'CALL_ERROR', 'exception':'URLError',       'info':str(u), 'code':590 }
  except Exception, e:
-  output = { 'result':'ERROR', 'type':'REST_CALL',      'exception':type(e).__name__, 'info':str(e), 'code':591 }
- raise RestException(output)
+  output = { 'result':'CALL_ERROR', 'exception':type(e).__name__, 'info':str(e), 'code':591 }
+ if output['result'][-5:] == "ERROR":
+  raise RestException(output)  
+ return output

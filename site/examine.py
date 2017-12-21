@@ -35,17 +35,15 @@ def main(aWeb):
 #
 #
 def clear(aWeb):
- from sdcp.core.rest import call as rest_call
- res_dns  = rest_call(PC.dns['url'],'sdcp.rest.examine_clear_logs',{ 'logs':[PC.generic['logformat']]})['data']
- res_host = rest_call("http://127.0.0.1/rest.cgi",'sdcp.rest.examine_clear_logs',{ 'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})['data']
+ res_dns  = aWeb.rest_call(PC.dns['url'],'sdcp.rest.examine_clear_logs',{ 'logs':[PC.generic['logformat']]})['data']
+ res_host = aWeb.rest_call("http://127.0.0.1/rest.cgi",'sdcp.rest.examine_clear_logs',{ 'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})['data']
  print "<ARTICLE>%s<BR>%s</ARTICLE>"%(res_host,res_dns)
 
 #
 # Internal Logs
 #
 def logs(aWeb):
- from sdcp.core.rest import call as rest_call
- res = rest_call("http://{}/rest.cgi".format(aWeb['ip']),'sdcp.rest.examine_get_logs',{'count':18,'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})['data']
+ res = aWeb.rest_call("http://{}/rest.cgi".format(aWeb['ip']),'sdcp.rest.examine_get_logs',{'count':18,'logs':[PC.generic['logformat'],PC.sdcp['netlogs']]})['data']
  for file,logs in res['logs'].iteritems():
   print "<ARTICLE><P>%s</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(file,"<BR>".join(logs))
 

@@ -36,6 +36,10 @@ class Web(object):
   from logger import log
   log(aMsg,self.cookie.get("{}_id".format(self._base)))
 
+ def rest_call(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
+  from rest import call
+  return call(aURL, aAPI, aArgs, aMethod, aHeader)
+
  # Header Key/Values
  def add_header(self,aKey,aValue):
   self._header[aKey] = aValue

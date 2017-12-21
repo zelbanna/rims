@@ -55,9 +55,8 @@ def db_table(aWeb):
 #
 #
 def install(aWeb):
- from sdcp.core.rest import call as rest_call
  from json import dumps
- print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(rest_call("http://{}/rest.cgi".format(aWeb['host']),"sdcp.rest.tools_installation")['data'],indent = 4)
+ print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_call("http://{}/rest.cgi".format(aWeb['host']),"sdcp.rest.tools_installation")['data'],indent = 4)
 
 #
 #
@@ -69,8 +68,7 @@ def test_sleep(aWeb):
 #
 #
 def test_rest(aWeb):
- from sdcp.core.rest import call as rest_call
- res = rest_call("http://127.0.0.1/rest.cgi","tools_test")
+ res = aWeb.rest_call("http://127.0.0.1/rest.cgi","tools_test")
  print "Done"
 
 #
@@ -98,13 +96,13 @@ def rest_main(aWeb):
 #
 #
 def rest_execute(aWeb):
- from sdcp.core.rest import call as rest_call, RestException
+ from sdcp.core.rest import RestException
  from json import loads,dumps
  try:    arguments = loads(aWeb['sdcp_args'])
  except: arguments = None
  print "<ARTICLE>"
  try:
-  ret = rest_call("http://{}/rest.cgi".format(aWeb['sdcp_host']),aWeb['sdcp_api'],arguments,aWeb['sdcp_method'])['data']
+  ret = aWeb.rest_call("http://{}/rest.cgi".format(aWeb['sdcp_host']),aWeb['sdcp_api'],arguments,aWeb['sdcp_method'])['data']
   print "<DIV CLASS='border'>"
   print "<PRE CLASS='white'>%s</PRE>"%dumps(ret,indent=4, sort_keys=True)
   print "</DIV>"

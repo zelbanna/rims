@@ -87,7 +87,6 @@ def info(aWeb):
 
  elif op == 'update':
   from sdcp import PackageContainer as PC
-  from sdcp.core.rest import call as rest_call
   d = aWeb.get_args2dict_except(['call','op','ip'])
   if d['devices_hostname'] != 'unknown':
    if not d.get('devices_vm'):
@@ -105,7 +104,7 @@ def info(aWeb):
     fqdn = ".".join([d['devices_hostname'],db.get_val('name') if xist > 0 else 'local'])
    for type,name,content in [('a',fqdn,ddi['ip']),('ptr',GL.ip2ptr(ddi['ip']),fqdn)]:
     if ddi['%s_dom_id'%(type)]:
-     opres[type] = rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':type.upper(), 'id':ddi['%s_id'%(type)], 'domain_id':ddi['%s_dom_id'%(type)], 'name':name, 'content':content })['data']
+     opres[type] = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':type.upper(), 'id':ddi['%s_id'%(type)], 'domain_id':ddi['%s_dom_id'%(type)], 'name':name, 'content':content })['data']
      if not str(opres[type]['id']) == str(ddi['%s_id'%(type)]):
       d['devices_%s_id'%(type)] = opres[type]['id']
    opres['update'] = rest_update(d)
@@ -394,10 +393,9 @@ def remove(aWeb):
  print "<ARTICLE>"
  print "Unit {} deleted, DB:{}".format(id,ret['deleted'])
  if ret['res'] == 'OK':
-  from sdcp.core.rest import call as rest_call
   from sdcp import PackageContainer as PC
-  arec = rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['a_id']})['data']   if ret['a_id']   else 0
-  prec = rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['ptr_id']})['data'] if ret['ptr_id'] else 0
+  arec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['a_id']})['data']   if ret['a_id']   else 0
+  prec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['ptr_id']})['data'] if ret['ptr_id'] else 0
   print ",A:%s,PTR:%s"%(arec,prec)
  print "</ARTICLE>"
 
