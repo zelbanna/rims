@@ -146,7 +146,7 @@ def action(aWeb):
 
  elif op == 'print':
   from json import dumps
-  print "<PRE>{}</PRE>".format(dumps(controller.href(aWeb['id']),indent=4))
+  print "<PRE>{}</PRE>".format(dumps(controller.href(aWeb['id'])['data'],indent=4))
 
  elif op == 'networks':
   from json import dumps
@@ -154,8 +154,8 @@ def action(aWeb):
   print "<DIV CLASS=table STYLE='width:auto'>"
   print "<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV>"
   for vmir in vm['virtual_machine_interface_back_refs']:
-   vmi = controller.href(vmir['href'])['virtual-machine-interface']
-   ip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['instance-ip']
+   vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']
+   ip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
    print "<DIV CLASS=tbody>"
    print "<DIV CLASS=tr>"
    print "<!-- {} -->".format(vmir['href'])
@@ -164,7 +164,7 @@ def action(aWeb):
    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=sdcp.cgi?call=neutron_action&id={0}&op=info>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
    print "<DIV CLASS=td>{}</DIV>".format(ip['instance_ip_address'])
    if vmi.get('floating_ip_back_refs'):
-    fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['floating-ip']
+    fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
     print "<DIV CLASS=td>{} ({})</DIV>".format(fip['floating_ip_address'],fip['fq_name'][2])
     print "<DIV CLASS=td>&nbsp;"
     print aWeb.button('remove',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], SPIN='true')

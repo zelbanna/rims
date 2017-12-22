@@ -93,8 +93,8 @@ def action(aWeb):
   print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Interface</DIV></DIV>"
   print "<DIV CLASS=tbody>"
   for ip in vn['instance_ip_back_refs']:
-   iip = controller.href(ip['href'])['instance-ip']
-   vmi = controller.href(iip['virtual_machine_interface_refs'][0]['href'])['virtual-machine-interface']
+   iip = controller.href(ip['href'])['data']['instance-ip']
+   vmi = controller.href(iip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
    print "<DIV CLASS=tr>"
    print "<! -- {} -->".format(ip['href'])
    print "<! -- {} -->".format(iip['virtual_machine_interface_refs'][0]['href'])
@@ -128,13 +128,13 @@ def action(aWeb):
   for fipool in fipools:
    pool  = controller.call("8082","floating-ip-pool/{}".format(fipool))['data']['floating-ip-pool']
    for fips in pool['floating_ips']:
-    fip = controller.href(fips['href'])['floating-ip']
+    fip = controller.href(fips['href'])['data']['floating-ip']
     fixed =  fip.get('floating_ip_fixed_ip_address')
     print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(pool['display_name'],fip['floating_ip_address'])
     if fixed:
      # Do we select one or many VMI:s?
      print "<!-- {} -->".format(fip)
-     vmi = controller.href(fip['virtual_machine_interface_refs'][0]['href'])['virtual-machine-interface']
+     vmi = controller.href(fip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
      print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?call=nova_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(vmi['virtual_machine_refs'][0]['to'][0],fixed)
      print "<DIV CLASS=td><A TITLE='Network info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?call=neutron_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
      print "<DIV CLASS=td>"
@@ -153,7 +153,7 @@ def action(aWeb):
 
  elif op == 'print':
   from json import dumps
-  print "<PRE>{}</PRE>".format(dumps(controller.href(id),indent=4))
+  print "<PRE>{}</PRE>".format(dumps(controller.href(id)['data'],indent=4))
 
  elif op == 'remove':
   res = controller.call("8082","virtual-network/{}".format(id), method='DELETE')['data']
@@ -185,8 +185,8 @@ def action(aWeb):
   print "VM: <INPUT STYLE='width:auto;' TYPE=TEXT VALUE={} disabled> Interface:<SELECT STYLE='width:auto; height:22px;' NAME=vmi>".format(vm_name)
   for vmi in vmis:
    uuid = vmi['uuid']
-   vmi = controller.href(vmi['href'])['virtual-machine-interface']
-   iip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['instance-ip']
+   vmi = controller.href(vmi['href'])['data']['virtual-machine-interface']
+   iip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
    print "<OPTION VALUE={0}#{1}>{2} ({1})</OPTION>".format(uuid,iip['instance_ip_address'],iip['virtual_network_refs'][0]['to'][2])
   print "</SELECT></FORM>"
   print aWeb.button('back', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_vm&id=%s'%id, TITLE='Change VM')
