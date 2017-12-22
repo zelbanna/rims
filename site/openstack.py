@@ -134,12 +134,11 @@ def api(aWeb):
 #
 def fqname(aWeb):
  print "<ARTICLE>"
- print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT STYLE='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else "")
+ print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else "")
  print aWeb.button('start',  DIV='div_content', URL='sdcp.cgi?call=openstack_fqname', FRM='frm_os_uuid')
  if aWeb['os_uuid']:
   from json import dumps,loads
-  cookie = aWeb.cookie
-  token  = cookie.get('os_user_token')
+  token  = aWeb.cookie.get('os_user_token')
   if not token:
    print "Not logged in"
   else:
@@ -161,15 +160,14 @@ def fqname(aWeb):
 #
 #
 def result(aWeb):
- if (not aWeb['os_call'] and not aWeb['os_href']) or not cookie.get('os_user_token'):
+ if (not aWeb['os_call'] and not aWeb['os_href']) or not aWeb.cookie.get('os_user_token'):
   return
  from sdcp.devices.openstack import OpenstackRPC
  from json import dumps,loads
- cookie = aWeb.cookie
- controller = OpenstackRPC(cookie.get('os_controller'),cookie.get('os_user_token'))
+ controller = OpenstackRPC(aWeb.cookie.get('os_controller'),aWeb.cookie.get('os_user_token'))
  try:    arguments = loads(aWeb['os_args'])
  except: arguments = None
- print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"          
+ print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"
  try:
   if aWeb['os_href']:
    data = controller.href(aWeb['os_href'], aArgs = arguments, aMethod=aWeb['os_method'])
