@@ -126,7 +126,7 @@ def info(aWeb):
 
  width = 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
- print "<ARTICLE CLASS='info' STYLE='position:relative; resize:horizontal; margin-left:0px; width:{}px;'><P>Device Info</P>".format(width)
+ print "<ARTICLE CLASS='info' STYLE='position:relative; width:{}px;'><P>Device Info</P>".format(width)
  print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
