@@ -45,7 +45,7 @@ def server():
   stdout.write("X-Z-Res:ERROR\r\n")
   stdout.write("X-Z-Args:%s\r\n"%args)
   stdout.write("X-Z-Info:%s\r\n"%str(e))
-  stdout.write("X-Z-Xctp:%s\r\n"%type(e).__name__)
+  stdout.write("X-Z-Exception:%s\r\n"%type(e).__name__)
  else:
   stdout.write("X-Z-Res:OK\r\n")
   stdout.write("X-Z-Mod:{}\r\n".format(mod))
@@ -73,19 +73,20 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   if aMethod:
    req.get_method = lambda: aMethod
   sock = urlopen(req)
-  output = {'result':'CALL_OK', 'info':dict(sock.info()), 'code':sock.code }
-  try:    output['data']   = loads(sock.read())
-  except: output['result'] = 'CALL_OK_NO_DATA'
+  output = {'info':dict(sock.info()), 'code':sock.code }
+  try:    output['data'] = loads(sock.read())
+  except: output['data'] = None
+  output['result'] = output['info'].get('x-z-res','OK')
   sock.close()
  except HTTPError, h:
   raw = h.read()
   try:    data = loads(raw)
   except: data = raw
-  output = { 'result':'CALL_ERROR', 'exception':'HTTPError',      'info':dict(h.info()), 'code': h.code, 'data':data }
+  output = { 'result':'ERROR', 'exception':'HTTPError',      'info':dict(h.info()), 'code': h.code, 'data':data }
  except URLError, u:
-  output = { 'result':'CALL_ERROR', 'exception':'URLError',       'info':dict({'error':str(u)}), 'code':590 }
+  output = { 'result':'ERROR', 'exception':'URLError',       'info':dict({'x-z-res':'ERROR', 'x-z-info':str(u)}), 'code':590 }
  except Exception, e:
-  output = { 'result':'CALL_ERROR', 'exception':type(e).__name__, 'info':dict({'error':str(e)}), 'code':591 }
- if output['result'] == "CALL_ERROR":
+  output = { 'result':'ERROR', 'exception':type(e).__name__, 'info':dict({'x-z-res':'ERROR', 'x-z-info':str(e)}), 'code':591 }
+ if output['result'] == "ERROR":
   raise Exception(output)
  return output
