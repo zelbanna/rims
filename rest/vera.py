@@ -15,22 +15,18 @@ from sdcp.devices.vera import Device
 # args
 def execute(aDict):
  controller = Device(aDict['ip'])
- return controller.call(3480,aDict['api'],aDict['args'],aDict['method'])['data']
+ return controller.call(3480,aDict['api'],aDict['args'],aDict['method'])
 
 #
 # ip
 def status(aDict):
  controller = Device(aDict['ip'])
- ret = controller.call(3480,"id=sdata")['data']
- ret.pop('header',None)
- ret.pop('code',None)
- return ret
+ return controller.call(3480,"id=sdata")['data']
 
 #
 # ip
 # id (of device)
 def dev_info(aDict):
  controller = Device(aDict['ip'])
- ret = controller.call(3480,"id=status&DeviceNum=%s"%aDict['id'])['data']
- return ret
+ return controller.call(3480,"id=status&DeviceNum=%s"%aDict['id'])['data']
 

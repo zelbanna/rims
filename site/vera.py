@@ -33,15 +33,15 @@ def inventory(aWeb):
 #
 def rest_main(aWeb):
  print "<ARTICLE><P>REST API inspection</P>"
- print "<FORM ID=frm_vera_rest><INPUT TYPE=hidden NAME=vera_host VALUE='%s'>"%aWeb['ip']
- print "Enter API: <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=vera_api><BR>"
- print "Call 'Method': <SELECT STYLE='width:70px; height:22px;' NAME=vera_method>"
+ print "<FORM ID=frm_rest><INPUT TYPE=hidden NAME=host VALUE='%s'>"%aWeb['ip']
+ print "Enter API: <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
+ print "Call 'Method': <SELECT STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
- print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=vera_rest_execute', FRM='frm_vera_rest')
+ print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=vera_rest_execute', FRM='frm_rest')
  print aWeb.button('remove', DIV='div_rest_info', OP='empty', TITLE='Clear results view')
- print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:100px;' NAME=vera_args></TEXTAREA>"
+ print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:100px;' NAME=args></TEXTAREA>"
  print "</FORM>"
  print "</ARTICLE>"
  print "<DIV ID=div_rest_info></DIV>"
@@ -51,17 +51,21 @@ def rest_main(aWeb):
 def rest_execute(aWeb):
  from sdcp.rest.vera import execute as rest_execute
  from json import loads,dumps
- try:    arguments = loads(aWeb['vera_args'])
+ try:    arguments = loads(aWeb['args'])
  except: arguments = None
- print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"
  try:
-  ret = rest_execute({'ip':aWeb['vera_host'], 'api':aWeb['vera_api'],'args':arguments,'method':aWeb['vera_method']})
-  print "<PRE CLASS='white'>%s</PRE>"%dumps(ret,indent=4, sort_keys=True)
- except Exception as e:
-  print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>"
-  for key,value in e[0].iteritems():
-   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key.upper(),value)
-  print "</DIV></DIV>"
+  ret = rest_execute({'ip':aWeb['host'], 'api':aWeb['api'],'args':arguments,'method':aWeb['method']})
+ except Exception,e:
+  ret = e[0] 
+ data = ret.pop('data',None)
+ print "<ARTICLE STYLE='width:auto'>"
+ print "<DIV CLASS='border'>"    
+ print "<!-- %s -->"%(ret.keys())  
+ print "<DIV CLASS=table STYLE='table-layout:fixed; width:100%; '><DIV CLASS=tbody>"
+ for key,value in ret.iteritems():
+  print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td STYLE='white-space:normal'>{}</DIV></DIV>".format(key.upper(),value)                 
+ print "</DIV></DIV>" 
+ print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True)                                  
  print "</DIV></ARTICLE>"
 
 #

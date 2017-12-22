@@ -69,26 +69,26 @@ def test_sleep(aWeb):
 #
 def test_rest(aWeb):
  res = aWeb.rest_call("http://127.0.0.1/rest.cgi","tools_test")
- print "Done"
+ print res
 
 #
 #
 def rest_main(aWeb):
  from sdcp import PackageContainer as PC
  print "<ARTICLE><P>REST API inspection</P>"
- print "<FORM ID=frm_sdcp_rest>"
- print "Choose host and enter API:<SELECT STYLE='height:22px;' NAME=sdcp_host>"
+ print "<FORM ID=frm_rest>"
+ print "Choose host and enter API:<SELECT STYLE='height:22px;' NAME=host>"
  print "<OPTION VALUE=127.0.0.1>Local Host</A>"
  if PC.sdcp['svcsrv']:
   print "<OPTION VALUE={0}>Service Host</OPTION>".format(PC.sdcp['svcsrv'])
- print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=sdcp_api><BR>"
- print "Call 'Method': <SELECT STYLE='width:70px; height:22px;' NAME=sdcp_method>"
+ print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
+ print "Call 'Method': <SELECT STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
- print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=tools_rest_execute', FRM='frm_sdcp_rest')
+ print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=tools_rest_execute', FRM='frm_rest')
  print aWeb.button('remove', DIV='div_rest_info', OP='empty', TITLE='Clear results view')
- print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:100px;' NAME=sdcp_args></TEXTAREA>"
+ print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:100px;' NAME=args></TEXTAREA>"
  print "</FORM>"
  print "</ARTICLE>"
  print "<DIV ID=div_rest_info></DIV>"
@@ -97,20 +97,19 @@ def rest_main(aWeb):
 #
 def rest_execute(aWeb):
  from json import loads,dumps
- try:    arguments = loads(aWeb['sdcp_args'])
+ try:    arguments = loads(aWeb['args'])
  except: arguments = None
- print "<ARTICLE>"
  try:
-  ret = aWeb.rest_call("http://{}/rest.cgi".format(aWeb['sdcp_host']),aWeb['sdcp_api'],arguments,aWeb['sdcp_method'])['data']
-  print "<DIV CLASS='border'>"
-  print "<PRE CLASS='white'>%s</PRE>"%dumps(ret,indent=4, sort_keys=True)
-  print "</DIV>"
+  ret = aWeb.rest_call("http://{}/rest.cgi".format(aWeb['host']),aWeb['api'],arguments,aWeb['method'])
  except Exception,e:
-  data = e[0]
-  data.pop('res',None)
-  print "<!-- %s -->"%(data.keys())
-  print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=tbody>"
-  for key in data.keys():
-   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),data[key])
-  print "</DIV></DIV>"
- print "</ARTICLE>"
+  ret = e[0]
+ data = ret.pop('data',None)
+ print "<ARTICLE STYLE='width:auto'>"
+ print "<DIV CLASS='border'>"
+ print "<!-- %s -->"%(ret.keys())
+ print "<DIV CLASS=table STYLE='table-layout:fixed; width:100%; '><DIV CLASS=tbody>"
+ for key,value in ret.iteritems():
+  print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td STYLE='white-space:normal'>{}</DIV></DIV>".format(key.upper(),value)
+ print "</DIV></DIV>"
+ print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True)
+ print "</DIV></ARTICLE>"

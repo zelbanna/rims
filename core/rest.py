@@ -40,15 +40,16 @@ def server():
   from importlib import import_module
   module = import_module(mod)
   output = dumps(getattr(module,fun,None)(args))
-  stdout.write("X-Z-Res:OK\r\n")
-  stdout.write("X-Z-Mod:{}\r\n".format(mod))
-  stdout.write("X-Z-Fun:{}\r\n".format(fun))
  except Exception, e:
   output = 'null'
   stdout.write("X-Z-Res:ERROR\r\n")
   stdout.write("X-Z-Args:%s\r\n"%args)
   stdout.write("X-Z-Info:%s\r\n"%str(e))
   stdout.write("X-Z-Xctp:%s\r\n"%type(e).__name__)
+ else:
+  stdout.write("X-Z-Res:OK\r\n")
+  stdout.write("X-Z-Mod:{}\r\n".format(mod))
+  stdout.write("X-Z-Fun:{}\r\n".format(fun))
  stdout.write("Content-Type: application/json\r\n")
  stdout.flush()
  stdout.write("\r\n")
@@ -82,9 +83,9 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   except: data = raw
   output = { 'result':'CALL_ERROR', 'exception':'HTTPError',      'info':dict(h.info()), 'code': h.code, 'data':data }
  except URLError, u:
-  output = { 'result':'CALL_ERROR', 'exception':'URLError',       'info':str(u), 'code':590 }
+  output = { 'result':'CALL_ERROR', 'exception':'URLError',       'info':dict({'error':str(u)}), 'code':590 }
  except Exception, e:
-  output = { 'result':'CALL_ERROR', 'exception':type(e).__name__, 'info':str(e), 'code':591 }
- if output['result'][-5:] == "ERROR":
-  raise Exception(output)  
+  output = { 'result':'CALL_ERROR', 'exception':type(e).__name__, 'info':dict({'error':str(e)}), 'code':591 }
+ if output['result'] == "CALL_ERROR":
+  raise Exception(output)
  return output
