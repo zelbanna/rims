@@ -49,7 +49,7 @@ def rest_main(aWeb):
 #
 #
 def rest_execute(aWeb):
- from sdcp.rest.vera import execute as rest_execute, RestException
+ from sdcp.rest.vera import execute as rest_execute
  from json import loads,dumps
  try:    arguments = loads(aWeb['vera_args'])
  except: arguments = None
@@ -57,13 +57,11 @@ def rest_execute(aWeb):
  try:
   ret = rest_execute({'ip':aWeb['vera_host'], 'api':aWeb['vera_api'],'args':arguments,'method':aWeb['vera_method']})
   print "<PRE CLASS='white'>%s</PRE>"%dumps(ret,indent=4, sort_keys=True)
- except RestException, re:
+ except Exception as e:
   print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>"
-  for key,value in re.get().iteritems():
+  for key,value in e[0].iteritems():
    print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key.upper(),value)
   print "</DIV></DIV>"
- except Exception,e:
-  print "<PRE>%s</PRE>"%str(e)
  print "</DIV></ARTICLE>"
 
 #

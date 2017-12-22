@@ -99,7 +99,7 @@ class Web(object):
    if headers == 'no' or mod == 'front':
     stdout.write("Content-Type: text/html\r\n")
    keys    = self.form.keys()
-   details = ("AJAX",self._base,mod_fun,type(e).__name__,",".join(keys), str(e)) if not type(e).__name__ == 'RestException' else (e.get('type'),self._base,e.get('api'),e.get('exception'),e.get('args'),e.get('info')) 
+   details = ("AJAX",self._base,mod_fun,type(e).__name__,",".join(keys), str(e)) 
    stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>Type: %s<BR>API: %s.site.%s<BR>Excpt: %s<BR><DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%details)
 
  ############################## CGI/Web functions ###############################

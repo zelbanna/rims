@@ -96,7 +96,6 @@ def rest_main(aWeb):
 #
 #
 def rest_execute(aWeb):
- from sdcp.core.rest import RestException
  from json import loads,dumps
  try:    arguments = loads(aWeb['sdcp_args'])
  except: arguments = None
@@ -106,8 +105,8 @@ def rest_execute(aWeb):
   print "<DIV CLASS='border'>"
   print "<PRE CLASS='white'>%s</PRE>"%dumps(ret,indent=4, sort_keys=True)
   print "</DIV>"
- except RestException,re:
-  data = re.get()
+ except Exception,e:
+  data = e[0]
   data.pop('res',None)
   print "<!-- %s -->"%(data.keys())
   print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=tbody>"

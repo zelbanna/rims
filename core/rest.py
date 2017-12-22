@@ -7,17 +7,6 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
-class RestException(Exception):
- '''Raise REST exceptions'''
- def __init__(self,args):
-  self._args = args
-
- def __str__(self):
-  return "RestException(%s)"%self._args
-
- def get(self,aKey = None):
-  return self._args if not aKey else self._args.get(aKey,None)
-
 #
 # Make proper REST responses
 #
@@ -50,13 +39,16 @@ def server():
   (mod,void,fun) = api.partition('_')
   from importlib import import_module
   module = import_module(mod)
-  output = dumps(getattr(module,fun,lambda x: { 'result':'ERROR', 'type':'REST_SERVER_FUNCTION', 'api':api, 'exception':'no_such_dunction', 'info':'No such function in module', 'args':x })(args))
+  output = dumps(getattr(module,fun,None)(args))
   stdout.write("X-Z-Res:OK\r\n")
   stdout.write("X-Z-Mod:{}\r\n".format(mod))
   stdout.write("X-Z-Fun:{}\r\n".format(fun))
  except Exception, e:
+  output = 'null'
   stdout.write("X-Z-Res:ERROR\r\n")
-  output= dumps({ 'result':'SERVER_ERROR', 'exception':type(e).__name__, 'api':api, 'info':str(e), 'code':592, 'args':args })
+  stdout.write("X-Z-Args:%s\r\n"%args)
+  stdout.write("X-Z-Info:%s\r\n"%str(e))
+  stdout.write("X-Z-Xctp:%s\r\n"%type(e).__name__)
  stdout.write("Content-Type: application/json\r\n")
  stdout.flush()
  stdout.write("\r\n")
@@ -83,8 +75,6 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   output = {'result':'CALL_OK', 'info':dict(sock.info()), 'code':sock.code }
   try:    output['data']   = loads(sock.read())
   except: output['result'] = 'CALL_OK_NO_DATA'
-  if output['data'].get('result') == 'SERVER_ERROR':
-   output = output['data']
   sock.close()
  except HTTPError, h:
   raw = h.read()
@@ -96,5 +86,5 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
  except Exception, e:
   output = { 'result':'CALL_ERROR', 'exception':type(e).__name__, 'info':str(e), 'code':591 }
  if output['result'][-5:] == "ERROR":
-  raise RestException(output)  
+  raise Exception(output)  
  return output
