@@ -32,9 +32,9 @@ def login(aWeb):
   id,user,view = aWeb.get('sdcp_login',"None_None_1").split('_')
   if id != "None":
    # "Login successful"
-   aWeb.add_cookie('sdcp_id',   id,   86400)
-   aWeb.add_cookie('sdcp_user', user, 86400)
-   aWeb.add_cookie('sdcp_view', view, 86400)
+   aWeb.cookie_add('sdcp_id',   id,   86400)
+   aWeb.cookie_add('sdcp_user', user, 86400)
+   aWeb.cookie_add('sdcp_view', view, 86400)
 
  if id != "None":
   aWeb.put_html(PC.sdcp['name'])
@@ -155,14 +155,14 @@ def openstack(aWeb):
   aWeb.put_redirect("sdcp.cgi?call=openstack_portal&headers=no")
   return
 
- aWeb.add_cookie("os_demo_name",name)
- aWeb.add_cookie("os_controller",ctrl)
- aWeb.add_cookie("af_controller",appf)
+ aWeb.cookie_add("os_demo_name",name)
+ aWeb.cookie_add("os_controller",ctrl)
+ aWeb.cookie_add("af_controller",appf)
 
  if not mtok:
   controller = OpenstackRPC(ctrl,None)
   res = controller.auth({'project':PC.openstack['project'], 'username':PC.openstack['username'],'password':PC.openstack['password']})
-  aWeb.add_cookie("os_main_token",controller.get_token())
+  aWeb.cookie_add("os_main_token",controller.get_token())
   aWeb.log("openstack_login - login result: {}".format(str(res['result'])))
  else:
   aWeb.log("openstack_login - reusing token: {}".format(mtok))

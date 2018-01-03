@@ -74,7 +74,7 @@ def info(aWeb):
     else:
      db.do("UPDATE users SET alias='{}',name='{}',email='{}',view_public='{}',menulist='{}' WHERE id = '{}'".format(data['alias'],data['name'],data['email'],data['view'],data['menulist'],data['id']))
      if aWeb.cookies['sdcp_id'] == str(data['id']):
-      aWeb.add_cookie('sdcp_view',data['view'],86400)
+      aWeb.cookie_add('sdcp_view',data['view'],86400)
     aWeb.put_headers()
   else:
    db.do("SELECT users.* FROM users WHERE id = '{}'".format(data['id']))

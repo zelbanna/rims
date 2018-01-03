@@ -32,17 +32,17 @@ def portal(aWeb):
    print "Error logging in - please try login again"
    return
   utok = openstack.get_token()
-  aWeb.add_cookie('os_user_token',utok)
-  aWeb.add_cookie('os_user_name',username)
-  aWeb.add_cookie("os_project_id",pid)
-  aWeb.add_cookie("os_project_name",pname)
-  aWeb.add_cookie("os_services",",".join(['heat','nova','neutron','glance']))
+  aWeb.cookie_add('os_user_token',utok)
+  aWeb.cookie_add('os_user_name',username)
+  aWeb.cookie_add("os_project_id",pid)
+  aWeb.cookie_add("os_project_name",pname)
+  aWeb.cookie_add("os_services",",".join(['heat','nova','neutron','glance']))
   for service in ['heat','nova','neutron','glance']:
    base = "os_" + service
    port,url,id = openstack.get_service(service,'public')
-   aWeb.add_cookie(base + "_port",port)
-   aWeb.add_cookie(base + "_url",url)
-   aWeb.add_cookie(base + "_id",id)
+   aWeb.cookie_add(base + "_port",port)
+   aWeb.cookie_add(base + "_url",url)
+   aWeb.cookie_add(base + "_id",id)
 
   aWeb.log("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
  else:

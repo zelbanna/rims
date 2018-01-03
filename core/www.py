@@ -53,11 +53,14 @@ class Web(object):
  # Cookies are key, value, lifetime
  # - the keys and values are always saved as strings and needs to be type casted (!)
 
- def add_cookie_jar(self,aName, aValueDict, aLife=3000):
+ def cookie_jar(self,aDict):
   self._c_stor[aName] =  ",".join(["%s=%s"%(k,v) for k,v in aValueDict.iteritems()])
   self._c_life[aName] = aLife
 
- def add_cookie(self,aParam,aData,aLife=3000):
+ def cookie_unjar(self,aName):
+  return dict(value.split('=') for value in self.cookies[aName].split(','))
+
+ def cookie_add(self,aParam,aData,aLife=3000):
   self._c_stor[aParam] = aData
   self._c_life[aParam] = aLife
 
