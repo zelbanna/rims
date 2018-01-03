@@ -26,8 +26,8 @@ def login(aWeb):
   aWeb.put_html("Error")
   return
 
- if aWeb.cookie.get('sdcp_id'):
-  id,user,view = aWeb.cookie.get('sdcp_id'),aWeb.cookie.get('sdcp_user'),aWeb.cookie.get('sdcp_view')
+ if aWeb.cookies.get('sdcp_id'):
+  id,user,view = aWeb.cookies.get('sdcp_id'),aWeb.cookies.get('sdcp_user'),aWeb.cookies.get('sdcp_view')
  else:
   id,user,view = aWeb.get('sdcp_login',"None_None_1").split('_')
   if id != "None":
@@ -147,10 +147,10 @@ def openstack(aWeb):
  name = aWeb.get('name',"iaas")
  ctrl = aWeb.get('controller',"127.0.0.1")
  appf = aWeb.get('appformix',"127.0.0.1")
- user = aWeb.cookie.get("os_user_name")
- utok = aWeb.cookie.get("os_user_token")
- mtok = aWeb.cookie.get("os_main_token")
- prev = aWeb.cookie.get("os_project_id")
+ user = aWeb.cookies.get("os_user_name")
+ utok = aWeb.cookies.get("os_user_token")
+ mtok = aWeb.cookies.get("os_main_token")
+ prev = aWeb.cookies.get("os_project_id")
  if utok:
   aWeb.put_redirect("sdcp.cgi?call=openstack_portal&headers=no")
   return

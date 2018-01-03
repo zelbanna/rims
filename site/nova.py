@@ -15,7 +15,7 @@ from sdcp.site.openstack import dict2html
 #
 def list(aWeb):
  from sdcp.core.extras import get_quote
- cookie = aWeb.cookie
+ cookie = aWeb.cookies
  token  = cookie.get('os_user_token')
  if not token:
   print "Not logged in"
@@ -59,7 +59,7 @@ def list(aWeb):
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def select_parameters(aWeb):
- cookie = aWeb.cookie
+ cookie = aWeb.cookies
  token  = cookie.get('os_user_token')
  if not token:
   print "Not logged in"
@@ -100,7 +100,7 @@ def select_parameters(aWeb):
 ######################################## Actions ########################################
 #
 def action(aWeb):
- cookie = aWeb.cookie
+ cookie = aWeb.cookies
  token  = cookie.get('os_user_token')
  if not token:
   print "Not logged in"
@@ -188,7 +188,7 @@ def action(aWeb):
    print "Error performing op %s"%str(e)
 
 def console(aWeb):
- token = aWeb.cookie.get('os_user_token')
+ token = aWeb.cookies.get('os_user_token')
 
  if not token:
   if aWeb['headers'] == 'no':
@@ -196,12 +196,12 @@ def console(aWeb):
   print "Not logged in"
   return
 
- controller = OpenstackRPC(aWeb.cookie.get('os_controller'),token)
+ controller = OpenstackRPC(aWeb.cookies.get('os_controller'),token)
  try:
-  data = controller.call(aWeb.cookie.get('os_nova_port'), aWeb.cookie.get('os_nova_url') + "/servers/{}/remote-consoles".format(aWeb['id']), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})['data']
+  data = controller.call(aWeb.cookies.get('os_nova_port'), aWeb.cookies.get('os_nova_url') + "/servers/{}/remote-consoles".format(aWeb['id']), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})['data']
   url = data['remote_console']['url']
   # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
-  url = "http://" + aWeb.cookie.get('os_controller') + ":" + url[7:].partition(':')[2]
+  url = "http://" + aWeb.cookies.get('os_controller') + ":" + url[7:].partition(':')[2]
   if not aWeb['headers']:
    print "<iframe id='console_embed' src='{}' STYLE='width: 100%; height: 100%;'></iframe>".format(url)
   else:

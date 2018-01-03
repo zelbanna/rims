@@ -37,5 +37,3 @@ def leases(aWeb):
  try: EXT.dict2table(dhcp['free']) 
  except: pass
  print "</ARTICLE>"
-
-

@@ -16,8 +16,8 @@ __status__= "Production"
 def portal(aWeb):
  from json import dumps
  from sdcp.devices.openstack import OpenstackRPC
- ctrl = aWeb.cookie.get('os_controller')
- utok = aWeb.cookie.get('os_user_token')
+ ctrl = aWeb.cookies.get('os_controller')
+ utok = aWeb.cookies.get('os_user_token')
 
  if not utok:
   username = aWeb['username']
@@ -46,9 +46,9 @@ def portal(aWeb):
 
   aWeb.log("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
  else:
-  username = aWeb.cookie.get("os_user_name")
-  pid      = aWeb.cookie.get("os_project_id")
-  pname    = aWeb.cookie.get("os_project_name")
+  username = aWeb.cookies.get("os_user_name")
+  pid      = aWeb.cookies.get("os_project_id")
+  pname    = aWeb.cookies.get("os_project_name")
   aWeb.log("openstack_portal - using existing token for {}@{}".format(username,ctrl))
   openstack = OpenstackRPC(ctrl,utok)
 
@@ -58,7 +58,7 @@ def portal(aWeb):
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
- print "<A CLASS='z-op btn menu-btn right warning' OP=logout URL='sdcp.cgi?call=front_openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookie.get('os_demo_name'),aWeb.cookie.get('af_controller'))
+ print "<A CLASS='z-op btn menu-btn right warning' OP=logout URL='sdcp.cgi?call=front_openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookies.get('os_demo_name'),aWeb.cookies.get('af_controller'))
  print "</HEADER><MAIN ID=main><NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
@@ -105,14 +105,14 @@ def data2html(aData):
 #
 #
 def api(aWeb):
- if not aWeb.cookie.get('os_user_token'):
+ if not aWeb.cookies.get('os_user_token'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  print "<ARTICLE><P>OpenStack REST API inspection</P>"
  print "<FORM ID=frm_os_api>"
  print "Choose Service and enter API call: <SELECT CLASS='white' STYLE='width:auto; height:22px;' NAME=os_service>"
  services = ['contrail']
- services.extend(aWeb.cookie['os_services'].split(','))
+ services.extend(aWeb.cookies['os_services'].split(','))
  for service in services:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(service)
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_call><BR>"
@@ -138,7 +138,7 @@ def fqname(aWeb):
  print aWeb.button('start',  DIV='div_content', URL='sdcp.cgi?call=openstack_fqname', FRM='frm_os_uuid')
  if aWeb['os_uuid']:
   from json import dumps,loads
-  token  = aWeb.cookie.get('os_user_token')
+  token  = aWeb.cookies.get('os_user_token')
   if not token:
    print "Not logged in"
   else:
@@ -160,11 +160,11 @@ def fqname(aWeb):
 #
 #
 def result(aWeb):
- if (not aWeb['os_call'] and not aWeb['os_href']) or not aWeb.cookie.get('os_user_token'):
+ if (not aWeb['os_call'] and not aWeb['os_href']) or not aWeb.cookies.get('os_user_token'):
   return
  from sdcp.devices.openstack import OpenstackRPC
  from json import dumps,loads
- controller = OpenstackRPC(aWeb.cookie.get('os_controller'),aWeb.cookie.get('os_user_token'))
+ controller = OpenstackRPC(aWeb.cookies.get('os_controller'),aWeb.cookies.get('os_user_token'))
  try:    arguments = loads(aWeb['os_args'])
  except: arguments = None
  print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"

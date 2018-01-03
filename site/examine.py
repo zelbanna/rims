@@ -15,7 +15,7 @@ from sdcp import PackageContainer as PC
 # Examine Logs
 #
 def main(aWeb):
- if not aWeb.cookie.get('sdcp_id'):
+ if not aWeb.cookies.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  upshost = PC.sdcp['upshost']

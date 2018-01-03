@@ -101,7 +101,7 @@ def vmop(aWeb):
  nstate = aWeb['nstate']
  vmid   = aWeb.get('vmid','-1')
  name   = aWeb['vmname'] 
- userid = aWeb.cookie.get('sdcp_id')
+ userid = aWeb.cookies.get('sdcp_id')
  if not userid:
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
@@ -158,7 +158,7 @@ def snapshot(aWeb):
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with Device(ip) as esxi:
-  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),aWeb.cookie.get('sdcp_id'))
+  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),aWeb.cookies.get('sdcp_id'))
   for field in snapshots.splitlines():
    if "Snapshot" in field:
     parts = field.partition(':')
@@ -199,5 +199,5 @@ def snap_op(aWeb):
  elif op == 'remove':
   template = "vim-cmd vmsvc/snapshot.remove {} {}"
  with Device(ip) as esxi:
-  esxi.ssh_send(template.format(vmid,snap),aWeb.cookie.get('sdcp_id'))
+  esxi.ssh_send(template.format(vmid,snap),aWeb.cookies.get('sdcp_id'))
  print "<ARTICLE>Carried out '{}' on '{}@{}'</ARTICLE>".format(op,vmid,ip)

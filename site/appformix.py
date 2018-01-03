@@ -18,9 +18,9 @@ from sdcp import PackageContainer as PC
 def report(aWeb):
  from datetime import datetime
  from json import dumps
- pid    = aWeb.cookie.get('os_project_id')
- pname  = aWeb.cookie.get('os_project_name')
- ctrl   = aWeb.cookie.get('af_controller')
+ pid    = aWeb.cookies.get('os_project_id')
+ pname  = aWeb.cookies.get('os_project_name')
+ ctrl   = aWeb.cookies.get('af_controller')
  # First auth..
  controller  = Device(ctrl)
  res = controller.auth({'username':PC.appformix['username'], 'password':PC.appformix['password'] })

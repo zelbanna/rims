@@ -20,21 +20,25 @@ class Web(object):
   self._c_life = {}
   self._base = aBase
   self.form  = None
-  bcookie = getenv("HTTP_COOKIE")
-  self.cookie = {} if not bcookie else dict(map( lambda c: c.split("="), bcookie.split('; ')))
+  self.cookies = {}
+  cookies = getenv("HTTP_COOKIE")
+  if cookies:
+   for cookie in cookies.split('; '):
+    k,_,v = cookie.partition('=')
+    self.cookies[k] = v
 
  def __getitem__(self,aKey):
   return self.get(aKey,None)
 
  def __str__(self):
-  return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Base: %s<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(self._base,str(self.cookie),self.form)
+  return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Base: %s<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(self._base,str(self.cookies),self.form)
 
  def get(self,aKey,aDefault = None):
   return self.form.getfirst(aKey,aDefault)
 
  def log(self, aMsg):
   from logger import log
-  log(aMsg,self.cookie.get("{}_id".format(self._base)))
+  log(aMsg,self.cookies.get("{}_id".format(self._base)))
 
  def rest_call(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   from rest import call
@@ -44,7 +48,15 @@ class Web(object):
  def add_header(self,aKey,aValue):
   self._header[aKey] = aValue
 
- # Cookie Param + Data and Life
+ ############################# Cookies #############################
+ #
+ # Cookies are key, value, lifetime
+ # - the keys and values are always saved as strings and needs to be type casted (!)
+
+ def add_cookie_jar(self,aName, aValueDict, aLife=3000):
+  self._c_stor[aName] =  ",".join(["%s=%s"%(k,v) for k,v in aValueDict.iteritems()])
+  self._c_life[aName] = aLife
+
  def add_cookie(self,aParam,aData,aLife=3000):
   self._c_stor[aParam] = aData
   self._c_life[aParam] = aLife
@@ -53,7 +65,7 @@ class Web(object):
   for key,value in self._header.iteritems():
    print "{}: {}\r".format(key,value)
   for key,value in self._c_stor.iteritems():
-   print "Set-Cookie: {}={}; Path=/; Max-Age={};\r".format(key,value,self._c_life.get(key,3000))
+   print "Set-Cookie: %s=%s; Path=/; Max-Age=%i;\r"%(key,value,self._c_life.get(key,3000))
   self._header = None
   print "Content-Type: text/html\r\n"
 

@@ -15,7 +15,7 @@ from sdcp.site.openstack import dict2html
 ############################### Neutron ##############################
 #
 def list(aWeb):
- cookie = aWeb.cookie
+ cookie = aWeb.cookies
  token  = cookie.get('os_user_token')
  if not token:
   print "Not logged in"
@@ -55,7 +55,7 @@ def list(aWeb):
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def action(aWeb):
- cookie = aWeb.cookie
+ cookie = aWeb.cookies
  token  = cookie.get('os_user_token')
  if not token:
   print "Not logged in"

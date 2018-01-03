@@ -73,7 +73,7 @@ def list(aWeb):
 ################################ Gigantic Device info and Ops function #################################
 #
 def info(aWeb):
- if not aWeb.cookie.get('sdcp_id'):
+ if not aWeb.cookies.get('sdcp_id'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
 
@@ -111,7 +111,7 @@ def info(aWeb):
 
  elif "book" in op:
   from sdcp.rest.booking import booking
-  booking({'device_id':aWeb['id'], 'user_id':aWeb.cookie['sdcp_id'], 'op':op})
+  booking({'device_id':aWeb['id'], 'user_id':aWeb.cookies['sdcp_id'], 'op':op})
 
  dev   = rest_info({'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
  if dev['exist'] == 0:
@@ -212,7 +212,7 @@ def info(aWeb):
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=lookup&id={}&ip={}'.format(dev['id'],dev['ip']), TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
  if dev['booked']:
-  if int(aWeb.cookie.get('sdcp_id')) == dev['booking']['user_id']:
+  if int(aWeb.cookies.get('sdcp_id')) == dev['booking']['user_id']:
    print aWeb.button('remove',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=debook&id=%i'%dev['id'],TITLE='Unbook')
  else:
    print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=book&id=%i'%dev['id'],TITLE='Book')   
@@ -343,7 +343,7 @@ def new(aWeb):
    args['vm'] = 0
   res  = rest_new(args)
   print "DB:{}".format(res)
-  aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(aWeb.cookie.get('sdcp_user'),args,res))
+  aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(aWeb.cookies.get('sdcp_user'),args,res))
  elif op == 'find':
   from sdcp.rest import sdcpipam
   res  = sdcpipam.find({'id':subnet_id})
