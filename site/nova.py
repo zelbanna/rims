@@ -152,11 +152,10 @@ def action(aWeb):
   from json import dumps
   vm  = controller.call("8082","virtual-machine/{}".format(aWeb['id']))['data']['virtual-machine']
   print "<DIV CLASS=table STYLE='width:auto'>"
-  print "<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV>"
+  print "<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV><DIV CLASS=tbody>"
   for vmir in vm['virtual_machine_interface_back_refs']:
    vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']
    ip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
-   print "<DIV CLASS=tbody>"
    print "<DIV CLASS=tr>"
    print "<!-- {} -->".format(vmir['href'])
    print "<DIV CLASS=td>{}</DIV>".format(vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
@@ -165,13 +164,12 @@ def action(aWeb):
    print "<DIV CLASS=td>{}</DIV>".format(ip['instance_ip_address'])
    if vmi.get('floating_ip_back_refs'):
     fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
-    print "<DIV CLASS=td>{} ({})</DIV>".format(fip['floating_ip_address'],fip['fq_name'][2])
-    print "<DIV CLASS=td>&nbsp;"
+    print "<DIV CLASS=td>{} ({})</DIV><DIV CLASS=td>&nbsp;".format(fip['floating_ip_address'],fip['fq_name'][2])
     print aWeb.button('remove',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], SPIN='true')
     print "</DIV>"
    else:
-    print "<DIV CLASS=td></DIV>"
-    print "<DIV CLASS=td></DIV>"
+    print "<DIV CLASS=td>&nbsp;</DIV>"
+    print "<DIV CLASS=td>&nbsp;</DIV>"
    print "</DIV>"
   print "</DIV></DIV>"
 
