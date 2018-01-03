@@ -13,7 +13,7 @@ from sdcp.core.dbase import DB
 ############################################ resources ##############################################
 #
 def main(aWeb):
- if not aWeb.cookies.get('sdcp_id'):
+ if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  print "<NAV><UL>&nbsp;</UL></NAV>"
@@ -24,8 +24,12 @@ def main(aWeb):
 #
 #
 def list(aWeb):
+ if not aWeb.cookies.get('sdcp'):
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
+ cookie = aWeb.cookie_unjar('sdcp')
  from sdcp.rest.resources import list as rest_list
- res = rest_list({'user_id':aWeb.cookies['sdcp_id'],'view':aWeb.cookies['sdcp_view']})
+ res = rest_list({'user_id':cookie['id'],'view':cookie['view']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list')
@@ -40,7 +44,7 @@ def list(aWeb):
    print "CLASS=z-op DIV=main URL='{}'>".format(row['href'])
   print "{}</A></DIV><DIV CLASS=td>&nbsp;".format(row['title'])
   print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=%i'%row['id'])
-  if aWeb.cookies['sdcp_id'] == str(row['user_id']):
+  if cookie['id'] == str(row['user_id']):
    print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%i'%row['id'], MSG='Delete resource?')
   print "</DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
@@ -50,6 +54,7 @@ def list(aWeb):
 #
 def info(aWeb):
  from os import listdir, path
+ cookie = aWeb.cookie_unjar('sdcp')
  data  = {}
  data['id'] = aWeb.get('id','new')
  if aWeb['op'] == 'update' or data['id'] == 'new':
@@ -59,7 +64,7 @@ def info(aWeb):
   data['icon']  = aWeb['icon']
   data['inline']  = aWeb.get('inline',"0")
   data['private'] = aWeb.get('private',"0")
-  data['user_id'] = aWeb.get('user_id',aWeb.cookies['sdcp_id'])
+  data['user_id'] = aWeb.get('user_id',cookie['id'])
   if aWeb['op'] == 'update':
    with DB() as db:
     if data['id'] == 'new':
@@ -81,7 +86,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV     CLASS=td><INPUT NAME=href  TYPE=URL  VALUE='%s' REQUIRED></DIV></DIV>"%data['href']
  print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon  TYPE=URL  VALUE='%s'></DIV></DIV>"%data['icon']
  print "<DIV CLASS=tr><DIV CLASS=td>Inline:</DIV><DIV   CLASS=td><INPUT NAME=inline  {}                TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['inline'] == 1 or data['inline'] == "1" else '')
- print "<DIV CLASS=tr><DIV CLASS=td>Private:</DIV><DIV  CLASS=td><INPUT NAME=private {} {}             TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['private'] == 1 or data['private'] == "1" else "","disabled" if aWeb.cookies['sdcp_id'] <> str(data['user_id']) else "")
+ print "<DIV CLASS=tr><DIV CLASS=td>Private:</DIV><DIV  CLASS=td><INPUT NAME=private {} {}             TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['private'] == 1 or data['private'] == "1" else "","disabled" if cookie['id'] <> str(data['user_id']) else "")
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV>"
  if data['type'] == 'menuitem':
   print "<DIV CLASS=td><INPUT  NAME=type TYPE=TEXT VALUE='menuitem' STYLE='font-style:italic' readonly></DIV>"
@@ -95,7 +100,7 @@ def info(aWeb):
  if data['icon'] and data['icon'] != 'NULL':
   print "<A CLASS='btn menu-btn' STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></A>".format(data['icon'])
  print "<BR>"
- if aWeb.cookies['sdcp_id'] == str(data['user_id']):
+ if cookies['id'] == str(data['user_id']):
   if data['id'] != 'new':
    print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%s'%data['id'], MSG='Delete resource?')
   print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='sdcp_resource_info_form')
@@ -106,7 +111,8 @@ def info(aWeb):
 #
 def view(aWeb):
  from sdcp.rest.resources import list as rest_list
- res = rest_list({'type':aWeb.get('type','tool'),'user_id':aWeb.cookies['sdcp_id'],'view':aWeb.cookies['sdcp_view']})
+ cookie = aWeb.cookie_unjar('sdcp')
+ res = rest_list({'type':aWeb.get('type','tool'),'user_id':cookie['id'],'view':cookie['view']})
  index = 0;
  print "<DIV CLASS=centered STYLE='align-items:initial'>"
  for row in res['data']:

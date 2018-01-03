@@ -14,7 +14,7 @@ from sdcp import PackageContainer as PC
 #
 # SDCP "login"
 #
-# - writes cookies for sdcp_user(name) and sdcp_id
+# - writes cookies for sdcp: user(name) ,id and view into a jar (dict)
 # - if passwords, then do proper checks
 #
 # Now do referrer?
@@ -26,15 +26,16 @@ def login(aWeb):
   aWeb.put_html("Error")
   return
 
- if aWeb.cookies.get('sdcp_id'):
-  id,user,view = aWeb.cookies.get('sdcp_id'),aWeb.cookies.get('sdcp_user'),aWeb.cookies.get('sdcp_view')
+ if aWeb.cookies.get('sdcp'):
+  cookie = aWeb.cookie_unjar('sdcp')
+  id   = cookie['id']
+  user = cookie['user']
+  view = cookie['view']
  else:
   id,user,view = aWeb.get('sdcp_login',"None_None_1").split('_')
   if id != "None":
    # "Login successful"
-   aWeb.cookie_add('sdcp_id',   id,   86400)
-   aWeb.cookie_add('sdcp_user', user, 86400)
-   aWeb.cookie_add('sdcp_view', view, 86400)
+   aWeb.cookie_jar('sdcp',{'id':id,'user':user,'view':view}, 86400)
 
  if id != "None":
   aWeb.put_html(PC.sdcp['name'])
@@ -147,6 +148,9 @@ def openstack(aWeb):
  name = aWeb.get('name',"iaas")
  ctrl = aWeb.get('controller',"127.0.0.1")
  appf = aWeb.get('appformix',"127.0.0.1")
+
+ cookie = aWeb.cookie_unjar('openstack') if aWeb.cookies.get('openstack') else {}
+
  user = aWeb.cookies.get("os_user_name")
  utok = aWeb.cookies.get("os_user_token")
  mtok = aWeb.cookies.get("os_main_token")

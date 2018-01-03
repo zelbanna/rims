@@ -95,30 +95,30 @@ def _vm_options(aWeb,aIP,aVMid,aVMname,aState,aHighlight):
 #
 #
 def vmop(aWeb):
+ if not aWeb.cookies.get('sdcp'):
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
+ cookie = aWeb.cookie_unjar('sdcp')
  from sdcp.devices.esxi import Device
  from time import sleep
  ip     = aWeb.get('ip')
  nstate = aWeb['nstate']
  vmid   = aWeb.get('vmid','-1')
  name   = aWeb['vmname'] 
- userid = aWeb.cookies.get('sdcp_id')
- if not userid:
-  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
-  return
  esxi   = Device(ip)
  try:
   if nstate == 'vmsvc-snapshot.create':
    from time import strftime
    with esxi:
-    esxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")),userid)
+    esxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")),cookie['id'])
   elif "vmsvc-" in nstate:
    vmop = nstate.partition('-')[2]
    with esxi:
-    esxi.ssh_send("vim-cmd vmsvc/{} {}".format(vmop,vmid),userid)
+    esxi.ssh_send("vim-cmd vmsvc/{} {}".format(vmop,vmid),cookie['id'])
     sleep(2)
   elif nstate == 'poweroff':
    with esxi:
-    esxi.ssh_send("poweroff",userid)
+    esxi.ssh_send("poweroff",cookie['id'])
  except Exception as err:
   aWeb.log("esxi: nstate error [{}]".format(str(err)))
  _vm_options(aWeb,ip,vmid,name,esxi.get_state_vm(vmid),True)
@@ -148,6 +148,7 @@ def logs(aWeb):
 #
 #
 def snapshot(aWeb):
+ cookie = aWeb.cookie_unjar('sdcp')
  from sdcp.devices.esxi import Device
  ip   = aWeb['ip']
  vmid = aWeb['vmid']
@@ -158,7 +159,7 @@ def snapshot(aWeb):
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  with Device(ip) as esxi:
-  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),aWeb.cookies.get('sdcp_id'))
+  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),cookie['id'])
   for field in snapshots.splitlines():
    if "Snapshot" in field:
     parts = field.partition(':')
@@ -190,6 +191,7 @@ def snapshot(aWeb):
 #
 def snap_op(aWeb):
  from sdcp.devices.esxi import Device
+ cookie = aWeb.cookie_unjar('sdcp')
  ip   = aWeb['ip']
  vmid = aWeb['vmid']
  snap = aWeb['snapid']
@@ -199,5 +201,5 @@ def snap_op(aWeb):
  elif op == 'remove':
   template = "vim-cmd vmsvc/snapshot.remove {} {}"
  with Device(ip) as esxi:
-  esxi.ssh_send(template.format(vmid,snap),aWeb.cookies.get('sdcp_id'))
+  esxi.ssh_send(template.format(vmid,snap),cookie['id'])
  print "<ARTICLE>Carried out '{}' on '{}@{}'</ARTICLE>".format(op,vmid,ip)

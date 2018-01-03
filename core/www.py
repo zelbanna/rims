@@ -51,18 +51,19 @@ class Web(object):
  ############################# Cookies #############################
  #
  # Cookies are key, value, lifetime
- # - the keys and values are always saved as strings and needs to be type casted (!)
+ # - Values are strings or numbers
+ # - special case for dictionaries, they can be "jar:ed" into a "k=v," string
 
- def cookie_jar(self,aDict):
-  self._c_stor[aName] =  ",".join(["%s=%s"%(k,v) for k,v in aValueDict.iteritems()])
+ def cookie_jar(self,aName,aValue,aLife=3000):
+  self._c_stor[aName] = ",".join(["%s=%s"%(k,v) for k,v in aValue.iteritems()])
   self._c_life[aName] = aLife
 
  def cookie_unjar(self,aName):
   return dict(value.split('=') for value in self.cookies[aName].split(','))
 
- def cookie_add(self,aParam,aData,aLife=3000):
-  self._c_stor[aParam] = aData
-  self._c_life[aParam] = aLife
+ def cookie_add(self,aName,aValue,aLife=3000):
+  self._c_stor[aName] = aValue
+  self._c_life[aName] = aLife
 
  def put_headers(self):
   for key,value in self._header.iteritems():

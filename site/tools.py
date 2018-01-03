@@ -11,7 +11,7 @@ __icon__ = 'images/icon-config.png'
 ############################################ Options ##############################################
 #
 def main(aWeb):
- if not aWeb.cookies.get('sdcp_id'):
+ if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  from sdcp import PackageContainer as PC
