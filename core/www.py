@@ -55,11 +55,11 @@ class Web(object):
  # - special case for dictionaries, they can be "jar:ed" into a "k=v," string
 
  def cookie_jar(self,aName,aValue,aLife=3000):
-  self._c_stor[aName] = ",".join(["%s=%s"%(k,v) for k,v in aValue.iteritems()])
+  self._c_stor[aName] = "&".join(["%s=%s"%(k,v) for k,v in aValue.iteritems()])
   self._c_life[aName] = aLife
 
  def cookie_unjar(self,aName):
-  return dict(value.split('=') for value in self.cookies[aName].split(','))
+  return dict(value.split('=') for value in self.cookies[aName].split('&'))
 
  def cookie_add(self,aName,aValue,aLife=3000):
   self._c_stor[aName] = aValue

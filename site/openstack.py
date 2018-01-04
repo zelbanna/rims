@@ -16,8 +16,9 @@ __status__= "Production"
 def portal(aWeb):
  from json import dumps
  from sdcp.devices.openstack import OpenstackRPC
- ctrl = aWeb.cookies.get('os_controller')
- utok = aWeb.cookies.get('os_user_token')
+ cookie = aWeb.cookie_unjar('openstack')
+ ctrl = cookie.get('controller')
+ utok = cookie.get('user_token')
 
  if not utok:
   username = aWeb['username']
@@ -32,23 +33,21 @@ def portal(aWeb):
    print "Error logging in - please try login again"
    return
   utok = openstack.get_token()
-  aWeb.cookie_add('os_user_token',utok)
-  aWeb.cookie_add('os_user_name',username)
-  aWeb.cookie_add("os_project_id",pid)
-  aWeb.cookie_add("os_project_name",pname)
-  aWeb.cookie_add("os_services",",".join(['heat','nova','neutron','glance']))
+  cookie['user_token'] = utok
+  cookie['user_name']  = username
+  cookie['project_id'] = pid
+  cookie['project_name'] = pname
+  cookie['services']   = ",".join(['heat','nova','neutron','glance'])
+  aWeb.cookie_jar('openstack',cookie,3000)
   for service in ['heat','nova','neutron','glance']:
-   base = "os_" + service
    port,url,id = openstack.get_service(service,'public')
-   aWeb.cookie_add(base + "_port",port)
-   aWeb.cookie_add(base + "_url",url)
-   aWeb.cookie_add(base + "_id",id)
+   aWeb.cookie_jar(service,{'port':port,'url':url,'id':id},3000)
 
   aWeb.log("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
  else:
-  username = aWeb.cookies.get("os_user_name")
-  pid      = aWeb.cookies.get("os_project_id")
-  pname    = aWeb.cookies.get("os_project_name")
+  username = cookie['user_name']
+  pid      = cookie['project_id']
+  pname    = cookie['project_name']
   aWeb.log("openstack_portal - using existing token for {}@{}".format(username,ctrl))
   openstack = OpenstackRPC(ctrl,utok)
 
@@ -58,7 +57,7 @@ def portal(aWeb):
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
- print "<A CLASS='z-op btn menu-btn right warning' OP=logout URL='sdcp.cgi?call=front_openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</A>".format(ctrl,aWeb.cookies.get('os_demo_name'),aWeb.cookies.get('af_controller'))
+ print "<A CLASS='z-op btn menu-btn right warning' OP=logout URL='sdcp.cgi?call=front_openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</A>".format(ctrl,cookie.get('demo'),cookie.get('appformix'))
  print "</HEADER><MAIN ID=main><NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"

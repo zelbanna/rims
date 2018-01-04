@@ -130,51 +130,56 @@ def weathermap(aWeb):
 # Openstack
 #
 # Cookies:
-# af_controller   = appformix controller ip
-# os_controller   = openstack controller ip
-# os_demo_name    = Name of Customer demoing for
-# os_main_token   = auth token for project recovery
-# os_project_id   = id for selected project
-# os_project_name = name for selected project
-# os_user_name    = username last used
-# os_user_token   = token for user
-# os_xyz_port     = port for service xyz
-# os_xyz_url      = url  for service xyz
-# os_xyz_id       = id   for service xyz
+# - openstack:
+# appformix   = appformix controller ip
+# controller   = openstack controller ip
+# demo_name    = Name of Customer demoing for
+# main_token   = auth token for project recovery
+# project_id   = id for selected project
+# project_name = name for selected project
+# user_name    = username last used
+# user_token   = token for user
+# services     = x,y,z
+#
+# - service:
+# port         = port for service xyz
+# url          = url  for service xyz
+# id           = id   for service xyz
 #
 
 def openstack(aWeb):
  from sdcp.devices.openstack import OpenstackRPC
- name = aWeb.get('name',"iaas")
- ctrl = aWeb.get('controller',"127.0.0.1")
- appf = aWeb.get('appformix',"127.0.0.1")
-
  cookie = aWeb.cookie_unjar('openstack') if aWeb.cookies.get('openstack') else {}
-
- user = aWeb.cookies.get("os_user_name")
- utok = aWeb.cookies.get("os_user_token")
- mtok = aWeb.cookies.get("os_main_token")
- prev = aWeb.cookies.get("os_project_id")
+ utok = cookie.get("user_token")
  if utok:
   aWeb.put_redirect("sdcp.cgi?call=openstack_portal&headers=no")
   return
 
- aWeb.cookie_add("os_demo_name",name)
- aWeb.cookie_add("os_controller",ctrl)
- aWeb.cookie_add("af_controller",appf)
+ name = aWeb.get('name',"iaas")
+ ctrl = aWeb.get('controller',"127.0.0.1")
+ appf = aWeb.get('appformix',"127.0.0.1")
+
+ user = cookie.get("user_name")
+ mtok = cookie.get("main_token")
+ prev = cookie.get("project_id")
+
+ cookie['demo'] = name
+ cookie['controller'] = ctrl
+ cookie['appformix'] = appf
 
  if not mtok:
   controller = OpenstackRPC(ctrl,None)
   res = controller.auth({'project':PC.openstack['project'], 'username':PC.openstack['username'],'password':PC.openstack['password']})
-  aWeb.cookie_add("os_main_token",controller.get_token())
-  aWeb.log("openstack_login - login result: {}".format(str(res['result'])))
+  cookie['main_token'] = controller.get_token()
+  aWeb.log("openstack_controller - login result: {}".format(str(res['result'])))
  else:
-  aWeb.log("openstack_login - reusing token: {}".format(mtok))
+  aWeb.log("openstack_controller - reusing token: {}".format(mtok))
   controller = OpenstackRPC(ctrl,mtok)
 
  ret = controller.call("5000","v3/projects")
  projects = [] if not ret['code'] == 200 else ret['data']['projects']
 
+ aWeb.cookie_jar('openstack',cookie,3000)
  aWeb.put_html("{} 2 Cloud".format(name.capitalize()))
  print "<DIV CLASS='grey overlay'>"
  print "<ARTICLE CLASS='login'>"
