@@ -14,21 +14,21 @@ from sdcp.site.openstack import dict2html
 ##################################### Heatstack ##################################
 #
 def list(aWeb):
- cookie = aWeb.cookies
- token  = cookie.get('os_user_token')
+ cookie = aWeb.cookie_unjar('heat')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('os_controller'),token)
+ controller = OpenstackRPC(cookie.get('controller'),token)
 
- port  = cookie.get('os_heat_port')
- url   = cookie.get('os_heat_url')
+ port = cookie.get('port')
+ url  = cookie.get('url')
  name = aWeb['name']
  id   = aWeb['id']
  op   = aWeb.get('op','info')
 
- try: 
-  data = controller.call(cookie.get('os_heat_port'),cookie.get('os_heat_url') + "/stacks")['data']
+ try:
+  data = controller.call(port,url + "/stacks")['data']
  except Exception as e:
   print "<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e)
   return
@@ -96,20 +96,18 @@ def enter_parameters(aWeb):
 # Heat Actions
 #
 def action(aWeb):
- cookie = aWeb.cookies
- token  = cookie.get('os_user_token')
+ cookie = aWeb.cookie_unjar('heat')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('os_controller'),token)
-
- port = cookie.get('os_heat_port')
- url  = cookie.get('os_heat_url')
+ controller = OpenstackRPC(cookie.get('controller'),token)
+ port = cookie.get('port')
+ url  = cookie.get('url')
  name = aWeb['name']
  id   = aWeb['id']
  op   = aWeb.get('op','info')
-
- aWeb.log("heat_action - project:{} id:{} name:{} op:{}".format(id,cookie.get('os_project_name'),name,op))
+ aWeb.log("heat_action - id:{} name:{} op:{}".format(id,name,op))
 
  if   op == 'info':
   tmpl = "<A TITLE='{}' CLASS='btn z-op' DIV=div_os_info URL=sdcp.cgi?call=heat_action&name=%s&id=%s&op={} SPIN=true>{}</A>"%(name,id)

@@ -37,11 +37,11 @@ def portal(aWeb):
   cookie['user_name']  = username
   cookie['project_id'] = pid
   cookie['project_name'] = pname
-  cookie['services']   = ",".join(['heat','nova','neutron','glance'])
+  cookie['services']   = "&".join(['heat','nova','neutron','glance'])
   aWeb.cookie_jar('openstack',cookie,3000)
   for service in ['heat','nova','neutron','glance']:
    port,url,id = openstack.get_service(service,'public')
-   aWeb.cookie_jar(service,{'port':port,'url':url,'id':id},3000)
+   aWeb.cookie_jar(service,{'port':port,'url':url,'id':id,'controller':ctrl,'token':utok},3000)
 
   aWeb.log("openstack_portal - successful login and catalog init for {}@{}".format(username,ctrl))
  else:
@@ -104,14 +104,15 @@ def data2html(aData):
 #
 #
 def api(aWeb):
- if not aWeb.cookies.get('os_user_token'):
+ cookie = aWeb.cookie_unjar('openstack')
+ if not cookie.get('user_token'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  print "<ARTICLE><P>OpenStack REST API inspection</P>"
  print "<FORM ID=frm_os_api>"
  print "Choose Service and enter API call: <SELECT CLASS='white' STYLE='width:auto; height:22px;' NAME=os_service>"
  services = ['contrail']
- services.extend(aWeb.cookies['os_services'].split(','))
+ services.extend(cookie['services'].split('&'))
  for service in services:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(service)
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_call><BR>"
@@ -130,19 +131,19 @@ def api(aWeb):
 
 #
 #
-#
 def fqname(aWeb):
  print "<ARTICLE>"
  print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else "")
  print aWeb.button('start',  DIV='div_content', URL='sdcp.cgi?call=openstack_fqname', FRM='frm_os_uuid')
  if aWeb['os_uuid']:
   from json import dumps,loads
-  token  = aWeb.cookies.get('os_user_token')
+  cookie = aWeb.cookie_unjar('openstack')
+  token  = cookie.get('user_token')
   if not token:
    print "Not logged in"
   else:
    from sdcp.devices.openstack import OpenstackRPC
-   controller = OpenstackRPC(cookie.get('os_controller'),token)
+   controller = OpenstackRPC(cookie.get('controller'),token)
    argument   = {'uuid':aWeb['os_uuid']}
    try:
     data = controller.call("8082","id-to-fqname",args=argument,method='POST')['data']
@@ -151,7 +152,10 @@ def fqname(aWeb):
     print "<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?call=openstack_result&os_service=contrail&os_call={0}/{1}>{0}</A></DIV></DIV>".format(data['type'],argument['uuid'])
     print "</DIV></DIV><BR>"
    except Exception as e:
-    print str(e)
+    print "<DIV CLASS=table STYLE='width:100%'><DIV CLASS=tbody>"
+    for key,value in e[0].iteritems():
+     print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)
+    print "</DIV></DIV>" 
  print "</ARTICLE>"
  print "<DIV ID=div_os_info></DIV>"
 
@@ -159,11 +163,12 @@ def fqname(aWeb):
 #
 #
 def result(aWeb):
- if (not aWeb['os_call'] and not aWeb['os_href']) or not aWeb.cookies.get('os_user_token'):
+ cookie = aWeb.cookie_unjar('openstack')
+ if (not aWeb['os_call'] and not aWeb['os_href']) or not cookie.get('user_token'):
   return
  from sdcp.devices.openstack import OpenstackRPC
  from json import dumps,loads
- controller = OpenstackRPC(aWeb.cookies.get('os_controller'),aWeb.cookies.get('os_user_token'))
+ controller = OpenstackRPC(cookie.get('controller'),cookie.get('user_token'))
  try:    arguments = loads(aWeb['os_args'])
  except: arguments = None
  print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"
@@ -175,12 +180,13 @@ def result(aWeb):
    if service == 'contrail':
     port,url = "8082",""
    else:
-    port,url = cookie.get("os_{}_port".format(service)),cookie.get("os_{}_url".format(service))
+    cookie = aWeb.cookie_unjar(service)
+    port,url = cookie['port'],cookie['url']
    data = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])['data']
   print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True) 
  except Exception, e:
   print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>" 
   for key,value in e[0].iteritems():
-   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)    
+   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)
   print "</DIV></DIV>" 
  print "</DIV></ARTICLE>"

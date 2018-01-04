@@ -15,15 +15,14 @@ from sdcp.site.openstack import dict2html
 #
 def list(aWeb):
  from sdcp.core.extras import get_quote
- cookie = aWeb.cookies
- token  = cookie.get('os_user_token')
+ cookie = aWeb.cookie_unjar('nova')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('os_controller'),token)
-
+ controller = OpenstackRPC(cookie.get('controller'),token)
  try:
-  data = controller.call(cookie.get('os_nova_port'),cookie.get('os_nova_url') + "/servers/detail")['data']
+  data = controller.call(cookie.get('port'),cookie.get('url') + "/servers/detail")['data']
  except Exception as e:
   print "Error retrieving list %s"%str(e)
   return
@@ -59,16 +58,18 @@ def list(aWeb):
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def select_parameters(aWeb):
- cookie = aWeb.cookies
- token  = cookie.get('os_user_token')
+ nova_cookie = aWeb.cookie_unjar('nova')
+ token  = nova_cookie.get('token')
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('os_controller'),token)
- port,url = cookie.get('os_nova_port'),cookie.get('os_nova_url')
- images   = controller.call(cookie.get('os_glance_port'),cookie.get('os_glance_url') + "/v2/images?sort=name:asc")['data']['images']
+ controller = OpenstackRPC(cookie.get('controller'),token)
+ port,url = cookie.get('port'),cookie.get('url')
  flavors  = controller.call(port,url + "/flavors/detail?sort_key=name")['data']['flavors']
- networks = controller.call(cookie.get('os_neutron_port'),cookie.get('os_neutron_url') + "/v2.0/networks?sort_key=name")['data']['networks']
+ glance_cookie  = aWeb.cookie_unjar('glance')
+ images   = controller.call(glance_cookie.get('port'),glance_cookie.get('url') + "/v2/images?sort=name:asc")['data']['images']
+ neutron_cookie = aWeb.cookie_unjar('neutron')
+ networks = controller.call(neutron_cookie.get('port'),neutron_cookie.get('url') + "/v2.0/networks?sort_key=name")['data']['networks']
  print aWeb.dragndrop()
  print "<ARTICLE CLASS='info'><P>New VM parameters</P>"
  print "<FORM ID=frm_os_create_vm>"
@@ -100,18 +101,18 @@ def select_parameters(aWeb):
 ######################################## Actions ########################################
 #
 def action(aWeb):
- cookie = aWeb.cookies
- token  = cookie.get('os_user_token')
+ cookie = aWeb.cookie_unjar('nova')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('os_controller'),token)
+ controller = OpenstackRPC(cookie.get('controller'),token)
 
- port = cookie.get('os_nova_port')
- url  = cookie.get('os_nova_url')
+ port = cookie.get('port')
+ url  = cookie.get('url')
  op   = aWeb.get('op','info')
 
- aWeb.log("nova_action - id:{} op:{} for project:{}".format(aWeb['id'],op,cookie.get('os_project_name')))
+ aWeb.log("nova_action - id:{} op:{}".format(aWeb['id'],op))
 
  if   op == 'info':
   from sdcp.core.extras import get_quote
@@ -186,20 +187,20 @@ def action(aWeb):
    print "Error performing op %s"%str(e)
 
 def console(aWeb):
- token = aWeb.cookies.get('os_user_token')
-
+ cookie = aWeb.cookie_unjar('nova')
+ token  = cookie.get('token')
  if not token:
   if aWeb['headers'] == 'no':
    aWeb.put_html('Openstack Nova')
   print "Not logged in"
   return
+ controller = OpenstackRPC(cookie.get('controller'),token)
 
- controller = OpenstackRPC(aWeb.cookies.get('os_controller'),token)
  try:
-  data = controller.call(aWeb.cookies.get('os_nova_port'), aWeb.cookies.get('os_nova_url') + "/servers/{}/remote-consoles".format(aWeb['id']), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})['data']
+  data = controller.call(cookie.get('port'), cookie.get('url') + "/servers/{}/remote-consoles".format(aWeb['id']), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})['data']
   url = data['remote_console']['url']
   # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
-  url = "http://" + aWeb.cookies.get('os_controller') + ":" + url[7:].partition(':')[2]
+  url = "http://" + cookie.get('controller') + ":" + url[7:].partition(':')[2]
   if not aWeb['headers']:
    print "<iframe id='console_embed' src='{}' STYLE='width: 100%; height: 100%;'></iframe>".format(url)
   else:

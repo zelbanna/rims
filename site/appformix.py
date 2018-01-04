@@ -18,18 +18,19 @@ from sdcp import PackageContainer as PC
 def report(aWeb):
  from datetime import datetime
  from json import dumps
- pid    = aWeb.cookies.get('os_project_id')
- pname  = aWeb.cookies.get('os_project_name')
- ctrl   = aWeb.cookies.get('af_controller')
  # First auth..
  controller  = Device(ctrl)
  res = controller.auth({'username':PC.appformix['username'], 'password':PC.appformix['password'] })
- 
- if not res['result'] == "OK":
+  if not res['result'] == "OK":
   print "Error logging in - {}".format(str(res))
   return
 
- resp = controller.call("reports/project/metadata")
+ cookie = aWeb.cookie_unjar('openstack')
+ pid    = cookie.get('project_id')
+ pname  = cookie.get('project_name')
+ ctrl   = cookie.get('appformix')
+ resp   = controller.call("reports/project/metadata")
+
  # Many id's?
  for rep in resp['data']['Metadata']:
   reportid = rep['ReportId']

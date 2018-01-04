@@ -3,7 +3,7 @@
 Generic WWW/HTMLinterworking module
 
 """
-__author__= "Zacharias El Banna"                     
+__author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
@@ -38,7 +38,7 @@ class Web(object):
 
  def log(self, aMsg):
   from logger import log
-  log(aMsg,self.cookies.get("{}_id".format(self._base)))
+  log(aMsg,self.cookies.get(self._base))
 
  def rest_call(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   from rest import call
@@ -52,14 +52,14 @@ class Web(object):
  #
  # Cookies are key, value, lifetime
  # - Values are strings or numbers
- # - special case for dictionaries, they can be "jar:ed" into a "k=v," string
+ # - special case for dictionaries, they can be "jar:ed" into a "k=v," string, the exception is the ',' char used for joining items
 
  def cookie_jar(self,aName,aValue,aLife=3000):
-  self._c_stor[aName] = "&".join(["%s=%s"%(k,v) for k,v in aValue.iteritems()])
+  self._c_stor[aName] = ",".join(["%s=%s"%(k,v) for k,v in aValue.iteritems()])
   self._c_life[aName] = aLife
 
  def cookie_unjar(self,aName):
-  return dict(value.split('=') for value in self.cookies[aName].split('&'))
+  return dict(value.split('=') for value in self.cookies[aName].split(','))
 
  def cookie_add(self,aName,aValue,aLife=3000):
   self._c_stor[aName] = aValue

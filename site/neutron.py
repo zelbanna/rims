@@ -2,8 +2,6 @@
 
 HTML5 Ajax Openstack Neutron/Contrail calls module
 
-- left and right divs frames (div_content_left/right) needs to be created by ajax call
-
 """
 __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
@@ -15,13 +13,12 @@ from sdcp.site.openstack import dict2html
 ############################### Neutron ##############################
 #
 def list(aWeb):
- cookie = aWeb.cookies
- token  = cookie.get('os_user_token')
+ cookie = aWeb.cookie_unjar('neutron')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('os_controller'),token)
- pname = cookie.get("os_project_name")
+ controller = OpenstackRPC(cookie.get('controller'),token)
 
  try:
   data = controller.call("8082","virtual-networks?fields=name,display_name,virtual_network_properties,network_ipam_refs")['data']
@@ -55,13 +52,12 @@ def list(aWeb):
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def action(aWeb):
- cookie = aWeb.cookies
- token  = cookie.get('os_user_token')
+ cookie = aWeb.cookie_unjar('neutron')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('os_controller'),token)
-
+ controller = OpenstackRPC(cookie.get('controller'),token)
  id   = aWeb['id']
  op   = aWeb['op']
 
@@ -168,7 +164,8 @@ def action(aWeb):
    print "Error - [%s]"%str(e)
 
  elif op == 'fi_associate_choose_vm':
-  vms = controller.call(cookie.get('os_nova_port'),cookie.get('os_nova_url') + "/servers")['data']['servers']
+  nova_cookie = aWeb.cookie_unjar('nova')
+  vms = controller.call(nova_cookie.get('port'), nova_cookie.get('url') + "/servers")['data']['servers']
   print "<FORM ID=frm_fi_assoc_vm><INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
   print "VM: <SELECT STYLE='width:auto; height:22px;' NAME=vm>"
   for vm in vms:
