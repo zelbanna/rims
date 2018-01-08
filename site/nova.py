@@ -63,8 +63,8 @@ def select_parameters(aWeb):
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('controller'),token)
- port,url = cookie.get('port'),cookie.get('url')
+ controller = OpenstackRPC(nova_cookie.get('controller'),token)
+ port,url = nova_cookie.get('port'),nova_cookie.get('url')
  flavors  = controller.call(port,url + "/flavors/detail?sort_key=name")['data']['flavors']
  glance_cookie  = aWeb.cookie_unjar('glance')
  images   = controller.call(glance_cookie.get('port'),glance_cookie.get('url') + "/v2/images?sort=name:asc")['data']['images']
