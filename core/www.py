@@ -59,7 +59,7 @@ class Web(object):
   self._c_life[aName] = aLife
 
  def cookie_unjar(self,aName):
-  return dict(value.split('=') for value in self.cookies[aName].split(','))
+  return dict(value.split('=') for value in self.cookies[aName].split(',')) if self.cookies.get('aName') else {}
 
  def cookie_add(self,aName,aValue,aLife=3000):
   self._c_stor[aName] = aValue
