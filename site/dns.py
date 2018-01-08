@@ -49,7 +49,7 @@ def domain_info(aWeb):
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict_except(['call','op'])
   res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domain_update".format(PC.dns['type']),data)['data']
-  data['id'] = res['id']  
+  data['id'] = res['id']
  else:
   res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domain_lookup".format(PC.dns['type']),{'id':aWeb['id']})['data']
   data = res['data']
@@ -71,7 +71,7 @@ def domain_info(aWeb):
    print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_transfer&id={}'.format(data['id']))
   else:
    print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete&id={}'.format(data['id']))
- print "<SPAN CLASS='results' ID=update_results>{}/{}</SPAN>".format("lookup" if not aWeb.get('op') else aWeb['op'],res['res'])
+ print "<SPAN CLASS='results' ID=update_results>{}/{}</SPAN>".format("lookup" if not aWeb.get('op') else aWeb['op'],res['result'])
  print "</ARTICLE>"
 
 #
