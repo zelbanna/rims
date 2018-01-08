@@ -28,8 +28,8 @@ def portal(aWeb):
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':pname, 'username':username,'password':password })
   if not res['result'] == "OK":
-   aWeb.put_html("Openstack Portal")
    aWeb.log("openstack_portal - error during login for {}@{}".format(username,ctrl))
+   aWeb.put_html("Openstack Portal")
    print "Error logging in - please try login again"
    return
   utok = openstack.get_token()
