@@ -128,7 +128,7 @@ def info(aWeb):
 
  width = 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
- print "<ARTICLE CLASS='info' STYLE='position:relative; width:{}px;'><P>Device Info</P>".format(width)
+ print "<ARTICLE CLASS='info' STYLE='position:relative; width:{}px; z-index:2000'><P>Device Info</P>".format(width)
  print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
@@ -168,7 +168,7 @@ def info(aWeb):
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
   print "</SELECT></DIV>"
  print "</DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['lookup'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td STYLE='max-width:150px; overflow-x:hidden;'>{}</DIV></DIV>".format(dev['info']['lookup'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['a_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ptr_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])
