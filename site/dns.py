@@ -234,8 +234,9 @@ def discrepancy(aWeb):
   if len(devs) > 0:
    for key,value in  devs.iteritems():
     print "<DIV CLASS=tr>"
+    print "<!-- %s -> %s -->"%(key,value)
     print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>-</DIV>".format(key)
-    print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={0}>{1}</A></DIV><DIV CLASS=td>-</DIV><DIV CLASS=td>{0}</DIV><DIV CLASS=td>{1}</DIV>".format(value['id'],value['fqdn'])
+    print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={0}>{1}</A></DIV><DIV CLASS=td>-</DIV><DIV CLASS=td>{0}</DIV><DIV CLASS=td>{1}</DIV>".format(value['id'],value['fqdn'] if type == 'a' else value['ipasc'])
     print "<DIV CLASS=td>&nbsp;</DIV>"
     print "</DIV>"
  print "</DIV></DIV>"
