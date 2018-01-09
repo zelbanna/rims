@@ -16,6 +16,7 @@ from sdcp import PackageContainer as PC
 ##################################### Report ##################################
 #
 def list(aWeb):
+ from datetime import datetime
  # First auth..
  cookie = aWeb.cookie_unjar('openstack')
  ctrl = cookie.get('appformix')
@@ -33,6 +34,7 @@ def list(aWeb):
  resp   = controller.call("reports/project/metadata")
  import time
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Usage Reports</P>"
+ print "<!-- %s -->"%controller
  print "<DIV CLASS=controls>"
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=appformix_list')
  print "</DIV>"
@@ -40,9 +42,12 @@ def list(aWeb):
  print "<DIV CLASS=tbody>"
  for rep in resp['data']['Metadata']:
   print "<DIV CLASS=tr>"
+  print "<!-- %s -->"%rep
   print "<DIV CLASS=td>%s</DIV>"%rep['ProjectId']
-  print "<DIV CLASS=td>%s</DIV>"%rep['Start']
-  print "</DIV>"
+  print "<DIV CLASS=td>%s</DIV>"%datetime.utcfromtimestamp(float(rep['Start'])/1e3)
+  print "<DIV CLASS=td>"
+  print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=appformix_info&report=%s'%(rep['ReportId']))
+  print "</DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -58,35 +63,13 @@ def info(aWeb):
  if not res['result'] == "OK":
   print "Error logging in - {}".format(str(res))
   return
+ reports = controller.call("reports/project/%s"%aWeb['report'])['data']['UsageReport']
 
- for rep in resp['data']['Metadata']:
-  reportid = rep['ReportId']
-  report = controller.call("reports/project/{}".format(reportid))['data'].get('UsageReport',None)
-  print "*******************<BR><PRE>"
-  from json import dumps
-  print dumps(report,indent=4)
-  print "</PRE>*******************<BR>"
-  if True:
+ from sdcp.site.openstack import dict2html
+ for project in reports['Data']:
+  if project['Project_Id'] == cookie['project_id']:
    print "<ARTICLE STYLE='overflow:auto;'>"
-   print "<H2>Report: {}</H2>".format(report['ReportId'])
-   print "<H3>{} -> {}</H3>".format(datetime.utcfromtimestamp(float(report['Start'])/1e3),datetime.utcfromtimestamp(float(report['End'])/1e3))
-   # print "<H3>Created by: {}</H3>".format(report['CreatedBy']) 
-   print "<DIV CLASS=table STYLE='display:inline-block;'><DIV CLASS=tbody>"
-   for ent in report['Data']:
-    #print "<THEAD><TH>Field</TH><TH>Data</TH></THEAD>"
-    print "<!-- Ent -->"
-    for key,value in ent.iteritems():
-     if isinstance(value,dict):
-      print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><TD STYLE='white-space:normal; overflow:auto;'><DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>".format(key)
-      for k,v in value.iteritems():
-       print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(k,v)
-      print "</DIV></DIV></DIV></DIV>"
-     elif isinstance(value,list):
-      print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><TD STYLE='white-space:normal; overflow:auto;'><DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>".format(key)
-      for v in value:
-       print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV></DIV>".format(v)
-      print "</DIV></DIV></DIV></DIV>"
-     else:
-      print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><TD STYLE='white-space:normal; overflow:auto;'>{}</DIV></DIV>".format(key,value)
-   print "</DIV></DIV>"
+   print "<H2>Report %s</H2>"%(aWeb['report'])
+   dict2html(project['Instances'],"Instances")
+   dict2html(project['MetaData'],"MetaData")
    print "</ARTICLE>"
