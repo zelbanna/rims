@@ -9,17 +9,14 @@ __status__  = "Production"
 __type__    = "generic"
 
 class Device(object):
- 
- # set a number of entries:
+
+ # set a number of entries available for all subclasses:
  # - _ip
  # - _id
- # - _logfile
- 
+
  def __init__(self, aIP, aID = None):
-  from sdcp import PackageContainer as PC
   self._id = aID
   self._ip = aIP
-  self._logfile = PC.generic['logformat']
 
  def __str__(self):
   return "IP:%s ID:%s"%(self._ip, self._id)
@@ -31,7 +28,6 @@ class Device(object):
   pass
 
  #
- # Alt create a list of threads running..
  def threading(self, aOperation, aArgs = None):
   try:
    from threading import Thread
@@ -42,8 +38,9 @@ class Device(object):
    self.log_msg("threading started: {}({})".format(aOperation,aArgs))
   except:
    self.log_msg("threading error: Illegal operation passed ({})".format(aOperation))
+   thread = None
   return thread
- 
+
  def ping_device(self):
   from os import system
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
@@ -78,16 +75,14 @@ class ConfObject(object):
 
  def get_keys(self, aTargetName = None, aTargetValue = None, aSortKey = None):
   if not aTargetName:
-   keys = self._configitems.keys()       
-  else:        
+   keys = self._configitems.keys()
+  else:
    keys = []
    for key, entry in self._configitems.iteritems():
     if entry[aTargetName] == aTargetValue:
-     keys.append(key) 
+     keys.append(key)
   keys.sort(key = aSortKey)
-  return keys         
+  return keys
 
  def get_entry(self, aKey):
   return self._configitems.get(aKey,None)
-
-
