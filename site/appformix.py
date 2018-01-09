@@ -15,27 +15,58 @@ from sdcp import PackageContainer as PC
 
 ##################################### Report ##################################
 #
-def report(aWeb):
- from datetime import datetime
- from json import dumps
+def list(aWeb):
  # First auth..
- controller  = Device(ctrl)
+ cookie = aWeb.cookie_unjar('openstack')
+ ctrl = cookie.get('appformix')
+ if not ctrl:
+  print "Not logged in"
+  return
+ controller = Device(ctrl)
  res = controller.auth({'username':PC.appformix['username'], 'password':PC.appformix['password'] })
-  if not res['result'] == "OK":
+ if not res['result'] == "OK":
   print "Error logging in - {}".format(str(res))
   return
 
- cookie = aWeb.cookie_unjar('openstack')
  pid    = cookie.get('project_id')
  pname  = cookie.get('project_name')
- ctrl   = cookie.get('appformix')
  resp   = controller.call("reports/project/metadata")
+ import time
+ print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Usage Reports</P>"
+ print "<DIV CLASS=controls>"
+ print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=appformix_list')
+ print "</DIV>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Project</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for rep in resp['data']['Metadata']:
+  print "<DIV CLASS=tr>"
+  print "<DIV CLASS=td>%s</DIV>"%rep['ProjectId']
+  print "<DIV CLASS=td>%s</DIV>"%rep['Start']
+  print "</DIV>"
+ print "</DIV></DIV>"
+ print "</ARTICLE></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
- # Many id's?
+def info(aWeb):
+ cookie = aWeb.cookie_unjar('openstack')
+ ctrl = cookie.get('appformix')
+ if not ctrl:
+  print "Not logged in"
+  return
+ controller = Device(ctrl)
+ res = controller.auth({'username':PC.appformix['username'], 'password':PC.appformix['password'] })
+ if not res['result'] == "OK":
+  print "Error logging in - {}".format(str(res))
+  return
+
  for rep in resp['data']['Metadata']:
   reportid = rep['ReportId']
   report = controller.call("reports/project/{}".format(reportid))['data'].get('UsageReport',None)
-  if report['ProjectId'] == pid:
+  print "*******************<BR><PRE>"
+  from json import dumps
+  print dumps(report,indent=4)
+  print "</PRE>*******************<BR>"
+  if True:
    print "<ARTICLE STYLE='overflow:auto;'>"
    print "<H2>Report: {}</H2>".format(report['ReportId'])
    print "<H3>{} -> {}</H3>".format(datetime.utcfromtimestamp(float(report['Start'])/1e3),datetime.utcfromtimestamp(float(report['End'])/1e3))

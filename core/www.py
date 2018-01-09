@@ -51,15 +51,16 @@ class Web(object):
  ############################# Cookies #############################
  #
  # Cookies are key, value, lifetime
- # - Values are strings or numbers
- # - special case for dictionaries, they can be "jar:ed" into a "k=v," string, the exception is the ',' char used for joining items
-
+ # - Values are strings, numbers or dictionaries
+ # - special case for dictionaries, the ',' char is used for joining items!
  def cookie_jar(self,aName,aValue,aLife=3000):
   self._c_stor[aName] = ",".join(["%s=%s"%(k,v) for k,v in aValue.iteritems()])
   self._c_life[aName] = aLife
 
+ # Unjar returns a dict with whatever was jar:ed into that cookie name (or empty)
  def cookie_unjar(self,aName):
-  return dict(value.split('=') for value in self.cookies[aName].split(',')) if self.cookies.get('aName') else {}
+  try:    return dict(value.split('=') for value in self.cookies[aName].split(','))
+  except: return {}
 
  def cookie_add(self,aName,aValue,aLife=3000):
   self._c_stor[aName] = aValue

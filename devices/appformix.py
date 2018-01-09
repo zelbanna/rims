@@ -23,35 +23,22 @@ class Device(object):
  def __str__(self):
   return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._token_utc)
 
- #
- # Basic POST  authentication
- # { 'username','password' }
- #
  def auth(self, aAuth):
-  from json import dumps,loads
-  from urllib2 import urlopen, Request, URLError, HTTPError
+  from sdcp.core.rest import call as rest_call
   from time import mktime, strptime
   try:
-   head = { 'Content-Type': 'application/json' }
-   auth ={'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
-   sock = urlopen(Request("http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,"auth_credentials"), headers=head, data=dumps(auth)))
+   auth = {'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
+   url  = "http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,"auth_credentials")
+   res = rest_call(url,'appformix_login',auth)
    # If sock code is ok (200) - we can expect to find a token
-   if sock.code == 200:
-    data = loads(sock.read())
-    token = data['Token']
+   if res['code'] == 200:
+    token = res.pop('data',{})['Token']
     self._token = token['tokenId']
     self._token_utc = token['expiresAt']
     self._token_expire = int(mktime(strptime(token['expiresAt'],"%Y-%m-%dT%H:%M:%S.%fZ")))
-   sock.close()
-   result, code, info  = "OK", sock.code, None
-   sock.close()
-  except HTTPError, h:
-   result,code,info = h.reason,h.code,str(h)
-  except URLError, u:
-   result,code,info = "URLError",590,str(u)
   except Exception, e:
-   result,code,info = "Error",591,str(e)
-  return {'result':result, 'code':code, 'info':info }
+   res = e[0]
+  return res
 
  def get_token(self):
   return self._token
@@ -61,58 +48,16 @@ class Device(object):
 
  #
  # Input:
- # - lnk  = service link
+ # - url  = service link
  # - arg  = dict with arguments for post operation, empty dict or nothing means no arguments (!)
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  #
- def call(self,lnk,arg = None, method = None):
-  return self.href("http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,lnk),arg, method)
+ def call(self,url,args = None, method = None, header = None):
+  return self.href("http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,url), aArgs=args, aMethod=method, aHeader = header)
 
- # Native href from openstack - simplify formatting
- def href(self,href,arg = None, method = None):
-  from json import loads, dumps
-  from urllib2 import urlopen, Request, URLError, HTTPError
-  try:
-   head = { 'Content-Type': 'application/json', 'X-Auth-Token':self._token }
-   req  = Request(href, headers=head, data = dumps(arg) if arg else None)
-   if method:
-    req.get_method = lambda: method
-   sock = urlopen(req)
-   result,info,code = "OK", dict(sock.info()), sock.code
-   try: data = loads(sock.read())
-   except: data = None
-   sock.close()
-  except HTTPError, h:
-   result,info,code = "HTTPError",dict(h.info()),h.code
-   try: data = loads(h.read())
-   except: data = None
-  except URLError, u:
-   result,info,data,code = "URLError",u,None,None
-  except Exception, e:
-   result,info,data,code = "Error",e,None,None
-  return { 'header':info, 'result':type, 'data':data, 'code':code }
-
- ###################################### File OPs ########################################
- #
- # Basic file ops for debugging
- #
- def dump(self,aFile):
-  from json import dump
-  with open(aFile,'w') as f:
-   dump({'token':self._token, 'token_utc':self._token_utc, 'token_expire':self._token_expire, 'ip':self._ip },f, sort_keys=True, indent=4)
-
- def load(self,aFile):
-  from json import load
-  from datetime import datetime
-  try:
-   with open(aFile,'r') as f:
-    data = load(f)
-    if datetime.fromtimestamp(int(data['token_expire'])) > datetime.utcnow():
-     self._ip = data['ip']
-     self._token = data['token']
-     self._token_expire = data['token_expire']
-     self._token_utc = data['token_utc']
-  except:
-   pass
-  return self._token
-
+ def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
+  from sdcp.core.rest import call as rest_call
+  head = { 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' }
+  try: head.update(aHeader)
+  except: pass
+  return rest_call(aURL, "appformix", aArgs, aMethod, head)

@@ -30,14 +30,13 @@ class OpenstackRPC(object):
  # Keystone v3 authentication - using v2.0 compatible domain (default), project = admin unless specified
  # { 'username','password', 'project' }
  #
-
  def auth(self, aAuth):
   from sdcp.core.rest import call as rest_call
   from time import mktime, strptime
   try:
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
-   aURL = "http://{}:{}/{}".format(self._ip,"5000","v3/auth/tokens")
-   res = rest_call(aURL,'openstack_login',auth)
+   url  = "http://%s:5000/v3/auth/tokens"%(self._ip)
+   res  = rest_call(url,'openstack_login',auth)
    # If sock code is created (201), not ok (200) - we can expect to find a token
    if res['code'] == 201:
     token = res.pop('data',{})['token']
@@ -88,7 +87,6 @@ class OpenstackRPC(object):
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  # - header = send additional headers as dictionary
  #
-
  def call(self,port,url,args = None, method = None, header = None):
   return self.href("http://{}:{}/{}".format(self._ip,port,url), aArgs=args, aMethod=method, aHeader = header)
 
