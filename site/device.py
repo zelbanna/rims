@@ -79,7 +79,7 @@ def info(aWeb):
 
  cookie = aWeb.cookie_unjar('sdcp')
 
- from sdcp.rest.device import info as rest_info, update as rest_update
+ from sdcp.rest.device import info as rest_info, update as rest_update, detect as rest_detect
  from sdcp.rest.racks  import infra as rest_infra
  op    = aWeb.get('op',"")
  opres = {}
