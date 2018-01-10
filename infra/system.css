@@ -40,7 +40,7 @@ nav div.dropdown-content > a { display:block; text-align:left; }
 section.content {       position:absolute; top:34px; bottom:0px; width:100%;  box-sizing: border-box; overflow: auto; clear:both;}
 section.content-left {  position:absolute; top:0px;  bottom:0px; width:400px; overflow-y:auto; overflow-x:hidden; }
 section.content-right { position:absolute; top:0px;  bottom:0px; right:0px; left:400px; overflow: auto; }
-section.content-left > article { width:99%; }
+/* section.content-left > article { width:99%; } */
 
 article {        border-radius: 6px; background-color:#F3F3F3; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; width:auto; }
 article:hover {  box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19) }      

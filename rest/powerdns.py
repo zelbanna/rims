@@ -113,7 +113,7 @@ def domain_delete(aDict):
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   ret['xist'] = db.do("DELETE FROM domains WHERE id = %i"%(int(aDict['id'])))
  return ret
-   
+
 #################################### Records #######################################
 #
 # records(type <'A'|'PTR'> | domain_id )
@@ -149,11 +149,11 @@ def record_lookup(aDict):
 #
 # id/0/'new',dom_id,name,content,type (ttl)
 def record_update(aDict):
- log("powerdns_records_update({})".format(aDict))
+ log("powerdns_record_update({})".format(aDict))
  from time import strftime
  aDict['change_date'] = strftime("%Y%m%d%H")
  aDict['ttl']  = aDict.get('ttl','3600')
- aDict['type'] = aDict['type'].upper() 
+ aDict['type'] = aDict['type'].upper()
  ret = {'result':'OK','id':aDict.pop('id',None)}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   if ret['id'] == 'new' or str(ret['id']) == '0':
