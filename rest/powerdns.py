@@ -165,8 +165,8 @@ def record_update(aDict):
 
 #
 #
-def record_remove(aDict):
- log("powerdns_record_remove({})".format(aDict))
+def record_delete(aDict):
+ log("powerdns_record_delete({})".format(aDict))
  ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
   ret['xist'] = db.do("DELETE FROM records WHERE id = '{}'".format(aDict['id']))

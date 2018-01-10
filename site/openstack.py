@@ -185,7 +185,7 @@ def result(aWeb):
    data = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])['data']
   print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True) 
  except Exception, e:
-  print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>" 
+  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>" 
   for key,value in e[0].iteritems():
    print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)
   print "</DIV></DIV>" 

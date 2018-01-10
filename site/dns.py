@@ -140,7 +140,7 @@ def records(aWeb):
   print "</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;"%(rec['type'],rec['ttl'])
   print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id=%i&domain_id=%s'%(rec['id'],aWeb['id']))
   if rec['type'] in ['A','CNAME','PTR']:
-   print aWeb.button('delete',DIV='span_dns',URL='sdcp.cgi?call=dns_record_remove&id=%i'%(rec['id']))
+   print aWeb.button('delete',DIV='span_dns',URL='sdcp.cgi?call=dns_record_delete&id=%i'%(rec['id']))
   print "</DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"
@@ -170,14 +170,14 @@ def record_info(aWeb):
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id={}&domain_id={}'.format(data['id'],data['domain_id']))
  print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&op=update',FRM='dns_info_form')
  if not data['id'] == 'new':
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_remove&id={}'.format(data['id']))
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_delete&id={}'.format(data['id']))
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</ARTICLE>"
 
 #
 #
-def record_remove(aWeb):
- res = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id': aWeb['id']})['data']
+def record_delete(aWeb):
+ res = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id': aWeb['id']})['data']
  print "Remove {} - Results:{}".format(aWeb['id'],res)
 
 def record_transfer(aWeb):
@@ -249,7 +249,7 @@ def discrepancy(aWeb):
      print "<DIV CLASS=td>{0}</DIV>".format(dev['fqdn'])
     else:
      print "<DIV CLASS=td>-</DIV><DIV CLASS=td>-</DIV>"
-    print "<DIV CLASS=td>&nbsp;" + aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='sdcp.cgi?call=dns_record_remove&id={}'.format(rec['id']))
+    print "<DIV CLASS=td>&nbsp;" + aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='sdcp.cgi?call=dns_record_delete&id={}'.format(rec['id']))
     if dev:
      print aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='sdcp.cgi?call=dns_record_transfer&id={}&dev={}&type={}'.format(rec['id'],dev['id'],type))
     print "</DIV></DIV>"
