@@ -92,8 +92,8 @@ def domain_update(aDict):
   if aDict['id'] == 'new':
    # Create and insert a lot of records
    ret['xist'] = db.do("INSERT INTO domains(name, master, type) VALUES ('{}','{}','{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['name'],aDict['master'],aDict['type']))
-   ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
-   if ret['id'] != 'new':
+   ret['id']   = db.get_last_id() if ret['xist'] > 0 else "existing"
+   if ret['id'] != 'existing':
     from time import strftime
     ret['serial'] = strftime("%Y%m%d%H")
     xist = db.do("SELECT records.name AS server, domains.name AS domain FROM records INNER JOIN domains ON domains.id = domain_id WHERE content = '{}'".format(aDict['master']))
