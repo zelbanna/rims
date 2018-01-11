@@ -240,8 +240,8 @@ def info(aWeb):
   Device = getattr(module,'Device',None)
   functions = Device.get_widgets() if Device else []
   if functions:
-   if functions[0] == 'operated':
-    print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?call=%s_inventory&id=%i'>Manage</A></LI>"%(dev['info']['type_name'],dev['id'])
+   if functions[0] == 'manage':
+    print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?call=%s_manage&id=%i'>Manage</A></LI>"%(dev['info']['type_name'],dev['id'])
    else:
     for fun in functions:
      funname = " ".join(fun.split('_')[1:])

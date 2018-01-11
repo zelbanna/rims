@@ -20,7 +20,7 @@ def main(aWeb):
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(row['type_name'])
   if   row['type_name'] == 'esxi':
-   print "<A CLASS=z-op DIV=main URL='sdcp.cgi?call=esxi_inventory&id={}'>{}</A>".format(row['id'],row['hostname'])
+   print "<A CLASS=z-op DIV=main URL='sdcp.cgi?call=esxi_manage&id={}'>{}</A>".format(row['id'],row['hostname'])
   elif row['type_name'] == 'vcenter':
    print "<A TARGET=_blank HREF='https://{}:9443/vsphere-client/'>{}</A>".format(row['ipasc'],row['hostname'])
   print "</DIV></DIV>"
@@ -32,7 +32,7 @@ def main(aWeb):
 #
 #
 #
-def inventory(aWeb):
+def manage(aWeb):
  from sdcp.rest.device import info as rest_info
  id = aWeb['id']
  data = rest_info({'id':id})
