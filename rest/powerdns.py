@@ -96,7 +96,7 @@ def domain_update(aDict):
    if ret['id'] != 'existing':
     from time import strftime
     ret['serial'] = strftime("%Y%m%d%H")
-    xist = db.do("SELECT domains.id AS domain_id, records.id AS record_id, records.name AS server, domains.name AS domain FROM records INNER JOIN domains ON domains.id = domain_id WHERE content = '{}'".format(aDict['master']))
+    xist = db.do("SELECT domains.id AS domain_id, records.id AS record_id, records.name AS server, domains.name AS domain FROM records INNER JOIN domains ON domains.id = domain_id WHERE content = '{}' AND type = 'PTR'".format(aDict['master']))
     ret['soa'] = db.get_row() if xist > 0 else {'server':'server','domain':'local'}
     db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','SOA',25200,'{}',0)".format(ret['id'],aDict['name'],"{} hostmaster.{} 0 21600 300 3600".format(ret['soa']['server'],ret['soa']['domain']),ret['serial'])) 
     db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','NS' ,25200,'{}',0)".format(ret['id'],aDict['name'],ret['soa']['server'],ret['serial'])) 
