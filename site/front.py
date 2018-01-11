@@ -17,7 +17,6 @@ from sdcp import PackageContainer as PC
 # - writes cookies for sdcp: user(name) ,id and view into a jar (dict)
 # - if passwords, then do proper checks
 #
-# Now do referrer?
 #
 def login(aWeb):
  from sdcp.core.dbase import DB
@@ -39,7 +38,7 @@ def login(aWeb):
 
  if id != "None":
   aWeb.put_html(PC.sdcp['name'])
-  aWeb.log("Entering portal")
+  aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
   with DB() as db:
    db.do("SELECT menulist FROM users WHERE id = '{}'".format(id))
    menulist = db.get_val('menulist')
