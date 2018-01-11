@@ -28,6 +28,9 @@ def main(aWeb):
 #
 #
 def list(aWeb):
+ with DB() as db:
+  res  = db.do("SELECT racks.* from racks ORDER by name")
+  data = db.get_rows()
  print "<ARTICLE><P>Rack</P>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=rack_list')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=rack_info&id=new')
@@ -35,11 +38,8 @@ def list(aWeb):
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- with DB() as db:
-  res  = db.do("SELECT racks.* from racks ORDER by name")
-  data = db.get_rows()
-  for unit in data:
-   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=rack_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['size'])
+ for unit in data:
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=rack_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['size'])
  print "</DIV></DIV></ARTICLE>"
 
 #

@@ -7,8 +7,13 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
-########################################## ESXi Operations ##########################################
+##### ToDo #####
 #
+# - list categories in vera inventory
+# - dimmable switch object in vera
+#
+
+########################################## Vera Operations ##########################################
 #
 #
 def inventory(aWeb):
@@ -23,6 +28,7 @@ def inventory(aWeb):
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_status&ip=%s>Status</A></LI>"%ip
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&ip=%s>Devices</A></LI>"%ip
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rooms&ip=%s>Rooms</A></LI>"%ip
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_scenes&ip=%s>Scenes</A></LI>"%ip
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
  print "<LI CLASS='right navinfo'><A CLASS=z-op TARGET=_blank HREF='http://%s/cmh/'>UI</A></LI>"%(ip)
  print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rest_main&ip=%s>REST</A></LI>"%ip
@@ -133,5 +139,20 @@ def rooms(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%room['id']
   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_room_info&ip=%s&id=%s>%s</A></DIV>"%(ip,room['id'],room['name'])
   print "<DIV CLASS=td>%s</DIV></DIV>"%(room['section'])
+ print "</DIV></DIV></ARTICLE></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+
+def scenes(aWeb):
+ from sdcp.devices.vera import Device
+ ip   = aWeb.get('ip')
+ ctrl = Device(ip)
+ res  = ctrl.call(3480,"id=sdata")
+ print "<SECTION CLASS=content-left ID=div_content_left>"
+ print "<ARTICLE>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Active</DIV></DIV><DIV CLASS=tbody>"
+ for scen in res['data']['scenes']:
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%scen['id']
+  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_scene_info&ip=%s&id=%s>%s</A></DIV>"%(ip,scen['id'],scen['name'])
+  print "<DIV CLASS=td>%s</DIV></DIV>"%(scen['active'])
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"

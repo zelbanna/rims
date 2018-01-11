@@ -39,7 +39,7 @@ def login(aWeb):
 
  if id != "None":
   aWeb.put_html(PC.sdcp['name'])
-  aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
+  aWeb.log("Entering portal")
   with DB() as db:
    db.do("SELECT menulist FROM users WHERE id = '{}'".format(id))
    menulist = db.get_val('menulist')
