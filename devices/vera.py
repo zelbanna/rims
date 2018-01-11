@@ -18,7 +18,7 @@ class Device(GenericDevice):
 
  @classmethod
  def get_widgets(cls):
-  return ['operated']
+  return ['manage']
 
  def __str__(self):
   return "Controller[{}]".format(self._ip)

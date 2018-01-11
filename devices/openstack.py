@@ -25,26 +25,23 @@ class OpenstackRPC(object):
 
  def __str__(self):
   return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._ip, self._token, self._token_utc, self._project,self._project_id)
- 
+
  #
  # Keystone v3 authentication - using v2.0 compatible domain (default), project = admin unless specified
  # { 'username','password', 'project' }
  #
  def auth(self, aAuth):
-  from json import dumps,loads
-  from urllib2 import urlopen, Request, URLError, HTTPError
+  from sdcp.core.rest import call as rest_call
   from time import mktime, strptime
   try:
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
-   aURL = "http://{}:{}/{}".format(self._ip,"5000","v3/auth/tokens")
-   head = { 'Content-Type': 'application/json' }
-   sock = urlopen(Request(aURL, headers=head, data=dumps(auth)))
+   url  = "http://%s:5000/v3/auth/tokens"%(self._ip)
+   res  = rest_call(url,'openstack_login',auth)
    # If sock code is created (201), not ok (200) - we can expect to find a token
-   if sock.code == 201:
-    data = loads(sock.read())
-    token = data['token']
-    self._token = sock.info().get('x-subject-token')
-    self._token_utc = token['expires_at'] 
+   if res['code'] == 201:
+    token = res.pop('data',{})['token']
+    self._token = res['info'].get('x-subject-token')
+    self._token_utc = token['expires_at']
     self._token_expire = int(mktime(strptime(token['expires_at'],"%Y-%m-%dT%H:%M:%S.%fZ")))
     self._project = token['project']['name']
     self._project_id = token['project']['id']
@@ -52,15 +49,9 @@ class OpenstackRPC(object):
     for svc in token['catalog']:
      catalog[svc['name']] = svc
     self._catalog = catalog
-   result, code, info  = "OK", sock.code, None
-   sock.close()
-  except HTTPError, h:
-   result,code,info = h.reason,h.code,str(h)
-  except URLError, u:
-   result,code,info = "URLError",590,str(u)
   except Exception, e:
-   result,code,info = "Error",591,str(e)
-  return {'result':result, 'code':code, 'info':info }
+   res = e[0]
+  return res
 
  def get_id(self):
   return self._project_id
@@ -95,8 +86,7 @@ class OpenstackRPC(object):
  # - args = dict with arguments for post operation, empty dict or nothing means no arguments (!)
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  # - header = send additional headers as dictionary
- # 
-
+ #
  def call(self,port,url,args = None, method = None, header = None):
   return self.href("http://{}:{}/{}".format(self._ip,port,url), aArgs=args, aMethod=method, aHeader = header)
 
@@ -110,7 +100,7 @@ class OpenstackRPC(object):
  #################################### File OPs ####################################
  #
  # File operations for debugging
- # 
+ #
  def dump(self,aFile):
   from json import dump
   with open(aFile,'w') as f:

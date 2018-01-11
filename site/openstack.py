@@ -28,8 +28,8 @@ def portal(aWeb):
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':pname, 'username':username,'password':password })
   if not res['result'] == "OK":
-   aWeb.put_html("Openstack Portal")
    aWeb.log("openstack_portal - error during login for {}@{}".format(username,ctrl))
+   aWeb.put_html("Openstack Portal")
    print "Error logging in - please try login again"
    return
   utok = openstack.get_token()
@@ -62,7 +62,7 @@ def portal(aWeb):
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
- print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_report'>Usage Report</A></LI>"
+ print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
  print "<LI><A CLASS='z-op reload'  OP=redirect URL='sdcp.cgi?call=openstack_portal&headers=no'></A></LI>"
  if username == 'admin':
   print "<LI CLASS='right'><A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A></LI>"
@@ -185,7 +185,7 @@ def result(aWeb):
    data = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])['data']
   print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True) 
  except Exception, e:
-  print "<DIV CLASS=table style='width:auto'><DIV CLASS=tbody>" 
+  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>" 
   for key,value in e[0].iteritems():
    print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)
   print "</DIV></DIV>" 

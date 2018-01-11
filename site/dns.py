@@ -13,25 +13,25 @@ from sdcp.core.dbase import DB
 ############################################ Domains ###########################################
 #
 #
-def domains(aWeb):
+def list(aWeb):
  domains = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))['data']
  with DB() as db:
   db.do("SELECT id, name FROM domains")
   local = db.get_dict('id')
  print "<ARTICLE><P>Domains</P>"
  print "<DIV CLASS='controls'>"
- print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_domains')
+ print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_list')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=new',TITLE='Add domain')
- print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?call=dns_discrepancy',TITLE='Backend Discrepancy',SPIN='true')
- print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=dns_dedup',TITLE='Find Duplicates',SPIN='true')
+ print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=dns_discrepancy',TITLE='Check Backend Discrepancy',SPIN='true')
+ print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_dedup',TITLE='Find Duplicates',SPIN='true')
  print "</DIV>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for dom in domains['domains']:
   print "<DIV CLASS=tr><!-- {} -->".format(dom)
-  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=dns_domain_info&id={}>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],dom['id'],dom['name'],dom['notified_serial'])
-  print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?call=dns_records&type={}&id={}'.format("a" if not 'arpa' in dom['name'] else "ptr",dom['id']))
+  print "<DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=dns_records&type={}&id={}>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],"a" if not 'arpa' in dom['name'] else "ptr",dom['id'],dom['name'],dom['notified_serial'])
+  print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=%s'%(dom['id']))
   if not local.pop(dom['id'],None):
    print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_cache_add&id={}&name={}'.format(dom['id'],dom['name']))
   print "</DIV></DIV>"
@@ -65,8 +65,9 @@ def domain_info(aWeb):
  print "</DIV></DIV>"
  print "</FORM>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id={}'.format(data['id']))
- print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&op=update',FRM='dns_info_form')
- if not data['id'] == 'new':
+ if data['id'] == 'new':
+  print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&op=update',FRM='dns_info_form')
+ else:
   if not "arpa" in data['name']:
    print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_transfer&id={}'.format(data['id']))
   else:
@@ -102,7 +103,7 @@ def domain_delete(aWeb):
    print "Transfered %i devices. "%(exist)
   dbase   = db.do("DELETE FROM domains WHERE id = %s"%(aWeb['id']))
  res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':aWeb['id']})['data']
- print "Removed domain [%s,%s]" % ("OK" if dbase > 0 else "NOT_OK",str(res))
+ print "Removed domain [%s,%s]" % ("removed cache" if dbase > 0 else "not in cache",str(res))
  print "</ARTICLE>"
 
 #
@@ -140,11 +141,10 @@ def records(aWeb):
   print "</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;"%(rec['type'],rec['ttl'])
   print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id=%i&domain_id=%s'%(rec['id'],aWeb['id']))
   if rec['type'] in ['A','CNAME','PTR']:
-   print aWeb.button('delete',DIV='span_dns',URL='sdcp.cgi?call=dns_record_remove&id=%i'%(rec['id']))
+   print aWeb.button('delete',DIV='span_dns',URL='sdcp.cgi?call=dns_record_delete&id=%i'%(rec['id']))
   print "</DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"
-
 
 def record_info(aWeb):
  if aWeb['op'] == 'update':
@@ -162,7 +162,7 @@ def record_info(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=domain_id VALUE={}>".format(data['domain_id'])
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td TITLE='E.g. A:FQDN, PTR:x.y.z.in-addr.arpa'>Name:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=name VALUE={}></DIV></DIV>".format(data['name'])
- print "<DIV CLASS=tr><DIV CLASS=td TITLE='E.g. A:IP, PTR:FQDN'>Content:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=content VALUE={}></DIV></DIV>".format(data['content'])
+ print "<DIV CLASS=tr><DIV CLASS=td TITLE='E.g. A:IP, PTR:FQDN'>Content:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=content VALUE='{}'></DIV></DIV>".format(data['content'])
  print "<DIV CLASS=tr><DIV CLASS=td>TTL:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=ttl VALUE={}></DIV></DIV>".format(data['ttl'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE={}></DIV></DIV>".format(data['type'])
  print "<DIV CLASS=tr><DIV CLASS=td>Domain (id):</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['domain_id'])
@@ -171,15 +171,33 @@ def record_info(aWeb):
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id={}&domain_id={}'.format(data['id'],data['domain_id']))
  print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&op=update',FRM='dns_info_form')
  if not data['id'] == 'new':
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_remove&id={}'.format(data['id']))
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_delete&id={}'.format(data['id']))
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</ARTICLE>"
 
 #
 #
-def record_remove(aWeb):
- res = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id': aWeb['id']})['data']
+def record_delete(aWeb):
+ res = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id': aWeb['id']})['data']
  print "Remove {} - Results:{}".format(aWeb['id'],res)
+
+def record_transfer(aWeb):
+ res = aWeb.rest_call("http://127.0.0.1/rest.cgi","sdcp.rest.device_update",{'id':aWeb['dev'],'devices_%s_id'%aWeb['type']:aWeb['id']})['data']
+ print "Updated device %s - Results:%s"%(aWeb['dev'],str(res))
+
+def record_create(aWeb):
+ operation = {'type':aWeb['type'],'dns':None,'device':None}
+ if aWeb['type'] == 'a':
+  data = {'id':'new','type':aWeb['type'],'domain_id':aWeb['dom_id'],'name':aWeb['fqdn'],'content':aWeb['ip']}
+ else:
+  from sdcp.core import genlib as GL
+  data = {'id':'new','type':aWeb['type'],'domain_id':aWeb['dom_id'],'content':aWeb['fqdn'],'name':GL.ip2ptr(aWeb['ip'])}
+ res = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_update".format(PC.dns['type']),data)
+ operation['dns'] = res['data']
+ if res['data']['result'] == 'OK':
+  res = aWeb.rest_call("http://127.0.0.1/rest.cgi","sdcp.rest.device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:res['data']['id']})
+  operation['device'] = res['data']
+ print "Created record result: %s"%str(operation)
 
 ############################################ Tools ###########################################
 #
@@ -213,13 +231,16 @@ def discrepancy(aWeb):
   dns = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_records".format(PC.dns['type']),{'type':type})['data']
   tid = "{}_id".format(type)
   with DB() as db:
-   db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, {0}_id, CONCAT(devices.hostname,'.',domains.name) as fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id ORDER BY ip".format(type))
+   db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, {0}_id, CONCAT(devices.hostname,'.',domains.name) as fqdn, a_dom_id FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id ORDER BY ip".format(type))
    devs = db.get_dict("ipasc" if type == 'a' else "fqdn")
+   db.do("SELECT id,name FROM domains")
+   domains = db.get_dict('name')
   for rec in dns['records']:
    dev = devs.pop(rec['content'],None)
    if not dev or dev[tid] != rec['id']:
     print "<DIV CLASS=tr>"
-    print "<!-- {} --> ".format(rec)
+    print "<!-- %s -->"%str(rec)
+    print "<!-- %s -->"%str(dev)
     print "<DIV CLASS=td>{}</DIV>".format(rec['content'])
     print "<DIV CLASS=td>{}</DIV>".format(rec['type'])
     print "<DIV CLASS=td>{}</DIV>".format(rec['name'])
@@ -228,15 +249,19 @@ def discrepancy(aWeb):
      print "<DIV CLASS=td>{}</DIV>".format(dev[tid])
      print "<DIV CLASS=td>{0}</DIV>".format(dev['fqdn'])
     else:
-     print "<DIV CLASS=td>&nbsp</DIV><DIV CLASS=td>&nbsp</DIV>"
-    print "<DIV CLASS=td>&nbsp;" + aWeb.button('delete',DIV='span_dns',MSG='Are you sure?',URL='sdcp.cgi?call=dns_record_remove&id={}'.format(rec['id'])) + "</DIV>"
-    print "</DIV>"
+     print "<DIV CLASS=td>-</DIV><DIV CLASS=td>-</DIV>"
+    print "<DIV CLASS=td>&nbsp;" + aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='sdcp.cgi?call=dns_record_delete&id={}'.format(rec['id']))
+    if dev:
+     print aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='sdcp.cgi?call=dns_record_transfer&id={}&dev={}&type={}'.format(rec['id'],dev['id'],type))
+    print "</DIV></DIV>"
   if len(devs) > 0:
+   from sdcp.core import genlib as GL
    for key,value in  devs.iteritems():
     print "<DIV CLASS=tr>"
-    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;</DIV>".format(key)
-    print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={0}>{1}</A></DIV><DIV CLASS=td>{0}</DIV><DIV CLASS=td>{1}</DIV>".format(value['id'],value['fqdn'])
-    print "<DIV CLASS=td>&nbsp;</DIV>"
+    print "<!-- %s -> %s -->"%(key,value)
+    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>-</DIV>".format(key)
+    print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={0}>{1}</A></DIV><DIV CLASS=td>-</DIV><DIV CLASS=td>{0}</DIV><DIV CLASS=td>{1}</DIV>".format(value['id'],value['fqdn'] if type == 'a' else value['ipasc'])
+    print "<DIV CLASS=td>&nbsp;" + aWeb.button('add',DIV='span_dns',URL='sdcp.cgi?call=dns_record_create&type={}&id={}&ip={}&fqdn={}&dom_id={}'.format(type,value['id'],value['ipasc'],value['fqdn'],value['a_dom_id'] if type == 'a' else domains[GL.ip2arpa(value['ipasc'])]['id'] )) + "</DIV>"
     print "</DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"
@@ -263,5 +288,6 @@ def dedup(aWeb):
  xist = len(dns['removed'])
  if xist > 0:
   from sdcp.core import extras as EXT
-  EXT.dict2table(dnsclean['removed'])
+  EXT.dict2table(dns['removed'])
  print "</ARTICLE>"
+

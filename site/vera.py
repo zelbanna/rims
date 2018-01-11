@@ -16,7 +16,7 @@ __status__ = "Production"
 ########################################## Vera Operations ##########################################
 #
 #
-def inventory(aWeb):
+def manage(aWeb):
  if aWeb['ip']:
   ip = aWeb['ip']
  else:
@@ -71,7 +71,7 @@ def rest_execute(aWeb):
  for key,value in ret.iteritems():
   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td STYLE='white-space:normal'>{}</DIV></DIV>".format(key.upper(),value)                 
  print "</DIV></DIV>" 
- print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True)                                  
+ print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True)
  print "</DIV></ARTICLE>"
 
 #

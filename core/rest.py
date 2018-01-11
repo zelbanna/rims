@@ -62,7 +62,7 @@ def server():
 # - aArgs = data/content if available
 #
 #  returns un-json:ed data
-def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
+def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = None):
  from json import loads, dumps
  from urllib2 import urlopen, Request, URLError, HTTPError
  try:
@@ -72,7 +72,11 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
   if aMethod:
    req.get_method = lambda: aMethod
-  sock = urlopen(req)
+  if aVerify is None or aVerify is True:
+   sock = urlopen(req)
+  else:
+   from ssl import _create_unverified_context
+   sock = urlopen(req,context=_create_unverified_context())
   output = {'info':dict(sock.info()), 'code':sock.code }
   try:    output['data'] = loads(sock.read())
   except: output['data'] = None
@@ -90,3 +94,9 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
  if output['result'] == "ERROR":
   raise Exception(output)
  return output
+
+#
+# Basic Auth header generator
+#
+def basic_auth(aUsername,aPassword):
+ return {'Authorization':'Basic ' + (("%s:%s"%(aUsername,aPassword)).encode('base64')).replace('\n','') }

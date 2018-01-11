@@ -69,11 +69,11 @@ def update(aDict):
      except: pass
 
   tbl_id = { 'devices':'id', 'rackinfo':'device_id' }
+  sql    = "UPDATE %s SET %s=%s WHERE %s = '%s'"
   for tkey in aDict.keys():
    (table, void, key) = tkey.partition('_')
    data = aDict[tkey]
-   sql = "UPDATE %s SET {0}=%s WHERE {1} = '{2}'"%(table,"'{3}'" if data != 'NULL' else "NULL")
-   if db.do(sql.format(key,tbl_id[table],id,data)) > 0:
+   if db.do(sql%(table,key,"'%s'"%data if data != 'NULL' else "NULL",tbl_id[table],id)) > 0:
     ret['data'][key] = 'CHANGED'
  return ret
 

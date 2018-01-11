@@ -37,7 +37,7 @@ def main(aWeb):
    print "<LI><A CLASS='z-op' DIV=div_content_right  URL='sdcp.cgi?call=rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,res['data']['name'])
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
   print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=ipam_list'>IPAM</A></LI>"
-  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=dns_domains'>DNS</A></LI>"
+  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=dns_list'>DNS</A></LI>"
   print "<LI CLASS='right dropdown'><A>Rackinfo</A><DIV CLASS='dropdown-content'>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=pdu_list'>PDUs</A>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=console_list'>Consoles</A>"
@@ -67,7 +67,7 @@ def list(aWeb):
  res = rest_list(args)
  print "<DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=device_info&id=%i'>%s</A></DIV><DIV CLASS=td>%s.%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['ipasc'], row['hostname'],row['domain'], row['model'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=device_info&id=%i'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s.%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['ipasc'], row['hostname'],row['domain'], row['model'])
  print "</DIV></DIV></ARTICLE>"
 
 ################################ Gigantic Device info and Ops function #################################
@@ -79,7 +79,7 @@ def info(aWeb):
 
  cookie = aWeb.cookie_unjar('sdcp')
 
- from sdcp.rest.device import info as rest_info, update as rest_update
+ from sdcp.rest.device import info as rest_info, update as rest_update, detect as rest_detect
  from sdcp.rest.racks  import infra as rest_infra
  op    = aWeb.get('op',"")
  opres = {}
@@ -128,7 +128,7 @@ def info(aWeb):
 
  width = 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
- print "<ARTICLE CLASS='info' STYLE='position:relative; width:{}px;'><P>Device Info</P>".format(width)
+ print "<ARTICLE CLASS='info' STYLE='position:relative; width:{}px; z-index:2000'><P>Device Info</P>".format(width)
  print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
@@ -168,7 +168,7 @@ def info(aWeb):
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
   print "</SELECT></DIV>"
  print "</DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['lookup'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td STYLE='max-width:150px; overflow-x:hidden;'>{}</DIV></DIV>".format(dev['info']['lookup'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['a_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ptr_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])
@@ -240,8 +240,8 @@ def info(aWeb):
   Device = getattr(module,'Device',None)
   functions = Device.get_widgets() if Device else []
   if functions:
-   if functions[0] == 'operated':
-    print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?call=%s_inventory&id=%i'>Manage</A></LI>"%(dev['info']['type_name'],dev['id'])
+   if functions[0] == 'manage':
+    print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?call=%s_manage&id=%i'>Manage</A></LI>"%(dev['info']['type_name'],dev['id'])
    else:
     for fun in functions:
      funname = " ".join(fun.split('_')[1:])
@@ -397,8 +397,8 @@ def remove(aWeb):
  print "Unit {} deleted, DB:{}".format(id,ret['deleted'])
  if ret['res'] == 'OK':
   from sdcp import PackageContainer as PC
-  arec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['a_id']})['data']   if ret['a_id']   else 0
-  prec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_remove".format(PC.dns['type']),{'id':ret['ptr_id']})['data'] if ret['ptr_id'] else 0
+  arec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['a_id']})['data']   if ret['a_id']   else 0
+  prec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['ptr_id']})['data'] if ret['ptr_id'] else 0
   print ",A:%s,PTR:%s"%(arec,prec)
  print "</ARTICLE>"
 
