@@ -3,7 +3,7 @@
 REST interface module
 
 """
-__author__= "Zacharias El Banna"                     
+__author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
@@ -43,7 +43,7 @@ def server():
  except Exception, e:
   output = 'null'
   stdout.write("X-Z-Res:ERROR\r\n")
-  stdout.write("X-Z-Args:%s\r\n"%args)
+  stdout.write("X-Z-Arguments:%s\r\n"%args)
   stdout.write("X-Z-Info:%s\r\n"%str(e))
   stdout.write("X-Z-Exception:%s\r\n"%type(e).__name__)
  else:
@@ -73,10 +73,10 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = Non
   if aMethod:
    req.get_method = lambda: aMethod
   if aVerify is None or aVerify is True:
-   sock = urlopen(req)
+   sock = urlopen(req, timeout = 10)
   else:
    from ssl import _create_unverified_context
-   sock = urlopen(req,context=_create_unverified_context())
+   sock = urlopen(req,context=_create_unverified_context(), timeout = 10)
   output = {'info':dict(sock.info()), 'code':sock.code }
   try:    output['data'] = loads(sock.read())
   except: output['data'] = None
@@ -86,11 +86,11 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = Non
   raw = h.read()
   try:    data = loads(raw)
   except: data = raw
-  output = { 'result':'ERROR', 'exception':'HTTPError',      'info':dict(h.info()), 'code': h.code, 'data':data }
- except URLError, u:
-  output = { 'result':'ERROR', 'exception':'URLError',       'info':dict({'x-z-res':'ERROR', 'x-z-info':str(u)}), 'code':590 }
+  output = { 'result':'ERROR', 'code':h.code, 'info':dict(h.info()), 'data':data }
+ except URLError, e:
+  output = { 'result':'ERROR', 'code':590, 'info':{'x-z-res':'ERROR', 'x-z-info':str(e),'x-z-exception':'URLError' }}
  except Exception, e:
-  output = { 'result':'ERROR', 'exception':type(e).__name__, 'info':dict({'x-z-res':'ERROR', 'x-z-info':str(e)}), 'code':591 }
+  output = { 'result':'ERROR', 'code':591, 'info':{'x-z-res':'ERROR', 'x-z-info':str(e),'x-z-exception':type(e).__name__ }}
  if output['result'] == "ERROR":
   raise Exception(output)
  return output
