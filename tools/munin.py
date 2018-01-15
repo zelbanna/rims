@@ -41,7 +41,7 @@ def widget_rows(asources):
 #
 def _detect(aentry, alock, asema):
  from sdcp import PackageContainer as PC
- from sdcp.core import genlib as GL
+ from ..core import genlib as GL
  if not GL.ping_os(aentry['ip']):
   asema.release()
   return False
@@ -51,7 +51,7 @@ def _detect(aentry, alock, asema):
  fqdn = aentry['hostname'] + "." + aentry['domain']
  try:
   if type in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-   from sdcp.devices.junos import Junos
+   from ..devices.junos import Junos
    if not type == 'wlc':
     with Junos(aentry['ip']) as jdev:
      activeinterfaces = jdev.get_up_interfaces()
@@ -70,7 +70,7 @@ def _detect(aentry, alock, asema):
     graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + fqdn + '_esxi\n')
    alock.release()
  except Exception as err:
-  from sdcp.core.logger import log
+  from ..core.logger import log
   log("Graph detect - error: [{}]".format(str(err)))
   
  asema.release()
@@ -83,8 +83,8 @@ def _detect(aentry, alock, asema):
 #
 def discover():
  from sdcp import PackageContainer as PC
- from sdcp.core.logger import log
- from sdcp.core.dbase import DB
+ from ..core.logger import log
+ from ..core.dbase import DB
  from os import chmod
  from time import time
  from threading import Lock, Thread, BoundedSemaphore

@@ -38,7 +38,7 @@ def user(aWeb):
  print "</SECTION>"
 
 def list(aWeb):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  with DB() as db:
   res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
   rows = db.get_rows()
@@ -56,12 +56,12 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  data = {}
  data['id'] = aWeb.get('id','new')
  op = aWeb['op']
  cookie = aWeb.cookie_unjar('sdcp')
- from sdcp.rest.resources import list as resource_list
+ from ..rest.resources import list as resource_list
  with DB() as db:
   if op == 'update' or data['id'] == 'new':
    data['name']  = aWeb.get('name',"unknown")
@@ -125,7 +125,7 @@ def info(aWeb):
 #
 #
 def remove(aWeb):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  with DB() as db:
   res = db.do("DELETE FROM users WHERE id = '{}'".format(aWeb['id']))
  print "<ARTICLE>User with id {} removed ({})</ARTICLE>".format(aWeb['id'],"OK" if res == 1 else "NOT_OK")

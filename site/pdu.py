@@ -12,7 +12,7 @@ __status__= "Production"
 # PDUs
 #
 def list(aWeb):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  print "<ARTICLE><P>PDUs</P>"
  print aWeb.button('reload',DIV='div_content_left',  URL='sdcp.cgi?call=pdu_list')
  print aWeb.button('add',   DIV='div_content_right', URL='sdcp.cgi?call=pdu_info&id=new')
@@ -29,8 +29,8 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- from sdcp.devices.avocent import Device
- from sdcp.core.dbase import DB
+ from ..devices.avocent import Device
+ from ..core.dbase import DB
  id = aWeb['id']
  ip = aWeb['ip']
  with DB() as db:
@@ -89,7 +89,7 @@ def info(aWeb):
 #
 #
 def remove(aWeb):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  with DB() as db:
   db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(aWeb['id']))
   db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(aWeb['id']))
@@ -100,7 +100,7 @@ def remove(aWeb):
 #
 #
 def unit_info(aWeb):
- from sdcp.devices.avocent import Device
+ from ..devices.avocent import Device
  if aWeb['op'] == 'update':
   avocent = Device(aWeb['pdu'])
   avocent.set_name(aWeb['slot'],aWeb['unit'],aWeb['name'])
@@ -128,7 +128,7 @@ def inventory(aWeb):
  print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='sdcp.cgi?%s'%aWeb.get_args())
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th STYLE='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- from sdcp.devices.avocent import Device
+ from ..devices.avocent import Device
  counter = 0
  pdu = aWeb['ip']
  avocent = Device(pdu)
@@ -151,7 +151,7 @@ def inventory(aWeb):
 #
 #
 def op(aWeb):
- from sdcp.devices.avocent import Device
+ from ..devices.avocent import Device
  avocent = Device(aWeb['ip'])
  avocent.set_state(aWeb['slot'],aWeb['unit'],aWeb['nstate'])
  # Avocent is not fast enough to execute something immediately after op, halt output then :-)

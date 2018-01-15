@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 __icon__ = 'images/icon-tools.png'
 
-from sdcp.core.dbase import DB
+from ..core.dbase import DB
 
 ############################################ resources ##############################################
 #
@@ -28,7 +28,7 @@ def list(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('sdcp')
- from sdcp.rest.resources import list as rest_list
+ from ..rest.resources import list as rest_list
  res = rest_list({'user_id':cookie['id'],'view':cookie['view']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P>"
@@ -110,7 +110,7 @@ def info(aWeb):
 #
 #
 def view(aWeb):
- from sdcp.rest.resources import list as rest_list
+ from ..rest.resources import list as rest_list
  cookie = aWeb.cookie_unjar('sdcp')
  res = rest_list({'type':aWeb.get('type','tool'),'user_id':cookie['id'],'view':cookie['view']})
  index = 0;

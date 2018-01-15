@@ -20,7 +20,7 @@ def manage(aWeb):
  if aWeb['ip']:
   ip = aWeb['ip']
  else:
-  from sdcp.rest.device import info as rest_info
+  from ..rest.device import info as rest_info
   data = rest_info({'id':id})
   ip = data['ip']
  print "<NAV><UL>"
@@ -55,7 +55,7 @@ def rest_main(aWeb):
 #
 #
 def rest_execute(aWeb):
- from sdcp.rest.vera import execute as rest_execute
+ from ..rest.vera import execute as rest_execute
  from json import loads,dumps
  try:    arguments = loads(aWeb['args'])
  except: arguments = None
@@ -77,7 +77,7 @@ def rest_execute(aWeb):
 #
 #
 def status(aWeb):
- from sdcp.rest.vera import status as rest_status
+ from ..rest.vera import status as rest_status
  data = rest_status({'ip':aWeb['ip']})
  print "<ARTICLE>"
  print "<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>"
@@ -89,7 +89,7 @@ def status(aWeb):
 #
 #
 def devices(aWeb):
- from sdcp.rest.vera import status as rest_status
+ from ..rest.vera import status as rest_status
  ip   = aWeb.get('ip')
  data = rest_status({'ip':ip})
  devs = data['devices']
@@ -110,7 +110,7 @@ def devices(aWeb):
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def device_info(aWeb):
- from sdcp.rest.vera import dev_info as rest_dev_info
+ from ..rest.vera import dev_info as rest_dev_info
  ip,id = aWeb.get('ip'), aWeb['id']
  data  = rest_dev_info({'ip':ip,'id':id})
  dev   = data['Device_Num_%s'%id]
@@ -128,7 +128,7 @@ def device_info(aWeb):
 #
 #
 def rooms(aWeb):
- from sdcp.devices.vera import Device
+ from ..devices.vera import Device
  ip   = aWeb.get('ip')
  ctrl = Device(ip)
  res  = ctrl.call(3480,"id=sdata")
@@ -143,7 +143,7 @@ def rooms(aWeb):
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def scenes(aWeb):
- from sdcp.devices.vera import Device
+ from ..devices.vera import Device
  ip   = aWeb.get('ip')
  ctrl = Device(ip)
  res  = ctrl.call(3480,"id=sdata")
@@ -162,7 +162,7 @@ def scenes(aWeb):
 
 def scene_state(aWeb):
  op = 'SceneOff' if aWeb['active'] == '1' else 'RunScene'
- from sdcp.devices.vera import Device
+ from ..devices.vera import Device
  ip   = aWeb.get('ip')
  ctrl = Device(ip)
  res  = ctrl.call(3480,"id=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(op,aWeb['id']))
