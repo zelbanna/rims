@@ -11,9 +11,11 @@ from sdcp.core.dbase import DB
 from sdcp.core.logger import log
 
 #
-# info(id)
 #
 def info(aDict):
+ """
+ Takes id or ascii rep of ip and return info
+ """
  ret = {}
  search = "devices.id = '{}'".format(aDict['id']) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
  with DB() as db:
@@ -41,9 +43,13 @@ def info(aDict):
  return ret
 
 #
-# update(id,**key:value pairs)
 #
 def update(aDict):
+ """
+ Update device info
+  - id
+  - **table_key:value pairs, table: devices/rackinfo
+ """
  log("device_update({})".format(aDict))
  from sdcp.core import genlib as GL
  id     = aDict.pop('id',None)
@@ -78,9 +84,13 @@ def update(aDict):
  return ret
 
 #
-# new(ip, hostname, subnet_id, a_dom_id, mac, target, arg)
 #
 def new(aDict):
+ """
+ new(ip, hostname, subnet_id, a_dom_id, mac, target, arg)
+ - target is 'rack_id' or nothing
+ - arg is rack_id
+ """
  log("device_new({})".format(aDict))
  from sdcp.core import genlib as GL
  ip    = aDict.get('ip')

@@ -149,10 +149,23 @@ def scenes(aWeb):
  res  = ctrl.call(3480,"id=sdata")
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Active</DIV></DIV><DIV CLASS=tbody>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for scen in res['data']['scenes']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%scen['id']
-  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_scene_info&ip=%s&id=%s>%s</A></DIV>"%(ip,scen['id'],scen['name'])
-  print "<DIV CLASS=td>%s</DIV></DIV>"%(scen['active'])
+  id = scen['id']
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%id
+  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_scene_info&ip=%s&id=%s>%s</A></DIV>"%(ip,id,scen['name'])
+  print "<DIV CLASS=td ID=div_scene_%s>"%id
+  print aWeb.button('start' if scen['active'] == 0 else 'shutdown',URL='sdcp.cgi?call=vera_scene_state&ip=%s&id=%s&active=%s'%(ip,id,scen['active']),DIV='div_scene_%s'%id)
+  print "</DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+
+def scene_state(aWeb):
+ op = 'SceneOff' if aWeb['active'] == '1' else 'RunScene'
+ from sdcp.devices.vera import Device
+ ip   = aWeb.get('ip')
+ ctrl = Device(ip)
+ res  = ctrl.call(3480,"id=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(op,aWeb['id']))
+ print "<!-- %s -->"%str(res)
+ print aWeb.button('start' if aWeb['active'] == "1" else 'shutdown',URL='sdcp.cgi?call=vera_scene_state&state=%s&id=%s'%(aWeb['active'],aWeb['id']),DIV='div_scene_%s'%aWeb['id'])
+
