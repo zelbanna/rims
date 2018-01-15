@@ -10,8 +10,8 @@ __status__= "Beta"
 ############################### Openstack #############################
 #
 #
-from sdcp.devices.appformix import Device
-from sdcp import PackageContainer as PC
+from ..devices.appformix import Device
+from .. import PackageContainer as PC
 
 ##################################### Report ##################################
 #
@@ -65,7 +65,7 @@ def info(aWeb):
   return
  reports = controller.call("reports/project/%s"%aWeb['report'])['data']['UsageReport']
 
- from sdcp.site.openstack import dict2html
+ from ..site.openstack import dict2html
  for project in reports['Data']:
   if project['Project_Id'] == cookie['project_id']:
    print "<ARTICLE STYLE='overflow:auto;'>"

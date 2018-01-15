@@ -7,8 +7,8 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
-from sdcp.devices.openstack import OpenstackRPC
-from sdcp.site.openstack import dict2html
+from ..devices.openstack import OpenstackRPC
+from ..site.openstack import dict2html
 
 ############################### Neutron ##############################
 #

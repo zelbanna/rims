@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 __icon__ = 'images/icon-rack.png'
 
-from sdcp.core.dbase import DB
+from ..core.dbase import DB
 
 ################################################## Basic Rack Info ######################################################
 
@@ -79,7 +79,7 @@ def inventory(aWeb):
 #
 #
 def info(aWeb):
- from sdcp import PackageContainer as PC
+ from .. import PackageContainer as PC
  from os import listdir, path
  id = aWeb['id']
 

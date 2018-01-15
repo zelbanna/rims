@@ -9,7 +9,7 @@ __status__ = "Production"
 __icon__ = 'images/icon-servers.png'
 
 def main(aWeb):
- from sdcp.rest.device import list_type
+ from ..rest.device import list_type
  rows = list_type({'base':'hypervisor'})['data']
  print "<NAV><UL>&nbsp;</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
@@ -33,7 +33,7 @@ def main(aWeb):
 #
 #
 def manage(aWeb):
- from sdcp.rest.device import info as rest_info
+ from ..rest.device import info as rest_info
  id = aWeb['id']
  data = rest_info({'id':id})
  print "<NAV><UL>"
@@ -54,7 +54,7 @@ def manage(aWeb):
 #
 #
 def list(aWeb,aIP = None):
- from sdcp.devices.esxi import Device
+ from ..devices.esxi import Device
  ip     = aWeb.get('ip',aIP)
  sort   = aWeb.get('sort','name')
  esxi   = Device(ip)
@@ -99,7 +99,7 @@ def vmop(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('sdcp')
- from sdcp.devices.esxi import Device
+ from ..devices.esxi import Device
  from time import sleep
  ip     = aWeb.get('ip')
  nstate = aWeb['nstate']
@@ -127,7 +127,7 @@ def vmop(aWeb):
 # Graphing
 #
 def graph(aWeb):
- from sdcp.tools.munin import widget_cols
+ from ..tools.munin import widget_cols
  hostname = aWeb['hostname']
  domain   = aWeb['domain']
  print "<ARTICLE STYLE='overflow-x:auto;'>"
@@ -140,7 +140,7 @@ def logs(aWeb):
  hostname = aWeb['hostname']
  try:
   from subprocess import check_output
-  from sdcp import PackageContainer as PC
+  from .. import PackageContainer as PC
   logs = check_output("tail -n 30 " + PC.esxi['logformat'].format(hostname) + " | tac", shell=True)
   print "<ARTICLE><P>%s operation logs</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(hostname,logs.replace('\n','<BR>'))
  except: pass
@@ -149,7 +149,7 @@ def logs(aWeb):
 #
 def snapshot(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
- from sdcp.devices.esxi import Device
+ from ..devices.esxi import Device
  ip   = aWeb['ip']
  vmid = aWeb['vmid']
  data = {}
@@ -190,7 +190,7 @@ def snapshot(aWeb):
 #
 #
 def snap_op(aWeb):
- from sdcp.devices.esxi import Device
+ from ..devices.esxi import Device
  cookie = aWeb.cookie_unjar('sdcp')
  ip   = aWeb['ip']
  vmid = aWeb['vmid']

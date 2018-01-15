@@ -10,7 +10,7 @@ __status__= "Production"
 #
 #
 def list(aWeb):
- from sdcp.rest import sdcpipam
+ from ..rest import sdcpipam
  res = sdcpipam.list(None)
  print "<ARTICLE><P>Subnets</P><DIV CLASS='controls'>"
  print aWeb.button('reload', DIV='div_content_left',  URL='sdcp.cgi?call=ipam_list')
@@ -28,7 +28,7 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- from sdcp.rest import sdcpipam
+ from ..rest import sdcpipam
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict()
   res = sdcpipam.update(data)
@@ -60,7 +60,7 @@ def info(aWeb):
 #
 #
 def layout(aWeb):
- from sdcp.rest import sdcpipam
+ from ..rest import sdcpipam
  print "<ARTICLE>"
  ret = sdcpipam.allocation({'id':aWeb['id']})
  startn  = int(ret['start'])
@@ -82,5 +82,5 @@ def layout(aWeb):
 #
 #
 def delete(aWeb):
- from sdcp.rest import sdcpipam
+ from ..rest import sdcpipam
  print "<ARTICLE>%s</ARTICLE"%(sdcpipam.remove({'id':aWeb['id']}))

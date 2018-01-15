@@ -13,8 +13,8 @@ from .. import PackageContainer as PC
 #
 #
 def update(aWeb):
- from sdcp.core.dbase import DB
- from sdcp.core import genlib as GL
+ from ..core.dbase import DB
+ from ..core import genlib as GL
  with DB() as db:
   db.do("SELECT devices.id, hostname, INET_NTOA(ip) as ipasc, domains.name as domain, mac, subnet_id from devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT  mac = 0 ORDER BY ip")
   rows = db.get_rows()

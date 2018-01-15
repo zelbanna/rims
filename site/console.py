@@ -7,14 +7,14 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
-from sdcp.core.dbase import DB
+from ..core.dbase import DB
 ############################################## Consoles ###################################################
 #
 # View Consoles
 #
 
 def inventory(aWeb):
- from sdcp.devices.opengear import Device
+ from ..devices.opengear import Device
  print "<ARTICLE>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Server</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>Device</DIV></DIV>"
@@ -47,7 +47,7 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- from sdcp.core import genlib as GL
+ from ..core import genlib as GL
  id = aWeb['id']
  ip = aWeb['ip']
  op = aWeb['op']

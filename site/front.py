@@ -104,12 +104,12 @@ def weathermap(aWeb):
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"
   print "</SECTION>" 
  else:
-  from sdcp.core.extras import get_include
+  from ..core.extras import get_include
   entry  = PC.weathermap[page]
   graphs = entry.get('graphs')
   print "<SECTION CLASS=content STYLE='top:0px;'>"
   if graphs:
-   from sdcp.tools.munin import widget_rows
+   from ..tools.munin import widget_rows
    print "<SECTION CLASS=content-left STYLE='width:420px'><ARTICLE>"
    widget_rows(graphs)
    print "</ARTICLE></SECTION><SECTION CLASS=content-right STYLE='left:420px'>"
@@ -147,7 +147,7 @@ def weathermap(aWeb):
 #
 
 def openstack(aWeb):
- from sdcp.devices.openstack import OpenstackRPC
+ from ..devices.openstack import OpenstackRPC
  cookie = aWeb.cookie_unjar('openstack') if aWeb.cookies.get('openstack') else {}
  utok = cookie.get("user_token")
  if utok:

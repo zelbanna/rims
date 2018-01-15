@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 
 from sdcp import PackageContainer as PC
-from sdcp.core.dbase import DB
+from ..core.dbase import DB
 
 #
 #
@@ -56,7 +56,7 @@ def allocation(aDict):
 #
 #
 def update(aDict):
- from sdcp.core import genlib as GL
+ from ..core import genlib as GL
  ret = {'result':'OK'}
  # Check gateway
  low   = GL.ip2int(aDict['subnet'])
@@ -90,7 +90,7 @@ def remove(aDict):
 #
 # find(subnet_id, consecutive)
 def find(aDict):   
- from sdcp.core import genlib as GL
+ from ..core import genlib as GL
  with DB() as db:
   db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(aDict['id']))
   sub = db.get_row()

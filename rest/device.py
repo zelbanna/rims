@@ -7,8 +7,8 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
-from sdcp.core.dbase import DB
-from sdcp.core.logger import log
+from ..core.dbase import DB
+from ..core.logger import log
 
 #
 #
@@ -51,7 +51,7 @@ def update(aDict):
   - **table_key:value pairs, table: devices/rackinfo
  """
  log("device_update({})".format(aDict))
- from sdcp.core import genlib as GL
+ from ..core import genlib as GL
  id     = aDict.pop('id',None)
  racked = aDict.pop('racked',None)
  ret    = {'result':'OK', 'data':{}}
@@ -92,7 +92,7 @@ def new(aDict):
  - arg is rack_id
  """
  log("device_new({})".format(aDict))
- from sdcp.core import genlib as GL
+ from ..core import genlib as GL
  ip    = aDict.get('ip')
  ipint = GL.ip2int(ip)
  subnet_id = aDict.get('subnet_id')
@@ -141,7 +141,7 @@ def discover(aDict):
  log("device_discover({})".format(aDict))
  from time import time
  from threading import Thread, BoundedSemaphore
- from sdcp.core import genlib as GL
+ from ..core import genlib as GL
  start_time = int(time())
  ip_start = aDict.get('start')
  ip_end   = aDict.get('end')
@@ -249,7 +249,7 @@ def detect(aDict):
  if aDict.get('types') and not update:
   info['type_id'] = aDict['types'][info['type_name']]['id']
  else:
-  from sdcp.core.dbase import DB
+  from ..core.dbase import DB
   with DB() as db:
    xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(info['type_name']))
    info['type_id'] = db.get_val('id') if xist > 0 else None

@@ -16,9 +16,9 @@ def list(aWeb):
   return
  cookie = aWeb.cookie_unjar('sdcp')
 
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  if aWeb['op']:
-  from sdcp.rest.booking import booking
+  from ..rest.booking import booking
   res = booking({'device_id':aWeb['device_id'],'user_id':aWeb['user_id'],'op':aWeb['op']})
  
  with DB() as db:

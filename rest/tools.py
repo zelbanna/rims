@@ -10,7 +10,7 @@ __status__ = "Production"
 #
 def installation(aDict):
  from sdcp import PackageContainer as PC
- from sdcp.tools.installation import install
+ from ..tools.installation import install
  from json import load
  from os import path as ospath
  file = ospath.join(PC.repo,PC.file)
@@ -25,7 +25,7 @@ def installation(aDict):
 def sync_devicetypes(aDict):
  from os import listdir, path as ospath
  from importlib import import_module
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '../devices'))
  types = []
  new   = 0
@@ -55,7 +55,7 @@ def sync_devicetypes(aDict):
 def sync_menuitems(aDict):
  from os import listdir, path as ospath
  from importlib import import_module
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '../site'))
  items = []
  for file in listdir(path):
@@ -82,7 +82,7 @@ def sync_menuitems(aDict):
 # - columns is a string list x,y,z,..
 #
 def db_table(aDict):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  cols = aDict.get('columns','*')
  tbl  = aDict.get('table','devices')
  ret  = {'result':'OK'}

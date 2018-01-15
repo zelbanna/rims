@@ -40,7 +40,7 @@ def widget_rows(asources):
 # Device must answer to ping(!) for system to continue
 #
 def _detect(aentry, alock, asema):
- from sdcp import PackageContainer as PC
+ from .. import PackageContainer as PC
  from ..core import genlib as GL
  if not GL.ping_os(aentry['ip']):
   asema.release()
@@ -82,7 +82,7 @@ def _detect(aentry, alock, asema):
 # Writes plugin info for devices found with DeviceHandler
 #
 def discover():
- from sdcp import PackageContainer as PC
+ from .. import PackageContainer as PC
  from ..core.logger import log
  from ..core.dbase import DB
  from os import chmod

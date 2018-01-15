@@ -10,7 +10,7 @@ __status__ = "Production"
 #
 # info([id:<rackid>])
 def info(aDict):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  ret  =  {'result':'OK'}
  with DB() as db:
   if aDict.get('id'):
@@ -38,7 +38,7 @@ def info(aDict):
 #
 #
 def infra(aDict):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  ret =  {'result':'OK' }
  with DB() as db:
   ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes") 

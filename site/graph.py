@@ -10,7 +10,7 @@ __status__= "Production"
 ############################################ GRAPHS ##########################################
 #
 def list(aWeb):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  id    = aWeb['id']
  state = aWeb['state']
  target= aWeb['target']
@@ -60,7 +60,7 @@ def set_proxy(aWeb):
  ip    = aWeb['ip']
  op = aWeb['op']
  if op == 'update':
-  from sdcp.core.dbase import DB
+  from ..core.dbase import DB
   with DB() as db:
    db.do("UPDATE devices SET graph_proxy = INET_ATON('{0}') WHERE id = '{1}'".format(proxy,id))
  print "<ARTICLE><P>Update Proxy for {}</DIV>".format(ip)
@@ -78,15 +78,15 @@ def set_proxy(aWeb):
 # Find graphs
 #
 def discover(aWeb):
- from sdcp.tools.munin import discover as graph_discover
+ from ..tools.munin import discover as graph_discover
  graph_discover()
 
 #
 # Generate output for munin, until we have other types
 #
 def save(aWeb):
- from sdcp.core.dbase import DB
- from sdcp import PackageContainer as PC
+ from ..core.dbase import DB
+ from .. import PackageContainer as PC
  with DB() as db:
   db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
   rows = db.get_rows()

@@ -11,7 +11,7 @@ __status__ = "Production"
 # booking(op, device_id, user_id)
 #
 def booking(aDict):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  ret = {'result':'NOT_OK', 'op':aDict['op']}
  if aDict['op'] == 'book':
   sql = "INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')"

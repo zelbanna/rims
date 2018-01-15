@@ -8,8 +8,8 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 
 from sdcp import PackageContainer as PC
-from sdcp.core.dbase import DB
-from sdcp.core.logger import log
+from ..core.dbase import DB
+from ..core.logger import log
 
 ############################### Tools #################################
 #
@@ -36,7 +36,7 @@ def dedup(aDict):
 #
 def top(aDict):
  log("powerdns_top({})".format(aDict))
- from sdcp.core import genlib as GL
+ from ..core import genlib as GL
  count = int(aDict.get('count',10))
  fqdn_top = {}
  fqdn_who = {}

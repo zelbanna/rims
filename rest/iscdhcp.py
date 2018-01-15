@@ -13,7 +13,7 @@ from sdcp import PackageContainer as PC
 #
 #
 def get_leases(aDict):
- from sdcp.core import genlib as GL
+ from ..core import genlib as GL
  active = []
  free   = []
  lease  = {}

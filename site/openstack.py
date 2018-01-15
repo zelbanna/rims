@@ -15,7 +15,7 @@ __status__= "Production"
 #
 def portal(aWeb):
  from json import dumps
- from sdcp.devices.openstack import OpenstackRPC
+ from ..devices.openstack import OpenstackRPC
  cookie = aWeb.cookie_unjar('openstack')
  ctrl = cookie.get('controller')
  utok = cookie.get('user_token')
@@ -142,7 +142,7 @@ def fqname(aWeb):
   if not token:
    print "Not logged in"
   else:
-   from sdcp.devices.openstack import OpenstackRPC
+   from ..devices.openstack import OpenstackRPC
    controller = OpenstackRPC(cookie.get('controller'),token)
    argument   = {'uuid':aWeb['os_uuid']}
    try:
@@ -166,7 +166,7 @@ def result(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
  if (not aWeb['os_call'] and not aWeb['os_href']) or not cookie.get('user_token'):
   return
- from sdcp.devices.openstack import OpenstackRPC
+ from ..devices.openstack import OpenstackRPC
  from json import dumps,loads
  controller = OpenstackRPC(cookie.get('controller'),cookie.get('user_token'))
  try:    arguments = loads(aWeb['os_args'])

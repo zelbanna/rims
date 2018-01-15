@@ -8,13 +8,13 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
-from sdcp.devices.openstack import OpenstackRPC
-from sdcp.site.openstack import dict2html
+from ..devices.openstack import OpenstackRPC
+from ..site.openstack import dict2html
 
 ################################# Nova ###############################
 #
 def list(aWeb):
- from sdcp.core.extras import get_quote
+ from ..core.extras import get_quote
  cookie = aWeb.cookie_unjar('nova')
  token  = cookie.get('token')
  if not token:
@@ -115,7 +115,7 @@ def action(aWeb):
  aWeb.log("nova_action - id:{} op:{}".format(aWeb['id'],op))
 
  if   op == 'info':
-  from sdcp.core.extras import get_quote
+  from ..core.extras import get_quote
   server = controller.call(port,url + "/servers/%s"%aWeb['id'])['data']['server']
   qserver = get_quote(server['name'])
   tmpl = "<A TITLE='{}' CLASS='btn z-op' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=%s&op={} SPIN=true>{}</A>"%aWeb['id']

@@ -8,13 +8,13 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 __icon__ = 'images/icon-network.png'
 
-from sdcp.core.dbase import DB
+from ..core.dbase import DB
 
 ########################################## Device Operations ##########################################
 
 def main(aWeb):
- from sdcp.rest.racks import info as rackinfo
- from sdcp.core.extras import get_include
+ from ..rest.racks import info as rackinfo
+ from ..core.extras import get_include
  target = aWeb['target']
  arg    = aWeb['arg']
 
@@ -53,7 +53,7 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- from sdcp.rest.device import list as rest_list
+ from ..rest.device import list as rest_list
  print "<ARTICLE><P>Devices</P><DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?{}'.format(aWeb.get_args()))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=device_new&{}'.format(aWeb.get_args()))
@@ -79,8 +79,8 @@ def info(aWeb):
 
  cookie = aWeb.cookie_unjar('sdcp')
 
- from sdcp.rest.device import info as rest_info, update as rest_update, detect as rest_detect
- from sdcp.rest.racks  import infra as rest_infra
+ from ..rest.device import info as rest_info, update as rest_update, detect as rest_detect
+ from ..rest.racks  import infra as rest_infra
  op    = aWeb.get('op',"")
  opres = {}
  ###################### Update ###################
@@ -95,7 +95,7 @@ def info(aWeb):
     d['devices_vm'] = 0
    if not d.get('devices_comment'):
     d['devices_comment'] = 'NULL'
-   from sdcp.core import genlib as GL
+   from ..core import genlib as GL
    with DB() as db:
     db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id FROM devices WHERE devices.id = {}".format(aWeb['id']))
     ddi  = db.get_row()
@@ -112,7 +112,7 @@ def info(aWeb):
    opres['update'] = rest_update(d)
 
  elif "book" in op:
-  from sdcp.rest.booking import booking
+  from ..rest.booking import booking
   booking({'device_id':aWeb['id'], 'user_id':cookie['id'], 'op':op})
 
  dev   = rest_info({'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
@@ -120,7 +120,7 @@ def info(aWeb):
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
   return
  if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
-  from sdcp.rest.pdu import update_device_pdus
+  from ..rest.pdu import update_device_pdus
   opres['pdu'] = update_device_pdus(dev['rack'])
  infra = rest_infra(None)
 
@@ -259,7 +259,7 @@ def info(aWeb):
 
 def conf_gen(aWeb):
  from importlib import import_module
- from sdcp.rest.device import info as rest_info
+ from ..rest.device import info as rest_info
  type = aWeb['type_name']
  res  = rest_info({'id':aWeb.get('id','0')})
  data = res['info']
@@ -278,7 +278,7 @@ def conf_gen(aWeb):
 #
 def op_function(aWeb):
  from importlib import import_module
- from sdcp.core import extras as EXT
+ from ..core import extras as EXT
  print "<ARTICLE>"
  try:
   module = import_module("sdcp.devices.{}".format(aWeb['type']))
@@ -293,7 +293,7 @@ def op_function(aWeb):
 #
 #
 def mac_sync(aWeb):
- from sdcp.core import genlib as GL
+ from ..core import genlib as GL
  print "<ARTICLE CLASS=info>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
@@ -329,11 +329,11 @@ def new(aWeb):
  op     = aWeb['op']
  subnet_id = aWeb['subnet_id']
  if not ip:
-  from sdcp.core import genlib as GL
+  from ..core import genlib as GL
   ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
 
  if op == 'new':
-  from sdcp.rest.device import new as rest_new
+  from ..rest.device import new as rest_new
 
   a_dom_id = aWeb['a_dom_id']
   args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom_id, 'subnet_id':subnet_id }
@@ -348,11 +348,11 @@ def new(aWeb):
   print "DB:{}".format(res)
   aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(cookie['user'],args,res))
  elif op == 'find':
-  from sdcp.rest import sdcpipam
+  from ..rest import sdcpipam
   res  = sdcpipam.find({'id':subnet_id})
   print "IP:{}".format(res['ip'])
  else:
-  from sdcp.rest import sdcpipam
+  from ..rest import sdcpipam
   domain = aWeb['domain']
   subnets = sdcpipam.list(None)['subnets']
   with DB() as db:
@@ -390,7 +390,7 @@ def new(aWeb):
 #
 #
 def remove(aWeb):
- from sdcp.rest.device import remove as rest_remove
+ from ..rest.device import remove as rest_remove
  id  = aWeb['id']
  ret = rest_remove({ 'id':id })
  print "<ARTICLE>"
@@ -408,7 +408,7 @@ def remove(aWeb):
 def discover(aWeb):
  op = aWeb['op']
  if op:
-  from sdcp.rest.device import discover
+  from ..rest.device import discover
   clear = aWeb.get('clear',False)
   a_dom = aWeb['a_dom_id']
   ipam  = aWeb.get('ipam_subnet',"0_0_32").split('_')
@@ -445,5 +445,5 @@ def discover(aWeb):
 # clear db
 #
 def clear_db(aWeb):
- from sdcp.rest.device import clear as rest_clear
+ from ..rest.device import clear as rest_clear
  print "<<ARTICLE>%s</ARTICLE>"%(rest_clear(None))
