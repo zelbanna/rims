@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 
 def list(aDict):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  ret = {'result':'OK'}
  ret['user_id'] = aDict.get('user_id',"1")
  ret['view'] = aDict.get('view',"1")

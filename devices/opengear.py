@@ -8,7 +8,7 @@ __status__  = "Production"
 __type__    = "console"
 
 from generic import Device as GenericDevice, ConfObject
-from sdcp import PackageContainer as PC
+from .. import PackageContainer as PC
 
 ######################################## Console ########################################
 #

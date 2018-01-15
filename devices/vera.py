@@ -8,8 +8,8 @@ __version__ = "17.11.01GA"
 __status__  = "Production"
 __type__    = "controller"
 
-from sdcp.core.rest import call as rest_call
-from sdcp.devices.generic import Device as GenericDevice
+from ..core.rest import call as rest_call
+from ..devices.generic import Device as GenericDevice
 
 class Device(GenericDevice):
 

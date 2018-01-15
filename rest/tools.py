@@ -9,7 +9,7 @@ __status__ = "Production"
 
 #
 def installation(aDict):
- from sdcp import PackageContainer as PC
+ from .. import PackageContainer as PC
  from ..tools.installation import install
  from json import load
  from os import path as ospath

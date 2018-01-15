@@ -11,8 +11,8 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
-from sdcp import PackageContainer as PC
-from sdcp.core.extras import get_results, str2hex
+from .. import PackageContainer as PC
+from ..core.extras import get_results, str2hex
 from subprocess import check_output, check_call
 
 

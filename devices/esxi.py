@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__  = "Production"
 __type__    = "hypervisor"
 
-from sdcp import PackageContainer as PC
+from .. import PackageContainer as PC
 from generic import Device as GenericDevice
 
 ########################################### ESXi ############################################
@@ -28,7 +28,7 @@ class Device(GenericDevice):
 
  def __init__(self,aIP,aID=None):
   GenericDevice.__init__(self,aIP,aID)
-  from sdcp.core import genlib as GL
+  from ..core import genlib as GL
   # Override log file
   self._hostname = GL.get_host_name(aIP)
   self._logfile = PC.esxi['logformat'].format(self._hostname)
@@ -59,11 +59,11 @@ class Device(GenericDevice):
    f.write(output + "\n")
  
  def create_lock(self,atime):
-  from sdcp.core.extras import pidfile_lock
+  from ..core.extras import pidfile_lock
   pidfile_lock("/tmp/esxi." + self._hostname + ".vm.pid",atime)
 
  def release_lock(self):
-  from sdcp.core.extras import pidfile_release
+  from ..core.extras import pidfile_release
   pidfile_release("/tmp/esxi." + self._hostname + ".vm.pid")
 
  #

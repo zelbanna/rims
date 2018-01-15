@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__  = "Production"
 __type__    = "network"
 
-from sdcp import PackageContainer as PC
+from .. import PackageContainer as PC
 from generic import Device as GenericDevice
 from netsnmp import VarList, Varbind, Session
 
@@ -106,7 +106,7 @@ class Junos(GenericDevice):
   return ret
 
  def print_conf(self,argdict):
-  from sdcp import PackageContainer as PC
+  from .. import PackageContainer as PC
   print "set system host-name {}<BR>".format(argdict['name'])
   if PC.netconf['username'] == 'root':
    print "set system root-authentication encrypted-password \"{}\"<BR>".format(PC.netconf['encrypted'])

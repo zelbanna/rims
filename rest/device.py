@@ -201,7 +201,7 @@ def discover(aDict):
 #
 def detect(aDict):
  log("device_detect({})".format(aDict))
- from sdcp import PackageContainer as PC
+ from .. import PackageContainer as PC
  from netsnmp import VarList, Varbind, Session
  from socket import gethostbyaddr
  from os import system

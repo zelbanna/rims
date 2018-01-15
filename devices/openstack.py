@@ -31,7 +31,7 @@ class OpenstackRPC(object):
  # { 'username','password', 'project' }
  #
  def auth(self, aAuth):
-  from sdcp.core.rest import call as rest_call
+  from ..core.rest import call as rest_call
   from time import mktime, strptime
   try:
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
@@ -91,7 +91,7 @@ class OpenstackRPC(object):
   return self.href("http://{}:{}/{}".format(self._ip,port,url), aArgs=args, aMethod=method, aHeader = header)
 
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
-  from sdcp.core.rest import call as rest_call
+  from ..core.rest import call as rest_call
   head = { 'X-Auth-Token':self._token }
   try: head.update(aHeader)
   except: pass
