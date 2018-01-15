@@ -8,29 +8,8 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 
 #
-#
-def infra(aDict):
- from sdcp.core.dbase import DB
- ret =  {'result':'OK' }
- with DB() as db:
-  ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes") 
-  ret['types']    = db.get_rows()
-  ret['rackxist'] = db.do("SELECT racks.* FROM racks")
-  ret['racks']    = db.get_rows()
-  ret['racks'].append({ 'id':'NULL', 'name':'Not used'})
-  ret['consolexist'] = db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") 
-  ret['consoles']    = db.get_rows()
-  ret['consoles'].append({ 'id':'NULL', 'name':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1' })
-  ret['pduxist'] = db.do("SELECT pdus.*, INET_NTOA(ip) as ipasc FROM pdus")
-  ret['pdus']    = db.get_rows()
-  ret['pdus'].append({ 'id':'NULL', 'name':'No PDU', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':'' })
-  ret['dnscachexist'] = db.do("SELECT domains.* FROM domains")
-  ret['dnscache']     = db.get_rows()
- return ret
-
-#
-# rackinf([id:<rackid>])
-def rackinfo(aDict):
+# info([id:<rackid>])
+def info(aDict):
  from sdcp.core.dbase import DB
  ret  =  {'result':'OK'}
  with DB() as db:
@@ -57,7 +36,28 @@ def rackinfo(aDict):
  return ret
 
 #
-# devices(rack:[rack_id,vm], sort:)
+#
+def infra(aDict):
+ from sdcp.core.dbase import DB
+ ret =  {'result':'OK' }
+ with DB() as db:
+  ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes") 
+  ret['types']    = db.get_rows()
+  ret['rackxist'] = db.do("SELECT racks.* FROM racks")
+  ret['racks']    = db.get_rows()
+  ret['racks'].append({ 'id':'NULL', 'name':'Not used'})
+  ret['consolexist'] = db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") 
+  ret['consoles']    = db.get_rows()
+  ret['consoles'].append({ 'id':'NULL', 'name':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1' })
+  ret['pduxist'] = db.do("SELECT pdus.*, INET_NTOA(ip) as ipasc FROM pdus")
+  ret['pdus']    = db.get_rows()
+  ret['pdus'].append({ 'id':'NULL', 'name':'No PDU', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':'' })
+  ret['dnscachexist'] = db.do("SELECT domains.* FROM domains")
+  ret['dnscache']     = db.get_rows()
+ return ret
+
+#
+# devices(rack:rack_id, sort:)
 #
 def devices(aDict):
  ret = { 'result':'OK' }

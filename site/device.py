@@ -13,7 +13,7 @@ from sdcp.core.dbase import DB
 ########################################## Device Operations ##########################################
 
 def main(aWeb):
- from sdcp.rest.racks import rackinfo
+ from sdcp.rest.racks import info as rackinfo
  from sdcp.core.extras import get_include
  target = aWeb['target']
  arg    = aWeb['arg']

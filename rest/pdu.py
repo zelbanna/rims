@@ -1,6 +1,7 @@
 """Moduledocstring.
 
 PDU REST calls module
+- should be renamed avocentpdu with proper type sent through REST api
 
 """
 __author__= "Zacharias El Banna"                     

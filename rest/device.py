@@ -1,6 +1,6 @@
 """Module docstring.
 
- Device restAPI module
+ Device API module
 
 """
 __author__ = "Zacharias El Banna"

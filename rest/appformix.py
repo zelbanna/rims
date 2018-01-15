@@ -1,6 +1,6 @@
 """Module docstring.
 
- Appformix restAPI module
+ Appformix API module
 
 """
 __author__ = "Zacharias El Banna"

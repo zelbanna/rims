@@ -68,7 +68,7 @@ def update(aDict):
  else:
   gwint = low + 1
   ret['gateway'] = GL.int2ip(gwint)
-  ret['info'] = "defaulted illegal gateway"
+  ret['info'] = "illegal gateway"
  with DB() as db:
   if aDict['id'] == 'new':
    ret['xist'] = db.do("INSERT INTO subnets(subnet,mask,gateway,description) VALUES (INET_ATON('{}'),{},{},'{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['subnet'],aDict['mask'],gwint,aDict['description']))
