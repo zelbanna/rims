@@ -7,7 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
-from sdcp import PackageContainer as PC
+from .. import PackageContainer as PC
 
 #
 #
@@ -27,7 +27,7 @@ def update(aWeb):
 #
 #
 def leases(aWeb):
- from sdcp.core import extras as EXT
+ from ..core import extras as EXT
  dhcp = aWeb.rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']))['data']
  print "<ARTICLE STYLE='float:left; width:49%;'><P>DHCP Active Leases</P>"
  try: EXT.dict2table(dhcp['active'])

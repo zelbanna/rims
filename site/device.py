@@ -88,7 +88,7 @@ def info(aWeb):
   opres['lookup'] = rest_detect({'ip':aWeb['ip'],'update':True,'id':aWeb['id']})
 
  elif op == 'update':
-  from sdcp import PackageContainer as PC
+  from .. import PackageContainer as PC
   d = aWeb.get_args2dict_except(['call','op','ip'])
   if d['devices_hostname'] != 'unknown':
    if not d.get('devices_vm'):
@@ -219,7 +219,7 @@ def info(aWeb):
  else:
    print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=book&id=%i'%dev['id'],TITLE='Book')   
  print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&type_name=%s&id=%i'%(dev['info']['type_name'],dev['id']),TITLE='Generate System Conf')
- from sdcp import PackageContainer as PC
+ from .. import PackageContainer as PC
  print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(PC.netconf['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
   print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
@@ -396,7 +396,7 @@ def remove(aWeb):
  print "<ARTICLE>"
  print "Unit {} deleted, DB:{}".format(id,ret['deleted'])
  if ret['res'] == 'OK':
-  from sdcp import PackageContainer as PC
+  from .. import PackageContainer as PC
   arec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['a_id']})['data']   if ret['a_id']   else 0
   prec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['ptr_id']})['data'] if ret['ptr_id'] else 0
   print ",A:%s,PTR:%s"%(arec,prec)

@@ -57,7 +57,7 @@ def install(aDict):
   f.write(" from time import localtime, strftime\n")
   f.write(" with open('" + PC.generic['logformat'] + "', 'a') as f:\n")
   f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
- from sdcp.core.logger import log
+ from ..core.logger import log
  log("installation({})".format(aDict))
 
  #
@@ -102,13 +102,13 @@ def install(aDict):
  #
  # Insert correct types into modules DB
  if PC.generic.get('db'):
-  from sdcp.core.dbase import DB
-  from sdcp.core.mysql import diff
+  from ..core.dbase import DB
+  from ..core.mysql import diff
   ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
   with DB() as db:
    ret['DB_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
 
-  from sdcp.rest.tools import sync_devicetypes, sync_menuitems
+  from ..rest.tools import sync_devicetypes, sync_menuitems
   ret['new_devicetypes'] = sync_devicetypes(None)['new']
   ret['new_menuitems']   = sync_menuitems(None)['new']
 

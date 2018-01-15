@@ -14,7 +14,7 @@ def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- from sdcp import PackageContainer as PC
+ from .. import PackageContainer as PC
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A></LI>"
  print "<LI CLASS='dropdown'><A>Options</A><DIV CLASS='dropdown-content'>"
@@ -39,7 +39,7 @@ def main(aWeb):
 #
 #
 def db_structure(aWeb):
- from sdcp.core.mysql import dump
+ from ..core.mysql import dump
  print "<ARTICLE><P>Database Structure</A>"
  print "<P CLASS='machine-text'>"
  print "<BR>".join(dump({'mode':'structure'})['output'])
@@ -49,7 +49,7 @@ def db_structure(aWeb):
 #
 def db_table(aWeb):
  from json import dumps
- from sdcp.rest.tools import db_table
+ from ..rest.tools import db_table
  print "<PRE>{}</PRE>".format(dumps(db_table({'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db'], indent=4, sort_keys=True))
 
 #
@@ -74,7 +74,7 @@ def test_rest(aWeb):
 #
 #
 def rest_main(aWeb):
- from sdcp import PackageContainer as PC
+ from .. import PackageContainer as PC
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_rest>"
  print "Choose host and enter API:<SELECT STYLE='height:22px;' NAME=host>"

@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__= "Production"
 
 
-from sdcp import PackageContainer as PC
+from .. import PackageContainer as PC
 
 #################################################################################################################
 #
@@ -19,7 +19,7 @@ from sdcp import PackageContainer as PC
 #
 #
 def login(aWeb):
- from sdcp.core.dbase import DB
+ from ..core.dbase import DB
  if PC.generic['db'] == '':
   aWeb.log("No Database available so login not possible")
   aWeb.put_html("Error")
@@ -43,7 +43,7 @@ def login(aWeb):
    db.do("SELECT menulist FROM users WHERE id = '{}'".format(id))
    menulist = db.get_val('menulist')
 
-  from sdcp.rest.resources import list as resource_list
+  from ..rest.resources import list as resource_list
   resources = resource_list({'id':id,'dict':'id'})['data']
   print "<HEADER>"
   inline = "<A CLASS='btn menu-btn z-op' DIV=main      TITLE='%s' URL='%s' ><IMG SRC='%s'/></A>"

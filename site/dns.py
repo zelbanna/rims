@@ -7,8 +7,8 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
-from sdcp import PackageContainer as PC
-from sdcp.core.dbase import DB
+from .. import PackageContainer as PC
+from ..core.dbase import DB
 
 ############################################ Domains ###########################################
 #
@@ -190,7 +190,7 @@ def record_create(aWeb):
  if aWeb['type'] == 'a':
   data = {'id':'new','type':aWeb['type'],'domain_id':aWeb['dom_id'],'name':aWeb['fqdn'],'content':aWeb['ip']}
  else:
-  from sdcp.core import genlib as GL
+  from ..core import genlib as GL
   data = {'id':'new','type':aWeb['type'],'domain_id':aWeb['dom_id'],'content':aWeb['fqdn'],'name':GL.ip2ptr(aWeb['ip'])}
  res = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_update".format(PC.dns['type']),data)
  operation['dns'] = res['data']
@@ -255,7 +255,7 @@ def discrepancy(aWeb):
      print aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='sdcp.cgi?call=dns_record_transfer&id={}&dev={}&type={}'.format(rec['id'],dev['id'],type))
     print "</DIV></DIV>"
   if len(devs) > 0:
-   from sdcp.core import genlib as GL
+   from ..core import genlib as GL
    for key,value in  devs.iteritems():
     print "<DIV CLASS=tr>"
     print "<!-- %s -> %s -->"%(key,value)
@@ -270,7 +270,7 @@ def discrepancy(aWeb):
 # DNS top
 #
 def top(aWeb):
- from sdcp.core import extras as EXT
+ from ..core import extras as EXT
  dnstop = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_top".format(PC.dns['type']), {'count':20})['data']
  print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>"
  EXT.dict2table(dnstop['top'])
@@ -287,7 +287,7 @@ def dedup(aWeb):
  print "<ARTICLE><P>Duplicate Removal</P>"
  xist = len(dns['removed'])
  if xist > 0:
-  from sdcp.core import extras as EXT
+  from ..core import extras as EXT
   EXT.dict2table(dns['removed'])
  print "</ARTICLE>"
 

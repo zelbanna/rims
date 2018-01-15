@@ -6,7 +6,7 @@
 __author__ = "Zacharias El Banna"                     
 __version__ = "17.11.01GA"
 __status__ = "Production"
-from sdcp.core.logger import log
+from ..core.logger import log
 
 ################################ LOOPIA DNS ###################################
 #
@@ -15,7 +15,7 @@ from sdcp.core.logger import log
 loopia_domain_server_url = 'https://api.loopia.se/RPCSERV' 
 
 def set_loopia_ip(subdomain, newip):
- from sdcp import PackageContainer as PC
+ from ..import PackageContainer as PC
  import xmlrpclib
  try:
   client = xmlrpclib.ServerProxy(uri = loopia_domain_server_url, encoding = 'utf-8')
@@ -32,7 +32,7 @@ def set_loopia_ip(subdomain, newip):
 # Get Loopia settings for subdomain
 #
 def get_loopia_ip(subdomain):
- from sdcp import PackageContainer as PC
+ from ..import PackageContainer as PC
  import xmlrpclib
  try:
   client = xmlrpclib.ServerProxy(uri = loopia_domain_server_url, encoding = 'utf-8')
@@ -43,7 +43,7 @@ def get_loopia_ip(subdomain):
   return False
 
 def get_loopia_suffix():
- from sdcp import PackageContainer as PC
+ from ..import PackageContainer as PC
  return "." + PC.loopia['domain']
 
 ################################# OpenDNS ######################################
@@ -75,7 +75,7 @@ def pdns_get():
 # - returns True if was in sync and False if modified
 # 
 def pdns_sync(dnslist):
- from sdcp.core.extras import file_replace
+ from ..core.extras import file_replace
  pdns = pdns_get()
  if not pdns in dnslist:
   from subprocess import check_call

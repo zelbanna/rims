@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 __icon__ = 'images/icon-examine.png'
 
-from sdcp import PackageContainer as PC
+from .. import PackageContainer as PC
 
 ############################################ Examine ##############################################
 #
@@ -51,7 +51,7 @@ def logs(aWeb):
 # UPS graphs
 #
 def ups(aWeb):
- from sdcp.tools.munin import widget_cols
+ from ..tools.munin import widget_cols
  upshost,void,domain = PC.sdcp['upshost'].partition('.')
  print "<ARTICLE>"
  widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])

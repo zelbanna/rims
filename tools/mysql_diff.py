@@ -14,8 +14,8 @@ if __name__ == "__main__":
 
  from os import path as ospath, getcwd
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '../..')))
- from sdcp import PackageContainer as PC
- from sdcp.core import mysql
+ from .. import PackageContainer as PC
+ from ..core import mysql
 
  file = ospath.abspath(ospath.join(getcwd(),argv[1]))
  diffs= mysql.diff({'file':file})

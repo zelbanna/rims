@@ -7,7 +7,7 @@ __status__ = "Production"
 # dump(mode,full)
 def dump(aDict):
  from subprocess import check_output
- from sdcp import PackageContainer as PC
+ from .. import PackageContainer as PC
  try:
   db = PC.generic['db']
   mode = aDict.get('mode','structure')
@@ -45,7 +45,7 @@ def dump(aDict):
 #
 def restore(aDict):
  from subprocess import check_output
- from sdcp import PackageContainer as PC
+ from .. import PackageContainer as PC
  try:
   cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u" + PC.generic['dbuser'], "-p" + PC.generic['dbpass'], '<',aDict['file']]
   output = check_output(" ".join(cmd), shell=True)
