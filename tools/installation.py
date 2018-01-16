@@ -10,22 +10,25 @@ def install(aDict):
  from os import chmod, remove, listdir, path as ospath
  from shutil import copy
  import pip
- ret = {'res':'NOT_OK'}
  basedir    = ospath.abspath(ospath.join(ospath.dirname(__file__),'../..'))
  packagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
  pcfile  = "{}/PackageContainer.py".format(packagedir)
  logger  = "{}/core/logger.py".format(packagedir)
+ ret = {'res':'NOT_OK', 'packagedir':packagedir, 'basedir':basedir}
  syspath.append(basedir)
  #
  # Write Package Container
+ try: remove(pcfile + "c")
+ except: pass
  try:
   with open(pcfile,'w') as f:
    for name,category in aDict.iteritems():
     f.write("{}={}\n".format(name,repr(category)))
    f.write("repo={}\n".format(repr(packagedir)))
-  import sdcp.PackageContainer as PC
-  remove(pcfile)
+  from .. import PackageContainer as PC
+  # remove(pcfile)
   ret['pc'] = 'OK'
+  ret['log'] = PC.generic['logformat']
  except Exception as err:
   ret['pc'] = 'NOT_OK'
   ret['error'] = str(err)
@@ -57,8 +60,6 @@ def install(aDict):
   f.write(" from time import localtime, strftime\n")
   f.write(" with open('" + PC.generic['logformat'] + "', 'a') as f:\n")
   f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
- from ..core.logger import log
- log("installation({})".format(aDict))
 
  #
  # Write CGI files

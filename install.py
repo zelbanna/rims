@@ -15,10 +15,9 @@ if len(argv) < 2:
  print "\n!!! Please import DB structure from mysql.txt before installing !!!\n"
  exit(0)
 else:
- from tools.installation import install
+ from sdcp.tools.installation import install
  with open(argv[1]) as settingsfile:
   settings = load(settingsfile)
- settings['file'] = str(argv[1])
  res = install(settings)
  print dumps(res,indent=4)
  exit(0 if res.get('res') == 'OK' else 1)

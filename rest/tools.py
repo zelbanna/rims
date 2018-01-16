@@ -11,14 +11,12 @@ __status__ = "Production"
 def installation(aDict):
  from .. import PackageContainer as PC
  from ..tools.installation import install
- from json import load
- from os import path as ospath
- file = ospath.join(PC.repo,PC.file)
- with open(file) as settingsfile:
-  settings = load(settingsfile)
- settings['file'] = str(PC.file)
+ settings = {}
+ for s in dir(PC):
+  if not s[0:2] == '__':
+   settings[s]= getattr(PC,s,None) 
  res = install(settings)
- ret = {'result':'OK', 'file':file, 'info':res}
+ ret = {'result':'OK', 'info':res}
  return ret
 
 #
