@@ -23,14 +23,12 @@ def install(aDict):
  except: pass
  try:
   ts = time().__trunc__()
+  aDict.pop('created',None)
   with open(pcfile,'w') as f:
    for name,category in aDict.iteritems():
-    if not name == 'created':
-     f.write("{}={}\n".format(name,repr(category)))
+    f.write("{}={}\n".format(name,repr(category)))
    f.write("created={}\n".format(repr(ts)))
-  ret['pc'] = 'OK'
-  ret['pc_timestamp'] = ts
-  ret['log'] = aDict['generic']['logformat']
+  ret['pc'] = {'res':'OK','timestamp':ts, 'info':aDict}
  except Exception as err:
   ret['pc'] = 'NOT_OK'
   ret['error'] = str(err)

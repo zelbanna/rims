@@ -8,15 +8,15 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
-def portal_info(aDict):
+def application(aDict):
  """
- - portal: 'sdcp', 'openstack'
+ - app: 'sdcp', 'openstack'
  """
 
  from ..core.dbase import DB
  ret = {'result':'NOT_OK'}
 
- if aDict.get('portal') == 'sdcp':
+ if aDict.get('app') == 'sdcp':
   ret['call'] = 'sdcp_portal'
   ret['name'] = 'El Banna Portal'
   with DB() as db:

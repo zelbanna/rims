@@ -8,7 +8,6 @@ __version__ = "17.11.01GA"
 __status__= "Production"
 
 
-from .. import PackageContainer as PC
 
 #################################################################################################################
 #
@@ -52,6 +51,7 @@ def login(aWeb):
 # Weathermap
 #
 def weathermap(aWeb):
+ from .. import PackageContainer as PC
  if aWeb.get('headers','no') == 'no':
   aWeb.put_html("Weathermap")
  else:
@@ -110,6 +110,7 @@ def weathermap(aWeb):
 #
 
 def openstack(aWeb):
+ from .. import PackageContainer as PC
  from ..devices.openstack import OpenstackRPC
  cookie = aWeb.cookie_unjar('openstack')
  utok = cookie.get("user_token")

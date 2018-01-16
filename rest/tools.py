@@ -11,10 +11,9 @@ __status__ = "Production"
 def installation(aDict):
  from .. import PackageContainer as PC
  from ..tools.installation import install
- settings = {}
- for s in dir(PC):
-  if not s[0:2] == '__':
-   settings[s]= getattr(PC,s,None) 
+ from json import load
+ with open(PC.source) as settingsfile:
+  settings = load(settingsfile)
  res = install(settings)
  ret = {'result':'OK', 'info':res}
  return ret
