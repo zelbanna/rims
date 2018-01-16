@@ -13,8 +13,7 @@ __status__= "Production"
 #
 # Login
 #
-# - Log in to "application" (default to:'sdcp') and redirect to application cookies portal 
-# - should write portal into cookie instead
+# - Log in to "application" (default to:'sdcp') and redirect to application cookies portal
 #
 def login(aWeb):
  application = aWeb.get('application','sdcp')

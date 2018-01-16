@@ -16,7 +16,6 @@ def application(aDict):
  from .. import PackageContainer as PC
  from ..core.dbase import DB
  ret = {'result':'NOT_OK'}
-
  if aDict.get('app') == 'sdcp':
   ret['name'] = PC.sdcp['name']
   ret['portal'] = "sdcp_portal"
@@ -28,7 +27,8 @@ def application(aDict):
   ret['cookie'] = "TBD"
   ret['parameters'] = []
   ret['result'] = 'OK'
-
- # Else should pick this upp from device controller somehow
-
+ elif aDict.get('app') == 'openstack':
+  demo = aDict.get('name','iaas')
+  ctrl = aDict.get('controller',"127.0.0.1")
+  appf = aDict.get('appformix',"127.0.0.1")
  return ret
