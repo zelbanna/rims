@@ -19,70 +19,33 @@ from .. import PackageContainer as PC
 #
 #
 def login(aWeb):
- from ..core.dbase import DB
- if PC.generic['db'] == '':
-  aWeb.log("No Database available so login not possible")
-  aWeb.put_html("Error")
+ cookie = aWeb.cookie_unjar('sdcp')
+ if len(cookie) > 0:
+  site = "sdcp_portal"
+  aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%site)
   return
 
- if aWeb.cookies.get('sdcp'):
-  cookie = aWeb.cookie_unjar('sdcp')
-  id   = cookie['id']
-  user = cookie['user']
-  view = cookie['view']
- else:
-  id,user,view = aWeb.get('sdcp_login',"None_None_1").split('_')
-  if id != "None":
-   # "Login successful"
-   aWeb.cookie_jar('sdcp',{'id':id,'user':user,'view':view}, 86400)
-
- if id != "None":
-  aWeb.put_html(PC.sdcp['name'])
-  aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
-  with DB() as db:
-   db.do("SELECT menulist FROM users WHERE id = '{}'".format(id))
-   menulist = db.get_val('menulist')
-
-  from ..rest.resources import list as resource_list
-  resources = resource_list({'id':id,'dict':'id'})['data']
-  print "<HEADER>"
-  inline = "<A CLASS='btn menu-btn z-op' DIV=main      TITLE='%s' URL='%s' ><IMG SRC='%s'/></A>"
-  extern = "<A CLASS='btn menu-btn z-op' TARGET=_blank TITLE='%s' HREF='%s'><IMG SRC='%s'/></A>"
-  if menulist == 'default':
-   for key,item in resources.iteritems():
-    item = resources.get(int(key))
-    if item['type'] == 'menuitem':
-     print inline%(item['title'],item['href'],item['icon'])
-  else:
-   for key in menulist.split(','):
-    item = resources.get(int(key))
-    if item['inline'] == 1:
-     print inline%(item['title'],item['href'],item['icon'])
-    else:
-     print extern%(item['title'],item['href'],item['icon'])
-  print "<A CLASS='btn menu-btn z-op right warning' OP=logout URL=sdcp.cgi>Log out</A>"
-  print "<A CLASS='btn menu-btn z-op right' DIV=main TITLE='%s' URL=sdcp.cgi?call=users_user&id=%s><IMG SRC='images/icon-users.png'></A>"%(user,id)
-  print "</HEADER>"
-  print "<main ID=main></main>"
- else:
-  with DB() as db:
-   db.do("SELECT id,name,view_public FROM users ORDER BY name")
-   rows = db.get_rows()
-  aWeb.put_html("Login")
-  print "<DIV CLASS='grey overlay'>"
-  print "<ARTICLE CLASS='login'>"
-  print "<H1 CLASS='centered'>Welcome to the management portal</H1>"
-  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
-  print "<INPUT TYPE=HIDDEN NAME=call VALUE=front_login>"
-  print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT NAME=sdcp_login>"
-  for row in rows:
-   print "<OPTION VALUE='{0}_{1}_{2}' {3}>{1}</OPTION>".format(row['id'],row['name'],row['view_public'],'' if str(row['id']) != id else "selected=True")
-  print "</SELECT></DIV></DIV>"
-  print "</DIV></DIV>"
-  print "<A CLASS='btn z-op' OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
-  print "</FORM>"
-  print "</ARTICLE></DIV>"
+ # request from REST
+ from ..core.dbase import DB
+ with DB() as db:
+  db.do("SELECT id,name,view_public FROM users ORDER BY name")
+  rows = db.get_rows()
+ aWeb.put_html("Login")
+ print "<DIV CLASS='grey overlay'>"
+ print "<ARTICLE CLASS='login'>"
+ print "<H1 CLASS='centered'>Welcome to the management portal</H1>"
+ print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
+ print "<INPUT TYPE=HIDDEN NAME=call VALUE=sdcp_portal>"
+ print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
+ print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT NAME=sdcp_login>"
+ for row in rows:
+  print "<OPTION VALUE='{0}_{1}_{2}'>{1}</OPTION>".format(row['id'],row['name'],row['view_public'])
+ print "</SELECT></DIV></DIV>"
+ print "</DIV></DIV>"
+ print "<A CLASS='btn z-op' OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
+ print "</FORM>"
+ print "</ARTICLE></DIV>"
 
 ##################################################################################################
 #
@@ -148,11 +111,14 @@ def weathermap(aWeb):
 
 def openstack(aWeb):
  from ..devices.openstack import OpenstackRPC
- cookie = aWeb.cookie_unjar('openstack') if aWeb.cookies.get('openstack') else {}
+ cookie = aWeb.cookie_unjar('openstack')
  utok = cookie.get("user_token")
  if utok:
   aWeb.put_redirect("sdcp.cgi?call=openstack_portal&headers=no")
   return
+
+ # Package all variables found except call and header into cookie, add portal :-), rename demo below
+ # request portal info from rest.sdcp_portal
 
  name = aWeb.get('name',"iaas")
  ctrl = aWeb.get('controller',"127.0.0.1")
@@ -178,20 +144,25 @@ def openstack(aWeb):
  ret = controller.call("5000","v3/projects")
  projects = [] if not ret['code'] == 200 else ret['data']['projects']
 
+ # Put cookie
  aWeb.cookie_jar('openstack',cookie,3000)
  aWeb.put_html("{} 2 Cloud".format(name.capitalize()))
  print "<DIV CLASS='grey overlay'>"
  print "<ARTICLE CLASS='login'>"
+ # REST header
  print "<H1 CLASS='centered'>Welcome to '{}' Cloud portal</H1>".format(name.capitalize())
  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=openstack_login>"
+ # REST portal
  print "<INPUT TYPE=HIDDEN NAME=call VALUE=openstack_portal>"
  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
  print "<DIV CLASS=table STYLE='display:inline; float:left; width:auto; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
+ # loop through REST choises
  print "<DIV CLASS=tr><DIV CLASS=td>Customer:</DIV><DIV CLASS=td><SELECT NAME=project>"
  for p in projects:
-  print "<OPTION VALUE={0}_{1} {2}>{1}</OPTION>".format(p['id'],p['name'],'' if not p['id'] == prev else "selected")
+  print "<OPTION VALUE={0}_{1}>{1}</OPTION>".format(p['id'],p['name'])
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><INPUT TYPE=text NAME=username {}></DIV></DIV>".format('' if not user else "VALUE={}".format(user))
+ # loop through rest parameters
+ print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><INPUT TYPE=text NAME=username></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Password:</DIV><DIV CLASS=td><INPUT TYPE=password NAME=password></DIV></DIV>"
  print "</DIV></DIV>"
  print "<A CLASS='btn z-op' STYLE='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
