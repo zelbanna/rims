@@ -18,33 +18,33 @@ __status__= "Production"
 #
 #
 def login(aWeb):
- cookie = aWeb.cookie_unjar('sdcp')
+ application = aWeb.get('application','sdcp')
+ cookie = aWeb.cookie_unjar(application)
  if len(cookie) > 0:
-  site = "sdcp_portal"
+  site = "%s_portal"%application
   aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%site)
   return
 
- # request from REST
- from ..core.dbase import DB
- with DB() as db:
-  db.do("SELECT id,name,view_public FROM users ORDER BY name")
-  rows = db.get_rows()
- aWeb.put_html("Login")
+ from .. import PackageContainer as PC
+ data = aWeb.rest_call(PC.generic['url'],"sdcp.rest.sdcp_application",{'app':application})['data']
+ aWeb.put_html(data['name'])
  print "<DIV CLASS='grey overlay'>"
  print "<ARTICLE CLASS='login'>"
- print "<H1 CLASS='centered'>Welcome to the management portal</H1>"
- print "<FORM ACTION=sdcp.cgi METHOD=POST ID=sdcp_login_form>"
- print "<INPUT TYPE=HIDDEN NAME=call VALUE=sdcp_portal>"
+ print "<H1 CLASS='centered'>%s</H1>"%data['message']
+ print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
+ print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s'>"%data['call']
  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
  print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT NAME=sdcp_login>"
- for row in rows:
-  print "<OPTION VALUE='{0}_{1}_{2}'>{1}</OPTION>".format(row['id'],row['name'],row['view_public'])
- print "</SELECT></DIV></DIV>"
+ for choice in data['choices']:
+  print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s'>"%(choice['display'],choice['id'])
+  for row in choice['data']:
+   print "<OPTION VALUE='%s'>%s</OPTION>"%(row['value'],row['name'])
+  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
- print "<A CLASS='btn z-op' OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=sdcp_login_form>Enter</A>"
+ print "<A CLASS='btn z-op' OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=login_form>Enter</A>"
  print "</FORM>"
  print "</ARTICLE></DIV>"
+
 
 ##################################################################################################
 #

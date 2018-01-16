@@ -14,6 +14,7 @@ def installation(aDict):
  from json import load
  with open(PC.source) as settingsfile:
   settings = load(settingsfile)
+ settings['source'] = PC.source
  res = install(settings)
  ret = {'result':'OK', 'info':res}
  return ret

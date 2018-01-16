@@ -19,10 +19,11 @@ def application(aDict):
  if aDict.get('app') == 'sdcp':
   ret['call'] = 'sdcp_portal'
   ret['name'] = 'El Banna Portal'
+  ret['message']= "Welcome to the management Portal"
   with DB() as db:
    db.do("SELECT name, CONCAT(id,'_',name,'_',view_public) as value FROM users ORDER BY name")
    rows = db.get_rows()
-  ret['choises'] = [{'sdcp_login':rows}]
+  ret['choices'] = [{'display':'Username', 'id':'sdcp_login', 'data':rows}]
   ret['parameters'] = []
   ret['result'] = 'OK'
  return ret
