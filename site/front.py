@@ -25,6 +25,7 @@ def login(aWeb):
 
  from .. import PackageContainer as PC
  data = aWeb.rest_call(PC.generic['url'],"sdcp.rest.sdcp_application",{'app':application})['data']
+ aWeb.cookie_jar(application,aWeb.get_args2dict_except(['call','header']))
  aWeb.put_html(data['name'])
  print "<DIV CLASS='grey overlay'>"
  print "<ARTICLE CLASS='login'>"
