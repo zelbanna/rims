@@ -9,6 +9,7 @@ def install(aDict):
  from sys import path as syspath
  from os import chmod, remove, listdir, path as ospath
  from shutil import copy
+ from time import time
  import pip
  basedir    = ospath.abspath(ospath.join(ospath.dirname(__file__),'../..'))
  packagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
@@ -21,11 +22,14 @@ def install(aDict):
  try: remove(pcfile + "c")
  except: pass
  try:
+  ts = time().__trunc__()
   with open(pcfile,'w') as f:
    for name,category in aDict.iteritems():
-    f.write("{}={}\n".format(name,repr(category)))
-   # f.write("repo={}\n".format(repr(packagedir)))
+    if not name == 'created':
+     f.write("{}={}\n".format(name,repr(category)))
+   f.write("created={}\n".format(repr(ts)))
   ret['pc'] = 'OK'
+  ret['pc_timestamp'] = ts
   ret['log'] = aDict['generic']['logformat']
  except Exception as err:
   ret['pc'] = 'NOT_OK'
