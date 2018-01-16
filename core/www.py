@@ -13,7 +13,7 @@ __status__= "Production"
 #
 class Web(object):
 
- def __init__(self,aBase):
+ def __init__(self):
   from os import getenv
   self._header = {}
   self._c_stor = {}
