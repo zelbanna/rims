@@ -13,17 +13,19 @@ def application(aDict):
  - app: 'sdcp', 'openstack'
  """
 
+ from .. import PackageContainer as PC
  from ..core.dbase import DB
  ret = {'result':'NOT_OK'}
 
  if aDict.get('app') == 'sdcp':
   ret['call'] = 'sdcp_portal'
-  ret['name'] = 'El Banna Portal'
+  ret['name'] = PC.sdcp['name']
   ret['message']= "Welcome to the management Portal"
   with DB() as db:
    db.do("SELECT name, CONCAT(id,'_',name,'_',view_public) as value FROM users ORDER BY name")
    rows = db.get_rows()
   ret['choices'] = [{'display':'Username', 'id':'sdcp_login', 'data':rows}]
+  ret['cookie'] = "TBD"
   ret['parameters'] = []
   ret['result'] = 'OK'
  return ret
