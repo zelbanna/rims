@@ -24,11 +24,9 @@ def install(aDict):
   with open(pcfile,'w') as f:
    for name,category in aDict.iteritems():
     f.write("{}={}\n".format(name,repr(category)))
-   f.write("repo={}\n".format(repr(packagedir)))
-  from .. import PackageContainer as PC
-  # remove(pcfile)
+   # f.write("repo={}\n".format(repr(packagedir)))
   ret['pc'] = 'OK'
-  ret['log'] = PC.generic['logformat']
+  ret['log'] = aDict['generic']['logformat']
  except Exception as err:
   ret['pc'] = 'NOT_OK'
   ret['error'] = str(err)
@@ -58,13 +56,13 @@ def install(aDict):
  with open(logger,'w') as f:
   f.write("def log(aMsg,aID=None):\n")
   f.write(" from time import localtime, strftime\n")
-  f.write(" with open('" + PC.generic['logformat'] + "', 'a') as f:\n")
+  f.write(" with open('" + aDict['generic']['logformat'] + "', 'a') as f:\n")
   f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
 
  #
  # Write CGI files
  for dest in [ 'index','rest','sdcp' ]:
-  site = "{}/{}.cgi".format(PC.generic['docroot'],dest)
+  site = "{}/{}.cgi".format(aDict['generic']['docroot'],dest)
   with open(site,'w') as f:
    wr = f.write
    wr("#!/usr/bin/python\n")
@@ -82,11 +80,11 @@ def install(aDict):
 
  #
  # Generate ERD
- if PC.generic.get('db'):
+ if aDict['generic'].get('db'):
   try:
    from eralchemy import render_er
-   erd_input = "mysql+pymysql://{}:{}@127.0.0.1/{}".format(PC.generic['dbuser'],PC.generic['dbpass'],PC.generic['db'])
-   erd_output= ospath.join(PC.generic['docroot'],"sdcp") + ".pdf"
+   erd_input = "mysql+pymysql://{}:{}@127.0.0.1/{}".format(aDict['generic']['dbuser'],aDict['generic']['dbpass'],aDict['generic']['db'])
+   erd_output= ospath.join(aDict['generic']['docroot'],"sdcp") + ".pdf"
    render_er(erd_input,erd_output)
    ret['ERD'] = 'OK'
   except Exception, e:
@@ -95,14 +93,14 @@ def install(aDict):
  
  #
  # Copy files
- for type,dest in [('images',ospath.join(PC.generic['docroot'],'images')), ('infra',PC.generic['docroot'])]:
+ for type,dest in [('images',ospath.join(aDict['generic']['docroot'],'images')), ('infra',aDict['generic']['docroot'])]:
   for file in listdir(ospath.join(packagedir,type)):
    copy(ospath.join(packagedir,type,file), ospath.join(dest,file))
   ret[type] = 'OK'
 
  #
  # Insert correct types into modules DB
- if PC.generic.get('db'):
+ if aDict['generic'].get('db'):
   from ..core.dbase import DB
   from ..core.mysql import diff
   ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
