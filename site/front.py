@@ -7,8 +7,6 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
-
-
 #################################################################################################################
 #
 # Login
@@ -18,7 +16,7 @@ __status__= "Production"
 def login(aWeb):
  application = aWeb.get('application','sdcp')
  cookie = aWeb.cookie_unjar(application)
- if len(cookie) > 0:
+ if len(cookie) > 0 and cookie.get('portal',False):
   aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%cookie['portal'])
   return
 
@@ -34,16 +32,17 @@ def login(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s'>"%data['portal']
  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
  print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
- for choice in data['choices']:
+ for choice in data.get('choices'):
   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s'>"%(choice['display'],choice['id'])
   for row in choice['data']:
-   print "<OPTION VALUE='%s'>%s</OPTION>"%(row['value'],row['name'])
+   print "<OPTION VALUE='%s'>%s</OPTION>"%(row['id'],row['name'])
   print "</SELECT></DIV></DIV>"
+ for param in data.get('parameters'):
+  print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s'></DIV></DIV>"%(param['display'],param['data'],param['id'])
  print "</DIV></DIV>"
  print "<A CLASS='btn z-op' OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=login_form>Enter</A>"
  print "</FORM>"
  print "</ARTICLE></DIV>"
-
 
 ##################################################################################################
 #
@@ -86,85 +85,3 @@ def weathermap(aWeb):
    print "</ARTICLE>"
   print "</SECTION>"
 
-###################################################################################################################################
-#
-# Openstack
-#
-# Cookies:
-# - openstack:
-# appformix   = appformix controller ip
-# controller   = openstack controller ip
-# demo_name    = Name of Customer demoing for
-# main_token   = auth token for project recovery
-# project_id   = id for selected project
-# project_name = name for selected project
-# user_name    = username last used
-# user_token   = token for user
-# services     = x,y,z
-#
-# - service:
-# port         = port for service xyz
-# url          = url  for service xyz
-# id           = id   for service xyz
-#
-
-def openstack(aWeb):
- from .. import PackageContainer as PC
- from ..devices.openstack import OpenstackRPC
- cookie = aWeb.cookie_unjar('openstack')
- utok = cookie.get("user_token")
- if utok:
-  aWeb.put_redirect("sdcp.cgi?call=openstack_portal&headers=no")
-  return
-
- # Package all variables found except call and header into cookie, add portal :-), rename demo below
- # request portal info from rest.sdcp_portal
-
- name = aWeb.get('name',"iaas")
- ctrl = aWeb.get('controller',"127.0.0.1")
- appf = aWeb.get('appformix',"127.0.0.1")
-
- user = cookie.get("user_name")
- mtok = cookie.get("main_token")
- prev = cookie.get("project_id")
-
- cookie['demo'] = name
- cookie['controller'] = ctrl
- cookie['appformix'] = appf
-
- if not mtok:
-  controller = OpenstackRPC(ctrl,None)
-  res = controller.auth({'project':PC.openstack['project'], 'username':PC.openstack['username'],'password':PC.openstack['password']})
-  cookie['main_token'] = controller.get_token()
-  aWeb.log("openstack_controller - login result: {}".format(str(res['result'])))
- else:
-  aWeb.log("openstack_controller - reusing token: {}".format(mtok))
-  controller = OpenstackRPC(ctrl,mtok)
-
- ret = controller.call("5000","v3/projects")
- projects = [] if not ret['code'] == 200 else ret['data']['projects']
-
- # Put cookie
- aWeb.cookie_jar('openstack',cookie,3000)
- aWeb.put_html("{} 2 Cloud".format(name.capitalize()))
- print "<DIV CLASS='grey overlay'>"
- print "<ARTICLE CLASS='login'>"
- # REST header
- print "<H1 CLASS='centered'>Welcome to '{}' Cloud portal</H1>".format(name.capitalize())
- print "<FORM ACTION=sdcp.cgi METHOD=POST ID=openstack_login>"
- # REST portal
- print "<INPUT TYPE=HIDDEN NAME=call VALUE=openstack_portal>"
- print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
- print "<DIV CLASS=table STYLE='display:inline; float:left; width:auto; margin:0px 0px 0px 30px;'><DIV CLASS=tbody>"
- # loop through REST choises
- print "<DIV CLASS=tr><DIV CLASS=td>Customer:</DIV><DIV CLASS=td><SELECT NAME=project>"
- for p in projects:
-  print "<OPTION VALUE={0}_{1}>{1}</OPTION>".format(p['id'],p['name'])
- print "</SELECT></DIV></DIV>"
- # loop through rest parameters
- print "<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><INPUT TYPE=text NAME=username></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Password:</DIV><DIV CLASS=td><INPUT TYPE=password NAME=password></DIV></DIV>"
- print "</DIV></DIV>"
- print "<A CLASS='btn z-op' STYLE='margin:20px 20px 30px 40px;' OP=submit FRM=openstack_login>Login</A>"
- print "</FORM>"
- print "</ARTICLE></DIV>"
