@@ -18,7 +18,6 @@ class Web(object):
   self._header = {}
   self._c_stor = {}
   self._c_life = {}
-  self._base = aBase
   self.form  = None
   self.cookies = {}
   cookies = getenv("HTTP_COOKIE")
@@ -31,14 +30,14 @@ class Web(object):
   return self.get(aKey,None)
 
  def __str__(self):
-  return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Base: %s<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(self._base,str(self.cookies),self.form)
+  return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Web object<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(str(self.cookies),self.form)
 
  def get(self,aKey,aDefault = None):
   return self.form.getfirst(aKey,aDefault)
 
  def log(self, aMsg):
   from logger import log
-  log(aMsg,self.cookies.get(self._base))
+  log(aMsg,'sdcp')
 
  def rest_call(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None):
   from rest import call
@@ -86,7 +85,7 @@ class Web(object):
   stdout.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='system.css'>")
   if aTitle:
    stdout.write("<TITLE>" + aTitle + "</TITLE>")
-  stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/%s.png'/>"%self._base)
+  stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/sdcp.png'/>")
   stdout.write("<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='system.js'></SCRIPT>")
   stdout.write("<SCRIPT>$(function() { $(document.body).on('click','a.z-op',btn ) .on('focusin focusout','input, select',focus ); });</SCRIPT>");
   stdout.write("</HEAD>")
@@ -109,15 +108,15 @@ class Web(object):
    if headers == 'yes' and mod != 'front':
     print "Content-Type: text/html\r\n"
    from importlib import import_module
-   module = import_module(self._base + ".site." + mod)
+   module = import_module("sdcp.site." + mod)
    getattr(module,fun,None)(self)
   except Exception, e:
    from sys import stdout
    if headers == 'no' or mod == 'front':
     stdout.write("Content-Type: text/html\r\n\n")
    keys    = self.form.keys()
-   details = ("AJAX",self._base,mod_fun,type(e).__name__,",".join(keys), str(e)) 
-   stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>Type: %s<BR>API: %s.site.%s<BR>Excpt: %s<BR><DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%details)
+   details = ("AJAX",mod_fun,type(e).__name__,",".join(keys), str(e)) 
+   stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>Type: %s<BR>API: sdcp.site.%s<BR>Excpt: %s<BR><DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%details)
 
  ############################## CGI/Web functions ###############################
 

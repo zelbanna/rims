@@ -62,7 +62,7 @@ def install(aDict):
 
  #
  # Write CGI files
- for dest in [ 'index','rest', PC.generic['sitebase'] ]:
+ for dest in [ 'index','rest','sdcp' ]:
   site = "{}/{}.cgi".format(PC.generic['docroot'],dest)
   with open(site,'w') as f:
    wr = f.write
@@ -71,10 +71,10 @@ def install(aDict):
    wr("from sys import path as syspath\n")
    wr("syspath.insert(1, '{}')\n".format(basedir))
    if dest == 'rest':
-    wr("from {0}.core import rest as cgi\n".format(PC.generic['sitebase']))
+    wr("from sdcp.core import rest as cgi\n")
    else:
-    wr("from {0}.core.www import Web\n".format(PC.generic['sitebase']))
-    wr("cgi = Web('{}')\n".format(PC.generic['sitebase']))
+    wr("from sdcp.core.www import Web\n")
+    wr("cgi = Web('sdcp')\n")
    wr("cgi.server()\n")
   chmod(site,0755)
   ret["cgi_{}".format(dest)] = 'OK'
@@ -85,7 +85,7 @@ def install(aDict):
   try:
    from eralchemy import render_er
    erd_input = "mysql+pymysql://{}:{}@127.0.0.1/{}".format(PC.generic['dbuser'],PC.generic['dbpass'],PC.generic['db'])
-   erd_output= ospath.join(PC.generic['docroot'],PC.generic['sitebase']) + ".pdf"
+   erd_output= ospath.join(PC.generic['docroot'],"sdcp") + ".pdf"
    render_er(erd_input,erd_output)
    ret['ERD'] = 'OK'
   except Exception, e:

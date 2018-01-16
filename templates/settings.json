@@ -1,6 +1,5 @@
 {
  "generic": {
-  "sitebase": "sdcp",
   "docroot":"/var/www",
   "logformat": "/var/log/system/system.log",
   "db": "sdcp",
