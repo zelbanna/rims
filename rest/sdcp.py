@@ -18,8 +18,8 @@ def application(aDict):
  ret = {'result':'NOT_OK'}
 
  if aDict.get('app') == 'sdcp':
-  ret['call'] = 'sdcp_portal'
   ret['name'] = PC.sdcp['name']
+  ret['portal'] = "sdcp_portal"
   ret['message']= "Welcome to the management Portal"
   with DB() as db:
    db.do("SELECT name, CONCAT(id,'_',name,'_',view_public) as value FROM users ORDER BY name")
@@ -28,4 +28,7 @@ def application(aDict):
   ret['cookie'] = "TBD"
   ret['parameters'] = []
   ret['result'] = 'OK'
+
+ # Else should pick this upp from device controller somehow
+
  return ret

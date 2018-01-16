@@ -22,7 +22,7 @@ def portal(aWeb):
    aWeb.put_html("SDCP Portal")
    print "Error logging in - please try login again"
    return   
-  cookie.update({'id':id,'user':user,'view':view})
+  cookie.update({'id':id,'user':user,'view':view,'portal':'sdcp_portal'})
   aWeb.cookie_jar('sdcp',cookie, 86400)
   aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
  else:

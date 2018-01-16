@@ -11,18 +11,16 @@ __status__= "Production"
 
 #################################################################################################################
 #
-# SDCP "login"
+# Login
 #
-# - writes cookies for sdcp: user(name) ,id and view into a jar (dict)
-# - if passwords, then do proper checks
-#
+# - Log in to "application" (default to:'sdcp') and redirect to application cookies portal 
+# - should write portal into cookie instead
 #
 def login(aWeb):
  application = aWeb.get('application','sdcp')
  cookie = aWeb.cookie_unjar(application)
  if len(cookie) > 0:
-  site = "%s_portal"%application
-  aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%site)
+  aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%cookie['portal'])
   return
 
  from .. import PackageContainer as PC
@@ -32,7 +30,7 @@ def login(aWeb):
  print "<ARTICLE CLASS='login'>"
  print "<H1 CLASS='centered'>%s</H1>"%data['message']
  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
- print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s'>"%data['call']
+ print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s'>"%data['portal']
  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
  print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
  for choice in data['choices']:
