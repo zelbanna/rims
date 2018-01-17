@@ -12,10 +12,11 @@ from .. import PackageContainer as PC
 #
 #
 #
-def get_leases(aDict):
+def leases(aDict):
+ from ..core.logger import log
  from ..core import genlib as GL
+ log('leases(%s)'%aDict)
  result = []
- free   = []
  lease  = {}
  with open(PC.dhcp['leasefile'],'r') as leasefile: 
   for line in leasefile:
