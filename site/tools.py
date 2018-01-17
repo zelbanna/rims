@@ -48,8 +48,8 @@ def db_structure(aWeb):
 #
 def db_table(aWeb):
  from json import dumps
- from ..rest.tools import db_table
- print "<PRE>{}</PRE>".format(dumps(db_table({'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db'], indent=4, sort_keys=True))
+ db = aWeb.rest_call(aWeb.resturl,"sdcp.rest.tools_db_table",{'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db']
+ print "<PRE>{}</PRE>".format(dumps(db, indent=4, sort_keys=True))
 
 #
 #
