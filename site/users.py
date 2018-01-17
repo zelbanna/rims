@@ -38,7 +38,6 @@ def user(aWeb):
  print "</SECTION>"
 
 def list(aWeb):
- from ..core.dbase import DB
  rows = aWeb.rest_call(aWeb.resturl,"sdcp.rest.users_list")['data']
  print "<ARTICLE><P>Users</P>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=users_list')
@@ -115,7 +114,5 @@ def info(aWeb):
 #
 #
 def remove(aWeb):
- from ..core.dbase import DB
- with DB() as db:
-  res = db.do("DELETE FROM users WHERE id = '{}'".format(aWeb['id']))
- print "<ARTICLE>User with id {} removed ({})</ARTICLE>".format(aWeb['id'],"OK" if res == 1 else "NOT_OK")
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.resources_delete",{'id':aWeb['id']})
+ print "<ARTICLE>USer with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res['result'])
