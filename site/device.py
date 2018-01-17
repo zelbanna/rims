@@ -394,7 +394,7 @@ def remove(aWeb):
  ret = rest_remove({ 'id':id })
  print "<ARTICLE>"
  print "Unit {} deleted, DB:{}".format(id,ret['deleted'])
- if ret['res'] == 'OK':
+ if ret['result'] == 'OK':
   from .. import PackageContainer as PC
   arec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['a_id']})['data']   if ret['a_id']   else 0
   prec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['ptr_id']})['data'] if ret['ptr_id'] else 0
