@@ -75,7 +75,7 @@ def install(aDict):
     wr("from sdcp.core import rest as cgi\n")
    else:
     wr("from sdcp.core.www import Web\n")
-    wr("cgi = Web()\n")
+    wr("cgi = Web('%s')\n"%aDict['generic']['url'])
    wr("cgi.server()\n")
   chmod(site,0755)
   ret["cgi_{}".format(dest)] = 'OK'

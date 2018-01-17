@@ -6,11 +6,10 @@
   "dbtype":"mysql",
   "dbuser":"sdcp",
   "dbpass":"sdcp"
- },
- "sdcp": {
+  "url":"http://ip-to-rest-url/rest.cgi",
+  "hosts":["127.0.0.1,"ip-of-service-host"],
   "name":"SCDP Portal",
   "netlogs":"/path/to/net.log",
-  "svcsrv":"127.0.0.1",
   "upshost":"127.0.0.1",
   "graph":{ "type":"munin","file":"/etc/munin/munin-conf.d/sdcp.conf","plugins":"/var/www/device.graph.plugins" }
  },

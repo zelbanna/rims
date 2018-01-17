@@ -28,8 +28,8 @@ def update(aWeb):
 #
 def leases(aWeb):
  from ..core import extras as EXT
- dhcp = aWeb.rest_call(PC.dhcp['url'], "sdcp.rest.{}_get_leases".format(PC.dhcp['type']),{'type':aWeb['type']})['data']
+ dhcp = aWeb.rest_call(PC.dhcp['url'], "sdcp.rest.{}_leases".format(PC.dhcp['type']),{'type':aWeb['type']})['data']
  print "<ARTICLE><P>%s Leases</P>"%(aWeb['type'].title())
- try: EXT.dict2table(dhcp)
+ try: EXT.dict2table(dhcp['data'])
  except: pass
  print "</ARTICLE>"

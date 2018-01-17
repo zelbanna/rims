@@ -29,8 +29,7 @@ def login(aWeb):
   aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%cookie['portal'])
   return
 
- from .. import PackageContainer as PC
- data = aWeb.rest_call(PC.generic['url'],"sdcp.rest.%s_application"%(application),aWeb.get_args2dict_except(['call','header']))['data']
+ data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.%s_application"%(application),aWeb.get_args2dict_except(['call','header']))['data']
  aWeb.cookie_add(application,data['cookie'])
  aWeb.put_html(data['title'])
  print "<DIV CLASS='grey overlay'>"
@@ -59,7 +58,6 @@ def login(aWeb):
 # Base SDCP Portal, creates DIVs for layout
 #
 def portal(aWeb):
- from .. import PackageContainer as PC
  cookie = aWeb.cookie_unjar('sdcp')
 
  if cookie.get('id',None) is None:
@@ -83,7 +81,7 @@ def portal(aWeb):
 
  from ..rest.resources import list as resource_list
  resources = resource_list({'id':id,'dict':'id'})['data']
- aWeb.put_html(PC.generic['name'])
+ aWeb.put_html(aWeb.get('title','Portal'))
  print "<HEADER>"
  inline = "<A CLASS='btn menu-btn z-op' DIV=main      TITLE='%s' URL='%s' ><IMG SRC='%s'/></A>"
  extern = "<A CLASS='btn menu-btn z-op' TARGET=_blank TITLE='%s' HREF='%s'><IMG SRC='%s'/></A>"
