@@ -16,7 +16,7 @@ def application(aDict):
  from ..core.dbase import DB
  ret = {'result':'NOT_OK'}
  if aDict.get('app') == 'sdcp':
-  ret['name'] = PC.sdcp['name']
+  ret['title']  = PC.sdcp['name']
   ret['portal'] = "sdcp_portal"
   ret['message']= "Welcome to the management Portal"
   with DB() as db:
@@ -30,7 +30,7 @@ def application(aDict):
   from ..devices.openstack import OpenstackRPC
   from ..core.logger import log
   args = aDict.get('args',{})
-  ret['name']   = "%s 2 Cloud"%(args.get('name','iaas'))
+  ret['title']   = "%s 2 Cloud"%(args.get('name','iaas'))
   ret['portal'] = "openstack_portal"
   ret['message']= "Welcome to the '%s' Cloud Portal"%(args.get('name','iaas'))
   cookies = {'name':args.get('name','iaas'),'controller':args.get('controller','127.0.0.1'),'appformix':args.get('appformix','127.0.0.1'),'main_token':args.get('main_token',None)}
