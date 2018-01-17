@@ -50,7 +50,7 @@ def clear(aWeb):
 # Internal Logs
 #
 def logs(aWeb):
- res = aWeb.rest_call("http://{}/rest.cgi".format(aWeb['ip']),'sdcp.rest.examine_get_logs',{'count':18,'logs':[PC.generic['logformat'],PC.generic['netlogs']]})['data']
+ res = aWeb.rest_call("http://%s/rest.cgi"%aWeb['ip'],'sdcp.rest.examine_get_logs',{'count':18,'logs':[PC.generic['logformat'],PC.generic['netlogs']]})['data']
  for file,logs in res['logs'].iteritems():
   print "<ARTICLE><P>%s</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(file,"<BR>".join(logs))
 

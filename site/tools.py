@@ -55,7 +55,7 @@ def db_table(aWeb):
 #
 def install(aWeb):
  from json import dumps
- print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_call("http://{}/rest.cgi".format(aWeb['host']),"sdcp.rest.tools_installation")['data'],indent = 4)
+ print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_call("http://%s/rest.cgi"%aWeb['host'],"sdcp.rest.tools_installation")['data'],indent = 4)
 
 #
 #
@@ -67,7 +67,7 @@ def test_sleep(aWeb):
 #
 #
 def test_rest(aWeb):
- res = aWeb.rest_call("http://127.0.0.1/rest.cgi","tools_test")
+ res = aWeb.rest_call(aWeb.resturl,"tools_test")
  print res
 
 #
@@ -98,7 +98,7 @@ def rest_execute(aWeb):
  try:    arguments = loads(aWeb['args'])
  except: arguments = None
  try:
-  ret = aWeb.rest_call("http://{}/rest.cgi".format(aWeb['host']),aWeb['api'],arguments,aWeb['method'])
+  ret = aWeb.rest_call("http://%s/rest.cgi".aWeb['host'],aWeb['api'],arguments,aWeb['method'])
  except Exception,e:
   ret = e[0]
  data = ret.pop('data',None)

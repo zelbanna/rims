@@ -182,7 +182,7 @@ def record_delete(aWeb):
  print "Remove {} - Results:{}".format(aWeb['id'],res)
 
 def record_transfer(aWeb):
- res = aWeb.rest_call("http://127.0.0.1/rest.cgi","sdcp.rest.device_update",{'id':aWeb['dev'],'devices_%s_id'%aWeb['type']:aWeb['id']})['data']
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_update",{'id':aWeb['dev'],'devices_%s_id'%aWeb['type']:aWeb['id']})['data']
  print "Updated device %s - Results:%s"%(aWeb['dev'],str(res))
 
 def record_create(aWeb):
@@ -195,7 +195,7 @@ def record_create(aWeb):
  res = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_update".format(PC.dns['type']),data)
  operation['dns'] = res['data']
  if res['data']['result'] == 'OK':
-  res = aWeb.rest_call("http://127.0.0.1/rest.cgi","sdcp.rest.device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:res['data']['id']})
+  res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:res['data']['id']})
   operation['device'] = res['data']
  print "Created record result: %s"%str(operation)
 
