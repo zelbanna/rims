@@ -15,7 +15,6 @@ from .. import PackageContainer as PC
 def leases(aDict):
  from ..core.logger import log
  from ..core import genlib as GL
- log('leases(%s)'%aDict)
  result = []
  lease  = {}
  with open(PC.dhcp['leasefile'],'r') as leasefile: 
