@@ -80,6 +80,8 @@ def portal(aWeb):
   menulist = db.get_val('menulist')
 
  from ..rest.resources import list as resource_list
+ #
+ # when REST, replace int(key) with key
  resources = resource_list({'id':id,'dict':'id'})['data']
  aWeb.put_html(aWeb.get('title','Portal'))
  print "<HEADER>"

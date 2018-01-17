@@ -39,9 +39,7 @@ def user(aWeb):
 
 def list(aWeb):
  from ..core.dbase import DB
- with DB() as db:
-  res  = db.do("SELECT id, alias, name, email FROM users ORDER by name")
-  rows = db.get_rows()
+ rows = aWeb.rest_call(aWeb.resturl,"sdcp.rest.users_list")['data']
  print "<ARTICLE><P>Users</P>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=users_list')
  print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?call=users_info&id=new')
@@ -56,32 +54,25 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- from ..core.dbase import DB
- data = {}
- data['id'] = aWeb.get('id','new')
- op = aWeb['op']
  cookie = aWeb.cookie_unjar('sdcp')
- with DB() as db:
-  if op == 'update' or data['id'] == 'new':
-   data['name']  = aWeb.get('name',"unknown")
-   data['alias'] = aWeb.get('alias',"unknown")
-   data['email'] = aWeb.get('email',"unknown")
-   data['view']  = aWeb.get('view','0')
-   data['menulist'] = aWeb.get('menulist','default')
-   if op == 'update':
-    if data['id'] == 'new':
-     db.do("INSERT INTO users (alias,name,email,menulist,view_public) VALUES ('{}','{}','{}','{}',{})".format(data['alias'],data['name'],data['email'],data['menulist'],data['view']))
-     data['id']  = db.get_last_id()
-    else:
-     db.do("UPDATE users SET alias='{}',name='{}',email='{}',view_public='{}',menulist='{}' WHERE id = '{}'".format(data['alias'],data['name'],data['email'],data['view'],data['menulist'],data['id']))
-     if cookie['id'] == str(data['id']):
-      cookie['view'] = data['view']
-      aWeb.cookie_jar('sdcp',cookie,86400)
-    aWeb.put_headers()
-  else:
-   db.do("SELECT users.* FROM users WHERE id = '{}'".format(data['id']))
-   data = db.get_row()
-   data['view']  = str(data['view_public'])
+ data = {'id':aWeb.get('id','new'),'op':aWeb['op']}
+ if aWeb['op'] == 'update' or data['id'] == 'new':
+  data['name']  = aWeb.get('name',"unknown")
+  data['alias'] = aWeb.get('alias',"unknown")
+  data['email'] = aWeb.get('email',"unknown")
+  data['view_public']  = aWeb.get('view_public','0')
+  data['menulist'] = aWeb.get('menulist','default')
+  if aWeb['op'] == 'update':
+   res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.users_info",data)
+   if data['id'] == 'new':
+    data['id'] = res['id']
+   else:
+    if cookie['id'] == str(data['id']):
+     cookie['view'] = data['view_public']
+     aWeb.cookie_jar('sdcp',cookie,86400)
+   aWeb.put_headers()
+ else:
+  data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.users_info",data)['data']
 
  resources = aWeb.rest_call(aWeb.resturl,"sdcp.rest.resources_list",{'id':cookie['id'], 'dict':'id'})['data']
  print aWeb.dragndrop()
@@ -93,14 +84,14 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Alias:</DIV>  <DIV CLASS=td><INPUT NAME=alias  TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['alias'])
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>   <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name'])
  print "<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV> <DIV CLASS=td><INPUT NAME=email  TYPE=email VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['email'])
- print "<DIV CLASS=tr><DIV CLASS=td>View All:</DIV><DIV CLASS=td><INPUT NAME=view  TYPE=CHECKBOX VALUE=1 {}                  {}></DIV></DIV>".format("checked=checked" if str(data['view']) == "1" else "","disabled" if cookie['id'] <> str(data['id']) else "")
+ print "<DIV CLASS=tr><DIV CLASS=td>View All:</DIV><DIV CLASS=td><INPUT NAME=view_public TYPE=CHECKBOX VALUE=1 {}             {}></DIV></DIV>".format("checked=checked" if str(data['view_public']) == "1" else "","disabled" if cookie['id'] <> str(data['id']) else "")
  print "</DIV></DIV>"
  print "<SPAN>Menu list</SPAN>"
  print "<DIV CLASS='border' STYLE='display:flex; flex-wrap:wrap; min-height:100px;'><UL STYLE='width:100%' ID=ul_menu DEST=menulist CLASS='drop'>"
  if not data.get('menulist') == 'default':
   for key in data['menulist'].split(','):
    try: 
-    resource = resources.pop(int(key),None)
+    resource = resources.pop(key,None)
     print "<LI CLASS='drag' ID=%s><A CLASS='btn menu-btn' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(key,resource['title'],resource['icon'])
    except: pass
  else:
