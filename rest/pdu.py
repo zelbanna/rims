@@ -8,6 +8,8 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
+from ..core.dbase import DB
+
 #
 # Update PDU slot info (name basically)
 #
@@ -28,7 +30,6 @@ def unit_update(aDict):
 # Remove PDU from DB
 #
 def remove(aDict):
- from ..core.dbase import DB
  id = aDict.get('id')
  with DB() as db:
   db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
@@ -41,7 +42,6 @@ def remove(aDict):
 #
 def update_device_pdus(aDict):
  from ..core.logger import log
- from ..core.dbase import DB 
  log("pdu_update_device_pdus({})".format(aDict))
  hostname  = aDict.get('hostname')
  ret = {'result':'OK'}

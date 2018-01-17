@@ -7,6 +7,8 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
+from ..core.dbase import DB
+
 #
 def installation(aDict):
  from .. import PackageContainer as PC
@@ -23,7 +25,6 @@ def installation(aDict):
 def sync_devicetypes(aDict):
  from os import listdir, path as ospath
  from importlib import import_module
- from ..core.dbase import DB
  path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '../devices'))
  types = []
  new   = 0
@@ -53,7 +54,6 @@ def sync_devicetypes(aDict):
 def sync_menuitems(aDict):
  from os import listdir, path as ospath
  from importlib import import_module
- from ..core.dbase import DB
  path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '../site'))
  items = []
  for file in listdir(path):
@@ -80,7 +80,6 @@ def sync_menuitems(aDict):
 # - columns is a string list x,y,z,..
 #
 def db_table(aDict):
- from ..core.dbase import DB
  cols = aDict.get('columns','*')
  tbl  = aDict.get('table','devices')
  ret  = {'result':'OK'}

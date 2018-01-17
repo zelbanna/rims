@@ -249,7 +249,6 @@ def detect(aDict):
  if aDict.get('types') and not update:
   info['type_id'] = aDict['types'][info['type_name']]['id']
  else:
-  from ..core.dbase import DB
   with DB() as db:
    xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(info['type_name']))
    info['type_id'] = db.get_val('id') if xist > 0 else None

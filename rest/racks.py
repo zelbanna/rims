@@ -7,10 +7,11 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
+from ..core.dbase import DB
+
 #
 # info([id:<rackid>])
 def info(aDict):
- from ..core.dbase import DB
  ret  =  {'result':'OK'}
  with DB() as db:
   if aDict.get('id'):
@@ -38,7 +39,6 @@ def info(aDict):
 #
 #
 def infra(aDict):
- from ..core.dbase import DB
  ret =  {'result':'OK' }
  with DB() as db:
   ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes") 
