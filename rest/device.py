@@ -290,6 +290,7 @@ def list_type(aDict):
   ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE %s ORDER BY type_name,hostname"%select)
   ret['data'] = db.get_rows() 
  return ret
+
 #
 #
 def clear(aDict):
@@ -298,3 +299,13 @@ def clear(aDict):
   db.do("TRUNCATE TABLE devices")
  return ret
 
+#
+#
+def list_mac(aDict):
+ from ..core import genlib as GL
+ with DB() as db:
+  db.do("SELECT devices.id, CONCAT(hostname,'.',domains.name) as fqdn, INET_NTOA(ip) as ip, mac, subnet_id FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT mac = 0 ORDER BY ip")
+  rows = db.get_rows()
+ for row in rows:
+  row['mac'] = GL.int2mac(row['mac'])
+ return rows

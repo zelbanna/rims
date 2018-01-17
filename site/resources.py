@@ -23,6 +23,24 @@ def main(aWeb):
 
 #
 #
+def view(aWeb):
+ cookie = aWeb.cookie_unjar('sdcp')
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'view':cookie['view']})
+ index = 0;
+ print "<DIV CLASS=centered STYLE='align-items:initial'>"
+ for row in res['data']:
+  print "<DIV STYLE='float:left; min-width:100px; margin:6px;'><A STYLE='font-size:10px;' TITLE='{}'".format(row['title'])
+  if row['inline'] == 0:
+   print "CLASS='btn menu-btn' TARGET=_blank HREF='{}'>".format(row['href'])
+  else:
+   print "CLASS='z-op btn menu-btn' DIV=main URL='{}'>".format(row['href'])
+  print "<IMG ALT='{0}' SRC='{0}'></A>".format(row['icon'])
+  print "</A><BR><SPAN STYLE='width:100px; display:block;'>{}</SPAN>".format(row['title'])
+  print "</DIV>"
+ print "</DIV>"
+
+#
+#
 def list(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
@@ -49,13 +67,13 @@ def list(aWeb):
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
+
 #
 #
 def info(aWeb):
  from os import listdir, path
  cookie = aWeb.cookie_unjar('sdcp')
- data  = {}
- data['id'] = aWeb.get('id','new')
+ data  = {'id':aWeb.get('id','new'),'op':aWeb['op']}
  if aWeb['op'] == 'update' or data['id'] == 'new':
   data['title'] = aWeb.get('title','Not set')
   data['href']  = aWeb.get('href','Not set')
@@ -65,16 +83,10 @@ def info(aWeb):
   data['private'] = aWeb.get('private',"0")
   data['user_id'] = aWeb.get('user_id',cookie['id'])
   if aWeb['op'] == 'update':
-   with DB() as db:
-    if data['id'] == 'new':
-     db.do("INSERT INTO resources (title,href,icon,type,inline,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}','{}')".format(data['title'],data['href'],data['icon'],data['type'],data['inline'],data['private'],data['user_id']))
-     data['id']  = db.get_last_id()
-    else:
-     db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}', inline='{}', private='{}' WHERE id = '{}'".format(data['title'],data['href'],data['icon'],data['type'],data['inline'],data['private'],data['id']))
+   res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.resources_info",data)
+   data['id'] = res['id']
  else:
-  with DB() as db:
-   db.do("SELECT id,title,href,icon,type,inline,private,user_id FROM resources WHERE id = '{}'".format(data['id']))
-   data = db.get_row()
+  data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.resources_info",data)['data']
 
  print "<ARTICLE><P>Resource entity ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_resource_info_form>"
@@ -107,28 +119,6 @@ def info(aWeb):
 
 #
 #
-#
-def view(aWeb):
- from ..rest.resources import list as rest_list
- cookie = aWeb.cookie_unjar('sdcp')
- res = rest_list({'type':aWeb.get('type','tool'),'user_id':cookie['id'],'view':cookie['view']})
- index = 0;
- print "<DIV CLASS=centered STYLE='align-items:initial'>"
- for row in res['data']:
-  print "<DIV STYLE='float:left; min-width:100px; margin:6px;'><A STYLE='font-size:10px;' TITLE='{}'".format(row['title'])
-  if row['inline'] == 0:
-   print "CLASS='btn menu-btn' TARGET=_blank HREF='{}'>".format(row['href'])
-  else:
-   print "CLASS='z-op btn menu-btn' DIV=main URL='{}'>".format(row['href'])
-  print "<IMG ALT='{0}' SRC='{0}'></A>".format(row['icon'])
-  print "</A><BR><SPAN STYLE='width:100px; display:block;'>{}</SPAN>".format(row['title'])
-  print "</DIV>"
- print "</DIV>"
-
-#
-#
 def delete(aWeb):
- with DB() as db:
-  id = aWeb['id']
-  res = db.do("DELETE FROM resources WHERE id = '{}'".format(id))
- print "<ARTICLE>Result: {}</ARTICLE>".format("OK" if res == 1 else "Not OK:{}".format(res))
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.resources_delete",{'id':aWeb['id']})
+ print "<ARTICLE>Result: %s</ARTICLE>"%(res)
