@@ -13,7 +13,7 @@ __status__= "Production"
 #
 class Web(object):
 
- def __init__(self,aREST = "http://127.0.0.1/rest.cgi)):
+ def __init__(self,aREST = "http://127.0.0.1/rest.cgi"):
   from os import getenv
   self._header = {}
   self.resturl = aREST

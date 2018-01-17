@@ -112,8 +112,7 @@ def info(aWeb):
    opres['update'] = rest_update(d)
 
  elif "book" in op:
-  from ..rest.booking import booking
-  booking({'device_id':aWeb['id'], 'user_id':cookie['id'], 'op':op})
+  aWeb.rest_call(aWeb.resturl,"sdcp.rest.booking_modify",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':op})
 
  dev   = rest_info({'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
  if dev['exist'] == 0:
