@@ -30,11 +30,10 @@ def login(aWeb):
   return
 
  from .. import PackageContainer as PC
- data = aWeb.rest_call(PC.generic['url'],"sdcp.rest.sdcp_application",{'app':application,'args':aWeb.get_args2dict_except(['call','header'])})['data']
+ data = aWeb.rest_call(PC.generic['url'],"sdcp.rest.%s_application"%(application),aWeb.get_args2dict_except(['call','header']))['data']
  aWeb.cookie_add(application,data['cookie'])
  aWeb.put_html(data['title'])
  print "<DIV CLASS='grey overlay'>"
- print "<!-- %s -->"%(aWeb.get_args2dict_except(['call','header']))
  print "<ARTICLE CLASS='login'>"
  print "<H1 CLASS='centered'>%s</H1>"%data['message']
  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"

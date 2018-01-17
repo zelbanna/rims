@@ -28,7 +28,7 @@ def server():
  try:
   if api:
    data = stdin.read()
-   args = loads(data if len(data) > 0 else '{"args":"empty"}')
+   args = loads(data if len(data) > 0 else '{}')
   else:
    try:
     args = dict(map(lambda x: x.split('='),getenv("QUERY_STRING").split("&")))
