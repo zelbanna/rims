@@ -14,7 +14,7 @@ from .. import PackageContainer as PC
 #
 def get_leases(aDict):
  from ..core import genlib as GL
- active = []
+ result = []
  free   = []
  lease  = {}
  with open(PC.dhcp['leasefile'],'r') as leasefile: 
@@ -25,10 +25,8 @@ def get_leases(aDict):
    if   parts[0] == 'lease' and parts[2] == '{':
     lease['ip'] = parts[1]
    elif parts[0] == '}':
-    if lease.pop('binding') == "active":
-     active.append(lease)
-    else:
-     free.append(lease)
+    if lease.pop('binding') == aDict['type']:
+     result.append(lease)
     lease = {}
    elif parts[0] == 'hardware' and parts[1] == 'ethernet':
     lease['mac'] = parts[2][:-1] 
@@ -38,9 +36,8 @@ def get_leases(aDict):
     lease[parts[0]] = " ".join(parts[2:])[:-1]
    elif parts[0] == 'client-hostname':
     lease['hostname'] = parts[1][:-1]
-  active.sort(key=lambda d: GL.ip2int(d['ip']))
-  free.sort(  key=lambda d: GL.ip2int(d['ip']))
-  return { 'result':'OK', 'active':active, 'free':free }                                
+  result.sort(key=lambda d: GL.ip2int(d['ip']))
+  return { 'result':'OK', 'data':result }
 
 #
 # Update function - reload the DHCP server to use new info

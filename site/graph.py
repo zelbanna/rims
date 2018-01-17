@@ -90,12 +90,12 @@ def save(aWeb):
  with DB() as db:
   db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
   rows = db.get_rows()
- with open(PC.sdcp['graph']['file'],'w') as output:
+ with open(PC.generic['graph']['file'],'w') as output:
   for row in rows:
    output.write("[{}.{}]\n".format(row['hostname'],row['domain']))
    output.write("address {}\n".format(row['proxy']))
    output.write("update yes\n\n")
- print "<ARTICLE>Done updating devices' graphing to conf file [{}]</ARTICLE>".format(PC.sdcp['graph']['file'])
+ print "<ARTICLE>Done updating devices' graphing to conf file [{}]</ARTICLE>".format(PC.generic['graph']['file'])
 
 #
 # Weathermap Link

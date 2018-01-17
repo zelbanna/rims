@@ -56,7 +56,7 @@ def _detect(aentry, alock, asema):
     with Junos(aentry['ip']) as jdev:
      activeinterfaces = jdev.get_up_interfaces()
    alock.acquire()
-   with open(PC.sdcp['graph']['plugins'], 'a') as graphfile:
+   with open(PC.generic['graph']['plugins'], 'a') as graphfile:
     graphfile.write('ln -s /usr/local/sbin/plugins/snmp__{0} /etc/munin/plugins/snmp_{1}_{0}\n'.format(type,fqdn))
     graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')
     graphfile.write('ln -s /usr/share/munin/plugins/snmp__users  /etc/munin/plugins/snmp_' + fqdn + '_users\n')
@@ -65,7 +65,7 @@ def _detect(aentry, alock, asema):
    alock.release()
   elif type == "esxi":
    alock.acquire()
-   with open(PC.sdcp['graph']['plugins'], 'a') as graphfile:
+   with open(PC.generic['graph']['plugins'], 'a') as graphfile:
     graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')              
     graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + fqdn + '_esxi\n')
    alock.release()
@@ -92,9 +92,9 @@ def discover():
  try:
   flock = Lock()
   sema  = BoundedSemaphore(10)
-  with open(PC.sdcp['graph']['plugins'], 'w') as f:
+  with open(PC.generic['graph']['plugins'], 'w') as f:
    f.write("#!/bin/bash\n")
-  chmod(PC.sdcp['graph']['plugins'], 0o777)
+  chmod(PC.generic['graph']['plugins'], 0o777)
   with DB() as db:
    db.do("SELECT devicetypes.name, hostname, domains.name AS domain, INET_NTOA(ip) as ip, INET_NTOA(graph_proxy) as handler FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id INNER JOIN domains ON devices.a_dom_id = domains.id WHERE graph_update = 1 AND model <> 'unknown'")
    rows = db.get_rows()

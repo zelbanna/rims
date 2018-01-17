@@ -39,6 +39,7 @@ def login(aWeb):
  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s'>"%data['portal']
  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
+ print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
  print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
  for choice in data.get('choices'):
   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s'>"%(choice['display'],choice['id'])
@@ -82,7 +83,7 @@ def portal(aWeb):
 
  from ..rest.resources import list as resource_list
  resources = resource_list({'id':id,'dict':'id'})['data']
- aWeb.put_html(PC.sdcp['name'])
+ aWeb.put_html(PC.generic['name'])
  print "<HEADER>"
  inline = "<A CLASS='btn menu-btn z-op' DIV=main      TITLE='%s' URL='%s' ><IMG SRC='%s'/></A>"
  extern = "<A CLASS='btn menu-btn z-op' TARGET=_blank TITLE='%s' HREF='%s'><IMG SRC='%s'/></A>"

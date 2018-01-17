@@ -24,9 +24,8 @@ def main(aWeb):
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.cgi?call=tools_db_table'>DB - Dump Device Table to JSON</A>"
  print "<A CLASS=z-op DIV=div_content           URL='sdcp.cgi?call=tools_db_structure'>DB - View Structure</A>"
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
- print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host=127.0.0.1'>Reinstall Host</A>"
- if PC.sdcp['svcsrv']:
-  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host={}'>Reinstall SVC</A>".format(PC.sdcp['svcsrv'])
+ for host in PC.generic['hosts']:
+  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host=%s'>Reinstall %s</A>"%(host,host)
  print "<A CLASS=z-op DIV=div_content            URL='sdcp.cgi?call=tools_test_rest'>Test</A>"
  print "</DIV></LI>"
  print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A></LI>"
@@ -78,9 +77,8 @@ def rest_main(aWeb):
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_rest>"
  print "Choose host and enter API:<SELECT STYLE='height:22px;' NAME=host>"
- print "<OPTION VALUE=127.0.0.1>Local Host</A>"
- if PC.sdcp['svcsrv']:
-  print "<OPTION VALUE={0}>Service Host</OPTION>".format(PC.sdcp['svcsrv'])
+ for host in PC.generic['hosts']:
+  print "<OPTION VALUE='%s'>%s</A>"%(host,host)
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
  print "Call 'Method': <SELECT STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:

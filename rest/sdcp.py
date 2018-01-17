@@ -10,7 +10,7 @@ __status__ = "Production"
 def application(aDict):
  from .. import PackageContainer as PC
  from ..core.dbase import DB
- ret = {'result':'OK', 'title':PC.sdcp['name'],'portal':"sdcp_portal",'message':"Welcome to the management Portal",'parameters':[]}
+ ret = {'result':'OK', 'title':PC.generic['name'],'portal':"sdcp_portal",'message':"Welcome to the management Portal",'parameters':[]}
  with DB() as db:
   db.do("SELECT CONCAT(id,'_',name,'_',view_public) as id, name FROM users ORDER BY name")
   rows = db.get_rows()
