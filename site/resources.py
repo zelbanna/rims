@@ -28,8 +28,7 @@ def list(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('sdcp')
- from ..rest.resources import list as rest_list
- res = rest_list({'user_id':cookie['id'],'view':cookie['view']})
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.resources_list",{'user_id':cookie['id'],'view':cookie['view']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list')

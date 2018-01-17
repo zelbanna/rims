@@ -21,14 +21,14 @@ def update(aWeb):
  args = []
  for row in rows:
   args.append({'ip':row['ipasc'],'fqdn':"{}.{}".format(row['hostname'],row['domain']),'mac':GL.int2mac(row['mac']),'id':row['id'],'subnet_id':row['subnet_id']})
- print aWeb.rest_call(PC.dhcp['url'],"sdcp.rest.{}_update_server".format(PC.dhcp['type']),{'entries':args})['data']
+ print aWeb.rest_call(PC.dhcp['url'],"sdcp.rest.{}_update_server".format(PC.dhcp['type']),{'entries':args})
 
 #
 #
 #
 def leases(aWeb):
  from ..core import extras as EXT
- dhcp = aWeb.rest_call(PC.dhcp['url'], "sdcp.rest.{}_leases".format(PC.dhcp['type']),{'type':aWeb['type']})['data']
+ dhcp = aWeb.rest_call(PC.dhcp['url'], "sdcp.rest.{}_leases".format(PC.dhcp['type']),{'type':aWeb['type']})
  print "<ARTICLE><P>%s Leases</P>"%(aWeb['type'].title())
  try: EXT.dict2table(dhcp['data'])
  except: pass

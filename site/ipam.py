@@ -10,8 +10,7 @@ __status__= "Production"
 #
 #
 def list(aWeb):
- from ..rest import sdcpipam
- res = sdcpipam.list(None)
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpipam_list")
  print "<ARTICLE><P>Subnets</P><DIV CLASS='controls'>"
  print aWeb.button('reload', DIV='div_content_left',  URL='sdcp.cgi?call=ipam_list')
  print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?call=ipam_info&id=new')
@@ -20,27 +19,24 @@ def list(aWeb):
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for net in res['subnets']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_info&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(net['id'],net['id'],net['subnet'],net['description'])
-  print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=ipam_layout&id=%i'%net['id'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_layout&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(net['id'],net['id'],net['subnet'],net['description'])
+  print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=ipam_info&id=%i'%net['id'])
   print "</DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
 #
 #
 def info(aWeb):
- from ..rest import sdcpipam
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict()
-  res = sdcpipam.update(data)
+  res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpipam_update",data)
   data['gateway'] = res['gateway']
   data['id']      = res['id']
  else:
-  res = sdcpipam.subnet({'id':aWeb['id']})
-  data = res['data']
+  data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpipam_subnet",{'id':aWeb['id']})['data']
  lock = "readonly" if not data['id'] == 'new' else ""
 
  print "<ARTICLE CLASS=info><P>Subnet Info {}</P>".format("(new)" if data['id'] == 'new' else "")
- print "<!-- {} -->".format(res)
  print "<FORM ID=ipam_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=table><DIV CLASS=tbody>"
@@ -60,27 +56,26 @@ def info(aWeb):
 #
 #
 def layout(aWeb):
- from ..rest import sdcpipam
+ data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpipam_allocation",{'id':aWeb['id']})
  print "<ARTICLE>"
- ret = sdcpipam.allocation({'id':aWeb['id']})
- startn  = int(ret['start'])
- starta  = int(ret['subnet'].split('.')[3])
- devices = ret['devices']
+ startn  = int(data['start'])
+ starta  = int(data['subnet'].split('.')[3])
+ devices = data['devices']
  green = "<A CLASS='z-op btn ipam-icon green' TITLE='New' DIV=div_content_right URL=sdcp.cgi?call=device_new&subnet_id="+ aWeb['id'] +"&ipint={}>{}</A>"
  red   = "<A CLASS='z-op btn ipam-icon red'   TITLE='{}' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A>"
  blue  = "<A CLASS='z-op btn ipam-icon blue'  TITLE='{}'>{}</A>"
  print blue.format('network',starta % 256)
- for cnt in range(1,int(ret['no'])-1):
-  dev = devices.get(cnt + startn)
+ for cnt in range(1,int(data['no'])-1):
+  dev = devices.get(str(cnt + startn))
   if dev:
    print red.format(dev['hostname'],dev['id'],(cnt + starta) % 256)
   else:
    print green.format(cnt + startn,(cnt + starta) % 256)
- print blue.format('broadcast',(starta + int(ret['no'])-1)% 256)
+ print blue.format('broadcast',(starta + int(data['no'])-1)% 256)
  print "</ARTICLE>"
 
 #
 #
 def delete(aWeb):
- from ..rest import sdcpipam
- print "<ARTICLE>%s</ARTICLE"%(sdcpipam.remove({'id':aWeb['id']}))
+ data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpipam_remove",{'id':aWeb['id']})
+ print "<ARTICLE>%s</ARTICLE"%(data)

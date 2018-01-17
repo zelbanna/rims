@@ -14,7 +14,7 @@ from ..core.dbase import DB
 #
 #
 def list(aWeb):
- domains = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))['data']
+ domains = aWeb.rest_call(PC.dns['url'], "sdcp.rest.%s_domains"%PC.dns['type'])
  with DB() as db:
   db.do("SELECT id, name FROM domains")
   local = db.get_dict('id')
@@ -48,10 +48,10 @@ def list(aWeb):
 def domain_info(aWeb):
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict_except(['call','op'])
-  res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domain_update".format(PC.dns['type']),data)['data']
+  res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domain_update".format(PC.dns['type']),data)
   data['id'] = res['id']
  else:
-  res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domain_lookup".format(PC.dns['type']),{'id':aWeb['id']})['data']
+  res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domain_lookup".format(PC.dns['type']),{'id':aWeb['id']})
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  print "<ARTICLE CLASS=info><P>Domain Info{}</P>".format(" (new)" if data['id'] == 'new' else "")
@@ -78,7 +78,7 @@ def domain_info(aWeb):
 #
 #
 def domain_transfer(aWeb):
- domains = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))['data']
+ domains = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
  print "<ARTICLE>"
  print "<FORM ID=dns_transfer><INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
  print "Transfer all records to <SELECT NAME=transfer>"
@@ -102,7 +102,7 @@ def domain_delete(aWeb):
    exist = db.do("UPDATE devices SET a_dom_id = %s WHERE a_dom_id = %s"%(aWeb['transfer'],aWeb['id']))
    print "Transfered %i devices. "%(exist)
   dbase   = db.do("DELETE FROM domains WHERE id = %s"%(aWeb['id']))
- res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':aWeb['id']})['data']
+ res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':aWeb['id']})
  print "Removed domain [%s,%s]" % ("removed cache" if dbase > 0 else "not in cache",str(res))
  print "</ARTICLE>"
 
@@ -128,7 +128,7 @@ def domain_cache_delete(aWeb):
 #
 #
 def records(aWeb):
- dns = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_records".format(PC.dns['type']),{'domain_id':aWeb['id']})['data']
+ dns = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_records".format(PC.dns['type']),{'domain_id':aWeb['id']})
  print "<ARTICLE><P>Records</P>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_records&id=%s'%(aWeb['id']))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id=new&domain_id=%s'%(aWeb['id']))
@@ -149,10 +149,10 @@ def records(aWeb):
 def record_info(aWeb):
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict_except(['call','op'])
-  res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']),data)['data']
+  res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']),data)
   data['id'] = res['id']
  else:
-  res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_record_lookup".format(PC.dns['type']),{'id':aWeb['id'],'domain_id':aWeb['domain_id']})['data']
+  res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_record_lookup".format(PC.dns['type']),{'id':aWeb['id'],'domain_id':aWeb['domain_id']})
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  print "<ARTICLE CLASS=info><P>Record Info {} (Domain {})</P>".format("(new)" if data['id'] == 'new' else "",data['domain_id'])
@@ -178,11 +178,11 @@ def record_info(aWeb):
 #
 #
 def record_delete(aWeb):
- res = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id': aWeb['id']})['data']
+ res = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id': aWeb['id']})
  print "Remove {} - Results:{}".format(aWeb['id'],res)
 
 def record_transfer(aWeb):
- res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_update",{'id':aWeb['dev'],'devices_%s_id'%aWeb['type']:aWeb['id']})['data']
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_update",{'id':aWeb['dev'],'devices_%s_id'%aWeb['type']:aWeb['id']})
  print "Updated device %s - Results:%s"%(aWeb['dev'],str(res))
 
 def record_create(aWeb):
@@ -192,18 +192,16 @@ def record_create(aWeb):
  else:
   from ..core import genlib as GL
   data = {'id':'new','type':aWeb['type'],'domain_id':aWeb['dom_id'],'content':aWeb['fqdn'],'name':GL.ip2ptr(aWeb['ip'])}
- res = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_update".format(PC.dns['type']),data)
- operation['dns'] = res['data']
- if res['data']['result'] == 'OK':
-  res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:res['data']['id']})
-  operation['device'] = res['data']
+ operation['dns'] = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_update".format(PC.dns['type']),data)
+ if operation['dns']['result'] == 'OK':
+  operation['device'] = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:operation['dns']['id']})
  print "Created record result: %s"%str(operation)
 
 ############################################ Tools ###########################################
 #
 #
 def load(aWeb):
- dns_domains  = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))['data']
+ dns_domains  = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
  added = 0
  print "<ARTICLE>"
  with DB() as db:
@@ -228,7 +226,7 @@ def discrepancy(aWeb):
  print "<ARTICLE><P>DNS Consistency</P><SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Value</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Key</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for type in ['a','ptr']:
-  dns = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_records".format(PC.dns['type']),{'type':type})['data']
+  dns = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_records".format(PC.dns['type']),{'type':type})
   tid = "{}_id".format(type)
   with DB() as db:
    db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, {0}_id, CONCAT(devices.hostname,'.',domains.name) as fqdn, a_dom_id FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id ORDER BY ip".format(type))
@@ -271,7 +269,7 @@ def discrepancy(aWeb):
 #
 def top(aWeb):
  from ..core import extras as EXT
- dnstop = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_top".format(PC.dns['type']), {'count':20})['data']
+ dnstop = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_top".format(PC.dns['type']), {'count':20})
  print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>"
  EXT.dict2table(dnstop['top'])
  print "</ARTICLE>"
@@ -283,7 +281,7 @@ def top(aWeb):
 # Cleanup duplicate entries
 #
 def dedup(aWeb):
- dns = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_dedup".format(PC.dns['type']))['data']
+ dns = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_dedup".format(PC.dns['type']))
  print "<ARTICLE><P>Duplicate Removal</P>"
  xist = len(dns['removed'])
  if xist > 0:

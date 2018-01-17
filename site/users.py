@@ -61,7 +61,6 @@ def info(aWeb):
  data['id'] = aWeb.get('id','new')
  op = aWeb['op']
  cookie = aWeb.cookie_unjar('sdcp')
- from ..rest.resources import list as resource_list
  with DB() as db:
   if op == 'update' or data['id'] == 'new':
    data['name']  = aWeb.get('name',"unknown")
@@ -84,7 +83,7 @@ def info(aWeb):
    data = db.get_row()
    data['view']  = str(data['view_public'])
 
- resources = resource_list({'id':cookie['id'], 'dict':'id'})['data']
+ resources = aWeb.rest_call(aWeb.resturl,"sdcp.rest.resources_list",{'id':cookie['id'], 'dict':'id'})['data']
  print aWeb.dragndrop()
  print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
