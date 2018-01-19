@@ -73,6 +73,9 @@ def portal(aWeb):
   user = cookie.get('user')
   view = cookie.get('view')
 
+ #
+ # Plocka resources for users directly !
+ # 
  from ..core.dbase import DB
  with DB() as db:
   db.do("SELECT menulist FROM users WHERE id = '{}'".format(id))

@@ -25,8 +25,7 @@ def main(aWeb):
  if target == 'vm':
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  else:
-  res = rackinfo({'id':arg} if target == 'rack_id' else {})
-  data = res['data']
+  data = rackinfo({'id':arg} if target == 'rack_id' else {})
 
   if len(data['console']) > 0:
    print "<LI CLASS='dropdown'><A>Console</A><DIV CLASS='dropdown-content'>"
@@ -39,7 +38,7 @@ def main(aWeb):
     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory&ip=%s'>%s</A>"%(row['ipasc'],row['hostname'])
    print "</DIV></LI>"
   if data.get('name'):
-   print "<LI><A CLASS='z-op' DIV=div_content_right  URL='sdcp.cgi?call=rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,res['data']['name'])
+   print "<LI><A CLASS='z-op' DIV=div_content_right  URL='sdcp.cgi?call=rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,data['name'])
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
   print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=ipam_list'>IPAM</A></LI>"
   print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=dns_list'>DNS</A></LI>"

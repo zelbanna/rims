@@ -12,37 +12,32 @@ from ..core.dbase import DB
 #
 # info([id:<rackid>])
 def info(aDict):
- ret  =  {}
+ ret = {'name': None, 'console':[], 'pdu':[] }
  with DB() as db:
   if aDict.get('id'):
-   data = {'name': None, 'console':[], 'pdu':[] }
    res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = %s"%aDict['id'])
    try:
     select = db.get_row()
-    data['name'] = select.pop('name',"Noname")
+    ret['name'] = select.pop('name',"Noname")
     if select.get('console'):
      value = select.pop('console',None)
      db.do("SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%value)
-     data['console'].append(db.get_row())
+     ret['console'].append(db.get_row())
 
     if select.get('pdu_1') == select.get('pdu_2'):
      select.pop('pdu_2',None)
     for pdu_no,value in select.iteritems():
      if value:
       db.do("SELECT id, name AS hostname, INET_NTOA(ip) AS ipasc, 'pdu' AS type FROM pdus WHERE id = %i"%value)
-      data['pdu'].append(db.get_row())
+      ret['pdu'].append(db.get_row())
 
    except: pass
   else:
-   data = {}
    db.do("SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'")
-   data['console'] = db.get_rows()
+   ret['console'] = db.get_rows()
    res = db.do("SELECT id, name AS hostname, INET_NTOA(ip) AS ipasc, 'pdu' AS type FROM pdus")
-   data['pdu'] = db.get_rows()
+   ret['pdu'] = db.get_rows()
 
- ret['data'] = data
- from ..core.logger import log
- log(data)
  return ret
 
 #

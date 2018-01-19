@@ -90,22 +90,34 @@ def info(aWeb):
 
  with DB() as db:
   if id == 'new':
-   rack = { 'id':'new', 'name':'new-name', 'size':'48', 'fk_pdu_1':None, 'fk_pdu_2':None, 'fk_console':None }
+   rack = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None }
   else:
    db.do("SELECT racks.* from racks WHERE id = {}".format(id))
    rack = db.get_row()
   print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(rack['name'])
   print "<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(rack['size'])
-  for key in ['pdu_1','pdu_2','console']:
+
+  db.do("SELECT devices.id,devices.hostname FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'")
+  rows = db.get_rows()
+  rows.append({'id':'NULL', 'hostname':"No console"})
+  print "<DIV CLASS=tr><DIV CLASS=td>Console:</DIV><DIV CLASS=td><SELECT NAME=console>"
+  for unit in rows:
+   extra = " selected" if (rack.get('console') == unit['id']) or (not rack.get('console') and unit['id'] == 'NULL') else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname'])
+  print "</SELECT></DIV></DIV>"
+
+
+  for key in ['pdu_1','pdu_2']:
    dbname = key.partition('_')[0]
    db.do("SELECT id,name from {0}s".format(dbname))
    rows = db.get_rows()
    rows.append({'id':'NULL', 'name':"No {}".format(dbname.capitalize())})
-   print "<DIV CLASS=tr><DIV CLASS=td>{0}:</DIV><DIV CLASS=td><SELECT NAME=fk_{1}>".format(key.capitalize(),key)
+   print "<DIV CLASS=tr><DIV CLASS=td>{0}:</DIV><DIV CLASS=td><SELECT NAME={1}>".format(key.capitalize(),key)
    for unit in rows:
-    extra = " selected" if (rack.get("fk_"+key) == unit['id']) or (not rack.get("fk_"+key) and unit['id'] == 'NULL') else ""
+    extra = " selected" if (rack.get(key) == unit['id']) or (not rack.get(key) and unit['id'] == 'NULL') else ""
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])   
    print "</SELECT></DIV></DIV>"
+
   print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=image_url>"
   print "<OPTION VALUE=NULL>No picture</OPTION>"
   for image in listdir(path.join(PC.generic['docroot'],"images")):
@@ -128,12 +140,12 @@ def info(aWeb):
 def update(aWeb):
  if aWeb['id'] == 'new':
   print "Creating new rack [new:{}]".format(aWeb['name'])
-  sql = "INSERT into racks (name, size, fk_pdu_1, fk_pdu_2, fk_console, image_url) VALUES ('{}','{}',{},{},{},'{}')"
+  sql = "INSERT into racks (name, size, pdu_1, pdu_2, console, image_url) VALUES ('{}','{}',{},{},{},'{}')"
  else:
   print "Updating rack [{}:{}]".format(aWeb['id'],aWeb['name'])
-  sql = "UPDATE racks SET name = '{}', size = '{}', fk_pdu_1 = {}, fk_pdu_2 = {}, fk_console = {}, image_url='{}' WHERE id = '{}'"
+  sql = "UPDATE racks SET name = '{}', size = '{}', pdu_1 = {}, pdu_2 = {}, console = {}, image_url='{}' WHERE id = '{}'"
  with DB() as db:
-  res = db.do(sql.format(aWeb['name'],aWeb['size'],aWeb['fk_pdu_1'],aWeb['fk_pdu_2'],aWeb['fk_console'],aWeb['image_url'],aWeb['id']))
+  res = db.do(sql.format(aWeb['name'],aWeb['size'],aWeb['pdu_1'],aWeb['pdu_2'],aWeb['console'],aWeb['image_url'],aWeb['id']))
 
 #
 #
