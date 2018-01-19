@@ -15,9 +15,7 @@ from ..core.dbase import DB
 #
 def list(aWeb):
  domains = aWeb.rest_call(PC.dns['url'], "sdcp.rest.%s_domains"%PC.dns['type'])
- with DB() as db:
-  db.do("SELECT id, name FROM domains")
-  local = db.get_dict('id')
+ local   = aWeb.rest_call(aWeb.resturl,  "sdcp.rest.sdcpdns_domains")
  print "<ARTICLE><P>Domains</P>"
  print "<DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_list')
@@ -32,7 +30,7 @@ def list(aWeb):
   print "<DIV CLASS=tr><!-- {} -->".format(dom)
   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=dns_records&type={}&id={}>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],"a" if not 'arpa' in dom['name'] else "ptr",dom['id'],dom['name'],dom['notified_serial'])
   print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=%s'%(dom['id']))
-  if not local.pop(dom['id'],None):
+  if not local.pop(str(dom['id']),None):
    print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_cache_add&id={}&name={}'.format(dom['id'],dom['name']))
   print "</DIV></DIV>"
  for dom in local.values():
@@ -96,13 +94,12 @@ def domain_transfer(aWeb):
 #
 def domain_delete(aWeb):
  print "<ARTICLE>"
- with DB() as db:
-  if aWeb['transfer']:
-   exist = db.do("UPDATE devices SET a_dom_id = %s WHERE a_dom_id = %s"%(aWeb['transfer'],aWeb['id']))
-   print "Transfered %i devices. "%(exist)
-  dbase   = db.do("DELETE FROM domains WHERE id = %s"%(aWeb['id']))
- res = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':aWeb['id']})
- print "Removed domain [%s,%s]" % ("removed cache" if dbase > 0 else "not in cache",str(res))
+ cache = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpdns_domain_delete",{'from':aWeb['id'],'to':aWeb['transfer']})
+ if cache['result'] == 'OK': 
+  dns = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':aWeb['id']})
+  print "Removed domain [%s,%s]" % (cache,dns)
+ else:
+  print "Error removing domain cache and transfer"
  print "</ARTICLE>"
 
 #
