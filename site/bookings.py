@@ -17,7 +17,7 @@ def list(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
 
  if aWeb['op']:
-  aWeb.rest_call(aWeb.resturl,"sdcp.rest.booking_modify",{'device_id':aWeb['device_id'],'user_id':aWeb['user_id'],'op':aWeb['op']})
+  aWeb.rest_call(aWeb.resturl,"sdcp.rest.booking_update",{'device_id':aWeb['device_id'],'user_id':aWeb['user_id'],'op':aWeb['op']})
 
  rows = aWeb.rest_call(aWeb.resturl,"sdcp.rest.booking_list")['list']
 
