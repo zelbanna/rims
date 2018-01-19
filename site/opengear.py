@@ -3,7 +3,7 @@
 HTML5 Ajax Console calls module
 
 """
-__author__= "Zacharias El Banna"                     
+__author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
@@ -11,7 +11,8 @@ def manage(aWeb):
  id = aWeb['id']
  data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_info",{'id':id})
  print "<NAV><UL>"
- print "<LI CLASS='right navinfo'><A>%s</A></LI>"%(data['info']['hostname'])
+ print "<LI CLASS='navinfo'><A>%s</A></LI>"%(data['info']['hostname'])
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"

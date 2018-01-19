@@ -279,7 +279,7 @@ def list(aDict):
   ret['xist'] = db.do(sql)
   ret['data']= db.get_rows()
  return ret
- 
+
 #
 #
 def list_type(aDict):
@@ -287,7 +287,7 @@ def list_type(aDict):
  with DB() as db:
   select = "devicetypes.%s ='%s'"%(('name',aDict.get('name')) if aDict.get('name') else ('base',aDict.get('base')))
   ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE %s ORDER BY type_name,hostname"%select)
-  ret['data'] = db.get_rows() 
+  ret['data'] = db.get_rows()
  return ret
 
 #
