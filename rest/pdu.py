@@ -41,8 +41,6 @@ def remove(aDict):
 # Update PDU slot info for a device
 #
 def update_device_pdus(aDict):
- from ..core.logger import log
- log("pdu_update_device_pdus({})".format(aDict))
  hostname  = aDict.get('hostname')
  ret = {}
  with DB() as db:

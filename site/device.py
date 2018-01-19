@@ -124,7 +124,7 @@ def info(aWeb):
  if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
   from ..rest.pdu import update_device_pdus
   opres['pdu'] = update_device_pdus(dev['rack'])
- infra = rest_infra(None)
+ infra = rest_infra({})
 
  ########################## Data Tables ######################
 

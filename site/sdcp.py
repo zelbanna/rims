@@ -11,18 +11,6 @@ __status__= "Production"
 # Generic Login
 #
 def login(aWeb):
- """
- Input header/form:
-  - application (default to sdcp)
-  - 'application' cookie jar with 'portal'
-
- REST backend requires 'app' (same as application) and response:
-  - title
-  - message, welcome message
-  - portal (xyz_abc in sdcp.site.xyz_abc)
-  - choices (list of display, id, data list  with id, data entries)
-  - parameters (list of display id data where data is input type)
- """
  application = aWeb.get('application','sdcp')
  cookie = aWeb.cookie_unjar(application)
  if len(cookie) > 0 and cookie.get('portal',False):
@@ -59,7 +47,6 @@ def login(aWeb):
 #
 def portal(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
-
  if cookie.get('id',None) is None:
   id,user,view = aWeb.get('sdcp_login',"None_None_1").split('_')
   if id == "None":
@@ -69,15 +56,13 @@ def portal(aWeb):
   aWeb.cookie_jar('sdcp',cookie, 86400)
   aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
  else:
-  id   = cookie.get('id')
-  user = cookie.get('user')
-  view = cookie.get('view')
+  id,user,view = cookie.get('id'),cookie.get('user'),cookie.get('view')
 
  menu = aWeb.rest_call(aWeb.resturl,"sdcp.rest.users_menu",{"id":id})
  aWeb.put_html(aWeb.get('title','Portal'))
  print "<HEADER>"
  for item in menu:
-  print "<A CLASS='btn menu-btn z-op' TITLE='%s' %s='%s'><IMG SRC='%s'/></A>"%(item['title'],"TARGET=_blank HREF" if item['inline'] == 1 else "DIV=main URL", item['href'],item['icon'])
+  print "<A CLASS='btn menu-btn z-op' TITLE='%s' %s='%s'><IMG SRC='%s'/></A>"%(item['title'],"TARGET=_blank HREF" if item['inline'] == 0 else "DIV=main URL", item['href'],item['icon'])
  print "<A CLASS='btn menu-btn z-op right warning' OP=logout URL=sdcp.cgi>Log out</A>"
  print "<A CLASS='btn menu-btn z-op right' DIV=main TITLE='%s' URL=sdcp.cgi?call=users_user&id=%s><IMG SRC='images/icon-users.png'></A>"%(user,id)
  print "</HEADER>"

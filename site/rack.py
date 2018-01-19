@@ -13,9 +13,7 @@ from ..core.dbase import DB
 ################################################## Basic Rack Info ######################################################
 
 def main(aWeb):
- with DB() as db:
-  db.do("SELECT id,name,image_url from racks")
-  racks = db.get_rows()
+ racks = aWeb.rest_call(aWeb.resturl,"sdcp.rest.racks_list")
  print "<NAV><UL>&nbsp;</UL></NAV>"
  print "<H1 CLASS='centered'>Rack Overview</H1>"
  print "<DIV CLASS='centered'>"
@@ -28,9 +26,7 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- with DB() as db:
-  res  = db.do("SELECT racks.* from racks ORDER by name")
-  data = db.get_rows()
+ racks = aWeb.rest_call(aWeb.resturl,"sdcp.rest.racks_list",{"sort":"name"})
  print "<ARTICLE><P>Rack</P>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=rack_list')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=rack_info&id=new')
@@ -38,20 +34,15 @@ def list(aWeb):
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- for unit in data:
+ for unit in racks:
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=rack_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['size'])
  print "</DIV></DIV></ARTICLE>"
 
 #
 #
 def inventory(aWeb):
- rack = aWeb.get('rack', 0)
- with DB() as db:
-  db.do("SELECT name, size from racks where id = {}".format(rack))
-  ri = db.get_row() 
-  db.do("SELECT devices.id, hostname, rackinfo.rack_unit, rackinfo.rack_size, bookings.user_id FROM devices LEFT JOIN bookings ON devices.id = bookings.device_id LEFT JOIN rackinfo ON devices.id = rackinfo.device_id WHERE rackinfo.rack_id = {}".format(rack))
-  devs = db.get_rows()
- size = ri['size']
+ data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.racks_devices",{"id":aWeb['rack']})
+ size = data['size']
  print "<DIV STYLE='display:grid; justify-items:stretch; align-items:stretch; margin:10px; grid: repeat({}, 20px)/20px 220px 20px 20px 20px 220px 20px;'>".format(size)
  # Create rack and some text, then place devs
  print "<DIV STYLE='grid-column:1/4; grid-row:1; justify-self:center; font-weight:bold; font-size:14px;'>Front</DIV>"
@@ -64,7 +55,7 @@ def inventory(aWeb):
   print "<DIV CLASS=rack-indx STYLE='grid-column:5; grid-row:%i; border-right:1px solid grey'>%i</DIV>"%(idx,ru)
   print "<DIV CLASS=rack-indx STYLE='grid-column:7; grid-row:%i;  border-left:1px solid grey'>%i</DIV>"%(idx,ru)
 
- for dev in devs:
+ for dev in data['devices']:
   if dev['rack_unit'] == 0:
    continue
   rowstart = size-abs(dev['rack_unit'])+2
@@ -81,71 +72,49 @@ def inventory(aWeb):
 def info(aWeb):
  from .. import PackageContainer as PC
  from os import listdir, path
- id = aWeb['id']
-
+ if aWeb.get('op') == 'save':
+  data = {'name':aWeb['name'],'size':aWeb['size'],'pdu_1':aWeb['pdu_1'],'pdu_2':aWeb['pdu_2'],'console':aWeb['console'],'image_url':aWeb['image_url'],'id':aWeb['id']}
+  res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.racks_update",data)
+  id = res['id']
+ else:
+  id = aWeb['id']
+ info = aWeb.rest_call(aWeb.resturl,"sdcp.rest.racks_infra",{'id':id})
+ 
  print "<ARTICLE CLASS=info><P>Rack Info {}</P>".format("(new)" if id == 'new' else "")
  print "<FORM ID=rack_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
  print "<DIV CLASS=table><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='%s'></DIV></DIV>"%(info['rack']['name'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT VALUE='%s'></DIV></DIV>"%(info['rack']['size'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Console:</DIV><DIV CLASS=td><SELECT NAME=console>"
+ for unit in info['consoles']:
+  extra = " selected" if (info['rack']['console'] == unit['id']) or (not info['rack']['console'] and unit['id'] == 'NULL') else ""
+  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
+ print "</SELECT></DIV></DIV>"
 
- with DB() as db:
-  if id == 'new':
-   rack = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None }
-  else:
-   db.do("SELECT racks.* from racks WHERE id = {}".format(id))
-   rack = db.get_row()
-  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(rack['name'])
-  print "<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT VALUE='{0}'></DIV></DIV>".format(rack['size'])
-
-  db.do("SELECT devices.id,devices.hostname FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'")
-  rows = db.get_rows()
-  rows.append({'id':'NULL', 'hostname':"No console"})
-  print "<DIV CLASS=tr><DIV CLASS=td>Console:</DIV><DIV CLASS=td><SELECT NAME=console>"
-  for unit in rows:
-   extra = " selected" if (rack.get('console') == unit['id']) or (not rack.get('console') and unit['id'] == 'NULL') else ""
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname'])
+ for key in ['pdu_1','pdu_2']:
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}:</DIV><DIV CLASS=td><SELECT NAME={1}>".format(key.capitalize(),key)
+  for unit in info['pdus']:
+   extra = " selected" if (info['rack'][key] == unit['id']) or (not info['rack'][key] and unit['id'] == 'NULL') else ""
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])   
   print "</SELECT></DIV></DIV>"
 
-
-  for key in ['pdu_1','pdu_2']:
-   dbname = key.partition('_')[0]
-   db.do("SELECT id,name from {0}s".format(dbname))
-   rows = db.get_rows()
-   rows.append({'id':'NULL', 'name':"No {}".format(dbname.capitalize())})
-   print "<DIV CLASS=tr><DIV CLASS=td>{0}:</DIV><DIV CLASS=td><SELECT NAME={1}>".format(key.capitalize(),key)
-   for unit in rows:
-    extra = " selected" if (rack.get(key) == unit['id']) or (not rack.get(key) and unit['id'] == 'NULL') else ""
-    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])   
-   print "</SELECT></DIV></DIV>"
-
-  print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=image_url>"
-  print "<OPTION VALUE=NULL>No picture</OPTION>"
-  for image in listdir(path.join(PC.generic['docroot'],"images")):
-   extra = " selected" if (rack.get("image_url") == image) or (not rack.get('image_url') and image == 'NULL') else ""
-   if image[-3:] == "png" or image[-3:] == "jpg":
-    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(image,extra,image[:-4])
-  print "</SELECT></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=image_url>"
+ print "<OPTION VALUE=NULL>No picture</OPTION>"
+ for image in listdir(path.join(PC.generic['docroot'],"images")):
+  extra = " selected" if (info['rack']['image_url'] == image) or (info['rack']['image_url'] and image == 'NULL') else ""
+  if image[-3:] == "png" or image[-3:] == "jpg":
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(image,extra,image[:-4])
+ print "</SELECT></DIV></DIV>"
 
  print "</DIV></DIV>"
  print "</FORM>"
  print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?call=rack_info&id={0}'.format(id))
- print aWeb.button('save', DIV='update_results', URL='sdcp.cgi?call=rack_update', FRM='rack_info_form')
+ print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?call=rack_info&op=save', FRM='rack_info_form')
  if not id == 'new':
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_remove&id={0}'.format(id))
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_remove&id=%s'%(id))
  print "<SPAN CLASS='right small-text' ID=update_results></SPAN>"
  print "</ARTICLE>"
-
-#
-#
-def update(aWeb):
- if aWeb['id'] == 'new':
-  print "Creating new rack [new:{}]".format(aWeb['name'])
-  sql = "INSERT into racks (name, size, pdu_1, pdu_2, console, image_url) VALUES ('{}','{}',{},{},{},'{}')"
- else:
-  print "Updating rack [{}:{}]".format(aWeb['id'],aWeb['name'])
-  sql = "UPDATE racks SET name = '{}', size = '{}', pdu_1 = {}, pdu_2 = {}, console = {}, image_url='{}' WHERE id = '{}'"
- with DB() as db:
-  res = db.do(sql.format(aWeb['name'],aWeb['size'],aWeb['pdu_1'],aWeb['pdu_2'],aWeb['console'],aWeb['image_url'],aWeb['id']))
 
 #
 #
