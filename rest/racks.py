@@ -16,14 +16,13 @@ def info(aDict):
  with DB() as db:
   if aDict.get('id'):
    data = {'name': None, 'console':[], 'pdu':[] }
-   res = db.do("SELECT racks.name, pdu_1, pdu_2, console FROM racks WHERE racks.id=%s"%aDict['id'])
+   res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = %s"%aDict['id'])
    try:
     select = db.get_row()
     data['name'] = select.pop('name',"Noname")
-
     if select.get('console'):
-     select.pop('console',None)
-     db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE id = %i"%value)
+     value = select.pop('console',None)
+     db.do("SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%value)
      data['console'].append(db.get_row())
 
     if select.get('pdu_1') == select.get('pdu_2'):
