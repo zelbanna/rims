@@ -63,8 +63,7 @@ def portal(aWeb):
  if cookie.get('id',None) is None:
   id,user,view = aWeb.get('sdcp_login',"None_None_1").split('_')
   if id == "None":
-   aWeb.put_html("SDCP Portal")
-   print "Error logging in - please try login again"
+   aWeb.put_redirect("index.cgi")
    return   
   cookie.update({'id':id,'user':user,'view':view,'portal':'sdcp_portal'})
   aWeb.cookie_jar('sdcp',cookie, 86400)

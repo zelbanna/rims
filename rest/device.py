@@ -34,7 +34,7 @@ def info(aDict):
    if ret['info']['vm'] == 1:
     ret['racked'] = 0
    else:
-    ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(consoles.ip) AS console_ip, consoles.name AS console_name FROM rackinfo LEFT JOIN consoles ON consoles.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(ret['id']))
+    ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(devices.ip) AS console_ip, devices.hostname AS console_name FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(ret['id']))
     if ret['racked'] > 0:
      ret['rack'] = db.get_row()
      ret['rack']['hostname'] = ret['info']['hostname']

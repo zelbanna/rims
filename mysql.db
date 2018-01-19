@@ -19,16 +19,6 @@ CREATE TABLE `bookings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
-DROP TABLE IF EXISTS `consoles`;
-CREATE TABLE `consoles` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(20) DEFAULT NULL,
-  `ip` int(10) unsigned DEFAULT '2130706433',
-  `device_id` int(10) unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-
 DROP TABLE IF EXISTS `devices`;
 CREATE TABLE `devices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -122,7 +112,7 @@ CREATE TABLE `rackinfo` (
   KEY `pem1_pdu_id` (`pem1_pdu_id`),
   KEY `rack_id` (`rack_id`),
   CONSTRAINT `rackinfo_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `rackinfo_ibfk_2` FOREIGN KEY (`console_id`) REFERENCES `consoles` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `rackinfo_ibfk_2` FOREIGN KEY (`console_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `rackinfo_ibfk_3` FOREIGN KEY (`pem0_pdu_id`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `rackinfo_ibfk_4` FOREIGN KEY (`pem1_pdu_id`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `rackinfo_ibfk_5` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -134,18 +124,18 @@ CREATE TABLE `racks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(20) DEFAULT NULL,
   `size` int(10) unsigned DEFAULT NULL,
-  `fk_console` int(10) unsigned DEFAULT NULL,
-  `fk_pdu_1` int(10) unsigned DEFAULT NULL,
-  `fk_pdu_2` int(10) unsigned DEFAULT NULL,
+  `console` int(10) unsigned DEFAULT NULL,
+  `pdu_1` int(10) unsigned DEFAULT NULL,
+  `pdu_2` int(10) unsigned DEFAULT NULL,
   `image_url` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
-  KEY `fk_console` (`fk_console`),
-  KEY `fk_pdu_1` (`fk_pdu_1`),
-  KEY `fk_pdu_2` (`fk_pdu_2`),
-  CONSTRAINT `racks_ibfk_1` FOREIGN KEY (`fk_console`) REFERENCES `consoles` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `racks_ibfk_2` FOREIGN KEY (`fk_pdu_1`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `racks_ibfk_3` FOREIGN KEY (`fk_pdu_2`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  KEY `console` (`console`),
+  KEY `pdu_1` (`pdu_1`),
+  KEY `pdu_2` (`pdu_2`),
+  CONSTRAINT `racks_ibfk_1` FOREIGN KEY (`console`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `racks_ibfk_2` FOREIGN KEY (`pdu_1`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `racks_ibfk_3` FOREIGN KEY (`pdu_2`) REFERENCES `pdus` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 

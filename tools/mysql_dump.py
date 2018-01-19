@@ -14,8 +14,8 @@ if __name__ == "__main__":
 
  from os import path as ospath, getcwd
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '../..')))
- from .. import PackageContainer as PC
- from ..core import mysql
+ from sdcp import PackageContainer as PC
+ from sdcp.core import mysql
 
  file = ospath.abspath(ospath.join(getcwd(),argv[2])) if len(argv) > 2 else None
 
