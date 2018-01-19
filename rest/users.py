@@ -41,3 +41,14 @@ def remove(aDict):
   res = db.do("DELETE FROM users WHERE id = '%s'"%aDict['id'])
  return { 'deleted':res }
 
+#
+#
+def menu(aDict):
+ ret = []
+ with DB() as db:
+  db.do("SELECT menulist FROM users WHERE id = '%s'"%aDict['id'])
+  menulist = db.get_val('menulist')
+  select = "type == 'menuitem'" if menulist == 'default' else "id IN (%s) ORDER BY FIELD(id,%s)"%(menulist,menulist)
+  db.do("SELECT icon, title, href, inline FROM resources WHERE %s"%select)
+  ret = db.get_rows()
+ return ret

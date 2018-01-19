@@ -73,39 +73,15 @@ def portal(aWeb):
   user = cookie.get('user')
   view = cookie.get('view')
 
- #
- # Plocka resources for users directly !
- # 
- from ..core.dbase import DB
- with DB() as db:
-  db.do("SELECT menulist FROM users WHERE id = '{}'".format(id))
-  menulist = db.get_val('menulist')
-
- from ..rest.resources import list as resource_list
- #
- # when REST, replace int(key) with key
- resources = resource_list({'id':id,'dict':'id'})['data']
+ menu = aWeb.rest_call(aWeb.resturl,"sdcp.rest.users_menu",{"id":id})
  aWeb.put_html(aWeb.get('title','Portal'))
  print "<HEADER>"
- inline = "<A CLASS='btn menu-btn z-op' DIV=main      TITLE='%s' URL='%s' ><IMG SRC='%s'/></A>"
- extern = "<A CLASS='btn menu-btn z-op' TARGET=_blank TITLE='%s' HREF='%s'><IMG SRC='%s'/></A>"
- if menulist == 'default':
-  for key,item in resources.iteritems():
-   item = resources.get(int(key))
-   if item['type'] == 'menuitem':
-    print inline%(item['title'],item['href'],item['icon'])
- else:
-  for key in menulist.split(','):
-   item = resources.get(int(key))
-   if item['inline'] == 1:
-    print inline%(item['title'],item['href'],item['icon'])
-   else:
-    print extern%(item['title'],item['href'],item['icon'])
+ for item in menu:
+  print "<A CLASS='btn menu-btn z-op' TITLE='%s' %s='%s'><IMG SRC='%s'/></A>"%(item['title'],"TARGET=_blank HREF" if item['inline'] == 1 else "DIV=main URL", item['href'],item['icon'])
  print "<A CLASS='btn menu-btn z-op right warning' OP=logout URL=sdcp.cgi>Log out</A>"
  print "<A CLASS='btn menu-btn z-op right' DIV=main TITLE='%s' URL=sdcp.cgi?call=users_user&id=%s><IMG SRC='images/icon-users.png'></A>"%(user,id)
  print "</HEADER>"
  print "<main ID=main></main>"
-
 
 ##################################################################################################
 #
