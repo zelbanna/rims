@@ -173,3 +173,9 @@ def mappings(aWeb):
    print "</DIV>"
   print "</DIV></DIV></ARTICLE>"
 
+#
+#
+def infra(aWeb):
+ type = aWeb['type']
+ data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_list_type",{'type':type})['data']
+ print data

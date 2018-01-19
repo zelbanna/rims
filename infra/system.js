@@ -8,7 +8,7 @@
 // Button functions - accepts proper JScript object:
 //  Set attribute log=true to log operation
 //
-// - [load]   div url [spin=true/div] [msg = for confirmation] [frm = if doing a post]
+// - [load]   div url [spin=true/div] [msg = for confirmation] [frm = if doing a post] [input = True if populating input]
 // - redirect url
 // - iload    iframe url
 // - logout   url/div
@@ -41,22 +41,13 @@ function btn(event) {
     spin.css("overflow-y","hidden");
     spin.append("<DIV CLASS='overlay'><DIV CLASS='loader'></DIV></DIV>");
   }
-  var frm  = this.getAttribute("frm");
+  var frm  =  this.getAttribute("frm");
+  var input = this.getAttribute("input");
   if(frm)
-   $.post(url, $("#"+frm).serializeArray() , function(result) { 
-    div.html(result); 
-    if(spin){
-     $(".overlay").remove();
-     spin.css("overflow-y","auto");
-    }
-   });
+   $.post(url, $("#"+frm).serializeArray() , function(result) { loadresult(div,spin,input,result);  });
   else
-   div.load(url, function(responseTxt, statusTxt, xhr){
-    if (spin) {
-     $(".overlay").remove();
-     spin.css("overflow-y","auto");
-    }
-   });
+   $.get(url, function(result) { loadresult(div,spin,input,result); });
+
  } else if (op == 'redirect') {
   location.replace(url);
  } else if (op == 'submit') {
@@ -85,6 +76,20 @@ function btn(event) {
   div.html('');
  }
 };
+
+//
+// Callback for loading result
+//
+function loadresult(div,spin,input,result){
+ if (input)
+  div.val(result);
+ else
+  div.html(result);
+ if (spin) {
+  $(".overlay").remove();
+  spin.css("overflow-y","auto");
+ }
+}
 
 //
 //

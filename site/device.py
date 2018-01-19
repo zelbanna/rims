@@ -349,7 +349,7 @@ def new(aWeb):
  elif op == 'find':
   from ..rest import sdcpipam
   res  = sdcpipam.find({'id':subnet_id})
-  print "IP:{}".format(res['ip'])
+  print res['ip']
  else:
   from ..rest import sdcpipam
   domain = aWeb['domain']
@@ -361,7 +361,7 @@ def new(aWeb):
   print "<!-- {} -->".format(aWeb.get_args2dict_except())
   print "<FORM ID=device_new_form>"
   print "<DIV CLASS=table><DIV CLASS=tbody>"
-  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip       TYPE=TEXT VALUE={}></DIV></DIV>".format(ip)
+  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip ID=device_ip TYPE=TEXT VALUE={}></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE={}></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
   for d in domains:
@@ -380,9 +380,9 @@ def new(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV  CLASS=td><INPUT NAME=vm  TYPE=CHECKBOX VALUE=1  {0} ></DIV></DIV>".format("checked" if aWeb['target'] == 'vm' else '')
   print "</DIV></DIV>"
   print "</FORM>"
-  print aWeb.button('start', DIV='device_new_span', URL='sdcp.cgi?call=device_new&op=new',  FRM='device_new_form', TITLE='Create')
-  print aWeb.button('search',DIV='device_new_span', URL='sdcp.cgi?call=device_new&op=find', FRM='device_new_form', TITLE='Find IP')
-  print "<SPAN CLASS='results' ID=device_new_span STYLE='max-width:400px;'></SPAN>"
+  print aWeb.button('start', DIV='device_span', URL='sdcp.cgi?call=device_new&op=new', FRM='device_new_form', TITLE='Create')
+  print aWeb.button('search',DIV='device_ip',   URL='sdcp.cgi?call=device_new&op=find', FRM='device_new_form', TITLE='Find IP',INPUT='True')
+  print "<SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'></SPAN>"
   print "</ARTICLE>"
 
 #
