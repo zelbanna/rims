@@ -86,11 +86,11 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = Non
   raw = h.read()
   try:    data = loads(raw)
   except: data = raw
-  output = { 'result':'ERROR', 'code':h.code, 'info':dict(h.info()), 'data':data }
+  output = { 'result':'ERROR', 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
  except URLError, e:
-  output = { 'result':'ERROR', 'code':590, 'info':{'x-z-res':'ERROR', 'x-z-info':str(e),'x-z-exception':'URLError' }}
+  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':str(e)}
  except Exception, e:
-  output = { 'result':'ERROR', 'code':591, 'info':{'x-z-res':'ERROR', 'x-z-info':str(e),'x-z-exception':type(e).__name__ }}
+  output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':str(e)}
  if output['result'] == "ERROR":
   raise Exception(output)
  return output

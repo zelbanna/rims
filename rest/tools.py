@@ -18,8 +18,8 @@ def installation(aDict):
   settings = load(settingsfile)
  settings['source'] = PC.source
  res = install(settings)
- ret = {'result':'OK', 'info':res}
- return ret
+ return {'info':res}
+
 
 #
 def sync_devicetypes(aDict):
@@ -47,8 +47,7 @@ def sync_devicetypes(aDict):
    except Exception,e :
     print "DB:{}".format(str(e))
 
- ret = {'result':'OK', 'types':types, 'found':len(types), 'new':new, 'path':path }
- return ret
+ return {'types':types, 'found':len(types), 'new':new, 'path':path }
 
 #
 def sync_menuitems(aDict):
@@ -73,7 +72,7 @@ def sync_menuitems(aDict):
     item['db'] = db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon']))
     new += item['db']
    except: pass
- return {'result':'OK', 'menuitems':items, 'found':len(items), 'new':new, 'path':path }
+ return {'menuitems':items, 'found':len(items), 'new':new, 'path':path }
 
 #
 # db_table(columns)
@@ -82,7 +81,7 @@ def sync_menuitems(aDict):
 def db_table(aDict):
  cols = aDict.get('columns','*')
  tbl  = aDict.get('table','devices')
- ret  = {'result':'OK'}
+ ret  = {}
  with DB() as db:
   ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
   ret['db'] = db.get_rows() if ret['found'] > 0 else []

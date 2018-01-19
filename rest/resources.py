@@ -10,10 +10,7 @@ __status__ = "Production"
 from ..core.dbase import DB
 
 def list(aDict):
- ret = {'result':'OK'}
- ret['user_id'] = aDict.get('user_id',"1")
- ret['view'] = aDict.get('view',"1")
- ret['type'] = aDict.get('type')
+ ret = {'user_id':aDict.get('user_id',"1"),'view':aDict.get('view',"1"), 'type':aDict.get('type') }
  select = "%s(user_id = %s %s)"%("type = '%s' AND "%ret['type'] if ret['type'] else "", ret['user_id'],"" if ret['view'] == '0' else 'OR private = 0')
  with DB() as db:
   ret['xist'] = db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE %s ORDER BY type,title"%select)
@@ -23,7 +20,7 @@ def list(aDict):
 #
 #
 def info(aDict):
- ret = {'result':'OK','id':aDict['id']}
+ ret = {'id':aDict['id']}
  id = aDict['id']
  op = aDict.pop('op',None)
  with DB() as db:
@@ -43,4 +40,4 @@ def info(aDict):
 def remove(aDict):
  with DB() as db:
   res = db.do("DELETE FROM resources WHERE id = '%s'"%aDict['id'])
- return { 'result':"OK" if res == 1 else "NOT_OK" }
+ return { 'deleted':res }

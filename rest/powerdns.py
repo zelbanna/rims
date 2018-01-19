@@ -84,6 +84,7 @@ def domain_lookup(aDict):
  return ret
 
 #
+# 'result' used to trigger a device update
 #
 def domain_update(aDict):
  log("powerdns_domain_update({})".format(aDict))

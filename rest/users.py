@@ -10,7 +10,7 @@ __status__ = "Production"
 from ..core.dbase import DB
 
 def list(aDict):
- ret = {'result':'OK'}
+ ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT id, alias, name, email FROM users ORDER by name")
   ret['data'] = db.get_rows()
@@ -19,7 +19,7 @@ def list(aDict):
 #
 #
 def info(aDict):
- ret = {'result':'OK','id':aDict['id']}
+ ret = {'id':aDict['id']}
  id = aDict['id']
  op = aDict.pop('op',None)
  with DB() as db:
@@ -39,5 +39,5 @@ def info(aDict):
 def remove(aDict):
  with DB() as db:
   res = db.do("DELETE FROM users WHERE id = '%s'"%aDict['id'])
- return { 'result':"OK" if res == 1 else "NOT_OK" }
+ return { 'deleted':res }
 

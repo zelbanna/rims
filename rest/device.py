@@ -122,16 +122,18 @@ def new(aDict):
 #
 # remove(id) and pop dns and ipam info
 #
+# OK is used to
+#
+
 def remove(aDict):
  log("device_remove({})".format(aDict))
  with DB() as db:
   xist = db.do("SELECT hostname, mac, a_id, ptr_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
   if xist == 0:
-   ret = { 'result':'NOT_OK', 'a_id':0, 'ptr_id':0 }
+   ret = { 'deleted':0, 'a_id':0, 'ptr_id':0 }
   else:
    ret = db.get_row()
    ret['deleted'] = db.do("DELETE FROM devices WHERE id = '{}'".format(aDict['id']))
-   ret['result'] = 'OK'
  return ret
 
 #

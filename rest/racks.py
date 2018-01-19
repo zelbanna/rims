@@ -48,7 +48,7 @@ def info(aDict):
 #
 #
 def infra(aDict):
- ret =  {'result':'OK' }
+ ret =  {}
  with DB() as db:
   ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes") 
   ret['types']    = db.get_rows()
@@ -69,15 +69,13 @@ def infra(aDict):
 # devices(rack:rack_id, sort:)
 #
 def devices(aDict):
- ret = { 'result':'OK' }
+ ret = {'sort':aDict.get('sort','devices.id')}
  tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(aDict['rack'])
  if aDict.get('filter'):
   tune += " AND type_id = {}".format(aDict['filter'])
 
- ret = {'result':'OK','sort':aDict.get('sort','devices.id')}
  with DB() as db:
   sql = "SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model, type_id, subnets.gateway FROM devices JOIN subnets ON subnet_id = subnets.id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
   ret['xist'] = db.do(sql)
   ret['data']= db.get_rows()
  return ret
-
