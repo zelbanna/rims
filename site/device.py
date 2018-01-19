@@ -361,7 +361,6 @@ def new(aWeb):
   print "<!-- {} -->".format(aWeb.get_args2dict_except())
   print "<FORM ID=device_new_form>"
   print "<DIV CLASS=table><DIV CLASS=tbody>"
-  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       NAME=ip ID=device_ip TYPE=TEXT VALUE={}></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE={}></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
   for d in domains:
@@ -372,6 +371,7 @@ def new(aWeb):
   for s in subnets:
    print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == subnet_id else "", s['subnet'],s['description'])
   print "</SELECT></DIV></DIV>"
+  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT  NAME=ip ID=device_ip TYPE=TEXT VALUE={}></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
   if aWeb['target'] == 'rack_id':
    print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(aWeb['target'])
