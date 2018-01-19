@@ -20,12 +20,12 @@ def domains(aDict):
 #
 #
 def domain_delete(aDict):
- ret = {'result':'OK'}
+ ret = {'result':'NOT_OK'}
  if aDict.get('to') and aDict.get('from'):
   with DB() as db:
    try:
     ret['transfer'] = db.do("UPDATE devices SET a_dom_id = %s WHERE a_dom_id = %s"%(aDict['to'],aDict['from']))
     ret['deleted']  = db.do("DELETE FROM domains WHERE id = %s"%(aDict['from']))
-   except:
-    ret['result'] = 'NOT_OK'
+    ret['result']   = 'OK'
+   except: pass
  return ret
