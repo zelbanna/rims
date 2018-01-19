@@ -12,6 +12,7 @@ from ..core.dbase import DB
 #
 # View Consoles
 #
+# redo - send type 
 
 def inventory(aWeb):
  from ..devices.opengear import Device
@@ -29,6 +30,9 @@ def inventory(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td><A HREF='https://{0}/'>{0}</A></DIV><DIV CLASS=td><A TITLE='Edit port info' HREF={4}>{1}</A></DIV><DIV CLASS=td><A HREF='telnet://{0}:{2}'>{3}</A></DIV></DIV>".format(con,str(key),port, value, config.format(con,key))
  print "</DIV></DIV></ARTICLE>"
 
+#
+#
+#
 def list(aWeb):
  with DB() as db:
   res  = db.do("SELECT id, INET_NTOA(ip) as ip, name from consoles ORDER by name")

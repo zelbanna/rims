@@ -55,7 +55,6 @@ def domain_info(aWeb):
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  print "<ARTICLE CLASS=info><P>Domain Info{}</P>".format(" (new)" if data['id'] == 'new' else "")
- print "<!-- {} -->".format(res)
  print "<FORM ID=dns_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=table><DIV CLASS=tbody>"

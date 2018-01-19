@@ -17,6 +17,10 @@ from .. import PackageContainer as PC
 
 class Device(GenericDevice, ConfObject):
 
+ @classmethod
+ def get_widgets(cls):
+  return ['manage']
+
  def __init__(self, aIP, aID = None):
   GenericDevice.__init__(self,aIP, aID)
   ConfObject.__init__(self)
