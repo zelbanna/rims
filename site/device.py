@@ -27,12 +27,17 @@ def main(aWeb):
  else:
   res = rackinfo({'id':arg} if target == 'rack_id' else {})
   data = res['data']
-  for type in ['console','pdu']:
-   if len(data[type]) > 0:
-    print "<LI CLASS='dropdown'><A>%s</A><DIV CLASS='dropdown-content'>"%(type.title())
-    for row in data[type]:
-     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=%s_inventory&ip=%s'>%s</A>"%(type,row['ipasc'],row['name'])
-    print "</DIV></LI>"
+
+  if len(data['console']) > 0:
+   print "<LI CLASS='dropdown'><A>Console</A><DIV CLASS='dropdown-content'>"
+   for row in data['console']:
+    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=%s_inventory&ip=%s'>%s</A>"%(row['type'],row['ipasc'],row['hostname'])
+   print "</DIV></LI>"
+  if len(data['pdu']) > 0:
+   print "<LI CLASS='dropdown'><A>PDU</A><DIV CLASS='dropdown-content'>"
+   for row in data['pdu']:
+    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory&ip=%s'>%s</A>"%(row['ipasc'],row['hostname'])
+   print "</DIV></LI>"
   if data.get('name'):
    print "<LI><A CLASS='z-op' DIV=div_content_right  URL='sdcp.cgi?call=rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,res['data']['name'])
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
@@ -40,7 +45,6 @@ def main(aWeb):
   print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=dns_list'>DNS</A></LI>"
   print "<LI CLASS='right dropdown'><A>Rackinfo</A><DIV CLASS='dropdown-content'>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=pdu_list'>PDUs</A>"
-  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=console_list'>Consoles</A>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=rack_list'>Racks</A>"
   print "</DIV></LI>"
  print "</UL></NAV>"
@@ -371,7 +375,7 @@ def new(aWeb):
   for s in subnets:
    print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == subnet_id else "", s['subnet'],s['description'])
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT  NAME=ip ID=device_ip TYPE=TEXT VALUE={}></DIV></DIV>".format(ip)
+  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT  NAME=ip ID=device_ip TYPE=TEXT VALUE='{}'></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
   if aWeb['target'] == 'rack_id':
    print "<INPUT TYPE=HIDDEN NAME=target VALUE={}>".format(aWeb['target'])
@@ -380,7 +384,7 @@ def new(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV  CLASS=td><INPUT NAME=vm  TYPE=CHECKBOX VALUE=1  {0} ></DIV></DIV>".format("checked" if aWeb['target'] == 'vm' else '')
   print "</DIV></DIV>"
   print "</FORM>"
-  print aWeb.button('start', DIV='device_span', URL='sdcp.cgi?call=device_new&op=new', FRM='device_new_form', TITLE='Create')
+  print aWeb.button('start', DIV='device_span', URL='sdcp.cgi?call=device_new&op=new',  FRM='device_new_form', TITLE='Create')
   print aWeb.button('search',DIV='device_ip',   URL='sdcp.cgi?call=device_new&op=find', FRM='device_new_form', TITLE='Find IP',INPUT='True')
   print "<SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'></SPAN>"
   print "</ARTICLE>"

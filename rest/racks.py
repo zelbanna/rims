@@ -12,28 +12,38 @@ from ..core.dbase import DB
 #
 # info([id:<rackid>])
 def info(aDict):
- ret  =  {'result':'OK'}
+ ret  =  {}
  with DB() as db:
   if aDict.get('id'):
    data = {'name': None, 'console':[], 'pdu':[] }
-   res = db.do("SELECT racks.name, fk_pdu_1 AS pdu_1, fk_pdu_2 AS pdu_2, fk_console AS console_1 FROM racks WHERE racks.id=%s"%aDict['id'])
+   res = db.do("SELECT racks.name, pdu_1, pdu_2, console FROM racks WHERE racks.id=%s"%aDict['id'])
    try:
     select = db.get_row()
     data['name'] = select.pop('name',"Noname")
+
+    if select.get('console'):
+     select.pop('console',None)
+     db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE id = %i"%value)
+     data['console'].append(db.get_row())
+
     if select.get('pdu_1') == select.get('pdu_2'):
      select.pop('pdu_2',None)
-    for type_no,value in select.iteritems():
-     type,void,no = type_no.partition('_')
+    for pdu_no,value in select.iteritems():
      if value:
-      db.do("SELECT id, name, INET_NTOA(ip) AS ipasc FROM %ss WHERE id = %i"%(type,value))
-      data[type].append(db.get_row())
+      db.do("SELECT id, name AS hostname, INET_NTOA(ip) AS ipasc, 'pdu' AS type FROM pdus WHERE id = %i"%value)
+      data['pdu'].append(db.get_row())
+
    except: pass
   else:
    data = {}
-   for type in ['pdu','console']:
-    res = db.do("SELECT id, name, INET_NTOA(ip) AS ipasc FROM %ss"%type)
-    data[type] = db.get_rows()
+   db.do("SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'")
+   data['console'] = db.get_rows()
+   res = db.do("SELECT id, name AS hostname, INET_NTOA(ip) AS ipasc, 'pdu' AS type FROM pdus")
+   data['pdu'] = db.get_rows()
+
  ret['data'] = data
+ from ..core.logger import log
+ log(data)
  return ret
 
 #
@@ -46,7 +56,7 @@ def infra(aDict):
   ret['rackxist'] = db.do("SELECT racks.* FROM racks")
   ret['racks']    = db.get_rows()
   ret['racks'].append({ 'id':'NULL', 'name':'Not used'})
-  ret['consolexist'] = db.do("SELECT id, name, INET_NTOA(ip) as ipasc FROM consoles") 
+  ret['consolexist'] = db.do("SELECT devices.id, devices.hostname AS name, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'") 
   ret['consoles']    = db.get_rows()
   ret['consoles'].append({ 'id':'NULL', 'name':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1' })
   ret['pduxist'] = db.do("SELECT pdus.*, INET_NTOA(ip) as ipasc FROM pdus")

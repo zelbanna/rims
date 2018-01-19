@@ -154,7 +154,7 @@ def mappings(aWeb):
   order.sort()
   db.do("SELECT id, name FROM pdus")
   pdus  = db.get_dict('id')
-  db.do("SELECT id, name FROM consoles")
+  db.do("SELECT devices.id, devices.hostname FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'")
   cons  = db.get_dict('id')
   db.do("SELECT id, name FROM racks")
   racks = db.get_dict('id')
@@ -166,7 +166,7 @@ def mappings(aWeb):
   for ri in ris:
    print "<DIV CLASS=tr>"
    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(ri['device_id'],ri['device_id'],ri['ipasc'],ri['hostname'],ri['vm'])
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(cons.get(ri['console_id'],{}).get('name',None),ri['console_port'])
+   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(cons.get(ri['console_id'],{}).get('hostname',None),ri['console_port'])
    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(ri['pem0_pdu_id'],{}).get('name',None),ri['pem0_pdu_slot'],ri['pem0_pdu_unit'])
    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(ri['pem1_pdu_id'],{}).get('name',None),ri['pem1_pdu_slot'],ri['pem1_pdu_unit'])
    print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(racks.get(ri['rack_id'],{}).get('name',None),ri['rack_size'],ri['rack_unit'])
@@ -177,5 +177,12 @@ def mappings(aWeb):
 #
 def infra(aWeb):
  type = aWeb['type']
- data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_list_type",{'type':type})['data']
- print data
+ data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_list_type",{'base':type})['data']
+ print "<ARTICLE><P>%s</P>"%type.title()
+ print  aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?%s'%(aWeb.get_args()))
+ print "<DIV CLASS=table>"
+ print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>IP</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for unit in data:
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call={3}_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{3}</DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['hostname'],unit['ipasc'],unit['type_name'])
+ print "</DIV></DIV></ARTICLE>"
