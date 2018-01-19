@@ -30,7 +30,6 @@ def list(aWeb):
  print "<ARTICLE><P>Rack</P>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=rack_list')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=rack_info&id=new')
- print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?call=rack_mappings')
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -119,40 +118,8 @@ def info(aWeb):
 #
 #
 def remove(aWeb):
- with DB() as db:
-  db.do("DELETE FROM racks WHERE id = {0}".format(aWeb['id']))
-  print "<ARTICLE>Rack {0} deleted</ARTICLE>".format(aWeb['id'])
-
-#
-#
-def mappings(aWeb):
- with DB() as db:
-  res  = db.do("SELECT rackinfo.*, devices.vm, devices.hostname, devices.ip, INET_NTOA(devices.ip) as ipasc FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.device_id")
-  if res == 0:
-   return 
-  ris = db.get_rows()
-  order = ris[0].keys()
-  order.sort()
-  db.do("SELECT id, name FROM pdus")
-  pdus  = db.get_dict('id')
-  db.do("SELECT devices.id, devices.hostname FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'")
-  cons  = db.get_dict('id')
-  db.do("SELECT id, name FROM racks")
-  racks = db.get_dict('id')
-  print "<ARTICLE STYLE='overflow-x:auto;'>"
-  print "<P>Mappings</P>"
-  print "<DIV CLASS=table>"
-  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>VM</DIV><DIV CLASS=th>Console</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>PEM0-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>PEM1-PDU</DIV><DIV CLASS=th>slot</DIV><DIV CLASS=th>unit</DIV><DIV CLASS=th>Rack</DIV><DIV CLASS=th>size</DIV><DIV CLASS=th>unit</DIV></DIV>"
-  print "<DIV CLASS=tbody>"
-  for ri in ris:
-   print "<DIV CLASS=tr>"
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(ri['device_id'],ri['device_id'],ri['ipasc'],ri['hostname'],ri['vm'])
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(cons.get(ri['console_id'],{}).get('hostname',None),ri['console_port'])
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(ri['pem0_pdu_id'],{}).get('name',None),ri['pem0_pdu_slot'],ri['pem0_pdu_unit'])
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format( pdus.get(ri['pem1_pdu_id'],{}).get('name',None),ri['pem1_pdu_slot'],ri['pem1_pdu_unit'])
-   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(racks.get(ri['rack_id'],{}).get('name',None),ri['rack_size'],ri['rack_unit'])
-   print "</DIV>"
-  print "</DIV></DIV></ARTICLE>"
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.racks_remove",{'id':aWeb['id']})
+ print "<ARTICLE>Rack %s deleted (%s)</ARTICLE>"%(aWeb['id'],res)
 
 #
 #

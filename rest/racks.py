@@ -51,9 +51,10 @@ def info(aDict):
 #
 def infra(aDict):
  ret =  {}
+ key = aDict.get('key')
  with DB() as db:
   ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes") 
-  ret['types']    = db.get_rows()
+  ret['types']    = db.get_rows() 
   if aDict.get('id'):
    if aDict['id'] == 'new':
     ret['rackxist'] = 0
@@ -63,7 +64,7 @@ def infra(aDict):
     ret['rack']     = db.get_row()   
   else:
    ret['rackxist'] = db.do("SELECT racks.* FROM racks")
-   ret['racks']    = db.get_rows()
+   ret['racks']    =  db.get_rows()
    ret['racks'].append({ 'id':'NULL', 'name':'Not used'})
   ret['consolexist'] = db.do("SELECT devices.id, devices.hostname AS name, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'") 
   ret['consoles']    = db.get_rows()
@@ -98,3 +99,11 @@ def update(aDict):
   else:
    ret['xist'] = db.do("UPDATE racks SET name = '%s', size = %s, pdu_1 = %s, pdu_2 = %s, console = %s, image_url='%s' WHERE id = '%s'"%(aDict['name'],aDict['size'],aDict['pdu_1'],aDict['pdu_2'],aDict['console'],aDict['image_url'],aDict['id']))
  return ret
+
+#
+#
+def remove(aDict):
+ with DB() as db:
+  deleted = db.do("DELETE FROM racks WHERE id = %s"%aDict['id'])
+ return deleted
+
