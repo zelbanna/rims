@@ -13,16 +13,15 @@ __status__ = "Production"
 def clear_logs(aDict):
  from ..core.logger import log
  logfiles = aDict.get('logs')
- result = {'result':'OK'}
+ ret = {}
  for logfile in logfiles:
   try:
    open(logfile,'w').close()
    log("Emptied log [{}]".format(logfile))
-   result[logfile] = 'CLEARED'
+   ret[logfile] = 'CLEARED'
   except Exception as err:
-   result[logfile] = 'ERROR:{}'.format(str(err))
-   result['result'] = 'NOT_OK'
- return result
+   ret[logfile] = 'ERROR:{}'.format(str(err))
+ return ret
 
 #
 # Examine log
@@ -33,7 +32,7 @@ def clear_logs(aDict):
 def get_logs(aDict):
  count = int(aDict.get('count',15))
  logfiles = aDict['logs']
- ret = {'result':'OK', 'logs':{}}
+ ret = {}
  for logfile in logfiles:
   logs = ["\r" for i in range(count)]
   pos = 0
@@ -42,7 +41,7 @@ def get_logs(aDict):
     for line in f:
      logs[pos] = line
      pos = (pos + 1) % count
-    ret['logs'][logfile] = [logs[(pos + n) % count][:-1] for n in reversed(range(count))]
+    ret[logfile] = [logs[(pos + n) % count][:-1] for n in reversed(range(count))]
   except Exception as err:
-   ret['logs'][logfile] = ['ERROR: {}'.format(str(err))]
+   ret[logfile] = ['ERROR: {}'.format(str(err))]
  return ret

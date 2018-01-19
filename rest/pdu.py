@@ -22,9 +22,9 @@ def unit_update(aDict):
   unit = aDict.get('unit','0')
   avocent = Device(ip)
   res = avocent.set_name(slot,unit,name)
-  return { 'result':'OK', 'info':res }
+  return { 'info':res }
  else:
-  return { 'result':'NOT_OK', 'info':'No name supplied' }
+  return { 'info':'No name supplied' }
 
 #
 # Remove PDU from DB
@@ -34,8 +34,8 @@ def remove(aDict):
  with DB() as db:
   db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(id))
   db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(id))
-  db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
- return { 'result':'OK' }
+  deleted = db.do("DELETE FROM pdus WHERE id = '{0}'".format(id))
+ return {'deleted':deleted}
 
 #
 # Update PDU slot info for a device
@@ -44,7 +44,7 @@ def update_device_pdus(aDict):
  from ..core.logger import log
  log("pdu_update_device_pdus({})".format(aDict))
  hostname  = aDict.get('hostname')
- ret = {'result':'OK'}
+ ret = {}
  with DB() as db:
   for p in ['0','1']:
    ret[p] = None

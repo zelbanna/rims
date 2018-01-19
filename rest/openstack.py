@@ -13,7 +13,7 @@ def application(aDict):
  from ..core.dbase import DB
  from ..devices.openstack import OpenstackRPC
  from ..core.logger import log
- ret = {'result':'OK'}
+ ret = {}
  ret['title']   = "%s 2 Cloud"%(aDict.get('name','iaas'))
  ret['portal'] = "openstack_portal"
  ret['message']= "Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas'))
@@ -34,7 +34,6 @@ def application(aDict):
     projects.append({'name':project['name'], 'id':"%s_%s"%(project['id'],project['name'])})
    ret['choices'] = [{'display':'Customer', 'id':'project', 'data':projects}]
  except Exception as e:
-  ret['result'] = 'NOT_OK'
   ret['exception'] = str(e)
  ret['parameters'] = [{'display':'Username', 'id':'username', 'data':'text'},{'display':'Password', 'id':'password', 'data':'password'}]
  ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookies.iteritems()])

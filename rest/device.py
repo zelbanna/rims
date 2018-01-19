@@ -26,7 +26,6 @@ def info(aDict):
    ret['ip']   = ret['info'].pop('ipasc',None)
    ret['type'] = ret['info']['type_base']
    ret['mac']  = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
-   ret['result']  = 'OK'
    ret['id']   = ret['info'].pop('id',None)
    ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id']))
    if ret['booked'] > 0:
@@ -38,8 +37,6 @@ def info(aDict):
     if ret['racked'] > 0:
      ret['rack'] = db.get_row()
      ret['rack']['hostname'] = ret['info']['hostname']
-  else:
-   ret['result'] = 'NOT_OK'
  return ret
 
 #
@@ -54,7 +51,7 @@ def update(aDict):
  from ..core import genlib as GL
  id     = aDict.pop('id',None)
  racked = aDict.pop('racked',None)
- ret    = {'result':'OK', 'data':{}}
+ ret    = {'data':{}}
  with DB() as db:
   # specials
   try: aDict['devices_mac'] = GL.mac2int(aDict.pop('devices_mac','00:00:00:00:00:00'))
@@ -96,7 +93,7 @@ def new(aDict):
  ip    = aDict.get('ip')
  ipint = GL.ip2int(ip)
  subnet_id = aDict.get('subnet_id')
- ret = {'result':'NOT_OK', 'info':None}
+ ret = {'info':None}
  with DB() as db:
   in_sub = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(subnet_id,ipint))
   if in_sub == 0:
@@ -113,7 +110,6 @@ def new(aDict):
      db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
      ret['rack'] = aDict.get('arg')
      ret['info'] = "rack"
-    ret['result']  = "OK"
    else:
     ret['info']  = "existing"
     ret.update(db.get_row())
@@ -147,7 +143,7 @@ def discover(aDict):
  start_time = int(time())
  ip_start = aDict.get('start')
  ip_end   = aDict.get('end')
- ret = { 'result':'OK', 'errors':0 }
+ ret = {'errors':0 }
 
  def _tdetect(aip,adict,asema,atypes):
   res = detect({'ip':aip,'types':atypes})
@@ -189,7 +185,6 @@ def discover(aDict):
     db.do(sql.format(GL.ip2int(ip), aDict.get('subnet_id'), entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['lookup']))
   except Exception as err:
    log("device discover: Error [{}]".format(str(err)))
-   ret['result']    = 'NOT_OK'
    ret['info']   = "Error:{}".format(str(err))
    ret['errors'] += 1
 
@@ -262,7 +257,7 @@ def detect(aDict):
 # list(rack:[rack_id,vm], sort:)
 #
 def list(aDict):
- ret = { 'result':'OK' }
+ ret = {}
  if aDict.get('rack'):
   if aDict['rack'] == 'vm':
    tune = "WHERE vm = 1"
@@ -275,7 +270,7 @@ def list(aDict):
  else:
   tune = ""
 
- ret = {'result':'OK','sort':aDict.get('sort','devices.id')}
+ ret = {'sort':aDict.get('sort','devices.id')}
  with DB() as db:
   sql = "SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model, type_id, subnets.gateway FROM devices JOIN subnets ON subnet_id = subnets.id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
   ret['xist'] = db.do(sql)
@@ -285,7 +280,7 @@ def list(aDict):
 #
 #
 def list_type(aDict):
- ret = { 'result':'OK' }
+ ret = {}
  with DB() as db:
   select = "devicetypes.%s ='%s'"%(('name',aDict.get('name')) if aDict.get('name') else ('base',aDict.get('base')))
   ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE %s ORDER BY type_name,hostname"%select)
@@ -295,10 +290,10 @@ def list_type(aDict):
 #
 #
 def clear(aDict):
- ret = { 'result':'OK' }
  with DB() as db:
-  db.do("TRUNCATE TABLE devices")
- return ret
+  res = db.do("TRUNCATE TABLE devices")
+ return { 'operation':res }
+
 
 #
 #
