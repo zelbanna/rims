@@ -63,7 +63,10 @@ def domains(aDict):
  log("powerdns_domains({})".format(aDict))
  ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  ret['xist'] = db.do("SELECT domains.* FROM domains {} ORDER BY name".format('' if not aDict.get('id') else "WHERE id = {}".format(aDict['id'])))
+  if aDict.get('filter') == 'arpa':
+   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name NOT LIKE '%arpa' ORDER BY name")
+  else:
+   ret['xist'] = db.do("SELECT domains.* FROM domains ORDER BY name")
   ret['domains'] = db.get_rows()
  return ret
 
