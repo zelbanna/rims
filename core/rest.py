@@ -73,10 +73,10 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = Non
   if aMethod:
    req.get_method = lambda: aMethod
   if aVerify is None or aVerify is True:
-   sock = urlopen(req, timeout = 10)
+   sock = urlopen(req, timeout = 20)
   else:
    from ssl import _create_unverified_context
-   sock = urlopen(req,context=_create_unverified_context(), timeout = 10)
+   sock = urlopen(req,context=_create_unverified_context(), timeout = 20)
   output = {'info':dict(sock.info()), 'code':sock.code }
   try:    output['data'] = loads(sock.read())
   except: output['data'] = None

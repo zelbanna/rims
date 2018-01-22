@@ -19,6 +19,7 @@ def list(aWeb):
  with DB() as db:
   if id and state:
    db.do("UPDATE devices SET graph_update = '{1}' WHERE id = '{0}'".format(id,1 if state == '0' else 0))
+
   if not target or not arg:
    tune = ""
   elif target:
@@ -79,7 +80,7 @@ def set_proxy(aWeb):
 #
 def discover(aWeb):
  from ..tools.munin import discover as graph_discover
- graph_discover()
+ print graph_discover()
 
 #
 # Generate output for munin, until we have other types
@@ -96,21 +97,3 @@ def save(aWeb):
    output.write("address {}\n".format(row['proxy']))
    output.write("update yes\n\n")
  print "<ARTICLE>Done updating devices' graphing to conf file [{}]</ARTICLE>".format(PC.generic['graph']['file'])
-
-#
-# Weathermap Link
-#
-def wm(aWeb):
- indx = aWeb['index']
- name = aWeb['hostname']
- snmpname = name.replace('-','_')
- dom  = aWeb['domain']
- desc = aWeb.get('desc',"LNK"+indx)
- gstr = "munin-cgi/munin-cgi-graph/{1}/{0}.{1}/snmp_{2}_{1}_if_{3}-day.png".format(name,dom,snmpname,indx)
- print "<ARTICLE><PRE STYLE='font-size:10px;'>"
- print "LINK {}-{}".format(name,desc)
- print "\tINFOURL " +  gstr
- print "\tOVERLIBGRAPH " + gstr
- print "\tBWLABEL bits"
- print "\tTARGET {1}/{0}.{1}-snmp_{2}_{1}_if_{3}-recv-d.rrd {1}/{0}.{1}-snmp_{2}_{1}_if_{3}-send-d.rrd:-:42".format(name,dom,snmpname,indx)
- print "</PRE></ARTICLE>"

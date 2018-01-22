@@ -86,3 +86,11 @@ def db_table(aDict):
   ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
   ret['db'] = db.get_rows() if ret['found'] > 0 else []
  return ret
+
+#
+# Munin conf file
+#
+def graph_discover(aDict):
+ from ..tools.munin import discover as graph_discover
+ return {'discover':graph_discover()}
+

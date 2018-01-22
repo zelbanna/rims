@@ -11,7 +11,7 @@ from ..core.dbase import DB
 from ..core.logger import log
 
 #
-# list(rack:[rack_id,vm], sort:)
+# list(rack:[rack_id,vm], sort:, columns)
 #
 def list(aDict):
  ret = {}
@@ -29,7 +29,7 @@ def list(aDict):
 
  ret = {'sort':aDict.get('sort','devices.id')}
  with DB() as db:
-  sql = "SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, CONCAT(devices.hostname,'.',domains.name) as fqdn, a_dom_id, a_id, ptr_id, model, type_id, subnets.gateway FROM devices JOIN subnets ON subnet_id = subnets.id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
+  sql = "SELECT devices.id, devices.hostname, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, CONCAT(devices.hostname,'.',domains.name) AS  fqdn, a_dom_id, a_id, ptr_id, model, type_id, subnets.gateway FROM devices JOIN subnets ON subnet_id = subnets.id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
   ret['xist'] = db.do(sql)
   if aDict.get('index'):
    ret['data']= db.get_dict(aDict['index'])

@@ -107,4 +107,4 @@ def discover():
  except Exception as err:
   log("Munin: failure in processing Device entries: [{}]".format(str(err)))
  log("Munin: Total time spent: {} seconds".format(int(time()) - start_time))
-
+ return True
