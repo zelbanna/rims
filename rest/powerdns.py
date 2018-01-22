@@ -119,11 +119,7 @@ def domain_delete(aDict):
 
 #################################### Records #######################################
 #
-<<<<<<< HEAD
-# records(type <'A'|'PTR'> ,<domain_id> )
-=======
 # records(type <'A'|'PTR'>,  domain_id )
->>>>>>> e20c7a7c6bd88a15acf47581a4b530be5d0f0fc5
 #
 def records(aDict):
  log("powerdns_get_records({})".format(aDict))
