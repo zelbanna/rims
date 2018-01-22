@@ -8,19 +8,18 @@ __version__ = "17.11.01GA"
 __status__= "Production"
 
 from .. import PackageContainer as PC
-from ..core.dbase import DB
 
 ############################################ Domains ###########################################
 #
 #
 def list(aWeb):
  domains = aWeb.rest_call(PC.dns['url'], "sdcp.rest.%s_domains"%PC.dns['type'])
- local   = aWeb.rest_call(aWeb.resturl,  "sdcp.rest.sdcpdns_domains")
+ local   = aWeb.rest_call(aWeb.resturl,  "sdcp.rest.sdcpdns_domains",{'index':'id'})
  print "<ARTICLE><P>Domains</P>"
  print "<DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_list')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=new',TITLE='Add domain')
- print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=dns_discrepancy',TITLE='Check Backend Discrepancy',SPIN='true')
+ print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=dns_consistency',TITLE='Check Backend Consistency',SPIN='true')
  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_dedup',TITLE='Find Duplicates',SPIN='true')
  print "</DIV>"
  print "<DIV CLASS=table>"
@@ -30,10 +29,10 @@ def list(aWeb):
   print "<DIV CLASS=tr><!-- {} -->".format(dom)
   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=dns_records&type={}&id={}>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],"a" if not 'arpa' in dom['name'] else "ptr",dom['id'],dom['name'],dom['notified_serial'])
   print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=%s'%(dom['id']))
-  if not local.pop(str(dom['id']),None):
+  if not local['domains'].pop(str(dom['id']),None):
    print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_cache_add&id={}&name={}'.format(dom['id'],dom['name']))
   print "</DIV></DIV>"
- for dom in local.values():
+ for dom in local['domains'].values():
   print "<DIV CLASS=tr><!-- {} -->".format(dom)
   print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;".format(dom['id'],dom['name'])
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_cache_delete&id={}'.format(dom['id']))
@@ -75,7 +74,7 @@ def domain_info(aWeb):
 #
 #
 def domain_transfer(aWeb):
- domains = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
+ domains = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']),{"filter":"arpa"})
  print "<ARTICLE>"
  print "<FORM ID=dns_transfer><INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
  print "Transfer all records to <SELECT NAME=transfer>"
@@ -83,8 +82,7 @@ def domain_transfer(aWeb):
   if (str(domain['id']) == aWeb['id']):
    old = domain['name']
   else:
-   if not "arpa" in domain['name']:
-    print "<OPTION VALUE={}>{}</OPTION>".format(domain['id'],domain['name'])
+   print "<OPTION VALUE={}>{}</OPTION>".format(domain['id'],domain['name'])
  print "</SELECT> from previous domain ({})".format(old)
  print aWeb.button('back',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=%s'%(aWeb['id']))
  print aWeb.button('next',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete',FRM='dns_transfer')
@@ -105,20 +103,14 @@ def domain_delete(aWeb):
 #
 #
 def domain_cache_add(aWeb):
- print "<ARTICLE>"
- with DB() as db:
-  xist = db.do("INSERT INTO domains SET id = %s, name = '%s'"%(aWeb['id'],aWeb['name']))
-  print "Inserted (%s:%s): %i"%(aWeb['id'],aWeb['name'],xist)
- print "</ARTICLE>"
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpdns_domain_add",{'id':aWeb['id'],'name':aWeb['name']})
+ print "<ARTICLE>Inserted (%s:%s): %i</ARTICLE>"%(aWeb['id'],aWeb['name'],res['xist'])
 
 #
 #
 def domain_cache_delete(aWeb):
- print "<ARTICLE>"
- with DB() as db:
-  xist = db.do("DELETE FROM domains WHERE id = %s"%(aWeb['id']))
-  print "Delete %s: %i"%(aWeb['id'],xist)
- print "</ARTICLE>"
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpdns_domain_delete",{'id':aWeb['id']})
+ print "<ARTICLE>Delete %s: %i</ARTICLE>"%(aWeb['id'],res['xist'])
 
 ############################################ Records ###########################################
 #
@@ -197,40 +189,22 @@ def record_create(aWeb):
 #
 #
 def load(aWeb):
- dns_domains  = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']))
- added = 0
- print "<ARTICLE>"
- with DB() as db:
-  db.do("SELECT id,name FROM domains")
-  sdcp_domains = db.get_dict('id')
-  for dom in dns_domains['domains']:
-   exist = sdcp_domains.pop(dom['id'],None)
-   if not exist:
-    added += 1
-    print "Added: {}".format(dom)
-   db.do("INSERT INTO domains(id,name) VALUES ({0},'{1}') ON DUPLICATE KEY UPDATE name = '{1}'".format(dom['id'],dom['name']))
-  print "<SPAN>Domains - Inserted:{}, New:{}, Old:{}</SPAN><BR>".format(len(dns_domains['domains']),added,len(sdcp_domains))
-  for dom,entry in sdcp_domains.iteritems():
-   print "Delete {} -> {}<BR>".format(dom,entry)
-   db.do("DELETE FROM domains WHERE id = '{}'".format(dom))
- print "</ARTICLE>"
+ dns = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type'])) 
+ res = aWeb.rest_call(aWeb.resturl,  "sdcp.rest.sdcpdns_load",{'domains':dns['domains']})
+ print "<ARTICLE>%s</ARTICLE>"%(res)
 
 #
 #
-#
-def discrepancy(aWeb):
+def consistency(aWeb):
  print "<ARTICLE><P>DNS Consistency</P><SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Value</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Key</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
+ domains = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpdns_domains",{'index':'name'})['domains']
  for type in ['a','ptr']:
-  dns = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_records".format(PC.dns['type']),{'type':type})
+  records = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_records".format(PC.dns['type']),{'type':type})['records']
   tid = "{}_id".format(type)
-  with DB() as db:
-   db.do("SELECT devices.id, ip, INET_NTOA(ip) as ipasc, {0}_id, CONCAT(devices.hostname,'.',domains.name) as fqdn, a_dom_id FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id ORDER BY ip".format(type))
-   devs = db.get_dict("ipasc" if type == 'a' else "fqdn")
-   db.do("SELECT id,name FROM domains")
-   domains = db.get_dict('name')
-  for rec in dns['records']:
-   dev = devs.pop(rec['content'],None)
+  devices = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_list",{"index":"ipasc" if type == 'a' else "fqdn"})['data']
+  for rec in records:
+   dev = devices.pop(rec['content'],None)
    if not dev or dev[tid] != rec['id']:
     print "<DIV CLASS=tr>"
     print "<!-- %s -->"%str(rec)
@@ -248,7 +222,8 @@ def discrepancy(aWeb):
     if dev:
      print aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='sdcp.cgi?call=dns_record_transfer&id={}&dev={}&type={}'.format(rec['id'],dev['id'],type))
     print "</DIV></DIV>"
-  if len(devs) > 0:
+
+  if len(devices) > 0:
    from ..core import genlib as GL
    for key,value in  devs.iteritems():
     print "<DIV CLASS=tr>"
@@ -258,6 +233,7 @@ def discrepancy(aWeb):
     print "<DIV CLASS=td>&nbsp;" + aWeb.button('add',DIV='span_dns',URL='sdcp.cgi?call=dns_record_create&type={}&id={}&ip={}&fqdn={}&dom_id={}'.format(type,value['id'],value['ipasc'],value['fqdn'],value['a_dom_id'] if type == 'a' else domains[GL.ip2arpa(value['ipasc'])]['id'] )) + "</DIV>"
     print "</DIV>"
  print "</DIV></DIV>"
+
  print "</ARTICLE>"
 
 #

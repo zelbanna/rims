@@ -11,6 +11,33 @@ from ..core.dbase import DB
 from ..core.logger import log
 
 #
+# list(rack:[rack_id,vm], sort:)
+#
+def list(aDict):
+ ret = {}
+ if aDict.get('rack'):
+  if aDict['rack'] == 'vm':
+   tune = "WHERE vm = 1"
+  else:
+   tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(aDict['rack'])
+  if aDict.get('filter'):
+   tune += " AND type_id = {}".format(aDict['filter'])
+ elif aDict.get('filter'):
+  tune = "WHERE type_id = {}".format(aDict['filter'])
+ else:
+  tune = ""
+
+ ret = {'sort':aDict.get('sort','devices.id')}
+ with DB() as db:
+  sql = "SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, CONCAT(devices.hostname,'.',domains.name) as fqdn, a_dom_id, a_id, ptr_id, model, type_id, subnets.gateway FROM devices JOIN subnets ON subnet_id = subnets.id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
+  ret['xist'] = db.do(sql)
+  if aDict.get('index'):
+   ret['data']= db.get_dict(aDict['index'])
+  else:
+   ret['data']= db.get_rows()
+ return ret
+
+#
 #
 def info(aDict):
  """
@@ -252,30 +279,6 @@ def detect(aDict):
    if update:
     update = db.do("UPDATE devices SET snmp = '{}', lookup = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(info['snmp'],info['lookup'],info['model'],info['type_id'],aDict['id'])) > 0
  return { 'result':'OK', 'update':update, 'info':info}
-
-#
-# list(rack:[rack_id,vm], sort:)
-#
-def list(aDict):
- ret = {}
- if aDict.get('rack'):
-  if aDict['rack'] == 'vm':
-   tune = "WHERE vm = 1"
-  else:
-   tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(aDict['rack'])
-  if aDict.get('filter'):
-   tune += " AND type_id = {}".format(aDict['filter'])
- elif aDict.get('filter'):
-  tune = "WHERE type_id = {}".format(aDict['filter'])
- else:
-  tune = ""
-
- ret = {'sort':aDict.get('sort','devices.id')}
- with DB() as db:
-  sql = "SELECT devices.id, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, model, type_id, subnets.gateway FROM devices JOIN subnets ON subnet_id = subnets.id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
-  ret['xist'] = db.do(sql)
-  ret['data']= db.get_rows()
- return ret
 
 #
 #
