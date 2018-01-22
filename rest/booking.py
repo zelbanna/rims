@@ -12,7 +12,7 @@ __status__ = "Production"
 #
 from ..core.dbase import DB
 
-def modify(aDict):
+def update(aDict):
  ret = {'op':aDict['op']}
  if aDict['op'] == 'book':
   sql = "INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')"
