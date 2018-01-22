@@ -63,11 +63,14 @@ def domains(aDict):
  log("powerdns_domains({})".format(aDict))
  ret = {}
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  if aDict.get('filter') == 'arpa':
-   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name NOT LIKE '%arpa' ORDER BY name")
+  if aDict.get('filter'):
+   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict['filter'] == 'reverse' else "NOT"))
+  else:      
+   ret['xist'] = db.do("SELECT domains.* FROM domains")
+  if aDict.get('index'):
+   ret['domains'] = db.get_dict(aDict['index'])
   else:
-   ret['xist'] = db.do("SELECT domains.* FROM domains ORDER BY name")
-  ret['domains'] = db.get_rows()
+   ret['domains'] = db.get_rows()
  return ret
 
 #
@@ -116,17 +119,19 @@ def domain_delete(aDict):
 
 #################################### Records #######################################
 #
-# records(type <'A'|'PTR'> | domain_id )
+# records(type <'A'|'PTR'>,  domain_id )
 #
 def records(aDict):
  log("powerdns_get_records({})".format(aDict))
  ret = {}
- try:    tune = ["domain_id = {}".format(aDict['domain_id'])]
- except: tune = []
+ select = []
+ if aDict.get('domain_id'):
+  select.append("domain_id = %s"%aDict['domain_id'])
  if aDict.get('type'):
-  tune.append("type = '{}'".format(aDict['type'].upper()))
+  select.append("type = '%s'"%aDict['type'].upper())
+ tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
  with DB(PC.dns['dbname'],'localhost',PC.dns['username'],PC.dns['password']) as db:
-  ret['count'] = db.do("SELECT id, domain_id AS dom_id, name, type, content,ttl,change_date FROM records WHERE {} ORDER BY type DESC, name".format(" AND ".join(tune)))
+  ret['count'] = db.do("SELECT id, domain_id AS dom_id, name, type, content,ttl,change_date FROM records %s ORDER BY type DESC, name"%tune)
   ret['records'] = db.get_rows()
  return ret
 
