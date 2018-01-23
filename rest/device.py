@@ -172,7 +172,7 @@ def new(aDict):
 def remove(aDict):
  log("device_remove({})".format(aDict))
  with DB() as db:
-  xist = db.do("SELECT hostname, mac, a_id, ptr_id, devicetypes.* FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = {}".format(aDict.get('id','0')))
+  xist = db.do("SELECT hostname, mac, a_id, ptr_id, devicetypes.* FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = {}".format(aDict.get('id','0')))
   if xist == 0:
    ret = { 'deleted':0, 'a_id':0, 'ptr_id':0 }
   else:
@@ -311,3 +311,54 @@ def clear(aDict):
  with DB() as db:
   res = db.do("TRUNCATE TABLE devices")
  return { 'operation':res }
+
+############################################# Munin ###########################################
+#
+# ip, type_name,fqdn
+#
+def graph_detect(aentry):
+ from .. import PackageContainer as PC
+ from ..core import genlib as GL
+ ret = {'result':'NOT_OK'}
+ if not GL.ping_os(aentry['ip']):
+  return ret
+
+ activeinterfaces = []
+ type = aentry['type_name']
+ fqdn = aentry['fqdn']
+ try:
+  if type in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
+   from ..devices.junos import Junos
+   if not type == 'wlc':
+    with Junos(aentry['ip']) as jdev:
+     activeinterfaces = jdev.get_up_interfaces()
+   with open(PC.generic['graph']['plugins'], 'a') as graphfile:
+    graphfile.write('ln -s /usr/local/sbin/plugins/snmp__{0} /etc/munin/plugins/snmp_{1}_{0}\n'.format(type,fqdn))
+    graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')
+    graphfile.write('ln -s /usr/share/munin/plugins/snmp__users  /etc/munin/plugins/snmp_' + fqdn + '_users\n')
+    for ifd in activeinterfaces:
+     graphfile.write('ln -s /usr/share/munin/plugins/snmp__if_    /etc/munin/plugins/snmp_' + fqdn + '_if_'+ ifd['SNMP'] +'\n')
+  elif type == "esxi":
+   with open(PC.generic['graph']['plugins'], 'a') as graphfile:
+    graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')              
+    graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + fqdn + '_esxi\n')
+ except Exception as err:
+  from ..core.logger import log
+  log("Graph detect - error: [{}]".format(str(err)))
+ else:
+  ret['result'] = 'OK'
+ return ret
+
+#
+#
+def graph_save(aDict):
+ ret = {}
+ with DB() as db:                      
+  ret['xist'] = db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
+  rows = db.get_rows()  
+ with open(PC.generic['graph']['file'],'w') as output:
+  for row in rows: 
+   output.write("[{}.{}]\n".format(row['hostname'],row['domain']))
+   output.write("address {}\n".format(row['proxy']))
+   output.write("update yes\n\n")
+ return ret

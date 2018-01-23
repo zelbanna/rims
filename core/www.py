@@ -40,9 +40,9 @@ class Web(object):
   from logger import log
   log(aMsg,'sdcp')
 
- def rest_call(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aFull = None):
+ def rest_call(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20, aFull = None):
   from rest import call
-  res = call(aURL, aAPI, aArgs, aMethod, aHeader)
+  res = call(aURL, aAPI, aArgs, aMethod, aHeader, True, aTimeout)
   return res['data'] if not aFull else res
 
  # Header Key/Values

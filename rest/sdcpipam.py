@@ -15,13 +15,13 @@ from ..core.dbase import DB
 def list(aDict):
  ret = {}
  with DB() as db:
-  ret['xist']    = db.do("SELECT id, CONCAT(INET_NTOA(subnet),'/',mask) AS subnet, INET_NTOA(gateway) AS gateway, description from subnets ORDER by subnet")
+  ret['xist']    = db.do("SELECT id, CONCAT(INET_NTOA(subnet),'/',mask) AS subasc, INET_NTOA(gateway) AS gateway, description, mask, subnet FROM subnets ORDER by subnet")
   ret['subnets'] = db.get_rows()
  return ret
 
 #
 #
-def subnet(aDict):
+def info(aDict):
  ret = {}
  if aDict['id'] == 'new':
    ret['data'] = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }

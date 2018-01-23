@@ -62,7 +62,7 @@ def server():
 # - aArgs = data/content if available
 #
 #  returns un-json:ed data
-def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = None):
+def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20):
  from json import loads, dumps
  from urllib2 import urlopen, Request, URLError, HTTPError
  try:
@@ -73,10 +73,10 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = Non
   if aMethod:
    req.get_method = lambda: aMethod
   if aVerify is None or aVerify is True:
-   sock = urlopen(req, timeout = 20)
+   sock = urlopen(req, timeout = aTimeout)
   else:
    from ssl import _create_unverified_context
-   sock = urlopen(req,context=_create_unverified_context(), timeout = 20)
+   sock = urlopen(req,context=_create_unverified_context(), timeout = aTimeout)
   output = {'info':dict(sock.info()), 'code':sock.code }
   try:    output['data'] = loads(sock.read())
   except: output['data'] = None

@@ -88,9 +88,27 @@ def db_table(aDict):
  return ret
 
 #
-# Munin conf file
+# Linux oriented mac sync
 #
-def graph_discover(aDict):
- from ..tools.munin import discover as graph_discover
- return {'discover':graph_discover()}
-
+def mac_sync(aDict):
+ from ..core import genlib as GL
+ ret = []
+ try:
+  arps = {}
+  with open('/proc/net/arp') as f:
+   _ = f.readline()
+   for data in f:
+    ( ip, _, _, mac, _, _ ) = data.split()
+    if not mac == '00:00:00:00:00:00':
+     arps[ip] = mac
+  with DB() as db:
+   db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc, mac FROM devices WHERE hostname <> 'unknown' ORDER BY ip")
+   rows = db.get_rows()
+   for row in rows:
+    row['xist'] = arps.get(row['ipasc'],None)
+    if row['xist']:        
+     ret.append(row)
+     db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL.mac2int(row['xist']),row['id']))
+ except:
+  pass
+ return ret

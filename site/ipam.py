@@ -33,7 +33,7 @@ def info(aWeb):
   data['gateway'] = res['gateway']
   data['id']      = res['id']
  else:
-  data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpipam_subnet",{'id':aWeb['id']})['data']
+  data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpipam_info",{'id':aWeb['id']})['data']
  lock = "readonly" if not data['id'] == 'new' else ""
 
  print "<ARTICLE CLASS=info><P>Subnet Info {}</P>".format("(new)" if data['id'] == 'new' else "")

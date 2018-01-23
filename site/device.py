@@ -296,29 +296,13 @@ def op_function(aWeb):
 #
 #
 def mac_sync(aWeb):
- from ..core import genlib as GL
  print "<ARTICLE CLASS=info>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- try:
-  arps = {}
-  with open('/proc/net/arp') as f:
-   _ = f.readline()
-   for data in f:
-    ( ip, _, _, mac, _, _ ) = data.split()
-    if not mac == '00:00:00:00:00:00':
-     arps[ip] = mac
-  with DB() as db:
-   db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc,mac FROM devices WHERE hostname <> 'unknown' ORDER BY ip")
-   rows = db.get_rows()
-   for row in rows:
-    xist = arps.get(row['ipasc'],None)
-    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['id'],row['ipasc'],row['hostname'],xist)
-    if xist:
-     db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL.mac2int(xist),row['id']))
- except:
-  pass
+ macs = aWeb.rest_call(aWeb.resturl,"sdcp.rest.tools_mac_sync")
+ for row in macs:
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['id'],row['ipasc'],row['hostname'],row['xist'])
  print "</DIV></DIV></ARTICLE>"
 
 #
@@ -336,31 +320,22 @@ def new(aWeb):
   ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
 
  if op == 'new':
-  from ..rest.device import new as rest_new
-
-  a_dom_id = aWeb['a_dom_id']
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':a_dom_id, 'subnet_id':subnet_id }
-
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb['a_dom_id'], 'subnet_id':subnet_id }
   if aWeb['vm']:
    args['vm'] = 1
   else:
    args['target'] = aWeb['target']
    args['arg']    = aWeb['arg']
    args['vm'] = 0
-  res  = rest_new(args)
-  print "DB:{}".format(res)
+  res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_new",args)
+  print "Operation:%s"%str(res)
   aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(cookie['user'],args,res))
  elif op == 'find':
-  from ..rest import sdcpipam
-  res  = sdcpipam.find({'id':subnet_id})
-  print res['ip']
+  print aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpipam_find",{'id':subnet_id})['ip']
  else:
-  from ..rest import sdcpipam
-  domain = aWeb['domain']
-  subnets = sdcpipam.list(None)['subnets']
-  with DB() as db:
-   db.do("SELECT id, name FROM domains")
-   domains = db.get_rows()
+  domain  = aWeb['domain']
+  subnets = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpipam_list")['subnets']
+  domains = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpdns_domains",{'filter':'forward'})['domains']
   print "<ARTICLE CLASS=info><P>Add Device</P>"
   print "<!-- {} -->".format(aWeb.get_args2dict_except())
   print "<FORM ID=device_new_form>"
@@ -368,12 +343,11 @@ def new(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE={}></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
   for d in domains:
-   if not "in-addr.arpa" in d.get('name'):
-    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == domain else "",d['name'])
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == domain else "",d['name'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=subnet_id>"
   for s in subnets:
-   print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == subnet_id else "", s['subnet'],s['description'])
+   print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == subnet_id else "", s['subasc'],s['description'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT  NAME=ip ID=device_ip TYPE=TEXT VALUE='{}'></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
@@ -393,15 +367,14 @@ def new(aWeb):
 #
 #
 def remove(aWeb):
- from ..rest.device import remove as rest_remove
  id  = aWeb['id']
- ret = rest_remove({ 'id':id })
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_remove",{ 'id':id })
  print "<ARTICLE>"
- print "Unit {} deleted, DB:{}".format(id,ret['deleted'])
- if not str(ret['deleted']) == '0':
+ print "Unit {} deleted, DB:{}".format(id,res['deleted'])
+ if not str(res['deleted']) == '0':
   from .. import PackageContainer as PC
-  arec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['a_id']})   if ret['a_id']   else 0
-  prec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['ptr_id']}) if ret['ptr_id'] else 0
+  arec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['a_id']})   if res['a_id']   else 0
+  prec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['ptr_id']}) if res['ptr_id'] else 0
   print ",A:%s,PTR:%s"%(arec,prec)
  print "</ARTICLE>"
 
@@ -411,19 +384,13 @@ def remove(aWeb):
 def discover(aWeb):
  op = aWeb['op']
  if op:
-  from ..rest.device import discover
-  clear = aWeb.get('clear',False)
-  a_dom = aWeb['a_dom_id']
-  ipam  = aWeb.get('ipam_subnet',"0_0_32").split('_')
   # id, subnet int, subnet mask
-  res = discover({ 'subnet_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':a_dom, 'clear':clear})
+  ipam  = aWeb.get('ipam_subnet',"0_0_32").split('_')
+  res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_discover",{ 'subnet_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':aWeb['a_dom_id'], 'clear':aWeb.get('clear',False)}, aTimeout = 200)
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
-  with DB() as db:
-   db.do("SELECT id, subnet, INET_NTOA(subnet) as subasc, mask, description FROM subnets ORDER BY subnet");
-   subnets = db.get_rows()
-   db.do("SELECT id, name FROM domains")
-   domains  = db.get_rows()
+  subnets = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpipam_list")['subnets']
+  domains = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpdns_domains",{'filter':'forward'})['domains']
   dom_name = aWeb['domain']
   print "<ARTICLE CLASS=info><P>Device Discovery</P>"
   print "<FORM ID=device_discover_form>"
@@ -431,13 +398,12 @@ def discover(aWeb):
   print "<DIV CLASS=table><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
   for d in domains:
-   if not "in-addr.arpa" in d.get('name'):
-    extra = "" if not dom_name == d.get('name') else "selected=selected"
-    print "<OPTION VALUE={0} {2}>{1}</OPTION>".format(d.get('id'),d.get('name'),extra)
+   extra = "" if not dom_name == d.get('name') else "selected=selected"
+   print "<OPTION VALUE={0} {2}>{1}</OPTION>".format(d.get('id'),d.get('name'),extra)
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_subnet>"
   for s in subnets:
-   print "<OPTION VALUE={0}_{1}_{3}>{2}/{3} ({4})</OPTION>".format(s.get('id'),s.get('subnet'),s.get('subasc'),s.get('mask'),s.get('description'))
+   print "<OPTION VALUE={0}_{1}_{3}>{2} ({4})</OPTION>".format(s['id'],s['subnet'],s['subasc'],s['mask'],s['description'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Clear DB<B>??</B>:</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=clear VALUE=True></DIV></DIV>"
   print "</DIV></DIV>"
@@ -448,24 +414,15 @@ def discover(aWeb):
 # clear db
 #
 def clear_db(aWeb):
- from ..rest.device import clear as rest_clear
- print "<<ARTICLE>%s</ARTICLE>"%(rest_clear(None))
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_clear")
+ print "<<ARTICLE>%s</ARTICLE>"%(res)
 
 #
 # Generate output for munin, until we have other types
 #
 def graph_save(aWeb):
- from ..core.dbase import DB
- from .. import PackageContainer as PC
- with DB() as db:         
-  db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
-  rows = db.get_rows()  
- with open(PC.generic['graph']['file'],'w') as output:
-  for row in rows:
-   output.write("[{}.{}]\n".format(row['hostname'],row['domain']))
-   output.write("address {}\n".format(row['proxy']))
-   output.write("update yes\n\n")
- print "<ARTICLE>Done updating devices' graphing to conf file [{}]</ARTICLE>".format(PC.generic['graph']['file'])
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_graph_save")
+ print "<ARTICLE>Done updating devices' graphing (%s)</ARTICLE>"%(res)
 
 #
 #
@@ -482,7 +439,7 @@ def graph_info(aWeb):
  proxy = GL.int2ip(dev['info']['graph_proxy'])
 
  if aWeb['op'] == 'search':
-  res['op'] = aWeb.rest_call(aWeb.resturl,"sdcp.rest.munin_detect",{'ip':dev['ip'],'type_name':dev['info']['type_name'],'fqdn':dev['fqdn']})
+  res['op'] = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_graph_detect",{'ip':dev['ip'],'type_name':dev['info']['type_name'],'fqdn':dev['fqdn']}, aTimeout = 60)
 
  print "<ARTICLE CLASS='info'><P>Graph for %s</DIV>"%(dev['fqdn'])
  print "<FORM ID=device_graph_form>"
