@@ -207,17 +207,14 @@ def discover(aDict):
  ip_end   = aDict.get('end')
  ret = {'errors':0 }
 
- def _tdetect(aip,adict,asema,atypes):
-  res = detect({'ip':aip,'types':atypes})
+ def _tdetect(aip,adict,asema):
+  res = detect({'ip':aip})
   if res['result'] == 'OK':
    adict[aip] = res['info']
   asema.release()
   return True
 
  with DB() as db:
-
-  db.do("SELECT id,name FROM devicetypes")
-  devtypes = db.get_dict('name')
 
   db_old, db_new = {}, {}
   if aDict.get('clear',False):
