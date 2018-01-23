@@ -7,13 +7,28 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
+def manage(aWeb):
+ id = aWeb['id']
+ data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_info",{'id':id})
+ print "<NAV><UL>"
+ print "<LI CLASS='navinfo'><A>%s</A></LI>"%(data['info']['hostname'])
+ print "<LI><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=avocent_info&id=%s&ip=%s'>Info</A></LI>"%(id,data['ip'])
+ print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=avocent_inventory&id=%s&ip=%s'>Inventory</A></LI>"%(id,data['ip'])
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
+ print "</UL></NAV>"
+ print "<SECTION CLASS=content ID=div_content>"
+ print "<SECTION CLASS=content-left ID=div_content_left>"
+ print "</SECTION>" 
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+ print "</SECTION>"
+
 #
 #
-def inventory(aWeb):
+def inventory(aWeb,aIP = None):
  from ..devices.avocent import Device
  counter = 0
- pdu = aWeb['ip']
- avocent = Device(pdu)
+ ip = aWeb['ip'] if not aIP else aIP
+ avocent = Device(ip)
  avocent.load_snmp()
  print "<ARTICLE>"
  print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='sdcp.cgi?%s'%aWeb.get_args())
@@ -22,9 +37,9 @@ def inventory(aWeb):
  for key in avocent.get_keys(aSortKey = lambda x: int(x.split('.')[0])*100+int(x.split('.')[1])):
   counter += 1
   value = avocent.get_entry(key)
-  print "<DIV CLASS=tr><DIV CLASS=td TITLE='Open up a browser tab for {1}'><A TARGET='_blank' HREF='https://{0}:3502'>{1}</A></DIV><DIV CLASS=td>{2}</DIV>".format(avocent._ip,pdu,value['slotname']+'.'+value['unit'])
-  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=pdu_unit_info&pdu={0}&slot={1}&unit={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td ID=div_pdu_{5}>&nbsp;".format(pdu,value['slot'],value['unit'],value['name'], value['slotname'],counter)
-  url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(pdu,value['slot'],value['unit'],counter)
+  print "<DIV CLASS=tr><DIV CLASS=td TITLE='Open up a browser tab for {0}'><A TARGET='_blank' HREF='https://{0}:3502'>{0}</A></DIV><DIV CLASS=td>{1}</DIV>".format(ip,value['slotname']+'.'+value['unit'])
+  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=pdu_unit_info&pdu={0}&slot={1}&unit={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td ID=div_pdu_{5}>&nbsp;".format(ip,value['slot'],value['unit'],value['name'], value['slotname'],counter)
+  url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(ip,value['slot'],value['unit'],counter)
   div = 'div_pdu_%i'%counter
   if value['state'] == "off":
    print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))

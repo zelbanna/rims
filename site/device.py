@@ -8,8 +8,6 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 __icon__ = 'images/icon-network.png'
 
-from ..core.dbase import DB
-
 ########################################## Device Operations ##########################################
 
 def main(aWeb):
@@ -370,7 +368,7 @@ def remove(aWeb):
  id  = aWeb['id']
  res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_remove",{ 'id':id })
  print "<ARTICLE>"
- print "Unit {} deleted, DB:{}".format(id,res['deleted'])
+ print "Unit {} deleted, op:{}".format(id,res['deleted'])
  if not str(res['deleted']) == '0':
   from .. import PackageContainer as PC
   arec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['a_id']})   if res['a_id']   else 0

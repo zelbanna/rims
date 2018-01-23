@@ -23,6 +23,10 @@ class Device(GenericDevice, ConfObject):
  _setstatemap = { 'off':'3', 'on':'2', 'reboot':'4' }
 
  @classmethod
+ def get_widgets(cls):
+  return ['manage']
+
+ @classmethod
  def get_outlet_state(cls,state):
   return cls._getstatemap.get(state,'unknown')
 
