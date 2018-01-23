@@ -319,6 +319,28 @@ def clear(aDict):
   res = db.do("TRUNCATE TABLE devices")
  return { 'operation':res }
 
+#
+#
+def update_pdu(aDict):
+ hostname  = aDict['hostname']
+ ret = {}
+ with DB() as db:
+  for p in ['0','1']:
+   ret[p] = None
+   id = aDict.get("pem{}_pdu_id".format(p))
+   if id:
+    slot = int(aDict.get("pem{}_pdu_slot".format(p),0))
+    unit = int(aDict.get("pem{}_pdu_unit".format(p),0))
+    if not (slot == 0 or unit == 0):
+     db.do("SELECT hostname, INET_NTOA(ip), devicetypes.name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '{}'".format(id))        
+     data = db.get_row()
+     if data.name == 'avocent':
+      from ..devices.avocent import Device
+      avocent = Device(aDict['ip'])
+      ret["pem{}".format(p)] = avocent.set_name(int(aDict['slot']),int(aDict['unit']),aDict['text'])
+ return ret
+
+
 ############################################# Munin ###########################################
 #
 # ip, type_name,fqdn

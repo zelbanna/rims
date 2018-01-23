@@ -121,8 +121,7 @@ def info(aWeb):
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
   return
  if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
-  opres['pdu'] = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcppdu_update_device",dev['rack'])
- 
+  opres['pdu'] = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_update_pdu",dev['rack'])
 
  ########################## Data Tables ######################
 
