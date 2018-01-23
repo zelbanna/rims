@@ -11,7 +11,7 @@ __status__= "Production"
 #
 # Update PDU slot info (name basically)
 #
-def unit_update(aDict):
+def update(aDict):
  if aDict.get('name'):
   from ..devices.avocent import Device
   name = aDict.get('name')
@@ -27,7 +27,7 @@ def unit_update(aDict):
 #
 # Update PDU slot info for a device
 #
-def update_device_pdus(aDict):
+def update_device(aDict):
  from ..core.dbase import DB
  hostname  = aDict.get('hostname')
  ret = {}
@@ -40,7 +40,7 @@ def update_device_pdus(aDict):
     unit = int(aDict.get("pem{}_pdu_unit".format(p),0))
     if not (slot == 0 or unit == 0):
      from ..devices.avocent import Device
-     db.do("SELECT INET_NTOA(ip) as ip FROM pdus WHERE id = '{}'".format(id))
+     db.do("SELECT INET_NTOA(ip) as ip FROM devices WHERE id = '{}'".format(id))
      avocent = Device(db.get_val('ip'))
      ret["pem{}".format(p)] = avocent.set_name(slot,unit,hostname+"-P{}".format(p))
  return ret

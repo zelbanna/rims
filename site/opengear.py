@@ -10,14 +10,21 @@ __status__= "Production"
 
 def manage(aWeb):
  id = aWeb['id']
- data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_info",{'id':id})
+ if aWeb['ip']:
+  ip = aWeb['ip']
+  hostname = aWeb['hostname']
+ else:
+  data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_info",{'id':id})
+  ip = data['ip']
+  hostname = data['hostname']
+
  print "<NAV><UL>"
- print "<LI CLASS='navinfo'><A>%s</A></LI>"%(data['info']['hostname'])
+ print "<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname)
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
- inventory(aWeb,data['ip'])
+ inventory(aWeb,ip)
  print "</SECTION>" 
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
  print "</SECTION>"

@@ -58,6 +58,16 @@ def list_mac(aDict):
   row['mac'] = GL.int2mac(row['mac'])
  return rows
 
+
+#
+#
+def ip(aDict):
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT INET_NTOA(ip) AS ipasc FROM devices WHERE id = %s"%aDict['id'])
+  ret['ip']  = db.get_val('ipasc')
+ return ret
+
 #
 #
 def info(aDict):
