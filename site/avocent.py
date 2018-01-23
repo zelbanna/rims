@@ -75,27 +75,9 @@ def op(aWeb):
 
 #
 #
-#
 def info(aWeb):
- from ..devices.avocent import Device
- from ..core.dbase import DB
- with DB() as db:
-  if aWeb['op'] == 'lookup':
-   pdu   = Device(aWeb['ip'])
-   slotl = pdu.get_slot_names()
-   slotn = len(slotl)
-   if slotn == 1:
-    db.do("UPDATE pduinfo SET slots = 1, 0_slot_id = '{}', 0_slot_name = '{}' WHERE device_id = {}".format(slotl[0][0],slotl[0][1],aWeb['id']))
-   elif slotn == 2:
-    db.do("UPDATE pduinfo SET slots = 2, 0_slot_id = '{}', 0_slot_name = '{}', 1_slot_id = '{}', 1_slot_name = '{}' WHERE device_id = {}".format(slotl[0][0],slotl[0][1],slotl[1][0],slotl[1][1],aWeb['id']))
-
-  xist = db.do("SELECT * FROM pduinfo WHERE device_id = '%s'"%aWeb['id'])
-  if xist == 1:
-   pdudata = db.get_row()
-  else:
-   db.do("INSERT INTO pduinfo SET device_id = %s, slots = 1"%(aWeb['id']))
-   pdudata = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':1, '1_slot_name':'' }
-
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.avocent_info",{'op':aWeb['op'],'id':aWeb['id']})
+ pdudata = res['data']
  print "<ARTICLE CLASS=info><P>PDU Device Info</P>"
  print "<FORM ID=pdu_info_form>"
  print "<DIV CLASS=table><DIV CLASS=tbody>"
@@ -117,9 +99,8 @@ def info(aWeb):
 def unit_info(aWeb):
  from ..devices.avocent import Device
  if aWeb['op'] == 'update':
-  avocent = Device(aWeb['ip'])
-  avocent.set_name(aWeb['slot'],aWeb['unit'],aWeb['text'])
-  print "Updated info: {} for {} slot {}".format(aWeb['name'],aWeb['ip'],aWeb['slot'])
+  res = aWeb.rest_call(aWeb.rest_url,"sdcp.rest.avocent_update",aWeb.get_args2dict())
+  print "Updated info: {} ({})".format(aWeb['name'],res)
   return
  print "<ARTICLE CLASS=info><P>PDU Unit Info</P>"
  print "<FORM ID=pdu_form>"

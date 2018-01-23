@@ -169,4 +169,3 @@ def scene_state(aWeb):
  res  = ctrl.call(3480,"id=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(op,aWeb['id']))
  print "<!-- %s -->"%str(res)
  print aWeb.button('start' if aWeb['active'] == "1" else 'shutdown',URL='sdcp.cgi?call=vera_scene_state&state=%s&id=%s'%(aWeb['active'],aWeb['id']),DIV='div_scene_%s'%aWeb['id'])
-

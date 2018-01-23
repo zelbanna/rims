@@ -322,7 +322,6 @@ def clear(aDict):
 #
 #
 def update_pdu(aDict):
- hostname  = aDict['hostname']
  ret = {}
  with DB() as db:
   for p in ['0','1']:
@@ -334,12 +333,12 @@ def update_pdu(aDict):
     if not (slot == 0 or unit == 0):
      db.do("SELECT hostname, INET_NTOA(ip), devicetypes.name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '{}'".format(id))        
      data = db.get_row()
+     aDict['text'] = aDict['hostname']+"-P{}".format(p)
+     aDict['ip'] = data['ip']
      if data.name == 'avocent':
-      from ..devices.avocent import Device
-      avocent = Device(aDict['ip'])
-      ret["pem{}".format(p)] = avocent.set_name(int(aDict['slot']),int(aDict['unit']),aDict['text'])
+      from avocent import pdu_update
+      ret["pem{}".format(p)] = pdu_update(aDict)
  return ret
-
 
 ############################################# Munin ###########################################
 #
