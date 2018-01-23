@@ -11,7 +11,6 @@ __icon__ = 'images/icon-network.png'
 ########################################## Device Operations ##########################################
 
 def main(aWeb):
- from ..rest.racks import info as rackinfo
  from ..core.extras import get_include
  target = aWeb['target']
  arg    = aWeb['arg']
@@ -22,7 +21,7 @@ def main(aWeb):
  if target == 'vm':
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  else:
-  data = rackinfo({'id':arg} if target == 'rack_id' else {})
+  data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.racks_info",{'id':arg} if target == 'rack_id' else {})
   for type in ['pdu','console']:
    if len(data[type]) > 0:
     print "<LI CLASS='dropdown'><A>%s</A><DIV CLASS='dropdown-content'>"%(type.title())
@@ -49,7 +48,10 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- from ..rest.device import list as rest_list
+ args = {'sort':aWeb.get('sort','ip')}
+ if aWeb['target']:
+  args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_list",args)
  print "<ARTICLE><P>Devices</P><DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?{}'.format(aWeb.get_args()))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=device_new&{}'.format(aWeb.get_args()))
@@ -58,10 +60,6 @@ def list(aWeb):
  print "</DIV>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
- args = {'sort':aWeb.get('sort','ip')}
- if aWeb['target']:
-  args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
- res = rest_list(args)
  print "<DIV CLASS=tbody>"
  for row in res['data']:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=device_info&id=%i'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s.%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['ipasc'], row['hostname'],row['domain'], row['model'])
@@ -262,14 +260,13 @@ def info(aWeb):
 #
 
 def conf_gen(aWeb):
- from importlib import import_module
- from ..rest.device import info as rest_info
  type = aWeb['type_name']
- res  = rest_info({'id':aWeb.get('id','0')})
+ res  = aWeb.rest_call(aWeb.rest_url,"sdcp.rest.device_info",{'id':aWeb.get('id','0')})
  data = res['info']
  subnet,void,mask = data['subnet'].partition('/')
  print "<ARTICLE>"
  try:
+  from importlib import import_module
   module = import_module("sdcp.devices.{}".format(type))
   dev = getattr(module,'Device',lambda x: None)(res['ip'])
   dev.print_conf({'name':data['hostname'], 'domain':data['domain'], 'gateway':data['gateway'], 'subnet':subnet, 'mask':mask})
