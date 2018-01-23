@@ -39,6 +39,7 @@ def widget_rows(asources):
 #
 # Device must answer to ping(!) for system to continue
 #
+# ip, type_name,fqdn
 def _detect(aentry, alock, asema):
  from .. import PackageContainer as PC
  from ..core import genlib as GL
@@ -72,7 +73,7 @@ def _detect(aentry, alock, asema):
  except Exception as err:
   from ..core.logger import log
   log("Graph detect - error: [{}]".format(str(err)))
-  
+
  asema.release()
  return True
 

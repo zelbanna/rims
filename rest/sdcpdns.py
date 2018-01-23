@@ -54,27 +54,8 @@ def domain_delete(aDict):
 
 #
 #
-def domains_add(aDict):
+def domain_add(aDict):
  ret = {}
  with DB() as db:
   ret['xist'] = db.do("INSERT INTO domains SET id = %s, name = '%s'"%(aDict['id'],aDict['name']))
  return ret
-
-#
-#
-def domains_delete(aDict):
- ret = {}
- with DB() as db:
-  ret['xist'] = db.do("DELETE FROM domains WHERE id = %s"%(aDict['id']))
- return ret
-
-#
-#
-def consistency(aDict):
- #
- # Pick cache
- # 
- ret = {'diff':[]}
- with DB() as db:
-  pass
- return ret 

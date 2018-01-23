@@ -7,23 +7,50 @@ __author__= "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__= "Production"
 
-############################################## PDUs ###################################################
 #
-# PDUs
 #
-def list(aWeb):
- from ..core.dbase import DB
- print "<ARTICLE><P>PDUs</P>"
- print aWeb.button('reload',DIV='div_content_left',  URL='sdcp.cgi?call=pdu_list')
- print aWeb.button('add',   DIV='div_content_right', URL='sdcp.cgi?call=pdu_info&id=new')
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>IP</DIV></DIV>"
+def inventory(aWeb):
+ from ..devices.avocent import Device
+ counter = 0
+ pdu = aWeb['ip']
+ avocent = Device(pdu)
+ avocent.load_snmp()
+ print "<ARTICLE>"
+ print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='sdcp.cgi?%s'%aWeb.get_args())
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th STYLE='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- with DB() as db:
-  res  = db.do("SELECT id, name, INET_NTOA(ip) as ip from pdus ORDER by name")
-  data = db.get_rows()
-  for unit in data:
-   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=pdu_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['ip'])
+ for key in avocent.get_keys(aSortKey = lambda x: int(x.split('.')[0])*100+int(x.split('.')[1])):
+  counter += 1
+  value = avocent.get_entry(key)
+  print "<DIV CLASS=tr><DIV CLASS=td TITLE='Open up a browser tab for {1}'><A TARGET='_blank' HREF='https://{0}:3502'>{1}</A></DIV><DIV CLASS=td>{2}</DIV>".format(avocent._ip,pdu,value['slotname']+'.'+value['unit'])
+  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=pdu_unit_info&pdu={0}&slot={1}&unit={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td ID=div_pdu_{5}>&nbsp;".format(pdu,value['slot'],value['unit'],value['name'], value['slotname'],counter)
+  url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(pdu,value['slot'],value['unit'],counter)
+  div = 'div_pdu_%i'%counter
+  if value['state'] == "off":
+   print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
+  else:
+   print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
+   print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
+  print "</DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
+
+#
+#
+def op(aWeb):
+ from ..devices.avocent import Device
+ avocent = Device(aWeb['ip'])
+ avocent.set_state(aWeb['slot'],aWeb['unit'],aWeb['nstate'])
+ # Avocent is not fast enough to execute something immediately after op, halt output then :-)
+ from time import sleep
+ sleep(10 if aWeb['nstate'] == 'reboot' else 4)
+ url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%s&nstate={}'%(aWeb['ip'],aWeb['slot'],aWeb['unit'],aWeb['id'])
+ div = 'div_pdu_%s'%aWeb['id']
+ print "&nbsp;"
+ if avocent.get_state(aWeb['slot'],aWeb['unit'])['state'] == "off":
+  print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
+ else:
+  print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
+  print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
 
 #
 #
@@ -86,16 +113,6 @@ def info(aWeb):
  print "</FORM>"
  print "</ARTICLE>"
 
-#
-#
-def remove(aWeb):
- from ..core.dbase import DB
- with DB() as db:
-  db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(aWeb['id']))
-  db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(aWeb['id']))
-  db.do("DELETE FROM pdus WHERE id = '{0}'".format(aWeb['id']))
-  print "<B>PDU {0} deleted<B>".format(aWeb['id'])
-
 ####################################### Device Operations #########################################
 #
 #
@@ -120,48 +137,3 @@ def unit_info(aWeb):
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</FORM>"
  print "</ARTICLE>"
-
-#
-#
-def inventory(aWeb):
- print "<ARTICLE>"
- print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='sdcp.cgi?%s'%aWeb.get_args())
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th STYLE='width:63px;'>State</DIV></DIV>"
- print "<DIV CLASS=tbody>"
- from ..devices.avocent import Device
- counter = 0
- pdu = aWeb['ip']
- avocent = Device(pdu)
- avocent.load_snmp()
- for key in avocent.get_keys(aSortKey = lambda x: int(x.split('.')[0])*100+int(x.split('.')[1])):
-  counter += 1
-  value = avocent.get_entry(key)
-  print "<DIV CLASS=tr><DIV CLASS=td TITLE='Open up a browser tab for {1}'><A TARGET='_blank' HREF='https://{0}:3502'>{1}</A></DIV><DIV CLASS=td>{2}</DIV>".format(avocent._ip,pdu,value['slotname']+'.'+value['unit'])
-  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=pdu_unit_info&pdu={0}&slot={1}&unit={2}&name={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td ID=div_pdu_{5}>&nbsp;".format(pdu,value['slot'],value['unit'],value['name'], value['slotname'],counter)
-  url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(pdu,value['slot'],value['unit'],counter)
-  div = 'div_pdu_%i'%counter
-  if value['state'] == "off":
-   print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
-  else:
-   print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
-   print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
-  print "</DIV></DIV>"
- print "</DIV></DIV></ARTICLE>"
-
-#
-#
-def op(aWeb):
- from ..devices.avocent import Device
- avocent = Device(aWeb['ip'])
- avocent.set_state(aWeb['slot'],aWeb['unit'],aWeb['nstate'])
- # Avocent is not fast enough to execute something immediately after op, halt output then :-)
- from time import sleep
- sleep(10 if aWeb['nstate'] == 'reboot' else 4)
- url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%s&nstate={}'%(aWeb['ip'],aWeb['slot'],aWeb['unit'],aWeb['id'])
- div = 'div_pdu_%s'%aWeb['id']
- print "&nbsp;"
- if avocent.get_state(aWeb['slot'],aWeb['unit'])['state'] == "off":
-  print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
- else:
-  print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
-  print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))

@@ -28,23 +28,18 @@ def info(aDict):
    res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = %s"%aDict['id'])
    select = db.get_row()
    ret['name'] = select.pop('name',"Noname")
-   if select.get('console'):
-    value = select.pop('console',None)
-    db.do("SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%value)
-    ret['console'].append(db.get_row())
-
    if select.get('pdu_1') == select.get('pdu_2'):
     select.pop('pdu_2',None)
-   for pdu_no,value in select.iteritems():
-    if value:
-     db.do("SELECT id, name AS hostname, INET_NTOA(ip) AS ipasc, 'pdu' AS type FROM pdus WHERE id = %i"%value)
-     ret['pdu'].append(db.get_row())
+   for type in ['console','pdu_1','pdu_2']:
+    if select.get(type):
+     value = select.pop(type,None)
+     db.do("SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%value)
+     ret[type].append(db.get_row())
   else:
-   db.do("SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'")
-   ret['console'] = db.get_rows()
-   res = db.do("SELECT id, name AS hostname, INET_NTOA(ip) AS ipasc, 'pdu' AS type FROM pdus")
-   ret['pdu'] = db.get_rows()
-
+   sql = "SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = '%s'"
+   for type in ['console','pdu']:
+    db.do(sql%(type))
+    ret[type] = db.get_rows()
  return ret
 
 #
@@ -69,11 +64,9 @@ def infra(aDict):
   ret['consolexist'] = db.do("SELECT devices.id, devices.hostname AS name, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'") 
   ret['consoles']    = db.get_rows()
   ret['consoles'].append({ 'id':'NULL', 'name':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1' })
-  ret['pduxist'] = db.do("SELECT pdus.*, INET_NTOA(ip) as ipasc FROM pdus")
+  ret['pduxist'] = db.do("SELECT devices.id, devices.hostname AS name, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'pdu'") 
   ret['pdus']    = db.get_rows()
   ret['pdus'].append({ 'id':'NULL', 'name':'No PDU', 'ip':'127.0.0.1', 'slots':0, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':'' })
-  ret['dnscachexist'] = db.do("SELECT domains.* FROM domains")
-  ret['dnscache']     = db.get_rows()
  return ret
 
 #

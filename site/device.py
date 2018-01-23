@@ -20,30 +20,25 @@ def main(aWeb):
 
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_list{0}'>Devices</A></LI>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
- print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=graph_list{0}'>Graphing</A></LI>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A></LI>"
  if target == 'vm':
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  else:
   data = rackinfo({'id':arg} if target == 'rack_id' else {})
-
-  if len(data['console']) > 0:
-   print "<LI CLASS='dropdown'><A>Console</A><DIV CLASS='dropdown-content'>"
-   for row in data['console']:
-    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=%s_inventory&ip=%s'>%s</A>"%(row['type'],row['ipasc'],row['hostname'])
-   print "</DIV></LI>"
-  if len(data['pdu']) > 0:
-   print "<LI CLASS='dropdown'><A>PDU</A><DIV CLASS='dropdown-content'>"
-   for row in data['pdu']:
-    print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=pdu_inventory&ip=%s'>%s</A>"%(row['ipasc'],row['hostname'])
-   print "</DIV></LI>"
+  for type in ['pdu','console']:
+   if len(data[type]) > 0:
+    print "<LI CLASS='dropdown'><A>%s</A><DIV CLASS='dropdown-content'>"%(type.title())
+    for row in data[type]:
+     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?call=%s_inventory&ip=%s'>%s</A>"%(row['type'],row['ipasc'],row['hostname'])
+    print "</DIV></LI>"
   if data.get('name'):
    print "<LI><A CLASS='z-op' DIV=div_content_right  URL='sdcp.cgi?call=rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,data['name'])
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
   print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=ipam_list'>IPAM</A></LI>"
   print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=dns_list'>DNS</A></LI>"
   print "<LI CLASS='right dropdown'><A>Rackinfo</A><DIV CLASS='dropdown-content'>"
-  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=pdu_list'>PDUs</A>"
+  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=rack_list_infra&type=pdu'>PDUs</A>"
+  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=rack_list_infra&type=console'>Consoles</A>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=rack_list'>Racks</A>"
   print "</DIV></LI>"
  print "</UL></NAV>"
@@ -60,7 +55,8 @@ def list(aWeb):
  print "<ARTICLE><P>Devices</P><DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?{}'.format(aWeb.get_args()))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=device_new&{}'.format(aWeb.get_args()))
- print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_discover',MSG='Run device discovery?')
+ print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_discover')
+ print aWeb.button('save'  ,DIV='div_content_right', URL='sdcp.cgi?call=device_graph_save')
  print "</DIV>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=ip'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?{0}&sort=hostname'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args_except(['sort']))
@@ -82,49 +78,54 @@ def info(aWeb):
 
  cookie = aWeb.cookie_unjar('sdcp')
 
- from ..rest.device import info as rest_info, update as rest_update, detect as rest_detect
- from ..rest.racks  import infra as rest_infra
+ dns   = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpdns_domains",{'filter':'forward','index':'id'})['domains']
+ infra = aWeb.rest_call(aWeb.resturl,"sdcp.rest.racks_infra")
+
  op    = aWeb.get('op',"")
  opres = {}
  ###################### Update ###################
  if op == 'lookup':
-  opres['lookup'] = rest_detect({'ip':aWeb['ip'],'update':True,'id':aWeb['id']})
+  opres['lookup'] = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_detect",{'ip':aWeb['ip'],'update':True,'id':aWeb['id']})
 
  elif op == 'update':
   from .. import PackageContainer as PC
   d = aWeb.get_args2dict_except(['call','op','ip'])
   if d['devices_hostname'] != 'unknown':
+   from ..core import genlib as GL
    if not d.get('devices_vm'):
     d['devices_vm'] = 0
    if not d.get('devices_comment'):
     d['devices_comment'] = 'NULL'
-   from ..core import genlib as GL
-   with DB() as db:
-    db.do("SELECT hostname, INET_NTOA(ip) as ip, a_id, ptr_id FROM devices WHERE devices.id = {}".format(aWeb['id']))
-    ddi  = db.get_row()
-    xist = db.do("SELECT id FROM domains WHERE name = '{}'".format(GL.ip2arpa(ddi['ip'])))
-    ddi['ptr_dom_id'] = db.get_val('id') if xist > 0 else None
-    ddi['a_dom_id']   = d['devices_a_dom_id']
-    xist = db.do("SELECT name FROM domains WHERE id = '{}'".format(ddi['a_dom_id']))
-    fqdn = ".".join([d['devices_hostname'],db.get_val('name') if xist > 0 else 'local'])
-   for type,name,content in [('a',fqdn,ddi['ip']),('ptr',GL.ip2ptr(ddi['ip']),fqdn)]:
-    if ddi['%s_dom_id'%(type)]:
-     opres[type] = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':type.upper(), 'id':ddi['%s_id'%(type)], 'domain_id':ddi['%s_dom_id'%(type)], 'name':name, 'content':content })
-     if not str(opres[type]['id']) == str(ddi['%s_id'%(type)]):
-      d['devices_%s_id'%(type)] = opres[type]['id']
-   opres['update'] = rest_update(d)
+
+   fqdn   = ".".join([d['devices_hostname'],  dns[d['devices_a_dom_id']]['name']])
+   dom_id = aWeb.rest_call(aWeb.resturl,"sdcp.rest.sdcpdns_domains",{'filter':'reverse','index':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
+
+   opres['a'] = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
+   if dom_id:
+    opres['ptr'] = aWeb.rest_call(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
+   else:
+    opres['ptr'] = {'id':0,'info':'nonexisting_ptr_domain'}
+
+   for type in ['a','ptr']:
+    if not str(opres[type]['id']) == str(d['devices_%s_id'%type]):
+     d['devices_%s_id'%type] = opres[type]['id']
+    else:
+     d.pop('devices_%s_id'%type,None)
+   
+   opres['update'] = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_update",d)
 
  elif "book" in op:
   aWeb.rest_call(aWeb.resturl,"sdcp.rest.booking_update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':op})
 
- dev   = rest_info({'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
+ dev = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_info",{'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
+
  if dev['exist'] == 0:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
   return
  if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
   from ..rest.pdu import update_device_pdus
   opres['pdu'] = update_device_pdus(dev['rack'])
- infra = rest_infra({})
+ 
 
  ########################## Data Tables ######################
 
@@ -139,12 +140,11 @@ def info(aWeb):
  print "<DIV STYLE='margin:3px; float:left; height:172px;'>"
  print "<DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['info']['hostname'])
- print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['ip'])
+ print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE={} READONLY></DIV></DIV>".format(dev['ip'])
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=devices_a_dom_id>"
- for dom in infra['dnscache']:
-  if not "arpa" in dom['name']:
-   extra = " selected" if dev['info']['a_dom_id'] == dom['id'] else ""
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(dom['id'],extra,dom['name'])
+ for dom in dns.values():
+  extra = " selected" if dev['info']['a_dom_id'] == dom['id'] else ""
+  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(dom['id'],extra,dom['name'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['subnet'])
  print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['snmp'])
@@ -171,13 +171,14 @@ def info(aWeb):
   print "</SELECT></DIV>"
  print "</DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td STYLE='max-width:150px; overflow-x:hidden;'>{}</DIV></DIV>".format(dev['info']['lookup'])
- print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['a_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['ptr_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_a_id VALUE='{}' readonly></DIV></DIV>".format(dev['info']['a_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ptr_id VALUE='{}' readonly></DIV></DIV>".format(dev['info']['ptr_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])
+ print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='update graph state' DIV=div_content_right URL=sdcp.cgi?call=device_graph_info&id=%s>Graphing</A></DIV>"%(dev['id'])
  if dev['info']['graph_update'] == 1:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op TITLE='View graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>Graphs</A>:</DIV><DIV CLASS=td>yes</DIV></DIV>".format(dev['info']['domain'],dev['info']['hostname']+"."+ dev['info']['domain'])
+  print "<DIV CLASS=td><A CLASS=z-op TITLE='View graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>yes</A></DIV></DIV>".format(dev['info']['domain'],dev['fqdn'])
  else:
-  print "<DIV CLASS=tr><DIV CLASS=td>Graphs:</DIV><DIV CLASS=td>no</DIV></DIV>"
+  print "<DIV CLASS=td>no</DIV></DIV>"
  print ''.join(["<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV>","<DIV CLASS='td {0}'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={1}&op=view>{2}</A> {3}</DIV>".format("red" if dev['booking']['valid'] == 1 else "orange",dev['booking']['user_id'],dev['booking']['alias'],'' if dev['booking']['valid'] else "(obsolete)") if int(dev['booked']) > 0 else "<DIV CLASS='td green'>None</DIV>","</DIV>"])
  print "</DIV></DIV></DIV>"
 
@@ -449,3 +450,49 @@ def discover(aWeb):
 def clear_db(aWeb):
  from ..rest.device import clear as rest_clear
  print "<<ARTICLE>%s</ARTICLE>"%(rest_clear(None))
+
+#
+# Generate output for munin, until we have other types
+#
+def graph_save(aWeb):
+ from ..core.dbase import DB
+ from .. import PackageContainer as PC
+ with DB() as db:         
+  db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
+  rows = db.get_rows()  
+ with open(PC.generic['graph']['file'],'w') as output:
+  for row in rows:
+   output.write("[{}.{}]\n".format(row['hostname'],row['domain']))
+   output.write("address {}\n".format(row['proxy']))
+   output.write("update yes\n\n")
+ print "<ARTICLE>Done updating devices' graphing to conf file [{}]</ARTICLE>".format(PC.generic['graph']['file'])
+
+#
+#
+def graph_info(aWeb):
+ from ..core import genlib as GL
+ id  = aWeb['id']
+ res = {}
+ if aWeb['op'] == 'update':
+  proxy = GL.ip2int(aWeb['graph_proxy'])
+  update= aWeb.get('graph_update','0')
+  res['op'] = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_update",{'id':id,'devices_graph_proxy':proxy,'devices_graph_update':update})['data']
+
+ dev = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_info",{'id':id})
+ proxy = GL.int2ip(dev['info']['graph_proxy'])
+
+ if aWeb['op'] == 'search':
+  res['op'] = aWeb.rest_call(aWeb.resturl,"sdcp.rest.munin_detect",{'ip':dev['ip'],'type_name':dev['info']['type_name'],'fqdn':dev['fqdn']})
+
+ print "<ARTICLE CLASS='info'><P>Graph for %s</DIV>"%(dev['fqdn'])
+ print "<FORM ID=device_graph_form>"
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(id)
+ print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=graph_proxy STYLE='width:200px;' VALUE='%s'></DIV></DIV>"%(proxy)
+ print "<DIV CLASS=tr><DIV CLASS=td>Enable:</DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX NAME=graph_update VALUE=1 %s></DIV></DIV>"%("checked=checked" if dev['info']['graph_update'] == 1 else "")
+ print "</DIV></DIV>"
+ print "<SPAN>%s</SPAN>"%(res.get('op',""))
+ print "</FORM><BR>"
+ print aWeb.button('save',  DIV='div_content_right', URL='sdcp.cgi?call=device_graph_info&id=%s&op=update', FRM='device_graph_form')
+ print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=device_graph_info&id=%s&op=search', FRM='device_graph_form')
+ print "</ARTICLE>"

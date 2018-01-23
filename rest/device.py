@@ -39,6 +39,27 @@ def list(aDict):
 
 #
 #
+def list_type(aDict):
+ ret = {}
+ with DB() as db:
+  select = "devicetypes.%s ='%s'"%(('name',aDict.get('name')) if aDict.get('name') else ('base',aDict.get('base')))
+  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE %s ORDER BY type_name,hostname"%select)
+  ret['data'] = db.get_rows()
+ return ret
+
+#
+#
+def list_mac(aDict):
+ from ..core import genlib as GL
+ with DB() as db:
+  db.do("SELECT devices.id, CONCAT(hostname,'.',domains.name) as fqdn, INET_NTOA(ip) as ip, mac, subnet_id FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT mac = 0 ORDER BY ip")
+  rows = db.get_rows()
+ for row in rows:
+  row['mac'] = GL.int2mac(row['mac'])
+ return rows
+
+#
+#
 def info(aDict):
  """
  Takes id or ascii rep of ip and return info
@@ -151,12 +172,16 @@ def new(aDict):
 def remove(aDict):
  log("device_remove({})".format(aDict))
  with DB() as db:
-  xist = db.do("SELECT hostname, mac, a_id, ptr_id FROM devices WHERE id = {}".format(aDict.get('id','0')))
+  xist = db.do("SELECT hostname, mac, a_id, ptr_id, devicetypes.* FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = {}".format(aDict.get('id','0')))
   if xist == 0:
    ret = { 'deleted':0, 'a_id':0, 'ptr_id':0 }
   else:
    ret = db.get_row()
    ret['deleted'] = db.do("DELETE FROM devices WHERE id = '{}'".format(aDict['id']))
+   if ret['base'] == 'pdu':
+    db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(aDict['id']))
+    db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(aDict['id']))
+    ret['pdu'] = db.do("DELETE FROM pdus WHERE id = '{0}'".format(aDict['id']))
  return ret
 
 #
@@ -282,29 +307,7 @@ def detect(aDict):
 
 #
 #
-def list_type(aDict):
- ret = {}
- with DB() as db:
-  select = "devicetypes.%s ='%s'"%(('name',aDict.get('name')) if aDict.get('name') else ('base',aDict.get('base')))
-  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE %s ORDER BY type_name,hostname"%select)
-  ret['data'] = db.get_rows()
- return ret
-
-#
-#
 def clear(aDict):
  with DB() as db:
   res = db.do("TRUNCATE TABLE devices")
  return { 'operation':res }
-
-
-#
-#
-def list_mac(aDict):
- from ..core import genlib as GL
- with DB() as db:
-  db.do("SELECT devices.id, CONCAT(hostname,'.',domains.name) as fqdn, INET_NTOA(ip) as ip, mac, subnet_id FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT mac = 0 ORDER BY ip")
-  rows = db.get_rows()
- for row in rows:
-  row['mac'] = GL.int2mac(row['mac'])
- return rows
