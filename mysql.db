@@ -80,8 +80,8 @@ CREATE TABLE `events` (
 DROP TABLE IF EXISTS `pduinfo`;
 CREATE TABLE `pduinfo` (
   `device_id` int(10) unsigned NOT NULL,
-  `0_slot_name` varchar(10) NOT NULL DEFAULT 'unknown',
-  `1_slot_name` varchar(10) NOT NULL DEFAULT 'unknown',
+  `0_slot_name` varchar(10) NOT NULL DEFAULT 'default',
+  `1_slot_name` varchar(10) NOT NULL DEFAULT 'default',
   `0_slot_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `1_slot_id` tinyint(3) unsigned NOT NULL DEFAULT '1',
   `slots` tinyint(1) NOT NULL DEFAULT '1',
