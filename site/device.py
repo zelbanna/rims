@@ -294,11 +294,11 @@ def op_function(aWeb):
 #
 #
 def mac_sync(aWeb):
+ macs = aWeb.rest_call(aWeb.resturl,"sdcp.rest.tools_mac_sync")
  print "<ARTICLE CLASS=info>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- macs = aWeb.rest_call(aWeb.resturl,"sdcp.rest.tools_mac_sync")
  for row in macs:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['id'],row['ipasc'],row['hostname'],row['xist'])
  print "</DIV></DIV></ARTICLE>"
@@ -361,7 +361,6 @@ def new(aWeb):
   print "<SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'></SPAN>"
   print "</ARTICLE>"
 
-#
 #
 #
 def remove(aWeb):
