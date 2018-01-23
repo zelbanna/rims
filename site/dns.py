@@ -176,12 +176,12 @@ def record_transfer(aWeb):
 def record_create(aWeb):
  operation = {'type':aWeb['type'],'dns':None,'device':None}
  if aWeb['type'] == 'a':
-  data = {'id':'new','type':aWeb['type'],'domain_id':aWeb['dom_id'],'name':aWeb['fqdn'],'content':aWeb['ip']}
+  data = {'id':'new','type':'a','domain_id':aWeb['dom_id'],'name':aWeb['fqdn'],'content':aWeb['ip']}
  else:
   from ..core import genlib as GL
-  data = {'id':'new','type':aWeb['type'],'domain_id':aWeb['dom_id'],'content':aWeb['fqdn'],'name':GL.ip2ptr(aWeb['ip'])}
+  data = {'id':'new','type':'ptr','domain_id':aWeb['dom_id'],'content':aWeb['fqdn'],'name':GL.ip2ptr(aWeb['ip'])}
  operation['dns'] = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_update".format(PC.dns['type']),data)
- if operation['dns']['result'] == 'OK':
+ if operation['dns']['xist'] == 1:
   operation['device'] = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:operation['dns']['id']})
  print "Created record result: %s"%str(operation)
 
@@ -225,7 +225,7 @@ def consistency(aWeb):
 
   if len(devices) > 0:
    from ..core import genlib as GL
-   for key,value in  devs.iteritems():
+   for key,value in  devices.iteritems():
     print "<DIV CLASS=tr>"
     print "<!-- %s -> %s -->"%(key,value)
     print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>-</DIV>".format(key)

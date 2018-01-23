@@ -371,8 +371,8 @@ def remove(aWeb):
  print "Unit {} deleted, op:{}".format(id,res['deleted'])
  if not str(res['deleted']) == '0':
   from .. import PackageContainer as PC
-  arec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['a_id']})   if res['a_id']   else 0
-  prec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':ret['ptr_id']}) if res['ptr_id'] else 0
+  arec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':res['a_id']})   if res['a_id']   else 0
+  prec = aWeb.rest_call(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':res['ptr_id']}) if res['ptr_id'] else 0
   print ",A:%s,PTR:%s"%(arec,prec)
  print "</ARTICLE>"
 
