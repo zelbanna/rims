@@ -191,7 +191,7 @@ def remove(aDict):
    if ret['base'] == 'pdu':
     db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(aDict['id']))
     db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(aDict['id']))
-    ret['pdu'] = db.do("DELETE FROM pdus WHERE id = '{0}'".format(aDict['id']))
+    ret['pdu'] = db.do("DELETE FROM pduinfo WHERE id = '{0}'".format(aDict['id']))
  return ret
 
 #

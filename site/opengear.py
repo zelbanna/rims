@@ -16,7 +16,7 @@ def manage(aWeb):
  else:
   data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_info",{'id':id})
   ip = data['ip']
-  hostname = data['hostname']
+  hostname = data['info']['hostname']
 
  print "<NAV><UL>"
  print "<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname)
