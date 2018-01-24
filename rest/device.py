@@ -380,6 +380,7 @@ def graph_detect(aentry):
 #
 #
 def graph_save(aDict):
+ from .. import PackageContainer as PC
  ret = {}
  with DB() as db:                      
   ret['xist'] = db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
