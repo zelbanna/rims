@@ -25,7 +25,7 @@ def info(aDict):
  ret = {'name': None, 'console':[], 'pdu':[] }
  with DB() as db:
   if aDict.get('id'):
-   res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = %s"%aDict['id'])
+   res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aDict['id'])
    select = db.get_row()
    ret['name'] = select.pop('name',"Noname")
    if select.get('pdu_1') == select.get('pdu_2'):
@@ -33,8 +33,9 @@ def info(aDict):
    for type in ['console','pdu_1','pdu_2']:
     if select.get(type):
      value = select.pop(type,None)
-     db.do("SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%value)
-     ret[type].append(db.get_row())
+     db.do("SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '%s'"%value)
+     main,_,_ = type.partition('_')
+     ret[main].append(db.get_row())
   else:
    sql = "SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = '%s'"
    for type in ['console','pdu']:
