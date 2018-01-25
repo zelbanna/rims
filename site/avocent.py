@@ -18,13 +18,13 @@ def manage(aWeb):
   hostname = data['info']['hostname']
 
  print "<NAV><UL>"
- print "<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname)                
+ print "<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname)
  print "<LI><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=avocent_info&id=%s&ip=%s&hostname=%s'>Info</A></LI>"%(id,ip,hostname)
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=avocent_inventory&id=%s&ip=%s'>Inventory</A></LI>"%(id,ip)
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
- print "<SECTION CLASS=content-left ID=div_content_left></SECTION>" 
+ print "<SECTION CLASS=content-left ID=div_content_left></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
  print "</SECTION>"
 
@@ -76,7 +76,7 @@ def op(aWeb):
 #
 #
 def info(aWeb):
- res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.avocent_info",{'op':aWeb['op'],'id':aWeb['id']})
+ res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.avocent_info",{'op':aWeb['op'],'id':aWeb['id'],'ip':aWeb['ip']})
  pdudata = res['data']
  print "<ARTICLE CLASS=info><P>PDU Device Info</P>"
  print "<FORM ID=pdu_info_form>"

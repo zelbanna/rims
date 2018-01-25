@@ -13,7 +13,7 @@ from ..devices.avocent import Device
 #
 #
 def update(aDict):
- avocent = Device(aDict['ip'])    
+ avocent = Device(aDict['ip'])
  return avocent.set_name(int(aDict['slot']),int(aDict['unit']),aDict['text'])
 
 #
@@ -22,7 +22,7 @@ def info(aDict):
  ret = {}
  with DB() as db:
   if aDict.get('op') == 'lookup':
-   pdu   = Device(aWeb['ip'])
+   pdu   = Device(aDict['ip'])
    slotl = pdu.get_slot_names()
    slotn = len(slotl)
    if slotn == 1:
