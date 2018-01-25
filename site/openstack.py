@@ -57,7 +57,7 @@ def portal(aWeb):
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
- print "<A CLASS='z-op btn menu-btn right warning' OP=logout URL='sdcp.cgi?call=front_openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</A>".format(ctrl,cookie.get('demo'),cookie.get('appformix'))
+ print "<A CLASS='z-op btn menu-btn right warning' OP=logout URL='sdcp.cgi?call=sdcp_login&application=openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</A>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
  print "</HEADER><MAIN ID=main><NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
@@ -174,7 +174,7 @@ def result(aWeb):
  print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"
  try:
   if aWeb['os_href']:
-   data = controller.href(aWeb['os_href'], aArgs = arguments, aMethod=aWeb['os_method'])
+   data = controller.href(aWeb['os_href'], aArgs = arguments, aMethod=aWeb['os_method'])['data']
   else:
    service = aWeb['os_service']
    if service == 'contrail':
@@ -183,9 +183,9 @@ def result(aWeb):
     cookie = aWeb.cookie_unjar(service)
     port,url = cookie['port'],cookie['url']
    data = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])['data']
-  print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True) 
+  print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True)
  except Exception, e:
-  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>" 
+  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
   for key,value in e[0].iteritems():
    print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)
   print "</DIV></DIV>" 
