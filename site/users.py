@@ -38,7 +38,7 @@ def user(aWeb):
  print "</SECTION>"
 
 def list(aWeb):
- rows = aWeb.rest_call(aWeb.resturl,"sdcp.rest.users_list")['data']
+ rows = aWeb.rest("users_list")['data']
  print "<ARTICLE><P>Users</P>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=users_list')
  print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?call=users_info&id=new')
@@ -62,7 +62,7 @@ def info(aWeb):
   data['view_public']  = aWeb.get('view_public','0')
   data['menulist'] = aWeb.get('menulist','default')
   if aWeb['op'] == 'update':
-   res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.users_info",data)
+   res = aWeb.rest("users_info",data)
    if data['id'] == 'new':
     data['id'] = res['id']
    else:
@@ -71,9 +71,9 @@ def info(aWeb):
      aWeb.cookie_jar('sdcp',cookie,86400)
    aWeb.put_headers()
  else:
-  data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.users_info",data)['data']
+  data = aWeb.rest("users_info",data)['data']
 
- resources = aWeb.rest_call(aWeb.resturl,"sdcp.rest.resources_list",{'id':cookie['id'], 'dict':'id'})['data']
+ resources = aWeb.rest("resources_list",{'id':cookie['id'], 'dict':'id'})['data']
  print aWeb.dragndrop()
  print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
@@ -114,5 +114,5 @@ def info(aWeb):
 #
 #
 def remove(aWeb):
- res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.resources_delete",{'id':aWeb['id']})
+ res = aWeb.rest("resources_delete",{'id':aWeb['id']})
  print "<ARTICLE>USer with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res['result'])

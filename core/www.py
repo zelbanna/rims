@@ -16,7 +16,7 @@ class Web(object):
  def __init__(self,aREST = "http://127.0.0.1/rest.cgi"):
   from os import getenv
   self._header = {}
-  self.resturl = aREST
+  self._rest_url = aREST
   self._c_stor = {}
   self._c_life = {}
   self.form  = None
@@ -40,10 +40,20 @@ class Web(object):
   from logger import log
   log(aMsg,'sdcp')
 
- def rest_call(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20, aFull = None):
+ # Simplified SDCP REST call
+ def rest(self, aAPI, aArgs = None):
   from rest import call
-  res = call(aURL, aAPI, aArgs, aMethod, aHeader, True, aTimeout)
-  return res['data'] if not aFull else res
+  return call(self._rest_url, "sdcp.rest.%s"%aAPI, aArgs )['data']
+
+ # Generic REST call
+ def rest_generic(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
+  from rest import call
+  return call(aURL, aAPI, aArgs, aMethod, aHeader, True, aTimeout)['data']
+
+ # Generic REST call with full output
+ def rest_full(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
+  from rest import call
+  return call(aURL, aAPI, aArgs, aMethod, aHeader, True, aTimeout)
 
  # Header Key/Values
  def add_header(self,aKey,aValue):

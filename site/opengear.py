@@ -14,7 +14,7 @@ def manage(aWeb):
   ip = aWeb['ip']
   hostname = aWeb['hostname']
  else:
-  data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_info",{'id':id})
+  data = aWeb.rest("device_info",{'id':id})
   ip = data['ip']
   hostname = data['info']['hostname']
 

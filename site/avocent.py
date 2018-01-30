@@ -13,7 +13,7 @@ def manage(aWeb):
   ip = aWeb['ip']
   hostname = aWeb['hostname']
  else:
-  data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.device_info",{'id':id})
+  data = aWeb.rest("device_info",{'id':id})
   ip = data['ip']
   hostname = data['info']['hostname']
 
@@ -76,7 +76,7 @@ def op(aWeb):
 #
 #
 def info(aWeb):
- res = aWeb.rest_call(aWeb.resturl,"sdcp.rest.avocent_info",{'op':aWeb['op'],'id':aWeb['id'],'ip':aWeb['ip']})
+ res = aWeb.rest("avocent_info",{'op':aWeb['op'],'id':aWeb['id'],'ip':aWeb['ip']})
  pdudata = res['data']
  print "<ARTICLE CLASS=info><P>PDU Device Info</P>"
  print "<FORM ID=pdu_info_form>"
@@ -99,7 +99,7 @@ def info(aWeb):
 def unit_info(aWeb):
  from ..devices.avocent import Device
  if aWeb['op'] == 'update':
-  res = aWeb.rest_call(aWeb.rest_url,"sdcp.rest.avocent_update",aWeb.get_args2dict())
+  res = aWeb.rest("avocent_update",aWeb.get_args2dict())
   print "Updated info: {} ({})".format(aWeb['name'],res)
   return
  print "<ARTICLE CLASS=info><P>PDU Unit Info</P>"

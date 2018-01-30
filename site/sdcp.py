@@ -17,7 +17,7 @@ def login(aWeb):
   aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%cookie['portal'])
   return
 
- data = aWeb.rest_call(aWeb.resturl,"sdcp.rest.%s_application"%(application),aWeb.get_args2dict_except(['call','header']))
+ data = aWeb.rest("%s_application"%(application),aWeb.get_args2dict_except(['call','header']))
  aWeb.cookie_add(application,data['cookie'])
  aWeb.put_html(data['title'])
  print "<DIV CLASS='grey overlay'>"
@@ -58,7 +58,7 @@ def portal(aWeb):
  else:
   id,user,view = cookie.get('id'),cookie.get('user'),cookie.get('view')
 
- menu = aWeb.rest_call(aWeb.resturl,"sdcp.rest.users_menu",{"id":id})
+ menu = aWeb.rest("users_menu",{"id":id})
  aWeb.put_html(aWeb.get('title','Portal'))
  print "<HEADER>"
  for item in menu:

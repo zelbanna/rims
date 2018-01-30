@@ -48,14 +48,14 @@ def db_structure(aWeb):
 #
 def db_table(aWeb):
  from json import dumps
- db = aWeb.rest_call(aWeb.resturl,"sdcp.rest.tools_db_table",{'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db']
+ db = aWeb.rest("tools_db_table",{'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db']
  print "<PRE>{}</PRE>".format(dumps(db, indent=4, sort_keys=True))
 
 #
 #
 def install(aWeb):
  from json import dumps
- print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_call("http://%s/rest.cgi"%aWeb['host'],"sdcp.rest.tools_installation"),indent = 4)
+ print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_generic("http://%s/rest.cgi"%aWeb['host'],"sdcp.rest.tools_installation"),indent = 4)
 
 #
 #
@@ -67,7 +67,7 @@ def test_sleep(aWeb):
 #
 #
 def test_rest(aWeb):
- print aWeb.rest_call(aWeb.resturl,"tools_test")
+ print aWeb.rest("tools_test")
 
 #
 #
@@ -97,7 +97,7 @@ def rest_execute(aWeb):
  try:    arguments = loads(aWeb['args'])
  except: arguments = None
  try:
-  ret = aWeb.rest_call("http://%s/rest.cgi"%aWeb['host'],aWeb['api'],arguments,aWeb['method'],aFull = True)
+  ret = aWeb.rest_full("http://%s/rest.cgi"%aWeb['host'],"sdcp.rest.%s"%aWeb['api'],arguments,aWeb['method'])
  except Exception,e:
   ret = e[0]
  data = ret.pop('data',None)
