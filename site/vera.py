@@ -133,13 +133,14 @@ def rooms(aWeb):
  ip   = aWeb.get('ip')
  ctrl = Device(ip)
  res  = ctrl.call(3480,"id=sdata")
+ sections = { sect['id']:sect for sect in  res['data']['sections']}
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Section</DIV></DIV><DIV CLASS=tbody>"
  for room in res['data']['rooms']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%room['id']
   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_room_info&ip=%s&id=%s>%s</A></DIV>"%(ip,room['id'],room['name'])
-  print "<DIV CLASS=td>%s</DIV></DIV>"%(room['section'])
+  print "<DIV CLASS=td>%s</DIV></DIV>"%(sections[room['section']]['name'])
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
