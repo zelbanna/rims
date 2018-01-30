@@ -22,7 +22,6 @@ def manage(aWeb):
  else:
   ip = aWeb.rest("device_info",{'id':aWeb['id']})['ip']
  print "<NAV><UL>"
- print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='sdcp.cgi?call=vera_op&nstate=poweroff&ip=%s'>Shutdown</A></LI>"%(ip)
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_status&ip=%s>Status</A></LI>"%ip
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&ip=%s>Devices</A></LI>"%ip
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rooms&ip=%s>Rooms</A></LI>"%ip
