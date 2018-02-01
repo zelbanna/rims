@@ -13,7 +13,7 @@ from .. import PackageContainer as PC
 #
 #
 def list(aWeb):
- domains = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.%s_domains"%PC.dns['type'])
+ domains = aWeb.rest_generic(PC.dns['url'], "%s_domains"%PC.dns['type'])
  local   = aWeb.rest("sdcpdns_domains",{'index':'id'})
  print "<ARTICLE><P>Domains</P>"
  print "<DIV CLASS='controls'>"
@@ -45,10 +45,10 @@ def list(aWeb):
 def domain_info(aWeb):
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict_except(['call','op'])
-  res = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_domain_update".format(PC.dns['type']),data)
+  res = aWeb.rest_generic(PC.dns['url'], "{}_domain_update".format(PC.dns['type']),data)
   data['id'] = res['id']
  else:
-  res = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_domain_lookup".format(PC.dns['type']),{'id':aWeb['id']})
+  res = aWeb.rest_generic(PC.dns['url'], "{}_domain_lookup".format(PC.dns['type']),{'id':aWeb['id']})
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  print "<ARTICLE CLASS=info><P>Domain Info{}</P>".format(" (new)" if data['id'] == 'new' else "")
@@ -74,7 +74,7 @@ def domain_info(aWeb):
 #
 #
 def domain_transfer(aWeb):
- domains = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type']),{"filter":"arpa"})
+ domains = aWeb.rest_generic(PC.dns['url'], "{}_domains".format(PC.dns['type']),{"filter":"arpa"})
  print "<ARTICLE>"
  print "<FORM ID=dns_transfer><INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
  print "Transfer all records to <SELECT NAME=transfer>"
@@ -94,7 +94,7 @@ def domain_delete(aWeb):
  print "<ARTICLE>"
  cache = aWeb.rest("sdcpdns_domain_delete",{'from':aWeb['id'],'to':aWeb['transfer']})
  if cache['result'] == 'OK': 
-  dns = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_domain_delete".format(PC.dns['type']),{'id':aWeb['id']})
+  dns = aWeb.rest_generic(PC.dns['url'], "{}_domain_delete".format(PC.dns['type']),{'id':aWeb['id']})
   print "Removed domain [%s,%s]" % (cache,dns)
  else:
   print "Error removing domain cache and transfer"
@@ -116,7 +116,7 @@ def domain_cache_delete(aWeb):
 #
 #
 def records(aWeb):
- dns = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_records".format(PC.dns['type']),{'domain_id':aWeb['id']})
+ dns = aWeb.rest_generic(PC.dns['url'], "{}_records".format(PC.dns['type']),{'domain_id':aWeb['id']})
  print "<ARTICLE><P>Records</P>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_records&id=%s'%(aWeb['id']))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id=new&domain_id=%s'%(aWeb['id']))
@@ -137,10 +137,10 @@ def records(aWeb):
 def record_info(aWeb):
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict_except(['call','op'])
-  res = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']),data)
+  res = aWeb.rest_generic(PC.dns['url'], "{}_record_update".format(PC.dns['type']),data)
   data['id'] = res['id']
  else:
-  res = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_record_lookup".format(PC.dns['type']),{'id':aWeb['id'],'domain_id':aWeb['domain_id']})
+  res = aWeb.rest_generic(PC.dns['url'], "{}_record_lookup".format(PC.dns['type']),{'id':aWeb['id'],'domain_id':aWeb['domain_id']})
   data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  print "<ARTICLE CLASS=info><P>Record Info {} (Domain {})</P>".format("(new)" if data['id'] == 'new' else "",data['domain_id'])
@@ -166,7 +166,7 @@ def record_info(aWeb):
 #
 #
 def record_delete(aWeb):
- res = aWeb.rest_generic(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id': aWeb['id']})
+ res = aWeb.rest_generic(PC.dns['url'],"{}_record_delete".format(PC.dns['type']),{'id': aWeb['id']})
  print "Remove {} - Results:{}".format(aWeb['id'],res)
 
 def record_transfer(aWeb):
@@ -180,7 +180,7 @@ def record_create(aWeb):
  else:
   from ..core import genlib as GL
   data = {'id':'new','type':'ptr','domain_id':aWeb['dom_id'],'content':aWeb['fqdn'],'name':GL.ip2ptr(aWeb['ip'])}
- operation['dns'] = aWeb.rest_generic(PC.dns['url'],"sdcp.rest.{}_record_update".format(PC.dns['type']),data)
+ operation['dns'] = aWeb.rest_generic(PC.dns['url'],"{}_record_update".format(PC.dns['type']),data)
  if operation['dns']['xist'] == 1:
   operation['device'] = aWeb.rest("device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:operation['dns']['id']})
  print "Created record result: %s"%str(operation)
@@ -189,7 +189,7 @@ def record_create(aWeb):
 #
 #
 def load(aWeb):
- dns = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_domains".format(PC.dns['type'])) 
+ dns = aWeb.rest_generic(PC.dns['url'], "{}_domains".format(PC.dns['type'])) 
  res = aWeb.rest("sdcpdns_load",{'domains':dns['domains']})
  print "<ARTICLE>%s</ARTICLE>"%(res)
 
@@ -200,7 +200,7 @@ def consistency(aWeb):
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Value</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Key</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  domains = aWeb.rest("sdcpdns_domains",{'index':'name'})['domains']
  for type in ['a','ptr']:
-  records = aWeb.rest_generic(PC.dns['url'],"sdcp.rest.{}_records".format(PC.dns['type']),{'type':type})['records']
+  records = aWeb.rest_generic(PC.dns['url'],"{}_records".format(PC.dns['type']),{'type':type})['records']
   tid = "{}_id".format(type)
   devices = aWeb.rest("device_list",{"index":"ipasc" if type == 'a' else "fqdn"})['data']
   for rec in records:
@@ -241,7 +241,7 @@ def consistency(aWeb):
 #
 def top(aWeb):
  from ..core import extras as EXT
- dnstop = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_top".format(PC.dns['type']), {'count':20})
+ dnstop = aWeb.rest_generic(PC.dns['url'], "{}_top".format(PC.dns['type']), {'count':20})
  print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>"
  EXT.dict2table(dnstop['top'])
  print "</ARTICLE>"
@@ -253,7 +253,7 @@ def top(aWeb):
 # Cleanup duplicate entries
 #
 def dedup(aWeb):
- dns = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_dedup".format(PC.dns['type']))
+ dns = aWeb.rest_generic(PC.dns['url'], "{}_dedup".format(PC.dns['type']))
  print "<ARTICLE><P>Duplicate Removal</P>"
  xist = len(dns['removed'])
  if xist > 0:

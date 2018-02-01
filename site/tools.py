@@ -55,7 +55,7 @@ def db_table(aWeb):
 #
 def install(aWeb):
  from json import dumps
- print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_generic("http://%s/rest.cgi"%aWeb['host'],"sdcp.rest.tools_installation"),indent = 4)
+ print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_generic("http://%s/rest.cgi"%aWeb['host'],"tools_installation"),indent = 4)
 
 #
 #

@@ -96,9 +96,9 @@ def info(aWeb):
    fqdn   = ".".join([d['devices_hostname'],  dns[d['devices_a_dom_id']]['name']])
    dom_id = aWeb.rest("sdcpdns_domains",{'filter':'reverse','index':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
 
-   opres['a'] = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
+   opres['a'] = aWeb.rest_generic(PC.dns['url'], "{}_record_update".format(PC.dns['type']), { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
    if dom_id:
-    opres['ptr'] = aWeb.rest_generic(PC.dns['url'], "sdcp.rest.{}_record_update".format(PC.dns['type']), { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
+    opres['ptr'] = aWeb.rest_generic(PC.dns['url'], "{}_record_update".format(PC.dns['type']), { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
    else:
     opres['ptr'] = {'id':0,'info':'nonexisting_ptr_domain'}
 
@@ -370,8 +370,8 @@ def remove(aWeb):
  print "Unit {} deleted, op:{}".format(id,res['deleted'])
  if not str(res['deleted']) == '0':
   from .. import PackageContainer as PC
-  arec = aWeb.rest_generic(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':res['a_id']})   if res['a_id']   else 0
-  prec = aWeb.rest_generic(PC.dns['url'],"sdcp.rest.{}_record_delete".format(PC.dns['type']),{'id':res['ptr_id']}) if res['ptr_id'] else 0
+  arec = aWeb.rest_generic(PC.dns['url'],"{}_record_delete".format(PC.dns['type']),{'id':res['a_id']})   if res['a_id']   else 0
+  prec = aWeb.rest_generic(PC.dns['url'],"{}_record_delete".format(PC.dns['type']),{'id':res['ptr_id']}) if res['ptr_id'] else 0
   print ",A:%s,PTR:%s"%(arec,prec)
  print "</ARTICLE>"
 
