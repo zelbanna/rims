@@ -38,7 +38,7 @@ def server():
    api  = args.pop('call')
   (mod,void,fun) = api.partition('_')
   from importlib import import_module
-  module = import_module(mod)
+  module = import_module("sdcp.rest.%s"%mod)
   output = dumps(getattr(module,fun,None)(args))
  except Exception, e:
   output = 'null'

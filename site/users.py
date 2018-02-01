@@ -69,7 +69,7 @@ def info(aWeb):
  else:
   data = aWeb.rest("users_info",data)['data']
 
- resources = aWeb.rest("resources_list",{'id':cookie['id'], 'dict':'id'})['data']
+ resources = aWeb.rest("resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True})['data']
  print aWeb.dragndrop()
  print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"

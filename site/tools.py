@@ -97,7 +97,7 @@ def rest_execute(aWeb):
  try:    arguments = loads(aWeb['args'])
  except: arguments = None
  try:
-  ret = aWeb.rest_full("http://%s/rest.cgi"%aWeb['host'],"sdcp.rest.%s"%aWeb['api'],arguments,aWeb['method'])
+  ret = aWeb.rest_full("http://%s/rest.cgi"%aWeb['host'],aWeb['api'],arguments,aWeb['method'])
  except Exception,e:
   ret = e[0]
  data = ret.pop('data',None)

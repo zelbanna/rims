@@ -17,7 +17,7 @@ def execute(argv):
 
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '../..')))
  try:
-  module = import_module(rest)
+  module = import_module("sdcp.rest.%s"%rest)
   res    = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })(args)
   print dumps(res, indent=4, sort_keys=True)
  except Exception, e:
