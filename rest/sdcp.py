@@ -14,9 +14,9 @@ from ..core.dbase import DB
 def application(aDict):
  """ Default login information """
  from .. import PackageContainer as PC
- ret = {'title':PC.generic['name'],'portal':"sdcp_portal",'message':"Welcome to the management Portal",'parameters':[]}
+ ret = {'title':PC.generic['name'],'portal':"sdcp_portal",'message':"Welcome to the Management Portal",'parameters':[]}
  with DB() as db:
-  db.do("SELECT CONCAT(id,'_',name,'_',view_public) as id, name FROM users ORDER BY name")
+  db.do("SELECT CONCAT(id,'_',name) as id, name FROM users ORDER BY name")
   rows = db.get_rows()
  ret['choices'] = [{'display':'Username', 'id':'sdcp_login', 'data':rows}]
  ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in aDict.iteritems()])

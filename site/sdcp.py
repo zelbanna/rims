@@ -14,7 +14,7 @@ def login(aWeb):
  application = aWeb.get('application','sdcp')
  cookie = aWeb.cookie_unjar(application)
  if len(cookie) > 0 and cookie.get('portal',False):
-  aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%cookie['portal'])
+  aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%cookie.get('portal','sdcp_login'))
   return
 
  data = aWeb.rest("%s_application"%(application),aWeb.get_args2dict_except(['call','header']))
@@ -48,15 +48,15 @@ def login(aWeb):
 def portal(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
  if cookie.get('id',None) is None:
-  id,user,view = aWeb.get('sdcp_login',"None_None_1").split('_')
+  id,user = aWeb.get('sdcp_login',"None_None").split('_')
   if id == "None":
    aWeb.put_redirect("index.cgi")
    return   
-  cookie.update({'id':id,'user':user,'view':view,'portal':'sdcp_portal'})
+  cookie.update({'id':id})
   aWeb.cookie_jar('sdcp',cookie, 86400)
-  aWeb.log("Entering as {}-'{}' ({})".format(id,user,view))
+  aWeb.log("Entering as {}-'{}'".format(id,user))
  else:
-  id,user,view = cookie.get('id'),cookie.get('user'),cookie.get('view')
+  id = cookie.get('id')
 
  menu = aWeb.rest("users_menu",{"id":id})
  aWeb.put_html(aWeb.get('title','Portal'))
@@ -64,7 +64,7 @@ def portal(aWeb):
  for item in menu:
   print "<A CLASS='btn menu-btn z-op' TITLE='%s' %s='%s'><IMG SRC='%s'/></A>"%(item['title'],"TARGET=_blank HREF" if item['inline'] == 0 else "DIV=main URL", item['href'],item['icon'])
  print "<A CLASS='btn menu-btn z-op right warning' OP=logout URL=sdcp.cgi>Log out</A>"
- print "<A CLASS='btn menu-btn z-op right' DIV=main TITLE='%s' URL=sdcp.cgi?call=users_user&id=%s><IMG SRC='images/icon-users.png'></A>"%(user,id)
+ print "<A CLASS='btn menu-btn z-op right' DIV=main TITLE='User info' URL=sdcp.cgi?call=users_user&id=%s><IMG SRC='images/icon-users.png'></A>"%id
  print "</HEADER>"
  print "<main ID=main></main>"
 

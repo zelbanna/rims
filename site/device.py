@@ -327,7 +327,7 @@ def new(aWeb):
    args['vm'] = 0
   res = aWeb.rest("device_new",args)
   print "Operation:%s"%str(res)
-  aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(cookie['user'],args,res))
+  aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(cookie['id'],args,res))
  elif op == 'find':
   print aWeb.rest("sdcpipam_find",{'id':subnet_id})['ip']
  else:

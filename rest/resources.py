@@ -10,9 +10,11 @@ __status__ = "Production"
 from ..core.dbase import DB
 
 def list(aDict):
- ret = {'user_id':aDict.get('user_id',"1"),'view':aDict.get('view',"1"), 'type':aDict.get('type') }
- select = "%s(user_id = %s %s)"%("type = '%s' AND "%ret['type'] if ret['type'] else "", ret['user_id'],"" if ret['view'] == '0' else 'OR private = 0')
+ ret = {'user_id':aDict.get('user_id',"1"), 'type':aDict.get('type') }
  with DB() as db:
+  db.do("SELECT view_public FROM users WHERE id = %s"%ret['user_id'])
+  ret['view_public'] = (db.get_val('view_public') == 1)
+  select = "%s(user_id = %s %s)"%("type = '%s' AND "%ret['type'] if ret['type'] else "", ret['user_id'],"" if not ret['view_public'] else 'OR private = 0')
   ret['xist'] = db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE %s ORDER BY type,title"%select)
   ret['data'] = db.get_dict(aDict['dict']) if aDict.get('dict') else db.get_rows()
  return ret

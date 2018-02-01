@@ -23,7 +23,7 @@ def main(aWeb):
 #
 def view(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
- res = aWeb.rest("resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'view':cookie['view']})
+ res = aWeb.rest("resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id']})
  index = 0;
  print "<DIV CLASS=centered STYLE='align-items:initial'>"
  for row in res['data']:
@@ -44,7 +44,7 @@ def list(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('sdcp')
- res = aWeb.rest("resources_list",{'user_id':cookie['id'],'view':cookie['view']})
+ res = aWeb.rest("resources_list",{'user_id':cookie['id']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list')

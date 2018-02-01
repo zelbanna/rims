@@ -15,10 +15,11 @@ def main(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('sdcp')
+ info = aWeb.rest("users_info",{'id':cookie['id']})
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=users_list'>Users</A></LI>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A></LI>"
- print "<LI CLASS='right navinfo'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={}>{}</A></LI>".format(cookie['id'],cookie['user'])
+ print "<LI CLASS='right navinfo'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={}>{}</A></LI>".format(cookie['id'],info['data']['name'])
  print "</UL></NAV>"
  print "<SECTION CLASS=content       ID=div_content>"
  print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
@@ -65,11 +66,6 @@ def info(aWeb):
    res = aWeb.rest("users_info",data)
    if data['id'] == 'new':
     data['id'] = res['id']
-   else:
-    if cookie['id'] == str(data['id']):
-     cookie['view'] = data['view_public']
-     aWeb.cookie_jar('sdcp',cookie,86400)
-   aWeb.put_headers()
  else:
   data = aWeb.rest("users_info",data)['data']
 
@@ -102,7 +98,7 @@ def info(aWeb):
  print "<DIV CLASS='controls'>"
  if data['id'] != 'new' and ((cookie['id'] == str(data['id']) or cookie['id'] == "1")):
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_remove&id={0}'.format(data['id']), MSG='Really remove user?')
- print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&headers=no&op=update', FRM='sdcp_user_info_form')
+ print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&op=update', FRM='sdcp_user_info_form')
  print "</DIV>"
  print "</FORM>"
  print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>"
