@@ -34,6 +34,6 @@ def info(aDict):
   if ret['xist'] == 1:
    ret['data'] = db.get_row()
   else:
-   db.do("INSERT INTO pduinfo SET device_id = %s, slots = 1"%(aWeb['id']))
+   db.do("INSERT INTO pduinfo SET device_id = %s, slots = 1"%(aDict['id']))
    ret['data'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':1, '1_slot_name':'' }
  return ret

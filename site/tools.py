@@ -16,8 +16,13 @@ def main(aWeb):
   return
  from .. import PackageContainer as PC
  print "<NAV><UL>"
- print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A></LI>"
- print "<LI CLASS='dropdown'><A>Options</A><DIV CLASS='dropdown-content'>"
+ print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>List resources</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>View Tools</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>View Demos</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>View Bookmarks</A>"
+ print "</DIV></LI>"
+ print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dns_load'>DNS - Load Cache</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
@@ -28,10 +33,9 @@ def main(aWeb):
   print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host=%s'>Reinstall %s</A>"%(host,host)
  print "<A CLASS=z-op DIV=div_content            URL='sdcp.cgi?call=tools_test_rest'>Test</A>"
  print "</DIV></LI>"
- print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A></LI>"
- print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>Tools</A></LI>"
- print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>Demos</A></LI>"
- print "<LI CLASS='right'><A CLASS='z-op' DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>Bookmarks</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list'>Settings</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A></LI>"
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
 

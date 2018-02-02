@@ -44,7 +44,7 @@ def list_infra(aWeb):
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for dev in devices:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=%s_inventory&ip=%s'>%s</A></DIV><DIV CLASS=td>"%(dev['id'],dev['type_name'],dev['ipasc'],dev['hostname'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=device_info&id=%s'>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=%s_inventory&ip=%s'>%s</A></DIV><DIV CLASS=td>"%(dev['id'],dev['id'],dev['type_name'],dev['ipasc'],dev['hostname'])
   print aWeb.button('info',DIV='main',URL='sdcp.cgi?call=%s_manage&id=%s&ip=%s&hostname=%s'%(dev['type_name'],dev['id'],dev['ipasc'],dev['hostname']))
   print "</DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"

@@ -49,6 +49,7 @@ def clear(aWeb):
 #
 # Internal Logs
 #
+# ZEB: ask settings for logs "locally" :-)
 def logs(aWeb):
  res = aWeb.rest_generic("http://%s/rest.cgi"%aWeb['ip'],'sdcp_logs_get',{'count':18,'logs':[PC.generic['logformat'],PC.generic['netlogs']]})
  for file,logs in res.iteritems():
