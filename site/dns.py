@@ -14,7 +14,7 @@ from .. import PackageContainer as PC
 #
 def list(aWeb):
  domains = aWeb.rest_generic(PC.dns['url'], "%s_domains"%PC.dns['type'])
- local   = aWeb.rest("sdcpdns_domains",{'index':'id'})
+ local   = aWeb.rest_call("sdcpdns_domains",{'index':'id'})
  print "<ARTICLE><P>Domains</P>"
  print "<DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_list')
@@ -92,7 +92,7 @@ def domain_transfer(aWeb):
 #
 def domain_delete(aWeb):
  print "<ARTICLE>"
- cache = aWeb.rest("sdcpdns_domain_delete",{'from':aWeb['id'],'to':aWeb['transfer']})
+ cache = aWeb.rest_call("sdcpdns_domain_delete",{'from':aWeb['id'],'to':aWeb['transfer']})
  if cache['result'] == 'OK': 
   dns = aWeb.rest_generic(PC.dns['url'], "{}_domain_delete".format(PC.dns['type']),{'id':aWeb['id']})
   print "Removed domain [%s,%s]" % (cache,dns)
@@ -103,13 +103,13 @@ def domain_delete(aWeb):
 #
 #
 def domain_cache_add(aWeb):
- res = aWeb.rest("sdcpdns_domain_add",{'id':aWeb['id'],'name':aWeb['name']})
+ res = aWeb.rest_call("sdcpdns_domain_add",{'id':aWeb['id'],'name':aWeb['name']})
  print "<ARTICLE>Inserted (%s:%s): %i</ARTICLE>"%(aWeb['id'],aWeb['name'],res['xist'])
 
 #
 #
 def domain_cache_delete(aWeb):
- res = aWeb.rest("sdcpdns_domain_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("sdcpdns_domain_delete",{'id':aWeb['id']})
  print "<ARTICLE>Delete %s: %i</ARTICLE>"%(aWeb['id'],res['xist'])
 
 ############################################ Records ###########################################
@@ -170,7 +170,7 @@ def record_delete(aWeb):
  print "Remove {} - Results:{}".format(aWeb['id'],res)
 
 def record_transfer(aWeb):
- res = aWeb.rest("device_update",{'id':aWeb['dev'],'devices_%s_id'%aWeb['type']:aWeb['id']})
+ res = aWeb.rest_call("device_update",{'id':aWeb['dev'],'devices_%s_id'%aWeb['type']:aWeb['id']})
  print "Updated device %s - Results:%s"%(aWeb['dev'],str(res))
 
 def record_create(aWeb):
@@ -182,7 +182,7 @@ def record_create(aWeb):
   data = {'id':'new','type':'ptr','domain_id':aWeb['dom_id'],'content':aWeb['fqdn'],'name':GL.ip2ptr(aWeb['ip'])}
  operation['dns'] = aWeb.rest_generic(PC.dns['url'],"{}_record_update".format(PC.dns['type']),data)
  if operation['dns']['xist'] == 1:
-  operation['device'] = aWeb.rest("device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:operation['dns']['id']})
+  operation['device'] = aWeb.rest_call("device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:operation['dns']['id']})
  print "Created record result: %s"%str(operation)
 
 ############################################ Tools ###########################################
@@ -190,7 +190,7 @@ def record_create(aWeb):
 #
 def load(aWeb):
  dns = aWeb.rest_generic(PC.dns['url'], "{}_domains".format(PC.dns['type'])) 
- res = aWeb.rest("sdcpdns_load",{'domains':dns['domains']})
+ res = aWeb.rest_call("sdcpdns_load",{'domains':dns['domains']})
  print "<ARTICLE>%s</ARTICLE>"%(res)
 
 #
@@ -198,11 +198,11 @@ def load(aWeb):
 def consistency(aWeb):
  print "<ARTICLE><P>DNS Consistency</P><SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Value</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Key</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
- domains = aWeb.rest("sdcpdns_domains",{'index':'name'})['domains']
+ domains = aWeb.rest_call("sdcpdns_domains",{'index':'name'})['domains']
  for type in ['a','ptr']:
   records = aWeb.rest_generic(PC.dns['url'],"{}_records".format(PC.dns['type']),{'type':type})['records']
   tid = "{}_id".format(type)
-  devices = aWeb.rest("device_list",{"index":"ipasc" if type == 'a' else "fqdn"})['data']
+  devices = aWeb.rest_call("device_list",{"index":"ipasc" if type == 'a' else "fqdn"})['data']
   for rec in records:
    dev = devices.pop(rec['content'],None)
    if not dev or dev[tid] != rec['id']:

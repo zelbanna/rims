@@ -9,7 +9,7 @@ __status__ = "Production"
 __icon__ = 'images/icon-servers.png'
 
 def main(aWeb):
- rows = aWeb.rest("device_list_type",{'base':'hypervisor'})['data']
+ rows = aWeb.rest_call("device_list_type",{'base':'hypervisor'})['data']
  print "<NAV><UL>&nbsp;</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
@@ -33,7 +33,7 @@ def main(aWeb):
 #
 def manage(aWeb):
  id = aWeb['id']
- data = aWeb.rest("device_info",{'id':id})
+ data = aWeb.rest_call("device_info",{'id':id})
  print "<NAV><UL>"
  print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='sdcp.cgi?call=esxi_op&nstate=poweroff&id={}'>Shutdown</A></LI>".format(id)
  print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['info']['hostname'],data['info']['domain'])

@@ -11,7 +11,7 @@ from .. import PackageContainer as PC
 #
 #
 def update(aWeb):
- args = aWeb.rest("device_list_mac")
+ args = aWeb.rest_call("device_list_mac")
  print  aWeb.rest_generic(PC.dhcp['url'],"%s_update_server"%(PC.dhcp['type']),{'entries':args})
 
 #

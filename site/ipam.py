@@ -10,7 +10,7 @@ __status__= "Production"
 #
 #
 def list(aWeb):
- res = aWeb.rest("sdcpipam_list")
+ res = aWeb.rest_call("sdcpipam_list")
  print "<ARTICLE><P>Subnets</P><DIV CLASS='controls'>"
  print aWeb.button('reload', DIV='div_content_left',  URL='sdcp.cgi?call=ipam_list')
  print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?call=ipam_info&id=new')
@@ -29,11 +29,11 @@ def list(aWeb):
 def info(aWeb):
  if aWeb['op'] == 'update':
   data = aWeb.get_args2dict()
-  res = aWeb.rest("sdcpipam_update",data)
+  res = aWeb.rest_call("sdcpipam_update",data)
   data['gateway'] = res['gateway']
   data['id']      = res['id']
  else:
-  data = aWeb.rest("sdcpipam_info",{'id':aWeb['id']})['data']
+  data = aWeb.rest_call("sdcpipam_info",{'id':aWeb['id']})['data']
  lock = "readonly" if not data['id'] == 'new' else ""
 
  print "<ARTICLE CLASS=info><P>Subnet Info {}</P>".format("(new)" if data['id'] == 'new' else "")
@@ -56,7 +56,7 @@ def info(aWeb):
 #
 #
 def layout(aWeb):
- data = aWeb.rest("sdcpipam_allocation",{'id':aWeb['id']})
+ data = aWeb.rest_call("sdcpipam_allocation",{'id':aWeb['id']})
  print "<ARTICLE>"
  startn  = int(data['start'])
  starta  = int(data['subnet'].split('.')[3])
@@ -77,5 +77,5 @@ def layout(aWeb):
 #
 #
 def delete(aWeb):
- data = aWeb.rest("sdcpipam_remove",{'id':aWeb['id']})
+ data = aWeb.rest_call("sdcpipam_remove",{'id':aWeb['id']})
  print "<ARTICLE>%s</ARTICLE"%(data)

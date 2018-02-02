@@ -48,7 +48,7 @@ def db_structure(aWeb):
 #
 def db_table(aWeb):
  from json import dumps
- db = aWeb.rest("tools_db_table",{'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db']
+ db = aWeb.rest_call("tools_db_table",{'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db']
  print "<PRE>{}</PRE>".format(dumps(db, indent=4, sort_keys=True))
 
 #
@@ -67,7 +67,7 @@ def test_sleep(aWeb):
 #
 #
 def test_rest(aWeb):
- print aWeb.rest("tools_test")
+ print aWeb.rest_call("tools_test")
 
 #
 #
