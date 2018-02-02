@@ -41,7 +41,7 @@ class Web(object):
   log(aMsg,'sdcp')
 
  # Simplified SDCP REST call
- def rest(self, aAPI, aArgs = None):
+ def rest_call(self, aAPI, aArgs = None):
   from rest import call
   return call(self._rest_url, aAPI, aArgs )['data']
 
