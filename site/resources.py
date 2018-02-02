@@ -23,7 +23,7 @@ def main(aWeb):
 #
 def view(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
- res = aWeb.rest("resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id']})
+ res = aWeb.rest_call("resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id']})
  index = 0;
  print "<DIV CLASS=centered STYLE='align-items:initial'>"
  for row in res['data']:
@@ -44,7 +44,7 @@ def list(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('sdcp')
- res = aWeb.rest("resources_list",{'user_id':cookie['id']})
+ res = aWeb.rest_call("resources_list",{'user_id':cookie['id']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list')
@@ -81,10 +81,10 @@ def info(aWeb):
   data['private'] = aWeb.get('private',"0")
   data['user_id'] = aWeb.get('user_id',cookie['id'])
   if aWeb['op'] == 'update':
-   res = aWeb.rest("resources_info",data)
+   res = aWeb.rest_call("resources_info",data)
    data['id'] = res['id']
  else:
-  data = aWeb.rest("resources_info",data)['data']
+  data = aWeb.rest_call("resources_info",data)['data']
 
  print "<ARTICLE><P>Resource entity ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_resource_info_form>"
@@ -118,5 +118,5 @@ def info(aWeb):
 #
 #
 def delete(aWeb):
- res = aWeb.rest("resources_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("resources_delete",{'id':aWeb['id']})
  print "<ARTICLE>Result: %s</ARTICLE>"%(res)

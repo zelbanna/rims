@@ -17,9 +17,9 @@ def list(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
 
  if aWeb['op']:
-  aWeb.rest("booking_update",{'device_id':aWeb['device_id'],'user_id':aWeb['user_id'],'op':aWeb['op']})
+  aWeb.rest_call("booking_update",{'device_id':aWeb['device_id'],'user_id':aWeb['user_id'],'op':aWeb['op']})
 
- rows = aWeb.rest("booking_list")['list']
+ rows = aWeb.rest_call("booking_list")['list']
 
  print "<ARTICLE><P>Bookings</P>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=bookings_list')

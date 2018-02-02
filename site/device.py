@@ -21,7 +21,7 @@ def main(aWeb):
  if target == 'vm':
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  else:
-  data = aWeb.rest("racks_info",{'id':arg} if target == 'rack_id' else None)
+  data = aWeb.rest_call("racks_info",{'id':arg} if target == 'rack_id' else None)
   for type in ['pdu','console']:
    if len(data[type]) > 0:
     print "<LI CLASS='dropdown'><A>%s</A><DIV CLASS='dropdown-content'>"%(type.title())
@@ -51,7 +51,7 @@ def list(aWeb):
  args = {'sort':aWeb.get('sort','ip')}
  if aWeb['target']:
   args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
- res = aWeb.rest("device_list",args)
+ res = aWeb.rest_call("device_list",args)
  print "<ARTICLE><P>Devices</P><DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?{}'.format(aWeb.get_args()))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=device_new&{}'.format(aWeb.get_args()))
@@ -74,14 +74,14 @@ def info(aWeb):
 
  cookie = aWeb.cookie_unjar('sdcp')
 
- dns   = aWeb.rest("sdcpdns_domains",{'filter':'forward','index':'id'})['domains']
- infra = aWeb.rest("racks_infra")
+ dns   = aWeb.rest_call("sdcpdns_domains",{'filter':'forward','index':'id'})['domains']
+ infra = aWeb.rest_call("racks_infra")
 
  op    = aWeb.get('op',"")
  opres = {}
  ###################### Update ###################
  if op == 'lookup':
-  opres['lookup'] = aWeb.rest("device_detect",{'ip':aWeb['ip'],'update':True,'id':aWeb['id']})
+  opres['lookup'] = aWeb.rest_call("device_detect",{'ip':aWeb['ip'],'update':True,'id':aWeb['id']})
 
  elif op == 'update':
   from .. import PackageContainer as PC
@@ -94,7 +94,7 @@ def info(aWeb):
     d['devices_comment'] = 'NULL'
 
    fqdn   = ".".join([d['devices_hostname'],  dns[d['devices_a_dom_id']]['name']])
-   dom_id = aWeb.rest("sdcpdns_domains",{'filter':'reverse','index':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
+   dom_id = aWeb.rest_call("sdcpdns_domains",{'filter':'reverse','index':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
 
    opres['a'] = aWeb.rest_generic(PC.dns['url'], "{}_record_update".format(PC.dns['type']), { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
    if dom_id:
@@ -108,18 +108,18 @@ def info(aWeb):
     else:
      d.pop('devices_%s_id'%type,None)
    
-   opres['update'] = aWeb.rest("device_update",d)
+   opres['update'] = aWeb.rest_call("device_update",d)
 
  elif "book" in op:
-  aWeb.rest("booking_update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':op})
+  aWeb.rest_call("booking_update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':op})
 
- dev = aWeb.rest("device_info",{'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
+ dev = aWeb.rest_call("device_info",{'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
 
  if dev['exist'] == 0:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
   return
  if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
-  opres['pdu'] = aWeb.rest("device_update_pdu",dev['rack'])
+  opres['pdu'] = aWeb.rest_call("device_update_pdu",dev['rack'])
 
  ########################## Data Tables ######################
 
@@ -261,7 +261,7 @@ def info(aWeb):
 
 def conf_gen(aWeb):
  type = aWeb['type_name']
- res  = aWeb.rest("device_info",{'id':aWeb.get('id','0')})
+ res  = aWeb.rest_call("device_info",{'id':aWeb.get('id','0')})
  data = res['info']
  subnet,void,mask = data['subnet'].partition('/')
  print "<ARTICLE>"
@@ -294,7 +294,7 @@ def op_function(aWeb):
 #
 #
 def mac_sync(aWeb):
- macs = aWeb.rest("tools_mac_sync")
+ macs = aWeb.rest_call("tools_mac_sync")
  print "<ARTICLE CLASS=info>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
@@ -325,15 +325,15 @@ def new(aWeb):
    args['target'] = aWeb['target']
    args['arg']    = aWeb['arg']
    args['vm'] = 0
-  res = aWeb.rest("device_new",args)
+  res = aWeb.rest_call("device_new",args)
   print "Operation:%s"%str(res)
   aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(cookie['id'],args,res))
  elif op == 'find':
-  print aWeb.rest("sdcpipam_find",{'id':subnet_id})['ip']
+  print aWeb.rest_call("sdcpipam_find",{'id':subnet_id})['ip']
  else:
   domain  = aWeb['domain']
-  subnets = aWeb.rest("sdcpipam_list")['subnets']
-  domains = aWeb.rest("sdcpdns_domains",{'filter':'forward'})['domains']
+  subnets = aWeb.rest_call("sdcpipam_list")['subnets']
+  domains = aWeb.rest_call("sdcpdns_domains",{'filter':'forward'})['domains']
   print "<ARTICLE CLASS=info><P>Add Device</P>"
   print "<!-- {} -->".format(aWeb.get_args2dict_except())
   print "<FORM ID=device_new_form>"
@@ -365,7 +365,7 @@ def new(aWeb):
 #
 def remove(aWeb):
  id  = aWeb['id']
- res = aWeb.rest("device_remove",{ 'id':id })
+ res = aWeb.rest_call("device_remove",{ 'id':id })
  print "<ARTICLE>"
  print "Unit {} deleted, op:{}".format(id,res['deleted'])
  if not str(res['deleted']) == '0':
@@ -383,11 +383,11 @@ def discover(aWeb):
  if op:
   # id, subnet int, subnet mask
   ipam  = aWeb.get('ipam_subnet',"0_0_32").split('_')
-  res = aWeb.rest("device_discover",{ 'subnet_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':aWeb['a_dom_id'], 'clear':aWeb.get('clear',False)}, aTimeout = 200)
+  res = aWeb.rest_call("device_discover",{ 'subnet_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':aWeb['a_dom_id'], 'clear':aWeb.get('clear',False)}, aTimeout = 200)
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
-  subnets = aWeb.rest("sdcpipam_list")['subnets']
-  domains = aWeb.rest("sdcpdns_domains",{'filter':'forward'})['domains']
+  subnets = aWeb.rest_call("sdcpipam_list")['subnets']
+  domains = aWeb.rest_call("sdcpdns_domains",{'filter':'forward'})['domains']
   dom_name = aWeb['domain']
   print "<ARTICLE CLASS=info><P>Device Discovery</P>"
   print "<FORM ID=device_discover_form>"
@@ -411,14 +411,14 @@ def discover(aWeb):
 # clear db
 #
 def clear_db(aWeb):
- res = aWeb.rest("device_clear")
+ res = aWeb.rest_call("device_clear")
  print "<<ARTICLE>%s</ARTICLE>"%(res)
 
 #
 # Generate output for munin, until we have other types
 #
 def graph_save(aWeb):
- res = aWeb.rest("device_graph_save")
+ res = aWeb.rest_call("device_graph_save")
  print "<ARTICLE>Done updating devices' graphing (%s)</ARTICLE>"%(res)
 
 #
@@ -430,13 +430,13 @@ def graph_info(aWeb):
  if aWeb['op'] == 'update':
   proxy = GL.ip2int(aWeb['graph_proxy'])
   update= aWeb.get('graph_update','0')
-  res['op'] = aWeb.rest("device_update",{'id':id,'devices_graph_proxy':proxy,'devices_graph_update':update})['data']
+  res['op'] = aWeb.rest_call("device_update",{'id':id,'devices_graph_proxy':proxy,'devices_graph_update':update})['data']
 
- dev = aWeb.rest("device_info",{'id':id})
+ dev = aWeb.rest_call("device_info",{'id':id})
  proxy = GL.int2ip(dev['info']['graph_proxy'])
 
  if aWeb['op'] == 'search':
-  res['op'] = aWeb.rest("device_graph_detect",{'ip':dev['ip'],'type_name':dev['info']['type_name'],'fqdn':dev['fqdn']}, aTimeout = 60)
+  res['op'] = aWeb.rest_call("device_graph_detect",{'ip':dev['ip'],'type_name':dev['info']['type_name'],'fqdn':dev['fqdn']}, aTimeout = 60)
 
  print "<ARTICLE CLASS='info'><P>Graph for %s</DIV>"%(dev['fqdn'])
  print "<FORM ID=device_graph_form>"

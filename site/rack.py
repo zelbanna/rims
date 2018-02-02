@@ -11,7 +11,7 @@ __icon__ = 'images/icon-rack.png'
 ################################################## Basic Rack Info ######################################################
 
 def main(aWeb):
- racks = aWeb.rest("racks_list")
+ racks = aWeb.rest_call("racks_list")
  print "<NAV><UL>&nbsp;</UL></NAV>"
  print "<H1 CLASS='centered'>Rack Overview</H1>"
  print "<DIV CLASS='centered'>"
@@ -24,7 +24,7 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- racks = aWeb.rest("racks_list",{"sort":"name"})
+ racks = aWeb.rest_call("racks_list",{"sort":"name"})
  print "<ARTICLE><P>Rack</P>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=rack_list')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=rack_info&id=new')
@@ -38,7 +38,7 @@ def list(aWeb):
 #
 def list_infra(aWeb):
  type = aWeb['type']
- devices = aWeb.rest("device_list_type",{'base':type})['data']
+ devices = aWeb.rest_call("device_list_type",{'base':type})['data']
  print "<ARTICLE><P>%ss</P>"%type.title()
  print aWeb.button('reload',DIV='div_content_left',  URL='sdcp.cgi?call=rack_list_infra&type=%s'%type)
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
@@ -52,7 +52,7 @@ def list_infra(aWeb):
 #
 #
 def inventory(aWeb):
- data = aWeb.rest("racks_devices",{"id":aWeb['rack']})
+ data = aWeb.rest_call("racks_devices",{"id":aWeb['rack']})
  size = data['size']
  print "<DIV STYLE='display:grid; justify-items:stretch; align-items:stretch; margin:10px; grid: repeat({}, 20px)/20px 220px 20px 20px 20px 220px 20px;'>".format(size)
  # Create rack and some text, then place devs
@@ -85,11 +85,11 @@ def info(aWeb):
  from os import listdir, path
  if aWeb.get('op') == 'save':
   data = {'name':aWeb['name'],'size':aWeb['size'],'pdu_1':aWeb['pdu_1'],'pdu_2':aWeb['pdu_2'],'console':aWeb['console'],'image_url':aWeb['image_url'],'id':aWeb['id']}
-  res = aWeb.rest("racks_update",data)
+  res = aWeb.rest_call("racks_update",data)
   id = res['id']
  else:
   id = aWeb['id']
- info = aWeb.rest("racks_infra",{'id':id})
+ info = aWeb.rest_call("racks_infra",{'id':id})
  
  print "<ARTICLE CLASS=info><P>Rack Info {}</P>".format("(new)" if id == 'new' else "")
  print "<FORM ID=rack_info_form>"
@@ -130,5 +130,5 @@ def info(aWeb):
 #
 #
 def remove(aWeb):
- res = aWeb.rest("racks_remove",{'id':aWeb['id']})
+ res = aWeb.rest_call("racks_remove",{'id':aWeb['id']})
  print "<ARTICLE>Rack %s deleted (%s)</ARTICLE>"%(aWeb['id'],res)

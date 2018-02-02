@@ -20,7 +20,7 @@ def manage(aWeb):
  if aWeb['ip']:
   ip = aWeb['ip']
  else:
-  ip = aWeb.rest("device_info",{'id':aWeb['id']})['ip']
+  ip = aWeb.rest_call("device_info",{'id':aWeb['id']})['ip']
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_status&ip=%s>Status</A></LI>"%ip
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&ip=%s>Devices</A></LI>"%ip

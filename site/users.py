@@ -15,7 +15,7 @@ def main(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('sdcp')
- info = aWeb.rest("users_info",{'id':cookie['id']})
+ info = aWeb.rest_call("users_info",{'id':cookie['id']})
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=users_list'>Users</A></LI>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A></LI>"
@@ -39,7 +39,7 @@ def user(aWeb):
  print "</SECTION>"
 
 def list(aWeb):
- rows = aWeb.rest("users_list")['data']
+ rows = aWeb.rest_call("users_list")['data']
  print "<ARTICLE><P>Users</P>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=users_list')
  print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?call=users_info&id=new')
@@ -63,13 +63,13 @@ def info(aWeb):
   data['view_public']  = aWeb.get('view_public','0')
   data['menulist'] = aWeb.get('menulist','default')
   if aWeb['op'] == 'update':
-   res = aWeb.rest("users_info",data)
+   res = aWeb.rest_call("users_info",data)
    if data['id'] == 'new':
     data['id'] = res['id']
  else:
-  data = aWeb.rest("users_info",data)['data']
+  data = aWeb.rest_call("users_info",data)['data']
 
- resources = aWeb.rest("resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True})['data']
+ resources = aWeb.rest_call("resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True})['data']
  print aWeb.dragndrop()
  print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_user_info_form>"
@@ -110,5 +110,5 @@ def info(aWeb):
 #
 #
 def remove(aWeb):
- res = aWeb.rest("resources_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("resources_delete",{'id':aWeb['id']})
  print "<ARTICLE>USer with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res['result'])
