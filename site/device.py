@@ -436,7 +436,8 @@ def graph_info(aWeb):
  proxy = GL.int2ip(dev['info']['graph_proxy'])
 
  if aWeb['op'] == 'search':
-  res['op'] = aWeb.rest_call("device_graph_detect",{'ip':dev['ip'],'type_name':dev['info']['type_name'],'fqdn':dev['fqdn']}, aTimeout = 60)
+  plugfile  = aWeb.rest_call("settings_param",{'type':'graph','parameter':'plugins'})['data']['value']
+  res['op'] = aWeb.rest_call("device_graph_detect",{'ip':dev['ip'],'type_name':dev['info']['type_name'],'fqdn':dev['fqdn'],'plugin_file':plugfile}, aTimeout = 60)
 
  print "<ARTICLE CLASS='info'><P>Graph for %s</DIV>"%(dev['fqdn'])
  print "<FORM ID=device_graph_form>"

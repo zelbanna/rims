@@ -51,6 +51,15 @@ def parameter(aDict):
 
 #
 #
+def type(aDict):
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT id,parameter,value,description FROM settings WHERE type = '%s'"%(aDict['type']))
+  ret['data'] = db.get_dict('parameter')
+ return ret
+
+#
+#
 def all(aDict):
  ret = {}
  with DB() as db:

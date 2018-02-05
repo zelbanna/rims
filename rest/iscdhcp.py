@@ -7,8 +7,6 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
-from .. import PackageContainer as PC
-
 #
 #
 #
@@ -17,7 +15,7 @@ def leases(aDict):
  from ..core import genlib as GL
  result = []
  lease  = {}
- with open(PC.dhcp['leasefile'],'r') as leasefile: 
+ with open(aDict['settings']['active']['value'],'r') as leasefile: 
   for line in leasefile:
    if line == '\n':
     continue
@@ -45,13 +43,13 @@ def leases(aDict):
 def update_server(aDict):
  entries = aDict['entries']
  # Create new file
- with open(PC.dhcp['file'],'w') as leasefile:
+ with open(aDict['settings']['static']['value'],'w') as leasefile:
   for entry in entries:
    leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Subnet {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['subnet_id'],entry['id'])) 
 
  # Reload
  from subprocess import check_output, CalledProcessError
- commands = PC.dhcp['reload'].split()
+ commands = aDict['settings']['reload']['value'].split()
  ret = {}
  try:
   ret['output'] = check_output(commands)
