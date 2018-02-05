@@ -154,6 +154,18 @@ CREATE TABLE `resources` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
+DROP TABLE IF EXISTS `settings`;
+CREATE TABLE `settings` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` varchar(20) DEFAULT 'generic',
+  `parameter` varchar(40) DEFAULT NULL,
+  `value` varchar(100) DEFAULT NULL,
+  `description` text,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `parameter` (`type`,`parameter`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 DROP TABLE IF EXISTS `subnets`;
 CREATE TABLE `subnets` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,

@@ -79,19 +79,6 @@ def install(aDict):
    wr("cgi.server()\n")
   chmod(site,0755)
   ret["cgi_{}".format(dest)] = 'OK'
-
- #
- # Generate ERD
- if aDict['generic'].get('db'):
-  try:
-   from eralchemy import render_er
-   erd_input = "mysql+pymysql://{}:{}@127.0.0.1/{}".format(aDict['generic']['dbuser'],aDict['generic']['dbpass'],aDict['generic']['db'])
-   erd_output= ospath.join(aDict['generic']['docroot'],"sdcp") + ".pdf"
-   render_er(erd_input,erd_output)
-   ret['ERD'] = 'OK'
-  except Exception, e:
-   ret['error'] = str(e)
-   ret['ERD'] = 'NOT_OK'
  
  #
  # Copy files
@@ -101,8 +88,19 @@ def install(aDict):
   ret[type] = 'OK'
 
  #
- # Insert correct types into modules DB
+ # Generate ERD and Insert correct types into modules DB
  if aDict['generic'].get('db'):
+  # Generate ERD
+  try:
+   from eralchemy import render_er
+   erd_input = "mysql+pymysql://{}:{}@127.0.0.1/{}".format(aDict['generic']['dbuser'],aDict['generic']['dbpass'],aDict['generic']['db'])
+   erd_output= ospath.join(aDict['generic']['docroot'],"sdcp") + ".pdf"
+   render_er(erd_input,erd_output)
+   ret['ERD'] = 'OK'
+  except Exception, e:
+   ret['error'] = str(e)
+   ret['ERD'] = 'NOT_OK'
+
   from ..core.dbase import DB
   from ..core.mysql import diff
   ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
