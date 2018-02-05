@@ -10,28 +10,28 @@ __icon__ = 'images/icon-examine.png'
 
 from .. import PackageContainer as PC
 
-############################################ Examine ##############################################
+############################################ Monitor ##############################################
 #
-# Examine Logs
+# Monitor Logs
 #
 def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  print "<NAV><UL>"
- print "<LI CLASS='warning'><A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=examine_clear&ip=%s'>Clear Logs</A></LI>"%",".join(PC.generic['hosts'])
+ print "<LI CLASS='warning'><A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=monitor_clear&ip=%s'>Clear Logs</A></LI>"%",".join(PC.generic['hosts'])
  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
  for host in PC.generic['hosts']:
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_logs&ip=%s>%s</A>"%(host,host)
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=monitor_logs&ip=%s>%s</A>"%(host,host)
  print "</DIV></LI>"
  if PC.generic['upshost']:
-  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=examine_ups>UPS</A></LI>"
+  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=monitor_ups>UPS</A></LI>"
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dns_top>DNS</A></LI>"
  print "<LI CLASS='dropdown'><A>DHCP</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&type=active>Active</A>"
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&type=free>Free</A>"
  print "</DIV></LI>"
- print "<LI><A CLASS='z-op reload' DIV=main URL=sdcp.cgi?call=examine_main></A></LI>"
+ print "<LI><A CLASS='z-op reload' DIV=main URL=sdcp.cgi?call=monitor_main></A></LI>"
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
 
