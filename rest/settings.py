@@ -63,12 +63,15 @@ def type(aDict):
 def all(aDict):
  ret = {}
  with DB() as db:
-  db.do("SELECT DISTINCT type FROM settings")
-  types = db.get_rows()
+  if not aDict.get('type'):
+   db.do("SELECT DISTINCT type FROM settings")
+   types = db.get_rows()
+  else:
+   types = [{'type':aDict['type']}]
   for tp in types:
    type = tp['type']
    db.do("SELECT parameter,id,value,description FROM settings WHERE type = '%s'"%(type))
-   ret[type] = db.get_dict('parameter')
+   ret[type] = db.get_dict('parameter')   
  return ret
 
 #

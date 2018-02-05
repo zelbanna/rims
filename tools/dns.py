@@ -16,13 +16,15 @@ loopia_domain_server_url = 'https://api.loopia.se/RPCSERV'
 
 def set_loopia_ip(subdomain, newip):
  from ..import PackageContainer as PC
+ from ..rest.core import call
  import xmlrpclib
+ loopia = call(PC.generic['url'],"settings_type",{'type':'loopia'})['data']
  try:
-  client = xmlrpclib.ServerProxy(uri = loopia_domain_server_url, encoding = 'utf-8')
-  data = client.getZoneRecords(PC.loopia['username'], PC.loopia['password'], PC.loopia['domain'], subdomain)[0]
+  client = xmlrpclib.ServerProxy(uri = loopia['rpc_server']['value'], encoding = 'utf-8')
+  data = client.getZoneRecords(loopia['username']['value'], loopia['password']['value'], loopia['domain']['value'], subdomain)[0]
   oldip = data['rdata']
   data['rdata'] = newip
-  status = client.updateZoneRecord(PC.loopia['username'], PC.loopia['password'], PC.loopia['domain'], subdomain, data)[0]
+  status = client.updateZoneRecord(loopia['username']['value'], loopia['password']['value'], loopia['domain']['value'], subdomain, data)[0]
  except Exception as exmlrpc:
   log("System Error - Loopia set: " + str(exmlrpc))
   return False
@@ -33,10 +35,12 @@ def set_loopia_ip(subdomain, newip):
 #
 def get_loopia_ip(subdomain):
  from ..import PackageContainer as PC
+ from ..rest.core import call
  import xmlrpclib
+ loopia = call(PC.generic['url'],"settings_type",{'type':'loopia'})['data']
  try:
-  client = xmlrpclib.ServerProxy(uri = loopia_domain_server_url, encoding = 'utf-8')
-  data = client.getZoneRecords(PC.loopia['username'], PC.loopia['password'], PC.loopia['domain'], subdomain)[0]
+  client = xmlrpclib.ServerProxy(uri = loopia['rpc_server']['value'], encoding = 'utf-8')
+  data = client.getZoneRecords(loopia['username']['value'], loopia['password']['value'], loopia['domain']['value'], subdomain)[0]
   return data['rdata']
  except Exception as exmlrpc:
   log("System Error - Loopia get: " + str(exmlrpc))
@@ -44,7 +48,9 @@ def get_loopia_ip(subdomain):
 
 def get_loopia_suffix():
  from ..import PackageContainer as PC
- return "." + PC.loopia['domain']
+ from ..rest.core import call
+ loopia = call(PC.generic['url'],"settings_parameter",{'type':'loopia','parameter':'domain'})['data']
+ return "." + loopia['domain']['value']
 
 ################################# OpenDNS ######################################
 #

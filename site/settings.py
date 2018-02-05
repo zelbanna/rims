@@ -23,7 +23,7 @@ def list(aWeb):
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Parameter</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td TITLE='%s'><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=settings_info&id=%s'>%s</A></DIV>"%(row['id'],row['type'],row['description'],row['id'],row['parameter'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=settings_all&type=%s'>%s</A></DIV><DIV CLASS=td TITLE='%s'><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=settings_info&id=%s'>%s</A></DIV>"%(row['id'],row['type'],row['type'],row['description'],row['id'],row['parameter'])
   print "</DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -64,4 +64,4 @@ def info(aWeb):
 #
 def all(aWeb):
  from json import dumps
- print "<ARTICLE><PRE>%s<PRE></ARTICLE>"%(dumps(aWeb.rest_call("settings_all"),indent=4))
+ print "<ARTICLE><PRE>%s<PRE></ARTICLE>"%(dumps(aWeb.rest_call("settings_all",{'type':aWeb['type']}),indent=4))

@@ -31,6 +31,7 @@ def main(aWeb):
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
  for host in PC.generic['hosts']:
   print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host=%s'>Reinstall %s</A>"%(host,host)
+ print "<A CLASS=z-op DIV=div_content           URL='sdcp.cgi?call=tools_test'>Test</A>"
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Settings</A><DIV CLASS='dropdown-content'>"
  for host in PC.generic['hosts']:
@@ -49,6 +50,9 @@ def db_structure(aWeb):
  print "<P CLASS='machine-text'>"
  print "<BR>".join(dump({'mode':'structure'})['output'])
  print "</P></ARTICLE>"
+
+def test(aWeb):
+ pass
 
 #
 #
