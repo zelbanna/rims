@@ -14,7 +14,8 @@ def list(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('sdcp')
- res = aWeb.rest_call("settings_list",{'user_id':cookie['id']})
+ host = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
+ res = aWeb.rest_generic(host['value'],"settings_list",{'user_id':cookie['id']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Settings</P>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=settings_list')
@@ -23,7 +24,7 @@ def list(aWeb):
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Parameter</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=settings_all&type=%s'>%s</A></DIV><DIV CLASS=td TITLE='%s'><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=settings_info&id=%s'>%s</A></DIV>"%(row['id'],row['type'],row['type'],row['description'],row['id'],row['parameter'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=settings_all&type={1}&host={2}'>{1}</A></DIV><DIV CLASS=td TITLE='{3}'><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=settings_info&id={0}&host={2}'>{4}</A></DIV>".format(row['id'],row['type'],aWeb['host'],row['description'],row['parameter'])
   print "</DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -33,6 +34,7 @@ def list(aWeb):
 def info(aWeb):
  from os import listdir, path
  cookie = aWeb.cookie_unjar('sdcp')
+ host   = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
  data  = {'id':aWeb.get('id','new')}
  if aWeb['op'] or data['id'] == 'new':
   data['op']    = aWeb['op']
@@ -41,10 +43,10 @@ def info(aWeb):
   data['parameter']   = aWeb.get('parameter','Not set')
   data['description'] = aWeb.get('description','Not set') 
   if aWeb['op'] == 'update':
-   res = aWeb.rest_call("settings_info",data)
+   res = aWeb.rest_generic(host['value'],"settings_info",data)
    data['id'] = res['id']
  else:
-  data = aWeb.rest_call("settings_info",data)['data']
+  data = aWeb.rest_generic(host['value'],"settings_info",data)['data']
  print "<ARTICLE CLASS=info><P>Settings ({})</P>".format(data['id'])
  print "<FORM ID=sdcp_settings_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
@@ -64,4 +66,5 @@ def info(aWeb):
 #
 def all(aWeb):
  from json import dumps
- print "<ARTICLE><PRE>%s<PRE></ARTICLE>"%(dumps(aWeb.rest_call("settings_all",{'type':aWeb['type']}),indent=4))
+ host   = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
+ print "<ARTICLE><PRE>%s<PRE></ARTICLE>"%(dumps(aWeb.rest_generic(host['value'],"settings_all",{'type':aWeb['type']}),indent=4))

@@ -14,7 +14,7 @@ def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- from .. import PackageContainer as PC
+ hosts = aWeb.rest_call("settings_list",{'type':'rest'})['data']
  print "<NAV><UL>"
  print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>List resources</A>"
@@ -29,13 +29,12 @@ def main(aWeb):
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.cgi?call=tools_db_table'>DB - Dump Device Table to JSON</A>"
  print "<A CLASS=z-op DIV=div_content           URL='sdcp.cgi?call=tools_db_structure'>DB - View Structure</A>"
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
- for host in PC.generic['hosts']:
-  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host=%s'>Reinstall %s</A>"%(host,host)
- print "<A CLASS=z-op DIV=div_content           URL='sdcp.cgi?call=tools_test'>Test</A>"
+ for host in hosts:
+  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host=%s'>Reinstall %s</A>"%(host['id'],host['parameter'])
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Settings</A><DIV CLASS='dropdown-content'>"
- for host in PC.generic['hosts']:
-  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&host=%s'>%s</A>"%(host,host)
+ for host in hosts:
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&host=%s'>%s</A>"%(host['id'],host['parameter'])
  print "</DIV></LI>"
  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
@@ -51,9 +50,6 @@ def db_structure(aWeb):
  print "<BR>".join(dump({'mode':'structure'})['output'])
  print "</P></ARTICLE>"
 
-def test(aWeb):
- pass
-
 #
 #
 def db_table(aWeb):
@@ -65,7 +61,8 @@ def db_table(aWeb):
 #
 def install(aWeb):
  from json import dumps
- print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_generic("http://%s/rest.cgi"%aWeb['host'],"tools_installation"),indent = 4)
+ dev = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
+ print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_generic(dev['value'],"tools_installation"),indent = 4)
 
 #
 #
