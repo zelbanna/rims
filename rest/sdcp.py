@@ -14,8 +14,10 @@ from ..core.dbase import DB
 def application(aDict):
  """ Default login information """
  from .. import PackageContainer as PC
- ret = {'title':PC.generic['name'],'portal':"sdcp_portal",'message':"Welcome to the Management Portal",'parameters':[]}
+ ret = {'portal':"sdcp_portal",'message':"Welcome to the Management Portal",'parameters':[]}
  with DB() as db:
+  xist = db.do("SELECT value FROM settings WHERE type = 'generic' AND parameter = 'title'")
+  ret['title'] = db.get_val('value') if xist > 0 else 'New Installation'
   db.do("SELECT CONCAT(id,'_',name) as id, name FROM users ORDER BY name")
   rows = db.get_rows()
  ret['choices'] = [{'display':'Username', 'id':'sdcp_login', 'data':rows}]
@@ -26,35 +28,38 @@ def application(aDict):
 # Clear logs
 #
 def logs_clear(aDict):
- from ..core.logger import log
- logfiles = aDict.get('logs')
- ret = {}
- for logfile in logfiles:
+ from ..core.logger import log as logging
+ ret = {} 
+ with DB() as db:
+  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE type = 'logs'")
+  logs = db.get_rows()
+ for log in logs:
   try:
-   open(logfile,'w').close()
-   log("Emptied log [{}]".format(logfile))
-   ret[logfile] = 'CLEARED'
+   open(log['value'],'w').close()
+   logging("Emptied log [{}]".format(log['value']))
+   ret[log['parameter']] = 'CLEARED'
   except Exception as err:
-   ret[logfile] = 'ERROR:{}'.format(str(err))
+   ret[log['parameter']] = 'ERROR: %s'%(str(err))
  return ret
 
 #
 # - count: number of lines
-# - logs: list of files to open locally
 #
 def logs_get(aDict):
- count = int(aDict.get('count',15))
- logfiles = aDict['logs']
  ret = {}
- for logfile in logfiles:
-  logs = ["\r" for i in range(count)]
+ with DB() as db:
+  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE type = 'logs'")
+  logs = db.get_rows()
+ count = int(aDict.get('count',15))
+ for log in logs:
+  lines = ["\r" for i in range(count)]
   pos = 0
   try:
-   with open(logfile,'r') as f:
+   with open(log['value'],'r') as f:
     for line in f:
-     logs[pos] = line
+     lines[pos] = line
      pos = (pos + 1) % count
-    ret[logfile] = [logs[(pos + n) % count][:-1] for n in reversed(range(count))]
+    ret[log['parameter']] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
   except Exception as err:
-   ret[logfile] = ['ERROR: {}'.format(str(err))]
+   ret[log['parameter']] = ['ERROR: %s'%(str(err))]
  return ret

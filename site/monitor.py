@@ -12,25 +12,27 @@ from .. import PackageContainer as PC
 
 ############################################ Monitor ##############################################
 #
-# Monitor Logs
+# Monitor
 #
 def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
+ monitors = aWeb.rest_call("resources_list",{'type':'monitor','view_public':True})['data']
+ hosts    = aWeb.rest_call("settings_list",{'type':'rest'})['data']
  print "<NAV><UL>"
- print "<LI CLASS='warning'><A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=monitor_clear&ip=%s'>Clear Logs</A></LI>"%",".join(PC.generic['hosts'])
+ print "<LI CLASS='warning'><A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=monitor_clear&ip=%s'>Clear Logs</A></LI>"
  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
- for host in PC.generic['hosts']:
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=monitor_logs&ip=%s>%s</A>"%(host,host)
+ for host in hosts:
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=monitor_logs&id=%s>%s</A>"%(host['id'],host['parameter'])
  print "</DIV></LI>"
- if PC.generic['upshost']:
-  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=monitor_ups>UPS</A></LI>"
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dns_top>DNS</A></LI>"
  print "<LI CLASS='dropdown'><A>DHCP</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&type=active>Active</A>"
  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&type=free>Free</A>"
  print "</DIV></LI>"
+ for mon in monitors:
+  print "<LI><A CLASS=z-op DIV=div_content URL='%s'>%s</A></LI>"%(mon['href'],mon['title'])
  print "<LI><A CLASS='z-op reload' DIV=main URL=sdcp.cgi?call=monitor_main></A></LI>"
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
@@ -39,11 +41,12 @@ def main(aWeb):
 #
 #
 def clear(aWeb):
- hosts = aWeb['ip'].split(',')
+ hosts = aWeb.rest_call("settings_list",{'type':'rest'})['data']
  print "<ARTICLE>"
  for host in hosts:
-  res = aWeb.rest_generic("http://%s/rest.cgi"%host,'sdcp_logs_clear',{ 'logs':[PC.generic['logformat'],PC.generic['netlogs']]})
-  print "%s: %s<BR>"%(host, res)
+  try: output = aWeb.rest_generic(host['value'],'sdcp_logs_clear')
+  except Exception,e: output = e[0]['info']
+  print "%s: %s<BR>"%(host['parameter'], output)
  print "</ARTICLE>"
 
 #
@@ -51,7 +54,9 @@ def clear(aWeb):
 #
 # ZEB: ask settings for logs "locally" :-)
 def logs(aWeb):
- res = aWeb.rest_generic("http://%s/rest.cgi"%aWeb['ip'],'sdcp_logs_get',{'count':18,'logs':[PC.generic['logformat'],PC.generic['netlogs']]})
+ dev = aWeb.rest_call("settings_info",{'id':aWeb['id']})['data']
+ res = aWeb.rest_generic(dev['value'],'sdcp_logs_get',{'count':18})
+ res.pop('xist',None)
  for file,logs in res.iteritems():
   print "<ARTICLE><P>%s</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(file,"<BR>".join(logs))
 
@@ -59,8 +64,11 @@ def logs(aWeb):
 # UPS graphs
 #
 def ups(aWeb):
- from ..tools.munin import widget_cols
- upshost,void,domain = PC.generic['upshost'].partition('.')
  print "<ARTICLE>"
- widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
+ if aWeb.get('host'):
+  from ..tools.munin import widget_cols
+  upshost,void,domain = aWeb['host'].partition('.')
+  widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
+ else:
+  print "Missing 'host' var" 
  print "</ARTICLE>"

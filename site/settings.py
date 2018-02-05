@@ -19,10 +19,11 @@ def list(aWeb):
  print "<ARTICLE><P>Settings</P>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=settings_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=settings_info&id=new')
+ print aWeb.button('document', DIV='div_content_right', URL='sdcp.cgi?call=settings_all')
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Parameter</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td TITLE='%s'>%s</DIV>"%(row['id'],row['type'],row['description'],row['parameter'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td TITLE='%s'><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=settings_info&id=%s'>%s</A></DIV>"%(row['id'],row['type'],row['description'],row['id'],row['parameter'])
   print "</DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -32,11 +33,12 @@ def list(aWeb):
 def info(aWeb):
  from os import listdir, path
  cookie = aWeb.cookie_unjar('sdcp')
- data  = {'id':aWeb.get('id','new'),'op':aWeb['op']}
- if aWeb['op'] == 'update' or data['id'] == 'new':
-  data['type']        = aWeb.get('type','Not set')
+ data  = {'id':aWeb.get('id','new')}
+ if aWeb['op'] or data['id'] == 'new':
+  data['op']    = aWeb['op']
+  data['type']  = aWeb.get('type','Not set')
+  data['value'] = aWeb.get('value','Not set')
   data['parameter']   = aWeb.get('parameter','Not set')
-  data['value']       = aWeb.get('value','Not set')
   data['description'] = aWeb.get('description','Not set') 
   if aWeb['op'] == 'update':
    res = aWeb.rest_call("settings_info",data)
@@ -50,7 +52,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT  NAME=type VALUE='%s'  TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%data['type']
  print "<DIV CLASS=tr><DIV CLASS=td>Parameter:</DIV><DIV CLASS=td><INPUT NAME=parameter VALUE='%s' TYPE=TEXT REQUIRED></DIV></DIV>"%data['parameter']
  print "<DIV CLASS=tr><DIV CLASS=td>Value:</DIV><DIV CLASS=td><INPUT NAME=value VALUE='%s' TYPE=TEXT REQUIRED></DIV></DIV>"%data['value']
- print "<DIV CLASS=tr><DIV CLASS=td>Value:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT></DIV></DIV>"%data['description']
+ print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT></DIV></DIV>"%data['description']
  print "</DIV></DIV>"
  print "</FORM><BR>"
  if data['id'] != 'new':
@@ -59,3 +61,7 @@ def info(aWeb):
  print "</ARTICLE>"
 
 #
+#
+def all(aWeb):
+ from json import dumps
+ print "<ARTICLE><PRE>%s<PRE></ARTICLE>"%(dumps(aWeb.rest_call("settings_all"),indent=4))

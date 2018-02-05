@@ -31,9 +31,11 @@ def main(aWeb):
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
  for host in PC.generic['hosts']:
   print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host=%s'>Reinstall %s</A>"%(host,host)
- print "<A CLASS=z-op DIV=div_content            URL='sdcp.cgi?call=tools_test_rest'>Test</A>"
  print "</DIV></LI>"
- print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list'>Settings</A></LI>"
+ print "<LI CLASS='dropdown'><A>Settings</A><DIV CLASS='dropdown-content'>"
+ for host in PC.generic['hosts']:
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&host=%s'>%s</A>"%(host,host)
+ print "</DIV></LI>"
  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  print "</UL></NAV>"
@@ -63,25 +65,14 @@ def install(aWeb):
 
 #
 #
-def test_sleep(aWeb):
- from time import sleep
- sleep(int(aWeb['time']))
- print "Done"
-
-#
-#
-def test_rest(aWeb):
- print aWeb.rest_call("tools_test")
-
-#
-#
 def rest_main(aWeb):
  from .. import PackageContainer as PC
+ devices = aWeb.rest_call("settings_list",{'type':'rest'})['data']
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_rest>"
  print "Choose host and enter API:<SELECT STYLE='height:22px;' NAME=host>"
- for host in PC.generic['hosts']:
-  print "<OPTION VALUE='%s'>%s</A>"%(host,host)
+ for host in devices:
+  print "<OPTION VALUE='%s'>%s</A>"%(host['id'],host['parameter'])
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
  print "Call 'Method': <SELECT STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:
@@ -101,7 +92,8 @@ def rest_execute(aWeb):
  try:    arguments = loads(aWeb['args'])
  except: arguments = None
  try:
-  ret = aWeb.rest_full("http://%s/rest.cgi"%aWeb['host'],aWeb['api'],arguments,aWeb['method'])
+  dev = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
+  ret = aWeb.rest_full(dev['value'],aWeb['api'],arguments,aWeb['method'])
  except Exception,e:
   ret = e[0]
  data = ret.pop('data',None)
