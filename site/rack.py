@@ -81,16 +81,15 @@ def inventory(aWeb):
 #
 #
 def info(aWeb):
- from ..settings.generic import data as Settings
- from os import listdir, path
  if aWeb.get('op') == 'save':
   data = {'name':aWeb['name'],'size':aWeb['size'],'pdu_1':aWeb['pdu_1'],'pdu_2':aWeb['pdu_2'],'console':aWeb['console'],'image_url':aWeb['image_url'],'id':aWeb['id']}
   res = aWeb.rest_call("racks_update",data)
   id = res['id']
  else:
   id = aWeb['id']
- info = aWeb.rest_call("racks_infra",{'id':id})
+ info = aWeb.rest_call("racks_infra",{'id':id,'consoles':True,'pdus':True,'images':True,'types':False})
  
+ print info
  print "<ARTICLE CLASS=info><P>Rack Info {}</P>".format("(new)" if id == 'new' else "")
  print "<FORM ID=rack_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
@@ -100,22 +99,21 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Console:</DIV><DIV CLASS=td><SELECT NAME=console>"
  for unit in info['consoles']:
   extra = " selected" if (info['rack']['console'] == unit['id']) or (not info['rack']['console'] and unit['id'] == 'NULL') else ""
-  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])
+  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname'])
  print "</SELECT></DIV></DIV>"
 
  for key in ['pdu_1','pdu_2']:
   print "<DIV CLASS=tr><DIV CLASS=td>{0}:</DIV><DIV CLASS=td><SELECT NAME={1}>".format(key.capitalize(),key)
   for unit in info['pdus']:
    extra = " selected" if (info['rack'][key] == unit['id']) or (not info['rack'][key] and unit['id'] == 'NULL') else ""
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name'])   
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname'])   
   print "</SELECT></DIV></DIV>"
 
  print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=image_url>"
  print "<OPTION VALUE=NULL>No picture</OPTION>"
- for image in listdir(path.join(Settings['docroot'],"images")):
+ for image in info['images']:
   extra = " selected" if (info['rack']['image_url'] == image) or (info['rack']['image_url'] and image == 'NULL') else ""
-  if image[-3:] == "png" or image[-3:] == "jpg":
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(image,extra,image[:-4])
+  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(image,extra,image[:-4])
  print "</SELECT></DIV></DIV>"
 
  print "</DIV></DIV>"

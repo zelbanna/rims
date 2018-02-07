@@ -49,8 +49,6 @@ def infra(aDict):
  ret =  {}
  key = aDict.get('key')
  with DB() as db:
-  ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes") 
-  ret['types']    = db.get_rows() 
   if aDict.get('id'):
    if aDict['id'] == 'new':
     ret['rackxist'] = 0
@@ -62,15 +60,25 @@ def infra(aDict):
    ret['rackxist'] = db.do("SELECT racks.* FROM racks")
    ret['racks']    =  db.get_rows()
    ret['racks'].append({ 'id':'NULL', 'name':'Not used'})
-  ret['consolexist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'") 
-  ret['consoles']    = db.get_rows()
-  ret['consoles'].append({ 'id':'NULL', 'hostname':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1', 'type':'NULL' })
-  ret['pduxist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'pdu'") 
-  ret['pdus']    = db.get_rows()
-  ret['pdus'].append({ 'id':'NULL', 'hostname':'No PDU', 'ip':2130706433, 'ipasc':'127.0.0.1', 'type':'NULL'})
-  db.do("SELECT pduinfo.* FROM pduinfo")
-  ret['pduinfo'] = db.get_dict('device_id')
-  ret['pduinfo']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
+  if aDict.get('types',True):
+   ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes") 
+   ret['types']    = db.get_rows() 
+  if aDict.get('consoles',True):
+   ret['consolexist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'") 
+   ret['consoles']    = db.get_rows()
+   ret['consoles'].append({ 'id':'NULL', 'hostname':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1', 'type':'NULL' })
+  if aDict.get('pdus',True):
+   ret['pduxist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'pdu'") 
+   ret['pdus']    = db.get_rows()
+   ret['pdus'].append({ 'id':'NULL', 'hostname':'No PDU', 'ip':2130706433, 'ipasc':'127.0.0.1', 'type':'NULL'})
+   db.do("SELECT pduinfo.* FROM pduinfo")
+   ret['pduinfo'] = db.get_dict('device_id')
+   ret['pduinfo']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
+
+ if aDict.get('images',False):
+  from ..settings.generic import data as Settings
+  from os import listdir, path
+  ret['images'] = [f for f in listdir(path.join(Settings['docroot'],"images")) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
  return ret
 
 #
