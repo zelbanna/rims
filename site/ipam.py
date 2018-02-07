@@ -45,11 +45,12 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Mask:</DIV><DIV CLASS=td><INPUT    TYPE=TEXT NAME=mask    VALUE={} {}></DIV></DIV>".format(data['mask'],lock)
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=gateway VALUE={}></DIV></DIV>".format(data['gateway'])
  print "</DIV></DIV>"
- print "</FORM>"
+ print "</FORM><DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=ipam_info&id=%s'%data['id'])
  print aWeb.button('save'  ,DIV='div_content_right',URL='sdcp.cgi?call=ipam_info&op=update', FRM='ipam_info_form')
  if not data['id'] == 'new':
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=ipam_delete&id=%s'%data['id'],MSG='Are you really sure')
+ print "</DIV>"
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</ARTICLE>"
 
