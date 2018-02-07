@@ -1,1 +1,0 @@
-data={"type": "munin", "file": "/etc/munin/munin-conf.d/sdcp.conf", "plugins": "/var/www/device.graph.plugins"}

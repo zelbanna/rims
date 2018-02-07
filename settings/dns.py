@@ -1,1 +1,0 @@
-data={"url": "http://192.168.121.4/rest.cgi", "type": "powerdns", "master": "192.168.121.4"}

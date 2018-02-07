@@ -1,1 +1,0 @@
-data={"username": "zacharias@loopiaapi", "domain": "elbanna.se", "password": "aF02KArtzFUN1GgL", "rpc_server": "https://api.loopia.se/RPCSERV"}
