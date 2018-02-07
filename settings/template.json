@@ -13,7 +13,7 @@
         "password": {
             "description": "Password", 
             "required": 1, 
-            "value": "password"
+            "value": "PASSWORD"
         }, 
         "type": {
             "description": "Mysql DB", 
@@ -23,7 +23,7 @@
         "username": {
             "description": "Username", 
             "required": 1, 
-            "value": "username"
+            "value": "USERNAME"
         }
     }, 
     "dhcp": {
@@ -50,7 +50,7 @@
         "url": {
             "description": "ISC DHCP REST API", 
             "required": 0, 
-            "value": "url"
+            "value": "URL"
         }
     }, 
     "dns": {
@@ -67,7 +67,7 @@
         "url": {
             "description": "PowerDNS REST API", 
             "required": 0, 
-            "value": "url"
+            "value": "URL"
         }
     }, 
     "esxi": {
@@ -79,7 +79,7 @@
         "password": {
             "description": "Password", 
             "required": 0, 
-            "value": "password"
+            "value": "PASSWORD"
         }, 
         "shutdownfile": {
             "description": "Shutdown template", 
@@ -89,7 +89,7 @@
         "username": {
             "description": "Username", 
             "required": 0, 
-            "value": "username"
+            "value": "USERNAME"
         }
     }, 
     "generic": {
@@ -145,12 +145,12 @@
         "password": {
             "description": "Password", 
             "required": 0, 
-            "value": "password"
+            "value": "PASSWORD"
         }, 
         "username": {
             "description": "Username", 
             "required": 0, 
-            "value": "username"
+            "value": "USERNAME"
         }
     }, 
     "logs": {
@@ -169,12 +169,12 @@
         "domain": {
             "description": "Domain", 
             "required": 0, 
-            "value": "domain"
+            "value": "DOMAIN"
         }, 
         "password": {
             "description": "Loopia password", 
             "required": 0, 
-            "value": "password"
+            "value": "PASSWORD"
         }, 
         "rpc_server": {
             "description": "Loopia API server", 
@@ -184,7 +184,7 @@
         "username": {
             "description": "Loopia RPC username", 
             "required": 0, 
-            "value": "username"
+            "value": "USERNAME"
         }
     }, 
     "netconf": {
@@ -201,7 +201,7 @@
         "encrypted": {
             "description": "Encrypted password", 
             "required": 0, 
-            "value": "encrypted"
+            "value": "ENCRYPTED"
         }, 
         "ntpsrv": {
             "description": "NTP server", 
@@ -211,12 +211,12 @@
         "password": {
             "description": "Password", 
             "required": 0, 
-            "value": "password"
+            "value": "PASSWORD"
         }, 
         "username": {
             "description": "Username", 
             "required": 0, 
-            "value": "username"
+            "value": "USERNAME"
         }
     }, 
     "node": {
