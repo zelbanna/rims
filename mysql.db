@@ -157,12 +157,13 @@ CREATE TABLE `resources` (
 DROP TABLE IF EXISTS `settings`;
 CREATE TABLE `settings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `type` varchar(20) DEFAULT 'generic',
+  `section` varchar(20) DEFAULT 'generic',
   `parameter` varchar(40) DEFAULT NULL,
   `value` varchar(100) DEFAULT NULL,
   `description` text,
+  `required` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `parameter` (`type`,`parameter`)
+  UNIQUE KEY `parameter` (`section`,`parameter`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
