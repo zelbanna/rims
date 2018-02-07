@@ -123,12 +123,12 @@ def info(aWeb):
  print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?call=rack_info&id={0}'.format(id))
  print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?call=rack_info&op=save', FRM='rack_info_form')
  if not id == 'new':
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_remove&id=%s'%(id))
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_delete&id=%s'%(id))
  print "<SPAN CLASS='right small-text' ID=update_results></SPAN>"
  print "</ARTICLE>"
 
 #
 #
-def remove(aWeb):
- res = aWeb.rest_call("racks_remove",{'id':aWeb['id']})
+def delete(aWeb):
+ res = aWeb.rest_call("racks_delete",{'id':aWeb['id']})
  print "<ARTICLE>Rack %s deleted (%s)</ARTICLE>"%(aWeb['id'],res)

@@ -135,7 +135,7 @@ def action(aWeb):
      print "<DIV CLASS=td><A TITLE='Network info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?call=neutron_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
      print "<DIV CLASS=td>"
      print aWeb.button('info',  DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=print&id=%s'%fip['href'])
-     print aWeb.button('remove',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], MSG='Are you sure?', SPIN='true')
+     print aWeb.button('delete',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], MSG='Are you sure?', SPIN='true')
      print "&nbsp;</DIV>"
     else:
      print "<DIV CLASS=td></DIV>"

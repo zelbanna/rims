@@ -166,7 +166,7 @@ def action(aWeb):
    if vmi.get('floating_ip_back_refs'):
     fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
     print "<DIV CLASS=td>{} ({})</DIV><DIV CLASS=td>&nbsp;".format(fip['floating_ip_address'],fip['fq_name'][2])
-    print aWeb.button('remove',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], SPIN='true')
+    print aWeb.button('delete',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], SPIN='true')
     print "</DIV>"
    else:
     print "<DIV CLASS=td>&nbsp;</DIV>"

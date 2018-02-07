@@ -78,5 +78,5 @@ def layout(aWeb):
 #
 #
 def delete(aWeb):
- data = aWeb.rest_call("sdcpipam_remove",{'id':aWeb['id']})
+ data = aWeb.rest_call("sdcpipam_delete",{'id':aWeb['id']})
  print "<ARTICLE>%s</ARTICLE"%(data)

@@ -122,7 +122,7 @@ def api(aWeb):
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
  print aWeb.button('start',  DIV='div_os_info', URL='sdcp.cgi?call=openstack_result', FRM='frm_os_api')
- print aWeb.button('remove', DIV='div_os_info', OP='empty', TITLE='Clear results view')
+ print aWeb.button('delete', DIV='div_os_info', OP='empty', TITLE='Clear results view')
  print "Arguments/Body<BR>"
  print "<TEXTAREA STYLE='width:100%; height:100px;' NAME=os_args></TEXTAREA>"
  print "</FORM>"
