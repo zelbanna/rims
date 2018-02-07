@@ -69,7 +69,6 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- from os import listdir, path
  cookie = aWeb.cookie_unjar('sdcp')
  data  = {'id':aWeb.get('id','new'),'op':aWeb['op']}
  if aWeb['op'] == 'update' or data['id'] == 'new':

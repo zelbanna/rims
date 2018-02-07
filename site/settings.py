@@ -33,7 +33,6 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- from os import listdir, path
  cookie = aWeb.cookie_unjar('sdcp')
  host   = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
  data  = {'id':aWeb.get('id','new')}

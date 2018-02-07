@@ -134,6 +134,13 @@ def db_table(aDict):
  return ret
 
 #
+#
+#
+def db_dump(aDict):
+ from ..core.mysql import dump
+ return dump({'mode':aDict.get('mode','structure')})
+
+#
 # Linux oriented mac sync
 #
 def mac_sync(aDict):

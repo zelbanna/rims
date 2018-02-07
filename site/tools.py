@@ -44,10 +44,10 @@ def main(aWeb):
 #
 #
 def db_structure(aWeb):
- from ..core.mysql import dump
+ res = aWeb.rest_call("sdcp_db_dump",{'mode':'structure'})
  print "<ARTICLE><P>Database Structure</A>"
  print "<P CLASS='machine-text'>"
- print "<BR>".join(dump({'mode':'structure'})['output'])
+ print "<BR>".join(res['output'])
  print "</P></ARTICLE>"
 
 #
