@@ -60,13 +60,13 @@ def portal(aWeb):
 
  menu = aWeb.rest_call("users_menu",{"id":id})
  aWeb.put_html(aWeb.get('title','Portal'))
- print "<HEADER>"
+ print "<HEADER CLASS='background'>"
  for item in menu:
   print "<A CLASS='btn menu-btn z-op' TITLE='%s' %s='%s'><IMG SRC='%s'/></A>"%(item['title'],"TARGET=_blank HREF" if item['inline'] == 0 else "DIV=main URL", item['href'],item['icon'])
  print "<A CLASS='btn menu-btn z-op right warning' OP=logout URL=sdcp.cgi>Log out</A>"
  print "<A CLASS='btn menu-btn z-op right' DIV=main TITLE='User info' URL=sdcp.cgi?call=users_user&id=%s><IMG SRC='images/icon-users.png'></A>"%id
  print "</HEADER>"
- print "<main ID=main></main>"
+ print "<MAIN CLASS='background' ID=main></MAIN>"
 
 ##################################################################################################
 #
@@ -79,32 +79,18 @@ def weathermap(aWeb):
  else:
   print "Content-Type: text/html\r\n"
 
- page = aWeb['page']
- if not page:
+ if not aWeb['page']:
   print "<NAV><UL>" 
-  for map,entry in Settings.iteritems():
-   print "<LI><A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=front_weathermap&page={0}>{1}</A></LI>".format(map,entry['name'])
+  for map,name in Settings.iteritems():
+   print "<LI><A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=sdcp_weathermap&page={0}>{1}</A></LI>".format(map,name)
   print "</UL></NAV>"
-  print "<SECTION CLASS='content' ID='div_wm_content' NAME='Weathermap Content' STYLE='overflow:hidden;'>"
+  print "<SECTION CLASS='content background' ID='div_wm_content' NAME='Weathermap Content' STYLE='overflow:hidden;'>"
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"
   print "</SECTION>" 
  else:
   from ..core.extras import get_include
-  entry  = Settings[page]
-  graphs = entry.get('graphs')
-  print "<SECTION CLASS=content STYLE='top:0px;'>"
-  if graphs:
-   from ..tools.munin import widget_rows
-   print "<SECTION CLASS=content-left STYLE='width:420px'><ARTICLE>"
-   widget_rows(graphs)
-   print "</ARTICLE></SECTION><SECTION CLASS=content-right STYLE='left:420px'>"
-   print "<ARTICLE>"
-   print get_include('%s.html'%page)
-   print "</ARTICLE>"
-   print "</SECTION>"
-  else:
-   print "<SECTION CLASS=content STYLE='top:0px;'>"
-   print "<ARTICLE>"
-   print get_include('%s.html'%page)
-   print "</ARTICLE>"
+  print "<SECTION CLASS='content background' STYLE='top:0px;'>"
+  print "<ARTICLE>"
+  print get_include('%s.html'%aWeb['page'])
+  print "</ARTICLE>"
   print "</SECTION>"

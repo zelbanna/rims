@@ -97,7 +97,7 @@ def info(aWeb):
  print "</UL></DIV>"
  print "<DIV CLASS='controls'>"
  if data['id'] != 'new' and ((cookie['id'] == str(data['id']) or cookie['id'] == "1")):
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_remove&id={0}'.format(data['id']), MSG='Really remove user?')
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_delete&id={0}'.format(data['id']), MSG='Really remove user?')
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&op=update', FRM='sdcp_user_info_form')
  print "</DIV>"
  print "</FORM>"
@@ -111,4 +111,4 @@ def info(aWeb):
 #
 def delete(aWeb):
  res = aWeb.rest_call("users_delete",{'id':aWeb['id']})
- print "<ARTICLE>USer with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res['result'])
+ print "<ARTICLE>User with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res)
