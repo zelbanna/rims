@@ -57,7 +57,7 @@
         "master": {
             "description": "PowerDNS Master", 
             "required": 1, 
-            "value": "192.168.121.4"
+            "value": "127.0.0.1"
         }, 
         "type": {
             "description": "DNS server type", 
@@ -68,6 +68,31 @@
             "description": "PowerDNS REST API", 
             "required": 0, 
             "value": "URL"
+        },
+        "password": {
+            "description": "Password", 
+            "required": 0, 
+            "value": "PASSWORD"
+        }, 
+        "database": {
+            "description": "Database", 
+            "required": 0, 
+            "value": "pdns"
+        }, 
+        "username": {
+            "description": "Username", 
+            "required": 0, 
+            "value": "USERNAME"
+        },
+        "soa": {
+            "description": "Default SOA record", 
+            "required": 0, 
+            "value": "services.mgmt hostmaster.mgmt 0 86400 3600 604800"
+        },
+        "logfile": {
+            "description": "Log file", 
+            "required": 0, 
+            "value": "/var/log/system/pdns.info.log"
         }
     }, 
     "esxi": {
@@ -116,12 +141,12 @@
         "title": {
             "description": "Portal Title", 
             "required": 1, 
-            "value": "El Banna portal"
+            "value": "SDCP portal"
         }, 
         "upshost": {
             "description": "UPS host", 
             "required": 0, 
-            "value": "esxi3.mgmt"
+            "value": "esxi.mgmt"
         }
     }, 
     "graph": {
@@ -191,12 +216,12 @@
         "anonftp": {
             "description": "Anonymous FTP", 
             "required": 0, 
-            "value": "192.168.121.2/ftp/archive/"
+            "value": "192.168.0.2/ftp/archive/"
         }, 
         "dnssrv": {
             "description": "DNS server", 
             "required": 0, 
-            "value": "192.168.121.4"
+            "value": "192.168.0.4"
         }, 
         "encrypted": {
             "description": "Encrypted password", 
@@ -206,7 +231,7 @@
         "ntpsrv": {
             "description": "NTP server", 
             "required": 0, 
-            "value": "192.168.121.1"
+            "value": "192.168.0.1"
         }, 
         "password": {
             "description": "Password", 
@@ -228,7 +253,7 @@
         "services": {
             "description": "Services host", 
             "required": 0, 
-            "value": "http://192.168.121.4/rest.cgi"
+            "value": "http://192.168.0.4/rest.cgi"
         }
     }, 
     "snmp": {
@@ -244,20 +269,10 @@
         }
     }, 
     "weathermap": {
-        "wm_borev": {
-            "description": "Weathermap", 
-            "required": 0, 
-            "value": "Borev"
-        }, 
         "wm_main-map": {
             "description": "Weathermap", 
             "required": 0, 
             "value": "Main Map"
-        }, 
-        "wm_odengatan": {
-            "description": "Weathermap", 
-            "required": 0, 
-            "value": "Odengatan"
         }
     }
 }
