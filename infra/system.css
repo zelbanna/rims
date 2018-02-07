@@ -69,6 +69,8 @@ div.table .tfoot {     display: table-footer-group; }
 article.info div.td:first-child { font-weight:bold; }
 article.info div.td:last-child { width:100%; }
 div.td > select,input[type='text'],input[type='url'] { width:99%; -webkit-appearance: none; }
+div.td > input:-moz-read-only { font-style:italic; }
+div.td > input:read-only {      font-style:italic; }
 div.td > input::-webkit-input-placeholder { color: darkgrey; }
 div.td > input::-moz-placeholder {          color: darkgrey; opacity:1; }
 div.controls { font-size:5px; }

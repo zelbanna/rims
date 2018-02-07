@@ -380,7 +380,7 @@ def graph_detect(aDict):
 def graph_save(aDict):
  ret = {}
  with DB() as db:
-  db.do("SELECT value FROM settings WHERE type='graph' AND parameter = 'file'")
+  db.do("SELECT value FROM settings WHERE section='graph' AND parameter = 'file'")
   graph_file = db.get_val('value')
   ret['xist'] = db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
   rows = db.get_rows()  

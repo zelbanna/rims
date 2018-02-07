@@ -48,16 +48,17 @@ def info(aWeb):
    data = aWeb.rest_generic(host['value'],"settings_info",data)['data']
  else:
   data = aWeb.rest_generic(host['value'],"settings_info",data)['data']
+ readonly = "readonly" if str(data['required']) == '1' else ""
  print "<ARTICLE CLASS=info><P>Settings</P>"
  print "<FORM ID=sdcp_settings_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<INPUT TYPE=HIDDEN NAME=required VALUE={}>".format(data['required'])
  print "<INPUT TYPE=HIDDEN NAME=host VALUE={}>".format(aWeb['host'])
  print "<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Section:</DIV><DIV CLASS=td><INPUT  NAME=section VALUE='%s'  TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%data['section']
- print "<DIV CLASS=tr><DIV CLASS=td>Parameter:</DIV><DIV CLASS=td><INPUT NAME=parameter VALUE='%s' TYPE=TEXT REQUIRED></DIV></DIV>"%data['parameter']
+ print "<DIV CLASS=tr><DIV CLASS=td>Section:</DIV><DIV CLASS=td><INPUT  NAME=section VALUE='%s'  TYPE=TEXT REQUIRED %s STYLE='min-width:400px'></DIV></DIV>"%(data['section'],readonly)
+ print "<DIV CLASS=tr><DIV CLASS=td>Parameter:</DIV><DIV CLASS=td><INPUT NAME=parameter VALUE='%s' TYPE=TEXT REQUIRED %s></DIV></DIV>"%(data['parameter'],readonly)
  print "<DIV CLASS=tr><DIV CLASS=td>Value:</DIV><DIV CLASS=td><INPUT NAME=value VALUE='%s' TYPE=TEXT REQUIRED></DIV></DIV>"%data['value']
- print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT></DIV></DIV>"%data['description']
+ print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT %s></DIV></DIV>"%(data['description'],readonly)
  print "</DIV></DIV>"
  print "</FORM><BR>"
  if data['id'] != 'new':
@@ -75,7 +76,7 @@ def view(aWeb):
   print "<P>%s</P>"%section
   print "<DIV CLASS=table STYLE='width:500px;'><DIV CLASS=tbody>"
   for data in parameters:
-   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:300px; overflow-x:hidden'>%s</DIV></DIV>"%(data['parameter'],data['value'],data['description'])
+   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:300px; overflow-x:hidden; font-style:italic;'>\"%s\"</DIV></DIV>"%(data['parameter'],data['value'],data['description'])
   print "</DIV></DIV>"
  print "</ARTICLE>"
 

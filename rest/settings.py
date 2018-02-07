@@ -67,12 +67,13 @@ def all(aDict):
  with DB() as db:
   if not aDict.get('section'):
    db.do("SELECT DISTINCT section FROM settings")
-   sections = db.get_rows()
+   rows = db.get_rows()
+   sections = [row['section'] for row in rows]
   else:
-   sections = [{'section':aDict['section']}]
+   sections = [aDict['section']]
   for section in sections:
-   db.do("SELECT parameter,id,value,description,required FROM settings WHERE section = '%s' ORDER BY parameter"%(section['section']))
-   ret[section['section']] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict['dict'])
+   db.do("SELECT parameter,id,value,description,required FROM settings WHERE section = '%s' ORDER BY parameter"%(section))
+   ret[section] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict['dict'])
  return ret
 
 #

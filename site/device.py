@@ -140,7 +140,7 @@ def info(aWeb):
   extra = " selected" if dev['info']['a_dom_id'] == dom['id'] else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(dom['id'],extra,dom['name'])
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['subnet'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%(dev['info']['subnet'])
  print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>{}</DIV></DIV>".format(dev['info']['snmp'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type_id>"
  for type in infra['types']:
