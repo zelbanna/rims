@@ -14,7 +14,7 @@ def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- hosts = aWeb.rest_call("settings_list",{'type':'rest'})['data']
+ hosts = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<NAV><UL>"
  print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>List resources</A>"
@@ -68,7 +68,7 @@ def install(aWeb):
 #
 def rest_main(aWeb):
  from .. import PackageContainer as PC
- devices = aWeb.rest_call("settings_list",{'type':'rest'})['data']
+ devices = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_rest>"
  print "Choose host and enter API:<SELECT STYLE='height:22px;' NAME=host>"

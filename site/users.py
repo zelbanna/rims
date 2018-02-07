@@ -109,6 +109,6 @@ def info(aWeb):
 
 #
 #
-def remove(aWeb):
- res = aWeb.rest_call("resources_delete",{'id':aWeb['id']})
+def delete(aWeb):
+ res = aWeb.rest_call("users_delete",{'id':aWeb['id']})
  print "<ARTICLE>USer with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res['result'])

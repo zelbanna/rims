@@ -36,7 +36,7 @@ def info(aDict):
 
 #
 #
-def remove(aDict):
+def delete(aDict):
  with DB() as db:
   res = db.do("DELETE FROM users WHERE id = '%s'"%aDict['id'])
  return { 'deleted':res }

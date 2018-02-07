@@ -16,7 +16,7 @@ def application(aDict):
  from .. import PackageContainer as PC
  ret = {'portal':"sdcp_portal",'message':"Welcome to the Management Portal",'parameters':[]}
  with DB() as db:
-  xist = db.do("SELECT value FROM settings WHERE type = 'generic' AND parameter = 'title'")
+  xist = db.do("SELECT value FROM settings WHERE section = 'generic' AND parameter = 'title'")
   ret['title'] = db.get_val('value') if xist > 0 else 'New Installation'
   db.do("SELECT CONCAT(id,'_',name) as id, name FROM users ORDER BY name")
   rows = db.get_rows()

@@ -19,7 +19,7 @@ def main(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  monitors = aWeb.rest_call("resources_list",{'type':'monitor','view_public':True})['data']
- hosts    = aWeb.rest_call("settings_list",{'type':'rest'})['data']
+ hosts    = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<NAV><UL>"
  print "<LI CLASS='warning'><A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=monitor_clear&ip=%s'>Clear Logs</A></LI>"
  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
@@ -41,7 +41,7 @@ def main(aWeb):
 #
 #
 def clear(aWeb):
- hosts = aWeb.rest_call("settings_list",{'type':'rest'})['data']
+ hosts = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<ARTICLE>"
  for host in hosts:
   try: output = aWeb.rest_generic(host['value'],'sdcp_logs_clear')
@@ -52,7 +52,6 @@ def clear(aWeb):
 #
 # Internal Logs
 #
-# ZEB: ask settings for logs "locally" :-)
 def logs(aWeb):
  dev = aWeb.rest_call("settings_info",{'id':aWeb['id']})['data']
  res = aWeb.rest_generic(dev['value'],'sdcp_logs_get',{'count':18})
