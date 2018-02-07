@@ -16,13 +16,14 @@ def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
+ from ..settings.node import data as Settings
  monitors = aWeb.rest_call("resources_list",{'type':'monitor','view_public':True})['data']
- hosts    = aWeb.rest_call("settings_list",{'section':'node'})['data']
+ hosts = Settings.keys()
  print "<NAV><UL>"
  print "<LI CLASS='warning'><A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=monitor_clear&ip=%s'>Clear Logs</A></LI>"
  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
  for host in hosts:
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=monitor_logs&id=%s>%s</A>"%(host['id'],host['parameter'])
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=monitor_logs&host=%s>%s</A>"%(host,host)
  print "</DIV></LI>"
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dns_top>DNS</A></LI>"
  print "<LI CLASS='dropdown'><A>DHCP</A><DIV CLASS='dropdown-content'>"
@@ -43,7 +44,7 @@ def clear(aWeb):
  print "<ARTICLE>"
  for host in hosts:
   try: output = aWeb.rest_generic(host['value'],'sdcp_logs_clear')
-  except Exception,e: output = e[0]['info']
+  except Exception,e: output = e[0]['info']	
   print "%s: %s<BR>"%(host['parameter'], output)
  print "</ARTICLE>"
 
@@ -51,7 +52,7 @@ def clear(aWeb):
 # Internal Logs
 #
 def logs(aWeb):
- dev = aWeb.rest_call("settings_info",{'id':aWeb['id']})['data']
+ dev = aWeb.rest_call("settings_parameter",{'section':'node','parameter':aWeb['host']})['data']
  res = aWeb.rest_generic(dev['value'],'sdcp_logs_get',{'count':18})
  res.pop('xist',None)
  for file,logs in res.iteritems():

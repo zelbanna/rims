@@ -30,7 +30,7 @@ def logs_clear(aDict):
  from ..core.dbase import DB
  ret = {} 
  with DB() as db:
-  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE type = 'logs'")
+  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
   logs = db.get_rows()
  for log in logs:
   try:
@@ -48,7 +48,7 @@ def logs_get(aDict):
  from ..core.dbase import DB
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE type = 'logs'")
+  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
   logs = db.get_rows()
  count = int(aDict.get('count',15))
  for log in logs:
