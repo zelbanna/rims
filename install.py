@@ -78,6 +78,7 @@ except Exception,e:
   print str(e)
 
 from sdcp.rest.sdcp import install
-print install({})
+rest = install({})
+res.update(rest)
 print dumps(res,indent=4)
 exit(0 if res.get('res') == 'OK' else 1)

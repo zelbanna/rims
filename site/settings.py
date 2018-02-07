@@ -89,5 +89,4 @@ def delete(aWeb):
 #
 def save(aWeb):
  host   = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
- print "<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_generic(host['value'],"settings_save"))
-
+ print "<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_generic(host['value'],"settings_save"))

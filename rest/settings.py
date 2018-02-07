@@ -101,8 +101,9 @@ def save(aDict):
     container[sect][key] = param['value']
  try:
   with open(config_file,'w') as f:
-   dump(config,f,indent=4,sort_key=True)
- except:
+   dump(config,f,indent=4,sort_keys=True)
+ except Exception as e:
+  print e
   ret['config'] = 'NOT_OK'
  try:
   for key,values in container.iteritems():
@@ -112,11 +113,6 @@ def save(aDict):
  except:
   ret['containers'] = 'NOT_OK'
  return ret
-
-#
-#
-def import(aDict):
- pass
 
 #
 #
