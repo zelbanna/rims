@@ -1,0 +1,1 @@
+data={"sdcp": "http://127.0.0.1/rest.cgi", "services": "http://192.168.121.4/rest.cgi"}

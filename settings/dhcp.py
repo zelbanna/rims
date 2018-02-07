@@ -1,0 +1,1 @@
+data={"active": "/var/lib/dhcp/dhcpd.leases", "reload": "sudo /usr/sbin/service isc-dhcp-server restart", "static": "/etc/dhcp/rest.conf", "url": "http://192.168.121.4/rest.cgi", "type": "iscdhcp"}
