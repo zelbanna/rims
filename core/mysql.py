@@ -9,7 +9,7 @@ def dump(aDict):
  from subprocess import check_output
  from ..settings.database import data as Settings
  try:
-  db = Settings['db']
+  db = Settings['database']
   mode = aDict.get('mode','structure')
   cmd  = ["mysqldump", "-u" + Settings['username'], "-p" + Settings['password'], db]
 
@@ -61,7 +61,7 @@ def diff(aDict):
   data = f.read() 
  ret = {}
  db = dump({'mode':'structure'})
- ret['db'] = db['res']
+ ret['database'] = db['res']
  ret['output'] = [line for line in unified_diff(db['output'],data.split('\n'),fromfile='dbase',tofile=aDict['file'])]
  ret['diffs'] = 0
  for line in ret['output']:

@@ -20,7 +20,7 @@ class DB(object):
   self._dirty = False
   if not aDB:
    from ..settings.database import data as Settings
-   self._db, self._host, self._user, self._pass = Settings['db'],Settings['host'],Settings['username'],Settings['password']
+   self._db, self._host, self._user, self._pass = Settings['database'],Settings['host'],Settings['username'],Settings['password']
   else:
    self._db, self._host, self._user, self._pass = aDB, aHost, aUser, aPass
 

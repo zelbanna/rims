@@ -6,11 +6,8 @@ Small or Simple DC Project
 - tools: various modules 
 - site: the web frontend (pane) and ajax for driving the web gui
 - site_: site support files (jscrip, stylesheets and images)
-- templates: template files for various things, to be copied to document root
 
-To start, enter sdcp directory and copy template/settings.json (with appropriate settings)
-
-Then run install to write site cgi files into doc-root, finally enter mysql structure (from mysql.txt) into database
+Then run install to write site cgi files into docroot, finally enter mysql structure (from mysql.db) into database
 
 ############################### Good to know stuff #############################
 - Don't forgets:
@@ -21,4 +18,3 @@ www-data ALL=(ALL) NOPASSWD: /bin/systemctl
 - DataStructure through ERAlchemy:
 apt-get install graphviz libgraphviz-dev
 pip install pygraphviz --install-option="--include-path=/usr/include/graphviz" --install-option="--library-path=/usr/lib/graphviz/"
-eralchemy -i 'mysql+pymysql://user:pass@127.0.0.1:3306/sdcp' -o sdcp-db.pdf
