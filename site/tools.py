@@ -54,7 +54,7 @@ def db_structure(aWeb):
 #
 def db_table(aWeb):
  from json import dumps
- db = aWeb.rest_call("tools_db_table",{'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db']
+ db = aWeb.rest_call("sdcp_db_table",{'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db']
  print "<PRE>{}</PRE>".format(dumps(db, indent=4, sort_keys=True))
 
 #
@@ -62,7 +62,7 @@ def db_table(aWeb):
 def install(aWeb):
  from json import dumps
  dev = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
- print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_generic(dev['value'],"tools_installation"),indent = 4)
+ print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_generic(dev['value'],"sdcp_install"),indent = 4)
 
 #
 #

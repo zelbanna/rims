@@ -176,6 +176,8 @@ def install(aDict):
  logger  = ospath.abspath(ospath.join(packagedir,'core','logger.py'))
  ret = {'res':'NOT_OK'}
 
+ modes = generic.data['mode'].split(',')
+
  #
  # Write Logger
  try:
@@ -188,28 +190,30 @@ def install(aDict):
   f.write(" with open('" + logs.data['syslog'] + "', 'a') as f:\n")
   f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
 
- #
- # Copy files
- for type,dest in [('images',ospath.join(generic.data['docroot'],'images')), ('infra',generic.data['docroot'])]:
-  for file in listdir(ospath.join(packagedir,type)):
-   copy(ospath.join(packagedir,type,file), ospath.join(dest,file))
-  ret[type] = 'OK'
+ if 'front' in modes:
+  # Copy files
+  for type,dest in [('images',ospath.join(generic.data['docroot'],'images')), ('infra',generic.data['docroot'])]:
+   for file in listdir(ospath.join(packagedir,type)):
+    copy(ospath.join(packagedir,type,file), ospath.join(dest,file))
+   ret[type] = 'OK'
 
- #
- # Generate ERD and Insert correct types into modules DB
- try:
-  from eralchemy import render_er
-  erd_input = "mysql+pymysql://%s:%s@%s/%s"%(database.data['username'],database.data['password'],database.data['host'],database.data['db'])
-  erd_output= ospath.join(generic.data['docroot'],"sdcp.pdf")
-  render_er(erd_input,erd_output)
-  ret['ERD'] = 'OK'
- except Exception, e:
-  ret['error'] = str(e)
-  ret['ERD'] = 'NOT_OK'
+  # Generate ERD
+  try:
+   from eralchemy import render_er
+   erd_input = "mysql+pymysql://%s:%s@%s/%s"%(database.data['username'],database.data['password'],database.data['host'],database.data['database'])
+   erd_output= ospath.join(generic.data['docroot'],"sdcp.pdf")
+   render_er(erd_input,erd_output)
+   ret['ERD'] = 'OK'
+  except Exception, e:
+   ret['error'] = str(e)
+   ret['ERD'] = 'NOT_OK'
 
  ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
  with DB() as db:
-  ret['DB_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
+  # Insert required user
+  ret['DB']['user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
+  # Insert required settings
+  ret['DB']['settings'] = 0
 
  ret['new_devicetypes'] = sync_devicetypes(None)['new']
  ret['new_menuitems']   = sync_menuitems(None)['new']

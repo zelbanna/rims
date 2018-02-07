@@ -10,7 +10,7 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 
 from sys import argv, path as syspath
-from json import load,dumps
+from json import load,dump,dumps
 syspath.insert(1, '../')
 if len(argv) < 2:
  print "Usage: {} </path/json file>".format(argv[0])
@@ -25,7 +25,9 @@ res = {}
 settingsfilename = ospath.abspath(argv[1])
 with open(settingsfilename) as settingsfile:
  settings = load(settingsfile)
-settings['generic']['config_file'] = {'required':'1','description':'SDCP config file','value':settingsfilename}
+
+modes = settings['generic']['mode']['value'].split(',')
+print "Installing modes: %s"%modes
 
 #
 # Verify necessary modules
@@ -45,7 +47,11 @@ except ImportError:
 #
 # Write CGI files
 basedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
-for dest in [ 'index','rest','sdcp' ]:
+destinations = ['rest']
+if 'front' in modes:
+ destinations.append('index')
+ destinations.append('sdcp')
+for dest in destinations:
  site = ospath.abspath(ospath.join(settings['generic']['docroot']['value'],"%s.cgi"%dest))
  with open(site,'w') as f:
   wr = f.write
@@ -77,8 +83,11 @@ except Exception,e:
   res['containers'] = 'NOT_OK'
   print str(e)
 
+# Update database (!)
+settings['generic']['config_file'] = {'required':'1','description':'SDCP config file','value':settingsfilename}
+
 from sdcp.rest.sdcp import install
 rest = install({})
 res.update(rest)
-print dumps(res,indent=4)
+print dumps(res,indent=4,sort_keys=True)
 exit(0 if res.get('res') == 'OK' else 1)
