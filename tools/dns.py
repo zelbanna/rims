@@ -15,16 +15,14 @@ from ..core.logger import log
 loopia_domain_server_url = 'https://api.loopia.se/RPCSERV' 
 
 def set_loopia_ip(subdomain, newip):
- from ..import PackageContainer as PC
- from ..rest.core import call
+ from ..settings.loopia import data as Settings
  import xmlrpclib
- loopia = call(PC.generic['url'],"settings_type",{'type':'loopia'})['data']
  try:
-  client = xmlrpclib.ServerProxy(uri = loopia['rpc_server']['value'], encoding = 'utf-8')
-  data = client.getZoneRecords(loopia['username']['value'], loopia['password']['value'], loopia['domain']['value'], subdomain)[0]
+  client = xmlrpclib.ServerProxy(uri = Settings['rpc_server'], encoding = 'utf-8')
+  data = client.getZoneRecords(Settings['username'], Settings['password'], Settings['domain'], subdomain)[0]
   oldip = data['rdata']
   data['rdata'] = newip
-  status = client.updateZoneRecord(loopia['username']['value'], loopia['password']['value'], loopia['domain']['value'], subdomain, data)[0]
+  status = client.updateZoneRecord(Settings['username'], Settings['password'], Settings['domain'], subdomain, data)[0]
  except Exception as exmlrpc:
   log("System Error - Loopia set: " + str(exmlrpc))
   return False
@@ -34,23 +32,19 @@ def set_loopia_ip(subdomain, newip):
 # Get Loopia settings for subdomain
 #
 def get_loopia_ip(subdomain):
- from ..import PackageContainer as PC
- from ..rest.core import call
+ from ..settings.loopia import data as Settings
  import xmlrpclib
- loopia = call(PC.generic['url'],"settings_type",{'type':'loopia'})['data']
  try:
-  client = xmlrpclib.ServerProxy(uri = loopia['rpc_server']['value'], encoding = 'utf-8')
-  data = client.getZoneRecords(loopia['username']['value'], loopia['password']['value'], loopia['domain']['value'], subdomain)[0]
+  client = xmlrpclib.ServerProxy(uri = Settings['rpc_server'], encoding = 'utf-8')
+  data = client.getZoneRecords(Settings['username'], Settings['password'], Settings['domain'], subdomain)[0]
   return data['rdata']
  except Exception as exmlrpc:
   log("System Error - Loopia get: " + str(exmlrpc))
   return False
 
 def get_loopia_suffix():
- from ..import PackageContainer as PC
- from ..rest.core import call
- loopia = call(PC.generic['url'],"settings_parameter",{'type':'loopia','parameter':'domain'})['data']
- return "." + loopia['domain']['value']
+ from ..settings.loopia import data as Settings
+ return "." + Settings['domain']
 
 ################################# OpenDNS ######################################
 #

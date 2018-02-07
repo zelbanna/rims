@@ -138,8 +138,8 @@ def logs(aWeb):
  hostname = aWeb['hostname']
  try:
   from subprocess import check_output
-  from .. import PackageContainer as PC
-  logs = check_output("tail -n 30 " + PC.esxi['logformat'].format(hostname) + " | tac", shell=True)
+  from ..settings.esxi import data as Settings
+  logs = check_output("tail -n 30 " + Settings['logformat'].format(hostname) + " | tac", shell=True)
   print "<ARTICLE><P>%s operation logs</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(hostname,logs.replace('\n','<BR>'))
  except: pass
 

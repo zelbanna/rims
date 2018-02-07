@@ -81,7 +81,7 @@ def inventory(aWeb):
 #
 #
 def info(aWeb):
- from .. import PackageContainer as PC
+ from ..settings.generic import data as Settings
  from os import listdir, path
  if aWeb.get('op') == 'save':
   data = {'name':aWeb['name'],'size':aWeb['size'],'pdu_1':aWeb['pdu_1'],'pdu_2':aWeb['pdu_2'],'console':aWeb['console'],'image_url':aWeb['image_url'],'id':aWeb['id']}
@@ -112,7 +112,7 @@ def info(aWeb):
 
  print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=image_url>"
  print "<OPTION VALUE=NULL>No picture</OPTION>"
- for image in listdir(path.join(PC.generic['docroot'],"images")):
+ for image in listdir(path.join(Settings['docroot'],"images")):
   extra = " selected" if (info['rack']['image_url'] == image) or (info['rack']['image_url'] and image == 'NULL') else ""
   if image[-3:] == "png" or image[-3:] == "jpg":
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(image,extra,image[:-4])

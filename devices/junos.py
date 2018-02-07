@@ -8,7 +8,6 @@ __version__ = "17.11.01GA"
 __status__  = "Production"
 __type__    = "network"
 
-from .. import PackageContainer as PC
 from generic import Device as GenericDevice
 from netsnmp import VarList, Varbind, Session
 
@@ -25,7 +24,8 @@ class Junos(GenericDevice):
   GenericDevice.__init__(self,aIP,aID)
   from jnpr.junos import Device as JunosDevice
   from jnpr.junos.utils.config import Config
-  self._router = JunosDevice(self._ip, user=PC.netconf['username'], password=PC.netconf['password'], normalize=True)
+  from ..settings.netconf import data as Settings
+  self._router = JunosDevice(self._ip, user=Settings['username'], password=Settings['password'], normalize=True)
   self._config = Config(self._router)
   self._model = ""
   self._version = ""
@@ -106,17 +106,18 @@ class Junos(GenericDevice):
   return ret
 
  def print_conf(self,argdict):
-  from .. import PackageContainer as PC
+  from ..settings.netconf import data as Settings
+  from ..settings.snmp import data as SettingsSNMP
   print "set system host-name {}<BR>".format(argdict['name'])
-  if PC.netconf['username'] == 'root':
-   print "set system root-authentication encrypted-password \"{}\"<BR>".format(PC.netconf['encrypted'])
+  if Settings['username'] == 'root':
+   print "set system root-authentication encrypted-password \"{}\"<BR>".format(Settings['encrypted'])
   else:
-   print "set system login user {0} class super-user<BR>".format(PC.netconf['username'])
-   print "set system login user {0} authentication encrypted-password \"{1}\"<BR>".format(PC.netconf['username'],PC.netconf['encrypted'])
+   print "set system login user {0} class super-user<BR>".format(Settings['username'])
+   print "set system login user {0} authentication encrypted-password \"{1}\"<BR>".format(Settings['username'],Settings['encrypted'])
   base  = "set groups default_system "
   print base + "system domain-name {}<BR>".format(argdict['domain'])
   print base + "system domain-search {}<BR>".format(argdict['domain'])
-  print base + "system name-server {}<BR>".format(PC.netconf['dnssrv'])
+  print base + "system name-server {}<BR>".format(Settings['dnssrv'])
   print base + "system services ssh root-login allow<BR>"
   print base + "system services netconf ssh<BR>"
   print base + "system syslog user * any emergency<BR>"
@@ -124,12 +125,12 @@ class Junos(GenericDevice):
   print base + "system syslog file messages authorization info<BR>"
   print base + "system syslog file interactive-commands interactive-commands any<BR>"
   print base + "system archival configuration transfer-on-commit<BR>"
-  print base + "system archival configuration archive-sites ftp://{}/<BR>".format(PC.netconf['anonftp'])
+  print base + "system archival configuration archive-sites ftp://{}/<BR>".format(Settings['anonftp'])
   print base + "system commit persist-groups-inheritance<BR>"
-  print base + "system ntp server {}<BR>".format(PC.netconf['ntpsrv'])
+  print base + "system ntp server {}<BR>".format(Settings['ntpsrv'])
   print base + "routing-options static route 0.0.0.0/0 next-hop {}<BR>".format(argdict['gateway'])
   print base + "routing-options static route 0.0.0.0/0 no-readvertise<BR>"
-  print base + "snmp community {} clients {}/{}<BR>".format(PC.snmp['read_community'],argdict['subnet'],argdict['mask'])
+  print base + "snmp community {} clients {}/{}<BR>".format(SettingsSNMP['read_community'],argdict['subnet'],argdict['mask'])
   print base + " protocols lldp port-id-subtype interface-name<BR>"
   print base + " protocols lldp interface all<BR>"
   print base + " class-of-service host-outbound-traffic forwarding-class network-control<BR>"

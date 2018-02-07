@@ -256,7 +256,7 @@ def discover(aDict):
 #
 def detect(aDict):
  log("device_detect({})".format(aDict))
- from .. import PackageContainer as PC
+ from ..settings.snmp import data as Settings
  from netsnmp import VarList, Varbind, Session
  from socket import gethostbyaddr
  from os import system
@@ -267,7 +267,7 @@ def detect(aDict):
   # .1.3.6.1.2.1.1.1.0 : Device info
   # .1.3.6.1.2.1.1.5.0 : Device name
   devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'))
-  session = Session(Version = 2, DestHost = aDict['ip'], Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+  session = Session(Version = 2, DestHost = aDict['ip'], Community = Settings['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
   session.get(devobjs)
  except:
   pass

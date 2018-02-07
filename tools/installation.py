@@ -11,46 +11,13 @@ def install(aDict):
  from shutil import copy
  from time import time
  import pip
- basedir    = ospath.abspath(ospath.join(ospath.dirname(__file__),'../..'))
- packagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
- pcfile  = "{}/PackageContainer.py".format(packagedir)
- logger  = "{}/core/logger.py".format(packagedir)
+ basedir    = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','..'))
  ret = {'res':'NOT_OK', 'packagedir':packagedir, 'basedir':basedir}
  syspath.append(basedir)
- #
- # Write Package Container
- try: remove(pcfile + "c")
- except: pass
- try:
-  ts = time().__trunc__()
-  aDict.pop('created',None)
-  with open(pcfile,'w') as f:
-   for name,category in aDict.iteritems():
-    f.write("{}={}\n".format(name,repr(category)))
-   f.write("created={}\n".format(repr(ts)))
-  ret['pc'] = {'res':'OK','timestamp':ts, 'info':aDict}
- except Exception as err:
-  ret['pc'] = 'NOT_OK'
-  ret['error'] = str(err)
-  return ret
-
- #
- # Verify necessary modules
- try: import pymysql
- except ImportError:
-  ret['pymysql'] = 'install'
-  pip.main(["install", "-q","pymysql"])
- try: import git
- except ImportError:
-  ret['gitpython'] = 'install'
-  pip.main(["install","-q","gitpython"])
- try: import eralchemy
- except ImportError:
-  ret['gitpython'] = 'install'
-  pip.main(["install","-q","eralchemy"])
 
  #
  # Write Logger
+ logger  = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','..','core','logger.py'))
  try:
   remove(logger)
  except:
@@ -61,25 +28,6 @@ def install(aDict):
   f.write(" with open('" + aDict['generic']['logformat'] + "', 'a') as f:\n")
   f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
 
- #
- # Write CGI files
- for dest in [ 'index','rest','sdcp' ]:
-  site = "{}/{}.cgi".format(aDict['generic']['docroot'],dest)
-  with open(site,'w') as f:
-   wr = f.write
-   wr("#!/usr/bin/python\n")
-   wr("# -*- coding: utf-8 -*-\n")
-   wr("from sys import path as syspath\n")
-   wr("syspath.insert(1, '{}')\n".format(basedir))
-   if dest == 'rest':
-    wr("from sdcp.core import rest as cgi\n")
-   else:
-    wr("from sdcp.core.www import Web\n")
-    wr("cgi = Web('%s')\n"%aDict['generic']['url'])
-   wr("cgi.server()\n")
-  chmod(site,0755)
-  ret["cgi_{}".format(dest)] = 'OK'
- 
  #
  # Copy files
  for type,dest in [('images',ospath.join(aDict['generic']['docroot'],'images')), ('infra',aDict['generic']['docroot'])]:
@@ -111,8 +59,6 @@ def install(aDict):
   ret['new_devicetypes'] = sync_devicetypes(None)['new']
   ret['new_menuitems']   = sync_menuitems(None)['new']
 
-  #
-  # Verify MYSQL db
 
  # Done
  ret['res'] = 'OK'

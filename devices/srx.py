@@ -8,7 +8,6 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 __type__ = "network"
 
-from .. import PackageContainer as PC
 from junos import Junos
 
 ################################ SRX Object #####################################

@@ -8,7 +8,7 @@ __status__  = "Production"
 __type__    = "console"
 
 from generic import Device as GenericDevice, ConfObject
-from .. import PackageContainer as PC
+from ..settings.snmp import data as Settings
 
 ######################################## Console ########################################
 #
@@ -32,7 +32,7 @@ class Device(GenericDevice, ConfObject):
   from netsnmp import VarList, Varbind, Session
   try:
    portobjs = VarList(Varbind('.1.3.6.1.4.1.25049.17.2.1.2'))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(portobjs)
    self._configitems.clear()
    for result in portobjs:

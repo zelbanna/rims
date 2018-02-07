@@ -8,8 +8,6 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 __icon__ = 'images/icon-examine.png'
 
-from .. import PackageContainer as PC
-
 ############################################ Monitor ##############################################
 #
 # Monitor

@@ -67,7 +67,6 @@ def install(aWeb):
 #
 #
 def rest_main(aWeb):
- from .. import PackageContainer as PC
  devices = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_rest>"

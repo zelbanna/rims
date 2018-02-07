@@ -2,8 +2,6 @@
 
 DB module
 
-- also exports PC for dbase settings
-
 """
 __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
@@ -21,8 +19,8 @@ class DB(object):
   self._curs = None
   self._dirty = False
   if not aDB:
-   from .. import PackageContainer as PC
-   self._db, self._host, self._user, self._pass = PC.generic['db'],'localhost',PC.generic['dbuser'],PC.generic['dbpass']
+   from ..settings.database import data as Settings
+   self._db, self._host, self._user, self._pass = Settings['db'],Settings['host'],Settings['username'],Settings['password']
   else:
    self._db, self._host, self._user, self._pass = aDB, aHost, aUser, aPass
 

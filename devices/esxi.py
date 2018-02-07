@@ -8,7 +8,7 @@ __version__ = "17.11.01GA"
 __status__  = "Production"
 __type__    = "hypervisor"
 
-from .. import PackageContainer as PC
+from ..settings.esxi import data as Settings
 from generic import Device as GenericDevice
 
 ########################################### ESXi ############################################
@@ -31,14 +31,14 @@ class Device(GenericDevice):
   from ..core import genlib as GL
   # Override log file
   self._hostname = GL.get_host_name(aIP)
-  self._logfile = PC.esxi['logformat'].format(self._hostname)
+  self._logfile = Settings['logformat'].format(self._hostname)
   self._sshclient = None
-  self.statefile = PC.esxi['shutdownfile'].format(self._hostname) 
+  self.statefile = Settings['shutdownfile'].format(self._hostname) 
 
  def set_name(self, aHostname):
   self._hostname = aHostname
-  self._logfile = PC.esxi['logformat'].format(aHostname)
-  self.statefile = PC.esxi['shutdownfile'].format(aHostname) 
+  self._logfile = Settings['logformat'].format(aHostname)
+  self.statefile = Settings['shutdownfile'].format(aHostname) 
 
  def __enter__(self):
   if self.ssh_connect():
@@ -75,7 +75,7 @@ class Device(GenericDevice):
    try:
     self._sshclient = SSHClient()
     self._sshclient.set_missing_host_key_policy(AutoAddPolicy())
-    self._sshclient.connect(self._ip, username=PC.esxi['username'], password=PC.esxi['password'] )
+    self._sshclient.connect(self._ip, username=Settings['username'], password=Settings['password'] )
    except AuthenticationException:
     self.log_msg("DEBUG: Authentication failed when connecting to %s" % self._ip)
     self._sshclient = None
@@ -108,9 +108,10 @@ class Device(GenericDevice):
 
  def get_id_vm(self, aname):
   from netsnmp import VarList, Varbind, Session
+  from ..settings.snmp import data as SettingsSNMP
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = SettingsSNMP['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    for result in vmnameobjs:
     if result.val == aname:
@@ -121,9 +122,10 @@ class Device(GenericDevice):
  
  def get_state_vm(self, aid):
   from netsnmp import VarList, Varbind, Session
+  from ..settings.snmp import data as SettingsSNMP
   try:
    vmstateobj = VarList(Varbind(".1.3.6.1.4.1.6876.2.1.1.6." + str(aid)))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = SettingsSNMP['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(vmstateobj)
    return Device.get_state_str(vmstateobj[0].val)
   except:
@@ -136,11 +138,12 @@ class Device(GenericDevice):
   #
   # aSort = 'id' or 'name'
   from netsnmp import VarList, Varbind, Session
+  from ..settings.snmp import data as SettingsSNMP
   statelist=[]
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
    vmstateobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.6'))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = SettingsSNMP['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for index,result in enumerate(vmnameobjs):

@@ -7,11 +7,11 @@ __status__ = "Production"
 # dump(mode,full)
 def dump(aDict):
  from subprocess import check_output
- from .. import PackageContainer as PC
+ from ..settings.database import data as Settings
  try:
-  db = PC.generic['db']
+  db = Settings['db']
   mode = aDict.get('mode','structure')
-  cmd  = ["mysqldump", "-u" + PC.generic['dbuser'], "-p" + PC.generic['dbpass'], db]
+  cmd  = ["mysqldump", "-u" + Settings['username'], "-p" + Settings['password'], db]
 
   if   mode == 'structure':
    cmd.extend(['--no-data','--add-drop-database'])
@@ -45,9 +45,9 @@ def dump(aDict):
 #
 def restore(aDict):
  from subprocess import check_output
- from .. import PackageContainer as PC
+ from ..settings.database import data as Settings
  try:
-  cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u" + PC.generic['dbuser'], "-p" + PC.generic['dbpass'], '<',aDict['file']]
+  cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u" + Settings['username'], "-p" + Settings['password'], '<',aDict['file']]
   output = check_output(" ".join(cmd), shell=True)
   return { 'res':'OK','output':output.split('\n') }
  except Exception,e:

@@ -73,7 +73,7 @@ def portal(aWeb):
 # Weathermap
 #
 def weathermap(aWeb):
- from .. import PackageContainer as PC
+ from ..settings.weathermap import data as Settings
  if aWeb.get('headers','no') == 'no':
   aWeb.put_html("Weathermap")
  else:
@@ -82,7 +82,7 @@ def weathermap(aWeb):
  page = aWeb['page']
  if not page:
   print "<NAV><UL>" 
-  for map,entry in PC.weathermap.iteritems():
+  for map,entry in Settings.iteritems():
    print "<LI><A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=front_weathermap&page={0}>{1}</A></LI>".format(map,entry['name'])
   print "</UL></NAV>"
   print "<SECTION CLASS='content' ID='div_wm_content' NAME='Weathermap Content' STYLE='overflow:hidden;'>"
@@ -90,7 +90,7 @@ def weathermap(aWeb):
   print "</SECTION>" 
  else:
   from ..core.extras import get_include
-  entry  = PC.weathermap[page]
+  entry  = Settings[page]
   graphs = entry.get('graphs')
   print "<SECTION CLASS=content STYLE='top:0px;'>"
   if graphs:

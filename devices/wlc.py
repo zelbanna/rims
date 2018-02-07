@@ -8,7 +8,6 @@ __version__ = "17.11.01GA"
 __status__  = "Production"
 __type__    = "network"
 
-from .. import PackageContainer as PC
 from generic import Device as GenericDevice
 from netsnmp import VarList, Varbind, Session
 
@@ -35,8 +34,9 @@ class Device(GenericDevice):
    # Length of below is used to offset ip address (32) + 1 and mac base (33) + 1 
    cssidobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.15"))
    cipobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.4"))
-    
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+
+   from ..settings.snmp import data as Settings    
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(cssidobjs)
    session.walk(cipobjs)
   except:

@@ -9,7 +9,7 @@ __status__  = "Production"
 __type__    = "pdu"
 
 from generic import Device as GenericDevice, ConfObject
-from .. import PackageContainer as PC
+from ..settings.snmp import data as Settings
 
 ######################################## PDU ########################################
 #
@@ -45,7 +45,7 @@ class Device(GenericDevice, ConfObject):
   from netsnmp import VarList, Varbind, Session
   try:
    # node = "pdu.outlet"
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.6.1.{}.{}".format(slot,unit) , Device.set_outlet_state(state) ,"INTEGER"))
    session.set(setobj)
    entry = self.get_entry("{}.{}".format(slot,unit))
@@ -61,7 +61,7 @@ class Device(GenericDevice, ConfObject):
   from netsnmp import VarList, Varbind, Session
   try:
    name = name[:16]
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.4.1.{}.{}".format(slot,unit) , name, "OPAQUE"))
    session.set(setobj)
    entry = self.get_entry("{}.{}".format(slot,unit))
@@ -76,7 +76,7 @@ class Device(GenericDevice, ConfObject):
   from netsnmp import VarList, Varbind, Session
   try:
    stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.{}.{}".format(slot,unit)))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(stateobj)
    return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
   except Exception,e:
@@ -91,7 +91,7 @@ class Device(GenericDevice, ConfObject):
    outletobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.4'))
    stateobjs  = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.5'))
    slotobjs   = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(outletobjs)
    session.walk(stateobjs)
    session.walk(slotobjs)
@@ -117,7 +117,7 @@ class Device(GenericDevice, ConfObject):
   slots = []
   try:
    slotobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
-   session = Session(Version = 2, DestHost = self._ip, Community = PC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(slotobjs)
    for slot in slotobjs:
     slots.append([slot.iid, slot.val])

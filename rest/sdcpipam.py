@@ -7,7 +7,6 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
-from .. import PackageContainer as PC
 from ..core.dbase import DB
 
 #

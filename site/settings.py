@@ -20,12 +20,12 @@ def list(aWeb):
  print "<ARTICLE><P>Settings</P>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=settings_list&host=%s'%aWeb['host'])
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=settings_info&id=new&host=%s'%aWeb['host'])
- print aWeb.button('document', DIV='div_content_right', URL='sdcp.cgi?call=settings_all&host=%s'%aWeb['host'])
+ print aWeb.button('document', DIV='div_content_right', URL='sdcp.cgi?call=settings_view&host=%s'%aWeb['host'])
  print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?call=settings_save&host=%s'%aWeb['host'])
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Section</DIV><DIV CLASS=th>Parameter</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=settings_all&section={1}&host={2}'>{1}</A></DIV><DIV CLASS=td TITLE='{3}'><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=settings_info&id={0}&host={2}'>{4}</A></DIV>".format(row['id'],row['section'],aWeb['host'],row['description'],row['parameter'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=settings_view&section={1}&host={2}'>{1}</A></DIV><DIV CLASS=td TITLE='{3}'><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=settings_info&id={0}&host={2}'>{4}</A></DIV>".format(row['id'],row['section'],aWeb['host'],row['description'],row['parameter'])
   print "</DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -67,13 +67,27 @@ def info(aWeb):
 
 #
 #
-def all(aWeb):
- from json import dumps
- host   = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
- print "<ARTICLE><PRE>%s<PRE></ARTICLE>"%(dumps(aWeb.rest_generic(host['value'],"settings_all",{'section':aWeb['section']}),indent=4))
+def view(aWeb):
+ host     = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
+ settings = aWeb.rest_generic(host['value'],"settings_all",{'section':aWeb['section']})
+ print "<ARTICLE><P>Settings</P>"
+ for section,parameters in settings.iteritems():
+  print "<P>%s</P>"%section
+  print "<DIV CLASS=table STYLE='width:500px;'><DIV CLASS=tbody>"
+  for data in parameters:
+   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:300px; overflow-x:hidden'>%s</DIV></DIV>"%(data['parameter'],data['value'],data['description'])
+  print "</DIV></DIV>"
+ print "</ARTICLE>"
 
 #
 #
 def delete(aWeb):
  host   = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
  print "<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_generic(host['value'],"settings_delete",{'id':aWeb['id']}))
+
+#
+#
+def save(aWeb):
+ host   = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
+ print "<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_generic(host['value'],"settings_save"))
+

@@ -11,7 +11,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
-from .. import PackageContainer as PC
+from ..settings.ipmi import data as Settings
 from ..core.extras import get_results, str2hex
 from subprocess import check_output, check_call
 
@@ -23,7 +23,7 @@ class Device(object):
   self.hostname = ahost
   
  def print_info(self, agrep):
-  readout = check_output("ipmitool -H " + self.hostname + " -U " + PC.ipmi['username'] + " -P " + PC.ipmi['password'] + " sdr | grep -E '" + agrep + "'",shell=True)
+  readout = check_output("ipmitool -H " + self.hostname + " -U " + Settings['username'] + " -P " + Settings['password'] + " sdr | grep -E '" + agrep + "'",shell=True)
   for fanline in readout.split('\n'):
    if fanline is not "":
     fan = fanline.split()
@@ -35,6 +35,6 @@ class Device(object):
   FNULL = open(devnull, 'w')
   rear  = str2hex(arear)
   front = str2hex(afront)
-  ipmistring = "ipmitool -H " + self.hostname + " -U " + PC.ipmi['username'] + " -P " + PC.ipmi['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
+  ipmistring = "ipmitool -H " + self.hostname + " -U " + Settings['username'] + " -P " + Settings['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
   res = check_call(ipmistring,stdout=FNULL,stderr=FNULL,shell=True)
   print get_results(res)

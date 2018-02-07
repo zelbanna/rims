@@ -71,9 +71,52 @@ def all(aDict):
   else:
    sections = [{'section':aDict['section']}]
   for section in sections:
-   db.do("SELECT parameter,id,value,description,required FROM settings WHERE section = '%s'"%(section['section']))
-   ret[section['section']] = db.get_rows()
+   db.do("SELECT parameter,id,value,description,required FROM settings WHERE section = '%s' ORDER BY parameter"%(section['section']))
+   ret[section['section']] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict['dict'])
  return ret
+
+#
+#
+def save(aDict):
+ from os import chmod, remove, listdir, path as ospath
+ from json import dumps,dump
+ ret = {'containers':'OK','config':'OK'}
+ config = {}
+ container = {}
+
+ with DB() as db:
+  db.do("SELECT value FROM settings WHERE section = 'generic' AND parameter = 'config_file'")
+  config_file = db.get_val('value')
+  db.do("SELECT DISTINCT section FROM settings")
+  sections = db.get_rows()
+  for section in sections:
+   sect = section['section']
+   config[sect] = {}
+   container[sect] = {}
+   db.do("SELECT parameter,value,description,required FROM settings WHERE section = '%s' ORDER BY parameter"%sect)
+   params = db.get_rows()
+   for param in params:
+    key = param.pop('parameter',None)
+    config[sect][key] = param
+    container[sect][key] = param['value']
+ try:
+  with open(config_file,'w') as f:
+   dump(config,f,indent=4,sort_key=True)
+ except:
+  ret['config'] = 'NOT_OK'
+ try:
+  for key,values in container.iteritems():
+   file= ospath.abspath(ospath.join(ospath.dirname(__file__),'..','settings',"%s.py"%key))
+   with open(file,'w') as f:
+    f.write("data=%s"%dumps(values))
+ except:
+  ret['containers'] = 'NOT_OK'
+ return ret
+
+#
+#
+def import(aDict):
+ pass
 
 #
 #
