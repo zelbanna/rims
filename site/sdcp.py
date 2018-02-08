@@ -73,7 +73,7 @@ def portal(aWeb):
 # Weathermap
 #
 def weathermap(aWeb):
- from ..settings.weathermap import data as Settings
+ from .. import SettingsContainer as SC
  if aWeb.get('headers','no') == 'no':
   aWeb.put_html("Weathermap")
  else:
@@ -81,7 +81,7 @@ def weathermap(aWeb):
 
  if not aWeb['page']:
   print "<NAV><UL>" 
-  for map,name in Settings.iteritems():
+  for map,name in SC.weathermap.iteritems():
    print "<LI><A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=sdcp_weathermap&page={0}>{1}</A></LI>".format(map,name)
   print "</UL></NAV>"
   print "<SECTION CLASS='content background' ID='div_wm_content' NAME='Weathermap Content' STYLE='overflow:hidden;'>"

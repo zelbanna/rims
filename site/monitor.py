@@ -16,9 +16,9 @@ def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- from ..settings.node import data as Settings
+ from .. import SettingsContainer as SC
  monitors = aWeb.rest_call("resources_list",{'type':'monitor','view_public':True})['data']
- hosts = Settings.keys()
+ hosts = SC.node.keys()
  print "<NAV><UL>"
  print "<LI CLASS='warning'><A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=monitor_clear&ip=%s'>Clear Logs</A></LI>"
  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"

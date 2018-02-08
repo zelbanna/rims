@@ -11,7 +11,7 @@ __status__= "Beta"
 #
 #
 from ..devices.appformix import Device
-from ..settings.appformix import data as Settings
+from .. import SettingsContainer as SC
 
 ##################################### Report ##################################
 #
@@ -24,7 +24,7 @@ def list(aWeb):
   print "Not logged in"
   return
  controller = Device(ctrl)
- res = controller.auth({'username':Settings['username'], 'password':Settings['password'] })
+ res = controller.auth({'username':SC.appformix['username'], 'password':SC.appformix['password'] })
  if not res['result'] == "OK":
   print "Error logging in - {}".format(str(res))
   return
@@ -59,7 +59,7 @@ def info(aWeb):
   print "Not logged in"
   return
  controller = Device(ctrl)
- res = controller.auth({'username':Settings['username'], 'password':Settings['password'] })
+ res = controller.auth({'username':SC.appformix['username'], 'password':SC.appformix['password'] })
  if not res['result'] == "OK":
   print "Error logging in - {}".format(str(res))
   return

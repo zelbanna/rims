@@ -84,7 +84,7 @@ def info(aWeb):
   opres['lookup'] = aWeb.rest_call("device_detect",{'ip':aWeb['ip'],'update':True,'id':aWeb['id']})
 
  elif op == 'update':
-  from ..settings.dns import data as Settings
+  from .. import SettingsContainer as SC
   d = aWeb.get_args2dict_except(['call','op','ip'])
   if d['devices_hostname'] != 'unknown':
    from ..core import genlib as GL
@@ -96,9 +96,9 @@ def info(aWeb):
    fqdn   = ".".join([d['devices_hostname'],  dns[d['devices_a_dom_id']]['name']])
    dom_id = aWeb.rest_call("sdcpdns_domains",{'filter':'reverse','index':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
 
-   opres['a'] = aWeb.rest_generic(Settings['url'], "{}_record_update".format(Settings['type']), { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
+   opres['a'] = aWeb.rest_generic(SC.dns['url'], "{}_record_update".format(SC.dns['type']), { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
    if dom_id:
-    opres['ptr'] = aWeb.rest_generic(Settings['url'], "{}_record_update".format(Settings['type']), { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
+    opres['ptr'] = aWeb.rest_generic(SC.dns['url'], "{}_record_update".format(SC.dns['type']), { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
    else:
     opres['ptr'] = {'id':0,'info':'nonexisting_ptr_domain'}
 
@@ -221,8 +221,7 @@ def info(aWeb):
  else:
    print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=book&id=%i'%dev['id'],TITLE='Book')   
  print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&type_name=%s&id=%i'%(dev['info']['type_name'],dev['id']),TITLE='Generate System Conf')
- from ..settings.netconf import data as Settings
- print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(Settings['username'],dev['ip']))
+ print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
   print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
 
@@ -369,9 +368,9 @@ def delete(aWeb):
  print "<ARTICLE>"
  print "Unit {} deleted, op:{}".format(id,res['deleted'])
  if not str(res['deleted']) == '0':
-  from ..settings.dns import data as Settings
-  arec = aWeb.rest_generic(Settings['url'],"{}_record_delete".format(Settings['type']),{'id':res['a_id']})   if res['a_id']   else 0
-  prec = aWeb.rest_generic(Settings['url'],"{}_record_delete".format(Settings['type']),{'id':res['ptr_id']}) if res['ptr_id'] else 0
+  from .. import SettingsContainer as SC
+  arec = aWeb.rest_generic(SC.dns['url'],"{}_record_delete".format(SC.dns['type']),{'id':res['a_id']})   if res['a_id']   else 0
+  prec = aWeb.rest_generic(SC.dns['url'],"{}_record_delete".format(SC.dns['type']),{'id':res['ptr_id']}) if res['ptr_id'] else 0
   print ",A:%s,PTR:%s"%(arec,prec)
  print "</ARTICLE>"
 
