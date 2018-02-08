@@ -19,6 +19,7 @@ if len(argv) < 2:
 
 from os import chmod, path as ospath
 from shutil import copy
+from pip import main as pipmain
 res = {}
 #
 # load settings
@@ -34,15 +35,15 @@ res['modes'] = modes
 try: import pymysql
 except ImportError:
  res['pymysql'] = 'install'
- pip.main(["install", "-q","pymysql"])
+ pipmain(["install", "-q","pymysql"])
 try: import git
 except ImportError:
  res['gitpython'] = 'install'
- pip.main(["install","-q","gitpython"])
+ pipmain(["install","-q","gitpython"])
 try: import eralchemy
 except ImportError:
  res['gitpython'] = 'install'
- pip.main(["install","-q","eralchemy"])
+ pipmain(["install","-q","eralchemy"])
 
 #
 # Write CGI files
