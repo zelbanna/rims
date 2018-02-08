@@ -83,30 +83,31 @@ except Exception,e:
   res['containers'] = 'NOT_OK'
   print str(e)
 
-
+#
 # Update database
 #
-# truncate settings and install all again
-#
-print "\nMake sure that user has access to database:"
-print "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';"%(settings['database']['username']['value'],settings['database']['password']['value'])
-print "GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';"%(settings['database']['database']['value'],settings['database']['username']['value'])
-print "FLUSH PRIVILEGES;\n"
+try:
+ from sdcp.core.dbase import DB
+ with DB() as db:
+  res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
+  res['settings'] = 0
+  sql = "INSERT INTO settings(section,parameter,value,required,description) VALUES('%s','%s','%s','%s','%s')"
+  db.do("TRUNCATE TABLE settings")
+  for section,content in settings.iteritems():
+   for key,p in content.iteritems():
+    db.do(sql%(section,key,p['value'],p['required'],p['description']))
+    res['settings'] += 1
+except Exception as e:
+ res['DB'] = 'NOT_OK'
+ res['DB_error'] = str(e)
+ print "\nError in settings up database, make sure that configured user has access:"
+ print "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';"%(settings['database']['username']['value'],settings['database']['password']['value'])
+ print "GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';"%(settings['database']['database']['value'],settings['database']['username']['value'])
+ print "FLUSH PRIVILEGES;\n"
+else:
+ from sdcp.rest.sdcp import install
+ rest = install({})
+ res.update(rest)
 
-from sdcp.core.dbase import DB
-with DB() as db:
- res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
- res['settings'] = 0
- sql = "INSERT INTO settings(section,parameter,value,required,description) VALUES('%s','%s','%s','%s','%s')"
- db.do("TRUNCATE TABLE settings")
- for section,content in settings.iteritems():
-  for key,p in content.iteritems():
-   db.do(sql%(section,key,p['value'],p['required'],p['description']))
-   res['settings'] += 1
-
-from sdcp.rest.sdcp import install
-rest = install({})
-res.update(rest)
 print dumps(res,indent=4,sort_keys=True)
-
 exit(0 if res.get('res') == 'OK' else 1)
