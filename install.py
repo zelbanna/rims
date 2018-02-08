@@ -40,10 +40,11 @@ try: import git
 except ImportError:
  res['gitpython'] = 'install'
  pipmain(["install","-q","gitpython"])
-try: import eralchemy
-except ImportError:
- res['gitpython'] = 'install'
- pipmain(["install","-q","eralchemy"])
+if 'front' in modes:
+ try: import eralchemy
+ except ImportError:
+  res['gitpython'] = 'install'
+  pipmain(["install","-q","eralchemy"])
 
 #
 # Write CGI files
