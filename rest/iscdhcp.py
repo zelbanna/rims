@@ -13,9 +13,10 @@ __status__ = "Production"
 def leases(aDict):
  from ..core.logger import log
  from ..core import genlib as GL
+ from ..settings.dhcp import data as Settings
  result = []
  lease  = {}
- with open(aDict['settings']['active']['value'],'r') as leasefile: 
+ with open(Settings['active'],'r') as leasefile: 
   for line in leasefile:
    if line == '\n':
     continue
@@ -41,15 +42,16 @@ def leases(aDict):
 # Update function - reload the DHCP server to use new info
 # - entries is a list of dict objects containing hostname, mac, ip etc
 def update_server(aDict):
+ from ..settings.dhcp import data as Settings
  entries = aDict['entries']
  # Create new file
- with open(aDict['settings']['static']['value'],'w') as leasefile:
+ with open(Settings['static'],'w') as leasefile:
   for entry in entries:
    leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Subnet {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['subnet_id'],entry['id'])) 
 
  # Reload
  from subprocess import check_output, CalledProcessError
- commands = aDict['settings']['reload']['value'].split()
+ commands = Settings['reload'].split()
  ret = {}
  try:
   ret['output'] = check_output(commands)
