@@ -18,7 +18,7 @@ def dump(aDict):
   elif mode == 'database':
    cmd.extend(['-c','--skip-extended-insert'])
 
-  output = ["--","-- Command: " + " ".join(cmd),"--"]
+  output = []
   if aDict.get('full',True):
    output.extend(["DROP DATABASE IF EXISTS "+db+";","CREATE DATABASE "+db+";"])
   else:
@@ -45,9 +45,14 @@ def dump(aDict):
 #
 def restore(aDict):
  from subprocess import check_output
- from ..settings.database import data as Settings
+ if aDict.get('username') and aDict.get('password'):
+  username,password = aDict['username'],aDict['password']
+ else:
+  from ..settings.database import data as Settings
+  username,password = Settings['username'], Settings['password']
+
  try:
-  cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u" + Settings['username'], "-p" + Settings['password'], '<',aDict['file']]
+  cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '<',aDict['file']]
   output = check_output(" ".join(cmd), shell=True)
   return { 'res':'OK','output':output.split('\n') }
  except Exception,e:

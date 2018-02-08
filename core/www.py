@@ -9,11 +9,11 @@ __status__= "Production"
 
 #
 # web handling object
-# - cookies are dictionaries which encodes type and TTL
+# - cookies are 2x dictionaries which encodes type and TTL
 #
 class Web(object):
 
- def __init__(self,aREST = "http://127.0.0.1/rest.cgi"):
+ def __init__(self,aREST):
   from os import getenv
   self._header = {}
   self._rest_url = aREST
@@ -28,7 +28,7 @@ class Web(object):
     self.cookies[k] = v
 
  def __getitem__(self,aKey):
-  return self.get(aKey,None)
+  return self.form.getfirst(aKey,None)
 
  def __str__(self):
   return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Web object<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(str(self.cookies),self.form)

@@ -5,7 +5,7 @@ Small or Simple DC Project
 - core: Generic stuff
 - tools: various modules 
 - site: the web frontend (pane) and ajax for driving the web gui
-- site_: site support files (jscrip, stylesheets and images)
+- rest: backend SYSTEM system
 
 Then run install to write site cgi files into docroot, finally enter mysql structure (from mysql.db) into database
 
@@ -18,3 +18,4 @@ www-data ALL=(ALL) NOPASSWD: /bin/systemctl
 - DataStructure through ERAlchemy:
 apt-get install graphviz libgraphviz-dev
 pip install pygraphviz --install-option="--include-path=/usr/include/graphviz" --install-option="--library-path=/usr/lib/graphviz/"
+

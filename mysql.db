@@ -1,6 +1,3 @@
---
--- Command: mysqldump -usdcp -psdcp sdcp --no-data --add-drop-database
---
 DROP DATABASE IF EXISTS sdcp;
 CREATE DATABASE sdcp;
 USE sdcp;
@@ -157,11 +154,11 @@ CREATE TABLE `resources` (
 DROP TABLE IF EXISTS `settings`;
 CREATE TABLE `settings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `required` tinyint(1) NOT NULL DEFAULT '0',
   `section` varchar(20) DEFAULT 'generic',
   `parameter` varchar(40) DEFAULT NULL,
   `value` varchar(100) DEFAULT NULL,
   `description` text,
-  `required` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `parameter` (`section`,`parameter`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

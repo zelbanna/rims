@@ -217,9 +217,7 @@ def install(aDict):
 
  ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
  with DB() as db:
-  # Insert required user
-  ret['DB']['user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
-  # Insert required settings
+  # Insert required settings, if they do not exist (!) ZEB: Todo
   ret['DB']['settings'] = 0
 
  ret['new_devicetypes'] = sync_devicetypes(None)['new']

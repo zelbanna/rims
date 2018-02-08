@@ -14,7 +14,7 @@ from json import load,dump,dumps
 syspath.insert(1, '../')
 if len(argv) < 2:
  print "Usage: {} </path/json file>".format(argv[0])
- print "\n!!! Please import DB structure from mysql.txt before installing !!!\n"
+ print "\n!!! Import DB structure from mysql.db before installing !!!\n"
  exit(0)
 
 from os import chmod, path as ospath
@@ -25,9 +25,9 @@ res = {}
 settingsfilename = ospath.abspath(argv[1])
 with open(settingsfilename) as settingsfile:
  settings = load(settingsfile)
-
+settings['generic']['config_file'] = {'required':'1','description':'SDCP config file','value':settingsfilename}
 modes = settings['generic']['mode']['value'].split(',')
-print "Installing modes: %s"%modes
+res['modes'] = modes
 
 #
 # Verify necessary modules
@@ -83,11 +83,30 @@ except Exception,e:
   res['containers'] = 'NOT_OK'
   print str(e)
 
-# Update database (!)
-settings['generic']['config_file'] = {'required':'1','description':'SDCP config file','value':settingsfilename}
+
+# Update database
+#
+# truncate settings and install all again
+#
+print "\nMake sure that user has access to database:"
+print "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';"%(settings['database']['username']['value'],settings['database']['password']['value'])
+print "GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';"%(settings['database']['database']['value'],settings['database']['username']['value'])
+print "FLUSH PRIVILEGES;\n"
+
+from sdcp.core.dbase import DB
+with DB() as db:
+ res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
+ res['settings'] = 0
+ sql = "INSERT INTO settings(section,parameter,value,required,description) VALUES('%s','%s','%s','%s','%s')"
+ db.do("TRUNCATE TABLE settings")
+ for section,content in settings.iteritems():
+  for key,p in content.iteritems():
+   db.do(sql%(section,key,p['value'],p['required'],p['description']))
+   res['settings'] += 1
 
 from sdcp.rest.sdcp import install
 rest = install({})
 res.update(rest)
 print dumps(res,indent=4,sort_keys=True)
+
 exit(0 if res.get('res') == 'OK' else 1)

@@ -130,7 +130,7 @@
         }, 
         "mode": {
             "description": "Local device function [front,master,rest]", 
-            "required": 0, 
+            "required": 1, 
             "value": "front,master"
         }, 
         "rack_image_directory": {
@@ -140,7 +140,7 @@
         }, 
         "title": {
             "description": "Portal Title", 
-            "required": 1, 
+            "required": 0, 
             "value": "SDCP portal"
         }, 
         "upshost": {
