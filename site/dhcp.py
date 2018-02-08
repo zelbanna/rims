@@ -18,7 +18,7 @@ def update(aWeb):
 #
 def leases(aWeb):
  from ..core import extras as EXT
- leases = aWeb.rest_generic(Settings['url'], "{}_leases"%(Settings['type']),{'type':aWeb['type']})
+ leases = aWeb.rest_generic(Settings['url'], "%s_leases"%(Settings['type']),{'type':aWeb['type']})
  print "<ARTICLE><P>%s Leases</P>"%(aWeb['type'].title())
  try: EXT.dict2table(leases['data'])
  except: pass

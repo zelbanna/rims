@@ -100,7 +100,7 @@ try:
 except Exception as e:
  res['DB'] = 'NOT_OK'
  res['DB_error'] = str(e)
- print "\nError in settings up database, make sure that configured user has access:"
+ print "\nError in settings up database, make sure that configured user has access:\n"
  print "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';"%(settings['database']['username']['value'],settings['database']['password']['value'])
  print "GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';"%(settings['database']['database']['value'],settings['database']['username']['value'])
  print "FLUSH PRIVILEGES;\n"

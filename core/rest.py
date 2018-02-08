@@ -25,6 +25,7 @@ def server():
  from sys import stdout, stdin
  from json import loads, dumps
  api = getenv("HTTP_X_Z_APICALL")
+ args,mod,fun = None,None,None
  try:
   if api:
    data = stdin.read()
@@ -33,9 +34,9 @@ def server():
    try:
     args = dict(map(lambda x: x.split('='),getenv("QUERY_STRING").split("&")))
    except:
-    args,mod,fun = None
     raise  Exception('No Module/Function found for REST API (Query String)')
-   api  = args.pop('call')
+   else:
+    api  = args.pop('call')
   (mod,void,fun) = api.partition('_')
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%mod)
@@ -43,15 +44,13 @@ def server():
  except Exception, e:
   output = 'null'
   stdout.write("X-Z-Res:ERROR\r\n")
-  stdout.write("X-Z-Mod:%s\r\n"%mod)
-  stdout.write("X-Z-Fun:%s\r\n"%fun)
   stdout.write("X-Z-Arguments:%s\r\n"%args)
   stdout.write("X-Z-Info:%s\r\n"%str(e))
   stdout.write("X-Z-Exception:%s\r\n"%type(e).__name__)
  else:
   stdout.write("X-Z-Res:OK\r\n")
-  stdout.write("X-Z-Mod:{}\r\n".format(mod))
-  stdout.write("X-Z-Fun:{}\r\n".format(fun))
+ stdout.write("X-Z-Mod:%s\r\n"%mod)
+ stdout.write("X-Z-Fun:%s\r\n"%fun)
  stdout.write("Content-Type: application/json\r\n")
  stdout.flush()
  stdout.write("\r\n")
