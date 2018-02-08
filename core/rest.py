@@ -81,11 +81,12 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = Non
   output = {'info':dict(sock.info()), 'code':sock.code }
   try:    output['data'] = loads(sock.read())
   except: output['data'] = None
-  output['result'] = output['info'].get('x-z-res','OK')
-  if output['result'] == 'ERROR':
+  if (output['info'].get('x-z-res','OK') == 'ERROR'):
    output['info'].pop('server',None)
    output['info'].pop('connection',None)
    output['info'].pop('transfer-encoding',None)
+   output['info'].pop('content-type',None)
+   output['exception'] = 'RESTError'
   sock.close()
  except HTTPError, h:
   raw = h.read()
@@ -96,7 +97,7 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = Non
   output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':str(e)}
  except Exception, e:
   output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':str(e)}
- if output['result'] == "ERROR":
+ if output.get('exception'):
   raise Exception(output)
  return output
 
