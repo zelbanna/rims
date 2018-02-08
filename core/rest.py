@@ -82,6 +82,10 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = Non
   try:    output['data'] = loads(sock.read())
   except: output['data'] = None
   output['result'] = output['info'].get('x-z-res','OK')
+  if output['result'] == 'ERROR':
+   output['info'].pop('server',None)
+   output['info'].pop('connection',None)
+   output['info'].pop('transfer-encoding',None)
   sock.close()
  except HTTPError, h:
   raw = h.read()
