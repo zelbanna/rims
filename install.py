@@ -71,17 +71,17 @@ for dest in destinations:
 #
 # Write settings containers
 try:              
- for key,values in settings.iteritems():
-  file= ospath.abspath(ospath.join(ospath.dirname(__file__),'settings',"%s.py"%key))
-  processed = {}
-  for param,data in values.iteritems():
-   processed[param]= data['value'] 
-  with open(file,'w') as f:
-    f.write("data=%s"%dumps(processed))    
+ scfile= ospath.abspath(ospath.join(ospath.dirname(__file__),'SettingsContainer.py'))
+ with open(scfile,'w') as f:
+  for section,content in settings.iteritems():
+   processed = {}
+   for param,data in content.iteritems():
+    processed[param]= data['value'] 
+   f.write("%s=%s\n"%(section,dumps(processed)))
   res['containers'] = 'OK'
 except Exception,e:                   
-  res['containers'] = 'NOT_OK'
-  print str(e)
+ res['containers'] = 'NOT_OK'
+ print str(e)
 
 #
 # Update database

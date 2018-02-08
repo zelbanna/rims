@@ -104,13 +104,12 @@ def save(aDict):
   with open(config_file,'w') as f:
    dump(config,f,indent=4,sort_keys=True)
  except Exception as e:
-  print e
   ret['config'] = 'NOT_OK'
  try:
-  for key,values in container.iteritems():
-   file= ospath.abspath(ospath.join(ospath.dirname(__file__),'..','settings',"%s.py"%key))
-   with open(file,'w') as f:
-    f.write("data=%s"%dumps(values))
+  file=ospath.abspath(ospath.join(ospath.dirname(__file__),'..','SettingsContainer.py'))
+  with open(file,'w') as f:
+   for key,values in container.iteritems():
+    f.write("%s=%s\n"%(key,dumps(values)))
  except:
   ret['containers'] = 'NOT_OK'
  return ret

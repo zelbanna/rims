@@ -76,10 +76,9 @@ def infra(aDict):
    ret['pduinfo']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
 
  if aDict.get('images',False):
-  from ..settings.generic import data as Settings
+  from .. import SettingsContainer as SC
   from os import listdir, path
-  print Settings.get('rack_image_directory')
-  directory = listdir(path.join(Settings['docroot'],"images")) if not Settings.get('rack_image_directory') else Settings['rack_image_directory']
+  directory = listdir(path.join(SC.generic['docroot'],"images")) if not SC.generic.get('rack_image_directory') else SC.generic['rack_image_directory']
   ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
  return ret
 

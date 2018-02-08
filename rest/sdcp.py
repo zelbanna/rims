@@ -178,12 +178,13 @@ def install(aDict):
  import pip
  from ..core.dbase import DB
  from ..core.mysql import diff
- from ..settings import generic,database,logs
+ from .. import SettingsContainer as SC
+
  packagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
  logger  = ospath.abspath(ospath.join(packagedir,'core','logger.py'))
  ret = {'res':'NOT_OK'}
 
- modes = generic.data['mode'].split(',')
+ modes = SC.generic['mode'].split(',')
 
  #
  # Write Logger
@@ -194,12 +195,12 @@ def install(aDict):
  with open(logger,'w') as f:
   f.write("def log(aMsg,aID=None):\n")
   f.write(" from time import localtime, strftime\n")
-  f.write(" with open('" + logs.data['syslog'] + "', 'a') as f:\n")
+  f.write(" with open('" + SC.logs['syslog'] + "', 'a') as f:\n")
   f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
 
  if 'front' in modes:
   # Copy files
-  for type,dest in [('images',ospath.join(generic.data['docroot'],'images')), ('infra',generic.data['docroot'])]:
+  for type,dest in [('images',ospath.join(SC.generic['docroot'],'images')), ('infra',SC.generic['docroot'])]:
    for file in listdir(ospath.join(packagedir,type)):
     copy(ospath.join(packagedir,type,file), ospath.join(dest,file))
    ret[type] = 'OK'
@@ -207,8 +208,8 @@ def install(aDict):
   # Generate ERD
   try:
    from eralchemy import render_er
-   erd_input = "mysql+pymysql://%s:%s@%s/%s"%(database.data['username'],database.data['password'],database.data['host'],database.data['database'])
-   erd_output= ospath.join(generic.data['docroot'],"sdcp.pdf")
+   erd_input = "mysql+pymysql://%s:%s@%s/%s"%(SC.database['username'],SC.database['password'],SC.database['host'],SC.database['database'])
+   erd_output= ospath.join(SC.generic['docroot'],"sdcp.pdf")
    render_er(erd_input,erd_output)
    ret['ERD'] = 'OK'
   except Exception, e:

@@ -19,8 +19,8 @@ class DB(object):
   self._curs = None
   self._dirty = False
   if not aDB:
-   from ..settings.database import data as Settings
-   self._db, self._host, self._user, self._pass = Settings['database'],Settings['host'],Settings['username'],Settings['password']
+   from .. import SettingsContainer as SC
+   self._db, self._host, self._user, self._pass = SC.database['database'],SC.database['host'],SC.database['username'],SC.database['password']
   else:
    self._db, self._host, self._user, self._pass = aDB, aHost, aUser, aPass
 

@@ -7,7 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "17.11.01GA"
 __status__ = "Production"
 
-from ..settings.dns import data as Settings
+from .. import SettingsContainer as SC
 from ..core.dbase import DB
 from ..core.logger import log
 
@@ -17,7 +17,7 @@ from ..core.logger import log
 #
 def dedup(aDict):
  log("powerdns_dedup({})".format(aDict))
- with DB(Settings['database'],'localhost',Settings['username'],Settings['password']) as db:
+ with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
   rows = db.get_rows();
   remove = []
@@ -40,7 +40,7 @@ def top(aDict):
  count = int(aDict.get('count',10))
  fqdn_top = {}
  fqdn_who = {}
- with open(Settings['logfile'],'r') as logfile:
+ with open(SC.dns['logfile'],'r') as logfile:
   for line in logfile:
    parts = line.split()
    if not parts[5] == 'Remote':
@@ -62,7 +62,7 @@ def top(aDict):
 def domains(aDict):
  log("powerdns_domains({})".format(aDict))
  ret = {}
- with DB(Settings['database'],'localhost',Settings['username'],Settings['password']) as db:
+ with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if aDict.get('filter'):
    ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict['filter'] == 'reverse' else "NOT"))
   else:      
@@ -79,7 +79,7 @@ def domains(aDict):
 def domain_lookup(aDict):
  log("powerdns_domain_lookup({})".format(aDict))
  ret = {}
- with DB(Settings['database'],'localhost',Settings['username'],Settings['password']) as db:
+ with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE id = '{}'".format(aDict['id']))
   if ret['xist'] > 0:
    ret['data'] = db.get_row()
@@ -91,7 +91,7 @@ def domain_lookup(aDict):
 def domain_update(aDict):
  log("powerdns_domain_update({})".format(aDict))
  ret = {'result':'OK'}
- with DB(Settings['database'],'localhost',Settings['username'],Settings['password']) as db:
+ with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if aDict['id'] == 'new':
    # Create and insert a lot of records
    ret['xist'] = db.do("INSERT INTO domains(name, master, type) VALUES ('{}','{}','{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['name'],aDict['master'],aDict['type']))
@@ -113,7 +113,7 @@ def domain_update(aDict):
 def domain_delete(aDict):
  log("powerdns_domain_delete({})".format(aDict))
  ret = {}
- with DB(Settings['database'],'localhost',Settings['username'],Settings['password']) as db:
+ with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   ret['deleted'] = db.do("DELETE FROM domains WHERE id = %i"%(int(aDict['id'])))
  return ret
 
@@ -130,7 +130,7 @@ def records(aDict):
  if aDict.get('type'):
   select.append("type = '%s'"%aDict['type'].upper())
  tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
- with DB(Settings['database'],'localhost',Settings['username'],Settings['password']) as db:
+ with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   ret['count'] = db.do("SELECT id, domain_id AS dom_id, name, type, content,ttl,change_date FROM records %s ORDER BY type DESC, name"%tune)
   ret['records'] = db.get_rows()
  return ret
@@ -141,7 +141,7 @@ def records(aDict):
 def record_lookup(aDict):
  log("powerdns_record_lookup({})".format(aDict))
  ret = {}
- with DB(Settings['database'],'localhost',Settings['username'],Settings['password']) as db:
+ with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   ret['xist'] = db.do("SELECT records.* FROM records WHERE id = '{}' AND domain_id = '{}'".format(aDict['id'],aDict['domain_id']))
   ret['data'] = db.get_row() if ret['xist'] > 0 else {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
  return ret
@@ -155,7 +155,7 @@ def record_update(aDict):
  aDict['ttl']  = aDict.get('ttl','3600')
  aDict['type'] = aDict['type'].upper()
  ret = {'id':aDict.pop('id',None)}
- with DB(Settings['database'],'localhost',Settings['username'],Settings['password']) as db:
+ with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if ret['id'] == 'new' or str(ret['id']) == '0':
    ret['xist'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date,prio) VALUES ({},'{}','{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'],aDict['ttl'],aDict['change_date']))
    ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
@@ -168,6 +168,6 @@ def record_update(aDict):
 def record_delete(aDict):
  log("powerdns_record_delete({})".format(aDict))
  ret = {}
- with DB(Settings['database'],'localhost',Settings['username'],Settings['password']) as db:
+ with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   ret['deleted'] = db.do("DELETE FROM records WHERE id = '{}'".format(aDict['id']))
  return ret

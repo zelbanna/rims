@@ -9,7 +9,7 @@ __version__ = "17.11.01GA"
 __status__ = "Production"
 
 def application(aDict):
- from ..settings.openstack import data as Settings
+ from .. import SettingsContainer as SC
  from ..core.dbase import DB
  from ..devices.openstack import OpenstackRPC
  from ..core.logger import log
@@ -21,7 +21,7 @@ def application(aDict):
  try:
   if cookies['main_token'] is None:
    controller = OpenstackRPC(cookies['controller'],None)
-   res = controller.auth({'project':Settings['project'], 'username':Settings['username'],'password':Settings['password']})
+   res = controller.auth({'project':SC.openstack['project'], 'username':SC.openstack['username'],'password':SC.openstack['password']})
    cookies['main_token'] = controller.get_token()
    log("openstack_controller - login result: {}".format(str(res['result'])))
   else:
