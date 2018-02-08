@@ -158,7 +158,7 @@ def action(aWeb):
    with open("os_templates/"+template) as f:
     data = load(f)
    data['stack_name'] = name
-   params  = aWeb.get_args2dict_except(['op','call','template','name'])
+   params  = aWeb.get_args2dict(['op','call','template','name'])
    for key,value in params.iteritems():
     data['parameters'][key[6:]] = value
 

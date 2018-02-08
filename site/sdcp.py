@@ -17,7 +17,7 @@ def login(aWeb):
   aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%cookie.get('portal','sdcp_login'))
   return
 
- data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict_except(['call','header']))
+ data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call','header']))
  aWeb.cookie_add(application,data['cookie'])
  aWeb.put_html(data['title'])
  print "<DIV CLASS='grey overlay'>"

@@ -132,25 +132,11 @@ class Web(object):
 
  ############################## CGI/Web functions ###############################
 
- def get_args2dict(self):
-  return { key: self[key] for key in self.form.keys() }
+ def get_args2dict(self,aExcept = []):
+  return { key: self[key] for key in self.form.keys() if not key in aExcept }
 
- def get_args2dict_except(self,aexceptlist = []):
-  keys = self.form.keys()
-  for exc in aexceptlist:
-   try:    keys.remove(exc)
-   except: pass
-  return { key: self[key] for key in keys }
-
- def get_args(self):
-  return "&".join(["%s=%s"%(key,self[key]) for key in self.form.keys()])
-
- def get_args_except(self,aexceptlist = []):
-  keys = self.form.keys()
-  for exc in aexceptlist:
-   try:    keys.remove(exc)
-   except: pass
-  return "&".join(["%s=%s"%(key,self[key]) for key in keys])
+ def get_args(self,aExcept = []):
+  return "&".join(["%s=%s"%(key,self[key]) for key in self.form.keys() if not key in aExcept])
 
  @classmethod
  def button(cls,aImg,**kwargs):
