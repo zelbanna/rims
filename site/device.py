@@ -113,7 +113,9 @@ def info(aWeb):
  elif "book" in op:
   aWeb.rest_call("booking_update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':op})
 
- dev = aWeb.rest_call("device_info",{'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']})
+ restargs = {'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']}
+ restargs.update({'username':True,'booking':True,'rackinfo':True})
+ dev = aWeb.rest_call("device_info",restargs)
 
  if dev['exist'] == 0:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
@@ -334,7 +336,7 @@ def new(aWeb):
   subnets = aWeb.rest_call("sdcpipam_list")['subnets']
   domains = aWeb.rest_call("sdcpdns_domains",{'filter':'forward'})['domains']
   print "<ARTICLE CLASS=info><P>Add Device</P>"
-  print "<!-- {} -->".format(aWeb.get_args2dict_except())
+  print "<!-- {} -->".format(aWeb.get_args2dict_except(['call']))
   print "<FORM ID=device_new_form>"
   print "<DIV CLASS=table><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE={}></DIV></DIV>".format(name)

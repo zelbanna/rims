@@ -79,24 +79,27 @@ def info(aDict):
  with DB() as db:
   ret['exist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
   if ret['exist'] > 0:
-   from .. import SettingsContainer as SC
-   ret['username'] = SC.netconf['username']
+   if aDict.get('username',False):
+    from .. import SettingsContainer as SC
+    ret['username'] = SC.netconf['username']
    ret['info'] = db.get_row()
    ret['fqdn'] = "{}.{}".format(ret['info']['hostname'],ret['info']['domain'])
    ret['ip']   = ret['info'].pop('ipasc',None)
    ret['type'] = ret['info']['type_base']
    ret['mac']  = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
    ret['id']   = ret['info'].pop('id',None)
-   ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id']))
-   if ret['booked'] > 0:
-    ret['booking'] = db.get_row()
-   if ret['info']['vm'] == 1:
-    ret['racked'] = 0
-   else:
-    ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(devices.ip) AS console_ip, devices.hostname AS console_name FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(ret['id']))
-    if ret['racked'] > 0:
-     ret['rack'] = db.get_row()
-     ret['rack']['hostname'] = ret['info']['hostname']
+   if aDict.get('booking',False):
+    ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id']))
+    if ret['booked'] > 0:
+     ret['booking'] = db.get_row()
+   if aDict.get('rackinfo',False):
+    if ret['info']['vm'] == 1:
+     ret['racked'] = 0
+    else:
+     ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(devices.ip) AS console_ip, devices.hostname AS console_name FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(ret['id']))
+     if ret['racked'] > 0:
+      ret['rack'] = db.get_row()
+      ret['rack']['hostname'] = ret['info']['hostname']
  return ret
 
 #
