@@ -13,8 +13,8 @@ __status__= "Production"
 def login(aWeb):
  application = aWeb.get('application','sdcp')
  cookie = aWeb.cookie_unjar(application)
- if len(cookie) > 0 and cookie.get('portal',False):
-  aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%cookie.get('portal','sdcp_login'))
+ if len(cookie) > 0:
+  aWeb.put_redirect("sdcp.cgi?call=%s_portal"%application)
   return
  
  data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call','header']))
