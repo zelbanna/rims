@@ -58,13 +58,13 @@ def info(aWeb):
 #
 def layout(aWeb):
  data = aWeb.rest_call("sdcpipam_allocation",{'id':aWeb['id']})
- print "<ARTICLE>"
  startn  = int(data['start'])
  starta  = int(data['subnet'].split('.')[3])
  devices = data['devices']
  green = "<A CLASS='z-op btn ipam-icon green' TITLE='New' DIV=div_content_right URL=sdcp.cgi?call=device_new&subnet_id="+ aWeb['id'] +"&ipint={}>{}</A>"
  red   = "<A CLASS='z-op btn ipam-icon red'   TITLE='{}' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A>"
  blue  = "<A CLASS='z-op btn ipam-icon blue'  TITLE='{}'>{}</A>"
+ print "<ARTICLE><P>%s/%s</P>"%(data['subnet'],data['mask'])
  print blue.format('network',starta % 256)
  for cnt in range(1,int(data['no'])-1):
   dev = devices.get(str(cnt + startn))
