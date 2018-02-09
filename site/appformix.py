@@ -25,7 +25,7 @@ def list(aWeb):
   return
  controller = Device(ctrl)
  res = controller.auth({'username':SC.appformix['username'], 'password':SC.appformix['password'] })
- if not res['result'] == "OK":
+ if not res['auth'] == "OK":
   print "Error logging in - {}".format(str(res))
   return
 
@@ -60,7 +60,7 @@ def info(aWeb):
   return
  controller = Device(ctrl)
  res = controller.auth({'username':SC.appformix['username'], 'password':SC.appformix['password'] })
- if not res['result'] == "OK":
+ if not res['auth'] == "OK":
   print "Error logging in - {}".format(str(res))
   return
  reports = controller.call("reports/project/%s"%aWeb['report'])['data']['UsageReport']

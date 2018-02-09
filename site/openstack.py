@@ -27,7 +27,7 @@ def portal(aWeb):
   (pid,pname) = project.split('_')
   openstack = OpenstackRPC(ctrl,None)
   res = openstack.auth({'project':pname, 'username':username,'password':password })
-  if not res['result'] == "OK":
+  if not res['auth'] == "OK":
    aWeb.log("openstack_portal - error during login for {}@{}".format(username,ctrl))
    aWeb.put_html("Openstack Portal")
    print "Error logging in - please try login again"

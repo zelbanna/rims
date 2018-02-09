@@ -20,24 +20,25 @@ def login(aWeb):
  data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call','header']))
  aWeb.cookie_add(application,data['cookie'])
  aWeb.put_html(data['title'])
- print "<DIV CLASS='grey overlay'>"
- print "<ARTICLE CLASS='login'>"
- print "<H1 CLASS='centered'>%s</H1>"%data['message']
- print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
- print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s'>"%data['portal']
- print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
- print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
- print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
- for choice in data.get('choices'):
-  print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s'>"%(choice['display'],choice['id'])
-  for row in choice['data']:
-   print "<OPTION VALUE='%s'>%s</OPTION>"%(row['id'],row['name'])
-  print "</SELECT></DIV></DIV>"
- for param in data.get('parameters'):
-  print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s'></DIV></DIV>"%(param['display'],param['data'],param['id'])
- print "</DIV></DIV>"
- print "<A CLASS='btn z-op' OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=login_form>Enter</A>"
- print "</FORM>"
+ print "<DIV CLASS='grey overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message']
+ if data.get('exception'):
+  print "Error retrieving applicaiton info - exception info: %s"%(data['exception'])
+ else:
+  print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
+  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s'>"%data['portal']
+  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
+  print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
+  print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
+  for choice in data.get('choices'):
+   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s'>"%(choice['display'],choice['id'])
+   for row in choice['data']:
+    print "<OPTION VALUE='%s'>%s</OPTION>"%(row['id'],row['name'])
+   print "</SELECT></DIV></DIV>"
+  for param in data.get('parameters'):
+   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s'></DIV></DIV>"%(param['display'],param['data'],param['id'])
+  print "</DIV></DIV>"
+  print "<A CLASS='btn z-op' OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=login_form>Enter</A>"
+  print "</FORM>"
  print "</ARTICLE></DIV>"
 
 ############################################## SDCP ###############################################

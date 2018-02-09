@@ -1,7 +1,6 @@
 """Module docstring.
 
 Openstack Portal REST module
-- Hardcoded for the moment
 
 """
 __author__ = "Zacharias El Banna"
@@ -23,7 +22,7 @@ def application(aDict):
    controller = OpenstackRPC(cookies['controller'],None)
    res = controller.auth({'project':SC.openstack['project'], 'username':SC.openstack['username'],'password':SC.openstack['password']})
    cookies['main_token'] = controller.get_token()
-   log("openstack_controller - login result: {}".format(str(res['result'])))
+   log("openstack_controller - login result: {}".format(str(res['auth'])))
   else:
    log("openstack_controller - reusing token: {}".format(cookies['main_token']))
    controller = OpenstackRPC(cookies['controller'],cookies['main_token'])

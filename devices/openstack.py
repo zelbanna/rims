@@ -49,6 +49,9 @@ class OpenstackRPC(object):
     for svc in token['catalog']:
      catalog[svc['name']] = svc
     self._catalog = catalog
+    res['auth'] = 'OK'
+   else:
+    res['auth'] = 'NOT_OK'
   except Exception, e:
    res = e[0]
   return res

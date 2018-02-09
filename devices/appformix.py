@@ -36,6 +36,9 @@ class Device(object):
     self._token = token['tokenId']
     self._token_utc = token['expiresAt']
     self._token_expire = int(mktime(strptime(token['expiresAt'],"%Y-%m-%dT%H:%M:%S.%fZ")))
+    res['auth'] = 'OK'
+   else:
+    res['auth'] = 'NOT_OK'
   except Exception, e:
    res = e[0]
   return res
