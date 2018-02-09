@@ -59,11 +59,12 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Value:</DIV><DIV CLASS=td><INPUT NAME=value VALUE='%s' TYPE=TEXT REQUIRED></DIV></DIV>"%data['value']
  print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT %s></DIV></DIV>"%(data['description'],readonly)
  print "</DIV></DIV>"
- print "</FORM><BR>"
+ print "</FORM><BR><DIV CLASS=controls>"
+ print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&op=update', FRM='sdcp_settings_info_form')
  if data['id'] != 'new':
   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=settings_delete&id=%s&host=%s'%(data['id'],aWeb['host']), MSG='Delete settings?')
- print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&op=update', FRM='sdcp_settings_info_form')
- print "</ARTICLE>"
+  print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&section=%s&host=%s'%(data['section'],aWeb['host']), MSG='Add settings for same section?')
+ print "</DIV></ARTICLE>"
 
 #
 #
