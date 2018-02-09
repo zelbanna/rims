@@ -19,7 +19,7 @@
 // - submit   frm
 //
 
-function btn(event) {
+function btn(e) {
  var op  = $(this).attr("op");
  var div = $("#"+$(this).attr("div"));
  var url = $(this).attr("url");
@@ -93,10 +93,10 @@ function loadresult(div,spin,input,result){
 
 //
 //
-function focus(event){
- if (event.originalEvent.type == 'focus')
+function focus(e){
+ if (e.originalEvent.type == 'focus')
   $(this).addClass('highlight');
- else if (event.originalEvent.type == 'blur')
+ else if (e.originalEvent.type == 'blur')
   $(this).removeClass('highlight');
 };
 
@@ -109,6 +109,7 @@ function dragndrop(){
  $(".drop").off();
  $(".drag").attr("draggable","true");
  $(".drag").on("dragstart", dragstart);
+ $(".drag").on("dragend", dragend);
  $(".drop").on("dragover", dragover);
  $(".drop").on("drop", drop);
  $(".drop").on("dragenter", dragenter);
@@ -116,29 +117,33 @@ function dragndrop(){
 }
 
 //
-function dragstart(event){
+function dragend(e){
+ this.style.opacity = '';
+}
+
+//
+function dragstart(e){
  console.log("Drag " + this.id + " FROM " + this.parentElement.id);
  this.style.opacity = '0.4';
- event.originalEvent.dataTransfer.setData("Text",this.id);
- event.originalEvent.dataTransfer.effectAllowed = 'move';
+ e.originalEvent.dataTransfer.setData("Text",this.id);
+ e.originalEvent.dataTransfer.effectAllowed = 'move';
 }
 
 //
-function dragover(event){
- if(event.preventDefault)
-  event.preventDefault();
+function dragover(e){
+ if(e.preventDefault)
+  e.preventDefault();
  return false;
 }
-function dragenter(event){ this.classList.add('highlight'); }
-function dragleave(event){ this.classList.remove('highlight'); }
+function dragenter(e){ this.classList.add('highlight'); }
+function dragleave(e){ this.classList.remove('highlight'); }
 
 //
-function drop(event){
- event.preventDefault();
- var el_id = event.originalEvent.dataTransfer.getData("Text");
+function drop(e){
+ e.preventDefault();
+ var el_id = e.originalEvent.dataTransfer.getData("Text");
  var el    = document.getElementById(el_id);
  var parent= el.parentElement;
- el.style.opacity = '';
  this.appendChild(el);
  console.log("Drop " + el_id + " INTO " + this.id + " FROM " + parent.id);
  updatelist(this);
