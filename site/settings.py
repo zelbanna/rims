@@ -63,7 +63,7 @@ def info(aWeb):
  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&op=update', FRM='sdcp_settings_info_form')
  if data['id'] != 'new':
   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=settings_delete&id=%s&host=%s'%(data['id'],aWeb['host']), MSG='Delete settings?')
-  print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&section=%s&host=%s'%(data['section'],aWeb['host']), MSG='Add settings for same section?')
+  print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&id=new&section=%s&host=%s'%(data['section'],aWeb['host']))
  print "</DIV></ARTICLE>"
 
 #
