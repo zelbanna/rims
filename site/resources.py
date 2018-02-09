@@ -26,7 +26,7 @@ def view(aWeb):
  res = aWeb.rest_call("resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id']})
  index = 0;
  inline = "<BUTTON CLASS='z-op menu' DIV=main URL='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
- extern = "<FORM><BUTTON CLASS='menu' TYPE='submit' FORMTARGET=_blank FORMMETHOD=post FORMACTION='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON></FORM>"
+ extern = "<A CLASS='btn menu' TARGET=_blank HREF='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></A>"
  print "<DIV CLASS=centered STYLE='align-items:initial'>"
  for row in res['data']:
   print "<DIV STYLE='float:left; min-width:100px; margin:6px;'>"
@@ -106,7 +106,7 @@ def info(aWeb):
   print "</SELECT></DIV>"
  print "</DIV></DIV></DIV>"
  if data['icon'] and data['icon'] != 'NULL':
-  print "<BUTTON CLASS='menu' STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></BUTTON>".format(data['icon'])
+  print "<BUTTON CLASS='menu' TYPE=button STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></BUTTON>".format(data['icon'])
  print "</FORM><BR><DIV CLASS=controls>"
  if cookie['id'] == str(data['user_id']):
   if data['id'] != 'new':
