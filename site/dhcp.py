@@ -7,18 +7,16 @@ __author__= "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__= "Production"
 
-from .. import SettingsContainer as SC
 #
 #
 def update(aWeb):
- args = aWeb.rest_call("device_list_mac")
- print  aWeb.rest_generic(SC.dhcp['url'],"%s_update_server"%(SC.dhcp['type']),{'entries':args})
+ print "<ARTICLE>%s</ARTICLE>"%(aWeb.rest_call("sdcpdhcp_update_server"))
 
 #
 #
 def leases(aWeb):
  from ..core import extras as EXT
- leases = aWeb.rest_generic(SC.dhcp['url'], "%s_leases"%(SC.dhcp['type']),{'type':aWeb['type']})
+ leases = aWeb.rest_call("sdcpdhcp_leases",{'type':aWeb['type']})
  print "<ARTICLE><P>%s Leases</P>"%(aWeb['type'].title())
  try: EXT.dict2table(leases['data'])
  except: pass
