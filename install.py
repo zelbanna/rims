@@ -65,7 +65,7 @@ for dest in destinations:
    wr("from sdcp.core import rest as cgi\n")
   else:
    wr("from sdcp.core.www import Web\n")
-   wr("cgi = Web('%s')\n"%settings['node']['sdcp']['value'])
+   wr("cgi = Web('%s')\n"%settings['node']['master']['value'])
   wr("cgi.server()\n")
  chmod(site,0755)
  res["cgi_{}".format(dest)] = 'OK'

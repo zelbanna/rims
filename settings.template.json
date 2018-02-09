@@ -47,10 +47,10 @@
             "required": 1, 
             "value": "iscdhcp"
         }, 
-        "url": {
+        "node": {
             "description": "ISC DHCP REST API", 
             "required": 0, 
-            "value": "URL"
+            "value": "node"
         }
     }, 
     "dns": {
@@ -245,8 +245,8 @@
         }
     }, 
     "node": {
-        "sdcp": {
-            "description": "SDCP", 
+        "master": {
+            "description": "Master Node",
             "required": 1, 
             "value": "http://127.0.0.1/rest.cgi"
         }, 

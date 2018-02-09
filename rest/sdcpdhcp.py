@@ -2,7 +2,6 @@
 
 DHCP API module
 
-- ToDo: Check node, if local, load module
 """
 __author__ = "Zacharias El Banna"
 __version__ = "18.02.09GA"
@@ -16,7 +15,7 @@ def update_server(aDict):
  from device import list_mac
  ret = {}
  macs = list_mac({})
- if SC.dhcp['node'] == 'sdcp':
+ if SC.dhcp['node'] == 'master':
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dhcp['type'])
   fun = getattr(module,'update_server',None)
@@ -31,7 +30,7 @@ def update_server(aDict):
 #
 #
 def leases(aDict):
- if SC.dhcp['node'] == 'sdcp':
+ if SC.dhcp['node'] == 'master':
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dhcp['type'])
   fun = getattr(module,'leases',None)
