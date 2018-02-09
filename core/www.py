@@ -99,7 +99,7 @@ class Web(object):
    stdout.write("<TITLE>" + aTitle + "</TITLE>")
   stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/sdcp.png'/>")
   stdout.write("<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='system.js'></SCRIPT>")
-  stdout.write("<SCRIPT>$(function() { $(document.body).on('click','a.z-op',btn ) .on('focusin focusout','input, select',focus ); });</SCRIPT>");
+  stdout.write("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ); });</SCRIPT>");
   stdout.write("</HEAD>")
   stdout.flush()
 
@@ -140,7 +140,7 @@ class Web(object):
 
  @classmethod
  def button(cls,aImg,**kwargs):
-  return " ".join(["<A CLASS='z-op btn small-btn'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC=images/btn-%s.png></A>"%(aImg)])
+  return " ".join(["<BUTTON CLASS='z-op small'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC=images/btn-%s.png></BUTTON>"%(aImg)])
  # Add drag n drop
 
  @classmethod

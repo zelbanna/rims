@@ -16,10 +16,11 @@ def login(aWeb):
  if len(cookie) > 0 and cookie.get('portal',False):
   aWeb.put_redirect("sdcp.cgi?call=%s&headers=no"%cookie.get('portal','sdcp_login'))
   return
-
+ 
  data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call','header']))
  aWeb.cookie_add(application,data['cookie'])
  aWeb.put_html(data['title'])
+ taborder = 2
  print "<DIV CLASS='grey overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message']
  if data.get('exception'):
   print "Error retrieving applicaiton info - exception info: %s"%(data['exception'])
@@ -30,16 +31,18 @@ def login(aWeb):
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
   print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   for choice in data.get('choices'):
-   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s'>"%(choice['display'],choice['id'])
+   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s' TABORDER=%s>"%(choice['display'],choice['id'],taborder)
+   taborder +=1
    for row in choice['data']:
     print "<OPTION VALUE='%s'>%s</OPTION>"%(row['id'],row['name'])
    print "</SELECT></DIV></DIV>"
   for param in data.get('parameters'):
-   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s'></DIV></DIV>"%(param['display'],param['data'],param['id'])
+   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s' TABORDER=%s></DIV></DIV>"%(param['display'],param['data'],param['id'],taborder)
+   taborder +=1
   print "</DIV></DIV>"
-  print "<A CLASS='btn z-op' OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=login_form>Enter</A>"
-  print "</FORM>"
- print "</ARTICLE></DIV>"
+  print "</FORM><DIV CLASS=controls>"
+  print "<BUTTON CLASS=z-op OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=login_form TABORDER=1 TYPE=submit>Enter</BUTTON>"
+ print "</DIV></ARTICLE></DIV>"
 
 ############################################## SDCP ###############################################
 #
@@ -63,9 +66,12 @@ def portal(aWeb):
  aWeb.put_html(aWeb.get('title','Portal'))
  print "<HEADER CLASS='background'>"
  for item in menu:
-  print "<A CLASS='btn menu-btn z-op' TITLE='%s' %s='%s'><IMG SRC='%s'/></A>"%(item['title'],"TARGET=_blank HREF" if item['inline'] == 0 else "DIV=main URL", item['href'],item['icon'])
- print "<A CLASS='btn menu-btn z-op right warning' OP=logout URL=sdcp.cgi>Log out</A>"
- print "<A CLASS='btn menu-btn z-op right' DIV=main TITLE='User info' URL=sdcp.cgi?call=users_user&id=%s><IMG SRC='images/icon-users.png'></A>"%id
+  if item['inline'] == 0:
+   print "<FORM><BUTTON CLASS='menu' TITLE='%s' TYPE='submit' FORMTARGET=_blank FORMMETHOD=post FORMACTION='%s'><IMG SRC='%s'/></BUTTON></FORM>"%(item['title'],item['href'],item['icon'])
+  else:
+   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG SRC='%s'/></BUTTON>"%(item['title'],item['href'],item['icon'])
+ print "<BUTTON CLASS='z-op menu right warning' OP=logout URL=sdcp.cgi>Log out</BUTTON>"
+ print "<BUTTON CLASS='z-op menu right' DIV=main TITLE='User info' URL=sdcp.cgi?call=users_user&id=%s><IMG SRC='images/icon-users.png'></BUTTON>"%id
  print "</HEADER>"
  print "<MAIN CLASS='background' ID=main></MAIN>"
 

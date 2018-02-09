@@ -37,7 +37,7 @@ def list(aWeb):
  for server in data.get('servers',None):
   print "<DIV CLASS=tr>"
   print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
-  print "<DIV CLASS=td STYLE='max-width:200px'><A TITLE='VM info' CLASS='z-op' DIV=div_content_right URL=sdcp.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
+  print "<DIV CLASS=td STYLE='max-width:200px'><A CLASS='z-op' TITLE='VM info' DIV=div_content_right URL=sdcp.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
   print "<DIV CLASS=td>"
   qserver = get_quote(server['name'])
   actionurl = 'sdcp.cgi?call=nova_action&name=%s&id=%s&op={}'%(qserver,server['id'])
@@ -87,15 +87,14 @@ def select_parameters(aWeb):
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
  print "<DIV CLASS='border'><UL CLASS='drop vertical' ID=ul_network DEST=os_network></UL></DIV>"
- print "</FORM>"
-
+ print "</FORM><DIV CLASS=controls>"
+ print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=nova_action&id=new&op=add',FRM='frm_os_create_vm', SPIN='true')
+ print "</DIV>"
  print "<DIV CLASS='border'><UL CLASS='drop vertical' ID=ul_avail>"
  for net in networks:
   if net.get('contrail:subnet_ipam'):
    print "<LI ID=net_%s CLASS='drag'>%s (%s)</LI>"%(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
  print "</UL></DIV>"
- print "<BR>"
- print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=nova_action&id=new&op=add',FRM='frm_os_create_vm', SPIN='true')
  print "</ARTICLE>"
 
 ######################################## Actions ########################################
@@ -118,12 +117,12 @@ def action(aWeb):
   from ..core.extras import get_quote
   server = controller.call(port,url + "/servers/%s"%aWeb['id'])['data']['server']
   qserver = get_quote(server['name'])
-  tmpl = "<A TITLE='{}' CLASS='btn z-op' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=%s&op={} SPIN=true>{}</A>"%aWeb['id']
+  tmpl = "<BUTTON CLASS='z-op' TITLE='{}' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=%s&op={} SPIN=true>{}</BUTTON>"%aWeb['id']
   print "<DIV>"
   print tmpl.format('Details','details','VM Details')
   print tmpl.format('Diagnostics','diagnostics','Diagnostics')
   print tmpl.format('Networks','networks','Networks')
-  print "<A TITLE='New-tab Console'  CLASS='btn'  TARGET=_blank HREF='sdcp.cgi?call=nova_console&name={0}&id={1}'>Console</A>".format(qserver,aWeb['id'])
+  print "<A CLASS=btn TITLE='New-tab Console' TARGET=_blank HREF='sdcp.cgi?call=nova_console&name={0}&id={1}'>Console</A>".format(qserver,aWeb['id'])
   print "</DIV>"
   print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
   dict2html(server,server['name'])

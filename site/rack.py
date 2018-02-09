@@ -115,13 +115,13 @@ def info(aWeb):
  print "</SELECT></DIV></DIV>"
 
  print "</DIV></DIV>"
- print "</FORM>"
+ print "<SPAN CLASS='right small-text' ID=update_results></SPAN>"
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?call=rack_info&id={0}'.format(id))
  print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?call=rack_info&op=save', FRM='rack_info_form')
  if not id == 'new':
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_delete&id=%s'%(id))
- print "<SPAN CLASS='right small-text' ID=update_results></SPAN>"
- print "</ARTICLE>"
+ print "</DIV></ARTICLE>"
 
 #
 #

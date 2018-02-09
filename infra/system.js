@@ -105,14 +105,14 @@ function focus(event){
 // - updating a list of element id's on attribute "dest" on drop element
 //
 function dragndrop(){
- $("li.drag").off();
- $("ul.drop").off();
- $("li.drag").attr("draggable","true");
- $("li.drag").on("dragstart", dragstart);
- $("ul.drop").on("dragover", dragover);
- $("ul.drop").on("drop", drop);
- $("ul.drop").on("dragenter", dragenter);
- $("ul.drop").on("dragleave", dragleave);
+ $(".drag").off();
+ $(".drop").off();
+ $(".drag").attr("draggable","true");
+ $(".drag").on("dragstart", dragstart);
+ $(".drop").on("dragover", dragover);
+ $(".drop").on("drop", drop);
+ $(".drop").on("dragenter", dragenter);
+ $(".drop").on("dragleave", dragleave);
 }
 
 //

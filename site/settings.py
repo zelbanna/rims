@@ -18,10 +18,12 @@ def list(aWeb):
  res = aWeb.rest_generic(host['value'],"settings_list",{'user_id':cookie['id']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Settings</P>"
+ print "<DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=settings_list&host=%s'%aWeb['host'])
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=settings_info&id=new&host=%s'%aWeb['host'])
  print aWeb.button('document', DIV='div_content_right', URL='sdcp.cgi?call=settings_view&host=%s'%aWeb['host'])
  print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?call=settings_save&host=%s'%aWeb['host'])
+ print "</DIV>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Section</DIV><DIV CLASS=th>Parameter</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
@@ -59,7 +61,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Value:</DIV><DIV CLASS=td><INPUT NAME=value VALUE='%s' TYPE=TEXT REQUIRED></DIV></DIV>"%data['value']
  print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT %s></DIV></DIV>"%(data['description'],readonly)
  print "</DIV></DIV>"
- print "</FORM><BR><DIV CLASS=controls>"
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&op=update', FRM='sdcp_settings_info_form')
  if data['id'] != 'new':
   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=settings_delete&id=%s&host=%s'%(data['id'],aWeb['host']), MSG='Delete settings?')

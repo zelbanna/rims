@@ -59,7 +59,8 @@ def domain_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Master:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=master VALUE={}></DIV></DIV>".format(data['master'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE={}></DIV></DIV>".format(data['type'])
  print "</DIV></DIV>"
- print "</FORM>"
+ print "<SPAN CLASS='results' ID=update_results>{}</SPAN>".format("lookup" if not aWeb.get('op') else aWeb['op'])
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id={}'.format(data['id']))
  if data['id'] == 'new':
   print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&op=update',FRM='dns_info_form')
@@ -68,8 +69,7 @@ def domain_info(aWeb):
    print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_transfer&id={}'.format(data['id']))
   else:
    print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete&id={}'.format(data['id']))
- print "<SPAN CLASS='results' ID=update_results>{}</SPAN>".format("lookup" if not aWeb.get('op') else aWeb['op'])
- print "</ARTICLE>"
+ print "</DIV></ARTICLE>"
 
 #
 #
@@ -155,13 +155,13 @@ def record_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE={}></DIV></DIV>".format(data['type'])
  print "<DIV CLASS=tr><DIV CLASS=td>Domain (id):</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['domain_id'])
  print "</DIV></DIV>"
- print "</FORM>"
+ print "<SPAN CLASS='results' ID=update_results></SPAN>"
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id={}&domain_id={}'.format(data['id'],data['domain_id']))
  print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&op=update',FRM='dns_info_form')
  if not data['id'] == 'new':
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_delete&id={}'.format(data['id']))
- print "<SPAN CLASS='results' ID=update_results></SPAN>"
- print "</ARTICLE>"
+ print "</DIV></ARTICLE>"
 
 #
 #

@@ -45,7 +45,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Mask:</DIV><DIV CLASS=td><INPUT    TYPE=TEXT NAME=mask    VALUE={} {}></DIV></DIV>".format(data['mask'],lock)
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=gateway VALUE={}></DIV></DIV>".format(data['gateway'])
  print "</DIV></DIV>"
- print "</FORM><DIV CLASS='controls'>"
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=ipam_info&id=%s'%data['id'])
  print aWeb.button('save'  ,DIV='div_content_right',URL='sdcp.cgi?call=ipam_info&op=update', FRM='ipam_info_form')
  if not data['id'] == 'new':
@@ -61,9 +61,9 @@ def layout(aWeb):
  startn  = int(data['start'])
  starta  = int(data['subnet'].split('.')[3])
  devices = data['devices']
- green = "<A CLASS='z-op btn ipam-icon green' TITLE='New' DIV=div_content_right URL=sdcp.cgi?call=device_new&subnet_id="+ aWeb['id'] +"&ipint={}>{}</A>"
- red   = "<A CLASS='z-op btn ipam-icon red'   TITLE='{}' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</A>"
- blue  = "<A CLASS='z-op btn ipam-icon blue'  TITLE='{}'>{}</A>"
+ green = "<BUTTON CLASS='z-op ipam-icon green' TITLE='New' DIV=div_content_right URL=sdcp.cgi?call=device_new&subnet_id="+ aWeb['id'] +"&ipint={}>{}</BUTTON>"
+ red   = "<BUTTON CLASS='z-op ipam-icon red'   TITLE='{}' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</BUTTON>"
+ blue  = "<BUTTON CLASS='z-op ipam-icon blue'  TITLE='{}'>{}</BUTTON>"
  print "<ARTICLE><P>%s/%s</P>"%(data['subnet'],data['mask'])
  print blue.format('network',starta % 256)
  for cnt in range(1,int(data['no'])-1):

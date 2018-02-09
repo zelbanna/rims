@@ -88,10 +88,10 @@ def info(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>Slot %s ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(slot,pdudata['%s_slot_id'%slot])
 
  print "</DIV></DIV>"
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?call=avocent_info&id=%s&ip=%s&hostname=%s'%(aWeb['id'],aWeb['ip'],aWeb['hostname']))
  print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=avocent_info&id=%s&ip=%s&hostname=%s&op=lookup'%(aWeb['id'],aWeb['ip'],aWeb['hostname']), TITLE='Fetch information')
- print "</FORM>"
- print "</ARTICLE>"
+ print "</DIV></ARTICLE>"
 
 ####################################### Device Operations #########################################
 #
@@ -112,7 +112,7 @@ def unit_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Slot.Unit:</DIV><DIV CLASS=td>{0}.{1}</DIV></DIV>".format(aWeb['slotname'],aWeb['unit'])
  print "<DIV CLASS=tr><DIV CLASS=td>Text:</DIV><DIV CLASS=td><INPUT NAME=text TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(aWeb['text'])
  print "</DIV></DIV>"
- print aWeb.button('save',DIV='update_results', URL='sdcp.cgi?call=pdu_unit_info&op=update', FRM='pdu_form')
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
- print "</FORM>"
- print "</ARTICLE>"
+ print "</FORM><DIV CLASS=controls>"
+ print aWeb.button('save',DIV='update_results', URL='sdcp.cgi?call=pdu_unit_info&op=update', FRM='pdu_form')
+ print "</DIV></ARTICLE>"

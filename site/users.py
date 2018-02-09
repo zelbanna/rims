@@ -87,23 +87,22 @@ def info(aWeb):
   for key in data['menulist'].split(','):
    try: 
     resource = resources.pop(key,None)
-    print "<LI CLASS='drag' ID=%s><A CLASS='btn menu-btn' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(key,resource['title'],resource['icon'])
+    print "<LI CLASS='drag' ID=%s><A CLASS='btn menu' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(key,resource['title'],resource['icon'])
    except: pass
  else:
   for key in resources.keys():
    if resources[key]['type'] == 'menuitem':
     resource = resources.pop(key,None)
-    print "<LI CLASS='drag' ID=%s><A CLASS='btn menu-btn' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(key,resource['title'],resource['icon'])    
+    print "<LI CLASS='drag' ID=%s><A CLASS='btn menu' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(key,resource['title'],resource['icon'])    
  print "</UL></DIV>"
- print "<DIV CLASS='controls'>"
+ print "</FORM><DIV CLASS=controls>"
  if data['id'] != 'new' and ((cookie['id'] == str(data['id']) or cookie['id'] == "1")):
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_delete&id={0}'.format(data['id']), MSG='Really remove user?')
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&op=update', FRM='sdcp_user_info_form')
  print "</DIV>"
- print "</FORM>"
  print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>"
  for id,resource in resources.iteritems():
-  print "<LI CLASS='drag' ID=%s><A CLASS='btn menu-btn' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(id,resource['title'],resource['icon'])
+  print "<LI CLASS='drag' ID=%s><A CLASS='btn menu' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(id,resource['title'],resource['icon'])
  print "</UL></DIV>"
  print "</ARTICLE>"
 

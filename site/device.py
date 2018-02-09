@@ -209,10 +209,7 @@ def info(aWeb):
     print "<DIV CLASS=tr><DIV CLASS=td>{0} Unit:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_{1}_pdu_unit TYPE=TEXT PLACEHOLDER='{2}'></DIV></DIV>".format(pem.upper(),pem,dev['rack'][pem + "_pdu_unit"])
   print "</DIV></DIV></DIV>"
  print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%'><SPAN>Comments:</SPAN><INPUT CLASS='white' STYLE='width:{}px; overflow-x:auto;' TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV>".format(width-90,"" if not dev['info']['comment'] else dev['info']['comment'])
- print "</FORM>"
-
- print "<!-- Controls -->"
- print "<DIV CLASS='controls'>"
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=device_info&id=%i'%dev['id'])
  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=lookup&id={}&ip={}'.format(dev['id'],dev['ip']), TITLE='Lookup and Detect Device information')
@@ -232,8 +229,7 @@ def info(aWeb):
   if value.get('res','NOT_FOUND') != 'OK':
    res += "{}({})".format(key,value)
  print "<SPAN CLASS='results' ID=update_results>%s</SPAN>"%res
- print "</DIV>"
- print "</ARTICLE>"
+ print "</DIV></ARTICLE>"
 
  print "<!-- Function navbar and content -->"
  print "<NAV><UL>"
@@ -355,10 +351,10 @@ def new(aWeb):
   else:
    print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV  CLASS=td><INPUT NAME=vm  TYPE=CHECKBOX VALUE=1  {0} ></DIV></DIV>".format("checked" if aWeb['target'] == 'vm' else '')
   print "</DIV></DIV>"
-  print "</FORM>"
+  print "</FORM><DIV CLASS=controls>"
   print aWeb.button('start', DIV='device_span', URL='sdcp.cgi?call=device_new&op=new',  FRM='device_new_form', TITLE='Create')
   print aWeb.button('search',DIV='device_ip',   URL='sdcp.cgi?call=device_new&op=find', FRM='device_new_form', TITLE='Find IP',INPUT='True')
-  print "<SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'></SPAN>"
+  print "</DIV><SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'></SPAN>"
   print "</ARTICLE>"
 
 #
@@ -404,8 +400,9 @@ def discover(aWeb):
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Clear DB<B>??</B>:</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=clear VALUE=True></DIV></DIV>"
   print "</DIV></DIV>"
+  print "</FORM><DIV CLASS=controls>"
   print aWeb.button('start', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=device_discover', FRM='device_discover_form')
-  print "</ARTICLE>"
+  print "</DIV></ARTICLE>"
 
 #
 # clear db
@@ -447,7 +444,7 @@ def graph_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Enable:</DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX NAME=graph_update VALUE=1 %s></DIV></DIV>"%("checked=checked" if dev['info']['graph_update'] == 1 else "")
  print "</DIV></DIV>"
  print "<SPAN>%s</SPAN>"%(res.get('op',""))
- print "</FORM><BR>"
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('save',  DIV='div_content_right', URL='sdcp.cgi?call=device_graph_info&id=%s&op=update', FRM='device_graph_form')
  print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=device_graph_info&id=%s&op=search', FRM='device_graph_form')
- print "</ARTICLE>"
+ print "</DIV></ARTICLE>"

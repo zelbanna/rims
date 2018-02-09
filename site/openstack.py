@@ -57,7 +57,7 @@ def portal(aWeb):
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
- print "<A CLASS='z-op btn menu-btn right warning' OP=logout URL='sdcp.cgi?call=sdcp_login&application=openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</A>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
+ print "<BUTTON CLASS='z-op menu-btn right warning' OP=logout URL='sdcp.cgi?call=sdcp_login&application=openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
  print "</HEADER><MAIN ID=main><NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
@@ -121,20 +121,21 @@ def api(aWeb):
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
- print aWeb.button('start',  DIV='div_os_info', URL='sdcp.cgi?call=openstack_result', FRM='frm_os_api')
- print aWeb.button('delete', DIV='div_os_info', OP='empty', TITLE='Clear results view')
  print "Arguments/Body<BR>"
  print "<TEXTAREA STYLE='width:100%; height:100px;' NAME=os_args></TEXTAREA>"
- print "</FORM>"
- print "</ARTICLE>"
+ print "</FORM><DIV CLASS=controls>"
+ print aWeb.button('start',  DIV='div_os_info', URL='sdcp.cgi?call=openstack_result', FRM='frm_os_api')
+ print aWeb.button('delete', DIV='div_os_info', OP='empty', TITLE='Clear results view')
+ print "</DIV></ARTICLE>"
  print "<DIV ID=div_os_info></DIV>"
 
 #
 #
 def fqname(aWeb):
  print "<ARTICLE>"
- print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else "")
+ print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM><DIV CLASS=controls>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else "")
  print aWeb.button('start',  DIV='div_content', URL='sdcp.cgi?call=openstack_fqname', FRM='frm_os_uuid')
+ print "</DIV>"
  if aWeb['os_uuid']:
   from json import dumps,loads
   cookie = aWeb.cookie_unjar('openstack')

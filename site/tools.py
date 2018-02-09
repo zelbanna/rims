@@ -23,6 +23,7 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>View Bookmarks</A>"
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_test'>Test</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dns_load'>DNS - Load Cache</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
@@ -39,6 +40,11 @@ def main(aWeb):
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
+
+#
+#
+def test(aWeb):
+ hej
 
 #
 #
@@ -74,11 +80,11 @@ def rest_main(aWeb):
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
+ print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:70px;' NAME=args></TEXTAREA>"
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=tools_rest_execute', FRM='frm_rest')
  print aWeb.button('delete', DIV='div_rest_info', OP='empty', TITLE='Clear results view')
- print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:100px;' NAME=args></TEXTAREA>"
- print "</FORM>"
- print "</ARTICLE>"
+ print "</DIV></ARTICLE>"
  print "<DIV ID=div_rest_info></DIV>"
 
 #

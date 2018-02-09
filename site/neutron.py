@@ -65,7 +65,7 @@ def action(aWeb):
  if   op == 'info':
   vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
   name = vn['display_name']
-  tmpl = "<A CLASS='btn z-op' DIV=div_os_info URL=sdcp.cgi?call=neutron_action&name=%s&id=%s&op={} SPIN=true>{}</A>"%(name,id)
+  tmpl = "<BUTTON CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?call=neutron_action&name=%s&id=%s&op={} SPIN=true>{}</BUTTON>"%(name,id)
   print "<DIV>"
   print tmpl.format('details','Network details')
   if vn.get('instance_ip_back_refs'):
@@ -170,8 +170,9 @@ def action(aWeb):
   print "VM: <SELECT STYLE='width:auto; height:22px;' NAME=vm>"
   for vm in vms:
    print "<OPTION VALUE={0}#{1}>{0}</OPTION>".format(vm['name'],vm['id'])
-  print "</SELECT></FORM>"
+  print "</SELECT></FORM><DIV CLASS=controls>"
   print aWeb.button('next', DIV='div_os_info', FRM='frm_fi_assoc_vm', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_interface')
+  print "</DIV>"
 
  elif op == 'fi_associate_choose_interface':
   vm_name,_,vm_id = aWeb['vm'].partition('#')
@@ -185,9 +186,11 @@ def action(aWeb):
    vmi = controller.href(vmi['href'])['data']['virtual-machine-interface']
    iip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
    print "<OPTION VALUE={0}#{1}>{2} ({1})</OPTION>".format(uuid,iip['instance_ip_address'],iip['virtual_network_refs'][0]['to'][2])
-  print "</SELECT></FORM>"
+  print "</SELECT>"
+  print "</FORM><DIV CLASS=controls>"
   print aWeb.button('back', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_vm&id=%s'%id, TITLE='Change VM')
   print aWeb.button('next', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate', FRM='frm_fi_assoc_vmi', TITLE='Commit')
+  print "</DIV>"
 
  elif op == 'fi_associate':
   from json import dumps

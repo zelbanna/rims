@@ -69,11 +69,11 @@ def choose_template(aWeb):
   print "</SELECT>"
  except Exception as err:
   print "openstack_choose_template: error finding template files in 'os_templates/' [{}]".format(str(err))
- print "</FORM>"
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('document', DIV='div_os_info', URL='sdcp.cgi?call=heat_enter_parameters',   FRM='frm_heat_choose_template', TITLE='Enter parameters')
  print aWeb.button('info', DIV='div_os_info', URL='sdcp.cgi?call=heat_action&op=templateview', FRM='frm_heat_choose_template', TITLE='View Template')
  print "<BR><DIV ID=div_os_info></DIV>"
- print "</ARTICLE>"
+ print "</DIV></ARTICLE>"
 
 def enter_parameters(aWeb):
  from json import load,dumps
@@ -89,8 +89,9 @@ def enter_parameters(aWeb):
  for key,value in data['parameters'].iteritems():
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value)
  print "</DIV></DIV>"
- print "</FORM>"
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('next',DIV='div_content_right', URL='sdcp.cgi?call=heat_action&op=create',FRM='frm_heat_template_parameters', SPIN='true')
+ print "</DIV>"
 
 #
 # Heat Actions
@@ -110,7 +111,7 @@ def action(aWeb):
  aWeb.log("heat_action - id:{} name:{} op:{}".format(id,name,op))
 
  if   op == 'info':
-  tmpl = "<A TITLE='{}' CLASS='btn z-op' DIV=div_os_info URL=sdcp.cgi?call=heat_action&name=%s&id=%s&op={} SPIN=true>{}</A>"%(name,id)
+  tmpl = "<BUTTON CLASS='z-op' TITLE='{}' DIV=div_os_info URL=sdcp.cgi?call=heat_action&name=%s&id=%s&op={} SPIN=true>{}</BUTTON>"%(name,id)
   print "<DIV>"
   print tmpl.format('Stack Details','details','Stack Details')
   print tmpl.format('Stack Parameters','events','Events')
