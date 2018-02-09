@@ -37,7 +37,7 @@ def list(aWeb):
  print aWeb.button('reload',DIV='div_content',URL='sdcp.cgi?call=heat_list')
  print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=heat_choose_template')
  print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:150px;'>Status</DIV><DIV CLASS=th STYLE='width:70px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for stack in data.get('stacks',None):
   print "<DIV CLASS=tr>"

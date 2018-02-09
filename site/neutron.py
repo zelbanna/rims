@@ -27,18 +27,18 @@ def list(aWeb):
   return
 
  print "<SECTION CLASS=content-left ID=div_content_left>"
- print "<ARTICLE STYLE='overflow:auto;'><P>Contrail VNs</P>"
+ print "<ARTICLE STYLE='overflow-x:hidden;'><P>Contrail VNs</P>"
  print aWeb.button('reload',DIV='div_content',  URL='sdcp.cgi?call=neutron_list')
  print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Network</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Network</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th STYLE='width:50px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for net in data['virtual-networks']:
   if not net.get('display_name'):
    continue
   print "<DIV CLASS=tr>"
   print "<!-- {} -->".format(net.get('href'))
-  print "<DIV CLASS=td STYLE='max-width:200px; overflow-x:hidden;'><A TITLE='Info {1}' CLASS='z-op' DIV=div_content_right URL=sdcp.cgi?call=neutron_action&id={0}&op=info SPIN=true>{1}</A></DIV>".format(net['uuid'],net['display_name'])
-  print "<DIV CLASS=td>"
+  print "<DIV CLASS=td STYLE='max-width:175px;'><A TITLE='Info {1}' CLASS='z-op' DIV=div_content_right URL=sdcp.cgi?call=neutron_action&id={0}&op=info SPIN=true>{1}</A></DIV>".format(net['uuid'],net['display_name'])
+  print "<DIV CLASS=td STYLE='max-width:175px;'>"
   if net.get('network_ipam_refs'):
    for ipam in net['network_ipam_refs']:
     for sub in ipam['attr']['ipam_subnets']:
