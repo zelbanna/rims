@@ -61,9 +61,9 @@ def layout(aWeb):
  startn  = int(data['start'])
  starta  = int(data['subnet'].split('.')[3])
  devices = data['devices']
- green = "<BUTTON CLASS='z-op ipam-icon green' TITLE='New' DIV=div_content_right URL=sdcp.cgi?call=device_new&subnet_id="+ aWeb['id'] +"&ipint={}>{}</BUTTON>"
- red   = "<BUTTON CLASS='z-op ipam-icon red'   TITLE='{}' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</BUTTON>"
- blue  = "<BUTTON CLASS='z-op ipam-icon blue'  TITLE='{}'>{}</BUTTON>"
+ green = "<BUTTON CLASS='z-op ipam green' TITLE='New' DIV=div_content_right URL=sdcp.cgi?call=device_new&subnet_id="+ aWeb['id'] +"&ipint={}>{}</BUTTON>"
+ red   = "<BUTTON CLASS='z-op ipam red'   TITLE='{}' DIV=div_content_right URL=sdcp.cgi?call=device_info&id={}>{}</BUTTON>"
+ blue  = "<BUTTON CLASS='z-op ipam blue'  TITLE='{}'>{}</BUTTON>"
  print "<ARTICLE><P>%s/%s</P>"%(data['subnet'],data['mask'])
  print blue.format('network',starta % 256)
  for cnt in range(1,int(data['no'])-1):
