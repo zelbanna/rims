@@ -26,7 +26,6 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dns_load'>DNS - Load Cache</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
- print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.cgi?call=tools_db_table'>DB - Dump Device Table to JSON</A>"
  print "<A CLASS=z-op DIV=div_content           URL='sdcp.cgi?call=tools_db_structure'>DB - View Structure</A>"
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
  for host in hosts:
@@ -45,24 +44,21 @@ def main(aWeb):
 #
 def db_structure(aWeb):
  res = aWeb.rest_call("sdcp_db_dump",{'mode':'structure'})
- print "<ARTICLE><P>Database Structure</A>"
+ print "<ARTICLE><P>Database Structure</P>"
  print "<P CLASS='machine-text'>"
  print "<BR>".join(res['output'])
  print "</P></ARTICLE>"
 
 #
 #
-def db_table(aWeb):
- from json import dumps
- db = aWeb.rest_call("sdcp_db_table",{'table':aWeb.get('table','devices'),'columns':aWeb.get('columns','*')})['db']
- print "<PRE>{}</PRE>".format(dumps(db, indent=4, sort_keys=True))
-
-#
-#
 def install(aWeb):
- from json import dumps
  dev = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
- print "<ARTICLE><PRE>%s</PRE></ARTICLE"%dumps(aWeb.rest_generic(dev['value'],"sdcp_install"),indent = 4)
+ res = aWeb.rest_generic(dev['value'],"sdcp_install")
+ print "<ARTICLE CLASS='info'><P>Install results</P>"
+ print "<DIV CLASS=table><DIV CLASS=tbody>"
+ for key,value in res.iteritems():
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value)
+ print "</DIV></DIV></ARTICLE>"
 
 #
 #
