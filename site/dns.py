@@ -243,10 +243,12 @@ def top(aWeb):
  from ..core import extras as EXT
  dnstop = aWeb.rest_generic(SC.dns['url'], "{}_top".format(SC.dns['type']), {'count':20})
  print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>"
- EXT.dict2table(dnstop['top'])
+ if len(dnstop['top']) > 0:
+  EXT.dict2table(dnstop['top'])
  print "</ARTICLE>"
  print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN per Client</P>"
- EXT.dict2table(dnstop['who'])
+ if len(dnstop['who']) > 0:
+  EXT.dict2table(dnstop['who'])
  print "</ARTICLE>"
 
 #
