@@ -73,7 +73,7 @@ div.td > input:-moz-read-only { font-style:italic; }
 div.td > input:read-only {      font-style:italic; }
 div.td > input:-webkit-input-placeholder { color: darkgrey; }
 div.td > input:-moz-placeholder {          color: darkgrey; opacity:1; }
-div.controls { font-size:5px; }
+div.controls { display:inline; font-size:5px; }
 
 /*#############################################################################*/
 

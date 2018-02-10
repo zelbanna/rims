@@ -81,7 +81,7 @@ def rest_main(aWeb):
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
  print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:70px;' NAME=args></TEXTAREA>"
- print "</FORM><DIV CLASS=controls>"
+ print "</FORM><DIV STYLE='display:inline' CLASS=controls>"
  print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=tools_rest_execute', FRM='frm_rest')
  print aWeb.button('delete', DIV='div_rest_info', OP='empty', TITLE='Clear results view')
  print "</DIV></ARTICLE>"
