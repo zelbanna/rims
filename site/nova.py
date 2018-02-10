@@ -38,7 +38,7 @@ def list(aWeb):
   print "<DIV CLASS=tr>"
   print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
   print "<DIV CLASS=td STYLE='max-width:200px'><A CLASS='z-op' TITLE='VM info' DIV=div_content_right URL=sdcp.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
-  print "<DIV CLASS=td>"
+  print "<DIV CLASS='td controls'>"
   qserver = get_quote(server['name'])
   actionurl = 'sdcp.cgi?call=nova_action&name=%s&id=%s&op={}'%(qserver,server['id'])
   print aWeb.button('term', TARGET='_blank', HREF='sdcp.cgi?call=nova_console&headers=no&name=%s&id=%s'%(qserver,server['id']), TITLE='New window console')
