@@ -84,9 +84,10 @@ def domain_transfer(aWeb):
   else:
    print "<OPTION VALUE={}>{}</OPTION>".format(domain['id'],domain['name'])
  print "</SELECT> from previous domain ({})".format(old)
+ print "</FORM><DIV CLASS=controls>"
  print aWeb.button('back',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=%s'%(aWeb['id']))
  print aWeb.button('next',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete',FRM='dns_transfer')
- print "</ARTICLE>"
+ print "</DIV></ARTICLE>"
 
 #
 #
@@ -117,11 +118,11 @@ def domain_cache_delete(aWeb):
 #
 def records(aWeb):
  dns = aWeb.rest_generic(SC.dns['url'], "{}_records".format(SC.dns['type']),{'domain_id':aWeb['id']})
- print "<ARTICLE><P>Records</P>"
+ print "<ARTICLE><P>Records</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_records&id=%s'%(aWeb['id']))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id=new&domain_id=%s'%(aWeb['id']))
  print "<SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>TTL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>TTL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for rec in dns['records']:
   print "<DIV CLASS=tr><DIV CLASS=td>%i</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(rec['id'],rec['name'])
@@ -167,11 +168,11 @@ def record_info(aWeb):
 #
 def record_delete(aWeb):
  res = aWeb.rest_generic(SC.dns['url'],"{}_record_delete".format(SC.dns['type']),{'id': aWeb['id']})
- print "Remove {} - Results:{}".format(aWeb['id'],res)
+ print "<ARTICLE>Remove {} - Results:{}</ARTICLE>".format(aWeb['id'],res)
 
 def record_transfer(aWeb):
  res = aWeb.rest_call("device_update",{'id':aWeb['dev'],'devices_%s_id'%aWeb['type']:aWeb['id']})
- print "Updated device %s - Results:%s"%(aWeb['dev'],str(res))
+ print "<ARTICLE>Updated device %s - Results:%s</ARTICLE>"%(aWeb['dev'],str(res))
 
 def record_create(aWeb):
  operation = {'type':aWeb['type'],'dns':None,'device':None}
@@ -183,7 +184,7 @@ def record_create(aWeb):
  operation['dns'] = aWeb.rest_generic(SC.dns['url'],"{}_record_update".format(SC.dns['type']),data)
  if operation['dns']['xist'] == 1:
   operation['device'] = aWeb.rest_call("device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:operation['dns']['id']})
- print "Created record result: %s"%str(operation)
+ print "<ARTICLE>Created record result: %s</ARTICLE>"%str(operation)
 
 ############################################ Tools ###########################################
 #
