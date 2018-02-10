@@ -20,15 +20,8 @@ def list(aWeb):
   print "Not logged in"
   return
  controller = OpenstackRPC(cookie.get('controller'),token)
-
- port = cookie.get('port')
- url  = cookie.get('url')
- name = aWeb['name']
- id   = aWeb['id']
- op   = aWeb.get('op','info')
-
  try:
-  data = controller.call(port,url + "/stacks")['data']
+  data = controller.call(cookie.get('port'),cookie.get('url') + "/stacks")['data']
  except Exception as e:
   print "<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e)
   return
@@ -38,13 +31,13 @@ def list(aWeb):
  print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=heat_choose_template')
  print "</DIV>"
  print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:150px;'>Status</DIV><DIV CLASS=th STYLE='width:70px;'>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:150px;'>Status</DIV><DIV CLASS=th STYLE='width:50px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for stack in data.get('stacks',None):
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_name'])
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_status'])
-  print "<DIV CLASS=td>"
+  print "<DIV CLASS='td controls'>"
   print aWeb.button('info',DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=heat_action&name=%s&id=%s&op=info'%(stack['stack_name'],stack['id']))
   if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED" or stack['stack_status'] == "DELETE_FAILED":
    print aWeb.button('delete', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=heat_action&name=%s&id=%s&op=remove'%(stack['stack_name'],stack['id']), MSG='Are you sure?')
@@ -73,7 +66,7 @@ def choose_template(aWeb):
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('document', DIV='div_os_info', URL='sdcp.cgi?call=heat_enter_parameters',   FRM='frm_heat_choose_template', TITLE='Enter parameters')
  print aWeb.button('info', DIV='div_os_info', URL='sdcp.cgi?call=heat_action&op=templateview', FRM='frm_heat_choose_template', TITLE='View Template')
- print "<BR><DIV ID=div_os_info></DIV>"
+ print "</DIV><BR><DIV ID=div_os_info></DIV>"
  print "</DIV></ARTICLE>"
 
 def enter_parameters(aWeb):

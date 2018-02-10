@@ -52,13 +52,13 @@ def portal(aWeb):
   openstack = OpenstackRPC(ctrl,utok)
 
  aWeb.put_html("Openstack Portal")
- print "<HEADER>"
+ print "<HEADER CLASS='background'>"
  print "<DIV CLASS=table STYLE='width:auto; display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
- print "<BUTTON CLASS='z-op menu-btn right warning' OP=logout URL='sdcp.cgi?call=sdcp_login&application=openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
- print "</HEADER><MAIN ID=main><NAV><UL>"
+ print "<BUTTON CLASS='z-op right menu warning' OP=logout URL='sdcp.cgi?call=sdcp_login&application=openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
+ print "</HEADER><MAIN CLASS='background' ID=main><NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
@@ -116,7 +116,7 @@ def api(aWeb):
  for service in services:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(service)
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_call><BR>"
- print "Or enter HREF: <DIV ID=div_href STYLE='display:inline-block;'><INPUT STYLE='width:716px;' TYPE=TEXT NAME=os_href></DIV><BR>"
+ print "Or enter HREF: <DIV ID=div_href STYLE='display:inline-block;'><INPUT CLASS='white' STYLE='width:716px;' TYPE=TEXT NAME=os_href></DIV><BR>"
  print "Call 'Method': <SELECT STYLE='width:auto; height:22px;' NAME=os_method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
