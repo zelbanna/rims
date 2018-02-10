@@ -30,7 +30,7 @@ main {          position:fixed; top:75px; bottom:0px; width:100%}
 nav {           clear:both; font-size:14px; height:34px; background-color:#808D99; display:block;}
 nav ul {        overflow:hidden; }
 nav li {        height:34px; float:left; }
-nav li a {      padding:8px; outline:none; font-weight:normal; display:inline-block; position:relative; text-align:center; color:#FFFFFF; cursor:pointer; }
+nav li a {      padding:9px; outline:none; font-weight:normal; display:inline-block; position:relative; text-align:center; color:#FFFFFF; cursor:pointer; }
 nav li a:hover{ color:#000000; background-color:#D5D9DD;}
 nav li a.reload {   background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; margin: 0px 10px; height:100%; } 
 nav li.navinfo {  background-color:#00CC66;       font-weight:bold; color:#FFFFFF }
