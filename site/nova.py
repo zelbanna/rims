@@ -32,7 +32,7 @@ def list(aWeb):
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=nova_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=nova_select_parameters')
  print "</DIV>"
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:145px;'>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:135px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for server in data.get('servers',None):
   print "<DIV CLASS=tr>"
