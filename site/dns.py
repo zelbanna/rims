@@ -75,7 +75,7 @@ def domain_info(aWeb):
 #
 def domain_transfer(aWeb):
  domains = aWeb.rest_generic(SC.dns['url'], "{}_domains".format(SC.dns['type']),{"filter":"arpa"})
- print "<ARTICLE>"
+ print "<ARTICLE STYLE='display:inline-block'>"
  print "<FORM ID=dns_transfer><INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
  print "Transfer all records to <SELECT NAME=transfer>"
  for domain in domains['domains']:
