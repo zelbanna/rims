@@ -83,17 +83,12 @@ def info(aWeb):
  print "</DIV></DIV>"
  print "<SPAN>Menu list</SPAN>"
  print "<DIV CLASS='border' STYLE='display:flex; flex-wrap:wrap; min-height:100px;'><UL STYLE='width:100%' ID=ul_menu DEST=menulist CLASS='drop'>"
- if not data.get('menulist') == 'default':
-  for key in data['menulist'].split(','):
-   try: 
-    resource = resources.pop(key,None)
-    print "<LI CLASS='drag' ID=%s><A CLASS='btn menu' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(key,resource['title'],resource['icon'])
-   except: pass
- else:
-  for key in resources.keys():
-   if resources[key]['type'] == 'menuitem':
-    resource = resources.pop(key,None)
-    print "<LI CLASS='drag' ID=%s><A CLASS='btn menu' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(key,resource['title'],resource['icon'])    
+ menulist = data['menulist'].split(',') if not data.get('menulist') == 'default' else [ value['id'] for key,value in resources.iteritems() if value['type'] == 'menuitem']
+ for key in menulist:
+  try: 
+   resource = resources.pop(key,None)
+   print "<LI CLASS='drag' ID=%s><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></BUTTON></LI>"%(key,resource['title'],resource['icon'])
+  except: pass
  print "</UL></DIV>"
  print "</FORM><DIV CLASS=controls>"
  if data['id'] != 'new' and ((cookie['id'] == str(data['id']) or cookie['id'] == "1")):
@@ -102,7 +97,7 @@ def info(aWeb):
  print "</DIV>"
  print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>"
  for id,resource in resources.iteritems():
-  print "<LI CLASS='drag' ID=%s><A CLASS='btn menu' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></A></LI>"%(id,resource['title'],resource['icon'])
+  print "<LI CLASS='drag' ID=%s><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></BUTTON></LI>"%(id,resource['title'],resource['icon'])
  print "</UL></DIV>"
  print "</ARTICLE>"
 

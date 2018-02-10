@@ -94,6 +94,8 @@ div.controls { font-size:5px; }
 div.rack-indx { font-weight:bold; font-size:8px; color:grey; padding:2px; }
 div.rack-data { border: solid 2px grey; font-size:12px; text-align:center;}
 
+span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; font-family: Verdana,sans-serif; }
+
 /*################################ JS tools ####################################*/
 
 .highlight { border: 1px solid #33CAFF }
@@ -108,18 +110,16 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
 
 [draggable] { -moz-user-select: none; -khtml-user-select: none; -webkit-user-select: none; user-select: none; -ms-touch-action: none; touch-action: none; cursor:move!important; -webkit-user-drag: element; -khtml-user-drag: element; }
 
+li.drag {        position: relative; }
+li.drag:after {  content: ''; top: 0; left: 0; right: 0; bottom: 0; position: absolute; }
 ul.drop {        -ms-touch-action: none; touch-action: none; display:flex; flex-wrap:wrap; min-height:20px; width:100%;}
 ul.drop li {     font-size:11px; }
 ul.vertical {    display:block!important; }
 ul.vertical li { display:table!important; }
 
-span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; font-family: Verdana,sans-serif; }
-
 /*################################ Common ###################################*/
 
 .z-op {  outline:none; cursor:pointer; z-index:10000;}
-
-/* ############################## A(nything)################################### */
 
 a{        color:#000000; background-color:transparent;-webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; }
 a:active,a:hover{ outline-width:0; }
