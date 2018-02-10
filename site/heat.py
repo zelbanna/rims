@@ -33,9 +33,10 @@ def list(aWeb):
   print "<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e)
   return
 
- print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE STYLE='width:394px;'><P>Heat Stacks</P>"
+ print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Heat Stacks</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content',URL='sdcp.cgi?call=heat_list')
  print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=heat_choose_template')
+ print "</DIV>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:150px;'>Status</DIV><DIV CLASS=th STYLE='width:70px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
