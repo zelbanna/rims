@@ -30,7 +30,7 @@ main {          position:fixed; top:75px; bottom:0px; width:100%}
 nav {           clear:both; font-size:14px; height:34px; background-color:#808D99; display:block;}
 nav ul {        overflow:hidden; }
 nav li {        height:34px; float:left; }
-nav li a {      padding:9px; outline:none; font-weight:normal; display:inline-block; position:relative; text-align:center; color:#FFFFFF; cursor:pointer; }
+nav li a {      padding:8px; outline:none; font-weight:normal; display:inline-block; position:relative; text-align:center; color:#FFFFFF; cursor:pointer; }
 nav li a:hover{ color:#000000; background-color:#D5D9DD;}
 nav li a.reload {   background-image: url(images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; margin: 0px 10px; height:100%; } 
 nav li.navinfo {  background-color:#00CC66;       font-weight:bold; color:#FFFFFF }
@@ -121,11 +121,12 @@ ul.vertical li { display:table!important; }
 
 .z-op {  outline:none; cursor:pointer; z-index:10000;}
 
-a{        color:#000000; background-color:transparent;-webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; }
+a{ color:#000000; background-color:transparent;-webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; }
 a:active,a:hover{ outline-width:0; }
 
 button,a.btn { -webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; background-color:#FFFFFF; background-position: center; background-repeat: no-repeat; border-radius:4px; border: 1px solid #ccc; display: inline-block; font-family: "Courier New", serif; font-size: 20px; vertical-align:top; outline:none; overflow:hidden; text-align:center; text-decoration:none!important; white-space:nowrap; padding:2px; margin:2px; -webkit-transition:background-color .25s,color .15s,box-shadow .25s,opacity 0.25s,filter 0.25s,border 0.15s; transition:background-color .25s,color .15s,box-shadow .15s .15s,opacity .25s,filter .25s,border .15s; }
 button:hover,a.btn:hover { outline-width:0; box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 18px 0 rgba(0,0,0,0.19); font-weight: bold; border: 1px solid black;}
+button:active { opacity:0.5; }
 
 button.menu, a.menu {  height: 52px; min-width:52px; float:left; border-radius: 8px!important; padding: 4px; margin: 5px 2px; }
 button.menu > img,a.menu > img{  max-height:43px; }

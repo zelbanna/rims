@@ -35,7 +35,7 @@ def manage(aWeb):
  id = aWeb['id']
  data = aWeb.rest_call("device_info",{'id':id})
  print "<NAV><UL>"
- print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='sdcp.cgi?call=esxi_op&nstate=poweroff&id={}'>Shutdown</A></LI>".format(id)
+ print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='sdcp.cgi?call=esxi_op&ip=%s&next-state=poweroff&id=%s&name=esxi'>Shutdown</A></LI>".format(data['ip'],id)
  print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['info']['hostname'],data['info']['domain'])
  print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A></LI>".format(data['info']['hostname'],data['info']['domain'])
  print "<LI><A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A></LI>".format(data['ip'])
@@ -52,74 +52,52 @@ def manage(aWeb):
 #
 #
 def list(aWeb,aIP = None):
- from ..devices.esxi import Device
- ip     = aWeb.get('ip',aIP)
- sort   = aWeb.get('sort','name')
- esxi   = Device(ip)
+ ip   = aWeb.get('ip',aIP)
+ sort = aWeb.get('sort','name') 
+ statelist = aWeb.rest_call("esxi_list",{'ip':ip,'sort':sort})
  print "<ARTICLE>"
  print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='sdcp.cgi?call=esxi_list&ip={}&sort={}'.format(ip,sort))
  print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_op&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_list&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- statelist = esxi.get_vms(sort)
  for vm in statelist:
-  print "<DIV CLASS=tr STYLE='padding:0px;' ID=div_vm_{}>".format(vm[0])
-  _vm_options(aWeb,ip,vm[0],vm[1],vm[2],False)
+  print "<DIV CLASS=tr STYLE='padding:0px;' ID=div_vm_{}>".format(vm['id'])
+  _vm_options(aWeb,ip,vm,False)
   print "</DIV>"
  print "</DIV></DIV></ARTICLE>"
 
 #
 #
-def _vm_options(aWeb,aIP,aVMid,aVMname,aState,aHighlight):
- div = "div_vm_%s"%aVMid
- url = "sdcp.cgi?call=esxi_vmop&ip=%s&nstate={0}&vmname=%s&vmid=%s"%(aIP,aVMname,aVMid)
- print "<DIV CLASS=td STYLE='padding:0px;'>{}</DIV><DIV CLASS='td controls' STYLE='width:150px'>&nbsp;".format("<B>{}</B>".format(aVMname) if aHighlight else aVMname)
- if int(aState) == 1:
-  print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.shutdown'), TITLE='Soft shutdown')
-  print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.reboot'), TITLE='Soft reboot')
-  print aWeb.button('suspend', DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.suspend'),TITLE='Suspend')
-  print aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off')
- elif int(aState) == 3:
-  print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start')
-  print aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off')
- elif int(aState) == 2:
-  print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start')
-  print aWeb.button('snapshot',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-snapshot.create'), TITLE='Snapshot')
-  print aWeb.button('info',    DIV='div_content_right',SPIN='true',URL='sdcp.cgi?call=esxi_snapshot&ip={}&vmid={}'.format(aIP,aVMid), TITLE='Snapshot info')
- else:
-  print "Unknown state [{}]".format(aState)
- print "</DIV>"
-
-#
-#
-def vmop(aWeb):
+def op(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('sdcp')
- from ..devices.esxi import Device
- from time import sleep
- ip     = aWeb.get('ip')
- nstate = aWeb['nstate']
- vmid   = aWeb.get('vmid','-1')
- name   = aWeb['vmname'] 
- esxi   = Device(ip)
- try:
-  if nstate == 'vmsvc-snapshot.create':
-   from time import strftime
-   with esxi:
-    esxi.ssh_send("vim-cmd vmsvc/snapshot.create {} 'Portal Snapshot' '{}'".format(vmid,strftime("%Y%m%d")),cookie['id'])
-  elif "vmsvc-" in nstate:
-   vmop = nstate.partition('-')[2]
-   with esxi:
-    esxi.ssh_send("vim-cmd vmsvc/{} {}".format(vmop,vmid),cookie['id'])
-    sleep(2)
-  elif nstate == 'poweroff':
-   with esxi:
-    esxi.ssh_send("poweroff",cookie['id'])
- except Exception as err:
-  aWeb.log("esxi: nstate error [{}]".format(str(err)))
- _vm_options(aWeb,ip,vmid,name,esxi.get_state_vm(vmid),True)
+ res = aWeb.rest_call("esxi_op",{'ip':aWeb['ip'],'next-state':aWeb['next-state'], 'id':aWeb['id'],'name':aWeb['name'],'user_id':cookie['id']})
+ _vm_options(aWeb,aWeb['ip'],res,True)
+
+#
+#
+def _vm_options(aWeb,aIP,aVM,aHighlight):
+ div = "div_vm_%s"%aVM['id']
+ url = "sdcp.cgi?call=esxi_op&ip=%s&next-state={}&name=%s&id=%s"%(aIP,aVM['name'],aVM['id'])
+ print "<DIV CLASS=td STYLE='padding:0px;'>{}</DIV><DIV CLASS='td controls' STYLE='width:150px'>&nbsp;".format("<B>{}</B>".format(aVM['name']) if aHighlight else aVM['name'])
+ if int(aVM['state_id']) == 1:
+  print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.shutdown'), TITLE='Soft shutdown')
+  print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.reboot'), TITLE='Soft reboot')
+  print aWeb.button('suspend', DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.suspend'),TITLE='Suspend')
+  print aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off')
+ elif int(aVM['state_id']) == 3:
+  print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start')
+  print aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off')
+ elif int(aVM['state_id']) == 2:
+  print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start')
+  print aWeb.button('snapshot',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-snapshot.create'), TITLE='Snapshot')
+  print aWeb.button('info',    DIV='div_content_right',SPIN='true',URL='sdcp.cgi?call=esxi_snapshot&ip={}&vmid={}'.format(aIP,aVM['id']), TITLE='Snapshot info')
+ else:
+  print "Unknown state [{}]".format(aVM['state_id'])
+ print "</DIV>"
+
 
 #
 # Graphing

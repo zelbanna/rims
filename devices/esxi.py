@@ -58,14 +58,6 @@ class Device(GenericDevice):
   with open(self._logfile, 'a') as f:
    f.write(output + "\n")
  
- def create_lock(self,atime):
-  from ..core.extras import pidfile_lock
-  pidfile_lock("/tmp/esxi." + self._hostname + ".vm.pid",atime)
-
- def release_lock(self):
-  from ..core.extras import pidfile_release
-  pidfile_release("/tmp/esxi." + self._hostname + ".vm.pid")
-
  #
  # ESXi ssh interaction - Connect() send, send,.. Close()
  #
@@ -106,7 +98,10 @@ class Device(GenericDevice):
    except Exception as err:
     self.log_msg( "Close error: " + str(err))
 
- def get_id_vm(self, aname):
+ #
+ # SNMP interaction
+ # 
+ def get_vm_id(self, aname):
   from netsnmp import VarList, Varbind, Session
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
@@ -119,21 +114,18 @@ class Device(GenericDevice):
    pass
   return -1
  
- def get_state_vm(self, aid):
+ def get_vm_state(self, aid):
   from netsnmp import VarList, Varbind, Session
   try:
    vmstateobj = VarList(Varbind(".1.3.6.1.4.1.6876.2.1.1.6." + str(aid)))
    session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(vmstateobj)
-   return Device.get_state_str(vmstateobj[0].val)
+   return vmstateobj[0].val
   except:
    pass
   return "unknown"
 
- def get_vms(self, aSort = None):
-  #
-  # Returns a list with tuples of strings: [ vm.id, vm.name, vm.powerstate, vm.to_be_backedup ]
-  #
+ def get_vm_list(self, aSort = None):
   # aSort = 'id' or 'name'
   from netsnmp import VarList, Varbind, Session
   statelist=[]
@@ -144,18 +136,28 @@ class Device(GenericDevice):
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for index,result in enumerate(vmnameobjs):
-    statetuple = [result.iid, result.val, Device.get_state_str(vmstateobjs[index].val)]
+    statetuple = {'id':result.iid, 'name':result.val, 'state':vmstateobjs[index].val ,'state_id':Device.get_state_str(vmstateobjs[index].val)}
     statelist.append(statetuple)
   except:
    pass
-  if aSort == 'name':
-   statelist.sort(key = lambda x: x[1])
+  if aSort:
+   statelist.sort(key = lambda x: x[aSort])
   return statelist
 
+ ################################################# StateFile operations #############################################
  #
  # Shutdown methods to/from default statefile
  #
  #
+
+ def create_lock(self,atime):
+  from ..core.extras import pidfile_lock
+  pidfile_lock("/tmp/esxi." + self._hostname + ".vm.pid",atime)
+
+ def release_lock(self):
+  from ..core.extras import pidfile_release
+  pidfile_release("/tmp/esxi." + self._hostname + ".vm.pid")
+
 
  def startup_vms(self):
   from os import remove, path
