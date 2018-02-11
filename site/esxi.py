@@ -35,7 +35,7 @@ def manage(aWeb):
  id = aWeb['id']
  data = aWeb.rest_call("device_info",{'id':id})
  print "<NAV><UL>"
- print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='sdcp.cgi?call=esxi_op&ip=%s&next-state=poweroff&id=%s&name=esxi'>Shutdown</A></LI>".format(data['ip'],id)
+ print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='sdcp.cgi?call=esxi_op&ip=%s&next-state=poweroff&id=%s'>Shutdown</A></LI>".format(data['ip'],id)
  print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['info']['hostname'],data['info']['domain'])
  print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A></LI>".format(data['info']['hostname'],data['info']['domain'])
  print "<LI><A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A></LI>".format(data['ip'])
@@ -58,12 +58,12 @@ def list(aWeb,aIP = None):
  print "<ARTICLE>"
  print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='sdcp.cgi?call=esxi_list&ip={}&sort={}'.format(ip,sort))
  print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_list&ip=" + ip + "&sort=" + ("id" if sort == "name" else "name") + "'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_list&ip=%s&sort=%s'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"%(ip,"id" if sort == "name" else "name")
  print "<DIV CLASS=tbody>"
  for vm in statelist:
-  print "<DIV CLASS=tr STYLE='padding:0px;' ID=div_vm_{}>".format(vm['id'])
+  print "<DIV CLASS=tr STYLE='padding:0px;'><DIV CLASS=td STYLE='padding:0px;'>%s</DIV><DIV CLASS='td controls' ID=div_vm_%s STYLE='width:120px'>"%(vm['name'],vm['id'])
   _vm_options(aWeb,ip,vm,False)
-  print "</DIV>"
+  print "</DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
 #
@@ -73,15 +73,16 @@ def op(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('sdcp')
- res = aWeb.rest_call("esxi_op",{'ip':aWeb['ip'],'next-state':aWeb['next-state'], 'id':aWeb['id'],'name':aWeb['name'],'user_id':cookie['id']})
+ res = aWeb.rest_call("esxi_op",{'ip':aWeb['ip'],'next-state':aWeb['next-state'], 'id':aWeb['id'],'user_id':cookie['id']})
  _vm_options(aWeb,aWeb['ip'],res,True)
 
 #
 #
 def _vm_options(aWeb,aIP,aVM,aHighlight):
  div = "div_vm_%s"%aVM['id']
- url = "sdcp.cgi?call=esxi_op&ip=%s&next-state={}&name=%s&id=%s"%(aIP,aVM['name'],aVM['id'])
- print "<DIV CLASS=td STYLE='padding:0px;'>{}</DIV><DIV CLASS='td controls' STYLE='width:150px'>&nbsp;".format("<B>{}</B>".format(aVM['name']) if aHighlight else aVM['name'])
+ url = "sdcp.cgi?call=esxi_op&ip=%s&next-state={}&id=%s"%(aIP,aVM['id'])
+ if aHighlight:
+  print "<DIV CLASS='border'>"
  if int(aVM['state_id']) == 1:
   print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.shutdown'), TITLE='Soft shutdown')
   print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.reboot'), TITLE='Soft reboot')
@@ -96,7 +97,8 @@ def _vm_options(aWeb,aIP,aVM,aHighlight):
   print aWeb.button('info',    DIV='div_content_right',SPIN='true',URL='sdcp.cgi?call=esxi_snapshot&ip={}&vmid={}'.format(aIP,aVM['id']), TITLE='Snapshot info')
  else:
   print "Unknown state [{}]".format(aVM['state_id'])
- print "</DIV>"
+ if aHighlight:
+  print "</DIV>"
 
 
 #

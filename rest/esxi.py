@@ -10,15 +10,13 @@ __status__ = "Production"
 #
 def list(aDict):
  from ..devices.esxi import Device
- ip     = aDict['ip']
- sort   = aDict.get('sort','name')
- esxi   = Device(ip)
- return esxi.get_vm_list(sort)
+ esxi = Device(aDict['ip'])
+ return esxi.get_vm_list(aDict.get('sort','name'))
 
 #
 #
 def op(aDict):
- ret = {'id':aDict['id'],'name':aDict['name'],'res':'OK'}
+ ret = {'id':aDict['id'],'res':'OK'}
  from ..devices.esxi import Device
  esxi = Device(aDict['ip'])
  try:
