@@ -76,6 +76,8 @@ def status(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value)
  print "</DIV></DIV></ARTICLE>"
 
+
+############################################### To Do ##############################################
 #
 #
 def devices(aWeb):
@@ -115,7 +117,6 @@ def device_info(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['variable'],row['service'],row['value'])
  print "</DIV></DIV></ARTICLE>"
 
-############################################### To Do ##############################################
 #
 #
 def rooms(aWeb):

@@ -4,6 +4,32 @@
 // Author:  Zacharias El Banna
 // 
 
+
+//
+function create_cookie(name,value,life) {
+ var date = new Date();
+ seconds = (life) ? life*1000 : "3000000";
+ date.setTime(date.getTime()+seconds);
+ console.log("Creating cookie:" + name + " expires:" + date.toGMTString()); 
+ document.cookie = name+"="+value+"; expires=" + date.toGMTString() + "; Path=/";
+}
+
+function read_cookie(name) {
+ var nameEQ = name + "=";
+ var cookies = document.cookie.split("; ");
+ for(var i=0;i < cookies.length;i++) {
+  var c = cookies[i];
+  if (c.indexOf(nameEQ) == 0)
+   return c.substring(nameEQ.length,c.length);
+ }
+ return null;
+}
+
+function erase_cookie(name) {
+ document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+}
+
+
 //
 // Button functions - accepts proper JScript object:
 //  Set attribute log=true to log operation
@@ -53,13 +79,13 @@ function btn(e) {
  } else if (op == 'logout') {
   if (this.getAttribute("cookie")) {
    console.log('Expiring cookie:' + this.getAttribute("cookie"));
-   document.cookie = this.getAttribute("cookie") + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+   erase_cookie(this.getAttribute("cookie"));
   } else {
    var cookies = document.cookie.split("; ");
    for(var i=0; i < cookies.length; i++) {
     var equals = cookies[i].indexOf("=");
     var name = equals > -1 ? cookies[i].substr(0, equals) : cookies[i];
-    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    erase_cookie(this.getAttribute("cookie"));
    }
   }
   if(url)
@@ -158,3 +184,4 @@ function updatelist(obj){
  for (i = 0; i < obj.children.length; i++){ list.push(obj.children[i].id); }
  $("#" + obj.getAttribute("dest")).attr("value",list);
 }
+

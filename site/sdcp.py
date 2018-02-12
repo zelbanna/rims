@@ -14,24 +14,22 @@ def login(aWeb):
  application = aWeb.get('application','sdcp')
  cookie = aWeb.cookie_unjar(application)
  if cookie.get('authenticated'):
-  aWeb.put_redirect("sdcp.cgi?call=%s_portal&headers=yes"%application)
+  aWeb.put_redirect("sdcp.cgi?call=%s_portal"%application)
   return
  
- data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call','header']))
+ data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call']))
  aWeb.cookie_add(application,data['cookie'])
- if aWeb['inline'] == 'yes':
-  aWeb.put_headers()
- else:
+ if not aWeb['inline'] == 'yes':
   aWeb.put_html(data['title'])
  taborder = 2
  print "<DIV CLASS='grey overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message']
  if data.get('exception'):
-  print "Error retrieving applicaiton info - exception info: %s"%(data['exception'])
+  print "Error retrieving application info - exception info: %s"%(data['exception'])
  else:
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
   print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s'>"%data['portal']
-  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=yes>"
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
+  print "<INPUT TYPE=HIDDEN NAME=inline VALUE='%s'>"%aWeb.get('inline','no')
   print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   for choice in data.get('choices'):
    print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s' TABORDER=%s>"%(choice['display'],choice['id'],taborder)
@@ -83,10 +81,6 @@ def portal(aWeb):
 # Weathermap
 #
 def weathermap(aWeb):
- if aWeb.get('headers','yes') == 'yes':
-  aWeb.put_html("Weathermap")
- else:
-  print "Content-Type: text/html\r\n"
  if not aWeb['page']:
   wms = aWeb.rest_call("settings_list",{'section':'weathermap'})['data']
   print "<NAV><UL>" 
