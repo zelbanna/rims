@@ -46,22 +46,25 @@ def portal(aWeb):
   pid      = cookie['project_id']
   pname    = cookie['project_name']
   utok     = cookie['user_token']
-  aWeb.log("openstack_portal - login using existing {} for {}".format(utok,ctrl))
+  aWeb.log("openstack_portal - using existing {} for {}".format(utok,ctrl))
 
- aWeb.put_html("Openstack Portal")
- print "<HEADER CLASS='background'>"
- print "<DIV CLASS=table STYLE='width:auto; display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
- print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
- print "</DIV></DIV>"
- print "<BUTTON CLASS='z-op right menu warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
- print "</HEADER><MAIN CLASS='background' ID=main><NAV><UL>"
- print "<MAIN CLASS='background' ID=main><NAV><UL>"
+ if not aWeb['inline'] == 'yes':
+  aWeb.put_html("Openstack Portal")
+  print "<HEADER CLASS='background'>"
+  print "<DIV CLASS=table STYLE='width:auto; display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
+  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
+  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
+  print "</DIV></DIV>"
+  print "<BUTTON CLASS='z-op right menu warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
+  print "</HEADER><MAIN CLASS='background' ID=main>"
+ else:
+  aWeb.put_cookie()
+ print "<NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
  print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
- print "<LI><A CLASS='z-op reload'  OP=redirect URL='sdcp.cgi?call=openstack_portal'></A></LI>"
+ print "<LI><A CLASS='z-op reload' %s URL='sdcp.cgi?call=openstack_portal&line=%s'></A></LI>"%("DIV=main" if aWeb['inline'] == 'yes' else "OP=redirect",aWeb.get('inline','no'))
  print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&controller={}&name={}&appformix={}'>Log out</A></LI>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
  print "<LI CLASS='dropdown right'><A>API</A><DIV CLASS=dropdown-content>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"

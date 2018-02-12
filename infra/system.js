@@ -1,6 +1,6 @@
 // Tools created using javascript
 //
-// Version: 17.11.17GA
+// Version: 18.02.12GA
 // Author:  Zacharias El Banna
 // 
 
@@ -28,7 +28,6 @@ function read_cookie(name) {
 function erase_cookie(name) {
  document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
-
 
 //
 // Button functions - accepts proper JScript object:

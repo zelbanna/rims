@@ -42,7 +42,7 @@ def login(aWeb):
    taborder +=1
   print "</DIV></DIV>"
   print "</FORM><DIV CLASS=controls>"
-  print "<BUTTON CLASS=z-op OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=login_form TABORDER=1 TYPE=submit>Enter</BUTTON>"
+  print "<BUTTON CLASS=z-op %s STYLE='margin:20px 20px 30px 40px;' FRM=login_form TABORDER=1>Enter</BUTTON>"%("OP=submit" if not aWeb['inline'] == 'yes' else "DIV=main URL=sdcp.cgi")
  print "</DIV></ARTICLE></DIV>"
 
 ############################################## SDCP ###############################################
