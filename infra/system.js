@@ -29,14 +29,10 @@ function btn(e) {
   console.log("Log OP:"+op);
 
  if (!op || op == 'load') {
-  var msg  = this.getAttribute("msg");
-  if (msg && !confirm(msg)) return;
+  if (this.getAttribute("msg") && !confirm(this.getAttribute("msg"))) return;
   var spin = this.getAttribute("spin");
   if (spin){
-    if(spin == 'true')
-     spin = div;
-    else
-     spin = $("#"+spin);
+    spin = (spin.toLowerCase() == 'true') ? div : $("#"+spin);
     spin.scrollTop(0);
     spin.css("overflow-y","hidden");
     spin.append("<DIV CLASS='overlay'><DIV CLASS='loader'></DIV></DIV>");
