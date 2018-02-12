@@ -18,7 +18,7 @@ def portal(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
  ctrl = cookie.get('controller')
 
- if not cookie.get('autheticated'):
+ if not cookie.get('authenticated'):
   username = aWeb['user_name']
   password = aWeb['user_pass']
   project  = aWeb.get('project','none_none')
@@ -29,7 +29,7 @@ def portal(aWeb):
    print "Error logging in - please try login again"
    return
   utok = openstack.get_token()
-  cookie['autheticated'] = True
+  cookie['authenticated'] = True
   cookie['user_token'] = utok
   cookie['user_name']  = username
   cookie['project_id'] = pid
@@ -65,7 +65,7 @@ def portal(aWeb):
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
  print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
  print "<LI><A CLASS='z-op reload' %s URL='sdcp.cgi?call=openstack_portal&inline=%s'></A></LI>"%("DIV=main" if aWeb['inline'] == 'yes' else "OP=redirect",aWeb.get('inline','no'))
- print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&controller={}&name={}&appformix={}'>Log out</A></LI>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
+ print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack %s>Log out</A></LI>"%("DIV=main" if aWeb['inline'] == 'yes' else "URL='sdcp.cgi?call=sdcp_login&application=openstack&controller=%s&name=%s&appformix=%s'"%(ctrl,cookie.get('name'),cookie.get('appformix')))
  print "<LI CLASS='dropdown right'><A>API</A><DIV CLASS=dropdown-content>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
