@@ -64,7 +64,7 @@ def portal(aWeb):
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
  print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
- print "<LI><A CLASS='z-op reload' %s URL='sdcp.cgi?call=openstack_portal&line=%s'></A></LI>"%("DIV=main" if aWeb['inline'] == 'yes' else "OP=redirect",aWeb.get('inline','no'))
+ print "<LI><A CLASS='z-op reload' %s URL='sdcp.cgi?call=openstack_portal&inline=%s'></A></LI>"%("DIV=main" if aWeb['inline'] == 'yes' else "OP=redirect",aWeb.get('inline','no'))
  print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&controller={}&name={}&appformix={}'>Log out</A></LI>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
  print "<LI CLASS='dropdown right'><A>API</A><DIV CLASS=dropdown-content>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"
