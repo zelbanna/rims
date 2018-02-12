@@ -14,7 +14,7 @@ def login(aWeb):
  application = aWeb.get('application','sdcp')
  cookie = aWeb.cookie_unjar(application)
  if len(cookie) > 0:
-  aWeb.put_redirect("sdcp.cgi?call=%s_portal"%application)
+  aWeb.put_redirect("sdcp.cgi?call=%s_portal&headers=no"%application)
   return
  
  data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call','header']))
@@ -55,7 +55,7 @@ def portal(aWeb):
   id,user = aWeb.get('sdcp_login',"None_None").split('_')
   if id == "None":
    aWeb.put_redirect("index.cgi")
-   return   
+   return
   cookie.update({'id':id})
   aWeb.cookie_jar('sdcp',cookie, 86400)
   aWeb.log("Entering as {}-'{}'".format(id,user))
@@ -67,7 +67,7 @@ def portal(aWeb):
  print "<HEADER CLASS='background'>"
  for item in menu:
   if item['inline'] == 0:
-   print "<FORM><BUTTON CLASS='menu' TITLE='%s' TYPE='submit' FORMTARGET=_blank FORMMETHOD=post FORMACTION='%s'><IMG SRC='%s'/></BUTTON></FORM>"%(item['title'],item['href'],item['icon'])
+   print "<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
   else:
    print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG SRC='%s'/></BUTTON>"%(item['title'],item['href'],item['icon'])
  print "<BUTTON CLASS='z-op menu right warning' OP=logout URL=sdcp.cgi>Log out</BUTTON>"

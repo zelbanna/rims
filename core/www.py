@@ -141,7 +141,10 @@ class Web(object):
  @classmethod
  def button(cls,aImg,**kwargs):
   return " ".join(["<BUTTON CLASS='z-op small'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC=images/btn-%s.png></BUTTON>"%(aImg)])
- # Add drag n drop
+
+ @classmethod
+ def a_button(cls,aImg,**kwargs):
+  return " ".join(["<A CLASS='btn z-op small'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC=images/btn-%s.png></A>"%(aImg)])
 
  @classmethod
  def dragndrop(cls):

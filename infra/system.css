@@ -131,8 +131,8 @@ button:active { opacity:0.5; }
 button.menu, a.menu {  height: 52px; min-width:52px; float:left; border-radius: 8px!important; padding: 4px; margin: 5px 2px; }
 button.menu > img,a.menu > img{  max-height:43px; }
 
-button.small { height: 24px; width: 24px; margin:0px; font-size:9px; padding:0px;}
-button.small > img { height:22px; }
+button.small, a.small { height: 24px; width: 24px; margin:0px; font-size:9px; padding:0px;}
+button.small > img, a.msmall > img{ height:22px; }
 
 button.low {   height: 24px; width: 24px; position: relative; bottom: -26px; padding:0px; }
 
