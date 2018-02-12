@@ -70,7 +70,7 @@ def portal(aWeb):
    print "<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
   else:
    print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG SRC='%s'/></BUTTON>"%(item['title'],item['href'],item['icon'])
- print "<BUTTON CLASS='z-op menu right warning' OP=logout URL=sdcp.cgi>Log out</BUTTON>"
+ print "<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=sdcp URL=sdcp.cgi>Log out</BUTTON>"
  print "<BUTTON CLASS='z-op menu right' DIV=main TITLE='User info' URL=sdcp.cgi?call=users_user&id=%s><IMG SRC='images/icon-users.png'></BUTTON>"%id
  print "</HEADER>"
  print "<MAIN CLASS='background' ID=main></MAIN>"

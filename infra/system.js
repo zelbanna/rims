@@ -55,16 +55,21 @@ function btn(e) {
  } else if (op == 'iload') {
   $("#"+ this.getAttribute("iframe")).attr('src',url);
  } else if (op == 'logout') {
-  var cookies = document.cookie.split(";");
-  for(var i=0; i < cookies.length; i++) {
-   var equals = cookies[i].indexOf("=");
-   var name = equals > -1 ? cookies[i].substr(0, equals) : cookies[i];
-   document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  if (this.getAttribute("cookie")) {
+   console.log('Expiring cookie:' + this.getAttribute("cookie"));
+   document.cookie = this.getAttribute("cookie") + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  } else {
+   var cookies = document.cookie.split("; ");
+   for(var i=0; i < cookies.length; i++) {
+    var equals = cookies[i].indexOf("=");
+    var name = equals > -1 ? cookies[i].substr(0, equals) : cookies[i];
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+   }
   }
   if(url)
    location.replace(url);
   else
-   div.html('')
+   div.html('');
  } else if (op == 'single') {
   $(this.getAttribute("selector")).hide();
   div.show();

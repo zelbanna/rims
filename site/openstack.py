@@ -55,7 +55,7 @@ def portal(aWeb):
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(pname,pid)
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(username,utok)
  print "</DIV></DIV>"
- print "<BUTTON CLASS='z-op right menu warning' OP=logout URL='sdcp.cgi?call=sdcp_login&application=openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
+ print "<BUTTON CLASS='z-op right menu warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&headers=no&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
  print "</HEADER><MAIN CLASS='background' ID=main><NAV><UL>"
  print "<MAIN CLASS='background' ID=main><NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
@@ -63,7 +63,7 @@ def portal(aWeb):
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
  print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
  print "<LI><A CLASS='z-op reload'  OP=redirect URL='sdcp.cgi?call=openstack_portal&headers=no'></A></LI>"
- print "<LI CLASS='right'><A CLASS='z-op warning'  OP=logout URL='sdcp.cgi?call=sdcp_login&application=openstack&headers=no&controller={}&name={}&appformix={}'>Log out</A></LI>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
+ print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&headers=no&controller={}&name={}&appformix={}'>Log out</A></LI>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
  print "<LI CLASS='dropdown right'><A>API</A><DIV CLASS=dropdown-content>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
