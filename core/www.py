@@ -111,20 +111,20 @@ class Web(object):
   # Do something about field storage...
   import cgi
   self.form = cgi.FieldStorage()
-  headers   = self.get('headers','yes')
+  headers   = self.get('headers','no')
   mod_fun   = self.get('call','sdcp_login')
   (mod,void,fun) = mod_fun.partition('_')
   print "X-Z-Mod:{}\r".format(mod)
   print "X-Z-Fun:{}\r".format(fun)
   try:
-   if headers == 'yes' and mod != 'sdcp':
+   if headers == 'no' and mod != 'sdcp':
     print "Content-Type: text/html\r\n"
    from importlib import import_module
    module = import_module("sdcp.site." + mod)
    getattr(module,fun,None)(self)
   except Exception, e:
    from sys import stdout
-   if headers == 'no' or mod == 'sdcp':
+   if headers == 'yes' or mod == 'sdcp':
     stdout.write("Content-Type: text/html\r\n\n")
    keys    = self.form.keys()
    details = ("AJAX",mod_fun,type(e).__name__,",".join(keys), str(e)) 

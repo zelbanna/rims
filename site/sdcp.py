@@ -13,8 +13,8 @@ __status__= "Production"
 def login(aWeb):
  application = aWeb.get('application','sdcp')
  cookie = aWeb.cookie_unjar(application)
- if len(cookie) > 0:
-  aWeb.put_redirect("sdcp.cgi?call=%s_portal&headers=no"%application)
+ if cookie.get('authenticated'):
+  aWeb.put_redirect("sdcp.cgi?call=%s_portal&headers=yes"%application)
   return
  
  data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call','header']))
@@ -27,7 +27,7 @@ def login(aWeb):
  else:
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
   print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s'>"%data['portal']
-  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
+  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=yes>"
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
   print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   for choice in data.get('choices'):
@@ -56,7 +56,7 @@ def portal(aWeb):
   if id == "None":
    aWeb.put_redirect("index.cgi")
    return
-  cookie.update({'id':id})
+  cookie.update({'id':id,'authenticated':True})
   aWeb.cookie_jar('sdcp',cookie, 86400)
   aWeb.log("Entering as {}-'{}'".format(id,user))
  else:
@@ -80,7 +80,7 @@ def portal(aWeb):
 # Weathermap
 #
 def weathermap(aWeb):
- if aWeb.get('headers','no') == 'no':
+ if aWeb.get('headers','yes') == 'yes':
   aWeb.put_html("Weathermap")
  else:
   print "Content-Type: text/html\r\n"
