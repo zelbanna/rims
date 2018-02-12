@@ -37,3 +37,9 @@ def application(aDict):
  ret['parameters'] = [{'display':'Username', 'id':'user_name', 'data':'text'},{'display':'Password', 'id':'user_pass', 'data':'password'}]
  ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookies.iteritems()])
  return ret
+
+#
+#
+def authenticate(aDict):
+ ret = {}
+ return ret

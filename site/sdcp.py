@@ -19,7 +19,10 @@ def login(aWeb):
  
  data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call','header']))
  aWeb.cookie_add(application,data['cookie'])
- aWeb.put_html(data['title'])
+ if aWeb['inline'] == 'yes':
+  aWeb.put_headers()
+ else:
+  aWeb.put_html(data['title'])
  taborder = 2
  print "<DIV CLASS='grey overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message']
  if data.get('exception'):
