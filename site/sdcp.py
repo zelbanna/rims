@@ -85,6 +85,7 @@ def portal(aWeb):
 # Weathermap
 #
 def weathermap(aWeb):
+ aWeb.put_html("Weathermap")
  if not aWeb['page']:
   wms = aWeb.rest_call("settings_list",{'section':'weathermap'})['data']
   print "<NAV><UL>" 
