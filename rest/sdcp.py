@@ -225,6 +225,7 @@ def rest_analyze(aDict):
   for line in file:
    line_no += 1
    line = line.rstrip()
+   line = line.replace("%s","<var>")
    if line[0:4] == 'def ':
     if data['function']:
      ret['functions'].append(data)

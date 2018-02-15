@@ -16,14 +16,14 @@ from ..core.logger import log
 def list(aDict):
  ret = {}
  if aDict.get('rack'):
-  if aDict['rack'] == 'vm':
+  if aDict.get('rack') == 'vm':
    tune = "WHERE vm = 1"
   else:
-   tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(aDict['rack'])
+   tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(aDict.get('rack'))
   if aDict.get('filter'):
-   tune += " AND type_id = {}".format(aDict['filter'])
+   tune += " AND type_id = {}".format(aDict.get('filter'))
  elif aDict.get('filter'):
-  tune = "WHERE type_id = {}".format(aDict['filter'])
+  tune = "WHERE type_id = {}".format(aDict.get('filter'))
  else:
   tune = ""
 
@@ -31,10 +31,7 @@ def list(aDict):
  with DB() as db:
   sql = "SELECT devices.id, devices.hostname, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, CONCAT(devices.hostname,'.',domains.name) AS  fqdn, a_dom_id, a_id, ptr_id, model, type_id, subnets.gateway FROM devices JOIN subnets ON subnet_id = subnets.id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
   ret['xist'] = db.do(sql)
-  if aDict.get('index'):
-   ret['data']= db.get_dict(aDict['index'])
-  else:
-   ret['data']= db.get_rows()
+  ret['data'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 
 #
@@ -75,7 +72,7 @@ def info(aDict):
  Takes id or ascii rep of ip and return info
  """
  ret = {}
- search = "devices.id = '{}'".format(aDict['id']) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
+ search = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
  with DB() as db:
   ret['exist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
   if ret['exist'] > 0:
@@ -123,7 +120,7 @@ def update(aDict):
     aDict.pop('rackinfo_pem0_pdu_slot_id',None)
     aDict.pop('rackinfo_pem1_pdu_slot_id',None)
    elif racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
-    db.do("INSERT INTO rackinfo SET device_id = {},rack_id={} ON DUPLICATE KEY UPDATE rack_id = rack_id".format(id,aDict['rackinfo_rack_id']))
+    db.do("INSERT INTO rackinfo SET device_id = {},rack_id={} ON DUPLICATE KEY UPDATE rack_id = rack_id".format(id,aDict.get('rackinfo_rack_id')))
    elif racked == '1':
     for pem in ['pem0','pem1']:
      try:
@@ -158,10 +155,10 @@ def new(aDict):
   in_sub = db.do("SELECT subnet FROM subnets WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(subnet_id,ipint))
   if in_sub == 0:
    ret['info'] = "IP not in subnet range"
-  elif aDict.get('hostname') == 'unknown':
+  elif aDict['hostname'] == 'unknown':
    ret['info'] = "Hostname unknown not allowed"
   else:
-   xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE subnet_id = {} AND (ip = {} OR hostname = '{}')".format(subnet_id,ipint,aDict.get('hostname')))
+   xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE subnet_id = {} AND (ip = {} OR hostname = '{}')".format(subnet_id,ipint,aDict['hostname']))
    if xist == 0:
     mac = GL.mac2int(aDict.get('mac',0))
     ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,lookup,snmp,model) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname']))
@@ -304,7 +301,7 @@ def detect(aDict):
 
  update = aDict.get('update',False)
  if aDict.get('types') and not update:
-  info['type_id'] = aDict['types'][info['type_name']]['id']
+  info['type_id'] = aDict.get('types')[info['type_name']]['id']
  else:
   with DB() as db:
    xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(info['type_name']))

@@ -19,16 +19,13 @@ def formatting(restfile,data):
    print "        %s (optional%s"%(key,")" if value == True else " - required actually)")
  print ""
  print "    Extra:"
- for tp in ['pop','undecoded']:
-  if len(data[tp]) > 0:
-   if type(data[tp]) is list:
-    keys = data[tp]
-   if type(data[tp]) is dict:
-    keys = data[tp].keys()
-   for key in keys:
-     print "        %s (%s)"%(key,tp)
-   print ""
-
+ if len(data['pop']) > 0:
+  for key in data['pop'].keys():
+   print "        %s (pop)"%(key)
+ if len(data['undecoded']) > 0:
+  for value in data['undecoded']:
+   print "        %s (undecoded - line:%s)"%(value['part'],value['line'])
+ print ""
  print "    \"\"\""
  print "#####################################################"
 

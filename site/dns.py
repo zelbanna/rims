@@ -203,7 +203,7 @@ def consistency(aWeb):
  for type in ['a','ptr']:
   records = aWeb.rest_generic(SC.dns['url'],"{}_records".format(SC.dns['type']),{'type':type})['records']
   tid = "{}_id".format(type)
-  devices = aWeb.rest_call("device_list",{"index":"ipasc" if type == 'a' else "fqdn"})['data']
+  devices = aWeb.rest_call("device_list",{"dict":"ipasc" if type == 'a' else "fqdn"})['data']
   for rec in records:
    dev = devices.pop(rec['content'],None)
    if not dev or dev[tid] != rec['id']:
