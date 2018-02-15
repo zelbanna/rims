@@ -105,20 +105,17 @@ def info(aDict):
 #
 #
 def update(aDict):
- """
- Update device info
-  - id
-  - **table_key:value pairs, table: devices/rackinfo
- """
  log("device_update({})".format(aDict))
  from ..core import genlib as GL
- id     = aDict.pop('id',None)
- racked = aDict.pop('racked',None)
+ id     = aDict['id']
+ racked = aDict.get('racked')
+ aDict.pop('id',None)
+ aDict.pop('racked',None)
+ try: aDict['devices_mac'] = GL.mac2int(aDict.pop('devices_mac','00:00:00:00:00:00'))
+ except: pass
+
  ret    = {'data':{}}
  with DB() as db:
-  # specials
-  try: aDict['devices_mac'] = GL.mac2int(aDict.pop('devices_mac','00:00:00:00:00:00'))
-  except: pass
 
   if racked:
    if   racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
@@ -330,18 +327,17 @@ def update_pdu(aDict):
  with DB() as db:
   for p in ['0','1']:
    ret[p] = None
-   id = aDict.get("pem{}_pdu_id".format(p))
+   id = aDict.get('pem%s_pdu_id'%(p))
    if id:
-    slot = int(aDict.get("pem{}_pdu_slot".format(p),0))
-    unit = int(aDict.get("pem{}_pdu_unit".format(p),0))
+    slot = int(aDict.get('pem%s_pdu_slot'%(p),0))
+    unit = int(aDict.get('pem%s_pdu_unit'%(p),0))
     if not (slot == 0 or unit == 0):
      db.do("SELECT hostname, INET_NTOA(ip), devicetypes.name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '{}'".format(id))        
      data = db.get_row()
-     aDict['text'] = aDict['hostname']+"-P{}".format(p)
-     aDict['ip'] = data['ip']
+     args = {'ip':data['ip'],'unit':unit,'slot':slot,'text':aDict['hostname']+"-P%s"%(p)}
      if data.name == 'avocent':
       from avocent import pdu_update
-      ret["pem{}".format(p)] = pdu_update(aDict)
+      ret["pem{}".format(p)] = pdu_update(args)
  return ret
 
 ############################################# Munin ###########################################

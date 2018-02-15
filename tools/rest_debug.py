@@ -15,7 +15,7 @@ def execute(argv):
  except: args = None
  print "Executing:{}_{}({})".format(rest,fun,args)
 
- syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '../..')))
+ syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
  try:
   module = import_module("sdcp.rest.%s"%rest)
   res    = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })(args)
