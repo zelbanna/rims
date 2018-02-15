@@ -14,14 +14,14 @@ from ..site.openstack import dict2html
 ##################################### Heatstack ##################################
 #
 def list(aWeb):
- cookie = aWeb.cookie_unjar('heat')
- token  = cookie.get('token')
+ cookie = aWeb.cookie_unjar('openstack')
+ token  = cookie.get('user_token')
  if not token:
   print "Not logged in"
   return
  controller = OpenstackRPC(cookie.get('controller'),token)
  try:
-  data = controller.call(cookie.get('port'),cookie.get('url') + "/stacks")['data']
+  data = controller.call(cookie.get('heat_port'),cookie.get('heat_url') + "/stacks")['data']
  except Exception as e:
   print "<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e)
   return
@@ -91,14 +91,14 @@ def enter_parameters(aWeb):
 # Heat Actions
 #
 def action(aWeb):
- cookie = aWeb.cookie_unjar('heat')
- token  = cookie.get('token')
+ cookie = aWeb.cookie_unjar('openstack')
+ token  = cookie.get('user_token')
  if not token:
   print "Not logged in"
   return
  controller = OpenstackRPC(cookie.get('controller'),token)
- port = cookie.get('port')
- url  = cookie.get('url')
+ port = cookie.get('heat_port')
+ url  = cookie.get('heat_url')
  name = aWeb['name']
  id   = aWeb['id']
  op   = aWeb.get('op','info')

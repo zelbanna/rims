@@ -13,8 +13,8 @@ from ..site.openstack import dict2html
 ############################### Neutron ##############################
 #
 def list(aWeb):
- cookie = aWeb.cookie_unjar('neutron')
- token  = cookie.get('token')
+ cookie = aWeb.cookie_unjar('openstack')
+ token  = cookie.get('user_token')
  if not token:
   print "Not logged in"
   return
@@ -52,8 +52,8 @@ def list(aWeb):
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def action(aWeb):
- cookie = aWeb.cookie_unjar('neutron')
- token  = cookie.get('token')
+ cookie = aWeb.cookie_unjar('openstack')
+ token  = cookie.get('user_token')
  if not token:
   print "Not logged in"
   return
@@ -164,8 +164,7 @@ def action(aWeb):
    print "Error - [%s]"%str(e)
 
  elif op == 'fi_associate_choose_vm':
-  nova_cookie = aWeb.cookie_unjar('nova')
-  vms = controller.call(nova_cookie.get('port'), nova_cookie.get('url') + "/servers")['data']['servers']
+  vms = controller.call(cookie.get('nova_port'), cookie.get('nova_url') + "/servers")['data']['servers']
   print "<FORM ID=frm_fi_assoc_vm><INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
   print "VM: <SELECT STYLE='width:auto; height:22px;' NAME=vm>"
   for vm in vms:
