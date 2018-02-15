@@ -36,7 +36,11 @@ def dedup(aDict):
 #
 def top(aDict):
  log("powerdns_top({})".format(aDict))
- from ..core import genlib as GL
+ def GL_get_host_name(aIP):
+  from socket import gethostbyaddr
+  try:    return gethostbyaddr(aIP)[0].partition('.')[0]
+  except: return None
+    
  count = int(aDict.get('count',10))
  fqdn_top = {}
  fqdn_who = {}
@@ -53,7 +57,7 @@ def top(aDict):
  who = []
  for item in  Counter(fqdn_who).most_common(count):
   parts = item[0].split('#')
-  who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL.get_host_name(parts[1]), 'count':item[1]})
+  who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL_get_host_name(parts[1]), 'count':item[1]})
  return {'top':top,'who':who }
 
 #################################### Domains #######################################
@@ -151,6 +155,7 @@ def record_lookup(aDict):
 def record_update(aDict):
  log("powerdns_record_update({})".format(aDict))
  from time import strftime
+ 
  aDict['change_date'] = strftime("%Y%m%d%H")
  aDict['ttl']  = aDict.get('ttl','3600')
  aDict['type'] = aDict['type'].upper()
