@@ -37,7 +37,7 @@ if __name__ == "__main__":
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
  from sdcp.rest.sdcp import rest_analyze
  if len(argv) == 2:
-  res = rest_analyze(argv[1] + ".py")
+  res = rest_analyze({'file':argv[1] + ".py"})
   for fun in res['functions']:
    formatting(res['file'],fun)
  else:
@@ -45,5 +45,5 @@ if __name__ == "__main__":
    if restfile[-3:] == 'pyc':
     continue
    print "Analyzing file %s"%restfile
-   print rest_analyze(restfile)
+   print rest_analyze({'file':restfile})
  exit(0)

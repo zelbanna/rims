@@ -214,14 +214,15 @@ def install(aDict):
 #
 #
 #
-def rest_analyze(restfile):
+def rest_analyze(aDict):
  from os import path as ospath
  restdir = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','rest'))
- ret = {'file':restfile,'functions':[]}
+ ret = {'file':aDict['file'],'functions':[]}
  data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[]} 
 
- with open(ospath.abspath(ospath.join(restdir,restfile)),'r') as file:
+ with open(ospath.abspath(ospath.join(restdir,aDict['file'])),'r') as file:
   line_no = 0
+  arg = 'aDict'
   for line in file:
    line_no += 1
    line = line.rstrip()
@@ -229,8 +230,10 @@ def rest_analyze(restfile):
     if data['function']:
      ret['functions'].append(data)
      data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[]}
-    data['function'] = line[4:-8].lstrip()
-   elif data['function'] and "aDict" in line:
+    name_end = line.index('(')
+    arg = line[name_end+1:-2]
+    data['function'] = line[4:name_end].lstrip()
+   elif data['function'] and arg in line:
      parts = line.split('aDict')
      # print "%s:%s"%(data['function'],parts)
      for part in parts[1:]:
