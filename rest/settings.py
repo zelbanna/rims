@@ -10,34 +10,57 @@ __status__ = "Production"
 from ..core.dbase import DB
 
 def list(aDict):
+ """Function description for list TBD
+
+ Args:
+  - dict (optional)
+  - section (optional)
+  - user_id (optional)
+
+ Extra:
+ """
  ret = {'user_id':aDict.get('user_id',"1") }
  if aDict.get('section'):
-  filter = "WHERE section = '%s'"%aDict['section']
-  ret['section'] = aDict['section']
+  filter = "WHERE section = '%s'"%aDict.get('section')
+  ret['section'] = aDict.get('section')
  else:
   filter = ""
   ret['section'] = 'all'
  with DB() as db:
   ret['xist'] = db.do("SELECT * FROM settings %s ORDER BY section,parameter"%(filter))
-  ret['data'] = db.get_dict(aDict['dict']) if aDict.get('dict') else db.get_rows()
+  ret['data'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
  return ret
 
 #
 #
 def info(aDict):
+ """Function description for info TBD
+
+ Args:
+  - id (required)
+  - description (required)
+  - section (required)
+  - value (required)
+  - parameter (required)
+  - required (conditionally required)
+
+ Extra:
+  - op (pop)
+ """
  ret = {}
  id = aDict['id']
  op = aDict.pop('op',None)
  with DB() as db:
   if op == 'update':
-   if id == 'new':
-    ret['result'] = db.do("INSERT INTO settings (section,parameter,required,value,description) VALUES ('{}','{}','{}','{}','{}')".format(aDict['section'],aDict['parameter'],aDict.get('required',0),aDict['value'],aDict['description']))
-    id = db.get_last_id()
-   else:
+   if not id == 'new':
     if aDict['required'] == '0':
      ret['result'] = db.do("UPDATE settings SET section='{}',parameter='{}',value='{}',description='{}' WHERE id = '{}'".format(aDict['section'],aDict['parameter'],aDict['value'],aDict['description'],id))
     else:
      ret['result'] = db.do("UPDATE settings SET value='{}' WHERE id = '{}'".format(aDict['value'],id))
+   else:
+    ret['result'] = db.do("INSERT INTO settings (section,parameter,required,value,description) VALUES ('{}','{}','{}','{}','{}')".format(aDict['section'],aDict['parameter'],aDict.get('required',0),aDict['value'],aDict['description']))
+    id = db.get_last_id()
+
   ret['xist'] = db.do("SELECT * FROM settings WHERE id = '%s'"%id)
   ret['data'] = db.get_row()
  return ret
@@ -45,6 +68,14 @@ def info(aDict):
 #
 #
 def parameter(aDict):
+ """Function description for parameter TBD
+
+ Args:
+  - section (required)
+  - parameter (required)
+
+ Extra:
+ """
  ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT * FROM settings WHERE section='%s' AND parameter='%s'"%(aDict['section'],aDict['parameter']))
@@ -54,6 +85,13 @@ def parameter(aDict):
 #
 #
 def section(aDict):
+ """Function description for section TBD
+
+ Args:
+  - section (required)
+
+ Extra:
+ """
  ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT id,parameter,value,description FROM settings WHERE section = '%s' ORDER BY parameter"%(aDict['section']))
@@ -63,6 +101,14 @@ def section(aDict):
 #
 #
 def all(aDict):
+ """Function description for all TBD
+
+ Args:
+  - dict (optional)
+  - section (optional)
+
+ Extra:
+ """
  ret = {}
  with DB() as db:
   if not aDict.get('section'):
@@ -70,15 +116,21 @@ def all(aDict):
    rows = db.get_rows()
    sections = [row['section'] for row in rows]
   else:
-   sections = [aDict['section']]
+   sections = [aDict.get('section')]
   for section in sections:
    db.do("SELECT parameter,id,value,description,required FROM settings WHERE section = '%s' ORDER BY parameter"%(section))
-   ret[section] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict['dict'])
+   ret[section] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 
 #
 #
 def save(aDict):
+ """Function description for save TBD
+
+ Args:
+
+ Extra:
+ """
  from os import chmod, remove, listdir, path as ospath
  from json import dumps,dump
  ret = {'containers':'OK','config':'OK'}
@@ -117,6 +169,13 @@ def save(aDict):
 #
 #
 def delete(aDict):
+ """Function description for delete TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
  with DB() as db:
   res = db.do("DELETE FROM settings WHERE id = '%s' AND required ='0'"%aDict['id'])
  return { 'deleted':res }

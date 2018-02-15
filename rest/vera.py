@@ -7,8 +7,20 @@ __author__ = "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__ = "Production"
 
+
+#
 #
 def rest(aDict):
+ """Function description for rest TBD
+
+ Args:
+  - host (required)
+  - api (required)
+  - method (required)
+  - args (required)
+
+ Extra:
+ """
  from ..devices.vera import Device
  try:
   controller = Device(aDict['host'])
@@ -20,6 +32,13 @@ def rest(aDict):
 #
 #
 def status(aDict):
+ """Function description for status TBD
+
+ Args:
+  - host (required)
+
+ Extra:
+ """
  from ..devices.vera import Device
  try:
   controller = Device(aDict['host'])

@@ -45,5 +45,7 @@ if __name__ == "__main__":
    if restfile[-3:] == 'pyc':
     continue
    print "############# Analyzing file: %s ################"%restfile
-   print rest_analyze({'file':restfile})
+   res = rest_analyze({'file':restfile})
+   for fun in res['functions']:
+    formatting(res['file'],fun)
  exit(0)

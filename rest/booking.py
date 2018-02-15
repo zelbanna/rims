@@ -13,6 +13,15 @@ __status__ = "Production"
 from ..core.dbase import DB
 
 def update(aDict):
+ """Function description for update TBD
+
+ Args:
+  - device_id (required)
+  - user_id (required)
+  - op (required)
+
+ Extra:
+ """
  ret = {'op':aDict['op']}
  if aDict['op'] == 'book':
   sql = "INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')"
@@ -24,7 +33,15 @@ def update(aDict):
   ret['update'] = db.do(sql.format(aDict['device_id'],aDict['user_id']))
  return ret
 
+#
+#
 def list(aDict):
+ """Function description for list TBD
+
+ Args:
+
+ Extra:
+ """
  ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT user_id, device_id, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') as start, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid, DATE_FORMAT(ADDTIME(time_start, '30 0:0:0.0'),'%Y-%m-%d %H:%i') as end, devices.hostname, users.alias FROM bookings INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id")
