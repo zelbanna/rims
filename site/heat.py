@@ -33,7 +33,7 @@ def list(aWeb):
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:150px;'>Status</DIV><DIV CLASS=th STYLE='width:50px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- for stack in data.get('stacks',None):
+ for stack in data.get('stacks'):
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_name'])
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_status'])

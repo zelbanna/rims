@@ -108,7 +108,7 @@ class Device(GenericDevice, ConfObject):
  #
  #
  def get_slotunit(self, aSlot, aUnit):
-  return self._configitems.get(aSlot +'.'+ aUnit,None)
+  return self._configitems.get(aSlot +'.'+ aUnit)
 
  #
  #

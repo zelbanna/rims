@@ -305,7 +305,7 @@ def mac_sync(aWeb):
 #
 def new(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
- ip     = aWeb.get('ip',None)
+ ip     = aWeb.get('ip')
  name   = aWeb.get('hostname','unknown')
  mac    = aWeb.get('mac',"00:00:00:00:00:00")
  op     = aWeb['op']

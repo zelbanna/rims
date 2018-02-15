@@ -12,7 +12,7 @@ from ..core.dbase import DB
 def list(aDict):
  ret = {'user_id':aDict.get('user_id',"1"), 'type':aDict.get('type') }
  with DB() as db:
-  if aDict.get('view_public',None) is None:
+  if aDict.get('view_public') is None:
    db.do("SELECT view_public FROM users WHERE id = %s"%ret['user_id'])
    ret['view_public'] = (db.get_val('view_public') == 1)
   else:

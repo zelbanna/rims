@@ -79,7 +79,7 @@ def info(aDict):
  with DB() as db:
   ret['exist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
   if ret['exist'] > 0:
-   if aDict.get('username',False):
+   if aDict.get('username'):
     from .. import SettingsContainer as SC
     ret['username'] = SC.netconf['username']
    ret['info'] = db.get_row()
@@ -184,7 +184,7 @@ def new(aDict):
 def remove(aDict):
  log("device_remove({})".format(aDict))
  with DB() as db:
-  xist = db.do("SELECT hostname, mac, a_id, ptr_id, devicetypes.* FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = {}".format(aDict.get('id','0')))
+  xist = db.do("SELECT hostname, mac, a_id, ptr_id, devicetypes.* FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = {}".format(aDict['id']))
   if xist == 0:
    ret = { 'deleted':0, 'a_id':0, 'ptr_id':0 }
   else:
@@ -218,7 +218,7 @@ def discover(aDict):
  with DB() as db:
 
   db_old, db_new = {}, {}
-  if aDict.get('clear',False):
+  if aDict.get('clear') == True:
    db.do("TRUNCATE TABLE devices")
   else:
    db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(ip_start,ip_end))
@@ -228,7 +228,7 @@ def discover(aDict):
   try:
    sema = BoundedSemaphore(10)
    for ip in GL.ipint2range(ip_start,ip_end):
-    if db_old.get(GL.ip2int(ip),None):
+    if db_old.get(GL.ip2int(ip)):
      continue
     sema.acquire()
     t = Thread(target = _tdetect, args=[ip, db_new, sema, devtypes])

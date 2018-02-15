@@ -55,7 +55,7 @@ def login(aWeb):
 #
 def portal(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
- if cookie.get('id',None) is None:
+ if cookie.get('id') is None:
   id,user = aWeb.get('sdcp_login',"None_None").split('_')
   if id == "None":
    aWeb.put_redirect("index.cgi")

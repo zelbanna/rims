@@ -14,7 +14,7 @@ def application(aDict):
  ret = {}
  ret['title']   = "%s 2 Cloud"%(aDict.get('name','iaas'))
  ret['message']= "Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas'))
- cookies = {'name':aDict.get('name','iaas'),'controller':aDict['controller'],'appformix':aDict.get('appformix',None)}
+ cookies = {'name':aDict.get('name','iaas'),'controller':aDict['controller'],'appformix':aDict.get('appformix')}
  try:
   controller = OpenstackRPC(cookies['controller'],None)
   res = controller.auth({'project':SC.openstack['project'], 'username':SC.openstack['username'],'password':SC.openstack['password']})

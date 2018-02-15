@@ -66,7 +66,7 @@ class Junos(GenericDevice):
   return self._router
 
  def get_interface_name(self, aifl):
-  return self._interfacesname.get(aifl.split('.')[0],None)
+  return self._interfacesname.get(aifl.split('.')[0])
  
  #
  # Netconf shit

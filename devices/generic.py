@@ -70,6 +70,9 @@ class ConfObject(object):
  def __exit__(self, *ctx_info):
   pass
 
+ def __getitem__(self,aKey):
+  return self._configitems.get(aKey)
+
  def load_snmp(self):
   pass
 
@@ -85,4 +88,4 @@ class ConfObject(object):
   return keys
 
  def get_entry(self, aKey):
-  return self._configitems.get(aKey,None)
+  return self._configitems.get(aKey)
