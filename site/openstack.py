@@ -14,60 +14,74 @@ __status__= "Production"
 # Openstack Portal - New "Window"/Pane
 #
 def portal(aWeb):
- from ..devices.openstack import OpenstackRPC
  cookie = aWeb.cookie_unjar('openstack')
- ctrl = cookie.get('controller')
 
  if not cookie.get('authenticated'):
-  project  = aWeb.get('project','none_none')
-  (pid,pname) = project.split('_')
-  openstack = OpenstackRPC(ctrl,None)
-  res = openstack.auth({'project':pname, 'username':aWeb['username'],'password':aWeb['password'] })
-  if not res['auth'] == "OK":
+  (pid,pname) = aWeb.get('project','none_none').split('_')
+  res = aWeb.rest_call("openstack_authenticate",{'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
+  if res['authenticated'] == "OK":
+   cookie.update(res)
+   aWeb.cookie_jar('openstack',cookie,3000)
+  else:
    print "Error logging in - please try login again"
    return
-  utok = openstack.get_token()
-  cookie['authenticated'] = True
-  cookie['user_token'] = utok
-  cookie['username']  = aWeb['username']
-  cookie['project_id'] = pid
-  cookie['project_name'] = pname
-  cookie['services']   = "&".join(['heat','nova','neutron','glance'])
-  for service in ['heat','nova','neutron','glance']:
-   port,url,id = openstack.get_service(service,'public')
-   cookie.update({'%s_port'%service:port,'%s_url'%service:url,'%s_id'%service:id})
-  aWeb.cookie_jar('openstack',cookie,3000)
-
-  aWeb.log("openstack_portal - successful login and catalog init for {}@{}".format(aWeb['username'],ctrl))
  else:
-  aWeb.log("openstack_portal - using existing {} for {}".format(cookie.get('user_token'),ctrl))
+  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('user_token'),ctrl))
 
- if not aWeb['inline'] == 'yes':
-  aWeb.put_html("Openstack Portal")
-  print "<HEADER CLASS='background'>"
-  print "<DIV CLASS=table STYLE='width:auto; display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
-  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(cookie['project_name'],cookie['project_id'])
-  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(cookie['username'],cookie['user_token'])
-  print "</DIV></DIV>"
-  print "<BUTTON CLASS='z-op right menu warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
-  print "</HEADER><MAIN CLASS='background' ID=main>"
- else:
-  aWeb.put_cookie()
+ aWeb.put_html("Openstack Portal")
+ print "<HEADER CLASS='background'>"
+ print "<DIV CLASS=table STYLE='width:auto; display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(cookie['project_name'],cookie['project_id'])
+ print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(cookie['username'],cookie['user_token'])
+ print "</DIV></DIV>"
+ print "<BUTTON CLASS='z-op right menu warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
+ print "</HEADER><MAIN CLASS='background' ID=main>"
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
  print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
- print "<LI><A CLASS='z-op reload' %s URL='sdcp.cgi?call=openstack_portal&inline=%s'></A></LI>"%("DIV=main" if aWeb['inline'] == 'yes' else "OP=redirect",aWeb.get('inline','no'))
- if aWeb['inline'] == 'yes':
-  print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack %s>Log out</A></LI>"%("DIV=main" if aWeb['inline'] == 'yes' else "URL='sdcp.cgi?call=sdcp_login&application=openstack&controller=%s&name=%s&appformix=%s'"%(ctrl,cookie.get('name'),cookie.get('appformix')))
-  print "<LI CLASS='right'><A CLASS='z-op green' TARGET=_blank HREF='sdcp.cgi?call=sdcp_login&application=openstack&controller=%s&name=%s&appformix=%s'>Tab</A></LI>"%(ctrl,cookie.get('name'),cookie.get('appformix'))
+ print "<LI><A CLASS='z-op reload' OP=redirect URL='sdcp.cgi?call=openstack_portal'></A></LI>"
  print "<LI CLASS='dropdown right'><A>API</A><DIV CLASS=dropdown-content>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
  print "</DIV></LI>"
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION></MAIN>"
+
+#
+#
+def inline(aWeb):
+ cookie = aWeb.cookie_unjar('openstack')
+
+ if not cookie.get('authenticated'):
+  (pid,pname) = aWeb.get('project','none_none').split('_')
+  res = aWeb.rest_call("openstack_authenticate",{'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
+  if res['authenticated'] == "OK":
+   cookie.update(res)
+   aWeb.cookie_jar('openstack',cookie,3000)
+  else:
+   print "Error logging in - please try login again"
+   return
+ else:
+  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('user_token'),ctrl))
+
+ aWeb.put_cookie()
+ print "<NAV><UL>"
+ print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
+ print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
+ print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
+ print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=openstack_inline'></A></LI>"
+ print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout DIV=main COOKIE=openstack>Logout</A></LI>"
+ print "<LI CLASS='right'><A CLASS='z-op green' TARGET=_blank HREF='sdcp.cgi?call=sdcp_login&application=openstack&controller=%s&name=%s&appformix=%s'>Tab</A></LI>"%(ctrl,cookie.get('name'),cookie.get('appformix'))
+ print "<LI CLASS='dropdown right'><A>API</A><DIV CLASS=dropdown-content>"
+ print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"
+ print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
+ print "</DIV></LI>"
+ print "</UL></NAV>"
+ print "<SECTION CLASS=content ID=div_content></SECTION></MAIN>"
+
 
 ############################################## Formatting ##############################################
 #

@@ -15,7 +15,7 @@ def login(aWeb):
  cookie = aWeb.cookie_unjar(application)
  inline = aWeb.get('inline','no')
  print "<!-- Cookie:%s -->"%cookie
- if cookie.get('authenticated') and inline == 'no':
+ if cookie.get('authenticated') == 'OK' and inline == 'no':
   aWeb.put_redirect("sdcp.cgi?call=%s_portal"%application)
   return
 
@@ -31,9 +31,8 @@ def login(aWeb):
   print "Error retrieving application info - exception info: %s"%(data['exception'])
  else:
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
-  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s'>"%data['portal']
+  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s_%s'>"%(application,"portal" if inline=='no' else 'inline')
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
-  print "<INPUT TYPE=HIDDEN NAME=inline VALUE='%s'>"%inline
   print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   for choice in data.get('choices'):
    print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s' TABORDER=%s>"%(choice['display'],choice['id'],taborder)
@@ -61,7 +60,7 @@ def portal(aWeb):
   if id == "None":
    aWeb.put_redirect("index.cgi")
    return
-  cookie.update({'id':id,'authenticated':True})
+  cookie.update({'id':id,'authenticated':'OK'})
   aWeb.cookie_jar('sdcp',cookie, 86400)
   aWeb.log("Entering as {}-'{}'".format(id,user))
  else:

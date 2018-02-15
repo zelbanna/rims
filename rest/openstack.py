@@ -11,21 +11,15 @@ def application(aDict):
  from .. import SettingsContainer as SC
  from ..core.dbase import DB
  from ..devices.openstack import OpenstackRPC
- from ..core.logger import log
  ret = {}
  ret['title']   = "%s 2 Cloud"%(aDict.get('name','iaas'))
- ret['portal'] = "openstack_portal"
  ret['message']= "Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas'))
- cookies = {'name':aDict.get('name','iaas'),'controller':aDict.get('controller','127.0.0.1'),'appformix':aDict.get('appformix','127.0.0.1'),'main_token':aDict.get('main_token',None)}
+ cookies = {'name':aDict.get('name','iaas'),'controller':aDict['controller'],'appformix':aDict.get('appformix',None)}
  try:
-  if cookies['main_token'] is None:
-   controller = OpenstackRPC(cookies['controller'],None)
-   res = controller.auth({'project':SC.openstack['project'], 'username':SC.openstack['username'],'password':SC.openstack['password']})
-   cookies['main_token'] = controller.get_token()
-   log("openstack_controller - login result: {}".format(str(res['auth'])))
-  else:
-   log("openstack_controller - reusing token: {}".format(cookies['main_token']))
-   controller = OpenstackRPC(cookies['controller'],cookies['main_token'])
+  controller = OpenstackRPC(cookies['controller'],None)
+  res = controller.auth({'project':SC.openstack['project'], 'username':SC.openstack['username'],'password':SC.openstack['password']})
+  # Forget about main token for security resasons, just retrieve projects for the list
+  # main_token = controller.get_token()
   auth = controller.call("5000","v3/projects")
   if auth['code'] == 200:
    projects = []
@@ -41,5 +35,22 @@ def application(aDict):
 #
 #
 def authenticate(aDict):
+ from ..devices.openstack import OpenstackRPC
+ from ..core.logger import log
  ret = {}
+ openstack = OpenstackRPC(ctrl,None)
+ res = openstack.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
+ ret['authenticated'] = res['auth']
+ if ret['authenticated'] == 'OK':
+  ret['project_name'] = aDict['project_name']
+  ret['project_id'] = aDict['project_id']
+  ret['username']   = aDict['username']
+  ret['user_token'] = openstack.get_token()
+  ret['services']   = "&".join(['heat','nova','neutron','glance'])
+  for service in ['heat','nova','neutron','glance']:
+   port,url,id = openstack.get_service(service,'public')
+   ret.update({'%s_port'%service:port,'%s_url'%service:url,'%s_id'%service:id})
+  log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],ctrl))
+ else:
+  log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl))
  return ret

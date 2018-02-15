@@ -12,7 +12,7 @@ __status__ = "Production"
 def application(aDict):
  from ..core.dbase import DB
  """ Default login information """
- ret = {'portal':"sdcp_portal",'message':"Welcome to the Management Portal",'parameters':[]}
+ ret = {'message':"Welcome to the Management Portal",'parameters':[]}
  with DB() as db:
   xist = db.do("SELECT value FROM settings WHERE section = 'generic' AND parameter = 'title'")
   ret['title'] = db.get_val('value') if xist > 0 else 'New Installation'
