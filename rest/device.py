@@ -8,12 +8,20 @@ __version__ = "18.02.09GA"
 __status__ = "Production"
 
 from ..core.dbase import DB
-from ..core.logger import log
 
 #
-# list(rack:[rack_id,vm], sort:, columns)
 #
 def list(aDict):
+ """Function description for list TBD
+
+ Args:
+  - filter (optional)
+  - sort (optional)
+  - dict (optional)
+  - rack (optional)
+
+ Extra:
+ """
  ret = {}
  if aDict.get('rack'):
   if aDict.get('rack') == 'vm':
@@ -37,6 +45,14 @@ def list(aDict):
 #
 #
 def list_type(aDict):
+ """Function description for list_type TBD
+
+ Args:
+  - base (optional)
+  - name (optional)
+
+ Extra:
+ """
  ret = {}
  with DB() as db:
   select = "devicetypes.%s ='%s'"%(('name',aDict.get('name')) if aDict.get('name') else ('base',aDict.get('base')))
@@ -47,6 +63,12 @@ def list_type(aDict):
 #
 #
 def list_mac(aDict):
+ """Function description for list_mac TBD
+
+ Args:
+
+ Extra:
+ """
  from ..core import genlib as GL
  with DB() as db:
   db.do("SELECT devices.id, CONCAT(hostname,'.',domains.name) as fqdn, INET_NTOA(ip) as ip, mac, subnet_id FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT mac = 0 ORDER BY ip")
@@ -55,10 +77,16 @@ def list_mac(aDict):
   row['mac'] = GL.int2mac(row['mac'])
  return rows
 
-
 #
 #
 def ip(aDict):
+ """Function description for ip TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
  ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT INET_NTOA(ip) AS ipasc FROM devices WHERE id = %s"%aDict['id'])
@@ -68,8 +96,16 @@ def ip(aDict):
 #
 #
 def info(aDict):
- """
- Takes id or ascii rep of ip and return info
+ """Function description for info TBD
+
+ Args:
+  - username (optional)
+  - ip (optional)
+  - id (optional)
+  - booking (optional)
+  - rackinfo (optional)
+
+ Extra:
  """
  ret = {}
  search = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
@@ -102,6 +138,18 @@ def info(aDict):
 #
 #
 def update(aDict):
+ """Function description for update TBD
+
+ Args:
+  - id (required)
+  - rackinfo_<var>_pdu_slot' (conditionally optional)
+  - rackinfo_<var>_pdu_id' (conditionally optional)
+  - devices_mac (optional)
+  - racked (optional)
+  - rackinfo_rack_id (optional)
+
+ """
+ from ..core.logger import log
  log("device_update({})".format(aDict))
  from ..core import genlib as GL
  id     = aDict['id']
@@ -140,11 +188,23 @@ def update(aDict):
 #
 #
 def new(aDict):
+ """Function description for new TBD
+
+ Args:
+  - a_dom_id (required)
+  - hostname (required)
+  - target (optional)
+  - subnet_id (optional)
+  - ip (optional)
+  - vm (optional)
+  - mac (optional)
+  - arg (optional)
+
+ Extra:
+  - target is 'rack_id' or nothing
+  - arg is rack_id
  """
- new(ip, hostname, subnet_id, a_dom_id, mac, target, arg)
- - target is 'rack_id' or nothing
- - arg is rack_id
- """
+ from ..core.logger import log
  log("device_new({})".format(aDict))
  from ..core import genlib as GL
  ip    = aDict.get('ip')
@@ -173,12 +233,16 @@ def new(aDict):
  return ret
 
 #
-# remove(id) and pop dns and ipam info
 #
-# OK is used to
-#
-
 def remove(aDict):
+ """Function description for remove TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
+ from ..core.logger import log
  log("device_remove({})".format(aDict))
  with DB() as db:
   xist = db.do("SELECT hostname, mac, a_id, ptr_id, devicetypes.* FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = {}".format(aDict['id']))
@@ -193,16 +257,26 @@ def remove(aDict):
  return ret
 
 #
-# discover(start, end, clear, a_dom_id, subnet_id)
 #
 def discover(aDict):
+ """Function description for discover TBD
+
+ Args:
+  - a_dom_id (required)
+  - start (required)
+  - end (required)
+  - subnet_id (required)
+  - clear (optional)
+
+ Extra:
+ """ from ..core.logger import log
  log("device_discover({})".format(aDict))
  from time import time
  from threading import Thread, BoundedSemaphore
  from ..core import genlib as GL
  start_time = int(time())
- ip_start = aDict.get('start')
- ip_end   = aDict.get('end')
+ ip_start = aDict['start']
+ ip_end   = aDict['end']
  ret = {'errors':0 }
 
  def _tdetect(aip,adict,asema):
@@ -239,7 +313,7 @@ def discover(aDict):
    sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, hostname, snmp, model, type_id, lookup) VALUES ({},"+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
    for ip,entry in db_new.iteritems():
     log("device_discover - adding:{}->{}".format(ip,entry))
-    db.do(sql.format(GL.ip2int(ip), aDict.get('subnet_id'), entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['lookup']))
+    db.do(sql.format(GL.ip2int(ip), aDict['subnet_id'], entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['lookup']))
   except Exception as err:
    log("device discover: Error [{}]".format(str(err)))
    ret['info']   = "Error:{}".format(str(err))
@@ -249,11 +323,20 @@ def discover(aDict):
   ret['found']= len(db_new)
  return ret
 
-
-#
 #
 #
 def detect(aDict):
+ """Function description for detect TBD
+
+ Args:
+  - ip (required)
+  - id (required)
+  - update (optional)
+  - types (optional)
+
+ Extra:
+ """
+ from ..core.logger import log
  log("device_detect({})".format(aDict))
  from .. import SettingsContainer as SC
  from netsnmp import VarList, Varbind, Session
@@ -313,6 +396,12 @@ def detect(aDict):
 #
 #
 def clear(aDict):
+ """Function description for clear TBD
+
+ Args:
+
+ Extra:
+ """
  with DB() as db:
   res = db.do("TRUNCATE TABLE devices")
  return { 'operation':res }
@@ -320,6 +409,16 @@ def clear(aDict):
 #
 #
 def update_pdu(aDict):
+ """Function description for update_pdu TBD
+
+ Args:
+  - hostname (required)
+  - pem<var>_pdu_slot (optional)
+  - pem<var>_pdu_id (optional)
+  - pem<var>_pdu_unit (optional)
+
+ Extra:
+ """
  ret = {}
  with DB() as db:
   for p in ['0','1']:
@@ -339,9 +438,18 @@ def update_pdu(aDict):
 
 ############################################# Munin ###########################################
 #
-# ip, type_name,fqdn
 #
 def graph_detect(aDict):
+ """Function description for graph_detect TBD
+
+ Args:
+  - ip (required)
+  - type_name (required)
+  - fqdn (required)
+  - plugin_file (required)
+
+ Extra:
+ """
  from ..core import genlib as GL
  ret = {'result':'NOT_OK'}
  if not GL.ping_os(aDict['ip']):
@@ -376,6 +484,12 @@ def graph_detect(aDict):
 #
 #
 def graph_save(aDict):
+ """Function description for graph_save TBD
+
+ Args:
+
+ Extra:
+ """
  ret = {}
  with DB() as db:
   db.do("SELECT value FROM settings WHERE section='graph' AND parameter = 'file'")
