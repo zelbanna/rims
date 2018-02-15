@@ -218,34 +218,34 @@ def rest_analyze(aDict):
  from os import path as ospath
  restdir = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','rest'))
  ret = {'file':aDict['file'],'functions':[]}
- data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[]} 
+ data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[],'arg':'aDict'} 
 
  with open(ospath.abspath(ospath.join(restdir,aDict['file'])),'r') as file:
   line_no = 0
-  arg = 'aDict'
   for line in file:
    line_no += 1
    line = line.rstrip()
    if line[0:4] == 'def ':
     if data['function']:
      ret['functions'].append(data)
-     data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[]}
+     data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[],'arg':None}
     name_end = line.index('(')
-    arg = line[name_end+1:-2]
+    data['arg'] = line[name_end+1:-2]
     data['function'] = line[4:name_end].lstrip()
-   elif data['function'] and arg in line:
+   elif data['function'] and data['arg'] in line:
      parts = line.split('aDict')
      # print "%s:%s"%(data['function'],parts)
      for part in parts[1:]:
       if part[0:2] == "['":
        end = part.index("]")
        argument = part[2:end-1]
-       data['required'][argument] = (data['optional'].get(argument) is None) 
+       if not data['required'].get(argument):
+        data['required'][argument] = (data['optional'].get(argument) is None) 
       elif part[0:6] == ".get('":
        end = part[6:].index("'")
        argument = part[6:6+end]
-       if not data['required'].get(argument):
-        data['optional'][argument] = True
+       if not data['optional'].get(argument):
+        data['optional'][argument] = (data['required'].get(argument) is None)
       elif part[0:7]== ".keys()" or part[0] == ")":
        pass
       elif part[0:6] == ".pop('":

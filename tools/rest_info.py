@@ -6,28 +6,31 @@ __status__ = "Production"
 
 
 def formatting(restfile,data):
- from sys import stdout
  size = len(data['function']) + 2
- print "%s %s %s"%("#"*(20 - size/2),data['function'],"#"*(20 - size/2 - size%2))
- print "#"
+ # print "%s %s %s"%("#"*(20 - size/2),data['function'],"#"*(20 - size/2 - size%2))
+ print "def %s(%s):"%(data['function'],data['arg'])
+ print "    \"\"\"Function description for %s TBD\n"%data['function']
+ print "    Args:"
  if len(data['required']) > 0:
-  print "# Required arguments:"
   for key,value in data['required'].iteritems():
-   stdout.write("#  - %s"%key)
-   stdout.write("\n" if value == True else " (optional)\n")
-  print "#"
- for tp in ['optional','pop','undecoded']:
+   print "        %s (required%s"%(key,")" if value == True else " - optional indication)")
+ if len(data['optional']) > 0:
+  for key,value in data['optional'].iteritems():
+   print "        %s (optional%s"%(key,")" if value == True else " - required actually)")
+ print ""
+ print "    Extra:"
+ for tp in ['pop','undecoded']:
   if len(data[tp]) > 0:
-   print "# %s arguments:"%tp.title()
    if type(data[tp]) is list:
     keys = data[tp]
    if type(data[tp]) is dict:
     keys = data[tp].keys()
    for key in keys:
-     print "#  - %s"%key
-   print "#"
+     print "        %s (%s)"%(key,tp)
+   print ""
 
- print "#\n"
+ print "    \"\"\""
+ print "#####################################################"
 
 if __name__ == "__main__":
  from os   import path as ospath, listdir
