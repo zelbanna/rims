@@ -1,8 +1,33 @@
 // Tools created using javascript
 //
-// Version: 17.11.17GA
+// Version: 18.02.12GA
 // Author:  Zacharias El Banna
 // 
+
+
+//
+function create_cookie(name,value,life) {
+ var date = new Date();
+ seconds = (life) ? life*1000 : "3000000";
+ date.setTime(date.getTime()+seconds);
+ console.log("Creating cookie:" + name + " expires:" + date.toGMTString()); 
+ document.cookie = name+"="+value+"; expires=" + date.toGMTString() + "; Path=/";
+}
+
+function read_cookie(name) {
+ var nameEQ = name + "=";
+ var cookies = document.cookie.split("; ");
+ for(var i=0;i < cookies.length;i++) {
+  var c = cookies[i];
+  if (c.indexOf(nameEQ) == 0)
+   return c.substring(nameEQ.length,c.length);
+ }
+ return null;
+}
+
+function erase_cookie(name) {
+ document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+}
 
 //
 // Button functions - accepts proper JScript object:
@@ -29,14 +54,10 @@ function btn(e) {
   console.log("Log OP:"+op);
 
  if (!op || op == 'load') {
-  var msg  = this.getAttribute("msg");
-  if (msg && !confirm(msg)) return;
+  if (this.getAttribute("msg") && !confirm(this.getAttribute("msg"))) return;
   var spin = this.getAttribute("spin");
   if (spin){
-    if(spin == 'true')
-     spin = div;
-    else
-     spin = $("#"+spin);
+    spin = (spin.toLowerCase() == 'true') ? div : $("#"+spin);
     spin.scrollTop(0);
     spin.css("overflow-y","hidden");
     spin.append("<DIV CLASS='overlay'><DIV CLASS='loader'></DIV></DIV>");
@@ -55,16 +76,21 @@ function btn(e) {
  } else if (op == 'iload') {
   $("#"+ this.getAttribute("iframe")).attr('src',url);
  } else if (op == 'logout') {
-  var cookies = document.cookie.split(";");
-  for(var i=0; i < cookies.length; i++) {
-   var equals = cookies[i].indexOf("=");
-   var name = equals > -1 ? cookies[i].substr(0, equals) : cookies[i];
-   document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  if (this.getAttribute("cookie")) {
+   console.log('Expiring cookie:' + this.getAttribute("cookie"));
+   erase_cookie(this.getAttribute("cookie"));
+  } else {
+   var cookies = document.cookie.split("; ");
+   for(var i=0; i < cookies.length; i++) {
+    var equals = cookies[i].indexOf("=");
+    var name = equals > -1 ? cookies[i].substr(0, equals) : cookies[i];
+    erase_cookie(this.getAttribute("cookie"));
+   }
   }
   if(url)
    location.replace(url);
   else
-   div.html('')
+   div.html('');
  } else if (op == 'single') {
   $(this.getAttribute("selector")).hide();
   div.show();
@@ -157,3 +183,4 @@ function updatelist(obj){
  for (i = 0; i < obj.children.length; i++){ list.push(obj.children[i].id); }
  $("#" + obj.getAttribute("dest")).attr("value",list);
 }
+

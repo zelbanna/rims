@@ -8,27 +8,32 @@ __version__ = "18.02.09GA"
 __status__= "Production"
 
 #
-# Generic Login
+# Generic Login - REST based apps required
 #
 def login(aWeb):
  application = aWeb.get('application','sdcp')
  cookie = aWeb.cookie_unjar(application)
- if len(cookie) > 0:
+ inline = aWeb.get('inline','no')
+ print "<!-- Cookie:%s -->"%cookie
+ if cookie.get('authenticated') and inline == 'no':
   aWeb.put_redirect("sdcp.cgi?call=%s_portal"%application)
   return
- 
- data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call','header']))
+
+ data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call']))
  aWeb.cookie_add(application,data['cookie'])
- aWeb.put_html(data['title'])
+ if inline == 'no':
+  aWeb.put_html(data['title'])
+ else:
+  aWeb.put_cookie()
  taborder = 2
  print "<DIV CLASS='grey overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message']
  if data.get('exception'):
-  print "Error retrieving applicaiton info - exception info: %s"%(data['exception'])
+  print "Error retrieving application info - exception info: %s"%(data['exception'])
  else:
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
   print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s'>"%data['portal']
-  print "<INPUT TYPE=HIDDEN NAME=headers VALUE=no>"
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
+  print "<INPUT TYPE=HIDDEN NAME=inline VALUE='%s'>"%inline
   print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   for choice in data.get('choices'):
    print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s' TABORDER=%s>"%(choice['display'],choice['id'],taborder)
@@ -41,7 +46,7 @@ def login(aWeb):
    taborder +=1
   print "</DIV></DIV>"
   print "</FORM><DIV CLASS=controls>"
-  print "<BUTTON CLASS=z-op OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=login_form TABORDER=1 TYPE=submit>Enter</BUTTON>"
+  print "<BUTTON CLASS=z-op %s STYLE='margin:20px 20px 30px 40px;' FRM=login_form TABORDER=1>Enter</BUTTON>"%("OP=submit" if not aWeb['inline'] == 'yes' else "DIV=main URL=sdcp.cgi")
  print "</DIV></ARTICLE></DIV>"
 
 ############################################## SDCP ###############################################
@@ -55,8 +60,8 @@ def portal(aWeb):
   id,user = aWeb.get('sdcp_login',"None_None").split('_')
   if id == "None":
    aWeb.put_redirect("index.cgi")
-   return   
-  cookie.update({'id':id})
+   return
+  cookie.update({'id':id,'authenticated':True})
   aWeb.cookie_jar('sdcp',cookie, 86400)
   aWeb.log("Entering as {}-'{}'".format(id,user))
  else:
@@ -67,10 +72,10 @@ def portal(aWeb):
  print "<HEADER CLASS='background'>"
  for item in menu:
   if item['inline'] == 0:
-   print "<FORM><BUTTON CLASS='menu' TITLE='%s' TYPE='submit' FORMTARGET=_blank FORMMETHOD=post FORMACTION='%s'><IMG SRC='%s'/></BUTTON></FORM>"%(item['title'],item['href'],item['icon'])
+   print "<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
   else:
    print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG SRC='%s'/></BUTTON>"%(item['title'],item['href'],item['icon'])
- print "<BUTTON CLASS='z-op menu right warning' OP=logout URL=sdcp.cgi>Log out</BUTTON>"
+ print "<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=sdcp URL=sdcp.cgi>Log out</BUTTON>"
  print "<BUTTON CLASS='z-op menu right' DIV=main TITLE='User info' URL=sdcp.cgi?call=users_user&id=%s><IMG SRC='images/icon-users.png'></BUTTON>"%id
  print "</HEADER>"
  print "<MAIN CLASS='background' ID=main></MAIN>"
@@ -80,10 +85,7 @@ def portal(aWeb):
 # Weathermap
 #
 def weathermap(aWeb):
- if aWeb.get('headers','no') == 'no':
-  aWeb.put_html("Weathermap")
- else:
-  print "Content-Type: text/html\r\n"
+ aWeb.put_html("Weathermap")
  if not aWeb['page']:
   wms = aWeb.rest_call("settings_list",{'section':'weathermap'})['data']
   print "<NAV><UL>" 

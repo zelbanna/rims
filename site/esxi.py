@@ -69,12 +69,14 @@ def list(aWeb,aIP = None):
 #
 #
 def op(aWeb):
- if not aWeb.cookies.get('sdcp'):
-  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
-  return
  cookie = aWeb.cookie_unjar('sdcp')
- res = aWeb.rest_call("esxi_op",{'ip':aWeb['ip'],'next-state':aWeb['next-state'], 'id':aWeb['id'],'user_id':cookie['id']})
- _vm_options(aWeb,aWeb['ip'],res,True)
+ args = aWeb.get_args2dict(['call'])
+ args['user_id'] = cookie['id']
+ res = aWeb.rest_call("esxi_op",args)
+ if aWeb['output'] == 'div':
+  print "<ARTICLE>Carried out '{}' on '{}@{}'</ARTICLE>".format(aWeb['next-state'],aWeb['id'],aWeb['ip'])
+ else:
+  _vm_options(aWeb,aWeb['ip'],res,True)
 
 #
 #
@@ -94,7 +96,7 @@ def _vm_options(aWeb,aIP,aVM,aHighlight):
  elif int(aVM['state_id']) == 2:
   print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start')
   print aWeb.button('snapshot',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-snapshot.create'), TITLE='Snapshot')
-  print aWeb.button('info',    DIV='div_content_right',SPIN='true',URL='sdcp.cgi?call=esxi_snapshot&ip={}&vmid={}'.format(aIP,aVM['id']), TITLE='Snapshot info')
+  print aWeb.button('info',    DIV='div_content_right',SPIN='true',URL='sdcp.cgi?call=esxi_snapshot&ip={}&id={}'.format(aIP,aVM['id']), TITLE='Snapshot info')
  else:
   print "Unknown state [{}]".format(aVM['state_id'])
  if aHighlight:
@@ -115,69 +117,20 @@ def graph(aWeb):
 #
 #
 def logs(aWeb):
- hostname = aWeb['hostname']
- try:
-  from subprocess import check_output
-  from ..  import SettingsContainer as SC
-  logs = check_output("tail -n 30 " + SC.esxi['logformat'].format(hostname) + " | tac", shell=True)
-  print "<ARTICLE><P>%s operation logs</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(hostname,logs.replace('\n','<BR>'))
- except: pass
+ res = aWeb.rest_call("esxi_logs",{'hostname':aWeb['hostname']})
+ print "<ARTICLE><P>%s operation logs</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(aWeb['hostname'],"<BR>".join(res['data']))
 
 #
 #
 def snapshot(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
- from ..devices.esxi import Device
- ip   = aWeb['ip']
- vmid = aWeb['vmid']
- data = {}
- id   = 0
- print "<ARTICLE><P>Snapshots ({})</P>".format(vmid)
- print "<!-- {}@'vim-cmd vmsvc/snapshot.get {}' -->".format(ip,vmid)
+ res = aWeb.rest_call("esxi_snapshots",{'ip':aWeb['ip'],'id':aWeb['id'],'user_id':cookie['id']}) 
+ print "<ARTICLE><P>Snapshots (%s) Highest ID:%s</P>"%(aWeb['id'],res['highest'])
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- with Device(ip) as esxi:
-  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get {} ".format(vmid),cookie['id'])
-  for field in snapshots.splitlines():
-   if "Snapshot" in field:
-    parts = field.partition(':')
-    key = parts[0].strip()
-    val = parts[2].strip()
-    if key[-4:] == 'Name':
-     data['name'] = val
-    elif key[-10:] == 'Desciption':
-     data['desc'] = val
-    elif key[-10:] == 'Created On':
-     data['created'] = val
-    elif key[-2:] == 'Id':
-     data['id'] = val
-     if int(val) > id:
-      id = int(val)
-    elif key[-5:] == 'State':
-     # Last!
-     data['state'] = val
-     print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(data['name'],data['id'],data['desc'],data['created'],data['state'])
-     print aWeb.button('revert', TITLE='Revert', DIV='div_content_right',SPIN='true', URL='sdcp.cgi?call=esxi_snap_op&ip=%s&vmid=%s&op=revert&snapid=%s'%(ip,vmid,data['id']))
-     print aWeb.button('delete', TITLE='Delete', DIV='div_content_right',SPIN='true', URL='sdcp.cgi?call=esxi_snap_op&ip=%s&vmid=%s&op=remove&snapid=%s'%(ip,vmid,data['id']))
-     print "</DIV></DIV>"
-     data = {}
+ for snap in res['data']:
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS='td controls'>".format(snap['name'],snap['id'],snap['desc'],snap['created'],snap['state'])
+  print aWeb.button('revert', TITLE='Revert', DIV='div_content_right',SPIN='true', URL='sdcp.cgi?call=esxi_op&ip=%s&id=%s&next-state=vmsvc-snapshot.revert&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id']))
+  print aWeb.button('delete', TITLE='Delete', DIV='div_content_right',SPIN='true', URL='sdcp.cgi?call=esxi_op&ip=%s&id=%s&next-state=vmsvc-snapshot.remove&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id']))
+  print "</DIV></DIV>"
  print "</DIV></DIV>"
- print "<SPAN CLASS='results'>[Highest ID:{}]</SPAN></ARTICLE>".format(id)
-
-#
-#
-#
-def snap_op(aWeb):
- from ..devices.esxi import Device
- cookie = aWeb.cookie_unjar('sdcp')
- ip   = aWeb['ip']
- vmid = aWeb['vmid']
- snap = aWeb['snapid']
- op   = aWeb['op']
- if   op == 'revert':
-  template = "vim-cmd vmsvc/snapshot.revert {} {} suppressPowerOff"
- elif op == 'remove':
-  template = "vim-cmd vmsvc/snapshot.remove {} {}"
- with Device(ip) as esxi:
-  esxi.ssh_send(template.format(vmid,snap),cookie['id'])
- print "<ARTICLE>Carried out '{}' on '{}@{}'</ARTICLE>".format(op,vmid,ip)

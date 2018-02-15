@@ -54,6 +54,7 @@ class OpenstackRPC(object):
     res['auth'] = 'NOT_OK'
   except Exception, e:
    res = e[0]
+   res['auth'] = 'NOT_OK'
   return res
 
  def get_id(self):

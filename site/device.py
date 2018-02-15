@@ -220,9 +220,9 @@ def info(aWeb):
  else:
    print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=book&id=%i'%dev['id'],TITLE='Book')   
  print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&type_name=%s&id=%i'%(dev['info']['type_name'],dev['id']),TITLE='Generate System Conf')
- print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
+ print aWeb.a_button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
-  print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
+  print aWeb.a_button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
 
  res = ""
  for key,value in opres.iteritems():

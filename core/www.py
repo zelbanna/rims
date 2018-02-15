@@ -15,7 +15,6 @@ class Web(object):
 
  def __init__(self,aREST):
   from os import getenv
-  self._header = {}
   self._rest_url = aREST
   self._c_stor = {}
   self._c_life = {}
@@ -55,10 +54,6 @@ class Web(object):
   from rest import call
   return call(aURL, aAPI, aArgs, aMethod, aHeader, True, aTimeout)
 
- # Header Key/Values
- def add_header(self,aKey,aValue):
-  self._header[aKey] = aValue
-
  ############################# Cookies #############################
  #
  # Cookies are key, value, lifetime
@@ -77,29 +72,27 @@ class Web(object):
   self._c_stor[aName] = aValue
   self._c_life[aName] = aLife
 
- def put_headers(self):
-  for key,value in self._header.iteritems():
-   print "{}: {}\r".format(key,value)
+ def put_cookie(self):
+  from sys import stdout
+  stdout.write("<SCRIPT>");
   for key,value in self._c_stor.iteritems():
-   print "Set-Cookie: %s=%s; Path=/; Max-Age=%i;\r"%(key,value,self._c_life.get(key,3000))
-  self._header = None
-  print "Content-Type: text/html\r\n"
-
+   stdout.write("create_cookie('%s','%s',%s);"%(key,value,self._c_life.get(key,3000)));
+  stdout.write("</SCRIPT>");
+ 
  # Redirect will all cookies and headers set
  def put_redirect(self,aLocation):
-  print "Location: {}\r".format(aLocation)
-  self.put_headers()
+  print "<SCRIPT> window.location.replace('%s'); </SCRIPT>"%(aLocation)
 
  # Put full header and listener
  def put_html(self, aTitle = None):
-  self.put_headers()
   from sys import stdout
   stdout.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='system.css'>")
   if aTitle:
    stdout.write("<TITLE>" + aTitle + "</TITLE>")
   stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/sdcp.png'/>")
   stdout.write("<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='system.js'></SCRIPT>")
-  stdout.write("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ); });</SCRIPT>");
+  stdout.write("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ); });</SCRIPT>")
+  self.put_cookie()
   stdout.write("</HEAD>")
   stdout.flush()
 
@@ -111,21 +104,17 @@ class Web(object):
   # Do something about field storage...
   import cgi
   self.form = cgi.FieldStorage()
-  headers   = self.get('headers','yes')
   mod_fun   = self.get('call','sdcp_login')
   (mod,void,fun) = mod_fun.partition('_')
   print "X-Z-Mod:{}\r".format(mod)
   print "X-Z-Fun:{}\r".format(fun)
+  print "Content-Type: text/html\r\n"
   try:
-   if headers == 'yes' and mod != 'sdcp':
-    print "Content-Type: text/html\r\n"
    from importlib import import_module
    module = import_module("sdcp.site." + mod)
    getattr(module,fun,None)(self)
   except Exception, e:
    from sys import stdout
-   if headers == 'no' or mod == 'sdcp':
-    stdout.write("Content-Type: text/html\r\n\n")
    keys    = self.form.keys()
    details = ("AJAX",mod_fun,type(e).__name__,",".join(keys), str(e)) 
    stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>Type: %s<BR>API: sdcp.site.%s<BR>Excpt: %s<BR><DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%details)
@@ -141,7 +130,10 @@ class Web(object):
  @classmethod
  def button(cls,aImg,**kwargs):
   return " ".join(["<BUTTON CLASS='z-op small'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC=images/btn-%s.png></BUTTON>"%(aImg)])
- # Add drag n drop
+
+ @classmethod
+ def a_button(cls,aImg,**kwargs):
+  return " ".join(["<A CLASS='btn z-op small'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC=images/btn-%s.png></A>"%(aImg)])
 
  @classmethod
  def dragndrop(cls):

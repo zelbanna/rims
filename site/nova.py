@@ -41,8 +41,8 @@ def list(aWeb):
   print "<DIV CLASS='td controls'>"
   qserver = get_quote(server['name'])
   actionurl = 'sdcp.cgi?call=nova_action&name=%s&id=%s&op={}'%(qserver,server['id'])
-  print aWeb.button('term', TARGET='_blank', HREF='sdcp.cgi?call=nova_console&headers=no&name=%s&id=%s'%(qserver,server['id']), TITLE='New window console')
-  print aWeb.button('term-frame', DIV='div_content_right', URL='sdcp.cgi?call=nova_console&id=%s'%server['id'], TITLE='Embedded console')
+  print aWeb.a_button('term', TARGET='_blank', HREF='sdcp.cgi?call=nova_console&name=%s&id=%s'%(qserver,server['id']), TITLE='New window console')
+  print aWeb.button('term-frame', DIV='div_content_right', URL='sdcp.cgi?call=nova_console&inline=yes&id=%s'%server['id'], TITLE='Embedded console')
   print aWeb.button('delete', DIV='div_content_right', URL=actionurl.format('remove'), MSG='Are you sure you want to delete VM?', SPIN='true')
   if not server['OS-EXT-STS:task_state']:
    if   server['status'] == 'ACTIVE':
@@ -189,8 +189,6 @@ def console(aWeb):
  cookie = aWeb.cookie_unjar('nova')
  token  = cookie.get('token')
  if not token:
-  if aWeb['headers'] == 'no':
-   aWeb.put_html('Openstack Nova')
   print "Not logged in"
   return
  controller = OpenstackRPC(cookie.get('controller'),token)
@@ -200,7 +198,7 @@ def console(aWeb):
   url = data['remote_console']['url']
   # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
   url = "http://" + cookie.get('controller') + ":" + url[7:].partition(':')[2]
-  if not aWeb['headers']:
+  if aWeb['inline']:
    print "<iframe id='console_embed' src='{}' STYLE='width: 100%; height: 100%;'></iframe>".format(url)
   else:
    aWeb.put_redirect("{}&title={}".format(url,aWeb['name']))
