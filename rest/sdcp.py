@@ -65,61 +65,6 @@ def logs_get(aDict):
  return ret
 
 #
-def sync_devicetypes(aDict):
- from os import listdir, path as ospath
- from importlib import import_module
- from ..core.dbase import DB
- path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','devices'))
- types = []
- new   = 0
- for file in listdir(path):
-  pyfile = file[:-3]
-  if file[-3:] == ".py" and pyfile[:2] != "__":
-   try:
-    mod = import_module("sdcp.devices.{}".format(pyfile))
-    type = getattr(mod,'__type__',None)
-    if type:
-     types.append({'name':pyfile, 'base':type })
-   except:
-    pass
- with DB() as db:
-  sql ="INSERT INTO devicetypes(name,base) VALUES ('{}','{}') ON DUPLICATE KEY UPDATE id = id"
-  for type in types:
-   try:
-    type['db'] = db.do(sql.format(type['name'],type['base']))
-    new += type['db']
-   except Exception,e :
-    print "DB:{}".format(str(e))
-
- return {'types':types, 'found':len(types), 'new':new, 'path':path }
-
-#
-def sync_menuitems(aDict):
- from os import listdir, path as ospath
- from importlib import import_module
- from ..core.dbase import DB
- path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','site'))
- items = []
- for file in listdir(path):
-  pyfile = file[:-3]
-  if file[-3:] == ".py" and pyfile[:2] != "__":
-   try:
-    mod  = import_module("sdcp.site.{}".format(pyfile))
-    icon = getattr(mod,'__icon__',None)
-    if not icon: continue
-    else:  items.append({'name':pyfile, 'icon':icon})
-   except: pass
- new   = 0
- with DB() as db:
-  sql ="INSERT INTO resources(title,href,icon,type,user_id,inline) VALUES ('{}','{}','{}','menuitem',1,1) ON DUPLICATE KEY UPDATE id = id"
-  for item in items:
-   try:
-    item['db'] = db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon']))
-    new += item['db']
-   except: pass
- return {'menuitems':items, 'found':len(items), 'new':new, 'path':path }
-
-#
 # db_table(columns)
 # - columns is a string list x,y,z,..
 #
@@ -173,6 +118,7 @@ def mac_sync(aDict):
 def install(aDict):
  from sys import path as syspath
  from os import chmod, remove, listdir, path as ospath
+ from importlib import import_module
  from shutil import copy
  from time import time
  import pip
@@ -181,7 +127,9 @@ def install(aDict):
  from .. import SettingsContainer as SC
 
  packagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
- logger  = ospath.abspath(ospath.join(packagedir,'core','logger.py'))
+ devdir = ospath.abspath(ospath.join(packagedir,'devices'))
+ sitedir= ospath.abspath(ospath.join(packagedir,'site'))
+ logger = ospath.abspath(ospath.join(packagedir,'core','logger.py'))
  ret = {'res':'NOT_OK'}
 
  modes = SC.generic['mode'].split(',')
@@ -216,14 +164,53 @@ def install(aDict):
    ret['error'] = str(e)
    ret['ERD'] = 'NOT_OK'
 
+ # Database diffs
  ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
  with DB() as db:
   # Insert required settings, if they do not exist (!) ZEB: Todo
   ret['DB']['settings'] = 0
 
- ret['new_devicetypes'] = sync_devicetypes(None)['new']
- ret['new_menuitems']   = sync_menuitems(None)['new']
+ # Device types
+ device_types = []
+ for file in listdir(devdir):
+  pyfile = file[:-3]
+  if file[-3:] == ".py" and pyfile[:2] != "__":
+   try:
+    mod = import_module("sdcp.devices.{}".format(pyfile))
+    type = getattr(mod,'__type__',None)
+    if type:
+     device_types.append({'name':pyfile, 'base':type })
+   except: pass
+ ret['device_found'] = len(device_types)
+ ret['device_new'] = 0
+ with DB() as db:
+  sql ="INSERT INTO devicetypes(name,base) VALUES ('%s','%s') ON DUPLICATE KEY UPDATE id = id"
+  for type in device_types:
+   try:    ret['device_new'] += db.do(sql%(type['name'],type['base']))
+   except: ret['device_type_errors'] = True
+
+ # Menu items
+ menuitems = []
+ for file in listdir(sitedir):
+  pyfile = file[:-3]
+  if file[-3:] == ".py" and pyfile[:2] != "__":
+   try:
+    mod  = import_module("sdcp.site.%s"%(pyfile))
+    icon = getattr(mod,'__icon__',None)
+    if icon:
+     items.append({'name':pyfile, 'icon':icon})
+   except: pass
+ ret['menuitems_new'] = 0
+ with DB() as db:
+  sql ="INSERT INTO resources(title,href,icon,type,user_id,inline) VALUES ('{}','{}','{}','menuitem',1,1) ON DUPLICATE KEY UPDATE id = id"
+  for item in menuitems:
+   try:    ret['menuitems_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon']))
+   except: ret['menuitems_errors'] = True
 
  # Done
  ret['res'] = 'OK'
  return ret
+
+
+
+
