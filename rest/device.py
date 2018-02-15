@@ -269,7 +269,8 @@ def discover(aDict):
   - clear (optional)
 
  Extra:
- """ from ..core.logger import log
+ """
+ from ..core.logger import log
  log("device_discover({})".format(aDict))
  from time import time
  from threading import Thread, BoundedSemaphore
