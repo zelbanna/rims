@@ -112,7 +112,7 @@ def mac_sync(aDict):
   pass
  return ret
 
-
+#
 #
 #
 def install(aDict):
@@ -211,6 +211,49 @@ def install(aDict):
  ret['res'] = 'OK'
  return ret
 
+#
+#
+#
+def rest_analyze(restfile):
+ from os import path as ospath
+ restdir = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','rest'))
+ ret = {'file':restfile,'functions':[]}
+ data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[]} 
 
+ with open(ospath.abspath(ospath.join(restdir,restfile)),'r') as file:
+  line_no = 0
+  for line in file:
+   line_no += 1
+   line = line.rstrip()
+   if line[0:4] == 'def ':
+    if data['function']:
+     ret['functions'].append(data)
+     data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[]}
+    data['function'] = line[4:-8].lstrip()
+   elif data['function'] and "aDict" in line:
+     parts = line.split('aDict')
+     # print "%s:%s"%(data['function'],parts)
+     for part in parts[1:]:
+      if part[0:2] == "['":
+       end = part.index("]")
+       argument = part[2:end-1]
+       data['required'][argument] = (data['optional'].get(argument) is None) 
+      elif part[0:6] == ".get('":
+       end = part[6:].index("'")
+       argument = part[6:6+end]
+       if not data['required'].get(argument):
+        data['optional'][argument] = True
+      elif part[0:7]== ".keys()" or part[0] == ")":
+       pass
+      elif part[0:6] == ".pop('":
+       end = part[6:].index("'")
+       argument = part[6:6+end]
+       if not data['required'].get(argument) and not data['optional'].get(argument):
+        data['pop'][argument] = True
+      else:
+       data['undecoded'].append({'part':part,'line':line_no})
 
+  if data['function']:
+   ret['functions'].append(data)
+ return ret
 
