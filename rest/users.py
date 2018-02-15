@@ -10,6 +10,12 @@ __status__ = "Production"
 from ..core.dbase import DB
 
 def list(aDict):
+ """Function description for list TBD
+
+ Args:
+
+ Extra:
+ """
  ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT id, alias, name, email FROM users ORDER by name")
@@ -19,6 +25,19 @@ def list(aDict):
 #
 #
 def info(aDict):
+ """Function description for info TBD
+
+ Args:
+  - id (required, x|'new')
+  - name (optional)
+  - view_public (optional)
+  - menulist (optional)
+  - alias (optional)
+  - email (optional)
+
+ Extra:
+  - op (pop)
+ """
  ret = {'id':aDict['id']}
  id = aDict['id']
  op = aDict.pop('op',None)
@@ -37,6 +56,13 @@ def info(aDict):
 #
 #
 def delete(aDict):
+ """Function description for delete TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
  with DB() as db:
   res = db.do("DELETE FROM users WHERE id = '%s'"%aDict['id'])
  return { 'deleted':res }
@@ -44,11 +70,19 @@ def delete(aDict):
 #
 #
 def menu(aDict):
+ """Function description for menu TBD
+
+ Args:
+  - id (required)
+  - dict (optional)
+
+ Extra:
+ """
  ret = []
  with DB() as db:
   db.do("SELECT menulist FROM users WHERE id = '%s'"%aDict['id'])
   menulist = db.get_val('menulist')
   select = "type = 'menuitem'" if menulist == 'default' else "id IN (%s) ORDER BY FIELD(id,%s)"%(menulist,menulist)
   db.do("SELECT icon, title, href, inline FROM resources WHERE %s"%select)
-  ret = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict['dict'])
+  ret = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
