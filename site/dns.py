@@ -14,7 +14,7 @@ from .. import SettingsContainer as SC
 #
 def list(aWeb):
  domains = aWeb.rest_generic(SC.dns['url'], "%s_domains"%SC.dns['type'])
- local   = aWeb.rest_call("sdcpdns_domains",{'index':'id'})
+ local   = aWeb.rest_call("sdcpdns_domains",{'dict':'id'})
  print "<ARTICLE><P>Domains</P>"
  print "<DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_list')
@@ -199,7 +199,7 @@ def load(aWeb):
 def consistency(aWeb):
  print "<ARTICLE><P>DNS Consistency</P><SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Value</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Key</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
- domains = aWeb.rest_call("sdcpdns_domains",{'index':'name'})['domains']
+ domains = aWeb.rest_call("sdcpdns_domains",{'dict':'name'})['domains']
  for type in ['a','ptr']:
   records = aWeb.rest_generic(SC.dns['url'],"{}_records".format(SC.dns['type']),{'type':type})['records']
   tid = "{}_id".format(type)

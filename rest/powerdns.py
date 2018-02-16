@@ -79,7 +79,7 @@ def domains(aDict):
 
  Args:
   - filter (optional)
-  - index (optional) => dict, TODO
+  - dict (optional)
 
  Extra:
  """
@@ -90,7 +90,7 @@ def domains(aDict):
    ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
   else:      
    ret['xist'] = db.do("SELECT domains.* FROM domains")
-  ret['domains'] = db.get_rows() if not aDict.get('index') else db.get_dict(aDict.('index'))
+  ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.('dict'))
  return ret
 
 #
@@ -212,16 +212,16 @@ def record_update(aDict):
  """Function description for record_update TBD
 
  Args:
+  - id (required) - id/0/'new'
   - name (required)
   - content (required)
   - ttl (required)
   - change_date (required)
   - type (required)
   - domain_id (required)
-  - ttl (optional - required actually), TODO, rework how to build the dict
+  - ttl (optional)
 
  Extra:
-  - id (pop) TODO, required, id/0/'new'
  """
  log("powerdns_record_update({})".format(aDict))
  from time import strftime

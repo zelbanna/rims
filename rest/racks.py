@@ -63,12 +63,11 @@ def infra(aDict):
  """Function description for infra TBD
 
  Args:
-  - id (required - optional indication)
+  - id (optional), id of rack to get specific information on, 'new'|<x>, if left out, all racks are collected
   - pdus (optional)
   - consoles (optional)
   - key (optional)
   - images (optional)
-  - id (optional)
   - types (optional)
 
  Extra:
@@ -77,7 +76,7 @@ def infra(aDict):
  key = aDict.get('key')
  with DB() as db:
   if aDict.get('id'):
-   if aDict['id'] == 'new':
+   if aDict.get('id') == 'new':
     ret['rackxist'] = 0
     ret['rack']     = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None, 'image_url':None }
    else:

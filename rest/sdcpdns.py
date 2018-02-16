@@ -39,7 +39,7 @@ def domains(aDict):
 
  Args:
   - filter (optional)
-  - index (optional) TODO
+  - dict (optional)
 
  Extra:
   - filter:forward/reverse, index
@@ -50,7 +50,7 @@ def domains(aDict):
    ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
   else:
    ret['xist'] = db.do("SELECT domains.* FROM domains")
-  ret['domains'] = db.get_rows() if not aDict.get('index') else db.get_dict(aDict.get('index'))
+  ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 
 #

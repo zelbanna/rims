@@ -28,7 +28,7 @@ def info(aDict):
  """Function description for info TBD
 
  Args:
-  - id (required, x|'new')
+  - id (required) -  <x|'new'>
   - name (optional)
   - view_public (optional)
   - menulist (optional)

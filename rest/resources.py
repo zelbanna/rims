@@ -15,12 +15,11 @@ def list(aDict):
  """Function description for list TBD
 
  Args:
-  - view_public (required - optional indication)
+  - user_id (required)
   - dict (required)
   - type (optional)
   - view_public (optional)
-  - user_id (optional)
-  - dict (optional - required actually)
+  - dict (optional)
 
  Extra:
  """
@@ -30,10 +29,10 @@ def list(aDict):
    db.do("SELECT view_public FROM users WHERE id = %s"%ret['user_id'])
    ret['view_public'] = (db.get_val('view_public') == 1)
   else:
-   ret['view_public'] = aDict['view_public']
+   ret['view_public'] = aDict.get('view_public')
   select = "%s(user_id = %s %s)"%("type = '%s' AND "%ret['type'] if ret['type'] else "", ret['user_id'],"" if not ret['view_public'] else 'OR private = 0')
   ret['xist'] = db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE %s ORDER BY type,title"%select)
-  ret['data'] = db.get_dict(aDict['dict']) if aDict.get('dict') else db.get_rows()
+  ret['data'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
  return ret
 
 #
