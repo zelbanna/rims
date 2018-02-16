@@ -90,7 +90,7 @@ def domains(aDict):
    ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
   else:      
    ret['xist'] = db.do("SELECT domains.* FROM domains")
-  ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.('dict'))
+  ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 
 #
@@ -168,8 +168,6 @@ def records(aDict):
  """Function description for records TBD
 
  Args:
-  - type (required - optional indication) TODO
-  - domain_id (required - optional indication) TODO
   - type (optional)
   - domain_id (optional)
 
@@ -179,9 +177,9 @@ def records(aDict):
  ret = {}
  select = []
  if aDict.get('domain_id'):
-  select.append("domain_id = %s"%aDict['domain_id'])
+  select.append("domain_id = %s"%aDict.get('domain_id'))
  if aDict.get('type'):
-  select.append("type = '%s'"%aDict['type'].upper())
+  select.append("type = '%s'"%aDict.get('type').upper())
  tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   ret['count'] = db.do("SELECT id, domain_id AS dom_id, name, type, content,ttl,change_date FROM records %s ORDER BY type DESC, name"%tune)
