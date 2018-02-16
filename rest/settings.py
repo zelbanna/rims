@@ -37,15 +37,16 @@ def info(aDict):
  """Function description for info TBD
 
  Args:
-  - id (required)
   - description (required)
   - section (required)
+  - required (required)
   - value (required)
   - parameter (required)
+  - id (required)
   - required (conditionally required)
+  - op (optional)
 
  Extra:
-  - op (pop)
  """
  ret = {}
  id = aDict['id']
