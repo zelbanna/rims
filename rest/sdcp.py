@@ -234,6 +234,7 @@ def rest_analyze(aDict):
     data['arg'] = line[name_end+1:-2]
     data['function'] = line[4:name_end].lstrip()
    elif data['function'] and data['arg'] in line:
+    try:
      parts = line.split('aDict')
      # print "%s:%s"%(data['function'],parts)
      for part in parts[1:]:
@@ -256,7 +257,8 @@ def rest_analyze(aDict):
         data['pop'][argument] = True
       else:
        data['undecoded'].append({'part':part,'line':line_no})
-
+    except Exception, e:
+     data['undecoded'].append({'error':str(e),'line':line_no})
   if data['function']:
    ret['functions'].append(data)
  return ret

@@ -7,18 +7,37 @@ __author__ = "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__ = "Production"
 
-from ..core.dbase import DB
 from ..devices.avocent import Device
 
 #
 #
 def update(aDict):
+ """Function description for update TBD
+
+ Args:
+  - slot (required)
+  - ip (required)
+  - unit (required)
+  - text (required)
+
+ Extra:
+ """
  avocent = Device(aDict['ip'])
  return avocent.set_name(int(aDict['slot']),int(aDict['unit']),aDict['text'])
 
 #
 #
 def info(aDict):
+ """Function description for info TBD
+
+ Args:
+  - ip (required)
+  - id (required)
+  - op (optional)
+
+ Extra:
+ """
+ from ..core.dbase import DB
  ret = {}
  with DB() as db:
   if aDict.get('op') == 'lookup':

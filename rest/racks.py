@@ -9,8 +9,16 @@ __status__ = "Production"
 
 from ..core.dbase import DB
 
-
+#
+#
 def list(aDict):
+ """Function description for list TBD
+
+ Args:
+  - sort (optional)
+
+ Extra:
+ """
  ret = []
  sort = aDict.get('sort','id')
  with DB() as db:
@@ -18,14 +26,20 @@ def list(aDict):
   ret = db.get_rows()
  return ret
 
-
 #
-# info([id:<rackid>])
+#
 def info(aDict):
+ """Function description for info TBD
+
+ Args:
+  - id (optional)
+
+ Extra:
+ """
  ret = {'name': None, 'console':[], 'pdu':[] }
  with DB() as db:
   if aDict.get('id'):
-   res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aDict['id'])
+   res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aDict.get('id'))
    select = db.get_row()
    ret['name'] = select.pop('name',"Noname")
    if select.get('pdu_1') == select.get('pdu_2'):
@@ -46,6 +60,19 @@ def info(aDict):
 #
 #
 def infra(aDict):
+ """Function description for infra TBD
+
+ Args:
+  - id (required - optional indication)
+  - pdus (optional)
+  - consoles (optional)
+  - key (optional)
+  - images (optional)
+  - id (optional)
+  - types (optional)
+
+ Extra:
+ """
  ret =  {}
  key = aDict.get('key')
  with DB() as db:
@@ -85,6 +112,14 @@ def infra(aDict):
 #
 #
 def devices(aDict):
+ """Function description for devices TBD
+
+ Args:
+  - id (required)
+  - sort (optional)
+
+ Extra:
+ """
  ret = {'sort':aDict.get('sort','devices.id')}
  id = aDict['id']
  with DB() as db:
@@ -97,6 +132,19 @@ def devices(aDict):
 #
 #
 def update(aDict):
+ """Function description for update TBD
+
+ Args:
+  - console (required)
+  - name (required)
+  - image_url (required)
+  - pdu_1 (required)
+  - pdu_2 (required)
+  - id (required)
+  - size (required)
+
+ Extra:
+ """
  ret = {'id':aDict['id']}
  with DB() as db:
   if aDict['id'] == 'new':
@@ -109,6 +157,13 @@ def update(aDict):
 #
 #
 def remove(aDict):
+ """Function description for remove TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
  with DB() as db:
   deleted = db.do("DELETE FROM racks WHERE id = %s"%aDict['id'])
  return deleted

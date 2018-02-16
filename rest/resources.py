@@ -9,7 +9,21 @@ __status__ = "Production"
 
 from ..core.dbase import DB
 
+#
+#
 def list(aDict):
+ """Function description for list TBD
+
+ Args:
+  - view_public (required - optional indication)
+  - dict (required)
+  - type (optional)
+  - view_public (optional)
+  - user_id (optional)
+  - dict (optional - required actually)
+
+ Extra:
+ """
  ret = {'user_id':aDict.get('user_id',"1"), 'type':aDict.get('type') }
  with DB() as db:
   if aDict.get('view_public') is None:
@@ -25,6 +39,21 @@ def list(aDict):
 #
 #
 def info(aDict):
+ """Function description for info TBD
+
+ Args:
+  - id (required)
+  - op (optional)
+  - user_id (required conditionally)
+  - title (required conditionally)
+  - private (required conditionally)
+  - href (required conditionally)
+  - inline (required conditionally)
+  - type (required conditionally)
+  - icon (required conditionally)
+
+ Extra:
+ """
  ret = {'id':aDict['id']}
  id = aDict['id']
  op = aDict.pop('op',None)
@@ -43,6 +72,13 @@ def info(aDict):
 #
 #
 def delete(aDict):
+ """Function description for delete TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
  with DB() as db:
   res = db.do("DELETE FROM resources WHERE id = '%s'"%aDict['id'])
  return { 'deleted':res }

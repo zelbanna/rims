@@ -11,6 +11,13 @@ __status__ = "Production"
 #
 #
 def leases(aDict):
+ """Function description for leases TBD
+
+ Args:
+  - type (required)
+
+ Extra:
+ """
  from ..core.logger import log
  from ..core import genlib as GL
  from .. import SettingsContainer as SC
@@ -39,9 +46,14 @@ def leases(aDict):
   return {'data':result }
 
 #
-# Update function - reload the DHCP server to use new info
-# - entries is a list of dict objects containing hostname, mac, ip etc
 def update_server(aDict):
+ """Function description for update_server:  reload the DHCP server to use new info
+
+ Args:
+  - entries (required). entries is a list of dict objects containing hostname, mac, ip etc
+
+ Extra:
+ """
  from .. import SettingsContainer as SC
  entries = aDict['entries']
  # Create new file

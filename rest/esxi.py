@@ -9,13 +9,32 @@ __status__ = "Production"
 
 #
 def list(aDict):
+ """Function description for list TBD
+
+ Args:
+  - ip (required)
+  - sort (optional)
+
+ Extra:
+ """
  from ..devices.esxi import Device
- with Device(aDict['ip']) as esxi:
-  return esxi.get_vm_list(aDict.get('sort','name'))
+ esxi = Device(aDict['ip'])
+ return esxi.get_vm_list(aDict.get('sort','name'))
 
 #
 #
 def op(aDict):
+ """Function description for op TBD
+
+ Args:
+  - ip (required)
+  - user_id (required)
+  - id (required)
+  - next-state (required)
+  - snapshot (optional)
+
+ Extra:
+ """
  ret = {'id':aDict['id'],'res':'OK'}
  from ..devices.esxi import Device
  with Device(aDict['ip']) as esxi:
@@ -46,6 +65,14 @@ def op(aDict):
 #
 #
 def logs(aDict):
+ """Function description for logs TBD
+
+ Args:
+  - hostname (required)
+  - count (optional)
+
+ Extra:
+ """
  ret = {'res':'OK'}
  hostname = aDict['hostname']
  count = aDict.get('count','30')
@@ -61,6 +88,15 @@ def logs(aDict):
 #
 #
 def snapshots(aDict):
+ """Function description for snapshots TBD
+
+ Args:
+  - ip (required)
+  - user_id (required)
+  - id (required)
+
+ Extra:
+ """
  ret = {'res':'OK', 'data':[],'highest':0}
  from ..devices.esxi import Device
  with Device(aDict['ip']) as esxi:

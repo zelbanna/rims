@@ -13,9 +13,14 @@ from ..core.logger import log
 
 ############################### Tools #################################
 #
-# Call removes name duplicates.. (assume order by name => duplicate names :-))
 #
 def dedup(aDict):
+ """Function description for dedup. Removes name duplicates.. (assume order by name => duplicate names :-))
+
+ Args:
+
+ Extra:
+ """
  log("powerdns_dedup({})".format(aDict))
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
@@ -32,9 +37,15 @@ def dedup(aDict):
  return {'removed':remove}
 
 #
-# dns top lookups
 #
 def top(aDict):
+ """Function description for top TBD
+
+ Args:
+  - count (optional)
+
+ Extra:
+ """
  log("powerdns_top({})".format(aDict))
  def GL_get_host_name(aIP):
   from socket import gethostbyaddr
@@ -64,23 +75,34 @@ def top(aDict):
 #
 #
 def domains(aDict):
+ """Function description for domains TBD
+
+ Args:
+  - filter (optional)
+  - index (optional) => dict, TODO
+
+ Extra:
+ """
  log("powerdns_domains({})".format(aDict))
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if aDict.get('filter'):
-   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict['filter'] == 'reverse' else "NOT"))
+   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
   else:      
    ret['xist'] = db.do("SELECT domains.* FROM domains")
-  if aDict.get('index'):
-   ret['domains'] = db.get_dict(aDict['index'])
-  else:
-   ret['domains'] = db.get_rows()
+  ret['domains'] = db.get_rows() if not aDict.get('index') else db.get_dict(aDict.('index'))
  return ret
 
 #
-# domain_lookup (id, domain_id)
 #
 def domain_lookup(aDict):
+ """Function description for domain_lookup TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
  log("powerdns_domain_lookup({})".format(aDict))
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
@@ -92,7 +114,18 @@ def domain_lookup(aDict):
  return ret
 
 #
+#
 def domain_update(aDict):
+ """Function description for domain_update TBD
+
+ Args:
+  - type (required)
+  - master (required)
+  - id (required)
+  - name (required)
+
+ Extra:
+ """
  log("powerdns_domain_update({})".format(aDict))
  ret = {'result':'OK'}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
@@ -115,6 +148,13 @@ def domain_update(aDict):
 #
 #
 def domain_delete(aDict):
+ """Function description for domain_delete TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
  log("powerdns_domain_delete({})".format(aDict))
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
@@ -123,9 +163,18 @@ def domain_delete(aDict):
 
 #################################### Records #######################################
 #
-# records(type <'A'|'PTR'>,  domain_id )
 #
 def records(aDict):
+ """Function description for records TBD
+
+ Args:
+  - type (required - optional indication) TODO
+  - domain_id (required - optional indication) TODO
+  - type (optional)
+  - domain_id (optional)
+
+ Extra:
+ """
  log("powerdns_get_records({})".format(aDict))
  ret = {}
  select = []
@@ -140,9 +189,16 @@ def records(aDict):
  return ret
 
 #
-# record_lookup (id, domain_id)
 #
 def record_lookup(aDict):
+ """Function description for record_lookup TBD
+
+ Args:
+  - id (required)
+  - domain_id (required)
+
+ Extra:
+ """
  log("powerdns_record_lookup({})".format(aDict))
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
@@ -153,24 +209,46 @@ def record_lookup(aDict):
 #
 # id/0/'new',dom_id,name,content,type (ttl)
 def record_update(aDict):
+ """Function description for record_update TBD
+
+ Args:
+  - name (required)
+  - content (required)
+  - ttl (required)
+  - change_date (required)
+  - type (required)
+  - domain_id (required)
+  - ttl (optional - required actually), TODO, rework how to build the dict
+
+ Extra:
+  - id (pop) TODO, required, id/0/'new'
+ """
  log("powerdns_record_update({})".format(aDict))
  from time import strftime
- 
- aDict['change_date'] = strftime("%Y%m%d%H")
- aDict['ttl']  = aDict.get('ttl','3600')
- aDict['type'] = aDict['type'].upper()
- ret = {'id':aDict.pop('id',None)}
+
+ args = aDict 
+ args['change_date'] = strftime("%Y%m%d%H")
+ args['ttl']  = aDict.get('ttl','3600')
+ args['type'] = aDict['type'].upper()
+ ret = {'id':aDict['id']}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if ret['id'] == 'new' or str(ret['id']) == '0':
-   ret['xist'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date,prio) VALUES ({},'{}','{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'],aDict['ttl'],aDict['change_date']))
+   ret['xist'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date,prio) VALUES ({},'{}','{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(args['domain_id'],args['name'],args['content'],args['type'],args['ttl'],args['change_date']))
    ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
   else:
-   ret['xist'] = db.do("UPDATE records SET domain_id = {}, name = '{}', content = '{}', type = '{}', ttl = '{}', change_date = '{}',prio = 0 WHERE id = {}".format(aDict['domain_id'],aDict['name'],aDict['content'],aDict['type'],aDict['ttl'],aDict['change_date'],ret['id']))
+   ret['xist'] = db.do("UPDATE records SET domain_id = {}, name = '{}', content = '{}', type = '{}', ttl = '{}', change_date = '{}',prio = 0 WHERE id = {}".format(args['domain_id'],args['name'],args['content'],args['type'],args['ttl'],args['change_date'],ret['id']))
  return ret
 
 #
 #
 def record_delete(aDict):
+ """Function description for record_delete TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
  log("powerdns_record_delete({})".format(aDict))
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
