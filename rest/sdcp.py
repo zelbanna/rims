@@ -7,9 +7,14 @@ __author__ = "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__ = "Production"
 
-#
-#
 def application(aDict):
+ """Function description for application TBD
+
+ Args:
+
+ Extra:
+  -  .iteritems()]) (undecoded - line:22) TODO
+ """
  from ..core.dbase import DB
  """ Default login information """
  ret = {'message':"Welcome to the Management Portal",'parameters':[]}
@@ -23,9 +28,14 @@ def application(aDict):
  return ret
 
 #
-# Clear logs
 #
 def logs_clear(aDict):
+ """Function description for logs_clear TBD
+
+ Args:
+
+ Extra:
+ """
  from ..core.logger import log as logging
  from ..core.dbase import DB
  ret = {} 
@@ -42,9 +52,15 @@ def logs_clear(aDict):
  return ret
 
 #
-# - count: number of lines
 #
 def logs_get(aDict):
+ """Function description for logs_get TBD
+
+ Args:
+  - count (optional)
+
+ Extra:
+ """
  from ..core.dbase import DB
  ret = {}
  with DB() as db:
@@ -65,10 +81,16 @@ def logs_get(aDict):
  return ret
 
 #
-# db_table(columns)
-# - columns is a string list x,y,z,..
 #
 def db_table(aDict):
+ """Function description for db_table TBD
+
+ Args:
+  - table (optional)
+  - columns (optional) - columns is a string list x,y,z,..
+
+ Extra:
+ """
  from ..core.dbase import DB
  cols = aDict.get('columns','*')
  tbl  = aDict.get('table','devices')
@@ -80,15 +102,26 @@ def db_table(aDict):
 
 #
 #
-#
 def db_dump(aDict):
+ """Function description for db_dump TBD
+
+ Args:
+  - mode (optional)
+
+ Extra:
+ """
  from ..core.mysql import dump
  return dump({'mode':aDict.get('mode','structure')})
 
 #
-# Linux oriented mac sync
 #
 def mac_sync(aDict):
+ """Function description for mac_sync TBD
+
+ Args:
+
+ Extra:
+ """
  from ..core.genlib import mac2int
  from ..core.dbase import DB
  ret = []
@@ -114,8 +147,13 @@ def mac_sync(aDict):
 
 #
 #
-#
 def install(aDict):
+ """Function description for install. Installation of SDCP tools and DB entries
+
+ Args:
+
+ Extra:
+ """
  from sys import path as syspath
  from os import chmod, remove, listdir, path as ospath
  from importlib import import_module
@@ -213,8 +251,16 @@ def install(aDict):
 
 #
 #
-#
 def rest_analyze(aDict):
+ """Function description for rest_analyze. Analyzes REST files to deduce parameter inputs
+
+ Args:
+  - file (required)
+
+ Extra:
+  -  '} (undecoded - line:221)
+  -  ') (undecoded - line:238)
+ """
  from os import path as ospath
  restdir = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','rest'))
  ret = {'file':aDict['file'],'functions':[]}

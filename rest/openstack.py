@@ -7,7 +7,18 @@ __author__ = "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__ = "Production"
 
+#
+#
 def application(aDict):
+ """Function description for application. Delivers the information for SDCP login to redirect to the openstack App.
+
+ Args:
+  - controller (required)
+  - appformix (optional)
+  - name (optional)
+
+ Extra:
+ """
  from .. import SettingsContainer as SC
  from ..core.dbase import DB
  from ..devices.openstack import OpenstackRPC
@@ -35,6 +46,16 @@ def application(aDict):
 #
 #
 def authenticate(aDict):
+ """Function description for authenticate TBD
+
+ Args:
+  - username (required)
+  - project_id (required)
+  - password (required)
+  - project_name (required)
+
+ Extra:
+ """
  from ..devices.openstack import OpenstackRPC
  from ..core.logger import log
  ret = {}

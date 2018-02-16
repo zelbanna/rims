@@ -12,6 +12,12 @@ from .. import SettingsContainer as SC
 #
 #
 def update_server(aDict):
+ """Function description for update_server TBD
+
+ Args:
+
+ Extra:
+ """
  from device import list_mac
  ret = {}
  macs = list_mac({})
@@ -30,6 +36,13 @@ def update_server(aDict):
 #
 #
 def leases(aDict):
+ """Function description for leases TBD
+
+ Args:
+  - type (required)
+
+ Extra:
+ """
  if SC.dhcp['node'] == 'master':
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dhcp['type'])
