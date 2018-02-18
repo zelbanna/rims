@@ -86,18 +86,25 @@ def update(aDict):
 
  Extra:
  """
- from ..core import genlib as GL
+ from struct import pack,unpack
+ from socket import inet_aton,inet_ntoa
+
+ def GL_ip2int(addr):
+  return unpack("!I", inet_aton(addr))[0]
+ def GL_int2ip(addr):
+  return inet_ntoa(pack("!I", addr))
+
  ret = {}
  # Check gateway
- low   = GL.ip2int(aDict['subnet'])
+ low   = GL_ip2int(aDict['subnet'])
  high  = low + 2**(32-int(aDict['mask'])) - 1
- try:    gwint = GL.ip2int(aDict['gateway'])
+ try:    gwint = GL_ip2int(aDict['gateway'])
  except: gwint = 0
  if (low < gwint and gwint < high):
   ret['gateway'] = aDict['gateway']
  else:
   gwint = low + 1
-  ret['gateway'] = GL.int2ip(gwint)
+  ret['gateway'] = GL_int2ip(gwint)
   ret['info'] = "illegal gateway"
  with DB() as db:
   if aDict['id'] == 'new':
@@ -110,22 +117,6 @@ def update(aDict):
 
 #
 #
-def remove(aDict):
- """Function docstring for remove TBD
-
- Args:
-  - id (required)
-
- Extra:
- """
- ret = {}
- with DB() as db:
-  ret['devices'] = db.do("DELETE FROM devices WHERE subnet_id = " + aDict['id'])
-  ret['xist']    = db.do("DELETE FROM subnets WHERE id = " + aDict['id'])
- return ret
- 
-#
-#
 def find(aDict):
  """Function docstring for find TBD
 
@@ -135,7 +126,11 @@ def find(aDict):
 
  Extra:
  """
- from ..core import genlib as GL
+ from struct import pack
+ from socket import inet_ntoa
+ def GL_int2ip(addr):
+  return inet_ntoa(pack("!I", addr))
+
  with DB() as db:
   db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(aDict['id']))
   sub = db.get_row()
@@ -152,13 +147,30 @@ def find(aDict):
    if count > 1:
     start = ip
    else:
-    ret['ip'] = GL.int2ip(ip)
+    ret['ip'] = GL_int2ip(ip)
     break
   else:
    if count == 2:
-    ret['start'] = GL.int2ip(start)
-    ret['end'] = GL.int2ip(start+int(aDict.get('consecutive'))-1)
+    ret['start'] = GL_int2ip(start)
+    ret['end'] = GL_int2ip(start+int(aDict.get('consecutive'))-1)
     break
    else:
     count = count - 1
  return ret
+
+#
+#
+def delete(aDict):
+ """Function docstring for delete TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
+ ret = {}
+ with DB() as db:
+  ret['devices'] = db.do("DELETE FROM devices WHERE subnet_id = " + aDict['id'])
+  ret['xist']    = db.do("DELETE FROM subnets WHERE id = " + aDict['id'])
+ return ret
+ 

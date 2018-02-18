@@ -47,8 +47,11 @@ def discover():
  from threading import Lock, Thread, BoundedSemaphore
 
  def _detect(aentry, alock, asema,aplugfile):
-  from ..core import genlib as GL
-  if not GL.ping_os(aentry['ip']):
+  def GL_ping_os(ip):
+   from os import system
+   return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
+
+  if not GL_ping_os(aentry['ip']):
    asema.release()
    return False
 

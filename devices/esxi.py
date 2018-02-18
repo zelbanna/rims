@@ -30,7 +30,12 @@ class Device(GenericDevice):
   GenericDevice.__init__(self,aIP,aID)
   from ..core import genlib as GL
   # Override log file
-  self._hostname = GL.get_host_name(aIP)
+  def GL_get_host_name(aIP):
+   from socket import gethostbyaddr
+   try:    return gethostbyaddr(aIP)[0].partition('.')[0]
+   except: return None
+
+  self._hostname = GL_get_host_name(aIP)
   self._logfile = SC.esxi['logformat'].format(self._hostname)
   self._sshclient = None
   self.statefile = SC.esxi['shutdownfile'].format(self._hostname) 

@@ -1,6 +1,6 @@
 """Module docstring.
 
-Generic Library
+Generic Library. For reference, make them "inline"
 
 """
 __author__ = "Zacharias El Banna"

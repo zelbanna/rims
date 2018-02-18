@@ -18,8 +18,12 @@ def leases(aDict):
 
  Extra:
  """
+ def GL_ip2int(addr):
+  from struct import unpack
+  from socket import inet_aton
+  return unpack("!I", inet_aton(addr))[0]
+
  from ..core.logger import log
- from ..core import genlib as GL
  from .. import SettingsContainer as SC
  result = []
  lease  = {}
@@ -42,7 +46,7 @@ def leases(aDict):
     lease[parts[0]] = " ".join(parts[2:])[:-1]
    elif parts[0] == 'client-hostname':
     lease['hostname'] = parts[1][:-1]
-  result.sort(key=lambda d: GL.ip2int(d['ip']))
+  result.sort(key=lambda d: GL_ip2int(d['ip']))
   return {'data':result }
 
 #

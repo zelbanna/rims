@@ -69,12 +69,15 @@ def list_mac(aDict):
 
  Extra:
  """
+ def GL_int2mac(aInt):
+  return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
+
  from ..core import genlib as GL
  with DB() as db:
   db.do("SELECT devices.id, CONCAT(hostname,'.',domains.name) as fqdn, INET_NTOA(ip) as ip, mac, subnet_id FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT mac = 0 ORDER BY ip")
   rows = db.get_rows()
  for row in rows:
-  row['mac'] = GL.int2mac(row['mac'])
+  row['mac'] = GL_int2mac(row['mac'])
  return rows
 
 #
@@ -151,12 +154,14 @@ def update(aDict):
  """
  from ..core.logger import log
  log("device_update({})".format(aDict))
- from ..core import genlib as GL
+ def GL_mac2int(aMAC):
+  try:    return int(aMAC.replace(":",""),16)
+  except: return 0
  id     = aDict['id']
  racked = aDict.get('racked')
  aDict.pop('id',None)
  aDict.pop('racked',None)
- try: aDict['devices_mac'] = GL.mac2int(aDict.pop('devices_mac','00:00:00:00:00:00'))
+ try: aDict['devices_mac'] = GL_mac2int(aDict.pop('devices_mac','00:00:00:00:00:00'))
  except: pass
 
  ret    = {'data':{}}
@@ -206,9 +211,16 @@ def new(aDict):
  """
  from ..core.logger import log
  log("device_new({})".format(aDict))
- from ..core import genlib as GL
+ def GL_ip2int(addr):
+  from struct import unpack
+  from socket import inet_aton
+  return unpack("!I", inet_aton(addr))[0]
+ def mac2int(aMAC):
+  try:    return int(aMAC.replace(":",""),16)
+  except: return 0
+
  ip    = aDict.get('ip')
- ipint = GL.ip2int(ip)
+ ipint = GL_ip2int(ip)
  subnet_id = aDict.get('subnet_id')
  ret = {'info':None}
  with DB() as db:
@@ -220,7 +232,7 @@ def new(aDict):
   else:
    xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE subnet_id = {} AND (ip = {} OR hostname = '{}')".format(subnet_id,ipint,aDict['hostname']))
    if xist == 0:
-    mac = GL.mac2int(aDict.get('mac',0))
+    mac = GL_mac2int(aDict.get('mac',0))
     ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,lookup,snmp,model) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname']))
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
@@ -270,22 +282,29 @@ def discover(aDict):
 
  Extra:
  """
- from ..core.logger import log
- log("device_discover({})".format(aDict))
  from time import time
  from threading import Thread, BoundedSemaphore
- from ..core import genlib as GL
- start_time = int(time())
- ip_start = aDict['start']
- ip_end   = aDict['end']
- ret = {'errors':0 }
-
+ from struct import pack,unpack
+ from socket import inet_ntoa,inet_aton
+ from ..core.logger import log
+ log("device_discover({})".format(aDict))
  def _tdetect(aip,adict,asema):
   res = detect({'ip':aip})
   if res['result'] == 'OK':
    adict[aip] = res['info']
   asema.release()
   return True
+
+ def GL_ip2int(addr):
+  return unpack("!I", inet_aton(addr))[0]
+
+ def GL_ipint2range(start,end):
+  return map(lambda addr: inet_ntoa(pack("!I", addr)), range(start,end + 1))
+
+ start_time = int(time())
+ ip_start = aDict['start']
+ ip_end   = aDict['end']
+ ret = {'errors':0 }
 
  with DB() as db:
 
@@ -299,8 +318,8 @@ def discover(aDict):
     db_old[item.get('ip')] = True
   try:
    sema = BoundedSemaphore(10)
-   for ip in GL.ipint2range(ip_start,ip_end):
-    if db_old.get(GL.ip2int(ip)):
+   for ip in GL_ipint2range(ip_start,ip_end):
+    if db_old.get(GL_ip2int(ip)):
      continue
     sema.acquire()
     t = Thread(target = _tdetect, args=[ip, db_new, sema, devtypes])
@@ -314,7 +333,7 @@ def discover(aDict):
    sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, hostname, snmp, model, type_id, lookup) VALUES ({},"+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
    for ip,entry in db_new.iteritems():
     log("device_discover - adding:{}->{}".format(ip,entry))
-    db.do(sql.format(GL.ip2int(ip), aDict['subnet_id'], entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['lookup']))
+    db.do(sql.format(GL_ip2int(ip), aDict['subnet_id'], entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['lookup']))
   except Exception as err:
    log("device discover: Error [{}]".format(str(err)))
    ret['info']   = "Error:{}".format(str(err))
@@ -451,9 +470,11 @@ def graph_detect(aDict):
 
  Extra:
  """
- from ..core import genlib as GL
+ def GL_ping_os(ip):
+  from os import system
+  return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
  ret = {'result':'NOT_OK'}
- if not GL.ping_os(aDict['ip']):
+ if not GL_ping_os(aDict['ip']):
   return ret
 
  activeinterfaces = []
