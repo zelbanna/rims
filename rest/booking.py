@@ -13,7 +13,7 @@ __status__ = "Production"
 from ..core.dbase import DB
 
 def update(aDict):
- """Function description for update TBD
+ """Function docstring for update TBD
 
  Args:
   - device_id (required)
@@ -36,7 +36,7 @@ def update(aDict):
 #
 #
 def list(aDict):
- """Function description for list TBD
+ """Function docstring for list TBD
 
  Args:
 

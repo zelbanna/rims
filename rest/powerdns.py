@@ -15,7 +15,7 @@ from ..core.logger import log
 #
 #
 def dedup(aDict):
- """Function description for dedup. Removes name duplicates.. (assume order by name => duplicate names :-))
+ """Function docstring for dedup. Removes name duplicates.. (assume order by name => duplicate names :-))
 
  Args:
 
@@ -39,7 +39,7 @@ def dedup(aDict):
 #
 #
 def top(aDict):
- """Function description for top TBD
+ """Function docstring for top TBD
 
  Args:
   - count (optional)
@@ -75,7 +75,7 @@ def top(aDict):
 #
 #
 def domains(aDict):
- """Function description for domains TBD
+ """Function docstring for domains TBD
 
  Args:
   - filter (optional)
@@ -96,7 +96,7 @@ def domains(aDict):
 #
 #
 def domain_lookup(aDict):
- """Function description for domain_lookup TBD
+ """Function docstring for domain_lookup TBD
 
  Args:
   - id (required)
@@ -116,7 +116,7 @@ def domain_lookup(aDict):
 #
 #
 def domain_update(aDict):
- """Function description for domain_update TBD
+ """Function docstring for domain_update TBD
 
  Args:
   - type (required)
@@ -148,7 +148,7 @@ def domain_update(aDict):
 #
 #
 def domain_delete(aDict):
- """Function description for domain_delete TBD
+ """Function docstring for domain_delete TBD
 
  Args:
   - id (required)
@@ -165,7 +165,7 @@ def domain_delete(aDict):
 #
 #
 def records(aDict):
- """Function description for records TBD
+ """Function docstring for records TBD
 
  Args:
   - type (optional)
@@ -189,7 +189,7 @@ def records(aDict):
 #
 #
 def record_lookup(aDict):
- """Function description for record_lookup TBD
+ """Function docstring for record_lookup TBD
 
  Args:
   - id (required)
@@ -207,7 +207,7 @@ def record_lookup(aDict):
 #
 # id/0/'new',dom_id,name,content,type (ttl)
 def record_update(aDict):
- """Function description for record_update TBD
+ """Function docstring for record_update TBD
 
  Args:
   - id (required) - id/0/'new'
@@ -240,7 +240,7 @@ def record_update(aDict):
 #
 #
 def record_delete(aDict):
- """Function description for record_delete TBD
+ """Function docstring for record_delete TBD
 
  Args:
   - id (required)

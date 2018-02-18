@@ -10,7 +10,7 @@ __status__ = "Production"
 from ..core.dbase import DB
 
 def list(aDict):
- """Function description for list TBD
+ """Function docstring for list TBD
 
  Args:
 
@@ -25,7 +25,7 @@ def list(aDict):
 #
 #
 def info(aDict):
- """Function description for info TBD
+ """Function docstring for info TBD
 
  Args:
   - id (required) -  <x|'new'>
@@ -56,7 +56,7 @@ def info(aDict):
 #
 #
 def delete(aDict):
- """Function description for delete TBD
+ """Function docstring for delete TBD
 
  Args:
   - id (required)
@@ -70,7 +70,7 @@ def delete(aDict):
 #
 #
 def menu(aDict):
- """Function description for menu TBD
+ """Function docstring for menu TBD
 
  Args:
   - id (required)

@@ -9,7 +9,7 @@ __status__ = "Production"
 
 #
 def list(aDict):
- """Function description for list TBD
+ """Function docstring for list TBD
 
  Args:
   - ip (required)
@@ -24,7 +24,7 @@ def list(aDict):
 #
 #
 def op(aDict):
- """Function description for op TBD
+ """Function docstring for op TBD
 
  Args:
   - ip (required)
@@ -65,7 +65,7 @@ def op(aDict):
 #
 #
 def logs(aDict):
- """Function description for logs TBD
+ """Function docstring for logs TBD
 
  Args:
   - hostname (required)
@@ -88,7 +88,7 @@ def logs(aDict):
 #
 #
 def snapshots(aDict):
- """Function description for snapshots TBD
+ """Function docstring for snapshots TBD
 
  Args:
   - ip (required)

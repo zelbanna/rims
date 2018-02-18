@@ -12,7 +12,7 @@ from ..core.dbase import DB
 #
 #
 def list(aDict):
- """Function description for list TBD
+ """Function docstring for list TBD
 
  Args:
   - filter (optional)
@@ -45,7 +45,7 @@ def list(aDict):
 #
 #
 def list_type(aDict):
- """Function description for list_type TBD
+ """Function docstring for list_type TBD
 
  Args:
   - base (optional)
@@ -63,7 +63,7 @@ def list_type(aDict):
 #
 #
 def list_mac(aDict):
- """Function description for list_mac TBD
+ """Function docstring for list_mac TBD
 
  Args:
 
@@ -80,7 +80,7 @@ def list_mac(aDict):
 #
 #
 def ip(aDict):
- """Function description for ip TBD
+ """Function docstring for ip TBD
 
  Args:
   - id (required)
@@ -96,7 +96,7 @@ def ip(aDict):
 #
 #
 def info(aDict):
- """Function description for info TBD
+ """Function docstring for info TBD
 
  Args:
   - username (optional)
@@ -138,7 +138,7 @@ def info(aDict):
 #
 #
 def update(aDict):
- """Function description for update TBD
+ """Function docstring for update TBD
 
  Args:
   - id (required)
@@ -188,7 +188,7 @@ def update(aDict):
 #
 #
 def new(aDict):
- """Function description for new TBD
+ """Function docstring for new TBD
 
  Args:
   - a_dom_id (required)
@@ -235,7 +235,7 @@ def new(aDict):
 #
 #
 def remove(aDict):
- """Function description for remove TBD
+ """Function docstring for remove TBD
 
  Args:
   - id (required)
@@ -259,7 +259,7 @@ def remove(aDict):
 #
 #
 def discover(aDict):
- """Function description for discover TBD
+ """Function docstring for discover TBD
 
  Args:
   - a_dom_id (required)
@@ -327,7 +327,7 @@ def discover(aDict):
 #
 #
 def detect(aDict):
- """Function description for detect TBD
+ """Function docstring for detect TBD
 
  Args:
   - ip (required)
@@ -397,7 +397,7 @@ def detect(aDict):
 #
 #
 def clear(aDict):
- """Function description for clear TBD
+ """Function docstring for clear TBD
 
  Args:
 
@@ -410,7 +410,7 @@ def clear(aDict):
 #
 #
 def update_pdu(aDict):
- """Function description for update_pdu TBD
+ """Function docstring for update_pdu TBD
 
  Args:
   - hostname (required)
@@ -441,7 +441,7 @@ def update_pdu(aDict):
 #
 #
 def graph_detect(aDict):
- """Function description for graph_detect TBD
+ """Function docstring for graph_detect TBD
 
  Args:
   - ip (required)
@@ -485,7 +485,7 @@ def graph_detect(aDict):
 #
 #
 def graph_save(aDict):
- """Function description for graph_save TBD
+ """Function docstring for graph_save TBD
 
  Args:
 

@@ -12,7 +12,7 @@ from .. import SettingsContainer as SC
 #
 #
 def update_server(aDict):
- """Function description for update_server TBD
+ """Function docstring for update_server TBD
 
  Args:
 
@@ -36,7 +36,7 @@ def update_server(aDict):
 #
 #
 def leases(aDict):
- """Function description for leases TBD
+ """Function docstring for leases TBD
 
  Args:
   - type (required)

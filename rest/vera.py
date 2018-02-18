@@ -11,7 +11,7 @@ __status__ = "Production"
 #
 #
 def rest(aDict):
- """Function description for rest TBD
+ """Function docstring for rest TBD
 
  Args:
   - host (required)
@@ -32,7 +32,7 @@ def rest(aDict):
 #
 #
 def status(aDict):
- """Function description for status TBD
+ """Function docstring for status TBD
 
  Args:
   - host (required)

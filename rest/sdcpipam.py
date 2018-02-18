@@ -12,7 +12,7 @@ from ..core.dbase import DB
 #
 #
 def list(aDict):
- """Function description for list: lists subnets
+ """Function docstring for list: lists subnets
 
  Args:
 
@@ -27,7 +27,7 @@ def list(aDict):
 #
 #
 def info(aDict):
- """Function description for info TBD
+ """Function docstring for info TBD
 
  Args:
   - id (required) ('new' / <no>)
@@ -47,7 +47,7 @@ def info(aDict):
 #
 #
 def allocation(aDict):
- """Function description for allocation: Allocation of IP addresses within a subnet
+ """Function docstring for allocation: Allocation of IP addresses within a subnet
 
  Args:
   - id (required)
@@ -75,7 +75,7 @@ def allocation(aDict):
 #
 #
 def update(aDict):
- """Function description for update TBD
+ """Function docstring for update TBD
 
  Args:
   - subnet (required)
@@ -111,7 +111,7 @@ def update(aDict):
 #
 #
 def remove(aDict):
- """Function description for remove TBD
+ """Function docstring for remove TBD
 
  Args:
   - id (required)
@@ -127,7 +127,7 @@ def remove(aDict):
 #
 #
 def find(aDict):
- """Function description for find TBD
+ """Function docstring for find TBD
 
  Args:
   - id (required)

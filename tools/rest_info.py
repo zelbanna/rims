@@ -9,7 +9,7 @@ def formatting(restfile,data):
  size = len(data['function']) + 2
  # print "%s %s %s"%("#"*(20 - size/2),data['function'],"#"*(20 - size/2 - size%2))
  print "#\n#\ndef %s(%s):"%(data['function'],data['arg'])
- print " \"\"\"Function description for %s TBD\n"%data['function']
+ print " \"\"\"Function docstring for %s TBD\n"%data['function']
  print " Args:"
  if len(data['required']) > 0:
   for key,value in data['required'].iteritems():

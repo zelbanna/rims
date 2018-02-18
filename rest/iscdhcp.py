@@ -11,7 +11,7 @@ __status__ = "Production"
 #
 #
 def leases(aDict):
- """Function description for leases TBD
+ """Function docstring for leases TBD
 
  Args:
   - type (required)
@@ -47,7 +47,7 @@ def leases(aDict):
 
 #
 def update_server(aDict):
- """Function description for update_server:  reload the DHCP server to use new info
+ """Function docstring for update_server:  reload the DHCP server to use new info
 
  Args:
   - entries (required). entries is a list of dict objects containing hostname, mac, ip etc

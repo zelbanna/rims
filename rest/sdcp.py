@@ -8,7 +8,7 @@ __version__ = "18.02.09GA"
 __status__ = "Production"
 
 def application(aDict):
- """Function description for application TBD
+ """Function docstring for application TBD
 
  Args:
 
@@ -30,7 +30,7 @@ def application(aDict):
 #
 #
 def logs_clear(aDict):
- """Function description for logs_clear TBD
+ """Function docstring for logs_clear TBD
 
  Args:
 
@@ -54,7 +54,7 @@ def logs_clear(aDict):
 #
 #
 def logs_get(aDict):
- """Function description for logs_get TBD
+ """Function docstring for logs_get TBD
 
  Args:
   - count (optional)
@@ -83,7 +83,7 @@ def logs_get(aDict):
 #
 #
 def db_table(aDict):
- """Function description for db_table TBD
+ """Function docstring for db_table TBD
 
  Args:
   - table (optional)
@@ -103,7 +103,7 @@ def db_table(aDict):
 #
 #
 def db_dump(aDict):
- """Function description for db_dump TBD
+ """Function docstring for db_dump TBD
 
  Args:
   - mode (optional)
@@ -116,7 +116,7 @@ def db_dump(aDict):
 #
 #
 def mac_sync(aDict):
- """Function description for mac_sync TBD
+ """Function docstring for mac_sync TBD
 
  Args:
 
@@ -148,7 +148,7 @@ def mac_sync(aDict):
 #
 #
 def install(aDict):
- """Function description for install. Installation of SDCP tools and DB entries
+ """Function docstring for install. Installation of SDCP tools and DB entries
 
  Args:
 
@@ -252,7 +252,7 @@ def install(aDict):
 #
 #
 def rest_analyze(aDict):
- """Function description for rest_analyze. Analyzes REST files to deduce parameter inputs
+ """Function docstring for rest_analyze. Analyzes REST files to deduce parameter inputs
 
  Args:
   - file (required)

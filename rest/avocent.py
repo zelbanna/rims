@@ -12,7 +12,7 @@ from ..devices.avocent import Device
 #
 #
 def update(aDict):
- """Function description for update TBD
+ """Function docstring for update TBD
 
  Args:
   - slot (required)
@@ -28,7 +28,7 @@ def update(aDict):
 #
 #
 def info(aDict):
- """Function description for info TBD
+ """Function docstring for info TBD
 
  Args:
   - ip (required)

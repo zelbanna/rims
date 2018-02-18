@@ -10,7 +10,7 @@ __status__ = "Production"
 #
 #
 def application(aDict):
- """Function description for application. Delivers the information for SDCP login to redirect to the openstack App.
+ """Function docstring for application. Delivers the information for SDCP login to redirect to the openstack App.
 
  Args:
   - controller (required)
@@ -46,7 +46,7 @@ def application(aDict):
 #
 #
 def authenticate(aDict):
- """Function description for authenticate TBD
+ """Function docstring for authenticate TBD
 
  Args:
   - username (required)

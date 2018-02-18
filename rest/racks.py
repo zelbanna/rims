@@ -12,7 +12,7 @@ from ..core.dbase import DB
 #
 #
 def list(aDict):
- """Function description for list TBD
+ """Function docstring for list TBD
 
  Args:
   - sort (optional)
@@ -29,7 +29,7 @@ def list(aDict):
 #
 #
 def info(aDict):
- """Function description for info TBD
+ """Function docstring for info TBD
 
  Args:
   - id (optional)
@@ -60,7 +60,7 @@ def info(aDict):
 #
 #
 def infra(aDict):
- """Function description for infra TBD
+ """Function docstring for infra TBD
 
  Args:
   - id (optional), id of rack to get specific information on, 'new'|<x>, if left out, all racks are collected
@@ -111,7 +111,7 @@ def infra(aDict):
 #
 #
 def devices(aDict):
- """Function description for devices TBD
+ """Function docstring for devices TBD
 
  Args:
   - id (required)
@@ -131,7 +131,7 @@ def devices(aDict):
 #
 #
 def update(aDict):
- """Function description for update TBD
+ """Function docstring for update TBD
 
  Args:
   - console (required)
@@ -156,7 +156,7 @@ def update(aDict):
 #
 #
 def remove(aDict):
- """Function description for remove TBD
+ """Function docstring for remove TBD
 
  Args:
   - id (required)

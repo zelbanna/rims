@@ -9,7 +9,7 @@ __status__ = "Production"
 
 #
 def alarm(aDict):
- """Function description for alarm TBD
+ """Function docstring for alarm TBD
 
  Args:
 

@@ -12,7 +12,7 @@ from ..core.dbase import DB
 #
 #
 def load(aDict):
- """Function description for load TBD
+ """Function docstring for load TBD
 
  Args:
   - domains (required)
@@ -35,7 +35,7 @@ def load(aDict):
 #
 #
 def domains(aDict):
- """Function description for domains TBD
+ """Function docstring for domains TBD
 
  Args:
   - filter (optional)
@@ -56,7 +56,7 @@ def domains(aDict):
 #
 #
 def domain_delete(aDict):
- """Function description for domain_delete TBD
+ """Function docstring for domain_delete TBD
 
  Args:
   - to (required)
@@ -76,7 +76,7 @@ def domain_delete(aDict):
 #
 #
 def domain_add(aDict):
- """Function description for domain_add TBD
+ """Function docstring for domain_add TBD
 
  Args:
   - id (required)
