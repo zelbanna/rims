@@ -15,9 +15,11 @@ def update(aWeb):
 #
 #
 def leases(aWeb):
- from ..core import extras as EXT
  leases = aWeb.rest_call("sdcpdhcp_leases",{'type':aWeb['type']})
  print "<ARTICLE><P>%s Leases</P>"%(aWeb['type'].title())
- try: EXT.dict2table(leases['data'])
- except: pass
+ print "<DIV CLASS=table><DIV class=thead><DIV class=th>Ip</DIV><DIV class=th>Mac</DIV><DIV class=th>Hostname</DIV><DIV class=th>Starts</DIV><DIV class=th>Ends</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for data in leases['data']:
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(data['ip'],data['mac'],data.get('hostname',"None"),data['starts'],data['ends'])
+ print "</DIV></DIV>"
  print "</ARTICLE>"
