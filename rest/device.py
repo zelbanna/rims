@@ -215,7 +215,7 @@ def new(aDict):
   from struct import unpack
   from socket import inet_aton
   return unpack("!I", inet_aton(addr))[0]
- def mac2int(aMAC):
+ def GL_mac2int(aMAC):
   try:    return int(aMAC.replace(":",""),16)
   except: return 0
 

@@ -176,11 +176,7 @@ def record_transfer(aWeb):
 
 def record_create(aWeb):
  operation = {'type':aWeb['type'],'dns':None,'device':None}
- if aWeb['type'] == 'a':
-  data = {'id':'new','type':'a','domain_id':aWeb['dom_id'],'name':aWeb['fqdn'],'content':aWeb['ip']}
- else:
-  from ..core import genlib as GL
-  data = {'id':'new','type':'ptr','domain_id':aWeb['dom_id'],'content':aWeb['fqdn'],'name':GL.ip2ptr(aWeb['ip'])}
+ data = {'id':'new','type':aWeb['type'],'domain_id':aWeb['dom_id'],'fqdn':aWeb['fqdn'],'ip':aWeb['ip']}
  operation['dns'] = aWeb.rest_generic(SC.dns['url'],"{}_record_update".format(SC.dns['type']),data)
  if operation['dns']['xist'] == 1:
   operation['device'] = aWeb.rest_call("device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:operation['dns']['id']})

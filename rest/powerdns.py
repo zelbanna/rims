@@ -211,8 +211,8 @@ def record_update(aDict):
 
  Args:
   - id (required) - id/0/'new'
-  - name (required)
-  - content (required)
+  - ip (required)
+  - fqdn (required)
   - ttl (required)
   - change_date (required)
   - type (required)
@@ -223,11 +223,19 @@ def record_update(aDict):
  """
  log("powerdns_record_update({})".format(aDict))
  from time import strftime
+ args = {'prio':aDict['prio'],'domain_id':aDict['domain_id'],'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper()}
+ if args['type'] == 'A':
+  args['name'] = aDict['fqdn']
+  args['content'] = aDict['ip']
+ elif args['type'] == 'PTR':
+  def GL_ip2ptr(addr):
+   octets = addr.split('.')
+   octets.reverse()
+   octets.append("in-addr.arpa")
+   return ".".join(octets)
+  args['name'] = GL.ip2ptr(aDict['ip'])
+  args['content'] = aDict['fqdn']
 
- args = aDict 
- args['change_date'] = strftime("%Y%m%d%H")
- args['ttl']  = aDict.get('ttl','3600')
- args['type'] = aDict['type'].upper()
  ret = {'id':aDict['id']}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if ret['id'] == 'new' or str(ret['id']) == '0':
