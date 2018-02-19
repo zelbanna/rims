@@ -89,9 +89,13 @@ def scene(aDict):
   if aDict.get('op'):
    ret['op'] = "RunScene" if aDict['op']== "run" else "SceneOff"
    res = controller.call(3480,"id=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(ret['op'],aDict['scene']))
-   ret['info'] = (res['code'] == 200)
+   ret['info'] = "OK" if (res['code'] == 200) else "FAILED"
   elif aDict.get('status'):
-   ret = controller.call(3480,"id=status")['data']
+   scenes = controller.call(3480,"id=sdata")['data']['scenes']
+   for scene in scenes:
+    if scene['id'] == aDict['scene']:
+     ret['info']= scene
+     break
   else:
    ret = controller.call(3480,"id=scene&action=list&scene=%s"%aDict['scene'])['data']
  except Exception,e:
