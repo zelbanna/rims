@@ -73,11 +73,8 @@ class Web(object):
   self._c_life[aName] = aLife
 
  def put_cookie(self):
-  from sys import stdout
-  stdout.write("<SCRIPT>");
   for key,value in self._c_stor.iteritems():
-   stdout.write("create_cookie('%s','%s',%s);"%(key,value,self._c_life.get(key,3000)));
-  stdout.write("</SCRIPT>");
+   print "<SCRIPT>create_cookie('%s','%s',%s);</SCRIPT>"%(key,value,self._c_life.get(key,3000))
  
  # Redirect will all cookies and headers set
  def put_redirect(self,aLocation):

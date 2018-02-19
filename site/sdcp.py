@@ -95,9 +95,8 @@ def weathermap(aWeb):
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"
   print "</SECTION>" 
  else:
-  from ..core.extras import get_include
   print "<SECTION CLASS='content background' STYLE='top:0px;'>"
-  print "<ARTICLE>"
-  print get_include('%s.html'%aWeb['page'])
+  print "<ARTICLE ID='including'>"
+  print "<SCRIPT>include_html('including','%s.html');</SCRIPT>"%aWeb['page']
   print "</ARTICLE>"
   print "</SECTION>"

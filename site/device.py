@@ -11,7 +11,6 @@ __icon__ = 'images/icon-network.png'
 ########################################## Device Operations ##########################################
 
 def main(aWeb):
- from ..core.extras import get_include
  target = aWeb['target']
  arg    = aWeb['arg']
 
@@ -41,9 +40,9 @@ def main(aWeb):
  print "</UL></NAV>"
  print "<SECTION CLASS=content       ID=div_content>"
  print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
- print "<SECTION CLASS=content-right ID=div_content_right>"
- print get_include('README.devices.html')
- print "</SECTION></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+ print "</SECTION>"
+ print "<SCRIPT>include_html('div_content_right','README.devices.html');</SCRIPT>"
 
 #
 #
@@ -94,7 +93,7 @@ def info(aWeb):
     d['devices_comment'] = 'NULL'
 
    fqdn   = ".".join([d['devices_hostname'],  dns[d['devices_a_dom_id']]['name']])
-   dom_id = aWeb.rest_call("sdcpdns_domains",{'filter':'reverse','index':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
+   dom_id = aWeb.rest_call("sdcpdns_domains",{'filter':'reverse','dict':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
 
    opres['a'] = aWeb.rest_generic(SC.dns['url'], "{}_record_update".format(SC.dns['type']), { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
    if dom_id:
@@ -127,7 +126,7 @@ def info(aWeb):
 
  width = 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
- print "<ARTICLE CLASS='info' STYLE='position:relative; width:%spx; z-index:2000'><P TITLE='%s'>Device Info</P>"%(width,dev['id'])
+ print "<ARTICLE CLASS='info' STYLE='position:relative; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id'])
  print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])

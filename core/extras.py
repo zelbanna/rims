@@ -24,20 +24,9 @@ def dict2table(aList):
  print "</DIV>"
  print "</DIV>"
 
-def get_include(aURL):
- from urllib import urlopen
- try:
-  sock = urlopen(aURL)
-  html = sock.read()
-  sock.close()
-  return html
- except Exception as err:
-  return ""
-
 def get_quote(aString):
  from urllib import quote_plus
  return quote_plus(aString)
-
 
 ################################# Generics ####################################
 

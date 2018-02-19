@@ -30,6 +30,12 @@ function erase_cookie(name) {
 }
 
 //
+function include_html(dst,src) {
+ var dest = $('#'+ dst);
+ $.get(src,function(data) { load_result(dest,data);});
+}
+
+//
 // Button functions - accepts proper JScript object:
 //  Set attribute log=true to log operation
 //
@@ -58,16 +64,14 @@ function btn(e) {
   var spin = this.getAttribute("spin");
   if (spin){
     spin = (spin.toLowerCase() == 'true') ? div : $("#"+spin);
-    spin.scrollTop(0);
-    spin.css("overflow-y","hidden");
-    spin.append("<DIV CLASS='overlay'><DIV CLASS='loader'></DIV></DIV>");
+    load_spinner(spin);
   }
   var frm  =  this.getAttribute("frm");
   var input = this.getAttribute("input");
   if(frm)
-   $.post(url, $("#"+frm).serializeArray() , function(result) { loadresult(div,spin,input,result);  });
+   $.post(url, $("#"+frm).serializeArray() , function(result) { load_result(div,result,spin,input);  });
   else
-   $.get(url, function(result) { loadresult(div,spin,input,result); });
+   $.get(url, function(result) { load_result(div,result,spin,input); });
 
  } else if (op == 'redirect') {
   location.replace(url);
@@ -106,15 +110,24 @@ function btn(e) {
 //
 // Callback for loading result
 //
-function loadresult(div,spin,input,result){
+function load_result(dest,data,spin,input){
  if (input)
-  div.val(result);
+  dest.val(data);
  else
-  div.html(result);
+  dest.html(data);
  if (spin) {
   $(".overlay").remove();
   spin.css("overflow-y","auto");
  }
+}
+
+//
+// Loading spinner overlay, lock scrolling and scroll up first before adding spinner
+//
+function load_spinner(dest){
+ dest.scrollTop(0);
+ dest.css("overflow-y","hidden");
+ dest.append("<DIV CLASS='overlay'><DIV CLASS='loader'></DIV></DIV>");
 }
 
 //
