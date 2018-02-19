@@ -42,7 +42,7 @@ def domains(aDict):
   - dict (optional)
 
  Extra:
-  - filter:forward/reverse, index
+  - filter:forward/reverse
  """
  ret = {}
  with DB() as db:

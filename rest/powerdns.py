@@ -233,7 +233,7 @@ def record_update(aDict):
    octets.reverse()
    octets.append("in-addr.arpa")
    return ".".join(octets)
-  args['name'] = GL.ip2ptr(aDict['ip'])
+  args['name'] = GL_ip2ptr(aDict['ip'])
   args['content'] = aDict['fqdn']
 
  ret = {'id':aDict['id']}

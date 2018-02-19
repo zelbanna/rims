@@ -24,7 +24,6 @@ def main(aWeb):
 def view(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
  res = aWeb.rest_call("resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id']})
- index = 0;
  inline = "<BUTTON CLASS='z-op menu' DIV=main URL='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
  extern = "<A CLASS='btn menu' TARGET=_blank HREF='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></A>"
  print "<DIV CLASS=centered STYLE='align-items:initial'>"

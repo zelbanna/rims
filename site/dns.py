@@ -176,7 +176,7 @@ def record_transfer(aWeb):
 
 def record_create(aWeb):
  operation = {'type':aWeb['type'],'dns':None,'device':None}
- data = {'id':'new','type':aWeb['type'],'domain_id':aWeb['dom_id'],'fqdn':aWeb['fqdn'],'ip':aWeb['ip']}
+ data = {'id':'new','type':aWeb['type'],'domain_id':aWeb['domain_id'],'fqdn':aWeb['fqdn'],'ip':aWeb['ip']}
  operation['dns'] = aWeb.rest_generic(SC.dns['url'],"{}_record_update".format(SC.dns['type']),data)
  if operation['dns']['xist'] == 1:
   operation['device'] = aWeb.rest_call("device_update",{'id':aWeb['id'],'devices_%s_id'%aWeb['type']:operation['dns']['id']})
@@ -227,7 +227,7 @@ def consistency(aWeb):
     print "<!-- %s -> %s -->"%(key,value)
     print "<DIV CLASS=td>{}</DIV><DIV CLASS=td>-</DIV>".format(key)
     print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=device_info&id={0}>{1}</A></DIV><DIV CLASS=td>-</DIV><DIV CLASS=td>{0}</DIV><DIV CLASS=td>{1}</DIV>".format(value['id'],value['fqdn'] if type == 'a' else value['ipasc'])
-    print "<DIV CLASS=td>&nbsp;" + aWeb.button('add',DIV='span_dns',URL='sdcp.cgi?call=dns_record_create&type={}&id={}&ip={}&fqdn={}&dom_id={}'.format(type,value['id'],value['ipasc'],value['fqdn'],value['a_dom_id'] if type == 'a' else domains[GL.ip2arpa(value['ipasc'])]['id'] )) + "</DIV>"
+    print "<DIV CLASS=td>&nbsp;" + aWeb.button('add',DIV='span_dns',URL='sdcp.cgi?call=dns_record_create&type={}&id={}&ip={}&fqdn={}&domain_id={}'.format(type,value['id'],value['ipasc'],value['fqdn'],value['a_dom_id'] if type == 'a' else domains[GL.ip2arpa(value['ipasc'])]['id'] )) + "</DIV>"
     print "</DIV>"
  print "</DIV></DIV>"
 

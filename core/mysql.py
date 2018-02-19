@@ -29,7 +29,7 @@ def dump(aDict):
    if not line[:2] in [ '/*','--']:
     if "AUTO_INCREMENT=" in line:
      parts = line.split();
-     for index, part in enumerate(parts):
+     for indx, part in enumerate(parts):
       if "AUTO_INCREMENT=" in part:
        parts.remove(part)
        break

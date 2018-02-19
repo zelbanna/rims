@@ -140,8 +140,8 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
-   for index,result in enumerate(vmnameobjs):
-    statetuple = {'id':result.iid, 'name':result.val, 'state':vmstateobjs[index].val ,'state_id':Device.get_state_str(vmstateobjs[index].val)}
+   for indx,result in enumerate(vmnameobjs):
+    statetuple = {'id':result.iid, 'name':result.val, 'state':vmstateobjs[indx].val ,'state_id':Device.get_state_str(vmstateobjs[indx].val)}
     statelist.append(statetuple)
   except:
    pass
