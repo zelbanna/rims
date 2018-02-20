@@ -27,17 +27,17 @@ def list(aWeb):
    aWeb.put_cookie()
 
  from datetime import datetime
- res = aWeb.rest_call("appformix_report_projects",{'host':cookie_appformix['controller'],'token':cookie_appformix['token']})
+ res = aWeb.rest_call("appformix_report_projects",{'host':cookie_appformix['controller'],'token':cookie_appformix['token'],'project':cookie_openstack['project_id']})
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Usage Reports</P>"
  print "<DIV CLASS=controls>"
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=appformix_list')
  print "</DIV>"
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Project</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Report</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for rep in res['reports']:
   print "<DIV CLASS=tr>"
   print "<!-- %s -->"%rep
-  print "<DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden;'>%s</DIV>"%rep['ProjectId']
+  print "<DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden;'>%s</DIV>"%rep['ReportId']
   print "<DIV CLASS=td>%s</DIV>"%datetime.utcfromtimestamp(float(rep['Start'])/1e3)
   print "<DIV CLASS=td>"
   print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=appformix_info&report=%s'%(rep['ReportId']))

@@ -47,12 +47,14 @@ def report_projects(aDict):
  Args:
   - host (required)
   - token (required)
+  - project (required)
 
  Extra:
  """
  ret = {}
  controller = Device(aDict['host'],aDict['token'])
- ret['reports'] = controller.call('reports/project/metadata')['data']['Metadata']
+ reports = controller.call('reports/project/metadata')['data']['Metadata']
+ ret['reports'] = [rep for rep in reports if rep['ProjectId'] == aDict['project']]
  return ret
 
 #
