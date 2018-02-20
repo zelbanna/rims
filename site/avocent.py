@@ -31,21 +31,16 @@ def manage(aWeb):
 #
 #
 def inventory(aWeb,aIP = None):
- from ..devices.avocent import Device
- counter = 0
  ip = aWeb['ip'] if not aIP else aIP
- avocent = Device(ip)
- avocent.load_snmp()
+ data = aWeb.rest_call("avocent_inventory",{'ip':ip})
  print "<ARTICLE>"
  print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='sdcp.cgi?%s'%aWeb.get_args())
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th STYLE='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- for key in avocent.get_keys(aSortKey = lambda x: int(x.split('.')[0])*100+int(x.split('.')[1])):
-  counter += 1
-  value = avocent.get_entry(key)
+ for counter,value in enumerate(data,1):
   print "<DIV CLASS=tr><DIV CLASS=td TITLE='Open up a browser tab for {0}'><A TARGET='_blank' HREF='https://{0}:3502'>{0}</A></DIV><DIV CLASS=td>{1}</DIV>".format(ip,value['slotname']+'.'+value['unit'])
   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=avocent_unit_info&ip={0}&slot={1}&unit={2}&text={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td ID=div_pdu_{5}>&nbsp;".format(ip,value['slot'],value['unit'],value['name'], value['slotname'],counter)
-  url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(ip,value['slot'],value['unit'],counter)
+  url = 'sdcp.cgi?call=avocent_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(ip,value['slot'],value['unit'],counter)
   div = 'div_pdu_%i'%counter
   if value['state'] == "off":
    print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
@@ -58,16 +53,11 @@ def inventory(aWeb,aIP = None):
 #
 #
 def op(aWeb):
- from ..devices.avocent import Device
- avocent = Device(aWeb['ip'])
- avocent.set_state(aWeb['slot'],aWeb['unit'],aWeb['nstate'])
- # Avocent is not fast enough to execute something immediately after op, halt output then :-)
- from time import sleep
- sleep(10 if aWeb['nstate'] == 'reboot' else 4)
- url = 'sdcp.cgi?call=pdu_op&ip=%s&slot=%s&unit=%s&id=%s&nstate={}'%(aWeb['ip'],aWeb['slot'],aWeb['unit'],aWeb['id'])
+ res = aWeb.rest_call("avocent_op",{'state':aWeb['nstate'],'ip':aWeb['ip'],'slot':aWeb['slot'],'unit':aWeb['unit']})
+ url = 'sdcp.cgi?call=avocent_op&ip=%s&slot=%s&unit=%s&id=%s&nstate={}'%(aWeb['ip'],aWeb['slot'],aWeb['unit'],aWeb['id'])
  div = 'div_pdu_%s'%aWeb['id']
  print "&nbsp;"
- if avocent.get_state(aWeb['slot'],aWeb['unit'])['state'] == "off":
+ if res['state'] == "off":
   print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
  else:
   print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
@@ -97,7 +87,6 @@ def info(aWeb):
 #
 #
 def unit_info(aWeb):
- from ..devices.avocent import Device
  if aWeb['op'] == 'update':
   res = aWeb.rest_call("avocent_update",aWeb.get_args2dict())
   print "Updated info: {} ({})".format(aWeb['name'],res)

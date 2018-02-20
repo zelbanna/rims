@@ -74,7 +74,7 @@ class ConfObject(object):
   return self._configitems.get(aKey)
 
  def load_snmp(self):
-  pass
+  return True
 
  def get_keys(self, aTargetName = None, aTargetValue = None, aSortKey = None):
   if not aTargetName:

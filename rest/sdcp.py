@@ -38,7 +38,7 @@ def logs_clear(aDict):
  """
  from ..core.logger import log as logging
  from ..core.dbase import DB
- ret = {} 
+ ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
   logs = db.get_rows()
@@ -138,7 +138,7 @@ def mac_sync(aDict):
    rows = db.get_rows()
    for row in rows:
     row['xist'] = arps.get(row['ipasc'])
-    if row['xist']:        
+    if row['xist']:
      ret.append(row)
      db.do("UPDATE devices SET mac = {} WHERE id = {}".format(mac2int(row['xist']),row['id']))
  except:
@@ -280,13 +280,12 @@ def rest_analyze(aDict):
    elif data['function'] and data['arg'] in line:
     try:
      parts = line.split(data['arg'])
-     # print "%s:%s"%(data['function'],parts)
      for part in parts[1:]:
       if part[0:2] == "['":
        end = part.index("]")
        argument = part[2:end-1]
        if not data['required'].get(argument):
-        data['required'][argument] = (data['optional'].get(argument) is None) 
+        data['required'][argument] = (data['optional'].get(argument) is None)
       elif part[0:6] == ".get('":
        end = part[6:].index("'")
        argument = part[6:6+end]

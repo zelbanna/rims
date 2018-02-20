@@ -57,6 +57,37 @@ def info(aDict):
    ret['data'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':1, '1_slot_name':'' }
  return ret
 
-
+#
+#
 def inventory(aDict):
- pass
+ """Function docstring for inventory TBD
+
+ Args:
+  - ip (required)
+
+ Extra:
+ """
+ avocent = Device(aDict['ip'])
+ return avocent.get_inventory()
+
+#
+#
+def op(aDict):
+ """Function docstring for op TBD
+
+ Args:
+  - ip (required)
+  - slot (required)
+  - state (required)
+  - unit (required)
+
+ Extra:
+ """
+ from ..devices.avocent import Device
+ ret = {}
+ avocent = Device(aDict['ip'])
+ ret['op'] = avocent.set_state(aDict['slot'],aDict['unit'],aDict['state'])['res']
+ from time import sleep
+ sleep(10 if aDict['state'] == 'reboot' else 5)
+ ret['state'] = avocent.get_state(aDict['slot'],aDict['unit'])['state']
+ return ret
