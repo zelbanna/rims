@@ -8,12 +8,12 @@ __version__ = "18.02.09GA"
 __status__  = "Production"
 __type__    = "pdu"
 
-from generic import Device as GenericDevice, ConfObject
+from generic import Device as GenericDevice
 from .. import SettingsContainer as SC
 
 ######################################## PDU ########################################
 
-class Device(GenericDevice, ConfObject):
+class Device(GenericDevice):
 
  _getstatemap = { '1':'off', '2':'on' }
  _setstatemap = { 'off':'3', 'on':'2', 'reboot':'4' }
@@ -32,7 +32,6 @@ class Device(GenericDevice, ConfObject):
 
  def __init__(self, aIP, aID = None):
   GenericDevice.__init__(self,aIP, aID)
-  ConfObject.__init__(self)
 
  def __str__(self):
   return "Avocent[%s]: %s"%(__type__,GenericDevice.__str__(self))
@@ -106,32 +105,3 @@ class Device(GenericDevice, ConfObject):
   except Exception as exception_error:
    self.log_msg("Avocent : error loading conf " + str(exception_error))
   return result
-
- #################################### ConfigItems ######################################
- #
- #
- def load_snmp(self):
-  from netsnmp import VarList, Varbind, Session
-  try:
-   outletobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.4'))
-   stateobjs  = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.5'))
-   slotobjs   = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
-   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   session.walk(outletobjs)
-   session.walk(stateobjs)
-   session.walk(slotobjs)
-   statedict = dict(map(lambda var: (var.tag[34:] + "." + var.iid, var.val), stateobjs))
-   slotdict  = dict(map(lambda var: (var.iid, var.val),slotobjs))
-   for outlet in outletobjs:
-    # outlet.iid = outlet number
-    slot = outlet.tag[34:]
-    node = slot + "." + outlet.iid
-    self._configitems[ node ] = { 'name': outlet.val, 'state':Device.get_outlet_state(statedict[node]), 'slotname':slotdict.get(slot,"unknown"), 'slot':slot, 'unit':outlet.iid }
-  except Exception as exception_error:
-   self.log_msg("Avocent : error loading conf " + str(exception_error))
-   return False
-  return True
- #
- #
- def get_slotunit(self, aSlot, aUnit):
-  return self._configitems.get(aSlot +'.'+ aUnit)
