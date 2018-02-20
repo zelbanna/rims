@@ -18,3 +18,12 @@ def alarm(aDict):
  from ..core.logger import log
  log("appformix_alarm({})".format(str(aDict)))
  return { 'result':'OK', 'info':'got alarm', 'data':'waiting to find out what to do with it :-)'}
+
+#
+#
+def authenticate(aDict):
+ from ..devices.appformix import Device
+ from .. import SettingsContainer as SC
+ controller = Device(aDict['host'])
+ ret = controller.auth({'username':SC.appformix['username'], 'password':SC.appformix['password'] })
+ return ret

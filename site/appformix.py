@@ -16,23 +16,20 @@ from .. import SettingsContainer as SC
 ##################################### Report ##################################
 #
 def list(aWeb):
- from datetime import datetime
- # First auth..
  cookie = aWeb.cookie_unjar('openstack')
  ctrl = cookie.get('appformix')
  if not ctrl:
   print "Not logged in"
   return
- controller = Device(ctrl)
- res = controller.auth({'username':SC.appformix['username'], 'password':SC.appformix['password'] })
+ res = aWeb.rest_call("appformix_authenticate")
  if not res['auth'] == "OK":
   print "Error logging in - {}".format(str(res))
   return
-
+ print res
+ from datetime import datetime
  pid    = cookie.get('project_id')
  pname  = cookie.get('project_name')
  resp   = controller.call("reports/project/metadata")
- import time
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Usage Reports</P>"
  print "<!-- %s -->"%controller
  print "<DIV CLASS=controls>"
