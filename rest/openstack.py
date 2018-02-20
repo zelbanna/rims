@@ -185,7 +185,7 @@ def heat_content(aDict):
  Extra:
  """
  from json import load
- ret = {'res':'OK','template':None} 
+ ret = {'res':'OK','template':None}
  try:
   with open("os_templates/%s.tmpl.json"%aDict['template']) as f:
    ret['template'] = load(f)

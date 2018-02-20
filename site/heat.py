@@ -164,9 +164,8 @@ def action(aWeb):
   print "</ARTICLE>"
 
  if op == 'templateview':
+  from json import dumps
   template = aWeb['template']
-  from json import load,dumps
-  with open("os_templates/"+template) as f:
-   data = load(f)
+  data = aWeb.rest_call("openstack_heat_content",{'template':template})['template']
   data['stack_name'] = name if name else "Need_to_specify_name"
   print "<PRE>{}</PRE>".format(dumps(data, indent=4, sort_keys=True))
