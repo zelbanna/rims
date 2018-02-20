@@ -17,11 +17,11 @@ class Device(object):
  def __init__(self, aIP, aToken = None):
   self._token = aToken
   self._token_expire = None
-  self._token_utc = None
+  self._lifetime = None
   self._ip = aIP
 
  def __str__(self):
-  return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._token_utc)
+  return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._lifetime)
 
  def auth(self, aAuth):
   from ..core.rest import call as rest_call
@@ -34,7 +34,7 @@ class Device(object):
    if res['code'] == 200:
     token = res.pop('data',{})['Token']
     self._token = token['tokenId']
-    self._token_utc = token['expiresAt']
+    self._lifetime = token['expiresAt']
     self._token_expire = int(mktime(strptime(token['expiresAt'],"%Y-%m-%dT%H:%M:%S.%fZ")))
     res['auth'] = 'OK'
    else:
@@ -46,8 +46,11 @@ class Device(object):
  def get_token(self):
   return self._token
 
- def get_token_utc(self):
-  return self._token_utc
+ def get_lifetime(self):
+  return self._lifetime
+
+ def set_lifetime(self,aTime):
+  self._lifetime = aTime
 
  #
  # Input:

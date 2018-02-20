@@ -14,7 +14,7 @@ from ..site.openstack import dict2html
 #
 def list(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
- token  = cookie.get('user_token')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
@@ -53,7 +53,7 @@ def list(aWeb):
 
 def action(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
- token  = cookie.get('user_token')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return

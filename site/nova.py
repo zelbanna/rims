@@ -16,7 +16,7 @@ from ..site.openstack import dict2html
 def list(aWeb):
  from ..core.extras import get_quote
  cookie = aWeb.cookie_unjar('openstack')
- token  = cookie.get('user_token')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
@@ -59,7 +59,7 @@ def list(aWeb):
 
 def select_parameters(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
- token  = cookie.get('user_token')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
@@ -99,7 +99,7 @@ def select_parameters(aWeb):
 #
 def action(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
- token  = cookie.get('user_token')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
@@ -185,7 +185,7 @@ def action(aWeb):
 
 def console(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
- token  = cookie.get('user_token')
+ token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return

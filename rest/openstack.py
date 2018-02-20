@@ -69,8 +69,9 @@ def authenticate(aDict):
   ret['project_name'] = aDict['project_name']
   ret['project_id'] = aDict['project_id']
   ret['username']   = aDict['username']
-  ret['user_token'] = openstack.get_token()
-  ret['services']   = "&".join(['heat','nova','neutron','glance'])
+  ret['token'] = openstack.get_token()
+  ret['lifetime'] = openstack.get_lifetime()
+  ret['services'] = "&".join(['heat','nova','neutron','glance'])
   for service in ['heat','nova','neutron','glance']:
    port,url,id = openstack.get_service(service,'public')
    if len(url) > 0:

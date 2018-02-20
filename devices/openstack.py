@@ -17,14 +17,14 @@ class OpenstackRPC(object):
  def __init__(self, aIP, aToken = None):
   self._token = aToken
   self._token_expire = None
-  self._token_utc = None
+  self._lifetime = None
   self._ip = aIP
   self._project = None
   self._project_id = None
   self._catalog = None
 
  def __str__(self):
-  return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._ip, self._token, self._token_utc, self._project,self._project_id)
+  return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._ip, self._token, self._lifetime, self._project,self._project_id)
 
  #
  # Keystone v3 authentication - using v2.0 compatible domain (default), project = admin unless specified
@@ -41,7 +41,7 @@ class OpenstackRPC(object):
    if res['code'] == 201:
     token = res.pop('data',{})['token']
     self._token = res['info'].get('x-subject-token')
-    self._token_utc = token['expires_at']
+    self._lifetime = token['expires_at']
     self._token_expire = int(mktime(strptime(token['expires_at'],"%Y-%m-%dT%H:%M:%S.%fZ")))
     self._project = token['project']['name']
     self._project_id = token['project']['id']
@@ -66,8 +66,8 @@ class OpenstackRPC(object):
  def get_catalog(self):
   return self._catalog
 
- def get_expire_utc(self):
-  return self._token_utc
+ def get_lifetime(self):
+  return self._lifetime
  #
  # Input: Service, auth-type (admin/internal/public)
  # Returns tuple with:
@@ -108,7 +108,7 @@ class OpenstackRPC(object):
  def dump(self,aFile):
   from json import dump
   with open(aFile,'w') as f:
-   dump({'token':self._token, 'token_utc':self._token_utc, 'token_expire':self._token_expire, 'project':self._project, 'ip':self._ip,'project_id':self._project_id, 'catalog':self._catalog },f, sort_keys=True, indent=4)
+   dump({'token':self._token, 'lifetime':self._lifetime, 'token_expire':self._token_expire, 'project':self._project, 'ip':self._ip,'project_id':self._project_id, 'catalog':self._catalog },f, sort_keys=True, indent=4)
 
  def load(self,aFile):
   from json import load
@@ -120,7 +120,7 @@ class OpenstackRPC(object):
      self._ip = data['ip']
      self._token = data['token']
      self._token_expire = data['token_expire']
-     self._token_utc = data['token_utc']
+     self._lifetime = data['lifetime']
      self._project = data['project']
      self._project_id = data['project_id']
      self._catalog = data['catalog']
