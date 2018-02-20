@@ -31,24 +31,29 @@ def formatting(restfile,data):
  print " \"\"\""
  print "********************************************************"
 
+def analyze(aFile):
+ syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
+ from sdcp.rest.sdcp import rest_analyze
+ print "############# Analyzing file: %s ################"%(aFile + ".py")
+ res = rest_analyze({'file':aFile + ".py"})
+ if len(res['global']) > 0:
+  print "#\n# Global imports:"
+  for glob in res['global']:
+   print "#  - %s"%glob
+  print "#"
+ for fun in res['functions']:
+  formatting(res['file'],fun)
+
 if __name__ == "__main__":
  from os   import path as ospath, listdir
  from sys  import path as syspath, argv, exit
  from json import loads, dumps 
  restdir = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','rest'))
- syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
- from sdcp.rest.sdcp import rest_analyze
  if len(argv) == 2:
-  print "############# Analyzing file: %s ################"%(argv[1] + ".py")
-  res = rest_analyze({'file':argv[1] + ".py"})
-  for fun in res['functions']:
-   formatting(res['file'],fun)
+  analyze(argv[1])
  else:
   for restfile in listdir(restdir):
    if restfile[-3:] == 'pyc':
     continue
-   print "############# Analyzing file: %s ################"%restfile
-   res = rest_analyze({'file':restfile})
-   for fun in res['functions']:
-    formatting(res['file'],fun)
+   analyze(restfile[0:-3])
  exit(0)

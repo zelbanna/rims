@@ -12,7 +12,6 @@ from ..core.logger import log
 #
 # Change IP for a domain in loopia DNS
 #
-loopia_domain_server_url = 'https://api.loopia.se/RPCSERV' 
 
 def set_loopia_ip(subdomain, newip):
  from .. import SettingsContainer as SC

@@ -6,7 +6,7 @@ __status__ = "Production"
 
 from os   import path as ospath
 from sys  import path as syspath
-syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '../..')))
+syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
 
 if __name__ == "__main__":
  from sys import argv, exit

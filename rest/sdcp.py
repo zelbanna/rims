@@ -261,8 +261,8 @@ def rest_analyze(aDict):
  """
  from os import path as ospath
  restdir = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','rest'))
- ret = {'file':aDict['file'],'functions':[]}
- data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[],'arg':None}
+ ret = {'file':aDict['file'],'functions':[],'global':[]}
+ data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[],'arg':None,'imports':[]}
 
  with open(ospath.abspath(ospath.join(restdir,aDict['file'])),'r') as file:
   line_no = 0
@@ -270,6 +270,8 @@ def rest_analyze(aDict):
    line_no += 1
    line = line.rstrip()
    line = line.replace("%s","<var>")
+   if line[0:4] =='from':
+    ret['global'].append(line)
    if line[0:4] == 'def ':
     if data['function']:
      ret['functions'].append(data)

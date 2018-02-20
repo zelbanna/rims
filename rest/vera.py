@@ -8,6 +8,8 @@ __version__ = "18.02.09GA"
 __status__ = "Production"
 
 
+from ..devices.vera import Device
+
 #
 #
 def rest(aDict):
@@ -21,7 +23,6 @@ def rest(aDict):
 
  Extra:
  """
- from ..devices.vera import Device
  try:
   controller = Device(aDict['host'])
   ret = controller.call(3480,aDict['api'],aDict['args'],aDict['method'])
@@ -39,7 +40,6 @@ def status(aDict):
 
  Extra:
  """
- from ..devices.vera import Device
  try:
   controller = Device(aDict['host'])
   ret = controller.call(3480,"id=sdata")['data']
@@ -57,7 +57,6 @@ def infra(aDict):
 
  Extra:
  """
- from ..devices.vera import Device
  try:
   ret = {}
   controller = Device(aDict['host'])
@@ -83,7 +82,6 @@ def scene(aDict):
 
  Extra:
  """                
- from ..devices.vera import Device
  try:      
   ret = {}
   controller = Device(aDict['host'])
@@ -115,7 +113,6 @@ def devices(aDict):
 
  Extra:
  """
- from ..devices.vera import Device
  try:
   ret = {}
   controller = Device(aDict['host'])
@@ -138,7 +135,6 @@ def device_info(aDict):
 
  Extra:
  """
- from ..devices.vera import Device
  try:
   controller = Device(aDict['host'])
   ret = controller.call(3480,"id=status&DeviceNum=%s"%aDict['device'])['data']['Device_Num_%s'%aDict['device']]
