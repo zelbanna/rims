@@ -72,7 +72,6 @@ def list_mac(aDict):
  def GL_int2mac(aInt):
   return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
 
- from ..core import genlib as GL
  with DB() as db:
   db.do("SELECT devices.id, CONCAT(hostname,'.',domains.name) as fqdn, INET_NTOA(ip) as ip, mac, subnet_id FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT mac = 0 ORDER BY ip")
   rows = db.get_rows()

@@ -7,6 +7,8 @@ __author__ = "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__ = "Production"
 
+from ..devices.openstack import OpenstackRPC
+
 #
 #
 def application(aDict):
@@ -19,9 +21,6 @@ def application(aDict):
   - token (optional)
  Extra:
  """
- from .. import SettingsContainer as SC
- from ..core.dbase import DB
- from ..devices.openstack import OpenstackRPC
  ret = {}
  ret['title']   = "%s 2 Cloud"%(aDict.get('name','iaas'))
  ret['message']= "Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas'))
@@ -30,6 +29,7 @@ def application(aDict):
   if aDict.get('token'):
    controller = OpenstackRPC(cookies['controller'],aDict.get('token'))
   else:
+   from .. import SettingsContainer as SC
    controller = OpenstackRPC(cookies['controller'],None)
    res = controller.auth({'project':SC.openstack['project'], 'username':SC.openstack['username'],'password':SC.openstack['password']})
   # Forget about main token for security resasons, just retrieve projects for the list
@@ -60,7 +60,6 @@ def authenticate(aDict):
 
  Extra:
  """
- from ..devices.openstack import OpenstackRPC
  from ..core.logger import log
  ret = {}
  openstack = OpenstackRPC(aDict['host'],None)
@@ -95,7 +94,6 @@ def fqname(aDict):
 
  Extra:
  """
- from ..devices.openstack import OpenstackRPC
  controller = OpenstackRPC(aDict['host'],aDict['token'])
  try:
   ret = controller.call("8082","id-to-fqname",args={'uuid':aDict['uuid']},method='POST')
@@ -120,7 +118,6 @@ def rest(aDict):
 
  Extra:
  """
- from ..devices.openstack import OpenstackRPC
  controller = OpenstackRPC(aDict['host'],aDict['token'])
  try:
   if aDict.get('href'):

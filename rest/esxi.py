@@ -35,8 +35,8 @@ def op(aDict):
 
  Extra:
  """
- ret = {'id':aDict['id'],'res':'OK'}
  from ..devices.esxi import Device
+ ret = {'id':aDict['id'],'res':'OK'}
  with Device(aDict['ip']) as esxi:
   try:
    if aDict['next-state'] == 'vmsvc-snapshot.create':
@@ -73,12 +73,12 @@ def logs(aDict):
 
  Extra:
  """
+ from subprocess import check_output
+ from ..  import SettingsContainer as SC
  ret = {'res':'OK'}
  hostname = aDict['hostname']
  count = aDict.get('count','30')
  try:
-  from subprocess import check_output
-  from ..  import SettingsContainer as SC
   ret['data'] = check_output("tail -n %s %s | tac"%(count,SC.esxi['logformat'].format(hostname)), shell=True).split('\n')
  except Exception as e:
   ret['res'] = 'NOT_OK'
@@ -97,8 +97,8 @@ def snapshots(aDict):
 
  Extra:
  """
- ret = {'res':'OK', 'data':[],'highest':0}
  from ..devices.esxi import Device
+ ret = {'res':'OK', 'data':[],'highest':0}
  with Device(aDict['ip']) as esxi:
   data = {}                  
   snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get %s"%aDict['id'],aDict['user_id'])

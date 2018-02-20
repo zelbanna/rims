@@ -83,7 +83,6 @@ def op(aDict):
 
  Extra:
  """
- from ..devices.avocent import Device
  ret = {}
  avocent = Device(aDict['ip'])
  ret['op'] = avocent.set_state(aDict['slot'],aDict['unit'],aDict['state'])['res']
