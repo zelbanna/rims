@@ -275,7 +275,7 @@ def rest_analyze(aDict):
    if line[0:4] == 'def ':
     if data['function']:
      ret['functions'].append(data)
-     data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[],'arg':None}
+     data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[],'arg':None,'imports':[]}
     name_end = line.index('(')
     data['arg'] = line[name_end+1:-2]
     data['function'] = line[4:name_end].lstrip()
@@ -304,6 +304,8 @@ def rest_analyze(aDict):
        data['undecoded'].append({'part':part,'line':line_no})
     except Exception, e:
      data['undecoded'].append({'error':str(e),'line':line_no})
+   elif data['function'] and "from" in line:
+    data['imports'].append(line.lstrip())
   if data['function']:
    ret['functions'].append(data)
  return ret

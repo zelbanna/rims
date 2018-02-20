@@ -5,7 +5,7 @@ __version__ = "18.02.09GA"
 __status__ = "Production"
 
 
-def formatting(restfile,data):
+def formatting(restfile,data,globals):
  size = len(data['function']) + 2
  # print "%s %s %s"%("#"*(20 - size/2),data['function'],"#"*(20 - size/2 - size%2))
  print "#\n#\ndef %s(%s):"%(data['function'],data['arg'])
@@ -29,6 +29,13 @@ def formatting(restfile,data):
    if value.get('error'):
     print "  -  %s (error - line:%s)"%(value['error'],value['line'])
  print " \"\"\""
+ print "Module dependencies:"
+ if len(globals) > 0:
+  for value in globals:
+   print "- %s (global import)"%(value)
+ if len(data['imports']) > 0:
+  for value in data['imports']:
+   print "- %s (function import)"%(value)
  print "********************************************************"
 
 def analyze(aFile):
@@ -42,7 +49,7 @@ def analyze(aFile):
    print "#  - %s"%glob
   print "#"
  for fun in res['functions']:
-  formatting(res['file'],fun)
+  formatting(res['file'],fun,res['global'])
 
 if __name__ == "__main__":
  from os   import path as ospath, listdir

@@ -22,7 +22,7 @@ def list(aDict):
  ret = []
  sort = aDict.get('sort','id')
  with DB() as db:
-  db.do("SELECT racks.* from racks ORDER BY %s"%sort)
+  db.do("SELECT racks.* FROM racks ORDER BY %s"%sort)
   ret = db.get_rows()
  return ret
 
@@ -122,7 +122,7 @@ def devices(aDict):
  ret = {'sort':aDict.get('sort','devices.id')}
  id = aDict['id']
  with DB() as db:
-  db.do("SELECT name, size from racks where id = %s"%id)
+  db.do("SELECT name, size FROM racks where id = %s"%id)
   ret.update(db.get_row())
   ret['xist']    = db.do("SELECT devices.id, hostname, rackinfo.rack_unit, rackinfo.rack_size, bookings.user_id FROM devices LEFT JOIN bookings ON devices.id = bookings.device_id INNER JOIN rackinfo ON devices.id = rackinfo.device_id WHERE rackinfo.rack_id = %s ORDER BY %s"%(id,ret['sort']))
   ret['devices'] = db.get_rows()

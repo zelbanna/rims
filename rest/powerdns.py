@@ -29,7 +29,7 @@ def dedup(aDict):
   previous = {'content':None,'name':None}
   for row in rows:
    if previous['content'] == row['content'] and previous['name'] == row['name']:
-    db.do("DELETE from records WHERE id = '{}'".format(row['id'] if row['id'] > previous['id'] else previous['id']))
+    db.do("DELETE FROM records WHERE id = '{}'".format(row['id'] if row['id'] > previous['id'] else previous['id']))
     row.pop('id')
     remove.append(row)
    else:
