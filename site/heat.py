@@ -2,14 +2,10 @@
 
 HTML5 Ajax Openstack HEAT calls module
 
-- left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__= "Production"
-
-from ..devices.openstack import OpenstackRPC
-from ..site.openstack import dict2html
 
 ##################################### Heatstack ##################################
 #
@@ -19,13 +15,11 @@ def list(aWeb):
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('controller'),token)
- try:
-  data = controller.call(cookie.get('heat_port'),cookie.get('heat_url') + "stacks")['data']
- except Exception as e:
+ res = aWeb.rest_call("openstack_call",{'host':cookie['controller'],'port':cookie['heat_port'],'token':cookie['token'],'url':cookie['heat_url'] + "stacks"})
+ if not res['result'] == 'OK':
   print "<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e)
   return
-
+ data = res['data']
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Heat Stacks</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content',URL='sdcp.cgi?call=heat_list')
  print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=heat_choose_template')
@@ -53,16 +47,11 @@ def list(aWeb):
 def choose_template(aWeb):
  print "<ARTICLE STYLE='display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_choose_template>"
- try:
-  print "Add solution from template:<SELECT NAME=template STYLE='height:22px; width:auto;'>"
-  from os import listdir
-  for file in listdir("os_templates/"):
-   name,_,suffix = file.partition('.')
-   if suffix == 'tmpl.json':
-    print "<OPTION VALUE={}>{}</OPTION>".format(file,name)
-  print "</SELECT>"
- except Exception as err:
-  print "openstack_choose_template: error finding template files in 'os_templates/' [{}]".format(str(err))
+ print "Add solution from template:<SELECT NAME=template STYLE='height:22px; width:auto;'>"
+ templates = aWeb.rest_call("openstack_heat_templates")['templates']
+ for tmpl in templates:
+  print "<OPTION VALUE={0}>{0}</OPTION>".format(tmpl)
+ print "</SELECT>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('document', DIV='div_os_info', URL='sdcp.cgi?call=heat_enter_parameters',   FRM='frm_heat_choose_template', TITLE='Enter parameters')
  print aWeb.button('info', DIV='div_os_info', URL='sdcp.cgi?call=heat_action&op=templateview', FRM='frm_heat_choose_template', TITLE='View Template')
@@ -70,10 +59,8 @@ def choose_template(aWeb):
  print "</DIV></ARTICLE>"
 
 def enter_parameters(aWeb):
- from json import load,dumps
  template = aWeb['template']
- with open("os_templates/"+template) as f:
-  data = load(f)
+ data = aWeb.rest_call("openstack_heat_content",{'template':template})['template']
  print "<FORM ID=frm_heat_template_parameters>"
  print "<INPUT TYPE=hidden NAME=template VALUE={}>".format(template)
  print "<DIV CLASS=table>"
@@ -91,18 +78,16 @@ def enter_parameters(aWeb):
 # Heat Actions
 #
 def action(aWeb):
+ from ..site.openstack import dict2html
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('controller'),token)
- port = cookie.get('heat_port')
- url  = cookie.get('heat_url')
+ args = {'host':cookie['controller'],'port':cookie['heat_port'],'token':cookie['token']}
  name = aWeb['name']
  id   = aWeb['id']
  op   = aWeb.get('op','info')
- aWeb.log("heat_action - id:{} name:{} op:{}".format(id,name,op))
 
  if   op == 'info':
   tmpl = "<BUTTON CLASS='z-op' TITLE='{}' DIV=div_os_info URL=sdcp.cgi?call=heat_action&name=%s&id=%s&op={} SPIN=true>{}</BUTTON>"%(name,id)
@@ -113,17 +98,20 @@ def action(aWeb):
   print tmpl.format('Stack Parameters','parameters','Parameters')
   print "</DIV>"
   print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
-  data = controller.call(port,url + "stacks/{}/{}".format(name,id))['data']
+  args['url'] = cookie['heat_url'] + "stacks/{}/{}".format(name,id)
+  data = aWeb.rest_call("openstack_call",args)['data']
   dict2html(data['stack'],name)
   print "</ARTICLE>"
 
  elif op == 'details':
-  data = controller.call(port,url + "stacks/{}/{}".format(name,id))['data']
+  args['url'] = cookie['heat_url'] + "stacks/{}/{}".format(name,id)
+  data = aWeb.rest_call("openstack_call",args)['data']
   dict2html(data['stack'],name)
 
  elif op == 'events':
   from json import dumps
-  data = controller.call(port,url + "stacks/{}/{}/events".format(name,id))['data']
+  args['url'] = cookie['heat_url'] + "stacks/{}/{}/events".format(name,id)
+  data = aWeb.rest_call("openstack_call",args)['data']
   print "<!-- {} -->".format("stacks/{}/{}/events".format(name,id) )
   print "<DIV CLASS=table>"
   print "<DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>Resource</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th>Reason</DIV></DIV>"
@@ -134,34 +122,32 @@ def action(aWeb):
 
  elif op == 'template':
   from json import dumps
-  data = controller.call(port,url + "stacks/{}/{}/template".format(name,id))['data']
+  args['url'] = cookie['heat_url'] + "stacks/{}/{}/template".format(name,id)
+  data = aWeb.rest_call("openstack_call",args)['data']
   print "<PRE>%s</PREE>"%(dumps(data, indent=4))
 
  elif op == 'parameters':
   from json import dumps
-  data = controller.call(port,url + "stacks/{}/{}".format(name,id))['data']['stack']['parameters']
+  args['url'] = cookie['heat_url'] + "stacks/{}/{}".format(name,id)
+  data = aWeb.rest_call("openstack_call",args)['data']['stack']['parameters']
   data.pop('OS::project_id')
   data.pop('OS::stack_name')
   data.pop('OS::stack_id')
   print "<PRE>%s</PRE>"%(dumps(data, indent=4))
 
  elif op == 'create':
-  template = aWeb['template']
   print "<ARTICLE>"
-  if name and template:
-   from json import load,dumps
-   with open("os_templates/"+template) as f:
-    data = load(f)
-   data['stack_name'] = name
+  if name and aWeb['template']:
+   args['name'] = name
+   args['template'] = aWeb['template']
+   args['url'] = cookie['heat_url']
+   args['parameters'] = {}
    params  = aWeb.get_args2dict(['op','call','template','name'])
    for key,value in params.iteritems():
-    data['parameters'][key[6:]] = value
-
-   # Code...
-
-   ret = controller.call(port,url + "stacks",args=data)
+    args['parameters'][key[6:]] = value
+   ret = aWeb.rest_call("openstack_heat_instantiate",args)
    if ret['code'] == 201:
-    print "<H2>Starting instantiation of '{}' solution</H2>".format(template.partition('.')[0])
+    print "<H2>Starting instantiation of '{}' solution</H2>".format(aWeb['template'].partition('.')[0])
     print "Name: {}<BR>Id:{}".format(name,ret['data']['stack']['id'])
    else:
     print "<PRE>Error instantiating stack:" + str(ret) + "</PRE>"
@@ -170,7 +156,9 @@ def action(aWeb):
   print "</ARTICLE>"
 
  elif op == 'remove':
-  ret = controller.call(port,url + "stacks/{}/{}".format(name,id), method='DELETE')
+  args['url'] = cookie['heat_url'] + "stacks/{}/{}".format(name,id)
+  args['method'] = 'DELETE'
+  ret = aWeb.rest_call("openstack_call",args)
   print "<ARTICLE><P>Removing {}</P>".format(name)
   print "Removing stack" if ret['code'] == 204 else "Error code: %s"%ret['code']
   print "</ARTICLE>"

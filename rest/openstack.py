@@ -129,3 +129,105 @@ def rest(aDict):
  except Exception as e:
   ret = e[0]
  return ret
+
+#
+#
+def call(aDict):
+ """Function docstring for call TBD
+
+ Args:
+  - host (required)
+  - token (required)
+  - port (required)
+  - url (required)
+  - arguments (optional)
+  - method (optional)
+
+ Extra:
+ """
+ ret = {}
+ controller = OpenstackRPC(aDict['host'],aDict['token'])
+ try:
+  ret = controller.call(aDict['port'], aDict['url'], aDict.get('arguments'), aDict.get('method','GET'))
+  ret['result'] = 'OK'
+ except Exception as e:
+  ret = e[0]
+ return ret
+
+#
+#
+def heat_templates(aDict):
+ """Function docstring for heat_templates TBD
+
+ Args:
+
+ Extra:
+ """
+ ret = {'res':'OK','templates':[]}
+ try:
+  from os import listdir
+  for file in listdir("os_templates/"):
+   name,_,suffix = file.partition('.')
+   if suffix == 'tmpl.json':
+    ret['templates'].append(name)
+ except Exception as e:
+  ret['info'] = str(e)
+  ret['res'] = 'NOT_OK'
+ return ret
+
+#
+#
+def heat_content(aDict):
+ """Function docstring for heat_content TBD
+
+ Args:
+  - template (required)
+ Extra:
+ """
+ from json import load
+ ret = {'res':'OK','template':None} 
+ try:
+  with open("os_templates/%s.tmpl.json"%aDict['template']) as f:
+   ret['template'] = load(f)
+ except Exception as e:
+  ret['info'] = str(e)
+  ret['res'] = 'NOT_OK'
+ return ret
+
+#
+#
+def heat_instantiate(aDict):
+ """Function docstring for heat_instantiate TBD
+
+ Args:
+  - host (required)
+  - token (required)
+  - port (required) - heat port
+  - url (required) - heat base url
+  - template (required)
+  - name (required)
+  - parameters (required)
+
+ Extra:
+ """
+ from json import load,dump
+ ret = {}
+ data = {}
+ try:
+  with open("os_templates/%s.tmpl.json"%aDict['template']) as f:
+   data = load(f)
+  data['stack_name'] = aDict['name']
+  for key,value in aDict['parameters'].iteritems():
+   data['parameters'][key] = value
+ except Exception as e:
+  ret['info'] = str(e)
+  ret['result'] = 'NOT_OK'
+ else:
+  try:
+   controller = OpenstackRPC(aDict['host'],aDict['token'])
+   ret = controller.call(aDict['port'], aDict['url'] + "stacks", data, 'POST')
+   ret['result'] = 'OK'
+  except Exception as e:
+   ret = e[0]
+ return ret
+
