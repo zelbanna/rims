@@ -79,6 +79,7 @@ def scene(aDict):
   - host (required)
   - scene (required)
   - op (optional) - 'run'/'off'
+  - status (optional)
 
  Extra:
  """                
@@ -87,7 +88,7 @@ def scene(aDict):
   ret = {}
   controller = Device(aDict['host'])
   if aDict.get('op'):
-   ret['op'] = "RunScene" if aDict['op']== "run" else "SceneOff"
+   ret['op'] = "RunScene" if aDict.get('op')== "run" else "SceneOff"
    res = controller.call(3480,"id=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(ret['op'],aDict['scene']))
    ret['info'] = "OK" if (res['code'] == 200) else "FAILED"
   elif aDict.get('status'):
