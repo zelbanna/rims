@@ -21,7 +21,7 @@ def list(aWeb):
   return
  controller = OpenstackRPC(cookie.get('controller'),token)
  try:
-  data = controller.call(cookie.get('heat_port'),cookie.get('heat_url') + "/stacks")['data']
+  data = controller.call(cookie.get('heat_port'),cookie.get('heat_url') + "stacks")['data']
  except Exception as e:
   print "<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e)
   return
@@ -113,18 +113,18 @@ def action(aWeb):
   print tmpl.format('Stack Parameters','parameters','Parameters')
   print "</DIV>"
   print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
-  data = controller.call(port,url + "/stacks/{}/{}".format(name,id))['data']
+  data = controller.call(port,url + "stacks/{}/{}".format(name,id))['data']
   dict2html(data['stack'],name)
   print "</ARTICLE>"
 
  elif op == 'details':
-  data = controller.call(port,url + "/stacks/{}/{}".format(name,id))['data']
+  data = controller.call(port,url + "stacks/{}/{}".format(name,id))['data']
   dict2html(data['stack'],name)
 
  elif op == 'events':
   from json import dumps
-  data = controller.call(port,url + "/stacks/{}/{}/events".format(name,id))['data']
-  print "<!-- {} -->".format("/stacks/{}/{}/events".format(name,id) )
+  data = controller.call(port,url + "stacks/{}/{}/events".format(name,id))['data']
+  print "<!-- {} -->".format("stacks/{}/{}/events".format(name,id) )
   print "<DIV CLASS=table>"
   print "<DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>Resource</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th>Reason</DIV></DIV>"
   print "<DIV CLASS=tbody>"
@@ -134,12 +134,12 @@ def action(aWeb):
 
  elif op == 'template':
   from json import dumps
-  data = controller.call(port,url + "/stacks/{}/{}/template".format(name,id))['data']
+  data = controller.call(port,url + "stacks/{}/{}/template".format(name,id))['data']
   print "<PRE>%s</PREE>"%(dumps(data, indent=4))
 
  elif op == 'parameters':
   from json import dumps
-  data = controller.call(port,url + "/stacks/{}/{}".format(name,id))['data']['stack']['parameters']
+  data = controller.call(port,url + "stacks/{}/{}".format(name,id))['data']['stack']['parameters']
   data.pop('OS::project_id')
   data.pop('OS::stack_name')
   data.pop('OS::stack_id')
@@ -159,7 +159,7 @@ def action(aWeb):
 
    # Code...
 
-   ret = controller.call(port,url + "/stacks",args=data)
+   ret = controller.call(port,url + "stacks",args=data)
    if ret['code'] == 201:
     print "<H2>Starting instantiation of '{}' solution</H2>".format(template.partition('.')[0])
     print "Name: {}<BR>Id:{}".format(name,ret['data']['stack']['id'])
@@ -170,7 +170,7 @@ def action(aWeb):
   print "</ARTICLE>"
 
  elif op == 'remove':
-  ret = controller.call(port,url + "/stacks/{}/{}".format(name,id), method='DELETE')
+  ret = controller.call(port,url + "stacks/{}/{}".format(name,id), method='DELETE')
   print "<ARTICLE><P>Removing {}</P>".format(name)
   print "Removing stack" if ret['code'] == 204 else "Error code: %s"%ret['code']
   print "</ARTICLE>"

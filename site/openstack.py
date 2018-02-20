@@ -18,7 +18,7 @@ def portal(aWeb):
 
  if not cookie.get('authenticated'):
   (pid,pname) = aWeb.get('project','none_none').split('_')
-  res = aWeb.rest_call("openstack_authenticate",{'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
+  res = aWeb.rest_call("openstack_authenticate",{'host':cookie['controller'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
    cookie.update(res)
    aWeb.cookie_jar('openstack',cookie,3000)
@@ -26,7 +26,7 @@ def portal(aWeb):
    print "Error logging in - please try login again"
    return
  else:
-  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('user_token'),ctrl))
+  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('user_token'),cookie['controller']))
 
  aWeb.put_html("Openstack Portal")
  print "<HEADER CLASS='background'>"
@@ -34,7 +34,7 @@ def portal(aWeb):
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(cookie['project_name'],cookie['project_id'])
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(cookie['username'],cookie['user_token'])
  print "</DIV></DIV>"
- print "<BUTTON CLASS='z-op right menu warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(ctrl,cookie.get('name'),cookie.get('appformix'))
+ print "<BUTTON CLASS='z-op right menu warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(cookie['controller'],cookie.get('name'),cookie.get('appformix'))
  print "</HEADER><MAIN CLASS='background' ID=main>"
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
@@ -42,7 +42,7 @@ def portal(aWeb):
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
  print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
  print "<LI><A CLASS='z-op reload' OP=redirect URL='sdcp.cgi?call=openstack_portal'></A></LI>"
- print "<LI CLASS='dropdown right'><A>API</A><DIV CLASS=dropdown-content>"
+ print "<LI CLASS='dropdown right'><A>Debug</A><DIV CLASS=dropdown-content>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
  print "</DIV></LI>"
@@ -56,7 +56,7 @@ def inline(aWeb):
 
  if not cookie.get('authenticated'):
   (pid,pname) = aWeb.get('project','none_none').split('_')
-  res = aWeb.rest_call("openstack_authenticate",{'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
+  res = aWeb.rest_call("openstack_authenticate",{'host':cookie['controller'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
    cookie.update(res)
    aWeb.cookie_jar('openstack',cookie,3000)
@@ -64,7 +64,7 @@ def inline(aWeb):
    print "Error logging in - please try login again"
    return
  else:
-  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('user_token'),ctrl))
+  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('user_token'),cookie['controller']))
 
  aWeb.put_cookie()
  print "<NAV><UL>"
@@ -74,8 +74,8 @@ def inline(aWeb):
  print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=openstack_inline'></A></LI>"
  print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout DIV=main COOKIE=openstack>Logout</A></LI>"
- print "<LI CLASS='right'><A CLASS='z-op green' TARGET=_blank HREF='sdcp.cgi?call=sdcp_login&application=openstack&controller=%s&name=%s&appformix=%s'>Tab</A></LI>"%(ctrl,cookie.get('name'),cookie.get('appformix'))
- print "<LI CLASS='dropdown right'><A>API</A><DIV CLASS=dropdown-content>"
+ print "<LI CLASS='right'><A CLASS='z-op green' TARGET=_blank HREF='sdcp.cgi?call=sdcp_login&application=openstack&controller=%s&name=%s&appformix=%s'>Tab</A></LI>"%(cookie['controller'],cookie.get('name'),cookie.get('appformix'))
+ print "<LI CLASS='dropdown right'><A>Debug</A><DIV CLASS=dropdown-content>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
  print "</DIV></LI>"
@@ -155,20 +155,17 @@ def fqname(aWeb):
   if not token:
    print "Not logged in"
   else:
-   from ..devices.openstack import OpenstackRPC
-   controller = OpenstackRPC(cookie.get('controller'),token)
-   argument   = {'uuid':aWeb['os_uuid']}
-   try:
-    data = controller.call("8082","id-to-fqname",args=argument,method='POST')['data']
+   res = aWeb.rest_call("openstack_fqname",{"host":cookie['controller'],"token":cookie['user_token'],'uuid':aWeb['os_uuid']})
+   if res['result'] == 'OK':
     print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
-    print "<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(data['fq_name']))
-    print "<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?call=openstack_result&os_service=contrail&os_call={0}/{1}>{0}</A></DIV></DIV>".format(data['type'],argument['uuid'])
+    print "<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(res['data']['fq_name']))
+    print "<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?call=openstack_result&os_service=contrail&os_call={0}/{1}>{0}</A></DIV></DIV>".format(res['data']['type'],aWeb['os_uuid'])
     print "</DIV></DIV><BR>"
-   except Exception as e:
+   else:
     print "<DIV CLASS=table STYLE='width:100%'><DIV CLASS=tbody>"
-    for key,value in e[0].iteritems():
+    for key,value in res.iteritems():
      print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)
-    print "</DIV></DIV>" 
+    print "</DIV></DIV>"
  print "</ARTICLE>"
  print "<DIV ID=div_os_info></DIV>"
 
@@ -179,27 +176,27 @@ def result(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
  if (not aWeb['os_call'] and not aWeb['os_href']) or not cookie.get('user_token'):
   return
- from ..devices.openstack import OpenstackRPC
  from json import dumps,loads
- controller = OpenstackRPC(cookie.get('controller'),cookie.get('user_token'))
  try:    arguments = loads(aWeb['os_args'])
  except: arguments = None
- print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"
- try:
-  if aWeb['os_href']:
-   data = controller.href(aWeb['os_href'], aArgs = arguments, aMethod=aWeb['os_method'])['data']
+ args = {"host":cookie['controller'],"token":cookie['user_token'],'arguments':arguments,'method':aWeb['os_method']}
+ if aWeb['os_href']:
+  args['href'] = aWeb['os_href']
+ else:
+  service = aWeb['os_service']
+  if service == 'contrail':
+   args['port'] = "8082"
+   args['url']  = aWeb['os_call']
   else:
-   service = aWeb['os_service']
-   if service == 'contrail':
-    port,url = "8082",""
-   else:
-    cookie = aWeb.cookie_unjar(service)
-    port,url = cookie['port'],cookie['url']
-   data = controller.call(port,url + aWeb['os_call'], args = arguments, method=aWeb['os_method'])['data']
-  print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True)
- except Exception, e:
+   args['port'] = cookie['%s_port'%service]
+   args['url']  = cookie['%s_url'%service] + aWeb['os_call']
+ res = aWeb.rest_call("openstack_rest",args)
+ print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"
+ if res['result'] == 'OK':
+  print "<PRE CLASS='white'>%s</PRE>"%dumps(res['data'],indent=4, sort_keys=True)
+ else:
   print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
-  for key,value in e[0].iteritems():
+  for key,value in res.iteritems():
    print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)
   print "</DIV></DIV>" 
  print "</DIV></ARTICLE>"

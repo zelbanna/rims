@@ -59,7 +59,7 @@ def list(aWeb):
 
 def select_parameters(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
- token  = cookie.get('token')
+ token  = cookie.get('user_token')
  if not token:
   print "Not logged in"
   return

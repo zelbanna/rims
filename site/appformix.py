@@ -43,7 +43,7 @@ def list(aWeb):
  for rep in resp['data']['Metadata']:
   print "<DIV CLASS=tr>"
   print "<!-- %s -->"%rep
-  print "<DIV CLASS=td>%s</DIV>"%rep['ProjectId']
+  print "<DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden;'>%s</DIV>"%rep['ProjectId']
   print "<DIV CLASS=td>%s</DIV>"%datetime.utcfromtimestamp(float(rep['Start'])/1e3)
   print "<DIV CLASS=td>"
   print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=appformix_info&report=%s'%(rep['ReportId']))

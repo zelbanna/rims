@@ -16,7 +16,7 @@ def application(aDict):
   - controller (required)
   - appformix (optional)
   - name (optional)
-
+  - token (optional)
  Extra:
  """
  from .. import SettingsContainer as SC
@@ -27,8 +27,11 @@ def application(aDict):
  ret['message']= "Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas'))
  cookies = {'name':aDict.get('name','iaas'),'controller':aDict['controller'],'appformix':aDict.get('appformix')}
  try:
-  controller = OpenstackRPC(cookies['controller'],None)
-  res = controller.auth({'project':SC.openstack['project'], 'username':SC.openstack['username'],'password':SC.openstack['password']})
+  if aDict.get('token'):
+   controller = OpenstackRPC(cookies['controller'],aDict.get('token'))
+  else:
+   controller = OpenstackRPC(cookies['controller'],None)
+   res = controller.auth({'project':SC.openstack['project'], 'username':SC.openstack['username'],'password':SC.openstack['password']})
   # Forget about main token for security resasons, just retrieve projects for the list
   # main_token = controller.get_token()
   auth = controller.call("5000","v3/projects")
@@ -49,6 +52,7 @@ def authenticate(aDict):
  """Function docstring for authenticate TBD
 
  Args:
+  - host (required)
   - username (required)
   - project_id (required)
   - password (required)
@@ -59,7 +63,7 @@ def authenticate(aDict):
  from ..devices.openstack import OpenstackRPC
  from ..core.logger import log
  ret = {}
- openstack = OpenstackRPC(ctrl,None)
+ openstack = OpenstackRPC(aDict['host'],None)
  res = openstack.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
  ret['authenticated'] = res['auth']
  if ret['authenticated'] == 'OK':
@@ -70,8 +74,60 @@ def authenticate(aDict):
   ret['services']   = "&".join(['heat','nova','neutron','glance'])
   for service in ['heat','nova','neutron','glance']:
    port,url,id = openstack.get_service(service,'public')
+   if len(url) > 0:
+    url = url + '/'
    ret.update({'%s_port'%service:port,'%s_url'%service:url,'%s_id'%service:id})
-  log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],ctrl))
+  log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],aDict['host']))
  else:
   log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl))
+ return ret
+
+
+#
+#
+def fqname(aDict):
+ """Function docstring for fqname TBD
+
+ Args:
+  - host (required)
+  - token (required)
+  - uuid (required)
+
+ Extra:
+ """
+ from ..devices.openstack import OpenstackRPC
+ controller = OpenstackRPC(aDict['host'],aDict['token'])
+ try:
+  ret = controller.call("8082","id-to-fqname",args={'uuid':aDict['uuid']},method='POST')
+  ret['result'] = 'OK'
+ except Exception as e:
+  ret = e[0]
+ return ret
+
+#
+#
+def rest(aDict):
+ """Function docstring for rest TBD
+
+ Args:
+  - host (required)
+  - token (required)
+  - port (optional)
+  - url (optional)
+  - href (optional)
+  - arguments (optional)
+  - method (optional)
+
+ Extra:
+ """
+ from ..devices.openstack import OpenstackRPC
+ controller = OpenstackRPC(aDict['host'],aDict['token'])
+ try:
+  if aDict.get('href'):
+   ret = controller.href(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'))
+  else:
+   ret = controller.call(aDict.get('port'), aDict.get('url'), aDict.get('arguments'), aDict.get('method','GET'))
+  ret['result'] = 'OK'
+ except Exception as e:
+  ret = e[0]
  return ret
