@@ -133,7 +133,7 @@ def rest(aDict):
 #
 #
 def call(aDict):
- """Function docstring for call TBD
+ """Function docstring for call. Basically creates a controller instance and send a (nested) rest_call
 
  Args:
   - host (required)
@@ -148,7 +148,7 @@ def call(aDict):
  ret = {}
  controller = OpenstackRPC(aDict['host'],aDict['token'])
  try:
-  ret = controller.call(aDict['port'], aDict['url'], aDict.get('arguments'), aDict.get('method','GET'))
+  ret = controller.call(aDict['port'], aDict['url'], aDict.get('arguments'), aDict.get('method'))
   ret['result'] = 'OK'
  except Exception as e:
   ret = e[0]
@@ -230,4 +230,3 @@ def heat_instantiate(aDict):
   except Exception as e:
    ret = e[0]
  return ret
-
