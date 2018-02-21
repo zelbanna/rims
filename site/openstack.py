@@ -32,7 +32,7 @@ def portal(aWeb):
  print "<HEADER CLASS='background'>"
  print "<DIV CLASS=table STYLE='width:auto; display:inline; float:left; margin:5px 100px 0px 10px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Identity:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Id:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(cookie['project_name'],cookie['project_id'])
- print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(cookie['username'],cookie['token'])
+ print "<DIV CLASS=tr STYLE='background:transparent'><DIV CLASS=td><B>Username:</B></DIV><DIV CLASS=td><I>{}</I></DIV><DIV CLASS=td>&nbsp;<B>Token:</B></DIV><DIV CLASS=td><I>{}</I></DIV></DIV>".format(cookie['username'],cookie['os_token'])
  print "</DIV></DIV>"
  print "<BUTTON CLASS='z-op right menu warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&controller={}&name={}&appformix={}' STYLE='margin-right:20px;'>Log out</BUTTON>".format(cookie['controller'],cookie.get('name'),cookie.get('appformix'))
  print "</HEADER><MAIN CLASS='background' ID=main>"
@@ -121,7 +121,7 @@ def api(aWeb):
  if not cookie.get('token'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- services = aWeb.rest_call("openstack_services",{'token':cookie['db_token']})['services']
+ services = aWeb.rest_call("openstack_services",{'token':cookie['token']})['services']
  print "<ARTICLE><P>OpenStack REST API inspection</P>"
  print "<FORM ID=frm_os_api>"
  print "Choose Service and enter API call: <SELECT CLASS='white' STYLE='width:auto; height:22px;' NAME=os_service>"
@@ -154,7 +154,7 @@ def fqname(aWeb):
   if not token:
    print "Not logged in"
   else:
-   res = aWeb.rest_call("openstack_fqname",{'token':cookie['db_token'],'uuid':aWeb['os_uuid']})
+   res = aWeb.rest_call("openstack_fqname",{'token':cookie['token'],'uuid':aWeb['os_uuid']})
    if res['result'] == 'OK':
     print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
     print "<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(res['data']['fq_name']))
@@ -177,7 +177,7 @@ def result(aWeb):
  from json import dumps,loads
  try:    arguments = loads(aWeb['os_args'])
  except: arguments = None
- args = {"token":cookie['db_token'],'arguments':arguments,'method':aWeb['os_method']}
+ args = {"token":cookie['token'],'arguments':arguments,'method':aWeb['os_method']}
  if aWeb['os_href']:
   args['href'] = aWeb['os_href']
  else:

@@ -15,7 +15,7 @@ def list(aWeb):
  if not token:
   print "Not logged in"
   return
- res = aWeb.rest_call("openstack_call",{'token':cookie['db_token'],'service':'heat','call':"stacks"})
+ res = aWeb.rest_call("openstack_call",{'token':cookie['token'],'service':'heat','call':"stacks"})
  if not res['result'] == 'OK':
   print "<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e)
   return
@@ -84,7 +84,7 @@ def action(aWeb):
  if not token:
   print "Not logged in"
   return
- args = {'token':cookie['db_token'],'service':'heat'}
+ args = {'token':cookie['token'],'service':'heat'}
  name = aWeb['name']
  id   = aWeb['id']
  op   = aWeb.get('op','info')

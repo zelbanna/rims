@@ -67,20 +67,15 @@ def authenticate(aDict):
  ret['authenticated'] = res['auth']
  if ret['authenticated'] == 'OK':
   with DB() as db:
-   ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'token':controller.get_token(),'lifetime':controller.get_lifetime()})
-   db.do("INSERT INTO openstack_tokens(token,expiry,project_id,username,controller) VALUES('%s','%s','%s','%s',INET_ATON('%s'))"%(ret['token'],ret['lifetime'],aDict['project_id'],aDict['username'],aDict['host']))
-   uuid = db.get_last_id()
-   ret['db_token'] = uuid
-   ret['services'] = "&".join(['heat','nova','neutron','glance'])
+   ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'os_token':controller.get_token()})
+   db.do("INSERT INTO openstack_tokens(token,expiry,project_id,username,controller) VALUES('%s','%s','%s','%s',INET_ATON('%s'))"%(controller.get_token(),controller.get_lifetime(),aDict['project_id'],aDict['username'],aDict['host']))
+   ret['token'] = db.get_last_id()
    for service in ['heat','nova','neutron','glance']:
     port,url,id = controller.get_service(service,'public')
     if len(url) > 0:
      url = url + '/'
-    ret.update({'%s_port'%service:port,'%s_url'%service:url,'%s_id'%service:id})
-    db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(uuid,service,port,url,id))
-   ret['services'] = "contrail&" + ret['services']
-   ret.update({'contrail_port':'8082','contrail_url':'','contrail_id':''})
-   db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(uuid,"contrail",8082,'',''))
+    db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(ret['token'],service,port,url,id))
+   db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(ret['token'],"contrail",8082,'',''))
   log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],aDict['host']))
  else:
   log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl))
