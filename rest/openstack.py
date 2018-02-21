@@ -122,7 +122,6 @@ def rest(aDict):
  """Function docstring for rest TBD
 
  Args:
-  - host (required)
   - token (required)
   - service (optional)
   - call (optional)
@@ -154,18 +153,20 @@ def call(aDict):
  """Function docstring for call. Basically creates a controller instance and send a (nested) rest_call
 
  Args:
-  - host (required)
   - token (required)
-  - port (required)
-  - url (required)
+  - service (required)
+  - call (optional)
   - arguments (optional)
   - method (optional)
 
  Extra:
  """
- controller = OpenstackRPC(aDict['host'],aDict['token'])
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = '%s'"%(aDict['token'], aDict['service']))
+  data = db.get_row()
+ controller = OpenstackRPC(data['ipasc'],data['token'])
  try:
-  ret = controller.call(aDict['port'], aDict['url'], aDict.get('arguments'), aDict.get('method'))
+  ret = controller.call(data['service_port'], data['service_url'] + aDict.get('call',''), aDict.get('arguments'), aDict.get('method'))
   ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
@@ -181,7 +182,10 @@ def href(aDict):
 
  Extra:
  """
- controller = OpenstackRPC(aDict['host'],aDict['token'])
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE openstack_tokens.uuid = '%s'"%(aDict['token']))
+  data = db.get_row()
+ controller = OpenstackRPC(data['ipasc'],data['token'])
  try:
   ret = controller.href(aDict['href'], aDict.get('arguments'), aDict.get('method'))
   ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
@@ -234,10 +238,7 @@ def heat_instantiate(aDict):
  """Function docstring for heat_instantiate TBD
 
  Args:
-  - host (required)
   - token (required)
-  - port (required) - heat port
-  - url (required) - heat base url
   - template (required)
   - name (required)
   - parameters (required)
@@ -246,20 +247,23 @@ def heat_instantiate(aDict):
  """
  from json import load,dump
  ret = {}
- data = {}
+ args = {}
  try:
   with open("os_templates/%s.tmpl.json"%aDict['template']) as f:
-   data = load(f)
-  data['stack_name'] = aDict['name']
+   args = load(f)
+  args['stack_name'] = aDict['name']
   for key,value in aDict['parameters'].iteritems():
-   data['parameters'][key] = value
+   args['parameters'][key] = value
  except Exception as e:
   ret['info'] = str(e)
   ret['result'] = 'NOT_OK'
  else:
+  with DB() as db:
+   db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'heat'"%(aDict['token']))
+   data = db.get_row()
   try:
-   controller = OpenstackRPC(aDict['host'],aDict['token'])
-   ret = controller.call(aDict['port'], aDict['url'] + "stacks", data, 'POST')
+   controller = OpenstackRPC(data['ipasc'],data['token'])
+   ret = controller.call(data['service_port'], data['service_url'] + "stacks", args, 'POST')
    ret['result'] = 'OK'
   except Exception as e: ret = e[0]
  return ret

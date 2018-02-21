@@ -15,7 +15,7 @@ def list(aWeb):
  if not token:
   print "Not logged in"
   return
- res = aWeb.rest_call("openstack_call",{'host':cookie['controller'],'port':cookie['heat_port'],'token':cookie['token'],'url':cookie['heat_url'] + "stacks"})
+ res = aWeb.rest_call("openstack_call",{'token':cookie['db_token'],'service':'heat','call':"stacks"})
  if not res['result'] == 'OK':
   print "<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e)
   return
@@ -84,7 +84,7 @@ def action(aWeb):
  if not token:
   print "Not logged in"
   return
- args = {'host':cookie['controller'],'port':cookie['heat_port'],'token':cookie['token']}
+ args = {'token':cookie['db_token'],'service':'heat'}
  name = aWeb['name']
  id   = aWeb['id']
  op   = aWeb.get('op','info')
@@ -98,19 +98,19 @@ def action(aWeb):
   print tmpl.format('Stack Parameters','parameters','Parameters')
   print "</DIV>"
   print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
-  args['url'] = cookie['heat_url'] + "stacks/{}/{}".format(name,id)
+  args['call'] = "stacks/{}/{}".format(name,id)
   data = aWeb.rest_call("openstack_call",args)['data']
   dict2html(data['stack'],name)
   print "</ARTICLE>"
 
  elif op == 'details':
-  args['url'] = cookie['heat_url'] + "stacks/{}/{}".format(name,id)
+  args['call'] = "stacks/{}/{}".format(name,id)
   data = aWeb.rest_call("openstack_call",args)['data']
   dict2html(data['stack'],name)
 
  elif op == 'events':
   from json import dumps
-  args['url'] = cookie['heat_url'] + "stacks/{}/{}/events".format(name,id)
+  args['call'] = "stacks/{}/{}/events".format(name,id)
   data = aWeb.rest_call("openstack_call",args)['data']
   print "<!-- {} -->".format("stacks/{}/{}/events".format(name,id) )
   print "<DIV CLASS=table>"
@@ -122,13 +122,13 @@ def action(aWeb):
 
  elif op == 'template':
   from json import dumps
-  args['url'] = cookie['heat_url'] + "stacks/{}/{}/template".format(name,id)
+  args['call'] = "stacks/{}/{}/template".format(name,id)
   data = aWeb.rest_call("openstack_call",args)['data']
   print "<PRE>%s</PREE>"%(dumps(data, indent=4))
 
  elif op == 'parameters':
   from json import dumps
-  args['url'] = cookie['heat_url'] + "stacks/{}/{}".format(name,id)
+  args['call'] = "stacks/{}/{}".format(name,id)
   data = aWeb.rest_call("openstack_call",args)['data']['stack']['parameters']
   data.pop('OS::project_id')
   data.pop('OS::stack_name')
@@ -140,7 +140,6 @@ def action(aWeb):
   if name and aWeb['template']:
    args['name'] = name
    args['template'] = aWeb['template']
-   args['url'] = cookie['heat_url']
    args['parameters'] = {}
    params  = aWeb.get_args2dict(['op','call','template','name'])
    for key,value in params.iteritems():
@@ -156,7 +155,7 @@ def action(aWeb):
   print "</ARTICLE>"
 
  elif op == 'remove':
-  args['url'] = cookie['heat_url'] + "stacks/{}/{}".format(name,id)
+  args['call'] = "stacks/{}/{}".format(name,id)
   args['method'] = 'DELETE'
   ret = aWeb.rest_call("openstack_call",args)
   print "<ARTICLE><P>Removing {}</P>".format(name)
