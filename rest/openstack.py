@@ -8,7 +8,7 @@ __version__ = "18.02.09GA"
 __status__ = "Production"
 
 from ..devices.openstack import OpenstackRPC
-
+from ..core.dbase import DB
 #
 #
 def application(aDict):
@@ -62,45 +62,58 @@ def authenticate(aDict):
  """
  from ..core.logger import log
  ret = {}
- openstack = OpenstackRPC(aDict['host'],None)
- res = openstack.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
+ controller = OpenstackRPC(aDict['host'],None)
+ res = controller.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
  ret['authenticated'] = res['auth']
  if ret['authenticated'] == 'OK':
-  ret['project_name'] = aDict['project_name']
-  ret['project_id'] = aDict['project_id']
-  ret['username']   = aDict['username']
-  ret['token'] = openstack.get_token()
-  ret['lifetime'] = openstack.get_lifetime()
-  ret['services'] = "&".join(['heat','nova','neutron','glance'])
-  for service in ['heat','nova','neutron','glance']:
-   port,url,id = openstack.get_service(service,'public')
-   if len(url) > 0:
-    url = url + '/'
-   ret.update({'%s_port'%service:port,'%s_url'%service:url,'%s_id'%service:id})
+  with DB() as db:
+   ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'token':controller.get_token(),'lifetime':controller.get_lifetime()})
+   db.do("INSERT INTO openstack_tokens(token,expiry,project_id,username,controller) VALUES('%s','%s','%s','%s',INET_ATON('%s'))"%(ret['token'],ret['lifetime'],aDict['project_id'],aDict['username'],aDict['host']))
+   uuid = db.get_last_id()
+   ret['db_token'] = uuid
+   ret['services'] = "&".join(['heat','nova','neutron','glance'])
+   for service in ['heat','nova','neutron','glance']:
+    port,url,id = controller.get_service(service,'public')
+    if len(url) > 0:
+     url = url + '/'
+    ret.update({'%s_port'%service:port,'%s_url'%service:url,'%s_id'%service:id})
+    db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(uuid,service,port,url,id))
+   ret['services'] = "contrail&" + ret['services']
+   ret.update({'contrail_port':'8082','contrail_url':'','contrail_id':''})
+   db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(uuid,"contrail",8082,'',''))
   log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],aDict['host']))
  else:
   log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl))
  return ret
 
-
+#
+#
+def services(aDict):
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT %s FROM openstack_services WHERE uuid = '%s'"%("*" if not aDict.get('filter') else aDict.get('filter'), aDict['token']))
+  ret['services'] = db.get_rows()
+ return ret
+ 
 #
 #
 def fqname(aDict):
  """Function docstring for fqname TBD
 
  Args:
-  - host (required)
   - token (required)
   - uuid (required)
 
  Extra:
  """
- controller = OpenstackRPC(aDict['host'],aDict['token'])
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
+  data = db.get_row()
+ controller = OpenstackRPC(data['ipasc'],data['token'])
  try:
   ret = controller.call("8082","id-to-fqname",args={'uuid':aDict['uuid']},method='POST')
-  ret['result'] = 'OK'
- except Exception as e:
-  ret = e[0]
+  ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
+ except Exception as e: ret = e[0]
  return ret
 
 #
@@ -111,23 +124,28 @@ def rest(aDict):
  Args:
   - host (required)
   - token (required)
-  - port (optional)
-  - url (optional)
+  - service (optional)
+  - call (optional)
   - href (optional)
   - arguments (optional)
   - method (optional)
 
  Extra:
  """
- controller = OpenstackRPC(aDict['host'],aDict['token'])
  try:
+  with DB() as db:
+   db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE openstack_tokens.uuid = '%s'"%(aDict['token']))
+   data = db.get_row()
+   if not aDict.get('href'):
+    db.do("SELECT service_port,service_url FROM openstack_services WHERE uuid = '%s' AND service = '%s'"%(aDict['token'],aDict.get('service')))
+    data.update(db.get_row())
+  controller = OpenstackRPC(data['ipasc'],data['token'])
   if aDict.get('href'):
    ret = controller.href(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'))
   else:
-   ret = controller.call(aDict.get('port'), aDict.get('url'), aDict.get('arguments'), aDict.get('method','GET'))
-  ret['result'] = 'OK'
- except Exception as e:
-  ret = e[0]
+   ret = controller.call(data['service_port'], data['service_url'] + aDict['call'], aDict.get('arguments'), aDict.get('method','GET'))
+  ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
+ except Exception as e: ret = e[0]
  return ret
 
 #
@@ -145,13 +163,29 @@ def call(aDict):
 
  Extra:
  """
- ret = {}
  controller = OpenstackRPC(aDict['host'],aDict['token'])
  try:
   ret = controller.call(aDict['port'], aDict['url'], aDict.get('arguments'), aDict.get('method'))
-  ret['result'] = 'OK'
- except Exception as e:
-  ret = e[0]
+  ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
+ except Exception as e: ret = e[0]
+ return ret
+
+def href(aDict):
+ """Function docstring for call. Basically creates a controller instance and send a (nested) rest_call
+
+ Args:
+  - href (required)
+  - token (required)
+  - arguments (optional)
+  - method (optional)
+
+ Extra:
+ """
+ controller = OpenstackRPC(aDict['host'],aDict['token'])
+ try:
+  ret = controller.href(aDict['href'], aDict.get('arguments'), aDict.get('method'))
+  ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
+ except Exception as e: ret = e[0]
  return ret
 
 #
@@ -163,7 +197,7 @@ def heat_templates(aDict):
 
  Extra:
  """
- ret = {'res':'OK','templates':[]}
+ ret = {'result':'OK','templates':[]}
  try:
   from os import listdir
   for file in listdir("os_templates/"):
@@ -172,7 +206,7 @@ def heat_templates(aDict):
     ret['templates'].append(name)
  except Exception as e:
   ret['info'] = str(e)
-  ret['res'] = 'NOT_OK'
+  ret['result'] = 'NOT_OK'
  return ret
 
 #
@@ -185,13 +219,13 @@ def heat_content(aDict):
  Extra:
  """
  from json import load
- ret = {'res':'OK','template':None}
+ ret = {'result':'OK','template':None}
  try:
   with open("os_templates/%s.tmpl.json"%aDict['template']) as f:
    ret['template'] = load(f)
  except Exception as e:
   ret['info'] = str(e)
-  ret['res'] = 'NOT_OK'
+  ret['result'] = 'NOT_OK'
  return ret
 
 #
@@ -227,6 +261,82 @@ def heat_instantiate(aDict):
    controller = OpenstackRPC(aDict['host'],aDict['token'])
    ret = controller.call(aDict['port'], aDict['url'] + "stacks", data, 'POST')
    ret['result'] = 'OK'
-  except Exception as e:
-   ret = e[0]
+  except Exception as e: ret = e[0]
  return ret
+
+#
+#
+def vm_networks(aDict):
+ """Function docstring for vm_networks TBD
+
+ Args:
+  - host (required)
+  - token (required)
+  - port (required) - contrail port
+  - url (required) - contrail base url
+  - vm (required)
+
+ Extra:
+ """
+ ret = {'result':'OK','vm':None,'interfaces':[]}
+ controller = OpenstackRPC(aDict['host'],aDict['token'])
+ vm = controller.call(aDict['port'],aDict['url'] + "virtual-machine/%s"%aDict['vm'])['data']['virtual-machine']
+ ret['vm'] = vm['name']
+ for vmir in vm['virtual_machine_interface_back_refs']:
+  vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']
+  ip  = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
+  network = vmi['virtual_network_refs'][0]['to']
+  network.reverse()
+  data = {'mac_address':vmi['virtual_machine_interface_mac_addresses']['mac_address'][0],'routing-instance':vmi['routing_instance_refs'][0]['to'][3],'network_uuid':vmi['virtual_network_refs'][0]['uuid'],'network_fqdn':".".join(network),'ip_address':ip['instance_ip_address']}
+  if vmi.get('floating_ip_back_refs'):
+   fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
+   data.update({'floating_ip_address':fip['floating_ip_address'],'floating_ip_name':fip['fq_name'][2],'floating_ip_uuid':fip['uuid']})
+  ret['interfaces'].append(data)
+ return ret
+
+#
+#
+def vm_console(aDict):
+ """Function docstring for vm_console TBD
+
+ Args:
+  - host (required)
+  - token (required)
+  - port (required) - nova port
+  - url (required) - nova base url
+  - vm (required)
+
+ Extra:
+ """
+ ret = {'result':'NOT_OK','vm':aDict['vm']}
+ controller = OpenstackRPC(aDict['host'],aDict['token'])
+ try:
+  res = controller.call(aDict['port'], aDict['url'] + "servers/%s/remote-consoles"%(aDict['vm']), {'remote_console':{ "protocol": "vnc", "type": "novnc" }}, header={'X-OpenStack-Nova-API-Version':'2.8'})
+  if res['code'] == 200:
+   url = res['data']['remote_console']['url']
+   # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
+   ret['url'] = "http://%s:%s"%(aDict['host'],url[7:].partition(':')[2])
+   ret['result'] = 'OK'
+  elif res['code'] == 401 and res['data'] == 'Authentication required':
+   ret.update({'info':'Authentication required'})
+ except Exception,e: ret = e[0]
+ return ret
+
+#
+#
+def vm_new_infra(aDict):
+ """Function docstring for vm_new_infra TBD
+
+ Args:
+  - host (required)
+  - token (required)
+  - nova_port (required) - port
+  - nova_url (required) - base url
+  - glance_port (required) - port
+  - glance_url (required) - base url
+  - neutron_port (required) - port
+  - neutron_url (required) - base url
+
+ Extra:
+ """
+

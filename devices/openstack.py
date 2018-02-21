@@ -99,7 +99,9 @@ class OpenstackRPC(object):
   head = { 'X-Auth-Token':self._token }
   try: head.update(aHeader)
   except: pass
-  return rest_call(aURL, "openstack", aArgs, aMethod, head)
+  try: res = rest_call(aURL, "openstack", aArgs, aMethod, head)
+  except Exception as e: res = e[0]
+  return res
 
  #################################### File OPs ####################################
  #
@@ -124,6 +126,5 @@ class OpenstackRPC(object):
      self._project = data['project']
      self._project_id = data['project_id']
      self._catalog = data['catalog']
-  except:
-   pass
+  except: pass
   return self._token

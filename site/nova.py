@@ -8,9 +8,6 @@ __author__= "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__= "Production"
 
-from ..devices.openstack import OpenstackRPC
-from ..site.openstack import dict2html
-
 ################################# Nova ###############################
 #
 def list(aWeb):
@@ -20,13 +17,7 @@ def list(aWeb):
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('controller'),token)
- try:
-  data = controller.call(cookie.get('nova_port'),cookie.get('nova_url') + "/servers/detail")['data']
- except Exception as e:
-  print "Error retrieving list %s"%str(e)
-  return
-
+ data = aWeb.rest_call("openstack_call",{'host':cookie['controller'],'token':cookie['token'],'port':cookie['nova_port'],'url':cookie['nova_url'] + "servers/detail"})['data']
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Nova Servers</P>"
  print "<DIV CLASS=controls>"
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=nova_list')
@@ -63,6 +54,7 @@ def select_parameters(aWeb):
  if not token:
   print "Not logged in"
   return
+ from ..devices.openstack import OpenstackRPC
  controller = OpenstackRPC(cookie.get('controller'),token)
  port,url = cookie.get('nova_port'),cookie.get('nova_url')
  flavors  = controller.call(port,url + "/flavors/detail?sort_key=name")['data']['flavors']
@@ -98,22 +90,20 @@ def select_parameters(aWeb):
 ######################################## Actions ########################################
 #
 def action(aWeb):
+ from ..site.openstack import dict2html
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('controller'),token)
-
- port = cookie.get('nova_port')
- url  = cookie.get('nova_url')
+ args ={'host':cookie['controller'],'token':cookie['token'],'port':cookie['nova_port']}
  op   = aWeb.get('op','info')
-
  aWeb.log("nova_action - id:{} op:{}".format(aWeb['id'],op))
 
  if   op == 'info':
   from ..core.extras import get_quote
-  server = controller.call(port,url + "/servers/%s"%aWeb['id'])['data']['server']
+  args['url'] = cookie['nova_url'] + "servers/%s"%aWeb['id']
+  server = aWeb.rest_call("openstack_call",args)['data']['server']
   qserver = get_quote(server['name'])
   tmpl = "<BUTTON CLASS='z-op' TITLE='{}' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=%s&op={} SPIN=true>{}</BUTTON>"%aWeb['id']
   print "<DIV>"
@@ -127,43 +117,44 @@ def action(aWeb):
   print "</ARTICLE>"
 
  elif op == 'details':
-  server = controller.call(port,url + "/servers/{}".format(aWeb['id']))['data']['server']
+  args['url'] = cookie['nova_url'] + "servers/%s"%aWeb['id']
+  server = aWeb.rest_call("openstack_call",args)['data']['server']
   dict2html(server,server['name'])
 
  elif op == 'stop' or op == 'start' or op == 'reboot':
-  arg = {"os-"+op:None} if op != 'reboot' else {"reboot":{ "type":"SOFT" }}
-  try:
-   ret = controller.call(port,url + "/servers/{}/action".format(aWeb['id']),args=arg)
-   print "Command executed successfully [{}]".format(str(arg))
-  except Exception as e:
-   print "Error executing command [%s]"%str(e)
+  args['arguments'] = {"os-"+op:None} if op != 'reboot' else {"reboot":{ "type":"SOFT" }}
+  args['url'] = cookie['nova_url'] + "servers/%s/action"%aWeb['id']
+  res = aWeb.rest_call("openstack_call",args)
+  print "<ARTICLE>"
+  if res['code'] == 202:
+   print "Command executed successfully [%s]"%(op)
+  else:
+   print "Error executing command [%s]"%str(res)
+  print "</ARTICLE>"
 
  elif op == 'diagnostics':
-  data = controller.call(port,url + "/servers/{}/diagnostics".format(aWeb['id']))['data']
+  args['url'] = cookie['nova_url'] + "servers/%s/diagnostics"%aWeb['id']
+  data = aWeb.rest_call("openstack_call",args)['data']
   dict2html(data)
-
- elif op == 'print':
-  from json import dumps
-  print "<PRE>{}</PRE>".format(dumps(controller.href(aWeb['id'])['data'],indent=4))
 
  elif op == 'networks':
   from json import dumps
-  vm  = controller.call("8082","virtual-machine/{}".format(aWeb['id']))['data']['virtual-machine']
+  args['port'] = cookie['contrail_port']
+  args['url'] = cookie['contrail_url']
+  args['vm']  = aWeb['id']
+  data = aWeb.rest_call("openstack_vm_networks",args)
+
   print "<DIV CLASS=table STYLE='width:auto'>"
   print "<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV><DIV CLASS=tbody>"
-  for vmir in vm['virtual_machine_interface_back_refs']:
-   vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']
-   ip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
+  for intf in data['interfaces']:
    print "<DIV CLASS=tr>"
-   print "<!-- {} -->".format(vmir['href'])
-   print "<DIV CLASS=td>{}</DIV>".format(vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
-   print "<DIV CLASS=td>{}</DIV>".format(vmi['routing_instance_refs'][0]['to'][3])
-   print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=sdcp.cgi?call=neutron_action&id={0}&op=info>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
-   print "<DIV CLASS=td>{}</DIV>".format(ip['instance_ip_address'])
-   if vmi.get('floating_ip_back_refs'):
-    fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
-    print "<DIV CLASS=td>{} ({})</DIV><DIV CLASS=td>&nbsp;".format(fip['floating_ip_address'],fip['fq_name'][2])
-    print aWeb.button('delete',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], SPIN='true')
+   print "<DIV CLASS=td>{}</DIV>".format(intf['mac_address'])
+   print "<DIV CLASS=td>{}</DIV>".format(intf['routing-instance'])
+   print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=sdcp.cgi?call=neutron_action&id={0}&op=info>{1}</A></DIV>".format(intf['network_uuid'],intf['network_fqdn'])
+   print "<DIV CLASS=td>{}</DIV>".format(intf['ip_address'])
+   if intf.get('floating_ip_address'):
+    print "<DIV CLASS=td>{} ({})</DIV><DIV CLASS=td>&nbsp;".format(intf['floating_ip_address'],intf['floating_ip_name'])
+    print aWeb.button('delete',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%intf['floating_ip_uuid'], SPIN='true')
     print "</DIV>"
    else:
     print "<DIV CLASS=td>&nbsp;</DIV>"
@@ -175,29 +166,19 @@ def action(aWeb):
   print aWeb
 
  elif op == 'remove':
-  try:
-   ret = controller.call(port,url + "/servers/{}".format(aWeb['id']), method='DELETE')
-   print "<ARTICLE><P>Removing VM</P>"
-   print "VM removed" if ret['code'] == 204 else "Error code: %s"%(ret['code'])
-   print "</ARTICLE>"
-  except Exception as e:
-   print "Error performing op %s"%str(e)
+  args['url'] = cookie['nova_url'] + "servers/{}".format(aWeb['id'])
+  args['method'] = 'DELETE'
+  res = aWeb.rest_call("openstack_rest",args)
+  print res
+  print "<ARTICLE><P>Removing VM</P>"
+  print "VM removed" if res['code'] == 204 else "Error code: %s"%(res['code'])
+  print "</ARTICLE>"
 
 def console(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
- if not token:
-  print "Not logged in"
-  return
- controller = OpenstackRPC(cookie.get('controller'),token)
-
- try:
-  data = controller.call(cookie.get('nova_port'), cookie.get('nova_url') + "/servers/{}/remote-consoles".format(aWeb['id']), { "remote_console": { "protocol": "vnc", "type": "novnc" } }, header={'X-OpenStack-Nova-API-Version':'2.8'})['data']
-  url = data['remote_console']['url']
-  # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
-  url = "http://" + cookie.get('controller') + ":" + url[7:].partition(':')[2]
-  if aWeb['inline']:
-   print "<iframe id='console_embed' src='{}' STYLE='width: 100%; height: 100%;'></iframe>".format(url)
-  else:
-   aWeb.put_redirect("{}&title={}".format(url,aWeb['name']))
- except: pass
+ res = aWeb.rest_call("openstack_vm_console",{'host':cookie['controller'],'token':cookie['token'],'port':cookie['nova_port'],'url':cookie['nova_url'],'vm':aWeb['id']})
+ if aWeb['inline']:
+  print "<iframe id='console_embed' src='{}' STYLE='width: 100%; height: 100%;'></iframe>".format(res['url'])
+ else:
+  aWeb.put_redirect("%s&title=%s"%(res['url'],aWeb['name']))

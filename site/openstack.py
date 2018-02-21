@@ -121,13 +121,12 @@ def api(aWeb):
  if not cookie.get('token'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
+ services = aWeb.rest_call("openstack_services",{'token':cookie['db_token']})['services']
  print "<ARTICLE><P>OpenStack REST API inspection</P>"
  print "<FORM ID=frm_os_api>"
  print "Choose Service and enter API call: <SELECT CLASS='white' STYLE='width:auto; height:22px;' NAME=os_service>"
- services = ['contrail']
- services.extend(cookie['services'].split('&'))
  for service in services:
-  print "<OPTION VALUE={0}>{0}</OPTION>".format(service)
+  print "<OPTION VALUE={0}>{0}</OPTION>".format(service['service'])
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_call><BR>"
  print "Or enter HREF: <DIV ID=div_href STYLE='display:inline-block;'><INPUT CLASS='white' STYLE='width:716px;' TYPE=TEXT NAME=os_href></DIV><BR>"
  print "Call 'Method': <SELECT STYLE='width:auto; height:22px;' NAME=os_method>"
@@ -155,7 +154,7 @@ def fqname(aWeb):
   if not token:
    print "Not logged in"
   else:
-   res = aWeb.rest_call("openstack_fqname",{"host":cookie['controller'],"token":cookie['token'],'uuid':aWeb['os_uuid']})
+   res = aWeb.rest_call("openstack_fqname",{'token':cookie['db_token'],'uuid':aWeb['os_uuid']})
    if res['result'] == 'OK':
     print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
     print "<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(res['data']['fq_name']))
@@ -171,7 +170,6 @@ def fqname(aWeb):
 
 #
 #
-#
 def result(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
  if (not aWeb['os_call'] and not aWeb['os_href']) or not cookie.get('token'):
@@ -179,17 +177,12 @@ def result(aWeb):
  from json import dumps,loads
  try:    arguments = loads(aWeb['os_args'])
  except: arguments = None
- args = {"host":cookie['controller'],"token":cookie['token'],'arguments':arguments,'method':aWeb['os_method']}
+ args = {"token":cookie['db_token'],'arguments':arguments,'method':aWeb['os_method']}
  if aWeb['os_href']:
   args['href'] = aWeb['os_href']
  else:
-  service = aWeb['os_service']
-  if service == 'contrail':
-   args['port'] = "8082"
-   args['url']  = aWeb['os_call']
-  else:
-   args['port'] = cookie['%s_port'%service]
-   args['url']  = cookie['%s_url'%service] + aWeb['os_call']
+  args['service'] = aWeb['os_service']
+  args['call'] = aWeb['os_call']
  res = aWeb.rest_call("openstack_rest",args)
  print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"
  if res['result'] == 'OK':
