@@ -89,27 +89,6 @@ def services(aDict):
   ret['xist'] = db.do("SELECT %s FROM openstack_services WHERE uuid = '%s'"%("*" if not aDict.get('filter') else aDict.get('filter'), aDict['token']))
   ret['services'] = db.get_rows()
  return ret
- 
-#
-#
-def fqname(aDict):
- """Function docstring for fqname TBD
-
- Args:
-  - token (required)
-  - uuid (required)
-
- Extra:
- """
- with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
-  data = db.get_row()
- controller = OpenstackRPC(data['ipasc'],data['token'])
- try:
-  ret = controller.call("8082","id-to-fqname",args={'uuid':aDict['uuid']},method='POST')
-  ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
- except Exception as e: ret = e[0]
- return ret
 
 #
 #
@@ -187,6 +166,7 @@ def href(aDict):
  except Exception as e: ret = e[0]
  return ret
 
+################################################# HEAT ###########################################
 #
 #
 def heat_templates(aDict):
@@ -263,34 +243,35 @@ def heat_instantiate(aDict):
   except Exception as e: ret = e[0]
  return ret
 
+################################################# NOVA ###########################################
 #
 #
 def vm_networks(aDict):
  """Function docstring for vm_networks TBD
 
  Args:
-  - host (required)
   - token (required)
-  - port (required) - contrail port
-  - url (required) - contrail base url
   - vm (required)
 
  Extra:
  """
  ret = {'result':'OK','vm':None,'interfaces':[]}
- controller = OpenstackRPC(aDict['host'],aDict['token'])
- vm = controller.call(aDict['port'],aDict['url'] + "virtual-machine/%s"%aDict['vm'])['data']['virtual-machine']
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'contrail'"%(aDict['token']))
+  data = db.get_row()
+ controller = OpenstackRPC(data['ipasc'],data['token'])
+ vm = controller.call(data['service_port'],data['service_url'] + "virtual-machine/%s"%aDict['vm'])['data']['virtual-machine']
  ret['vm'] = vm['name']
  for vmir in vm['virtual_machine_interface_back_refs']:
   vmi = controller.href(vmir['href'])['data']['virtual-machine-interface']
   ip  = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
   network = vmi['virtual_network_refs'][0]['to']
   network.reverse()
-  data = {'mac_address':vmi['virtual_machine_interface_mac_addresses']['mac_address'][0],'routing-instance':vmi['routing_instance_refs'][0]['to'][3],'network_uuid':vmi['virtual_network_refs'][0]['uuid'],'network_fqdn':".".join(network),'ip_address':ip['instance_ip_address']}
+  record = {'mac_address':vmi['virtual_machine_interface_mac_addresses']['mac_address'][0],'routing-instance':vmi['routing_instance_refs'][0]['to'][3],'network_uuid':vmi['virtual_network_refs'][0]['uuid'],'network_fqdn':".".join(network),'ip_address':ip['instance_ip_address']}
   if vmi.get('floating_ip_back_refs'):
    fip = controller.href(vmi['floating_ip_back_refs'][0]['href'])['data']['floating-ip']
-   data.update({'floating_ip_address':fip['floating_ip_address'],'floating_ip_name':fip['fq_name'][2],'floating_ip_uuid':fip['uuid']})
-  ret['interfaces'].append(data)
+   record.update({'floating_ip_address':fip['floating_ip_address'],'floating_ip_name':fip['fq_name'][2],'floating_ip_uuid':fip['uuid']})
+  ret['interfaces'].append(record)
  return ret
 
 #
@@ -299,22 +280,22 @@ def vm_console(aDict):
  """Function docstring for vm_console TBD
 
  Args:
-  - host (required)
   - token (required)
-  - port (required) - nova port
-  - url (required) - nova base url
   - vm (required)
 
  Extra:
  """
  ret = {'result':'NOT_OK','vm':aDict['vm']}
- controller = OpenstackRPC(aDict['host'],aDict['token'])
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'nova'"%(aDict['token']))
+  data = db.get_row()
+ controller = OpenstackRPC(data['ipasc'],data['token'])
  try:
-  res = controller.call(aDict['port'], aDict['url'] + "servers/%s/remote-consoles"%(aDict['vm']), {'remote_console':{ "protocol": "vnc", "type": "novnc" }}, header={'X-OpenStack-Nova-API-Version':'2.8'})
+  res = controller.call(data['service_port'], data['service_url'] + "servers/%s/remote-consoles"%(aDict['vm']), {'remote_console':{ "protocol": "vnc", "type": "novnc" }}, header={'X-OpenStack-Nova-API-Version':'2.8'})
   if res['code'] == 200:
    url = res['data']['remote_console']['url']
    # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
-   ret['url'] = "http://%s:%s"%(aDict['host'],url[7:].partition(':')[2])
+   ret['url'] = "http://%s:%s"%(data['ipasc'],url[7:].partition(':')[2])
    ret['result'] = 'OK'
   elif res['code'] == 401 and res['data'] == 'Authentication required':
    ret.update({'info':'Authentication required'})
@@ -327,15 +308,173 @@ def vm_new_infra(aDict):
  """Function docstring for vm_new_infra TBD
 
  Args:
-  - host (required)
   - token (required)
-  - nova_port (required) - port
-  - nova_url (required) - base url
-  - glance_port (required) - port
-  - glance_url (required) - base url
-  - neutron_port (required) - port
-  - neutron_url (required) - base url
 
  Extra:
  """
+ pass
 
+################################################# CONTRAIL ###########################################
+#
+#
+def contrail_fqname(aDict):
+ """Function docstring for fqname TBD
+
+ Args:
+  - token (required)
+  - uuid (required)
+
+ Extra:
+ """
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
+  data = db.get_row()
+ controller = OpenstackRPC(data['ipasc'],data['token'])
+ try:
+  ret = controller.call("8082","id-to-fqname",args={'uuid':aDict['uuid']},method='POST')
+  ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
+ except Exception as e: ret = e[0]
+ return ret
+
+#
+#
+def contrail_uuid(aDict):
+ """Function docstring for uuid_info TBD
+
+ Args:
+  - token (required)
+  - uuid (required)
+
+ Extra:
+ """
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
+  data = db.get_row()
+ controller = OpenstackRPC(data['ipasc'],data['token'])
+ try:
+  res = controller.call("8082","id-to-fqname",args={'uuid':aDict['uuid']},method='POST')
+  if res.get('result','OK') == 'OK':
+   ret = controller.call("8082","%s/%s"%(res['data']['type'],aDict['uuid']))['data']
+ except Exception as e: ret = e[0]
+ return ret
+
+#
+#
+def contrail_interfaces(aDict):
+ """Function docstring for contrail_interfaces TBD
+
+ Args:
+  - token (required)
+  - virtual_network (required)
+
+ Extra:
+ """
+ ret = {'virtual-network':aDict['virtual_network'],'ip_addresses':[]}
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'contrail'"%(aDict['token']))
+  data = db.get_row()
+ controller = OpenstackRPC(data['ipasc'],data['token'])
+ res = controller.call(data['service_port'],data['service_url'] + "virtual-network/%s"%aDict['virtual_network'])
+ vn = res['data']['virtual-network']
+ fqdn = vn['fq_name']
+ fqdn.reverse()
+ ret['fqdn'] = ".".join(fqdn)
+ ret['name'] = vn['name']
+ for ip in vn.get('instance_ip_back_refs',[]):
+  iip = controller.href(ip['href'])['data']['instance-ip']
+  vmi = controller.href(iip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
+  record = {'ip_address':iip['instance_ip_address'],'mac_address':vmi['virtual_machine_interface_mac_addresses']['mac_address'][0]}
+  if vmi.get('virtual_machine_refs'):
+   record['vm_uuid'] = vmi['virtual_machine_refs'][0]['uuid']
+  if vmi.get('virtual_machine_interface_bindings'):
+   host = vmi['virtual_machine_interface_bindings']['key_value_pair']
+   for kvp in host:
+    if kvp['key'] == 'host_id':
+     record['vm_binding'] = kvp['value']
+     break
+  if vmi.get('logical_interface_back_refs'):
+   li = vmi['logical_interface_back_refs'][0]
+   record['logical_interface'] = li['to'][1] + "-" + li['to'][3]
+   record['logical_interface_uuid'] = li['uuid']
+  if vmi.get('virtual_machine_interface_device_owner'):
+   record['vm_interface_owner'] = vmi['virtual_machine_interface_device_owner']
+  ret['ip_addresses'].append(record)
+ return ret
+
+#
+#
+def contrail_floating_ips(aDict):
+ """Function docstring for contrail_floating_ips TBD
+
+ Args:
+  - token (required)
+  - virtual_network (required)
+
+ Extra:
+ """
+ ret = {'virtual-network':aDict['virtual_network'],'ip_addresses':[]}
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'contrail'"%(aDict['token']))
+  data = db.get_row()
+ controller = OpenstackRPC(data['ipasc'],data['token'])
+ vn = controller.call(data['service_port'],data['service_url'] + "virtual-network/%s"%aDict['virtual_network'])['data']['virtual-network']
+ for fipool in vn.get('floating_ip_pools',[]):
+  pool = controller.call(data['service_port'],data['service_url'] +"floating-ip-pool/%s"%(fipool['uuid']) )['data']['floating-ip-pool']
+  for fips in pool['floating_ips']:
+   fip = controller.call(data['service_port'],data['service_url'] + "floating-ip/%s"%(fips['uuid']))['data']['floating-ip']
+   record = {'pool_uuid':pool['uuid'],'pool_name':pool['name'],'ip_address':fip['floating_ip_address'],'uuid':fip['uuid'],'vm_ip_address':fip.get('floating_ip_fixed_ip_address')}
+   if fip.get('floating_ip_fixed_ip_address'):
+    vmi = controller.href(fip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
+    record.update({'vm_interface':vmi['virtual_machine_refs'][0]['to'][0],'vm_network_uuid':vmi['virtual_network_refs'][0]['uuid'],'vm_network_name':vmi['virtual_network_refs'][0]['to'][2]})
+   ret['ip_addresses'].append(record)
+ return ret
+
+#
+#
+def contrail_vm_interfaces(aDict):
+ """Function docstring for contrail_vm_interfaces TBD
+
+ Args:
+  - token (required)
+  - vm (required)
+
+ Extra:
+ """
+ ret = {'vm':aDict['vm'],'interfaces':[]}
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'contrail'"%(aDict['token']))
+  data = db.get_row()
+ controller = OpenstackRPC(data['ipasc'],data['token'])
+ vmis = controller.call(data['service_port'],data['service_url'] + "virtual-machine/%s"%aDict['vm'])['data']['virtual-machine']['virtual_machine_interface_back_refs']
+ for vmi in vmis:
+  vmi = controller.href(vmi['href'])['data']['virtual-machine-interface']
+  iip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
+  ret['interfaces'].append({'uuid':vmi['uuid'],'ip_address':iip['instance_ip_address'],'virtual_network':iip['virtual_network_refs'][0]['to'][2]})
+ return ret
+
+#
+#
+def contrail_vm_associate_fip(aDict):
+ """Function docstring for contrail_vm_interfaces TBD
+
+ Args:
+  - token (required)
+  - vm_interface (required)
+  - vm_ip_address (required)
+  - floating_ip (required)
+ Extra:
+ """
+ ret = {}
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'contrail'"%(aDict['token']))
+  data = db.get_row()
+ controller = OpenstackRPC(data['ipasc'],data['token'])
+ try:
+  vmi = controller.call(data['service_port'],data['service_url'] + "virtual-machine-interface/%s"%aDict['vm_interface'])['data']['virtual-machine-interface']
+  fip = { 'floating-ip':{ 'floating_ip_fixed_ip_address':aDict['vm_ip_address'], 'virtual_machine_interface_refs':[ {'href':vmi['href'],'attr':None,'uuid':vmi['uuid'],'to':vmi['fq_name'] } ] } }
+  res = controller.call(data['service_port'],data['service_url'] +"floating-ip/%s"%aDict['floating_ip'],args=fip,method='PUT')
+  ret['result'] = "OK" if res['code'] == 200 else "NOT_OK"
+ except Exception as e:
+  ret['result'] ='ERROR'
+  ret['info'] = str(e)
+ return ret

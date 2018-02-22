@@ -7,9 +7,6 @@ __author__= "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__= "Production"
 
-from ..devices.openstack import OpenstackRPC
-from ..site.openstack import dict2html
-
 ############################### Neutron ##############################
 #
 def list(aWeb):
@@ -18,13 +15,7 @@ def list(aWeb):
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('controller'),token)
-
- try:
-  data = controller.call("8082","virtual-networks?fields=name,display_name,virtual_network_properties,network_ipam_refs")['data']
- except Exception as e:
-  print "<!-- %s -->Error retrieving list"%str(e)
-  return
+ data = aWeb.rest_call("openstack_call",{'token':token,'service':'contrail','call':"virtual-networks?fields=name,display_name,virtual_network_properties,network_ipam_refs"})['data']
 
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE STYLE='overflow-x:hidden;'><P>Contrail VNs</P>"
@@ -52,18 +43,19 @@ def list(aWeb):
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def action(aWeb):
+ from ..site.openstack import dict2html
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
  if not token:
   print "Not logged in"
   return
- controller = OpenstackRPC(cookie.get('controller'),token)
+ args = {'token':token,'service':'contrail'}
  id   = aWeb['id']
  op   = aWeb['op']
 
- print "<!-- action - op:{} - id:{} -->".format(op,id)
  if   op == 'info':
-  vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
+  args['call'] = 'virtual-network/%s'%(id)
+  vn = aWeb.rest_call("openstack_call",args)['data']['virtual-network']
   name = vn['display_name']
   tmpl = "<BUTTON CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?call=neutron_action&name=%s&id=%s&op={} SPIN=true>{}</BUTTON>"%(name,id)
   print "<DIV>"
@@ -71,46 +63,36 @@ def action(aWeb):
   if vn.get('instance_ip_back_refs'):
    print tmpl.format('interfaces','Interfaces')
   if vn.get('floating_ip_pools'):
-   # create a list of floating-ips
-   fipool = ",".join(map(lambda x: x.get('uuid'), vn.get('floating_ip_pools')))
-   print tmpl.format('floating-ip&fipool=%s'%fipool,'Floating IPs')
+   print tmpl.format('floating-ip&id=%s'%id,'Floating IPs')
   print "</DIV>"
   print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
   dict2html(vn,"{} ({})".format(name,id))
   print "</ARTICLE>"
 
  elif op == 'details':
-  vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
+  args['call'] = 'virtual-network/%s'%(id)
+  vn = aWeb.rest_call("openstack_call",args)['data']['virtual-network']
   name = vn['display_name']
   dict2html(vn,"{} ({})".format(name,id))
 
  elif op == 'interfaces':
-  vn = controller.call("8082","virtual-network/{}".format(id))['data']['virtual-network']
+  args['virtual_network'] = id
+  vn = aWeb.rest_call("openstack_contrail_interfaces",args)
   print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=thead><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Interface</DIV></DIV>"
   print "<DIV CLASS=tbody>"
-  for ip in vn['instance_ip_back_refs']:
-   iip = controller.href(ip['href'])['data']['instance-ip']
-   vmi = controller.href(iip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
+  for ip in vn['ip_addresses']:
    print "<DIV CLASS=tr>"
-   print "<! -- {} -->".format(ip['href'])
-   print "<! -- {} -->".format(iip['virtual_machine_interface_refs'][0]['href'])
-   if vmi.get('virtual_machine_refs'):
-    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=sdcp.cgi?call=nova_action&id={0}>{1}</A></DIV>".format(vmi['virtual_machine_refs'][0]['uuid'],iip['instance_ip_address'])
+   if ip.get('vm_uuid'):
+    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=sdcp.cgi?call=nova_action&id={0}>{1}</A></DIV>".format(ip['vm_uuid'],ip['ip_address'])
    else:
-    print "<DIV CLASS=td>{}</DIV>".format(iip['instance_ip_address'])
-   print "<DIV CLASS=td>{}</DIV>".format(vmi['virtual_machine_interface_mac_addresses']['mac_address'][0])
-   if   vmi.get('virtual_machine_interface_bindings'):
-    host = vmi['virtual_machine_interface_bindings']['key_value_pair']
-    for kvp in host:
-     if kvp['key'] == 'host_id':
-      print "<DIV CLASS=td>{}</DIV>".format(kvp['value'])
-   elif vmi.get('logical_interface_back_refs'):
-    li = vmi['logical_interface_back_refs'][0]
-    interface = li['to'][1] + "-" + li['to'][3]
-    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_os_info SPIN=true URL=sdcp.cgi?call=neutron_action&op=print&id={}>{}</A></DIV>".format(li['href'],interface)
+    print "<DIV CLASS=td>{}</DIV>".format(ip['ip_address'])
+   print "<DIV CLASS=td>{}</DIV>".format(ip['mac_address'])
+   if ip.get('vm_binding'):
+    print "<DIV CLASS=td>{}</DIV>".format(ip['vm_binding'])
+   elif ip.get('logical_interface'):
+    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_os_info SPIN=true URL=sdcp.cgi?call=neutron_action&op=print&id={}>{}</A></DIV>".format(ip['logical_interface_uuid'],ip['logical_interface'])
    else:
-    print "<!-- {} -->".format(vmi['href'])
-    print "<DIV CLASS=td>{}</DIV>".format(vmi['virtual_machine_interface_device_owner'])
+    print "<DIV CLASS=td>{}</DIV>".format(vmi['vm_interface_owner'])
    print "</DIV>"
   print "</DIV></DIV>"
 
@@ -118,53 +100,54 @@ def action(aWeb):
  #
  #
  elif op == 'floating-ip':
-  fipools = aWeb['fipool'].split(',')
+  args['virtual_network'] = id
+  fips = aWeb.rest_call("openstack_contrail_floating_ips",args)
   print "<DIV CLASS=table STYLE='width:500px'><DIV CLASS=thead><DIV CLASS=th>Pool</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Fixed IP</DIV><DIV CLASS=th>Fixed Network</DIV><DIV CLASS=th>Operations</DIV></DIV>"
   print "<DIV CLASS=tbody>"
-  for fipool in fipools:
-   pool  = controller.call("8082","floating-ip-pool/{}".format(fipool))['data']['floating-ip-pool']
-   for fips in pool['floating_ips']:
-    fip = controller.href(fips['href'])['data']['floating-ip']
-    fixed =  fip.get('floating_ip_fixed_ip_address')
-    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(pool['display_name'],fip['floating_ip_address'])
-    if fixed:
-     # Do we select one or many VMI:s?
-     print "<!-- {} -->".format(fip)
-     vmi = controller.href(fip['virtual_machine_interface_refs'][0]['href'])['data']['virtual-machine-interface']
-     print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?call=nova_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(vmi['virtual_machine_refs'][0]['to'][0],fixed)
-     print "<DIV CLASS=td><A TITLE='Network info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?call=neutron_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(vmi['virtual_network_refs'][0]['uuid'],vmi['virtual_network_refs'][0]['to'][2])
-     print "<DIV CLASS=td>"
-     print aWeb.button('info',  DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=print&id=%s'%fip['href'])
-     print aWeb.button('delete',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], MSG='Are you sure?', SPIN='true')
-     print "&nbsp;</DIV>"
-    else:
-     print "<DIV CLASS=td></DIV>"
-     print "<DIV CLASS=td></DIV>"
-     print "<DIV CLASS=td>"
-     print aWeb.button('info', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=print&id=%s'%fip['href'])
-     print aWeb.button('add',  DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_vm&id=%s'%fip['uuid'])
-     print "</DIV>"
+  for fip in fips['ip_addresses']:
+   fixed = fip.get('vm_ip_address')
+   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(fip['pool_name'],fip['ip_address'])
+   if fixed:
+    # Do we select one or many VMI:s?
+    print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?call=nova_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(fip['vm_interface'],fixed)
+    print "<DIV CLASS=td><A TITLE='Network info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?call=neutron_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(fip['vm_network_uuid'],fip['vm_network_name'])
+    print "<DIV CLASS=td>"
+    print aWeb.button('info',  DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=print&id=%s'%fip['uuid'])
+    print aWeb.button('delete',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], MSG='Are you sure?', SPIN='true')
+    print "&nbsp;</DIV>"
+   else:
+    print "<DIV CLASS=td></DIV>"
+    print "<DIV CLASS=td></DIV>"
+    print "<DIV CLASS=td>"
+    print aWeb.button('info', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=print&id=%s'%fip['uuid'])
+    print aWeb.button('add',  DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_vm&id=%s'%fip['uuid'])
     print "</DIV>"
-  print "</DIV></DIV>" 
+   print "</DIV>"
+  print "</DIV></DIV>"
 
  elif op == 'print':
   from json import dumps
-  print "<PRE>{}</PRE>".format(dumps(controller.href(id)['data'],indent=4))
+  args['uuid'] = aWeb['id']
+  res = aWeb.rest_call("openstack_contrail_uuid",args)
+  print "<PRE>{}</PRE>".format(dumps(res,indent=4))
 
  elif op == 'remove':
-  res = controller.call("8082","virtual-network/{}".format(id), method='DELETE')['data']
+  args['call'] = "virtual-network/{}".format(id)
+  args['method'] = 'DELETE'
+  res = aWeb.rest_call("openstack_call",args)['data']
   print "<ARTICLE>{}</ARTICLE>".format(res)
 
  elif op == 'fi_disassociate':
-  fip = {'floating-ip':{'virtual_machine_interface_refs':None,'floating_ip_fixed_ip_address':None }}
-  try:
-   res = controller.call("8082","floating-ip/{}".format(id),args=fip,method='PUT')['data']
-   print "Floating IP association removed"
-  except Exception as e:
-   print "Error - [%s]"%str(e)
+  args['call'] = "floating-ip/{}".format(id)
+  args['method'] = 'PUT'
+  args['arguments'] = {'floating-ip':{'virtual_machine_interface_refs':None,'floating_ip_fixed_ip_address':None }}
+  res = aWeb.rest_call("openstack_call",args)
+  print "Floating IP association removed" if res.get('result') == 'OK' else "Error: %s"%res
 
  elif op == 'fi_associate_choose_vm':
-  vms = controller.call(cookie.get('nova_port'), cookie.get('nova_url') + "/servers")['data']['servers']
+  args['service'] = 'nova'
+  args['call'] = "servers"
+  vms = aWeb.rest_call("openstack_call",args)['data']['servers']
   print "<FORM ID=frm_fi_assoc_vm><INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
   print "VM: <SELECT STYLE='width:auto; height:22px;' NAME=vm>"
   for vm in vms:
@@ -175,16 +158,14 @@ def action(aWeb):
 
  elif op == 'fi_associate_choose_interface':
   vm_name,_,vm_id = aWeb['vm'].partition('#')
-  vmis = controller.call("8082","virtual-machine/{}".format(vm_id))['data']['virtual-machine']['virtual_machine_interface_back_refs']
+  args['vm'] = vm_id
+  vmis = aWeb.rest_call("openstack_contrail_vm_interfaces",args)
   print "<FORM ID=frm_fi_assoc_vmi>"
   print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
   print "<INPUT TYPE=HIDDEN NAME=vm VALUE={}>".format(vm_id)
   print "VM: <INPUT STYLE='width:auto;' TYPE=TEXT VALUE={} disabled> Interface:<SELECT STYLE='width:auto; height:22px;' NAME=vmi>".format(vm_name)
-  for vmi in vmis:
-   uuid = vmi['uuid']
-   vmi = controller.href(vmi['href'])['data']['virtual-machine-interface']
-   iip = controller.href(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
-   print "<OPTION VALUE={0}#{1}>{2} ({1})</OPTION>".format(uuid,iip['instance_ip_address'],iip['virtual_network_refs'][0]['to'][2])
+  for vmi in vmis.get('interfaces',[]):
+   print "<OPTION VALUE={0}#{1}>{2} ({1})</OPTION>".format(vmi['uuid'],vmi['ip_address'],vmi['virtual_network'])
   print "</SELECT>"
   print "</FORM><DIV CLASS=controls>"
   print aWeb.button('back', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_vm&id=%s'%id, TITLE='Change VM')
@@ -192,13 +173,10 @@ def action(aWeb):
   print "</DIV>"
 
  elif op == 'fi_associate':
-  from json import dumps
   vmid  = aWeb['vm']
   vmiid,_,ip = aWeb['vmi'].partition('#')
-  vmi = controller.call("8082","virtual-machine-interface/{}".format(vmiid))['data']['virtual-machine-interface']
-  fip = { 'floating-ip':{ 'floating_ip_fixed_ip_address':ip, 'virtual_machine_interface_refs':[ {'href':vmi['href'],'attr':None,'uuid':vmi['uuid'],'to':vmi['fq_name'] } ] } }
-  try:
-   res = controller.call("8082","floating-ip/{}".format(id),args=fip,method='PUT')
-   print "Floating IP association created"
-  except Exception as e:
-   print "Error - [%s]"%str(e)
+  args['vm_interface'] = vmiid
+  args['vm_ip_address'] = ip
+  args['floating_ip'] = id
+  res = aWeb.rest_call("openstack_contrail_vm_associate_fip",args)
+  print "Floating IP asssociation created" if res.get('result','NOT_OK') == "OK" else "Failure: %s"%res

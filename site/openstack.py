@@ -154,7 +154,7 @@ def fqname(aWeb):
   if not token:
    print "Not logged in"
   else:
-   res = aWeb.rest_call("openstack_fqname",{'token':cookie['token'],'uuid':aWeb['os_uuid']})
+   res = aWeb.rest_call("openstack_contrail_fqname",{'token':cookie['token'],'uuid':aWeb['os_uuid']})
    if res['result'] == 'OK':
     print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
     print "<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(res['data']['fq_name']))

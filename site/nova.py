@@ -17,7 +17,7 @@ def list(aWeb):
  if not token:
   print "Not logged in"
   return
- data = aWeb.rest_call("openstack_call",{'host':cookie['controller'],'token':cookie['token'],'port':cookie['nova_port'],'url':cookie['nova_url'] + "servers/detail"})['data']
+ data = aWeb.rest_call("openstack_call",{'token':cookie['token'],'service':"nova",'call':"servers/detail"})['data']
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Nova Servers</P>"
  print "<DIV CLASS=controls>"
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=nova_list')
@@ -96,13 +96,12 @@ def action(aWeb):
  if not token:
   print "Not logged in"
   return
- args ={'host':cookie['controller'],'token':cookie['token'],'port':cookie['nova_port']}
+ args ={'token':cookie['token'],'service':'nova'}
  op   = aWeb.get('op','info')
- aWeb.log("nova_action - id:{} op:{}".format(aWeb['id'],op))
 
  if   op == 'info':
   from ..core.extras import get_quote
-  args['url'] = cookie['nova_url'] + "servers/%s"%aWeb['id']
+  args['call'] = "servers/%s"%aWeb['id']
   server = aWeb.rest_call("openstack_call",args)['data']['server']
   qserver = get_quote(server['name'])
   tmpl = "<BUTTON CLASS='z-op' TITLE='{}' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=%s&op={} SPIN=true>{}</BUTTON>"%aWeb['id']
@@ -117,13 +116,13 @@ def action(aWeb):
   print "</ARTICLE>"
 
  elif op == 'details':
-  args['url'] = cookie['nova_url'] + "servers/%s"%aWeb['id']
+  args['call'] = "servers/%s"%aWeb['id']
   server = aWeb.rest_call("openstack_call",args)['data']['server']
   dict2html(server,server['name'])
 
  elif op == 'stop' or op == 'start' or op == 'reboot':
   args['arguments'] = {"os-"+op:None} if op != 'reboot' else {"reboot":{ "type":"SOFT" }}
-  args['url'] = cookie['nova_url'] + "servers/%s/action"%aWeb['id']
+  args['call'] = "servers/%s/action"%aWeb['id']
   res = aWeb.rest_call("openstack_call",args)
   print "<ARTICLE>"
   if res['code'] == 202:
@@ -133,14 +132,12 @@ def action(aWeb):
   print "</ARTICLE>"
 
  elif op == 'diagnostics':
-  args['url'] = cookie['nova_url'] + "servers/%s/diagnostics"%aWeb['id']
+  args['call'] = "servers/%s/diagnostics"%aWeb['id']
   data = aWeb.rest_call("openstack_call",args)['data']
   dict2html(data)
 
  elif op == 'networks':
   from json import dumps
-  args['port'] = cookie['contrail_port']
-  args['url'] = cookie['contrail_url']
   args['vm']  = aWeb['id']
   data = aWeb.rest_call("openstack_vm_networks",args)
 
@@ -166,10 +163,9 @@ def action(aWeb):
   print aWeb
 
  elif op == 'remove':
-  args['url'] = cookie['nova_url'] + "servers/{}".format(aWeb['id'])
+  args['call'] = "servers/{}".format(aWeb['id'])
   args['method'] = 'DELETE'
   res = aWeb.rest_call("openstack_rest",args)
-  print res
   print "<ARTICLE><P>Removing VM</P>"
   print "VM removed" if res['code'] == 204 else "Error code: %s"%(res['code'])
   print "</ARTICLE>"
@@ -177,7 +173,7 @@ def action(aWeb):
 def console(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
- res = aWeb.rest_call("openstack_vm_console",{'host':cookie['controller'],'token':cookie['token'],'port':cookie['nova_port'],'url':cookie['nova_url'],'vm':aWeb['id']})
+ res = aWeb.rest_call("openstack_vm_console",{'token':cookie['token'],'vm':aWeb['id']})
  if aWeb['inline']:
   print "<iframe id='console_embed' src='{}' STYLE='width: 100%; height: 100%;'></iframe>".format(res['url'])
  else:
