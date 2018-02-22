@@ -176,9 +176,9 @@ def heat_templates(aDict):
 
  Extra:
  """
+ from os import listdir
  ret = {'result':'OK','templates':[]}
  try:
-  from os import listdir
   for file in listdir("os_templates/"):
    name,_,suffix = file.partition('.')
    if suffix == 'tmpl.json':
@@ -220,7 +220,7 @@ def heat_instantiate(aDict):
 
  Extra:
  """
- from json import load,dump
+ from json import load
  ret = {}
  args = {}
  try:
@@ -304,15 +304,25 @@ def vm_console(aDict):
 
 #
 #
-def vm_new_infra(aDict):
- """Function docstring for vm_new_infra TBD
+def vm_resources(aDict):
+ """Function docstring for vm_resources TBD
 
  Args:
   - token (required)
 
  Extra:
  """
- pass
+ ret = {}
+ with DB() as db:
+  db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE openstack_tokens.uuid = '%s'"%(aDict['token']))
+  data = db.get_row()
+  db.do("SELECT service,service_port,service_url FROM openstack_services WHERE uuid = '%s'"%(aDict['token']))
+  services = db.get_dict('service')
+ controller = OpenstackRPC(data['ipasc'],data['token'])
+ ret['flavors']  = controller.call(services['nova']['service_port'],services['nova']['service_url'] + "flavors/detail?sort_key=name")['data']['flavors']
+ ret['images']   = controller.call(services['glance']['service_port'],services['glance']['service_url'] + "v2/images?sort=name:asc")['data']['images']
+ ret['networks'] = controller.call(services['neutron']['service_port'],services['neutron']['service_url'] + "v2.0/networks?sort_key=name")['data']['networks']
+ return ret
 
 ################################################# CONTRAIL ###########################################
 #

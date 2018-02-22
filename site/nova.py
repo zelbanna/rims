@@ -54,12 +54,7 @@ def select_parameters(aWeb):
  if not token:
   print "Not logged in"
   return
- from ..devices.openstack import OpenstackRPC
- controller = OpenstackRPC(cookie.get('controller'),token)
- port,url = cookie.get('nova_port'),cookie.get('nova_url')
- flavors  = controller.call(port,url + "/flavors/detail?sort_key=name")['data']['flavors']
- images   = controller.call(cookie.get('glance_port'),cookie.get('glance_url') + "/v2/images?sort=name:asc")['data']['images']
- networks = controller.call(cookie.get('neutron_port'),cookie.get('neutron_url') + "/v2.0/networks?sort_key=name")['data']['networks']
+ resources = aWeb.rest_call("openstack_vm_resources",{'token':token})
  print aWeb.dragndrop()
  print "<ARTICLE CLASS='info'><P>New VM parameters</P>"
  print "<FORM ID=frm_os_create_vm>"
@@ -67,12 +62,12 @@ def select_parameters(aWeb):
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name</DIV><DIV CLASS=td><INPUT NAME=os_name PLACEHOLDER='Unique Name'></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=os_image>"
- for img in images:
+ for img in resources['images']:
   print "<OPTION VALUE={}>{} (Min Ram: {}Mb)</OPTION>".format(img['id'],img['name'],img['min_ram'])
  print "</SELECT></DIV></DIV>"
 
  print "<DIV CLASS=tr><DIV CLASS=td>Flavor</DIV><DIV CLASS='table-val td'><SELECT NAME=os_flavor>"
- for fl in flavors:
+ for fl in resources['flavors']:
   print "<OPTION VALUE={}>{} (Ram: {}Mb, vCPUs: {}, Disk: {}Gb</OPTION>".format(fl['id'],fl['name'],fl['ram'],fl['vcpus'],fl['disk'])
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
@@ -81,7 +76,7 @@ def select_parameters(aWeb):
  print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=nova_action&id=new&op=add',FRM='frm_os_create_vm', SPIN='true')
  print "</DIV>"
  print "<DIV CLASS='border'><UL CLASS='drop vertical' ID=ul_avail>"
- for net in networks:
+ for net in resources['networks']:
   if net.get('contrail:subnet_ipam'):
    print "<LI ID=net_%s CLASS='drag'>%s (%s)</LI>"%(net['id'],net['name'],net['contrail:subnet_ipam'][0]['subnet_cidr'])
  print "</UL></DIV>"
