@@ -45,7 +45,7 @@ def application(aDict):
   ret['exception'] = str(e)
  ret['parameters'] = [{'display':'Username', 'id':'username', 'data':'text'},{'display':'Password', 'id':'password', 'data':'password'}]
  ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookies.iteritems()])
- ret['lifetime'] = (datetime.utcnow() + timedelta(hours=1)).strftime('%a, %d %m %Y %H:%M:%S GMT')
+ ret['expires'] = (datetime.utcnow() + timedelta(hours=1)).strftime('%a, %d %m %Y %H:%M:%S GMT')
  return ret
 
 #
@@ -70,7 +70,7 @@ def authenticate(aDict):
  if ret['authenticated'] == 'OK':
   with DB() as db:
    ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'os_token':controller.get_token()})
-   db.do("INSERT INTO openstack_tokens(token,expiry,project_id,username,controller) VALUES('%s','%s','%s','%s',INET_ATON('%s'))"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],aDict['host']))
+   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,controller) VALUES('%s','%s','%s','%s',INET_ATON('%s'))"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],aDict['host']))
    ret['token'] = db.get_last_id()
    for service in ['heat','nova','neutron','glance']:
     port,url,id = controller.get_service(service,'public')
@@ -78,7 +78,7 @@ def authenticate(aDict):
      url = url + '/'
     db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(ret['token'],service,port,url,id))
    db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(ret['token'],"contrail",8082,'',''))
-  ret['lifetime'] = controller.get_cookie_expire()
+  ret['expires'] = controller.get_cookie_expire()
   log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],aDict['host']))
  else:
   log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl))

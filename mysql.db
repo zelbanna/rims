@@ -93,7 +93,7 @@ CREATE TABLE `openstack_tokens` (
   `uuid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `token` varchar(50) NOT NULL,
-  `expiry` int(10) unsigned NOT NULL,
+  `expires` int(10) unsigned NOT NULL,
   `project_id` varchar(50) NOT NULL,
   `username` varchar(50) NOT NULL,
   `controller` int(10) unsigned NOT NULL,

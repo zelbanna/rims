@@ -26,7 +26,7 @@ def application(aDict):
  ret['choices'] = [{'display':'Username', 'id':'sdcp_login', 'data':rows}]
  cookie = aDict
  ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
- ret['lifetime'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %m %Y %H:%M:%S GMT")
+ ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %m %Y %H:%M:%S GMT")
  return ret
 
 #
