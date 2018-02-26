@@ -3,7 +3,7 @@
 ISC DHCP API module
 
 """
-__author__ = "Zacharias El Banna"                     
+__author__ = "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__ = "Production"
 
@@ -39,9 +39,9 @@ def leases(aDict):
      result.append(lease)
     lease = {}
    elif parts[0] == 'hardware' and parts[1] == 'ethernet':
-    lease['mac'] = parts[2][:-1] 
+    lease['mac'] = parts[2][:-1]
    elif parts[0] == 'binding':
-    lease['binding'] = parts[2][:-1] 
+    lease['binding'] = parts[2][:-1]
    elif parts[0] == 'starts' or parts[0] == 'ends':
     lease[parts[0]] = " ".join(parts[2:])[:-1]
    elif parts[0] == 'client-hostname':
@@ -63,7 +63,7 @@ def update_server(aDict):
  # Create new file
  with open(SC.dhcp['static'],'w') as leasefile:
   for entry in entries:
-   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Subnet {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['subnet_id'],entry['id'])) 
+   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Subnet {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['subnet_id'],entry['id']))
 
  # Reload
  from subprocess import check_output, CalledProcessError

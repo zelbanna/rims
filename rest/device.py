@@ -261,10 +261,10 @@ def remove(aDict):
    ret = { 'deleted':0, 'a_id':0, 'ptr_id':0 }
   else:
    ret = db.get_row()
-   ret['deleted'] = db.do("DELETE FROM devices WHERE id = '{}'".format(aDict['id']))
+   ret['deleted'] = db.do("DELETE FROM devices WHERE id = '%s'"%(aDict['id']))
    if ret['base'] == 'pdu':
-    db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '{0}'".format(aDict['id']))
-    db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '{0}'".format(aDict['id']))
+    db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '%s'"%(aDict['id']))
+    db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '%s'"%(aDict['id']))
  return ret
 
 #
@@ -285,8 +285,6 @@ def discover(aDict):
  from threading import Thread, BoundedSemaphore
  from struct import pack,unpack
  from socket import inet_ntoa,inet_aton
- from ..core.logger import log
- log("device_discover({})".format(aDict))
  def _tdetect(aip,adict,asema):
   res = detect({'ip':aip})
   if res['result'] == 'OK':
@@ -422,7 +420,7 @@ def clear(aDict):
  Extra:
  """
  with DB() as db:
-  res = db.do("TRUNCATE TABLE devices")
+  res = db.do("DELETE FROM devices")
  return { 'operation':res }
 
 #
@@ -447,9 +445,10 @@ def update_pdu(aDict):
     slot = int(aDict.get('pem%s_pdu_slot'%(p),0))
     unit = int(aDict.get('pem%s_pdu_unit'%(p),0))
     if not (slot == 0 or unit == 0):
-     db.do("SELECT hostname, INET_NTOA(ip), devicetypes.name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '{}'".format(id))        
+     db.do("SELECT hostname, INET_NTOA(ip), devicetypes.name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '{}'".format(id))
      data = db.get_row()
      args = {'ip':data['ip'],'unit':unit,'slot':slot,'text':aDict['hostname']+"-P%s"%(p)}
+     # Redo with module import
      if data.name == 'avocent':
       from avocent import pdu_update
       ret["pem{}".format(p)] = pdu_update(args)
@@ -516,9 +515,9 @@ def graph_save(aDict):
   db.do("SELECT value FROM settings WHERE section='graph' AND parameter = 'file'")
   graph_file = db.get_val('value')
   ret['xist'] = db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
-  rows = db.get_rows()  
+  rows = db.get_rows()
  with open(graph_file,'w') as output:
-  for row in rows: 
+  for row in rows:
    output.write("[{}.{}]\n".format(row['hostname'],row['domain']))
    output.write("address {}\n".format(row['proxy']))
    output.write("update yes\n\n")

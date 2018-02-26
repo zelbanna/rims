@@ -13,7 +13,6 @@ def application(aDict):
  Args:
 
  Extra:
-  -  .iteritems()]) (undecoded - line:22) TODO
  """
  from ..core.dbase import DB
  """ Default login information """
@@ -24,7 +23,8 @@ def application(aDict):
   db.do("SELECT CONCAT(id,'_',name) as id, name FROM users ORDER BY name")
   rows = db.get_rows()
  ret['choices'] = [{'display':'Username', 'id':'sdcp_login', 'data':rows}]
- ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in aDict.iteritems()])
+ cookie = aDict
+ ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
  return ret
 
 #

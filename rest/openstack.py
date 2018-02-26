@@ -175,6 +175,15 @@ def info(aDict):
   ret['data'] = db.get_rows()
  return ret
 
+#
+#
+def token_info(aDict):
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT INET_NTOA(controller) as controller, uuid AS internal_token, token AS openstack_token, expiry FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
+  ret['data'] = db.get_row()
+ return ret
+
 ################################################# HEAT ###########################################
 #
 #

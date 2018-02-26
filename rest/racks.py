@@ -81,14 +81,14 @@ def infra(aDict):
     ret['rack']     = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None, 'image_url':None }
    else:
     ret['rackxist'] = db.do("SELECT racks.* FROM racks WHERE id = %s"%aDict['id'])
-    ret['rack']     = db.get_row()   
+    ret['rack']     = db.get_row()
   else:
    ret['rackxist'] = db.do("SELECT racks.* FROM racks")
    ret['racks']    =  db.get_rows()
    ret['racks'].append({ 'id':'NULL', 'name':'Not used'})
   if aDict.get('types',True):
-   ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes") 
-   ret['types']    = db.get_rows() 
+   ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes")
+   ret['types']    = db.get_rows()
   if aDict.get('consoles',True):
    ret['consolexist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'") 
    ret['consoles']    = db.get_rows()
@@ -166,4 +166,3 @@ def remove(aDict):
  with DB() as db:
   deleted = db.do("DELETE FROM racks WHERE id = %s"%aDict['id'])
  return deleted
-
