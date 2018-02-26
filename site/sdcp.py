@@ -21,7 +21,6 @@ def login(aWeb):
  data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call']))
  if inline == 'no':
   aWeb.put_html(data['title'])
- print data
  aWeb.put_cookie(application,data['cookie'],data['expires'])
  taborder = 2
  print "<DIV CLASS='grey overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message']
@@ -53,6 +52,7 @@ def login(aWeb):
 #
 def portal(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
+ aWeb.put_html(aWeb.get('title','Portal'))
  if cookie.get('id') is None:
   id,username = aWeb.get('sdcp_login',"None_None").split('_')
   res = aWeb.rest_call("sdcp_authenticate",{'id':id,'username':username})
@@ -60,12 +60,10 @@ def portal(aWeb):
    aWeb.put_redirect("index.cgi")
    return
   cookie.update({'id':id,'authenticated':'OK'})
-  aWeb.put_html(aWeb.get('title','Portal'))
   aWeb.put_cookie('sdcp',cookie,res['expires'])
   aWeb.log("Entering as {}-'{}'".format(id,username))
  else:
   id = cookie.get('id')
-  aWeb.put_html(aWeb.get('title','Portal'))
 
  menu = aWeb.rest_call("users_menu",{"id":id})
  print "<HEADER CLASS='background'>"

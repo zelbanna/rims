@@ -16,19 +16,18 @@ __status__= "Production"
 def portal(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
 
+ aWeb.put_html("Openstack Portal")
  if not cookie.get('authenticated'):
   (pid,pname) = aWeb.get('project','none_none').split('_')
   res = aWeb.rest_call("openstack_authenticate",{'host':cookie['host'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
    cookie.update({'authenticated':'OK','token':res['token'],'username':aWeb['username'],'project_id':pid})
-   aWeb.put_html("Openstack Portal")
    aWeb.put_cookie('openstack',cookie,res['expires'])
   else:
    print "Error logging in - please try login again"
    return
  else:
   aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('token'),cookie['host']))
-  aWeb.put_html("Openstack Portal")
 
  print "<MAIN CLASS='background' STYLE='top:0px;' ID=main>"
  print "<NAV><UL>"
