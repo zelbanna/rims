@@ -16,8 +16,6 @@ class Web(object):
  def __init__(self,aREST):
   from os import getenv
   self._rest_url = aREST
-  self._c_stor = {}
-  self._c_life = {}
   self.form  = None
   self.cookies = {}
   cookies = getenv("HTTP_COOKIE")
@@ -72,7 +70,7 @@ class Web(object):
   try:    return dict(value.split('=') for value in self.cookies[aName].split(','))
   except: return {}
 
- # Redirect will all cookies and headers set
+ # Redirect
  def put_redirect(self,aLocation):
   print "<SCRIPT> window.location.replace('%s'); </SCRIPT>"%(aLocation)
 

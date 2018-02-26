@@ -106,7 +106,7 @@ def info(aWeb):
      d['devices_%s_id'%type] = opres[type]['id']
     else:
      d.pop('devices_%s_id'%type,None)
-   
+
    opres['update'] = aWeb.rest_call("device_update",d)
 
  elif "book" in op:
@@ -381,7 +381,7 @@ def discover(aWeb):
  if op:
   # id, subnet int, subnet mask
   ipam  = aWeb.get('ipam_subnet',"0_0_32").split('_')
-  res = aWeb.rest_call("device_discover",{ 'subnet_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':aWeb['a_dom_id'], 'clear':aWeb.get('clear',False)}, aTimeout = 200)
+  res = aWeb.rest_generic("device_discover",{ 'subnet_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':aWeb['a_dom_id'], 'clear':aWeb.get('clear',False)}, aTimeout = 200)
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
   subnets = aWeb.rest_call("sdcpipam_list")['subnets']
@@ -436,7 +436,7 @@ def graph_info(aWeb):
 
  if aWeb['op'] == 'search':
   plugfile  = aWeb.rest_call("settings_param",{'section':'graph','parameter':'plugins'})['data']['value']
-  res['op'] = aWeb.rest_call("device_graph_detect",{'ip':dev['ip'],'type_name':dev['info']['type_name'],'fqdn':dev['fqdn'],'plugin_file':plugfile}, aTimeout = 60)
+  res['op'] = aWeb.rest_generic("device_graph_detect",{'ip':dev['ip'],'type_name':dev['info']['type_name'],'fqdn':dev['fqdn'],'plugin_file':plugfile}, aTimeout = 60)
 
  print "<ARTICLE CLASS='info'><P>Graph for %s</DIV>"%(dev['fqdn'])
  print "<FORM ID=device_graph_form>"
