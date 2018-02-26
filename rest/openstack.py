@@ -68,7 +68,7 @@ def authenticate(aDict):
  if ret['authenticated'] == 'OK':
   with DB() as db:
    ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'os_token':controller.get_token()})
-   db.do("INSERT INTO openstack_tokens(token,expiry,project_id,username,controller) VALUES('%s','%s','%s','%s',INET_ATON('%s'))"%(controller.get_token(),controller.get_lifetime(),aDict['project_id'],aDict['username'],aDict['host']))
+   db.do("INSERT INTO openstack_tokens(token,expiry,project_id,username,controller) VALUES('%s','%s','%s','%s',INET_ATON('%s'))"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],aDict['host']))
    ret['token'] = db.get_last_id()
    for service in ['heat','nova','neutron','glance']:
     port,url,id = controller.get_service(service,'public')
@@ -169,19 +169,23 @@ def href(aDict):
 #
 #
 def info(aDict):
+ from datetime import datetime
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT INET_NTOA(controller) as controller, uuid AS internal_token, token AS openstack_token, expiry FROM openstack_tokens WHERE username = '%s'"%aDict['username'])
+  ret['xist'] = db.do("SELECT INET_NTOA(controller) as controller, uuid AS internal_token, token AS openstack_token, expiry, (UNIX_TIMESTAMP() < expiry) AS valid FROM openstack_tokens WHERE username = '%s'"%aDict['username'])
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
 def token_info(aDict):
+ from datetime import datetime
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT INET_NTOA(controller) as controller, uuid AS internal_token, token AS openstack_token, expiry FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
+  ret['xist'] = db.do("SELECT UNIX_TIMESTAMP() AS time, INET_NTOA(controller) as controller, uuid AS internal_token, token AS openstack_token, expiry FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
   ret['data'] = db.get_row()
+  ret['data']['expiry_string'] = datetime.utcfromtimestamp(int(ret['data']['expiry'])).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+  ret['data']['time_string'] = datetime.utcfromtimestamp(int(ret['data']['time'])).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
  return ret
 
 ################################################# HEAT ###########################################

@@ -32,7 +32,7 @@ class OpenstackRPC(object):
  #
  def auth(self, aAuth):
   from ..core.rest import call as rest_call
-  from time import mktime, strptime
+  from datetime import datetime,timedelta
   try:
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
    url  = "http://%s:5000/v3/auth/tokens"%(self._ip)
@@ -42,7 +42,7 @@ class OpenstackRPC(object):
     token = res.pop('data',{})['token']
     self._token = res['info'].get('x-subject-token')
     self._lifetime = token['expires_at']
-    self._token_expire = int(mktime(strptime(token['expires_at'],"%Y-%m-%dT%H:%M:%S.%fZ")))
+    self._token_expire = int((datetime.strptime(self._lifetime,"%Y-%m-%dT%H:%M:%S.%fZ") - datetime(1970,1,1)).total_seconds())
     self._project = token['project']['name']
     self._project_id = token['project']['id']
     catalog = {}
@@ -68,6 +68,10 @@ class OpenstackRPC(object):
 
  def get_lifetime(self):
   return self._lifetime
+
+ def get_token_expire(self):
+  return self._token_expire
+
  #
  # Input: Service, auth-type (admin/internal/public)
  # Returns tuple with:

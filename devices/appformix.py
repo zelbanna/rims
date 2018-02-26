@@ -25,7 +25,7 @@ class Device(object):
 
  def auth(self, aAuth):
   from ..core.rest import call as rest_call
-  from time import mktime, strptime
+  from datetime import datetime,timedelta
   try:
    auth = {'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
    url  = "http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,"auth_credentials")
@@ -35,7 +35,7 @@ class Device(object):
     token = res.pop('data',{})['Token']
     self._token = token['tokenId']
     self._lifetime = token['expiresAt']
-    self._token_expire = int(mktime(strptime(token['expiresAt'],"%Y-%m-%dT%H:%M:%S.%fZ")))
+    self._token_expire = int((datetime.strptime(self._lifetime,"%Y-%m-%dT%H:%M:%S.%fZ") - datetime(1970,1,1)).total_seconds())
     res['auth'] = 'OK'
    else:
     res['auth'] = 'NOT_OK'
