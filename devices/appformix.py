@@ -49,6 +49,13 @@ class Device(object):
  def get_lifetime(self):
   return self._lifetime
 
+ def get_cookie_expire(self):
+  from datetime import datetime
+  return datetime.strptime(self._lifetime,"%Y-%m-%dT%H:%M:%S.%fZ").strftime("%a, %d %m %Y %H:%M:%S GMT")
+
+ def get_token_expire(self):
+  return self._token_expire
+
  def set_lifetime(self,aTime):
   self._lifetime = aTime
 

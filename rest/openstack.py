@@ -15,22 +15,23 @@ def application(aDict):
  """Function docstring for application. Delivers the information for SDCP login to redirect to the openstack App.
 
  Args:
-  - controller (required)
+  - host (required)
   - appformix (optional)
   - name (optional)
   - token (optional)
  Extra:
  """
+ from datetime import datetime,timedelta
  ret = {}
  ret['title']   = "%s 2 Cloud"%(aDict.get('name','iaas'))
  ret['message']= "Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas'))
- cookies = {'name':aDict.get('name','iaas'),'controller':aDict['controller'],'appformix':aDict.get('appformix')}
+ cookies = {'name':aDict.get('name','iaas'),'host':aDict['host'],'appformix':aDict.get('appformix')}
  try:
   if aDict.get('token'):
-   controller = OpenstackRPC(cookies['controller'],aDict.get('token'))
+   controller = OpenstackRPC(cookies['host'],aDict.get('token'))
   else:
    from .. import SettingsContainer as SC
-   controller = OpenstackRPC(cookies['controller'],None)
+   controller = OpenstackRPC(cookies['host'],None)
    res = controller.auth({'project':SC.openstack['project'], 'username':SC.openstack['username'],'password':SC.openstack['password']})
   # Forget about main token for security resasons, just retrieve projects for the list
   # main_token = controller.get_token()
@@ -44,6 +45,7 @@ def application(aDict):
   ret['exception'] = str(e)
  ret['parameters'] = [{'display':'Username', 'id':'username', 'data':'text'},{'display':'Password', 'id':'password', 'data':'password'}]
  ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookies.iteritems()])
+ ret['lifetime'] = (datetime.utcnow() + timedelta(hours=1)).strftime('%a, %d %m %Y %H:%M:%S GMT')
  return ret
 
 #
@@ -76,6 +78,7 @@ def authenticate(aDict):
      url = url + '/'
     db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(ret['token'],service,port,url,id))
    db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(ret['token'],"contrail",8082,'',''))
+  ret['lifetime'] = controller.get_cookie_expire()
   log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],aDict['host']))
  else:
   log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl))
