@@ -75,7 +75,7 @@ class Web(object):
  def put_cookie(self):
   for key,value in self._c_stor.iteritems():
    print "<SCRIPT>create_cookie('%s','%s',%s);</SCRIPT>"%(key,value,self._c_life.get(key,3000))
- 
+
  # Redirect will all cookies and headers set
  def put_redirect(self,aLocation):
   print "<SCRIPT> window.location.replace('%s'); </SCRIPT>"%(aLocation)
@@ -100,18 +100,16 @@ class Web(object):
  def server(self):
   # Do something about field storage...
   import cgi
+  from sys import stdout
   self.form = cgi.FieldStorage()
   mod_fun   = self.get('call','sdcp_login')
   (mod,void,fun) = mod_fun.partition('_')
-  print "X-Z-Mod:{}\r".format(mod)
-  print "X-Z-Fun:{}\r".format(fun)
-  print "Content-Type: text/html\r\n"
+  stdout.write("X-Z-Mod:%s\r\nX-Z-Fun:%s\r\nContent-Type:text/html\r\n\n"%(mod,fun))
   try:
    from importlib import import_module
    module = import_module("sdcp.site." + mod)
    getattr(module,fun,None)(self)
   except Exception, e:
-   from sys import stdout
    keys    = self.form.keys()
    details = ("AJAX",mod_fun,type(e).__name__,",".join(keys), str(e)) 
    stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>Type: %s<BR>API: sdcp.site.%s<BR>Excpt: %s<BR><DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%details)

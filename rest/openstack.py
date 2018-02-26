@@ -166,6 +166,15 @@ def href(aDict):
  except Exception as e: ret = e[0]
  return ret
 
+#
+#
+def info(aDict):
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT INET_NTOA(controller) as controller, uuid AS internal_token, token AS openstack_token, expiry FROM openstack_tokens WHERE username = '%s'"%aDict['username'])
+  ret['data'] = db.get_rows()
+ return ret
+
 ################################################# HEAT ###########################################
 #
 #

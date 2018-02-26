@@ -43,6 +43,7 @@ def portal(aWeb):
  print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
  print "<LI><A CLASS='z-op reload' OP=redirect URL='sdcp.cgi?call=openstack_portal'></A></LI>"
  print "<LI CLASS='dropdown right'><A>Debug</A><DIV CLASS=dropdown-content>"
+ print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_info>Info</A>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
  print "</DIV></LI>"
@@ -76,11 +77,12 @@ def inline(aWeb):
  print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout DIV=main COOKIE=openstack>Logout</A></LI>"
  print "<LI CLASS='right'><A CLASS='z-op green' TARGET=_blank HREF='sdcp.cgi?call=sdcp_login&application=openstack&controller=%s&name=%s&appformix=%s'>Tab</A></LI>"%(cookie['controller'],cookie.get('name'),cookie.get('appformix'))
  print "<LI CLASS='dropdown right'><A>Debug</A><DIV CLASS=dropdown-content>"
+ print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_info>Info</A>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
  print "</DIV></LI>"
  print "</UL></NAV>"
- print "<SECTION CLASS=content ID=div_content></SECTION></MAIN>"
+ print "<SECTION CLASS=content ID=div_content></SECTION>"
 
 
 ############################################## Formatting ##############################################
@@ -191,5 +193,17 @@ def result(aWeb):
   print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
   for key,value in res.iteritems():
    print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value)
-  print "</DIV></DIV>" 
+  print "</DIV></DIV>"
  print "</DIV></ARTICLE>"
+
+#
+#
+def info(aWeb):
+ cookie = aWeb.cookie_unjar('openstack')
+ data = aWeb.rest_call("openstack_info",{'username':cookie['username']})
+ print "<ARTICLE>"
+ print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=thead><DIV CLASS=th>Controller</DIV><DIV CLASS=th>Internal Token</DIV><DIV CLASS=th>Openstack Token</DIV><DIV CLASS=th>Expiry</DIV></DIV><DIV CLASS=tbody>"
+ for row in data['data']:
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['controller'],row['internal_token'],row['openstack_token'],row['expiry'])
+ print "</DIV></DIV>"
+ print "</ARTICLE>"
