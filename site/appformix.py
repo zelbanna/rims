@@ -21,13 +21,13 @@ def list(aWeb):
    return
   else:
    cookie_appformix['token'] = res['token']
-   cookie_appformix['lifetime'] = res['lifetime']
-   cookie_appformix['controller'] = ctrl
+   cookie_appformix['expires'] = res['expires']
+   cookie_appformix['host'] = ctrl
    aWeb.cookie_jar('appformix',cookie_appformix)
    aWeb.put_cookie()
 
  from datetime import datetime
- res = aWeb.rest_call("appformix_report_projects",{'host':cookie_appformix['controller'],'token':cookie_appformix['token'],'project':cookie_openstack['project_id']})
+ res = aWeb.rest_call("appformix_report_projects",{'host':cookie_appformix['host'],'token':cookie_appformix['token'],'project':cookie_openstack['project_id']})
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Usage Reports</P>"
  print "<DIV CLASS=controls>"
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=appformix_list')
@@ -49,7 +49,7 @@ def list(aWeb):
 def info(aWeb):
  cookie_openstack = aWeb.cookie_unjar('openstack')
  cookie_appformix = aWeb.cookie_unjar('appformix')
- reports = aWeb.rest_call("appformix_project_reports",{'host':cookie_appformix['controller'],'token':cookie_appformix['token'],'report':aWeb['report']})
+ reports = aWeb.rest_call("appformix_project_reports",{'host':cookie_appformix['host'],'token':cookie_appformix['token'],'report':aWeb['report']})
  from ..site.openstack import dict2html
  for project in reports['Data']:
   if project['Project_Id'] == cookie_openstack['project_id']:

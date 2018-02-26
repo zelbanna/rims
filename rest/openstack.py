@@ -175,7 +175,7 @@ def info(aDict):
  from datetime import datetime
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT INET_NTOA(controller) as controller, uuid AS internal_token, token AS openstack_token, expiry, (UNIX_TIMESTAMP() < expiry) AS valid FROM openstack_tokens WHERE username = '%s'"%aDict['username'])
+  ret['xist'] = db.do("SELECT INET_NTOA(controller) AS controller, uuid AS internal_token, token AS openstack_token, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires, (UNIX_TIMESTAMP() < expires) AS valid FROM openstack_tokens WHERE username = '%s'"%aDict['username'])
   ret['data'] = db.get_rows()
  return ret
 
@@ -185,10 +185,8 @@ def token_info(aDict):
  from datetime import datetime
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT UNIX_TIMESTAMP() AS time, INET_NTOA(controller) as controller, uuid AS internal_token, token AS openstack_token, expiry FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
+  ret['xist'] = db.do("SELECT CAST(NOW() AS CHAR(50)) AS time, INET_NTOA(controller) AS controller, token AS openstack_token, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
   ret['data'] = db.get_row()
-  ret['data']['expiry_string'] = datetime.utcfromtimestamp(int(ret['data']['expiry'])).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-  ret['data']['time_string'] = datetime.utcfromtimestamp(int(ret['data']['time'])).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
  return ret
 
 ################################################# HEAT ###########################################

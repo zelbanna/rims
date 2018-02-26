@@ -36,7 +36,7 @@ def authenticate(aDict):
  controller = Device(aDict['host'])
  ret['auth'] = controller.auth({'username':SC.appformix['username'], 'password':SC.appformix['password'] })['auth']
  ret['token'] = controller.get_token()
- ret['lifetime'] = controller.get_lifetime()
+ ret['expires'] = controller.get_lifetime()
  return ret
 
 #

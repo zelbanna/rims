@@ -20,7 +20,7 @@ def portal(aWeb):
   (pid,pname) = aWeb.get('project','none_none').split('_')
   res = aWeb.rest_call("openstack_authenticate",{'host':cookie['host'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
-   cookie.update({'authenticated':'OK','token':res['token'],'username':aWeb['username']})
+   cookie.update({'authenticated':'OK','token':res['token'],'username':aWeb['username'],'project_id':pid})
    aWeb.cookie_jar('openstack',cookie,4500)
   else:
    print "Error logging in - please try login again"
@@ -55,8 +55,7 @@ def inline(aWeb):
   (pid,pname) = aWeb.get('project','none_none').split('_')
   res = aWeb.rest_call("openstack_authenticate",{'host':cookie['host'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
-   cookie.update({'authenticated':'OK','token':res['token'],'username':aWeb['username']})
-   cookie.update(res)
+   cookie.update({'authenticated':'OK','token':res['token'],'username':aWeb['username'],'project_id':pid})
    aWeb.cookie_jar('openstack',cookie,4500)
   else:
    print "Error logging in - please try login again"
@@ -199,8 +198,8 @@ def info(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
  data = aWeb.rest_call("openstack_info",{'username':cookie['username']})
  print "<ARTICLE>"
- print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=thead><DIV CLASS=th>Controller</DIV><DIV CLASS=th>Internal Token</DIV><DIV CLASS=th>Openstack Token</DIV><DIV CLASS=th>Expiry</DIV><DIV CLASS=th>Valid</DIV></DIV><DIV CLASS=tbody>"
+ print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=thead><DIV CLASS=th>Controller</DIV><DIV CLASS=th>Internal Token</DIV><DIV CLASS=th>Openstack Token</DIV><DIV CLASS=th>Expires</DIV><DIV CLASS=th>Valid</DIV></DIV><DIV CLASS=tbody>"
  for row in data['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['controller'],row['internal_token'],row['openstack_token'],row['expiry'],row['valid'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['controller'],row['internal_token'],row['openstack_token'],row['expires'],row['valid'])
  print "</DIV></DIV>"
  print "</ARTICLE>"
