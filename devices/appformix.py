@@ -16,16 +16,14 @@ class Device(object):
 
  def __init__(self, aIP, aToken = None):
   self._token = aToken
-  self._token_expire = None
-  self._lifetime = None
+  self._expire = None
   self._ip = aIP
 
  def __str__(self):
-  return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._lifetime)
+  return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._expire)
 
  def auth(self, aAuth):
   from ..core.rest import call as rest_call
-  from datetime import datetime,timedelta
   try:
    auth = {'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
    url  = "http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,"auth_credentials")
@@ -34,8 +32,7 @@ class Device(object):
    if res['code'] == 200:
     token = res.pop('data',{})['Token']
     self._token = token['tokenId']
-    self._lifetime = token['expiresAt']
-    self._token_expire = int((datetime.strptime(self._lifetime,"%Y-%m-%dT%H:%M:%S.%fZ") - datetime(1970,1,1)).total_seconds())
+    self._expire = token['expiresAt']
     res['auth'] = 'OK'
    else:
     res['auth'] = 'NOT_OK'
@@ -46,18 +43,13 @@ class Device(object):
  def get_token(self):
   return self._token
 
- def get_lifetime(self):
-  return self._lifetime
-
  def get_cookie_expire(self):
   from datetime import datetime
-  return datetime.strptime(self._lifetime,"%Y-%m-%dT%H:%M:%S.%fZ").strftime("%a, %d %m %Y %H:%M:%S GMT")
+  return datetime.strptime(self._expire,"%Y-%m-%dT%H:%M:%S.%fZ").strftime("%a, %d %b %Y %H:%M:%S GMT")
 
  def get_token_expire(self):
-  return self._token_expire
-
- def set_lifetime(self,aTime):
-  self._lifetime = aTime
+  from datetime import datetime,timedelta
+  return int((datetime.strptime(self._expire,"%Y-%m-%dT%H:%M:%S.%fZ") - datetime(1970,1,1)).total_seconds())
 
  #
  # Input:

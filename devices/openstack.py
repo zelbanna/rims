@@ -16,15 +16,14 @@ class OpenstackRPC(object):
 
  def __init__(self, aIP, aToken = None):
   self._token = aToken
-  self._token_expire = None
-  self._lifetime = None
+  self._expire = None
   self._ip = aIP
   self._project = None
   self._project_id = None
   self._catalog = None
 
  def __str__(self):
-  return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._ip, self._token, self._lifetime, self._project,self._project_id)
+  return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._ip, self._token, self._expire, self._project,self._project_id)
 
  #
  # Keystone v3 authentication - using v2.0 compatible domain (default), project = admin unless specified
@@ -32,7 +31,6 @@ class OpenstackRPC(object):
  #
  def auth(self, aAuth):
   from ..core.rest import call as rest_call
-  from datetime import datetime,timedelta
   try:
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
    url  = "http://%s:5000/v3/auth/tokens"%(self._ip)
@@ -41,8 +39,7 @@ class OpenstackRPC(object):
    if res['code'] == 201:
     token = res.pop('data',{})['token']
     self._token = res['info'].get('x-subject-token')
-    self._lifetime = token['expires_at']
-    self._token_expire = int((datetime.strptime(self._lifetime,"%Y-%m-%dT%H:%M:%S.%fZ") - datetime(1970,1,1)).total_seconds())
+    self._expire = token['expires_at']
     self._project = token['project']['name']
     self._project_id = token['project']['id']
     catalog = {}
@@ -66,15 +63,13 @@ class OpenstackRPC(object):
  def get_catalog(self):
   return self._catalog
 
- def get_lifetime(self):
-  return self._lifetime
-
  def get_cookie_expire(self):
   from datetime import datetime
-  return (datetime.strptime(self._lifetime,"%Y-%m-%dT%H:%M:%S.%fZ")).strftime('%a, %d %m %Y %H:%M:%S GMT')
+  return (datetime.strptime(self._expire,"%Y-%m-%dT%H:%M:%S.%fZ")).strftime('%a, %d %b %Y %H:%M:%S GMT')
 
  def get_token_expire(self):
-  return self._token_expire
+  from datetime import datetime
+  return int((datetime.strptime(self._expire,"%Y-%m-%dT%H:%M:%S.%fZ") - datetime(1970,1,1)).total_seconds())
 
  #
  # Input: Service, auth-type (admin/internal/public)
@@ -110,29 +105,3 @@ class OpenstackRPC(object):
   try: res = rest_call(aURL, "openstack", aArgs, aMethod, head)
   except Exception as e: res = e[0]
   return res
-
- #################################### File OPs ####################################
- #
- # File operations for debugging
- #
- def dump(self,aFile):
-  from json import dump
-  with open(aFile,'w') as f:
-   dump({'token':self._token, 'lifetime':self._lifetime, 'token_expire':self._token_expire, 'project':self._project, 'ip':self._ip,'project_id':self._project_id, 'catalog':self._catalog },f, sort_keys=True, indent=4)
-
- def load(self,aFile):
-  from json import load
-  from datetime import datetime
-  try:
-   with open(aFile,'r') as f:
-    data = load(f)
-    if datetime.fromtimestamp(int(data['token_expire'])) > datetime.utcnow():
-     self._ip = data['ip']
-     self._token = data['token']
-     self._token_expire = data['token_expire']
-     self._lifetime = data['lifetime']
-     self._project = data['project']
-     self._project_id = data['project_id']
-     self._catalog = data['catalog']
-  except: pass
-  return self._token

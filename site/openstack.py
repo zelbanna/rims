@@ -21,14 +21,15 @@ def portal(aWeb):
   res = aWeb.rest_call("openstack_authenticate",{'host':cookie['host'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
    cookie.update({'authenticated':'OK','token':res['token'],'username':aWeb['username'],'project_id':pid})
-   aWeb.cookie_jar('openstack',cookie,4500)
+   aWeb.put_html("Openstack Portal")
+   aWeb.put_cookie('openstack',cookie,res['expires'])
   else:
    print "Error logging in - please try login again"
    return
  else:
   aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('token'),cookie['host']))
+  aWeb.put_html("Openstack Portal")
 
- aWeb.put_html("Openstack Portal")
  print "<MAIN CLASS='background' STYLE='top:0px;' ID=main>"
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
@@ -56,14 +57,12 @@ def inline(aWeb):
   res = aWeb.rest_call("openstack_authenticate",{'host':cookie['host'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
    cookie.update({'authenticated':'OK','token':res['token'],'username':aWeb['username'],'project_id':pid})
-   aWeb.cookie_jar('openstack',cookie,4500)
+   aWeb.put_cookie('openstack',cookie,res['expires'])
   else:
    print "Error logging in - please try login again"
    return
  else:
   aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('token'),cookie['host']))
-
- aWeb.put_cookie()
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"

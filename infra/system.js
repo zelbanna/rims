@@ -2,16 +2,13 @@
 //
 // Version: 18.02.12GA
 // Author:  Zacharias El Banna
-// 
+//
 
 
 //
-function create_cookie(name,value,life) {
- var date = new Date();
- seconds = (life) ? life*1000 : "3000000";
- date.setTime(date.getTime()+seconds);
- console.log("Creating cookie:" + name + " expires:" + date.toGMTString());
- document.cookie = name+"="+value+"; expires=" + date.toGMTString() + "; Path=/";
+function set_cookie(name,value,expires) {
+ console.log("Creating cookie:" + name + " expires:" + expires);
+ document.cookie = name+"="+value+"; expires=" + expires + "; Path=/";
 }
 
 function read_cookie(name) {

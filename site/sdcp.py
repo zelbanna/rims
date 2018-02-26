@@ -14,17 +14,15 @@ def login(aWeb):
  application = aWeb.get('application','sdcp')
  cookie = aWeb.cookie_unjar(application)
  inline = aWeb.get('inline','no')
- print "<!-- Cookie:%s -->"%cookie
  if cookie.get('authenticated') == 'OK' and inline == 'no':
   aWeb.put_redirect("sdcp.cgi?call=%s_portal"%application)
   return
 
  data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call']))
- aWeb.cookie_add(application,data['cookie'])
  if inline == 'no':
   aWeb.put_html(data['title'])
- else:
-  aWeb.put_cookie()
+ print data
+ aWeb.put_cookie(application,data['cookie'],data['expires'])
  taborder = 2
  print "<DIV CLASS='grey overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message']
  if data.get('exception'):
@@ -56,18 +54,20 @@ def login(aWeb):
 def portal(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
  if cookie.get('id') is None:
-  id,user = aWeb.get('sdcp_login',"None_None").split('_')
-  if id == "None":
+  id,username = aWeb.get('sdcp_login',"None_None").split('_')
+  res = aWeb.rest_call("sdcp_authenticate",{'id':id,'username':username})
+  if not res['authenticated'] == "OK":
    aWeb.put_redirect("index.cgi")
    return
   cookie.update({'id':id,'authenticated':'OK'})
-  aWeb.cookie_jar('sdcp',cookie, 86400)
-  aWeb.log("Entering as {}-'{}'".format(id,user))
+  aWeb.put_html(aWeb.get('title','Portal'))
+  aWeb.put_cookie('sdcp',cookie,res['expires'])
+  aWeb.log("Entering as {}-'{}'".format(id,username))
  else:
   id = cookie.get('id')
+  aWeb.put_html(aWeb.get('title','Portal'))
 
  menu = aWeb.rest_call("users_menu",{"id":id})
- aWeb.put_html(aWeb.get('title','Portal'))
  print "<HEADER CLASS='background'>"
  for item in menu:
   if item['inline'] == 0:
@@ -87,13 +87,13 @@ def weathermap(aWeb):
  aWeb.put_html("Weathermap")
  if not aWeb['page']:
   wms = aWeb.rest_call("settings_list",{'section':'weathermap'})['data']
-  print "<NAV><UL>" 
+  print "<NAV><UL>"
   for map in wms:
    print "<LI><A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=sdcp_weathermap&page={0}>{1}</A></LI>".format(map['parameter'],map['value'])
   print "</UL></NAV>"
   print "<SECTION CLASS='content background' ID='div_wm_content' NAME='Weathermap Content' STYLE='overflow:hidden;'>"
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"
-  print "</SECTION>" 
+  print "</SECTION>"
  else:
   print "<SECTION CLASS='content background' STYLE='top:0px;'>"
   print "<ARTICLE ID='including'>"

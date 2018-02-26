@@ -21,10 +21,8 @@ def list(aWeb):
    return
   else:
    cookie_appformix['token'] = res['token']
-   cookie_appformix['expires'] = res['expires']
    cookie_appformix['host'] = ctrl
-   aWeb.cookie_jar('appformix',cookie_appformix)
-   aWeb.put_cookie()
+   aWeb.put_cookie('appformix',cookie_appformix,res['expires'])
 
  from datetime import datetime
  res = aWeb.rest_call("appformix_report_projects",{'host':cookie_appformix['host'],'token':cookie_appformix['token'],'project':cookie_openstack['project_id']})

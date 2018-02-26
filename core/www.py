@@ -59,22 +59,18 @@ class Web(object):
  # Cookies are key, value, lifetime
  # - Values are strings, numbers or dictionaries
  # - special case for dictionaries, the ',' char is used for joining items!
- def cookie_jar(self,aName,aValue,aLife=3000):
-  self._c_stor[aName] = ",".join(["%s=%s"%(k,v) for k,v in aValue.iteritems()])
-  self._c_life[aName] = aLife
+
+ def put_cookie(self,aName,aValue,aExpires):
+  if isinstance(aValue,dict):
+   value = ",".join(["%s=%s"%(k,v) for k,v in aValue.iteritems()])
+  else:
+   value = aValue
+  print "<SCRIPT>set_cookie('%s','%s','%s');</SCRIPT>"%(aName,value,aExpires)
 
  # Unjar returns a dict with whatever was jar:ed into that cookie name (or empty)
  def cookie_unjar(self,aName):
   try:    return dict(value.split('=') for value in self.cookies[aName].split(','))
   except: return {}
-
- def cookie_add(self,aName,aValue,aLife=3000):
-  self._c_stor[aName] = aValue
-  self._c_life[aName] = aLife
-
- def put_cookie(self):
-  for key,value in self._c_stor.iteritems():
-   print "<SCRIPT>create_cookie('%s','%s',%s);</SCRIPT>"%(key,value,self._c_life.get(key,3000))
 
  # Redirect will all cookies and headers set
  def put_redirect(self,aLocation):
@@ -89,7 +85,6 @@ class Web(object):
   stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/sdcp.png'/>")
   stdout.write("<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='system.js'></SCRIPT>")
   stdout.write("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ); });</SCRIPT>")
-  self.put_cookie()
   stdout.write("</HEAD>")
   stdout.flush()
 

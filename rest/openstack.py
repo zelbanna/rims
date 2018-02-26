@@ -25,16 +25,13 @@ def application(aDict):
  ret = {}
  ret['title']   = "%s 2 Cloud"%(aDict.get('name','iaas'))
  ret['message']= "Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas'))
- cookies = {'name':aDict.get('name','iaas'),'host':aDict['host'],'appformix':aDict.get('appformix')}
  try:
   if aDict.get('token'):
-   controller = OpenstackRPC(cookies['host'],aDict.get('token'))
+   controller = OpenstackRPC(aDict['host'],aDict.get('token'))
   else:
    from .. import SettingsContainer as SC
-   controller = OpenstackRPC(cookies['host'],None)
+   controller = OpenstackRPC(aDict['host'],None)
    res = controller.auth({'project':SC.openstack['project'], 'username':SC.openstack['username'],'password':SC.openstack['password']})
-  # Forget about main token for security resasons, just retrieve projects for the list
-  # main_token = controller.get_token()
   auth = controller.call("5000","v3/projects")
   if auth['code'] == 200:
    projects = []
@@ -44,8 +41,11 @@ def application(aDict):
  except Exception as e:
   ret['exception'] = str(e)
  ret['parameters'] = [{'display':'Username', 'id':'username', 'data':'text'},{'display':'Password', 'id':'password', 'data':'password'}]
- ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookies.iteritems()])
- ret['expires'] = (datetime.utcnow() + timedelta(hours=1)).strftime('%a, %d %m %Y %H:%M:%S GMT')
+ cookie = {'name':aDict.get('name','iaas'),'host':aDict['host']}
+ if aDict.get('appformix'):
+  cookie['appformix'] = aDict.get('appformix')
+ ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
+ ret['expires'] = (datetime.utcnow() + timedelta(hours=1)).strftime('%a, %d %b %Y %H:%M:%S GMT')
  return ret
 
 #
