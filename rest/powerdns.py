@@ -80,6 +80,7 @@ def domains(aDict):
  Args:
   - filter (optional)
   - dict (optional)
+  - exclude (optional)
 
  Extra:
  """
@@ -91,6 +92,8 @@ def domains(aDict):
   else:      
    ret['xist'] = db.do("SELECT domains.* FROM domains")
   ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
+  if aDict.get('dict') and aDict.get('exclude'):
+   ret['domains'].pop(aDict.get('exclude'),None)
  return ret
 
 #
@@ -205,7 +208,7 @@ def record_lookup(aDict):
  return ret
 
 #
-# id/0/'new',dom_id,name,content,type (ttl)
+#
 def record_update(aDict):
  """Function docstring for record_update TBD
 
@@ -213,17 +216,15 @@ def record_update(aDict):
   - id (required) - id/0/'new'
   - ip (required)
   - fqdn (required)
-  - ttl (required)
-  - change_date (required)
   - type (required)
   - domain_id (required)
-  - ttl (optional)
+  - prio (optional)
 
  Extra:
  """
  log("powerdns_record_update({})".format(aDict))
  from time import strftime
- args = {'prio':aDict['prio'],'domain_id':aDict['domain_id'],'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper()}
+ args = {'domain_id':aDict['domain_id'],'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper()}
  if args['type'] == 'A':
   args['name'] = aDict['fqdn']
   args['content'] = aDict['ip']
