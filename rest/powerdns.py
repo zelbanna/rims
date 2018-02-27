@@ -30,7 +30,7 @@ def dedup(aDict):
   for row in rows:
    if previous['content'] == row['content'] and previous['name'] == row['name']:
     db.do("DELETE FROM records WHERE id = '{}'".format(row['id'] if row['id'] > previous['id'] else previous['id']))
-    row.pop('id')
+    row.pop('id',None)
     remove.append(row)
    else:
     previous = row
@@ -214,30 +214,17 @@ def record_update(aDict):
 
  Args:
   - id (required) - id/0/'new'
-  - ip (required)
-  - fqdn (required)
+  - name (required)
+  - content (required)
   - type (required)
   - domain_id (required)
-  - prio (optional)
 
  Extra:
  """
  log("powerdns_record_update({})".format(aDict))
  from time import strftime
- args = {'domain_id':aDict['domain_id'],'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper()}
- if args['type'] == 'A':
-  args['name'] = aDict['fqdn']
-  args['content'] = aDict['ip']
- elif args['type'] == 'PTR':
-  def GL_ip2ptr(addr):
-   octets = addr.split('.')
-   octets.reverse()
-   octets.append("in-addr.arpa")
-   return ".".join(octets)
-  args['name'] = GL_ip2ptr(aDict['ip'])
-  args['content'] = aDict['fqdn']
-
  ret = {'id':aDict['id']}
+ args = {'domain_id':aDict['domain_id'],'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'name':aDict['name'],'content':aDict['content']}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if ret['id'] == 'new' or str(ret['id']) == '0':
    ret['xist'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date,prio) VALUES ({},'{}','{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(args['domain_id'],args['name'],args['content'],args['type'],args['ttl'],args['change_date']))
