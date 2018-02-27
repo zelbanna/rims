@@ -14,14 +14,13 @@ def list(aWeb):
  cookie_appformix = aWeb.cookie_unjar('appformix')
 
  if not cookie_appformix.get('appformix_token'):
-  ctrl = cookie_openstack['appformix']
-  res = aWeb.rest_call("appformix_authenticate",{'host':ctrl})
+  res = aWeb.rest_call("appformix_authenticate",{'host':cookie_openstack['appformix']})
   if not res['auth'] == "OK":
    print "Error logging in - {}".format(str(res))
    return
   else:
    cookie_appformix['token'] = res['token']
-   cookie_appformix['host'] = ctrl
+   cookie_appformix['host'] =  cookie_openstack['appformix']
    aWeb.put_cookie('appformix',cookie_appformix,res['expires'])
 
  from datetime import datetime
