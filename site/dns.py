@@ -149,7 +149,7 @@ def record_create(aWeb):
 #
 #
 def record_transfer(aWeb):
- res = aWeb.rest_call("sdcpdns_record_transfer",{'device_id':aWeb['device_id'],'type'%aWeb['type'],'record_id':aWeb['record_id']})
+ res = aWeb.rest_call("sdcpdns_record_transfer",{'device_id':aWeb['device_id'],'type':aWeb['type'],'record_id':aWeb['record_id']})
  print "Updated device %s - Results:%s"%(aWeb['dev'],str(res))
 
 ############################################ Tools ###########################################

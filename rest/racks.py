@@ -155,8 +155,8 @@ def update(aDict):
 
 #
 #
-def remove(aDict):
- """Function docstring for remove TBD
+def delete(aDict):
+ """Function docstring for delete TBD
 
  Args:
   - id (required)

@@ -87,7 +87,6 @@ def info(aWeb):
   opres['lookup'] = aWeb.rest_call("device_detect",{'ip':aWeb['ip'],'update':True,'id':aWeb['id']})
 
  elif op == 'update':
-  from .. import SettingsContainer as SC
   d = aWeb.get_args2dict(['call','op','ip'])
   if d['devices_hostname'] != 'unknown':
    from ..core import genlib as GL
@@ -99,9 +98,9 @@ def info(aWeb):
    fqdn   = ".".join([d['devices_hostname'],  dns[d['devices_a_dom_id']]['name']])
    dom_id = aWeb.rest_call("sdcpdns_domains",{'filter':'reverse','dict':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
 
-   opres['a'] = aWeb.rest_generic(SC.dns['url'], "{}_record_update".format(SC.dns['type']), { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
+   opres['a'] = aWeb.rest_call("sdcpdns_record_update", { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
    if dom_id:
-    opres['ptr'] = aWeb.rest_generic(SC.dns['url'], "{}_record_update".format(SC.dns['type']), { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
+    opres['ptr'] = aWeb.rest_call("sdcpdns_record_update", { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
    else:
     opres['ptr'] = {'id':0,'info':'nonexisting_ptr_domain'}
 
@@ -366,16 +365,15 @@ def new(aWeb):
   print "</ARTICLE>"
 
 #
-#
+# TODO - fix in one go
 def delete(aWeb):
  id  = aWeb['id']
  res = aWeb.rest_call("device_delete",{ 'id':id })
  print "<ARTICLE>"
  print "Unit {} deleted, op:{}".format(id,res['deleted'])
  if not str(res['deleted']) == '0':
-  from .. import SettingsContainer as SC
-  arec = aWeb.rest_generic(SC.dns['url'],"{}_record_delete".format(SC.dns['type']),{'id':res['a_id']})   if res['a_id']   else 0
-  prec = aWeb.rest_generic(SC.dns['url'],"{}_record_delete".format(SC.dns['type']),{'id':res['ptr_id']}) if res['ptr_id'] else 0
+  arec = aWeb.rest_call("sdcpdns_record_delete",{'id':res['a_id']})   if res['a_id']   else 0
+  prec = aWeb.rest_call("sdcpdns_record_delete",{'id':res['ptr_id']}) if res['ptr_id'] else 0
   print ",A:%s,PTR:%s"%(arec,prec)
  print "</ARTICLE>"
 
