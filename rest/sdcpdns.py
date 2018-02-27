@@ -31,7 +31,12 @@ def load(aDict):
   ret['deleted'].append(dom)
   db.do("DELETE FROM domains WHERE id = '%s'"%id)
  return ret
- 
+
+
+def dedup(aDict):
+ pass
+def top(aDict):
+ pass 
 #
 #
 def domains(aDict):
@@ -88,3 +93,20 @@ def domain_add(aDict):
  with DB() as db:
   ret['xist'] = db.do("INSERT INTO domains SET id = %s, name = '%s'"%(aDict['id'],aDict['name']))
  return ret
+
+def domains(aDict):
+ pass
+def domain_lookup(aDict):
+ pass
+def domain_update(aDict):
+ pass
+def domain_delete(aDict):
+ pass
+def records(aDict):
+ pass
+def record_lookup(aDict):
+ pass
+def record_update(aDict):
+ pass
+def record_delete(aDict):
+ pass
