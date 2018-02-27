@@ -11,7 +11,7 @@ from ..core.dbase import DB
 
 #
 #
-def load(aDict):
+def load_cache(aDict):
  """Function docstring for load TBD
 
  Args:
@@ -40,7 +40,7 @@ def top(aDict):
 #
 #
 def domains(aDict):
- """Function docstring for domains TBD
+ """Function docstring for domains. Should cover nested case too
 
  Args:
   - filter (optional)
@@ -61,7 +61,7 @@ def domains(aDict):
 #
 #
 def domain_delete(aDict):
- """Function docstring for domain_delete TBD
+ """Function docstring for domain_delete. Should cover nested case too TODO
 
  Args:
   - to (required)
@@ -94,13 +94,9 @@ def domain_add(aDict):
   ret['xist'] = db.do("INSERT INTO domains SET id = %s, name = '%s'"%(aDict['id'],aDict['name']))
  return ret
 
-def domains(aDict):
- pass
 def domain_lookup(aDict):
  pass
 def domain_update(aDict):
- pass
-def domain_delete(aDict):
  pass
 def records(aDict):
  pass

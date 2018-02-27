@@ -25,7 +25,7 @@ def main(aWeb):
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_test'>Test</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A>"
- print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dns_load'>DNS - Load Cache</A>"
+ print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dns_load_cache'>DNS - Load Cache</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "<A CLASS=z-op DIV=div_content           URL='sdcp.cgi?call=tools_db_structure'>DB - View Structure</A>"
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"

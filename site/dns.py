@@ -185,9 +185,9 @@ def record_create(aWeb):
 ############################################ Tools ###########################################
 #
 #
-def load(aWeb):
+def load_cache(aWeb):
  dns = aWeb.rest_generic(SC.dns['url'], "{}_domains".format(SC.dns['type'])) 
- res = aWeb.rest_call("sdcpdns_load",{'domains':dns['domains']})
+ res = aWeb.rest_call("sdcpdns_load_cache",{'domains':dns['domains']})
  print "<ARTICLE>%s</ARTICLE>"%(res)
 
 #

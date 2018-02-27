@@ -29,8 +29,9 @@ function erase_cookie(name) {
 //
 function include_html(dst,src) {
  var dest = $('#'+ dst);
- $.get(src,function(data) { load_result(dest,data);});
+ $.get(src,data => { load_result(dest,data);});
 }
+//
 
 //
 // Button functions - accepts proper JScript object:
@@ -66,9 +67,9 @@ function btn(e) {
   var frm  =  this.getAttribute("frm");
   var input = this.getAttribute("input");
   if(frm)
-   $.post(url, $("#"+frm).serializeArray() , function(result) { load_result(div,result,spin,input);  });
+   $.post(url, $("#"+frm).serializeArray() , result => { load_result(div,result,spin,input);  });
   else
-   $.get(url, function(result) { load_result(div,result,spin,input); });
+   $.get(url, result => { load_result(div,result,spin,input); });
 
  } else if (op == 'redirect') {
   location.replace(url);
