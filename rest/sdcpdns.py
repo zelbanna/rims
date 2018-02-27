@@ -268,6 +268,22 @@ def record_delete(aDict):
   ret = call(SC.node[SC.dns['node']], "%s_record_delete"%(SC.dns['type']),{'id':aDict['id']})['data']       
  return ret
 
+#
+#
+def record_transfer(aDict):
+ """Function docstring for record_transfer. Update IPAM device with correct A/PTR records
+
+ Args:
+  - record_id (required)
+  - device_id (required)
+  - type (required
+
+ Extra:
+ """
+ with DB() as db:
+  xist = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'],aDict['record_id'],aDict['device_id']))
+ return {'xist':xist}
+
 ###################################### Tools ####################################
 
 #

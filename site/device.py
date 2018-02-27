@@ -64,7 +64,12 @@ def list(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=device_info&id=%i'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s.%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['ipasc'], row['hostname'],row['domain'], row['model'])
  print "</DIV></DIV></ARTICLE>"
 
+#
+#
 ################################ Gigantic Device info and Ops function #################################
+#
+#
+# Simplify REST calls for this one TODO
 #
 def info(aWeb):
  if not aWeb.cookies.get('sdcp'):
@@ -74,7 +79,6 @@ def info(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
 
  dns   = aWeb.rest_call("sdcpdns_domains",{'filter':'forward','dict':'id'})['domains']
- infra = aWeb.rest_call("racks_infra")
 
  op    = aWeb.get('op',"")
  opres = {}
@@ -114,7 +118,9 @@ def info(aWeb):
 
  restargs = {'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']}
  restargs.update({'username':True,'booking':True,'rackinfo':True})
- dev = aWeb.rest_call("device_info",restargs)
+
+ dev   = aWeb.rest_call("device_info",restargs)
+ infra = aWeb.rest_call("racks_infra")
 
  if dev['exist'] == 0:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])

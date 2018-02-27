@@ -149,7 +149,7 @@ def record_create(aWeb):
 #
 #
 def record_transfer(aWeb):
- res = aWeb.rest_call("device_update",{'id':aWeb['dev'],'devices_%s_id'%aWeb['type']:aWeb['id']})
+ res = aWeb.rest_call("sdcpdns_record_transfer",{'device_id':aWeb['device_id'],'type'%aWeb['type'],'record_id':aWeb['record_id']})
  print "Updated device %s - Results:%s"%(aWeb['dev'],str(res))
 
 ############################################ Tools ###########################################
@@ -219,7 +219,7 @@ def consistency(aWeb):
      print "<DIV CLASS=td>-</DIV><DIV CLASS=td>-</DIV>"
     print "<DIV CLASS=td>&nbsp;" + aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='sdcp.cgi?call=dns_record_delete&id={}'.format(rec['id']))
     if dev:
-     print aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='sdcp.cgi?call=dns_record_transfer&id={}&dev={}&type={}'.format(rec['id'],dev['id'],type))
+     print aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='sdcp.cgi?call=dns_record_transfer&record_id={}&device_id={}&type={}'.format(rec['id'],dev['id'],type))
     print "</DIV></DIV>"
 
   if len(devices) > 0:
