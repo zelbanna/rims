@@ -199,10 +199,12 @@ def heat_templates(aDict):
 
  Extra:
  """
+ from os import path as ospath
+ from .. import SettingsContainer as SC
  from os import listdir
  ret = {'result':'OK','templates':[]}
  try:
-  for file in listdir("os_templates/"):
+  for file in listdir(ospath.abspath(SC.openstack['heat_directory'])):
    name,_,suffix = file.partition('.')
    if suffix == 'tmpl.json':
     ret['templates'].append(name)
@@ -220,10 +222,12 @@ def heat_content(aDict):
   - template (required)
  Extra:
  """
+ from os import path as ospath
  from json import load
+ from .. import SettingsContainer as SC
  ret = {'result':'OK','template':None}
  try:
-  with open("os_templates/%s.tmpl.json"%aDict['template']) as f:
+  with open(ospath.abspath(ospath.join(SC.openstack['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
    ret['template'] = load(f)
  except Exception as e:
   ret['info'] = str(e)
@@ -243,11 +247,13 @@ def heat_instantiate(aDict):
 
  Extra:
  """
+ from os import path as ospath
  from json import load
+ from .. import SettingsContainer as SC
  ret = {}
  args = {}
  try:
-  with open("os_templates/%s.tmpl.json"%aDict['template']) as f:
+  with open(ospath.abspath(ospath.join(SC.openstack['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
    args = load(f)
   args['stack_name'] = aDict['name']
   for key,value in aDict['parameters'].iteritems():
