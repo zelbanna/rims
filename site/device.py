@@ -78,7 +78,7 @@ def info(aWeb):
 
  cookie = aWeb.cookie_unjar('sdcp')
 
- dns   = aWeb.rest_call("sdcpdns_list_domains_cache",{'filter':'forward','dict':'id'})['domains']
+ dns   = aWeb.rest_call("dns_list_domains_cache",{'filter':'forward','dict':'id'})['domains']
 
  op    = aWeb.get('op',"")
  opres = {}
@@ -96,11 +96,11 @@ def info(aWeb):
     d['devices_comment'] = 'NULL'
 
    fqdn   = ".".join([d['devices_hostname'],  dns[d['devices_a_dom_id']]['name']])
-   dom_id = aWeb.rest_call("sdcpdns_list_domains",{'filter':'reverse','dict':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
+   dom_id = aWeb.rest_call("dns_list_domains",{'filter':'reverse','dict':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
 
-   opres['a'] = aWeb.rest_call("sdcpdns_record_update", { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
+   opres['a'] = aWeb.rest_call("dns_record_update", { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
    if dom_id:
-    opres['ptr'] = aWeb.rest_call("sdcpdns_record_update", { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
+    opres['ptr'] = aWeb.rest_call("dns_record_update", { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
    else:
     opres['ptr'] = {'id':0,'info':'nonexisting_ptr_domain'}
 
@@ -337,7 +337,7 @@ def new(aWeb):
  else:
   domain  = aWeb['domain']
   subnets = aWeb.rest_call("ipam_list")['subnets']
-  domains = aWeb.rest_call("sdcpdns_list_domains",{'filter':'forward'})['domains']
+  domains = aWeb.rest_call("dns_list_domains",{'filter':'forward'})['domains']
   print "<ARTICLE CLASS=info><P>Add Device</P>"
   print "<FORM ID=device_new_form>"
   print "<DIV CLASS=table><DIV CLASS=tbody>"
@@ -372,8 +372,8 @@ def delete(aWeb):
  print "<ARTICLE>"
  print "Unit {} deleted, op:{}".format(id,res['deleted'])
  if not str(res['deleted']) == '0':
-  arec = aWeb.rest_call("sdcpdns_record_delete",{'id':res['a_id']})   if res['a_id']   else 0
-  prec = aWeb.rest_call("sdcpdns_record_delete",{'id':res['ptr_id']}) if res['ptr_id'] else 0
+  arec = aWeb.rest_call("dns_record_delete",{'id':res['a_id']})   if res['a_id']   else 0
+  prec = aWeb.rest_call("dns_record_delete",{'id':res['ptr_id']}) if res['ptr_id'] else 0
   print ",A:%s,PTR:%s"%(arec,prec)
  print "</ARTICLE>"
 
@@ -389,7 +389,7 @@ def discover(aWeb):
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
   subnets = aWeb.rest_call("ipam_list")['subnets']
-  domains = aWeb.rest_call("sdcpdns_list_domains",{'filter':'forward'})['domains']
+  domains = aWeb.rest_call("dns_list_domains",{'filter':'forward'})['domains']
   dom_name = aWeb['domain']
   print "<ARTICLE CLASS=info><P>Device Discovery</P>"
   print "<FORM ID=device_discover_form>"
