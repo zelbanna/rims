@@ -12,8 +12,8 @@ from .. import SettingsContainer as SC
 
 #
 #
-def domains(aDict):
- """Function docstring for domains.
+def list_domains(aDict):
+ """Function docstring for list_domains.
 
  Args:
   - filter (optional)
@@ -47,8 +47,8 @@ def domains(aDict):
 
 #
 #
-def domains_cache(aDict):
- """Function docstring for domains_cache TBD
+def list_domains_cache(aDict):
+ """Function docstring for list_domains_cache TBD
 
  Args:
   - filter (optional)
@@ -143,7 +143,7 @@ def domain_delete(aDict):
 
 #
 #
-def records(aDict):
+def list_records(aDict):
  """Function docstring for records TBD
 
  Args:

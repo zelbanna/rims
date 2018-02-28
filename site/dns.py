@@ -11,7 +11,7 @@ __status__= "Production"
 #
 #
 def list(aWeb):
- domains = aWeb.rest_call("sdcpdns_domains")
+ domains = aWeb.rest_call("sdcpdns_list_domains")
  print "<ARTICLE><P>Domains</P>"
  print "<DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_list')
@@ -63,7 +63,7 @@ def domain_info(aWeb):
 #
 #
 def domain_transfer(aWeb):
- domains = aWeb.rest_call("sdcpdns_domains",{"filter":"arpa","exclude":aWeb['id']})
+ domains = aWeb.rest_call("sdcpdns_list_domains",{"filter":"arpa","exclude":aWeb['id']})
  print "<ARTICLE STYLE='display:inline-block'>"
  print "<FORM ID=dns_transfer><INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
  print "Transfer all records to <SELECT NAME=transfer>"
@@ -156,7 +156,7 @@ def record_transfer(aWeb):
 #
 #
 def load_cache(aWeb):
- res = aWeb.rest_call("sdcpdns_domains",{'sync':True})
+ res = aWeb.rest_call("sdcpdns_list_domains",{'sync':True})
  print "<ARTICLE>Added:%s Removed:%s</ARTICLE>"%(res['added'],res['deleted'])
 
 #
@@ -197,7 +197,7 @@ def dedup(aWeb):
 def consistency(aWeb):
  print "<ARTICLE><P>DNS Consistency</P><SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Value</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Key</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
- domains = aWeb.rest_call("sdcpdns_domains_cache",{'dict':'name'})['domains']
+ domains = aWeb.rest_call("sdcpdns_list_domains_cache",{'dict':'name'})['domains']
  for type in ['a','ptr']:
   records = aWeb.rest_call("sdcpdns_records",{'type':type})['records']
   tid = "{}_id".format(type)
