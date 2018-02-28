@@ -121,7 +121,7 @@ def info(aWeb):
  dev   = aWeb.rest_call("device_info",restargs)
  infra = aWeb.rest_call("racks_infra")
 
- if dev['exist'] == 0:
+ if dev['xist'] == 0:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
   return
  if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
@@ -382,7 +382,7 @@ def discover(aWeb):
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
   subnets = aWeb.rest_call("ipam_list")['subnets']
-  domains = aWeb.rest_call("dns_list_domains",{'filter':'forward'})['domains']
+  domains = aWeb.rest_call("dns_list_domains_cache",{'filter':'forward'})['domains']
   dom_name = aWeb['domain']
   print "<ARTICLE CLASS=info><P>Device Discovery</P>"
   print "<FORM ID=device_discover_form>"
@@ -420,30 +420,17 @@ def graph_save(aWeb):
 #
 #
 def graph_info(aWeb):
- from ..core import genlib as GL
- id  = aWeb['id']
- res = {}
- if aWeb['op'] == 'update':
-  proxy = GL.ip2int(aWeb['graph_proxy'])
-  update= aWeb.get('graph_update','0')
-  res['op'] = aWeb.rest_call("device_update",{'id':id,'devices_graph_proxy':proxy,'devices_graph_update':update})['data']
-
- dev = aWeb.rest_call("device_info",{'id':id})
- proxy = GL.int2ip(dev['info']['graph_proxy'])
-
- if aWeb['op'] == 'search':
-  plugfile  = aWeb.rest_call("settings_param",{'section':'graph','parameter':'plugins'})['data']['value']
-  res['op'] = aWeb.rest_generic("device_graph_detect",{'ip':dev['ip'],'type_name':dev['info']['type_name'],'fqdn':dev['fqdn'],'plugin_file':plugfile}, aTimeout = 60)
+ dev = aWeb.rest_call("device_graph_info",{'id':aWeb['id'],'graph_proxy':aWeb['graph_proxy'],'graph_update':aWeb['graph_update'],'op':aWeb['op']})
 
  print "<ARTICLE CLASS='info'><P>Graph for %s</DIV>"%(dev['fqdn'])
  print "<FORM ID=device_graph_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(id)
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id'])
  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=graph_proxy STYLE='width:200px;' VALUE='%s'></DIV></DIV>"%(proxy)
- print "<DIV CLASS=tr><DIV CLASS=td>Enable:</DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX NAME=graph_update VALUE=1 %s></DIV></DIV>"%("checked=checked" if dev['info']['graph_update'] == 1 else "")
+ print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=graph_proxy STYLE='width:200px;' VALUE='%s'></DIV></DIV>"%(dev['graph_proxy'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Enable:</DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX NAME=graph_update VALUE=1 %s></DIV></DIV>"%("checked=checked" if dev['graph_update'] == 1 else "")
  print "</DIV></DIV>"
- print "<SPAN>%s</SPAN>"%(res.get('op',""))
+ print "<SPAN>%s</SPAN>"%(dev.get('op'))
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('save',  DIV='div_content_right', URL='sdcp.cgi?call=device_graph_info&id=%s&op=update', FRM='device_graph_form')
- print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=device_graph_info&id=%s&op=search', FRM='device_graph_form')
+ print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=device_graph_info&id=%s&op=detect', FRM='device_graph_form')
  print "</DIV></ARTICLE>"

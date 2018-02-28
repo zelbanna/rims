@@ -112,8 +112,8 @@ def info(aDict):
  ret = {}
  search = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
  with DB() as db:
-  ret['exist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
-  if ret['exist'] > 0:
+  ret['xist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
+  if ret['xist'] > 0:
    if aDict.get('username'):
     from .. import SettingsContainer as SC
     ret['username'] = SC.netconf['username']
@@ -470,38 +470,6 @@ def graph_detect(aDict):
 
  Extra:
  """
- def GL_ping_os(ip):
-  from os import system
-  return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
- ret = {'result':'NOT_OK'}
- if not GL_ping_os(aDict['ip']):
-  return ret
-
- activeinterfaces = []
- type = aDict['type_name']
- fqdn = aDict['fqdn']
- try:
-  if type in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-   from ..devices.junos import Junos
-   if not type == 'wlc':
-    with Junos(aDict['ip']) as jdev:
-     activeinterfaces = jdev.get_up_interfaces()
-   with open(aDict['plugin_file'], 'a') as graphfile:
-    graphfile.write('ln -s /usr/local/sbin/plugins/snmp__{0} /etc/munin/plugins/snmp_{1}_{0}\n'.format(type,fqdn))
-    graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')
-    graphfile.write('ln -s /usr/share/munin/plugins/snmp__users  /etc/munin/plugins/snmp_' + fqdn + '_users\n')
-    for ifd in activeinterfaces:
-     graphfile.write('ln -s /usr/share/munin/plugins/snmp__if_    /etc/munin/plugins/snmp_' + fqdn + '_if_'+ ifd['SNMP'] +'\n')
-  elif type == "esxi":
-   with open(aDict['plugin_file'], 'a') as graphfile:
-    graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')              
-    graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + fqdn + '_esxi\n')
- except Exception as err:
-  from ..core.logger import log
-  log("Graph detect - error: [{}]".format(str(err)))
- else:
-  ret['result'] = 'OK'
- return ret
 
 #
 #
@@ -523,4 +491,60 @@ def graph_save(aDict):
    output.write("[{}.{}]\n".format(row['hostname'],row['domain']))
    output.write("address {}\n".format(row['proxy']))
    output.write("update yes\n\n")
+ return ret
+
+#
+#
+def graph_info(aDict):
+ """Function docstring for graph_info TBD
+
+ Args:
+  - id
+  - op (optional)
+  - graph_proxy (optional)
+  - graph_update (optional)
+
+
+ Extra:
+ """
+ with DB() as db:
+  ret = {}
+  if aDict.get('op') == 'update':
+   ret['changed'] = db.do("UPDATE devices SET graph_proxy = INET_ATON('%s'), graph_update = %i WHERE id = %i"%(aDict.get('graph_proxy'),int(aDict.get('graph_update',0)),int(aDict['id'])))
+
+  db.do("SELECT INET_NTOA(ip) AS ip, graph_update, devicetypes.name AS type_name, INET_NTOA(graph_proxy) AS graph_proxy, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '%s'"%aDict['id'])
+  ret.update(db.get_row())
+  db.do("SELECT value AS plugin_file FROM settings WHERE section = 'graph' AND parameter = 'plugins'")
+  ret.update(db.get_row())
+
+  if aDict.get('op') == 'detect':
+   def GL_ping_os(ip):
+    from os import system
+    return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
+  
+   if GL_ping_os(ret['ip']):
+    try:
+     if ret['type_name'] in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
+      from ..devices.junos import Junos
+      activeinterfaces = []
+      if not ret['type_name'] == 'wlc':
+       with Junos(ret['ip']) as jdev:
+        activeinterfaces = jdev.get_up_interfaces()
+       with open(ret['plugin_file'], 'a') as graphfile:
+        graphfile.write('ln -s /usr/local/sbin/plugins/snmp__{0} /etc/munin/plugins/snmp_{1}_{0}\n'.format(ret['type_name'],ret['fqdn']))
+        graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + ret['fqdn'] + '_uptime\n')
+        graphfile.write('ln -s /usr/share/munin/plugins/snmp__users  /etc/munin/plugins/snmp_' + ret['fqdn'] + '_users\n')
+        for ifd in activeinterfaces:
+         graphfile.write('ln -s /usr/share/munin/plugins/snmp__if_    /etc/munin/plugins/snmp_' + ret['fqdn'] + '_if_'+ ifd['SNMP'] +'\n')
+     elif ret['type_name'] == "esxi":
+      with open(ret['plugin_file'], 'a') as graphfile:
+       graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + ret['fqdn'] + '_uptime\n')              
+       graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + ret['fqdn'] + '_esxi\n')
+    except Exception as err:
+     ret['op'] = "Error:%s"%str(err)
+    else:
+     ret['op'] = 'OK'
+   else:
+    ret['op'] = 'NO_PING'
+
  return ret
