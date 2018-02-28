@@ -34,7 +34,7 @@ def main(aWeb):
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Settings</A><DIV CLASS='dropdown-content'>"
  for host in hosts:
-  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&host=%s'>%s</A>"%(host['id'],host['parameter'])
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&node=%s'>%s</A>"%(host['parameter'],host['parameter'])
  print "</DIV></LI>"
  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
