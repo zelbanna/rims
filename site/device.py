@@ -374,11 +374,8 @@ def delete(aWeb):
 # find devices operations
 #
 def discover(aWeb):
- op = aWeb['op']
- if op:
-  # id, subnet int, subnet mask
-  ipam  = aWeb.get('ipam_subnet',"0_0_32").split('_')
-  res = aWeb.rest_generic("device_discover",{ 'subnet_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':aWeb['a_dom_id'], 'clear':aWeb.get('clear',False)}, aTimeout = 200)
+ if aWeb['op']:
+  res = aWeb.rest_generic(aWeb._rest_url,"device_discover",{ 'subnet_id':aWeb['ipam_subnet'], 'a_dom_id':aWeb['a_dom_id']}, aTimeout = 200)
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
   subnets = aWeb.rest_call("ipam_list")['subnets']
@@ -391,13 +388,12 @@ def discover(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
   for d in domains:
    extra = "" if not dom_name == d.get('name') else "selected=selected"
-   print "<OPTION VALUE={0} {2}>{1}</OPTION>".format(d.get('id'),d.get('name'),extra)
+   print "<OPTION VALUE=%s %s>%s</OPTION>"%(d.get('id'),extra,d.get('name'))
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_subnet>"
   for s in subnets:
-   print "<OPTION VALUE={0}_{1}_{3}>{2} ({4})</OPTION>".format(s['id'],s['subnet'],s['subasc'],s['mask'],s['description'])
+   print "<OPTION VALUE=%s>%s (%s)</OPTION>"%(s['id'],s['subasc'],s['description'])
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Clear DB<B>??</B>:</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=clear VALUE=True></DIV></DIV>"
   print "</DIV></DIV>"
   print "</FORM><DIV CLASS=controls>"
   print aWeb.button('start', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=device_discover', FRM='device_discover_form')

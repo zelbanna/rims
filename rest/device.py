@@ -276,63 +276,62 @@ def discover(aDict):
 
  Args:
   - a_dom_id (required)
-  - start (required)
-  - end (required)
   - subnet_id (required)
-  - clear (optional)
 
  Extra:
  """
  from time import time
  from threading import Thread, BoundedSemaphore
- from struct import pack,unpack
- from socket import inet_ntoa,inet_aton
- def _tdetect(aip,adict,asema):
-  res = detect({'ip':aip})
+ from struct import pack
+ from socket import inet_ntoa
+ from ..core.logger import log
+ def _tdetect(aIP,aDB,aSema,aTypes):
+  res = detect({'ip':aIP,'types':aTypes})
   if res['result'] == 'OK':
-   adict[aip] = res['info']
-  asema.release()
+   aDB[aIP] = res['info']
+  aSema.release()
   return True
 
- def GL_ip2int(addr):
-  return unpack("!I", inet_aton(addr))[0]
-
- def GL_ipint2range(start,end):
-  return map(lambda addr: inet_ntoa(pack("!I", addr)), range(start,end + 1))
+ def GL_int2ip(addr):
+  return inet_ntoa(pack("!I", addr))
 
  start_time = int(time())
- ip_start = aDict['start']
- ip_end   = aDict['end']
  ret = {'errors':0 }
 
  with DB() as db:
+  db.do("SELECT id,name FROM devicetypes")
+  devtypes = db.get_dict('name')
+  db.do("SELECT subnet,mask FROM subnets WHERE id = '%s'"%aDict['subnet_id'])
+  net = db.get_row()
+
+  ip_start = net['subnet'] + 1
+  ip_end   = net['subnet'] + 2**(32 - net['mask']) - 1
+  ret.update({'start':GL_int2ip(ip_start),'end':GL_int2ip(ip_end)})
 
   db_old, db_new = {}, {}
-  if aDict.get('clear') == True:
-   db.do("TRUNCATE TABLE devices")
-  else:
-   db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(ip_start,ip_end))
-   rows = db.get_rows()
-   for item in rows:
-    db_old[item.get('ip')] = True
+  ret['xist'] = db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(ip_start,ip_end))
+  rows = db.get_rows()
+  for item in rows:
+   db_old[item['ip']] = True
   try:
    sema = BoundedSemaphore(10)
-   for ip in GL_ipint2range(ip_start,ip_end):
-    if db_old.get(GL_ip2int(ip)):
+   for ipint in range(ip_start,ip_end):
+    if db_old.get(ipint):
      continue
     sema.acquire()
+    ip = GL_int2ip(ipint)
     t = Thread(target = _tdetect, args=[ip, db_new, sema, devtypes])
-    t.name = "Detect " + ip
+    t.name = "Detect %s"%ip
     t.start()
 
    # Join all threads by acquiring all semaphore resources
    for i in range(10):
     sema.acquire()
    # We can now do inserts only (no update) as either we clear or we skip existing :-)
-   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, hostname, snmp, model, type_id, lookup) VALUES ({},"+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
+   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, hostname, snmp, model, type_id, lookup) VALUES (INET_ATON('{}'),"+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
    for ip,entry in db_new.iteritems():
     log("device_discover - adding:{}->{}".format(ip,entry))
-    db.do(sql.format(GL_ip2int(ip), aDict['subnet_id'], entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['lookup']))
+    db.do(sql.format(ip, aDict['subnet_id'], entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['lookup']))
   except Exception as err:
    log("device discover: Error [{}]".format(str(err)))
    ret['info']   = "Error:{}".format(str(err))
@@ -355,14 +354,13 @@ def detect(aDict):
 
  Extra:
  """
- from ..core.logger import log
- log("device_detect({})".format(aDict))
- from .. import SettingsContainer as SC
- from netsnmp import VarList, Varbind, Session
- from socket import gethostbyaddr
  from os import system
  if system("ping -c 1 -w 1 {} > /dev/null 2>&1".format(aDict['ip'])) != 0:
   return {'result':'NOT_OK'}
+
+ from .. import SettingsContainer as SC
+ from netsnmp import VarList, Varbind, Session
+ from socket import gethostbyaddr
 
  try:
   # .1.3.6.1.2.1.1.1.0 : Device info
@@ -457,20 +455,6 @@ def update_pdu(aDict):
  return ret
 
 ############################################# Munin ###########################################
-#
-#
-def graph_detect(aDict):
- """Function docstring for graph_detect TBD
-
- Args:
-  - ip (required)
-  - type_name (required)
-  - fqdn (required)
-  - plugin_file (required)
-
- Extra:
- """
-
 #
 #
 def graph_save(aDict):
