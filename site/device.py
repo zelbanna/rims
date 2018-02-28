@@ -223,7 +223,7 @@ def info(aWeb):
    print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=debook&id=%i'%dev['id'],TITLE='Unbook')
  else:
    print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=book&id=%i'%dev['id'],TITLE='Book')   
- print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&type_name=%s&id=%i'%(dev['info']['type_name'],dev['id']),TITLE='Generate System Conf')
+ print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
  print aWeb.a_button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
   print aWeb.a_button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
@@ -261,34 +261,25 @@ def info(aWeb):
 #
 
 def conf_gen(aWeb):
- type = aWeb['type_name']
- res  = aWeb.rest_call("device_info",{'id':aWeb.get('id','0')})
- data = res['info']
- subnet,void,mask = data['subnet'].partition('/')
  print "<ARTICLE>"
- try:
-  from importlib import import_module
-  module = import_module("sdcp.devices.{}".format(type))
-  dev = getattr(module,'Device',lambda x: None)(res['ip'])
-  dev.print_conf({'name':data['hostname'], 'domain':data['domain'], 'gateway':data['gateway'], 'subnet':subnet, 'mask':mask})
- except Exception as err:
-  print "No instance config specification for type:[{}]".format(type)
+ res = aWeb.rest_call("device_configuration_template",{'id':aWeb['id']})
+ if res['result'] == 'OK':
+  print "<BR>".join(res['data'])
+ else:
+  print "<B>Error in devdata: %s</B>"%res['info']
  print "</ARTICLE>"
 
 #
 #
 #
 def op_function(aWeb):
- from importlib import import_module
- from ..core import extras as EXT
  print "<ARTICLE>"
- try:
-  module = import_module("sdcp.devices.{}".format(aWeb['type']))
-  dev = getattr(module,'Device',lambda x: None)(aWeb['ip'])
-  with dev:
-   EXT.dict2table(getattr(dev,aWeb['op'],None)())
- except Exception as err:
-  print "<B>Error in devdata: {}</B>".format(str(err))
+ res = aWeb.rest_call("device_operation",{'ip':aWeb['ip'],'op':aWeb['op'],'type':aWeb['type']})
+ if res['result'] == 'OK':
+  from ..core import extras as EXT
+  EXT.dict2table(res['data'])
+ else:
+  print "<B>Error in devdata: %s</B>"%res['info']
  print "</ARTICLE>"
 
 #
@@ -335,7 +326,6 @@ def new(aWeb):
  elif op == 'find':
   print aWeb.rest_call("ipam_find",{'id':subnet_id})['ip']
  else:
-  domain  = aWeb['domain']
   subnets = aWeb.rest_call("ipam_list")['subnets']
   domains = aWeb.rest_call("dns_list_domains",{'filter':'forward'})['domains']
   print "<ARTICLE CLASS=info><P>Add Device</P>"
@@ -344,7 +334,7 @@ def new(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE={}></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
   for d in domains:
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == domain else "",d['name'])
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == aWeb['domain'] else "",d['name'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=subnet_id>"
   for s in subnets:

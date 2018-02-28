@@ -139,6 +139,22 @@ def info(aDict):
 
 #
 #
+def basics(aDict):
+ """Function docstring for basics TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT INET_NTOA(ip) as ip, hostname, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = '%s'"%aDict['id'])
+  ret.update(db.get_row())
+ return ret
+
+#
+#
 def update(aDict):
  """Function docstring for update TBD
 
@@ -150,6 +166,7 @@ def update(aDict):
   - racked (optional)
   - rackinfo_rack_id (optional)
 
+ Extra:
  """
  from ..core.logger import log
  log("device_update({})".format(aDict))
@@ -187,6 +204,37 @@ def update(aDict):
    data = aDict[tkey]
    if db.do(sql%(table,key,"'%s'"%data if data != 'NULL' else "NULL",tbl_id[table],id)) > 0:
     ret['data'][key] = 'CHANGED'
+ return ret
+
+#
+#
+def update_pdu(aDict):
+ """Function docstring for update_pdu TBD
+
+ Args:
+  - hostname (required)
+  - pem<var>_pdu_slot (optional)
+  - pem<var>_pdu_id (optional)
+  - pem<var>_pdu_unit (optional)
+
+ Extra:
+ """
+ ret = {}
+ with DB() as db:
+  for p in ['0','1']:
+   ret[p] = None
+   id = aDict.get('pem%s_pdu_id'%(p))
+   if id:
+    slot = int(aDict.get('pem%s_pdu_slot'%(p),0))
+    unit = int(aDict.get('pem%s_pdu_unit'%(p),0))
+    if not (slot == 0 or unit == 0):
+     db.do("SELECT hostname, INET_NTOA(ip), devicetypes.name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '{}'".format(id))
+     data = db.get_row()
+     args = {'ip':data['ip'],'unit':unit,'slot':slot,'text':aDict['hostname']+"-P%s"%(p)}
+     # Redo with module import
+     if data.name == 'avocent':
+      from avocent import pdu_update
+      ret["pem{}".format(p)] = pdu_update(args)
  return ret
 
 #
@@ -232,7 +280,7 @@ def new(aDict):
    xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE subnet_id = {} AND (ip = {} OR hostname = '{}')".format(subnet_id,ipint,aDict['hostname']))
    if xist == 0:
     mac = GL_mac2int(aDict.get('mac',0))
-    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,lookup,snmp,model) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname']))
+    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,lookup,snmp,model) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm','0'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname']))
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
      db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
@@ -267,6 +315,69 @@ def delete(aDict):
    if data['base'] == 'pdu':
     ret['pem0'] = db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '%s'"%(aDict['id']))
     ret['pem1'] = db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '%s'"%(aDict['id']))
+ return ret
+
+#
+#
+def clear(aDict):
+ """Function docstring for clear TBD
+
+ Args:
+
+ Extra:
+ """
+ with DB() as db:
+  res = db.do("DELETE FROM devices")
+ return { 'operation':res }
+
+############################################# Specials ###########################################
+#
+#
+def operation(aDict):
+ """Function docstring for operation TBD
+
+ Args:
+  - ip (required)
+  - op (required)
+  - type (required)
+
+ Extra:
+ """
+ ret = {}
+ from importlib import import_module
+ try:
+  module = import_module("sdcp.devices.%s"%(aDict['type']))
+  dev = getattr(module,'Device',lambda x: None)(aDict['ip'])
+  with dev:
+   ret['data'] = getattr(dev,aDict['op'],None)()
+  ret['result'] = 'OK'
+ except Exception as err:
+  ret = {'result':'ERROR','info':str(err)}
+ return ret
+
+#
+#
+def configuration_template(aDict):
+ """Function docstring for configuration TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
+ from importlib import import_module
+ ret = {}
+ with DB() as db:
+  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, mask, INET_NTOA(gateway) AS gateway, INET_NTOA(subnet) AS subnet, devicetypes.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.subnet_id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = '%s'"%aDict['id'])
+  data = db.get_row()
+ ip = data.pop('ipasc',None)
+ try:
+  module = import_module("sdcp.devices.%s"%data['type'])
+  dev = getattr(module,'Device',lambda x: None)(ip)
+  ret['data'] = dev.configuration(data)
+  ret['result'] = 'OK'
+ except Exception as err:
+  ret = {'result':'ERROR','info':str(err)} 
  return ret
 
 #
@@ -409,50 +520,6 @@ def detect(aDict):
    if update:
     update = db.do("UPDATE devices SET snmp = '{}', lookup = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(info['snmp'],info['lookup'],info['model'],info['type_id'],aDict['id'])) > 0
  return { 'result':'OK', 'update':update, 'info':info}
-
-#
-#
-def clear(aDict):
- """Function docstring for clear TBD
-
- Args:
-
- Extra:
- """
- with DB() as db:
-  res = db.do("DELETE FROM devices")
- return { 'operation':res }
-
-#
-#
-def update_pdu(aDict):
- """Function docstring for update_pdu TBD
-
- Args:
-  - hostname (required)
-  - pem<var>_pdu_slot (optional)
-  - pem<var>_pdu_id (optional)
-  - pem<var>_pdu_unit (optional)
-
- Extra:
- """
- ret = {}
- with DB() as db:
-  for p in ['0','1']:
-   ret[p] = None
-   id = aDict.get('pem%s_pdu_id'%(p))
-   if id:
-    slot = int(aDict.get('pem%s_pdu_slot'%(p),0))
-    unit = int(aDict.get('pem%s_pdu_unit'%(p),0))
-    if not (slot == 0 or unit == 0):
-     db.do("SELECT hostname, INET_NTOA(ip), devicetypes.name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '{}'".format(id))
-     data = db.get_row()
-     args = {'ip':data['ip'],'unit':unit,'slot':slot,'text':aDict['hostname']+"-P%s"%(p)}
-     # Redo with module import
-     if data.name == 'avocent':
-      from avocent import pdu_update
-      ret["pem{}".format(p)] = pdu_update(args)
- return ret
 
 ############################################# Munin ###########################################
 #

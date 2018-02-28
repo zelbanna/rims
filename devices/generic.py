@@ -49,5 +49,5 @@ class Device(object):
   from ..core.logger import log
   log(aMsg)
 
- def print_conf(self,argdict):
-  print "No config for device"
+ def configuration(self,argdict):
+  return ["No config for device"]

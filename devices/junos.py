@@ -105,32 +105,36 @@ class Junos(GenericDevice):
    ret.append({ 'Neighbor':neigh[fields].text, 'MAC':neigh[3].text if neigh[2].text == "Mac address" else '-','Local_port':neigh[0].text,'Destination_port':neigh[fields-1].text })
   return ret
 
- def print_conf(self,argdict):
+ def configuration(self,argdict):
   from .. import SettingsContainer as SC
-  print "set system host-name {}<BR>".format(argdict['name'])
+  base  = "set groups default_system"
+  ret = ["set system host-name %s"%(argdict['hostname'])]
   if SC.netconf['username'] == 'root':
-   print "set system root-authentication encrypted-password \"{}\"<BR>".format(SC.netconf['encrypted'])
+   ret.append("set system root-authentication encrypted-password \"%s\""%(SC.netconf['encrypted']))
   else:
-   print "set system login user {0} class super-user<BR>".format(SC.netconf['username'])
-   print "set system login user {0} authentication encrypted-password \"{1}\"<BR>".format(SC.netconf['username'],SC.netconf['encrypted'])
-  base  = "set groups default_system "
-  print base + "system domain-name {}<BR>".format(argdict['domain'])
-  print base + "system domain-search {}<BR>".format(argdict['domain'])
-  print base + "system name-server {}<BR>".format(SC.netconf['dnssrv'])
-  print base + "system services ssh root-login allow<BR>"
-  print base + "system services netconf ssh<BR>"
-  print base + "system syslog user * any emergency<BR>"
-  print base + "system syslog file messages any notice<BR>"
-  print base + "system syslog file messages authorization info<BR>"
-  print base + "system syslog file interactive-commands interactive-commands any<BR>"
-  print base + "system archival configuration transfer-on-commit<BR>"
-  print base + "system archival configuration archive-sites ftp://{}/<BR>".format(SC.netconf['anonftp'])
-  print base + "system commit persist-groups-inheritance<BR>"
-  print base + "system ntp server {}<BR>".format(SC.netconf['ntpsrv'])
-  print base + "routing-options static route 0.0.0.0/0 next-hop {}<BR>".format(argdict['gateway'])
-  print base + "routing-options static route 0.0.0.0/0 no-readvertise<BR>"
-  print base + "snmp community {} clients {}/{}<BR>".format(SC.snmp['read_community'],argdict['subnet'],argdict['mask'])
-  print base + " protocols lldp port-id-subtype interface-name<BR>"
-  print base + " protocols lldp interface all<BR>"
-  print base + " class-of-service host-outbound-traffic forwarding-class network-control<BR>"
-  print "set apply-groups default_system<BR>"
+   ret.append('set system login user %s class super-user'%(SC.netconf['username']))
+   ret.append('set system login user %s authentication encrypted-password "%s"'%(SC.netconf['username'],SC.netconf['encrypted']))
+  ret.extend(['%s system domain-name %s'%(base,argdict['domain']),
+              '%s system domain-search %s'%(base,argdict['domain']),
+              '%s system name-server %s'%(base,SC.netconf['dnssrv']),
+              '%s system services ssh root-login allow'%base,
+              '%s system services netconf ssh'%base,
+              '%s system syslog user * any emergency'%base,
+              '%s system syslog file messages any notice'%base,
+              '%s system syslog file messages authorization info'%base,
+              '%s system syslog file interactive-commands interactive-commands any'%base,
+              '%s system archival configuration transfer-on-commit'%base,
+              '%s system archival configuration archive-sites ftp://%s'%(base,SC.netconf['anonftp']),
+              '%s system commit persist-groups-inheritance'%base,
+              '%s system ntp server %s'%(base,SC.netconf['ntpsrv']),
+              '%s routing-options static route 0.0.0.0/0 next-hop %s'%(base,argdict['gateway']),
+              '%s routing-options static route 0.0.0.0/0 no-readvertise'%base,
+              '%s snmp community %s clients %s/%s'%(base,SC.snmp['read_community'],argdict['subnet'],argdict['mask']),
+              '%s protocols lldp port-id-subtype interface-name'%base,
+              '%s protocols lldp interface all'%base,
+              '%s class-of-service host-outbound-traffic forwarding-class network-control'%base,
+              'set apply-groups default_system'])
+  return ret
+
+
+
