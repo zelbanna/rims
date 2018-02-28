@@ -78,7 +78,7 @@ def info(aWeb):
 
  cookie = aWeb.cookie_unjar('sdcp')
 
- dns   = aWeb.rest_call("sdcpdns_list_domains",{'filter':'forward','dict':'id'})['domains']
+ dns   = aWeb.rest_call("sdcpdns_list_domains_cache",{'filter':'forward','dict':'id'})['domains']
 
  op    = aWeb.get('op',"")
  opres = {}
@@ -333,10 +333,10 @@ def new(aWeb):
   print "Operation:%s"%str(res)
   aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(cookie['id'],args,res))
  elif op == 'find':
-  print aWeb.rest_call("sdcpipam_find",{'id':subnet_id})['ip']
+  print aWeb.rest_call("ipam_find",{'id':subnet_id})['ip']
  else:
   domain  = aWeb['domain']
-  subnets = aWeb.rest_call("sdcpipam_list")['subnets']
+  subnets = aWeb.rest_call("ipam_list")['subnets']
   domains = aWeb.rest_call("sdcpdns_list_domains",{'filter':'forward'})['domains']
   print "<ARTICLE CLASS=info><P>Add Device</P>"
   print "<FORM ID=device_new_form>"
@@ -388,7 +388,7 @@ def discover(aWeb):
   res = aWeb.rest_generic("device_discover",{ 'subnet_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':aWeb['a_dom_id'], 'clear':aWeb.get('clear',False)}, aTimeout = 200)
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
-  subnets = aWeb.rest_call("sdcpipam_list")['subnets']
+  subnets = aWeb.rest_call("ipam_list")['subnets']
   domains = aWeb.rest_call("sdcpdns_list_domains",{'filter':'forward'})['domains']
   dom_name = aWeb['domain']
   print "<ARTICLE CLASS=info><P>Device Discovery</P>"
