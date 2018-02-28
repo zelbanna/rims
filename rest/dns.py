@@ -292,12 +292,12 @@ def record_transfer(aDict):
  Args:
   - record_id (required)
   - device_id (required)
-  - type (required
+  - type (required)
 
  Extra:
  """
  with DB() as db:
-  xist = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'],aDict['record_id'],aDict['device_id']))
+  xist = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),aDict['record_id'],aDict['device_id']))
  return {'xist':xist}
 
 ###################################### Tools ####################################
@@ -339,4 +339,38 @@ def top(aDict):
  else:  
   from ..core.rest import call
   ret = call(SC.node[SC.dns['node']], "%s_top"%(SC.dns['type']),aDict)['data']
+ return ret
+
+#
+#
+def consistency(aDict):
+ """Function docstring for consistency. Pulls all A and PTR records from domain server, expects domain cache to be up-to-date
+
+ Args:
+
+ Extra:
+ """
+ def GL_ip2arpa(addr):
+  octets = addr.split('.')[:3]
+  octets.reverse()
+  octets.append("in-addr.arpa")
+  return ".".join(octets)
+
+ ret = {'records':[],'devices':[]}
+ with DB() as db:
+  db.do("SELECT id,name FROM domains WHERE name LIKE '%%in-addr.arpa'")
+  domains = db.get_dict('name')
+  for type in ['a','ptr']:
+   records = list_records({'type':type})['records']
+   db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ip) AS ipasc, %s_id AS dns_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))
+   devices = db.get_dict('ipasc' if type == 'a' else 'fqdn')
+   for rec in records:
+    dev = devices.pop(rec['content'],None)
+    if not dev or dev['dns_id'] != rec['id']:
+     rec.update(dev if dev else {'dns_id':None,'fqdn':None})
+     ret['records'].append(rec)
+   for dev in devices.values():
+    dev['type'] = type.upper()
+    dev['domain_id'] = dev['a_dom_id'] if type == 'a' else domains[GL_ip2arpa(dev['ipasc'])]['id']
+    ret['devices'].append(dev)
  return ret
