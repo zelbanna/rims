@@ -248,7 +248,7 @@ def info(aWeb):
    else:
     for fun in functions:
      funname = " ".join(fun.split('_')[1:])
-     print "<LI><A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_op_function&ip={0}&type={1}&op={2}'>{3}</A></LI>".format(dev['ip'], dev['info']['type_name'], fun, funname.title())
+     print "<LI><A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_function&ip={0}&type={1}&op={2}'>{3}</A></LI>".format(dev['ip'], dev['info']['type_name'], fun, funname.title())
  except:
   print "&nbsp;"
  print "</UL></NAV>"
@@ -272,9 +272,9 @@ def conf_gen(aWeb):
 #
 #
 #
-def op_function(aWeb):
+def function(aWeb):
  print "<ARTICLE>"
- res = aWeb.rest_call("device_operation",{'ip':aWeb['ip'],'op':aWeb['op'],'type':aWeb['type']})
+ res = aWeb.rest_call("device_function",{'ip':aWeb['ip'],'op':aWeb['op'],'type':aWeb['type']})
  if res['result'] == 'OK':
   from ..core import extras as EXT
   EXT.dict2table(res['data'])

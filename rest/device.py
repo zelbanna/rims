@@ -328,13 +328,13 @@ def clear(aDict):
  """
  with DB() as db:
   res = db.do("DELETE FROM devices")
- return { 'operation':res }
+ return { 'result':res }
 
 ############################################# Specials ###########################################
 #
 #
-def operation(aDict):
- """Function docstring for operation TBD
+def function(aDict):
+ """Function docstring for function TBD
 
  Args:
   - ip (required)
