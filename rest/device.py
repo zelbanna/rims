@@ -258,13 +258,15 @@ def delete(aDict):
  with DB() as db:
   xist = db.do("SELECT hostname, mac, a_id, ptr_id, devicetypes.* FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = {}".format(aDict['id']))
   if xist == 0:
-   ret = { 'deleted':0, 'a_id':0, 'ptr_id':0 }
+   ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
-   ret = db.get_row()
-   ret['deleted'] = db.do("DELETE FROM devices WHERE id = '%s'"%(aDict['id']))
-   if ret['base'] == 'pdu':
-    db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '%s'"%(aDict['id']))
-    db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '%s'"%(aDict['id']))
+   data = db.get_row()
+   ret = {'deleted':db.do("DELETE FROM devices WHERE id = '%s'"%aDict['id'])}
+   from dns import record_auto_delete
+   ret.update(record_auto_delete({'a':data['a_id'],'ptr':data['ptr_id']}))
+   if data['base'] == 'pdu':
+    ret['pem0'] = db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '%s'"%(aDict['id']))
+    ret['pem1'] = db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '%s'"%(aDict['id']))
  return ret
 
 #

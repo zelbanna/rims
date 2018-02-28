@@ -226,6 +226,22 @@ def record_auto_create(aDict):
 
 #
 #
+def record_auto_delete(aDict):
+ ret = {}
+ if SC.dns['node'] == 'master':
+  from importlib import import_module
+  module = import_module("sdcp.rest.%s"%SC.dns['type'])
+  fun = getattr(module,'record_delete',None)
+  for tp in ['a','ptr']:
+   ret[tp] = fun({'id':aDict.get(tp)})['deleted'] if str(aDict.get(tp,'0')) != '0' else None
+ else:
+  from ..core.rest import call
+  for tp in ['a','ptr']:
+   ret[tp] = call(SC.node[SC.dns['node']], "%s_record_delete"%(SC.dns['type']),{'id':aDict.get(tp)})['data']['deleted'] if str(aDict.get(tp,'0')) != '0' else None
+ return ret
+
+#
+#
 def record_update(aDict):
  """Function docstring for record_update TBD
 

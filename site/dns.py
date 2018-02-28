@@ -85,7 +85,7 @@ def domain_delete(aWeb):
 #
 #
 def records(aWeb):
- dns = aWeb.rest_call("dns_records",{'domain_id':aWeb['id']})
+ dns = aWeb.rest_call("dns_list_records",{'domain_id':aWeb['id']})
  print "<ARTICLE><P>Records</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_records&id=%s'%(aWeb['id']))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id=new&domain_id=%s'%(aWeb['id']))
@@ -199,7 +199,7 @@ def consistency(aWeb):
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Value</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Key</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  domains = aWeb.rest_call("dns_list_domains_cache",{'dict':'name'})['domains']
  for type in ['a','ptr']:
-  records = aWeb.rest_call("dns_records",{'type':type})['records']
+  records = aWeb.rest_call("dns_list_records",{'type':type})['records']
   tid = "{}_id".format(type)
   devices = aWeb.rest_call("device_list",{"dict":"ipasc" if type == 'a' else "fqdn"})['data']
   for rec in records:

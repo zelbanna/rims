@@ -365,17 +365,10 @@ def new(aWeb):
   print "</ARTICLE>"
 
 #
-# TODO - fix in one go
+#
 def delete(aWeb):
- id  = aWeb['id']
- res = aWeb.rest_call("device_delete",{ 'id':id })
- print "<ARTICLE>"
- print "Unit {} deleted, op:{}".format(id,res['deleted'])
- if not str(res['deleted']) == '0':
-  arec = aWeb.rest_call("dns_record_delete",{'id':res['a_id']})   if res['a_id']   else 0
-  prec = aWeb.rest_call("dns_record_delete",{'id':res['ptr_id']}) if res['ptr_id'] else 0
-  print ",A:%s,PTR:%s"%(arec,prec)
- print "</ARTICLE>"
+ res = aWeb.rest_call("device_delete",{ 'id':aWeb['id'] })
+ print "<ARTICLE>Unit {} deleted, op:{}</ARTICLE>".format(aWeb['id'],res)
 
 #
 # find devices operations
