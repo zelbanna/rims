@@ -113,9 +113,6 @@ def info(aWeb):
 
    opres['update'] = aWeb.rest_call("device_update",d)
 
- elif "book" in op:
-  aWeb.rest_call("booking_update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':op})
-
  restargs = {'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']}
  restargs.update({'info':['username','booking','rackinfo','basics']})
 
@@ -179,7 +176,17 @@ def info(aWeb):
   print "<DIV CLASS=td><A CLASS=z-op TITLE='View graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>yes</A></DIV></DIV>".format(dev['info']['domain'],dev['fqdn'])
  else:
   print "<DIV CLASS=td>no</DIV></DIV>"
- print ''.join(["<DIV CLASS=tr><DIV CLASS=td>Booked by:</DIV>","<DIV CLASS='td {0}'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={1}&op=view>{2}</A> {3}</DIV>".format("red" if dev['booking']['valid'] == 1 else "orange",dev['booking']['user_id'],dev['booking']['alias'],'' if dev['booking']['valid'] else "(obsolete)") if int(dev['booked']) > 0 else "<DIV CLASS='td green'>None</DIV>","</DIV>"])
+ print "<DIV CLASS=tr ID=div_booking_info><DIV CLASS=td>Booked by:</DIV>"
+ if dev['booked']:
+  print "<DIV CLASS='td %s'>"%("red" if dev['booking']['valid'] == 1 else "orange")
+  if dev['booking']['user_id'] == int(cookie['id']):
+   print "<A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?call=bookings_update&op=debook&id=%s'>%s</A>"%(dev['id'],dev['booking']['alias'])
+  else:
+   print dev['booking']['alias']
+  print "</DIV>"
+ else:
+  print "<DIV CLASS='td green'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?call=bookings_update&op=book&id=%s'>None</A></DIV>"%dev['id']
+ print "</DIV>"
  print "</DIV></DIV></DIV>"
 
  print "<!-- Rack Info if such exists -->"
@@ -217,11 +224,6 @@ def info(aWeb):
  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=lookup&id={}&ip={}'.format(dev['id'],dev['ip']), TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
- if dev['booked']:
-  if int(cookie['id']) == dev['booking']['user_id']:
-   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=debook&id=%i'%dev['id'],TITLE='Unbook')
- else:
-   print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=book&id=%i'%dev['id'],TITLE='Book')   
  print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
  print aWeb.a_button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):

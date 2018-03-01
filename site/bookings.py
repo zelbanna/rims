@@ -34,3 +34,17 @@ def list(aWeb):
   print "&nbsp;</DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"
+
+#
+#
+def update(aWeb):
+ cookie = aWeb.cookie_unjar('sdcp')
+ res = aWeb.rest_call("booking_update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':aWeb['op']})
+ print "<DIV CLASS=td>Booked by:</DIV>"
+ if res['update'] == 1:
+  if aWeb['op'] == 'debook':
+   print "<DIV CLASS='td green'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?call=bookings_update&op=book&id=%s'>None</A></DIV>"%aWeb['id']
+  else:
+   print "<DIV CLASS='td red'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?call=bookings_update&op=debook&id=%s'>%s</A></DIV>"%(aWeb['id'],res['alias'])
+ else:
+  print "<DIV CLASS='td blue'>error updating</DIV>"

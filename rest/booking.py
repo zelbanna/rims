@@ -31,6 +31,8 @@ def update(aDict):
   sql = "UPDATE bookings SET time_start = NOW() WHERE device_id = '{}' AND user_id = '{}'"
  with DB() as db:
   ret['update'] = db.do(sql.format(aDict['device_id'],aDict['user_id']))
+  db.do("SELECT alias FROM users WHERE id = '%s'"%aDict['user_id'])
+  ret['alias'] = db.get_val('alias')
  return ret
 
 #
