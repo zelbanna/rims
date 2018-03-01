@@ -116,7 +116,7 @@ def info(aWeb):
   aWeb.rest_call("booking_update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':op})
 
  restargs = {'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']}
- restargs.update({'username':True,'booking':True,'rackinfo':True})
+ restargs.update({'info':['username','booking','rackinfo','basics']})
 
  dev   = aWeb.rest_call("device_info",restargs)
  infra = aWeb.rest_call("racks_infra")
@@ -170,7 +170,6 @@ def info(aWeb):
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
   print "</SELECT></DIV>"
  print "</DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Lookup:</DIV><DIV CLASS=td STYLE='max-width:150px; overflow-x:hidden;'><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%(dev['info']['lookup'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_a_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['a_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ptr_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['ptr_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])

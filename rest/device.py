@@ -17,32 +17,31 @@ def info(aDict):
  Args:
   - ip (optional)
   - id (optional)
-
-  - booking (optional)
-  - rackinfo (optional)
-  - username (optional)
+  - info (optional)
 
  Extra:
  """
  ret = {}
  search = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
  with DB() as db:
-  ret['xist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, devicetypes.functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
+  info = aDict.get('info',[])
+  ret['xist'] = db.do("SELECT devices.*, base, devicetypes.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
   if ret['xist'] > 0:
-   if aDict.get('username'):
+   ret['info'] = db.get_row()
+   ret['id']   = ret['info'].pop('id',None)
+   if 'basics' in info:
+    ret['fqdn'] = "{}.{}".format(ret['info']['hostname'],ret['info']['domain'])
+    ret['ip']   = ret['info'].pop('ipasc',None)
+    ret['type'] = ret['info'].pop('base',None)
+    ret['mac']  = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
+   if 'username' in info:
     from .. import SettingsContainer as SC
     ret['username'] = SC.netconf['username']
-   ret['info'] = db.get_row()
-   ret['fqdn'] = "{}.{}".format(ret['info']['hostname'],ret['info']['domain'])
-   ret['ip']   = ret['info'].pop('ipasc',None)
-   ret['type'] = ret['info']['type_base']
-   ret['mac']  = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
-   ret['id']   = ret['info'].pop('id',None)
-   if aDict.get('booking'):
+   if 'booking' in info:
     ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id']))
     if ret['booked'] > 0:
      ret['booking'] = db.get_row()
-   if aDict.get('rackinfo'):
+   if 'rackinfo' in info:
     if ret['info']['vm'] == 1:
      ret['racked'] = 0
     else:
@@ -265,7 +264,7 @@ def new(aDict):
    xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE subnet_id = {} AND (ip = {} OR hostname = '{}')".format(subnet_id,ipint,aDict['hostname']))
    if xist == 0:
     mac = GL_mac2int(aDict.get('mac',0))
-    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,lookup,snmp,model) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm','0'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname']))
+    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,snmp,model) VALUES({},{},{},{},{},'{}','unknown','unknown')".format(ipint,aDict.get('vm','0'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname']))
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
      db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
@@ -424,10 +423,12 @@ def discover(aDict):
    for i in range(10):
     sema.acquire()
    # We can now do inserts only (no update) as either we clear or we skip existing :-)
-   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, hostname, snmp, model, type_id, lookup) VALUES (INET_ATON('{}'),"+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
+   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, snmp, model, type_id, hostname) VALUES (INET_ATON('{}'),"+aDict['a_dom_id']+",{},'{}','{}','{}','{}')"
+   count = 0
    for ip,entry in db_new.iteritems():
     log("device_discover - adding:{}->{}".format(ip,entry))
-    db.do(sql.format(ip, aDict['subnet_id'], entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['lookup']))
+    count += 1
+    db.do(sql.format(ip,aDict['subnet_id'],entry['snmp'],entry['model'],entry['type_id'],"unknown_%i"%count))
   except Exception as err:
    log("device discover: Error [{}]".format(str(err)))
    ret['info']   = "Error:{}".format(str(err))
@@ -456,7 +457,6 @@ def detect(aDict):
 
  from .. import SettingsContainer as SC
  from netsnmp import VarList, Varbind, Session
- from socket import gethostbyaddr
 
  try:
   # .1.3.6.1.2.1.1.1.0 : Device info
@@ -467,13 +467,8 @@ def detect(aDict):
  except:
   pass
 
- info = {'lookup':'unknown','name':'unknown','model':'unknown', 'type_name':'generic'}
+ info = {'model':'unknown', 'type_name':'generic'}
  info['snmp'] = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
- try:
-  info['lookup'] = gethostbyaddr(aDict['ip'])[0]
-  info['name'] = info['lookup'].partition('.')[0].lower()
- except:
-  pass
 
  if devobjs[0].val:
   infolist = devobjs[0].val.split()
@@ -503,7 +498,7 @@ def detect(aDict):
    xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(info['type_name']))
    info['type_id'] = db.get_val('id') if xist > 0 else None
    if update:
-    update = db.do("UPDATE devices SET snmp = '{}', lookup = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(info['snmp'],info['lookup'],info['model'],info['type_id'],aDict['id'])) > 0
+    update = db.do("UPDATE devices SET snmp = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(info['snmp'],info['model'],info['type_id'],aDict['id'])) > 0
  return { 'result':'OK', 'update':update, 'info':info}
 
 ############################################# Munin ###########################################
