@@ -59,57 +59,6 @@ def info(aDict):
 
 #
 #
-def infra(aDict):
- """Function docstring for infra TBD
-
- Args:
-  - id (optional), id of rack to get specific information on, 'new'|<x>, if left out, all racks are collected
-  - pdus (optional)
-  - consoles (optional)
-  - key (optional)
-  - images (optional)
-  - types (optional)
-
- Extra:
- """
- ret =  {}
- key = aDict.get('key')
- with DB() as db:
-  if aDict.get('id'):
-   if aDict.get('id') == 'new':
-    ret['rackxist'] = 0
-    ret['rack']     = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None, 'image_url':None }
-   else:
-    ret['rackxist'] = db.do("SELECT racks.* FROM racks WHERE id = %s"%aDict['id'])
-    ret['rack']     = db.get_row()
-  else:
-   ret['rackxist'] = db.do("SELECT racks.* FROM racks")
-   ret['racks']    =  db.get_rows()
-   ret['racks'].append({ 'id':'NULL', 'name':'Not used'})
-  if aDict.get('types',True):
-   ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes")
-   ret['types']    = db.get_rows()
-  if aDict.get('consoles',True):
-   ret['consolexist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'") 
-   ret['consoles']    = db.get_rows()
-   ret['consoles'].append({ 'id':'NULL', 'hostname':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1', 'type':'NULL' })
-  if aDict.get('pdus',True):
-   ret['pduxist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'pdu'") 
-   ret['pdus']    = db.get_rows()
-   ret['pdus'].append({ 'id':'NULL', 'hostname':'No PDU', 'ip':2130706433, 'ipasc':'127.0.0.1', 'type':'NULL'})
-   db.do("SELECT pduinfo.* FROM pduinfo")
-   ret['pduinfo'] = db.get_dict('device_id')
-   ret['pduinfo']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
-
- if aDict.get('images',False):
-  from .. import SettingsContainer as SC
-  from os import listdir, path
-  directory = listdir(path.join(SC.generic['docroot'],"images")) if not SC.generic.get('rack_image_directory') else SC.generic['rack_image_directory']
-  ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
- return ret
-
-#
-#
 def devices(aDict):
  """Function docstring for devices TBD
 
