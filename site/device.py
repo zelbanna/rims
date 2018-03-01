@@ -96,6 +96,7 @@ def info(aWeb):
     else:
      d.pop('devices_%s_id'%type,None)
 
+   print d
    opres['update'] = aWeb.rest_call("device_update",d)
 
  dev = aWeb.rest_call("device_info",{'id':aWeb['id'],'ip':aWeb['ip'],'info':['username','booking','rackinfo','basics','infra'],'op':aWeb['op']})
@@ -128,7 +129,7 @@ def info(aWeb):
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=ipam_layout&id=%s>%s</A></DIV></DIV>"%(dev['info']['subnet_id'],dev['info']['subnet'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type_id>"
- for type in dev['infra']['types']:
+ for type in dev['infra']['types'].values():
   extra = " selected" if dev['info']['type_id'] == type['id'] or (not dev['info']['type_id'] and type['name'] == 'generic') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id'],extra,type['name'])
  print "</SELECT></DIV></DIV>"

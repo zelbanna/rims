@@ -12,7 +12,7 @@ from ..core.dbase import DB
 #
 #
 def info(aDict):
- """Function docstring for info TBD
+ """Function docstring for info. "One function to rule them all"
 
  Args:
   - ip (optional)
@@ -21,15 +21,38 @@ def info(aDict):
   - op (optional)
 
  Extra:
+  - info: basics,username,booking,rackinfo,infra => make 'exclude' arg in final function instead
  """
- ret = {'op':aDict.get('op')}
- search = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
- if ret['op'] == 'lookup' and aDict.get('ip'):
-  ret['result'] = detect({'ip':aDict.get('ip'),'update':True})
+ srch = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('%s')"%(aDict.get('ip'))
+ ret  = {'op':aDict.pop('op',None),'id':aDict.pop('id',None),'ip':aDict.pop('ip',None),'infra':{}}
 
  with DB() as db:
   info = aDict.get('info',[])
-  ret['xist'] = db.do("SELECT devices.*, base, devicetypes.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
+  if 'infra' in info:
+   from racks import infra
+   ret['infra'].update(infra({'types':True,'consoles':True,'pdus':True}))
+   ret['infra']['domainxist'] = db.do("SELECT domains.* FROM domains WHERE name NOT LIKE '%%arpa' ORDER BY name")
+   ret['infra']['domains'] = db.get_rows()
+
+  ret['infra']['typexist'] = db.do("SELECT id, name, base FROM devicetypes")
+  ret['infra']['types']    = db.get_dict('name')
+
+  op   = ret['op']
+  args = aDict 
+  if op == 'lookup' and ret['ip']:
+   lookup = detect({'ip':ret['ip'],'update':False})
+   if lookup['result'] == 'OK':
+    op = 'update'
+    args.update({'devices_model':lookup['info']['model'],'devices_snmp':lookup['info']['snmp'],'devices_type_id':ret['infra']['types'][lookup['info']['type']]['id']})
+
+  if op == 'update' and ret['id']:
+   if args.get('devices_mac'):
+    try: args['devices_mac'] = int(args['devices_mac'].replace(":",""),16)
+    except: aDict['devices_mac'] = 0
+
+   ret['result'] = args
+
+  ret['xist'] = db.do("SELECT devices.*, base, devicetypes.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(srch))
   if ret['xist'] > 0:
    ret['info'] = db.get_row()
    if not ret['info']['functions']:
@@ -55,9 +78,6 @@ def info(aDict):
      if ret['racked'] > 0:
       ret['rack'] = db.get_row()
       ret['rack']['hostname'] = ret['info']['hostname']
-   if 'infra' in info:
-    from sdcp import infra
-    ret['infra'] = infra({})
  return ret
 
 #
@@ -175,7 +195,6 @@ def update(aDict):
 
  ret    = {'data':{}}
  with DB() as db:
-
   if racked:
    if   racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
     db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))

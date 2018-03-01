@@ -87,7 +87,7 @@ def info(aWeb):
   id = res['id']
  else:
   id = aWeb['id']
- info = aWeb.rest_call("sdcp_infra",{'id':id,'consoles':True,'pdus':True,'images':True,'types':False})
+ info = aWeb.rest_call("racks_infra",{'id':id,'consoles':True,'pdus':True,'images':True,'types':False})
  print "<ARTICLE CLASS=info><P>Rack Info {}</P>".format("(new)" if id == 'new' else "")
  print "<FORM ID=rack_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
