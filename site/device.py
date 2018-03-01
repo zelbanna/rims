@@ -78,14 +78,10 @@ def info(aWeb):
 
  cookie = aWeb.cookie_unjar('sdcp')
 
-
- op    = aWeb.get('op',"")
- opres = {}
  ###################### Update ###################
- if op == 'lookup':
-  opres['lookup'] = aWeb.rest_call("device_detect",{'ip':aWeb['ip'],'update':True,'id':aWeb['id']})
+ opres = {}
 
- elif op == 'update':
+ if aWeb['op'] == 'update':
   d = aWeb.get_args2dict(['call','op','ip'])
   if d['devices_hostname'] != 'unknown':
    from ..core import genlib as GL
@@ -113,8 +109,8 @@ def info(aWeb):
 
    opres['update'] = aWeb.rest_call("device_update",d)
 
- restargs = {'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']}
- restargs.update({'info':['username','booking','rackinfo','basics']})
+ restargs = {'id':aWeb['id'],'ip':aWeb['ip']}
+ restargs.update({'info':['username','booking','rackinfo','basics'],'op':aWeb['op']})
 
  dev   = aWeb.rest_call("device_info",restargs)
  infra = aWeb.rest_call("sdcp_infra")
@@ -122,8 +118,9 @@ def info(aWeb):
  if dev['xist'] == 0:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
   return
- if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
+ if aWeb['op'] == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
   opres['pdu'] = aWeb.rest_call("device_update_pdu",dev['rack'])
+ print opres
 
  ########################## Data Tables ######################
 
@@ -234,7 +231,7 @@ def info(aWeb):
  for key,value in opres.iteritems():
   if value.get('res','NOT_FOUND') != 'OK':
    res += "{}({})".format(key,value)
- print "<SPAN CLASS='results' ID=update_results>%s</SPAN>"%res
+ print "<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result',''))
  print "</DIV></ARTICLE>"
 
  print "<!-- Function navbar and content -->"

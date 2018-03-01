@@ -232,11 +232,11 @@ def record_auto_delete(aDict):
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dns['type'])
   fun = getattr(module,'record_delete',None)
-  for tp in ['a','ptr']:
+  for tp in ['A','PTR']:
    ret[tp] = fun({'id':aDict.get(tp)})['deleted'] if str(aDict.get(tp,'0')) != '0' else None
  else:
   from ..core.rest import call
-  for tp in ['a','ptr']:
+  for tp in ['A','PTR']:
    ret[tp] = call(SC.node[SC.dns['node']], "%s_record_delete"%(SC.dns['type']),{'id':aDict.get(tp)})['data']['deleted'] if str(aDict.get(tp,'0')) != '0' else None
  return ret
 

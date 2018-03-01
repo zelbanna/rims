@@ -18,11 +18,15 @@ def info(aDict):
   - ip (optional)
   - id (optional)
   - info (optional)
+  - op (optional)
 
  Extra:
  """
- ret = {}
+ ret = {'op':aDict.get('op')}
  search = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
+ if ret['op'] == 'lookup' and aDict.get('ip'):
+  ret['result'] = detect({'ip':aDict.get('ip'),'update':True})
+
  with DB() as db:
   info = aDict.get('info',[])
   ret['xist'] = db.do("SELECT devices.*, base, devicetypes.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
@@ -295,7 +299,7 @@ def delete(aDict):
    data = db.get_row()
    ret = {'deleted':db.do("DELETE FROM devices WHERE id = '%s'"%aDict['id'])}
    from dns import record_auto_delete
-   ret.update(record_auto_delete({'a':data['a_id'],'ptr':data['ptr_id']}))
+   ret.update(record_auto_delete({'A':data['a_id'],'PTR':data['ptr_id']}))
    if data['base'] == 'pdu':
     ret['pem0'] = db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '%s'"%(aDict['id']))
     ret['pem1'] = db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '%s'"%(aDict['id']))
@@ -379,16 +383,16 @@ def discover(aDict):
  from threading import Thread, BoundedSemaphore
  from struct import pack
  from socket import inet_ntoa
- from ..core.logger import log
- def _tdetect(aIP,aDB,aSema,aTypes):
-  res = detect({'ip':aIP,'types':aTypes})
-  if res['result'] == 'OK':
-   aDB[aIP] = res['info']
-  aSema.release()
-  return True
 
  def GL_int2ip(addr):
   return inet_ntoa(pack("!I", addr))
+
+ def _tdetect(aIPint,aDB,aSema):
+  res = detect({'ip':GL_int2ip(aIPint)})
+  if res['result'] == 'OK':
+   aDB[aIPint] = res['info']
+  aSema.release()
+  return True
 
  start_time = int(time())
  ret = {'errors':0 }
@@ -414,8 +418,7 @@ def discover(aDict):
     if db_old.get(ipint):
      continue
     sema.acquire()
-    ip = GL_int2ip(ipint)
-    t = Thread(target = _tdetect, args=[ip, db_new, sema, devtypes])
+    t = Thread(target = _tdetect, args=[ipint, db_new, sema])
     t.name = "Detect %s"%ip
     t.start()
 
@@ -423,14 +426,12 @@ def discover(aDict):
    for i in range(10):
     sema.acquire()
    # We can now do inserts only (no update) as either we clear or we skip existing :-)
-   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, snmp, model, type_id, hostname) VALUES (INET_ATON('{}'),"+aDict['a_dom_id']+",{},'{}','{}','{}','{}')"
+   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, snmp, model, type_id, hostname) VALUES ('{}',"+aDict['a_dom_id']+",{},'{}','{}','{}','{}')"
    count = 0
-   for ip,entry in db_new.iteritems():
-    log("device_discover - adding:{}->{}".format(ip,entry))
+   for ipint,entry in db_new.iteritems():
     count += 1
-    db.do(sql.format(ip,aDict['subnet_id'],entry['snmp'],entry['model'],entry['type_id'],"unknown_%i"%count))
+    db.do(sql.format(ipint,aDict['subnet_id'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
   except Exception as err:
-   log("device discover: Error [{}]".format(str(err)))
    ret['info']   = "Error:{}".format(str(err))
    ret['errors'] += 1
 
@@ -445,9 +446,7 @@ def detect(aDict):
 
  Args:
   - ip (required)
-  - id (required)
   - update (optional)
-  - types (optional)
 
  Extra:
  """
@@ -457,7 +456,6 @@ def detect(aDict):
 
  from .. import SettingsContainer as SC
  from netsnmp import VarList, Varbind, Session
-
  try:
   # .1.3.6.1.2.1.1.1.0 : Device info
   # .1.3.6.1.2.1.1.5.0 : Device name
@@ -467,7 +465,7 @@ def detect(aDict):
  except:
   pass
 
- info = {'model':'unknown', 'type_name':'generic'}
+ info = {'model':'unknown', 'type':'generic'}
  info['snmp'] = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
 
  if devobjs[0].val:
@@ -477,29 +475,26 @@ def detect(aDict):
     info['model'] = infolist[3].lower()
     for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
      if tp in info['model']:
-      info['type_name'] = tp
+      info['type'] = tp
       break
    else:
     subinfolist = infolist[1].split(",")
     info['model'] = subinfolist[2]
   elif infolist[0] == "VMware":
    info['model'] = "esxi"
-   info['type_name']  = "esxi"
+   info['type']  = "esxi"
   elif infolist[0] == "Linux":
    info['model'] = 'debian' if "Debian" in devobjs[0].val else 'generic'
   else:
    info['model'] = " ".join(infolist[0:4])
 
- update = aDict.get('update',False)
- if aDict.get('types') and not update:
-  info['type_id'] = aDict.get('types')[info['type_name']]['id']
- else:
+ ret = {'result':'OK','info':info}
+ if aDict.get('update',False):
   with DB() as db:
-   xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(info['type_name']))
-   info['type_id'] = db.get_val('id') if xist > 0 else None
-   if update:
-    update = db.do("UPDATE devices SET snmp = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(info['snmp'],info['model'],info['type_id'],aDict['id'])) > 0
- return { 'result':'OK', 'update':update, 'info':info}
+   xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(info['type']))
+   ret['type_id'] = db.get_val('id') if xist > 0 else None
+   ret['update']  = db.do("UPDATE devices SET snmp = '{}', model = '{}', type_id = '{}' WHERE ip = INET_ATON('{}')".format(info['snmp'],info['model'],ret['type_id'],aDict['ip'])) > 0
+ return ret
 
 ############################################# Munin ###########################################
 #
