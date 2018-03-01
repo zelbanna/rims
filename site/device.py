@@ -105,7 +105,7 @@ def info(aWeb):
   return
  if aWeb['op'] == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
   opres['pdu'] = aWeb.rest_call("device_update_pdu",dev['rack'])
- print opres
+ dev['result'] = str(dev.get('result')) + str(opres)
 
  ########################## Data Tables ######################
 
@@ -210,12 +210,6 @@ def info(aWeb):
  print aWeb.a_button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
   print aWeb.a_button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
-
- # ["%s(%s)"%(key,value) for key,value in opres.iteritems() if value.get('res','NOT_FOUND') != 'OK']
- res = ""
- for key,value in opres.iteritems():
-  if value.get('res','NOT_FOUND') != 'OK':
-   res += "{}({})".format(key,value)
  print "<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result',''))
  print "</DIV></ARTICLE>"
 
