@@ -28,24 +28,23 @@ def info(aDict):
 
  with DB() as db:
   info = aDict.get('info',[])
+  typexist = db.do("SELECT id, name, base FROM devicetypes")
+  types    = db.get_dict('name') 
   if 'infra' in info:
    from racks import infra
    ret['infra'].update(infra({'types':True,'consoles':True,'pdus':True}))
    ret['infra']['domainxist'] = db.do("SELECT domains.* FROM domains WHERE name NOT LIKE '%%arpa' ORDER BY name")
    ret['infra']['domains'] = db.get_rows()
+   ret['infra']['typexist'] = typexist
+   ret['infra']['types']    = types
 
-  ret['infra']['typexist'] = db.do("SELECT id, name, base FROM devicetypes")
-  ret['infra']['types']    = db.get_dict('name')
-
-  op   = ret['op']
   args = aDict 
-  if op == 'lookup' and ret['ip']:
+  if ret['op'] == 'lookup' and ret['ip']:
    lookup = detect({'ip':ret['ip'],'update':False})
    if lookup['result'] == 'OK':
-    op = 'update'
-    args.update({'devices_model':lookup['info']['model'],'devices_snmp':lookup['info']['snmp'],'devices_type_id':ret['infra']['types'][lookup['info']['type']]['id']})
+    args.update({'devices_model':lookup['info']['model'],'devices_snmp':lookup['info']['snmp'],'devices_type_id':types[lookup['info']['type']]['id']})
 
-  if op == 'update' and ret['id']:
+  if ret['op'] == 'lookup' or (ret['op'] == 'update' and ret['id']):
    if args.get('devices_mac'):
     try: args['devices_mac'] = int(args['devices_mac'].replace(":",""),16)
     except: aDict['devices_mac'] = 0
