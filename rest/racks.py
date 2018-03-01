@@ -144,9 +144,6 @@ def infra(aDict):
    ret['rackxist'] = db.do("SELECT racks.* FROM racks")
    ret['racks']    =  db.get_rows()
    ret['racks'].append({ 'id':'NULL', 'name':'Not used'})
-  if aDict.get('types',False):
-   ret['typexist'] = db.do("SELECT id, name, base FROM devicetypes")
-   ret['types']    = db.get_rows()
   if aDict.get('consoles',False):
    ret['consolexist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'") 
    ret['consoles']    = db.get_rows()
