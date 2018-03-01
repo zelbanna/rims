@@ -55,6 +55,9 @@ def info(aDict):
      if ret['racked'] > 0:
       ret['rack'] = db.get_row()
       ret['rack']['hostname'] = ret['info']['hostname']
+   if 'infra' in info:
+    from sdcp import infra
+    ret['infra'] = infra({})
  return ret
 
 #

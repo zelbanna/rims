@@ -69,8 +69,6 @@ def list(aWeb):
 ################################ Gigantic Device info and Ops function #################################
 #
 #
-# Simplify REST calls for this one TODO
-#
 def info(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
@@ -100,11 +98,7 @@ def info(aWeb):
 
    opres['update'] = aWeb.rest_call("device_update",d)
 
- restargs = {'id':aWeb['id'],'ip':aWeb['ip']}
- restargs.update({'info':['username','booking','rackinfo','basics'],'op':aWeb['op']})
-
- dev   = aWeb.rest_call("device_info",restargs)
- infra = aWeb.rest_call("sdcp_infra")
+ dev = aWeb.rest_call("device_info",{'id':aWeb['id'],'ip':aWeb['ip'],'info':['username','booking','rackinfo','basics','infra'],'op':aWeb['op']})
 
  if dev['xist'] == 0:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
@@ -128,13 +122,13 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['info']['hostname'])
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE={} READONLY></DIV></DIV>".format(dev['ip'])
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=devices_a_dom_id>"
- for dom in infra['domains']:
+ for dom in dev['infra']['domains']:
   extra = " selected" if dev['info']['a_dom_id'] == dom['id'] else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(dom['id'],extra,dom['name'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=ipam_layout&id=%s>%s</A></DIV></DIV>"%(dev['info']['subnet_id'],dev['info']['subnet'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type_id>"
- for type in infra['types']:
+ for type in dev['infra']['types']:
   extra = " selected" if dev['info']['type_id'] == type['id'] or (not dev['info']['type_id'] and type['name'] == 'generic') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id'],extra,type['name'])
  print "</SELECT></DIV></DIV>"
@@ -150,7 +144,7 @@ def info(aWeb):
   print "<DIV CLASS=td>Not used <INPUT TYPE=hidden NAME=rackinfo_rack_id VALUE=NULL></DIV>"
  else:
   print "<DIV CLASS=td><SELECT NAME=rackinfo_rack_id>"
-  for rack in infra['racks']:
+  for rack in dev['infra']['racks']:
    extra = " selected" if ((dev['racked'] == 0 and rack['id'] == 'NULL') or (dev['racked'] == 1 and dev['rack']['rack_id'] == rack['id'])) else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
   print "</SELECT></DIV>"
@@ -185,18 +179,18 @@ def info(aWeb):
   if not dev['type'] == 'controlplane':
    print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_size'])
    print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['rack_unit'])
-  if not dev['type'] == 'console' and infra['consolexist'] > 0:
+  if not dev['type'] == 'console' and dev['infra']['consolexist'] > 0:
    print "<DIV CLASS=tr><DIV CLASS=td>TS:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_console_id>"
-   for console in infra['consoles']:
+   for console in dev['infra']['consoles']:
     extra = " selected='selected'" if (dev['rack']['console_id'] == console['id']) or (not dev['rack']['console_id'] and console['id'] == 'NULL') else ""
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['hostname'])
    print "</SELECT></DIV></DIV>"
    print "<DIV CLASS=tr><DIV CLASS=td>TS Port:</DIV><DIV CLASS=td TITLE='Console port in rack TS'><INPUT NAME=rackinfo_console_port TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['console_port'])
-  if not dev['type'] == 'controlplane' and infra['pduxist'] > 0:
+  if not dev['type'] == 'controlplane' and dev['infra']['pduxist'] > 0:
    for pem in ['pem0','pem1']:
     print "<DIV CLASS=tr><DIV CLASS=td>{0} PDU:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_{1}_pdu_slot_id>".format(pem.upper(),pem)
-    for pdu in infra['pdus']:
-     pduinfo = infra['pduinfo'].get(str(pdu['id']))
+    for pdu in dev['infra']['pdus']:
+     pduinfo = dev['infra']['pduinfo'].get(str(pdu['id']))
      if pduinfo:
       for slotid in range(0,pduinfo['slots']):
        pdu_slot_id   = pduinfo[str(slotid)+"_slot_id"]
