@@ -90,20 +90,11 @@ def info(aWeb):
    if not d.get('devices_comment'):
     d['devices_comment'] = 'NULL'
 
-   dns   = aWeb.rest_call("dns_list_domains_cache",{'filter':'forward','dict':'id'})['domains']
-
-   fqdn   = ".".join([d['devices_hostname'],  dns[d['devices_a_dom_id']]['name']])
-   dom_id = aWeb.rest_call("dns_list_domains",{'filter':'reverse','dict':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
-
-   opres['a'] = aWeb.rest_call("dns_record_update", { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
-   if dom_id:
-    opres['ptr'] = aWeb.rest_call("dns_record_update", { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
-   else:
-    opres['ptr'] = {'id':0,'info':'nonexisting_ptr_domain'}
+   opres = aWeb.rest_call("dns_record_auto_update", {'a_id':d['devices_a_id'],'ptr_id':d['devices_ptr_id'],'a_domain_id':d['devices_a_dom_id'],'hostname':d['devices_hostname'],'ip':aWeb['ip']})
 
    for type in ['a','ptr']:
-    if not str(opres[type]['id']) == str(d['devices_%s_id'%type]):
-     d['devices_%s_id'%type] = opres[type]['id']
+    if not str(opres[type.upper()]['id']) == str(d['devices_%s_id'%type]):
+     d['devices_%s_id'%type] = opres[type.upper()]['id']
     else:
      d.pop('devices_%s_id'%type,None)
 
@@ -173,16 +164,16 @@ def info(aWeb):
   print "<DIV CLASS=td><A CLASS=z-op TITLE='View graphs for {1}' DIV=div_content_right URL='/munin-cgi/munin-cgi-html/{0}/{1}/index.html#content'>yes</A></DIV></DIV>".format(dev['info']['domain'],dev['fqdn'])
  else:
   print "<DIV CLASS=td>no</DIV></DIV>"
- print "<DIV CLASS=tr ID=div_booking_info><DIV CLASS=td>Booked by:</DIV>"
+ print "<DIV CLASS=tr ID=div_booking_info>"
  if dev['booked']:
-  print "<DIV CLASS='td %s'>"%("red" if dev['booking']['valid'] == 1 else "orange")
+  print "<DIV CLASS=td>Booked by:</DIV><DIV CLASS='td %s'>"%("red" if dev['booking']['valid'] == 1 else "orange")
   if dev['booking']['user_id'] == int(cookie['id']):
    print "<A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?call=bookings_update&op=debook&id=%s'>%s</A>"%(dev['id'],dev['booking']['alias'])
   else:
    print dev['booking']['alias']
   print "</DIV>"
  else:
-  print "<DIV CLASS='td green'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?call=bookings_update&op=book&id=%s'>None</A></DIV>"%dev['id']
+  print "<DIV CLASS=td>Booking:</DIV><DIV CLASS='td green'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?call=bookings_update&op=book&id=%s'>Book</A></DIV>"%dev['id']
  print "</DIV>"
  print "</DIV></DIV></DIV>"
 

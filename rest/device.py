@@ -32,6 +32,8 @@ def info(aDict):
   ret['xist'] = db.do("SELECT devices.*, base, devicetypes.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
   if ret['xist'] > 0:
    ret['info'] = db.get_row()
+   if not ret['info']['functions']:
+    ret['info']['functions'] = ""
    ret['id']   = ret['info'].pop('id',None)
    if 'basics' in info:
     ret['fqdn'] = "{}.{}".format(ret['info']['hostname'],ret['info']['domain'])

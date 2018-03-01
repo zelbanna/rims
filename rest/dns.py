@@ -185,63 +185,6 @@ def record_lookup(aDict):
 
 #
 #
-def record_auto_create(aDict):
- """Function docstring for record_auto_create TBD
-
- Args:
-  - id (required)
-  - ip (required)
-  - type (required)
-  - domain_id (required)
-  - fqdn (required)
-
- Extra:
- """
- ret = {'result':'OK'}
- args = {'id':'new','domain_id':aDict['domain_id'],'type':aDict['type'].upper()}
- if args['type'] == 'A':
-  args['name'] = aDict['fqdn']
-  args['content'] = aDict['ip']               
- elif args['type'] == 'PTR':
-  def GL_ip2ptr(addr):
-   octets = addr.split('.')
-   octets.reverse()
-   octets.append("in-addr.arpa")
-   return ".".join(octets)
-  args['name'] = GL_ip2ptr(aDict['ip'])
-  args['content'] = aDict['fqdn']
- if SC.dns['node'] == 'master':  
-  from importlib import import_module  
-  module = import_module("sdcp.rest.%s"%SC.dns['type'])  
-  fun = getattr(module,'record_update',None)
-  ret['dns'] = fun(args)
- else:  
-  from ..core.rest import call
-  ret['dns'] = call(SC.node[SC.dns['node']], "%s_record_update"%(SC.dns['type']),args)['data']
- if str(ret['dns']['xist']) == "1" and (args['type'] == 'A' or args['type'] == 'PTR'):
-  ret['device'] = {'id':aDict['id']}
-  with DB() as db:
-   ret['xist'] = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),ret['dns']['id'],aDict['id']))
- return ret
-
-#
-#
-def record_auto_delete(aDict):
- ret = {}
- if SC.dns['node'] == 'master':
-  from importlib import import_module
-  module = import_module("sdcp.rest.%s"%SC.dns['type'])
-  fun = getattr(module,'record_delete',None)
-  for tp in ['A','PTR']:
-   ret[tp] = fun({'id':aDict.get(tp)})['deleted'] if str(aDict.get(tp,'0')) != '0' else None
- else:
-  from ..core.rest import call
-  for tp in ['A','PTR']:
-   ret[tp] = call(SC.node[SC.dns['node']], "%s_record_delete"%(SC.dns['type']),{'id':aDict.get(tp)})['data']['deleted'] if str(aDict.get(tp,'0')) != '0' else None
- return ret
-
-#
-#
 def record_update(aDict):
  """Function docstring for record_update TBD
 
@@ -299,6 +242,119 @@ def record_transfer(aDict):
  with DB() as db:
   xist = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),aDict['record_id'],aDict['device_id']))
  return {'xist':xist}
+
+#
+#
+def record_auto_create(aDict):
+ """Function docstring for record_auto_create TBD
+
+ Args:
+  - ip (required)
+  - type (required)
+  - domain_id (required)
+  - fqdn (required)
+
+ Extra:
+ """
+ ret = {'result':'OK'}
+ args = {'id':'new','domain_id':aDict['domain_id'],'type':aDict['type'].upper()}
+ if args['type'] == 'A':
+  args['name'] = aDict['fqdn']
+  args['content'] = aDict['ip']               
+ elif args['type'] == 'PTR':
+  def GL_ip2ptr(addr):
+   octets = addr.split('.')
+   octets.reverse()
+   octets.append("in-addr.arpa")
+   return ".".join(octets)
+  args['name'] = GL_ip2ptr(aDict['ip'])
+  args['content'] = aDict['fqdn']
+ if SC.dns['node'] == 'master':  
+  from importlib import import_module  
+  module = import_module("sdcp.rest.%s"%SC.dns['type'])  
+  fun = getattr(module,'record_update',None)
+  ret['dns'] = fun(args)
+ else:  
+  from ..core.rest import call
+  ret['dns'] = call(SC.node[SC.dns['node']], "%s_record_update"%(SC.dns['type']),args)['data']
+ if str(ret['dns']['xist']) == "1" and (args['type'] == 'A' or args['type'] == 'PTR'):
+  ret['device'] = {'id':aDict['id']}
+  with DB() as db:
+   ret['xist'] = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),ret['dns']['id'],aDict['id']))
+ return ret
+
+#
+#
+def record_auto_update(aDict):
+ """Function docstring for record_auto_update TBD
+
+ Args:
+  - ip (required)
+  - hostname (required)
+  - a_domain_id (required)
+  - a_id (required)   - id/0
+  - ptr_id (required) - id/0
+
+ Extra:
+ """
+ ret = {}
+ def GL_ip2ptr(addr):
+  octets = addr.split('.')
+  octets.reverse()
+  octets.append("in-addr.arpa")
+  return ".".join(octets)
+
+ ptr  = GL_ip2ptr(aDict['ip'])
+ arpa = ptr.partition('.')[2]
+ args = {'A':{'type':'A','id':aDict['a_id'],'content':aDict['ip'],'domain_id':aDict['a_domain_id']},'PTR':{'type':'PTR','id':aDict['ptr_id'],'name':ptr}}
+
+ with DB() as db:
+  db.do("SELECT id,name FROM domains WHERE id = '%s' OR name = '%s'"%(aDict['a_domain_id'],arpa))
+  domains = db.get_rows()
+  for domain in domains:
+   if domain['id'] == int(aDict['a_domain_id']):
+    fqdn = "%s.%s"%(aDict['hostname'],domain['name'])
+    args['A']['name'] = fqdn
+    args['PTR']['content'] = fqdn 
+   elif domain['name'] == arpa:
+    args['PTR']['domain_id'] = domain['id']
+
+ if SC.dns['node'] == 'master':  
+  from importlib import import_module  
+  module = import_module("sdcp.rest.%s"%SC.dns['type'])  
+  fun = getattr(module,'record_update',None)
+  for arg in args.values():
+   ret[arg['type']] = fun(arg)
+ else:  
+  from ..core.rest import call
+  for arg in args.values():
+   ret[arg['type']] = call(SC.node[SC.dns['node']], "%s_record_update"%(SC.dns['type']),arg)['data']
+ return ret
+
+#
+#
+def record_auto_delete(aDict):
+ """Function docstring for record_auto_delete TBD
+
+ Args:
+  - a_id (optional) - id/0
+  - ptr_id (optional) - id/0
+
+ Extra:
+ """
+ ret = {}
+ if SC.dns['node'] == 'master':
+  from importlib import import_module
+  module = import_module("sdcp.rest.%s"%SC.dns['type'])
+  fun = getattr(module,'record_delete',None)
+  for tp in ['A','PTR']:
+   ret[tp] = fun({'id':aDict.get(tp)})['deleted'] if str(aDict.get(tp,'0')) != '0' else None
+ else:
+  from ..core.rest import call
+  for tp in ['A','PTR']:
+   ret[tp] = call(SC.node[SC.dns['node']], "%s_record_delete"%(SC.dns['type']),{'id':aDict.get(tp)})['data']['deleted'] if str(aDict.get(tp,'0')) != '0' else None
+ return ret
+
 
 ###################################### Tools ####################################
 
