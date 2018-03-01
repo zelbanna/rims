@@ -229,10 +229,11 @@ def install(aDict):
     mod = import_module("sdcp.devices.{}".format(pyfile))
     type = getattr(mod,'__type__',None)
     if type:
-     device_types.append({'name':pyfile, 'base':type })
+     device_types.append({'name':pyfile, 'base':type, 'functions':[] })
    except: pass
  ret['device_found'] = len(device_types)
  ret['device_new'] = 0
+ ret['devices'] = device_types
  with DB() as db:
   sql ="INSERT INTO devicetypes(name,base) VALUES ('%s','%s') ON DUPLICATE KEY UPDATE id = id"
   for type in device_types:
