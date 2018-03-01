@@ -17,7 +17,7 @@ class Device(GenericDevice):
   GenericDevice.__init__(self,aIP,aID)
 
  @classmethod
- def get_widgets(cls):
+ def get_functions(cls):
   return ['manage']
 
  def __str__(self):

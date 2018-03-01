@@ -228,17 +228,19 @@ def install(aDict):
    try:
     mod = import_module("sdcp.devices.{}".format(pyfile))
     type = getattr(mod,'__type__',None)
+    dev = getattr(mod,'Device',None)
     if type:
-     device_types.append({'name':pyfile, 'base':type, 'functions':[] })
+     device_types.append({'name':pyfile, 'base':type, 'functions':dev.get_functions() })
    except: pass
  ret['device_found'] = len(device_types)
+ #ret['device_types'] = [tp['name'] for tp in device_types]
+ # ret['device_types'].sort()
  ret['device_new'] = 0
- ret['devices'] = device_types
  with DB() as db:
-  sql ="INSERT INTO devicetypes(name,base) VALUES ('%s','%s') ON DUPLICATE KEY UPDATE id = id"
+  sql ="INSERT INTO devicetypes(name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
   for type in device_types:
-   try:    ret['device_new'] += db.do(sql%(type['name'],type['base']))
-   except: ret['device_type_errors'] = True
+   try:    ret['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
+   except Exception as err: ret['device_type_errors'] = str(err)
 
  # Menu items
  menuitems = []

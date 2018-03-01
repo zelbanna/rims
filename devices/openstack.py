@@ -12,7 +12,11 @@ __type__    = "controller"
 #
 # OpenstackRPC Class
 #
-class OpenstackRPC(object):
+class Device(object):
+
+ @classmethod
+ def get_functions(cls):
+  return []
 
  def __init__(self, aIP, aToken = None):
   self._token = aToken

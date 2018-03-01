@@ -14,6 +14,10 @@ __type__ = "controller"
 #
 class Device(object):
 
+ @classmethod
+ def get_functions(cls):
+  return []
+
  def __init__(self, aIP, aToken = None):
   self._token = aToken
   self._expire = None

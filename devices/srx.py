@@ -15,8 +15,8 @@ from junos import Junos
 class Device(Junos):
 
  @classmethod
- def get_widgets(cls):
-  return Junos.get_widgets()
+ def get_functions(cls):
+  return Junos.get_functions()
 
  def __init__(self,aIP,aID=None):
   Junos.__init__(self, aIP,aID)

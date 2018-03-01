@@ -19,7 +19,7 @@ class Device(GenericDevice):
  _setstatemap = { 'off':'3', 'on':'2', 'reboot':'4' }
 
  @classmethod
- def get_widgets(cls):
+ def get_functions(cls):
   return ['manage']
 
  @classmethod

@@ -10,6 +10,10 @@ __type__    = "generic"
 
 class Device(object):
 
+ @classmethod
+ def get_functions(cls):
+  return []
+
  # set a number of entries available for all subclasses:
  # - _ip
  # - _id

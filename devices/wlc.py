@@ -19,7 +19,7 @@ from netsnmp import VarList, Varbind, Session
 class Device(GenericDevice):
 
  @classmethod
- def get_widgets(cls):
+ def get_functions(cls):
   return ['get_switch_table']
 
  def __init__(self,aIP, aID = None):

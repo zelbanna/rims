@@ -15,9 +15,9 @@ from junos import Junos
 class Device(Junos):
 
  @classmethod
- def get_widgets(cls):
+ def get_functions(cls):
   widgets = ['get_switch_table']
-  widgets.extend(Junos.get_widgets())
+  widgets.extend(Junos.get_functions())
   return widgets
 
  def __init__(self,aIP,aID=None):

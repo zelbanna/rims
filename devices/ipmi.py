@@ -12,18 +12,19 @@ __version__ = "18.02.09GA"
 __status__ = "Production"
 
 from .. import SettingsContainer as SC
-from ..core.extras import get_results, str2hex
-from subprocess import check_output, check_call
+from generic import Device as GenericDevice
 
 ################################### IPMI #######################################
 
-class Device(object):
- def __init__(self, ahost):
-  self.hostname = ahost
+class Device(GenericDevice):
+
+ def __init__(self,aIP,aID=None):
+  GenericDevice.__init__(self,aIP,aID)
 
  def get_info(self, agrep):
+  from subprocess import check_output
   result = []
-  readout = check_output("ipmitool -H " + self.hostname + " -U " + SC.ipmi['username'] + " -P " + SC.ipmi['password'] + " sdr | grep -E '" + agrep + "'",shell=True)
+  readout = check_output("ipmitool -H " + self._ip + " -U " + SC.ipmi['username'] + " -P " + SC.ipmi['password'] + " sdr | grep -E '" + agrep + "'",shell=True)
   for fanline in readout.split('\n'):
    if fanline is not "":
     fan = fanline.split()
@@ -33,8 +34,10 @@ class Device(object):
  def set_fans(self, arear, afront):
   from io import open
   from os import devnull
+  from subprocess import check_call
+  from ..core.extras import str2hex
   FNULL = open(devnull, 'w')
   rear  = str2hex(arear)
   front = str2hex(afront)
-  ipmistring = "ipmitool -H " + self.hostname + " -U " + SC.ipmi['username'] + " -P " + SC.ipmi['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
+  ipmistring = "ipmitool -H " + self._ip + " -U " + SC.ipmi['username'] + " -P " + SC.ipmi['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
   return check_call(ipmistring,stdout=FNULL,stderr=FNULL,shell=True)

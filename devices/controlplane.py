@@ -10,6 +10,10 @@ __type__    = "controlplane"
 
 class Device(object):
 
+ @classmethod
+ def get_functions(cls):
+  return []
+
  def __init__(self, aIP, aID = None):
   pass
 

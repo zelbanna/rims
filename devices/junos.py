@@ -17,7 +17,7 @@ from netsnmp import VarList, Varbind, Session
 class Junos(GenericDevice):
 
  @classmethod
- def get_widgets(cls):
+ def get_functions(cls):
   return ['get_up_interfaces','get_lldp' ]
 
  def __init__(self,aIP,aID = None):
