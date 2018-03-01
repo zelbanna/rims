@@ -40,7 +40,7 @@ class Web(object):
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None):
   from rest import call
-  return call(self._rest_url, aAPI, aArgs )['data']
+  return call(self._rest_url, aAPI, aArgs, aTimeout = 60)['data']
 
  # Generic REST call
  def rest_generic(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):

@@ -10,12 +10,12 @@ __status__= "Production"
 #
 #
 def update(aWeb):
- print "<ARTICLE>%s</ARTICLE>"%(aWeb.rest_call("sdcpdhcp_update_server"))
+ print "<ARTICLE>%s</ARTICLE>"%(aWeb.rest_call("dhcp_update_server"))
 
 #
 #
 def leases(aWeb):
- leases = aWeb.rest_call("sdcpdhcp_leases",{'type':aWeb['type']})
+ leases = aWeb.rest_call("dhcp_leases",{'type':aWeb['type']})
  print "<ARTICLE><P>%s Leases</P>"%(aWeb['type'].title())
  print "<DIV CLASS=table><DIV class=thead><DIV class=th>Ip</DIV><DIV class=th>Mac</DIV><DIV class=th>Hostname</DIV><DIV class=th>Starts</DIV><DIV class=th>Ends</DIV></DIV>"
  print "<DIV CLASS=tbody>"

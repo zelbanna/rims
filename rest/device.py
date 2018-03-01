@@ -112,8 +112,8 @@ def info(aDict):
  ret = {}
  search = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
  with DB() as db:
-  ret['exist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
-  if ret['exist'] > 0:
+  ret['xist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
+  if ret['xist'] > 0:
    if aDict.get('username'):
     from .. import SettingsContainer as SC
     ret['username'] = SC.netconf['username']
@@ -139,6 +139,22 @@ def info(aDict):
 
 #
 #
+def basics(aDict):
+ """Function docstring for basics TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT INET_NTOA(ip) as ip, hostname, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = '%s'"%aDict['id'])
+  ret.update(db.get_row())
+ return ret
+
+#
+#
 def update(aDict):
  """Function docstring for update TBD
 
@@ -150,6 +166,7 @@ def update(aDict):
   - racked (optional)
   - rackinfo_rack_id (optional)
 
+ Extra:
  """
  from ..core.logger import log
  log("device_update({})".format(aDict))
@@ -187,6 +204,37 @@ def update(aDict):
    data = aDict[tkey]
    if db.do(sql%(table,key,"'%s'"%data if data != 'NULL' else "NULL",tbl_id[table],id)) > 0:
     ret['data'][key] = 'CHANGED'
+ return ret
+
+#
+#
+def update_pdu(aDict):
+ """Function docstring for update_pdu TBD
+
+ Args:
+  - hostname (required)
+  - pem<var>_pdu_slot (optional)
+  - pem<var>_pdu_id (optional)
+  - pem<var>_pdu_unit (optional)
+
+ Extra:
+ """
+ ret = {}
+ with DB() as db:
+  for p in ['0','1']:
+   ret[p] = None
+   id = aDict.get('pem%s_pdu_id'%(p))
+   if id:
+    slot = int(aDict.get('pem%s_pdu_slot'%(p),0))
+    unit = int(aDict.get('pem%s_pdu_unit'%(p),0))
+    if not (slot == 0 or unit == 0):
+     db.do("SELECT hostname, INET_NTOA(ip), devicetypes.name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '{}'".format(id))
+     data = db.get_row()
+     args = {'ip':data['ip'],'unit':unit,'slot':slot,'text':aDict['hostname']+"-P%s"%(p)}
+     # Redo with module import
+     if data.name == 'avocent':
+      from avocent import pdu_update
+      ret["pem{}".format(p)] = pdu_update(args)
  return ret
 
 #
@@ -232,7 +280,7 @@ def new(aDict):
    xist = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE subnet_id = {} AND (ip = {} OR hostname = '{}')".format(subnet_id,ipint,aDict['hostname']))
    if xist == 0:
     mac = GL_mac2int(aDict.get('mac',0))
-    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,lookup,snmp,model) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname']))
+    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,lookup,snmp,model) VALUES({},{},{},{},{},'{}','unknown','unknown','unknown')".format(ipint,aDict.get('vm','0'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname']))
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
      db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
@@ -245,8 +293,8 @@ def new(aDict):
 
 #
 #
-def remove(aDict):
- """Function docstring for remove TBD
+def delete(aDict):
+ """Function docstring for delete TBD
 
  Args:
   - id (required)
@@ -258,13 +306,78 @@ def remove(aDict):
  with DB() as db:
   xist = db.do("SELECT hostname, mac, a_id, ptr_id, devicetypes.* FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = {}".format(aDict['id']))
   if xist == 0:
-   ret = { 'deleted':0, 'a_id':0, 'ptr_id':0 }
+   ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
-   ret = db.get_row()
-   ret['deleted'] = db.do("DELETE FROM devices WHERE id = '%s'"%(aDict['id']))
-   if ret['base'] == 'pdu':
-    db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '%s'"%(aDict['id']))
-    db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '%s'"%(aDict['id']))
+   data = db.get_row()
+   ret = {'deleted':db.do("DELETE FROM devices WHERE id = '%s'"%aDict['id'])}
+   from dns import record_auto_delete
+   ret.update(record_auto_delete({'a':data['a_id'],'ptr':data['ptr_id']}))
+   if data['base'] == 'pdu':
+    ret['pem0'] = db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '%s'"%(aDict['id']))
+    ret['pem1'] = db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '%s'"%(aDict['id']))
+ return ret
+
+#
+#
+def clear(aDict):
+ """Function docstring for clear TBD
+
+ Args:
+
+ Extra:
+ """
+ with DB() as db:
+  res = db.do("DELETE FROM devices")
+ return { 'operation':res }
+
+############################################# Specials ###########################################
+#
+#
+def operation(aDict):
+ """Function docstring for operation TBD
+
+ Args:
+  - ip (required)
+  - op (required)
+  - type (required)
+
+ Extra:
+ """
+ ret = {}
+ from importlib import import_module
+ try:
+  module = import_module("sdcp.devices.%s"%(aDict['type']))
+  dev = getattr(module,'Device',lambda x: None)(aDict['ip'])
+  with dev:
+   ret['data'] = getattr(dev,aDict['op'],None)()
+  ret['result'] = 'OK'
+ except Exception as err:
+  ret = {'result':'ERROR','info':str(err)}
+ return ret
+
+#
+#
+def configuration_template(aDict):
+ """Function docstring for configuration TBD
+
+ Args:
+  - id (required)
+
+ Extra:
+ """
+ from importlib import import_module
+ ret = {}
+ with DB() as db:
+  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, mask, INET_NTOA(gateway) AS gateway, INET_NTOA(subnet) AS subnet, devicetypes.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.subnet_id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = '%s'"%aDict['id'])
+  data = db.get_row()
+ ip = data.pop('ipasc',None)
+ try:
+  module = import_module("sdcp.devices.%s"%data['type'])
+  dev = getattr(module,'Device',lambda x: None)(ip)
+  ret['data'] = dev.configuration(data)
+  ret['result'] = 'OK'
+ except Exception as err:
+  ret = {'result':'ERROR','info':str(err)} 
  return ret
 
 #
@@ -274,63 +387,62 @@ def discover(aDict):
 
  Args:
   - a_dom_id (required)
-  - start (required)
-  - end (required)
   - subnet_id (required)
-  - clear (optional)
 
  Extra:
  """
  from time import time
  from threading import Thread, BoundedSemaphore
- from struct import pack,unpack
- from socket import inet_ntoa,inet_aton
- def _tdetect(aip,adict,asema):
-  res = detect({'ip':aip})
+ from struct import pack
+ from socket import inet_ntoa
+ from ..core.logger import log
+ def _tdetect(aIP,aDB,aSema,aTypes):
+  res = detect({'ip':aIP,'types':aTypes})
   if res['result'] == 'OK':
-   adict[aip] = res['info']
-  asema.release()
+   aDB[aIP] = res['info']
+  aSema.release()
   return True
 
- def GL_ip2int(addr):
-  return unpack("!I", inet_aton(addr))[0]
-
- def GL_ipint2range(start,end):
-  return map(lambda addr: inet_ntoa(pack("!I", addr)), range(start,end + 1))
+ def GL_int2ip(addr):
+  return inet_ntoa(pack("!I", addr))
 
  start_time = int(time())
- ip_start = aDict['start']
- ip_end   = aDict['end']
  ret = {'errors':0 }
 
  with DB() as db:
+  db.do("SELECT id,name FROM devicetypes")
+  devtypes = db.get_dict('name')
+  db.do("SELECT subnet,mask FROM subnets WHERE id = '%s'"%aDict['subnet_id'])
+  net = db.get_row()
+
+  ip_start = net['subnet'] + 1
+  ip_end   = net['subnet'] + 2**(32 - net['mask']) - 1
+  ret.update({'start':GL_int2ip(ip_start),'end':GL_int2ip(ip_end)})
 
   db_old, db_new = {}, {}
-  if aDict.get('clear') == True:
-   db.do("TRUNCATE TABLE devices")
-  else:
-   db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(ip_start,ip_end))
-   rows = db.get_rows()
-   for item in rows:
-    db_old[item.get('ip')] = True
+  ret['xist'] = db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(ip_start,ip_end))
+  rows = db.get_rows()
+  for item in rows:
+   db_old[item['ip']] = True
   try:
    sema = BoundedSemaphore(10)
-   for ip in GL_ipint2range(ip_start,ip_end):
-    if db_old.get(GL_ip2int(ip)):
+   for ipint in range(ip_start,ip_end):
+    if db_old.get(ipint):
      continue
     sema.acquire()
+    ip = GL_int2ip(ipint)
     t = Thread(target = _tdetect, args=[ip, db_new, sema, devtypes])
-    t.name = "Detect " + ip
+    t.name = "Detect %s"%ip
     t.start()
 
    # Join all threads by acquiring all semaphore resources
    for i in range(10):
     sema.acquire()
    # We can now do inserts only (no update) as either we clear or we skip existing :-)
-   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, hostname, snmp, model, type_id, lookup) VALUES ({},"+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
+   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, hostname, snmp, model, type_id, lookup) VALUES (INET_ATON('{}'),"+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
    for ip,entry in db_new.iteritems():
     log("device_discover - adding:{}->{}".format(ip,entry))
-    db.do(sql.format(GL_ip2int(ip), aDict['subnet_id'], entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['lookup']))
+    db.do(sql.format(ip, aDict['subnet_id'], entry['name'],entry['snmp'],entry['model'],entry['type_id'],entry['lookup']))
   except Exception as err:
    log("device discover: Error [{}]".format(str(err)))
    ret['info']   = "Error:{}".format(str(err))
@@ -353,14 +465,13 @@ def detect(aDict):
 
  Extra:
  """
- from ..core.logger import log
- log("device_detect({})".format(aDict))
- from .. import SettingsContainer as SC
- from netsnmp import VarList, Varbind, Session
- from socket import gethostbyaddr
  from os import system
  if system("ping -c 1 -w 1 {} > /dev/null 2>&1".format(aDict['ip'])) != 0:
   return {'result':'NOT_OK'}
+
+ from .. import SettingsContainer as SC
+ from netsnmp import VarList, Varbind, Session
+ from socket import gethostbyaddr
 
  try:
   # .1.3.6.1.2.1.1.1.0 : Device info
@@ -410,97 +521,7 @@ def detect(aDict):
     update = db.do("UPDATE devices SET snmp = '{}', lookup = '{}', model = '{}', type_id = '{}' WHERE id = '{}'".format(info['snmp'],info['lookup'],info['model'],info['type_id'],aDict['id'])) > 0
  return { 'result':'OK', 'update':update, 'info':info}
 
-#
-#
-def clear(aDict):
- """Function docstring for clear TBD
-
- Args:
-
- Extra:
- """
- with DB() as db:
-  res = db.do("DELETE FROM devices")
- return { 'operation':res }
-
-#
-#
-def update_pdu(aDict):
- """Function docstring for update_pdu TBD
-
- Args:
-  - hostname (required)
-  - pem<var>_pdu_slot (optional)
-  - pem<var>_pdu_id (optional)
-  - pem<var>_pdu_unit (optional)
-
- Extra:
- """
- ret = {}
- with DB() as db:
-  for p in ['0','1']:
-   ret[p] = None
-   id = aDict.get('pem%s_pdu_id'%(p))
-   if id:
-    slot = int(aDict.get('pem%s_pdu_slot'%(p),0))
-    unit = int(aDict.get('pem%s_pdu_unit'%(p),0))
-    if not (slot == 0 or unit == 0):
-     db.do("SELECT hostname, INET_NTOA(ip), devicetypes.name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '{}'".format(id))
-     data = db.get_row()
-     args = {'ip':data['ip'],'unit':unit,'slot':slot,'text':aDict['hostname']+"-P%s"%(p)}
-     # Redo with module import
-     if data.name == 'avocent':
-      from avocent import pdu_update
-      ret["pem{}".format(p)] = pdu_update(args)
- return ret
-
 ############################################# Munin ###########################################
-#
-#
-def graph_detect(aDict):
- """Function docstring for graph_detect TBD
-
- Args:
-  - ip (required)
-  - type_name (required)
-  - fqdn (required)
-  - plugin_file (required)
-
- Extra:
- """
- def GL_ping_os(ip):
-  from os import system
-  return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
- ret = {'result':'NOT_OK'}
- if not GL_ping_os(aDict['ip']):
-  return ret
-
- activeinterfaces = []
- type = aDict['type_name']
- fqdn = aDict['fqdn']
- try:
-  if type in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-   from ..devices.junos import Junos
-   if not type == 'wlc':
-    with Junos(aDict['ip']) as jdev:
-     activeinterfaces = jdev.get_up_interfaces()
-   with open(aDict['plugin_file'], 'a') as graphfile:
-    graphfile.write('ln -s /usr/local/sbin/plugins/snmp__{0} /etc/munin/plugins/snmp_{1}_{0}\n'.format(type,fqdn))
-    graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')
-    graphfile.write('ln -s /usr/share/munin/plugins/snmp__users  /etc/munin/plugins/snmp_' + fqdn + '_users\n')
-    for ifd in activeinterfaces:
-     graphfile.write('ln -s /usr/share/munin/plugins/snmp__if_    /etc/munin/plugins/snmp_' + fqdn + '_if_'+ ifd['SNMP'] +'\n')
-  elif type == "esxi":
-   with open(aDict['plugin_file'], 'a') as graphfile:
-    graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')              
-    graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + fqdn + '_esxi\n')
- except Exception as err:
-  from ..core.logger import log
-  log("Graph detect - error: [{}]".format(str(err)))
- else:
-  ret['result'] = 'OK'
- return ret
-
 #
 #
 def graph_save(aDict):
@@ -521,4 +542,60 @@ def graph_save(aDict):
    output.write("[{}.{}]\n".format(row['hostname'],row['domain']))
    output.write("address {}\n".format(row['proxy']))
    output.write("update yes\n\n")
+ return ret
+
+#
+#
+def graph_info(aDict):
+ """Function docstring for graph_info TBD
+
+ Args:
+  - id
+  - op (optional)
+  - graph_proxy (optional)
+  - graph_update (optional)
+
+
+ Extra:
+ """
+ with DB() as db:
+  ret = {}
+  if aDict.get('op') == 'update':
+   ret['changed'] = db.do("UPDATE devices SET graph_proxy = INET_ATON('%s'), graph_update = %i WHERE id = %i"%(aDict.get('graph_proxy'),int(aDict.get('graph_update',0)),int(aDict['id'])))
+
+  db.do("SELECT INET_NTOA(ip) AS ip, graph_update, devicetypes.name AS type_name, INET_NTOA(graph_proxy) AS graph_proxy, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '%s'"%aDict['id'])
+  ret.update(db.get_row())
+  db.do("SELECT value AS plugin_file FROM settings WHERE section = 'graph' AND parameter = 'plugins'")
+  ret.update(db.get_row())
+
+  if aDict.get('op') == 'detect':
+   def GL_ping_os(ip):
+    from os import system
+    return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
+  
+   if GL_ping_os(ret['ip']):
+    try:
+     if ret['type_name'] in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
+      from ..devices.junos import Junos
+      activeinterfaces = []
+      if not ret['type_name'] == 'wlc':
+       with Junos(ret['ip']) as jdev:
+        activeinterfaces = jdev.get_up_interfaces()
+       with open(ret['plugin_file'], 'a') as graphfile:
+        graphfile.write('ln -s /usr/local/sbin/plugins/snmp__{0} /etc/munin/plugins/snmp_{1}_{0}\n'.format(ret['type_name'],ret['fqdn']))
+        graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + ret['fqdn'] + '_uptime\n')
+        graphfile.write('ln -s /usr/share/munin/plugins/snmp__users  /etc/munin/plugins/snmp_' + ret['fqdn'] + '_users\n')
+        for ifd in activeinterfaces:
+         graphfile.write('ln -s /usr/share/munin/plugins/snmp__if_    /etc/munin/plugins/snmp_' + ret['fqdn'] + '_if_'+ ifd['SNMP'] +'\n')
+     elif ret['type_name'] == "esxi":
+      with open(ret['plugin_file'], 'a') as graphfile:
+       graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + ret['fqdn'] + '_uptime\n')              
+       graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + ret['fqdn'] + '_esxi\n')
+    except Exception as err:
+     ret['op'] = "Error:%s"%str(err)
+    else:
+     ret['op'] = 'OK'
+   else:
+    ret['op'] = 'NO_PING'
+
  return ret

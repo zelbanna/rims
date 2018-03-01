@@ -14,9 +14,9 @@ def manage(aWeb):
   ip = aWeb['ip']
   hostname = aWeb['hostname']
  else:
-  data = aWeb.rest_call("device_info",{'id':id})
+  data = aWeb.rest_call("device_basics",{'id':id})
   ip = data['ip']
-  hostname = data['info']['hostname']
+  hostname = data['hostname']
 
  print "<NAV><UL>"
  print "<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname)

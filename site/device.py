@@ -64,7 +64,12 @@ def list(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=device_info&id=%i'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s.%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['ipasc'], row['hostname'],row['domain'], row['model'])
  print "</DIV></DIV></ARTICLE>"
 
+#
+#
 ################################ Gigantic Device info and Ops function #################################
+#
+#
+# Simplify REST calls for this one TODO
 #
 def info(aWeb):
  if not aWeb.cookies.get('sdcp'):
@@ -73,8 +78,7 @@ def info(aWeb):
 
  cookie = aWeb.cookie_unjar('sdcp')
 
- dns   = aWeb.rest_call("sdcpdns_domains",{'filter':'forward','dict':'id'})['domains']
- infra = aWeb.rest_call("racks_infra")
+ dns   = aWeb.rest_call("dns_list_domains_cache",{'filter':'forward','dict':'id'})['domains']
 
  op    = aWeb.get('op',"")
  opres = {}
@@ -83,7 +87,6 @@ def info(aWeb):
   opres['lookup'] = aWeb.rest_call("device_detect",{'ip':aWeb['ip'],'update':True,'id':aWeb['id']})
 
  elif op == 'update':
-  from .. import SettingsContainer as SC
   d = aWeb.get_args2dict(['call','op','ip'])
   if d['devices_hostname'] != 'unknown':
    from ..core import genlib as GL
@@ -93,11 +96,11 @@ def info(aWeb):
     d['devices_comment'] = 'NULL'
 
    fqdn   = ".".join([d['devices_hostname'],  dns[d['devices_a_dom_id']]['name']])
-   dom_id = aWeb.rest_call("sdcpdns_domains",{'filter':'reverse','dict':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
+   dom_id = aWeb.rest_call("dns_list_domains",{'filter':'reverse','dict':'name'})['domains'].get(GL.ip2arpa(aWeb['ip']),{}).get('id')
 
-   opres['a'] = aWeb.rest_generic(SC.dns['url'], "{}_record_update".format(SC.dns['type']), { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
+   opres['a'] = aWeb.rest_call("dns_record_update", { 'type':'A', 'id':d['devices_a_id'], 'domain_id':d['devices_a_dom_id'], 'name':fqdn, 'content':aWeb['ip'] })
    if dom_id:
-    opres['ptr'] = aWeb.rest_generic(SC.dns['url'], "{}_record_update".format(SC.dns['type']), { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
+    opres['ptr'] = aWeb.rest_call("dns_record_update", { 'type':'PTR', 'id':d['devices_ptr_id'], 'domain_id':dom_id, 'name':GL.ip2ptr(aWeb['ip']), 'content':fqdn })
    else:
     opres['ptr'] = {'id':0,'info':'nonexisting_ptr_domain'}
 
@@ -114,9 +117,11 @@ def info(aWeb):
 
  restargs = {'id':aWeb['id']} if aWeb['id'] else {'ip':aWeb['ip']}
  restargs.update({'username':True,'booking':True,'rackinfo':True})
- dev = aWeb.rest_call("device_info",restargs)
 
- if dev['exist'] == 0:
+ dev   = aWeb.rest_call("device_info",restargs)
+ infra = aWeb.rest_call("racks_infra")
+
+ if dev['xist'] == 0:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
   return
  if op == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
@@ -218,7 +223,7 @@ def info(aWeb):
    print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=debook&id=%i'%dev['id'],TITLE='Unbook')
  else:
    print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=book&id=%i'%dev['id'],TITLE='Book')   
- print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&type_name=%s&id=%i'%(dev['info']['type_name'],dev['id']),TITLE='Generate System Conf')
+ print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
  print aWeb.a_button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
   print aWeb.a_button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
@@ -256,34 +261,25 @@ def info(aWeb):
 #
 
 def conf_gen(aWeb):
- type = aWeb['type_name']
- res  = aWeb.rest_call("device_info",{'id':aWeb.get('id','0')})
- data = res['info']
- subnet,void,mask = data['subnet'].partition('/')
  print "<ARTICLE>"
- try:
-  from importlib import import_module
-  module = import_module("sdcp.devices.{}".format(type))
-  dev = getattr(module,'Device',lambda x: None)(res['ip'])
-  dev.print_conf({'name':data['hostname'], 'domain':data['domain'], 'gateway':data['gateway'], 'subnet':subnet, 'mask':mask})
- except Exception as err:
-  print "No instance config specification for type:[{}]".format(type)
+ res = aWeb.rest_call("device_configuration_template",{'id':aWeb['id']})
+ if res['result'] == 'OK':
+  print "<BR>".join(res['data'])
+ else:
+  print "<B>Error in devdata: %s</B>"%res['info']
  print "</ARTICLE>"
 
 #
 #
 #
 def op_function(aWeb):
- from importlib import import_module
- from ..core import extras as EXT
  print "<ARTICLE>"
- try:
-  module = import_module("sdcp.devices.{}".format(aWeb['type']))
-  dev = getattr(module,'Device',lambda x: None)(aWeb['ip'])
-  with dev:
-   EXT.dict2table(getattr(dev,aWeb['op'],None)())
- except Exception as err:
-  print "<B>Error in devdata: {}</B>".format(str(err))
+ res = aWeb.rest_call("device_operation",{'ip':aWeb['ip'],'op':aWeb['op'],'type':aWeb['type']})
+ if res['result'] == 'OK':
+  from ..core import extras as EXT
+  EXT.dict2table(res['data'])
+ else:
+  print "<B>Error in devdata: %s</B>"%res['info']
  print "</ARTICLE>"
 
 #
@@ -328,18 +324,17 @@ def new(aWeb):
   print "Operation:%s"%str(res)
   aWeb.log("{} - 'new device' operation:[{}] -> [{}]".format(cookie['id'],args,res))
  elif op == 'find':
-  print aWeb.rest_call("sdcpipam_find",{'id':subnet_id})['ip']
+  print aWeb.rest_call("ipam_find",{'id':subnet_id})['ip']
  else:
-  domain  = aWeb['domain']
-  subnets = aWeb.rest_call("sdcpipam_list")['subnets']
-  domains = aWeb.rest_call("sdcpdns_domains",{'filter':'forward'})['domains']
+  subnets = aWeb.rest_call("ipam_list")['subnets']
+  domains = aWeb.rest_call("dns_list_domains",{'filter':'forward'})['domains']
   print "<ARTICLE CLASS=info><P>Add Device</P>"
   print "<FORM ID=device_new_form>"
   print "<DIV CLASS=table><DIV CLASS=tbody>"
   print "<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE={}></DIV></DIV>".format(name)
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT  NAME=a_dom_id>"
   for d in domains:
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == domain else "",d['name'])
+   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == aWeb['domain'] else "",d['name'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=subnet_id>"
   for s in subnets:
@@ -362,30 +357,19 @@ def new(aWeb):
 #
 #
 def delete(aWeb):
- id  = aWeb['id']
- res = aWeb.rest_call("device_delete",{ 'id':id })
- print "<ARTICLE>"
- print "Unit {} deleted, op:{}".format(id,res['deleted'])
- if not str(res['deleted']) == '0':
-  from .. import SettingsContainer as SC
-  arec = aWeb.rest_generic(SC.dns['url'],"{}_record_delete".format(SC.dns['type']),{'id':res['a_id']})   if res['a_id']   else 0
-  prec = aWeb.rest_generic(SC.dns['url'],"{}_record_delete".format(SC.dns['type']),{'id':res['ptr_id']}) if res['ptr_id'] else 0
-  print ",A:%s,PTR:%s"%(arec,prec)
- print "</ARTICLE>"
+ res = aWeb.rest_call("device_delete",{ 'id':aWeb['id'] })
+ print "<ARTICLE>Unit {} deleted, op:{}</ARTICLE>".format(aWeb['id'],res)
 
 #
 # find devices operations
 #
 def discover(aWeb):
- op = aWeb['op']
- if op:
-  # id, subnet int, subnet mask
-  ipam  = aWeb.get('ipam_subnet',"0_0_32").split('_')
-  res = aWeb.rest_generic("device_discover",{ 'subnet_id':ipam[0], 'ipam_mask':ipam[2], 'start':int(ipam[1]), 'end':int(ipam[1]) + 2**(32-int(ipam[2])) - 1, 'a_dom_id':aWeb['a_dom_id'], 'clear':aWeb.get('clear',False)}, aTimeout = 200)
+ if aWeb['op']:
+  res = aWeb.rest_generic(aWeb._rest_url,"device_discover",{ 'subnet_id':aWeb['ipam_subnet'], 'a_dom_id':aWeb['a_dom_id']}, aTimeout = 200)
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
-  subnets = aWeb.rest_call("sdcpipam_list")['subnets']
-  domains = aWeb.rest_call("sdcpdns_domains",{'filter':'forward'})['domains']
+  subnets = aWeb.rest_call("ipam_list")['subnets']
+  domains = aWeb.rest_call("dns_list_domains_cache",{'filter':'forward'})['domains']
   dom_name = aWeb['domain']
   print "<ARTICLE CLASS=info><P>Device Discovery</P>"
   print "<FORM ID=device_discover_form>"
@@ -394,13 +378,12 @@ def discover(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
   for d in domains:
    extra = "" if not dom_name == d.get('name') else "selected=selected"
-   print "<OPTION VALUE={0} {2}>{1}</OPTION>".format(d.get('id'),d.get('name'),extra)
+   print "<OPTION VALUE=%s %s>%s</OPTION>"%(d.get('id'),extra,d.get('name'))
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_subnet>"
   for s in subnets:
-   print "<OPTION VALUE={0}_{1}_{3}>{2} ({4})</OPTION>".format(s['id'],s['subnet'],s['subasc'],s['mask'],s['description'])
+   print "<OPTION VALUE=%s>%s (%s)</OPTION>"%(s['id'],s['subasc'],s['description'])
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Clear DB<B>??</B>:</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=clear VALUE=True></DIV></DIV>"
   print "</DIV></DIV>"
   print "</FORM><DIV CLASS=controls>"
   print aWeb.button('start', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=device_discover', FRM='device_discover_form')
@@ -423,30 +406,17 @@ def graph_save(aWeb):
 #
 #
 def graph_info(aWeb):
- from ..core import genlib as GL
- id  = aWeb['id']
- res = {}
- if aWeb['op'] == 'update':
-  proxy = GL.ip2int(aWeb['graph_proxy'])
-  update= aWeb.get('graph_update','0')
-  res['op'] = aWeb.rest_call("device_update",{'id':id,'devices_graph_proxy':proxy,'devices_graph_update':update})['data']
-
- dev = aWeb.rest_call("device_info",{'id':id})
- proxy = GL.int2ip(dev['info']['graph_proxy'])
-
- if aWeb['op'] == 'search':
-  plugfile  = aWeb.rest_call("settings_param",{'section':'graph','parameter':'plugins'})['data']['value']
-  res['op'] = aWeb.rest_generic("device_graph_detect",{'ip':dev['ip'],'type_name':dev['info']['type_name'],'fqdn':dev['fqdn'],'plugin_file':plugfile}, aTimeout = 60)
+ dev = aWeb.rest_call("device_graph_info",{'id':aWeb['id'],'graph_proxy':aWeb['graph_proxy'],'graph_update':aWeb['graph_update'],'op':aWeb['op']})
 
  print "<ARTICLE CLASS='info'><P>Graph for %s</DIV>"%(dev['fqdn'])
  print "<FORM ID=device_graph_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(id)
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id'])
  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=graph_proxy STYLE='width:200px;' VALUE='%s'></DIV></DIV>"%(proxy)
- print "<DIV CLASS=tr><DIV CLASS=td>Enable:</DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX NAME=graph_update VALUE=1 %s></DIV></DIV>"%("checked=checked" if dev['info']['graph_update'] == 1 else "")
+ print "<DIV CLASS=tr><DIV CLASS=td>Proxy:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=graph_proxy STYLE='width:200px;' VALUE='%s'></DIV></DIV>"%(dev['graph_proxy'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Enable:</DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX NAME=graph_update VALUE=1 %s></DIV></DIV>"%("checked=checked" if dev['graph_update'] == 1 else "")
  print "</DIV></DIV>"
- print "<SPAN>%s</SPAN>"%(res.get('op',""))
+ print "<SPAN>%s</SPAN>"%(dev.get('op'))
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('save',  DIV='div_content_right', URL='sdcp.cgi?call=device_graph_info&id=%s&op=update', FRM='device_graph_form')
- print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=device_graph_info&id=%s&op=search', FRM='device_graph_form')
+ print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?call=device_graph_info&id=%s&op=detect', FRM='device_graph_form')
  print "</DIV></ARTICLE>"

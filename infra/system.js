@@ -31,7 +31,13 @@ function include_html(dst,src) {
  var dest = $('#'+ dst);
  $.get(src,data => { load_result(dest,data);});
 }
+
 //
+function get_utc(dst,ts) {
+ var dest = $('#'+ dst);
+ var date = new Date(ts*1000);
+ dest.html = date.toUTCString();
+}
 
 //
 // Button functions - accepts proper JScript object:

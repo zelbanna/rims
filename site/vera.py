@@ -17,7 +17,7 @@ __status__ = "Production"
 #
 #
 def manage(aWeb):
- host = aWeb['ip'] if aWeb['ip'] else aWeb.rest_call("device_info",{'id':aWeb['id']})['ip']
+ host = aWeb['ip'] if aWeb['ip'] else aWeb.rest_call("device_basics",{'id':aWeb['id']})['ip']
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_status&host=%s>Status</A></LI>"%host
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&host=%s>Devices</A></LI>"%host
