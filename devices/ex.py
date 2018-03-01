@@ -16,7 +16,7 @@ class Device(Junos):
 
  @classmethod
  def get_functions(cls):
-  widgets = ['get_switch_table']
+  widgets = ['switch_table']
   widgets.extend(Junos.get_functions())
   return widgets
 
@@ -32,7 +32,7 @@ class Device(Junos):
  # should prep for ELS only and send "instance = 'default-instance'" - then id could be retrieved too
  # since grouping is different
  #
- def get_switch_table(self):
+ def switch_table(self):
   fdblist = []
   try:
    self.load_interfaces_name()

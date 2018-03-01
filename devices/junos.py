@@ -18,7 +18,7 @@ class Junos(GenericDevice):
 
  @classmethod
  def get_functions(cls):
-  return ['get_up_interfaces','get_lldp' ]
+  return ['up_interfaces','lldp' ]
 
  def __init__(self,aIP,aID = None):
   GenericDevice.__init__(self,aIP,aID)
@@ -85,7 +85,7 @@ class Junos(GenericDevice):
    description = interface.find("description").text
    self._interfacesname[ifd] = description
 
- def get_up_interfaces(self):
+ def up_interfaces(self):
   interfaces = self._router.rpc.get_interface_information()
   ret = []
   for ifd in interfaces:
@@ -96,7 +96,7 @@ class Junos(GenericDevice):
     ret.append(entry)
   return ret
 
- def get_lldp(self):
+ def lldp(self):
   neighbors = self._router.rpc.get_lldp_neighbors_information()
   ret = []
   for neigh in neighbors:
@@ -135,6 +135,3 @@ class Junos(GenericDevice):
               '%s class-of-service host-outbound-traffic forwarding-class network-control'%base,
               'set apply-groups default_system'])
   return ret
-
-
-

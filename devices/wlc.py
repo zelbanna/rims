@@ -20,7 +20,7 @@ class Device(GenericDevice):
 
  @classmethod
  def get_functions(cls):
-  return ['get_switch_table']
+  return ['switch_table']
 
  def __init__(self,aIP, aID = None):
   GenericDevice.__init__(self, aIP, aID)
@@ -28,7 +28,7 @@ class Device(GenericDevice):
  def __str__(self):
   return "WLC - {}".format(GenericDevice.__str__(self))
 
- def get_switch_table(self):
+ def switch_table(self):
   from socket import gethostbyaddr
   try:
    # Length of below is used to offset ip address (32) + 1 and mac base (33) + 1 

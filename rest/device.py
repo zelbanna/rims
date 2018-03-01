@@ -112,7 +112,7 @@ def info(aDict):
  ret = {}
  search = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('{}')".format(aDict.get('ip'))
  with DB() as db:
-  ret['xist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
+  ret['xist'] = db.do("SELECT devices.*, devicetypes.base as type_base, devicetypes.name as type_name, devicetypes.functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(search))
   if ret['xist'] > 0:
    if aDict.get('username'):
     from .. import SettingsContainer as SC

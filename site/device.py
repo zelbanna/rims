@@ -202,7 +202,6 @@ def info(aWeb):
     print "<DIV CLASS=tr><DIV CLASS=td>{0} PDU:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_{1}_pdu_slot_id>".format(pem.upper(),pem)
     for pdu in infra['pdus']:
      pduinfo = infra['pduinfo'].get(str(pdu['id']))
-     print "found pdu"
      if pduinfo:
       for slotid in range(0,pduinfo['slots']):
        pdu_slot_id   = pduinfo[str(slotid)+"_slot_id"]
@@ -228,6 +227,7 @@ def info(aWeb):
  if dev['racked'] == 1 and (dev['rack']['console_ip'] and dev['rack'].get('console_port',0) > 0):
   print aWeb.a_button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
 
+ # ["%s(%s)"%(key,value) for key,value in opres.iteritems() if value.get('res','NOT_FOUND') != 'OK']
  res = ""
  for key,value in opres.iteritems():
   if value.get('res','NOT_FOUND') != 'OK':
@@ -237,20 +237,11 @@ def info(aWeb):
 
  print "<!-- Function navbar and content -->"
  print "<NAV><UL>"
- try:
-  from importlib import import_module
-  module = import_module("sdcp.devices.{}".format(dev['info']['type_name']))
-  Device = getattr(module,'Device',None)
-  functions = Device.get_widgets() if Device else []
-  if functions:
-   if functions[0] == 'manage':
-    print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?call=%s_manage&id=%i'>Manage</A></LI>"%(dev['info']['type_name'],dev['id'])
-   else:
-    for fun in functions:
-     funname = " ".join(fun.split('_')[1:])
-     print "<LI><A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_function&ip={0}&type={1}&op={2}'>{3}</A></LI>".format(dev['ip'], dev['info']['type_name'], fun, funname.title())
- except:
-  print "&nbsp;"
+ for fun in dev['info']['functions'].split(','):
+  if fun == 'manage':
+   print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?call=%s_manage&id=%i'>Manage</A></LI>"%(dev['info']['type_name'],dev['id'])
+  else:
+   print "<LI><A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?call=device_function&ip={0}&type={1}&op={2}'>{3}</A></LI>".format(dev['ip'], dev['info']['type_name'], fun, fun.title())
  print "</UL></NAV>"
  print "<SECTION CLASS='content' ID=div_dev_data STYLE='top:307px; overflow-x:hidden; overflow-y:auto;'></SECTION>"
 

@@ -16,7 +16,7 @@ class Device(Junos):
 
  @classmethod
  def get_functions(cls):
-  widgets = ['get_switch_table']
+  widgets = ['switch_table']
   widgets.extend(Junos.get_functions())
   return widgets
 
@@ -28,7 +28,7 @@ class Device(Junos):
  def __str__(self):
   return Junos.__str__(self) + " Style:" + str(self._style)
 
- def get_switch_table(self):
+ def switch_table(self):
   fdblist = []
   try:
    self.load_interfaces_name()
