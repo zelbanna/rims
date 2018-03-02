@@ -22,8 +22,12 @@ def update(aDict):
 
  Extra:
  """
- avocent = Device(aDict['ip'])
- return avocent.set_name(int(aDict['slot']),int(aDict['unit']),aDict['text'])
+ if not (int(aDict['slot']) == 0 and int(aDict['unit']) == 0):
+  avocent = Device(aDict['ip'])
+  ret = avocent.set_name(int(aDict['slot']),int(aDict['unit']),aDict['text'])
+ else:
+  ret = 'not updating 0.0'
+ return ret
 
 #
 #

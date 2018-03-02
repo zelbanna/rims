@@ -21,7 +21,7 @@ def info(aDict):
   - op (optional)
 
  Extra:
-  - info: basics,username,booking,rackinfo,infra => make 'exclude' arg in final function instead
+  - info: username,booking,infra => make 'exclude' arg in final function instead
  """
  srch = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('%s')"%(aDict.get('ip'))
  ret  = {'id':aDict.pop('id',None),'ip':aDict.pop('ip',None)}
@@ -92,20 +92,19 @@ def info(aDict):
       else:
        args.pop('devices_%s_id'%type,None)
 
-    ret['result']['update'] = {'devices':_args2db(args,'devices','id'),'rackinfo':_args2db(args,'rackinfo','device_id')}
+    ret['result']['update'] = {'device_info':_args2db(args,'devices','id'),'rack_info':_args2db(args,'rackinfo','device_id')}
   
   # Now fetch info  
   ret['xist'] = db.do("SELECT devices.*, base, devicetypes.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(srch))
   if ret['xist'] > 0:
    ret['info'] = db.get_row()
+   ret['id'] = ret['info'].pop('id',None)
+   ret['ip'] = ret['info'].pop('ipasc',None)
+   ret['fqdn'] = "{}.{}".format(ret['info']['hostname'],ret['info']['domain'])
+   ret['type'] = ret['info'].pop('base',None)
+   ret['mac']  = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
    if not ret['info']['functions']:
     ret['info']['functions'] = ""
-   ret['id']   = ret['info'].pop('id',None)
-   if 'basics' in info:
-    ret['fqdn'] = "{}.{}".format(ret['info']['hostname'],ret['info']['domain'])
-    ret['ip']   = ret['info'].pop('ipasc',None)
-    ret['type'] = ret['info'].pop('base',None)
-    ret['mac']  = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
    if 'username' in info:
     from .. import SettingsContainer as SC
     ret['username'] = SC.netconf['username']
@@ -113,15 +112,25 @@ def info(aDict):
     ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id']))
     if ret['booked'] > 0:
      ret['booking'] = db.get_row()
-   if 'rackinfo' in info:
-    if ret['info']['vm'] == 1:
-     ret['racked'] = 0
-    else:
-     ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(devices.ip) AS console_ip, devices.hostname AS console_name FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.console_id WHERE rackinfo.device_id = {}".format(ret['id']))
-     if ret['racked'] > 0:
-      ret['rack'] = db.get_row()
-      ret['rack']['hostname'] = ret['info']['hostname']
+   if ret['info']['vm'] == 1:
+    ret['racked'] = 0
+   else:
+    ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(devices.ip) AS console_ip, devices.hostname AS console_name FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.console_id WHERE rackinfo.device_id = %i"%(ret['id']))
+    if ret['racked'] > 0:
+     ret['info'].update(db.get_row())
 
+  if operation == 'update' and ret['racked']:
+   for pem in [0,1]:
+    if ret['info']['pem%i_pdu_id'%(pem)] > 0:
+     db.do("SELECT INET_NTOA(ip) AS ip, name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
+     pdu_info = db.get_row()
+     args = {'ip':ret['ip'],'unit':ret['info']['pem%i_pdu_unit'%(pem)],'slot':ret['info']['pem%i_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem)}
+     if pdu_info['name'] == 'avocent':
+      try:
+       from avocent import update as pdu_update
+       ret['result']['pem%i'%pem] = pdu_update(args)
+      except Exception as err:
+       ret['result']['pem%i'%pem] = str(err)
  return ret
 
 #
@@ -212,37 +221,6 @@ def list_mac(aDict):
 
 #
 #
-def update_pdu(aDict):
- """Function docstring for update_pdu TBD
-
- Args:
-  - hostname (required)
-  - pem<var>_pdu_slot (optional)
-  - pem<var>_pdu_id (optional)
-  - pem<var>_pdu_unit (optional)
-
- Extra:
- """
- ret = {}
- with DB() as db:
-  for p in ['0','1']:
-   ret[p] = None
-   id = aDict.get('pem%s_pdu_id'%(p))
-   if id:
-    slot = int(aDict.get('pem%s_pdu_slot'%(p),0))
-    unit = int(aDict.get('pem%s_pdu_unit'%(p),0))
-    if not (slot == 0 or unit == 0):
-     db.do("SELECT hostname, INET_NTOA(ip), devicetypes.name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '{}'".format(id))
-     data = db.get_row()
-     args = {'ip':data['ip'],'unit':unit,'slot':slot,'text':aDict['hostname']+"-P%s"%(p)}
-     # Redo with module import
-     if data.name == 'avocent':
-      from avocent import pdu_update
-      ret["pem{}".format(p)] = pdu_update(args)
- return ret
-
-#
-#
 def new(aDict):
  """Function docstring for new TBD
 
@@ -313,12 +291,12 @@ def delete(aDict):
    ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
    data = db.get_row()
-   ret = {'deleted':db.do("DELETE FROM devices WHERE id = '%s'"%aDict['id'])}
    from dns import record_auto_delete
-   ret.update(record_auto_delete({'A':data['a_id'],'PTR':data['ptr_id']}))
+   ret = record_auto_delete({'A':data['a_id'],'PTR':data['ptr_id']})
    if data['base'] == 'pdu':
     ret['pem0'] = db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '%s'"%(aDict['id']))
     ret['pem1'] = db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '%s'"%(aDict['id']))
+   ret.update({'deleted':db.do("DELETE FROM devices WHERE id = '%s'"%aDict['id'])})
  return ret
 
 #
