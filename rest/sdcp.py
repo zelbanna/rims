@@ -48,19 +48,19 @@ def logs_clear(aDict):
 
  Extra:
  """
- from ..core.logger import log as logging
+ from ..core.logger import log
  from ..core.dbase import DB
  ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
   logs = db.get_rows()
- for log in logs:
+ for entry in logs:
   try:
-   open(log['value'],'w').close()
-   logging("Emptied log [{}]".format(log['value']))
-   ret[log['parameter']] = 'CLEARED'
+   open(entry['value'],'w').close()
+   ret[entry['parameter']] = 'CLEARED'
+   log("Emptied log [{}]".format(entry['value']))
   except Exception as err:
-   ret[log['parameter']] = 'ERROR: %s'%(str(err))
+   ret[entry['parameter']] = 'ERROR: %s'%(str(err))
  return ret
 
 #
@@ -134,8 +134,10 @@ def mac_sync(aDict):
 
  Extra:
  """
- from ..core.genlib import mac2int
  from ..core.dbase import DB
+ def GL_mac2int(aMAC):  
+  try:    return int(aMAC.replace(":",""),16)
+  except: return 0
  ret = []
  try:
   arps = {}
@@ -152,7 +154,7 @@ def mac_sync(aDict):
     row['xist'] = arps.get(row['ipasc'])
     if row['xist']:
      ret.append(row)
-     db.do("UPDATE devices SET mac = {} WHERE id = {}".format(mac2int(row['xist']),row['id']))
+     db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL_mac2int(row['xist']),row['id']))
  except:
   pass
  return ret

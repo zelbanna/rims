@@ -30,12 +30,6 @@ def get_quote(aString):
 
 ################################# Generics ####################################
 
-_debug = False
-
-def set_debug(astate):
- global _debug
- _debug = astate
-
 def str2hex(arg):
  try:
   return '0x{0:02x}'.format(int(arg))
@@ -44,11 +38,6 @@ def str2hex(arg):
 
 def get_results(test):
  return "success" if test else "failure"
-
-def log_msg(amsg):
- if _debug: print "Log: " + amsg
- from logger import log
- log(amsg)
 
 #
 # Lightweight argument parser, returns a dictionary with found arguments - { arg : value }

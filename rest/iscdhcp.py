@@ -23,7 +23,6 @@ def leases(aDict):
   from socket import inet_aton
   return unpack("!I", inet_aton(addr))[0]
 
- from ..core.logger import log
  from .. import SettingsContainer as SC
  result = []
  lease  = {}

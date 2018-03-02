@@ -9,7 +9,6 @@ __status__ = "Production"
 
 from .. import SettingsContainer as SC
 from ..core.dbase import DB
-from ..core.logger import log
 
 ############################### Tools #################################
 #
@@ -21,7 +20,6 @@ def dedup(aDict):
 
  Extra:
  """
- log("powerdns_dedup({})".format(aDict))
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
   rows = db.get_rows();
@@ -46,7 +44,6 @@ def top(aDict):
 
  Extra:
  """
- log("powerdns_top({})".format(aDict))
  def GL_get_host_name(aIP):
   from socket import gethostbyaddr
   try:    return gethostbyaddr(aIP)[0].partition('.')[0]
@@ -84,7 +81,6 @@ def domains(aDict):
 
  Extra:
  """
- log("powerdns_domains({})".format(aDict))
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if aDict.get('filter'):
@@ -106,7 +102,6 @@ def domain_lookup(aDict):
 
  Extra:
  """
- log("powerdns_domain_lookup({})".format(aDict))
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE id = '{}'".format(aDict['id']))
@@ -129,7 +124,6 @@ def domain_update(aDict):
 
  Extra:
  """
- log("powerdns_domain_update({})".format(aDict))
  ret = {'result':'OK'}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if aDict['id'] == 'new':
@@ -158,7 +152,6 @@ def domain_delete(aDict):
 
  Extra:
  """
- log("powerdns_domain_delete({})".format(aDict))
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   ret['deleted'] = db.do("DELETE FROM domains WHERE id = %i"%(int(aDict['id'])))
@@ -176,7 +169,6 @@ def records(aDict):
 
  Extra:
  """
- log("powerdns_get_records({})".format(aDict))
  ret = {}
  select = []
  if aDict.get('domain_id'):
@@ -200,7 +192,6 @@ def record_lookup(aDict):
 
  Extra:
  """
- log("powerdns_record_lookup({})".format(aDict))
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   ret['xist'] = db.do("SELECT records.* FROM records WHERE id = '{}' AND domain_id = '{}'".format(aDict['id'],aDict['domain_id']))
@@ -221,7 +212,6 @@ def record_update(aDict):
 
  Extra:
  """
- log("powerdns_record_update({})".format(aDict))
  from time import strftime
  ret = {'id':aDict['id']}
  args = {'domain_id':aDict['domain_id'],'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'name':aDict['name'],'content':aDict['content']}
@@ -243,8 +233,6 @@ def record_delete(aDict):
 
  Extra:
  """
- log("powerdns_record_delete({})".format(aDict))
- ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
-  ret['deleted'] = db.do("DELETE FROM records WHERE id = '{}'".format(aDict['id']))
- return ret
+  deleted = db.do("DELETE FROM records WHERE id = '%s'"%(aDict['id']))
+ return {'deleted':deleted}

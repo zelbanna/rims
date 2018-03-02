@@ -21,12 +21,12 @@ def list(aDict):
  Extra:
  """
  if not aDict.get('node','master') == 'master':
-  from ..core.rest import call
+  from ..core.rest import call as rest_call
   node = aDict.pop('node',None)
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = call(url,"settings_list",aDict)['data']
+  ret = rest_call(url,"settings_list",aDict)['data']
  else:
   ret = {'user_id':aDict.get('user_id',"1") }
   if aDict.get('section'):
@@ -58,12 +58,12 @@ def info(aDict):
  Extra:
  """
  if not aDict.get('node','master') == 'master':
-  from ..core.rest import call
+  from ..core.rest import call as rest_call
   node = aDict.pop('node',None)
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = call(url,"settings_info",aDict)['data']
+  ret = rest_call(url,"settings_info",aDict)['data']
  else:
   ret = {}
   id = aDict['id']
@@ -95,12 +95,12 @@ def parameter(aDict):
  Extra:
  """
  if not aDict.get('node','master') == 'master':
-  from ..core.rest import call
+  from ..core.rest import call as rest_call
   node = aDict.pop('node',None)
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = call(url,"settings_parameter",aDict)['data']
+  ret = rest_call(url,"settings_parameter",aDict)['data']
  else:
   ret = {}
   with DB() as db:
@@ -120,12 +120,12 @@ def section(aDict):
  Extra:
  """
  if not aDict.get('node','master') == 'master':
-  from ..core.rest import call
+  from ..core.rest import call as rest_call
   node = aDict.pop('node',None)
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = call(url,"settings_section",aDict)['data']
+  ret = rest_call(url,"settings_section",aDict)['data']
  else:
   ret = {}
   with DB() as db:
@@ -146,12 +146,12 @@ def all(aDict):
  Extra:
  """
  if not aDict.get('node','master') == 'master':
-  from ..core.rest import call
+  from ..core.rest import call as rest_call
   node = aDict.pop('node',None)
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = call(url,"settings_all",aDict)['data']
+  ret = rest_call(url,"settings_all",aDict)['data']
  else:
   ret = {}
   with DB() as db:
@@ -177,12 +177,12 @@ def save(aDict):
  Extra:
  """
  if not aDict.get('node','master') == 'master':
-  from ..core.rest import call
+  from ..core.rest import call as rest_call
   node = aDict.pop('node',None)
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = call(url,"settings_save",aDict)['data']
+  ret = rest_call(url,"settings_save",aDict)['data']
  else:
   from os import chmod, remove, listdir, path as ospath
   from json import dumps,dump
@@ -231,12 +231,12 @@ def delete(aDict):
  Extra:
  """
  if not aDict.get('node','master') == 'master':
-  from ..core.rest import call
+  from ..core.rest import call as rest_call
   node = aDict.pop('node',None)
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = call(url,"settings_delete",aDict)['data']
+  ret = rest_call(url,"settings_delete",aDict)['data']
  else:
   with DB() as db:
    res = db.do("DELETE FROM settings WHERE id = '%s' AND required ='0'"%aDict['id'])

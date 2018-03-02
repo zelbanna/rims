@@ -27,8 +27,8 @@ def update_server(aDict):
   fun = getattr(module,'update_server',None)
   ret = fun({'entries':macs})
  else:
-  from ..core.rest import call
-  res = call(SC.node[SC.dhcp['node']],"%s_update_server"%(SC.dhcp['type']),{'entries':macs})
+  from ..core.rest import call as rest_call
+  res = rest_call(SC.node[SC.dhcp['node']],"%s_update_server"%(SC.dhcp['type']),{'entries':macs})
   ret['output'] = res['data']['output']
   ret['res'] = res['info']['x-z-res']
  return ret
@@ -49,6 +49,6 @@ def leases(aDict):
   fun = getattr(module,'leases',None)
   ret = fun({'type':aDict['type']})
  else:
-  from ..core.rest import call
-  ret = call(SC.node[SC.dhcp['node']], "%s_leases"%(SC.dhcp['type']),{'type':aDict['type']})['data']
+  from ..core.rest import call as rest_call
+  ret = rest_call(SC.node[SC.dhcp['node']], "%s_leases"%(SC.dhcp['type']),{'type':aDict['type']})['data']
  return ret
