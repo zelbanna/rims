@@ -245,8 +245,8 @@ def record_transfer(aDict):
 
 #
 #
-def record_auto_create(aDict):
- """Function docstring for record_auto_create TBD
+def record_device_create(aDict):
+ """Function docstring for record_device_create TBD
 
  Args:
   - ip (required)
@@ -285,8 +285,8 @@ def record_auto_create(aDict):
 
 #
 #
-def record_auto_update(aDict):
- """Function docstring for record_auto_update TBD
+def record_device_update(aDict):
+ """Function docstring for record_device_update TBD
 
  Args:
   - ip (required)
@@ -333,8 +333,8 @@ def record_auto_update(aDict):
 
 #
 #
-def record_auto_delete(aDict):
- """Function docstring for record_auto_delete TBD
+def record_device_delete(aDict):
+ """Function docstring for record_device_delete TBD
 
  Args:
   - a_id (optional) - id/0

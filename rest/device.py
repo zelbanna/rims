@@ -53,7 +53,7 @@ def info(aDict):
      ret['result']['lookup'] = 'OK'
 
    if (operation == 'lookup' or operation == 'update') and ret['id']:
-    from dns import record_auto_update
+    from dns import record_device_update
     # Args2Database UPDATE string :-)
     def _args2db(aArgs,aTable,aIdCol):
      sql = "UPDATE %s SET %s WHERE %s ='%s'"%(aTable,",".join([ key.partition('_')[2] + "=" + ("NULL" if value == 'NULL' else "'%s'"%value) for key,value in aArgs.iteritems() if key.split('_')[0] == aTable]),aIdCol,ret['id'])
@@ -84,7 +84,7 @@ def info(aDict):
 
     # Make sure everything is there to update DNS records, if records are not the same as old ones, update device, otherwise pop
     if args.get('devices_a_id') and args.get('devices_ptr_id') and args.get('devices_a_dom_id') and args.get('devices_hostname') and ret['ip']:
-     dns = record_auto_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip']})
+     dns = record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip']})
      # ret['result']['dns'] = dns
      for type in ['a','ptr']:    
       if not str(dns[type.upper()]['id']) == str(args['devices_%s_id'%type]):
@@ -291,8 +291,8 @@ def delete(aDict):
    ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
    data = db.get_row()
-   from dns import record_auto_delete
-   ret = record_auto_delete({'A':data['a_id'],'PTR':data['ptr_id']})
+   from dns import record_device_delete
+   ret = record_device_delete({'A':data['a_id'],'PTR':data['ptr_id']})
    if data['base'] == 'pdu':
     ret['pem0'] = db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '%s'"%(aDict['id']))
     ret['pem1'] = db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '%s'"%(aDict['id']))

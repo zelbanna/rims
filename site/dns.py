@@ -143,7 +143,7 @@ def record_delete(aWeb):
 #
 #
 def record_create(aWeb):
- res = aWeb.rest_call("dns_record_auto_create",{'type':aWeb['type'],'domain_id':aWeb['domain_id'],'fqdn':aWeb['fqdn'],'ip':aWeb['ip'],'id':aWeb['id']})
+ res = aWeb.rest_call("dns_record_device_create",{'type':aWeb['type'],'domain_id':aWeb['domain_id'],'fqdn':aWeb['fqdn'],'ip':aWeb['ip'],'id':aWeb['id']})
  print "Create result:%s"%str(res)
 
 #
