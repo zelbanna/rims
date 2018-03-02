@@ -95,24 +95,29 @@ def update(aDict):
   return inet_ntoa(pack("!I", addr))
 
  ret = {}
+ id = aDict.pop('id',None)
+ args = aDict
+ args['subnet']= GL_ip2int(args['subnet'])
+
  # Check gateway
- low   = GL_ip2int(aDict['subnet'])
- high  = low + 2**(32-int(aDict['mask'])) - 1
- try:    gwint = GL_ip2int(aDict['gateway'])
+ low   = GL_ip2int(args['subnet'])
+ high  = low + 2**(32-int(args['mask'])) - 1
+ try:    gwint = GL_ip2int(args['gateway'])
  except: gwint = 0
  if (low < gwint and gwint < high):
-  ret['gateway'] = aDict['gateway']
+  ret['gateway'] = args['gateway']
  else:
   gwint = low + 1
   ret['gateway'] = GL_int2ip(gwint)
   ret['info'] = "illegal gateway"
+
  with DB() as db:
-  if aDict['id'] == 'new':
-   ret['update'] = db.do("INSERT INTO subnets(subnet,mask,gateway,description) VALUES (INET_ATON('{}'),{},{},'{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['subnet'],aDict['mask'],gwint,aDict['description']))
+  if id == 'new':
+   ret['update'] = db.do("INSERT INTO subnets(subnet,mask,gateway,description) VALUES ('{}',{},{},'{}') ON DUPLICATE KEY UPDATE id = id".format(args['subnet'],args['mask'],gwint,args['description']))
    ret['id'] = db.get_last_id() if ret['update'] > 0 else "new"
   else:
-   ret['update'] = db.do("UPDATE subnets SET subnet = INET_ATON('{}'), mask = {}, gateway = {}, description = '{}' WHERE id = {}".format(aDict['subnet'],aDict['mask'],gwint,aDict['description'],aDict['id']))
-   ret['id'] = aDict['id']
+   ret['update'] = db.update_dict('subnets',args,'id=%s'%id)
+   ret['id'] = id
  return ret
 
 #

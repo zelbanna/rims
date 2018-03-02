@@ -48,10 +48,10 @@ def info(aDict):
    pdu   = Device(aDict['ip'])
    slotl = pdu.get_slot_names()
    slotn = len(slotl)
-   if slotn == 1:
-    db.do("UPDATE pduinfo SET slots = 1, 0_slot_id = '{}', 0_slot_name = '{}' WHERE device_id = {}".format(slotl[0][0],slotl[0][1],aDict['id']))
-   elif slotn == 2:
-    db.do("UPDATE pduinfo SET slots = 2, 0_slot_id = '{}', 0_slot_name = '{}', 1_slot_id = '{}', 1_slot_name = '{}' WHERE device_id = {}".format(slotl[0][0],slotl[0][1],slotl[1][0],slotl[1][1],aDict['id']))
+   args = {'slots':slotn,'0_slot_id':slotl[0][0],'0_slot_name':slotl[0][1]}
+   if slotn == 2:
+    args.update({'1_slot_id':slotl[1][0],'1_slot_name':slotl[1][1]})
+   db.update_dict('pduinfo',args,"device_id = %s"%aDict['id'])
 
   ret['xist'] = db.do("SELECT * FROM pduinfo WHERE device_id = '%s'"%aDict['id'])
   if ret['xist'] == 1:

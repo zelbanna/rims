@@ -94,12 +94,14 @@ def update(aDict):
  Extra:
  """
  ret = {'id':aDict['id']}
+ id = aDict.pop('id',None)
+ args = aDict
  with DB() as db:
-  if aDict['id'] == 'new':
-   ret['update'] = db.do("INSERT into racks (name, size, pdu_1, pdu_2, console, image_url) VALUES ('%s',%s,%s,%s,%s,'%s')"%(aDict['name'],aDict['size'],aDict['pdu_1'],aDict['pdu_2'],aDict['console'],aDict['image_url']))
+  if id == 'new':
+   ret['update'] = db.do("INSERT into racks (name, size, pdu_1, pdu_2, console, image_url) VALUES ('%s',%s,%s,%s,%s,'%s')"%(args['name'],args['size'],args['pdu_1'],args['pdu_2'],args['console'],args['image_url']))
    ret['id']   = db.get_last_id() 
   else:
-   ret['update'] = db.do("UPDATE racks SET name = '%s', size = %s, pdu_1 = %s, pdu_2 = %s, console = %s, image_url='%s' WHERE id = '%s'"%(aDict['name'],aDict['size'],aDict['pdu_1'],aDict['pdu_2'],aDict['console'],aDict['image_url'],aDict['id']))
+   ret['update'] = db.update_dict('racks',args,'id=%s'%id)
  return ret
 
 #

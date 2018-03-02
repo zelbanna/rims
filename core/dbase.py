@@ -85,6 +85,4 @@ class DB(object):
 
  def update_dict(self, aTable, aDict, aCondition):
   self._dirty = True
-  sql = "UPDATE %s SET %s WHERE %s"%(aTable,",".join([ key + "=" + ("NULL" if value == 'NULL' else "'%s'"%value) for key,value in aDict.iteritems()]),aCondition)
-  # print sql
-  return self._curs.execute(sql)
+  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join([ key + "=" + ("NULL" if value == 'NULL' else "'%s'"%value) for key,value in aDict.iteritems()]),aCondition))
