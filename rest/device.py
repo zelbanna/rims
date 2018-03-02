@@ -48,11 +48,11 @@ def info(aDict):
 
    if operation == 'lookup' and ret['ip']:
     lookup = detect({'ip':ret['ip']})
+    ret['result']['lookup'] = lookup['result']
     if lookup['result'] == 'OK':
      args.update({'devices_model':lookup['info']['model'],'devices_snmp':lookup['info']['snmp'],'devices_type_id':types[lookup['info']['type']]['id']})
-     ret['result']['lookup'] = 'OK'
 
-   if (operation == 'lookup' or operation == 'update') and ret['id']:
+   if (operation == 'update' or (operation == 'lookup' and ret['result']['lookup'] == 'OK')) and ret['id']:
     if not args.get('devices_vm'):
      args['devices_vm'] = 0
     if not args.get('devices_comment'):
@@ -118,11 +118,11 @@ def info(aDict):
     if ret['info']['pem%i_pdu_id'%(pem)] > 0:
      db.do("SELECT INET_NTOA(ip) AS ip, hostname, name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
      pdu_info = db.get_row()
-     args = {'ip':pdu_info['ip'],'unit':ret['info']['pem%i_pdu_unit'%(pem)],'slot':ret['info']['pem%i_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem)}
+     args_pem = {'ip':pdu_info['ip'],'unit':ret['info']['pem%i_pdu_unit'%(pem)],'slot':ret['info']['pem%i_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem)}
      if pdu_info['name'] == 'avocent':
       try:
        from avocent import update as pdu_update
-       ret['result']['pem%i'%pem] = "%s.%s"%(pdu_info['hostname'],pdu_update(args))
+       ret['result']['pem%i'%pem] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem))
       except Exception as err:
        ret['result']['pem%i'%pem] = str(err)
  return ret
@@ -452,8 +452,7 @@ def detect(aDict):
  except:
   pass
 
- info = {'model':'unknown', 'type':'generic'}
- info['snmp'] = devobjs[1].val.lower() if devobjs[1].val else 'unknown'
+ info = {'model':'unknown', 'type':'generic','snmp':devobjs[1].val.lower() if devobjs[1].val else 'unknown'}
 
  if devobjs[0].val:
   infolist = devobjs[0].val.split()
