@@ -122,21 +122,25 @@ def domain_update(aDict):
  Extra:
  """
  ret = {'result':'OK'}
+ id = aDict.pop('id','new')
+ args = aDict
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
-  if aDict['id'] == 'new':
+  if id == 'new':
    # Create and insert a lot of records
-   ret['update'] = db.do("INSERT INTO domains(name, master, type) VALUES ('{}','{}','{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['name'],aDict['master'],aDict['type']))
-   ret['id'] = db.get_last_id() if ret['update'] > 0 else "existing"
-   if ret['id'] != 'existing':
+   ret['update'] = db.do("INSERT INTO domains(name, master, type) VALUES ('{}','{}','{}') ON DUPLICATE KEY UPDATE id = id".format(args['name'],args['master'],args['type']))
+   if ret['update'] > 0:
+    ret['id'] = db.get_last_id()
     from time import strftime
     ret['serial'] = strftime("%Y%m%d%H")
-    existing = db.do("SELECT domains.id AS domain_id, records.id AS record_id, records.name AS server, domains.name AS domain FROM records INNER JOIN domains ON domains.id = domain_id WHERE content = '{}' AND records.type ='A'".format(aDict['master']))
+    existing = db.do("SELECT domains.id AS domain_id, records.id AS record_id, records.name AS server, domains.name AS domain FROM records INNER JOIN domains ON domains.id = domain_id WHERE content = '{}' AND records.type ='A'".format(args['master']))
     ret['soa'] = db.get_row() if existing > 0 else {'server':'server.local','domain':'local'}
-    db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','SOA',25200,'{}',0)".format(ret['id'],aDict['name'],"{} hostmaster.{} 0 21600 300 3600".format(ret['soa']['server'],ret['soa']['domain']),ret['serial'])) 
-    db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','NS' ,25200,'{}',0)".format(ret['id'],aDict['name'],ret['soa']['server'],ret['serial'])) 
+    db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','SOA',25200,'{}',0)".format(ret['id'],args['name'],"{} hostmaster.{} 0 21600 300 3600".format(ret['soa']['server'],ret['soa']['domain']),ret['serial'])) 
+    db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','NS' ,25200,'{}',0)".format(ret['id'],args['name'],ret['soa']['server'],ret['serial'])) 
+   else:
+    ret['id'] = 'existing'
   else:
-   ret['update'] = db.do("UPDATE domains SET name = '{}', master = '{}', type = '{}' WHERE id = {}".format(aDict['name'],aDict['master'],aDict['type'],aDict['id']))
-   ret['id']   = aDict['id']
+   ret['update'] = db.update_dict('domains',args,"id=%s"%id)
+   ret['id']   = id
  return ret
 
 #
@@ -210,14 +214,17 @@ def record_update(aDict):
  Extra:
  """
  from time import strftime
- ret = {'id':aDict['id']}
- args = {'domain_id':aDict['domain_id'],'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'name':aDict['name'],'content':aDict['content']}
+ ret = {}
+ id = aDict.pop('id','new')
+ args = aDict
+ args.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':0})
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
-  if ret['id'] == 'new' or str(ret['id']) == '0':
+  if str(id) in ['new','0']:
    ret['update'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date,prio) VALUES ({},'{}','{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(args['domain_id'],args['name'],args['content'],args['type'],args['ttl'],args['change_date']))
-   ret['id']   = db.get_last_id() if ret['update'] > 0 else "new"
+   ret['id'] = db.get_last_id() if ret['update'] > 0 else "new"
   else:
-   ret['update'] = db.do("UPDATE records SET domain_id = {}, name = '{}', content = '{}', type = '{}', ttl = '{}', change_date = '{}',prio = 0 WHERE id = {}".format(args['domain_id'],args['name'],args['content'],args['type'],args['ttl'],args['change_date'],ret['id']))
+   ret['update'] = db.update_dict('records',args,"id='%s'"%id)
+   ret['id']=id
  return ret
 
 #
