@@ -227,10 +227,10 @@ def record_update(aDict):
  args = {'domain_id':aDict['domain_id'],'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'name':aDict['name'],'content':aDict['content']}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if ret['id'] == 'new' or str(ret['id']) == '0':
-   ret['xist'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date,prio) VALUES ({},'{}','{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(args['domain_id'],args['name'],args['content'],args['type'],args['ttl'],args['change_date']))
-   ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
+   ret['update'] = db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date,prio) VALUES ({},'{}','{}','{}','{}','{}',0) ON DUPLICATE KEY UPDATE id = id".format(args['domain_id'],args['name'],args['content'],args['type'],args['ttl'],args['change_date']))
+   ret['id']   = db.get_last_id() if ret['update'] > 0 else "new"
   else:
-   ret['xist'] = db.do("UPDATE records SET domain_id = {}, name = '{}', content = '{}', type = '{}', ttl = '{}', change_date = '{}',prio = 0 WHERE id = {}".format(args['domain_id'],args['name'],args['content'],args['type'],args['ttl'],args['change_date'],ret['id']))
+   ret['update'] = db.do("UPDATE records SET domain_id = {}, name = '{}', content = '{}', type = '{}', ttl = '{}', change_date = '{}',prio = 0 WHERE id = {}".format(args['domain_id'],args['name'],args['content'],args['type'],args['ttl'],args['change_date'],ret['id']))
  return ret
 
 #
