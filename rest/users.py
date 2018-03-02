@@ -39,15 +39,16 @@ def info(aDict):
   - op (pop)
  """
  ret = {'id':aDict['id']}
- id = aDict['id']
+ id = aDict.pop('id','new')
  op = aDict.pop('op',None)
+ args = aDict
  with DB() as db:
   if op == 'update':
-   if aDict['id'] == 'new':
+   if id == 'new':
     ret['update'] = db.do("INSERT INTO users (alias,name,email,menulist,view_public) VALUES ('{}','{}','{}','{}',{})".format(aDict['alias'],aDict['name'],aDict['email'],aDict['menulist'],aDict['view_public']))
-    ret['id']   = db.get_last_id()
+    ret['id'] = db.get_last_id()
    else:
-    ret['update'] = db.do("UPDATE users SET alias='{}',name='{}',email='{}',view_public='{}',menulist='{}' WHERE id = '{}'".format(aDict['alias'],aDict['name'],aDict['email'],aDict['view_public'],aDict['menulist'],aDict['id']))
+    ret['update'] = db.update_dict('users',args,"id=%s"%id)
   else:
    ret['xist'] = db.do("SELECT users.* FROM users WHERE id = '%s'"%id)
    ret['data'] = db.get_row()

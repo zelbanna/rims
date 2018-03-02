@@ -57,24 +57,25 @@ def info(aDict):
 
  Extra:
  """
- if not aDict.get('node','master') == 'master':
+ node = aDict.pop('node','master')
+ if not node == 'master':
   from ..core.rest import call as rest_call
-  node = aDict.pop('node',None)
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
   ret = rest_call(url,"settings_info",aDict)['data']
  else:
   ret = {}
-  id = aDict['id']
-  op = aDict.pop('op',None)
+  args = aDict
+  id = args.pop('id',None)
+  op = args.pop('op',None)
   with DB() as db:
    if op == 'update':
     if not id == 'new':
-     if aDict['required'] == '0':
-      ret['update'] = db.do("UPDATE settings SET section='{}',parameter='{}',value='{}',description='{}' WHERE id = '{}'".format(aDict['section'],aDict['parameter'],aDict['value'],aDict['description'],id))
+     if args.pop('required','0') == '0':
+      ret['update'] = db.update_dict('settings',args,"id=%s"%id) 
      else:
-      ret['update'] = db.do("UPDATE settings SET value='{}' WHERE id = '{}'".format(aDict['value'],id))
+      ret['update'] = db.update_dict('settings',{'value':args['value']},"id=%s"%id) 
     else:
      ret['update'] = db.do("INSERT INTO settings (section,parameter,required,value,description) VALUES ('{}','{}','{}','{}','{}')".format(aDict['section'],aDict['parameter'],aDict.get('required',0),aDict['value'],aDict['description']))
      id = db.get_last_id()
