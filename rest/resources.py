@@ -59,10 +59,10 @@ def info(aDict):
  with DB() as db:
   if op == 'update':
    if aDict['id'] == 'new':
-    ret['xist'] = db.do("INSERT INTO resources (title,href,icon,type,inline,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}','{}')".format(aDict['title'],aDict['href'],aDict['icon'],aDict['type'],aDict['inline'],aDict['private'],aDict['user_id']))
+    ret['update'] = db.do("INSERT INTO resources (title,href,icon,type,inline,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}','{}')".format(aDict['title'],aDict['href'],aDict['icon'],aDict['type'],aDict['inline'],aDict['private'],aDict['user_id']))
     ret['id']   = db.get_last_id()
    else:
-    ret['xist'] = db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}', inline='{}', private='{}' WHERE id = '{}'".format(aDict['title'],aDict['href'],aDict['icon'],aDict['type'],aDict['inline'],aDict['private'],aDict['id']))
+    ret['update'] = db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}', inline='{}', private='{}' WHERE id = '{}'".format(aDict['title'],aDict['href'],aDict['icon'],aDict['type'],aDict['inline'],aDict['private'],aDict['id']))
   else:
    db.do("SELECT id,title,href,icon,type,inline,private,user_id FROM resources WHERE id = '%s'"%id)
    ret['data'] = db.get_row()
@@ -79,5 +79,5 @@ def delete(aDict):
  Extra:
  """
  with DB() as db:
-  res = db.do("DELETE FROM resources WHERE id = '%s'"%aDict['id'])
- return { 'deleted':res }
+  deleted = db.do("DELETE FROM resources WHERE id = '%s'"%aDict['id'])
+ return { 'deleted':deleted }

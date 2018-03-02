@@ -96,10 +96,10 @@ def update(aDict):
  ret = {'id':aDict['id']}
  with DB() as db:
   if aDict['id'] == 'new':
-   ret['xist'] = db.do("INSERT into racks (name, size, pdu_1, pdu_2, console, image_url) VALUES ('%s',%s,%s,%s,%s,'%s')"%(aDict['name'],aDict['size'],aDict['pdu_1'],aDict['pdu_2'],aDict['console'],aDict['image_url']))
+   ret['update'] = db.do("INSERT into racks (name, size, pdu_1, pdu_2, console, image_url) VALUES ('%s',%s,%s,%s,%s,'%s')"%(aDict['name'],aDict['size'],aDict['pdu_1'],aDict['pdu_2'],aDict['console'],aDict['image_url']))
    ret['id']   = db.get_last_id() 
   else:
-   ret['xist'] = db.do("UPDATE racks SET name = '%s', size = %s, pdu_1 = %s, pdu_2 = %s, console = %s, image_url='%s' WHERE id = '%s'"%(aDict['name'],aDict['size'],aDict['pdu_1'],aDict['pdu_2'],aDict['console'],aDict['image_url'],aDict['id']))
+   ret['update'] = db.do("UPDATE racks SET name = '%s', size = %s, pdu_1 = %s, pdu_2 = %s, console = %s, image_url='%s' WHERE id = '%s'"%(aDict['name'],aDict['size'],aDict['pdu_1'],aDict['pdu_2'],aDict['console'],aDict['image_url'],aDict['id']))
  return ret
 
 #
@@ -114,7 +114,7 @@ def delete(aDict):
  """
  with DB() as db:
   deleted = db.do("DELETE FROM racks WHERE id = %s"%aDict['id'])
- return deleted
+ return {'deleted':deleted}
 
 #
 #
