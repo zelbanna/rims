@@ -72,11 +72,11 @@ def info(aDict):
    if op == 'update':
     if not id == 'new':
      if aDict['required'] == '0':
-      ret['result'] = db.do("UPDATE settings SET section='{}',parameter='{}',value='{}',description='{}' WHERE id = '{}'".format(aDict['section'],aDict['parameter'],aDict['value'],aDict['description'],id))
+      ret['update'] = db.do("UPDATE settings SET section='{}',parameter='{}',value='{}',description='{}' WHERE id = '{}'".format(aDict['section'],aDict['parameter'],aDict['value'],aDict['description'],id))
      else:
-      ret['result'] = db.do("UPDATE settings SET value='{}' WHERE id = '{}'".format(aDict['value'],id))
+      ret['update'] = db.do("UPDATE settings SET value='{}' WHERE id = '{}'".format(aDict['value'],id))
     else:
-     ret['result'] = db.do("INSERT INTO settings (section,parameter,required,value,description) VALUES ('{}','{}','{}','{}','{}')".format(aDict['section'],aDict['parameter'],aDict.get('required',0),aDict['value'],aDict['description']))
+     ret['update'] = db.do("INSERT INTO settings (section,parameter,required,value,description) VALUES ('{}','{}','{}','{}','{}')".format(aDict['section'],aDict['parameter'],aDict.get('required',0),aDict['value'],aDict['description']))
      id = db.get_last_id()
    ret['xist'] = db.do("SELECT * FROM settings WHERE id = '%s'"%id)
    ret['data'] = db.get_row()
