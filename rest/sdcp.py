@@ -19,8 +19,8 @@ def application(aDict):
  """ Default login information """
  ret = {'message':"Welcome to the Management Portal",'parameters':[]}
  with DB() as db:
-  xist = db.do("SELECT value FROM settings WHERE section = 'generic' AND parameter = 'title'")
-  ret['title'] = db.get_val('value') if xist > 0 else 'New Installation'
+  existing = db.do("SELECT value FROM settings WHERE section = 'generic' AND parameter = 'title'")
+  ret['title'] = db.get_val('value') if existing > 0 else 'New Installation'
   db.do("SELECT CONCAT(id,'_',name) as id, name FROM users ORDER BY name")
   rows = db.get_rows()
  ret['choices'] = [{'display':'Username', 'id':'sdcp_login', 'data':rows}]
@@ -154,7 +154,7 @@ def mac_sync(aDict):
     if arps.get(row['ipasc']):
      row['found'] = arps.get(row['ipasc'])
      ret.append(row)
-     db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL_mac2int(row['xist']),row['id']))
+     db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL_mac2int(row['found']),row['id']))
  except:
   pass
  return ret
