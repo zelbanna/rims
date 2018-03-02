@@ -513,7 +513,7 @@ def graph_info(aDict):
  """Function docstring for graph_info TBD
 
  Args:
-  - id
+  - id (required)
   - op (optional)
   - graph_proxy (optional)
   - graph_update (optional)
@@ -524,7 +524,9 @@ def graph_info(aDict):
  with DB() as db:
   ret = {}
   if aDict.get('op') == 'update':
-   ret['changed'] = db.do("UPDATE devices SET graph_proxy = INET_ATON('%s'), graph_update = %i WHERE id = %i"%(aDict.get('graph_proxy'),int(aDict.get('graph_update',0)),int(aDict['id'])))
+   args = {'graph_proxy':aDict.get('graph_proxy'),'id':int(aDict['id'])}
+   args['graph_update'] = 0 if not aDict.get('graph_update') else int(aDict.get('graph_update'))
+   ret['update'] = db.do("UPDATE devices SET graph_proxy = INET_ATON('%s'), graph_update = %i WHERE id = %i"%(args['graph_proxy'],int(args['graph_update']),args['id']))
 
   db.do("SELECT INET_NTOA(ip) AS ip, graph_update, devicetypes.name AS type_name, INET_NTOA(graph_proxy) AS graph_proxy, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '%s'"%aDict['id'])
   ret.update(db.get_row())
