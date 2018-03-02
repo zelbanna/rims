@@ -77,43 +77,21 @@ def info(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
 
  ###################### Update ###################
- opres = {}
-
- if aWeb['op'] == 'update':
-  d = aWeb.get_args2dict(['call','op','ip'])
-  if d['devices_hostname'] != 'unknown':
-   from ..core import genlib as GL
-   if not d.get('devices_vm'):
-    d['devices_vm'] = 0
-   if not d.get('devices_comment'):
-    d['devices_comment'] = 'NULL'
-
-   opres = aWeb.rest_call("dns_record_auto_update", {'a_id':d['devices_a_id'],'ptr_id':d['devices_ptr_id'],'a_domain_id':d['devices_a_dom_id'],'hostname':d['devices_hostname'],'ip':aWeb['ip']})
-
-   for type in ['a','ptr']:
-    if not str(opres[type.upper()]['id']) == str(d['devices_%s_id'%type]):
-     d['devices_%s_id'%type] = opres[type.upper()]['id']
-    else:
-     d.pop('devices_%s_id'%type,None)
-
-   print d
-   opres['update'] = aWeb.rest_call("device_update",d)
-
- dev = aWeb.rest_call("device_info",{'id':aWeb['id'],'ip':aWeb['ip'],'info':['username','booking','rackinfo','basics','infra'],'op':aWeb['op']})
+ args = aWeb.get_args2dict(['call'])
+ args['info'] = ['username','booking','rackinfo','basics','infra']
+ dev = aWeb.rest_call("device_info",args)
 
  if dev['xist'] == 0:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
   return
  if aWeb['op'] == 'update' and dev['racked'] and (dev['rack']['pem0_pdu_id'] or dev['rack']['pem1_pdu_id']):
-  opres['pdu'] = aWeb.rest_call("device_update_pdu",dev['rack'])
- dev['result'] = str(dev.get('result')) + str(opres)
+  dev['result']['pdu'] = aWeb.rest_call("device_update_pdu",dev['rack'])
 
  ########################## Data Tables ######################
 
  width = 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
  print "<ARTICLE CLASS='info' STYLE='position:relative; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id'])
- print "<!-- OP:{} -->".format(opres)
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
@@ -205,7 +183,7 @@ def info(aWeb):
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=device_info&id=%i'%dev['id'])
  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
- print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=lookup&id={}&ip={}'.format(dev['id'],dev['ip']), TITLE='Lookup and Detect Device information')
+ print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
  print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
  print aWeb.a_button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))

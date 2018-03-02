@@ -12,7 +12,7 @@ from ..core.dbase import DB
 #
 #
 def info(aDict):
- """Function docstring for info. "One function to rule them all"
+ """Function docstring for info. "One function to rule them all", does retrieve both device info and performs update, lookup and infra retrieval
 
  Args:
   - ip (optional)
@@ -24,33 +24,77 @@ def info(aDict):
   - info: basics,username,booking,rackinfo,infra => make 'exclude' arg in final function instead
  """
  srch = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('%s')"%(aDict.get('ip'))
- ret  = {'op':aDict.pop('op',None),'id':aDict.pop('id',None),'ip':aDict.pop('ip',None),'infra':{}}
+ ret  = {'id':aDict.pop('id',None),'ip':aDict.pop('ip',None)}
 
  with DB() as db:
-  info = aDict.get('info',[])
+  # Fetch selection info
+  info = aDict.pop('info',[])
+  # Prep types for lookup
   typexist = db.do("SELECT id, name, base FROM devicetypes")
   types    = db.get_dict('name') 
   if 'infra' in info:
    from racks import infra
-   ret['infra'].update(infra({'types':True,'consoles':True,'pdus':True}))
+   ret['infra'] = infra({'types':True,'consoles':True,'pdus':True})
    ret['infra']['domainxist'] = db.do("SELECT domains.* FROM domains WHERE name NOT LIKE '%%arpa' ORDER BY name")
    ret['infra']['domains'] = db.get_rows()
    ret['infra']['typexist'] = typexist
    ret['infra']['types']    = types
 
-  args = aDict 
-  if ret['op'] == 'lookup' and ret['ip']:
-   lookup = detect({'ip':ret['ip'],'update':False})
-   if lookup['result'] == 'OK':
-    args.update({'devices_model':lookup['info']['model'],'devices_snmp':lookup['info']['snmp'],'devices_type_id':types[lookup['info']['type']]['id']})
+  # Move aDict to args for op
+  operation = aDict.pop('op',None)
+  if operation:
+   args = aDict
+   ret['result'] = {}
 
-  if ret['op'] == 'lookup' or (ret['op'] == 'update' and ret['id']):
-   if args.get('devices_mac'):
-    try: args['devices_mac'] = int(args['devices_mac'].replace(":",""),16)
-    except: aDict['devices_mac'] = 0
+   if operation == 'lookup' and ret['ip']:
+    lookup = detect({'ip':ret['ip']})
+    if lookup['result'] == 'OK':
+     args.update({'devices_model':lookup['info']['model'],'devices_snmp':lookup['info']['snmp'],'devices_type_id':types[lookup['info']['type']]['id']})
+     ret['result']['lookup'] = 'OK'
 
-   ret['result'] = args
+   if (operation == 'lookup' or operation == 'update') and ret['id']:
+    from dns import record_auto_update
+    # Args2Database UPDATE string :-)
+    def _args2db(aArgs,aTable,aIdCol):
+     sql = "UPDATE %s SET %s WHERE %s ='%s'"%(aTable,",".join([ key.partition('_')[2] + "=" + ("NULL" if value == 'NULL' else "'%s'"%value) for key,value in aArgs.iteritems() if key.split('_')[0] == aTable]),aIdCol,ret['id'])
+     # ret["%s_sql"%aTable] = sql
+     return db.do(sql)
 
+    if not args.get('devices_vm'):
+     args['devices_vm'] = 0
+    if not args.get('devices_comment'):
+     args['devices_comment'] = 'NULL'
+    if args.get('devices_mac'):
+     try: args['devices_mac'] = int(args['devices_mac'].replace(":",""),16)
+     except: aDict['devices_mac'] = 0
+    racked = args.pop('racked',None)
+    if racked:
+     if   racked == '1' and args.get('rackinfo_rack_id') == 'NULL':
+      db.do("DELETE FROM rackinfo WHERE device_id = %s"%ret['id'])
+      args.pop('rackinfo_pem0_pdu_slot_id',None)
+      args.pop('rackinfo_pem1_pdu_slot_id',None)
+     elif racked == '0' and args.get('rackinfo_rack_id') != 'NULL':
+      db.do("INSERT INTO rackinfo SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(ret['id'],args.get('rackinfo_rack_id')))
+     elif racked == '1':
+      for pem in ['pem0','pem1']:
+       try:
+        pem_pdu_slot_id = args.pop('rackinfo_%s_pdu_slot_id'%pem,None)
+        (args['rackinfo_%s_pdu_id'%pem],args['rackinfo_%s_pdu_slot'%pem]) = pem_pdu_slot_id.split('.')
+       except: pass
+
+    # Make sure everything is there to update DNS records, if records are not the same as old ones, update device, otherwise pop
+    if args.get('devices_a_id') and args.get('devices_ptr_id') and args.get('devices_a_dom_id') and args.get('devices_hostname') and ret['ip']:
+     dns = record_auto_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip']})
+     # ret['result']['dns'] = dns
+     for type in ['a','ptr']:    
+      if not str(dns[type.upper()]['id']) == str(args['devices_%s_id'%type]):
+       args['devices_%s_id'%type] = dns[type.upper()]['id']
+      else:
+       args.pop('devices_%s_id'%type,None)
+
+    ret['result']['update'] = {'devices':_args2db(args,'devices','id'),'rackinfo':_args2db(args,'rackinfo','device_id')}
+  
+  # Now fetch info  
   ret['xist'] = db.do("SELECT devices.*, base, devicetypes.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(srch))
   if ret['xist'] > 0:
    ret['info'] = db.get_row()
@@ -77,6 +121,7 @@ def info(aDict):
      if ret['racked'] > 0:
       ret['rack'] = db.get_row()
       ret['rack']['hostname'] = ret['info']['hostname']
+
  return ret
 
 #
@@ -164,58 +209,6 @@ def list_mac(aDict):
  for row in rows:
   row['mac'] = GL_int2mac(row['mac'])
  return rows
-
-#
-#
-def update(aDict):
- """Function docstring for update TBD
-
- Args:
-  - id (required)
-  - rackinfo_<var>_pdu_slot' (conditionally optional)
-  - rackinfo_<var>_pdu_id' (conditionally optional)
-  - devices_mac (optional)
-  - racked (optional)
-  - rackinfo_rack_id (optional)
-
- Extra:
- """
- from ..core.logger import log
- log("device_update({})".format(aDict))
- def GL_mac2int(aMAC):
-  try:    return int(aMAC.replace(":",""),16)
-  except: return 0
- id     = aDict['id']
- racked = aDict.get('racked')
- aDict.pop('id',None)
- aDict.pop('racked',None)
- try: aDict['devices_mac'] = GL_mac2int(aDict.pop('devices_mac','00:00:00:00:00:00'))
- except: pass
-
- ret    = {'data':{}}
- with DB() as db:
-  if racked:
-   if   racked == '1' and aDict.get('rackinfo_rack_id') == 'NULL':
-    db.do("DELETE FROM rackinfo WHERE device_id = {}".format(id))
-    aDict.pop('rackinfo_pem0_pdu_slot_id',None)
-    aDict.pop('rackinfo_pem1_pdu_slot_id',None)
-   elif racked == '0' and aDict.get('rackinfo_rack_id') != 'NULL':
-    db.do("INSERT INTO rackinfo SET device_id = {},rack_id={} ON DUPLICATE KEY UPDATE rack_id = rack_id".format(id,aDict.get('rackinfo_rack_id')))
-   elif racked == '1':
-    for pem in ['pem0','pem1']:
-     try:
-      pem_pdu_slot_id = aDict.pop('rackinfo_%s_pdu_slot_id'%pem,None)
-      (aDict['rackinfo_%s_pdu_id'%pem],aDict['rackinfo_%s_pdu_slot'%pem]) = pem_pdu_slot_id.split('.')
-     except: pass
-
-  tbl_id = { 'devices':'id', 'rackinfo':'device_id' }
-  sql    = "UPDATE %s SET %s=%s WHERE %s = '%s'"
-  for tkey in aDict.keys():
-   (table, void, key) = tkey.partition('_')
-   data = aDict[tkey]
-   if db.do(sql%(table,key,"'%s'"%data if data != 'NULL' else "NULL",tbl_id[table],id)) > 0:
-    ret['data'][key] = 'CHANGED'
- return ret
 
 #
 #
