@@ -381,7 +381,7 @@ def discover(aDict):
  def GL_int2ip(addr):
   return inet_ntoa(pack("!I", addr))
 
- def _tdetect(aIPint,aDB,aSema):
+ def _detect_thread(aIPint,aDB,aSema):
   res = detect({'ip':GL_int2ip(aIPint)})
   if res['result'] == 'OK':
    aDB[aIPint] = res['info']
@@ -412,7 +412,7 @@ def discover(aDict):
     if db_old.get(ipint):
      continue
     sema.acquire()
-    t = Thread(target = _tdetect, args=[ipint, db_new, sema])
+    t = Thread(target = _detect_thread, args=[ipint, db_new, sema])
     t.name = "Detect %s"%ip
     t.start()
 
@@ -440,7 +440,6 @@ def detect(aDict):
 
  Args:
   - ip (required)
-  - update (optional)
 
  Extra:
  """
@@ -482,13 +481,8 @@ def detect(aDict):
   else:
    info['model'] = " ".join(infolist[0:4])
 
- ret = {'result':'OK','info':info}
- if aDict.get('update',False):
-  with DB() as db:
-   xist = db.do("SELECT id,name FROM devicetypes WHERE name = '{}'".format(info['type']))
-   ret['type_id'] = db.get_val('id') if xist > 0 else None
-   ret['update']  = db.do("UPDATE devices SET snmp = '{}', model = '{}', type_id = '{}' WHERE ip = INET_ATON('{}')".format(info['snmp'],info['model'],ret['type_id'],aDict['ip'])) > 0
- return ret
+ return {'result':'OK','info':info}
+ 
 
 ############################################# Munin ###########################################
 #

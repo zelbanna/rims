@@ -151,8 +151,8 @@ def mac_sync(aDict):
    db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc, mac FROM devices WHERE hostname <> 'unknown' ORDER BY ip")
    rows = db.get_rows()
    for row in rows:
-    row['xist'] = arps.get(row['ipasc'])
-    if row['xist']:
+    if arps.get(row['ipasc']):
+     row['found'] = arps.get(row['ipasc'])
      ret.append(row)
      db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL_mac2int(row['xist']),row['id']))
  except:
