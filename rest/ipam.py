@@ -36,11 +36,11 @@ def info(aDict):
  """
  ret = {}
  if aDict['id'] == 'new':
-   ret['data'] = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }
-   ret['xist'] = 0
+  ret['xist'] = 0
+  ret['data'] = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }
  else:
   with DB() as db:
-   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(subnet) AS subnet, INET_NTOA(gateway) AS gateway FROM subnets WHERE id = " + aDict['id'])
+   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(subnet) AS subnet, INET_NTOA(gateway) AS gateway FROM subnets WHERE id = '%s'"%aDict['id'])
    ret['data'] = db.get_row()
  return ret
 
@@ -108,11 +108,11 @@ def update(aDict):
   ret['info'] = "illegal gateway"
  with DB() as db:
   if aDict['id'] == 'new':
-   ret['xist'] = db.do("INSERT INTO subnets(subnet,mask,gateway,description) VALUES (INET_ATON('{}'),{},{},'{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['subnet'],aDict['mask'],gwint,aDict['description']))
-   ret['id']   = db.get_last_id() if ret['xist'] > 0 else "new"
+   ret['update'] = db.do("INSERT INTO subnets(subnet,mask,gateway,description) VALUES (INET_ATON('{}'),{},{},'{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['subnet'],aDict['mask'],gwint,aDict['description']))
+   ret['id'] = db.get_last_id() if ret['update'] > 0 else "new"
   else:
-   ret['xist'] = db.do("UPDATE subnets SET subnet = INET_ATON('{}'), mask = {}, gateway = {}, description = '{}' WHERE id = {}".format(aDict['subnet'],aDict['mask'],gwint,aDict['description'],aDict['id']))
-   ret['id']   = aDict['id']
+   ret['update'] = db.do("UPDATE subnets SET subnet = INET_ATON('{}'), mask = {}, gateway = {}, description = '{}' WHERE id = {}".format(aDict['subnet'],aDict['mask'],gwint,aDict['description'],aDict['id']))
+   ret['id'] = aDict['id']
  return ret
 
 #
@@ -171,6 +171,6 @@ def delete(aDict):
  ret = {}
  with DB() as db:
   ret['devices'] = db.do("DELETE FROM devices WHERE subnet_id = " + aDict['id'])
-  ret['xist']    = db.do("DELETE FROM subnets WHERE id = " + aDict['id'])
+  ret['deleted'] = db.do("DELETE FROM subnets WHERE id = " + aDict['id'])
  return ret
  

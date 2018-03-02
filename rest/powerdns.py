@@ -105,10 +105,7 @@ def domain_lookup(aDict):
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE id = '{}'".format(aDict['id']))
-  if ret['xist'] > 0:
-   ret['data'] = db.get_row()
-  else:
-   ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER' }
+  ret['data'] = db.get_row() if ret['xist'] > 0 else {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER' }
  return ret
 
 #
@@ -128,8 +125,8 @@ def domain_update(aDict):
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if aDict['id'] == 'new':
    # Create and insert a lot of records
-   ret['xist'] = db.do("INSERT INTO domains(name, master, type) VALUES ('{}','{}','{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['name'],aDict['master'],aDict['type']))
-   ret['id']   = db.get_last_id() if ret['xist'] > 0 else "existing"
+   ret['update'] = db.do("INSERT INTO domains(name, master, type) VALUES ('{}','{}','{}') ON DUPLICATE KEY UPDATE id = id".format(aDict['name'],aDict['master'],aDict['type']))
+   ret['id'] = db.get_last_id() if ret['update'] > 0 else "existing"
    if ret['id'] != 'existing':
     from time import strftime
     ret['serial'] = strftime("%Y%m%d%H")
@@ -138,7 +135,7 @@ def domain_update(aDict):
     db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','SOA',25200,'{}',0)".format(ret['id'],aDict['name'],"{} hostmaster.{} 0 21600 300 3600".format(ret['soa']['server'],ret['soa']['domain']),ret['serial'])) 
     db.do("INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','NS' ,25200,'{}',0)".format(ret['id'],aDict['name'],ret['soa']['server'],ret['serial'])) 
   else:
-   ret['xist'] = db.do("UPDATE domains SET name = '{}', master = '{}', type = '{}' WHERE id = {}".format(aDict['name'],aDict['master'],aDict['type'],aDict['id']))
+   ret['update'] = db.do("UPDATE domains SET name = '{}', master = '{}', type = '{}' WHERE id = {}".format(aDict['name'],aDict['master'],aDict['type'],aDict['id']))
    ret['id']   = aDict['id']
  return ret
 

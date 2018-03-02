@@ -240,8 +240,8 @@ def record_transfer(aDict):
  Extra:
  """
  with DB() as db:
-  xist = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),aDict['record_id'],aDict['device_id']))
- return {'xist':xist}
+  update = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),aDict['record_id'],aDict['device_id']))
+ return {'transfered':update}
 
 #
 #
@@ -277,10 +277,10 @@ def record_device_create(aDict):
  else:  
   from ..core.rest import call as rest_call
   ret['dns'] = rest_call(SC.node[SC.dns['node']], "%s_record_update"%(SC.dns['type']),args)['data']
- if str(ret['dns']['xist']) == "1" and (args['type'] == 'A' or args['type'] == 'PTR'):
+ if str(ret['dns']['update']) == "1" and (args['type'] == 'A' or args['type'] == 'PTR'):
   ret['device'] = {'id':aDict['id']}
   with DB() as db:
-   ret['xist'] = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),ret['dns']['id'],aDict['id']))
+   ret['update'] = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),ret['dns']['id'],aDict['id']))
  return ret
 
 #
