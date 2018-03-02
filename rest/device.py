@@ -288,8 +288,8 @@ def delete(aDict):
    from dns import record_device_delete
    ret = record_device_delete({'A':data['a_id'],'PTR':data['ptr_id']})
    if data['base'] == 'pdu':
-    ret['pem0'] = db.do("UPDATE rackinfo SET pem0_pdu_unit = 0, pem0_pdu_slot = 0 WHERE pem0_pdu_id = '%s'"%(aDict['id']))
-    ret['pem1'] = db.do("UPDATE rackinfo SET pem1_pdu_unit = 0, pem1_pdu_slot = 0 WHERE pem1_pdu_id = '%s'"%(aDict['id']))
+    ret['pem0'] = db.update_dict('rackinfo',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s"%(aDict['id']))
+    ret['pem1'] = db.update_dict('rackinfo',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem0_pdu_id = %s"%(aDict['id']))
    ret.update({'deleted':db.do("DELETE FROM devices WHERE id = '%s'"%aDict['id'])})
  return ret
 

@@ -53,16 +53,17 @@ def info(aDict):
 
  Extra:
  """
- ret = {'id':aDict['id']}
- id = aDict['id']
+ id = aDict.pop('id',None)
  op = aDict.pop('op',None)
+ ret = {'id':id}
+ args = aDict
  with DB() as db:
   if op == 'update':
-   if aDict['id'] == 'new':
-    ret['update'] = db.do("INSERT INTO resources (title,href,icon,type,inline,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}','{}')".format(aDict['title'],aDict['href'],aDict['icon'],aDict['type'],aDict['inline'],aDict['private'],aDict['user_id']))
+   if id == 'new':
+    ret['update'] = db.do("INSERT INTO resources (title,href,icon,type,inline,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}','{}')".format(args['title'],args['href'],args['icon'],args['type'],args['inline'],args['private'],args['user_id']))
     ret['id']   = db.get_last_id()
    else:
-    ret['update'] = db.do("UPDATE resources SET title='{}',href='{}',icon='{}', type='{}', inline='{}', private='{}' WHERE id = '{}'".format(aDict['title'],aDict['href'],aDict['icon'],aDict['type'],aDict['inline'],aDict['private'],aDict['id']))
+    ret['update'] = db.update_dict('resources',args,'id=%s'%id)
   else:
    db.do("SELECT id,title,href,icon,type,inline,private,user_id FROM resources WHERE id = '%s'"%id)
    ret['data'] = db.get_row()
