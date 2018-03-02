@@ -10,20 +10,6 @@ __status__ = "Production"
 
 ################################### HTML ######################################
 
-def dict2table(aList):
- print "<DIV CLASS=table><DIV CLASS=thead>"
- head = aList[0].keys()
- for th in head:
-  print "<DIV CLASS=th>{}</DIV>".format(th.title())
- print "</DIV><DIV CLASS=tbody>"
- for row in aList:
-  print "<DIV CLASS=tr>"
-  for td in head:
-   print "<DIV CLASS=td>{}</DIV>".format(row.get(td,'&nbsp;'))
-  print "</DIV>"
- print "</DIV>"
- print "</DIV>"
-
 def get_quote(aString):
  from urllib import quote_plus
  return quote_plus(aString)
