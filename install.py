@@ -107,7 +107,7 @@ except Exception as e:
  print "GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';"%(settings['database']['database']['value'],settings['database']['username']['value'])
  print "FLUSH PRIVILEGES;\n"
 else:
- from sdcp.rest.sdcp import install
+ from sdcp.rest.tools import install
  rest = install({})
  res.update(rest)
 

@@ -239,7 +239,7 @@ def function(aWeb):
 #
 #
 def mac_sync(aWeb):
- macs = aWeb.rest_call("sdcp_mac_sync")
+ macs = aWeb.rest_call("device_mac_sync")
  print "<ARTICLE CLASS=info>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"

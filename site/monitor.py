@@ -42,7 +42,7 @@ def clear(aWeb):
  hosts = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<ARTICLE>"
  for host in hosts:
-  output = aWeb.rest_generic(host['value'],'sdcp_logs_clear')
+  output = aWeb.rest_generic(host['value'],'tools_logs_clear')
   print "%s: %s<BR>"%(host['parameter'], output)
  print "</ARTICLE>"
 
@@ -51,7 +51,7 @@ def clear(aWeb):
 #
 def logs(aWeb):
  dev = aWeb.rest_call("settings_parameter",{'section':'node','parameter':aWeb['host']})['data']
- res = aWeb.rest_generic(dev['value'],'sdcp_logs_get',{'count':18})
+ res = aWeb.rest_generic(dev['value'],'tools_logs_get',{'count':18})
  res.pop('xist',None)
  for file,logs in res.iteritems():
   print "<ARTICLE><P>%s</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(file,"<BR>".join(logs))

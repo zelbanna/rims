@@ -22,7 +22,6 @@ def login(aWeb):
  if inline == 'no':
   aWeb.put_html(data['title'])
  aWeb.put_cookie(application,data['cookie'],data['expires'])
- taborder = 2
  print "<DIV CLASS='grey overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message']
  if data.get('exception'):
   print "Error retrieving application info - exception info: %s"%(data['exception'])
@@ -32,17 +31,15 @@ def login(aWeb):
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
   print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   for choice in data.get('choices'):
-   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s' TABORDER=%s>"%(choice['display'],choice['id'],taborder)
-   taborder +=1
+   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s'>"%(choice['display'],choice['id'])
    for row in choice['data']:
     print "<OPTION VALUE='%s'>%s</OPTION>"%(row['id'],row['name'])
    print "</SELECT></DIV></DIV>"
   for param in data.get('parameters'):
-   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s' TABORDER=%s></DIV></DIV>"%(param['display'],param['data'],param['id'],taborder)
-   taborder +=1
+   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s'></DIV></DIV>"%(param['display'],param['data'],param['id'])
   print "</DIV></DIV>"
   print "</FORM><DIV CLASS=controls>"
-  print "<BUTTON CLASS=z-op %s STYLE='margin:20px 20px 30px 40px;' FRM=login_form TABORDER=1>Enter</BUTTON>"%("OP=submit" if not aWeb['inline'] == 'yes' else "DIV=main URL=sdcp.cgi")
+  print "<BUTTON CLASS=z-op %s STYLE='margin:20px 20px 30px 40px;' FRM=login_form>Enter</BUTTON>"%("OP=submit" if not aWeb['inline'] == 'yes' else "DIV=main URL=sdcp.cgi")
  print "</DIV></ARTICLE></DIV>"
 
 ############################################## SDCP ###############################################

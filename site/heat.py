@@ -79,6 +79,7 @@ def enter_parameters(aWeb):
 #
 def action(aWeb):
  from ..site.openstack import dict2html
+ from json import dumps
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
  if not token:
@@ -109,7 +110,6 @@ def action(aWeb):
   dict2html(data['stack'],name)
 
  elif op == 'events':
-  from json import dumps
   args['call'] = "stacks/{}/{}/events".format(name,id)
   data = aWeb.rest_call("openstack_call",args)['data']
   print "<!-- {} -->".format("stacks/{}/{}/events".format(name,id) )
@@ -121,13 +121,11 @@ def action(aWeb):
   print "</DIV></DIV>"
 
  elif op == 'template':
-  from json import dumps
   args['call'] = "stacks/{}/{}/template".format(name,id)
   data = aWeb.rest_call("openstack_call",args)['data']
   print "<PRE>%s</PREE>"%(dumps(data, indent=4))
 
  elif op == 'parameters':
-  from json import dumps
   args['call'] = "stacks/{}/{}".format(name,id)
   data = aWeb.rest_call("openstack_call",args)['data']['stack']['parameters']
   data.pop('OS::project_id')
@@ -162,8 +160,7 @@ def action(aWeb):
   print "Removing stack" if ret['code'] == 204 else "Error code: %s"%ret['code']
   print "</ARTICLE>"
 
- if op == 'templateview':
-  from json import dumps
+ elif op == 'templateview':
   template = aWeb['template']
   data = aWeb.rest_call("openstack_heat_content",{'template':template})['template']
   data['stack_name'] = name if name else "Need_to_specify_name"

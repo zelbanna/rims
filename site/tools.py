@@ -43,7 +43,7 @@ def main(aWeb):
 #
 def install(aWeb):
  dev = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
- res = aWeb.rest_generic(dev['value'],"sdcp_install")
+ res = aWeb.rest_generic(dev['value'],"tools_install")
  print "<ARTICLE CLASS='info'><P>Install results</P>"
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  for key,value in res.iteritems():

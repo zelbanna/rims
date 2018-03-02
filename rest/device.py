@@ -477,6 +477,39 @@ def detect(aDict):
  return {'result':'OK','info':info}
  
 
+#
+#
+def mac_sync(aDict):
+ """Function docstring for mac_sync TBD
+
+ Args:
+
+ Extra:
+ """
+ from ..core.dbase import DB
+ def GL_mac2int(aMAC):
+  try:    return int(aMAC.replace(":",""),16)
+  except: return 0
+ ret = []
+ try:
+  arps = {}
+  with open('/proc/net/arp') as f:
+   _ = f.readline()
+   for data in f:
+    ( ip, _, _, mac, _, _ ) = data.split()
+    if not mac == '00:00:00:00:00:00':
+     arps[ip] = mac
+  with DB() as db:
+   db.do("SELECT id, hostname, INET_NTOA(ip) as ipasc, mac FROM devices WHERE hostname <> 'unknown' ORDER BY ip")
+   rows = db.get_rows()
+   for row in rows:
+    if arps.get(row['ipasc']):
+     row['found'] = arps.get(row['ipasc'])
+     ret.append(row)
+     db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL_mac2int(row['found']),row['id']))
+ except: pass
+ return ret
+
 ############################################# Munin ###########################################
 #
 #
