@@ -130,7 +130,6 @@ def infra(aDict):
 
  Extra:
  """
- from ..core.dbase import DB
  ret =  {}
  with DB() as db:
   if aDict.get('id'):

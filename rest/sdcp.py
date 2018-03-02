@@ -33,6 +33,12 @@ def application(aDict):
 #
 #
 def authenticate(aDict):
+ """Function docstring for authenticate. Provide cookie with lifetime
+
+ Args:
+
+ Extra:
+ """
  from datetime import datetime,timedelta
  ret = {}
  ret['authenticated'] = 'OK'
@@ -111,19 +117,6 @@ def db_table(aDict):
   ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
   ret['db'] = db.get_rows() if ret['found'] > 0 else []
  return ret
-
-#
-#
-def db_dump(aDict):
- """Function docstring for db_dump TBD
-
- Args:
-  - mode (optional)
-
- Extra:
- """
- from ..core.mysql import dump
- return dump({'mode':aDict.get('mode','structure')})
 
 #
 #

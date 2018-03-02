@@ -53,13 +53,6 @@ def info(aDict):
      ret['result']['lookup'] = 'OK'
 
    if (operation == 'lookup' or operation == 'update') and ret['id']:
-    from dns import record_device_update
-    # Args2Database UPDATE string :-)
-    def _args2db(aArgs,aTable,aIdCol):
-     sql = "UPDATE %s SET %s WHERE %s ='%s'"%(aTable,",".join([ key.partition('_')[2] + "=" + ("NULL" if value == 'NULL' else "'%s'"%value) for key,value in aArgs.iteritems() if key.split('_')[0] == aTable]),aIdCol,ret['id'])
-     # ret["%s_sql"%aTable] = sql
-     return db.do(sql)
-
     if not args.get('devices_vm'):
      args['devices_vm'] = 0
     if not args.get('devices_comment'):
@@ -84,6 +77,7 @@ def info(aDict):
 
     # Make sure everything is there to update DNS records, if records are not the same as old ones, update device, otherwise pop
     if args.get('devices_a_id') and args.get('devices_ptr_id') and args.get('devices_a_dom_id') and args.get('devices_hostname') and ret['ip']:
+     from dns import record_device_update
      dns = record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip']})
      # ret['result']['dns'] = dns
      for type in ['a','ptr']:    
@@ -92,7 +86,7 @@ def info(aDict):
       else:
        args.pop('devices_%s_id'%type,None)
 
-    ret['result']['update'] = {'device_info':_args2db(args,'devices','id'),'rack_info':_args2db(args,'rackinfo','device_id')}
+    ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%(ret['id'])),'rack_info':db.update_dict_prefixed('rackinfo',args,"device_id='%s'"%(ret['id']))}
   
   # Now fetch info  
   ret['xist'] = db.do("SELECT devices.*, base, devicetypes.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(srch))
@@ -340,7 +334,7 @@ def function(aDict):
 #
 #
 def configuration_template(aDict):
- """Function docstring for configuration TBD
+ """Function docstring for configuration_template TBD
 
  Args:
   - id (required)

@@ -75,7 +75,6 @@ def domain_lookup(aDict):
 
  Extra:
  """
-def domain_lookup(aDict):
  if SC.dns['node'] == 'master':
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dns['type'])
@@ -144,7 +143,7 @@ def domain_delete(aDict):
 #
 #
 def list_records(aDict):
- """Function docstring for records TBD
+ """Function docstring for list_records TBD
 
  Args:
   - type (optional)

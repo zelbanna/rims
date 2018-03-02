@@ -23,11 +23,9 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>View Bookmarks</A>"
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_test'>Test</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dns_load_cache'>DNS - Load Cache</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
- print "<A CLASS=z-op DIV=div_content           URL='sdcp.cgi?call=tools_db_structure'>DB - View Structure</A>"
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
  for host in hosts:
   print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host=%s'>Reinstall %s</A>"%(host['id'],host['parameter'])
@@ -40,20 +38,6 @@ def main(aWeb):
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
-
-#
-#
-def test(aWeb):
- hej
-
-#
-#
-def db_structure(aWeb):
- res = aWeb.rest_call("sdcp_db_dump",{'mode':'structure'})
- print "<ARTICLE><P>Database Structure</P>"
- print "<P CLASS='machine-text'>"
- print "<BR>".join(res['output'])
- print "</P></ARTICLE>"
 
 #
 #
@@ -76,7 +60,7 @@ def rest_main(aWeb):
  for host in devices:
   print "<OPTION VALUE='%s'>%s</A>"%(host['id'],host['parameter'])
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
- print "Call 'Method': <SELECT STYLE='width:70px; height:22px;' NAME=method>"
+ print "Call 'Method': <SELECT CLASS='white' STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
