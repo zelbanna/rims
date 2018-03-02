@@ -89,7 +89,7 @@ def info(aWeb):
 def unit_info(aWeb):
  if aWeb['op'] == 'update':
   res = aWeb.rest_call("avocent_update",aWeb.get_args2dict())
-  print "Updated info: {} ({})".format(aWeb['name'],res)
+  print "Updated info: {}".format(res)
   return
  print "<ARTICLE CLASS=info><P>PDU Unit Info</P>"
  print "<FORM ID=pdu_form>"
@@ -103,5 +103,5 @@ def unit_info(aWeb):
  print "</DIV></DIV>"
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('save',DIV='update_results', URL='sdcp.cgi?call=pdu_unit_info&op=update', FRM='pdu_form')
+ print aWeb.button('save',DIV='update_results', URL='sdcp.cgi?call=avocent_unit_info&op=update', FRM='pdu_form')
  print "</DIV></ARTICLE>"

@@ -80,15 +80,15 @@ def info(aDict):
      from dns import record_device_update
      dns = record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip']})
      # ret['result']['dns'] = dns
-     for type in ['a','ptr']:    
+     for type in ['a','ptr']:
       if not str(dns[type.upper()]['id']) == str(args['devices_%s_id'%type]):
        args['devices_%s_id'%type] = dns[type.upper()]['id']
       else:
        args.pop('devices_%s_id'%type,None)
 
     ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%(ret['id'])),'rack_info':db.update_dict_prefixed('rackinfo',args,"device_id='%s'"%(ret['id']))}
-  
-  # Now fetch info  
+
+  # Now fetch info
   ret['xist'] = db.do("SELECT devices.*, base, devicetypes.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(srch))
   if ret['xist'] > 0:
    ret['info'] = db.get_row()
@@ -116,13 +116,13 @@ def info(aDict):
   if operation == 'update' and ret['racked']:
    for pem in [0,1]:
     if ret['info']['pem%i_pdu_id'%(pem)] > 0:
-     db.do("SELECT INET_NTOA(ip) AS ip, name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
+     db.do("SELECT INET_NTOA(ip) AS ip, hostname, name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
      pdu_info = db.get_row()
-     args = {'ip':ret['ip'],'unit':ret['info']['pem%i_pdu_unit'%(pem)],'slot':ret['info']['pem%i_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem)}
+     args = {'ip':pdu_info['ip'],'unit':ret['info']['pem%i_pdu_unit'%(pem)],'slot':ret['info']['pem%i_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem)}
      if pdu_info['name'] == 'avocent':
       try:
        from avocent import update as pdu_update
-       ret['result']['pem%i'%pem] = pdu_update(args)
+       ret['result']['pem%i'%pem] = "%s.%s"%(pdu_info['hostname'],pdu_update(args))
       except Exception as err:
        ret['result']['pem%i'%pem] = str(err)
  return ret
