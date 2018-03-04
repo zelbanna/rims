@@ -12,26 +12,6 @@ from ..devices.vera import Device
 
 #
 #
-def rest(aDict):
- """Function docstring for rest TBD
-
- Args:
-  - host (required)
-  - api (required)
-  - method (required)
-  - args (required)
-
- Extra:
- """
- try:
-  controller = Device(aDict['host'])
-  ret = controller.call(3480,aDict['api'],aDict['args'],aDict['method'])
- except Exception,e:
-  ret = e[0] 
- return ret
-
-#
-#
 def status(aDict):
  """Function docstring for status TBD
 

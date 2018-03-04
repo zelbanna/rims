@@ -34,37 +34,20 @@ def manage(aWeb):
 #
 def rest_main(aWeb):
  print "<ARTICLE><P>REST API inspection</P>"
- print "<FORM ID=frm_rest><INPUT TYPE=hidden NAME=host VALUE='%s'>"%aWeb['host']
+ print "<FORM ID=frm_rest>"
+ print "<INPUT TYPE=hidden NAME=host VALUE='%s'>"%aWeb['host']
+ print "<INPUT TYPE=hidden NAME=device VALUE=vera>"
  print "Enter API: <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
  print "Call 'Method': <SELECT STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
- print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:70px;' NAME=args></TEXTAREA>"
+ print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:70px;' NAME=arguments></TEXTAREA>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=vera_rest_execute', FRM='frm_rest')
+ print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=tools_rest_execute', FRM='frm_rest')
  print aWeb.button('delete', DIV='div_rest_info', OP='empty', TITLE='Clear results view')
  print "</DIV></ARTICLE>"
  print "<DIV ID=div_rest_info></DIV>"
-
-#
-#
-def rest_execute(aWeb):
- from json import loads,dumps
- parameters = aWeb.get_args2dict(['call'])
- try:    parameters['args'] = loads(aWeb['args'])
- except: parameters['args'] = None
- res = aWeb.rest_call("vera_rest",parameters)
- data = res.pop('data',None)
- print "<ARTICLE STYLE='width:auto'>"
- print "<DIV CLASS='border'>"    
- print "<!-- %s -->"%(res.keys())  
- print "<DIV CLASS=table STYLE='table-layout:fixed; width:100%; '><DIV CLASS=tbody>"
- for key,value in res.iteritems():
-  print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td STYLE='white-space:normal'>{}</DIV></DIV>".format(key.upper(),value)                 
- print "</DIV></DIV>" 
- print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True)
- print "</DIV></ARTICLE>"
 
 #
 #

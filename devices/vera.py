@@ -8,7 +8,6 @@ __version__ = "18.02.09GA"
 __status__  = "Production"
 __type__    = "controller"
 
-from ..core.rest import call as rest_call
 from ..devices.generic import Device as GenericDevice
 
 class Device(GenericDevice):
@@ -24,4 +23,5 @@ class Device(GenericDevice):
   return "Controller[{}]".format(self._ip)
  
  def call(self,port,query,args = None, method = None):
+  from ..core.rest import call as rest_call
   return rest_call("http://%s:%i/data_request?%s"%(self._ip,port,query), "vera", aArgs=args, aMethod=method)

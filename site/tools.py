@@ -53,18 +53,18 @@ def install(aWeb):
 #
 #
 def rest_main(aWeb):
- devices = aWeb.rest_call("settings_list",{'section':'node'})['data']
+ nodes = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_rest>"
- print "Choose host and enter API:<SELECT STYLE='height:22px;' NAME=host>"
- for host in devices:
-  print "<OPTION VALUE='%s'>%s</A>"%(host['id'],host['parameter'])
+ print "Choose host and enter API:<SELECT STYLE='height:22px;' NAME=node>"
+ for node in nodes:
+  print "<OPTION VALUE='%s'>%s</A>"%(node['id'],node['parameter'])
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
  print "Call 'Method': <SELECT CLASS='white' STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
- print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:70px;' NAME=args></TEXTAREA>"
+ print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:70px;' NAME=arguments></TEXTAREA>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=tools_rest_execute', FRM='frm_rest')
  print aWeb.button('delete', DIV='div_rest_info', OP='empty', TITLE='Clear results view')
@@ -75,22 +75,25 @@ def rest_main(aWeb):
 #
 def rest_execute(aWeb):
  from json import loads,dumps
- try:    arguments = loads(aWeb['args'])
+ try:    arguments = loads(aWeb['arguments'])
  except: arguments = None
  try:
-  dev = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
-  ret = aWeb.rest_full(dev['value'],aWeb['api'],arguments,aWeb['method'])
+  if aWeb['node']:
+   dev = aWeb.rest_call("settings_info",{'id':aWeb['node']})['data']
+   ret = aWeb.rest_full(dev['value'],aWeb['api'],arguments,aWeb['method'])
+  elif aWeb['device'] == 'vera':
+   from ..devices.vera import Device
+   controller = Device(aWeb['host'])
+   ret = controller.call(3480,aWeb['api'],arguments,aWeb['method'])
  except Exception,e:
   ret = e[0]
  data = ret.pop('data',None)
  print "<ARTICLE STYLE='width:auto'>"
  print "<DIV CLASS='border'>"
- print "<!-- %s -->"%(ret.keys())
  print "<DIV CLASS=table STYLE='table-layout:fixed; width:100%;'><DIV CLASS=tbody>"
- info = ret.pop('info',None)
- if info:
+ if ret.get('info'):
   print "<DIV CLASS=tr STYLE=><DIV CLASS=td STYLE='width:100px'>INFO</DIV><DIV CLASS=td STYLE='white-space:normal'>"
-  for key,value in info.iteritems():
+  for key,value in ret.pop('info',{}).iteritems():
    print "<DIV CLASS='border-grey' STYLE='float:left; margin:1px;'><DIV CLASS=grey STYLE='min-width:100px; font-weight:bold;'>{}</DIV><DIV CLASS=white STYLE='white-space:normal; min-width:100px;'>{}</DIV></DIV>".format(key,value)
   print "</DIV></DIV>"
  for key,value in ret.iteritems():

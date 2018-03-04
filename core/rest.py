@@ -94,9 +94,9 @@ def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = Non
   except: data = raw
   output = { 'result':'ERROR', 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
  except URLError, e:
-  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':str(e)}
+  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
  except Exception, e:
-  output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':str(e)}
+  output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
  if output.get('exception'):
   raise Exception(output)
  return output
