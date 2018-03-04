@@ -98,8 +98,8 @@ class Device(object):
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  # - header = send additional headers as dictionary
  #
- def call(self,port,url,args = None, method = None, header = None):
-  return self.href("http://{}:{}/{}".format(self._ip,port,url), aArgs=args, aMethod=method, aHeader = header)
+ def call(self,port,query,args = None, method = None, header = None):
+  return self.href("http://%s:%s/%s".format(self._ip,port,query), aArgs=args, aMethod=method, aHeader = header)
 
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
   from ..core.rest import call as rest_call

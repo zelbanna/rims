@@ -11,7 +11,8 @@ __status__ = "Production"
 #
 # - list categories in vera inventory
 # - dimmable switch object in vera
-#
+# - use nodes :-)
+
 
 ########################################## Vera Operations ##########################################
 #

@@ -91,7 +91,7 @@ def rest_execute(aWeb):
  if info:
   print "<DIV CLASS=tr STYLE=><DIV CLASS=td STYLE='width:100px'>INFO</DIV><DIV CLASS=td STYLE='white-space:normal'>"
   for key,value in info.iteritems():
-   print "<DIV STYLE='float:left; padding:2px;'><DIV STYLE='min-width:100px; font-weight:bold;'>{}</DIV><DIV CLASS=white STYLE='white-space:normal; min-width:100px;'>{}</DIV></DIV>".format(key,value)
+   print "<DIV CLASS='border-grey' STYLE='float:left; margin:1px;'><DIV CLASS=grey STYLE='min-width:100px; font-weight:bold;'>{}</DIV><DIV CLASS=white STYLE='white-space:normal; min-width:100px;'>{}</DIV></DIV>".format(key,value)
   print "</DIV></DIV>"
  for key,value in ret.iteritems():
   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td STYLE='white-space:normal'>{}</DIV></DIV>".format(key.upper(),value)
@@ -101,5 +101,5 @@ def rest_execute(aWeb):
 
 #
 #
-def rest_explor(aWeb):
+def rest_explore(aWeb):
  pass

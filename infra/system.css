@@ -80,6 +80,7 @@ div.controls { display:inline; font-size:5px; }
 .warning {     background-color:red!important; font-weight:bold; color:#FFFFFF }
 .right   {     float:right!important; }
 .border {      border:solid 1px black; }
+.border-grey { border:solid 1px #9CA6B0; }
 .small-text {  font-size:9px; }
 .centered {    align-items:center; justify-content:center; display:flex; flex-wrap:wrap }
 .machine-text { font-family: "Courier New", serif; font-size: 12px; margin: 0px; }
