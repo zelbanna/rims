@@ -40,7 +40,7 @@ def formatting(restfile,data,globals):
 
 def analyze(aFile):
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
- from sdcp.rest.sdcp import rest_analyze
+ from sdcp.rest.tools import rest_analyze
  print "############# Analyzing file: %s ################"%(aFile + ".py")
  res = rest_analyze({'file':aFile + ".py"})
  if len(res['global']) > 0:

@@ -9,15 +9,15 @@ def execute(argv):
  from os   import path as ospath
  from sys  import path as syspath
  from importlib import import_module 
- rest = argv[1]
- fun  = argv[2]
- try:    args = loads(argv[3])
+ mod = argv[1]
+ fun = argv[2]
+ try:  args = loads(argv[3])
  except: args = None
- print "Executing:{}_{}({})".format(rest,fun,args)
+ print "Executing:{}_{}({})".format(mod,fun,args)
 
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
  try:
-  module = import_module("sdcp.rest.%s"%rest)
+  module = import_module("sdcp.rest.%s"%mod)
   res    = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })(args)
   print dumps(res, indent=4, sort_keys=True)
  except Exception, e:
