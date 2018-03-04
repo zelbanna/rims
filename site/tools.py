@@ -86,9 +86,20 @@ def rest_execute(aWeb):
  print "<ARTICLE STYLE='width:auto'>"
  print "<DIV CLASS='border'>"
  print "<!-- %s -->"%(ret.keys())
- print "<DIV CLASS=table STYLE='table-layout:fixed; width:100%; '><DIV CLASS=tbody>"
+ print "<DIV CLASS=table STYLE='table-layout:fixed; width:100%;'><DIV CLASS=tbody>"
+ info = ret.pop('info',None)
+ if info:
+  print "<DIV CLASS=tr STYLE=><DIV CLASS=td STYLE='width:100px'>INFO</DIV><DIV CLASS=td STYLE='white-space:normal'>"
+  for key,value in info.iteritems():
+   print "<DIV STYLE='float:left; padding:2px;'><DIV STYLE='min-width:100px; font-weight:bold;'>{}</DIV><DIV CLASS=white STYLE='white-space:normal; min-width:100px;'>{}</DIV></DIV>".format(key,value)
+  print "</DIV></DIV>"
  for key,value in ret.iteritems():
   print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td STYLE='white-space:normal'>{}</DIV></DIV>".format(key.upper(),value)
  print "</DIV></DIV>"
  print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True)
  print "</DIV></ARTICLE>"
+
+#
+#
+def rest_explor(aWeb):
+ pass

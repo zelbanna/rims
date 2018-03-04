@@ -9,79 +9,6 @@ __status__ = "Production"
 
 #
 #
-def logs_clear(aDict):
- """Function docstring for logs_clear TBD
-
- Args:
-
- Extra:
- """
- from ..core.logger import log
- from ..core.dbase import DB
- ret = {}
- with DB() as db:
-  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
-  logs = db.get_rows()
- for entry in logs:
-  try:
-   open(entry['value'],'w').close()
-   ret[entry['parameter']] = 'CLEARED'
-   log("Emptied log [{}]".format(entry['value']))
-  except Exception as err:
-   ret[entry['parameter']] = 'ERROR: %s'%(str(err))
- return ret
-
-#
-#
-def logs_get(aDict):
- """Function docstring for logs_get TBD
-
- Args:
-  - count (optional)
-
- Extra:
- """
- from ..core.dbase import DB
- ret = {}
- with DB() as db:
-  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
-  logs = db.get_rows()
- count = int(aDict.get('count',15))
- for log in logs:
-  lines = ["\r" for i in range(count)]
-  pos = 0
-  try:
-   with open(log['value'],'r') as f:
-    for line in f:
-     lines[pos] = line
-     pos = (pos + 1) % count
-    ret[log['parameter']] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
-  except Exception as err:
-   ret[log['parameter']] = ['ERROR: %s'%(str(err))]
- return ret
-
-#
-#
-def db_table(aDict):
- """Function docstring for db_table TBD
-
- Args:
-  - table (optional)
-  - columns (optional) - columns is a string list x,y,z,..
-
- Extra:
- """
- from ..core.dbase import DB
- cols = aDict.get('columns','*')
- tbl  = aDict.get('table','devices')
- ret  = {}
- with DB() as db:
-  ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
-  ret['db'] = db.get_rows() if ret['found'] > 0 else []
- return ret
-
-#
-#
 def install(aDict):
  """Function docstring for install. Installation of SDCP tools and DB entries
 
@@ -187,6 +114,7 @@ def install(aDict):
  ret['res'] = 'OK'
  return ret
 
+############################################ REST tools ############################################
 #
 #
 def rest_analyze(aDict):
@@ -247,3 +175,78 @@ def rest_analyze(aDict):
   if data['function']:
    ret['functions'].append(data)
  return ret
+
+#
+#
+def db_table(aDict):
+ """Function docstring for db_table TBD
+
+ Args:
+  - table (optional)
+  - columns (optional) - columns is a string list x,y,z,..
+
+ Extra:
+ """
+ from ..core.dbase import DB
+ cols = aDict.get('columns','*')
+ tbl  = aDict.get('table','devices')
+ ret  = {}
+ with DB() as db:
+  ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
+  ret['db'] = db.get_rows() if ret['found'] > 0 else []
+ return ret
+
+############################################ Monitor ##############################################
+#
+#
+def logs_clear(aDict):
+ """Function docstring for logs_clear TBD
+
+ Args:
+
+ Extra:
+ """
+ from ..core.logger import log
+ from ..core.dbase import DB
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
+  logs = db.get_rows()
+ for entry in logs:
+  try:
+   open(entry['value'],'w').close()
+   ret[entry['parameter']] = 'CLEARED'
+   log("Emptied log [{}]".format(entry['value']))
+  except Exception as err:
+   ret[entry['parameter']] = 'ERROR: %s'%(str(err))
+ return ret
+
+#
+#
+def logs_get(aDict):
+ """Function docstring for logs_get TBD
+
+ Args:
+  - count (optional)
+
+ Extra:
+ """
+ from ..core.dbase import DB
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
+  logs = db.get_rows()
+ count = int(aDict.get('count',15))
+ for log in logs:
+  lines = ["\r" for i in range(count)]
+  pos = 0
+  try:
+   with open(log['value'],'r') as f:
+    for line in f:
+     lines[pos] = line
+     pos = (pos + 1) % count
+    ret[log['parameter']] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
+  except Exception as err:
+   ret[log['parameter']] = ['ERROR: %s'%(str(err))]
+ return ret
+
