@@ -86,6 +86,14 @@ def authenticate(aDict):
 #
 #
 def services(aDict):
+ """Function docstring for services. Produces a list of services attached to token, services can be filtered on project names as a string list
+
+ Args:
+  - token (required)
+  - filter (optional)
+
+ Extra:
+ """
  ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT %s FROM openstack_services WHERE uuid = '%s'"%("*" if not aDict.get('filter') else aDict.get('filter'), aDict['token']))
@@ -171,6 +179,13 @@ def href(aDict):
 #
 #
 def info(aDict):
+ """Function docstring for info. Returns a list of Internal to Openstack tokens for user X
+
+ Args:
+  - username (required)
+
+ Extra:
+ """
  from datetime import datetime
  ret = {}
  with DB() as db:
@@ -181,6 +196,13 @@ def info(aDict):
 #
 #
 def token_info(aDict):
+ """Function docstring for info. Returns detailed list of Openstack token given internal token
+
+ Args:
+  - token (required)
+
+ Extra:
+ """
  from datetime import datetime
  ret = {}
  with DB() as db:

@@ -18,6 +18,7 @@ def list(aWeb):
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=new',TITLE='Add domain')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=dns_consistency',TITLE='Check Backend Consistency',SPIN='true')
  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_dedup',TITLE='Find Duplicates',SPIN='true')
+ print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?call=dns_load_cache',TITLE='ReSync DNS cache',SPIN='true')
  print "</DIV>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"

@@ -25,9 +25,8 @@ def main(aWeb):
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A>"
- print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dns_load_cache'>DNS - Load Cache</A>"
- print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
+ print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  for node in nodes:
   print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&node=%s'>Reinstall %s</A>"%(node['id'],node['parameter'])
  print "</DIV></LI>"
@@ -109,10 +108,20 @@ def rest_execute(aWeb):
 def rest_explore(aWeb):
  res = aWeb.rest_call("tools_rest_explore")
  print "<SECTION CLASS=content-left  ID=div_content_left>"
- print "<ARTICLE CLASS=info><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>API</DIV><DIV CLASS=th>Function</DIV></DIV><DIV CLASS=tbody>"
+ print "<ARTICLE><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>API</DIV><DIV CLASS=th>Function</DIV></DIV><DIV CLASS=tbody>"
  for item in res['data']:
   for fun in item['functions']:
-   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(item['api'],fun)
+   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=tools_rest_information&api=%s&function=%s>%s</A></DIV></DIV>"%(item['api'],item['api'],fun,fun)
  print "</DIV></DIV></ARTICLE>"
  print "</SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+
+#
+#
+def rest_information(aWeb):
+ res = aWeb.rest_call("tools_rest_information",{'api':aWeb['api'],'function':aWeb['function']})
+ print "<ARTICLE>"
+ print "<H1>%s - %s</H1>"%(aWeb['api'],aWeb['function'])
+ print "<BR>".join(res['information'])
+ print "</ARTICLE>"
+ 
