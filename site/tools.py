@@ -7,6 +7,7 @@ __author__= "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__= "Production"
 __icon__ = 'images/icon-config.png'
+__type__ = 'menuitem'
 
 ############################################ Options ##############################################
 #
@@ -94,10 +95,10 @@ def rest_execute(aWeb):
  if ret.get('info'):
   print "<DIV CLASS=tr STYLE=><DIV CLASS=td STYLE='width:100px'>INFO</DIV><DIV CLASS=td STYLE='white-space:normal'>"
   for key,value in ret.pop('info',{}).iteritems():
-   print "<DIV CLASS='border-grey' STYLE='float:left; margin:1px;'><DIV CLASS=grey STYLE='min-width:100px; font-weight:bold;'>{}</DIV><DIV CLASS=white STYLE='white-space:normal; min-width:100px;'>{}</DIV></DIV>".format(key,value)
+   print "<DIV CLASS='rest'><DIV>%s</DIV><DIV>%s</DIV></DIV>"%(key,value)
   print "</DIV></DIV>"
  for key,value in ret.iteritems():
-  print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td STYLE='white-space:normal'>{}</DIV></DIV>".format(key.upper(),value)
+  print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>%s</DIV><DIV CLASS=td STYLE='white-space:normal'>%s</DIV></DIV>"%(key.upper(),value)
  print "</DIV></DIV>"
  print "<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True)
  print "</DIV></ARTICLE>"

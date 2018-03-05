@@ -93,26 +93,49 @@ def install(aDict):
    except Exception as err: ret['device_type_errors'] = str(err)
 
  # Menu items
- menuitems = []
+ resources = []
  for file in listdir(sitedir):
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
     mod  = import_module("sdcp.site.%s"%(pyfile))
+    type = getattr(mod,'__type__',None)
     icon = getattr(mod,'__icon__',None)
-    if icon:
-     items.append({'name':pyfile, 'icon':icon})
+    if type:
+     resources.append({'name':pyfile, 'icon':icon, 'type':type})
    except: pass
- ret['menuitems_new'] = 0
+ ret['resources_new'] = 0
  with DB() as db:
-  sql ="INSERT INTO resources(title,href,icon,type,user_id,inline) VALUES ('{}','{}','{}','menuitem',1,1) ON DUPLICATE KEY UPDATE id = id"
-  for item in menuitems:
-   try:    ret['menuitems_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon']))
-   except: ret['menuitems_errors'] = True
+  sql ="INSERT INTO resources(title,href,icon,type,user_id,inline) VALUES ('{}','{}','{}','{}',1,1) ON DUPLICATE KEY UPDATE id = id"
+  for item in resources:
+   try:    ret['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon'],item['type']))
+   except: ret['resources_errors'] = True
 
  # Done
  ret['res'] = 'OK'
  return ret
+
+
+#
+#
+def database(aDict):
+ """Function docstring for database TBD
+
+ Args:
+  - table (optional)
+  - columns (optional) - columns is a string list x,y,z,..
+
+ Extra:
+ """
+ from ..core.dbase import DB
+ cols = aDict.get('columns','*')
+ tbl  = aDict.get('table','devices')
+ ret  = {}
+ with DB() as db:
+  ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
+  ret['db'] = db.get_rows() if ret['found'] > 0 else []
+ return ret
+
 
 ############################################ REST tools ############################################
 #
@@ -176,25 +199,53 @@ def rest_analyze(aDict):
    ret['functions'].append(data)
  return ret
 
+
 #
 #
-def db_table(aDict):
- """Function docstring for db_table TBD
+def rest_explore(aDict):
+ """Function docstring for rest_explore TBD
 
  Args:
-  - table (optional)
-  - columns (optional) - columns is a string list x,y,z,..
+  - api (optional)
 
  Extra:
  """
- from ..core.dbase import DB
- cols = aDict.get('columns','*')
- tbl  = aDict.get('table','devices')
- ret  = {}
- with DB() as db:
-  ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
-  ret['db'] = db.get_rows() if ret['found'] > 0 else []
+ from types import FunctionType as function
+ from importlib import import_module
+ def _analyze(aFile):
+  data = {'api':aFile, 'functions':[]}
+  try:
+   module = import_module("sdcp.rest.%s"%(aFile))
+   data['functions'] = [item for item in dir(module) if item[0:2] != "__" and isinstance(getattr(module,item,None),function)]
+  except Exception,e: data['error'] = str(e)
+  return data
+
+ ret = {'data':[]}
+ if aDict.get('api'):
+  ret['data'].append(_analyze(aDict.get('api')))
+ else:
+  from os import path as ospath, listdir
+  restdir = ospath.abspath(ospath.join(ospath.dirname(__file__)))
+  for restfile in listdir(restdir):
+   if restfile[-3:] == '.py':
+    ret['data'].append(_analyze(restfile[0:-3]))
  return ret
+
+#
+#
+def rest_information(aDict):
+ """Function docstring for rest_explore TBD
+
+ Args:
+  - api (required)
+  - function (required)
+
+ Extra:
+ """ 
+ from importlib import import_module
+ mod = import_module("sdcp.rest.%s"%(aDict['api']))
+ fun = getattr(mod,aDict['function'],None)
+ return {'api':aDict['api'],'information':fun.__doc__.split('\n')}
 
 ############################################ Monitor ##############################################
 #

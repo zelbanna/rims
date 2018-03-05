@@ -12,7 +12,7 @@ def execute(argv):
  mod = argv[1]
  fun = argv[2]
  try:  args = loads(argv[3])
- except: args = None
+ except: args = {}
  print "Executing:{}_{}({})".format(mod,fun,args)
 
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))

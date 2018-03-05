@@ -8,6 +8,7 @@ __author__= "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__ = "Production"
 __icon__ = 'images/icon-users.png'
+__type__ = 'menuitem'
 
 ############################################ Users ##############################################
 def main(aWeb):

@@ -97,6 +97,9 @@ div.rack-data { border: solid 2px grey; font-size:12px; text-align:center;}
 
 span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; font-family: Verdana,sans-serif; }
 
+div.rest { float:left; margin-left:1px; margin-top:1px; border:solid 1px #9CA6B0; }
+div.rest > div:first-child { font-weight:bold; background-color:#9CA6B0!important; }
+div.rest > div { min-width:100px; white-space:normal; margin-left:1px; margin-right:1px; }
 /*################################ JS tools ####################################*/
 
 .highlight { border: 1px solid #33CAFF }
