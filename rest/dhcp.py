@@ -21,7 +21,7 @@ def update_server(aDict):
  from device import list_mac
  ret = {}
  macs = list_mac({})
- if SC.dhcp['node'] == 'master':
+ if SC.dhcp.get('node','master') == 'master':
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dhcp['type'])
   fun = getattr(module,'update_server',None)
@@ -43,7 +43,7 @@ def leases(aDict):
 
  Extra:
  """
- if SC.dhcp['node'] == 'master':
+ if SC.dhcp.get('node','master') == 'master':
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dhcp['type'])
   fun = getattr(module,'leases',None)
