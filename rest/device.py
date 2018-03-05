@@ -306,6 +306,27 @@ def clear(aDict):
   res = db.do("DELETE FROM devices")
  return { 'result':res }
 
+#
+#
+def to_node(aDict):
+ """Function docstring for to_node TBD
+
+ Args:
+  - id
+
+ Extra:
+ """
+ ret = {}
+ with DB() as db:
+  res = db.do("SELECT INET_NTOA(ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id'])
+  dev = db.get_row()
+  for test in ['ip','fqdn','hostname']:
+   if db.do("SELECT id,parameter,value FROM settings WHERE section = 'node' AND value LIKE '%{}%'".format(dev[test])) > 0:
+    ret['node']  = db.get_val('parameter')
+    ret['found'] = test
+    break
+ return ret
+
 ############################################# Specials ###########################################
 #
 #

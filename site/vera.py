@@ -18,22 +18,26 @@ __status__ = "Production"
 #
 #
 def manage(aWeb):
- host = aWeb['ip'] if aWeb['ip'] else aWeb.rest_call("device_basics",{'id':aWeb['id']})['ip']
+ if aWeb['node']:
+  node = aWeb['node']
+ elif aWeb['id']:
+  node = aWeb.rest_call("device_to_node",{'id':aWeb['id']})['node']
+ ui = aWeb.rest_call("vera_node_to_ui",{'node':node}).get('host','#')
  print "<NAV><UL>"
- print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_status&host=%s>Status</A></LI>"%host
- print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&host=%s>Devices</A></LI>"%host
- print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rooms&host=%s>Rooms</A></LI>"%host
- print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_scenes&host=%s>Scenes</A></LI>"%host
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_status&node=%s>Status</A></LI>"%node
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&node=%s>Devices</A></LI>"%node
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rooms&node=%s>Rooms</A></LI>"%node
+ print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_scenes&node=%s>Scenes</A></LI>"%node
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
- print "<LI CLASS='right navinfo'><A CLASS=z-op TARGET=_blank HREF='http://%s/cmh/'>UI</A></LI>"%(host)
- print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_rest_main&node=vera>REST</A></LI>"
+ print "<LI CLASS='right navinfo'><A CLASS=z-op TARGET=_blank HREF='%s'>UI</A></LI>"%(ui)
+ print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_rest_main&node=%s>REST</A></LI>"%node
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
 
 #
 #
 def status(aWeb):
- res = aWeb.rest_call("vera_status",{'host':aWeb['host']})
+ res = aWeb.rest_call("vera_status",{'node':aWeb['node']})
  print "<ARTICLE>"
  print "<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -44,7 +48,7 @@ def status(aWeb):
 #
 #
 def devices(aWeb):
- res = aWeb.rest_call("vera_devices",{'host':aWeb['host']})
+ res = aWeb.rest_call("vera_devices",{'node':aWeb['node']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
  print "<DIV CLASS=table>"
@@ -53,7 +57,7 @@ def devices(aWeb):
  for dev in res['devices']:
    print "<DIV CLASS=tr>"
    print "<DIV CLASS=td>%s</DIV>"%dev['id']
-   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_device_info&host=%s&id=%s>%s</A></DIV>"%(aWeb['host'],dev['id'],dev['name'])
+   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_device_info&node=%s&id=%s>%s</A></DIV>"%(aWeb['node'],dev['id'],dev['name'])
    print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV>"%(res['categories'].get(dev['category']),res['rooms'].get(dev['room'],'Unassigned'))
    print "</DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
@@ -62,7 +66,7 @@ def devices(aWeb):
 #
 #
 def device_info(aWeb):
- res = aWeb.rest_call("vera_device_info",{'host':aWeb['host'],'device':aWeb['id']})
+ res = aWeb.rest_call("vera_device_info",{'node':aWeb['node'],'device':aWeb['id']})
  print "<ARTICLE>"
  print "<DIV CLASS=title>Device %s</DIV>"%aWeb['id']
  print "<DIV CLASS=table>"
@@ -75,13 +79,13 @@ def device_info(aWeb):
 #
 #
 def rooms(aWeb):
- res = aWeb.rest_call("vera_infra",{'host':aWeb['host']})
+ res = aWeb.rest_call("vera_infra",{'node':aWeb['node']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Section</DIV></DIV><DIV CLASS=tbody>"
  for room in res['rooms'].values():
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%room['id']
-  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_room_info&host=%s&id=%s>%s</A></DIV>"%(aWeb['host'],room['id'],room['name'])
+  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_room_info&node=%s&id=%s>%s</A></DIV>"%(aWeb['node'],room['id'],room['name'])
   print "<DIV CLASS=td>%s</DIV></DIV>"%(res['sections'][str(room['section'])])
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -89,21 +93,21 @@ def rooms(aWeb):
 #
 #
 def scenes(aWeb):
- res = aWeb.rest_call("vera_infra",{'host':aWeb['host']})
+ res = aWeb.rest_call("vera_infra",{'node':aWeb['node']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for scen in res['scenes'].values():
   id = scen['id']
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%id
-  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_scene_info&host=%s&scene=%s>%s</A></DIV>"%(aWeb['host'],id,scen['name'])
+  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_scene_info&node=%s&scene=%s>%s</A></DIV>"%(aWeb['node'],id,scen['name'])
   print "<DIV CLASS=td ID=div_scene_%s>"%id
-  print aWeb.button('start' if scen['active'] == 0 else 'shutdown',URL='sdcp.cgi?call=vera_scene_state&host=%s&scene=%s&op=%s'%(aWeb['host'],id,"run" if scen['active'] == 0 else "off"),DIV='div_scene_%s'%id)
+  print aWeb.button('start' if scen['active'] == 0 else 'shutdown',URL='sdcp.cgi?call=vera_scene_state&node=%s&scene=%s&op=%s'%(aWeb['node'],id,"run" if scen['active'] == 0 else "off"),DIV='div_scene_%s'%id)
   print "</DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def scene_state(aWeb):
- res = aWeb.rest_call("vera_scene",{'host':aWeb['host'],'scene':aWeb['scene'],'op':aWeb['op']})
+ res = aWeb.rest_call("vera_scene",{'node':aWeb['node'],'scene':aWeb['scene'],'op':aWeb['op']})
  print "<!-- %s -->"%str(res)
- print aWeb.button('shutdown' if aWeb['op'] == "run" else 'start',URL='sdcp.cgi?call=vera_scene_state&host=%s&scene=%s&op=%s'%(aWeb['host'],aWeb['scene'],"run" if aWeb['op'] == "off" else "off"),DIV='div_scene_%s'%aWeb['id'])
+ print aWeb.button('shutdown' if aWeb['op'] == "run" else 'start',URL='sdcp.cgi?call=vera_scene_state&node=%s&scene=%s&op=%s'%(aWeb['node'],aWeb['scene'],"run" if aWeb['op'] == "off" else "off"),DIV='div_scene_%s'%aWeb['id'])

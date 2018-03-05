@@ -60,7 +60,7 @@ def rest_main(aWeb):
  nodes = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_rest>"
- print "Choose host and enter API:<SELECT STYLE='height:22px;' NAME=node>"
+ print "Choose host and enter API:<SELECT CLASS=white STYLE='height:22px;' NAME=node>"
  for node in nodes:
   print "<OPTION VALUE='%s' %s>%s</A>"%(node['id'],"selected" if aWeb['node'] else "",node['parameter'])
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
