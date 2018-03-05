@@ -26,7 +26,7 @@ def list(aDict):
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = rest_call(url,"settings_list",aDict)['data']
+  ret = rest_call("%s?settings_list"%url,aDict)['data']
  else:
   ret = {'user_id':aDict.get('user_id',"1") }
   if aDict.get('section'):
@@ -63,7 +63,7 @@ def info(aDict):
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = rest_call(url,"settings_info",aDict)['data']
+  ret = rest_call("%s?settings_info"%url,aDict)['data']
  else:
   ret = {}
   args = aDict
@@ -101,7 +101,7 @@ def parameter(aDict):
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = rest_call(url,"settings_parameter",aDict)['data']
+  ret = rest_call("%s?settings_parameter"%url,aDict)['data']
  else:
   ret = {}
   with DB() as db:
@@ -126,7 +126,7 @@ def section(aDict):
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = rest_call(url,"settings_section",aDict)['data']
+  ret = rest_call("%s?settings_section"%url,aDict)['data']
  else:
   ret = {}
   with DB() as db:
@@ -152,7 +152,7 @@ def all(aDict):
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = rest_call(url,"settings_all",aDict)['data']
+  ret = rest_call("%s?settings_all"%url,aDict)['data']
  else:
   ret = {}
   with DB() as db:
@@ -183,7 +183,7 @@ def save(aDict):
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = rest_call(url,"settings_save",aDict)['data']
+  ret = rest_call("%s?settings_save"%url,aDict)['data']
  else:
   from os import chmod, remove, listdir, path as ospath
   from json import dumps,dump
@@ -237,7 +237,7 @@ def delete(aDict):
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  ret = rest_call(url,"settings_delete",aDict)['data']
+  ret = rest_call("%s?settings_delete"%url,aDict)['data']
  else:
   with DB() as db:
    res = db.do("DELETE FROM settings WHERE id = '%s' AND required ='0'"%aDict['id'])

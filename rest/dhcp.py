@@ -28,7 +28,7 @@ def update_server(aDict):
   ret = fun({'entries':macs})
  else:
   from ..core.rest import call as rest_call
-  res = rest_call(SC.node[SC.dhcp['node']],"%s_update_server"%(SC.dhcp['type']),{'entries':macs})
+  res = rest_call("%s?%s_update_server"%(SC.node[SC.dhcp['node']],SC.dhcp['type']),{'entries':macs})
   ret['output'] = res['data']['output']
   ret['res'] = res['info']['x-z-res']
  return ret
@@ -50,5 +50,5 @@ def leases(aDict):
   ret = fun({'type':aDict['type']})
  else:
   from ..core.rest import call as rest_call
-  ret = rest_call(SC.node[SC.dhcp['node']], "%s_leases"%(SC.dhcp['type']),{'type':aDict['type']})['data']
+  ret = rest_call("%s?%s_leases"%(SC.node[SC.dhcp['node']], SC.dhcp['type']),{'type':aDict['type']})['data']
  return ret
