@@ -86,9 +86,8 @@ def rest_execute(aWeb):
    dev = aWeb.rest_call("settings_info",{'id':aWeb['node']})['data']
    ret = aWeb.rest_full(dev['value'],aWeb['api'],arguments,aWeb['method'])
   elif aWeb['device'] == 'vera':
-   from ..devices.vera import Device
-   controller = Device(aWeb['host'])
-   ret = controller.call(3480,aWeb['api'],arguments,aWeb['method'])
+   url = "http://%s:3480/data_request?%s"%(aWeb['host'],aWeb['api'])
+   ret = aWeb.rest_full(url,"vera",arguments,aWeb['method'])
  except Exception,e:
   ret = e[0]
  data = ret.pop('data',None)
@@ -110,7 +109,6 @@ def rest_execute(aWeb):
 #
 def rest_explore(aWeb):
  res = aWeb.rest_call("tools_rest_explore")
- print "<SECTION CLASS=content       ID=div_content>"
  print "<SECTION CLASS=content-left  ID=div_content_left>"
  print "<ARTICLE CLASS=info><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>API</DIV><DIV CLASS=th>Function</DIV></DIV><DIV CLASS=tbody>"
  for item in res['data']:
@@ -119,4 +117,3 @@ def rest_explore(aWeb):
  print "</DIV></DIV></ARTICLE>"
  print "</SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
- print "</SECTION>"
