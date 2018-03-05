@@ -240,5 +240,5 @@ def delete(aDict):
   ret = rest_call("%s?settings_delete"%url,aDict)['data']
  else:
   with DB() as db:
-   res = db.do("DELETE FROM settings WHERE id = '%s' AND required ='0'"%aDict['id'])
- return { 'deleted':res }
+   ret['deleted'] = db.do("DELETE FROM settings WHERE id = '%s' AND required ='0'"%aDict['id'])
+ return ret
