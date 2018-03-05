@@ -35,7 +35,10 @@ def main(aWeb):
  for host in hosts:
   print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&node=%s'>%s</A>"%(host['parameter'],host['parameter'])
  print "</DIV></LI>"
- print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>REST</A></LI>"
+ print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>Debug</A>"
+ print "</DIV></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
@@ -106,4 +109,14 @@ def rest_execute(aWeb):
 #
 #
 def rest_explore(aWeb):
- pass
+ res = aWeb.rest_call("tools_rest_explore")
+ print "<SECTION CLASS=content       ID=div_content>"
+ print "<SECTION CLASS=content-left  ID=div_content_left>"
+ print "<ARTICLE CLASS=info><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>API</DIV><DIV CLASS=th>Function</DIV></DIV><DIV CLASS=tbody>"
+ for item in res['data']:
+  for fun in item['functions']:
+   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(item['api'],fun)
+ print "</DIV></DIV></ARTICLE>"
+ print "</SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+ print "</SECTION>"
