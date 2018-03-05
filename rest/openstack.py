@@ -22,8 +22,7 @@ def application(aDict):
  Extra:
  """
  from datetime import datetime,timedelta
- ret = {}
- ret['title']   = "%s 2 Cloud"%(aDict.get('name','iaas'))
+ ret = {'title':"%s 2 Cloud"%(aDict.get('name','iaas')),'choices':[]}
  ret['message']= "Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas'))
  try:
   if aDict.get('token'):

@@ -99,13 +99,13 @@ class Device(object):
  # - header = send additional headers as dictionary
  #
  def call(self,port,query,args = None, method = None, header = None):
-  return self.href("http://%s:%s/%s".format(self._ip,port,query), aArgs=args, aMethod=method, aHeader = header)
+  return self.href("http://%s:%s/%s"%(self._ip,port,query), aArgs=args, aMethod=method, aHeader = header)
 
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
   from ..core.rest import call as rest_call
   head = { 'X-Auth-Token':self._token }
   try: head.update(aHeader)
   except: pass
-  try: res = rest_call(aURL, "openstack", aArgs, aMethod, head)
+  try: res = rest_call(aURL, aArgs, aMethod, head)
   except Exception as e: res = e[0]
   return res

@@ -86,7 +86,6 @@ def rest_execute(aWeb):
    url = aWeb.rest_call("settings_info",{'id':aWeb['node']})['data']['value']
   elif aWeb['device'] == 'vera':
    url = "http://%s:3480/data_request"%(aWeb['host'])
-  print aWeb
   ret = aWeb.rest_full(url,aWeb['api'],arguments,aWeb['method'])
  except Exception,e:
   ret = e[0]
