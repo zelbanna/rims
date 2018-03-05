@@ -15,7 +15,7 @@ def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- hosts = aWeb.rest_call("settings_list",{'section':'node'})['data']
+ nodes = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<NAV><UL>"
  print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>List resources</A>"
@@ -28,16 +28,16 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dns_load_cache'>DNS - Load Cache</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
- for host in hosts:
-  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&host=%s'>Reinstall %s</A>"%(host['id'],host['parameter'])
+ for node in nodes:
+  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&node=%s'>Reinstall %s</A>"%(node['id'],node['parameter'])
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Settings</A><DIV CLASS='dropdown-content'>"
- for host in hosts:
-  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&node=%s'>%s</A>"%(host['parameter'],host['parameter'])
+ for node in nodes:
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&node=%s'>%s</A>"%(node['parameter'],node['parameter'])
  print "</DIV></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>Debug</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"
  print "</DIV></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  print "</UL></NAV>"
@@ -46,8 +46,8 @@ def main(aWeb):
 #
 #
 def install(aWeb):
- dev = aWeb.rest_call("settings_info",{'id':aWeb['host']})['data']
- res = aWeb.rest_generic(dev['value'],"tools_install")
+ dev = aWeb.rest_call("settings_info",{'id':aWeb['node']})['data']
+ res = aWeb.rest_full(dev['value'],"tools_install")['data']
  print "<ARTICLE CLASS='info'><P>Install results</P>"
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  for key,value in res.iteritems():
@@ -83,11 +83,11 @@ def rest_execute(aWeb):
  except: arguments = None
  try:
   if aWeb['node']:
-   dev = aWeb.rest_call("settings_info",{'id':aWeb['node']})['data']
-   ret = aWeb.rest_full(dev['value'],aWeb['api'],arguments,aWeb['method'])
+   url = aWeb.rest_call("settings_info",{'id':aWeb['node']})['data']['value']
   elif aWeb['device'] == 'vera':
-   url = "http://%s:3480/data_request?%s"%(aWeb['host'],aWeb['api'])
-   ret = aWeb.rest_full(url,"vera",arguments,aWeb['method'])
+   url = "http://%s:3480/data_request"%(aWeb['host'])
+  print aWeb
+  ret = aWeb.rest_full(url,aWeb['api'],arguments,aWeb['method'])
  except Exception,e:
   ret = e[0]
  data = ret.pop('data',None)

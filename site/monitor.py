@@ -43,8 +43,8 @@ def clear(aWeb):
  hosts = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<ARTICLE>"
  for host in hosts:
-  output = aWeb.rest_generic(host['value'],'tools_logs_clear')
-  print "%s: %s<BR>"%(host['parameter'], output)
+  output = aWeb.rest_full(host['value'],'tools_logs_clear')
+  print "%s: %s<BR>"%(host['parameter'], output['data'])
  print "</ARTICLE>"
 
 #
@@ -52,10 +52,13 @@ def clear(aWeb):
 #
 def logs(aWeb):
  dev = aWeb.rest_call("settings_parameter",{'section':'node','parameter':aWeb['host']})['data']
- res = aWeb.rest_generic(dev['value'],'tools_logs_get',{'count':18})
- res.pop('xist',None)
- for file,logs in res.iteritems():
-  print "<ARTICLE><P>%s</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(file,"<BR>".join(logs))
+ res = aWeb.rest_full(dev['value'],'tools_logs_get',{'count':18})
+ print "<ARTICLE>"
+ if res['code'] == 200 and res['data']:
+  res['data'].pop('xist',None)
+  for file,logs in res['data'].iteritems():
+   print "<P>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))
+ print "</ARTICLE>"
 
 #
 # UPS graphs

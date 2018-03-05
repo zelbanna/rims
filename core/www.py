@@ -42,11 +42,6 @@ class Web(object):
   from rest import call
   return call("%s?%s"%(self._rest_url, aAPI), aArgs, aTimeout = 60)['data']
 
- # Generic REST call
- def rest_generic(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
-  from rest import call
-  return call("%s?%s"%(aURL, aAPI), aArgs, aMethod, aHeader, True, aTimeout)['data']
-
  # Generic REST call with full output
  def rest_full(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
   from rest import call
