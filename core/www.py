@@ -45,7 +45,7 @@ class Web(object):
  # Generic REST call with full output
  def rest_full(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
   from rest import call
-  return call("%s?%s"%(aURL, aAPI), aArgs, aMethod, aHeader, True, aTimeout)
+  return call("%s?%s"%(aURL, aAPI) if aAPI else aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
  ############################# Cookies #############################
  #

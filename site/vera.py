@@ -26,28 +26,9 @@ def manage(aWeb):
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_scenes&host=%s>Scenes</A></LI>"%host
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
  print "<LI CLASS='right navinfo'><A CLASS=z-op TARGET=_blank HREF='http://%s/cmh/'>UI</A></LI>"%(host)
- print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rest_main&host=%s>REST</A></LI>"%host
+ print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_rest_main&node=vera>REST</A></LI>"
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
-
-#
-#
-def rest_main(aWeb):
- print "<ARTICLE><P>REST API inspection</P>"
- print "<FORM ID=frm_rest>"
- print "<INPUT TYPE=hidden NAME=host VALUE='%s'>"%aWeb['host']
- print "<INPUT TYPE=hidden NAME=device VALUE=vera>"
- print "Enter API: <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
- print "Call 'Method': <SELECT STYLE='width:70px; height:22px;' NAME=method>"
- for method in ['GET','POST','DELETE','PUT']:
-  print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
- print "</SELECT>"
- print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:70px;' NAME=arguments></TEXTAREA>"
- print "</FORM><DIV CLASS=controls>"
- print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=tools_rest_execute', FRM='frm_rest')
- print aWeb.button('delete', DIV='div_rest_info', OP='empty', TITLE='Clear results view')
- print "</DIV></ARTICLE>"
- print "<DIV ID=div_rest_info></DIV>"
 
 #
 #

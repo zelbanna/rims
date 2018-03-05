@@ -27,6 +27,8 @@ def list(aDict):
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
   ret = rest_call("%s?settings_list"%url,aDict)['data']
+  if not ret:
+   ret = {'xist':0,'data':{}}
  else:
   ret = {'user_id':aDict.get('user_id',"1") }
   if aDict.get('section'):

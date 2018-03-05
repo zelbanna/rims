@@ -18,7 +18,7 @@ def main(aWeb):
  nodes = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<NAV><UL>"
  print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>List resources</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>List</A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>View Tools</A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>View Demos</A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>View Bookmarks</A>"
@@ -62,7 +62,7 @@ def rest_main(aWeb):
  print "<FORM ID=frm_rest>"
  print "Choose host and enter API:<SELECT STYLE='height:22px;' NAME=node>"
  for node in nodes:
-  print "<OPTION VALUE='%s'>%s</A>"%(node['id'],node['parameter'])
+  print "<OPTION VALUE='%s' %s>%s</A>"%(node['id'],"selected" if aWeb['node'] else "",node['parameter'])
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
  print "Call 'Method': <SELECT CLASS='white' STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:
