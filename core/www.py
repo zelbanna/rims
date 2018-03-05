@@ -40,17 +40,17 @@ class Web(object):
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None):
   from rest import call
-  return call(self._rest_url, aAPI, aArgs, aTimeout = 60)['data']
+  return call("%s?%s"%(self._rest_url, aAPI), aArgs, aTimeout = 60)['data']
 
  # Generic REST call
  def rest_generic(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
   from rest import call
-  return call(aURL, aAPI, aArgs, aMethod, aHeader, True, aTimeout)['data']
+  return call("%s?%s"%(aURL, aAPI), aArgs, aMethod, aHeader, True, aTimeout)['data']
 
  # Generic REST call with full output
  def rest_full(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
   from rest import call
-  return call(aURL, aAPI, aArgs, aMethod, aHeader, True, aTimeout)
+  return call("%s?%s"%(aURL, aAPI), aArgs, aMethod, aHeader, True, aTimeout)
 
  ############################# Cookies #############################
  #
@@ -59,10 +59,7 @@ class Web(object):
  # - special case for dictionaries, the ',' char is used for joining items!
 
  def put_cookie(self,aName,aValue,aExpires):
-  if isinstance(aValue,dict):
-   value = ",".join(["%s=%s"%(k,v) for k,v in aValue.iteritems()])
-  else:
-   value = aValue
+  value = ",".join(["%s=%s"%(k,v) for k,v in aValue.iteritems()]) if isinstance(aValue,dict) else aValue
   print "<SCRIPT>set_cookie('%s','%s','%s');</SCRIPT>"%(aName,value,aExpires)
 
  # Unjar returns a dict with whatever was jar:ed into that cookie name (or empty)

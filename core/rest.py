@@ -14,29 +14,21 @@ __status__= "Production"
 # - reads body to find input data
 # - returns json:ed response from function
 # -- Response model
-# --- res: OK/NOT_OK, ERROR, NO_DATA
+# --- res: OK/NOT_OK, ERROR
 # --- type: of ERROR
 # --- info: ERROR info
 # --- exception: type of Exception
 # --- data: data
 
 def server():
- from os import getenv, environ
+ from os import getenv
  from sys import stdout, stdin
  from json import loads, dumps
- api = getenv("HTTP_X_Z_APICALL")
- args,mod,fun = None,None,None
+ api,args,mod,fun = None,None,None,None
  try:
-  if api:
-   data = stdin.read()
-   args = loads(data if len(data) > 0 else '{}')
-  else:
-   try:
-    args = dict(map(lambda x: x.split('='),getenv("QUERY_STRING").split("&")))
-   except:
-    raise  Exception('No Module/Function found for REST API (Query String)')
-   else:
-    api  = args.pop('call')
+  api  = getenv("QUERY_STRING")
+  data = stdin.read()
+  args = loads(data) if len(data) > 0 else {}
   (mod,void,fun) = api.partition('_')
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%mod)
@@ -49,8 +41,8 @@ def server():
   stdout.write("X-Z-Exception:%s\r\n"%type(e).__name__)
  else:
   stdout.write("X-Z-Res:OK\r\n")
- stdout.write("X-Z-Mod:%s\r\n"%mod)
- stdout.write("X-Z-Fun:%s\r\n"%fun)
+ stdout.write("X-Z-Module:%s\r\n"%mod)
+ stdout.write("X-Z-Function:%s\r\n"%fun)
  stdout.write("Content-Type: application/json\r\n")
  stdout.flush()
  stdout.write("\r\n")
@@ -63,11 +55,11 @@ def server():
 # - aArgs = data/content if available
 #
 #  returns un-json:ed data
-def call(aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20):
+def call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20):
  from json import loads, dumps
  from urllib2 import urlopen, Request, URLError, HTTPError
  try:
-  head = { 'Content-Type': 'application/json', 'X-Z-APICALL':aAPI }
+  head = { 'Content-Type': 'application/json' }
   try:    head.update(aHeader)
   except: pass
   req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
