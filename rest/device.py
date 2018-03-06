@@ -161,17 +161,17 @@ def list(aDict):
   if aDict.get('rack') == 'vm':
    tune = "WHERE vm = 1"
   else:
-   tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = '{}'".format(aDict.get('rack'))
+   tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = %s"%(aDict.get('rack'))
   if aDict.get('filter'):
-   tune += " AND type_id = {}".format(aDict.get('filter'))
+   tune += " AND type_id = %s"%(aDict.get('filter'))
  elif aDict.get('filter'):
-  tune = "WHERE type_id = {}".format(aDict.get('filter'))
+  tune = "WHERE type_id = %s"%(aDict.get('filter'))
  else:
   tune = ""
 
  ret = {'sort':aDict.get('sort','devices.id')}
  with DB() as db:
-  sql = "SELECT devices.id, devices.hostname, INET_NTOA(ip) as ipasc, hostname, domains.name as domain, CONCAT(devices.hostname,'.',domains.name) AS  fqdn, a_dom_id, a_id, ptr_id, model, type_id, subnets.gateway FROM devices JOIN subnets ON subnet_id = subnets.id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
+  sql = "SELECT devices.id, INET_NTOA(ip) AS ipasc, CONCAT(devices.hostname,'.',domains.name) AS fqdn, model FROM devices JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
   ret['xist'] = db.do(sql)
   ret['data'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret

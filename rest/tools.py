@@ -7,6 +7,8 @@ __author__ = "Zacharias El Banna"
 __version__ = "18.02.09GA"
 __status__ = "Production"
 
+from ..core.dbase import DB
+
 #
 #
 def install(aDict):
@@ -22,7 +24,6 @@ def install(aDict):
  from shutil import copy
  from time import time
  import pip
- from ..core.dbase import DB
  from ..core.mysql import diff
  from .. import SettingsContainer as SC
 
@@ -127,7 +128,6 @@ def database(aDict):
 
  Extra:
  """
- from ..core.dbase import DB
  cols = aDict.get('columns','*')
  tbl  = aDict.get('table','devices')
  ret  = {}
@@ -258,7 +258,6 @@ def logs_clear(aDict):
  Extra:
  """
  from ..core.logger import log
- from ..core.dbase import DB
  ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
@@ -282,7 +281,6 @@ def logs_get(aDict):
 
  Extra:
  """
- from ..core.dbase import DB
  ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
