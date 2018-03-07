@@ -20,7 +20,10 @@ def main(aWeb):
  monitors = aWeb.rest_call("resources_list",{'type':'monitor','view_public':True})['data']
  hosts    = aWeb.rest_call("settings_list",{'section':'node'})['data']
  print "<NAV><UL>"
- print "<LI CLASS='warning'><A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=monitor_clear&ip=%s'>Clear Logs</A></LI>"
+ print "<LI CLASS='warning dropdown'><A>Clear Logs</A><DIV CLASS='dropdown-content'>"
+ for host in hosts:
+  print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=monitor_clear&host=%s'>%s</A>"%(host['parameter'],host['parameter'])
+ print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
  for host in hosts:
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=monitor_logs&host=%s>%s</A>"%(host['parameter'],host['parameter'])
@@ -40,12 +43,8 @@ def main(aWeb):
 #
 #
 def clear(aWeb):
- hosts = aWeb.rest_call("settings_list",{'section':'node'})['data']
- print "<ARTICLE>"
- for host in hosts:
-  output = aWeb.rest_full(host['value'],'tools_logs_clear')
-  print "%s: %s<BR>"%(host['parameter'], output['data'])
- print "</ARTICLE>"
+ res = aWeb.rest_call('tools_logs_clear',{'node':aWeb['host']})
+ print "<ARTICLE>%s</ARTICLE>"%(res)
 
 #
 # Internal Logs
