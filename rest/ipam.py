@@ -42,8 +42,8 @@ def info(aDict):
 
 #
 #
-def allocation(aDict):
- """Function docstring for allocation: Allocation of IP addresses within a subnet. Should be renamed to inventory to follow naming conventions TODO
+def inventory(aDict):
+ """Function docstring for inventory: Allocation of IP addresses within a subnet.
 
  Args:
   - id (required)

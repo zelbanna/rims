@@ -57,7 +57,7 @@ def info(aWeb):
 #
 #
 def layout(aWeb):
- data = aWeb.rest_call("ipam_allocation",{'id':aWeb['id']})
+ data = aWeb.rest_call("ipam_inventory",{'id':aWeb['id']})
  startn  = int(data['start'])
  starta  = int(data['subnet'].split('.')[3])
  devices = data['devices']
