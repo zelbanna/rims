@@ -1,10 +1,6 @@
-"""Module docstring.
-
-Opengear REST module
-
-"""
+"""Opengear REST module. PRovides interworking with (through SNMP) opengear console server"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 #
@@ -15,7 +11,7 @@ def inventory(aDict):
  Args:
   - ip (required)
 
- Extra:
+ Output:
  """
  from ..devices.opengear import Device
  ret = {}

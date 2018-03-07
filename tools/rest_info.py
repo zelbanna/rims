@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 
@@ -17,8 +17,9 @@ def formatting(restfile,data,globals):
  if len(data['optional']) > 0:
   for key,value in data['optional'].iteritems():
    print "  - %s (optional%s"%(key,")" if value == True else " - required actually)")
- print ""
- print " Extra:"
+ print "\n Output:"
+ if len(data['pop']) > 0 or len(data['undecoded']) > 0:
+  print "\n Extra:"
  if len(data['pop']) > 0:
   for key in data['pop'].keys():
    print "  - %s (pop)"%(key)

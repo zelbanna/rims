@@ -1,10 +1,7 @@
-"""Module docstring.
-
-SDCP DNS cache REST module
-
-"""
+"""DNS API module. This module is a REST wrapper for interfaces to a particular DNS server (device) type module.           
+Settings are needed to pinpoint the right service node AND the server type"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from ..core.dbase import DB
@@ -20,7 +17,7 @@ def list_domains(aDict):
   - dict (optional)
   - sync (optional)
 
- Extra:
+ Output:
   - filter:forward/reverse
  """
  if SC.dns.get('node','master') == 'master':
@@ -54,7 +51,7 @@ def list_domains_cache(aDict):
   - filter (optional)
   - dict (optional)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:
@@ -73,7 +70,7 @@ def domain_lookup(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  if SC.dns.get('node','master') == 'master':
   from importlib import import_module
@@ -96,7 +93,7 @@ def domain_update(aDict):
   - id (required)
   - name (required)
 
- Extra:
+ Output:
  """
  if SC.dns.get('node','master') == 'master':
   from importlib import import_module
@@ -117,7 +114,7 @@ def domain_delete(aDict):
   - from (required)
   - to (required)
 
- Extra:
+ Output:
  """
  ret = {'result':'NOT_OK'}
  with DB() as db:
@@ -149,7 +146,7 @@ def list_records(aDict):
   - type (optional)
   - domain_id (optional)
 
- Extra:
+ Output:
  """
  if SC.dns.get('node','master') == 'master':
   from importlib import import_module
@@ -170,7 +167,7 @@ def record_lookup(aDict):
   - domain_id (required)
   - id (required)
 
- Extra:
+ Output:
  """
  if SC.dns.get('node','master') == 'master':
   from importlib import import_module  
@@ -194,7 +191,7 @@ def record_update(aDict):
   - type (required)
   - domain_id (required)
 
- Extra:
+ Output:
  """
  if SC.dns.get('node','master') == 'master':
   from importlib import import_module  
@@ -214,7 +211,7 @@ def record_delete(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  if SC.dns.get('node','master') == 'master':
   from importlib import import_module  
@@ -236,7 +233,7 @@ def record_transfer(aDict):
   - device_id (required)
   - type (required)
 
- Extra:
+ Output:
  """
  with DB() as db:
   update = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),aDict['record_id'],aDict['device_id']))
@@ -253,7 +250,7 @@ def record_device_create(aDict):
   - domain_id (required)
   - fqdn (required)
 
- Extra:
+ Output:
  """
  ret = {'result':'OK'}
  args = {'id':'new','domain_id':aDict['domain_id'],'type':aDict['type'].upper()}
@@ -294,7 +291,7 @@ def record_device_update(aDict):
   - a_id (required)   - id/0
   - ptr_id (required) - id/0
 
- Extra:
+ Output:
  """
  ret = {}
  def GL_ip2ptr(addr):
@@ -339,7 +336,7 @@ def record_device_delete(aDict):
   - a_id (optional) - id/0
   - ptr_id (optional) - id/0
 
- Extra:
+ Output:
  """
  ret = {}
  if SC.dns.get('node','master') == 'master':
@@ -364,7 +361,7 @@ def dedup(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  if SC.dns.get('node','master') == 'master':
   from importlib import import_module  
@@ -384,7 +381,7 @@ def top(aDict):
  Args:
   - count (optional)
 
- Extra:
+ Output:
  """
  if SC.dns.get('node','master') == 'master':
   from importlib import import_module  
@@ -403,7 +400,7 @@ def consistency(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  def GL_ip2arpa(addr):
   octets = addr.split('.')[:3]

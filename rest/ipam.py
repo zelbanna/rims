@@ -1,10 +1,6 @@
-"""Module docstring.
-
-sdcpIPAM API module
-
-"""
+"""IPAM API module. Provides subnet management for devices"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from ..core.dbase import DB
@@ -16,7 +12,7 @@ def list(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:
@@ -32,7 +28,7 @@ def info(aDict):
  Args:
   - id (required) ('new' / <no>)
 
- Extra:
+ Output:
  """
  ret = {}
  if aDict['id'] == 'new':
@@ -47,12 +43,12 @@ def info(aDict):
 #
 #
 def allocation(aDict):
- """Function docstring for allocation: Allocation of IP addresses within a subnet
+ """Function docstring for allocation: Allocation of IP addresses within a subnet. Should be renamed to inventory to follow naming conventions TODO
 
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:
@@ -84,7 +80,7 @@ def update(aDict):
   - gateway (required)
   - id (required)
 
- Extra:
+ Output:
  """
  from struct import pack,unpack
  from socket import inet_aton,inet_ntoa
@@ -129,7 +125,7 @@ def find(aDict):
   - id (required)
   - consecutive (optional)
 
- Extra:
+ Output:
  """
  from struct import pack
  from socket import inet_ntoa
@@ -171,7 +167,7 @@ def delete(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:

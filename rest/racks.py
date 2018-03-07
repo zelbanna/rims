@@ -1,10 +1,6 @@
-"""Module docstring.
-
-Tools REST module
-
-"""
+"""Racks REST module. Rack infrastructure management, info, listing etc (of PDUs, console servers and devices)"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from ..core.dbase import DB
@@ -17,7 +13,7 @@ def list(aDict):
  Args:
   - sort (optional)
 
- Extra:
+ Output:
  """
  ret = []
  sort = aDict.get('sort','id')
@@ -34,7 +30,7 @@ def info(aDict):
  Args:
   - id (optional)
 
- Extra:
+ Output:
  """
  ret = {'name': None, 'console':[], 'pdu':[] }
  with DB() as db:
@@ -66,7 +62,7 @@ def devices(aDict):
   - id (required)
   - sort (optional)
 
- Extra:
+ Output:
  """
  ret = {'sort':aDict.get('sort','devices.id')}
  id = aDict['id']
@@ -91,7 +87,7 @@ def update(aDict):
   - id (required)
   - size (required)
 
- Extra:
+ Output:
  """
  ret = {'id':aDict['id']}
  id = aDict.pop('id',None)
@@ -112,7 +108,7 @@ def delete(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  with DB() as db:
   deleted = db.do("DELETE FROM racks WHERE id = %s"%aDict['id'])
@@ -130,7 +126,7 @@ def infra(aDict):
   - images (optional)
   - types (optional)
 
- Extra:
+ Output:
  """
  ret =  {}
  with DB() as db:

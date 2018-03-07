@@ -1,10 +1,6 @@
-"""Module docstring.
-
-PowerDNS API module
-
-"""
+"""PowerDNS API module. Provides powerdns specific REST interface. Essentially to create a GUI management for PowerDNS."""
 __author__ = "Zacharias El Banna"                     
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from .. import SettingsContainer as SC
@@ -18,7 +14,7 @@ def dedup(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
@@ -42,7 +38,7 @@ def top(aDict):
  Args:
   - count (optional)
 
- Extra:
+ Output:
  """
  def GL_get_host_name(aIP):
   from socket import gethostbyaddr
@@ -79,7 +75,7 @@ def domains(aDict):
   - dict (optional)
   - exclude (optional)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
@@ -100,7 +96,7 @@ def domain_lookup(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
@@ -119,7 +115,7 @@ def domain_update(aDict):
   - id (required)
   - name (required)
 
- Extra:
+ Output:
  """
  ret = {'result':'OK'}
  id = aDict.pop('id','new')
@@ -151,7 +147,7 @@ def domain_delete(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
@@ -168,7 +164,7 @@ def records(aDict):
   - type (optional)
   - domain_id (optional)
 
- Extra:
+ Output:
  """
  ret = {}
  select = []
@@ -191,7 +187,7 @@ def record_lookup(aDict):
   - id (required)
   - domain_id (required)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
@@ -211,7 +207,7 @@ def record_update(aDict):
   - type (required)
   - domain_id (required)
 
- Extra:
+ Output:
  """
  from time import strftime
  ret = {}
@@ -235,7 +231,7 @@ def record_delete(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   deleted = db.do("DELETE FROM records WHERE id = '%s'"%(aDict['id']))

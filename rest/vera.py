@@ -1,10 +1,6 @@
-"""Module docstring.
-
-Vera API module
-
-"""
+"""Vera API module. Provides nested REST management for a VERA z-wave controller through a node"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 
@@ -18,7 +14,7 @@ def node_to_ui(aDict):
  Args:
   - node (required)
 
- Extra:
+ Output:
  """
  node = SC.node[aDict.get('node','vera')]
  parts = node.partition('//')
@@ -33,7 +29,7 @@ def status(aDict):
  Args:
   - node (required)
 
- Extra:
+ Output:
  """
  try:
   node = SC.node[aDict['node']]
@@ -50,7 +46,7 @@ def infra(aDict):
  Args:
   - node (required)
 
- Extra:
+ Output:
  """
  try:
   ret = {}
@@ -75,7 +71,7 @@ def scene(aDict):
   - op (optional) - 'run'/'off'
   - status (optional)
 
- Extra:
+ Output:
  """                
  try:      
   ret = {}
@@ -106,7 +102,7 @@ def devices(aDict):
  Args:
   - node (required)
 
- Extra:
+ Output:
  """
  try:
   ret = {}
@@ -128,7 +124,7 @@ def device_info(aDict):
   - node (required)
   - device (required)
 
- Extra:
+ Output:
  """
  try:
   node = SC.node[aDict['node']]

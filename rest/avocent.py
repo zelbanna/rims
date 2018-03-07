@@ -1,10 +1,6 @@
-"""Module docstring.
-
-Avicent REST module
-
-"""
+"""Avocent REST module. Provides calls to interact with avocent PDUs"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from ..devices.avocent import Device
@@ -20,7 +16,7 @@ def update(aDict):
   - unit (required)
   - text (required)
 
- Extra:
+ Output:
  """
  if not (int(aDict['slot']) == 0 and int(aDict['unit']) == 0):
   avocent = Device(aDict['ip'])
@@ -39,7 +35,7 @@ def info(aDict):
   - id (required)
   - op (optional)
 
- Extra:
+ Output:
  """
  from ..core.dbase import DB
  ret = {}
@@ -69,7 +65,7 @@ def inventory(aDict):
  Args:
   - ip (required)
 
- Extra:
+ Output:
  """
  avocent = Device(aDict['ip'])
  return avocent.get_inventory()
@@ -85,7 +81,7 @@ def op(aDict):
   - state (required)
   - unit (required)
 
- Extra:
+ Output:
  """
  ret = {}
  avocent = Device(aDict['ip'])

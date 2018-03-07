@@ -1,10 +1,6 @@
-"""Module docstring.
-
-Booking REST module
-
-"""
+"""Booking REST module. Provides basic booking functionality for devices"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 #
@@ -20,7 +16,7 @@ def update(aDict):
   - user_id (required)
   - op (required)
 
- Extra:
+ Output:
  """
  ret = {'op':aDict['op']}
  if aDict['op'] == 'book':
@@ -42,7 +38,7 @@ def list(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:

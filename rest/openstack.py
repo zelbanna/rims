@@ -1,10 +1,6 @@
-"""Module docstring.
-
-Openstack Portal REST module
-
-"""
+"""Openstack REST module. Provides all REST functions to interwork with an Openstack controller for different services"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from ..devices.openstack import Device
@@ -19,7 +15,7 @@ def application(aDict):
   - appformix (optional)
   - name (optional)
   - token (optional)
- Extra:
+ Output:
  """
  from datetime import datetime,timedelta
  ret = {'title':"%s 2 Cloud"%(aDict.get('name','iaas')),'choices':[]}
@@ -59,7 +55,7 @@ def authenticate(aDict):
   - password (required)
   - project_name (required)
 
- Extra:
+ Output:
  """
  from ..core.logger import log
  ret = {}
@@ -92,7 +88,7 @@ def services(aDict):
   - token (required)
   - filter (optional)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:
@@ -113,7 +109,7 @@ def rest(aDict):
   - arguments (optional)
   - method (optional)
 
- Extra:
+ Output:
  """
  try:
   with DB() as db:
@@ -143,7 +139,7 @@ def call(aDict):
   - arguments (optional)
   - method (optional)
 
- Extra:
+ Output:
  """
  with DB() as db:
   db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = '%s'"%(aDict['token'], aDict['service']))
@@ -164,7 +160,7 @@ def href(aDict):
   - arguments (optional)
   - method (optional)
 
- Extra:
+ Output:
  """
  with DB() as db:
   db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE openstack_tokens.uuid = '%s'"%(aDict['token']))
@@ -184,7 +180,7 @@ def info(aDict):
  Args:
   - username (required)
 
- Extra:
+ Output:
  """
  from datetime import datetime
  ret = {}
@@ -201,7 +197,7 @@ def token_info(aDict):
  Args:
   - token (required)
 
- Extra:
+ Output:
  """
  from datetime import datetime
  ret = {}
@@ -218,7 +214,7 @@ def heat_templates(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  from os import path as ospath
  from .. import SettingsContainer as SC
@@ -241,7 +237,7 @@ def heat_content(aDict):
 
  Args:
   - template (required)
- Extra:
+ Output:
  """
  from os import path as ospath
  from json import load
@@ -266,7 +262,7 @@ def heat_instantiate(aDict):
   - name (required)
   - parameters (required)
 
- Extra:
+ Output:
  """
  from os import path as ospath
  from json import load
@@ -303,7 +299,7 @@ def vm_networks(aDict):
   - token (required)
   - vm (required)
 
- Extra:
+ Output:
  """
  ret = {'result':'OK','vm':None,'interfaces':[]}
  with DB() as db:
@@ -333,7 +329,7 @@ def vm_console(aDict):
   - token (required)
   - vm (required)
 
- Extra:
+ Output:
  """
  ret = {'result':'NOT_OK','vm':aDict['vm']}
  with DB() as db:
@@ -360,7 +356,7 @@ def vm_resources(aDict):
  Args:
   - token (required)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:
@@ -384,7 +380,7 @@ def contrail_fqname(aDict):
   - token (required)
   - uuid (required)
 
- Extra:
+ Output:
  """
  with DB() as db:
   db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
@@ -405,7 +401,7 @@ def contrail_uuid(aDict):
   - token (required)
   - uuid (required)
 
- Extra:
+ Output:
  """
  with DB() as db:
   db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
@@ -427,7 +423,7 @@ def contrail_interfaces(aDict):
   - token (required)
   - virtual_network (required)
 
- Extra:
+ Output:
  """
  ret = {'virtual-network':aDict['virtual_network'],'ip_addresses':[]}
  with DB() as db:
@@ -470,7 +466,7 @@ def contrail_floating_ips(aDict):
   - token (required)
   - virtual_network (required)
 
- Extra:
+ Output:
  """
  ret = {'virtual-network':aDict['virtual_network'],'ip_addresses':[]}
  with DB() as db:
@@ -498,7 +494,7 @@ def contrail_vm_interfaces(aDict):
   - token (required)
   - vm (required)
 
- Extra:
+ Output:
  """
  ret = {'vm':aDict['vm'],'interfaces':[]}
  with DB() as db:
@@ -522,7 +518,7 @@ def contrail_vm_associate_fip(aDict):
   - vm_interface (required)
   - vm_ip_address (required)
   - floating_ip (required)
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:

@@ -1,10 +1,6 @@
-"""Module docstring.
-
-SDCP tools REST module
-
-"""
+"""SDCP tools REST module. Provides various tools"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from ..core.dbase import DB
@@ -16,7 +12,7 @@ def install(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  from sys import path as syspath
  from os import chmod, remove, listdir, path as ospath
@@ -126,7 +122,7 @@ def database(aDict):
   - table (optional)
   - columns (optional) - columns is a string list x,y,z,..
 
- Extra:
+ Output:
  """
  cols = aDict.get('columns','*')
  tbl  = aDict.get('table','devices')
@@ -146,7 +142,7 @@ def rest_analyze(aDict):
  Args:
   - file (required)
 
- Extra:
+ Output:
  """
  from os import path as ospath
  restdir = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','rest'))
@@ -208,7 +204,7 @@ def rest_explore(aDict):
  Args:
   - api (optional)
 
- Extra:
+ Output:
  """
  from types import FunctionType as function
  from importlib import import_module
@@ -240,7 +236,7 @@ def rest_information(aDict):
   - api (required)
   - function (required)
 
- Extra:
+ Output:
  """ 
  from importlib import import_module
  mod = import_module("sdcp.rest.%s"%(aDict['api']))
@@ -254,7 +250,7 @@ def rest_debug(aDict):
 
  Args:
 
- Extra:
+ Output:
  """ 
  print "Set-Cookie: debug=true; Path=/"
  return { 'globals':str(globals().keys()), 'locals':str(locals().keys()) }
@@ -267,7 +263,7 @@ def logs_clear(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  from ..core.logger import log
  ret = {}
@@ -291,7 +287,7 @@ def logs_get(aDict):
  Args:
   - count (optional)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:

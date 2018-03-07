@@ -1,10 +1,7 @@
-"""Module docstring.
-
-DHCP API module
-
-"""
+"""DHCP API module. This module is a REST wrapper for interfaces the DHCP (device) type module.
+Settings are needed to pinpoint the right service node AND the server type"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from .. import SettingsContainer as SC
@@ -16,7 +13,7 @@ def update_server(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  from device import list_mac
  ret = {}
@@ -41,7 +38,7 @@ def leases(aDict):
  Args:
   - type (required)
 
- Extra:
+ Output:
  """
  if SC.dhcp.get('node','master') == 'master':
   from importlib import import_module

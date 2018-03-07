@@ -4,7 +4,7 @@ Avocent PDU module
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__  = "Production"
 __type__    = "pdu"
 

@@ -1,10 +1,6 @@
-"""Module docstring.
-
-SDCP generic REST module
-
-"""
+"""SDCP generic REST module. The portal and authentication"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 #
@@ -14,7 +10,7 @@ def application(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  from datetime import datetime,timedelta
  from ..core.dbase import DB
@@ -35,11 +31,11 @@ def application(aDict):
 #
 #
 def authenticate(aDict):
- """Function docstring for authenticate. Provide cookie with lifetime
+ """Function docstring for authenticate. Provide cookie with lifetime. TODO should set auth and ID here
 
  Args:
 
- Extra:
+ Output:
  """
  from datetime import datetime,timedelta
  ret = {}

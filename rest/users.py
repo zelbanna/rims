@@ -1,10 +1,6 @@
-"""Module docstring.
-
-Users REST module
-
-"""
+"""Users API module. Provides user interaction and management (create, delete, setting and fetching menuitems etc)"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from ..core.dbase import DB
@@ -14,7 +10,7 @@ def list(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:
@@ -35,7 +31,7 @@ def info(aDict):
   - alias (optional)
   - email (optional)
 
- Extra:
+ Output:
   - op (pop)
  """
  ret = {'id':aDict['id']}
@@ -62,7 +58,7 @@ def delete(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  with DB() as db:
   res = db.do("DELETE FROM users WHERE id = '%s'"%aDict['id'])
@@ -77,7 +73,7 @@ def menu(aDict):
   - id (required)
   - dict (optional)
 
- Extra:
+ Output:
  """
  ret = []
  with DB() as db:

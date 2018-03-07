@@ -1,10 +1,6 @@
-"""Module docstring.
-
-Resources REST module
-
-"""
+"""Resources REST module. Provides functionality to manage menuitems, tools, bookmarks etc."""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from ..core.dbase import DB
@@ -21,7 +17,7 @@ def list(aDict):
   - view_public (optional)
   - dict (optional)
 
- Extra:
+ Output:
  """
  ret = {'user_id':aDict.get('user_id',"1"), 'type':aDict.get('type') }
  with DB() as db:
@@ -51,7 +47,7 @@ def info(aDict):
   - type (required conditionally)
   - icon (required conditionally)
 
- Extra:
+ Output:
  """
  id = aDict.pop('id',None)
  op = aDict.pop('op',None)
@@ -77,7 +73,7 @@ def delete(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  with DB() as db:
   deleted = db.do("DELETE FROM resources WHERE id = '%s'"%aDict['id'])

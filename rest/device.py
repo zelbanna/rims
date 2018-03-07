@@ -1,10 +1,6 @@
-"""Module docstring.
-
- Device API module
-
-"""
+"""Device API module. This is the main device interaction module for device info, update, listing,discovery etc"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from ..core.dbase import DB
@@ -20,7 +16,7 @@ def info(aDict):
   - info (optional)
   - op (optional)
 
- Extra:
+ Output:
   - info: username,booking,infra => make 'exclude' arg in final function instead
  """
  srch = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('%s')"%(aDict.get('ip'))
@@ -135,7 +131,7 @@ def basics(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:
@@ -154,7 +150,7 @@ def list(aDict):
   - dict (optional)
   - rack (optional)
 
- Extra:
+ Output:
  """
  ret = {}
  if aDict.get('rack'):
@@ -185,7 +181,7 @@ def list_type(aDict):
   - base (optional)
   - name (optional)
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:
@@ -201,7 +197,7 @@ def list_mac(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  def GL_int2mac(aInt):
   return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
@@ -228,7 +224,7 @@ def new(aDict):
   - mac (optional)
   - arg (optional)
 
- Extra:
+ Output:
   - target is 'rack_id' or nothing
   - arg is rack_id
  """
@@ -275,7 +271,7 @@ def delete(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  from ..core.logger import log
  log("device_remove({})".format(aDict))
@@ -300,7 +296,7 @@ def clear(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  with DB() as db:
   res = db.do("DELETE FROM devices")
@@ -314,7 +310,7 @@ def to_node(aDict):
  Args:
   - id
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:
@@ -338,7 +334,7 @@ def function(aDict):
   - op (required)
   - type (required)
 
- Extra:
+ Output:
  """
  ret = {}
  from importlib import import_module
@@ -360,7 +356,7 @@ def configuration_template(aDict):
  Args:
   - id (required)
 
- Extra:
+ Output:
  """
  from importlib import import_module
  ret = {}
@@ -386,7 +382,7 @@ def discover(aDict):
   - a_dom_id (required)
   - subnet_id (required)
 
- Extra:
+ Output:
  """
  from time import time
  from threading import Thread, BoundedSemaphore
@@ -456,7 +452,7 @@ def detect(aDict):
  Args:
   - ip (required)
 
- Extra:
+ Output:
  """
  from os import system
  if system("ping -c 1 -w 1 {} > /dev/null 2>&1".format(aDict['ip'])) != 0:
@@ -505,7 +501,7 @@ def mac_sync(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  from ..core.dbase import DB
  def GL_mac2int(aMAC):
@@ -539,7 +535,7 @@ def graph_save(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  ret = {}
  with DB() as db:
@@ -566,7 +562,7 @@ def graph_info(aDict):
   - graph_update (optional)
 
 
- Extra:
+ Output:
  """
  with DB() as db:
   ret = {}

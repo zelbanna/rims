@@ -1,10 +1,6 @@
-"""Module docstring.
-
-Settings REST module, This one offers nesting natively
-
-"""
+"""Settings REST module. Manages settings for nodes, offers nested settings management for other nodes pinpointed from the node section"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from ..core.dbase import DB
@@ -18,7 +14,7 @@ def list(aDict):
   - section (optional)
   - user_id (optional)
 
- Extra:
+ Output:
  """
  if not aDict.get('node','master') == 'master':
   from ..core.rest import call as rest_call
@@ -57,7 +53,7 @@ def info(aDict):
   - parameter (cond required)
   - required (conditionally required)
 
- Extra:
+ Output:
  """
  node = aDict.pop('node','master')
  if not node == 'master':
@@ -95,7 +91,7 @@ def parameter(aDict):
   - section (required)
   - parameter (required)
 
- Extra:
+ Output:
  """
  if not aDict.get('node','master') == 'master':
   from ..core.rest import call as rest_call
@@ -120,7 +116,7 @@ def section(aDict):
   - node (optional)
   - section (required)
 
- Extra:
+ Output:
  """
  if not aDict.get('node','master') == 'master':
   from ..core.rest import call as rest_call
@@ -146,7 +142,7 @@ def all(aDict):
   - dict (optional)
   - section (optional)
 
- Extra:
+ Output:
  """
  if not aDict.get('node','master') == 'master':
   from ..core.rest import call as rest_call
@@ -177,7 +173,7 @@ def save(aDict):
  Args:
   - node (optional)
 
- Extra:
+ Output:
  """
  if not aDict.get('node','master') == 'master':
   from ..core.rest import call as rest_call
@@ -231,7 +227,7 @@ def delete(aDict):
   - node (optional)
   - id (required)
 
- Extra:
+ Output:
  """
  if not aDict.get('node','master') == 'master':
   from ..core.rest import call as rest_call

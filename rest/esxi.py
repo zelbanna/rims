@@ -1,10 +1,6 @@
-"""Module docstring.
-
-ESXi API module
-
-"""
+"""ESXi API module. PRovides interworking with ESXi device module to provide esxi VM interaction"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 #
@@ -15,7 +11,7 @@ def list(aDict):
   - ip (required)
   - sort (optional)
 
- Extra:
+ Output:
  """
  from ..devices.esxi import Device
  esxi = Device(aDict['ip'])
@@ -33,7 +29,7 @@ def op(aDict):
   - next-state (required)
   - snapshot (optional)
 
- Extra:
+ Output:
  """
  from ..devices.esxi import Device
  ret = {'id':aDict['id'],'res':'OK'}
@@ -71,7 +67,7 @@ def logs(aDict):
   - hostname (required)
   - count (optional)
 
- Extra:
+ Output:
  """
  from subprocess import check_output
  from ..  import SettingsContainer as SC
@@ -95,7 +91,7 @@ def snapshots(aDict):
   - user_id (required)
   - id (required)
 
- Extra:
+ Output:
  """
  from ..devices.esxi import Device
  ret = {'res':'OK', 'data':[],'highest':0}

@@ -1,10 +1,6 @@
-"""Module docstring.
-
-ISC DHCP API module
-
-"""
+"""ISC DHCP API module. The specific ISC dhcp REST interface to reload and fetch info from ISC dhcp server"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 #
@@ -16,7 +12,7 @@ def leases(aDict):
  Args:
   - type (required)
 
- Extra:
+ Output:
  """
  def GL_ip2int(addr):
   from struct import unpack
@@ -55,7 +51,7 @@ def update_server(aDict):
  Args:
   - entries (required). entries is a list of dict objects containing hostname, mac, ip etc
 
- Extra:
+ Output:
  """
  from .. import SettingsContainer as SC
  entries = aDict['entries']

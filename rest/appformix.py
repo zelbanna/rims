@@ -1,10 +1,6 @@
-"""Module docstring.
-
- Appformix API module
-
-"""
+"""Appformix API module. Provides calls for appformix interaction"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.02.09GA"
+__version__ = "18.03.07GA"
 __status__ = "Production"
 
 from ..devices.appformix import Device
@@ -15,7 +11,7 @@ def alarm(aDict):
 
  Args:
 
- Extra:
+ Output:
  """
  from ..core.logger import log
  log("appformix_alarm({})".format(str(aDict)))
@@ -29,7 +25,7 @@ def authenticate(aDict):
  Args:
   - host (required)
 
- Extra:
+ Output:
  """
  from .. import SettingsContainer as SC
  ret = {}
@@ -49,7 +45,7 @@ def report_projects(aDict):
   - token (required)
   - project (required)
 
- Extra:
+ Output:
  """
  ret = {}
  controller = Device(aDict['host'],aDict['token'])
@@ -67,7 +63,7 @@ def project_reports(aDict):
   - host (required)
   - token (required)
 
- Extra:
+ Output:
  """
  ret = {}
  controller = Device(aDict['host'],aDict['token'])
