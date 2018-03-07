@@ -285,25 +285,35 @@ def logs_get(aDict):
  """Function docstring for logs_get TBD
 
  Args:
+  - node (optional)
   - count (optional)
 
  Output:
  """
- ret = {}
- with DB() as db:
-  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
-  logs = db.get_rows()
- count = int(aDict.get('count',15))
- for log in logs:
-  lines = ["\r" for i in range(count)]
-  pos = 0
-  try:
-   with open(log['value'],'r') as f:
-    for line in f:
-     lines[pos] = line
-     pos = (pos + 1) % count
-    ret[log['parameter']] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
-  except Exception as err:
-   ret[log['parameter']] = ['ERROR: %s'%(str(err))]
+ if not aDict.get('node','master') == 'master':
+  from ..core.rest import call as rest_call
+  node = aDict.pop('node',None)
+  with DB() as db:
+   db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
+   url = db.get_val('value')
+  res = rest_call("%s?logs_get"%url,aDict)
+  ret = res['data'] (if res['code'] == 200 and res['data']) else {'xist':0}
+ else:
+  ret = {}
+  with DB() as db:
+   ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
+   logs = db.get_rows()
+  count = int(aDict.get('count',15))
+  for log in logs:
+   lines = ["\r" for i in range(count)]
+   pos = 0
+   try:
+    with open(log['value'],'r') as f:
+     for line in f:
+      lines[pos] = line
+      pos = (pos + 1) % count
+     ret[log['parameter']] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
+   except Exception as err:
+    ret[log['parameter']] = ['ERROR: %s'%(str(err))]
  return ret
 

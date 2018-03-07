@@ -51,13 +51,11 @@ def clear(aWeb):
 # Internal Logs
 #
 def logs(aWeb):
- dev = aWeb.rest_call("settings_parameter",{'section':'node','parameter':aWeb['host']})['data']
- res = aWeb.rest_full(dev['value'],'tools_logs_get',{'count':18})
+ res = aWeb.rest_call('tools_logs_get',{'node':aWeb['host'],'count':18})
+ res.pop('xist',None)
  print "<ARTICLE>"
- if res['code'] == 200 and res['data']:
-  res['data'].pop('xist',None)
-  for file,logs in res['data'].iteritems():
-   print "<P>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))
+ for file,logs in res.iteritems():
+  print "<P>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))
  print "</ARTICLE>"
 
 #
