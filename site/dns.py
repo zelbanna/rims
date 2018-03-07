@@ -11,7 +11,7 @@ __status__= "Production"
 #
 #
 def list(aWeb):
- domains = aWeb.rest_call("dns_domains_list")
+ domains = aWeb.rest_call("dns_domain_list")
  print "<ARTICLE><P>Domains</P>"
  print "<DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_list')
@@ -64,7 +64,7 @@ def domain_info(aWeb):
 #
 #
 def domain_transfer(aWeb):
- domains = aWeb.rest_call("dns_domains_list",{"filter":"arpa","exclude":aWeb['id']})
+ domains = aWeb.rest_call("dns_domain_list",{"filter":"arpa","exclude":aWeb['id']})
  print "<ARTICLE STYLE='display:inline-block'>"
  print "<FORM ID=dns_transfer><INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
  print "Transfer all records to <SELECT NAME=transfer>"
@@ -86,7 +86,7 @@ def domain_delete(aWeb):
 #
 #
 def records(aWeb):
- dns = aWeb.rest_call("dns_records_list",{'domain_id':aWeb['id']})
+ dns = aWeb.rest_call("dns_record_list",{'domain_id':aWeb['id']})
  print "<ARTICLE><P>Records</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=dns_records&id=%s'%(aWeb['id']))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_record_info&id=new&domain_id=%s'%(aWeb['id']))
@@ -157,7 +157,7 @@ def record_transfer(aWeb):
 #
 #
 def load_cache(aWeb):
- res = aWeb.rest_call("dns_domains_list",{'sync':True})
+ res = aWeb.rest_call("dns_domain_list",{'sync':True})
  print "<ARTICLE>Added:%s Removed:%s</ARTICLE>"%(res['added'],res['deleted'])
 
 #

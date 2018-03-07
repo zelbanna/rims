@@ -10,8 +10,8 @@ from .. import SettingsContainer as SC
 
 #
 #
-def domains_list(aDict):
- """Function docstring for domains_list.
+def domain_list(aDict):
+ """Function docstring for domain_list.
 
  Args:
   - filter (optional)
@@ -45,8 +45,8 @@ def domains_list(aDict):
 
 #
 #
-def domains_list_cache(aDict):
- """Function docstring for domains_list_cache TBD
+def domain_list_cache(aDict):
+ """Function docstring for domain_list_cache TBD
 
  Args:
   - filter (optional)
@@ -140,8 +140,8 @@ def domain_delete(aDict):
 
 #
 #
-def records_list(aDict):
- """Function docstring for records_list TBD
+def record_list(aDict):
+ """Function docstring for record_list TBD
 
  Args:
   - type (optional)
@@ -414,7 +414,7 @@ def consistency(aDict):
   db.do("SELECT id,name FROM domains WHERE name LIKE '%%in-addr.arpa'")
   domains = db.get_dict('name')
   for type in ['a','ptr']:
-   records = records_list({'type':type})['records']
+   records = record_list({'type':type})['records']
    db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ip) AS ipasc, %s_id AS dns_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))
    devices = db.get_dict('ipasc' if type == 'a' else 'fqdn')
    for rec in records:
