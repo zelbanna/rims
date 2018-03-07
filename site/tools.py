@@ -121,7 +121,9 @@ def rest_explore(aWeb):
 def rest_information(aWeb):
  res = aWeb.rest_call("tools_rest_information",{'api':aWeb['api'],'function':aWeb['function']})
  print "<ARTICLE>"
- print "<H1>%s - %s</H1>"%(aWeb['api'],aWeb['function'])
+ print "<H1>API: %s</H1>"%(aWeb['api'])
+ print "<BR>".join(res['module'])
+ print "<H1>Function: %s</H1>"%(aWeb['function'])
  print "<BR>".join(res['information'])
  print "</ARTICLE>"
  

@@ -22,7 +22,7 @@ def manage(aWeb):
   node = aWeb['node']
  elif aWeb['id']:
   node = aWeb.rest_call("device_to_node",{'id':aWeb['id']})['node']
- ui = aWeb.rest_call("vera_node_to_ui",{'node':node}).get('host','#')
+ ui = aWeb.rest_call("vera_node_to_ui",{'node':node}).get('ui','#')
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_status&node=%s>Status</A></LI>"%node
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&node=%s>Devices</A></LI>"%node

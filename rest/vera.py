@@ -13,16 +13,17 @@ from ..core.rest import call as rest_call
 #
 #
 def node_to_ui(aDict):
- """Function docstring for node_to_ip TBD
+ """Function docstring for node_to_ui TBD
 
  Args:
   - node (required)
 
  Extra:
  """
- node = SC.node[aDict['node']]
- return {'node':"%s/cmh/"%(':'.join((node.split(':')[0:2])))}
- 
+ node = SC.node[aDict.get('node','vera')]
+ parts = node.partition('//')
+ host = "%s//%s/cmh/"%(parts[0],(parts[2].split('/')[0]).split(':')[0])
+ return {'ui':host }
 
 #
 #

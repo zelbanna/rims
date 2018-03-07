@@ -245,7 +245,19 @@ def rest_information(aDict):
  from importlib import import_module
  mod = import_module("sdcp.rest.%s"%(aDict['api']))
  fun = getattr(mod,aDict['function'],None)
- return {'api':aDict['api'],'information':fun.__doc__.split('\n')}
+ return {'api':aDict['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}
+
+#
+#
+def rest_debug(aDict):
+ """Function docstring for rest_debug TBD
+
+ Args:
+
+ Extra:
+ """ 
+ print "Set-Cookie: debug=true; Path=/"
+ return { 'globals':str(globals().keys()), 'locals':str(locals().keys()) }
 
 ############################################ Monitor ##############################################
 #
