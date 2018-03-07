@@ -281,7 +281,7 @@ def new(aWeb):
   print aWeb.rest_call("ipam_find",{'id':subnet_id})['ip']
  else:
   subnets = aWeb.rest_call("ipam_list")['subnets']
-  domains = aWeb.rest_call("dns_list_domains",{'filter':'forward'})['domains']
+  domains = aWeb.rest_call("dns_domains_list",{'filter':'forward'})['domains']
   print "<ARTICLE CLASS=info><P>Add Device</P>"
   print "<FORM ID=device_new_form>"
   print "<DIV CLASS=table><DIV CLASS=tbody>"
@@ -323,7 +323,7 @@ def discover(aWeb):
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
   subnets = aWeb.rest_call("ipam_list")['subnets']
-  domains = aWeb.rest_call("dns_list_domains_cache",{'filter':'forward'})['domains']
+  domains = aWeb.rest_call("dns_domains_list_cache",{'filter':'forward'})['domains']
   dom_name = aWeb['domain']
   print "<ARTICLE CLASS=info><P>Device Discovery</P>"
   print "<FORM ID=device_discover_form>"

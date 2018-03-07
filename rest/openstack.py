@@ -131,12 +131,12 @@ def rest(aDict):
 #
 #
 def call(aDict):
- """Function docstring for call. Basically creates a controller instance and send a (nested) rest_call
+ """Function docstring for call. Basically creates a controller instance and send a (nested) rest_call.
 
  Args:
   - token (required)
   - service (required)
-  - call (optional)
+  - call (required)
   - arguments (optional)
   - method (optional)
 
