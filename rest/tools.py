@@ -2,6 +2,7 @@
 __author__ = "Zacharias El Banna"
 __version__ = "18.03.07GA"
 __status__ = "Production"
+__add_globals__ = lambda x: globals().update(x)
 
 from ..core.dbase import DB
 
@@ -208,7 +209,7 @@ def rest_explore(aDict):
  """
  from types import FunctionType as function
  from importlib import import_module
- def _analyze(aFile):
+ def __analyze(aFile):
   data = {'api':aFile, 'functions':[]}
   try:
    module = import_module("sdcp.rest.%s"%(aFile))
@@ -218,13 +219,13 @@ def rest_explore(aDict):
 
  ret = {'data':[]}
  if aDict.get('api'):
-  ret['data'].append(_analyze(aDict.get('api')))
+  ret['data'].append(__analyze(aDict.get('api')))
  else:
   from os import path as ospath, listdir
   restdir = ospath.abspath(ospath.join(ospath.dirname(__file__)))
   for restfile in listdir(restdir):
    if restfile[-3:] == '.py':
-    ret['data'].append(_analyze(restfile[0:-3]))
+    ret['data'].append(__analyze(restfile[0:-3]))
  return ret
 
 #

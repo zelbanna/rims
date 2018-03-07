@@ -24,13 +24,13 @@ def server():
  from os import getenv
  from sys import stdout, stdin
  from json import loads, dumps
+ from importlib import import_module
  api,args,mod,fun = None,None,None,None
  try:
   api  = getenv("QUERY_STRING")
   data = stdin.read()
   args = loads(data) if len(data) > 0 else {}
   (mod,void,fun) = api.partition('_')
-  from importlib import import_module
   module = import_module("sdcp.rest.%s"%mod)
   output = dumps(getattr(module,fun,None)(args))
  except Exception, e:

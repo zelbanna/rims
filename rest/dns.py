@@ -3,6 +3,7 @@ Settings are needed to pinpoint the right service node AND the server type"""
 __author__ = "Zacharias El Banna"
 __version__ = "18.03.07GA"
 __status__ = "Production"
+__add_globals__ = lambda x: globals().update(x)
 
 from ..core.dbase import DB
 from .. import SettingsContainer as SC

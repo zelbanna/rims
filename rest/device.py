@@ -2,6 +2,7 @@
 __author__ = "Zacharias El Banna"
 __version__ = "18.03.07GA"
 __status__ = "Production"
+__add_globals__ = lambda x: globals().update(x)
 
 from ..core.dbase import DB
 
@@ -392,7 +393,7 @@ def discover(aDict):
  def GL_int2ip(addr):
   return inet_ntoa(pack("!I", addr))
 
- def _detect_thread(aIPint,aDB,aSema):
+ def __detect_thread(aIPint,aDB,aSema):
   res = detect({'ip':GL_int2ip(aIPint)})
   if res['result'] == 'OK':
    aDB[aIPint] = res['info']
@@ -423,7 +424,7 @@ def discover(aDict):
     if db_old.get(ipint):
      continue
     sema.acquire()
-    t = Thread(target = _detect_thread, args=[ipint, db_new, sema])
+    t = Thread(target = __detect_thread, args=[ipint, db_new, sema])
     t.name = "Detect %s"%ip
     t.start()
 
