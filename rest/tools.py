@@ -296,8 +296,8 @@ def logs_get(aDict):
   with DB() as db:
    db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
    url = db.get_val('value')
-  res = rest_call("%s?logs_get"%url,aDict)
-  ret = res['data'] (if res['code'] == 200 and res['data']) else {'xist':0}
+  res = rest_call("%s?tools_logs_get"%url,aDict)
+  ret = res['data'] if (res['code'] == 200 and res['data']) else {'xist':0}
  else:
   ret = {}
   with DB() as db:
