@@ -62,19 +62,18 @@ def authenticate(aDict):
  ret = {}
  controller = Device(aDict['host'],None)
  res = controller.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
- ret['authenticated'] = res['auth']
- if ret['authenticated'] == 'OK':
+ ret = {'authenticated':res['auth']}
+ if res['authenticated'] == 'OK':
   with DB() as db:
-   ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'os_token':controller.get_token()})
+   ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'token':controller.get_token(),'expires':controller.get_cookie_expire()})
    db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,controller) VALUES('%s','%s','%s','%s',INET_ATON('%s'))"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],aDict['host']))
-   ret['token'] = db.get_last_id()
+   token_id = db.get_last_id()
    for service in ['heat','nova','neutron','glance']:
     port,url,id = controller.get_service(service,'public')
     if len(url) > 0:
      url = url + '/'
-    db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(ret['token'],service,port,url,id))
-   db.do("INSERT INTO openstack_services(uuid,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(ret['token'],"contrail",8082,'',''))
-  ret['expires'] = controller.get_cookie_expire()
+    db.do("INSERT INTO openstack_services(id,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(token_id,service,port,url,id))
+   db.do("INSERT INTO openstack_services(id,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(token_id,"contrail",8082,'',''))
   log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],aDict['host']))
  else:
   log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl))
@@ -93,7 +92,7 @@ def services(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT %s FROM openstack_services WHERE uuid = '%s'"%("*" if not aDict.get('filter') else aDict.get('filter'), aDict['token']))
+  ret['xist'] = db.do("SELECT %s FROM openstack_services WHERE token = '%s'"%("*" if not aDict.get('filter') else aDict.get('filter'), aDict['token']))
   ret['services'] = db.get_rows()
  return ret
 
@@ -113,16 +112,16 @@ def rest(aDict):
  Output:
  """
  try:
-  with DB() as db:
-   db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE openstack_tokens.uuid = '%s'"%(aDict['token']))
-   data = db.get_row()
-   if not aDict.get('href'):
-    db.do("SELECT service_port,service_url FROM openstack_services WHERE uuid = '%s' AND service = '%s'"%(aDict['token'],aDict.get('service')))
-    data.update(db.get_row())
-  controller = Device(data['ipasc'],data['token'])
   if aDict.get('href'):
-   ret = controller.href(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'))
+   from ..core.rest import call as rest_call
+   ret = rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
   else:
+   with DB() as db:
+    db.do("SELECT INET_NTOA(controller) as ipasc, id FROM openstack_tokens WHERE openstack_tokens.token = '%s'"%(aDict['token']))
+    data = db.get_row()
+    db.do("SELECT service_port,service_url FROM openstack_services WHERE id = '%s' AND service = '%s'"%(data['id'],aDict.get('service')))
+    data.update(db.get_row())
+   controller = Device(data['ipasc'],aDict['token'])
    ret = controller.call(data['service_port'], data['service_url'] + aDict['call'], aDict.get('arguments'), aDict.get('method','GET'))
   ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
@@ -143,9 +142,9 @@ def call(aDict):
  Output:
  """
  with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = '%s'"%(aDict['token'], aDict['service']))
+  db.do("SELECT INET_NTOA(controller) as ipasc, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = '%s'"%(aDict['token'], aDict['service']))
   data = db.get_row()
- controller = Device(data['ipasc'],data['token'])
+ controller = Device(data['ipasc'],aDict['token'])
  try:
   ret = controller.call(data['service_port'], data['service_url'] + aDict.get('call',''), aDict.get('arguments'), aDict.get('method'))
   ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
@@ -163,13 +162,8 @@ def href(aDict):
 
  Output:
  """
- with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE openstack_tokens.uuid = '%s'"%(aDict['token']))
-  data = db.get_row()
- controller = Device(data['ipasc'],data['token'])
- try:
-  ret = controller.href(aDict['href'], aDict.get('arguments'), aDict.get('method'))
-  ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
+ from ..core.rest import call as rest_call
+ try: ret = rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
  except Exception as e: ret = e[0]
  return ret
 
@@ -186,14 +180,14 @@ def info(aDict):
  from datetime import datetime
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT INET_NTOA(controller) AS controller, uuid AS internal_token, token AS openstack_token, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires, (UNIX_TIMESTAMP() < expires) AS valid FROM openstack_tokens WHERE username = '%s'"%aDict['username'])
+  ret['xist'] = db.do("SELECT INET_NTOA(controller) AS controller, id, token, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires, (UNIX_TIMESTAMP() < expires) AS valid FROM openstack_tokens WHERE username = '%s'"%aDict['username'])
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
 def token_info(aDict):
- """Function docstring for info. Returns detailed list of Openstack token given internal token
+ """Function docstring for info. Returns detailed list of Openstack token given token
 
  Args:
   - token (required)
@@ -203,7 +197,7 @@ def token_info(aDict):
  from datetime import datetime
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT CAST(NOW() AS CHAR(50)) AS time, INET_NTOA(controller) AS controller, token AS openstack_token, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
+  ret['xist'] = db.do("SELECT CAST(NOW() AS CHAR(50)) AS time, INET_NTOA(controller) AS controller, id, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
   ret['data'] = db.get_row()
  return ret
 
@@ -281,10 +275,10 @@ def heat_instantiate(aDict):
   ret['result'] = 'NOT_OK'
  else:
   with DB() as db:
-   db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'heat'"%(aDict['token']))
+   db.do("SELECT INET_NTOA(controller) as ipasc, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = 'heat'"%(aDict['token']))
    data = db.get_row()
   try:
-   controller = Device(data['ipasc'],data['token'])
+   controller = Device(data['ipasc'],aDict['token'])
    ret = controller.call(data['service_port'], data['service_url'] + "stacks", args, 'POST')
    ret['result'] = 'OK'
   except Exception as e: ret = e[0]
@@ -304,9 +298,9 @@ def vm_networks(aDict):
  """
  ret = {'result':'OK','vm':None,'interfaces':[]}
  with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'contrail'"%(aDict['token']))
+  db.do("SELECT INET_NTOA(controller) as ipasc, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = 'contrail'"%(aDict['token']))
   data = db.get_row()
- controller = Device(data['ipasc'],data['token'])
+ controller = Device(data['ipasc'],aDict['token'])
  vm = controller.call(data['service_port'],data['service_url'] + "virtual-machine/%s"%aDict['vm'])['data']['virtual-machine']
  ret['vm'] = vm['name']
  for vmir in vm['virtual_machine_interface_back_refs']:
@@ -334,9 +328,9 @@ def vm_console(aDict):
  """
  ret = {'result':'NOT_OK','vm':aDict['vm']}
  with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'nova'"%(aDict['token']))
+  db.do("SELECT INET_NTOA(controller) as ipasc, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = 'nova'"%(aDict['token']))
   data = db.get_row()
- controller = Device(data['ipasc'],data['token'])
+ controller = Device(data['ipasc'],aDict['token'])
  try:
   res = controller.call(data['service_port'], data['service_url'] + "servers/%s/remote-consoles"%(aDict['vm']), {'remote_console':{ "protocol": "vnc", "type": "novnc" }}, header={'X-OpenStack-Nova-API-Version':'2.8'})
   if res['code'] == 200:
@@ -361,11 +355,11 @@ def vm_resources(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE openstack_tokens.uuid = '%s'"%(aDict['token']))
+  db.do("SELECT INET_NTOA(controller) as ipasc FROM openstack_tokens WHERE openstack_tokens.token = '%s'"%(aDict['token']))
   data = db.get_row()
-  db.do("SELECT service,service_port,service_url FROM openstack_services WHERE uuid = '%s'"%(aDict['token']))
+  db.do("SELECT service,service_port,service_url FROM openstack_services WHERE token = '%s'"%(aDict['token']))
   services = db.get_dict('service')
- controller = Device(data['ipasc'],data['token'])
+ controller = Device(data['ipasc'],aDict['token'])
  ret['flavors']  = controller.call(services['nova']['service_port'],services['nova']['service_url'] + "flavors/detail?sort_key=name")['data']['flavors']
  ret['images']   = controller.call(services['glance']['service_port'],services['glance']['service_url'] + "v2/images?sort=name:asc")['data']['images']
  ret['networks'] = controller.call(services['neutron']['service_port'],services['neutron']['service_url'] + "v2.0/networks?sort_key=name")['data']['networks']
@@ -384,9 +378,9 @@ def contrail_fqname(aDict):
  Output:
  """
  with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
+  db.do("SELECT INET_NTOA(controller) as ipasc FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
   data = db.get_row()
- controller = Device(data['ipasc'],data['token'])
+ controller = Device(data['ipasc'],aDict['token'])
  try:
   ret = controller.call("8082","id-to-fqname",args={'uuid':aDict['uuid']},method='POST')
   ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
@@ -405,9 +399,9 @@ def contrail_uuid(aDict):
  Output:
  """
  with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token FROM openstack_tokens WHERE uuid = '%s'"%aDict['token'])
+  db.do("SELECT INET_NTOA(controller) as ipasc FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
   data = db.get_row()
- controller = Device(data['ipasc'],data['token'])
+ controller = Device(data['ipasc'],aDict['token'])
  try:
   res = controller.call("8082","id-to-fqname",args={'uuid':aDict['uuid']},method='POST')
   if res.get('result','OK') == 'OK':
@@ -428,9 +422,9 @@ def contrail_interfaces(aDict):
  """
  ret = {'virtual-network':aDict['virtual_network'],'ip_addresses':[]}
  with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'contrail'"%(aDict['token']))
+  db.do("SELECT INET_NTOA(controller) as ipasc, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = 'contrail'"%(aDict['token']))
   data = db.get_row()
- controller = Device(data['ipasc'],data['token'])
+ controller = Device(data['ipasc'],aDict['token'])
  res = controller.call(data['service_port'],data['service_url'] + "virtual-network/%s"%aDict['virtual_network'])
  vn = res['data']['virtual-network']
  fqdn = vn['fq_name']
@@ -471,9 +465,9 @@ def contrail_floating_ips(aDict):
  """
  ret = {'virtual-network':aDict['virtual_network'],'ip_addresses':[]}
  with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'contrail'"%(aDict['token']))
+  db.do("SELECT INET_NTOA(controller) as ipasc, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = 'contrail'"%(aDict['token']))
   data = db.get_row()
- controller = Device(data['ipasc'],data['token'])
+ controller = Device(data['ipasc'],aDict['token'])
  vn = controller.call(data['service_port'],data['service_url'] + "virtual-network/%s"%aDict['virtual_network'])['data']['virtual-network']
  for fipool in vn.get('floating_ip_pools',[]):
   pool = controller.call(data['service_port'],data['service_url'] +"floating-ip-pool/%s"%(fipool['uuid']) )['data']['floating-ip-pool']
@@ -499,9 +493,9 @@ def contrail_vm_interfaces(aDict):
  """
  ret = {'vm':aDict['vm'],'interfaces':[]}
  with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'contrail'"%(aDict['token']))
+  db.do("SELECT INET_NTOA(controller) as ipasc, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = 'contrail'"%(aDict['token']))
   data = db.get_row()
- controller = Device(data['ipasc'],data['token'])
+ controller = Device(data['ipasc'],aDict['token'])
  vmis = controller.call(data['service_port'],data['service_url'] + "virtual-machine/%s"%aDict['vm'])['data']['virtual-machine']['virtual_machine_interface_back_refs']
  for vmi in vmis:
   vmi = controller.href(vmi['href'])['data']['virtual-machine-interface']
@@ -523,9 +517,9 @@ def contrail_vm_associate_fip(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc, token, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.uuid = openstack_services.uuid WHERE openstack_tokens.uuid = '%s' AND service = 'contrail'"%(aDict['token']))
+  db.do("SELECT INET_NTOA(controller) as ipasc, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = 'contrail'"%(aDict['token']))
   data = db.get_row()
- controller = Device(data['ipasc'],data['token'])
+ controller = Device(data['ipasc'],aDict['token'])
  try:
   vmi = controller.call(data['service_port'],data['service_url'] + "virtual-machine-interface/%s"%aDict['vm_interface'])['data']['virtual-machine-interface']
   fip = { 'floating-ip':{ 'floating_ip_fixed_ip_address':aDict['vm_ip_address'], 'virtual_machine_interface_refs':[ {'href':vmi['href'],'attr':None,'uuid':vmi['uuid'],'to':vmi['fq_name'] } ] } }

@@ -63,7 +63,7 @@ def call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTi
   try:    head.update(aHeader)
   except: pass
   from logger import log
-  log("call(%s,%s)"%(aURL,str(aArgs)))
+  log("rest_call(%s,%s)"%(aURL,str(aArgs)))
   req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
   if aMethod:
    req.get_method = lambda: aMethod

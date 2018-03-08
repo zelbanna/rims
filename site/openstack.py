@@ -196,8 +196,8 @@ def info(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
  data = aWeb.rest_call("openstack_info",{'username':cookie['username']})
  print "<ARTICLE>"
- print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=thead><DIV CLASS=th>Controller</DIV><DIV CLASS=th>Internal Token</DIV><DIV CLASS=th>Openstack Token</DIV><DIV CLASS=th>Expires</DIV><DIV CLASS=th>Valid</DIV></DIV><DIV CLASS=tbody>"
+ print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=thead><DIV CLASS=th>Controller</DIV><DIV CLASS=th>Internal ID</DIV><DIV CLASS=th>Token</DIV><DIV CLASS=th>Expires</DIV><DIV CLASS=th>Valid</DIV></DIV><DIV CLASS=tbody>"
  for row in data['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['controller'],row['internal_token'],row['openstack_token'],row['expires'],row['valid'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['controller'],row['id'],row['token'],row['expires'],row['valid'])
  print "</DIV></DIV>"
  print "</ARTICLE>"

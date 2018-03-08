@@ -54,7 +54,7 @@ def logs(aWeb):
  res.pop('xist',None)
  print "<ARTICLE>"
  for file,logs in res.iteritems():
-  print "<P>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))
+  print "<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))
  print "</ARTICLE>"
 
 #

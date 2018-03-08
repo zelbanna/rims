@@ -78,26 +78,27 @@ CREATE TABLE `events` (
 
 DROP TABLE IF EXISTS `openstack_services`;
 CREATE TABLE `openstack_services` (
-  `uuid` int(10) unsigned NOT NULL,
+  `id` int(10) unsigned NOT NULL,
   `service` varchar(20) NOT NULL,
   `service_port` int(5) DEFAULT NULL,
   `service_url` varchar(200) NOT NULL,
   `service_id` varchar(50) DEFAULT NULL,
-  UNIQUE KEY `uuid_service` (`uuid`,`service`),
-  CONSTRAINT `openstack_services_ibfk_1` FOREIGN KEY (`uuid`) REFERENCES `openstack_tokens` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
+  UNIQUE KEY `id_service` (`id`,`service`),
+  CONSTRAINT `openstack_services_ibfk_1` FOREIGN KEY (`id`) REFERENCES `openstack_tokens` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
 DROP TABLE IF EXISTS `openstack_tokens`;
 CREATE TABLE `openstack_tokens` (
-  `uuid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `token` varchar(50) NOT NULL,
   `expires` int(10) unsigned NOT NULL,
   `project_id` varchar(50) NOT NULL,
   `username` varchar(50) NOT NULL,
   `controller` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`uuid`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `token` (`token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
