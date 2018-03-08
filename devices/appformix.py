@@ -31,7 +31,8 @@ class Device(object):
   try:
    auth = {'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
    url  = "http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,"auth_credentials")
-   res = rest_call(url,'appformix_login',auth)
+   print url
+   res = rest_call(url,auth)
    # If sock code is ok (200) - we can expect to find a token
    if res['code'] == 200:
     token = res.pop('data',{})['Token']
@@ -69,4 +70,4 @@ class Device(object):
   head = { 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' }
   try: head.update(aHeader)
   except: pass
-  return rest_call(aURL, "appformix", aArgs, aMethod, head)
+  return rest_call(aURL,aArgs, aMethod, head)

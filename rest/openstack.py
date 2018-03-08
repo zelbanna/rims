@@ -63,7 +63,7 @@ def authenticate(aDict):
  controller = Device(aDict['host'],None)
  res = controller.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
  ret = {'authenticated':res['auth']}
- if res['authenticated'] == 'OK':
+ if res['auth'] == 'OK':
   with DB() as db:
    ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'token':controller.get_token(),'expires':controller.get_cookie_expire()})
    db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,controller) VALUES('%s','%s','%s','%s',INET_ATON('%s'))"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],aDict['host']))
@@ -92,7 +92,9 @@ def services(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT %s FROM openstack_services WHERE token = '%s'"%("*" if not aDict.get('filter') else aDict.get('filter'), aDict['token']))
+  db.do("SELECT id FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
+  id = db.get_val('id')
+  ret['xist'] = db.do("SELECT %s FROM openstack_services WHERE id = '%s'"%("*" if not aDict.get('filter') else aDict.get('filter'), id))
   ret['services'] = db.get_rows()
  return ret
 
@@ -117,10 +119,8 @@ def rest(aDict):
    ret = rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
   else:
    with DB() as db:
-    db.do("SELECT INET_NTOA(controller) as ipasc, id FROM openstack_tokens WHERE openstack_tokens.token = '%s'"%(aDict['token']))
+    db.do("SELECT INET_NTOA(controller) as ipasc, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = '%s'"%(aDict['token'],aDict.get('service')))
     data = db.get_row()
-    db.do("SELECT service_port,service_url FROM openstack_services WHERE id = '%s' AND service = '%s'"%(data['id'],aDict.get('service')))
-    data.update(db.get_row())
    controller = Device(data['ipasc'],aDict['token'])
    ret = controller.call(data['service_port'], data['service_url'] + aDict['call'], aDict.get('arguments'), aDict.get('method','GET'))
   ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
@@ -355,9 +355,9 @@ def vm_resources(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT INET_NTOA(controller) as ipasc FROM openstack_tokens WHERE openstack_tokens.token = '%s'"%(aDict['token']))
+  db.do("SELECT INET_NTOA(controller) as ipasc,id FROM openstack_tokens WHERE token = '%s'"%(aDict['token']))
   data = db.get_row()
-  db.do("SELECT service,service_port,service_url FROM openstack_services WHERE token = '%s'"%(aDict['token']))
+  db.do("SELECT service,service_port,service_url FROM openstack_services WHERE id = '%s'"%(data['id']))
   services = db.get_dict('service')
  controller = Device(data['ipasc'],aDict['token'])
  ret['flavors']  = controller.call(services['nova']['service_port'],services['nova']['service_url'] + "flavors/detail?sort_key=name")['data']['flavors']

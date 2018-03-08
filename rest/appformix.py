@@ -1,3 +1,4 @@
+
 """Appformix API module. Provides calls for appformix interaction"""
 __author__ = "Zacharias El Banna"
 __version__ = "18.03.07GA"
@@ -31,9 +32,12 @@ def authenticate(aDict):
  from .. import SettingsContainer as SC
  ret = {}
  controller = Device(aDict['host'])
- ret['auth'] = controller.auth({'username':SC.appformix['username'], 'password':SC.appformix['password'] })['auth']
- ret['token'] = controller.get_token()
- ret['expires'] = controller.get_cookie_expire()
+ try:
+  res = controller.auth({'username':SC.appformix['username'], 'password':SC.appformix['password'] })
+  ret['auth'] = res['auth']
+  ret['token'] = controller.get_token()
+  ret['expires'] = controller.get_cookie_expire()
+ except Exception,e : ret = e[0]
  return ret
 
 #
