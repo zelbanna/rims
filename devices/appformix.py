@@ -18,19 +18,19 @@ class Device(object):
  def get_functions(cls):
   return []
 
- def __init__(self, aIP, aToken = None):
+ def __init__(self, aREST, aToken = None):
   self._token = aToken
   self._expire = None
-  self._ip = aIP
+  self._node = aREST
 
  def __str__(self):
-  return "Controller[{}] Token[{},{}]".format(self._ip, self._token, self._expire)
+  return "Controller[{}] Token[{},{}]".format(self._node, self._token, self._expire)
 
  def auth(self, aAuth):
   from ..core.rest import call as rest_call
   try:
    auth = {'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
-   url  = "http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,"auth_credentials")
+   url  = "%s:7000/appformix/controller/v2.0/%s"%(self._node,"auth_credentials")
    print url
    res = rest_call(url,auth)
    # If sock code is ok (200) - we can expect to find a token
@@ -63,7 +63,7 @@ class Device(object):
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  #
  def call(self,url,args = None, method = None, header = None):
-  return self.href("http://{}:7000/appformix/controller/v2.0/{}".format(self._ip,url), aArgs=args, aMethod=method, aHeader = header)
+  return self.href("%s:7000/appformix/controller/v2.0/%s"%(self._node,url), aArgs=args, aMethod=method, aHeader = header)
 
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
   from ..core.rest import call as rest_call

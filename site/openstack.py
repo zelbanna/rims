@@ -19,7 +19,7 @@ def portal(aWeb):
  aWeb.put_html("Openstack Portal")
  if not cookie.get('authenticated'):
   (pid,pname) = aWeb.get('project','none_none').split('_')
-  res = aWeb.rest_call("openstack_authenticate",{'host':cookie['host'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
+  res = aWeb.rest_call("openstack_authenticate",{'node':cookie['node'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
    cookie.update({'authenticated':'OK','token':res['token'],'username':aWeb['username'],'project_id':pid})
    aWeb.put_cookie('openstack',cookie,res['expires'])
@@ -27,7 +27,7 @@ def portal(aWeb):
    print "Error logging in - please try login again"
    return
  else:
-  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('token'),cookie['host']))
+  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('token'),cookie['node']))
 
  print "<MAIN CLASS='background' STYLE='top:0px;' ID=main>"
  print "<NAV><UL>"
@@ -36,7 +36,7 @@ def portal(aWeb):
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
  print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
  print "<LI><A CLASS='z-op reload' OP=redirect URL='sdcp.cgi?call=openstack_portal'></A></LI>"
- print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&host={}&name={}&appformix={}'>Log out</A></LI>".format(cookie['host'],cookie.get('name'),cookie.get('appformix'))
+ print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&node={}&name={}&appformix={}'>Log out</A></LI>".format(cookie['node'],cookie.get('name'),cookie.get('appformix'))
  print "<LI CLASS='dropdown right'><A>Debug</A><DIV CLASS=dropdown-content>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_info>Info</A>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"
@@ -53,7 +53,7 @@ def inline(aWeb):
 
  if not cookie.get('authenticated'):
   (pid,pname) = aWeb.get('project','none_none').split('_')
-  res = aWeb.rest_call("openstack_authenticate",{'host':cookie['host'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
+  res = aWeb.rest_call("openstack_authenticate",{'node':cookie['node'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
    cookie.update({'authenticated':'OK','token':res['token'],'username':aWeb['username'],'project_id':pid})
    aWeb.put_cookie('openstack',cookie,res['expires'])
@@ -61,7 +61,7 @@ def inline(aWeb):
    print "Error logging in - please try login again"
    return
  else:
-  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('token'),cookie['host']))
+  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('token'),cookie['node']))
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
@@ -198,6 +198,6 @@ def info(aWeb):
  print "<ARTICLE>"
  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=thead><DIV CLASS=th>Controller</DIV><DIV CLASS=th>Internal ID</DIV><DIV CLASS=th>Token</DIV><DIV CLASS=th>Expires</DIV><DIV CLASS=th>Valid</DIV></DIV><DIV CLASS=tbody>"
  for row in data['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['controller'],row['id'],row['token'],row['expires'],row['valid'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['node'],row['id'],row['token'],row['expires'],row['valid'])
  print "</DIV></DIV>"
  print "</ARTICLE>"

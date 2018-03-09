@@ -18,16 +18,16 @@ class Device(object):
  def get_functions(cls):
   return []
 
- def __init__(self, aIP, aToken = None):
+ def __init__(self, aREST, aToken = None):
   self._token = aToken
   self._expire = None
-  self._ip = aIP
+  self._node = aREST
   self._project = None
   self._project_id = None
   self._catalog = None
 
  def __str__(self):
-  return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._ip, self._token, self._expire, self._project,self._project_id)
+  return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._node, self._token, self._expire, self._project,self._project_id)
 
  #
  # Keystone v3 authentication - using v2.0 compatible domain (default), project = admin unless specified
@@ -37,7 +37,7 @@ class Device(object):
   from ..core.rest import call as rest_call
   try:
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
-   url  = "http://%s:5000/v3/auth/tokens"%(self._ip)
+   url  = "%s:5000/v3/auth/tokens"%(self._node)
    res  = rest_call(url,auth)
    # If sock code is created (201), not ok (200) - we can expect to find a token
    if res['code'] == 201:
@@ -99,7 +99,7 @@ class Device(object):
  # - header = send additional headers as dictionary
  #
  def call(self,port,query,args = None, method = None, header = None):
-  return self.href("http://%s:%s/%s"%(self._ip,port,query), aArgs=args, aMethod=method, aHeader = header)
+  return self.href("%s:%s/%s"%(self._node,port,query), aArgs=args, aMethod=method, aHeader = header)
 
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
   from ..core.rest import call as rest_call

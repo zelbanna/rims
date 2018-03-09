@@ -1,4 +1,3 @@
-
 """Appformix API module. Provides calls for appformix interaction"""
 __author__ = "Zacharias El Banna"
 __version__ = "18.03.07GA"
@@ -6,6 +5,7 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from ..devices.appformix import Device
+from .. import SettingsContainer as SC
 
 #
 def alarm(aDict):
@@ -29,9 +29,8 @@ def authenticate(aDict):
 
  Output:
  """
- from .. import SettingsContainer as SC
  ret = {}
- controller = Device(aDict['host'])
+ controller = Device(SC.node[aDict['node']])
  try:
   res = controller.auth({'username':SC.appformix['username'], 'password':SC.appformix['password'] })
   ret['auth'] = res['auth']
@@ -46,14 +45,14 @@ def report_projects(aDict):
  """Function docstring for report_projects TBD
 
  Args:
-  - host (required)
+  - node (required)
   - token (required)
   - project (required)
 
  Output:
  """
  ret = {}
- controller = Device(aDict['host'],aDict['token'])
+ controller = Device(SC.node[aDict['node']],aDict['token'])
  reports = controller.call('reports/project/metadata')['data']['Metadata']
  ret['reports'] = [rep for rep in reports if rep['ProjectId'] == aDict['project']]
  return ret
@@ -65,12 +64,12 @@ def project_reports(aDict):
 
  Args:
   - report (required)
-  - host (required)
+  - node (required)
   - token (required)
 
  Output:
  """
  ret = {}
- controller = Device(aDict['host'],aDict['token'])
+ controller = Device(SC.node[aDict['node']],aDict['token'])
  ret = controller.call("reports/project/%s"%aDict['report'])['data']['UsageReport']
  return ret

@@ -55,6 +55,7 @@ def choose_template(aWeb):
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('document', DIV='div_os_info', URL='sdcp.cgi?call=heat_enter_parameters',   FRM='frm_heat_choose_template', TITLE='Enter parameters')
  print aWeb.button('info', DIV='div_os_info', URL='sdcp.cgi?call=heat_action&op=templateview', FRM='frm_heat_choose_template', TITLE='View Template')
+ print aWeb.button('add', DIV='div_os_info', URL='sdcp.cgi?call=heat_add_template', TITLE='Add Template')
  print "</DIV><BR><DIV ID=div_os_info></DIV>"
  print "</DIV></ARTICLE>"
 
@@ -74,6 +75,8 @@ def enter_parameters(aWeb):
  print aWeb.button('next',DIV='div_content_right', URL='sdcp.cgi?call=heat_action&op=create',FRM='frm_heat_template_parameters', SPIN='true')
  print "</DIV>"
 
+def add_template(aWeb):
+ print "todo"
 #
 # Heat Actions
 #
