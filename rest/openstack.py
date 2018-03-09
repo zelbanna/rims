@@ -250,6 +250,11 @@ def heat_content(aDict):
 
 #
 #
+def heat_create_template(aDict):
+ return aDict
+
+#
+#
 def heat_instantiate(aDict):
  """Function docstring for heat_instantiate TBD
 

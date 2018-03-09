@@ -45,7 +45,7 @@ def list(aWeb):
 # Add instantiation
 #
 def choose_template(aWeb):
- print "<ARTICLE STYLE='display:inline-block; padding:6px'>"
+ print "<ARTICLE CLASS=info STYLE='width:auto; display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_choose_template>"
  print "Add solution from template:<SELECT NAME=template STYLE='height:22px; width:auto;'>"
  templates = aWeb.rest_call("openstack_heat_templates")['templates']
@@ -67,7 +67,7 @@ def enter_parameters(aWeb):
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Parameter</DIV><DIV CLASS=th STYLE='min-width:300px'>Value</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td><B>Unique Name</B></DIV><DIV CLASS=td><INPUT TYPE=text NAME=name PLACEHOLDER='change-this-name'></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS='td green'>Unique Name</DIV><DIV CLASS=td><INPUT TYPE=text NAME=name PLACEHOLDER='change-this-name'></DIV></DIV>"
  for key,value in data['parameters'].iteritems():
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value)
  print "</DIV></DIV>"
@@ -76,7 +76,15 @@ def enter_parameters(aWeb):
  print "</DIV>"
 
 def add_template(aWeb):
- print "todo"
+ print "<FORM ID=frm_heat_template_parameters>"
+ print "<DIV CLASS=table><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT CLASS='border white' TYPE=TEXT NAME=os_name REQUIRED></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Template:</DIV><DIV CLASS=td><TEXTAREA STYLE='width:100%; height:100px;' NAME=os_template></TEXTAREA></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Parameters:</DIV><DIV CLASS=td><TEXTAREA STYLE='width:100%; height:100px;' NAME=os_parameters></TEXTAREA></DIV></DIV>"
+ print "</DIV></DIV>"
+ print "</FORM><DIV CLASS=controls>"
+ print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=heat_action&op=add_template',FRM='frm_heat_template_parameters', SPIN='true')
+ print "</DIV>"
 #
 # Heat Actions
 #
@@ -168,3 +176,7 @@ def action(aWeb):
   data = aWeb.rest_call("openstack_heat_content",{'template':template})['template']
   data['stack_name'] = name if name else "Need_to_specify_name"
   print "<PRE>{}</PRE>".format(dumps(data, indent=4, sort_keys=True))
+
+ elif op == 'add_template':
+  res = aWeb.rest_call("openstack_heat_create_template",aWeb.get_args2dict(['call','op']))
+  print res
