@@ -72,7 +72,7 @@ for dest in destinations:
 
 #
 # Write settings containers
-try:              
+try:
  scfile= ospath.abspath(ospath.join(ospath.dirname(__file__),'SettingsContainer.py'))
  with open(scfile,'w') as f:
   for section,content in settings.iteritems():
@@ -81,7 +81,7 @@ try:
     processed[param]= data['value'] 
    f.write("%s=%s\n"%(section,dumps(processed)))
   res['containers'] = 'OK'
-except Exception,e:                   
+except Exception,e:
  res['containers'] = 'NOT_OK'
  print str(e)
 

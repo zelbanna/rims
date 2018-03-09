@@ -41,6 +41,21 @@ def list(aDict):
 
 #
 #
+def system_nodes(aDict):
+ """Function docstring for info TBD
+
+ Args:
+
+ Output:
+ """
+ from .. import SettingsContainer as SC
+ with DB() as db:
+  db.do("SELECT id,value,parameter FROM settings WHERE section = 'node'")
+  nodes = db.get_rows()
+ return {'data':[node for node in nodes if node['parameter'] in SC.generic['nodes'].split(',')]}
+
+#
+#
 def info(aDict):
  """Function docstring for info TBD
 

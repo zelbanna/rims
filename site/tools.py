@@ -15,7 +15,7 @@ def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- nodes = aWeb.rest_call("settings_list",{'section':'node'})['data']
+ nodes = aWeb.rest_call("settings_system_nodes")['data']
  print "<NAV><UL>"
  print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>List</A>"

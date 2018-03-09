@@ -18,7 +18,7 @@ def main(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  monitors = aWeb.rest_call("resources_list",{'type':'monitor','view_public':True})['data']
- hosts    = aWeb.rest_call("settings_list",{'section':'node'})['data']
+ hosts    = aWeb.rest_call("settings_system_nodes")['data']
  print "<NAV><UL>"
  print "<LI CLASS='warning dropdown'><A>Clear Logs</A><DIV CLASS='dropdown-content'>"
  for host in hosts:
