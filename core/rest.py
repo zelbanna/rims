@@ -8,47 +8,6 @@ __version__ = "18.03.07GA"
 __status__= "Production"
 
 #
-# Make proper REST responses
-#
-# - encoded as apicall=package.path.module_function (module cannot contain '_', but function can)
-# - reads body to find input data
-# - returns json:ed response from function
-# -- Response model
-# --- res: OK/NOT_OK, ERROR
-# --- type: of ERROR
-# --- info: ERROR info
-# --- exception: type of Exception
-# --- data: data
-
-def server():
- from os import getenv
- from sys import stdout, stdin
- from json import loads, dumps
- from importlib import import_module
- api,args,mod,fun = None,None,None,None
- try:
-  api  = getenv("QUERY_STRING")
-  data = stdin.read()
-  args = loads(data) if len(data) > 0 else {}
-  (mod,void,fun) = api.partition('_')
-  module = import_module("sdcp.rest.%s"%mod)
-  output = dumps(getattr(module,fun,None)(args))
- except Exception, e:
-  output = 'null'
-  stdout.write("X-Z-Res:ERROR\r\n")
-  stdout.write("X-Z-Arguments:%s\r\n"%args)
-  stdout.write("X-Z-Info:%s\r\n"%str(e))
-  stdout.write("X-Z-Exception:%s\r\n"%type(e).__name__)
- else:
-  stdout.write("X-Z-Res:OK\r\n")
- stdout.write("X-Z-Module:%s\r\n"%mod)
- stdout.write("X-Z-Function:%s\r\n"%fun)
- stdout.write("Content-Type: application/json\r\n")
- stdout.flush()
- stdout.write("\r\n")
- stdout.write(output)
-
-#
 # Make proper REST call with arg = data
 # - aURL = REST API link - complete
 # - aAPI= python-path-to-module (e.g. package.path:module_fun*)
@@ -87,13 +46,62 @@ def call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTi
   try:    data = loads(raw)
   except: data = raw
   output = { 'result':'ERROR', 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
- except URLError, e:
-  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
- except Exception, e:
-  output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
+ except URLError, e:  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
+ except Exception, e: output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
  if output.get('exception'):
   raise Exception(output)
  return output
+
+#
+# Make proper REST responses
+#
+# - encoded as apicall=package.path.module_function (module cannot contain '_', but function can)
+# - reads body to find input data
+# - returns json:ed response from function
+# -- Response model
+# --- res: OK/NOT_OK, ERROR
+# --- type: of ERROR
+# --- info: ERROR info
+# --- exception: type of Exception
+# --- data: data
+
+def server():
+ from os import getenv
+ from sys import stdout, stdin
+ from json import loads, dumps
+ from importlib import import_module
+ output,api,args,mod,fun,additional = 'null',None,None,None,None,{}
+ try:
+  (api,void,extra) = getenv("QUERY_STRING").partition('&')
+  data = stdin.read()
+  args = loads(data) if len(data) > 0 else {}
+  (mod,void,fun) = api.partition('_')
+  if extra:
+   for part in extra.split("&"):
+    (k,void,v) = part.partition('=')
+    additional[k] = v
+  if additional.get('node','master') == 'master':
+   module = import_module("sdcp.rest.%s"%mod)
+   output = dumps(getattr(module,fun,None)(args))  
+  else:
+   stdout.write("X-Z-node:%s\r\n"%additional['node'])
+   from .. import SettingsContainer as SC
+   try: res = call("%s?%s"%(SC.node[additional['node']],api),args)
+   except Exception as err: raise Exception(err)
+   else: output = dumps(res['data'])
+ except Exception, e:
+  stdout.write("X-Z-Res:ERROR\r\n")
+  stdout.write("X-Z-Arguments:%s\r\n"%args)
+  stdout.write("X-Z-Info:%s\r\n"%str(e))
+  stdout.write("X-Z-Exception:%s\r\n"%type(e).__name__)
+ else:
+  stdout.write("X-Z-Res:OK\r\n")
+ stdout.write("X-Z-Module:%s\r\n"%mod)
+ stdout.write("X-Z-Function:%s\r\n"%fun)
+ stdout.write("Content-Type: application/json\r\n")
+ stdout.flush()
+ stdout.write("\r\n")
+ stdout.write(output)
 
 #
 # Basic Auth header generator
