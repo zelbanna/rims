@@ -10,7 +10,6 @@ def list(aDict):
  """Function docstring for list TBD
 
  Args:
-  - node (optional)
   - dict (optional)
   - section (optional)
   - user_id (optional)
@@ -50,7 +49,6 @@ def info(aDict):
  """Function docstring for info TBD
 
  Args:
-  - node (optional)
   - id (required)
   - op (optional)
   - description (cond required)
@@ -85,7 +83,6 @@ def parameter(aDict):
  """Function docstring for parameter TBD
 
  Args:
-  - node (optional)
   - section (required)
   - parameter (required)
 
@@ -103,7 +100,6 @@ def section(aDict):
  """Function docstring for section TBD
 
  Args:
-  - node (optional)
   - section (required)
 
  Output:
@@ -120,7 +116,6 @@ def all(aDict):
  """Function docstring for all TBD
 
  Args:
-  - node (optional)
   - dict (optional)
   - section (optional)
 
@@ -145,7 +140,6 @@ def save(aDict):
  """Function docstring for save TBD
 
  Args:
-  - node (optional)
 
  Output:
  """
@@ -190,7 +184,6 @@ def delete(aDict):
  """Function docstring for delete TBD
 
  Args:
-  - node (optional)
   - id (required)
 
  Output:

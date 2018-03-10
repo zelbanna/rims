@@ -43,14 +43,14 @@ def main(aWeb):
 #
 #
 def clear(aWeb):
- res = aWeb.rest_call('tools_logs_clear',{'node':aWeb['host']})
+ res = aWeb.rest_call('tools_logs_clear&node=%s'%aWeb['host'])
  print "<ARTICLE>%s</ARTICLE>"%(res)
 
 #
 # Internal Logs
 #
 def logs(aWeb):
- res = aWeb.rest_call('tools_logs_get',{'node':aWeb['host'],'count':18})
+ res = aWeb.rest_call('tools_logs_get&node=%s'%aWeb['host'],{'count':18})
  res.pop('xist',None)
  print "<ARTICLE>"
  for file,logs in res.iteritems():

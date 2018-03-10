@@ -266,28 +266,18 @@ def logs_clear(aDict):
 
  Output:
  """
- if not aDict.get('node','master') == 'master':
-  from ..core.rest import call as rest_call
-  node = aDict.pop('node',None)
-  with DB() as db:
-   db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
-   url = db.get_val('value')
-  try:    res = rest_call("%s?tools_logs_clear"%url,aDict)
-  except: ret = {'xist':0}
-  else:   ret = res['data'] if (res['code'] == 200 and res['data']) else {'xist':0}
- else:
-  from ..core.logger import log
-  ret = {}
-  with DB() as db:
-   ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
-   logs = db.get_rows()
-  for entry in logs:
-   try:
-    open(entry['value'],'w').close()
-    ret[entry['parameter']] = 'CLEARED'
-    log("Emptied log [{}]".format(entry['value']))
-   except Exception as err:
-    ret[entry['parameter']] = 'ERROR: %s'%(str(err))
+ from ..core.logger import log
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
+  logs = db.get_rows()
+ for entry in logs:
+  try:
+   open(entry['value'],'w').close()
+   ret[entry['parameter']] = 'CLEARED'
+   log("Emptied log [{}]".format(entry['value']))
+  except Exception as err:
+   ret[entry['parameter']] = 'ERROR: %s'%(str(err))
  return ret
 
 #
@@ -296,36 +286,25 @@ def logs_get(aDict):
  """Function docstring for logs_get TBD
 
  Args:
-  - node (optional)
   - count (optional)
 
  Output:
  """
- if not aDict.get('node','master') == 'master':
-  from ..core.rest import call as rest_call
-  node = aDict.pop('node',None)
-  with DB() as db:
-   db.do("SELECT value FROM settings WHERE section = 'node' and parameter = '%s'"%node)
-   url = db.get_val('value')
-  try:    res = rest_call("%s?tools_logs_get"%url,aDict)
-  except: ret = {'xist':0}
-  else:   ret = res['data'] if (res['code'] == 200 and res['data']) else {'xist':0}
- else:
-  ret = {}
-  with DB() as db:
-   ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
-   logs = db.get_rows()
-  count = int(aDict.get('count',15))
-  for log in logs:
-   lines = ["\r" for i in range(count)]
-   pos = 0
-   try:
-    with open(log['value'],'r') as f:
-     for line in f:
-      lines[pos] = line
-      pos = (pos + 1) % count
-     ret[log['parameter']] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
-   except Exception as err:
-    ret[log['parameter']] = ['ERROR: %s'%(str(err))]
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
+  logs = db.get_rows()
+ count = int(aDict.get('count',15))
+ for log in logs:
+  lines = ["\r" for i in range(count)]
+  pos = 0
+  try:
+   with open(log['value'],'r') as f:
+    for line in f:
+     lines[pos] = line
+     pos = (pos + 1) % count
+    ret[log['parameter']] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
+  except Exception as err:
+   ret[log['parameter']] = ['ERROR: %s'%(str(err))]
  return ret
 
