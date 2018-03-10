@@ -82,20 +82,20 @@ def server():
     additional[k] = v
   if additional.get('node','master') == 'master':
    module = import_module("sdcp.rest.%s"%mod)
-   output = dumps(getattr(module,fun,None)(args))  
+   output = dumps(getattr(module,fun,None)(args))
+   stdout.write("X-Z-Res:OK\r\n")
   else:
    stdout.write("X-Z-node:%s\r\n"%additional['node'])
    from .. import SettingsContainer as SC
    try: res = call("%s?%s"%(SC.node[additional['node']],api),args)
    except Exception as err: raise Exception(err)
    else: output = dumps(res['data'])
+   stdout.write("X-Z-Res:%s\r\n"%res['info']['x-z-res'])
  except Exception, e:
   stdout.write("X-Z-Res:ERROR\r\n")
   stdout.write("X-Z-Arguments:%s\r\n"%args)
   stdout.write("X-Z-Info:%s\r\n"%str(e))
   stdout.write("X-Z-Exception:%s\r\n"%type(e).__name__)
- else:
-  stdout.write("X-Z-Res:OK\r\n")
  stdout.write("X-Z-Module:%s\r\n"%mod)
  stdout.write("X-Z-Function:%s\r\n"%fun)
  stdout.write("Content-Type: application/json\r\n")
