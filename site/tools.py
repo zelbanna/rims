@@ -15,7 +15,7 @@ def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- nodes = aWeb.rest_call("settings_system_nodes")['data']
+ data = aWeb.rest_call("tools_system")
  print "<NAV><UL>"
  print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>List</A>"
@@ -24,14 +24,14 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>View Bookmarks</A>"
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dhcp_update'>DHCP - Update Server</A>"
+ print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dhcp_update&node=%s'>DHCP - Update Server</A>"%data['dhcp']
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
- for node in nodes:
+ for node in data['nodes']:
   print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&node=%s'>Reinstall %s</A>"%(node['id'],node['parameter'])
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Settings</A><DIV CLASS='dropdown-content'>"
- for node in nodes:
+ for node in data['nodes']:
   print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&node=%s'>%s</A>"%(node['parameter'],node['parameter'])
  print "</DIV></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"

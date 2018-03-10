@@ -260,13 +260,13 @@ def rest_debug(aDict):
 
 #
 #
-def monitor(aDict):
- """
+def system(aDict):
+ """Function docstring for system TBD
 
  Args:
   - user_id (required)
  
-
+ Output:
  """
  from .. import SettingsContainer as SC
  from resources import list as resource_list

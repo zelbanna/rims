@@ -1,5 +1,4 @@
-"""DHCP API module. This module is a REST wrapper for interfaces the DHCP (device) type module.
-Settings are needed to pinpoint the right service node AND the server type"""
+"""DHCP API module. This module is a REST wrapper for interfaces the DHCP (device) type module."""
 __author__ = "Zacharias El Banna"
 __version__ = "18.03.07GA"
 __status__ = "Production"
@@ -16,19 +15,13 @@ def update_server(aDict):
 
  Output:
  """
- from device import list_mac
  ret = {}
- macs = list_mac({})
- if SC.dhcp.get('node','master') == 'master':
-  from importlib import import_module
-  module = import_module("sdcp.rest.%s"%SC.dhcp['type'])
-  fun = getattr(module,'update_server',None)
-  ret = fun({'entries':macs})
- else:
-  from ..core.rest import call as rest_call
-  res = rest_call("%s?%s_update_server"%(SC.node[SC.dhcp['node']],SC.dhcp['type']),{'entries':macs})
-  ret['output'] = res['data']['output']
-  ret['res'] = res['info']['x-z-res']
+ from ..core.rest import call as rest_call
+ macs = rest_call("%s?%device_list_mac"%(SC.node['master'])['data']['entries']
+ from importlib import import_module
+ module = import_module("sdcp.rest.%s"%SC.dhcp['type'])
+ fun = getattr(module,'update_server',None)
+ ret = fun({'entries':macs})
  return ret
 
 #
