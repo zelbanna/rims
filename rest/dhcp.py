@@ -41,12 +41,8 @@ def leases(aDict):
 
  Output:
  """
- if SC.dhcp.get('node','master') == 'master':
-  from importlib import import_module
-  module = import_module("sdcp.rest.%s"%SC.dhcp['type'])
-  fun = getattr(module,'leases',None)
-  ret = fun({'type':aDict['type']})
- else:
-  from ..core.rest import call as rest_call
-  ret = rest_call("%s?%s_leases"%(SC.node[SC.dhcp['node']], SC.dhcp['type']),{'type':aDict['type']})['data']
+ from importlib import import_module
+ module = import_module("sdcp.rest.%s"%SC.dhcp['type'])
+ fun = getattr(module,'leases',None)
+ ret = fun({'type':aDict['type']})
  return ret

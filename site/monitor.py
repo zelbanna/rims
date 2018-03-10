@@ -17,23 +17,23 @@ def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- monitors = aWeb.rest_call("resources_list",{'type':'monitor','view_public':True})['data']
- hosts    = aWeb.rest_call("settings_system_nodes")['data']
+ data = aWeb.rest_call("tools_monitor")
  print "<NAV><UL>"
  print "<LI CLASS='warning dropdown'><A>Clear Logs</A><DIV CLASS='dropdown-content'>"
- for host in hosts:
+ for host in data['nodes']:
   print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=monitor_clear&host=%s'>%s</A>"%(host['parameter'],host['parameter'])
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
- for host in hosts:
+ for host in data['nodes']:
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=monitor_logs&host=%s>%s</A>"%(host['parameter'],host['parameter'])
  print "</DIV></LI>"
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dns_top>DNS</A></LI>"
- print "<LI CLASS='dropdown'><A>DHCP</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&type=active>Active</A>"
- print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&type=free>Free</A>"
- print "</DIV></LI>"
- for mon in monitors:
+ if data.get('dhcp'):
+  print "<LI CLASS='dropdown'><A>DHCP</A><DIV CLASS='dropdown-content'>"
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=active>Active</A>"%data['dhcp']
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=free>Free</A>"%data['dhcp']
+  print "</DIV></LI>"
+ for mon in data['monitors']:
   print "<LI><A CLASS=z-op DIV=div_content URL='%s'>%s</A></LI>"%(mon['href'],mon['title'])
  print "<LI><A CLASS='z-op reload' DIV=main URL=sdcp.cgi?call=monitor_main></A></LI>"
  print "</UL></NAV>"
