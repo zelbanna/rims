@@ -28,10 +28,10 @@ def main(aWeb):
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=monitor_logs&host=%s>%s</A>"%(host['parameter'],host['parameter'])
  print "</DIV></LI>"
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dns_top>DNS</A></LI>"
- if data.get('dhcp'):
+ if data.get('dhcp_node'):
   print "<LI CLASS='dropdown'><A>DHCP</A><DIV CLASS='dropdown-content'>"
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=active>Active</A>"%data['dhcp']
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=free>Free</A>"%data['dhcp']
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=active>Active</A>"%(data['dhcp_node'],data['dhcp_type'])
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=free>Free</A>"%(data['dhcp_node'],data['dhcp_type'])
   print "</DIV></LI>"
  for mon in data['monitors']:
   print "<LI><A CLASS=z-op DIV=div_content URL='%s'>%s</A></LI>"%(mon['href'],mon['title'])

@@ -8,6 +8,30 @@ from ..core.dbase import DB
 
 #
 #
+def system(aDict):
+ """Function docstring for system TBD
+
+ Args:
+  - user_id (required)
+ 
+ Output:
+ """
+ from .. import SettingsContainer as SC
+ from resources import list as resource_list
+ ret = {}
+ with DB() as db:
+  db.do("SELECT id,value,parameter FROM settings WHERE section = 'node'")
+  ret['nodes'] = [node for node in db.get_rows() if node['parameter'] in SC.generic['nodes'].split(',')]
+  db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
+  ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
+ ret['dns_node'] = SC.dns['node']
+ ret['dns_type'] = SC.dns['type']
+ ret['dhcp_node'] = SC.dhcp['node']
+ ret['dhcp_type'] = SC.dhcp['type']
+ return ret
+
+#
+#
 def install(aDict):
  """Function docstring for install. Installation of SDCP tools and DB entries
 
@@ -257,28 +281,6 @@ def rest_debug(aDict):
  return { 'globals':str(globals().keys()), 'locals':str(locals().keys()) }
 
 ############################################ Monitor ##############################################
-
-#
-#
-def system(aDict):
- """Function docstring for system TBD
-
- Args:
-  - user_id (required)
- 
- Output:
- """
- from .. import SettingsContainer as SC
- from resources import list as resource_list
- ret = {}
- with DB() as db:
-  db.do("SELECT id,value,parameter FROM settings WHERE section = 'node'")
-  ret['nodes'] = [node for node in db.get_rows() if node['parameter'] in SC.generic['nodes'].split(',')]
-  db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
-  ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
- ret['dns'] = SC.dns['node']
- ret['dhcp'] = SC.dhcp['node']
- return ret
 
 #
 #

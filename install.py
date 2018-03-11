@@ -31,22 +31,6 @@ modes = settings['generic']['mode']['value'].split(',')
 res['modes'] = modes
 
 #
-# Verify necessary modules
-try: import pymysql
-except ImportError:
- res['pymysql'] = 'install'
- pipmain(["install", "-q","pymysql"])
-try: import git
-except ImportError:
- res['gitpython'] = 'install'
- pipmain(["install","-q","gitpython"])
-if 'front' in modes:
- try: import eralchemy
- except ImportError:
-  res['gitpython'] = 'install'
-  pipmain(["install","-q","eralchemy"])
-
-#
 # Write CGI files
 basedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
 destinations = ['rest']
@@ -69,6 +53,22 @@ for dest in destinations:
   wr("cgi.server()\n")
  chmod(site,0755)
  res["cgi_{}".format(dest)] = 'OK'
+
+#
+# Verify necessary modules
+try: import pymysql
+except ImportError:
+ res['pymysql'] = 'install'
+ pipmain(["install", "-q","pymysql"])
+try: import git
+except ImportError:
+ res['gitpython'] = 'install'
+ pipmain(["install","-q","gitpython"])
+if 'front' in modes:
+ try: import eralchemy
+ except ImportError:
+  res['gitpython'] = 'install'
+  pipmain(["install","-q","eralchemy"])
 
 #
 # Write settings containers
