@@ -110,7 +110,7 @@ if 'master' in modes:
   print "FLUSH PRIVILEGES;\n"
 else:
  from sdcp.core.rest import call as rest_call
- try:    common_settings = rest_call("%s?tools_settings"%settings['system']['master']['value'],settings['system']['id']['value'])['data']
+ try:    common_settings = rest_call("%s?tools_settings"%settings['system']['master']['value'],{'node':settings['system']['id']['value']})['data']
  except: common_settings = []
 
 #
