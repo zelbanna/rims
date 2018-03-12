@@ -17,7 +17,10 @@ if len(argv) < 2:
  print "\n!!! Import DB structure from mysql.db before installing !!!\n"
  exit(0)
 
-from os import chmod, path as ospath
+from os import remove, chmod, path as ospath
+packagedir = ospath.abspath(ospath.dirname(__file__))
+basedir = ospath.abspath(ospath.join(packagedir,'..'))
+
 res = {}
 #
 # load settings
@@ -29,9 +32,19 @@ modes = settings['system']['mode']['value'].split(',')
 res['modes'] = modes
 
 #
+# Write Logger
+logger = ospath.abspath(ospath.join(packagedir,'core','logger.py'))
+try: remove(logger)    
+except: pass
+with open(logger,'w') as f:
+ f.write("def log(aMsg,aID=None):\n")
+ f.write(" from time import localtime, strftime\n")
+ f.write(" with open('" + settings['logs']['syslog']['value'] + "', 'a') as f:\n")
+ f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
+
+#
 # Write CGI files
 #
-basedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
 destinations = ['rest']
 if 'front' in modes:
  destinations.append('index')
