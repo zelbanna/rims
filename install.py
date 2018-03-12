@@ -18,6 +18,9 @@ if len(argv) < 2:
  exit(0)
 
 from os import remove, chmod, path as ospath
+packagedir = ospath.abspath(ospath.dirname(__file__))
+basedir = ospath.abspath(ospath.join(packagedir,'..'))
+
 res = {}
 #
 # load settings
@@ -36,13 +39,12 @@ except: pass
 with open(logger,'w') as f:
  f.write("def log(aMsg,aID=None):\n")
  f.write(" from time import localtime, strftime\n")
- f.write(" with open('" + SC.system['syslog'] + "', 'a') as f:\n")
+ f.write(" with open('" + settings['logs']['syslog']['value'] + "', 'a') as f:\n")
  f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
 
 #
 # Write CGI files
 #
-basedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
 destinations = ['rest']
 if 'front' in modes:
  destinations.append('index')
