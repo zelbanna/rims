@@ -8,6 +8,14 @@ from ..core.common import DB,SC
 
 #
 #
+def settings(aDict):
+ with DB() as db:
+  db.do("SELECT section,parameter,value,description FROM settings WHERE NOT section = 'system'")
+  ret = db.get_rows()
+ return ret
+
+#
+#
 def system(aDict):
  """Function docstring for system TBD
 
