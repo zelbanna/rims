@@ -5,7 +5,7 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from ..devices.appformix import Device
-from .. import SettingsContainer as SC
+from ..core.common import SC
 
 #
 def alarm(aDict):

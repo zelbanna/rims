@@ -4,7 +4,7 @@ __version__ = "18.03.07GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..core.dbase import DB
+from ..core.common import DB
 
 #
 #
@@ -155,7 +155,6 @@ def infra(aDict):
    ret['pduinfo']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
 
  if aDict.get('images',False):
-  from .. import SettingsContainer as SC
   from os import listdir, path
   directory = listdir(path.join(SC.generic['docroot'],"images")) if not SC.generic.get('rack_image_directory') else SC.generic['rack_image_directory']
   ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]

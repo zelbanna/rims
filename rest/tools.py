@@ -4,7 +4,7 @@ __version__ = "18.03.07GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..core.dbase import DB
+from ..core.common import DB,SC
 
 #
 #
@@ -16,7 +16,6 @@ def system(aDict):
  
  Output:
  """
- from .. import SettingsContainer as SC
  from resources import list as resource_list
  ret = {}
  with DB() as db:
@@ -28,6 +27,7 @@ def system(aDict):
  ret['dns_type'] = SC.dns['type']
  ret['dhcp_node'] = SC.dhcp['node']
  ret['dhcp_type'] = SC.dhcp['type']
+ ret['id'] = SC.generic['id']
  return ret
 
 #
@@ -46,7 +46,6 @@ def install(aDict):
  from time import time
  import pip
  from ..core.mysql import diff
- from .. import SettingsContainer as SC
 
  packagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
  devdir = ospath.abspath(ospath.join(packagedir,'devices'))

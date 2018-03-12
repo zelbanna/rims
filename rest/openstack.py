@@ -5,7 +5,7 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from ..devices.openstack import Device
-from ..core.dbase import DB
+from ..core.common import DB,SC
 #
 #
 def application(aDict):
@@ -18,7 +18,6 @@ def application(aDict):
   - token (optional)
  Output:
  """
- from .. import SettingsContainer as SC
  from datetime import datetime,timedelta
  ret = {'title':"%s 2 Cloud"%(aDict.get('name','iaas')),'choices':[]}
  ret['message']= "Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas'))
@@ -58,7 +57,6 @@ def authenticate(aDict):
 
  Output:
  """
- from .. import SettingsContainer as SC
  from ..core.logger import log
  ret = {}
  controller = Device(SC.node[aDict['node']],None)
@@ -214,7 +212,6 @@ def heat_templates(aDict):
  Output:
  """
  from os import path as ospath
- from .. import SettingsContainer as SC
  from os import listdir
  ret = {'result':'OK','templates':[]}
  try:
@@ -238,7 +235,6 @@ def heat_content(aDict):
  """
  from os import path as ospath
  from json import load
- from .. import SettingsContainer as SC
  ret = {'result':'OK','template':None}
  try:
   with open(ospath.abspath(ospath.join(SC.openstack['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
@@ -268,7 +264,6 @@ def heat_instantiate(aDict):
  """
  from os import path as ospath
  from json import load
- from .. import SettingsContainer as SC
  ret = {}
  args = {}
  try:

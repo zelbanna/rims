@@ -86,10 +86,10 @@ except Exception,e:
  print str(e)
 
 #
-# Update database
+# .. which is used in: Update database
 #
 try:
- from sdcp.core.dbase import DB
+ from sdcp.core.common import DB
  with DB() as db:
   res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
   res['settings'] = 0

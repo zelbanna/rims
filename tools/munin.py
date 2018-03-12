@@ -41,7 +41,7 @@ def widget_rows(asources):
 #
 def discover():
  from ..core.logger import log
- from ..core.dbase import DB
+ from ..core.common import DB
  from os import chmod
  from time import time
  from threading import Lock, Thread, BoundedSemaphore

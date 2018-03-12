@@ -14,7 +14,7 @@ if __name__ == "__main__":
   print argv[0] + " <output file>"
   exit(0)
  else:
-  from sdcp.core.dbase import DB
+  from sdcp.core.common import DB
   config = {}
   with DB() as db:
    db.do("SELECT DISTINCT section FROM settings")

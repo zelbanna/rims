@@ -4,7 +4,7 @@ __version__ = "18.03.07GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..core.dbase import DB
+from ..core.common import DB,SC
 
 #
 #
@@ -97,7 +97,6 @@ def info(aDict):
    if not ret['info']['functions']:
     ret['info']['functions'] = ""
    if 'username' in info:
-    from .. import SettingsContainer as SC
     ret['username'] = SC.netconf['username']
    if 'booking' in info:
     ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id']))
@@ -459,7 +458,6 @@ def detect(aDict):
  if system("ping -c 1 -w 1 {} > /dev/null 2>&1".format(aDict['ip'])) != 0:
   return {'result':'NOT_OK'}
 
- from .. import SettingsContainer as SC
  from netsnmp import VarList, Varbind, Session
  try:
   # .1.3.6.1.2.1.1.1.0 : Device info
@@ -504,7 +502,6 @@ def mac_sync(aDict):
 
  Output:
  """
- from ..core.dbase import DB
  def GL_mac2int(aMAC):
   try:    return int(aMAC.replace(":",""),16)
   except: return 0

@@ -38,7 +38,7 @@ def info(aDict):
 
  Output:
  """
- from ..core.dbase import DB
+ from ..core.common import DB
  ret = {}
  with DB() as db:
   if aDict.get('op') == 'lookup':

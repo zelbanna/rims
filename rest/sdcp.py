@@ -14,7 +14,7 @@ def application(aDict):
  Output:
  """
  from datetime import datetime,timedelta
- from ..core.dbase import DB
+ from ..core.common import DB
  """ Default login information """
  ret = {'message':"Welcome to the Management Portal",'parameters':[]}
  with DB() as db:

@@ -4,8 +4,7 @@ __version__ = "18.03.07GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from .. import SettingsContainer as SC
-from ..core.dbase import DB
+from ..core.common import DB,SC
 
 ############################### Tools #################################
 #

@@ -8,6 +8,8 @@ __version__ = "18.03.07GA"
 __status__ = "Production"
 
 
+from .. import SettingsContainer as SC
+
 ############################################ Database ######################################
 #
 # Database Class
@@ -19,7 +21,6 @@ class DB(object):
   self._curs = None
   self._dirty = False
   if not aDB:
-   from .. import SettingsContainer as SC
    self._db, self._host, self._user, self._pass = SC.database['database'],SC.database['host'],SC.database['username'],SC.database['password']
   else:
    self._db, self._host, self._user, self._pass = aDB, aHost, aUser, aPass

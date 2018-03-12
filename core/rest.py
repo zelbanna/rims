@@ -65,22 +65,25 @@ def call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTi
 # --- exception: type of Exception
 # --- data: data
 
-def server():
+#
+# Update module globals with NodeID? for quick lookup
+#
+def server(aNodeID):
  from os import getenv
  from sys import stdout, stdin
  from json import loads, dumps
  from importlib import import_module
  output,api,args,mod,fun,additional = 'null',None,None,None,None,{}
+ (api,void,extra) = getenv("QUERY_STRING").partition('&')
+ (mod,void,fun) = api.partition('_')
  try:
-  (api,void,extra) = getenv("QUERY_STRING").partition('&')
   data = stdin.read()
   args = loads(data) if len(data) > 0 else {}
-  (mod,void,fun) = api.partition('_')
   if extra:
    for part in extra.split("&"):
     (k,void,v) = part.partition('=')
     additional[k] = v
-  if additional.get('node','master') == 'master':
+  if additional.get('node',aNodeID) == aNodeID:
    module = import_module("sdcp.rest.%s"%mod)
    output = dumps(getattr(module,fun,None)(args))
    stdout.write("X-Z-Res:OK\r\n")
