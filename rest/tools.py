@@ -24,7 +24,7 @@ def system(aDict):
  
  Output:
  """
- from ..core.common import DB
+ from ..core.common import DB,SC
  from resources import list as resource_list
  ret = {}
  with DB() as db:
@@ -267,9 +267,6 @@ def logs_clear(aDict):
  from .. import SettingsContainer as SC
  from ..core.logger import log
  ret = {}
- with DB() as db:
-  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
-  logs = db.get_rows()
  for name,file in SC.logs.iteritems():
   try:
    open(file,'w').close()
@@ -304,4 +301,3 @@ def logs_get(aDict):
   except Exception as err:
    ret[name] = ['ERROR: %s'%(str(err))]
  return ret
-
