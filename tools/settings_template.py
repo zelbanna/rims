@@ -22,7 +22,7 @@ if __name__ == "__main__":
    for section in sections:
     sect = section['section']
     config[sect] = {}
-    db.do("SELECT parameter,value,description,required FROM settings WHERE section = '%s' ORDER BY parameter"%sect)
+    db.do("SELECT parameter,value,description FROM settings WHERE section = '%s' AND node = 'master' ORDER BY parameter"%sect)
     params = db.get_rows()
     for param in params:
      key = param.pop('parameter',None)

@@ -1,10 +1,21 @@
-"""DHCP REST module. Translation to correct DHCP server"""
+"""DHCP REST module. Translation to correct DHCP server
+Settings:
+ - node
+ - type
+
+ ISC:
+ - reload (argument from CLI)
+ - active (file storing current leases)
+ - static (file storing configuration for ISC DHCP
+
+"""
 __author__ = "Zacharias El Banna"
 __version__ = "18.03.07GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from .. import SettingsContainer as SC
+
 #
 #
 def update_server(aDict):

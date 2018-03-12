@@ -1,5 +1,9 @@
 """DNS API module. This module is a REST wrapper for interfaces to a particular DNS server (device) type module.           
-Settings are needed to pinpoint the right service node AND the server type"""
+Settings:
+ - node
+ - type
+
+"""
 __author__ = "Zacharias El Banna"
 __version__ = "18.03.07GA"
 __status__ = "Production"

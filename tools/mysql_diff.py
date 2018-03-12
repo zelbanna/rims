@@ -13,8 +13,8 @@ if __name__ == "__main__":
   exit(0)
 
  from os import path as ospath, getcwd
- syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '../..')))
- from sdcp.core import mysql
+ syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
+ from sdcp.rest import mysql
  file = ospath.abspath(ospath.join(getcwd(),argv[1]))
  diffs= mysql.diff({'file':file})
  print diffs['diffs']

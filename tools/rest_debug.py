@@ -9,9 +9,8 @@ def execute(argv):
  from os   import path as ospath
  from sys  import path as syspath
  from importlib import import_module 
- mod = argv[1]
- fun = argv[2]
- try:  args = loads(argv[3])
+ (mod,void,fun) = argv[1].partition('_')
+ try:  args = loads(argv[2])
  except: args = {}
  print "Executing:{}_{}({})".format(mod,fun,args)
 
@@ -27,8 +26,8 @@ def execute(argv):
 
 if __name__ == "__main__":
  from sys import argv, exit
- if len(argv) < 3:
-  print argv[0] + " <rest-module> <function> [<json-arg>]"
+ if len(argv) < 2:
+  print argv[0] + " <rest-module_function> [<json-arg>]"
   exit(0)
  else:
   exit(execute(argv))

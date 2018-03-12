@@ -2,16 +2,19 @@ __author__ = "Zacharias El Banna"
 __version__ = "18.03.07GA"
 __status__ = "Production"
 
-
 #
-# dump(mode,full)
+#
 def dump(aDict):
  from subprocess import check_output
  from .. import SettingsContainer as SC
+ if aDict.get('username') and aDict.get('password') and aDict.get('database'):
+  db,username,password = aDict['database'],aDict['username'],aDict['password']
+ else:
+  from .. import SettingsContainer as SC
+  db,username,password = SC.system['db_name'], SC.system['db_user'], SC.system['db_pass']
  try:
-  db = SC.database['database']
   mode = aDict.get('mode','structure')
-  cmd  = ["mysqldump", "-u" + SC.database['username'], "-p" + SC.database['password'], db]
+  cmd  = ["mysqldump", "-u" + username, "-p" + password, db]
 
   if   mode == 'structure':
    cmd.extend(['--no-data','--add-drop-database'])
@@ -49,7 +52,7 @@ def restore(aDict):
   username,password = aDict['username'],aDict['password']
  else:
   from .. import SettingsContainer as SC
-  username,password = SC.database['username'], SC.database['password']
+  username,password = SC.system['db_user'], SC.system['db_pass']
 
  try:
   cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '<',aDict['file']]
@@ -65,7 +68,8 @@ def diff(aDict):
  with open(aDict['file']) as f:
   data = f.read() 
  ret = {}
- db = dump({'mode':'structure'})
+ aDict.update({'mode':'structure'})
+ db = dump(aDict)
  ret['database'] = db['res']
  ret['output'] = [line for line in unified_diff(db['output'],data.split('\n'),fromfile='dbase',tofile=aDict['file'])]
  ret['diffs'] = 0

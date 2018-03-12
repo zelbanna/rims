@@ -1,4 +1,13 @@
-"""PowerDNS API module. Provides powerdns specific REST interface. Essentially to create a GUI management for PowerDNS."""
+"""PowerDNS API module. Provides powerdns specific REST interface. Essentially to create a GUI management for PowerDNS.
+Settings:
+ - database
+ - username
+ - password
+ - logfile
+ - master (IP of master)
+ - soa (e.g. 'xyz.domain hostmaster.domain 0 86400 3600 604800')
+
+"""
 __author__ = "Zacharias El Banna"                     
 __version__ = "18.03.07GA"
 __status__ = "Production"

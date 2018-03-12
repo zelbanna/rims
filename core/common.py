@@ -8,7 +8,8 @@ __version__ = "18.03.07GA"
 __status__ = "Production"
 
 
-from .. import SettingsContainer as SC
+try:    from .. import SettingsContainer as SC
+except: pass
 
 ############################################ Database ######################################
 #
@@ -21,7 +22,7 @@ class DB(object):
   self._curs = None
   self._dirty = False
   if not aDB:
-   self._db, self._host, self._user, self._pass = SC.database['database'],SC.database['host'],SC.database['username'],SC.database['password']
+   self._db, self._host, self._user, self._pass = SC.system['db_name'],SC.system['db_host'],SC.system['db_user'],SC.system['db_pass']
   else:
    self._db, self._host, self._user, self._pass = aDB, aHost, aUser, aPass
 
@@ -30,8 +31,6 @@ class DB(object):
   return self
 
  def __exit__(self, *ctx_info):
-  if self._dirty:
-   self.commit()
   self.close()
 
  def __str__(self):
@@ -44,6 +43,8 @@ class DB(object):
   self._curs = self._conn.cursor()
 
  def close(self):
+  if self._dirty:
+   self.commit()
   self._curs.close()
   self._conn.close()
 

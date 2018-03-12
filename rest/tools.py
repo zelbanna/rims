@@ -4,16 +4,7 @@ __version__ = "18.03.07GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-
-#
-#
-def settings(aDict):
- from ..core.common import DB
- with DB() as db:
-  db.do("SELECT section,parameter,value,description FROM settings WHERE node = '%s'"%aDict['node'])
-  ret = db.get_rows()
- return ret
-
+############################################ System Tools ############################################
 #
 #
 def system(aDict):
@@ -40,96 +31,37 @@ def system(aDict):
 
 #
 #
-def install(aDict):
- """Function docstring for install. Installation of SDCP tools and DB entries
+def settings_fetch(aDict):
+ """Function docstring for settings_fetch TBD
 
  Args:
-
+  - node (required)
+ 
  Output:
  """
- from ..core.common import DB,SC
- from os import listdir, path as ospath
- 
- packagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
- ret = {'res':'NOT_OK'}
- modes = SC.system['mode'].split(',')
-
- if 'front' in modes:
-  from shutil import copy
-  # Copy files
-  for type,dest in [('images',ospath.join(SC.system['docroot'],'images')), ('infra',SC.system['docroot'])]:
-   for file in listdir(ospath.join(packagedir,type)):
-    copy(ospath.join(packagedir,type,file), ospath.join(dest,file))
-   ret[type] = 'OK'
-
-  # Generate ERD
-  try:
-   from eralchemy import render_er
-   erd_input = "mysql+pymysql://%s:%s@%s/%s"%(SC.database['username'],SC.database['password'],SC.database['host'],SC.database['database'])
-   erd_output= ospath.join(SC.system['docroot'],"sdcp.pdf")
-   render_er(erd_input,erd_output)
-   ret['ERD'] = 'OK'
-  except Exception, e:
-   ret['error'] = str(e)
-   ret['ERD'] = 'NOT_OK'
-
- #
- # Database stuff
- #
- if 'master' in modes:
-  from ..core.mysql import diff
-  from importlib import import_module
-
-  # Database diffs
-  ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
-
-  # Device types
-  devdir = ospath.abspath(ospath.join(packagedir,'devices'))
-  device_types = []
-  for file in listdir(devdir):
-   pyfile = file[:-3]
-   if file[-3:] == ".py" and pyfile[:2] != "__":
-    try:
-     mod = import_module("sdcp.devices.{}".format(pyfile))
-     type = getattr(mod,'__type__',None)
-     dev = getattr(mod,'Device',None)
-     if type:
-      device_types.append({'name':pyfile, 'base':type, 'functions':dev.get_functions() })
-    except: pass
-  ret['device_found'] = len(device_types)
-  #ret['device_types'] = [tp['name'] for tp in device_types]
-  # ret['device_types'].sort()
-  ret['device_new'] = 0
-  with DB() as db:
-   sql ="INSERT INTO devicetypes(name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
-   for type in device_types:
-    try:    ret['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
-    except Exception as err: ret['device_type_errors'] = str(err)
-
-  # Menu items
-  sitedir= ospath.abspath(ospath.join(packagedir,'site'))
-  resources = []
-  for file in listdir(sitedir):
-   pyfile = file[:-3]
-   if file[-3:] == ".py" and pyfile[:2] != "__":
-    try:
-     mod  = import_module("sdcp.site.%s"%(pyfile))
-     type = getattr(mod,'__type__',None)
-     icon = getattr(mod,'__icon__',None)
-     if type:
-      resources.append({'name':pyfile, 'icon':icon, 'type':type})
-    except: pass
-  ret['resources_new'] = 0
-  with DB() as db:
-   sql ="INSERT INTO resources(title,href,icon,type,user_id,inline) VALUES ('{}','{}','{}','{}',1,1) ON DUPLICATE KEY UPDATE id = id"
-   for item in resources:
-    try:    ret['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon'],item['type']))
-    except: ret['resources_errors'] = True
-
- # Done
- ret['res'] = 'OK'
+ from ..core.common import DB
+ ret = {}
+ with DB() as db:
+  db.do("SELECT section,parameter,value,description FROM settings WHERE node = '%s'"%aDict['node'])
+  data = db.get_rows()
+  for setting in data:
+   section = setting.pop('section') 
+   if not ret.get(section): 
+    ret[section] = {} 
+   ret[section][setting['parameter']] = {'description':setting['description'],'value':setting['value']} 
  return ret
 
+#
+#
+def settings_save(aDict):
+ """Function docstring for settings_save TBD
+
+ Args:
+ 
+ Output:
+ """
+ 
+ return {}
 
 ############################################ REST tools ############################################
 #

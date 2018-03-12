@@ -1,0 +1,154 @@
+{
+    "dhcp": {
+        "node": {
+            "description": "ISC DHCP REST API", 
+            "value": "master"
+        }, 
+        "type": {
+            "description": "DHCP server type", 
+            "value": "iscdhcp"
+        }
+    }, 
+    "dns": {
+        "node": {
+            "description": "PowerDNS REST API", 
+            "value": "master"
+        }, 
+        "type": {
+            "description": "DNS server type", 
+            "value": "powerdns"
+        }
+    }, 
+    "esxi": {
+        "logformat": {
+            "description": "Log formatting", 
+            "value": "/var/log/network/{}.operations.log"
+        }, 
+        "password": {
+            "description": "Password", 
+            "value": "PASSWORD"
+        }, 
+        "shutdownfile": {
+            "description": "Shutdown template", 
+            "value": "/var/tmp/esxi.{}.vmstate.log"
+        }, 
+        "username": {
+            "description": "Username", 
+            "value": "USERNAME"
+        }
+    }, 
+    "generic": {
+        "nodes": {
+            "description": "System Nodes", 
+            "value": "master,services"
+        }, 
+        "rack_image_directory": {
+            "description": "Directory for rack images", 
+            "value": "/var/www/images"
+        }, 
+        "title": {
+            "description": "Portal Title", 
+            "value": "El Banna portal"
+        }, 
+        "upshost": {
+            "description": "UPS host", 
+            "value": "esxi3.mgmt"
+        }
+    }, 
+    "graph": {
+        "file": {
+            "description": "Munin conf-file", 
+            "value": "/etc/munin/munin-conf.d/sdcp.conf"
+        }, 
+        "plugins": {
+            "description": "Graph plugins file", 
+            "value": "/var/www/device.graph.plugins"
+        }, 
+        "type": {
+            "description": "Munin graphing ATM", 
+            "value": "munin"
+        }
+    }, 
+    "ipmi": {
+        "password": {
+            "description": "Password", 
+            "value": "PASSWORD"
+        }, 
+        "username": {
+            "description": "Username", 
+            "value": "USERNAME"
+        }
+    }, 
+    "logs": {
+        "network": {
+            "description": "Network log", 
+            "value": "/var/log/network/mgmt.log"
+        }
+    }, 
+    "loopia": {
+        "domain": {
+            "description": "Domain", 
+            "value": "DOMAIN"
+        }, 
+        "password": {
+            "description": "Loopia password", 
+            "value": "PASSWORD"
+        }, 
+        "rpc_server": {
+            "description": "Loopia API server", 
+            "value": "https://api.loopia.se/RPCSERV"
+        }, 
+        "username": {
+            "description": "Loopia RPC username", 
+            "value": "USERNAME"
+        }
+    }, 
+    "netconf": {
+        "anonftp": {
+            "description": "Anonymous FTP", 
+            "value": "192.168.121.2"
+        }, 
+        "dnssrv": {
+            "description": "DNS server", 
+            "value": "192.168.121.4"
+        }, 
+        "encrypted": {
+            "description": "Encrypted password", 
+            "value": "ENCRYPTED"
+        }, 
+        "ntpsrv": {
+            "description": "NTP server", 
+            "value": "192.168.121.1"
+        }, 
+        "password": {
+            "description": "Password", 
+            "value": "PASSWORD"
+        }, 
+        "username": {
+            "description": "Username", 
+            "value": "USERNAME"
+        }
+    }, 
+    "node": {
+        "master": {
+            "description": "Master", 
+            "value": "http://127.0.0.1/rest.cgi"
+        }
+    }, 
+    "snmp": {
+        "read_community": {
+            "description": "Read Community", 
+            "value": "public"
+        }, 
+        "write_community": {
+            "description": "Write community", 
+            "value": "private"
+        }
+    }, 
+    "weathermap": {
+        "wm_main-map": {
+            "description": "Weathermap", 
+            "value": "Main Map"
+        }
+    }
+}

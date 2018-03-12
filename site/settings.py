@@ -14,7 +14,7 @@ def list(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('sdcp')
- res = aWeb.rest_call("settings_list&node=%s"%aWeb['node'],{'user_id':cookie['id']})
+ res = aWeb.rest_call("settings_list",{'node':aWeb['node'],'user_id':cookie['id']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Settings</P>"
  print "<DIV CLASS=controls>"
@@ -35,29 +35,26 @@ def list(aWeb):
 #
 def info(aWeb):
  cookie = aWeb.cookie_unjar('sdcp')
- data = {'id':aWeb.get('id','new')}
+ data = {'id':aWeb.get('id','new'),'node':aWeb['node']}
  if aWeb['op'] == 'update' or aWeb['id'] == 'new':
-  data['required'] = aWeb.get('required','0')
   data['op']       = aWeb['op']
   data['value']    = aWeb.get('value','Not set')
   data['section']  = aWeb.get('section','Not set')
   data['parameter'] = aWeb.get('parameter','Not set')
   data['description'] = aWeb.get('description','Not set') 
   if aWeb['op'] == 'update':
-   data = aWeb.rest_call("settings_info&node=%s"%aWeb['node'],data)['data']
+   data = aWeb.rest_call("settings_info",data)['data']
  else:
-  data = aWeb.rest_call("settings_info&node=%s"%aWeb['node'],data)['data']
- readonly = "readonly" if str(data['required']) == '1' else ""
+  data = aWeb.rest_call("settings_info",data)['data']
  print "<ARTICLE CLASS=info><P>Settings</P>"
  print "<FORM ID=sdcp_settings_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
- print "<INPUT TYPE=HIDDEN NAME=required VALUE={}>".format(data['required'])
  print "<INPUT TYPE=HIDDEN NAME=node VALUE={}>".format(aWeb['node'])
  print "<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Section:</DIV><DIV CLASS=td><INPUT  NAME=section VALUE='%s'  TYPE=TEXT REQUIRED %s STYLE='min-width:400px'></DIV></DIV>"%(data['section'],readonly)
- print "<DIV CLASS=tr><DIV CLASS=td>Parameter:</DIV><DIV CLASS=td><INPUT NAME=parameter VALUE='%s' TYPE=TEXT REQUIRED %s></DIV></DIV>"%(data['parameter'],readonly)
+ print "<DIV CLASS=tr><DIV CLASS=td>Section:</DIV><DIV CLASS=td><INPUT  NAME=section VALUE='%s'  TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['section'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Parameter:</DIV><DIV CLASS=td><INPUT NAME=parameter VALUE='%s' TYPE=TEXT REQUIRED></DIV></DIV>"%(data['parameter'])
  print "<DIV CLASS=tr><DIV CLASS=td>Value:</DIV><DIV CLASS=td><INPUT NAME=value VALUE='%s' TYPE=TEXT REQUIRED></DIV></DIV>"%data['value']
- print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT %s></DIV></DIV>"%(data['description'],readonly)
+ print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT></DIV></DIV>"%(data['description'])
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&op=update', FRM='sdcp_settings_info_form')
@@ -69,7 +66,7 @@ def info(aWeb):
 #
 #
 def view(aWeb):
- settings = aWeb.rest_call("settings_all&node=%s"%aWeb['node'],{'section':aWeb['section']})
+ settings = aWeb.rest_call("settings_all",{'node':aWeb['node'],'section':aWeb['section']})
  print "<ARTICLE><P>Settings</P>"
  for section,parameters in settings.iteritems():
   print "<P>%s</P>"%section
@@ -82,9 +79,9 @@ def view(aWeb):
 #
 #
 def delete(aWeb):
- print "<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_call("settings_delete&node=%s"%aWeb['node'],{'id':aWeb['id']}))
+ print "<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_call("settings_delete",{'node':aWeb['node'],'id':aWeb['id']}))
 
 #
 #
 def save(aWeb):
- print "<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("settings_save&node=%s"%aWeb['node']))
+ print "<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("settings_save",{'node':aWeb['node']}))

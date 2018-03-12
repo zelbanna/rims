@@ -1,4 +1,12 @@
-"""ISC DHCP API module. The specific ISC dhcp REST interface to reload and fetch info from ISC dhcp server"""
+"""ISC DHCP API module. The specific ISC dhcp REST interface to reload and fetch info from ISC dhcp server.
+Settings: 
+ - reload (argument from CLI)
+ - active (file storing current leases)          
+ - static (file storing configuration for ISC DHCP
+
+"""
+
+"""
 __author__ = "Zacharias El Banna"
 __version__ = "18.03.07GA"
 __status__ = "Production"
