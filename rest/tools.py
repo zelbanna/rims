@@ -20,14 +20,14 @@ def system(aDict):
  ret = {}
  with DB() as db:
   db.do("SELECT id,value,parameter FROM settings WHERE section = 'node'")
-  ret['nodes'] = [node for node in db.get_rows() if node['parameter'] in SC.generic['nodes'].split(',')]
+  ret['nodes'] = [node for node in db.get_rows() if node['parameter'] in SC.system['nodes'].split(',')]
   db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
   ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
  ret['dns_node'] = SC.dns['node']
  ret['dns_type'] = SC.dns['type']
  ret['dhcp_node'] = SC.dhcp['node']
  ret['dhcp_type'] = SC.dhcp['type']
- ret['id'] = SC.generic['id']
+ ret['id'] = SC.system['id']
  return ret
 
 #
@@ -39,21 +39,14 @@ def install(aDict):
 
  Output:
  """
- from sys import path as syspath
- from os import chmod, remove, listdir, path as ospath
- from importlib import import_module
- from shutil import copy
- from time import time
- import pip
- from ..core.mysql import diff
-
+ from os import remove, listdir, path as ospath
+ 
  packagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
  devdir = ospath.abspath(ospath.join(packagedir,'devices'))
  sitedir= ospath.abspath(ospath.join(packagedir,'site'))
  logger = ospath.abspath(ospath.join(packagedir,'core','logger.py'))
  ret = {'res':'NOT_OK'}
-
- modes = SC.generic['mode'].split(',')
+ modes = SC.system['mode'].split(',')
 
  #
  # Write Logger
@@ -64,12 +57,13 @@ def install(aDict):
  with open(logger,'w') as f:
   f.write("def log(aMsg,aID=None):\n")
   f.write(" from time import localtime, strftime\n")
-  f.write(" with open('" + SC.logs['syslog'] + "', 'a') as f:\n")
+  f.write(" with open('" + SC.system['syslog'] + "', 'a') as f:\n")
   f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
 
  if 'front' in modes:
+  from shutil import copy
   # Copy files
-  for type,dest in [('images',ospath.join(SC.generic['docroot'],'images')), ('infra',SC.generic['docroot'])]:
+  for type,dest in [('images',ospath.join(SC.system['docroot'],'images')), ('infra',SC.system['docroot'])]:
    for file in listdir(ospath.join(packagedir,type)):
     copy(ospath.join(packagedir,type,file), ospath.join(dest,file))
    ret[type] = 'OK'
@@ -78,59 +72,66 @@ def install(aDict):
   try:
    from eralchemy import render_er
    erd_input = "mysql+pymysql://%s:%s@%s/%s"%(SC.database['username'],SC.database['password'],SC.database['host'],SC.database['database'])
-   erd_output= ospath.join(SC.generic['docroot'],"sdcp.pdf")
+   erd_output= ospath.join(SC.system['docroot'],"sdcp.pdf")
    render_er(erd_input,erd_output)
    ret['ERD'] = 'OK'
   except Exception, e:
    ret['error'] = str(e)
    ret['ERD'] = 'NOT_OK'
 
- # Database diffs
- ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
- with DB() as db:
-  # Insert required settings, if they do not exist (!) ZEB: Todo
-  ret['DB']['settings'] = 0
+ #
+ # Database stuff
+ #
+ if 'master' in modes:
+  from ..core.mysql import diff
+  from importlib import import_module
 
- # Device types
- device_types = []
- for file in listdir(devdir):
-  pyfile = file[:-3]
-  if file[-3:] == ".py" and pyfile[:2] != "__":
-   try:
-    mod = import_module("sdcp.devices.{}".format(pyfile))
-    type = getattr(mod,'__type__',None)
-    dev = getattr(mod,'Device',None)
-    if type:
-     device_types.append({'name':pyfile, 'base':type, 'functions':dev.get_functions() })
-   except: pass
- ret['device_found'] = len(device_types)
- #ret['device_types'] = [tp['name'] for tp in device_types]
- # ret['device_types'].sort()
- ret['device_new'] = 0
- with DB() as db:
-  sql ="INSERT INTO devicetypes(name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
-  for type in device_types:
-   try:    ret['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
-   except Exception as err: ret['device_type_errors'] = str(err)
+  # Database diffs
+  ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
+  with DB() as db:
+   # Insert required settings, if they do not exist (!) ZEB: Todo
+   ret['DB']['settings'] = 0
 
- # Menu items
- resources = []
- for file in listdir(sitedir):
-  pyfile = file[:-3]
-  if file[-3:] == ".py" and pyfile[:2] != "__":
-   try:
-    mod  = import_module("sdcp.site.%s"%(pyfile))
-    type = getattr(mod,'__type__',None)
-    icon = getattr(mod,'__icon__',None)
-    if type:
-     resources.append({'name':pyfile, 'icon':icon, 'type':type})
-   except: pass
- ret['resources_new'] = 0
- with DB() as db:
-  sql ="INSERT INTO resources(title,href,icon,type,user_id,inline) VALUES ('{}','{}','{}','{}',1,1) ON DUPLICATE KEY UPDATE id = id"
-  for item in resources:
-   try:    ret['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon'],item['type']))
-   except: ret['resources_errors'] = True
+  # Device types
+  device_types = []
+  for file in listdir(devdir):
+   pyfile = file[:-3]
+   if file[-3:] == ".py" and pyfile[:2] != "__":
+    try:
+     mod = import_module("sdcp.devices.{}".format(pyfile))
+     type = getattr(mod,'__type__',None)
+     dev = getattr(mod,'Device',None)
+     if type:
+      device_types.append({'name':pyfile, 'base':type, 'functions':dev.get_functions() })
+    except: pass
+  ret['device_found'] = len(device_types)
+  #ret['device_types'] = [tp['name'] for tp in device_types]
+  # ret['device_types'].sort()
+  ret['device_new'] = 0
+  with DB() as db:
+   sql ="INSERT INTO devicetypes(name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
+   for type in device_types:
+    try:    ret['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
+    except Exception as err: ret['device_type_errors'] = str(err)
+
+  # Menu items
+  resources = []
+  for file in listdir(sitedir):
+   pyfile = file[:-3]
+   if file[-3:] == ".py" and pyfile[:2] != "__":
+    try:
+     mod  = import_module("sdcp.site.%s"%(pyfile))
+     type = getattr(mod,'__type__',None)
+     icon = getattr(mod,'__icon__',None)
+     if type:
+      resources.append({'name':pyfile, 'icon':icon, 'type':type})
+    except: pass
+  ret['resources_new'] = 0
+  with DB() as db:
+   sql ="INSERT INTO resources(title,href,icon,type,user_id,inline) VALUES ('{}','{}','{}','{}',1,1) ON DUPLICATE KEY UPDATE id = id"
+   for item in resources:
+    try:    ret['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon'],item['type']))
+    except: ret['resources_errors'] = True
 
  # Done
  ret['res'] = 'OK'
