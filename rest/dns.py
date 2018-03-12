@@ -20,7 +20,7 @@ def domain_list(aDict):
  Output:
   - filter:forward/reverse
  """
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dns['type'])
   fun = getattr(module,'domains',None)
@@ -72,7 +72,7 @@ def domain_lookup(aDict):
 
  Output:
  """
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dns['type'])
   fun = getattr(module,'domain_lookup',None)
@@ -95,7 +95,7 @@ def domain_update(aDict):
 
  Output:
  """
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dns['type'])
   fun = getattr(module,'domain_update',None)
@@ -125,7 +125,7 @@ def domain_delete(aDict):
   except:
    pass
   else:
-   if SC.dns.get('node','master') == 'master':
+   if SC.dns.get('node',SC.system['id']) == SC.system['id']:
     from importlib import import_module
     module = import_module("sdcp.rest.%s"%SC.dns['type'])
     fun = getattr(module,'domain_delete',None)
@@ -148,7 +148,7 @@ def record_list(aDict):
 
  Output:
  """
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dns['type'])
   fun = getattr(module,'records',None)
@@ -169,7 +169,7 @@ def record_lookup(aDict):
 
  Output:
  """
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module  
   module = import_module("sdcp.rest.%s"%SC.dns['type'])  
   fun = getattr(module,'record_lookup',None)
@@ -193,7 +193,7 @@ def record_update(aDict):
 
  Output:
  """
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module  
   module = import_module("sdcp.rest.%s"%SC.dns['type'])  
   fun = getattr(module,'record_update',None)
@@ -213,7 +213,7 @@ def record_delete(aDict):
 
  Output:
  """
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module  
   module = import_module("sdcp.rest.%s"%SC.dns['type'])  
   fun = getattr(module,'record_delete',None)
@@ -265,7 +265,7 @@ def record_device_create(aDict):
    return ".".join(octets)
   args['name'] = GL_ip2ptr(aDict['ip'])
   args['content'] = aDict['fqdn']
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module  
   module = import_module("sdcp.rest.%s"%SC.dns['type'])  
   fun = getattr(module,'record_update',None)
@@ -315,7 +315,7 @@ def record_device_update(aDict):
    elif domain['name'] == arpa:
     args['PTR']['domain_id'] = domain['id']
 
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module  
   module = import_module("sdcp.rest.%s"%SC.dns['type'])  
   fun = getattr(module,'record_update',None)
@@ -339,7 +339,7 @@ def record_device_delete(aDict):
  Output:
  """
  ret = {}
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC.dns['type'])
   fun = getattr(module,'record_delete',None)
@@ -363,7 +363,7 @@ def dedup(aDict):
 
  Output:
  """
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module  
   module = import_module("sdcp.rest.%s"%SC.dns['type'])  
   fun = getattr(module,'dedup',None)
@@ -383,7 +383,7 @@ def top(aDict):
 
  Output:
  """
- if SC.dns.get('node','master') == 'master':
+ if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module  
   module = import_module("sdcp.rest.%s"%SC.dns['type'])  
   fun = getattr(module,'top',None)
