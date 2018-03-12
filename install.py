@@ -163,6 +163,14 @@ if 'master' in modes:
    try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon'],item['type']))
    except: res['resources_errors'] = True
 
+  db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
+  data = db.get_rows()
+  for setting in data:
+   section = setting.pop('section') 
+   if not settings.get(section):
+    settings[section] = {} 
+   settings[section][setting['parameter']] = {'value':setting['value']} 
+
   db.close()
 
   from sdcp.rest.mysql import diff
@@ -188,14 +196,15 @@ if 'master' in modes:
   stdout.flush()
   raise Exception("cannot connect to database (%s)"%str(e))
 
-############################################### ALL #################################################
-#
-# Fetch and update settings from central repo
-#
-from sdcp.core.rest import call as rest_call
-try: master = rest_call("%s?tools_settings_fetch"%settings['system']['master']['value'],{'node':settings['system']['id']['value']})['data']
-except: master = {}
-settings.update(master)
+else:
+ ############################################ NON-MASTER ##############################################
+ #
+ # Fetch and update settings from central repo
+ #
+ from sdcp.core.rest import call as rest_call
+ try: master = rest_call("%s?tools_settings_fetch"%settings['system']['master']['value'],{'node':settings['system']['id']['value']})['data']
+ except: master = {}
+ settings.update(master)
 
 #
 # Write settings containers
