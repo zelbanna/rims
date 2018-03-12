@@ -109,19 +109,23 @@ if 'master' in modes:
   print "GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';"%(settings['database']['database']['value'],settings['database']['username']['value'])
   print "FLUSH PRIVILEGES;\n"
 else:
+ # Update settings from central repo
  from sdcp.core.rest import call as rest_call
- try:    common_settings = rest_call("%s?tools_settings"%settings['system']['master']['value'],{'node':settings['system']['id']['value']})['data']
- except: common_settings = []
+ try:    central_settings = rest_call("%s?tools_settings"%settings['system']['master']['value'],{'node':settings['system']['id']['value']})['data']
+ except: central_settings = []
+ res['settings'] = len(central_settings)
+ res['id'] = settings['system']['id']['value']
+ for setting in central_settings:
+  print setting
+  section = setting.pop('section')
+  if not settings.get(section):
+   settings[section] = {}
+  settings[section][setting['parameter']] = {'description':setting['description'],'value':setting['value']}
 
 #
 # Write settings containers
 #
 
-for setting in common_settings:
- section = setting.pop('section')
- if not settings.get(section):
-  settings[section] = {}
-  settings[section][setting['parameter']] = {'description':setting['description'],'value':setting['value']}
 try:
  scfile = ospath.abspath(ospath.join(ospath.dirname(__file__),'SettingsContainer.py'))
  with open(scfile,'w') as f:
