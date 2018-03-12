@@ -86,7 +86,7 @@ def settings_save(aDict):
     settings[section][setting['parameter']] = setting['value']
   else:
    from ..core.rest import call as rest_call
-   try: master = rest_full(SC.system['master'],"tools_settings_fetch",{'node':SC.system['id']})['data']
+   try: master = rest_call("%s?tools_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
    except: pass
    else:
     for section,content in master.iteritems():
