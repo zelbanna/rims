@@ -18,27 +18,26 @@ if len(argv) < 2:
  exit(0)
 
 from os import chmod, path as ospath
-from shutil import copy
-from pip import main as pipmain
 res = {}
 #
 # load settings
 settingsfilename = ospath.abspath(argv[1])
 with open(settingsfilename) as settingsfile:
  settings = load(settingsfile)
-settings['generic']['config_file'] = {'required':'1','description':'SDCP config file','value':settingsfilename}
-modes = settings['generic']['mode']['value'].split(',')
+settings['system']['config_file'] = {'description':'SDCP config file','value':settingsfilename}
+modes = settings['system']['mode']['value'].split(',')
 res['modes'] = modes
 
 #
 # Write CGI files
+#
 basedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
 destinations = ['rest']
 if 'front' in modes:
  destinations.append('index')
  destinations.append('sdcp')
 for dest in destinations:
- site = ospath.abspath(ospath.join(settings['generic']['docroot']['value'],"%s.cgi"%dest))
+ site = ospath.abspath(ospath.join(settings['system']['docroot']['value'],"%s.cgi"%dest))
  with open(site,'w') as f:
   wr = f.write
   wr("#!/usr/bin/python\n")
@@ -46,34 +45,69 @@ for dest in destinations:
   wr("from sys import path as syspath\n")
   wr("syspath.insert(1, '{}')\n".format(basedir))
   if dest == 'rest':
-   wr("from sdcp.core import rest as cgi\n")
+   wr("from sdcp.core.rest import server\n")
+   wr("server('%s')\n"%(settings['system']['id']['value']))
   else:
    wr("from sdcp.core.www import Web\n")
-   wr("cgi = Web('%s')\n"%settings['node']['master']['value'])
-  wr("cgi.server()\n")
+   wr("cgi = Web('%s')\n"%settings['system']['master']['value'])
+   wr("cgi.server()\n")
  chmod(site,0755)
  res["cgi_{}".format(dest)] = 'OK'
 
 #
-# Verify necessary modules
-try: import pymysql
-except ImportError:
- res['pymysql'] = 'install'
- pipmain(["install", "-q","pymysql"])
-try: import git
-except ImportError:
- res['gitpython'] = 'install'
- pipmain(["install","-q","gitpython"])
-if 'front' in modes:
- try: import eralchemy
+# Install necessary modules
+#
+if 'master' in modes:
+ from pip import main as pipmain
+ try: import pymysql
+ except ImportError:
+  res['pymysql'] = 'install'
+  pipmain(["install", "-q","pymysql"])
+ try: import git
  except ImportError:
   res['gitpython'] = 'install'
-  pipmain(["install","-q","eralchemy"])
-
+  pipmain(["install","-q","gitpython"])
+ if 'front' in modes:
+  try: import eralchemy
+  except ImportError:
+   res['gitpython'] = 'install'
+   pipmain(["install","-q","eralchemy"])
+ try:
+  from sdcp.core.common import DB
+  with DB() as db:
+   res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
+   res['settings'] = 0
+   sql = "INSERT INTO settings(section,parameter,value,required,description) VALUES('%s','%s','%s',1,'%s')"
+   # db.do("TRUNCATE TABLE settings")
+   #
+   # When everything is done insert above again
+   #
+   for section,content in settings.iteritems():
+    for k,p in content.iteritems():
+     db.do(sql%(section,k,p['value'],p['description']))
+     res['settings'] += 1
+ except Exception as e:
+  res['DB'] = 'NOT_OK'
+  res['DB_error'] = str(e)
+  print "\nError in settings up database, make sure that configured user has access:\n"
+  print "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';"%(settings['database']['username']['value'],settings['database']['password']['value'])
+  print "GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';"%(settings['database']['database']['value'],settings['database']['username']['value'])
+  print "FLUSH PRIVILEGES;\n"
+else:
+ from sdcp.core.rest import call as rest_call
+ try: common_settings = rest_call("%s?tools_settings"%settings['system']['master']['value'],settings['system']['id']['value'])['data']
+ except: pass
+ else:
+  for setting in common_settings:
+   section = setting.pop('section')
+   if not settings.get(section):
+    settings[section] = {}
+   settings[section][setting['parameter']] = {'description':setting['description'],'value':setting['value']}
 #
 # Write settings containers
+#
 try:
- scfile= ospath.abspath(ospath.join(ospath.dirname(__file__),'SettingsContainer.py'))
+ scfile = ospath.abspath(ospath.join(ospath.dirname(__file__),'SettingsContainer.py'))
  with open(scfile,'w') as f:
   for section,content in settings.iteritems():
    processed = {}
@@ -85,31 +119,10 @@ except Exception,e:
  res['containers'] = 'NOT_OK'
  print str(e)
 
-#
-# .. which is used in: Update database
-#
-try:
- from sdcp.core.common import DB
- with DB() as db:
-  res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
-  res['settings'] = 0
-  sql = "INSERT INTO settings(section,parameter,value,required,description) VALUES('%s','%s','%s','%s','%s')"
-  db.do("TRUNCATE TABLE settings")
-  for section,content in settings.iteritems():
-   for key,p in content.iteritems():
-    db.do(sql%(section,key,p['value'],p['required'],p['description']))
-    res['settings'] += 1
-except Exception as e:
- res['DB'] = 'NOT_OK'
- res['DB_error'] = str(e)
- print "\nError in settings up database, make sure that configured user has access:\n"
- print "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';"%(settings['database']['username']['value'],settings['database']['password']['value'])
- print "GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';"%(settings['database']['database']['value'],settings['database']['username']['value'])
- print "FLUSH PRIVILEGES;\n"
-else:
- from sdcp.rest.tools import install
- rest = install({})
- res.update(rest)
+
+from sdcp.rest.tools import install
+rest = install({})
+res.update(rest)
 
 print dumps(res,indent=4,sort_keys=True)
 exit(0 if res.get('res') == 'OK' else 1)
