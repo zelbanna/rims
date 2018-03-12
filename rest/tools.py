@@ -10,7 +10,7 @@ from ..core.common import DB,SC
 #
 def settings(aDict):
  with DB() as db:
-  db.do("SELECT section,parameter,value,description FROM settings WHERE NOT section = 'system'")
+  db.do("SELECT section,parameter,value,description FROM settings WHERE node = '%s'"%aDict['node'])
   ret = db.get_rows()
  return ret
 
