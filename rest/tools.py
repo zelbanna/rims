@@ -4,11 +4,11 @@ __version__ = "18.03.07GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..core.common import DB,SC
 
 #
 #
 def settings(aDict):
+ from ..core.common import DB
  with DB() as db:
   db.do("SELECT section,parameter,value,description FROM settings WHERE node = '%s'"%aDict['node'])
   ret = db.get_rows()
@@ -24,11 +24,11 @@ def system(aDict):
  
  Output:
  """
+ from ..core.common import DB
  from resources import list as resource_list
  ret = {}
  with DB() as db:
-  db.do("SELECT id,value,parameter FROM settings WHERE section = 'node'")
-  ret['nodes'] = [node for node in db.get_rows() if node['parameter'] in SC.system['nodes'].split(',')]
+  ret['nodes'] = [{'parameter':node[0],'value':node[1]} for node in SC.node.items() if node[0] in SC.generic['nodes'].split(',')]
   db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
   ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
  ret['dns_node'] = SC.dns['node']
@@ -47,6 +47,7 @@ def install(aDict):
 
  Output:
  """
+ from ..core.common import DB,SC
  from os import remove, listdir, path as ospath
  
  packagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
@@ -143,26 +144,6 @@ def install(aDict):
 
  # Done
  ret['res'] = 'OK'
- return ret
-
-
-#
-#
-def database(aDict):
- """Function docstring for database TBD
-
- Args:
-  - table (optional)
-  - columns (optional) - columns is a string list x,y,z,..
-
- Output:
- """
- cols = aDict.get('columns','*')
- tbl  = aDict.get('table','devices')
- ret  = {}
- with DB() as db:
-  ret['found'] = db.do("SELECT {} FROM {}".format(cols,tbl))
-  ret['db'] = db.get_rows() if ret['found'] > 0 else []
  return ret
 
 
@@ -299,18 +280,19 @@ def logs_clear(aDict):
 
  Output:
  """
+ from .. import SettingsContainer as SC
  from ..core.logger import log
  ret = {}
  with DB() as db:
   ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
   logs = db.get_rows()
- for entry in logs:
+ for name,file in SC.logs.iteritems():
   try:
-   open(entry['value'],'w').close()
-   ret[entry['parameter']] = 'CLEARED'
-   log("Emptied log [{}]".format(entry['value']))
+   open(file,'w').close()
+   ret[name] = 'CLEARED'
+   log("Emptied log [{}]".format(name))
   except Exception as err:
-   ret[entry['parameter']] = 'ERROR: %s'%(str(err))
+   ret[name] = 'ERROR: %s'%(str(err))
  return ret
 
 #
@@ -323,21 +305,19 @@ def logs_get(aDict):
 
  Output:
  """
+ from .. import SettingsContainer as SC
  ret = {}
- with DB() as db:
-  ret['xist'] = db.do("SELECT parameter,value FROM settings WHERE section = 'logs'")
-  logs = db.get_rows()
  count = int(aDict.get('count',15))
- for log in logs:
+ for name,file in SC.logs.iteritems():
   lines = ["\r" for i in range(count)]
   pos = 0
   try:
-   with open(log['value'],'r') as f:
+   with open(file,'r') as f:
     for line in f:
      lines[pos] = line
      pos = (pos + 1) % count
-    ret[log['parameter']] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
+    ret[name] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
   except Exception as err:
-   ret[log['parameter']] = ['ERROR: %s'%(str(err))]
+   ret[name] = ['ERROR: %s'%(str(err))]
  return ret
 

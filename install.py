@@ -72,6 +72,8 @@ if 'master' in modes:
   except ImportError:
    res['gitpython'] = 'install'
    pipmain(["install","-q","eralchemy"])
+
+ # Common settings and user
  try:
   from sdcp.core.common import DB
   with DB() as db:
@@ -95,17 +97,18 @@ if 'master' in modes:
   print "FLUSH PRIVILEGES;\n"
 else:
  from sdcp.core.rest import call as rest_call
- try: common_settings = rest_call("%s?tools_settings"%settings['system']['master']['value'],settings['system']['id']['value'])['data']
- except: pass
- else:
-  for setting in common_settings:
-   section = setting.pop('section')
-   if not settings.get(section):
-    settings[section] = {}
-   settings[section][setting['parameter']] = {'description':setting['description'],'value':setting['value']}
+ try:    common_settings = rest_call("%s?tools_settings"%settings['system']['master']['value'],settings['system']['id']['value'])['data']
+ except: common_settings = []
+
 #
 # Write settings containers
 #
+
+for setting in common_settings:
+ section = setting.pop('section')
+ if not settings.get(section):
+  settings[section] = {}
+  settings[section][setting['parameter']] = {'description':setting['description'],'value':setting['value']}
 try:
  scfile = ospath.abspath(ospath.join(ospath.dirname(__file__),'SettingsContainer.py'))
  with open(scfile,'w') as f:

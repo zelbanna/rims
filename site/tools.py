@@ -28,7 +28,7 @@ def main(aWeb):
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  for node in data['nodes']:
-  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&node=%s'>Reinstall %s</A>"%(node['id'],node['parameter'])
+  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=tools_install&node=%s'>Reinstall %s</A>"%(node['parameter'],node['parameter'])
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Settings</A><DIV CLASS='dropdown-content'>"
  for node in data['nodes']:
@@ -45,8 +45,7 @@ def main(aWeb):
 #
 #
 def install(aWeb):
- dev = aWeb.rest_call("settings_info",{'id':aWeb['node']})['data']
- res = aWeb.rest_full(dev['value'],"tools_install")['data']
+ res = aWeb.rest_call("tools_install&node=%s"%aWeb['node'])['data']
  print "<ARTICLE CLASS='info'><P>Install results</P>"
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  for key,value in res.iteritems():
