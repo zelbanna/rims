@@ -56,7 +56,7 @@ def update_server(aDict):
  """
  from .. import SettingsContainer as SC
  from ..core.rest import call as rest_call
- entries = rest_call("%s?%device_list_mac"%(SC.system['master'])['data']['entries']
+ entries = rest_call("%s?%device_list_mac"%SC.system['master'])['data']['entries']
  # Create new file
  with open(SC.dhcp['static'],'w') as leasefile:
   for entry in entries:
