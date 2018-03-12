@@ -25,11 +25,17 @@ res = {}
 #
 # load settings
 #
+settings = {}
 settingsfilename = ospath.abspath(argv[1])
-with open(settingsfilename) as settingsfile:
- settings = load(settingsfile)
-settings['system']['config_file'] = {'description':'SDCP config file','value':settingsfilename}
-modes = settings['system']['mode']['value'].split(',')
+with open(settingsfilename) as sfile:
+ temp = load(sfile)
+for section,content in temp.iteritems():
+ for key,params in content.iteritems():
+  if not settings.get(section):
+   settings[section] = {}
+  settings[section][key] = params['value'] 
+settings['system']['config_file'] = settingsfilename
+modes = settings['system']['mode'].split(',')
 res['modes'] = modes
 
 ############################################### ALL #################################################
@@ -42,7 +48,7 @@ except: pass
 with open(logger,'w') as f:
  f.write("def log(aMsg,aID=None):\n")
  f.write(" from time import localtime, strftime\n")
- f.write(" with open('" + settings['logs']['syslog']['value'] + "', 'a') as f:\n")
+ f.write(" with open('" + settings['logs']['syslog'] + "', 'a') as f:\n")
  f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
 
 ############################################### ALL #################################################
@@ -59,13 +65,13 @@ if 'front' in modes:
  destinations.append('index')
  destinations.append('sdcp')
  # Copy files
- for type,dest in [('images',ospath.join(settings['system']['docroot']['value'],'images')), ('infra',settings['system']['docroot']['value'])]:
+ for type,dest in [('images',ospath.join(settings['system']['docroot'],'images')), ('infra',settings['system']['docroot'])]:
   for file in listdir(ospath.join(packagedir,type)):
    copy(ospath.join(packagedir,type,file), ospath.join(dest,file))
   res[type] = 'OK'
 
 for dest in destinations:
- site = ospath.abspath(ospath.join(settings['system']['docroot']['value'],"%s.cgi"%dest))
+ site = ospath.abspath(ospath.join(settings['system']['docroot'],"%s.cgi"%dest))
  with open(site,'w') as f:
   wr = f.write
   wr("#!/usr/bin/python\n")
@@ -74,10 +80,10 @@ for dest in destinations:
   wr("syspath.insert(1, '{}')\n".format(basedir))
   if dest == 'rest':
    wr("from sdcp.core.rest import server\n")
-   wr("server('%s')\n"%(settings['system']['id']['value']))
+   wr("server('%s')\n"%(settings['system']['id']))
   else:
    wr("from sdcp.core.www import Web\n")
-   wr("cgi = Web('%s')\n"%settings['system']['master']['value'])
+   wr("cgi = Web('%s')\n"%settings['system']['master'])
    wr("cgi.server()\n")
  chmod(site,0755)
  res["cgi_{}".format(dest)] = 'OK'
@@ -147,7 +153,7 @@ if 'master' in modes:
  #
  from sdcp.core.common import DB
  try:
-  database,host,username,password = settings['system']['db_name']['value'],settings['system']['db_host']['value'],settings['system']['db_user']['value'],settings['system']['db_pass']['value'] 
+  database,host,username,password = settings['system']['db_name'],settings['system']['db_host'],settings['system']['db_user'],settings['system']['db_pass'] 
   db = DB(database,host,username,password)
   db.connect()
 
@@ -166,10 +172,10 @@ if 'master' in modes:
   db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
   data = db.get_rows()
   for setting in data:
-   section = setting.pop('section') 
+   section = setting.pop('section')
    if not settings.get(section):
     settings[section] = {} 
-   settings[section][setting['parameter']] = {'value':setting['value']} 
+   settings[section][setting['parameter']] = setting['value']
 
   db.close()
 
@@ -180,7 +186,7 @@ if 'master' in modes:
   # Generate ERD and save
   #
   erd_input = "mysql+pymysql://%s:%s@%s/%s"%(username,password,host,database)
-  erd_output= ospath.join(settings['system']['docroot']['value'],"sdcp.pdf")
+  erd_output= ospath.join(settings['system']['docroot'],"sdcp.pdf")
   try:
    from eralchemy import render_er
    render_er(erd_input,erd_output)
@@ -190,8 +196,8 @@ if 'master' in modes:
 
  except Exception as e:
   stdout.write("\nError in setting up database, make sure that configured user has access:\n\n")
-  stdout.write("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';\n"%(settings['system']['db_user']['value'],settings['system']['db_pass']['value']))
-  stdout.write("GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';\n"%(settings['system']['db_name']['value'],settings['system']['db_user']['value']))
+  stdout.write("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';\n"%(settings['system']['db_user'],settings['system']['db_pass']))
+  stdout.write("GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';\n"%(settings['system']['db_name'],settings['system']['db_user']))
   stdout.write("FLUSH PRIVILEGES;\n\n")
   stdout.flush()
   raise Exception("cannot connect to database (%s)"%str(e))
@@ -202,24 +208,25 @@ else:
  # Fetch and update settings from central repo
  #
  from sdcp.core.rest import call as rest_call
- try: master = rest_call("%s?tools_settings_fetch"%settings['system']['master']['value'],{'node':settings['system']['id']['value']})['data']
- except: master = {}
- settings.update(master)
+ try: master = rest_call("%s?tools_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
+ except: pass
+ else:
+  for section,content in master.iteritems():
+   if settings.get(section): settings[section].update(content)
+   else: settings[section] = content
+
 
 #
 # Write settings containers
 #
-scfile = ospath.abspath(ospath.join(ospath.dirname(__file__),'SettingsContainer.py'))
+container = ospath.abspath(ospath.join(ospath.dirname(__file__),'SettingsContainer.py'))
 try:
- with open(scfile,'w') as f:
+ with open(container,'w') as f:
   for section,content in settings.iteritems():
-   processed = {}
-   for param,data in content.iteritems():
-    processed[param]= data['value'] 
-   f.write("%s=%s\n"%(section,dumps(processed)))
-  res['containers'] = 'OK'
+   f.write("%s=%s\n"%(section,dumps(content)))
+  res['container'] = 'OK'
 except Exception,e:
- res['containers'] = str(e)
+ res['container'] = str(e)
 
 ############################################### ALL #################################################
 #

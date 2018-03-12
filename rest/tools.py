@@ -42,13 +42,13 @@ def settings_fetch(aDict):
  from ..core.common import DB
  ret = {}
  with DB() as db:
-  db.do("SELECT section,parameter,value,description FROM settings WHERE node = '%s'"%aDict['node'])
+  db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aDict['node'])
   data = db.get_rows()
-  for setting in data:
-   section = setting.pop('section') 
-   if not ret.get(section): 
-    ret[section] = {} 
-   ret[section][setting['parameter']] = {'description':setting['description'],'value':setting['value']} 
+ for setting in data:
+  section = setting.pop('section')
+  if not ret.get(section):
+   ret[section] = {} 
+  ret[section][setting['parameter']] = setting['value']
  return ret
 
 #
@@ -60,8 +60,48 @@ def settings_save(aDict):
  
  Output:
  """
- 
- return {}
+ from json import load,dumps
+ from os import path as ospath
+ from ..core.common import DB,SC
+ ret = {'file':SC.system['config_file']}
+ try:
+  settings = {}
+  with open(SC.system['config_file']) as sfile:
+   temp = load(sfile)
+  for section,content in temp.iteritems():
+   for key,params in content.iteritems():
+    if not settings.get(section):
+     settings[section] = {}
+    settings[section][key] = params['value'] 
+  settings['system']['config_file'] = ret['file']
+
+  if SC.system['id'] == 'master':
+   with DB() as db:
+    db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
+    data = db.get_rows()
+   for setting in data:
+    section = setting.pop('section') 
+    if not settings.get(section): 
+     settings[section] = {} 
+    settings[section][setting['parameter']] = setting['value']
+  else:
+   from ..core.rest import call as rest_call
+   try: master = rest_full(SC.system['master'],"tools_settings_fetch",{'node':SC.system['id']})['data']
+   except: pass
+   else:
+    for section,content in master.iteritems():
+     if settings.get(section): settings[section].update(content)
+     else: settings[section] = content
+
+  container = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','SettingsContainer.py'))
+  with open(container,'w') as f:
+   for section,content in settings.iteritems():
+    f.write("%s=%s\n"%(section,dumps(content)))
+  ret['result'] = 'OK'
+ except Exception,e:
+  ret['result'] = 'NOT_OK'
+  ret['error'] = str(e)
+ return ret
 
 ############################################ REST tools ############################################
 #
