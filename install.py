@@ -17,7 +17,7 @@ if len(argv) < 2:
  print "\n!!! Import DB structure from mysql.db before installing !!!\n"
  exit(0)
 
-from os import chmod, path as ospath
+from os import remove, chmod, path as ospath
 res = {}
 #
 # load settings
@@ -27,6 +27,17 @@ with open(settingsfilename) as settingsfile:
 settings['system']['config_file'] = {'description':'SDCP config file','value':settingsfilename}
 modes = settings['system']['mode']['value'].split(',')
 res['modes'] = modes
+
+#
+# Write Logger
+logger = ospath.abspath(ospath.join(packagedir,'core','logger.py'))
+try: remove(logger)    
+except: pass
+with open(logger,'w') as f:
+ f.write("def log(aMsg,aID=None):\n")
+ f.write(" from time import localtime, strftime\n")
+ f.write(" with open('" + SC.system['syslog'] + "', 'a') as f:\n")
+ f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
 
 #
 # Write CGI files

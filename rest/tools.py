@@ -47,26 +47,11 @@ def install(aDict):
 
  Output:
  """
- from os import remove, listdir, path as ospath
+ from os import listdir, path as ospath
  
  packagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..'))
- devdir = ospath.abspath(ospath.join(packagedir,'devices'))
- sitedir= ospath.abspath(ospath.join(packagedir,'site'))
- logger = ospath.abspath(ospath.join(packagedir,'core','logger.py'))
  ret = {'res':'NOT_OK'}
  modes = SC.system['mode'].split(',')
-
- #
- # Write Logger
- try:
-  remove(logger)
- except:
-  pass
- with open(logger,'w') as f:
-  f.write("def log(aMsg,aID=None):\n")
-  f.write(" from time import localtime, strftime\n")
-  f.write(" with open('" + SC.system['syslog'] + "', 'a') as f:\n")
-  f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
 
  if 'front' in modes:
   from shutil import copy
@@ -96,11 +81,9 @@ def install(aDict):
 
   # Database diffs
   ret['DB']= diff({'file':ospath.join(packagedir,'mysql.db')})
-  with DB() as db:
-   # Insert required settings, if they do not exist (!) ZEB: Todo
-   ret['DB']['settings'] = 0
 
   # Device types
+  devdir = ospath.abspath(ospath.join(packagedir,'devices'))
   device_types = []
   for file in listdir(devdir):
    pyfile = file[:-3]
@@ -123,6 +106,7 @@ def install(aDict):
     except Exception as err: ret['device_type_errors'] = str(err)
 
   # Menu items
+  sitedir= ospath.abspath(ospath.join(packagedir,'site'))
   resources = []
   for file in listdir(sitedir):
    pyfile = file[:-3]
