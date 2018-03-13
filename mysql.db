@@ -92,11 +92,11 @@ DROP TABLE IF EXISTS `openstack_tokens`;
 CREATE TABLE `openstack_tokens` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `token` varchar(50) NOT NULL,
   `expires` int(10) unsigned NOT NULL,
+  `token` varchar(50) NOT NULL,
   `project_id` varchar(50) NOT NULL,
   `username` varchar(50) NOT NULL,
-  `controller` int(10) unsigned NOT NULL,
+  `node` varchar(40) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `token` (`token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
