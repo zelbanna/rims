@@ -223,10 +223,10 @@ def record_update(aDict):
  ret = {}
  id = aDict.pop('id','new')
  args = aDict
- args.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':0})
+ args.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if str(id) in ['new','0']:
-   ret['update'] = db.insert_dict('records',args',"ON DUPLICATE KEY UPDATE id = id")
+   ret['update'] = db.insert_dict('records',args,"ON DUPLICATE KEY UPDATE id = id")
    ret['id'] = db.get_last_id() if ret['update'] > 0 else "new"
   else:
    ret['update'] = db.update_dict('records',args,"id='%s'"%id)
