@@ -92,4 +92,4 @@ class DB(object):
  def insert_dict(self, aTable, aDict, aException = ""):
   """Assumes not inserting NULL"""
   self._dirty = True
-  return "INSERT INTO %s(%s) VALUES('%s') %s"%(aTable,",".join(args.keys()),"','".join(args.values()),aException)
+  return "INSERT INTO %s(%s) VALUES('%s') %s"%(aTable,",".join(aDict.keys()),"','".join(aDict.values()),aException)
