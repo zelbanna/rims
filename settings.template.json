@@ -1,5 +1,35 @@
 {
+    "logs": {
+        "syslog": {
+            "description": "System log", 
+            "value": "/var/log/system/system.log"
+        }
+    }, 
     "system": {
+        "application": {
+            "description": "Default Application (REST Application interface)", 
+            "value": "sdcp"
+        }, 
+        "db_host": {
+            "description": "DB host IP", 
+            "value": "127.0.0.1"
+        }, 
+        "db_name": {
+            "description": "DB name", 
+            "value": "sdcp"
+        }, 
+        "db_pass": {
+            "description": "DB Password", 
+            "value": "PASSWORD"
+        }, 
+        "db_type": {
+            "description": "DB type", 
+            "value": "mysql"
+        }, 
+        "db_user": {
+            "description": "DB Username", 
+            "value": "USERNAME"
+        }, 
         "docroot": {
             "description": "Web server document root", 
             "value": "/var/www"
@@ -8,39 +38,21 @@
             "description": "Node ID", 
             "value": "master"
         }, 
-        "mode": {
-            "description": "Local device function [front,master,rest]", 
-            "value": "front,master,rest"
-        },
         "master": {
             "description": "Master Node REST interface", 
             "value": "http://127.0.0.1/rest.cgi"
+        }, 
+        "mode": {
+            "description": "Local device function [front,master,rest]", 
+            "value": "front,master,rest"
+        }, 
+        "title": {
+            "description": "Browser Title",
+            "value": "Management Portal"
         },
-        "db_name": {
-            "description": "DB name", 
-            "value": "NAME"
-        }, 
-        "db_host": {
-            "description": "DB host IP", 
-            "value": "IP"
-        },
-        "db_user": {
-            "description": "DB Username", 
-            "value": "USER"
-        }, 
-        "db_pass": {
-            "description": "DB Password", 
-            "value": "PASS"
-        }, 
-        "db_type": {
-            "description": "DB type", 
-            "value": "mysql"
-        }
-    },
-    "logs": {
-        "syslog": {
-            "description": "System log", 
-            "value": "/var/log/system/system.log"
+        "welcome": {
+            "description": "Welcome Message",
+            "value": Welcome to the Management Portal"
         }
     }
 }

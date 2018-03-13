@@ -27,7 +27,7 @@ def login(aWeb):
   print "Error retrieving application info - exception info: %s"%(data['exception'])
  else:
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
-  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s_%s'>"%(application,"portal" if inline=='no' else 'inline')
+  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s_%s'>"%(data['application'],"portal" if inline=='no' else 'inline')
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
   print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   for choice in data.get('choices'):

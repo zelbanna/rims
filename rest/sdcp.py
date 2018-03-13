@@ -14,12 +14,10 @@ def application(aDict):
  Output:
  """
  from datetime import datetime,timedelta
- from ..core.common import DB
+ from ..core.common import DB,SC
  """ Default login information """
- ret = {'message':"Welcome to the Management Portal",'parameters':[]}
+ ret = {'message':SC.system.get('welcome',"Welcome to the Management Portal"),'parameters':[],'title':SC.system.get('title','Portal'),'application':SC.system.get('application','sdcp')}
  with DB() as db:
-  existing = db.do("SELECT value FROM settings WHERE section = 'generic' AND parameter = 'title'")
-  ret['title'] = db.get_val('value') if existing > 0 else 'New Installation'
   db.do("SELECT CONCAT(id,'_',name) as id, name FROM users ORDER BY name")
   rows = db.get_rows()
  ret['choices'] = [{'display':'Username', 'id':'sdcp_login', 'data':rows}]
