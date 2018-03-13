@@ -96,9 +96,17 @@ class Web(object):
    module = import_module("sdcp.site." + mod)
    getattr(module,fun,None)(self)
   except Exception, e:
-   keys    = self.form.keys()
-   details = ("AJAX",mod_fun,type(e).__name__,",".join(keys), str(e)) 
-   stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>Type: %s<BR>API: sdcp.site.%s<BR>Excpt: %s<BR><DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%details)
+   stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; sdcp.site.%s<BR>"%mod_fun)
+   try:
+    stdout.write("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
+    try:
+     for key,value in e[0]['info'].iteritems():
+      stdout.write("%s: %s<BR>"%(key,value))
+    except: stdout.write(e[0]['info'])
+    stdout.write("</DETAILS>")
+   except:
+    stdout.write("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS>"%(type(e).__name__,str(e)))
+   stdout.write("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(",".join(self.form.keys())))
 
  ############################## CGI/Web functions ###############################
 

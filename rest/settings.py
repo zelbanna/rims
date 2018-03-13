@@ -122,51 +122,6 @@ def all(aDict):
 
 #
 #
-def save(aDict):
- """Function docstring for save TBD
-
- Args:
-  - node (required)
-
- Output:
- """
- from os import chmod, remove, listdir, path as ospath
- from json import dumps,dump
- ret = {'containers':'OK','config':'OK'}
- config = {}
- container = {}
-
- with DB() as db:
-  db.do("SELECT value FROM settings WHERE section = 'generic' AND parameter = 'config_file'")
-  config_file = db.get_val('value')
-  db.do("SELECT DISTINCT section FROM settings")
-  sections = db.get_rows()
-  for section in sections:
-   sect = section['section']
-   config[sect] = {}
-   container[sect] = {}
-   db.do("SELECT parameter,value,description FROM settings WHERE section = '%s' ORDER BY parameter"%sect)
-   params = db.get_rows()
-   for param in params:
-    key = param.pop('parameter',None)
-    config[sect][key] = param
-    container[sect][key] = param['value']
- try:
-  with open(config_file,'w') as f:
-   dump(config,f,indent=4,sort_keys=True)
- except Exception as e:
-  ret['config'] = 'NOT_OK'
- try:
-  file=ospath.abspath(ospath.join(ospath.dirname(__file__),'..','SettingsContainer.py'))
-  with open(file,'w') as f:
-   for key,values in container.iteritems():
-    f.write("%s=%s\n"%(key,dumps(values)))
- except:
-  ret['containers'] = 'NOT_OK'
- return ret
-
-#
-#
 def delete(aDict):
  """Function docstring for delete TBD
 

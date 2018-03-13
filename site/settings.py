@@ -84,4 +84,4 @@ def delete(aWeb):
 #
 #
 def save(aWeb):
- print "<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("settings_save",{'node':aWeb['node']}))
+ print "<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("tools_settings_save&node=%s"%aWeb['node']))
