@@ -89,7 +89,7 @@ class Junos(GenericDevice):
   interfaces = self._router.rpc.get_interface_information()
   ret = []
   for ifd in interfaces:
-   entry = {'Interface':ifd[0].text, 'State':ifd[2].text, 'SNMP':ifd[4].text, 'Description':ifd[5].text }
+   entry = {'Interface':ifd[0].text, 'State':ifd[2].text, 'SNMP':ifd[4].text, 'Type':ifd[5].text }
    # Split ge-0/0/0 into ge and 0/0/0, remove extra numbers for aeX interfaces
    tp = entry['Interface'].partition('-')[0].rstrip('0123456789')
    if tp in [ 'ge', 'fe', 'xe', 'et','st0','ae' ] and entry['State'] == "up":
