@@ -40,7 +40,7 @@ def domain_list(aDict):
   for dom in ret['domains']:
    if not cache.pop(dom['id'],None):
     ret['added'].append(dom)
-    db.do("INSERT INTO domains(id,name) VALUES ({0},'{1}') ON DUPLICATE KEY UPDATE name = '{1}'".format(dom['id'],dom['name']))
+    db.insert_dict('domains',dom,"ON DUPLICATE KEY UPDATE name = '%s'"%dom['name'])
   for id,dom in cache.iteritems():
    ret['deleted'].append(dom)
    db.do("DELETE FROM domains WHERE id = '%s'"%id)

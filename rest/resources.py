@@ -57,7 +57,7 @@ def info(aDict):
  with DB() as db:
   if op == 'update':
    if id == 'new':
-    ret['update'] = db.do("INSERT INTO resources (title,href,icon,type,inline,private,user_id) VALUES ('{}','{}','{}','{}','{}','{}','{}')".format(args['title'],args['href'],args['icon'],args['type'],args['inline'],args['private'],args['user_id']))
+    ret['update'] = db.insert_dict('resources',args)
     ret['id']   = db.get_last_id()
    else:
     ret['update'] = db.update_dict('resources',args,'id=%s'%id)

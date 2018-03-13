@@ -95,7 +95,7 @@ def update(aDict):
  args = aDict
  with DB() as db:
   if id == 'new':
-   ret['update'] = db.do("INSERT into racks (name, size, pdu_1, pdu_2, console, image_url) VALUES ('%s',%s,%s,%s,%s,'%s')"%(args['name'],args['size'],args['pdu_1'],args['pdu_2'],args['console'],args['image_url']))
+   ret['update'] = db.insert_dict('racks',args)
    ret['id']   = db.get_last_id() 
   else:
    ret['update'] = db.update_dict('racks',args,'id=%s'%id)

@@ -42,7 +42,7 @@ def info(aDict):
  with DB() as db:
   if op == 'update':
    if id == 'new':
-    ret['update'] = db.do("INSERT INTO users (alias,name,email,menulist,view_public) VALUES ('{}','{}','{}','{}',{})".format(aDict['alias'],aDict['name'],aDict['email'],aDict['menulist'],aDict['view_public']))
+    ret['update'] = db.insert_dict('users',args)
     ret['id'] = db.get_last_id()
    else:
     ret['update'] = db.update_dict('users',args,"id=%s"%id)

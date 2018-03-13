@@ -55,7 +55,6 @@ def info(aDict):
     ret['update'] = db.update_dict('settings',args,"id=%s"%id) 
    else:
     ret['update'] = db.insert_dict('settings',args)
-    # ret['update'] = db.do("INSERT INTO settings (node,section,parameter,value,description) VALUES ('{}','{}','{}','{}','{}')".format(args['node'],args['section'],args['parameter'],args['value'],args['description']))
     id = db.get_last_id()
   ret['xist'] = db.do("SELECT * FROM settings WHERE id = '%s'"%id)
   ret['data'] = db.get_row()

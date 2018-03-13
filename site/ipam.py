@@ -28,7 +28,7 @@ def list(aWeb):
 #
 def info(aWeb):
  if aWeb['op'] == 'update':
-  data = aWeb.get_args2dict()
+  data = aWeb.get_args2dict(['call','op'])
   res = aWeb.rest_call("ipam_update",data)
   data['gateway'] = res['gateway']
   data['id']      = res['id']
