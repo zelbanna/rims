@@ -138,7 +138,7 @@ def domain_update(aDict):
     from time import strftime
     ret['serial'] = strftime("%Y%m%d%H")
     # Find DNS for MASTER to be placed into SOA record
-    existing = db.do("records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%args['master'])
+    existing = db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%args['master'])
     ret['soa'] = db.get_row() if existing > 0 else {'server':'server.local','domain':'local'}
     sql = "INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','{}' ,25200,'{}',0)"
     db.do(sql.format(ret['id'],args['name'],"%s hostmaster.%s 0 21600 300 3600"%(ret['soa']['server'],ret['soa']['domain']),'SOA',ret['serial']))
@@ -163,6 +163,7 @@ def domain_delete(aDict):
  ret = {}
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   ret['deleted'] = db.do("DELETE FROM domains WHERE id = %i"%(int(aDict['id'])))
+  ret['records'] = db.do("DELETE FROM records WHERE domain_id = %i"%(int(aDict['id'])))
  return ret
 
 #################################### Records #######################################
