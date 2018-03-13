@@ -137,7 +137,8 @@ def domain_update(aDict):
     ret['id'] = db.get_last_id()
     from time import strftime
     ret['serial'] = strftime("%Y%m%d%H")
-    existing = db.do("SELECT domains.id AS domain_id, records.id AS record_id, records.name AS server, domains.name AS domain FROM records INNER JOIN domains ON domains.id = domain_id WHERE content = '{}' AND records.type ='A'".format(args['master']))
+    # Find DNS for MASTER to be placed into SOA record
+    existing = db.do("records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%args['master'])
     ret['soa'] = db.get_row() if existing > 0 else {'server':'server.local','domain':'local'}
     sql = "INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','{}' ,25200,'{}',0)"
     db.do(sql.format(ret['id'],args['name'],"%s hostmaster.%s 0 21600 300 3600"%(ret['soa']['server'],ret['soa']['domain']),'SOA',ret['serial']))
