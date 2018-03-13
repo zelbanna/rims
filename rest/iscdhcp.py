@@ -5,8 +5,6 @@ Settings:
  - static (file storing configuration for ISC DHCP
 
 """
-
-"""
 __author__ = "Zacharias El Banna"
 __version__ = "18.03.07GA"
 __status__ = "Production"
