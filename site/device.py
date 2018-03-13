@@ -220,18 +220,21 @@ def conf_gen(aWeb):
 def function(aWeb):
  print "<ARTICLE>"
  res = aWeb.rest_call("device_function",{'ip':aWeb['ip'],'op':aWeb['op'],'type':aWeb['type']})
- if res['result'] == 'OK' and len(res['data']) > 0:
-  print "<DIV CLASS=table><DIV CLASS=thead>"
-  head = res['data'][0].keys()
-  for th in head:
-   print "<DIV CLASS=th>%s</DIV>"%(th.title())
-  print "</DIV><DIV CLASS=tbody>"
-  for row in res['data']:
-   print "<DIV CLASS=tr>"
-   for td in head:
-    print "<DIV CLASS=td>%s</DIV>"%(row.get(td,'&nbsp;'))
-   print "</DIV>"
-  print "</DIV></DIV>"
+ if res['result'] == 'OK':
+  if len(res['data']) > 0:
+   print "<DIV CLASS=table><DIV CLASS=thead>"
+   head = res['data'][0].keys()
+   for th in head:
+    print "<DIV CLASS=th>%s</DIV>"%(th.title())
+   print "</DIV><DIV CLASS=tbody>"
+   for row in res['data']:
+    print "<DIV CLASS=tr>"
+    for td in head:
+     print "<DIV CLASS=td>%s</DIV>"%(row.get(td,'&nbsp;'))
+    print "</DIV>"
+   print "</DIV></DIV>"
+  else:
+   print "No data"
  else:
   print "<B>Error in devdata: %s</B>"%res['info']
  print "</ARTICLE>"
