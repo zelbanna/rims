@@ -132,7 +132,7 @@ def domain_update(aDict):
  with DB(SC.dns['database'],'localhost',SC.dns['username'],SC.dns['password']) as db:
   if id == 'new':
    # Create and insert a lot of records
-   ret['update'] = db.insert_dict('domains',args)
+   ret['update'] = db.insert_dict('domains',args,'ON DUPLICATE KEY UPDATE id = id')
    if ret['update'] > 0:
     ret['id'] = db.get_last_id()
     from time import strftime
