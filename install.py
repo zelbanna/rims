@@ -206,8 +206,8 @@ if 'master' in modes:
   stdout.flush()
   raise Exception("cannot connect to database (%s)"%str(e))
 
-else:
- ############################################ NON-MASTER ##############################################
+elif 'rest' in modes:
+ ########################################## NON-MASTER REST ########################################
  #
  # Fetch and update settings from central repo
  #
