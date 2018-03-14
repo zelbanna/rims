@@ -318,7 +318,7 @@ def to_node(aDict):
   res = db.do("SELECT INET_NTOA(ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id'])
   dev = db.get_row()
   for test in ['ip','fqdn','hostname']:
-   if db.do("SELECT id,parameter,value FROM settings WHERE section = 'node' AND value LIKE '%{}%'".format(dev[test])) > 0:
+   if db.do("SELECT node FROM nodes WHERE url LIKE '%{}%'".format(dev[test])) > 0:
     ret['node']  = db.get_val('parameter')
     ret['found'] = test
     break
