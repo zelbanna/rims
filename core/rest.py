@@ -41,8 +41,8 @@ def server(aNodeID):
    stdout.write("X-Z-Res:OK\r\n")
   else:
    stdout.write("X-Z-node:%s\r\n"%additional['node'])
-   from .. import SettingsContainer as SC
-   try: res = call("%s?%s"%(SC.node[additional['node']],query),args)
+   from common import SC,rest_call
+   try: res = rest_call("%s?%s"%(SC.node[additional['node']],query),args)
    except Exception as err: raise Exception(err)
    else: output = dumps(res['data'])
    stdout.write("X-Z-Res:%s\r\n"%res['info']['x-z-res'])
