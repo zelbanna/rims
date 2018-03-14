@@ -16,8 +16,11 @@ def application(aDict):
  from datetime import datetime,timedelta
  from ..core.common import DB,SC
  """ Default login information """
- ret = {'message':SC.system.get('welcome',"Welcome to the Management Portal"),'parameters':[],'title':SC.system.get('title','Portal'),'application':SC.system.get('application','sdcp')}
+ ret = {'message':"Welcome to the Management Portal",'parameters':[],'title':'Portal','application':'sdcp'}
  with DB() as db:
+  db.do("SELECT parameter,value FROM settings WHERE section = 'portal'")
+  for row in db.get_rows():
+   ret[row['parameter']] = row['value']
   db.do("SELECT CONCAT(id,'_',name) as id, name FROM users ORDER BY name")
   rows = db.get_rows()
  ret['choices'] = [{'display':'Username', 'id':'sdcp_login', 'data':rows}]
@@ -41,3 +44,22 @@ def authenticate(aDict):
  ret['authenticated'] = 'OK'
  ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
+
+#
+#
+def register(aDict):
+ """Function docstring for register TBD
+
+ Args:
+  - (node)
+  - (url)
+
+ Output:
+ """
+ from ..core.common import DB,SC
+ ret = {}
+ args = aDict
+ with DB() as db:
+  ret['update'] = db.insert_dict('nodes',args,'ON DUPLICATE KEY UPDATE node = node')
+ return ret
+

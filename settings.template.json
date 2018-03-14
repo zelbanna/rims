@@ -6,10 +6,6 @@
         }
     }, 
     "system": {
-        "application": {
-            "description": "Default Application (REST Application interface)", 
-            "value": "sdcp"
-        }, 
         "db_host": {
             "description": "DB host IP", 
             "value": "127.0.0.1"
@@ -45,14 +41,10 @@
         "mode": {
             "description": "Local device function [front,master,rest]", 
             "value": "front,master,rest"
-        }, 
-        "title": {
-            "description": "Browser Title",
-            "value": "Management Portal"
         },
-        "welcome": {
-            "description": "Welcome Message",
-            "value": Welcome to the Management Portal"
+        "rest": {
+            "description": "Local Node REST interface", 
+            "value": "http://127.0.0.1/rest.cgi"
         }
     }
 }
