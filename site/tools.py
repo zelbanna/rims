@@ -29,6 +29,7 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Settings</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=sdcp_node_list'>Nodes</A>"
  for node in data['nodes']:
   print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&node=%s'>%s</A>"%(node['parameter'],node['parameter'])
  print "</DIV></LI>"

@@ -45,21 +45,82 @@ def authenticate(aDict):
  ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 
+####################################### Node Management #####################################
 #
 #
 def register(aDict):
  """Function docstring for register TBD
 
  Args:
-  - (node)
-  - (url)
+  - node (required)
+  - url (required)
+  - system (optional)
 
  Output:
  """
- from ..core.common import DB,SC
+ from ..core.common import DB
  ret = {}
  args = aDict
  with DB() as db:
   ret['update'] = db.insert_dict('nodes',args,'ON DUPLICATE KEY UPDATE node = node')
  return ret
 
+#
+#
+def node_list(aDict):
+ """Function docstring for node_list TBD
+
+ Args:
+
+ Output:
+ """
+ from ..core.common import DB
+ ret = {}
+ args = aDict
+ with DB() as db:
+  ret['xist'] = db.do("SELECT * FROM nodes")
+  ret['data'] = db.get_rows()
+ return ret
+
+#
+#
+def node_info(aDict):
+ """Function docstring for node_info TBD
+
+ Args:
+  - id (required)
+  - op (optional)
+
+ Output:
+ """
+ from ..core.common import DB
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
+ ret = {}
+ args = aDict
+ with DB() as db:
+  if op == 'update':
+   if not id == 'new':
+    ret['update'] = db.update_dict('nodes',args,'id=%s AND system = 0'%id)
+   else:
+    ret['update'] = db.insert_dict('nodes',args)
+    id = db.get_last_id()
+  ret['xist'] = db.do("SELECT * FROM nodes WHERE id = '%s'"%id)
+  ret['data'] = db.get_row()
+ return ret
+
+#
+#
+def node_delete(aDict):
+ """Function docstring for node_delete TBD
+
+ Args:
+  - id (required)
+
+ Output:
+ """
+ from ..core.common import DB
+ ret = {}   
+ with DB() as db:
+  ret['delete'] = db.do("DELETE FROM nodes WHERE id = %s AND system = 0"%aDict['id'])
+ return ret

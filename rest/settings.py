@@ -50,7 +50,7 @@ def info(aDict):
  id = args.pop('id',None)
  op = args.pop('op',None)
  with DB() as db:
-  if op == 'update' and aDict['section'] != 'system':
+  if op == 'update' and not (aDict['section'] == 'system' or aDict['section'] =='node'):
    if not id == 'new':
     ret['update'] = db.update_dict('settings',args,"id=%s"%id) 
    else:

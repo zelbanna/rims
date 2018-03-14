@@ -44,6 +44,8 @@ def settings_fetch(aDict):
  with DB() as db:
   db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aDict['node'])
   data = db.get_rows()
+  db.do("SELECT 'node' AS section, node AS parameter, url AS value FROM nodes") 
+  data.extend(db.get_rows())
  for setting in data:
   section = setting.pop('section')
   if not ret.get(section):
@@ -79,6 +81,8 @@ def settings_save(aDict):
    with DB() as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
+    db.do("SELECT 'node' AS section, node AS parameter, url AS value FROM nodes")
+    data.extend(db.get_rows())
    for setting in data:
     section = setting.pop('section') 
     if not settings.get(section): 

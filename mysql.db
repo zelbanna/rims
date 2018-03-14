@@ -76,6 +76,15 @@ CREATE TABLE `events` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
+DROP TABLE IF EXISTS `nodes`;
+CREATE TABLE `nodes` (
+  `node` varchar(40) NOT NULL,
+  `url` varchar(40) NOT NULL,
+  `system` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`node`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 DROP TABLE IF EXISTS `openstack_services`;
 CREATE TABLE `openstack_services` (
   `id` int(10) unsigned NOT NULL,

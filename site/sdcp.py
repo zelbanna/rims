@@ -74,6 +74,52 @@ def portal(aWeb):
  print "</HEADER>"
  print "<MAIN CLASS='background' ID=main></MAIN>"
 
+#
+#
+def node_list(aWeb):
+ nodes = aWeb.rest_call("sdcp_node_list")['data']
+ print "<SECTION CLASS=content-left ID=div_content_left>"
+ print "<ARTICLE><P>Nodes</P><DIV CLASS=controls>"
+ print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=sdcp_node_list')
+ print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_info&id=new')
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>System</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for row in nodes:
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=sdcp_node_info&id=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['node'],row['url'],"True" if row['system'] == 1 else "False")
+ print "</DIV></DIV></ARTICLE></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+
+#
+#
+def node_info(aWeb):
+ data = {'id':aWeb.get('id','new')}
+ if aWeb['op'] == 'update' or aWeb['id'] == 'new':
+  data['op']   = aWeb['op']
+  data['node'] = aWeb.get('node','Not set')
+  data['url']  = aWeb.get('url','Not set')
+  if aWeb['op'] == 'update':
+   data = aWeb.rest_call("sdcp_node_info",data)['data']
+ else:
+  data = aWeb.rest_call("sdcp_node_info",data)['data']
+ print "<ARTICLE CLASS='info'><P>Node Info</DIV>"
+ print "<FORM ID=sdcp_node_form>"
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id'])
+ print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=node STYLE='width:200px;' VALUE='%s'></DIV></DIV>"%(data['node'])
+ print "<DIV CLASS=tr><DIV CLASS=td>URL:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=url  STYLE='width:200px;' VALUE='%s'></DIV></DIV>"%(data['url'])
+ print "</DIV></DIV>"
+ print "<SPAN></SPAN>"
+ print "</FORM><DIV CLASS=controls>"
+ print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_info&op=update', FRM='sdcp_node_form')
+ print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_delete', FRM='sdcp_node_form')
+ print "</DIV></ARTICLE>"
+
+#
+#
+def node_delete(aWeb):
+ res = aWeb.rest_call("sdcp_node_delete",{'id':aWeb['id']})
+ print "<ARTICLE>Result: %s</ARTICLE>"%(res)
+
 ##################################################################################################
 #
 # Weathermap
