@@ -35,14 +35,15 @@ def server(aNodeID):
    for part in extra.split("&"):
     (k,void,v) = part.partition('=')
     additional[k] = v
-  if additional.get('node','master') == aNodeID:
+  node = additional.get('node','master')
+  if node == aNodeID:
    module = import_module("sdcp.rest.%s"%mod)
    output = dumps(getattr(module,fun,None)(args))
    stdout.write("X-Z-Res:OK\r\n")
   else:
-   stdout.write("X-Z-node:%s\r\n"%additional['node'])
+   stdout.write("X-Z-node:%s\r\n"%node)
    from common import SC,rest_call
-   try: res = rest_call("%s?%s"%(SC.node[additional['node']],query),args)
+   try: res = rest_call("%s?%s"%(SC.node[node],query),args)
    except Exception as err: raise Exception(err)
    else: output = dumps(res['data'])
    stdout.write("X-Z-Res:%s\r\n"%res['info']['x-z-res'])
@@ -51,6 +52,7 @@ def server(aNodeID):
   stdout.write("X-Z-Arguments:%s\r\n"%args)
   stdout.write("X-Z-Info:%s\r\n"%str(e))
   stdout.write("X-Z-Exception:%s\r\n"%type(e).__name__)
+ stdout.write("X-Z-ID:%s\r\n"%aNodeID)
  stdout.write("X-Z-Module:%s\r\n"%mod)
  stdout.write("X-Z-Function:%s\r\n"%fun)
  stdout.write("Content-Type: application/json\r\n")
