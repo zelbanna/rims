@@ -9,7 +9,7 @@ Settings:
 
 """
 __author__ = "Zacharias El Banna"                     
-__version__ = "18.03.07GA"
+__version__ = "18.03.14GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
