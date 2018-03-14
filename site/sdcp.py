@@ -11,14 +11,16 @@ __status__= "Production"
 # Generic Login - REST based apps required
 #
 def login(aWeb):
- application = aWeb.get('application',aWeb.application)
+ application = aWeb.get('application','sdcp')
  cookie = aWeb.cookie_unjar(application)
  inline = aWeb.get('inline','no')
  if cookie.get('authenticated') == 'OK' and inline == 'no':
-  aWeb.put_redirect("sdcp.cgi?call=%s_portal"%application)
+  aWeb.put_redirect("sdcp.cgi?call=%s_portal"%cookie['portal'])
   return
 
- data = aWeb.rest_call("%s_application"%(application),aWeb.get_args2dict(['call']))
+ args = aWeb.get_args2dict(['call'])
+ args['node'] = aWeb.id
+ data = aWeb.rest_call("%s_application"%(application),args)
  if inline == 'no':
   aWeb.put_html(data['title'])
  aWeb.put_cookie(application,data['cookie'],data['expires'])
@@ -27,7 +29,7 @@ def login(aWeb):
   print "Error retrieving application info - exception info: %s"%(data['exception'])
  else:
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
-  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s_%s'>"%(data['application'],"portal" if inline=='no' else 'inline')
+  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s_%s'>"%(data['portal'],"portal" if inline=='no' else 'inline')
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
   print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   for choice in data.get('choices'):

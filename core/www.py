@@ -13,10 +13,10 @@ __status__= "Production"
 #
 class Web(object):
 
- def __init__(self,aREST,aAPP):
+ def __init__(self,aREST,aID):
   from os import getenv
   self._rest_url = aREST
-  self.application = aAPP
+  self.id = aID
   self.form  = None
   self.cookies = {}
   cookies = getenv("HTTP_COOKIE")
