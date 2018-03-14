@@ -1,5 +1,31 @@
 {
+    "logs": {
+        "syslog": {
+            "description": "System log", 
+            "value": "/var/log/system/system.log"
+        }
+    }, 
     "system": {
+        "db_host": {
+            "description": "DB host IP", 
+            "value": "127.0.0.1"
+        }, 
+        "db_name": {
+            "description": "DB name", 
+            "value": "sdcp"
+        }, 
+        "db_pass": {
+            "description": "DB Password", 
+            "value": "PASSWORD"
+        }, 
+        "db_type": {
+            "description": "DB type", 
+            "value": "mysql"
+        }, 
+        "db_user": {
+            "description": "DB Username", 
+            "value": "USERNAME"
+        }, 
         "docroot": {
             "description": "Web server document root", 
             "value": "/var/www"
@@ -8,39 +34,17 @@
             "description": "Node ID", 
             "value": "master"
         }, 
+        "master": {
+            "description": "Master Node REST interface", 
+            "value": "http://127.0.0.1/rest.cgi"
+        }, 
         "mode": {
             "description": "Local device function [front,master,rest]", 
             "value": "front,master,rest"
         },
-        "master": {
-            "description": "Master Node REST interface", 
+        "rest": {
+            "description": "Local Node REST interface", 
             "value": "http://127.0.0.1/rest.cgi"
-        },
-        "db_name": {
-            "description": "DB name", 
-            "value": "NAME"
-        }, 
-        "db_host": {
-            "description": "DB host IP", 
-            "value": "IP"
-        },
-        "db_user": {
-            "description": "DB Username", 
-            "value": "USER"
-        }, 
-        "db_pass": {
-            "description": "DB Password", 
-            "value": "PASS"
-        }, 
-        "db_type": {
-            "description": "DB type", 
-            "value": "mysql"
-        }
-    },
-    "logs": {
-        "syslog": {
-            "description": "System log", 
-            "value": "/var/log/system/system.log"
         }
     }
 }
