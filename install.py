@@ -158,7 +158,7 @@ if 'master' in modes:
   db.connect()
 
   res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
-  res['node'] = db.do("INSERT INTO nodes(node,url) VALUES('%s','%s')"%(settings['system']['id'],settigns['system']['rest']))
+  res['register'] = db.do("INSERT INTO nodes(node,url,system) VALUES('%s','%s',1) ON DUPLICATE KEY UPDATE node = node"%(settings['system']['id'],settings['system']['rest']))
 
   sql ="INSERT INTO devicetypes(name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
   for type in device_types:
@@ -209,7 +209,7 @@ else:
  # Fetch and update settings from central repo
  #
  from sdcp.core.rest import call as rest_call
- try: res['register'] = rest_call("%s?sdcp_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest']})['data']
+ try: res['register'] = rest_call("%s?sdcp_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':1})['data']
  except Exception,e: res['register'] = str(e)
  try: master   = rest_call("%s?tools_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
  except: pass
