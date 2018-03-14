@@ -65,12 +65,12 @@ def install(aWeb):
 #
 #
 def rest_main(aWeb):
- nodes = aWeb.rest_call("settings_list",{'section':'node'})['data']
+ nodes = aWeb.rest_call("sdcp_node_list")['data']
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_rest>"
  print "Choose host and enter API:<SELECT CLASS=white STYLE='height:22px;' NAME=node>"
  for node in nodes:
-  print "<OPTION VALUE='%s' %s>%s</A>"%(node['id'],"selected" if aWeb['node'] else "",node['parameter'])
+  print "<OPTION VALUE='%s' %s>%s</A>"%(node['id'],"selected" if aWeb['node'] else "",node['node'])
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
  print "Call 'Method': <SELECT CLASS='white' STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:
@@ -91,7 +91,7 @@ def rest_execute(aWeb):
  except: arguments = None
  try:
   if aWeb['node']:
-   url = aWeb.rest_call("settings_info",{'id':aWeb['node']})['data']['value']
+   url = aWeb.rest_call("sdcp_node_info",{'id':aWeb['node']})['data']['url']
   elif aWeb['device'] == 'vera':
    url = "http://%s:3480/data_request"%(aWeb['host'])
   ret = aWeb.rest_full(url,aWeb['api'],arguments,aWeb['method'])

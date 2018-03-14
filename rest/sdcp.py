@@ -18,7 +18,7 @@ def application(aDict):
  """ Default login information """
  ret = {'message':"Welcome to the Management Portal",'parameters':[],'title':'Portal','application':'sdcp'}
  with DB() as db:
-  db.do("SELECT parameter,value FROM settings WHERE section = 'portal' AND 'node' = '%s'"%SC.system['id'])
+  db.do("SELECT parameter,value FROM settings WHERE section = 'portal' AND 'node' = '%s'"%aDict.get('node','master'))
   for row in db.get_rows():
    ret[row['parameter']] = row['value']
   db.do("SELECT CONCAT(id,'_',name) as id, name FROM users ORDER BY name")

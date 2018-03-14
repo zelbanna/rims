@@ -110,8 +110,9 @@ def node_info(aWeb):
  print "</DIV></DIV>"
  print "<SPAN></SPAN>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_info&op=update', FRM='sdcp_node_form')
- print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_delete', FRM='sdcp_node_form')
+ if str(data.get('system','0')) == '0':
+  print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_info&op=update', FRM='sdcp_node_form')
+  print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_delete', FRM='sdcp_node_form')
  print "</DIV></ARTICLE>"
 
 #
