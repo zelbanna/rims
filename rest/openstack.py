@@ -5,7 +5,7 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from ..devices.openstack import Device
-from ..core.common import DB,SC
+from ..core.common import DB,SC,rest_call
 #
 #
 def application(aDict):
@@ -113,7 +113,6 @@ def rest(aDict):
  """
  try:
   if aDict.get('href'):
-   from ..core.common import rest_call
    ret = rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
   else:
    with DB() as db:
@@ -161,7 +160,6 @@ def href(aDict):
 
  Output:
  """
- from ..core.common import rest_call
  try: ret = rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
  except Exception as e: ret = e[0]
  return ret

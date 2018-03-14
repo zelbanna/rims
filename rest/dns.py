@@ -11,6 +11,9 @@ __add_globals__ = lambda x: globals().update(x)
 
 from ..core.common import DB,SC,rest_call
 
+def __rest_format__(aFunction):
+ return "%s?%s_%s&node=%s"%(SC.node[SC.dns['node']], SC.dns['type'], aFunction, SC.dns['node'])
+
 #
 #
 def domain_list(aDict):
@@ -30,7 +33,7 @@ def domain_list(aDict):
   fun = getattr(module,'domains',None)
   ret = fun(aDict)
  else:
-  ret = rest_call("%s?%s_domains"%(SC.node[SC.dns['node']], SC.dns['type']),aDict)['data']
+  ret = rest_call(__rest_format__('domains'),aDict)['data']
  if aDict.get('sync'):
   ret.update({'added':[],'deleted':[]})
   with DB() as db:
@@ -81,7 +84,7 @@ def domain_lookup(aDict):
   fun = getattr(module,'domain_lookup',None)
   ret = fun({'id':aDict['id']})
  else:
-  ret = rest_call("%s?%s_domain_lookup"%(SC.node[SC.dns['node']], SC.dns['type']),{'id':aDict['id']})['data']
+  ret = rest_call(__restformat__('domain_lookup'),{'id':aDict['id']})['data']
  return ret
 
 #
@@ -103,7 +106,7 @@ def domain_update(aDict):
   fun = getattr(module,'domain_update',None)
   ret = fun(aDict)
  else:
-  ret = rest_call("%s?%s_domain_update"%(SC.node[SC.dns['node']], SC.dns['type']),aDict)['data']
+  ret = rest_call(__rest_format__('domain_update'),aDict)['data']
  return ret
 
 #
@@ -132,7 +135,7 @@ def domain_delete(aDict):
     fun = getattr(module,'domain_delete',None)
     ret.update(fun({'id':aDict['from']}))
    else:
-    ret.update(rest_call("%s?%s_domain_delete"%(SC.node[SC.dns['node']], SC.dns['type']),{'id':aDict['from']})['data'])
+    ret.update(rest_call(__rest_format__('domain_delete'),{'id':aDict['from']})['data'])
  return ret
 
 ######################################## Records ####################################
@@ -154,7 +157,7 @@ def record_list(aDict):
   fun = getattr(module,'records',None)
   ret = fun(aDict)
  else:
-  ret = rest_call("%s?%s_records"%(SC.node[SC.dns['node']], SC.dns['type']),aDict)['data']
+  ret = rest_call(__rest_format__('records'),aDict)['data']
  return ret
 
 #
@@ -168,13 +171,14 @@ def record_lookup(aDict):
 
  Output:
  """
+ args = {'domain_id':aDict['domain_id'],'id':aDict['id']}
  if SC.dns.get('node',SC.system['id']) == SC.system['id']:
   from importlib import import_module  
   module = import_module("sdcp.rest.%s"%SC.dns['type'])  
   fun = getattr(module,'record_lookup',None)
-  ret = fun({'domain_id':aDict['domain_id'],'id':aDict['id']})
+  ret = fun(args)
  else:  
-  ret = rest_call("%s?%s_record_lookup"%(SC.node[SC.dns['node']], SC.dns['type']),{'domain_id':aDict['domain_id'],'id':aDict['id']})['data']       
+  ret = rest_call(__rest_format__('record_lookup'),args)['data']       
  return ret
 
 #
@@ -197,7 +201,7 @@ def record_update(aDict):
   fun = getattr(module,'record_update',None)
   ret = fun(aDict)
  else:  
-  ret = rest_call("%s?%s_record_update"%(SC.node[SC.dns['node']], SC.dns['type']),aDict)['data']
+  ret = rest_call(__rest_format__('record_update'),aDict)['data']
  return ret
 
 #
@@ -216,7 +220,7 @@ def record_delete(aDict):
   fun = getattr(module,'record_delete',None)
   ret = fun({'id':aDict['id']})
  else:  
-  ret = rest_call("%s?%s_record_delete"%(SC.node[SC.dns['node']], SC.dns['type']),{'id':aDict['id']})['data']       
+  ret = rest_call(__rest_format__('record_delete'),{'id':aDict['id']})['data']       
  return ret
 
 #
@@ -267,7 +271,7 @@ def record_device_create(aDict):
   fun = getattr(module,'record_update',None)
   ret['dns'] = fun(args)
  else:  
-  ret['dns'] = rest_call("%s?%s_record_update"%(SC.node[SC.dns['node']], SC.dns['type']),args)['data']
+  ret['dns'] = rest_call(__rest_format__('record_update'),args)['data']
  if str(ret['dns']['update']) == "1" and (args['type'] == 'A' or args['type'] == 'PTR'):
   ret['device'] = {'id':aDict['id']}
   with DB() as db:
@@ -318,7 +322,7 @@ def record_device_update(aDict):
    ret[arg['type']] = fun(arg)
  else:  
   for arg in args.values():
-   ret[arg['type']] = rest_call("%s?%s_record_update"%(SC.node[SC.dns['node']], SC.dns['type']),arg)['data']
+   ret[arg['type']] = rest_call(__rest_format__('record_update'),arg)['data']
  return ret
 
 #
@@ -341,7 +345,7 @@ def record_device_delete(aDict):
    ret[tp] = fun({'id':aDict.get(tp)})['deleted'] if str(aDict.get(tp,'0')) != '0' else None
  else:
   for tp in ['A','PTR']:
-   ret[tp] = rest_call("%s?%s_record_delete"%(SC.node[SC.dns['node']], SC.dns['type']),{'id':aDict.get(tp)})['data']['deleted'] if str(aDict.get(tp,'0')) != '0' else None
+   ret[tp] = rest_call(__rest_format__('record_delete'),{'id':aDict.get(tp)})['data']['deleted'] if str(aDict.get(tp,'0')) != '0' else None
  return ret
 
 
@@ -362,7 +366,7 @@ def dedup(aDict):
   fun = getattr(module,'dedup',None)
   ret = fun({})
  else:  
-  ret = rest_call("%s?%s_dedup"%(SC.node[SC.dns['node']], SC.dns['type']))['data']
+  ret = rest_call(__rest_format__('dedup'))['data']
  return ret
 
 #
@@ -381,7 +385,7 @@ def top(aDict):
   fun = getattr(module,'top',None)
   ret = fun(aDict)
  else:  
-  ret = rest_call("%s?%s_top"%(SC.node[SC.dns['node']], SC.dns['type']),aDict)['data']
+  ret = rest_call(__rest_format__('top'),aDict)['data']
  return ret
 
 #

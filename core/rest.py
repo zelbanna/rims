@@ -8,9 +8,12 @@ __version__ = "18.03.07GA"
 __status__= "Production"
 
 #
-# Make proper REST responses
+# Centralized REST handler (assumes most calls should go to DB node !!) Very important for:
+# - supporting REST nodes
+# - any node using this module for serving REST requests
 #
-# - encoded as apicall=package.path.module_function (module cannot contain '_', but function can)
+# Function:
+# - expecting query string encoded as apicall=module_function (module cannot contain '_', but function can)
 # - reads body to find input data
 # - returns json:ed response from function
 # -- Response model
@@ -19,7 +22,7 @@ __status__= "Production"
 # --- info: ERROR info
 # --- exception: type of Exception
 # --- data: data
-
+#
 def server(aNodeID):
  from os import getenv
  from sys import stdout, stdin
