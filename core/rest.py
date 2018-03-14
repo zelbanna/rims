@@ -73,8 +73,8 @@ def server(aNodeID):
  from sys import stdout, stdin
  from json import loads, dumps
  from importlib import import_module
- output,api,args,mod,fun,additional = 'null',None,None,None,None,{}
- (api,void,extra) = getenv("QUERY_STRING").partition('&')
+ query,output,api,args,mod,fun,additional= getenv("QUERY_STRING"),'null',None,None,None,None,{}
+ (api,void,extra) = query.partition('&')
  (mod,void,fun) = api.partition('_')
  try:
   data = stdin.read()
@@ -90,7 +90,7 @@ def server(aNodeID):
   else:
    stdout.write("X-Z-node:%s\r\n"%additional['node'])
    from .. import SettingsContainer as SC
-   try: res = call("%s?%s"%(SC.node[additional['node']],api),args)
+   try: res = call("%s?%s"%(SC.node[additional['node']],query),args)
    except Exception as err: raise Exception(err)
    else: output = dumps(res['data'])
    stdout.write("X-Z-Res:%s\r\n"%res['info']['x-z-res'])
