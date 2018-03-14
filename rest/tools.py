@@ -19,7 +19,8 @@ def system(aDict):
  from resources import list as resource_list
  ret = {}
  with DB() as db:
-  ret['nodes'] = [{'parameter':node[0],'value':node[1]} for node in SC.node.items() if node[0] in SC.generic['nodes'].split(',')]
+  db.do("SELECT node FROM nodes WHERE system = 1")
+  ret['nodes'] = db.get_rows()
   db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
   ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
  ret['dns_node'] = SC.dns['node']

@@ -85,7 +85,7 @@ def node_list(aWeb):
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>System</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in nodes:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=sdcp_node_info&id=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['node'],row['url'],"True" if row['system'] == 1 else "False")
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=sdcp_node_info&id=%s'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['node'],row['url'],"True" if row['system'] == 1 else "False")
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
@@ -105,8 +105,8 @@ def node_info(aWeb):
  print "<FORM ID=sdcp_node_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id'])
  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=node STYLE='width:200px;' VALUE='%s'></DIV></DIV>"%(data['node'])
- print "<DIV CLASS=tr><DIV CLASS=td>URL:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=url  STYLE='width:200px;' VALUE='%s'></DIV></DIV>"%(data['url'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=node STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['node'])
+ print "<DIV CLASS=tr><DIV CLASS=td>URL:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=url  STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['url'])
  print "</DIV></DIV>"
  print "<SPAN></SPAN>"
  print "</FORM><DIV CLASS=controls>"

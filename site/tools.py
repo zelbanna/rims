@@ -17,26 +17,37 @@ def main(aWeb):
   return
  data = aWeb.rest_call("tools_system")
  print "<NAV><UL>"
+ print "<LI CLASS='warning dropdown'><A>Clear Logs</A><DIV CLASS='dropdown-content'>"
+ for node in data['nodes']:
+  print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=tools_clear&node=%s'>%s</A>"%(node['node'],node['node'])
+ print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
+ for node in data['nodes']:
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_logs&node=%s>%s</A>"%(node['node'],node['node'])
  print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>List</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'><B>- List -</B></A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>View Tools</A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>View Demos</A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>View Bookmarks</A>"
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dhcp_update&node=%s&type=%s'>DHCP - Update Server</A>"%(data['dhcp_node'],data['dhcp_type'])
+ if data.get('dhcp_node'):
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%(data['dhcp_node'],data['dhcp_type'])
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=active>DHCP - Active</A>"%(data['dhcp_node'],data['dhcp_type'])
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=free>DHCP - Free</A>"%(data['dhcp_node'],data['dhcp_type'])
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "</DIV></LI>"
  print "<LI CLASS='dropdown'><A>Settings</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=sdcp_node_list'>Nodes</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=sdcp_node_list'><B>- Nodes -</B></A>"
  for node in data['nodes']:
-  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&node=%s'>%s</A>"%(node['parameter'],node['parameter'])
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&node=%s'>%s</A>"%(node['node'],node['node'])
  print "</DIV></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>Debug</A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"
  print "</DIV></LI>"
+ for mon in data['monitors']:
+  print "<LI><A CLASS=z-op DIV=div_content URL='%s'>%s</A></LI>"%(mon['href'],mon['title'])
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
@@ -125,3 +136,33 @@ def rest_information(aWeb):
  print "<BR>".join(res['information'])
  print "</ARTICLE>"
  
+############################################ Monitor #############################################
+
+#
+#
+def clear(aWeb):
+ res = aWeb.rest_call('tools_logs_clear&node=%s'%aWeb['node'])
+ print "<ARTICLE>%s</ARTICLE>"%(res)
+
+#
+#
+def logs(aWeb):           
+ res = aWeb.rest_call('tools_logs_get&node=%s'%aWeb['node'],{'count':18})
+ res.pop('xist',None)               
+ print "<ARTICLE>"   
+ for file,logs in res.iteritems():
+  print "<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))
+ print "</ARTICLE>"
+
+#
+# UPS graphs   
+#
+def ups(aWeb):
+ print "<ARTICLE>"
+ if aWeb.get('node'):                 
+  from ..tools.munin import widget_cols
+  upshost,void,domain = aWeb['node'].partition('.')
+  widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
+ else:
+  print "Missing 'node' var" 
+ print "</ARTICLE>"
