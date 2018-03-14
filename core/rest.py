@@ -83,7 +83,7 @@ def server(aNodeID):
    for part in extra.split("&"):
     (k,void,v) = part.partition('=')
     additional[k] = v
-  if additional.get('node',aNodeID) == aNodeID:
+  if additional.get('node','master') == aNodeID:
    module = import_module("sdcp.rest.%s"%mod)
    output = dumps(getattr(module,fun,None)(args))
    stdout.write("X-Z-Res:OK\r\n")
