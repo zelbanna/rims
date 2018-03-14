@@ -78,10 +78,12 @@ CREATE TABLE `events` (
 
 DROP TABLE IF EXISTS `nodes`;
 CREATE TABLE `nodes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `node` varchar(40) NOT NULL,
   `url` varchar(40) NOT NULL,
   `system` tinyint(1) DEFAULT '0',
-  PRIMARY KEY (`node`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `node` (`node`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
@@ -197,7 +199,8 @@ CREATE TABLE `settings` (
   `value` varchar(100) DEFAULT NULL,
   `description` text,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `parameter` (`node`,`section`,`parameter`)
+  UNIQUE KEY `parameter` (`node`,`section`,`parameter`),
+  CONSTRAINT `settings_ibfk_1` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
