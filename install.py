@@ -83,7 +83,7 @@ for dest in destinations:
    wr("server('%s')\n"%(settings['system']['id']))
   else:
    wr("from sdcp.core.www import Web\n")
-   wr("cgi = Web('%s')\n"%settings['system']['rest'])
+   wr("cgi = Web('%s','%s')\n"%(settings['system']['rest'], settings['system'].get('application','sdcp')))
    wr("cgi.server()\n")
  chmod(site,0755)
  res["cgi_{}".format(dest)] = 'OK'

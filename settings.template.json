@@ -6,6 +6,10 @@
         }
     }, 
     "system": {
+        "application": {
+            "description": "Default Application", 
+            "value": "sdcp"
+        }, 
         "db_host": {
             "description": "DB host IP", 
             "value": "127.0.0.1"

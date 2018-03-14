@@ -11,7 +11,7 @@ __status__= "Production"
 # Generic Login - REST based apps required
 #
 def login(aWeb):
- application = aWeb.get('application','sdcp')
+ application = aWeb.get('application',aWeb.application)
  cookie = aWeb.cookie_unjar(application)
  inline = aWeb.get('inline','no')
  if cookie.get('authenticated') == 'OK' and inline == 'no':
