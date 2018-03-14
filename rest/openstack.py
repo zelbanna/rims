@@ -19,8 +19,7 @@ def application(aDict):
  Output:
  """
  from datetime import datetime,timedelta
- ret = {'title':"%s 2 Cloud"%(aDict.get('name','iaas')),'choices':[]}
- ret['message']= "Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas'))
+ ret = {'title':"%s 2 Cloud"%(aDict.get('name','iaas')),'choices':[],'message':"Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas')),'portal':'openstack' }
  try:
   if aDict.get('token'):
    controller = Device(SC.node[aDict['node']],aDict.get('token'))
@@ -36,7 +35,7 @@ def application(aDict):
  except Exception as e:
   ret['exception'] = str(e)
  ret['parameters'] = [{'display':'Username', 'id':'username', 'data':'text'},{'display':'Password', 'id':'password', 'data':'password'}]
- cookie = {'name':aDict.get('name','iaas'),'node':aDict['node']}
+ cookie = {'name':aDict.get('name','iaas'),'node':aDict['node'],'portal':'openstack'}
  if aDict.get('appformix'):
   cookie['appformix'] = aDict.get('appformix')
  ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
