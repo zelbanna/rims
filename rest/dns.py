@@ -84,7 +84,7 @@ def domain_lookup(aDict):
   fun = getattr(module,'domain_lookup',None)
   ret = fun({'id':aDict['id']})
  else:
-  ret = rest_call(__restformat__('domain_lookup'),{'id':aDict['id']})['data']
+  ret = rest_call(__rest_format__('domain_lookup'),{'id':aDict['id']})['data']
  return ret
 
 #
