@@ -28,7 +28,7 @@ def manage(aWeb):
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&node=%s>Devices</A></LI>"%node
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rooms&node=%s>Rooms</A></LI>"%node
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_scenes&node=%s>Scenes</A></LI>"%node
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=vera_manage&node=%s'></A></LI>"%node
  print "<LI CLASS='right navinfo'><A CLASS=z-op TARGET=_blank HREF='%s'>UI</A></LI>"%(ui)
  print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_rest_main&node=%s>REST</A></LI>"%node
  print "</UL></NAV>"

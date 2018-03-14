@@ -40,7 +40,7 @@ def manage(aWeb):
  print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['hostname'],data['domain'])
  print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A></LI>".format(data['hostname'],data['domain'])
  print "<LI><A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A></LI>".format(data['ip'])
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=esxi_manage&id=%s'></A></LI>".format(id)
  print "<LI CLASS='right navinfo'><A>{}</A></LI>".format(data['hostname'])
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
