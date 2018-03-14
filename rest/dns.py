@@ -9,7 +9,7 @@ __version__ = "18.03.07GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..core.common import DB,SC
+from ..core.common import DB,SC,rest_call
 
 #
 #
@@ -30,7 +30,6 @@ def domain_list(aDict):
   fun = getattr(module,'domains',None)
   ret = fun(aDict)
  else:
-  from ..core.rest import call as rest_call
   ret = rest_call("%s?%s_domains"%(SC.node[SC.dns['node']], SC.dns['type']),aDict)['data']
  if aDict.get('sync'):
   ret.update({'added':[],'deleted':[]})
@@ -82,7 +81,6 @@ def domain_lookup(aDict):
   fun = getattr(module,'domain_lookup',None)
   ret = fun({'id':aDict['id']})
  else:
-  from ..core.rest import call as rest_call
   ret = rest_call("%s?%s_domain_lookup"%(SC.node[SC.dns['node']], SC.dns['type']),{'id':aDict['id']})['data']
  return ret
 
@@ -105,7 +103,6 @@ def domain_update(aDict):
   fun = getattr(module,'domain_update',None)
   ret = fun(aDict)
  else:
-  from ..core.rest import call as rest_call
   ret = rest_call("%s?%s_domain_update"%(SC.node[SC.dns['node']], SC.dns['type']),aDict)['data']
  return ret
 
@@ -135,7 +132,6 @@ def domain_delete(aDict):
     fun = getattr(module,'domain_delete',None)
     ret.update(fun({'id':aDict['from']}))
    else:
-    from ..core.rest import call as rest_call
     ret.update(rest_call("%s?%s_domain_delete"%(SC.node[SC.dns['node']], SC.dns['type']),{'id':aDict['from']})['data'])
  return ret
 
@@ -158,7 +154,6 @@ def record_list(aDict):
   fun = getattr(module,'records',None)
   ret = fun(aDict)
  else:
-  from ..core.rest import call as rest_call
   ret = rest_call("%s?%s_records"%(SC.node[SC.dns['node']], SC.dns['type']),aDict)['data']
  return ret
 
@@ -179,7 +174,6 @@ def record_lookup(aDict):
   fun = getattr(module,'record_lookup',None)
   ret = fun({'domain_id':aDict['domain_id'],'id':aDict['id']})
  else:  
-  from ..core.rest import call as rest_call
   ret = rest_call("%s?%s_record_lookup"%(SC.node[SC.dns['node']], SC.dns['type']),{'domain_id':aDict['domain_id'],'id':aDict['id']})['data']       
  return ret
 
@@ -203,7 +197,6 @@ def record_update(aDict):
   fun = getattr(module,'record_update',None)
   ret = fun(aDict)
  else:  
-  from ..core.rest import call as rest_call
   ret = rest_call("%s?%s_record_update"%(SC.node[SC.dns['node']], SC.dns['type']),aDict)['data']
  return ret
 
@@ -223,7 +216,6 @@ def record_delete(aDict):
   fun = getattr(module,'record_delete',None)
   ret = fun({'id':aDict['id']})
  else:  
-  from ..core.rest import call as rest_call
   ret = rest_call("%s?%s_record_delete"%(SC.node[SC.dns['node']], SC.dns['type']),{'id':aDict['id']})['data']       
  return ret
 
@@ -275,7 +267,6 @@ def record_device_create(aDict):
   fun = getattr(module,'record_update',None)
   ret['dns'] = fun(args)
  else:  
-  from ..core.rest import call as rest_call
   ret['dns'] = rest_call("%s?%s_record_update"%(SC.node[SC.dns['node']], SC.dns['type']),args)['data']
  if str(ret['dns']['update']) == "1" and (args['type'] == 'A' or args['type'] == 'PTR'):
   ret['device'] = {'id':aDict['id']}
@@ -326,7 +317,6 @@ def record_device_update(aDict):
   for arg in args.values():
    ret[arg['type']] = fun(arg)
  else:  
-  from ..core.rest import call as rest_call
   for arg in args.values():
    ret[arg['type']] = rest_call("%s?%s_record_update"%(SC.node[SC.dns['node']], SC.dns['type']),arg)['data']
  return ret
@@ -350,7 +340,6 @@ def record_device_delete(aDict):
   for tp in ['A','PTR']:
    ret[tp] = fun({'id':aDict.get(tp)})['deleted'] if str(aDict.get(tp,'0')) != '0' else None
  else:
-  from ..core.rest import call as rest_call
   for tp in ['A','PTR']:
    ret[tp] = rest_call("%s?%s_record_delete"%(SC.node[SC.dns['node']], SC.dns['type']),{'id':aDict.get(tp)})['data']['deleted'] if str(aDict.get(tp,'0')) != '0' else None
  return ret
@@ -373,7 +362,6 @@ def dedup(aDict):
   fun = getattr(module,'dedup',None)
   ret = fun({})
  else:  
-  from ..core.rest import call as rest_call
   ret = rest_call("%s?%s_dedup"%(SC.node[SC.dns['node']], SC.dns['type']))['data']
  return ret
 
@@ -393,7 +381,6 @@ def top(aDict):
   fun = getattr(module,'top',None)
   ret = fun(aDict)
  else:  
-  from ..core.rest import call as rest_call
   ret = rest_call("%s?%s_top"%(SC.node[SC.dns['node']], SC.dns['type']),aDict)['data']
  return ret
 

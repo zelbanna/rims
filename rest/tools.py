@@ -65,7 +65,7 @@ def settings_save(aDict):
  """
  from json import load,dumps
  from os import path as ospath
- from ..core.common import DB,SC
+ from ..core.common import DB,SC,rest_call
  ret = {'file':SC.system['config_file']}
  try:
   settings = {}
@@ -90,7 +90,6 @@ def settings_save(aDict):
      settings[section] = {} 
     settings[section][setting['parameter']] = setting['value']
   else:
-   from ..core.rest import call as rest_call
    try: master = rest_call("%s?tools_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
    except: pass
    else:

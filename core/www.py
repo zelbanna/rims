@@ -39,12 +39,12 @@ class Web(object):
 
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None):
-  from rest import call
+  from common import rest_call
   return call("%s?%s"%(self._rest_url, aAPI), aArgs, aTimeout = 60)['data']
 
  # Generic REST call with full output
  def rest_full(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
-  from rest import call
+  from common import rest_call
   return call("%s?%s"%(aURL, aAPI) if aAPI else aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
  ############################# Cookies #############################

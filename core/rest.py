@@ -1,56 +1,11 @@
 """Module docstring.
 
-REST interface module
+REST Server module
 
 """
 __author__= "Zacharias El Banna"
 __version__ = "18.03.07GA"
 __status__= "Production"
-
-#
-# Make proper REST call with arg = data
-# - aURL = REST API link - complete
-# - aAPI= python-path-to-module (e.g. package.path:module_fun*)
-# - aArgs = data/content if available
-#
-#  returns un-json:ed data
-def call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20):
- from json import loads, dumps
- from urllib2 import urlopen, Request, URLError, HTTPError
- try:
-  head = { 'Content-Type': 'application/json' }
-  try:    head.update(aHeader)
-  except: pass
-  from logger import log
-  log("rest_call(%s,%s)"%(aURL,str(aArgs)))
-  req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
-  if aMethod:
-   req.get_method = lambda: aMethod
-  if aVerify is None or aVerify is True:
-   sock = urlopen(req, timeout = aTimeout)
-  else:
-   from ssl import _create_unverified_context
-   sock = urlopen(req,context=_create_unverified_context(), timeout = aTimeout)
-  output = {'info':dict(sock.info()), 'code':sock.code }
-  try:    output['data'] = loads(sock.read())
-  except: output['data'] = None
-  if (output['info'].get('x-z-res','OK') == 'ERROR'):
-   output['info'].pop('server',None)
-   output['info'].pop('connection',None)
-   output['info'].pop('transfer-encoding',None)
-   output['info'].pop('content-type',None)
-   output['exception'] = 'RESTError'
-  sock.close()
- except HTTPError, h:
-  raw = h.read()
-  try:    data = loads(raw)
-  except: data = raw
-  output = { 'result':'ERROR', 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
- except URLError, e:  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
- except Exception, e: output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
- if output.get('exception'):
-  raise Exception(output)
- return output
 
 #
 # Make proper REST responses
@@ -65,9 +20,6 @@ def call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTi
 # --- exception: type of Exception
 # --- data: data
 
-#
-# Update module globals with NodeID? for quick lookup
-#
 def server(aNodeID):
  from os import getenv
  from sys import stdout, stdin
@@ -105,9 +57,3 @@ def server(aNodeID):
  stdout.flush()
  stdout.write("\r\n")
  stdout.write(output)
-
-#
-# Basic Auth header generator
-#
-def basic_auth(aUsername,aPassword):
- return {'Authorization':'Basic ' + (("%s:%s"%(aUsername,aPassword)).encode('base64')).replace('\n','') }

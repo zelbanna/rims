@@ -114,7 +114,7 @@ def rest(aDict):
  """
  try:
   if aDict.get('href'):
-   from ..core.rest import call as rest_call
+   from ..core.common import rest_call
    ret = rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
   else:
    with DB() as db:
@@ -162,7 +162,7 @@ def href(aDict):
 
  Output:
  """
- from ..core.rest import call as rest_call
+ from ..core.common import rest_call
  try: ret = rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
  except Exception as e: ret = e[0]
  return ret

@@ -5,7 +5,7 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from .. import SettingsContainer as SC
-from ..core.rest import call as rest_call
+from ..core.common import rest_call
 #
 #
 def node_to_ui(aDict):

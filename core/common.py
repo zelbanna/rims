@@ -93,3 +93,59 @@ class DB(object):
   """Assumes not inserting NULL"""
   self._dirty = True
   return self._curs.execute("INSERT INTO %s(%s) VALUES('%s') %s"%(aTable,",".join(aDict.keys()),"','".join(aDict.values()),aException))
+
+
+######################################### REST ########################################
+#
+#
+def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20):
+ """ Rest call function
+  Args:
+   - aURL (required)
+   - aArgs (optional)
+   - ... (optional)
+
+  Output: de-json:ed data structure
+ """
+ from json import loads, dumps
+ from urllib2 import urlopen, Request, URLError, HTTPError
+ try:
+  head = { 'Content-Type': 'application/json' }
+  try:    head.update(aHeader)
+  except: pass
+  from logger import log
+  log("rest_call(%s,%s)"%(aURL,str(aArgs)))
+  req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
+  if aMethod:
+   req.get_method = lambda: aMethod
+  if aVerify is None or aVerify is True:
+   sock = urlopen(req, timeout = aTimeout)
+  else:
+   from ssl import _create_unverified_context
+   sock = urlopen(req,context=_create_unverified_context(), timeout = aTimeout)
+  output = {'info':dict(sock.info()), 'code':sock.code }
+  try:    output['data'] = loads(sock.read())
+  except: output['data'] = None
+  if (output['info'].get('x-z-res','OK') == 'ERROR'):
+   output['info'].pop('server',None)
+   output['info'].pop('connection',None)
+   output['info'].pop('transfer-encoding',None)
+   output['info'].pop('content-type',None)
+   output['exception'] = 'RESTError'
+  sock.close()
+ except HTTPError, h:
+  raw = h.read()
+  try:    data = loads(raw)
+  except: data = raw
+  output = { 'result':'ERROR', 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
+ except URLError, e:  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
+ except Exception, e: output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
+ if output.get('exception'):
+  raise Exception(output)
+ return output
+
+#
+# Basic Auth header generator for base64 authentication
+#
+def basic_auth(aUsername,aPassword):
+ return {'Authorization':'Basic ' + (("%s:%s"%(aUsername,aPassword)).encode('base64')).replace('\n','') }

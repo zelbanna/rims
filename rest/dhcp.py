@@ -14,7 +14,7 @@ __version__ = "18.03.07GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from .. import SettingsContainer as SC
+from ..core.common import SC,rest_call
 
 #
 #
@@ -33,7 +33,6 @@ def update_server(aDict):
   fun = getattr(module,'update_server',None)
   ret = fun(aDict)
  else:
-  from ..core.rest import call as rest_call
   ret = rest_call("%s?%s_update_server"%(SC.node[SC.dhcp['node']], SC.dhcp['type']),aDict)['data']
  return ret             
 
@@ -54,6 +53,5 @@ def leases(aDict):
   fun = getattr(module,'leases',None)
   ret = fun(aDict)
  else:
-  from ..core.rest import call as rest_call
   ret = rest_call("%s?%s_leases"%(SC.node[SC.dhcp['node']], SC.dhcp['type']),aDict)['data']
  return ret
