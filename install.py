@@ -212,7 +212,7 @@ elif 'rest' in modes:
  # Fetch and update settings from central repo
  #
  from sdcp.core.rest import call as rest_call
- try: res['register'] = rest_call("%s?sdcp_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':1})['data']
+ try: res['register'] = rest_call("%s?sdcp_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':'1'})['data']
  except Exception,e: res['register'] = str(e)
  try: master   = rest_call("%s?tools_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
  except: pass
