@@ -161,10 +161,10 @@ def logs_show(aWeb):
 #
 def ups(aWeb):
  print "<ARTICLE>"
- if aWeb.get('node'):                 
+ if aWeb.get('host'):                 
   from ..tools.munin import widget_cols
-  upshost,void,domain = aWeb['node'].partition('.')
+  upshost,void,domain = aWeb['host'].partition('.')
   widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
  else:
-  print "Missing 'node' var" 
+  print "Missing 'host' var" 
  print "</ARTICLE>"

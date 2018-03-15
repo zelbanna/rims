@@ -122,7 +122,7 @@ def settings_save(aDict):
     if not settings.get(section):
      settings[section] = {}
     settings[section][key] = params['value'] 
-  settings['system']['config_file'] = ret['file']
+  settings['system']['config_file'] = ret['config_file']
 
   if SC['system']['id'] == 'master':
    with DB() as db:

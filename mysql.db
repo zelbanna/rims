@@ -185,8 +185,9 @@ CREATE TABLE `resources` (
   `href` varchar(200) NOT NULL,
   `icon` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
   UNIQUE KEY `node_user_title` (`node`,`user_id`,`title`),
+  KEY `user_id` (`user_id`),
+  KEY `node` (`node`),
   CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `resources_ibfk_2` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

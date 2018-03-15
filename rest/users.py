@@ -82,6 +82,6 @@ def menu(aDict):
   db.do("SELECT menulist FROM users WHERE id = '%s'"%aDict['id'])
   menulist = db.get_val('menulist')
   select = "type = 'menuitem'" if menulist == 'default' else "id IN (%s) ORDER BY FIELD(id,%s)"%(menulist,menulist)
-  db.do("SELECT icon, title, href, inline FROM resources WHERE node = '%s AND %s"%aDict['node'],select)
+  db.do("SELECT icon, title, href, inline FROM resources WHERE node = '%s' AND %s"%(aDict['node'],select))
   ret = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
