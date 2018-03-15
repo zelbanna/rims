@@ -11,10 +11,10 @@ __status__= "Production"
 #
 #
 def list(aWeb):
- if not aWeb.cookies.get('sdcp'):
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
 
  if aWeb['op']:
   aWeb.rest_call("booking_update",{'device_id':aWeb['device_id'],'user_id':aWeb['user_id'],'op':aWeb['op']})
@@ -38,7 +38,7 @@ def list(aWeb):
 #
 #
 def update(aWeb):
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
  res = aWeb.rest_call("booking_update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':aWeb['op']})
  if res['update'] == 1:
   if aWeb['op'] == 'debook':

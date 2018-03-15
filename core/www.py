@@ -91,7 +91,7 @@ class Web(object):
   self.form = cgi.FieldStorage()
   stdout.write("Content-Type:text/html\r\n\n")
   try:
-   mod_fun = self.get('call','sdcp_login')
+   mod_fun = self.get('call','system_login')
    (mod,void,fun) = mod_fun.partition('_')
    module = import_module("sdcp.site." + mod)
    getattr(module,fun,None)(self)

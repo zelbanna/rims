@@ -11,7 +11,7 @@ __status__= "Production"
 # Generic Login - REST based apps required
 #
 def login(aWeb):
- application = aWeb.get('application','sdcp')
+ application = aWeb.get('application','system')
  cookie = aWeb.cookie_unjar(application)
  inline = aWeb.get('inline','no')
  if cookie.get('authenticated') == 'OK' and inline == 'no':
@@ -50,16 +50,16 @@ def login(aWeb):
 # Base SDCP Portal, creates DIVs for layout
 #
 def portal(aWeb):
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
  aWeb.put_html(aWeb.get('title','Portal'))
  if cookie.get('id') is None:
-  id,username = aWeb.get('sdcp_login',"None_None").split('_')
-  res = aWeb.rest_call("sdcp_authenticate",{'id':id,'username':username})
+  id,username = aWeb.get('system_login',"None_None").split('_')
+  res = aWeb.rest_call("system_authenticate",{'id':id,'username':username})
   if not res['authenticated'] == "OK":
    aWeb.put_redirect("index.cgi")
    return
   cookie.update({'id':id,'authenticated':'OK'})
-  aWeb.put_cookie('sdcp',cookie,res['expires'])
+  aWeb.put_cookie('system',cookie,res['expires'])
   aWeb.log("Entering as {}-'{}'".format(id,username))
  else:
   id = cookie.get('id')
@@ -79,16 +79,16 @@ def portal(aWeb):
 #
 #
 def node_list(aWeb):
- nodes = aWeb.rest_call("sdcp_node_list")['data']
+ nodes = aWeb.rest_call("system_node_list")['data']
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Nodes</P><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=sdcp_node_list')
- print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_info&id=new')
+ print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=system_node_list')
+ print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=system_node_info&id=new')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in nodes:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>"%(row['node'],row['url'])
-  print aWeb.button('info',DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_info&id=%s'%row['id'])
+  print aWeb.button('info',DIV='div_content_right', URL='sdcp.cgi?call=system_node_info&id=%s'%row['id'])
   if row['system']:
    print aWeb.button('document',DIV='div_content', URL='sdcp.cgi?call=settings_list&node=%s'%row['node']) 
   print "</DIV></DIV>"
@@ -104,11 +104,11 @@ def node_info(aWeb):
   data['node'] = aWeb.get('node','Not set')
   data['url']  = aWeb.get('url','Not set')
   if aWeb['op'] == 'update':
-   data = aWeb.rest_call("sdcp_node_info",data)['data']
+   data = aWeb.rest_call("system_node_info",data)['data']
  else:
-  data = aWeb.rest_call("sdcp_node_info",data)['data']
+  data = aWeb.rest_call("system_node_info",data)['data']
  print "<ARTICLE CLASS='info'><P>Node Info</DIV>"
- print "<FORM ID=sdcp_node_form>"
+ print "<FORM ID=system_node_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id'])
  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=node STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['node'])
@@ -117,14 +117,14 @@ def node_info(aWeb):
  print "<SPAN></SPAN>"
  print "</FORM><DIV CLASS=controls>"
  if str(data.get('system','0')) == '0':
-  print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_info&op=update', FRM='sdcp_node_form')
-  print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_delete', FRM='sdcp_node_form')
+  print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?call=system_node_info&op=update', FRM='system_node_form')
+  print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=system_node_delete', FRM='system_node_form')
  print "</DIV></ARTICLE>"
 
 #
 #
 def node_delete(aWeb):
- res = aWeb.rest_call("sdcp_node_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("system_node_delete",{'id':aWeb['id']})
  print "<ARTICLE>Result: %s</ARTICLE>"%(res)
 
 ##################################################################################################
@@ -137,7 +137,7 @@ def weathermap(aWeb):
   wms = aWeb.rest_call("settings_list",{'section':'weathermap'})['data']
   print "<NAV><UL>"
   for map in wms:
-   print "<LI><A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=sdcp_weathermap&page={0}>{1}</A></LI>".format(map['parameter'],map['value'])
+   print "<LI><A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=system_weathermap&page={0}>{1}</A></LI>".format(map['parameter'],map['value'])
   print "</UL></NAV>"
   print "<SECTION CLASS='content background' ID='div_wm_content' NAME='Weathermap Content' STYLE='overflow:hidden;'>"
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"

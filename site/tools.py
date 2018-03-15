@@ -12,10 +12,10 @@ __type__ = 'menuitem'
 ############################################ Options ##############################################
 #
 def main(aWeb):
- if not aWeb.cookies.get('sdcp'):
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- data = aWeb.rest_call("sdcp_inventory",{'node':'master'})
+ data = aWeb.rest_call("system_inventory",{'node':'master'})
  print "<NAV><UL>"
  print "<LI CLASS='warning dropdown'><A>Clear Logs</A><DIV CLASS='dropdown-content'>"
  for node in data['nodes']:
@@ -32,7 +32,7 @@ def main(aWeb):
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "</DIV></LI>"
- print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=sdcp_node_list'>Nodes</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=system_node_list'>Nodes</A></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>Debug</A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"
@@ -56,7 +56,7 @@ def install(aWeb):
 #
 #
 def rest_main(aWeb):
- nodes = aWeb.rest_call("sdcp_node_list")['data']
+ nodes = aWeb.rest_call("system_node_list")['data']
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_rest>"
  print "Choose host and enter API:<SELECT CLASS=white STYLE='height:22px;' NAME=node>"
@@ -82,7 +82,7 @@ def rest_execute(aWeb):
  except: arguments = None
  try:
   if aWeb['node']:
-   url = aWeb.rest_call("sdcp_node_info",{'id':aWeb['node']})['data']['url']
+   url = aWeb.rest_call("system_node_info",{'id':aWeb['node']})['data']['url']
   elif aWeb['device'] == 'vera':
    url = "http://%s:3480/data_request"%(aWeb['host'])
   ret = aWeb.rest_full(url,aWeb['api'],arguments,aWeb['method'])

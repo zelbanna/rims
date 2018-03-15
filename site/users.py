@@ -12,10 +12,10 @@ __type__ = 'menuitem'
 
 ############################################ Users ##############################################
 def main(aWeb):
- if not aWeb.cookies.get('sdcp'):
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
  info = aWeb.rest_call("users_info",{'id':cookie['id']})
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=users_list'>Users</A></LI>"
@@ -28,7 +28,7 @@ def main(aWeb):
  print "</SECTION>"
 
 def user(aWeb):
- if not aWeb.cookies.get('sdcp'):
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  print "<NAV><UL></UL></NAV>"
@@ -55,7 +55,7 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
  data = {'id':aWeb.get('id','new'),'op':aWeb['op']}
  if aWeb['op'] == 'update' or data['id'] == 'new':
   data['name']  = aWeb.get('name',"unknown")
@@ -73,7 +73,7 @@ def info(aWeb):
  resources = aWeb.rest_call("resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True})['data']
  print aWeb.dragndrop()
  print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])
- print "<FORM ID=sdcp_user_info_form>"
+ print "<FORM ID=user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<INPUT TYPE=HIDDEN NAME=menulist ID=menulist VALUE='{}'>".format(data['menulist'])
  print "<DIV CLASS=table><DIV CLASS=tbody>"
@@ -94,7 +94,7 @@ def info(aWeb):
  print "</FORM><DIV CLASS=controls>"
  if data['id'] != 'new' and ((cookie['id'] == str(data['id']) or cookie['id'] == "1")):
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_delete&id={0}'.format(data['id']), MSG='Really remove user?')
- print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&op=update', FRM='sdcp_user_info_form')
+ print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&op=update', FRM='user_info_form')
  print "</DIV>"
  print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>"
  for id,resource in resources.iteritems():

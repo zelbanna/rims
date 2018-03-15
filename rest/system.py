@@ -16,14 +16,14 @@ def application(aDict):
  from datetime import datetime,timedelta
  from ..core.common import DB,SC
  """ Default login information """
- ret = {'message':"Welcome to the Management Portal",'parameters':[],'title':'Portal','portal':'sdcp'}
+ ret = {'message':"Welcome to the Management Portal",'parameters':[],'title':'Portal','portal':'system'}
  with DB() as db:
   db.do("SELECT parameter,value FROM settings WHERE section = 'portal' AND node = '%s'"%aDict.pop('node','master'))
   for row in db.get_rows():
    ret[row['parameter']] = row['value']
   db.do("SELECT CONCAT(id,'_',name) as id, name FROM users ORDER BY name")
   rows = db.get_rows()
- ret['choices'] = [{'display':'Username', 'id':'sdcp_login', 'data':rows}]
+ ret['choices'] = [{'display':'Username', 'id':'system_login', 'data':rows}]
  cookie = aDict
  cookie['portal'] = ret['portal']
  ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
@@ -131,7 +131,7 @@ def settings_save(aDict):
      settings[section] = {} 
     settings[section][setting['parameter']] = setting['value']
   else:
-   try: master = rest_call("%s?sdcp_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
+   try: master = rest_call("%s?system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
    except: pass
    else:
     for section,content in master.iteritems():

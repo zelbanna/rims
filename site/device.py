@@ -71,11 +71,11 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- if not aWeb.cookies.get('sdcp'):
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
 
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
 
  args = aWeb.get_args2dict(['call'])
  args['info'] = ['username','booking','infra']
@@ -256,8 +256,8 @@ def mac_sync(aWeb):
 # new device:
 #
 def new(aWeb):
- cookie = aWeb.cookie_unjar('sdcp')
- if not aWeb.cookies.get('sdcp'):
+ cookie = aWeb.cookie_unjar('system')
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  ip     = aWeb.get('ip')

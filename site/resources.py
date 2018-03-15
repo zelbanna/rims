@@ -12,7 +12,7 @@ __type__ = 'menuitem'
 ############################################ resources ##############################################
 #
 def main(aWeb):
- if not aWeb.cookies.get('sdcp'):
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  print "<NAV><UL>&nbsp;</UL></NAV>"
@@ -23,7 +23,7 @@ def main(aWeb):
 #
 #
 def view(aWeb):
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
  res = aWeb.rest_call("resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id']})
  inline = "<BUTTON CLASS='z-op menu' DIV=main URL='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
  extern = "<A CLASS='btn menu' TARGET=_blank HREF='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></A>"
@@ -41,10 +41,10 @@ def view(aWeb):
 #
 #
 def list(aWeb):
- if not aWeb.cookies.get('sdcp'):
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
  res = aWeb.rest_call("resources_list",{'user_id':cookie['id']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P><DIV CLASS=controls>"
@@ -70,7 +70,7 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
  data  = {'id':aWeb.get('id','new'),'op':aWeb['op']}
  if aWeb['op'] == 'update' or data['id'] == 'new':
   data['title'] = aWeb.get('title','Not set')
@@ -87,7 +87,7 @@ def info(aWeb):
   data = aWeb.rest_call("resources_info",data)['data']
 
  print "<ARTICLE><P>Resource entity ({})</P>".format(data['id'])
- print "<FORM ID=sdcp_resource_info_form>"
+ print "<FORM ID=resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<INPUT TYPE=HIDDEN NAME=user_id VALUE={}>".format(data['user_id'])
  print "<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>"
@@ -111,7 +111,7 @@ def info(aWeb):
  if cookie['id'] == str(data['user_id']):
   if data['id'] != 'new':
    print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%s'%data['id'], MSG='Delete resource?')
-  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='sdcp_resource_info_form')
+  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='resource_info_form')
  print "</DIV></ARTICLE>"
 
 #
