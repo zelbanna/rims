@@ -124,6 +124,7 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
    from ssl import _create_unverified_context
    sock = urlopen(req,context=_create_unverified_context(), timeout = aTimeout)
   output = {'info':dict(sock.info()), 'code':sock.code }
+  output['node'] = output['info'].pop('Node','_no_node_')
   try:    output['data'] = loads(sock.read())
   except: output['data'] = None
   if (output['info'].get('x-z-res','OK') == 'ERROR'):

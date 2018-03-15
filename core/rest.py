@@ -39,12 +39,11 @@ def server(aNodeID):
     (k,void,v) = part.partition('=')
     additional[k] = v
   node = additional.get('node','master')
-  if node == aNodeID:
+  if node == aNodeID or node == '_local_':
    module = import_module("sdcp.rest.%s"%mod)
    output = dumps(getattr(module,fun,None)(args))
    stdout.write("X-Z-Res:OK\r\n")
   else:
-   stdout.write("X-Z-Node:%s\r\n"%node)
    from common import SC,rest_call
    try: res = rest_call("%s?%s"%(SC.node[node],query),args)
    except Exception as err: raise Exception(err)
@@ -55,6 +54,7 @@ def server(aNodeID):
   stdout.write("X-Z-Args:%s\r\n"%args)
   stdout.write("X-Z-Info:%s\r\n"%str(e))
   stdout.write("X-Z-Xcpt:%s\r\n"%type(e).__name__)
+ stdout.write("X-Z-Node:%s\r\n"%node)
  stdout.write("X-Z-Mod:%s\r\n"%mod)
  stdout.write("X-Z-Func:%s\r\n"%fun)
  stdout.write("Content-Type: application/json\r\n")
