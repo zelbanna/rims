@@ -62,15 +62,19 @@ def inventory(aDict):
  ret = {}
  with DB() as db:
   if aDict['node'] == 'master':
+   ret.update({'node':True,'extra':True})
    db.do("SELECT node FROM nodes WHERE system = 1")
    ret['nodes'] = [x['node'] for x in db.get_rows()]
+   ret['logs']  = ret['nodes']
    db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
    ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
-   db.do("SELECT section,value FROM settings WHERE parameter = 'node' AND node = '%s'"%aDict['node'])
-   for row in db.get_rows():
-    ret[row['section']]= {'node':row['value'],'type':SC[row['section']].get('type') }
+  else:
+   ret['logs']  = [aDict['node']]
 
- ret['id'] = SC['system']['id']
+  db.do("SELECT section,value FROM settings WHERE parameter = 'node' AND node = '%s'"%aDict['node'])
+  for row in db.get_rows():
+   ret[row['section']]= {'node':row['value'],'type':SC[row['section']].get('type') }
+
  return ret
 
 #

@@ -17,23 +17,24 @@ def main(aWeb):
   return
  data = aWeb.rest_call("system_inventory",{'node':aWeb.get('node','master')})
  print "<NAV><UL>"
- print "<LI CLASS='warning dropdown'><A>Clear Logs</A><DIV CLASS='dropdown-content'>"
- for node in data['nodes']:
-  print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=tools_clear&node=%s'>%s</A>"%(node,node)
- print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
- for node in data['nodes']:
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_logs&node=%s>%s</A>"%(node,node)
- print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A></LI>"
+ if data.get('node'):
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=system_node_list'>Nodes</A></LI>"
+ if data.get('logs'):
+  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
+  for node in data['logs']:
+   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_logs_show&node=%s>%s - show</A>"%(node,node)
+   print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=tools_logs_clear&node=%s'>%s - clear</A>"%(node,node)
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
  if data.get('dhcp'):
   dhcp = (data['dhcp']['node'],data['dhcp']['type'])
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%dhcp
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=active>DHCP - Active</A>"%dhcp
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=free>DHCP - Free</A>"%dhcp
- print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
- print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
+ if data.get('extra'):
+  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
+  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "</DIV></LI>"
- print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=system_node_list'>Nodes</A></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>Debug</A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"
@@ -132,7 +133,7 @@ def rest_information(aWeb):
 
 #
 #
-def clear(aWeb):
+def logs_clear(aWeb):
  res = aWeb.rest_call('tools_logs_clear&node=%s'%aWeb['node'])
  print "<ARTICLE><P>%s</P>"%res['node']
  for k,v in res['file'].iteritems():
@@ -141,7 +142,7 @@ def clear(aWeb):
 
 #
 #
-def logs(aWeb):           
+def logs_show(aWeb):           
  res = aWeb.rest_call('tools_logs_get&node=%s'%aWeb['node'],{'count':18})
  res.pop('xist',None)               
  print "<ARTICLE>"   
