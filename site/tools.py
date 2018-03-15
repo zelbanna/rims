@@ -15,7 +15,8 @@ def main(aWeb):
  if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- data = aWeb.rest_call("system_inventory",{'node':aWeb.id})
+ cookie = aWeb.cookie_unjar('system')
+ data = aWeb.rest_call("system_inventory",{'node':aWeb.id,'user_id':cookie['id']})
  print "<NAV><UL>"
  if data.get('node'):
   print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=system_node_list'>Nodes</A></LI>"
@@ -24,10 +25,15 @@ def main(aWeb):
   for node in data['logs']:
    print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_logs_show&node=%s>%s - show</A>"%(node,node)
    print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=tools_logs_clear&node=%s'>%s - clear</A>"%(node,node)
-  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A></LI>"
+  print "</DIV></LI>"
+ if data.get('resources'):
+  print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
+  for node in data['resources']:
+   print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list&node=%s'>%s</A>"%(node,node)
+  print "</DIV></LI>"  
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
  for tool in data.get('tools',[]): 
-  print "<LI><A CLASS=z-op DIV=div_content URL='%s'>%s</A></LI>"%(tool['href'],tool['title'])
+  print "<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title'])
  if data.get('dhcp'):
   dhcp = (data['dhcp']['node'],data['dhcp']['type'])
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%dhcp
@@ -37,8 +43,6 @@ def main(aWeb):
   print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
   print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "</DIV></LI>"
- for mon in data.get('monitors',[]):
-  print "<LI><A CLASS=z-op DIV=div_content URL='%s'>%s</A></LI>"%(mon['href'],mon['title'])
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main&node=%s'>Debug</A>"%aWeb['node']
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"

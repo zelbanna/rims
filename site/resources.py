@@ -9,8 +9,9 @@ __status__ = "Production"
 __icon__ = 'images/icon-tools.png'
 __type__ = 'menuitem'
 
-############################################ resources ##############################################
+############################################ Resources ##############################################
 #
+# Necessary
 def main(aWeb):
  if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
@@ -45,7 +46,7 @@ def list(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('system')
- res = aWeb.rest_call("resources_list",{'node':aWeb.id,'user_id':cookie['id']})
+ res = aWeb.rest_call("resources_list",{'node':aWeb['node'],'user_id':cookie['id']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list')
