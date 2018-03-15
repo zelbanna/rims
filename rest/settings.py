@@ -66,34 +66,12 @@ def parameter(aDict):
  """Function docstring for parameter TBD
 
  Args:
-  - node (required)
   - section (required)
   - parameter (required)
 
  Output:
  """
- ret = {}
- with DB() as db:
-  ret['xist'] = db.do("SELECT * FROM settings WHERE node='%s' AND section='%s' AND parameter='%s'"%(aDict['node'],aDict['section'],aDict['parameter']))
-  ret['data'] = db.get_row()
- return ret
-
-#
-#
-def section(aDict):
- """Function docstring for section TBD
-
- Args:
-  - node (required)
-  - section (required)
-
- Output:
- """
- ret = {}
- with DB() as db:
-  ret['xist'] = db.do("SELECT id,parameter,value,description FROM settings WHERE node = '%s' AND section = '%s' ORDER BY parameter"%(aDict['node'],aDict['section']))
-  ret['data'] = db.get_dict('parameter')
- return ret
+ return {'value':SC[aDict['section']][aDict['parameter']]}
 
 #
 #
