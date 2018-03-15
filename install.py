@@ -158,8 +158,8 @@ if 'master' in modes:
   db.connect()
 
   res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
-  res['register'] = db.do("INSERT INTO nodes(node,url,system) VALUES('%s','%s',1) ON DUPLICATE KEY UPDATE node = node"%(settings['system']['id'],settings['system']['rest']))
-
+  res['register'] = db.do("INSERT INTO nodes(node,url,system) VALUES('%s','%s',1) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"%(settings['system']['id'],settings['system']['rest']))
+  res['node_id']= db.get_last_id()
   sql ="INSERT INTO devicetypes(name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
   for type in device_types:
    try:    res['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
