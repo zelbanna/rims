@@ -64,7 +64,7 @@ def portal(aWeb):
  else:
   id = cookie.get('id')
 
- menu = aWeb.rest_call("users_menu",{"id":id})
+ menu = aWeb.rest_call("users_menu",{"id":id,'node':aWeb.id})
  print "<HEADER CLASS='background'>"
  for item in menu:
   if item['inline'] == 0:

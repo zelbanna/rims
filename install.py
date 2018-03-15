@@ -92,7 +92,7 @@ for dest in destinations:
 #
 # Install necessary modules
 #
-if 'master' in modes:
+if settings['system']['id'] == 'master':
  from importlib import import_module
  from pip import main as pipmain
 
@@ -165,7 +165,7 @@ if 'master' in modes:
    try:    res['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
    except Exception as err: res['device_errors'] = str(err)
 
-  sql ="INSERT INTO resources(title,href,icon,type,user_id,inline) VALUES ('{}','{}','{}','{}',1,1) ON DUPLICATE KEY UPDATE id = id"
+  sql ="INSERT INTO resources(node,title,href,icon,type,user_id,inline) VALUES ('%s','{}','{}','{}','{}',1,1) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
   for item in resources:
    try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon'],item['type']))
    except: res['resources_errors'] = True
