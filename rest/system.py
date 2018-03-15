@@ -67,7 +67,7 @@ def inventory(aDict):
    db.do("SELECT node FROM nodes WHERE system = 1")
    ret['nodes'] = [x['node'] for x in db.get_rows()]
    ret['logs']  = ret['nodes']
-   db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
+   db.do("SELECT title, href FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
    ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
   else:
    ret['logs']  = [aDict['node']]

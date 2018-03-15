@@ -37,7 +37,7 @@ def main(aWeb):
   print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
   print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "</DIV></LI>"
- for mon in data.get('monitors'):
+ for mon in data.get('monitors',[]):
   print "<LI><A CLASS=z-op DIV=div_content URL='%s'>%s</A></LI>"%(mon['href'],mon['title'])
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>Debug</A>"
