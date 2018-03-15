@@ -46,6 +46,109 @@ def authenticate(aDict):
  ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 
+#
+#
+def inventory(aDict):
+ """Function docstring for system TBD
+
+ Args:
+  - node (required)
+  - user_id (optional)
+
+ Output:
+ """
+ from ..core.common import DB,SC
+ from resources import list as resource_list
+ ret = {}
+ with DB() as db:
+  db.do("SELECT node FROM nodes WHERE system = 1")
+  ret['nodes'] = db.get_rows()
+  db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
+  ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
+ ret['dns_node'] = SC.dns['node']
+ ret['dns_type'] = SC.dns['type']
+ ret['dhcp_node'] = SC.dhcp['node']
+ ret['dhcp_type'] = SC.dhcp['type']
+ ret['id'] = SC.system['id']
+ return ret
+
+#
+#
+def settings_fetch(aDict):
+ """Function docstring for settings_fetch TBD
+
+ Args:
+  - node (required)
+ 
+ Output:
+ """
+ from ..core.common import DB
+ ret = {}
+ with DB() as db:
+  db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aDict['node'])
+  data = db.get_rows()
+  db.do("SELECT 'node' AS section, node AS parameter, url AS value FROM nodes")
+  data.extend(db.get_rows())
+ for setting in data:
+  section = setting.pop('section')
+  if not ret.get(section):
+   ret[section] = {}
+  ret[section][setting['parameter']] = setting['value']
+ return ret
+
+#
+#     
+def settings_save(aDict):
+ """Function docstring for settings_save TBD
+
+ Args:
+ 
+ Output:
+ """
+ from json import load,dumps
+ from os import path as ospath
+ from ..core.common import DB,SC,rest_call
+ ret = {'file':SC.system['config_file']}
+ try:
+  settings = {}
+  with open(SC.system['config_file']) as sfile:         
+   temp = load(sfile)
+  for section,content in temp.iteritems():
+   for key,params in content.iteritems():
+    if not settings.get(section):
+     settings[section] = {}
+    settings[section][key] = params['value'] 
+  settings['system']['config_file'] = ret['file']
+
+  if SC.system['id'] == 'master':
+   with DB() as db:
+    db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
+    data = db.get_rows()
+    db.do("SELECT 'node' AS section, node AS parameter, url AS value FROM nodes")
+    data.extend(db.get_rows())
+   for setting in data:
+    section = setting.pop('section') 
+    if not settings.get(section): 
+     settings[section] = {} 
+    settings[section][setting['parameter']] = setting['value']
+  else:
+   try: master = rest_call("%s?system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
+   except: pass
+   else:
+    for section,content in master.iteritems():
+     if settings.get(section): settings[section].update(content)
+     else: settings[section] = content
+
+  container = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','SettingsContainer.py'))
+  with open(container,'w') as f:
+   for section,content in settings.iteritems():
+    f.write("%s=%s\n"%(section,dumps(content)))
+  ret['result'] = 'OK'
+ except Exception,e:
+  ret['result'] = 'NOT_OK'
+  ret['error'] = str(e)
+ return ret
+
 ####################################### Node Management #####################################
 #
 #

@@ -15,7 +15,7 @@ def main(aWeb):
  if not aWeb.cookies.get('sdcp'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- data = aWeb.rest_call("tools_system")
+ data = aWeb.rest_call("sdcp_inventory",{'node':'master'})
  print "<NAV><UL>"
  print "<LI CLASS='warning dropdown'><A>Clear Logs</A><DIV CLASS='dropdown-content'>"
  for node in data['nodes']:
