@@ -49,7 +49,7 @@ def authenticate(aDict):
 #
 #
 def inventory(aDict):
- """Function docstring for system TBD
+ """Function docstring for inventory. Provides inventory info for paticular nodes
 
  Args:
   - node (required)
@@ -61,14 +61,16 @@ def inventory(aDict):
  from resources import list as resource_list
  ret = {}
  with DB() as db:
-  db.do("SELECT node FROM nodes WHERE system = 1")
-  ret['nodes'] = db.get_rows()
-  db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
-  ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
- ret['dns_node'] = SC.dns['node']
- ret['dns_type'] = SC.dns['type']
- ret['dhcp_node'] = SC.dhcp['node']
- ret['dhcp_type'] = SC.dhcp['type']
+  if aDict['node'] == 'master':
+   db.do("SELECT node FROM nodes WHERE system = 1")
+   ret['nodes'] = db.get_rows()
+   db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
+   ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
+   ret['dns_node'] = SC.dns['node']
+   ret['dns_type'] = SC.dns['type']
+   ret['dhcp_node'] = SC.dhcp['node']
+   ret['dhcp_type'] = SC.dhcp['type']
+
  ret['id'] = SC.system['id']
  return ret
 

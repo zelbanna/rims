@@ -15,7 +15,7 @@ def main(aWeb):
  if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- data = aWeb.rest_call("system_inventory",{'node':'master'})
+ data = aWeb.rest_call("system_inventory",{'node':aWeb.get('node','master')})
  print "<NAV><UL>"
  print "<LI CLASS='warning dropdown'><A>Clear Logs</A><DIV CLASS='dropdown-content'>"
  for node in data['nodes']:
