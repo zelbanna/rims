@@ -105,14 +105,13 @@ def settings_save(aDict):
  
  Output:
  """
- from json import load,dumps
  from os import path as ospath
  from ..core.common import DB,SC,rest_call
  ret = {'file':SC.system['config_file']}
  try:
   settings = {}
   with open(SC.system['config_file']) as sfile:         
-   temp = load(sfile)
+   temp = loads(sfile.read())
   for section,content in temp.iteritems():
    for key,params in content.iteritems():
     if not settings.get(section):
@@ -132,7 +131,7 @@ def settings_save(aDict):
      settings[section] = {} 
     settings[section][setting['parameter']] = setting['value']
   else:
-   try: master = rest_call("%s?system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
+   try: master = rest_call("%s?sdcp_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
    except: pass
    else:
     for section,content in master.iteritems():

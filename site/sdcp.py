@@ -84,10 +84,14 @@ def node_list(aWeb):
  print "<ARTICLE><P>Nodes</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=sdcp_node_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_info&id=new')
- print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>System</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in nodes:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=sdcp_node_info&id=%s'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['node'],row['url'],"True" if row['system'] == 1 else "False")
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>"%(row['node'],row['url'])
+  print aWeb.button('info',DIV='div_content_right', URL='sdcp.cgi?call=sdcp_node_info&id=%s'%row['id'])
+  if row['system']:
+   print aWeb.button('document',DIV='div_content', URL='sdcp.cgi?call=settings_list&node=%s'%row['node']) 
+  print "</DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 

@@ -4,6 +4,10 @@ __version__ = "18.03.14GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
+
+def test(aDict):
+ return {'globals':[x for x in globals().keys() if x[0:2] != '__'] }
+
 ############################################ REST tools ############################################
 #
 #

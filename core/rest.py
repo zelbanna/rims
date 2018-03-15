@@ -24,7 +24,7 @@ __status__= "Production"
 # --- data: data
 #
 def server(aNodeID):
- from os import getenv
+ from os import getenv, path as ospath
  from sys import stdout, stdin
  from json import loads, dumps
  from importlib import import_module
@@ -41,6 +41,7 @@ def server(aNodeID):
   node = additional.get('node','master')
   if node == aNodeID or node == '_local_':
    module = import_module("sdcp.rest.%s"%mod)
+   module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
    output = dumps(getattr(module,fun,None)(args))
    stdout.write("X-Z-Res:OK\r\n")
   else:

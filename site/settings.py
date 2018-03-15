@@ -84,4 +84,4 @@ def delete(aWeb):
 #
 #
 def save(aWeb):
- print "<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("system_settings_save&node=%s"%aWeb['node']))
+ print "<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("sdcp_settings_save&node=%s"%aWeb['node']))
