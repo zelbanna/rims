@@ -141,10 +141,10 @@ def logs_clear(aDict):
 
  Output:
  """
- from .. import SettingsContainer as SC
+ from ..SettingsContainer import SC
  from ..core.logger import log
  ret = {}
- for name,file in SC.logs.iteritems():
+ for name,file in SC['logs'].iteritems():
   try:
    open(file,'w').close()
    ret[name] = 'CLEARED'
@@ -163,10 +163,10 @@ def logs_get(aDict):
 
  Output:
  """
- from .. import SettingsContainer as SC
+ from ..SettingsContainer import SC
  ret = {}
  count = int(aDict.get('count',15))
- for name,file in SC.logs.iteritems():
+ for name,file in SC['logs'].iteritems():
   lines = ["\r" for i in range(count)]
   pos = 0
   try:

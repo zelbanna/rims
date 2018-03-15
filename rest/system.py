@@ -66,12 +66,12 @@ def inventory(aDict):
    ret['nodes'] = db.get_rows()
    db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
    ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
-   ret['dns_node'] = SC.dns['node']
-   ret['dns_type'] = SC.dns['type']
-   ret['dhcp_node'] = SC.dhcp['node']
-   ret['dhcp_type'] = SC.dhcp['type']
+   ret['dns_node'] = SC['dns']['node']
+   ret['dns_type'] = SC['dns']['type']
+   ret['dhcp_node'] = SC['dhcp']['node']
+   ret['dhcp_type'] = SC['dhcp']['type']
 
- ret['id'] = SC.system['id']
+ ret['id'] = SC['system']['id']
  return ret
 
 #
@@ -109,10 +109,10 @@ def settings_save(aDict):
  """
  from os import path as ospath
  from ..core.common import DB,SC,rest_call
- ret = {'file':SC.system['config_file']}
+ ret = {'file':SC['system']['config_file']}
  try:
   settings = {}
-  with open(SC.system['config_file']) as sfile:         
+  with open(SC['system']['config_file']) as sfile:         
    temp = loads(sfile.read())
   for section,content in temp.iteritems():
    for key,params in content.iteritems():
@@ -121,7 +121,7 @@ def settings_save(aDict):
     settings[section][key] = params['value'] 
   settings['system']['config_file'] = ret['file']
 
-  if SC.system['id'] == 'master':
+  if SC['system']['id'] == 'master':
    with DB() as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
@@ -142,8 +142,7 @@ def settings_save(aDict):
 
   container = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','SettingsContainer.py'))
   with open(container,'w') as f:
-   for section,content in settings.iteritems():
-    f.write("%s=%s\n"%(section,dumps(content)))
+   f.write("SC=%s\n"%dumps(settings))
   ret['result'] = 'OK'
  except Exception,e:
   ret['result'] = 'NOT_OK'

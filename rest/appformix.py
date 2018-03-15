@@ -30,9 +30,9 @@ def authenticate(aDict):
  Output:
  """
  ret = {}
- controller = Device(SC.node[aDict['node']])
+ controller = Device(SC['node'][aDict['node']])
  try:
-  res = controller.auth({'username':SC.appformix['username'], 'password':SC.appformix['password'] })
+  res = controller.auth({'username':SC['appformix']['username'], 'password':SC['appformix']['password'] })
   ret['auth'] = res['auth']
   ret['token'] = controller.get_token()
   ret['expires'] = controller.get_cookie_expire()
@@ -52,7 +52,7 @@ def report_projects(aDict):
  Output:
  """
  ret = {}
- controller = Device(SC.node[aDict['node']],aDict['token'])
+ controller = Device(SC['node'][aDict['node']],aDict['token'])
  reports = controller.call('reports/project/metadata')['data']['Metadata']
  ret['reports'] = [rep for rep in reports if rep['ProjectId'] == aDict['project']]
  return ret
@@ -70,6 +70,6 @@ def project_reports(aDict):
  Output:
  """
  ret = {}
- controller = Device(SC.node[aDict['node']],aDict['token'])
+ controller = Device(SC['node'][aDict['node']],aDict['token'])
  ret = controller.call("reports/project/%s"%aDict['report'])['data']['UsageReport']
  return ret

@@ -156,6 +156,6 @@ def infra(aDict):
 
  if aDict.get('images',False):
   from os import listdir, path
-  directory = listdir(path.join(SC.generic['docroot'],"images")) if not SC.generic.get('rack_image_directory') else SC.generic['rack_image_directory']
+  directory = listdir(path.join(SC['generic']['docroot'],"images")) if not SC['generic'].get('rack_image_directory') else SC['generic']['rack_image_directory']
   ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
  return ret

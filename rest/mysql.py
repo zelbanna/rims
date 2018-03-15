@@ -2,16 +2,16 @@ __author__ = "Zacharias El Banna"
 __version__ = "18.03.14GA"
 __status__ = "Production"
 
+
 #
 #
 def dump(aDict):
  from subprocess import check_output
- from .. import SettingsContainer as SC
  if aDict.get('username') and aDict.get('password') and aDict.get('database'):
   db,username,password = aDict['database'],aDict['username'],aDict['password']
  else:
-  from .. import SettingsContainer as SC
-  db,username,password = SC.system['db_name'], SC.system['db_user'], SC.system['db_pass']
+  from ..SettingsContainer import SC
+  db,username,password = SC['system']['db_name'], SC['system']['db_user'], SC['system']['db_pass']
  try:
   mode = aDict.get('mode','structure')
   cmd  = ["mysqldump", "-u" + username, "-p" + password, db]
@@ -51,8 +51,8 @@ def restore(aDict):
  if aDict.get('username') and aDict.get('password'):
   username,password = aDict['username'],aDict['password']
  else:
-  from .. import SettingsContainer as SC
-  username,password = SC.system['db_user'], SC.system['db_pass']
+  from ..SettingsContainer import SC
+  username,password = SC['system']['db_user'], SC['system']['db_pass']
 
  try:
   cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '<',aDict['file']]

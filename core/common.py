@@ -8,7 +8,7 @@ __version__ = "18.03.14GA"
 __status__ = "Production"
 
 
-try:    from .. import SettingsContainer as SC
+try:    from ..SettingsContainer import SC
 except: pass
 
 ############################################ Database ######################################
@@ -22,7 +22,7 @@ class DB(object):
   self._curs = None
   self._dirty = False
   if not aDB:
-   self._db, self._host, self._user, self._pass = SC.system['db_name'],SC.system['db_host'],SC.system['db_user'],SC.system['db_pass']
+   self._db, self._host, self._user, self._pass = SC['system']['db_name'],SC['system']['db_host'],SC['system']['db_user'],SC['system']['db_pass']
   else:
    self._db, self._host, self._user, self._pass = aDB, aHost, aUser, aPass
 

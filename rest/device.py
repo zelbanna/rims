@@ -97,7 +97,7 @@ def info(aDict):
    if not ret['info']['functions']:
     ret['info']['functions'] = ""
    if 'username' in info:
-    ret['username'] = SC.netconf['username']
+    ret['username'] = SC['netconf']['username']
    if 'booking' in info:
     ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id']))
     if ret['booked'] > 0:
@@ -464,7 +464,7 @@ def detect(aDict):
   # .1.3.6.1.2.1.1.1.0 : Device info
   # .1.3.6.1.2.1.1.5.0 : Device name
   devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'))
-  session = Session(Version = 2, DestHost = aDict['ip'], Community = SC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+  session = Session(Version = 2, DestHost = aDict['ip'], Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
   session.get(devobjs)
  except:
   pass

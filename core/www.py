@@ -9,7 +9,6 @@ __status__= "Production"
 
 #
 # web handling object
-# - cookies are 2x dictionaries which encodes type and TTL
 #
 class Web(object):
 

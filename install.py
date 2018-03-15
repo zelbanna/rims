@@ -228,8 +228,7 @@ elif 'rest' in modes:
 container = ospath.abspath(ospath.join(ospath.dirname(__file__),'SettingsContainer.py'))
 try:
  with open(container,'w') as f:
-  for section,content in settings.iteritems():
-   f.write("%s=%s\n"%(section,dumps(content)))
+  f.write("SC=%s\n"%dumps(settings))
   res['container'] = 'OK'
 except Exception,e:
  res['container'] = str(e)
