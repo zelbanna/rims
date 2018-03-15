@@ -15,7 +15,7 @@ def main(aWeb):
  if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- data = aWeb.rest_call("system_inventory",{'node':aWeb.get('node','master')})
+ data = aWeb.rest_call("system_inventory",{'node':aWeb.id})
  print "<NAV><UL>"
  if data.get('node'):
   print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=system_node_list'>Nodes</A></LI>"
@@ -40,7 +40,7 @@ def main(aWeb):
  for mon in data.get('monitors',[]):
   print "<LI><A CLASS=z-op DIV=div_content URL='%s'>%s</A></LI>"%(mon['href'],mon['title'])
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>Debug</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main&node=%s'>Debug</A>"%aWeb['node']
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"
  print "</DIV></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
@@ -65,7 +65,7 @@ def rest_main(aWeb):
  print "<FORM ID=frm_rest>"
  print "Choose host and enter API:<SELECT CLASS=white STYLE='height:22px;' NAME=node>"
  for node in nodes:
-  print "<OPTION VALUE='%s' %s>%s</A>"%(node['id'],"selected" if aWeb['node'] else "",node['node'])
+  print "<OPTION VALUE='%s' %s>%s</A>"%(node['id'],"selected" if aWeb['node'] == node['node'] else "",node['node'])
  print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
  print "Call 'Method': <SELECT CLASS='white' STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:
