@@ -53,7 +53,7 @@ def list(aWeb):
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A TITLE='{}' ".format(row['type'],row['title'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=resources_view&type=%s>%s</A></DIV><DIV CLASS=td><A TITLE='%s' "%(row['type'],row['type'],row['title'])
   if row['inline'] == 0:
    print "TARGET=_blank HREF='{}'>".format(row['href'])
   else:

@@ -23,12 +23,7 @@ def main(aWeb):
  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
  for node in data['nodes']:
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_logs&node=%s>%s</A>"%(node['node'],node['node'])
- print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'><B>- List -</B></A>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>View Tools</A>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>View Demos</A>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>View Bookmarks</A>"
- print "</DIV></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
  if data.get('dhcp_node'):
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%(data['dhcp_node'],data['dhcp_type'])
@@ -38,7 +33,6 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "</DIV></LI>"
  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=sdcp_node_list'>Nodes</A></LI>"
- print "</DIV></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>Debug</A>"
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"
