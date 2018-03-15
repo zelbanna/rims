@@ -63,13 +63,12 @@ def inventory(aDict):
  with DB() as db:
   if aDict['node'] == 'master':
    db.do("SELECT node FROM nodes WHERE system = 1")
-   ret['nodes'] = db.get_rows()
+   ret['nodes'] = [x['node'] for x in db.get_rows()]
    db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
    ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
-   ret['dns_node'] = SC['dns']['node']
-   ret['dns_type'] = SC['dns']['type']
-   ret['dhcp_node'] = SC['dhcp']['node']
-   ret['dhcp_type'] = SC['dhcp']['type']
+   db.do("SELECT section,value FROM settings WHERE parameter = 'node' AND node = '%s'"%aDict['node'])
+   for row in db.get_rows():
+    ret[row['section']]= {'node':row['value'],'type':SC[row['section']].get('type') }
 
  ret['id'] = SC['system']['id']
  return ret
@@ -109,7 +108,7 @@ def settings_save(aDict):
  """
  from os import path as ospath
  from ..core.common import DB,SC,rest_call
- ret = {'file':SC['system']['config_file']}
+ ret = {'config_file':SC['system']['config_file']}
  try:
   settings = {}
   with open(SC['system']['config_file']) as sfile:         

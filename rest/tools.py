@@ -143,14 +143,14 @@ def logs_clear(aDict):
  """
  from ..SettingsContainer import SC
  from ..core.logger import log
- ret = {}
+ ret = {'node':SC['system']['id'],'file':{}}
  for name,file in SC['logs'].iteritems():
   try:
    open(file,'w').close()
-   ret[name] = 'CLEARED'
+   ret['file'][name] = 'CLEARED'
    log("Emptied log [{}]".format(name))
   except Exception as err:
-   ret[name] = 'ERROR: %s'%(str(err))
+   ret['file'][name] = 'ERROR: %s'%(str(err))
  return ret
 
 #

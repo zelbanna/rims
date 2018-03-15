@@ -19,16 +19,17 @@ def main(aWeb):
  print "<NAV><UL>"
  print "<LI CLASS='warning dropdown'><A>Clear Logs</A><DIV CLASS='dropdown-content'>"
  for node in data['nodes']:
-  print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=tools_clear&node=%s'>%s</A>"%(node['node'],node['node'])
+  print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=tools_clear&node=%s'>%s</A>"%(node,node)
  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
  for node in data['nodes']:
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_logs&node=%s>%s</A>"%(node['node'],node['node'])
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_logs&node=%s>%s</A>"%(node,node)
  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>Resources</A></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
- if data.get('dhcp_node'):
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%(data['dhcp_node'],data['dhcp_type'])
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=active>DHCP - Active</A>"%(data['dhcp_node'],data['dhcp_type'])
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=free>DHCP - Free</A>"%(data['dhcp_node'],data['dhcp_type'])
+ if data.get('dhcp'):
+  dhcp = (data['dhcp']['node'],data['dhcp']['type'])
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%dhcp
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=active>DHCP - Active</A>"%dhcp
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=free>DHCP - Free</A>"%dhcp
  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "</DIV></LI>"
@@ -133,7 +134,10 @@ def rest_information(aWeb):
 #
 def clear(aWeb):
  res = aWeb.rest_call('tools_logs_clear&node=%s'%aWeb['node'])
- print "<ARTICLE>%s</ARTICLE>"%(res)
+ print "<ARTICLE><P>%s</P>"%res['node']
+ for k,v in res['file'].iteritems():
+  print "%s: %s<BR>"%(k,v)
+ print "</ARTICLE>"%(res)
 
 #
 #
