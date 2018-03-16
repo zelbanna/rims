@@ -110,7 +110,7 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
  from json import loads, dumps
  from urllib2 import urlopen, Request, URLError, HTTPError
  try:
-  head = { 'Content-Type': 'application/json' }
+  head = { 'Content-Type': 'application/json','Accept':'application/json' }
   try:    head.update(aHeader)
   except: pass
   from logger import log
