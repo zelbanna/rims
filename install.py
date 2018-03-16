@@ -35,7 +35,7 @@ for section,content in temp.iteritems():
    settings[section] = {}
   settings[section][key] = params['value'] 
 settings['system']['config_file'] = settingsfilename
-modes = settings['system']['mode'].split(',')
+modes = { mode:1 for mode in settings['system']['mode'].split(',') }
 res['modes'] = modes
 
 ############################################### ALL #################################################
@@ -57,10 +57,10 @@ with open(logger,'w') as f:
 #
 destinations = []
 
-if 'rest' in modes:
+if modes.get('rest'):
  destinations.append('rest')
 
-if 'front' in modes:
+if modes.get('front'):
  from shutil import copy
  destinations.append('index')
  destinations.append('sdcp')
@@ -107,7 +107,7 @@ if settings['system']['id'] == 'master':
  except ImportError:
   res['gitpython'] = 'install'
   pipmain(["install","-q","gitpython"])
- if 'front' in modes:
+ if modes.get('front'):
   try: import eralchemy
   except ImportError:
    res['gitpython'] = 'install'
@@ -158,7 +158,7 @@ if settings['system']['id'] == 'master':
   db.connect()
 
   res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
-  res['register'] = db.do("INSERT INTO nodes(node,url,system) VALUES('%s','%s',1) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"%(settings['system']['id'],settings['system']['rest']))
+  res['register'] = db.do("INSERT INTO nodes(node,url,system,www) VALUES('{0}','{1}',1,{2}) ON DUPLICATE KEY UPDATE system = 1, www = {2}, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['rest'],modes.get('front',0)))
   res['node_id']= db.get_last_id()
   sql ="INSERT INTO devicetypes(name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
   for type in device_types:
@@ -204,15 +204,15 @@ if settings['system']['id'] == 'master':
   stdout.write("GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';\n"%(settings['system']['db_name'],settings['system']['db_user']))
   stdout.write("FLUSH PRIVILEGES;\n\n")
   stdout.flush()
-  raise Exception("cannot connect to database (%s)"%str(e))
+  raise Exception("DB past error (%s)"%str(e))
 
-elif 'rest' in modes:
+else:
  ########################################## NON-MASTER REST ########################################
  #
  # Fetch and update settings from central repo
  #
  from sdcp.core.common import rest_call
- try: res['register'] = rest_call("%s?system_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':'1'})['data']
+ try: res['register'] = rest_call("%s?system_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':modes.get('rest',0),'www':modes.get('front',0)})['data']
  except Exception,e: res['register'] = str(e)
  try: master   = rest_call("%s?system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
  except: pass

@@ -64,8 +64,9 @@ def inventory(aDict):
   if aDict['node'] == 'master':
    ret.update({'node':True,'extra':True})
    db.do("SELECT node FROM nodes WHERE system = 1")
-   ret['resources'] = [x['node'] for x in db.get_rows()]
-   ret['logs']  = ret['resources']
+   ret['logs'] = [x['node'] for x in db.get_rows()]
+   db.do("SELECT node FROM nodes WHERE www = 1")
+   ret['www'] = [x['node'] for x in db.get_rows()]
   else:
    ret['logs']  = [aDict['node']]
 
@@ -162,6 +163,7 @@ def register(aDict):
   - node (required)
   - url (required)
   - system (optional)
+  - www (optional)
 
  Output:
  """
@@ -208,7 +210,7 @@ def node_info(aDict):
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('nodes',args,'id=%s AND system = 0'%id)
+    ret['update'] = db.update_dict('nodes',args,'id=%s AND (system = 0 OR www = 0)'%id)
    else:
     ret['update'] = db.insert_dict('nodes',args)
     id = db.get_last_id()
@@ -229,5 +231,5 @@ def node_delete(aDict):
  from ..core.common import DB
  ret = {}   
  with DB() as db:
-  ret['delete'] = db.do("DELETE FROM nodes WHERE id = %s AND system = 0"%aDict['id'])
+  ret['delete'] = db.do("DELETE FROM nodes WHERE id = %s"%aDict['id'])
  return ret
