@@ -65,12 +65,9 @@ def portal(aWeb):
   id = cookie.get('id')
 
  menu = aWeb.rest_call("users_menu",{"id":id,'node':aWeb.id})
- start = aWeb.rest_call("settings_parameter&node=%s"%aWeb.id,{'section':'portal','parameter':'start'}).get('value')
 
  print "<HEADER CLASS='background'>"
- if start:
-  print "<BUTTON CLASS='z-op menu' TITLE='Start' DIV=main URL='%s'><IMG SRC='images/icon-start.png'/></BUTTON>"%(start)
- for item in menu:
+ for item in menu['menu']:
   if item['inline'] == 0:
    print "<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
   else:
@@ -80,7 +77,7 @@ def portal(aWeb):
  print "<BUTTON CLASS='z-op menu right' TITLE='User'  DIV=main URL='sdcp.cgi?call=users_%s'><IMG SRC='images/icon-users.png'></BUTTON>"%("main" if id == '1' else "user&id=%s"%id)
  print "</HEADER>"
  print "<MAIN CLASS='background' ID=main></MAIN>"
- print "<SCRIPT>include_html('main','%s')</SCRIPT>"%start
+ print "<SCRIPT>include_html('main','%s')</SCRIPT>"%menu['start']
 
 #
 #

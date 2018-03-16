@@ -73,15 +73,24 @@ def menu(aDict):
  Args:
   - node (required)
   - id (required)
-  - dict (optional)
 
  Output:
  """
- ret = []
+ ret = {}
  with DB() as db:
-  db.do("SELECT menulist FROM users WHERE id = '%s'"%aDict['id'])
-  menulist = db.get_val('menulist')
-  select = "type = 'menuitem'" if menulist == 'default' else "id IN (%s) ORDER BY FIELD(id,%s)"%(menulist,menulist)
+  start = db.do("SELECT value FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start'"%aDict['node'])
+  if start > 0:
+   ret['start'] = db.get_val('value')
+   ret['menu'] = [{'icon':'images/icon-start.png', 'title':'Start', 'href':ret['start'], 'inline':1 }]
+  else:
+   ret['start'] = None
+   ret['menu'] = []
+  if aDict['node'] == 'master':
+   db.do("SELECT menulist FROM users WHERE id = '%s'"%aDict['id'])
+   menulist = db.get_val('menulist')
+   select = "type = 'menuitem'" if menulist == 'default' else "id IN (%s) ORDER BY FIELD(id,%s)"%(menulist,menulist)
+  else:
+   select = "type = 'menuitem'"
   db.do("SELECT icon, title, href, inline FROM resources WHERE node = '%s' AND %s"%(aDict['node'],select))
-  ret = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
+  ret['menu'].extend(db.get_rows())
  return ret

@@ -168,7 +168,7 @@ def register(aDict):
  Output:
  """
  from ..core.common import DB
- ret = {'args':aDict}
+ ret = {}
  args = {'node':aDict['node'],'url':aDict['url'],'system':aDict.get('system','0'),'www':aDict.get('www','0')}
  with DB() as db:
   ret['update'] = db.insert_dict('nodes',args,"ON DUPLICATE KEY UPDATE system = %s, www = %s, url = '%s'"%(args['system'],args['www'],args['url']))
