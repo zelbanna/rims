@@ -93,7 +93,7 @@ def info(aWeb):
    res = aWeb.rest_call("resources_info",data)
    data['id'] = res['id']
   elif aWeb['op'] == 'frame':
-   data['href']   = "sdcp.cgi?call=resources_frame&id=%s"%data['id']
+   data['href']   = "sdcp.cgi?call=resources_framed&id=%s"%data['id']
    data['inline'] = '1'
    data['id']     = 'new'
    data['type']   = 'menuitem' 
