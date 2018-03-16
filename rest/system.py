@@ -110,7 +110,6 @@ def settings_save(aDict):
  
  Output:
  """
- from os import path as ospath
  from ..core.common import DB,SC,rest_call
  ret = {'config_file':SC['system']['config_file']}
  try:

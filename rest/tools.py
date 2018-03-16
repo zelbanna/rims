@@ -19,7 +19,6 @@ def rest_analyze(aDict):
 
  Output:
  """
- from os import path as ospath
  restdir = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','rest'))
  ret = {'file':aDict['file'],'functions':[],'global':[]}
  data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[],'arg':None,'imports':[]}
@@ -94,7 +93,7 @@ def rest_explore(aDict):
  if aDict.get('api'):
   ret['data'].append(__analyze(aDict.get('api')))
  else:
-  from os import path as ospath, listdir
+  from os import listdir
   restdir = ospath.abspath(ospath.join(ospath.dirname(__file__)))
   for restfile in listdir(restdir):
    if restfile[-3:] == '.py':

@@ -208,7 +208,6 @@ def heat_templates(aDict):
 
  Output:
  """
- from os import path as ospath
  from os import listdir
  ret = {'result':'OK','templates':[]}
  try:
@@ -230,7 +229,6 @@ def heat_content(aDict):
   - template (required)
  Output:
  """
- from os import path as ospath
  ret = {'result':'OK','template':None}
  try:
   with open(ospath.abspath(ospath.join(SC['openstack']['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
@@ -258,7 +256,6 @@ def heat_instantiate(aDict):
 
  Output:
  """
- from os import path as ospath
  ret = {}
  args = {}
  try:
