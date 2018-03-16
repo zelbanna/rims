@@ -51,6 +51,8 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"
  print "</DIV></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
+ if data.get('user'):
+  print "<LI CLASS='right navinfo'><A>%s</A></LI>"%data.get('user')
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
 
