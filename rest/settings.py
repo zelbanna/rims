@@ -71,7 +71,9 @@ def parameter(aDict):
 
  Output:
  """
- return {'value':SC[aDict['section']][aDict['parameter']]}
+ try: ret = {'value':SC[aDict['section']][aDict['parameter']]}
+ except: ret = {'value':None }
+ return ret
 
 #
 #
