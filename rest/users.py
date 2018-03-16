@@ -1,6 +1,6 @@
 """Users API module. Provides user interaction and management (create, delete, setting and fetching menuitems etc)"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.16GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 

@@ -1,6 +1,6 @@
 """SDCP tools REST module. Provides various tools"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.16GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -15,7 +15,9 @@ def rest_debug(aDict):
  Output:
  """ 
  print "Set-Cookie: debug=true; Path=/"
- return { 'globals':str(globals().keys()) }
+ from sys import path as syspath 
+ 
+ return { 'globals':str(globals().keys()), 'path':syspath}
 
 #
 #

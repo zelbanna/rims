@@ -5,7 +5,7 @@ Settings:
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.16GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -408,3 +408,19 @@ def consistency(aDict):
     dev['domain_id'] = dev['a_dom_id'] if type == 'a' else domains[GL_ip2arpa(dev['ipasc'])]['id']
     ret['devices'].append(dev)
  return ret
+
+#
+#
+def external_ip(aDict):
+ from dns import resolver
+ from socket import gethostbyname
+ ret = {}
+ try:
+  opendns = resolver.Resolver()
+  opendns.nameservers = [gethostbyname('resolver1.opendns.com')]
+  ret['ip'] = opendns.query("myip.opendns.com",'A').response.answer[0]
+  ret['result'] = 'OK'
+ except Exception,e:
+  ret['error']
+  ret['result'] = 'NOT_OK'
+ return ret 

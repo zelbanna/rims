@@ -8,7 +8,7 @@ IPMI interworking module
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.16GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 
 from ..SettingsContainer import SC

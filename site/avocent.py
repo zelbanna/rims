@@ -4,7 +4,7 @@ HTML5 Ajax calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.16GA"
+__version__ = "18.03.16"
 __status__= "Production"
 
 def manage(aWeb):
