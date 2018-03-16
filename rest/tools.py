@@ -136,8 +136,8 @@ def logs_clear(aDict):
 
  Output:
  """
- from ..SettingsContainer import SC
- from ..core.logger import log
+ from sdcp.SettingsContainer import SC
+ from sdcp.core.logger import log
  ret = {'node':SC['system']['id'],'file':{}}
  for name,file in SC['logs'].iteritems():
   try:
@@ -158,7 +158,7 @@ def logs_get(aDict):
 
  Output:
  """
- from ..SettingsContainer import SC
+ from sdcp.SettingsContainer import SC
  ret = {}
  count = int(aDict.get('count',15))
  for name,file in SC['logs'].iteritems():

@@ -14,7 +14,7 @@ __version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..core.common import SC,rest_call
+from sdcp.core.common import SC,rest_call
 
 #
 #

@@ -4,7 +4,7 @@ __version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..core.common import DB,SC
+from sdcp.core.common import DB,SC
 
 #
 #
@@ -228,7 +228,7 @@ def new(aDict):
   - target is 'rack_id' or nothing
   - arg is rack_id
  """
- from ..core.logger import log
+ from sdcp.core.logger import log
  log("device_new({})".format(aDict))
  def GL_ip2int(addr):
   from struct import unpack
@@ -274,7 +274,7 @@ def delete(aDict):
 
  Output:
  """
- from ..core.logger import log
+ from sdcp.core.logger import log
  log("device_remove({})".format(aDict))
  with DB() as db:
   existing = db.do("SELECT hostname, mac, a_id, ptr_id, devicetypes.* FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = {}".format(aDict['id']))
@@ -581,7 +581,7 @@ def graph_info(aDict):
    if GL_ping_os(ret['ip']):
     try:
      if ret['type_name'] in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-      from ..devices.junos import Junos
+      from sdcp.devices.junos import Junos
       activeinterfaces = []
       if not ret['type_name'] == 'wlc':
        with Junos(ret['ip']) as jdev:

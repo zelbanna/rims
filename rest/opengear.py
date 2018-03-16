@@ -14,7 +14,7 @@ def inventory(aDict):
 
  Output:
  """
- from ..devices.opengear import Device
+ from sdcp.devices.opengear import Device
  ret = {}
  console = Device(aDict['ip'])
  return console.get_inventory()

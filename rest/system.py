@@ -14,7 +14,7 @@ def application(aDict):
  Output:
  """
  from datetime import datetime,timedelta
- from ..core.common import DB,SC
+ from sdcp.core.common import DB,SC
  """ Default login information """
  ret  = {'message':"Welcome to the Management Portal",'parameters':[],'title':'Portal'}
  aDict['node'] = aDict.get('node','master')
@@ -57,7 +57,7 @@ def inventory(aDict):
 
  Output:
  """
- from ..core.common import DB,SC
+ from sdcp.core.common import DB,SC
  ret = {}
  with DB() as db:
   if aDict['node'] == 'master':
@@ -91,7 +91,7 @@ def settings_fetch(aDict):
  
  Output:
  """
- from ..core.common import DB
+ from sdcp.core.common import DB
  ret = {}
  with DB() as db:
   db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aDict['node'])
@@ -114,7 +114,7 @@ def settings_save(aDict):
  
  Output:
  """
- from ..core.common import DB,SC,rest_call
+ from sdcp.core.common import DB,SC,rest_call
  ret = {'config_file':SC['system']['config_file']}
  try:
   settings = {}
@@ -169,7 +169,7 @@ def register(aDict):
 
  Output:
  """
- from ..core.common import DB
+ from sdcp.core.common import DB
  ret = {}
  args = {'node':aDict['node'],'url':aDict['url'],'system':aDict.get('system','0'),'www':aDict.get('www','0')}
  with DB() as db:
@@ -185,7 +185,7 @@ def node_list(aDict):
 
  Output:
  """
- from ..core.common import DB
+ from sdcp.core.common import DB
  ret = {}
  args = aDict
  with DB() as db:
@@ -204,7 +204,7 @@ def node_info(aDict):
 
  Output:
  """
- from ..core.common import DB
+ from sdcp.core.common import DB
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
  ret = {}
@@ -230,7 +230,7 @@ def node_delete(aDict):
 
  Output:
  """
- from ..core.common import DB
+ from sdcp.core.common import DB
  ret = {}   
  with DB() as db:
   ret['delete'] = db.do("DELETE FROM nodes WHERE id = %s"%aDict['id'])

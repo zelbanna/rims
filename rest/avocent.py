@@ -4,7 +4,7 @@ __version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..devices.avocent import Device
+from sdcp.devices.avocent import Device
 
 #
 #
@@ -38,7 +38,7 @@ def info(aDict):
 
  Output:
  """
- from ..core.common import DB
+ from sdcp.core.common import DB
  ret = {}
  with DB() as db:
   if aDict.get('op') == 'lookup':

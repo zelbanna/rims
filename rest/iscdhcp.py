@@ -26,7 +26,7 @@ def leases(aDict):
   from socket import inet_aton
   return unpack("!I", inet_aton(addr))[0]
 
- from ..SettingsContainer import SC
+ from sdcp.SettingsContainer import SC
  result = []
  lease  = {}
  with open(SC['dhcp']['active'],'r') as leasefile: 
@@ -60,7 +60,7 @@ def update_server(aDict):
 
  Output:
  """
- from ..core.common import SC,rest_call
+ from sdcp.core.common import SC,rest_call
  entries = rest_call("%s?device_list_mac"%SC['system']['master'])['data']
  # Create new file
  with open(SC['dhcp']['static'],'w') as leasefile:

@@ -7,7 +7,7 @@ __add_globals__ = lambda x: globals().update(x)
 #
 # booking(op, device_id, user_id)
 #
-from ..core.common import DB
+from sdcp.core.common import DB
 
 def update(aDict):
  """Function docstring for update TBD

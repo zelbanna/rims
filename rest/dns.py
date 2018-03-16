@@ -9,7 +9,7 @@ __version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..core.common import DB,SC,rest_call
+from sdcp.core.common import DB,SC,rest_call
 
 def __rest_format__(aFunction):
  return "%s?%s_%s&node=%s"%(SC['node'][SC['dns']['node']], SC['dns']['type'], aFunction, SC['dns']['node'])
