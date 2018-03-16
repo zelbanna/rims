@@ -41,6 +41,12 @@ def view(aWeb):
 
 #
 #
+def framed(aWeb):
+ res = aWeb.rest_call("resources_info",{'id':aWeb['id']})
+ print "<IFRAME ID=system_resource_frame NAME=system_resource_frame SRC='%s'></IFRAME>"%res['data']['href']
+
+#
+#
 def list(aWeb):
  if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
@@ -61,7 +67,7 @@ def list(aWeb):
   else:
    print "CLASS=z-op DIV=main URL='{}'>".format(row['href'])
   print "{}</A></DIV><DIV CLASS=td>&nbsp;".format(row['title'])
-  print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=%i'%(row['id']))
+  print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=%i'%(row['id']), TITLE=row['id'])
   if cookie['id'] == str(row['user_id']):
    print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%i'%row['id'], MSG='Delete resource?')
   print "</DIV></DIV>"
@@ -74,7 +80,7 @@ def list(aWeb):
 def info(aWeb):
  cookie = aWeb.cookie_unjar('system')
  data  = {'id':aWeb.get('id','new'),'op':aWeb['op']}
- if aWeb['op'] == 'update' or data['id'] == 'new':
+ if aWeb['op'] or data['id'] == 'new':
   data['title'] = aWeb.get('title','Not set')
   data['href']  = aWeb.get('href','Not set')
   data['type']  = aWeb['type']
@@ -86,6 +92,11 @@ def info(aWeb):
   if aWeb['op'] == 'update':
    res = aWeb.rest_call("resources_info",data)
    data['id'] = res['id']
+  elif aWeb['op'] == 'frame':
+   data['href']   = "sdcp.cgi?call=resources_frame&id=%s"%data['id']
+   data['inline'] = '1'
+   data['id']     = 'new'
+   data['type']   = 'menuitem' 
  else:
   data = aWeb.rest_call("resources_info",data)['data']
 
@@ -101,7 +112,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Inline:</DIV><DIV   CLASS=td><INPUT NAME=inline  {}                TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['inline'] == 1 or data['inline'] == "1" else '')
  print "<DIV CLASS=tr><DIV CLASS=td>Private:</DIV><DIV  CLASS=td><INPUT NAME=private {} {}             TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['private'] == 1 or data['private'] == "1" else "","disabled" if cookie['id'] <> str(data['user_id']) else "")
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV>"
- if data['type'] == 'menuitem':
+ if data['type'] == 'menuitem' and cookie['id'] != str(data['user_id']):
   print "<DIV CLASS=td><INPUT  NAME=type TYPE=TEXT VALUE='menuitem' STYLE='font-style:italic' readonly></DIV>"
  else:
   print "<DIV CLASS=td><SELECT NAME=type>"
@@ -112,10 +123,11 @@ def info(aWeb):
  if data['icon'] and data['icon'] != 'NULL':
   print "<BUTTON CLASS='menu' TYPE=button STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></BUTTON>".format(data['icon'])
  print "</FORM><BR><DIV CLASS=controls>"
+ print aWeb.button('frame',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=frame',  FRM='resource_info_form', TITLE='Frame')
  if cookie['id'] == str(data['user_id']):
+  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='resource_info_form', TITLE='Save')
   if data['id'] != 'new':
    print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%s'%data['id'], MSG='Delete resource?')
-  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='resource_info_form')
  print "</DIV></ARTICLE>"
 
 #
