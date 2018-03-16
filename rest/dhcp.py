@@ -28,7 +28,6 @@ def update_server(aDict):
  """
  ret = {}
  if SC['dhcp'].get('node',SC['system']['id']) == SC['system']['id']:
-  from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC['dhcp']['type'])
   fun = getattr(module,'update_server',None)
   ret = fun(aDict)
@@ -48,7 +47,6 @@ def leases(aDict):
   """
  ret = {}
  if SC['dhcp'].get('node',SC['system']['id']) == SC['system']['id']:
-  from importlib import import_module
   module = import_module("sdcp.rest.%s"%SC['dhcp']['type'])
   fun = getattr(module,'leases',None)
   ret = fun(aDict)

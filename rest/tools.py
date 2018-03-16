@@ -82,7 +82,6 @@ def rest_explore(aDict):
  Output:
  """
  from types import FunctionType as function
- from importlib import import_module
  def __analyze(aFile):
   data = {'api':aFile, 'functions':[]}
   try:
@@ -113,7 +112,6 @@ def rest_information(aDict):
 
  Output:
  """ 
- from importlib import import_module
  mod = import_module("sdcp.rest.%s"%(aDict['api']))
  fun = getattr(mod,aDict['function'],None)
  return {'api':aDict['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}
@@ -130,7 +128,7 @@ def rest_debug(aDict):
  print "Set-Cookie: debug=true; Path=/"
  return { 'globals':str(globals().keys()), 'locals':str(locals().keys()) }
 
-############################################ Monitor ##############################################
+############################################# Logs ###############################################
 
 #
 #
@@ -178,3 +176,6 @@ def logs_get(aDict):
   except Exception as err:
    ret[name] = ['ERROR: %s'%(str(err))]
  return ret
+
+########################################### FILE ############################################
+

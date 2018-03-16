@@ -231,11 +231,10 @@ def heat_content(aDict):
  Output:
  """
  from os import path as ospath
- from json import load
  ret = {'result':'OK','template':None}
  try:
   with open(ospath.abspath(ospath.join(SC['openstack']['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
-   ret['template'] = load(f)
+   ret['template'] = loads(f.read())
  except Exception as e:
   ret['info'] = str(e)
   ret['result'] = 'NOT_OK'
@@ -260,12 +259,11 @@ def heat_instantiate(aDict):
  Output:
  """
  from os import path as ospath
- from json import load
  ret = {}
  args = {}
  try:
   with open(ospath.abspath(ospath.join(SC['openstack']['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
-   args = load(f)
+   args = loads(f.read())
   args['stack_name'] = aDict['name']
   for key,value in aDict['parameters'].iteritems():
    args['parameters'][key] = value

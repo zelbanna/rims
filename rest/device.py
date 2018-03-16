@@ -115,12 +115,12 @@ def info(aDict):
      db.do("SELECT INET_NTOA(ip) AS ip, hostname, name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
      pdu_info = db.get_row()
      args_pem = {'ip':pdu_info['ip'],'unit':ret['info']['pem%i_pdu_unit'%(pem)],'slot':ret['info']['pem%i_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem)}
-     if pdu_info['name'] == 'avocent':
-      try:
-       from avocent import update as pdu_update
-       ret['result']['pem%i'%pem] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem))
-      except Exception as err:
-       ret['result']['pem%i'%pem] = str(err)
+     try:
+      module = import_module("sdcp.rest.%s"%pdu_info['name'])
+      pdu_update = getattr(module,'pdu_update',None)
+      ret['result']['pem%i'%pem] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem))
+     except Exception as err:
+      ret['result']['pem%i'%pem] = str(err)
  return ret
 
 #
@@ -338,7 +338,6 @@ def function(aDict):
  Output:
  """
  ret = {}
- from importlib import import_module
  try:
   module = import_module("sdcp.devices.%s"%(aDict['type']))
   dev = getattr(module,'Device',lambda x: None)(aDict['ip'])
@@ -359,7 +358,6 @@ def configuration_template(aDict):
 
  Output:
  """
- from importlib import import_module
  ret = {}
  with DB() as db:
   db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, mask, INET_NTOA(gateway) AS gateway, INET_NTOA(subnet) AS subnet, devicetypes.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = '%s'"%aDict['id'])
