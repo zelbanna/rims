@@ -20,7 +20,7 @@ def list(aWeb):
   aWeb.rest_call("booking_update",{'device_id':aWeb['device_id'],'user_id':aWeb['user_id'],'op':aWeb['op']})
 
  rows = aWeb.rest_call("booking_list")['list']
-
+ print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Bookings</P>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=bookings_list')
  print "<DIV CLASS=table>"
@@ -32,9 +32,8 @@ def list(aWeb):
    print aWeb.button('add',    DIV='div_content_left', TITLE='Extend booking', URL='sdcp.cgi?call=bookings_list&op=extend&device_id=%i&user_id=%i'%(row['device_id'],row['user_id']))
    print aWeb.button('delete', DIV='div_content_left', TITLE='Remove booking', URL='sdcp.cgi?call=bookings_list&op=debook&device_id=%i&user_id=%i'%(row['device_id'],row['user_id']))
   print "&nbsp;</DIV></DIV>"
- print "</DIV></DIV>"
- print "</ARTICLE>"
-
+ print "</DIV></DIV></ARTICLE></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 #
 #
 def update(aWeb):

@@ -31,6 +31,9 @@ def main(aWeb):
   for node in data['www']:
    print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list&node=%s'>%s</A>"%(node,node)
   print "</DIV></LI>"  
+ if data.get('users'):
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=users_list'>Users</A></LI>"
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=bookings_list'>Booking</A></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
  for tool in data.get('tools',[]): 
   print "<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title'])

@@ -18,14 +18,11 @@ def main(aWeb):
  cookie = aWeb.cookie_unjar('system')
  info = aWeb.rest_call("users_info",{'id':cookie['id']})
  print "<NAV><UL>"
- print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=users_list'>Users</A></LI>"
- print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A></LI>"
- print "<LI CLASS='right navinfo'><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=users_info&id={}>{}</A></LI>".format(cookie['id'],info['data']['name'])
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=users_list'>Users</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=bookings_list'>Bookings</A></LI>"
+ print "<LI CLASS='right navinfo'><A>%s</A></LI>"%info['data']['name']
  print "</UL></NAV>"
- print "<SECTION CLASS=content       ID=div_content>"
- print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
- print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
- print "</SECTION>"
+ print "<SECTION CLASS=content       ID=div_content></SECTION>"
 
 def user(aWeb):
  if not aWeb.cookies.get('system'):
@@ -41,6 +38,7 @@ def user(aWeb):
 
 def list(aWeb):
  rows = aWeb.rest_call("users_list")['data']
+ print "<SECTION CLASS=content-left  ID=div_content_left>"
  print "<ARTICLE><P>Users</P>"
  print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=users_list')
  print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?call=users_info&id=new')
@@ -49,7 +47,8 @@ def list(aWeb):
  print "<DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=users_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
- print "</DIV></DIV></ARTICLE>"
+ print "</DIV></DIV></ARTICLE></SECTION>"
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 #
 #
