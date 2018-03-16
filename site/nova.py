@@ -11,7 +11,7 @@ __status__= "Production"
 ################################# Nova ###############################
 #
 def list(aWeb):
- from ..core.extras import get_quote
+ from sdcp.core.extras import get_quote
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
  if not token:
@@ -85,7 +85,7 @@ def select_parameters(aWeb):
 ######################################## Actions ########################################
 #
 def action(aWeb):
- from ..site.openstack import dict2html
+ from sdcp.site.openstack import dict2html
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
  if not token:
@@ -95,7 +95,7 @@ def action(aWeb):
  op   = aWeb.get('op','info')
 
  if   op == 'info':
-  from ..core.extras import get_quote
+  from sdcp.core.extras import get_quote
   args['call'] = "servers/%s"%aWeb['id']
   server = aWeb.rest_call("openstack_call",args)['data']['server']
   qserver = get_quote(server['name'])

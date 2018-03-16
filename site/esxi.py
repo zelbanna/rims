@@ -108,7 +108,7 @@ def _vm_options(aWeb,aIP,aVM,aHighlight):
 # Graphing
 #
 def graph(aWeb):
- from ..tools.munin import widget_cols
+ from sdcp.tools.munin import widget_cols
  hostname = aWeb['hostname']
  domain   = aWeb['domain']
  print "<ARTICLE STYLE='overflow-x:auto;'>"

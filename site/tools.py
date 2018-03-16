@@ -176,7 +176,7 @@ def files_list(aWeb):
 def ups(aWeb):
  print "<ARTICLE>"
  if aWeb.get('host'):                 
-  from ..tools.munin import widget_cols
+  from sdcp.tools.munin import widget_cols
   upshost,void,domain = aWeb['host'].partition('.')
   widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
  else:

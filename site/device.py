@@ -266,7 +266,7 @@ def new(aWeb):
  op     = aWeb['op']
  subnet_id = aWeb['subnet_id']
  if not ip:
-  from ..core import genlib as GL
+  from sdcp.core import genlib as GL
   ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
 
  if op == 'new':
