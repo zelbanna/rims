@@ -4,7 +4,7 @@ HTML5 Ajax SDCP generic module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.14GA"
+__version__ = "18.03.16GA"
 __status__= "Production"
 
 #
@@ -15,7 +15,7 @@ def login(aWeb):
  cookie = aWeb.cookie_unjar(application)
  inline = aWeb.get('inline','no')
  if cookie.get('authenticated') == 'OK' and inline == 'no':
-  aWeb.put_redirect("sdcp.cgi?call=%s_portal"%cookie['portal'])
+  aWeb.put_redirect("sdcp.cgi?call=%s_portal"%application)
   return
 
  args = aWeb.get_args2dict(['call'])
@@ -29,7 +29,7 @@ def login(aWeb):
   print "Error retrieving application info - exception info: %s"%(data['exception'])
  else:
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
-  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s_%s'>"%(data['portal'],"portal" if inline=='no' else 'inline')
+  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s_%s'>"%(application,"portal" if inline=='no' else 'inline')
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
   print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   for choice in data.get('choices'):

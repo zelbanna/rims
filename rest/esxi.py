@@ -1,6 +1,6 @@
 """ESXi API module. PRovides interworking with ESXi device module to provide esxi VM interaction"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.14GA"
+__version__ = "18.03.16GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 

@@ -1,6 +1,6 @@
 """Vera API module. Provides nested REST management for a VERA z-wave controller through a node"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.14GA"
+__version__ = "18.03.16GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
