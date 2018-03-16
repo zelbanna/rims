@@ -82,6 +82,7 @@ CREATE TABLE `nodes` (
   `node` varchar(40) NOT NULL,
   `url` varchar(40) NOT NULL,
   `system` tinyint(1) DEFAULT '0',
+  `www` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `node` (`node`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

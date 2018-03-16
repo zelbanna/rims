@@ -135,7 +135,7 @@ def rest_information(aWeb):
  print "<BR>".join(res['information'])
  print "</ARTICLE>"
  
-############################################ Monitor #############################################
+############################################ Logs #############################################
 
 #
 #
@@ -156,6 +156,15 @@ def logs_show(aWeb):
   print "<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))
  print "</ARTICLE>"
 
+############################################ Files #############################################
+
+def files_list(aWeb):
+ res = aWeb.rest_call('tools_files_list&node=%s'%aWeb['node'],{'setting':aWeb['setting']})
+ print "<ARTICLE><P>Files in %s<P>"%res['directory']
+ for file in res['files']:
+  print "%s/<A CLASS=file HREF='%s/%s'>%s</A><BR>"%(res['directory'],res['directory'],file,file)
+ print "</ARTICLE>"
+
 #
 # UPS graphs   
 #
@@ -168,3 +177,4 @@ def ups(aWeb):
  else:
   print "Missing 'host' var" 
  print "</ARTICLE>"
+

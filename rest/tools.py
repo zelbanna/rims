@@ -4,11 +4,19 @@ __version__ = "18.03.16GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-
-def test(aDict):
- return {'globals':[x for x in globals().keys() if x[0:2] != '__'] }
-
 ############################################ REST tools ############################################
+#
+#
+def rest_debug(aDict):
+ """Function docstring for rest_debug TBD
+
+ Args:
+
+ Output:
+ """ 
+ print "Set-Cookie: debug=true; Path=/"
+ return { 'globals':str(globals().keys()) }
+
 #
 #
 def rest_analyze(aDict):
@@ -115,18 +123,6 @@ def rest_information(aDict):
  fun = getattr(mod,aDict['function'],None)
  return {'api':aDict['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}
 
-#
-#
-def rest_debug(aDict):
- """Function docstring for rest_debug TBD
-
- Args:
-
- Output:
- """ 
- print "Set-Cookie: debug=true; Path=/"
- return { 'globals':str(globals().keys()), 'locals':str(locals().keys()) }
-
 ############################################# Logs ###############################################
 
 #
@@ -177,4 +173,23 @@ def logs_get(aDict):
  return ret
 
 ########################################### FILE ############################################
+
+def files_list(aDict):
+ """Function docstring for files_list. List files in directory pinpointed by setting (in settings for the node)
+
+ Args:
+  - setting (required)                         
+
+ Output: List of files in 'files'
+ """
+ from os import listdir
+ from  ..SettingsContainer import SC
+ ret = {'result':'OK','directory':SC['files'][aDict['setting']], 'files':[]}
+ try:
+  for file in listdir(ospath.abspath(ret['directory'])):
+   ret['files'].append(file)
+ except Exception as e:
+  ret['info'] = str(e)
+  ret['result'] = 'NOT_OK'
+ return ret
 
