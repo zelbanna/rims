@@ -8,7 +8,7 @@ __version__ = "18.03.16"
 __status__  = "Production"
 __type__    = "hypervisor"
 
-from ..SettingsContainer import SC
+from sdcp.SettingsContainer import SC
 from generic import Device as GenericDevice
 
 ########################################### ESXi ############################################
@@ -155,11 +155,11 @@ class Device(GenericDevice):
  #
 
  def create_lock(self,atime):
-  from ..core.extras import pidfile_lock
+  from sdcp.core.extras import pidfile_lock
   pidfile_lock("/tmp/esxi." + self._hostname + ".vm.pid",atime)
 
  def release_lock(self):
-  from ..core.extras import pidfile_release
+  from sdcp.core.extras import pidfile_release
   pidfile_release("/tmp/esxi." + self._hostname + ".vm.pid")
 
 

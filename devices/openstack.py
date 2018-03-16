@@ -34,7 +34,7 @@ class Device(object):
  # { 'username','password', 'project' }
  #
  def auth(self, aAuth):
-  from ..core.common import rest_call
+  from sdcp.core.common import rest_call
   try:
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
    url  = "%s:5000/v3/auth/tokens"%(self._node)
@@ -102,7 +102,7 @@ class Device(object):
   return self.href("%s:%s/%s"%(self._node,port,query), aArgs=args, aMethod=method, aHeader = header)
 
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
-  from ..core.common import rest_call
+  from sdcp.core.common import rest_call
   head = { 'X-Auth-Token':self._token }
   try: head.update(aHeader)
   except: pass

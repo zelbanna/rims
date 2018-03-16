@@ -8,7 +8,7 @@ __version__ = "18.03.16"
 __status__ = "Production"
 
 
-try:    from ..SettingsContainer import SC
+try:    from sdcp.SettingsContainer import SC
 except: pass
 
 ############################################ Database ######################################

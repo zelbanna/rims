@@ -24,7 +24,7 @@ class Junos(GenericDevice):
   GenericDevice.__init__(self,aIP,aID)
   from jnpr.junos import Device as JunosDevice
   from jnpr.junos.utils.config import Config
-  from ..SettingsContainer import SC
+  from sdcp.SettingsContainer import SC
   self._router = JunosDevice(self._ip, user=SC['netconf']['username'], password=SC['netconf']['password'], normalize=True)
   self._config = Config(self._router)
   self._model = ""
@@ -106,7 +106,7 @@ class Junos(GenericDevice):
   return ret
 
  def configuration(self,argdict):
-  from ..SettingsContainer import SC
+  from sdcp.SettingsContainer import SC
   base  = "set groups default_system"
   ret = ["set system host-name %s"%(argdict['hostname'])]
   if SC['netconf']['username'] == 'root':

@@ -8,7 +8,7 @@ __version__ = "18.03.16"
 __status__  = "Production"
 __type__    = "controller"
 
-from ..devices.generic import Device as GenericDevice
+from sdcp.devices.generic import Device as GenericDevice
 
 class Device(GenericDevice):
 

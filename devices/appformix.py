@@ -27,7 +27,7 @@ class Device(object):
   return "Controller[{}] Token[{},{}]".format(self._node, self._token, self._expire)
 
  def auth(self, aAuth):
-  from ..core.common import rest_call
+  from sdcp.core.common import rest_call
   try:
    auth = {'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
    url  = "%s:7000/appformix/controller/v2.0/%s"%(self._node,"auth_credentials")
@@ -66,7 +66,7 @@ class Device(object):
   return self.href("%s:7000/appformix/controller/v2.0/%s"%(self._node,url), aArgs=args, aMethod=method, aHeader = header)
 
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
-  from ..core.common import rest_call
+  from sdcp.core.common import rest_call
   head = { 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' }
   try: head.update(aHeader)
   except: pass

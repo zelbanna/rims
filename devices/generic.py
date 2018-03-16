@@ -50,7 +50,7 @@ class Device(object):
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
 
  def log_msg(self, aMsg):
-  from ..core.logger import log
+  from sdcp.core.logger import log
   log(aMsg)
 
  def configuration(self,argdict):
