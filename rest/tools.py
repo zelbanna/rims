@@ -7,8 +7,8 @@ __add_globals__ = lambda x: globals().update(x)
 ############################################ REST tools ############################################
 #
 #
-def rest_debug(aDict):
- """Function docstring for rest_debug TBD
+def debug(aDict):
+ """Function docstring for debug TBD
 
  Args:
 
@@ -16,8 +16,10 @@ def rest_debug(aDict):
  """ 
  print "Set-Cookie: debug=true; Path=/"
  from sys import path as syspath 
- 
- return { 'globals':str(globals().keys()), 'path':syspath}
+ import dns as DNS1
+ from __future__ import absolute_import
+ import dns as DNS2
+ return { 'globals':str(globals().keys()), 'path':syspath, 'DNS1':dir(DNS1), 'DNS2':dir(DNS2)}
 
 #
 #
