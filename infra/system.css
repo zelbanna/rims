@@ -83,7 +83,7 @@ div.controls { display:inline; font-size:5px; }
 .border-grey { border:solid 1px #9CA6B0; }
 .small-text {  font-size:9px; }
 .centered {    align-items:center; justify-content:center; display:flex; flex-wrap:wrap }
-.machine-text { font-family: "Courier New", serif; font-size: 12px; margin: 0px; }
+.machine-text { font-family:Courier New, serif; font-size: 12px; margin: 0px; }
 
 .blue {  background-color:#33CAFF!important; }
 .red {   background-color:#DF3620!important; }
@@ -142,4 +142,9 @@ button.low {   height: 24px; width: 24px; position: relative; bottom: -26px; pad
 
 button.ipam {  height: 24px; width: 24px; font-size:9px; float:left; font-family: Verdana,sans-serif;}
 
-a.file { font-family: Courier New,monspace; font-size:10px; }
+/*################################ Inframe munin ####################################*/
+div#header { display:none; }
+div#footer { display:none; }
+div#nav    { display:none; }
+div#content { margin-left: 20px; }
+div#content > h2{ display:none; }

@@ -162,7 +162,7 @@ def files_list(aWeb):
  res = aWeb.rest_call('tools_files_list&node=%s'%aWeb['node'],{'setting':aWeb['setting']})
  print "<ARTICLE><P>Files in %s<P>"%res['directory']
  for file in res['files']:
-  print "%s/<A CLASS=file HREF='%s/%s'>%s</A><BR>"%(res['directory'],res['directory'],file,file)
+  print "<P CLASS=machine-text>%s/<A HREF='%s/%s'>%s</A></P>"%(res['directory'],res['directory'],file,file)
  print "</ARTICLE>"
 
 #
