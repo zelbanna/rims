@@ -14,7 +14,7 @@ def list(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('system')
- res = aWeb.rest_call("settings_list",{'node':aWeb['node'],'user_id':cookie['id']})
+ res = aWeb.rest_call("system_settings_list",{'node':aWeb['node'],'user_id':cookie['id']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Settings</P>"
  print "<DIV CLASS=controls>"
@@ -43,9 +43,9 @@ def info(aWeb):
   data['parameter'] = aWeb.get('parameter','Not set')
   data['description'] = aWeb.get('description','Not set') 
   if aWeb['op'] == 'update':
-   data = aWeb.rest_call("settings_info",data)['data']
+   data = aWeb.rest_call("system_settings_info",data)['data']
  else:
-  data = aWeb.rest_call("settings_info",data)['data']
+  data = aWeb.rest_call("system_settings_info",data)['data']
  print "<ARTICLE CLASS=info><P>Settings</P>"
  print "<FORM ID=settings_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
@@ -66,7 +66,7 @@ def info(aWeb):
 #
 #
 def view(aWeb):
- settings = aWeb.rest_call("settings_all",{'node':aWeb['node'],'section':aWeb['section']})
+ settings = aWeb.rest_call("system_settings_all",{'node':aWeb['node'],'section':aWeb['section']})
  print "<ARTICLE><P>Settings</P>"
  for section,parameters in settings.iteritems():
   print "<P>%s</P>"%section
@@ -79,7 +79,7 @@ def view(aWeb):
 #
 #
 def delete(aWeb):
- print "<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_call("settings_delete",{'node':aWeb['node'],'id':aWeb['id']}))
+ print "<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_call("system_settings_delete",{'node':aWeb['node'],'id':aWeb['id']}))
 
 #
 #

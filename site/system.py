@@ -139,7 +139,7 @@ def node_delete(aWeb):
 def weathermap(aWeb):
  aWeb.put_html("Weathermap")
  if not aWeb['page']:
-  wms = aWeb.rest_call("settings_list",{'section':'weathermap'})['data']
+  wms = aWeb.rest_call("system_settings_list",{'section':'weathermap'})['data']
   print "<NAV><UL>"
   for map in wms:
    print "<LI><A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=system_weathermap&page={0}>{1}</A></LI>".format(map['parameter'],map['value'])

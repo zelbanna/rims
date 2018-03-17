@@ -4,6 +4,8 @@ __version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
+from sdcp.core.common import DB,SC
+
 #
 #
 def application(aDict):
@@ -14,7 +16,6 @@ def application(aDict):
  Output:
  """
  from datetime import datetime,timedelta
- from sdcp.core.common import DB,SC
  """ Default login information """
  ret  = {'message':"Welcome to the Management Portal",'parameters':[],'title':'Portal'}
  aDict['node'] = aDict.get('node','master')
@@ -57,7 +58,6 @@ def inventory(aDict):
 
  Output:
  """
- from sdcp.core.common import DB,SC
  ret = {'navinfo':[]}
  with DB() as db:
   if aDict['node'] == 'master':
@@ -80,6 +80,119 @@ def inventory(aDict):
 
  return ret
 
+####################################### Settings #####################################
+#
+#
+def settings_list(aDict):
+ """Function docstring for settings_list TBD
+
+ Args:
+  - node (optional)
+  - dict (optional)
+  - section (optional)
+  - user_id (optional)
+
+ Output:
+ """
+ ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',SC['system']['id']) }
+ if aDict.get('section'):
+  filter = "AND section = '%s'"%aDict.get('section')
+  ret['section'] = aDict.get('section')
+ else:
+  filter = ""
+  ret['section'] = 'all'
+ with DB() as db:
+  ret['xist'] = db.do("SELECT * FROM settings WHERE node = '%s' %s ORDER BY section,parameter"%(ret['node'],filter))
+  ret['data'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
+ return ret
+
+#
+#
+def settings_info(aDict):
+ """Function docstring for settings_info TBD
+
+ Args:
+  - node (required)
+  - id (required)
+  - op (optional)
+  - description (cond required)
+  - section (cond required)
+  - value (cond required)
+  - parameter (cond required)
+
+ Output:
+ """
+ ret = {}
+ args = aDict
+ id = args.pop('id',None)
+ op = args.pop('op',None)
+ with DB() as db:
+  if op == 'update' and not (aDict['section'] == 'system' or aDict['section'] =='node'):
+   if not id == 'new':
+    ret['update'] = db.update_dict('settings',args,"id=%s"%id) 
+   else:
+    ret['update'] = db.insert_dict('settings',args)
+    id = db.get_last_id()
+  ret['xist'] = db.do("SELECT * FROM settings WHERE id = '%s'"%id)
+  ret['data'] = db.get_row()
+ return ret
+
+#
+#
+def parameter(aDict):
+ """Function docstring for parameter TBD
+
+ Args:
+  - section (required)
+  - parameter (required)
+
+ Output:
+ """
+ try: ret = {'value':SC[aDict['section']][aDict['parameter']]}
+ except: ret = {'value':None }
+ return ret
+
+#
+#
+def settings_all(aDict):
+ """Function docstring for settings_all TBD
+
+ Args:
+  - node (required)
+  - dict (optional)
+  - section (optional)
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  if not aDict.get('section'):
+   db.do("SELECT DISTINCT section FROM settings WHERE node='%s'"%aDict['node'])
+   rows = db.get_rows()
+   sections = [row['section'] for row in rows]
+  else:
+   sections = [aDict.get('section')]
+  for section in sections:
+   db.do("SELECT parameter,id,value,description FROM settings WHERE node = '%s' AND section = '%s'  ORDER BY parameter"%(aDict['node'],section))
+   ret[section] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
+ return ret
+
+#
+#
+def settings_delete(aDict):
+ """Function docstring for settings_delete TBD
+
+ Args:
+  - node (required)
+  - id (required)
+
+ Output:
+ """
+ ret = {} 
+ with DB() as db:
+  ret['deleted'] = db.do("DELETE FROM settings WHERE id = '%s' AND node = '%s'"%(aDict['id'],aDict['node']))
+ return ret
+
 #
 #
 def settings_fetch(aDict):
@@ -90,7 +203,6 @@ def settings_fetch(aDict):
  
  Output:
  """
- from sdcp.core.common import DB
  ret = {}
  with DB() as db:
   db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aDict['node'])
@@ -113,7 +225,7 @@ def settings_save(aDict):
  
  Output:
  """
- from sdcp.core.common import DB,SC,rest_call
+ from sdcp.core.common import rest_call
  ret = {'config_file':SC['system']['config_file']}
  try:
   settings = {}
@@ -168,7 +280,6 @@ def register(aDict):
 
  Output:
  """
- from sdcp.core.common import DB
  ret = {}
  args = {'node':aDict['node'],'url':aDict['url'],'system':aDict.get('system','0'),'www':aDict.get('www','0')}
  with DB() as db:
@@ -184,7 +295,6 @@ def node_list(aDict):
 
  Output:
  """
- from sdcp.core.common import DB
  ret = {}
  args = aDict
  with DB() as db:
@@ -203,7 +313,6 @@ def node_info(aDict):
 
  Output:
  """
- from sdcp.core.common import DB
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
  ret = {}
@@ -229,7 +338,6 @@ def node_delete(aDict):
 
  Output:
  """
- from sdcp.core.common import DB
  ret = {}   
  with DB() as db:
   ret['delete'] = db.do("DELETE FROM nodes WHERE id = %s"%aDict['id'])
