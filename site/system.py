@@ -79,7 +79,7 @@ def portal(aWeb):
  print "</HEADER>"
  print "<MAIN CLASS='background' ID=main></MAIN>"
  if menu['start']:
-  print "<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['start'] if menu['menu'][0]['view'] == 0 else "sdcp.cgi?call=resources_framed&id=%s"%menu['menu'][0]['id'])
+  print "<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['href'] if menu['menu'][0]['view'] == 0 else "sdcp.cgi?call=resources_framed&id=%s"%menu['menu'][0]['id'])
 
 #
 #
