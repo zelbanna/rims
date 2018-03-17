@@ -58,7 +58,7 @@ def inventory(aDict):
  Output:
  """
  from sdcp.core.common import DB,SC
- ret = {}
+ ret = {'navinfo':[]}
  with DB() as db:
   if aDict['node'] == 'master':
    ret.update({'node':True,'extra':True,'users':True})
@@ -70,9 +70,8 @@ def inventory(aDict):
    ret['logs']  = [aDict['node']]
   if aDict.get('user_id'):
    db.do("SELECT alias FROM users WHERE id = %s"%aDict.get('user_id'))
-   ret['user'] = db.get_val('alias')
-  else:
-   ret['user'] = None
+   ret['navinfo'].append(db.get_val('alias'))
+
   db.do("SELECT title, href FROM resources WHERE node = '%s' AND type = 'tool' AND inline = 1 AND (user_id = %s OR private = 0) ORDER BY type,title"%(aDict['node'],aDict.get('user_id',1)))
   ret['tools'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
   db.do("SELECT section,value FROM settings WHERE parameter = 'node' AND node = '%s'"%aDict['node'])

@@ -57,7 +57,7 @@ def list(aWeb,aIP = None):
  sort = aWeb.get('sort','name') 
  statelist = aWeb.rest_call("esxi_list",{'ip':ip,'sort':sort})
  print "<ARTICLE>"
- print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='sdcp.cgi?call=esxi_list&ip={}&sort={}'.format(ip,sort))
+ print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='sdcp.cgi?call=esxi_list&ip=%s&sort=%s'%(ip,sort))
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_list&ip=%s&sort=%s'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"%(ip,"id" if sort == "name" else "name")
  print "<DIV CLASS=tbody>"

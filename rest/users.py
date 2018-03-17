@@ -78,9 +78,9 @@ def menu(aDict):
  """
  ret = {}
  with DB() as db:
-  start = db.do("SELECT value FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start'"%aDict['node'])
+  start = db.do("SELECT href FROM resources WHERE id = (SELECT CAST(value AS UNSIGNED) FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start')"%aDict['node'])
   if start > 0:
-   ret['start'] = db.get_val('value')
+   ret['start'] = db.get_val('href')
    ret['menu'] = [{'icon':'images/icon-start.png', 'title':'Start', 'href':ret['start'], 'inline':1 }]
   else:
    ret['start'] = None
