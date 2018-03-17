@@ -72,7 +72,7 @@ def inventory(aDict):
    db.do("SELECT alias FROM users WHERE id = %s"%aDict.get('user_id'))
    ret['navinfo'].append(db.get_val('alias'))
 
-  db.do("SELECT title, href FROM resources WHERE node = '%s' AND type = 'tool' AND inline = 1 AND (user_id = %s OR private = 0) ORDER BY type,title"%(aDict['node'],aDict.get('user_id',1)))
+  db.do("SELECT title, href FROM resources WHERE node = '%s' AND type = 'tool' AND view < 2 AND (user_id = %s OR private = 0) ORDER BY type,title"%(aDict['node'],aDict.get('user_id',1)))
   ret['tools'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
   db.do("SELECT section,value FROM settings WHERE parameter = 'node' AND node = '%s'"%aDict['node'])
   for row in db.get_rows():

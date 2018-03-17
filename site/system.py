@@ -65,13 +65,14 @@ def portal(aWeb):
   id = cookie.get('id')
 
  menu = aWeb.rest_call("users_menu",{"id":id,'node':aWeb.id})
-
  print "<HEADER CLASS='background'>"
  for item in menu['menu']:
-  if item['inline'] == 0:
-   print "<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
-  else:
+  if   item['view'] == 0:
    print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG SRC='%s'/></BUTTON>"%(item['title'],item['href'],item['icon'])
+  elif item['view'] == 1:
+   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='sdcp.cgi?call=resources_framed&id=%s'><IMG SRC='%s'/></BUTTON>"%(item['title'],item['id'],item['icon'])
+  else:
+   print "<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
  print "<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=system URL=sdcp.cgi>Log out</BUTTON>"
  print "<BUTTON CLASS='z-op menu right' TITLE='Tools' DIV=main URL='sdcp.cgi?call=tools_main&node=%s'><IMG SRC='images/icon-config'/></BUTTON>"%aWeb.id
  print "<BUTTON CLASS='z-op menu right' TITLE='User'  DIV=main URL='sdcp.cgi?call=users_%s'><IMG SRC='images/icon-users.png'></BUTTON>"%("main" if id == '1' else "user&id=%s"%id)

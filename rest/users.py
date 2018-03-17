@@ -81,7 +81,7 @@ def menu(aDict):
   start = db.do("SELECT href FROM resources WHERE id = (SELECT CAST(value AS UNSIGNED) FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start')"%aDict['node'])
   if start > 0:
    ret['start'] = db.get_val('href')
-   ret['menu'] = [{'icon':'images/icon-start.png', 'title':'Start', 'href':ret['start'], 'inline':1 }]
+   ret['menu'] = [{'icon':'images/icon-start.png', 'title':'Start', 'href':ret['start'], 'view':0 }]
   else:
    ret['start'] = None
    ret['menu'] = []
@@ -91,6 +91,6 @@ def menu(aDict):
    select = "type = 'menuitem'" if menulist == 'default' else "id IN (%s) ORDER BY FIELD(id,%s)"%(menulist,menulist)
   else:
    select = "type = 'menuitem'"
-  db.do("SELECT icon, title, href, inline FROM resources WHERE node = '%s' AND %s"%(aDict['node'],select))
+  db.do("SELECT id, icon, title, href, view FROM resources WHERE node = '%s' AND %s"%(aDict['node'],select))
   ret['menu'].extend(db.get_rows())
  return ret

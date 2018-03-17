@@ -32,7 +32,7 @@ def list(aDict):
   type = "type = '%s'"%aDict['type'] if aDict.get('type') else "true"
   user = "(user_id = %s OR %s)"%(ret['user_id'],'false' if not ret['view_public'] else 'private = 0')
   select = "%s AND %s AND %s"%(node,type,user)
-  ret['xist'] = db.do("SELECT id, node, icon, title, href, type, inline, user_id FROM resources WHERE %s ORDER BY type,title"%select)
+  ret['xist'] = db.do("SELECT id, node, icon, title, href, type, view, user_id FROM resources WHERE %s ORDER BY type,title"%select)
   ret['data'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
  return ret
 
@@ -49,7 +49,7 @@ def info(aDict):
   - title (required conditionally)
   - private (required conditionally)
   - href (required conditionally)
-  - inline (required conditionally)
+  - view (required conditionally)
   - type (required conditionally)
   - icon (required conditionally)
 

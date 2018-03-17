@@ -27,14 +27,17 @@ def view(aWeb):
  cookie = aWeb.cookie_unjar('system')
  res = aWeb.rest_call("resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'node':aWeb.get('node',aWeb.id)})
  inline = "<BUTTON CLASS='z-op menu' DIV=main URL='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
- extern = "<A CLASS='btn menu' TARGET=_blank HREF='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></A>"
+ framed = "<BUTTON CLASS='z-op menu' DIV=main URL='sdcp.cgi?call=resources_framed&id={0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
+ tabbed = "<A CLASS='btn menu' TARGET=_blank HREF='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></A>"
  print "<DIV CLASS=centered STYLE='align-items:initial'>"
  for row in res['data']:
   print "<DIV STYLE='float:left; min-width:100px; margin:6px;'>"
-  if row['inline'] == 0:
-   print extern.format(row['href'],row['title'],row['icon'])
-  else:
+  if row['view'] == 0:
    print inline.format(row['href'],row['title'],row['icon'])
+  elif row['view'] == 1:
+   print framed.format(row['id'],row['title'],row['icon'])
+  else:
+   print tabbed.format(row['href'],row['title'],row['icon'])
   print "<BR><SPAN STYLE='width:100px; display:block;'>{}</SPAN>".format(row['title'])
   print "</DIV>"
  print "</DIV>"
@@ -62,10 +65,12 @@ def list(aWeb):
  print "<DIV CLASS=tbody>"
  for row in res['data']:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=resources_view&type=%s&node=%s>%s</A></DIV><DIV CLASS=td><A TITLE='%s' "%(row['type'],node,row['type'],row['title'])
-  if row['inline'] == 0:
-   print "TARGET=_blank HREF='{}'>".format(row['href'])
-  else:
+  if   row['view'] == 0:
    print "CLASS=z-op DIV=main URL='{}'>".format(row['href'])
+  elif row['view'] == 1:
+   print "CLASS=z-op DIV=main URL='sdcp.cgi?call=resources_framed&id=%s'>"%row['id']
+  else:
+   print "TARGET=_blank HREF='{}'>".format(row['href'])
   print "{}</A></DIV><DIV CLASS=td>&nbsp;".format(row['title'])
   print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=%i'%(row['id']), TITLE=row['id'])
   if cookie['id'] == str(row['user_id']):
@@ -86,17 +91,12 @@ def info(aWeb):
   data['type']  = aWeb['type']
   data['icon']  = aWeb['icon']
   data['node']  = aWeb['node']
-  data['inline']  = aWeb.get('inline',"0")
+  data['view']  = aWeb.get('view','0')
   data['private'] = aWeb.get('private',"0")
   data['user_id'] = aWeb.get('user_id',cookie['id'])
   if aWeb['op'] == 'update':
    res = aWeb.rest_call("resources_info",data)
    data['id'] = res['id']
-  elif aWeb['op'] == 'frame':
-   data['href']   = "sdcp.cgi?call=resources_framed&id=%s"%data['id']
-   data['inline'] = '1'
-   data['id']     = 'new'
-   data['type']   = 'menuitem' 
  else:
   data = aWeb.rest_call("resources_info",data)['data']
 
@@ -109,7 +109,10 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV    CLASS=td><INPUT NAME=title TYPE=TEXT VALUE='%s' REQUIRED STYLE='min-width:400px'></DIV></DIV>"%data['title']
  print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV     CLASS=td><INPUT NAME=href  TYPE=URL  VALUE='%s' REQUIRED></DIV></DIV>"%data['href']
  print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon  TYPE=URL  VALUE='%s'></DIV></DIV>"%data['icon']
- print "<DIV CLASS=tr><DIV CLASS=td>Inline:</DIV><DIV   CLASS=td><INPUT NAME=inline  {}                TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['inline'] == 1 or data['inline'] == "1" else '')
+ print "<DIV CLASS=tr><DIV CLASS=td>View:</DIV><DIV     CLASS=td>"
+ for name,view in [('inline','0'),('framed','1'),('tabbed','2')]:
+  print "<INPUT NAME=view TYPE=RADIO VALUE=%s %s>%s"%(view,"checked" if str(data['view']) == view else "",name)
+ print " </DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Private:</DIV><DIV  CLASS=td><INPUT NAME=private {} {}             TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['private'] == 1 or data['private'] == "1" else "","disabled" if cookie['id'] <> str(data['user_id']) else "")
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV>"
  if data['type'] == 'menuitem' and cookie['id'] != str(data['user_id']):
@@ -123,7 +126,6 @@ def info(aWeb):
  if data['icon'] and data['icon'] != 'NULL':
   print "<BUTTON CLASS='menu' TYPE=button STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></BUTTON>".format(data['icon'])
  print "</FORM><BR><DIV CLASS=controls>"
- print aWeb.button('frame',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=frame',  FRM='resource_info_form', TITLE='Frame')
  if cookie['id'] == str(data['user_id']):
   print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='resource_info_form', TITLE='Save')
   if data['id'] != 'new':
