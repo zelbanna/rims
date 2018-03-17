@@ -186,7 +186,7 @@ def records(aDict):
   select.append("type = '%s'"%aDict.get('type').upper())
  tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
  with DB(SC['dns']['database'],'localhost',SC['dns']['username'],SC['dns']['password']) as db:
-  ret['count'] = db.do("SELECT id, domain_id AS dom_id, name, type, content,ttl,change_date FROM records %s ORDER BY type DESC name"%tune)
+  ret['count'] = db.do("SELECT id, domain_id AS dom_id, name, type, content,ttl,change_date FROM records %s ORDER BY type DESC"%tune)
   ret['records'] = db.get_rows()
  return ret
 
