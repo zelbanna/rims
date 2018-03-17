@@ -88,6 +88,19 @@ for dest in destinations:
  chmod(site,0755)
  res["cgi_{}".format(dest)] = 'OK'
 
+#
+# Modules
+#
+try: import dns
+except ImportError:
+ res['dns'] = 'install'
+ pipmain(["install", "-q","dns"])
+try: import git
+except ImportError:
+ res['gitpython'] = 'install'
+ pipmain(["install","-q","gitpython"])
+
+
 ############################################ MASTER ###########################################
 #
 # Install necessary modules
@@ -96,21 +109,10 @@ if settings['system']['id'] == 'master':
  from importlib import import_module
  from pip import main as pipmain
 
- #
- # Modules
- #
  try: import pymysql
  except ImportError:
   res['pymysql'] = 'install'
   pipmain(["install", "-q","pymysql"])
- try: import dns
- except ImportError:
-  res['dns'] = 'install'
-  pipmain(["install", "-q","dns"])
- try: import git
- except ImportError:
-  res['gitpython'] = 'install'
-  pipmain(["install","-q","gitpython"])
  if modes.get('front'):
   try: import eralchemy
   except ImportError:
