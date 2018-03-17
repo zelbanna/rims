@@ -412,15 +412,5 @@ def consistency(aDict):
 #
 #
 def external_ip(aDict):
- from dns import resolver
- from socket import gethostbyname
- ret = {}
- try:
-  opendns = resolver.Resolver()
-  opendns.nameservers = [gethostbyname('resolver1.opendns.com')]
-  ret['ip'] = opendns.query("myip.opendns.com",'A').response.answer[0]
-  ret['result'] = 'OK'
- except Exception,e:
-  ret['error']
-  ret['result'] = 'NOT_OK'
- return ret 
+ from sdcp.core.genlib import external_ip
+ return {'ip':external_ip() }

@@ -4,6 +4,7 @@ __version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
+
 ############################################ REST tools ############################################
 #
 #
@@ -16,10 +17,7 @@ def debug(aDict):
  """ 
  print "Set-Cookie: debug=true; Path=/"
  from sys import path as syspath 
- import dns as DNS1
- from __future__ import absolute_import
- import dns as DNS2
- return { 'globals':str(globals().keys()), 'path':syspath, 'DNS1':dir(DNS1), 'DNS2':dir(DNS2)}
+ return { 'globals':str(globals().keys()), 'path':syspath }
 
 #
 #

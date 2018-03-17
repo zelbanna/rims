@@ -103,6 +103,10 @@ if settings['system']['id'] == 'master':
  except ImportError:
   res['pymysql'] = 'install'
   pipmain(["install", "-q","pymysql"])
+ try: import dns
+ except ImportError:
+  res['dns'] = 'install'
+  pipmain(["install", "-q","dns"])
  try: import git
  except ImportError:
   res['gitpython'] = 'install'
