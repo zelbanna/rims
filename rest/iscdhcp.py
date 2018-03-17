@@ -69,10 +69,9 @@ def update_server(aDict):
 
  # Reload
  from subprocess import check_output, CalledProcessError
- commands = SC['dhcp']['reload'].split()
  ret = {}
  try:
-  ret['output'] = check_output(commands)
+  ret['output'] = check_output(SC['dhcp']['reload'].split())
  except CalledProcessError, c:
   ret['code'] = c.returncode
   ret['output'] = c.output
