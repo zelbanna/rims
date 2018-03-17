@@ -37,6 +37,8 @@ def main(aWeb):
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
  for tool in data.get('tools',[]): 
   print "<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title'])
+ for svc in data.get('services',[]):
+  print "<A CLASS=z-op DIV=div_content URL='tools_services_info&service=%s'>%s</A>"%(svc['service'],svc['name'])
  if data.get('dhcp'):
   dhcp = (data['dhcp']['node'],data['dhcp']['type'])
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%dhcp
