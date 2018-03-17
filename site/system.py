@@ -78,7 +78,8 @@ def portal(aWeb):
  print "<BUTTON CLASS='z-op menu right' TITLE='User'  DIV=main URL='sdcp.cgi?call=users_%s'><IMG SRC='images/icon-users.png'></BUTTON>"%("main" if id == '1' else "user&id=%s"%id)
  print "</HEADER>"
  print "<MAIN CLASS='background' ID=main></MAIN>"
- print "<SCRIPT>include_html('main','%s')</SCRIPT>"%menu['start']
+ if menu['start']:
+  print "<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['start'] if menu['menu'][0]['view'] == 0 else "sdcp.cgi?call=resources_framed&id=%s"%menu['menu'][0]['id'])
 
 #
 #

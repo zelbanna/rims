@@ -78,12 +78,13 @@ def menu(aDict):
  """
  ret = {}
  with DB() as db:
-  start = db.do("SELECT href FROM resources WHERE id = (SELECT CAST(value AS UNSIGNED) FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start')"%aDict['node'])
+  start = db.do("SELECT id,view,href FROM resources WHERE id = (SELECT CAST(value AS UNSIGNED) FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start')"%aDict['node'])
   if start > 0:
-   ret['start'] = db.get_val('href')
-   ret['menu'] = [{'icon':'images/icon-start.png', 'title':'Start', 'href':ret['start'], 'view':0 }]
+   info = db.get_row()
+   ret['start'] = True
+   ret['menu'] = [{'id':info['id'],'icon':'images/icon-start.png', 'title':'Start', 'href':info['href'], 'view':info['view'] }]
   else:
-   ret['start'] = None
+   ret['start'] = False
    ret['menu'] = []
   if aDict['node'] == 'master':
    db.do("SELECT menulist FROM users WHERE id = '%s'"%aDict['id'])
