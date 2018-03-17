@@ -10,6 +10,7 @@ __version__ = "18.03.16"
 __status__ = "Production"
 
 from sys import argv, stdout, path as syspath
+from pip import main as pipmain
 from json import load,dump,dumps
 syspath.insert(1, '../')
 if len(argv) < 2:
@@ -107,7 +108,6 @@ except ImportError:
 #
 if settings['system']['id'] == 'master':
  from importlib import import_module
- from pip import main as pipmain
 
  try: import pymysql
  except ImportError:
