@@ -178,7 +178,7 @@ DROP TABLE IF EXISTS `resources`;
 CREATE TABLE `resources` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `private` tinyint(1) unsigned DEFAULT '0',
-  `inline` tinyint(1) unsigned DEFAULT '0',
+  `view` tinyint(3) DEFAULT '0',
   `user_id` int(10) unsigned DEFAULT NULL,
   `type` varchar(10) DEFAULT 'bookmark',
   `node` varchar(40) NOT NULL,
