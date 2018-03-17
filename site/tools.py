@@ -195,10 +195,8 @@ def services_info(aWeb):
  args = {'service':aWeb['service']}
  if aWeb['op']:
   args['operation'] = aWeb['op']
- data = aWeb.rest_call('tools_service_info&node=%s'%aWeb['node'],args)
+ data  = aWeb.rest_call('tools_service_info&node=%s'%aWeb['node'],args)
+ state = 'start' if data['state'] == 'inactive' else 'stop'
  print "<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)<DIV CLASS=controls>"%(aWeb['service'],data['state'],data['info'])
- if data['state'] == 'inactive':
-  print aWeb.button('start', DIV='div_content', URL='sdcp.cgi?call=tools_services_info&service=%s&node=%s&op=start'%(args['service'],aWeb['node']))
- else:
-  print aWeb.button('stop',  DIV='div_content', URL='sdcp.cgi?call=tools_services_info&service=%s&node=%s&op=stop'%(args['service'],aWeb['node']))
+ print aWeb.button(state, DIV='div_content', SPIN='true', URL='sdcp.cgi?call=tools_services_info&service=%s&node=%s&op=%s'%(args['service'],aWeb['node'],state))
  print "</DIV></ARTICLE>"
