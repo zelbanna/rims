@@ -38,7 +38,7 @@ def main(aWeb):
  for tool in data.get('tools',[]): 
   print "<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title'])
  for svc in data.get('services',[]):
-  print "<A CLASS=z-op DIV=div_content URL='tools_services_info&service=%s'>%s</A>"%(svc['service'],svc['name'])
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_services_info&node=%s&service=%s'>%s</A>"%(aWeb['node'],svc['service'],svc['name'])
  if data.get('dhcp'):
   dhcp = (data['dhcp']['node'],data['dhcp']['type'])
   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%dhcp
@@ -69,6 +69,7 @@ def install(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value)
  print "</DIV></DIV></ARTICLE>"
 
+############################################# REST ###############################################
 #
 #
 def rest_main(aWeb):
@@ -143,7 +144,7 @@ def rest_information(aWeb):
  print "<BR>".join(res['information'])
  print "</ARTICLE>"
  
-############################################ Logs #############################################
+############################################### Logs ###############################################
 
 #
 #
@@ -164,8 +165,9 @@ def logs_show(aWeb):
   print "<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))
  print "</ARTICLE>"
 
-############################################ Files #############################################
-
+############################################## Files ###############################################
+#
+#
 def files_list(aWeb):
  res = aWeb.rest_call('tools_files_list&node=%s'%aWeb['node'],{'setting':aWeb['setting']})
  print "<ARTICLE><P>Files in %s<P>"%res['directory']
@@ -186,3 +188,17 @@ def ups(aWeb):
   print "Missing 'host' var" 
  print "</ARTICLE>"
 
+############################################# Services ##############################################
+#
+#
+def services_info(aWeb):
+ args = {'service':aWeb['service']}
+ if aWeb['op']:
+  args['operation'] = aWeb['op']
+ data = aWeb.rest_call('tools_service_info&node=%s'%aWeb['node'],args)
+ print "<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)<DIV CLASS=controls>"%(aWeb['service'],data['state'],data['info'])
+ if data['state'] == 'inactive':
+  print aWeb.button('start', DIV='div_content', URL='sdcp.cgi?call=tools_services_info&service=%s&node=%s&op=start'%(args['service'],aWeb['node']))
+ else:
+  print aWeb.button('stop',  DIV='div_content', URL='sdcp.cgi?call=tools_services_info&service=%s&node=%s&op=stop'%(args['service'],aWeb['node']))
+ print "</DIV></ARTICLE>"

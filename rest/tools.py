@@ -198,16 +198,27 @@ def files_list(aDict):
 ######################################### Controls ########################################
 #
 #
-def service_status(aDict):
- """Function docstring for service_status. TBD
+def service_info(aDict):
+ """Function docstring for service_info. TBD
 
  Args:
-  - service  (required)                         
+  - service  (required)
+  - operation (optional): 'start','stop'
 
- Output: List of files in 'files'
+ Output:
  """
  from subprocess import check_output, CalledProcessError
  ret = {'state':None}
+ if aDict.get('operation'):
+  from time import sleep
+  try:
+   command = "sudo /etc/init.d/%s %s"%(aDict['service'],aDict['operation'])
+   ret['operation'] = check_output(command.split()).strip()
+  except CalledProcessError, c:
+   ret['operation'] = c.output.strip()
+  else:
+   sleep(2)
+
  try:
   command = "sudo /etc/init.d/%s status"%aDict['service']
   output = check_output(command.split())
@@ -222,29 +233,5 @@ def service_status(aDict):
    ret['state'] = state[0]
    ret['info'] = state[1][1:-1]
    break
- return ret
-
-#
-#
-def service_control(aDict):
- """Function docstring for service_control. TBD
-
- Args:
-  - service  (required)
-  - operation (required): 'start','stop'
-
- Output: List of files in 'files'
- """
- from subprocess import check_output, CalledProcessError
- from time import sleep
- ret = {}
- try:
-  command = "sudo /etc/init.d/%s %s"%(aDict['service'],aDict['operation'])
-  ret['operation'] = check_output(command.split()).strip()
- except CalledProcessError, c:
-  ret['operation'] = c.output.strip()
- else:
-  sleep(2)
- ret.update(service_status(aDict))
  return ret
 

@@ -22,3 +22,8 @@ def main(aWeb):
  print "<LI CLASS='right navinfo'><A>%s</A></LI>"%(ip)
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
+
+#
+#
+def files(aWeb):
+ print "Files"
