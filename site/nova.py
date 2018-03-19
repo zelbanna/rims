@@ -37,8 +37,8 @@ def list(aWeb):
   print aWeb.button('delete', DIV='div_content_right', URL=actionurl.format('remove'), MSG='Are you sure you want to delete VM?', SPIN='true')
   if not server['OS-EXT-STS:task_state']:
    if   server['status'] == 'ACTIVE':
-    print aWeb.button('shutdown', DIV='div_content_right', URL=actionurl.format('stop'), SPIN='true', TITLE='Stop VM')
-    print aWeb.button('reboot', DIV='div_content_right', URL=actionurl.format('reboot'), SPIN='true', TITLE='Reboot')
+    print aWeb.button('stop', DIV='div_content_right', URL=actionurl.format('stop'), SPIN='true', TITLE='Stop VM')
+    print aWeb.button('reload', DIV='div_content_right', URL=actionurl.format('reboot'), SPIN='true', TITLE='Reboot')
    elif server['status'] == 'SHUTOFF':
     print aWeb.button('start', DIV='div_content_right', URL=actionurl.format('start'), SPIN='true', TITLE='Start VM')
   else:

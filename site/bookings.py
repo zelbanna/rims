@@ -22,7 +22,7 @@ def list(aWeb):
  rows = aWeb.rest_call("booking_list")['list']
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Bookings</P>"
- print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=bookings_list')
+ print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=bookings_list')
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>User (Id)</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Until</DIV><DIV CLASS=th>Op</DIV></DIV>"
  print "<DIV CLASS=tbody>"

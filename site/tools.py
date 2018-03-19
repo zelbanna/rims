@@ -183,11 +183,21 @@ def services_info(aWeb):
 #
 def files_list(aWeb):
  res = aWeb.rest_call('tools_files_list',{'setting':aWeb['setting']})
- print "<ARTICLE><P>Files in %s<P>"%res['directory']
+ print "<SECTION CLASS=content ID=div_content><ARTICLE><P>Files in %s<P>"%res['directory']
  for file in res['files']:
   print "<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{1}</A></P>".format(res['directory'],file.encode('utf-8'))
- print res
- print "</ARTICLE>"
+ print "</ARTICLE></SECTION>"
+
+#
+#
+def images(aWeb):
+ res = aWeb.rest_call('tools_files_list',{'setting':'images'})
+ print "<NAV></NAV>"
+ print "<SECTION CLASS=content ID=div_content><ARTICLE><P>Images<P><DIV CLASS=table><DIV CLASS=tbody>"
+ for file in res['files']:
+  if file[-3:] == 'png':
+   print "<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:180px'>{0}</DIV><DIV CLASS=td STYLE='width:100%;'><IMG STYLE='max-height:60px;' SRC='images/{0}' /></DIV></DIV>".format(file)
+ print "</DIV></DIV></ARTICLE></SECTION>"
 
 #
 # UPS graphs   

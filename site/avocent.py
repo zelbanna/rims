@@ -45,8 +45,8 @@ def inventory(aWeb,aIP = None):
   if value['state'] == "off":
    print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
   else:
-   print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
-   print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
+   print aWeb.button('stop',DIV=div, SPIN='div_content_left', URL=url.format('off'))
+   print aWeb.button('reload',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
   print "</DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
@@ -60,8 +60,8 @@ def op(aWeb):
  if res['state'] == "off":
   print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
  else:
-  print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
-  print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
+  print aWeb.button('stop',DIV=div, SPIN='div_content_left', URL=url.format('off'))
+  print aWeb.button('reload',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
 
 #
 #
