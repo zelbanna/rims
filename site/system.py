@@ -24,7 +24,7 @@ def login(aWeb):
  if inline == 'no':
   aWeb.put_html(data['title'])
  aWeb.put_cookie(application,data['cookie'],data['expires'])
- print "<DIV CLASS='grey overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message']
+ print "<DIV CLASS='background overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message']
  if data.get('exception'):
   print "Error retrieving application info - exception info: %s"%(data['exception'])
  else:
