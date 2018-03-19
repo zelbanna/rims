@@ -186,7 +186,7 @@ def files_list(aDict):
  """
  from os import listdir
  from  sdcp.SettingsContainer import SC
- dir = SC['files'][aDict['setting']] if not "images" else "images"
+ dir = SC['files'][aDict['setting']] if not aDict['setting'] == 'images' else 'images'
  ret = {'result':'OK','directory':dir, 'files':[]}
  try:
   for file in listdir(ospath.abspath(ret['directory'])):
