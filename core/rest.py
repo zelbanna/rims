@@ -38,8 +38,10 @@ def server(aNodeID):
    for part in extra.split("&"):
     (k,void,v) = part.partition('=')
     additional[k] = v
-  node = additional.get('node','master')
-  if node == aNodeID or node == '_local_':
+  # Node is always master for system calls
+  node = additional.get('node',aNodeID) if not 'mod' == 'system' else 'master'
+
+  if node == aNodeID:
    module = import_module("sdcp.rest.%s"%mod)
    module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
    output = dumps(getattr(module,fun,None)(args))

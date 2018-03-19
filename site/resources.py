@@ -25,7 +25,7 @@ def main(aWeb):
 #
 def view(aWeb):
  cookie = aWeb.cookie_unjar('system')
- res = aWeb.rest_call("resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'node':aWeb.get('node',aWeb.id)})
+ res = aWeb.rest_call("system_resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'node':aWeb.get('node',aWeb.id)})
  inline = "<BUTTON CLASS='z-op menu' DIV=main URL='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
  framed = "<BUTTON CLASS='z-op menu' DIV=main URL='sdcp.cgi?call=resources_framed&id={0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
  tabbed = "<A CLASS='btn menu' TARGET=_blank HREF='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></A>"
@@ -45,7 +45,7 @@ def view(aWeb):
 #
 #
 def framed(aWeb):
- res = aWeb.rest_call("resources_info",{'id':aWeb['id']})
+ res = aWeb.rest_call("system_resources_info",{'id':aWeb['id']})
  print "<IFRAME ID=system_resource_frame NAME=system_resource_frame SRC='%s'></IFRAME>"%res['data']['href']
 
 #
@@ -56,7 +56,7 @@ def list(aWeb):
   return
  cookie = aWeb.cookie_unjar('system')
  node = aWeb.get('node',aWeb.id)
- res = aWeb.rest_call("resources_list",{'node':node,'user_id':cookie['id']})
+ res = aWeb.rest_call("system_resources_list",{'node':node,'user_id':cookie['id']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list&node=%s'%node)
@@ -95,10 +95,10 @@ def info(aWeb):
   data['private'] = aWeb.get('private',"0")
   data['user_id'] = aWeb.get('user_id',cookie['id'])
   if aWeb['op'] == 'update':
-   res = aWeb.rest_call("resources_info",data)
+   res = aWeb.rest_call("system_resources_info",data)
    data['id'] = res['id']
  else:
-  data = aWeb.rest_call("resources_info",data)['data']
+  data = aWeb.rest_call("system_resources_info",data)['data']
 
  print "<ARTICLE><P>Resource entity ({})</P>".format(data['id'])
  print "<FORM ID=resource_info_form>"
@@ -135,5 +135,5 @@ def info(aWeb):
 #
 #
 def delete(aWeb):
- res = aWeb.rest_call("resources_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("system_resources_delete",{'id':aWeb['id']})
  print "<ARTICLE>Result: %s</ARTICLE>"%(res)
