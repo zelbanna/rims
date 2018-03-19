@@ -41,7 +41,7 @@ def login(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s'></DIV></DIV>"%(param['display'],param['data'],param['id'])
   print "</DIV></DIV>"
   print "</FORM><DIV CLASS=controls>"
-  print "<BUTTON CLASS=z-op %s STYLE='margin:20px 20px 30px 40px;' FRM=login_form>Enter</BUTTON>"%("OP=submit" if not aWeb['inline'] == 'yes' else "DIV=main URL=sdcp.cgi")
+  print "<BUTTON CLASS='z-op' %s STYLE='margin:20px 20px 30px 40px;' FRM=login_form>Enter</BUTTON>"%("OP=submit" if not aWeb['inline'] == 'yes' else "DIV=main URL=sdcp.cgi")
  print "</DIV></ARTICLE></DIV>"
 
 ############################################## SDCP ###############################################

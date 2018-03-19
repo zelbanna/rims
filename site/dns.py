@@ -74,7 +74,7 @@ def domain_transfer(aWeb):
  print "</SELECT>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('back',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=%s'%(aWeb['id']))
- print aWeb.button('next',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete',FRM='dns_transfer')
+ print aWeb.button('forward',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete',FRM='dns_transfer')
  print "</DIV></ARTICLE>"
 
 #

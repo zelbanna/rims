@@ -72,7 +72,7 @@ def enter_parameters(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value)
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('next',DIV='div_content_right', URL='sdcp.cgi?call=heat_action&op=create',FRM='frm_heat_template_parameters', SPIN='true')
+ print aWeb.button('forward',DIV='div_content_right', URL='sdcp.cgi?call=heat_action&op=create',FRM='frm_heat_template_parameters', SPIN='true')
  print "</DIV>"
 
 def add_template(aWeb):

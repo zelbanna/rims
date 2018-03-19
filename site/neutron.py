@@ -153,7 +153,7 @@ def action(aWeb):
   for vm in vms:
    print "<OPTION VALUE={0}#{1}>{0}</OPTION>".format(vm['name'],vm['id'])
   print "</SELECT></FORM><DIV CLASS=controls>"
-  print aWeb.button('next', DIV='div_os_info', FRM='frm_fi_assoc_vm', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_interface')
+  print aWeb.button('forward', DIV='div_os_info', FRM='frm_fi_assoc_vm', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_interface')
   print "</DIV>"
 
  elif op == 'fi_associate_choose_interface':
@@ -169,7 +169,7 @@ def action(aWeb):
   print "</SELECT>"
   print "</FORM><DIV CLASS=controls>"
   print aWeb.button('back', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_vm&id=%s'%id, TITLE='Change VM')
-  print aWeb.button('next', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate', FRM='frm_fi_assoc_vmi', TITLE='Commit')
+  print aWeb.button('forward', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate', FRM='frm_fi_assoc_vmi', TITLE='Commit')
   print "</DIV>"
 
  elif op == 'fi_associate':
