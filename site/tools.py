@@ -165,14 +165,28 @@ def logs_show(aWeb):
   print "<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))
  print "</ARTICLE>"
 
+############################################# Services ##############################################
+#
+#
+def services_info(aWeb):
+ args = {'service':aWeb['service']}
+ if aWeb['op']:
+  args['operation'] = aWeb['op']
+ data  = aWeb.rest_call('tools_service_info&node=%s'%aWeb['node'],args)
+ state = 'start' if data['state'] == 'inactive' else 'stop'
+ print "<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)<DIV CLASS=controls>"%(aWeb['service'],data['state'],data['info'])
+ print aWeb.button(state, DIV='div_content', SPIN='true', URL='sdcp.cgi?call=tools_services_info&service=%s&node=%s&op=%s'%(args['service'],aWeb['node'],state))
+ print "</DIV></ARTICLE>"
+
 ############################################## Files ###############################################
 #
 #
 def files_list(aWeb):
- res = aWeb.rest_call('tools_files_list&node=%s'%aWeb['node'],{'setting':aWeb['setting']})
+ res = aWeb.rest_call('tools_files_list',{'setting':aWeb['setting']})
  print "<ARTICLE><P>Files in %s<P>"%res['directory']
  for file in res['files']:
   print "<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{1}</A></P>".format(res['directory'],file.encode('utf-8'))
+ print res
  print "</ARTICLE>"
 
 #
@@ -187,16 +201,3 @@ def ups(aWeb):
  else:
   print "Missing 'host' var" 
  print "</ARTICLE>"
-
-############################################# Services ##############################################
-#
-#
-def services_info(aWeb):
- args = {'service':aWeb['service']}
- if aWeb['op']:
-  args['operation'] = aWeb['op']
- data  = aWeb.rest_call('tools_service_info&node=%s'%aWeb['node'],args)
- state = 'start' if data['state'] == 'inactive' else 'stop'
- print "<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)<DIV CLASS=controls>"%(aWeb['service'],data['state'],data['info'])
- print aWeb.button(state, DIV='div_content', SPIN='true', URL='sdcp.cgi?call=tools_services_info&service=%s&node=%s&op=%s'%(args['service'],aWeb['node'],state))
- print "</DIV></ARTICLE>"

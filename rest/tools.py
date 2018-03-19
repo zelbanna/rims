@@ -5,8 +5,6 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'any'
 
-
-############################################ REST tools ############################################
 #
 #
 def debug(aDict):
@@ -18,8 +16,9 @@ def debug(aDict):
  """ 
  print "Set-Cookie: debug=true; Path=/"
  from sys import path as syspath 
- return { 'globals':str(globals().keys()), 'path':syspath }
+ return { 'globals':[x for x in globals().keys() if not x[0:2] == '__'], 'path':syspath }
 
+############################################ REST tools ############################################
 #
 #
 def rest_analyze(aDict):
@@ -186,14 +185,16 @@ def files_list(aDict):
  Output: List of files in 'files'
  """
  from os import listdir
- from  ..SettingsContainer import SC
- ret = {'result':'OK','directory':SC['files'][aDict['setting']], 'files':[]}
+ from  sdcp.SettingsContainer import SC
+ dir = SC['files'][aDict['setting']] if not "images" else "images"
+ ret = {'result':'OK','directory':dir, 'files':[]}
  try:
   for file in listdir(ospath.abspath(ret['directory'])):
    ret['files'].append(file)
  except Exception as e:
   ret['info'] = str(e)
   ret['result'] = 'NOT_OK'
+ ret['files'].sort()
  return ret
 
 ######################################### Controls ########################################

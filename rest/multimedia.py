@@ -4,16 +4,15 @@ __version__ = "18.03.16GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
+def files_list(aDict):
+ pass
 
-def list(aDict):
- """Function docstring for list TBD
+def files_transfer(aDict):
+ """Function docstring for transfer TBD
 
  Args:
-
+  
  Output:
  """
- ret = {}
- with DB() as db:
-  ret['xist'] = db.do("SELECT id, alias, name, email FROM users ORDER by name")
-  ret['data'] = db.get_rows()
- return ret
+ pass
+

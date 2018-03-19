@@ -39,7 +39,7 @@ def server(aNodeID):
     (k,void,v) = part.partition('=')
     additional[k] = v
   # Node is always master for system calls
-  node = additional.get('node',aNodeID) if not 'mod' == 'system' else 'master'
+  node = additional.get('node',aNodeID) if not mod == 'system' else 'master'
 
   if node == aNodeID:
    module = import_module("sdcp.rest.%s"%mod)

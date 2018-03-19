@@ -15,9 +15,9 @@ def main(aWeb):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  cookie = aWeb.cookie_unjar('system')
- ip = aWeb.rest_call("dns_external_ip&node=%s"%aWeb.id)['ip']
+ ip = aWeb.rest_call("dns_external_ip")['ip']
  print "<NAV><UL>"
- print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=multimedia_files&node=%s'>Completed Files</A></LI>"%aWeb.id
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=multimedia_list'>Files</A></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=multimedia_main'></A></LI>"
  print "<LI CLASS='right navinfo'><A>%s</A></LI>"%(ip)
  print "</UL></NAV>"
@@ -26,4 +26,6 @@ def main(aWeb):
 #
 #
 def files(aWeb):
- print "Files"
+ print "<SECTION CLASS=content-left  ID=div_content_left>"
+ print "<ARTICLE><P>Files</P>"
+
