@@ -97,7 +97,7 @@ def info(aWeb):
  print "</DIV>"
  print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>"
  for id,resource in resources.iteritems():
-  print "<LI CLASS='drag' ID=%s><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></BUTTON></LI>"%(id,resource['title'],resource['icon'])
+  print "<LI CLASS='drag' ID={0}><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='{1}'><IMG SRC='{2}' ALT='{1}'></BUTTON></LI>".format(id,resource['title'],resource['icon'])
  print "</UL></DIV>"
  print "</ARTICLE>"
 

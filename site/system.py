@@ -68,11 +68,11 @@ def portal(aWeb):
  print "<HEADER>"
  for item in menu['menu']:
   if   item['view'] == 0:
-   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG SRC='%s'/></BUTTON>"%(item['title'],item['href'],item['icon'])
+   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s'/></BUTTON>"%(item['title'],item['href'],item['title'],item['icon'])
   elif item['view'] == 1:
-   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='sdcp.cgi?call=resources_framed&id=%s'><IMG SRC='%s'/></BUTTON>"%(item['title'],item['id'],item['icon'])
+   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='sdcp.cgi?call=resources_framed&id=%s'><IMG ALT='%s' SRC='%s'/></BUTTON>"%(item['title'],item['id'],item['title'],item['icon'])
   else:
-   print "<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG SRC='%s'/></A>"%(item['title'],item['href'],item['icon'])
+   print "<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s'/></A>"%(item['title'],item['href'],item['title'],item['icon'])
  print "<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=system URL=sdcp.cgi>Log out</BUTTON>"
  print "<BUTTON CLASS='z-op menu right' TITLE='Tools' DIV=main URL='sdcp.cgi?call=tools_main&node=%s'><IMG SRC='images/icon-config'/></BUTTON>"%aWeb.id
  print "<BUTTON CLASS='z-op menu right' TITLE='User'  DIV=main URL='sdcp.cgi?call=users_%s'><IMG SRC='images/icon-users.png'></BUTTON>"%("main" if id == '1' else "user&id=%s"%id)
@@ -92,11 +92,11 @@ def node_list(aWeb):
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in nodes:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>"%(row['node'],row['url'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['node'],row['url'])
   print aWeb.button('info',DIV='div_content_right', URL='sdcp.cgi?call=system_node_info&id=%s'%row['id'])
   if row['system']:
    print aWeb.button('document',DIV='div_content', URL='sdcp.cgi?call=settings_list&node=%s'%row['node']) 
-  print "</DIV></DIV>"
+  print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
