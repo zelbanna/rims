@@ -9,7 +9,7 @@ def execute(argv):
  from os   import path as ospath
  from sys  import path as syspath
  from importlib import import_module 
- (mod,void,fun) = argv[1].partition('_')
+ (mod,_,fun) = argv[1].partition('_')
  try:  args = loads(argv[2])
  except: args = {}
  print "Executing:{}_{}({})".format(mod,fun,args)

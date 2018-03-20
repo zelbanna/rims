@@ -6,25 +6,24 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def files_list(aDict):
- """Function docstring for files_list TBD
+def list(aDict):
+ """Function docstring for list TBD
 
  Args:
   
  Output:
  """
- return {'res':'TBD'}
-
-#
-#
-def files_transfer(aDict):
- """Function docstring for files_transfer TBD
-
- Args:
-  
- Output:
- """
- return {'res':'TBD'}
+ from os import walk
+ from sdcp.SettingsContainer import SC
+ ret = {'root':SC['multimedia']['torrent_directory'],'files':[]}
+ try:
+  for path,_,files in walk(ret['root']):
+   for file in files:
+    if file[-3:] in ['mp4','mkv']:
+     ret['files'].append({'path':path,'file':file})
+ except Exception as err:
+  ret['error']= str(err)
+ return ret
 
 ################################################# Media Functions ################################################
 #
@@ -33,20 +32,22 @@ def check_srt(aDict):
  """Function docstring for check_srt. Find the 'first' SRT file in a directory, 
 
  Args:
-  - filename (required)
+  - filepath (cond optional)
+  - path (cond optional)
+  - file (cond optional)
 
  Output: Return anguage abbreviation, language name, srtfile if found
  """
  ret = {}
- filename = aDict['filename']
+ filename = (aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file')))[:-4]
  if   ospath.exists("%s.eng.srt"%filename):
-  ret = {'code':'eng','name':"English",'filename':"%s.eng.srt"%filename}
+  ret = {'code':'eng','name':"English",'file':"%s.eng.srt"%filename}
  elif ospath.exists("%s.swe.srt"%filename):
-  ret = {'code':'swe','name':"Swedish",'filename':"%s.swe.srt"%filename}
+  ret = {'code':'swe','name':"Swedish",'file':"%s.swe.srt"%filename}
  elif ospath.exists(filename + ".srt"):
-  ret = {'code':'eng','name':"English",'filename':"%s.srt"%filename}
+  ret = {'code':'eng','name':"English",'file':"%s.srt"%filename}
  else:
-  ret = {'code':None,'name':None,'filename':None}
+  ret = {'code':None,'name':None,'file':None}
  return ret
 
 #
@@ -55,12 +56,14 @@ def check_title(aDict):
  """Function docstring for check_title. Function tries to determine if this is a series or movie and then how to rename the file such that it would be easy to catalog
 
  Args:
-  - filename (required)
+  - filepath (cond optional)
+  - path (cond optional)   
+  - file (cond optional)
 
  Output:
  """
  from re import search
- fpath,filename = ospath.split(aDict['filename'])
+ fpath,filename = ospath.split(aDict['filepath']) if aDict.get('filepath') else aDict.get('path'),aDict.get('file')
  ret = {'path':fpath,'name':None,'info':None,'title':None}
  prefix = filename[:-4].replace("."," ").title()
  # Info start means episode info, like S01E01."whatever".suffix
@@ -175,8 +178,8 @@ def process(aDict):
  ret = {'prefix':aDict['original'][:-4],'suffix':aDict['original'][-3:],'timestamp':int(time()),'rename':False,'res':'NOT_OK','error':None}
 
  try:
-  info    = check_title({'filename':aDict['original']})
-  srt     = check_srt({'filename':aDict['original']})
+  info    = check_title({'filepath':aDict['original']})
+  srt     = check_srt({'filepath':aDict['original']})
   ret.update({'info':info,'srt':srt,'changes':{'subtitle':"",'audio':"",'srt':""}})
 
   if aDict['original'] != info['destination']:
@@ -188,8 +191,8 @@ def process(aDict):
 
    if srt['code']:
     log("INFO - %s - SRT found:%s"%(aDict['original'],srt['code']))
-    srtfile = srt['filename'] + ".process"
-    rename(srt['filename'],srtfile)
+    srtfile = srt['file'] + ".process"
+    rename(srt['file'],srtfile)
     ret['changes']['srt']="--language 0:{0} --track-name 0:{0} -s 0 -D -A {1}".format(srt['code'], repr(ospath.abspath(srtfile)))
 
    probe = check_content({'filename':info['destination'],'languages':['eng','swe'],'srt':srt['code']})
@@ -239,10 +242,10 @@ def process(aDict):
    if srt['code']:
     tmpfile = aDict['original'] + ".process"
     rename(info['destination'],tmpfile)
-    chmod(srt['filename'], 0666)
+    chmod(srt['file'], 0666)
     chmod(info['destination'], 0666)
-    call(['MP4Box -add {0}:hdlr=sbtl:lang={1}:name={2}:group=2:layer=-1:disable {3} -out {4}'.format( repr(srt['filename']), srt['code'], srt['name'], repr(tmpfile), repr(info['destination']))], shell=True, stdout=FNULL)
-    rename(srt['filename'],"%s.processed"%srt['filename'])
+    call(['MP4Box -add {0}:hdlr=sbtl:lang={1}:name={2}:group=2:layer=-1:disable {3} -out {4}'.format( repr(srt['file']), srt['code'], srt['name'], repr(tmpfile), repr(info['destination']))], shell=True, stdout=FNULL)
+    rename(srt['file'],"%s.processed"%srt['file'])
     remove(tmpfile)
    if aDict['modify']:
     if info['episode']:
@@ -270,6 +273,14 @@ def process(aDict):
 #
 #
 def mkv_delay_set(aDict):
+ """Function docstring for mkv_delay_set. Sets offset in ms for file xyz
+
+ Args:
+  - original (required)
+  - offset (required). ms
+
+ Output:
+ """
  from time import time
  from subprocess import Popen, PIPE, check_call, call, STDOUT
  from os import devnull,rename,remove

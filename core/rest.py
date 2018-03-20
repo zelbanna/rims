@@ -29,8 +29,8 @@ def server(aNodeID):
  from json import loads, dumps
  from importlib import import_module
  query,output,api,args,mod,fun,additional= getenv("QUERY_STRING"),'null',None,None,None,None,{}
- (api,void,extra) = query.partition('&')
- (mod,void,fun) = api.partition('_')
+ (api,_,extra) = query.partition('&')
+ (mod,_,fun) = api.partition('_')
  try:
   data = stdin.read()
   args = loads(data) if len(data) > 0 else {}
