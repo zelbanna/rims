@@ -4,15 +4,299 @@ __version__ = "18.03.16GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
+#
+#
 def files_list(aDict):
- pass
-
-def files_transfer(aDict):
- """Function docstring for transfer TBD
+ """Function docstring for files_list TBD
 
  Args:
   
  Output:
  """
- pass
+ return {'res':'TBD'}
 
+#
+#
+def files_transfer(aDict):
+ """Function docstring for files_transfer TBD
+
+ Args:
+  
+ Output:
+ """
+ return {'res':'TBD'}
+
+################################################# Media Functions ################################################
+#
+#
+def check_srt(aDict):
+ """Function docstring for check_srt. Find the 'first' SRT file in a directory, 
+
+ Args:
+  - filename (required)
+
+ Output: Return anguage abbreviation, language name, srtfile if found
+ """
+ ret = {}
+ filename = aDict['filename']
+ if   ospath.exists("%s.eng.srt"%filename):
+  ret = {'code':'eng','name':"English",'filename':"%s.eng.srt"%filename}
+ elif ospath.exists("%s.swe.srt"%filename):
+  ret = {'code':'swe','name':"Swedish",'filename':"%s.swe.srt"%filename}
+ elif ospath.exists(filename + ".srt"):
+  ret = {'code':'eng','name':"English",'filename':"%s.srt"%filename}
+ else:
+  ret = {'code':None,'name':None,'filename':None}
+ return ret
+
+#
+#
+def check_title(aDict):
+ """Function docstring for check_title. Function tries to determine if this is a series or movie and then how to rename the file such that it would be easy to catalog
+
+ Args:
+  - filename (required)
+
+ Output:
+ """
+ from re import search
+ fpath,filename = ospath.split(aDict['filename'])
+ ret = {'path':fpath,'name':None,'info':None,'title':None}
+ prefix = filename[:-4].replace("."," ").title()
+ # Info start means episode info, like S01E01."whatever".suffix
+ is_series = search(r"[sS][0-9]{1,2}[eE][0-9]{1,2}-*[eE]*[0-9]*",prefix)
+
+ if is_series:
+  ret['type'] = 'series'
+  info_start, info_end, title_end = is_series.end(), len(prefix), is_series.start()-1
+  ret['episode'] = prefix[is_series.start():info_start].upper().replace("-","")		
+
+  # Title date is prefix[0] - prefix[where we found season info]
+  # ... but maybe there is more, like the idiots who named Modus who added a " - " instead of a "." or just " "
+  ret['title'] = prefix[0:title_end] if not prefix[title_end-2:title_end+1] == " - " else prefix[0:title_end-2]
+
+  clean_search = search(r" (?:720|1080|Swesub).",prefix)
+  if clean_search:
+   info_end = clean_search.start()
+ 
+  if info_end != info_start:
+   ret['episode'] = ret['episode'] + prefix[info_start:info_end]
+
+  ret['info'] = "%s - %s"%(ret['title'],ret['episode'])
+  ret['name'] = "%s %s"%(ret['title'],ret['episode'])
+ else:
+  ret['type'] = 'movie'
+  has_year=search(r"\.(?:19|20)[0-9]{2}",prefix)
+  if has_year:
+   year = prefix[has_year.start()+1:has_year.end()]
+   ret['title'] = prefix[0:has_year.start()]
+   ret['info'] = "%s (%s)"%(ret['title'],year)
+   ret['name'] = "%s %s"%(ret['title'],year)
+  else:
+   clean_search = search(r" (?:720|1080|Swesub).",prefix)
+   ret['title'] = prefix
+   ret['info'] = prefix[0:clean_search.start()] if clean_search else prefix
+   ret['name'] = ret['info']
+
+ ret['name']="%s.%s"%(ret['name'].replace(" ","."),filename[-3:])
+ ret['destination']= ospath.abspath(ospath.join(ret['path'],ret['name']))
+ return ret
+
+#
+#
+def check_content(aDict):
+ """Function docstring for check_content. Checks file using avprobe to determine content and how to optimize file
+
+ Args:
+  - filename (required)
+  - languages (required). Which codes are we looking for (eng, swe, ?)
+  - srt (optional), do we already have an SRT?
+
+ Output:
+ """ 
+ from subprocess import Popen, PIPE, STDOUT
+ ret = {'res':'NOT_OK'}
+ filename = aDict['filename']
+ ret['video'] = {'language':'eng', 'set_default':False}
+ ret['audio'] = {'add':[], 'remove':[], 'add_aac':True }
+ ret['subtitle'] = {'add':[], 'remove':[], 'languages':[] }
+ if aDict.get('srt'):
+  ret['subtitle']['languages'].append(aDict.get('srt'))
+ try:
+  p1 = Popen(["avprobe", filename], stdout=PIPE, stderr=PIPE)
+  p2 = Popen(["sed","-n","s/.*Stream #[0-9]\\:\\([0-9]*\\)\(.*\\): \\([AVS][a-z]*\\)/\\3#\\1#\\2#/p"], stdin=p1.stderr, stdout=PIPE)
+  entries = p2.communicate()[0]
+ except Exception, e:
+  ret['error'] = str(err)
+ else:
+  from re import sub
+  for line in entries.split('\n'):
+   if line:
+    type,slot,lang,info = line.split('#')
+    lang = sub('[()]','',lang)   
+    # Special case for Video, we are not interested in something without fps..
+    if   type == 'Video' and "fps" in info:
+     if lang:
+      ret['video']['language'] = lang
+     else:
+      ret['video']['set_default'] = True
+    elif type == 'Audio':
+     if not lang or lang in aDict['languages'] or (lang in ['fre','jpn','chi','ita','nor'] and '(default)' in info) or lang == ret['video']['language']:
+      ret['audio']['add'].append(slot)
+      if ret['audio']['add_aac'] and 'aac' in info and 'stereo' in info:
+       ret['audio']['add_aac'] = False
+     else:
+      ret['audio']['remove'].append(slot)
+    elif type == 'Subtitle':
+     if not lang: lang = 'eng'
+     # if sub with lang is there already or not a sought lang then remove
+     if lang in ret['subtitle']['languages'] or not lang in aDict.get('languages',[]):
+      ret['subtitle']['remove'].append(slot)
+     else:
+      ret['subtitle']['add'].append(slot)
+      ret['subtitle']['languages'].append(lang)
+ ret['res'] = 'OK'
+ return ret
+
+#
+#
+def process(aDict):
+ """Function docstring for process. Process a media file
+
+ Args:
+  - original (required)
+
+ Output:
+ """
+ from time import time
+ from subprocess import check_call, call
+ from os import devnull,chmod,rename,remove
+ from sdcp.core.logger import log
+ ret = {'prefix':aDict['original'][:-4],'suffix':aDict['original'][-3:],'timestamp':int(time()),'rename':False,'res':'NOT_OK','error':None}
+
+ try:
+  info    = check_title({'filename':aDict['original']})
+  srt     = check_srt({'filename':aDict['original']})
+  ret.update({'info':info,'srt':srt,'changes':{'subtitle':"",'audio':"",'srt':""}})
+
+  if aDict['original'] != info['destination']:
+   try:  rename(aDict['original'],info['destination'])
+   except Exception, e: ret['error'] = str(e)    
+   else: ret['rename'] = True
+
+  if ret['suffix'] == 'mkv' and not ret['error']:
+
+   if srt['code']:
+    log("INFO - %s - SRT found:%s"%(aDict['original'],srt['code']))
+    srtfile = srt['filename'] + ".process"
+    rename(srt['filename'],srtfile)
+    ret['changes']['srt']="--language 0:{0} --track-name 0:{0} -s 0 -D -A {1}".format(srt['code'], repr(ospath.abspath(srtfile)))
+
+   probe = check_content({'filename':info['destination'],'languages':['eng','swe'],'srt':srt['code']})
+   ret['probe'] = probe
+
+   # if forced download or if there are subs to remove but no subs to add left 
+   if len(probe['subtitle']['remove']) > 0:
+    ret['changes']['subtitle'] = "--no-subtitles" if len(probe['subtitle']['add']) == 0 else "--stracks " + ",".join(map(str,probe['subtitle']['add']))
+
+   if len(probe['audio']['remove']) and len(probe['audio']['add']) > 0:
+    ret['changes']['audio'] = "--atracks " + ",".join(map(str,probe['audio']['add']))
+ 
+   if (ret['rename'] or probe['video']['set_default'] or probe['audio']['add_aac'] or len(ret['changes']['subtitle']) or len(ret['changes']['audio']) or srt['code']):
+    log("INFO - %s - Modifying file"%aDict['original'])
+    FNULL = open(devnull, 'w')
+
+    if ret['rename']:
+     ret['update_title'] = info['info']
+     call(['mkvpropedit', '--set', "title=" + info['info'], info['destination']], stdout=FNULL, stderr=FNULL)
+
+    if probe['video']['set_default']:
+     call(['mkvpropedit', '--edit', 'track:v1', '--set', 'language=eng', info['destination']], stdout=FNULL, stderr=FNULL)
+
+    if probe['audio']['add_aac'] or len(ret['changes']['audio']) or len(ret['changes']['subtitle']) or srt['code']:
+     from sdcp.SettingsContainer import SC
+     from tempfile import mkdtemp
+     log("INFO - %s - Modifying addaac:%s Modify: %s %s"%(probe['audio']['add_aac'],ret['changes']['subtitle'],ret['changes']['audio'], ret['changes']['srt']) )
+     tmpfile = aDict['original'] + ".process"
+     rename(info['destination'],tmpfile)
+     tempd   = SC['multimedia']['temp_directory'] 
+     tempdir = mkdtemp(suffix = "",prefix = 'aac.',dir = tempd)
+
+     if probe['audio']['add_aac']:
+      check_call(['avconv', '-i', tmpfile ,'-vn', '-acodec', 'pcm_s16le', '-ac', '2', tempdir + '/audiofile.wav'], stdout=FNULL, stderr=FNULL)
+      check_call(['normalize-audio', tempdir + '/audiofile.wav'], stdout=FNULL, stderr=FNULL)
+      check_call(['faac', '-c', '48000', '-b', '160', '-q', '100', '-s', tempdir + '/audiofile.wav', '-o',tempdir + '/audiofile.aac'], stdout=FNULL, stderr=FNULL)
+      ret['changes']['srt'] = "--language 0:{} --default-track 0 {}/audiofile.aac ".format(probe['video']['language'], tempdir) + ret['changes']['srt']
+
+     call(["mkvmerge -o '{}' {} {} '{}' {}".format(info['destination'],ret['changes']['subtitle'],ret['changes']['audio'],tmpfile, ret['changes']['srt'])], stdout=FNULL, stderr=FNULL, shell=True)
+     call(['rm','-fR',tempdir])
+     remove(tmpfile)
+
+    if srt['code']: rename(srtfile,srtfile + "ed")
+
+  elif ret['suffix'] == 'mp4' and ret['rename'] and (srt['code'] or aDict['modify']):
+   FNULL = open(devnull, 'w')
+   if srt['code']:
+    tmpfile = aDict['original'] + ".process"
+    rename(info['destination'],tmpfile)
+    chmod(srt['filename'], 0666)
+    chmod(info['destination'], 0666)
+    call(['MP4Box -add {0}:hdlr=sbtl:lang={1}:name={2}:group=2:layer=-1:disable {3} -out {4}'.format( repr(srt['filename']), srt['code'], srt['name'], repr(tmpfile), repr(info['destination']))], shell=True, stdout=FNULL)
+    rename(srt['filename'],"%s.processed"%srt['filename'])
+    remove(tmpfile)
+   if aDict['modify']:
+    if info['episode']:
+     call(['mp4tags', '-o', info['episode'], '-n', info['episode'][1:3], '-M', info['episode'][4:6], '-S', info['title'], '-m', info['info'], info['destination']], stdout=FNULL, stderr=FNULL)
+    else:
+     log("WARN - %s - Movie modifications not implemented"%aDict['original'])
+
+ except Exception as err:
+  ret['error'] = str(err)
+  log("XCPT - %s - Error: %s"%(aDict['original'],str(err)))
+ else:
+  ret['seconds'] = (int(time()) - ret['timestamp'])
+  if ospath.exists(info['destination']):
+   log("INFO - %s - Success - processed in % seconds"%(aDict['original'],ret['seconds']))
+   chmod(info['destination'], 0666)
+   ret['res'] = 'OK'
+  else:
+   log("ERRR - %s - FAILURE PROCESSING!"%aDict['original'])
+   ret['error'] = 'COMPLETE_NO_FILE'
+
+ return ret
+
+
+################################################ TBD ################################################
+#
+#
+def mkv_delay_set(aDict):
+ from time import time
+ from subprocess import Popen, PIPE, check_call, call, STDOUT
+ from os import devnull,rename,remove
+ ret = {'res':'NOT_OK','timestamp':int(time())}
+
+ absfile = ospath.abspath(aDict['original'])
+ tmpfile = absfile + ".delayset"
+
+ # Find subtitle position 
+ try:
+  p1 = Popen(["mkvmerge","--identify", aDict['original']], stdout=PIPE, stderr=PIPE)
+  entries = p1.communicate()[0]
+ except Exception as err:
+  ret['error']= str(err)
+ else:
+  for line in entries.split('\n'):
+   slots = line.split(' ')
+   if slots[0] == "Track" and slots[3] == "subtitles":
+    offset=slots[2][0:-1] + ":" + aDict.get('offset',0)
+    try:
+     rename(absfile,tmpfile)
+     FNULL = open(devnull, 'w')
+     check_call(["mkvmerge -o "+ repr(absfile) + " -y " + offset + " " + repr(tmpfile)], stdout=FNULL, stderr=FNULL, shell=True)
+     remove(tmpfile)
+     chmod(absfile,0666)
+    except Exception as err:
+     ret['error'] = str(err)
+    else:
+     ret['res'] = 'OK'
+ return ret
