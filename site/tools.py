@@ -76,11 +76,11 @@ def rest_main(aWeb):
  nodes = aWeb.rest_call("system_node_list")['data']
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_rest>"
- print "Choose host and enter API:<SELECT CLASS=white STYLE='height:22px;' NAME=node>"
+ print "Choose host and enter API:<SELECT CLASS=background STYLE='height:22px;' NAME=node>"
  for node in nodes:
   print "<OPTION VALUE='%s' %s>%s</A>"%(node['id'],"selected" if aWeb['node'] == node['node'] else "",node['node'])
- print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
- print "Call 'Method': <SELECT CLASS='white' STYLE='width:70px; height:22px;' NAME=method>"
+ print "</SELECT> <INPUT CLASS=background STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
+ print "Call 'Method': <SELECT CLASS=background STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
