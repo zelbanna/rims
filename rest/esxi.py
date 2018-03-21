@@ -1,6 +1,6 @@
 """ESXi API module. PRovides interworking with ESXi device module to provide esxi VM interaction"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -14,7 +14,7 @@ def list(aDict):
 
  Output:
  """
- from ..devices.esxi import Device
+ from sdcp.devices.esxi import Device
  esxi = Device(aDict['ip'])
  return esxi.get_vm_list(aDict.get('sort','name'))
 
@@ -32,7 +32,7 @@ def op(aDict):
 
  Output:
  """
- from ..devices.esxi import Device
+ from sdcp.devices.esxi import Device
  ret = {'id':aDict['id'],'res':'OK'}
  with Device(aDict['ip']) as esxi:
   try:
@@ -71,12 +71,12 @@ def logs(aDict):
  Output:
  """
  from subprocess import check_output
- from ..  import SettingsContainer as SC
+ from sdcp.SettingsContainer import SC
  ret = {'res':'OK'}
  hostname = aDict['hostname']
  count = aDict.get('count','30')
  try:
-  ret['data'] = check_output("tail -n %s %s | tac"%(count,SC.esxi['logformat'].format(hostname)), shell=True).split('\n')
+  ret['data'] = check_output("tail -n %s %s | tac"%(count,SC['esxi']['logformat'].format(hostname)), shell=True).split('\n')
  except Exception as e:
   ret['res'] = 'NOT_OK'
   ret['error'] = str(e)
@@ -94,7 +94,7 @@ def snapshots(aDict):
 
  Output:
  """
- from ..devices.esxi import Device
+ from sdcp.devices.esxi import Device
  ret = {'res':'OK', 'data':[],'highest':0}
  with Device(aDict['ip']) as esxi:
   data = {}                  

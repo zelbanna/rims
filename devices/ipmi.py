@@ -8,10 +8,10 @@ IPMI interworking module
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 
-from .. import SettingsContainer as SC
+from sdcp.SettingsContainer import SC
 from generic import Device as GenericDevice
 
 ################################### IPMI #######################################
@@ -24,7 +24,7 @@ class Device(GenericDevice):
  def get_info(self, agrep):
   from subprocess import check_output
   result = []
-  readout = check_output("ipmitool -H " + self._ip + " -U " + SC.ipmi['username'] + " -P " + SC.ipmi['password'] + " sdr | grep -E '" + agrep + "'",shell=True)
+  readout = check_output("ipmitool -H " + self._ip + " -U " + SC['ipmi']['username'] + " -P " + SC['ipmi']['password'] + " sdr | grep -E '" + agrep + "'",shell=True)
   for fanline in readout.split('\n'):
    if fanline is not "":
     fan = fanline.split()
@@ -35,9 +35,9 @@ class Device(GenericDevice):
   from io import open
   from os import devnull
   from subprocess import check_call
-  from ..core.extras import str2hex
+  from sdcp.core.extras import str2hex
   FNULL = open(devnull, 'w')
   rear  = str2hex(arear)
   front = str2hex(afront)
-  ipmistring = "ipmitool -H " + self._ip + " -U " + SC.ipmi['username'] + " -P " + SC.ipmi['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
+  ipmistring = "ipmitool -H " + self._ip + " -U " + SC['ipmi']['username'] + " -P " + SC['ipmi']['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
   return check_call(ipmistring,stdout=FNULL,stderr=FNULL,shell=True)

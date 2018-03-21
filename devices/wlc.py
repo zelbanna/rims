@@ -4,7 +4,7 @@ WLC Base Class
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__  = "Production"
 __type__    = "network"
 
@@ -35,8 +35,8 @@ class Device(GenericDevice):
    cssidobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.15"))
    cipobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.4"))
 
-   from .. import SettingsContainer as SC
-   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   from sdcp.SettingsContainer import SC
+   session = Session(Version = 2, DestHost = self._ip, Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(cssidobjs)
    session.walk(cipobjs)
   except:

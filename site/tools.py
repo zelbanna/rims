@@ -4,7 +4,7 @@ HTML5 Ajax Tools calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Production"
 __icon__ = 'images/icon-config.png'
 __type__ = 'menuitem'
@@ -12,31 +12,50 @@ __type__ = 'menuitem'
 ############################################ Options ##############################################
 #
 def main(aWeb):
- if not aWeb.cookies.get('sdcp'):
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- data = aWeb.rest_call("tools_system")
+ cookie = aWeb.cookie_unjar('system')
+ data = aWeb.rest_call("system_inventory",{'node':aWeb.id,'user_id':cookie['id']})
  print "<NAV><UL>"
- print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list'>List</A>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=tool'>View Tools</A>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=demo'>View Demos</A>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_view&type=bookmark'>View Bookmarks</A>"
- print "</DIV></LI>"
+ if data.get('node'):
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=system_node_list'>Nodes</A></LI>"
+ if data.get('logs'):
+  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
+  for node in data['logs']:
+   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_logs_show&node=%s>%s - show</A>"%(node,node)
+   print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=tools_logs_clear&node=%s'>%s - clear</A>"%(node,node)
+  print "</DIV></LI>"
+ if data.get('www'):
+  print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
+  for node in data['www']:
+   print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list&node=%s'>%s</A>"%(node,node)
+  print "</DIV></LI>"  
+ if data.get('users'):
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=users_list'>Users</A></LI>"
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=bookings_list'>Booking</A></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=dhcp_update&node=%s&type=%s'>DHCP - Update Server</A>"%(data['dhcp_node'],data['dhcp_type'])
- print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
- print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
- print "</DIV></LI>"
- print "<LI CLASS='dropdown'><A>Settings</A><DIV CLASS='dropdown-content'>"
- for node in data['nodes']:
-  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=settings_list&node=%s'>%s</A>"%(node['parameter'],node['parameter'])
+ for tool in data.get('tools',[]): 
+  print "<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title'])
+ for svc in data.get('services',[]):
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_services_info&node=%s&service=%s'>%s</A>"%(aWeb['node'],svc['service'],svc['name'])
+ if data.get('dhcp'):
+  dhcp = (data['dhcp']['node'],data['dhcp']['type'])
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%dhcp
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=active>DHCP - Active</A>"%dhcp
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=free>DHCP - Free</A>"%dhcp
+ if data.get('extra'):
+  print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
+  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
  print "</DIV></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main'>Debug</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main&node=%s'>Debug</A>"%aWeb['node']
  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"
  print "</DIV></LI>"
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=tools_main&node=%s'></A></LI>"%aWeb['node']
+ if data.get('navinfo'):
+  for info in data['navinfo']:
+   print "<LI CLASS='right navinfo'><A>%s</A></LI>"%info
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
 
@@ -50,17 +69,18 @@ def install(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value)
  print "</DIV></DIV></ARTICLE>"
 
+############################################# REST ###############################################
 #
 #
 def rest_main(aWeb):
- nodes = aWeb.rest_call("settings_list",{'section':'node'})['data']
+ nodes = aWeb.rest_call("system_node_list")['data']
  print "<ARTICLE><P>REST API inspection</P>"
  print "<FORM ID=frm_rest>"
- print "Choose host and enter API:<SELECT CLASS=white STYLE='height:22px;' NAME=node>"
+ print "Choose host and enter API:<SELECT CLASS=background STYLE='height:22px;' NAME=node>"
  for node in nodes:
-  print "<OPTION VALUE='%s' %s>%s</A>"%(node['id'],"selected" if aWeb['node'] else "",node['parameter'])
- print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
- print "Call 'Method': <SELECT CLASS='white' STYLE='width:70px; height:22px;' NAME=method>"
+  print "<OPTION VALUE='%s' %s>%s</A>"%(node['id'],"selected" if aWeb['node'] == node['node'] else "",node['node'])
+ print "</SELECT> <INPUT CLASS=background STYLE='width:500px;' TYPE=TEXT NAME=api><BR>"
+ print "Call 'Method': <SELECT CLASS=background STYLE='width:70px; height:22px;' NAME=method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)
  print "</SELECT>"
@@ -79,7 +99,7 @@ def rest_execute(aWeb):
  except: arguments = None
  try:
   if aWeb['node']:
-   url = aWeb.rest_call("settings_info",{'id':aWeb['node']})['data']['value']
+   url = aWeb.rest_call("system_node_info",{'id':aWeb['node']})['data']['url']
   elif aWeb['device'] == 'vera':
    url = "http://%s:3480/data_request"%(aWeb['host'])
   ret = aWeb.rest_full(url,aWeb['api'],arguments,aWeb['method'])
@@ -124,3 +144,69 @@ def rest_information(aWeb):
  print "<BR>".join(res['information'])
  print "</ARTICLE>"
  
+############################################### Logs ###############################################
+
+#
+#
+def logs_clear(aWeb):
+ res = aWeb.rest_call('tools_logs_clear&node=%s'%aWeb['node'])
+ print "<ARTICLE><P>%s</P>"%res['node']
+ for k,v in res['file'].iteritems():
+  print "%s: %s<BR>"%(k,v)
+ print "</ARTICLE>"%(res)
+
+#
+#
+def logs_show(aWeb):           
+ res = aWeb.rest_call('tools_logs_get&node=%s'%aWeb['node'],{'count':18})
+ res.pop('xist',None)               
+ print "<ARTICLE>"   
+ for file,logs in res.iteritems():
+  print "<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))
+ print "</ARTICLE>"
+
+############################################# Services ##############################################
+#
+#
+def services_info(aWeb):
+ args = {'service':aWeb['service']}
+ if aWeb['op']:
+  args['operation'] = aWeb['op']
+ data  = aWeb.rest_call('tools_service_info&node=%s'%aWeb['node'],args)
+ state = 'start' if data['state'] == 'inactive' else 'stop'
+ print "<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)<DIV CLASS=controls>"%(aWeb['service'],data['state'],data['info'])
+ print aWeb.button(state, DIV='div_content', SPIN='true', URL='sdcp.cgi?call=tools_services_info&service=%s&node=%s&op=%s'%(args['service'],aWeb['node'],state))
+ print "</DIV></ARTICLE>"
+
+############################################## Files ###############################################
+#
+#
+def files_list(aWeb):
+ res = aWeb.rest_call('tools_files_list',{'setting':aWeb['setting']})
+ print "<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Files in %s<P>"%res['directory']
+ for file in res['files']:
+  print "<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{1}</A></P>".format(res['directory'],file.encode('utf-8'))
+ print "</ARTICLE></SECTION>"
+
+#
+#
+def images(aWeb):
+ res = aWeb.rest_call('tools_files_list',{'setting':'images'})
+ print "<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Images<P><DIV CLASS=table><DIV CLASS=tbody>"
+ for file in res['files']:
+  if file[-3:] == 'png':
+   print "<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:180px'>{0}</DIV><DIV CLASS=td STYLE='width:100%;'><IMG STYLE='max-height:60px;' SRC='images/{0}' /></DIV></DIV>".format(file)
+ print "</DIV></DIV></ARTICLE></SECTION>"
+
+#
+# UPS graphs   
+#
+def ups(aWeb):
+ print "<ARTICLE>"
+ if aWeb.get('host'):                 
+  from sdcp.tools.munin import widget_cols
+  upshost,void,domain = aWeb['host'].partition('.')
+  widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
+ else:
+  print "Missing 'host' var" 
+ print "</ARTICLE>"

@@ -4,7 +4,7 @@ HTML5 Ajax ESXi calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __icon__ = 'images/icon-servers.png'
 __type__ = 'menuitem'
@@ -40,7 +40,7 @@ def manage(aWeb):
  print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['hostname'],data['domain'])
  print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?call=esxi_logs&hostname={0}&domain={1}>Logs</A></LI>".format(data['hostname'],data['domain'])
  print "<LI><A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A></LI>".format(data['ip'])
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=esxi_manage&id=%s'></A></LI>".format(id)
  print "<LI CLASS='right navinfo'><A>{}</A></LI>".format(data['hostname'])
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
@@ -57,7 +57,7 @@ def list(aWeb,aIP = None):
  sort = aWeb.get('sort','name') 
  statelist = aWeb.rest_call("esxi_list",{'ip':ip,'sort':sort})
  print "<ARTICLE>"
- print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='sdcp.cgi?call=esxi_list&ip={}&sort={}'.format(ip,sort))
+ print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='sdcp.cgi?call=esxi_list&ip=%s&sort=%s'%(ip,sort))
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=esxi_list&ip=%s&sort=%s'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"%(ip,"id" if sort == "name" else "name")
  print "<DIV CLASS=tbody>"
@@ -70,7 +70,7 @@ def list(aWeb,aIP = None):
 #
 #
 def op(aWeb):
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
  args = aWeb.get_args2dict(['call'])
  args['user_id'] = cookie['id']
  res = aWeb.rest_call("esxi_op",args)
@@ -87,8 +87,8 @@ def _vm_options(aWeb,aIP,aVM,aHighlight):
  if aHighlight:
   print "<DIV CLASS='border'>"
  if int(aVM['state_id']) == 1:
-  print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.shutdown'), TITLE='Soft shutdown')
-  print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.reboot'), TITLE='Soft reboot')
+  print aWeb.button('stop',    DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.shutdown'), TITLE='Soft shutdown')
+  print aWeb.button('reload',  DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.reboot'), TITLE='Soft reboot')
   print aWeb.button('suspend', DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.suspend'),TITLE='Suspend')
   print aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off')
  elif int(aVM['state_id']) == 3:
@@ -108,7 +108,7 @@ def _vm_options(aWeb,aIP,aVM,aHighlight):
 # Graphing
 #
 def graph(aWeb):
- from ..tools.munin import widget_cols
+ from sdcp.tools.munin import widget_cols
  hostname = aWeb['hostname']
  domain   = aWeb['domain']
  print "<ARTICLE STYLE='overflow-x:auto;'>"
@@ -124,7 +124,7 @@ def logs(aWeb):
 #
 #
 def snapshot(aWeb):
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
  res = aWeb.rest_call("esxi_snapshots",{'ip':aWeb['ip'],'id':aWeb['id'],'user_id':cookie['id']}) 
  print "<ARTICLE><P>Snapshots (%s) Highest ID:%s</P>"%(aWeb['id'],res['highest'])
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"

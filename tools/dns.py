@@ -4,9 +4,9 @@
 
 """
 __author__ = "Zacharias El Banna"                     
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
-from ..core.logger import log
+from sdcp.core.logger import log
 
 ################################ LOOPIA DNS ###################################
 #
@@ -14,14 +14,14 @@ from ..core.logger import log
 #
 
 def set_loopia_ip(subdomain, newip):
- from .. import SettingsContainer as SC
+ from sdcp.SettingsContainer import SC
  import xmlrpclib
  try:
-  client = xmlrpclib.ServerProxy(uri = SC.loopia['rpc_server'], encoding = 'utf-8')
-  data = client.getZoneRecords(SC.loopia['username'], SC.loopia['password'], SC.loopia['domain'], subdomain)[0]
+  client = xmlrpclib.ServerProxy(uri = SC['loopia']['rpc_server'], encoding = 'utf-8')
+  data = client.getZoneRecords(SC['loopia']['username'], SC['loopia']['password'], SC['loopia']['domain'], subdomain)[0]
   oldip = data['rdata']
   data['rdata'] = newip
-  status = client.updateZoneRecord(SC.loopia['username'], SC.loopia['password'], SC.loopia['domain'], subdomain, data)[0]
+  status = client.updateZoneRecord(SC['loopia']['username'], SC['loopia']['password'], SC['loopia']['domain'], subdomain, data)[0]
  except Exception as exmlrpc:
   log("System Error - Loopia set: " + str(exmlrpc))
   return False
@@ -31,19 +31,19 @@ def set_loopia_ip(subdomain, newip):
 # Get Loopia settings for subdomain
 #
 def get_loopia_ip(subdomain):
- from .. import SettingsContainer as SC
+ from sdcp.SettingsContainer import SC
  import xmlrpclib
  try:
-  client = xmlrpclib.ServerProxy(uri = SC.loopia['rpc_server'], encoding = 'utf-8')
-  data = client.getZoneRecords(SC.loopia['username'], SC.loopia['password'], SC.loopia['domain'], subdomain)[0]
+  client = xmlrpclib.ServerProxy(uri = SC['loopia']['rpc_server'], encoding = 'utf-8')
+  data = client.getZoneRecords(SC['loopia']['username'], SC['loopia']['password'], SC['loopia']['domain'], subdomain)[0]
   return data['rdata']
  except Exception as exmlrpc:
   log("System Error - Loopia get: " + str(exmlrpc))
   return False
 
 def get_loopia_suffix():
- from .. import SettingsContainer as SC
- return "." + SC.loopia['domain']
+ from sdcp.SettingsContainer import SC
+ return "." + SC['loopia']['domain']
 
 ################################# OpenDNS ######################################
 #
@@ -74,7 +74,7 @@ def pdns_get():
 # - returns True if was in sync and False if modified
 # 
 def pdns_sync(dnslist):
- from ..core.extras import file_replace
+ from sdcp.core.extras import file_replace
  pdns = pdns_get()
  if not pdns in dnslist:
   from subprocess import check_call

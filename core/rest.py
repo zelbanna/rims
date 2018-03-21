@@ -1,61 +1,19 @@
 """Module docstring.
 
-REST interface module
+REST Server module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Production"
 
 #
-# Make proper REST call with arg = data
-# - aURL = REST API link - complete
-# - aAPI= python-path-to-module (e.g. package.path:module_fun*)
-# - aArgs = data/content if available
+# Centralized REST handler (assumes most calls should go to DB node !!) Very important for:
+# - supporting REST nodes
+# - any node using this module for serving REST requests
 #
-#  returns un-json:ed data
-def call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20):
- from json import loads, dumps
- from urllib2 import urlopen, Request, URLError, HTTPError
- try:
-  head = { 'Content-Type': 'application/json' }
-  try:    head.update(aHeader)
-  except: pass
-  from logger import log
-  log("rest_call(%s,%s)"%(aURL,str(aArgs)))
-  req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
-  if aMethod:
-   req.get_method = lambda: aMethod
-  if aVerify is None or aVerify is True:
-   sock = urlopen(req, timeout = aTimeout)
-  else:
-   from ssl import _create_unverified_context
-   sock = urlopen(req,context=_create_unverified_context(), timeout = aTimeout)
-  output = {'info':dict(sock.info()), 'code':sock.code }
-  try:    output['data'] = loads(sock.read())
-  except: output['data'] = None
-  if (output['info'].get('x-z-res','OK') == 'ERROR'):
-   output['info'].pop('server',None)
-   output['info'].pop('connection',None)
-   output['info'].pop('transfer-encoding',None)
-   output['info'].pop('content-type',None)
-   output['exception'] = 'RESTError'
-  sock.close()
- except HTTPError, h:
-  raw = h.read()
-  try:    data = loads(raw)
-  except: data = raw
-  output = { 'result':'ERROR', 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
- except URLError, e:  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
- except Exception, e: output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
- if output.get('exception'):
-  raise Exception(output)
- return output
-
-#
-# Make proper REST responses
-#
-# - encoded as apicall=package.path.module_function (module cannot contain '_', but function can)
+# Function:
+# - expecting query string encoded as apicall=module_function (module cannot contain '_', but function can)
 # - reads body to find input data
 # - returns json:ed response from function
 # -- Response model
@@ -64,18 +22,15 @@ def call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTi
 # --- info: ERROR info
 # --- exception: type of Exception
 # --- data: data
-
-#
-# Update module globals with NodeID? for quick lookup
 #
 def server(aNodeID):
- from os import getenv
+ from os import getenv, path as ospath
  from sys import stdout, stdin
  from json import loads, dumps
  from importlib import import_module
- output,api,args,mod,fun,additional = 'null',None,None,None,None,{}
- (api,void,extra) = getenv("QUERY_STRING").partition('&')
- (mod,void,fun) = api.partition('_')
+ query,output,api,args,mod,fun,additional= getenv("QUERY_STRING"),'null',None,None,None,None,{}
+ (api,_,extra) = query.partition('&')
+ (mod,_,fun) = api.partition('_')
  try:
   data = stdin.read()
   args = loads(data) if len(data) > 0 else {}
@@ -83,31 +38,29 @@ def server(aNodeID):
    for part in extra.split("&"):
     (k,void,v) = part.partition('=')
     additional[k] = v
-  if additional.get('node',aNodeID) == aNodeID:
+  # Node is always master for system calls
+  node = additional.get('node',aNodeID) if not mod == 'system' else 'master'
+
+  if node == aNodeID:
    module = import_module("sdcp.rest.%s"%mod)
+   module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
    output = dumps(getattr(module,fun,None)(args))
    stdout.write("X-Z-Res:OK\r\n")
   else:
-   stdout.write("X-Z-node:%s\r\n"%additional['node'])
-   from .. import SettingsContainer as SC
-   try: res = call("%s?%s"%(SC.node[additional['node']],api),args)
+   from common import SC,rest_call
+   try: res = rest_call("%s?%s"%(SC['node'][node],query),args)
    except Exception as err: raise Exception(err)
    else: output = dumps(res['data'])
    stdout.write("X-Z-Res:%s\r\n"%res['info']['x-z-res'])
  except Exception, e:
   stdout.write("X-Z-Res:ERROR\r\n")
-  stdout.write("X-Z-Arguments:%s\r\n"%args)
+  stdout.write("X-Z-Args:%s\r\n"%args)
   stdout.write("X-Z-Info:%s\r\n"%str(e))
-  stdout.write("X-Z-Exception:%s\r\n"%type(e).__name__)
- stdout.write("X-Z-Module:%s\r\n"%mod)
- stdout.write("X-Z-Function:%s\r\n"%fun)
+  stdout.write("X-Z-Xcpt:%s\r\n"%type(e).__name__)
+ stdout.write("X-Z-Node:%s\r\n"%node)
+ stdout.write("X-Z-Mod:%s\r\n"%mod)
+ stdout.write("X-Z-Func:%s\r\n"%fun)
  stdout.write("Content-Type: application/json\r\n")
  stdout.flush()
  stdout.write("\r\n")
  stdout.write(output)
-
-#
-# Basic Auth header generator
-#
-def basic_auth(aUsername,aPassword):
- return {'Authorization':'Basic ' + (("%s:%s"%(aUsername,aPassword)).encode('base64')).replace('\n','') }

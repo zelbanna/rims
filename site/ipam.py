@@ -4,7 +4,7 @@ HTML5 Ajax IPAM calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Production"
 
 #
@@ -19,16 +19,16 @@ def list(aWeb):
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for net in res['subnets']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_layout&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;".format(net['id'],net['id'],net['subasc'],net['description'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_layout&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(net['id'],net['id'],net['subasc'],net['description'])
   print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=ipam_info&id=%i'%net['id'])
-  print "</DIV></DIV>"
+  print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
 #
 #
 def info(aWeb):
  if aWeb['op'] == 'update':
-  data = aWeb.get_args2dict()
+  data = aWeb.get_args2dict(['call','op'])
   res = aWeb.rest_call("ipam_update",data)
   data['gateway'] = res['gateway']
   data['id']      = res['id']

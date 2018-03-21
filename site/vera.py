@@ -4,7 +4,7 @@ HTML5 Ajax Vera Z-wave controller calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 
 ##### ToDo #####
@@ -28,7 +28,7 @@ def manage(aWeb):
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&node=%s>Devices</A></LI>"%node
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_rooms&node=%s>Rooms</A></LI>"%node
  print "<LI><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_scenes&node=%s>Scenes</A></LI>"%node
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=vera_manage&node=%s'></A></LI>"%node
  print "<LI CLASS='right navinfo'><A CLASS=z-op TARGET=_blank HREF='%s'>UI</A></LI>"%(ui)
  print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_rest_main&node=%s>REST</A></LI>"%node
  print "</UL></NAV>"
@@ -37,7 +37,7 @@ def manage(aWeb):
 #
 #
 def status(aWeb):
- res = aWeb.rest_call("vera_status",{'node':aWeb['node']})
+ res = aWeb.rest_call("vera_status&node=master",{'node':aWeb['node']})
  print "<ARTICLE>"
  print "<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -48,7 +48,7 @@ def status(aWeb):
 #
 #
 def devices(aWeb):
- res = aWeb.rest_call("vera_devices",{'node':aWeb['node']})
+ res = aWeb.rest_call("vera_devices&node=master",{'node':aWeb['node']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
  print "<DIV CLASS=table>"
@@ -66,7 +66,7 @@ def devices(aWeb):
 #
 #
 def device_info(aWeb):
- res = aWeb.rest_call("vera_device_info",{'node':aWeb['node'],'device':aWeb['id']})
+ res = aWeb.rest_call("vera_device_info&node=master",{'node':aWeb['node'],'device':aWeb['id']})
  print "<ARTICLE>"
  print "<DIV CLASS=title>Device %s</DIV>"%aWeb['id']
  print "<DIV CLASS=table>"
@@ -79,7 +79,7 @@ def device_info(aWeb):
 #
 #
 def rooms(aWeb):
- res = aWeb.rest_call("vera_infra",{'node':aWeb['node']})
+ res = aWeb.rest_call("vera_infra&node=master",{'node':aWeb['node']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Section</DIV></DIV><DIV CLASS=tbody>"
@@ -93,7 +93,7 @@ def rooms(aWeb):
 #
 #
 def scenes(aWeb):
- res = aWeb.rest_call("vera_infra",{'node':aWeb['node']})
+ res = aWeb.rest_call("vera_infra&node=master",{'node':aWeb['node']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
@@ -101,13 +101,13 @@ def scenes(aWeb):
   id = scen['id']
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%id
   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_scene_info&node=%s&scene=%s>%s</A></DIV>"%(aWeb['node'],id,scen['name'])
-  print "<DIV CLASS=td ID=div_scene_%s>"%id
-  print aWeb.button('start' if scen['active'] == 0 else 'shutdown',URL='sdcp.cgi?call=vera_scene_state&node=%s&scene=%s&op=%s'%(aWeb['node'],id,"run" if scen['active'] == 0 else "off"),DIV='div_scene_%s'%id)
-  print "</DIV></DIV>"
+  print "<DIV CLASS=td><DIV CLASS=controls ID=scene_%s>"%id
+  print aWeb.button('start' if scen['active'] == 0 else 'stop',URL='sdcp.cgi?call=vera_scene_state&node=%s&scene=%s&op=%s'%(aWeb['node'],id,"run" if scen['active'] == 0 else "off"),DIV='scene_%s'%id)
+  print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def scene_state(aWeb):
- res = aWeb.rest_call("vera_scene",{'node':aWeb['node'],'scene':aWeb['scene'],'op':aWeb['op']})
+ res = aWeb.rest_call("vera_scene&node=master",{'node':aWeb['node'],'scene':aWeb['scene'],'op':aWeb['op']})
  print "<!-- %s -->"%str(res)
- print aWeb.button('shutdown' if aWeb['op'] == "run" else 'start',URL='sdcp.cgi?call=vera_scene_state&node=%s&scene=%s&op=%s'%(aWeb['node'],aWeb['scene'],"run" if aWeb['op'] == "off" else "off"),DIV='div_scene_%s'%aWeb['id'])
+ print aWeb.button('stop' if aWeb['op'] == "run" else 'start',URL='sdcp.cgi?call=vera_scene_state&node=%s&scene=%s&op=%s'%(aWeb['node'],aWeb['scene'],"run" if aWeb['op'] == "off" else "off"),DIV='div_scene_%s'%aWeb['id'])

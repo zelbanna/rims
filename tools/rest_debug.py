@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 
 def execute(argv):
@@ -9,19 +9,16 @@ def execute(argv):
  from os   import path as ospath
  from sys  import path as syspath
  from importlib import import_module 
- (mod,void,fun) = argv[1].partition('_')
+ (mod,_,fun) = argv[1].partition('_')
  try:  args = loads(argv[2])
  except: args = {}
  print "Executing:{}_{}({})".format(mod,fun,args)
 
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
- try:
-  module = import_module("sdcp.rest.%s"%mod)
-  res    = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })(args)
-  print dumps(res, indent=4, sort_keys=True)
- except Exception, e:
-  print "Error [{}:{}]".format(type(e).__name__,str(e))
-  return 1
+ module = import_module("sdcp.rest.%s"%mod)
+ module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
+ res    = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })(args)
+ print dumps(res, indent=4, sort_keys=True)
  return 0
 
 if __name__ == "__main__":

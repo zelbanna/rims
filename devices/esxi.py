@@ -4,11 +4,11 @@ The ESXi interworking module
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__  = "Production"
 __type__    = "hypervisor"
 
-from .. import SettingsContainer as SC
+from sdcp.SettingsContainer import SC
 from generic import Device as GenericDevice
 
 ########################################### ESXi ############################################
@@ -36,13 +36,13 @@ class Device(GenericDevice):
 
   self._sshclient = None
   self._hostname = GL_get_host_name(aIP)
-  self._logfile = SC.esxi['logformat'].format(self._hostname)
-  self.statefile = SC.esxi['shutdownfile'].format(self._hostname) 
+  self._logfile = SC['esxi']['logformat'].format(self._hostname)
+  self.statefile = SC['esxi']['shutdownfile'].format(self._hostname) 
 
  def set_name(self, aHostname):
   self._hostname = aHostname
-  self._logfile = SC.esxi['logformat'].format(aHostname)
-  self.statefile = SC.esxi['shutdownfile'].format(aHostname) 
+  self._logfile = SC['esxi']['logformat'].format(aHostname)
+  self.statefile = SC['esxi']['shutdownfile'].format(aHostname) 
 
  def __enter__(self):
   if self.ssh_connect():
@@ -71,7 +71,7 @@ class Device(GenericDevice):
    try:
     self._sshclient = SSHClient()
     self._sshclient.set_missing_host_key_policy(AutoAddPolicy())
-    self._sshclient.connect(self._ip, username=SC.esxi['username'], password=SC.esxi['password'] )
+    self._sshclient.connect(self._ip, username=SC['esxi']['username'], password=SC['esxi']['password'] )
    except AuthenticationException:
     self.log_msg("DEBUG: Authentication failed when connecting to %s" % self._ip)
     self._sshclient = None
@@ -109,7 +109,7 @@ class Device(GenericDevice):
   from netsnmp import VarList, Varbind, Session
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
-   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    for result in vmnameobjs:
     if result.val == aname:
@@ -122,7 +122,7 @@ class Device(GenericDevice):
   from netsnmp import VarList, Varbind, Session
   try:
    vmstateobj = VarList(Varbind(".1.3.6.1.4.1.6876.2.1.1.6." + str(aid)))
-   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(vmstateobj)
    return vmstateobj[0].val
   except:
@@ -136,7 +136,7 @@ class Device(GenericDevice):
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
    vmstateobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.6'))
-   session = Session(Version = 2, DestHost = self._ip, Community = SC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for indx,result in enumerate(vmnameobjs):
@@ -155,11 +155,11 @@ class Device(GenericDevice):
  #
 
  def create_lock(self,atime):
-  from ..core.extras import pidfile_lock
+  from sdcp.core.extras import pidfile_lock
   pidfile_lock("/tmp/esxi." + self._hostname + ".vm.pid",atime)
 
  def release_lock(self):
-  from ..core.extras import pidfile_release
+  from sdcp.core.extras import pidfile_release
   pidfile_release("/tmp/esxi." + self._hostname + ".vm.pid")
 
 

@@ -4,7 +4,7 @@ HTML5 Ajax Openstack Neutron/Contrail calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Production"
 
 ############################### Neutron ##############################
@@ -43,7 +43,7 @@ def list(aWeb):
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def action(aWeb):
- from ..site.openstack import dict2html
+ from sdcp.site.openstack import dict2html
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
  if not token:
@@ -153,7 +153,7 @@ def action(aWeb):
   for vm in vms:
    print "<OPTION VALUE={0}#{1}>{0}</OPTION>".format(vm['name'],vm['id'])
   print "</SELECT></FORM><DIV CLASS=controls>"
-  print aWeb.button('next', DIV='div_os_info', FRM='frm_fi_assoc_vm', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_interface')
+  print aWeb.button('forward', DIV='div_os_info', FRM='frm_fi_assoc_vm', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_interface')
   print "</DIV>"
 
  elif op == 'fi_associate_choose_interface':
@@ -169,7 +169,7 @@ def action(aWeb):
   print "</SELECT>"
   print "</FORM><DIV CLASS=controls>"
   print aWeb.button('back', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_vm&id=%s'%id, TITLE='Change VM')
-  print aWeb.button('next', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate', FRM='frm_fi_assoc_vmi', TITLE='Commit')
+  print aWeb.button('forward', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate', FRM='frm_fi_assoc_vmi', TITLE='Commit')
   print "</DIV>"
 
  elif op == 'fi_associate':

@@ -1,12 +1,12 @@
-"""ISC DHCP API module. The specific ISC dhcp REST interface to reload and fetch info from ISC dhcp server.
+"""ISCDHCP API module. The specific ISCDHCP REST interface to reload and fetch info from ISCDHCP server.
 Settings: 
  - reload (argument from CLI)
  - active (file storing current leases)          
- - static (file storing configuration for ISC DHCP
+ - static (file storing configuration for ISCDHCP
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -26,10 +26,10 @@ def leases(aDict):
   from socket import inet_aton
   return unpack("!I", inet_aton(addr))[0]
 
- from .. import SettingsContainer as SC
+ from sdcp.SettingsContainer import SC
  result = []
  lease  = {}
- with open(SC.dhcp['active'],'r') as leasefile: 
+ with open(SC['dhcp']['active'],'r') as leasefile: 
   for line in leasefile:
    if line == '\n':
     continue
@@ -60,20 +60,18 @@ def update_server(aDict):
 
  Output:
  """
- from .. import SettingsContainer as SC
- from ..core.rest import call as rest_call
- entries = rest_call("%s?device_list_mac"%SC.system['master'])['data']
+ from sdcp.core.common import SC,rest_call
+ entries = rest_call("%s?device_list_mac"%SC['system']['master'])['data']
  # Create new file
- with open(SC.dhcp['static'],'w') as leasefile:
+ with open(SC['dhcp']['static'],'w') as leasefile:
   for entry in entries:
    leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Subnet {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['subnet_id'],entry['id']))
 
  # Reload
  from subprocess import check_output, CalledProcessError
- commands = SC.dhcp['reload'].split()
  ret = {}
  try:
-  ret['output'] = check_output(commands)
+  ret['output'] = check_output(SC['dhcp']['reload'].split())
  except CalledProcessError, c:
   ret['code'] = c.returncode
   ret['output'] = c.output

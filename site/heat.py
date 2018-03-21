@@ -4,7 +4,7 @@ HTML5 Ajax Openstack HEAT calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Production"
 
 ##################################### Heatstack ##################################
@@ -72,7 +72,7 @@ def enter_parameters(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value)
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('next',DIV='div_content_right', URL='sdcp.cgi?call=heat_action&op=create',FRM='frm_heat_template_parameters', SPIN='true')
+ print aWeb.button('forward',DIV='div_content_right', URL='sdcp.cgi?call=heat_action&op=create',FRM='frm_heat_template_parameters', SPIN='true')
  print "</DIV>"
 
 def add_template(aWeb):
@@ -89,7 +89,7 @@ def add_template(aWeb):
 # Heat Actions
 #
 def action(aWeb):
- from ..site.openstack import dict2html
+ from sdcp.site.openstack import dict2html
  from json import dumps
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')

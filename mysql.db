@@ -76,6 +76,18 @@ CREATE TABLE `events` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
+DROP TABLE IF EXISTS `nodes`;
+CREATE TABLE `nodes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `node` varchar(40) NOT NULL,
+  `url` varchar(40) NOT NULL,
+  `system` tinyint(1) DEFAULT '0',
+  `www` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `node` (`node`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 DROP TABLE IF EXISTS `openstack_services`;
 CREATE TABLE `openstack_services` (
   `id` int(10) unsigned NOT NULL,
@@ -165,17 +177,20 @@ CREATE TABLE `racks` (
 DROP TABLE IF EXISTS `resources`;
 CREATE TABLE `resources` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `private` tinyint(1) unsigned DEFAULT '0',
+  `view` tinyint(3) DEFAULT '0',
+  `user_id` int(10) unsigned DEFAULT NULL,
+  `type` varchar(10) DEFAULT 'bookmark',
+  `node` varchar(40) NOT NULL,
   `title` varchar(25) NOT NULL,
   `href` varchar(200) NOT NULL,
   `icon` varchar(200) DEFAULT NULL,
-  `user_id` int(10) unsigned DEFAULT NULL,
-  `type` varchar(10) DEFAULT 'bookmark',
-  `private` tinyint(1) unsigned DEFAULT '0',
-  `inline` tinyint(1) unsigned DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `user_title` (`title`,`user_id`),
+  UNIQUE KEY `node_user_title_type` (`node`,`user_id`,`title`,`type`),
   KEY `user_id` (`user_id`),
-  CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `node` (`node`),
+  CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `resources_ibfk_2` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
@@ -188,7 +203,8 @@ CREATE TABLE `settings` (
   `value` varchar(100) DEFAULT NULL,
   `description` text,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `parameter` (`node`,`section`,`parameter`)
+  UNIQUE KEY `parameter` (`node`,`section`,`parameter`),
+  CONSTRAINT `settings_ibfk_1` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 

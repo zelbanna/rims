@@ -4,7 +4,7 @@ Generic Device
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__  = "Production"
 __type__    = "generic"
 
@@ -50,7 +50,7 @@ class Device(object):
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
 
  def log_msg(self, aMsg):
-  from ..core.logger import log
+  from sdcp.core.logger import log
   log(aMsg)
 
  def configuration(self,argdict):

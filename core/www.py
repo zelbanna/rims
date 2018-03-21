@@ -4,18 +4,18 @@ Generic WWW/HTMLinterworking module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Production"
 
 #
 # web handling object
-# - cookies are 2x dictionaries which encodes type and TTL
 #
 class Web(object):
 
- def __init__(self,aREST):
+ def __init__(self,aREST,aID):
   from os import getenv
   self._rest_url = aREST
+  self.id = aID
   self.form  = None
   self.cookies = {}
   cookies = getenv("HTTP_COOKIE")
@@ -39,13 +39,13 @@ class Web(object):
 
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None):
-  from rest import call
-  return call("%s?%s"%(self._rest_url, aAPI), aArgs, aTimeout = 60)['data']
+  from common import rest_call
+  return rest_call("%s?%s"%(self._rest_url, aAPI), aArgs, aTimeout = 60)['data']
 
  # Generic REST call with full output
  def rest_full(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
-  from rest import call
-  return call("%s?%s"%(aURL, aAPI) if aAPI else aURL, aArgs, aMethod, aHeader, True, aTimeout)
+  from common import rest_call
+  return rest_call("%s?%s"%(aURL, aAPI) if aAPI else aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
  ############################# Cookies #############################
  #
@@ -85,18 +85,17 @@ class Web(object):
  def server(self):
   # Do something about field storage...
   import cgi
+  from importlib import import_module
   from sys import stdout
   self.form = cgi.FieldStorage()
-  mod_fun   = self.get('call','sdcp_login')
-  (mod,void,fun) = mod_fun.partition('_')
-  stdout.write("X-Z-Mod:%s\r\nX-Z-Fun:%s\r\n"%(mod,fun))
   stdout.write("Content-Type:text/html\r\n\n")
   try:
-   from importlib import import_module
+   mod_fun = self.get('call','system_login')
+   (mod,void,fun) = mod_fun.partition('_')
    module = import_module("sdcp.site." + mod)
    getattr(module,fun,None)(self)
   except Exception, e:
-   stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; sdcp.site.%s<BR>"%mod_fun)
+   stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; sdcp.site.%s_%s<BR>"%(mod,fun))
    try:
     stdout.write("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
     try:

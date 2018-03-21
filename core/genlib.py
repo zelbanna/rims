@@ -4,7 +4,7 @@ Generic Library. For reference, make them "inline"
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 
 ################################# Generics ####################################
@@ -56,3 +56,15 @@ def mac2int(aMAC):
 def ping_os(ip):
  from os import system
  return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
+
+def external_ip():
+ from dns import resolver
+ from socket import gethostbyname
+ try:
+  opendns  = resolver.Resolver()
+  opendns.nameservers = [gethostbyname('resolver1.opendns.com')]
+  res = str(opendns.query("myip.opendns.com",'A').response.answer[0])
+  return res.split()[4]
+ except:
+  return None
+

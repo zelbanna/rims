@@ -4,17 +4,17 @@ HTML5 Ajax Settings calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Production"
 
 #
 #
 def list(aWeb):
- if not aWeb.cookies.get('sdcp'):
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- cookie = aWeb.cookie_unjar('sdcp')
- res = aWeb.rest_call("settings_list",{'node':aWeb['node'],'user_id':cookie['id']})
+ cookie = aWeb.cookie_unjar('system')
+ res = aWeb.rest_call("system_settings_list",{'node':aWeb['node'],'user_id':cookie['id']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Settings</P>"
  print "<DIV CLASS=controls>"
@@ -34,7 +34,7 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
  data = {'id':aWeb.get('id','new'),'node':aWeb['node']}
  if aWeb['op'] == 'update' or aWeb['id'] == 'new':
   data['op']       = aWeb['op']
@@ -43,11 +43,11 @@ def info(aWeb):
   data['parameter'] = aWeb.get('parameter','Not set')
   data['description'] = aWeb.get('description','Not set') 
   if aWeb['op'] == 'update':
-   data = aWeb.rest_call("settings_info",data)['data']
+   data = aWeb.rest_call("system_settings_info",data)['data']
  else:
-  data = aWeb.rest_call("settings_info",data)['data']
+  data = aWeb.rest_call("system_settings_info",data)['data']
  print "<ARTICLE CLASS=info><P>Settings</P>"
- print "<FORM ID=sdcp_settings_info_form>"
+ print "<FORM ID=settings_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<INPUT TYPE=HIDDEN NAME=node VALUE={}>".format(aWeb['node'])
  print "<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>"
@@ -57,7 +57,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT></DIV></DIV>"%(data['description'])
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&op=update', FRM='sdcp_settings_info_form')
+ print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&op=update', FRM='settings_info_form')
  if data['id'] != 'new':
   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=settings_delete&id=%s&node=%s'%(data['id'],aWeb['node']), MSG='Delete settings?')
   print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&id=new&section=%s&node=%s'%(data['section'],aWeb['node']))
@@ -66,7 +66,7 @@ def info(aWeb):
 #
 #
 def view(aWeb):
- settings = aWeb.rest_call("settings_all",{'node':aWeb['node'],'section':aWeb['section']})
+ settings = aWeb.rest_call("system_settings_all",{'node':aWeb['node'],'section':aWeb['section']})
  print "<ARTICLE><P>Settings</P>"
  for section,parameters in settings.iteritems():
   print "<P>%s</P>"%section
@@ -79,9 +79,9 @@ def view(aWeb):
 #
 #
 def delete(aWeb):
- print "<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_call("settings_delete",{'node':aWeb['node'],'id':aWeb['id']}))
+ print "<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_call("system_settings_delete",{'node':aWeb['node'],'id':aWeb['id']}))
 
 #
 #
 def save(aWeb):
- print "<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("tools_settings_save&node=%s"%aWeb['node']))
+ print "<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("system_settings_save&node=%s"%aWeb['node']))

@@ -4,7 +4,7 @@ HTML5 Ajax Device calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __icon__ = 'images/icon-network.png'
 __type__ = 'menuitem'
@@ -17,7 +17,7 @@ def main(aWeb):
 
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=device_list{0}'>Devices</A></LI>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
- print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=bookings_list'>Bookings</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=bookings_list'>Bookings</A></LI>"
  if target == 'vm':
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  else:
@@ -71,11 +71,11 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- if not aWeb.cookies.get('sdcp'):
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
 
- cookie = aWeb.cookie_unjar('sdcp')
+ cookie = aWeb.cookie_unjar('system')
 
  args = aWeb.get_args2dict(['call'])
  args['info'] = ['username','booking','infra']
@@ -256,8 +256,8 @@ def mac_sync(aWeb):
 # new device:
 #
 def new(aWeb):
- cookie = aWeb.cookie_unjar('sdcp')
- if not aWeb.cookies.get('sdcp'):
+ cookie = aWeb.cookie_unjar('system')
+ if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
  ip     = aWeb.get('ip')
@@ -266,7 +266,7 @@ def new(aWeb):
  op     = aWeb['op']
  subnet_id = aWeb['subnet_id']
  if not ip:
-  from ..core import genlib as GL
+  from sdcp.core import genlib as GL
   ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
 
  if op == 'new':

@@ -4,7 +4,7 @@ HTML5 Ajax calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Production"
 
 def manage(aWeb):
@@ -21,7 +21,7 @@ def manage(aWeb):
  print "<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname)
  print "<LI><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=avocent_info&id=%s&ip=%s&hostname=%s'>Info</A></LI>"%(id,ip,hostname)
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=avocent_inventory&id=%s&ip=%s'>Inventory</A></LI>"%(id,ip)
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?%s'></A></LI>"%(aWeb.get_args())
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=avocent_manage&id=%s&ip=%s&hostname=%s'></A></LI>"%(id,ip,hostname)
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left></SECTION>"
@@ -34,7 +34,7 @@ def inventory(aWeb,aIP = None):
  ip = aWeb['ip'] if not aIP else aIP
  data = aWeb.rest_call("avocent_inventory",{'ip':ip})
  print "<ARTICLE>"
- print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='sdcp.cgi?%s'%aWeb.get_args())
+ print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='sdcp.cgi?call=avocent_inventory&ip=%s'%ip)
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th STYLE='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for counter,value in enumerate(data,1):
@@ -45,8 +45,8 @@ def inventory(aWeb,aIP = None):
   if value['state'] == "off":
    print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
   else:
-   print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
-   print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
+   print aWeb.button('stop',DIV=div, SPIN='div_content_left', URL=url.format('off'))
+   print aWeb.button('reload',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
   print "</DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
@@ -60,8 +60,8 @@ def op(aWeb):
  if res['state'] == "off":
   print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
  else:
-  print aWeb.button('shutdown',DIV=div, SPIN='div_content_left', URL=url.format('off'))
-  print aWeb.button('reboot',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
+  print aWeb.button('stop',DIV=div, SPIN='div_content_left', URL=url.format('off'))
+  print aWeb.button('reload',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'))
 
 #
 #

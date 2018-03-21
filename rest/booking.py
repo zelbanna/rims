@@ -1,13 +1,13 @@
 """Booking REST module. Provides basic booking functionality for devices"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 #
 # booking(op, device_id, user_id)
 #
-from ..core.common import DB
+from sdcp.core.common import DB
 
 def update(aDict):
  """Function docstring for update TBD

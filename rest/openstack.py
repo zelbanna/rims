@@ -1,11 +1,11 @@
 """Openstack REST module. Provides all REST functions to interwork with an Openstack controller for different services"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..devices.openstack import Device
-from ..core.common import DB,SC
+from sdcp.devices.openstack import Device
+from sdcp.core.common import DB,SC,rest_call
 #
 #
 def application(aDict):
@@ -19,14 +19,13 @@ def application(aDict):
  Output:
  """
  from datetime import datetime,timedelta
- ret = {'title':"%s 2 Cloud"%(aDict.get('name','iaas')),'choices':[]}
- ret['message']= "Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas'))
+ ret = {'title':"%s 2 Cloud"%(aDict.get('name','iaas')),'choices':[],'message':"Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas')),'portal':'openstack' }
  try:
   if aDict.get('token'):
-   controller = Device(SC.node[aDict['node']],aDict.get('token'))
+   controller = Device(SC['node'][aDict['node']],aDict.get('token'))
   else:
-   controller = Device(SC.node[aDict['node']],None)
-   res = controller.auth({'project':SC.openstack['project'], 'username':SC.openstack['username'],'password':SC.openstack['password']})
+   controller = Device(SC['node'][aDict['node']],None)
+   res = controller.auth({'project':SC['openstack']['project'], 'username':SC['openstack']['username'],'password':SC['openstack']['password']})
   auth = controller.call("5000","v3/projects")
   if auth['code'] == 200:
    projects = []
@@ -36,7 +35,7 @@ def application(aDict):
  except Exception as e:
   ret['exception'] = str(e)
  ret['parameters'] = [{'display':'Username', 'id':'username', 'data':'text'},{'display':'Password', 'id':'password', 'data':'password'}]
- cookie = {'name':aDict.get('name','iaas'),'node':aDict['node']}
+ cookie = {'name':aDict.get('name','iaas'),'node':aDict['node'],'portal':'openstack'}
  if aDict.get('appformix'):
   cookie['appformix'] = aDict.get('appformix')
  ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
@@ -57,15 +56,15 @@ def authenticate(aDict):
 
  Output:
  """
- from ..core.logger import log
+ from sdcp.core.logger import log
  ret = {}
- controller = Device(SC.node[aDict['node']],None)
+ controller = Device(SC['node'][aDict['node']],None)
  res = controller.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
  ret = {'authenticated':res['auth']}
  if res['auth'] == 'OK':
   with DB() as db:
    ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'token':controller.get_token(),'expires':controller.get_cookie_expire()})
-   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node) VALUES('%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],SC.node[aDict['node']]))
+   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node) VALUES('%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],SC['node'][aDict['node']]))
    token_id = db.get_last_id()
    for service in ['heat','nova','neutron','glance']:
     port,url,id = controller.get_service(service,'public')
@@ -114,7 +113,6 @@ def rest(aDict):
  """
  try:
   if aDict.get('href'):
-   from ..core.rest import call as rest_call
    ret = rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
   else:
    with DB() as db:
@@ -162,7 +160,6 @@ def href(aDict):
 
  Output:
  """
- from ..core.rest import call as rest_call
  try: ret = rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
  except Exception as e: ret = e[0]
  return ret
@@ -211,11 +208,10 @@ def heat_templates(aDict):
 
  Output:
  """
- from os import path as ospath
  from os import listdir
  ret = {'result':'OK','templates':[]}
  try:
-  for file in listdir(ospath.abspath(SC.openstack['heat_directory'])):
+  for file in listdir(ospath.abspath(SC['openstack']['heat_directory'])):
    name,_,suffix = file.partition('.')
    if suffix == 'tmpl.json':
     ret['templates'].append(name)
@@ -233,12 +229,10 @@ def heat_content(aDict):
   - template (required)
  Output:
  """
- from os import path as ospath
- from json import load
  ret = {'result':'OK','template':None}
  try:
-  with open(ospath.abspath(ospath.join(SC.openstack['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
-   ret['template'] = load(f)
+  with open(ospath.abspath(ospath.join(SC['openstack']['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
+   ret['template'] = loads(f.read())
  except Exception as e:
   ret['info'] = str(e)
   ret['result'] = 'NOT_OK'
@@ -262,13 +256,11 @@ def heat_instantiate(aDict):
 
  Output:
  """
- from os import path as ospath
- from json import load
  ret = {}
  args = {}
  try:
-  with open(ospath.abspath(ospath.join(SC.openstack['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
-   args = load(f)
+  with open(ospath.abspath(ospath.join(SC['openstack']['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
+   args = loads(f.read())
   args['stack_name'] = aDict['name']
   for key,value in aDict['parameters'].iteritems():
    args['parameters'][key] = value

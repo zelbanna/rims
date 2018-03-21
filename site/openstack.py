@@ -5,7 +5,7 @@ HTML5 Ajax Openstack Generic calls module
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Production"
 
 ############################################## Openstack ###############################################
@@ -36,7 +36,7 @@ def portal(aWeb):
  print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
  print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
  print "<LI><A CLASS='z-op reload' OP=redirect URL='sdcp.cgi?call=openstack_portal'></A></LI>"
- print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=sdcp_login&application=openstack&node={}&name={}&appformix={}'>Log out</A></LI>".format(cookie['node'],cookie.get('name'),cookie.get('appformix'))
+ print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='sdcp.cgi?call=system_login&application=openstack&node={}&name={}&appformix={}'>Log out</A></LI>".format(cookie['node'],cookie.get('name'),cookie.get('appformix'))
  print "<LI CLASS='dropdown right'><A>Debug</A><DIV CLASS=dropdown-content>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_info>Info</A>"
  print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"

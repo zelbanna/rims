@@ -9,7 +9,7 @@ Exports:
 
 """  
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 
 def _print_graph_link(asource, aX = "399", aY = "224"):
@@ -33,77 +33,3 @@ def widget_rows(asources):
  for src in asources:         
   _print_graph_link(src)      
  print "</DIV>"
-
-#############################################################################
-
-#
-# Writes plugin info for devices found with DeviceHandler
-#
-def discover():
- from ..core.logger import log
- from ..core.common import DB
- from os import chmod
- from time import time
- from threading import Lock, Thread, BoundedSemaphore
-
- def _detect(aentry, alock, asema,aplugfile):
-  def GL_ping_os(ip):
-   from os import system
-   return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
-
-  if not GL_ping_os(aentry['ip']):
-   asema.release()
-   return False
-
-  activeinterfaces = []
-  type = aentry['type_name']
-  fqdn = aentry['hostname'] + "." + aentry['domain']
-  try:
-   if type in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-    from ..devices.junos import Junos
-    if not type == 'wlc':
-     with Junos(aentry['ip']) as jdev:
-      activeinterfaces = jdev.get_up_interfaces()
-    alock.acquire()
-    with open(aplugfile, 'a') as graphfile:
-     graphfile.write('ln -s /usr/local/sbin/plugins/snmp__{0} /etc/munin/plugins/snmp_{1}_{0}\n'.format(type,fqdn))
-     graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')
-     graphfile.write('ln -s /usr/share/munin/plugins/snmp__users  /etc/munin/plugins/snmp_' + fqdn + '_users\n')
-     for ifd in activeinterfaces:
-      graphfile.write('ln -s /usr/share/munin/plugins/snmp__if_    /etc/munin/plugins/snmp_' + fqdn + '_if_'+ ifd['SNMP'] +'\n')
-    alock.release()
-   elif type == "esxi":
-    alock.acquire()
-    with open(aplugfile, 'a') as graphfile:
-     graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + fqdn + '_uptime\n')              
-     graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + fqdn + '_esxi\n')
-    alock.release()
-  except Exception as err:
-   from ..core.logger import log
-   log("Graph detect - error: [{}]".format(str(err)))
-
-  asema.release()
-  return True
-
- start_time = int(time())
- with DB() as db:
-  db.do("SELECT value FROM settings WHERE parameter = 'plugins'")
-  plug_file = db.get_val('value')
-  db.do("SELECT devicetypes.name, hostname, domains.name AS domain, INET_NTOA(ip) as ip, INET_NTOA(graph_proxy) as handler FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id INNER JOIN domains ON devices.a_dom_id = domains.id WHERE graph_update = 1 AND model <> 'unknown'")
-  devices = db.get_rows()
- try:
-  flock = Lock()
-  sema  = BoundedSemaphore(10)
-  with open(plug_file, 'w') as f:
-   f.write("#!/bin/bash\n")
-  chmod(plug_file, 0o777)
-  for item in devices:
-   sema.acquire()
-   t = Thread(target = _detect, args=[item, flock, sema, plug_file])
-   t.start()
-  for i in range(10):
-   sema.acquire()       
- except Exception as err:
-  log("Munin: failure in processing Device entries: [{}]".format(str(err)))
- log("Munin: Total time spent: {} seconds".format(int(time()) - start_time))
- return True

@@ -1,10 +1,10 @@
 """IPAM API module. Provides subnet management for devices"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..core.common import DB
+from sdcp.core.common import DB
 
 #
 #
@@ -94,7 +94,6 @@ def update(aDict):
  ret = {}
  id = aDict.pop('id',None)
  args = aDict
- args['subnet']= GL_ip2int(args['subnet'])
 
  # Check gateway
  low   = GL_ip2int(args['subnet'])
@@ -107,10 +106,11 @@ def update(aDict):
   gwint = low + 1
   ret['gateway'] = GL_int2ip(gwint)
   ret['info'] = "illegal gateway"
-
+ args['gateway'] = str(gwint)
+ args['subnet']  = str(low)
  with DB() as db:
   if id == 'new':
-   ret['update'] = db.do("INSERT INTO subnets(subnet,mask,gateway,description) VALUES ('{}',{},{},'{}') ON DUPLICATE KEY UPDATE id = id".format(args['subnet'],args['mask'],gwint,args['description']))
+   ret['update'] = db.insert_dict('subnets',args,'ON DUPLICATE KEY UPDATE id = id')
    ret['id'] = db.get_last_id() if ret['update'] > 0 else "new"
   else:
    ret['update'] = db.update_dict('subnets',args,'id=%s'%id)

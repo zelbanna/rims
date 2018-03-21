@@ -4,7 +4,7 @@ HTML5 Ajax DNS calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Production"
 
 ############################################ Domains ###########################################
@@ -15,10 +15,11 @@ def list(aWeb):
  print "<ARTICLE><P>Domains</P>"
  print "<DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=dns_list')
+ print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?call=dns_load_cache',TITLE='ReSync DNS cache',SPIN='true')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=new',TITLE='Add domain')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=dns_consistency',TITLE='Check Backend Consistency',SPIN='true')
  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=dns_dedup',TITLE='Find Duplicates',SPIN='true')
- print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?call=dns_load_cache',TITLE='ReSync DNS cache',SPIN='true')
+ print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?call=dns_top', SPIN='true')
  print "</DIV>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
@@ -73,7 +74,7 @@ def domain_transfer(aWeb):
  print "</SELECT>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('back',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_info&id=%s'%(aWeb['id']))
- print aWeb.button('next',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete',FRM='dns_transfer')
+ print aWeb.button('forward',DIV='div_content_right',URL='sdcp.cgi?call=dns_domain_delete',FRM='dns_transfer')
  print "</DIV></ARTICLE>"
 
 #

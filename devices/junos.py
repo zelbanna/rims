@@ -4,7 +4,7 @@ Junos Router Base Class
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__  = "Production"
 __type__    = "network"
 
@@ -24,8 +24,8 @@ class Junos(GenericDevice):
   GenericDevice.__init__(self,aIP,aID)
   from jnpr.junos import Device as JunosDevice
   from jnpr.junos.utils.config import Config
-  from .. import SettingsContainer as SC
-  self._router = JunosDevice(self._ip, user=SC.netconf['username'], password=SC.netconf['password'], normalize=True)
+  from sdcp.SettingsContainer import SC
+  self._router = JunosDevice(self._ip, user=SC['netconf']['username'], password=SC['netconf']['password'], normalize=True)
   self._config = Config(self._router)
   self._model = ""
   self._version = ""
@@ -106,17 +106,17 @@ class Junos(GenericDevice):
   return ret
 
  def configuration(self,argdict):
-  from .. import SettingsContainer as SC
+  from sdcp.SettingsContainer import SC
   base  = "set groups default_system"
   ret = ["set system host-name %s"%(argdict['hostname'])]
-  if SC.netconf['username'] == 'root':
-   ret.append("set system root-authentication encrypted-password \"%s\""%(SC.netconf['encrypted']))
+  if SC['netconf']['username'] == 'root':
+   ret.append("set system root-authentication encrypted-password \"%s\""%(SC['netconf']['encrypted']))
   else:
-   ret.append('set system login user %s class super-user'%(SC.netconf['username']))
-   ret.append('set system login user %s authentication encrypted-password "%s"'%(SC.netconf['username'],SC.netconf['encrypted']))
+   ret.append('set system login user %s class super-user'%(SC['netconf']['username']))
+   ret.append('set system login user %s authentication encrypted-password "%s"'%(SC['netconf']['username'],SC['netconf']['encrypted']))
   ret.extend(['%s system domain-name %s'%(base,argdict['domain']),
               '%s system domain-search %s'%(base,argdict['domain']),
-              '%s system name-server %s'%(base,SC.netconf['dnssrv']),
+              '%s system name-server %s'%(base,SC['netconf']['dnssrv']),
               '%s system services ssh root-login allow'%base,
               '%s system services netconf ssh'%base,
               '%s system syslog user * any emergency'%base,
@@ -124,12 +124,12 @@ class Junos(GenericDevice):
               '%s system syslog file messages authorization info'%base,
               '%s system syslog file interactive-commands interactive-commands any'%base,
               '%s system archival configuration transfer-on-commit'%base,
-              '%s system archival configuration archive-sites ftp://%s'%(base,SC.netconf['anonftp']),
+              '%s system archival configuration archive-sites ftp://%s'%(base,SC['netconf']['anonftp']),
               '%s system commit persist-groups-inheritance'%base,
-              '%s system ntp server %s'%(base,SC.netconf['ntpsrv']),
+              '%s system ntp server %s'%(base,SC['netconf']['ntpsrv']),
               '%s routing-options static route 0.0.0.0/0 next-hop %s'%(base,argdict['gateway']),
               '%s routing-options static route 0.0.0.0/0 no-readvertise'%base,
-              '%s snmp community %s clients %s/%s'%(base,SC.snmp['read_community'],argdict['subnet'],argdict['mask']),
+              '%s snmp community %s clients %s/%s'%(base,SC['snmp']['read_community'],argdict['subnet'],argdict['mask']),
               '%s protocols lldp port-id-subtype interface-name'%base,
               '%s protocols lldp interface all'%base,
               '%s class-of-service host-outbound-traffic forwarding-class network-control'%base,

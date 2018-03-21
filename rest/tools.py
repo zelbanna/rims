@@ -1,107 +1,22 @@
-"""SDCP tools REST module. Provides various tools"""
+"""SDCP tools REST module. Provides various tools that are not bound to a node"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
+__node__ = 'any'
 
-############################################ System Tools ############################################
 #
 #
-def system(aDict):
- """Function docstring for system TBD
+def debug(aDict):
+ """Function docstring for debug TBD
 
  Args:
-  - user_id (required)
- 
+
  Output:
- """
- from ..core.common import DB,SC
- from resources import list as resource_list
- ret = {}
- with DB() as db:
-  ret['nodes'] = [{'parameter':node[0],'value':node[1]} for node in SC.node.items() if node[0] in SC.generic['nodes'].split(',')]
-  db.do("SELECT id, icon, title, href, type, inline, user_id FROM resources WHERE type = 'monitor' AND (user_id = %s OR private = 0) ORDER BY type,title"%ret.get('user_id',1))
-  ret['monitors'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
- ret['dns_node'] = SC.dns['node']
- ret['dns_type'] = SC.dns['type']
- ret['dhcp_node'] = SC.dhcp['node']
- ret['dhcp_type'] = SC.dhcp['type']
- ret['id'] = SC.system['id']
- return ret
-
-#
-#
-def settings_fetch(aDict):
- """Function docstring for settings_fetch TBD
-
- Args:
-  - node (required)
- 
- Output:
- """
- from ..core.common import DB
- ret = {}
- with DB() as db:
-  db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aDict['node'])
-  data = db.get_rows()
- for setting in data:
-  section = setting.pop('section')
-  if not ret.get(section):
-   ret[section] = {} 
-  ret[section][setting['parameter']] = setting['value']
- return ret
-
-#
-#
-def settings_save(aDict):
- """Function docstring for settings_save TBD
-
- Args:
- 
- Output:
- """
- from json import load,dumps
- from os import path as ospath
- from ..core.common import DB,SC
- ret = {'file':SC.system['config_file']}
- try:
-  settings = {}
-  with open(SC.system['config_file']) as sfile:
-   temp = load(sfile)
-  for section,content in temp.iteritems():
-   for key,params in content.iteritems():
-    if not settings.get(section):
-     settings[section] = {}
-    settings[section][key] = params['value'] 
-  settings['system']['config_file'] = ret['file']
-
-  if SC.system['id'] == 'master':
-   with DB() as db:
-    db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
-    data = db.get_rows()
-   for setting in data:
-    section = setting.pop('section') 
-    if not settings.get(section): 
-     settings[section] = {} 
-    settings[section][setting['parameter']] = setting['value']
-  else:
-   from ..core.rest import call as rest_call
-   try: master = rest_call("%s?tools_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
-   except: pass
-   else:
-    for section,content in master.iteritems():
-     if settings.get(section): settings[section].update(content)
-     else: settings[section] = content
-
-  container = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','SettingsContainer.py'))
-  with open(container,'w') as f:
-   for section,content in settings.iteritems():
-    f.write("%s=%s\n"%(section,dumps(content)))
-  ret['result'] = 'OK'
- except Exception,e:
-  ret['result'] = 'NOT_OK'
-  ret['error'] = str(e)
- return ret
+ """ 
+ print "Set-Cookie: debug=true; Path=/"
+ from sys import path as syspath 
+ return { 'globals':[x for x in globals().keys() if not x[0:2] == '__'], 'path':syspath }
 
 ############################################ REST tools ############################################
 #
@@ -114,7 +29,6 @@ def rest_analyze(aDict):
 
  Output:
  """
- from os import path as ospath
  restdir = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','rest'))
  ret = {'file':aDict['file'],'functions':[],'global':[]}
  data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[],'arg':None,'imports':[]}
@@ -177,7 +91,6 @@ def rest_explore(aDict):
  Output:
  """
  from types import FunctionType as function
- from importlib import import_module
  def __analyze(aFile):
   data = {'api':aFile, 'functions':[]}
   try:
@@ -190,7 +103,7 @@ def rest_explore(aDict):
  if aDict.get('api'):
   ret['data'].append(__analyze(aDict.get('api')))
  else:
-  from os import path as ospath, listdir
+  from os import listdir
   restdir = ospath.abspath(ospath.join(ospath.dirname(__file__)))
   for restfile in listdir(restdir):
    if restfile[-3:] == '.py':
@@ -208,24 +121,11 @@ def rest_information(aDict):
 
  Output:
  """ 
- from importlib import import_module
  mod = import_module("sdcp.rest.%s"%(aDict['api']))
  fun = getattr(mod,aDict['function'],None)
  return {'api':aDict['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}
 
-#
-#
-def rest_debug(aDict):
- """Function docstring for rest_debug TBD
-
- Args:
-
- Output:
- """ 
- print "Set-Cookie: debug=true; Path=/"
- return { 'globals':str(globals().keys()), 'locals':str(locals().keys()) }
-
-############################################ Monitor ##############################################
+############################################# Logs ###############################################
 
 #
 #
@@ -236,16 +136,16 @@ def logs_clear(aDict):
 
  Output:
  """
- from .. import SettingsContainer as SC
- from ..core.logger import log
- ret = {}
- for name,file in SC.logs.iteritems():
+ from sdcp.SettingsContainer import SC
+ from sdcp.core.logger import log
+ ret = {'node':SC['system']['id'],'file':{}}
+ for name,file in SC['logs'].iteritems():
   try:
    open(file,'w').close()
-   ret[name] = 'CLEARED'
+   ret['file'][name] = 'CLEARED'
    log("Emptied log [{}]".format(name))
   except Exception as err:
-   ret[name] = 'ERROR: %s'%(str(err))
+   ret['file'][name] = 'ERROR: %s'%(str(err))
  return ret
 
 #
@@ -258,10 +158,10 @@ def logs_get(aDict):
 
  Output:
  """
- from .. import SettingsContainer as SC
+ from sdcp.SettingsContainer import SC
  ret = {}
  count = int(aDict.get('count',15))
- for name,file in SC.logs.iteritems():
+ for name,file in SC['logs'].iteritems():
   lines = ["\r" for i in range(count)]
   pos = 0
   try:
@@ -273,3 +173,67 @@ def logs_get(aDict):
   except Exception as err:
    ret[name] = ['ERROR: %s'%(str(err))]
  return ret
+
+########################################### FILE ############################################
+
+def files_list(aDict):
+ """Function docstring for files_list. List files in directory pinpointed by setting (in settings for the node)
+
+ Args:
+  - setting (required)                         
+
+ Output: List of files in 'files'
+ """
+ from os import listdir
+ from  sdcp.SettingsContainer import SC
+ dir = SC['files'][aDict['setting']] if not aDict['setting'] == 'images' else 'images'
+ ret = {'result':'OK','directory':dir, 'files':[]}
+ try:
+  for file in listdir(ospath.abspath(ret['directory'])):
+   ret['files'].append(file)
+ except Exception as e:
+  ret['info'] = str(e)
+  ret['result'] = 'NOT_OK'
+ ret['files'].sort()
+ return ret
+
+######################################### Controls ########################################
+#
+#
+def service_info(aDict):
+ """Function docstring for service_info. TBD
+
+ Args:
+  - service  (required)
+  - operation (optional): 'start','stop'
+
+ Output:
+ """
+ from subprocess import check_output, CalledProcessError
+ ret = {'state':None}
+ if aDict.get('operation'):
+  from time import sleep
+  try:
+   command = "sudo /etc/init.d/%s %s"%(aDict['service'],aDict['operation'])
+   ret['operation'] = check_output(command.split()).strip()
+  except CalledProcessError, c:
+   ret['operation'] = c.output.strip()
+  else:
+   sleep(2)
+
+ try:
+  command = "sudo /etc/init.d/%s status"%aDict['service']
+  output = check_output(command.split())
+  ret['code'] = 0
+ except CalledProcessError, c:
+  output = c.output
+  ret['code'] = c.returncode
+ for line in output.split('\n'):
+  line = line.lstrip()
+  if (line.lstrip())[0:7] == 'Active:':
+   state = line[7:].split()
+   ret['state'] = state[0]
+   ret['info'] = state[1][1:-1]
+   break
+ return ret
+

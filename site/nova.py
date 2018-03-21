@@ -5,13 +5,13 @@ HTML5 Ajax Openstack NOVA calls module
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Production"
 
 ################################# Nova ###############################
 #
 def list(aWeb):
- from ..core.extras import get_quote
+ from sdcp.core.extras import get_quote
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
  if not token:
@@ -37,8 +37,8 @@ def list(aWeb):
   print aWeb.button('delete', DIV='div_content_right', URL=actionurl.format('remove'), MSG='Are you sure you want to delete VM?', SPIN='true')
   if not server['OS-EXT-STS:task_state']:
    if   server['status'] == 'ACTIVE':
-    print aWeb.button('shutdown', DIV='div_content_right', URL=actionurl.format('stop'), SPIN='true', TITLE='Stop VM')
-    print aWeb.button('reboot', DIV='div_content_right', URL=actionurl.format('reboot'), SPIN='true', TITLE='Reboot')
+    print aWeb.button('stop', DIV='div_content_right', URL=actionurl.format('stop'), SPIN='true', TITLE='Stop VM')
+    print aWeb.button('reload', DIV='div_content_right', URL=actionurl.format('reboot'), SPIN='true', TITLE='Reboot')
    elif server['status'] == 'SHUTOFF':
     print aWeb.button('start', DIV='div_content_right', URL=actionurl.format('start'), SPIN='true', TITLE='Start VM')
   else:
@@ -85,7 +85,7 @@ def select_parameters(aWeb):
 ######################################## Actions ########################################
 #
 def action(aWeb):
- from ..site.openstack import dict2html
+ from sdcp.site.openstack import dict2html
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
  if not token:
@@ -95,7 +95,7 @@ def action(aWeb):
  op   = aWeb.get('op','info')
 
  if   op == 'info':
-  from ..core.extras import get_quote
+  from sdcp.core.extras import get_quote
   args['call'] = "servers/%s"%aWeb['id']
   server = aWeb.rest_call("openstack_call",args)['data']['server']
   qserver = get_quote(server['name'])

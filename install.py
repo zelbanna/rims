@@ -6,10 +6,11 @@ Installs System
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 
 from sys import argv, stdout, path as syspath
+from pip import main as pipmain
 from json import load,dump,dumps
 syspath.insert(1, '../')
 if len(argv) < 2:
@@ -35,7 +36,7 @@ for section,content in temp.iteritems():
    settings[section] = {}
   settings[section][key] = params['value'] 
 settings['system']['config_file'] = settingsfilename
-modes = settings['system']['mode'].split(',')
+modes = { mode:'1' for mode in settings['system']['mode'].split(',') }
 res['modes'] = modes
 
 ############################################### ALL #################################################
@@ -57,10 +58,10 @@ with open(logger,'w') as f:
 #
 destinations = []
 
-if 'rest' in modes:
+if modes.get('rest'):
  destinations.append('rest')
 
-if 'front' in modes:
+if modes.get('front'):
  from shutil import copy
  destinations.append('index')
  destinations.append('sdcp')
@@ -83,31 +84,36 @@ for dest in destinations:
    wr("server('%s')\n"%(settings['system']['id']))
   else:
    wr("from sdcp.core.www import Web\n")
-   wr("cgi = Web('%s')\n"%settings['system']['master'])
+   wr("cgi = Web('%s','%s')\n"%(settings['system']['rest'], settings['system']['id']))
    wr("cgi.server()\n")
  chmod(site,0755)
  res["cgi_{}".format(dest)] = 'OK'
+
+#
+# Modules
+#
+try: import dns
+except ImportError:
+ res['dns'] = 'install'
+ pipmain(["install", "-q","dns"])
+try: import git
+except ImportError:
+ res['gitpython'] = 'install'
+ pipmain(["install","-q","gitpython"])
+
 
 ############################################ MASTER ###########################################
 #
 # Install necessary modules
 #
-if 'master' in modes:
+if settings['system']['id'] == 'master':
  from importlib import import_module
- from pip import main as pipmain
 
- #
- # Modules
- #
  try: import pymysql
  except ImportError:
   res['pymysql'] = 'install'
   pipmain(["install", "-q","pymysql"])
- try: import git
- except ImportError:
-  res['gitpython'] = 'install'
-  pipmain(["install","-q","gitpython"])
- if 'front' in modes:
+ if modes.get('front'):
   try: import eralchemy
   except ImportError:
    res['gitpython'] = 'install'
@@ -158,19 +164,23 @@ if 'master' in modes:
   db.connect()
 
   res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
-
+  res['register'] = db.do("INSERT INTO nodes(node,url,system,www) VALUES('{0}','{1}',1,{2}) ON DUPLICATE KEY UPDATE system = 1, www = {2}, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['rest'],modes.get('front','0')))
+  res['node_id']= db.get_last_id()
   sql ="INSERT INTO devicetypes(name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
   for type in device_types:
    try:    res['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
    except Exception as err: res['device_errors'] = str(err)
 
-  sql ="INSERT INTO resources(title,href,icon,type,user_id,inline) VALUES ('{}','{}','{}','{}',1,1) ON DUPLICATE KEY UPDATE id = id"
+  sql ="INSERT INTO resources(node,title,href,icon,type,user_id,inline) VALUES ('%s','{}','{}','{}','{}',1,1) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
   for item in resources:
    try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon'],item['type']))
    except: res['resources_errors'] = True
 
   db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
   data = db.get_rows()
+  db.do("SELECT 'node' AS section, node AS parameter, url AS value FROM nodes") 
+  data.extend(db.get_rows())
+
   for setting in data:
    section = setting.pop('section')
    if not settings.get(section):
@@ -200,15 +210,17 @@ if 'master' in modes:
   stdout.write("GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';\n"%(settings['system']['db_name'],settings['system']['db_user']))
   stdout.write("FLUSH PRIVILEGES;\n\n")
   stdout.flush()
-  raise Exception("cannot connect to database (%s)"%str(e))
+  raise Exception("DB past error (%s)"%str(e))
 
 else:
- ############################################ NON-MASTER ##############################################
+ ########################################## NON-MASTER REST ########################################
  #
  # Fetch and update settings from central repo
  #
- from sdcp.core.rest import call as rest_call
- try: master = rest_call("%s?tools_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
+ from sdcp.core.common import rest_call
+ try: res['register'] = rest_call("%s?system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':modes.get('rest','0'),'www':modes.get('front','0')})['data']
+ except Exception,e: res['register'] = str(e)
+ try: master   = rest_call("%s?system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
  except: pass
  else:
   for section,content in master.iteritems():
@@ -222,8 +234,7 @@ else:
 container = ospath.abspath(ospath.join(ospath.dirname(__file__),'SettingsContainer.py'))
 try:
  with open(container,'w') as f:
-  for section,content in settings.iteritems():
-   f.write("%s=%s\n"%(section,dumps(content)))
+  f.write("SC=%s\n"%dumps(settings))
   res['container'] = 'OK'
 except Exception,e:
  res['container'] = str(e)

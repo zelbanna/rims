@@ -4,7 +4,7 @@ HTML5 Ajax Appformix calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__= "Beta"
 
 ##################################### Report ##################################
@@ -47,7 +47,7 @@ def info(aWeb):
  cookie_openstack = aWeb.cookie_unjar('openstack')
  cookie_appformix = aWeb.cookie_unjar('appformix')
  reports = aWeb.rest_call("appformix_project_reports",{'node':cookie_appformix['node'],'token':cookie_appformix['token'],'report':aWeb['report']})
- from ..site.openstack import dict2html
+ from sdcp.site.openstack import dict2html
  for project in reports['Data']:
   if project['Project_Id'] == cookie_openstack['project_id']:
    print "<ARTICLE STYLE='overflow:auto;'>"

@@ -1,10 +1,10 @@
 """Racks REST module. Rack infrastructure management, info, listing etc (of PDUs, console servers and devices)"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..core.common import DB,SC
+from sdcp.core.common import DB,SC
 
 #
 #
@@ -95,7 +95,7 @@ def update(aDict):
  args = aDict
  with DB() as db:
   if id == 'new':
-   ret['update'] = db.do("INSERT into racks (name, size, pdu_1, pdu_2, console, image_url) VALUES ('%s',%s,%s,%s,%s,'%s')"%(args['name'],args['size'],args['pdu_1'],args['pdu_2'],args['console'],args['image_url']))
+   ret['update'] = db.insert_dict('racks',args)
    ret['id']   = db.get_last_id() 
   else:
    ret['update'] = db.update_dict('racks',args,'id=%s'%id)
@@ -156,6 +156,6 @@ def infra(aDict):
 
  if aDict.get('images',False):
   from os import listdir, path
-  directory = listdir(path.join(SC.generic['docroot'],"images")) if not SC.generic.get('rack_image_directory') else SC.generic['rack_image_directory']
+  directory = listdir(path.join(SC['generic']['docroot'],"images")) if not SC['generic'].get('rack_image_directory') else SC['generic']['rack_image_directory']
   ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
  return ret

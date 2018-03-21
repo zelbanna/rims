@@ -1,11 +1,10 @@
 """Vera API module. Provides nested REST management for a VERA z-wave controller through a node"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from .. import SettingsContainer as SC
-from ..core.rest import call as rest_call
+from sdcp.core.common import SC,rest_call
 #
 #
 def node_to_ui(aDict):
@@ -16,7 +15,7 @@ def node_to_ui(aDict):
 
  Output:
  """
- node = SC.node[aDict.get('node','vera')]
+ node = SC['node'][aDict.get('node','vera')]
  parts = node.partition('//')
  host = "%s//%s/cmh/"%(parts[0],(parts[2].split('/')[0]).split(':')[0])
  return {'ui':host }
@@ -32,7 +31,7 @@ def status(aDict):
  Output:
  """
  try:
-  node = SC.node[aDict['node']]
+  node = SC['node'][aDict['node']]
   ret = rest_call("%s?id=sdata"%node)['data']
  except Exception,e:
   ret = e[0] 
@@ -50,7 +49,7 @@ def infra(aDict):
  """
  try:
   ret = {}
-  node = SC.node[aDict['node']]
+  node = SC['node'][aDict['node']]
   info = rest_call("%s?id=sdata"%node)['data']
   ret['sections'] = { d['id']: d['name'] for d in info['sections'] }
   ret['rooms']    = { d['id']: d for d in info['rooms'] }
@@ -75,7 +74,7 @@ def scene(aDict):
  """                
  try:      
   ret = {}
-  node = SC.node[aDict['node']]
+  node = SC['node'][aDict['node']]
   if aDict.get('op'):
    ret['op'] = "RunScene" if aDict.get('op')== "run" else "SceneOff"
    res = rest_call("%s?id=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(node,ret['op'],aDict['scene']))
@@ -106,7 +105,7 @@ def devices(aDict):
  """
  try:
   ret = {}
-  node = SC.node[aDict['node']]
+  node = SC['node'][aDict['node']]
   info = rest_call("%s?id=sdata"%node)['data']
   ret['devices'] = info['devices']
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
@@ -126,9 +125,10 @@ def device_info(aDict):
 
  Output:
  """
+ ret = {}
  try:
-  node = SC.node[aDict['node']]
-  info = rest_call("%s?id=status&DeviceNum=%s"%(node,aDict['device']))['data']['Device_Num_%s'%aDict['device']]
+  node = SC['node'][aDict['node']]
+  ret['states'] = rest_call("%s?id=status&DeviceNum=%s"%(node,aDict['device']))['data']['Device_Num_%s'%aDict['device']]['states']
  except Exception,e:
   ret = e[0] 
  return ret

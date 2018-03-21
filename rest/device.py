@@ -1,10 +1,10 @@
 """Device API module. This is the main device interaction module for device info, update, listing,discovery etc"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.07GA"
+__version__ = "18.03.16"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from ..core.common import DB,SC
+from sdcp.core.common import DB,SC
 
 #
 #
@@ -97,7 +97,7 @@ def info(aDict):
    if not ret['info']['functions']:
     ret['info']['functions'] = ""
    if 'username' in info:
-    ret['username'] = SC.netconf['username']
+    ret['username'] = SC['netconf']['username']
    if 'booking' in info:
     ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id']))
     if ret['booked'] > 0:
@@ -115,12 +115,12 @@ def info(aDict):
      db.do("SELECT INET_NTOA(ip) AS ip, hostname, name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
      pdu_info = db.get_row()
      args_pem = {'ip':pdu_info['ip'],'unit':ret['info']['pem%i_pdu_unit'%(pem)],'slot':ret['info']['pem%i_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem)}
-     if pdu_info['name'] == 'avocent':
-      try:
-       from avocent import update as pdu_update
-       ret['result']['pem%i'%pem] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem))
-      except Exception as err:
-       ret['result']['pem%i'%pem] = str(err)
+     try:
+      module = import_module("sdcp.rest.%s"%pdu_info['name'])
+      pdu_update = getattr(module,'pdu_update',None)
+      ret['result']['pem%i'%pem] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem))
+     except Exception as err:
+      ret['result']['pem%i'%pem] = str(err)
  return ret
 
 #
@@ -228,7 +228,7 @@ def new(aDict):
   - target is 'rack_id' or nothing
   - arg is rack_id
  """
- from ..core.logger import log
+ from sdcp.core.logger import log
  log("device_new({})".format(aDict))
  def GL_ip2int(addr):
   from struct import unpack
@@ -252,10 +252,11 @@ def new(aDict):
    ret['xist'] = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE subnet_id = {} AND (ip = {} OR hostname = '{}')".format(subnet_id,ipint,aDict['hostname']))
    if ret['xist'] == 0:
     mac = GL_mac2int(aDict.get('mac',0))
-    ret['insert'] = db.do("INSERT INTO devices (ip,vm,mac,a_dom_id,subnet_id,hostname,snmp,model) VALUES({},{},{},{},{},'{}','unknown','unknown')".format(ipint,aDict.get('vm','0'),mac,aDict['a_dom_id'],subnet_id,aDict['hostname']))
+    args = {'ip':str(ipint), 'vm':str(aDict.get('vm','0')), 'mac':str(mac), 'a_dom_id':aDict['a_dom_id'], 'subnet_id':str(subnet_id), 'hostname':aDict['hostname'], 'snmp':'unknown', 'model':'unknown'}
+    ret['insert'] = db.insert_dict('devices',args)
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
-     db.do("INSERT INTO rackinfo SET device_id = {}, rack_id = {} ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1".format(ret['id'],aDict.get('arg')))
+     db.do("INSERT INTO rackinfo SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict.get('arg')))
      ret['rack'] = aDict.get('arg')
      ret['info'] = "rack"
    else:
@@ -273,7 +274,7 @@ def delete(aDict):
 
  Output:
  """
- from ..core.logger import log
+ from sdcp.core.logger import log
  log("device_remove({})".format(aDict))
  with DB() as db:
   existing = db.do("SELECT hostname, mac, a_id, ptr_id, devicetypes.* FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = {}".format(aDict['id']))
@@ -317,7 +318,7 @@ def to_node(aDict):
   res = db.do("SELECT INET_NTOA(ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id'])
   dev = db.get_row()
   for test in ['ip','fqdn','hostname']:
-   if db.do("SELECT id,parameter,value FROM settings WHERE section = 'node' AND value LIKE '%{}%'".format(dev[test])) > 0:
+   if db.do("SELECT node FROM nodes WHERE url LIKE '%{}%'".format(dev[test])) > 0:
     ret['node']  = db.get_val('parameter')
     ret['found'] = test
     break
@@ -337,7 +338,6 @@ def function(aDict):
  Output:
  """
  ret = {}
- from importlib import import_module
  try:
   module = import_module("sdcp.devices.%s"%(aDict['type']))
   dev = getattr(module,'Device',lambda x: None)(aDict['ip'])
@@ -358,7 +358,6 @@ def configuration_template(aDict):
 
  Output:
  """
- from importlib import import_module
  ret = {}
  with DB() as db:
   db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, mask, INET_NTOA(gateway) AS gateway, INET_NTOA(subnet) AS subnet, devicetypes.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = '%s'"%aDict['id'])
@@ -463,7 +462,7 @@ def detect(aDict):
   # .1.3.6.1.2.1.1.1.0 : Device info
   # .1.3.6.1.2.1.1.5.0 : Device name
   devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'))
-  session = Session(Version = 2, DestHost = aDict['ip'], Community = SC.snmp['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+  session = Session(Version = 2, DestHost = aDict['ip'], Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
   session.get(devobjs)
  except:
   pass
@@ -582,7 +581,7 @@ def graph_info(aDict):
    if GL_ping_os(ret['ip']):
     try:
      if ret['type_name'] in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-      from ..devices.junos import Junos
+      from sdcp.devices.junos import Junos
       activeinterfaces = []
       if not ret['type_name'] == 'wlc':
        with Junos(ret['ip']) as jdev:
