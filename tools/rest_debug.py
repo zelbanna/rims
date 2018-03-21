@@ -15,15 +15,10 @@ def execute(argv):
  print "Executing:{}_{}({})".format(mod,fun,args)
 
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
- try:
-  module = import_module("sdcp.rest.%s"%mod)
-  module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
-  res    = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })(args)
- except Exception, e:
-  print "Error [{}:{}]".format(type(e).__name__,str(e))
- else:
-  print dumps(res, indent=4, sort_keys=True)
-  return 1
+ module = import_module("sdcp.rest.%s"%mod)
+ module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
+ res    = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })(args)
+ print dumps(res, indent=4, sort_keys=True)
  return 0
 
 if __name__ == "__main__":
