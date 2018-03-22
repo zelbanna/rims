@@ -171,10 +171,11 @@ if settings['system']['id'] == 'master':
    try:    res['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
    except Exception as err: res['device_errors'] = str(err)
 
-  sql ="INSERT INTO resources(node,title,href,icon,type,user_id,inline) VALUES ('%s','{}','{}','{}','{}',1,1) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
+  sql ="INSERT INTO resources(node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
   for item in resources:
    try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon'],item['type']))
-   except: res['resources_errors'] = True
+   except Exception as err:
+    res['resources_errors'] = str(err)
 
   db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
   data = db.get_rows()
