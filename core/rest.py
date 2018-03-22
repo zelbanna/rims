@@ -25,7 +25,7 @@ __status__= "Production"
 #
 def server(aNodeID):
  from os import getenv, path as ospath
- from sys import stdout, stdin
+ from sys import stdout, stdin, path as syspath 
  from json import loads, dumps
  from importlib import import_module
  query,output,api,args,mod,fun,additional= getenv("QUERY_STRING"),'null',None,None,None,None,{}

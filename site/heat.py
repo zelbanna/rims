@@ -31,11 +31,11 @@ def list(aWeb):
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_name'])
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_status'])
-  print "<DIV CLASS='td controls'>"
+  print "<DIV CLASS=td><DIV CLASS=controls>"
   print aWeb.button('info',DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=heat_action&name=%s&id=%s&op=info'%(stack['stack_name'],stack['id']))
   if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED" or stack['stack_status'] == "DELETE_FAILED":
    print aWeb.button('delete', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=heat_action&name=%s&id=%s&op=remove'%(stack['stack_name'],stack['id']), MSG='Are you sure?')
-  print "&nbsp;</DIV></DIV>"
+  print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"

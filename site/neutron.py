@@ -35,10 +35,9 @@ def list(aWeb):
     for sub in ipam['attr']['ipam_subnets']:
      print "{}/{}".format(sub['subnet']['ip_prefix'],sub['subnet']['ip_prefix_len'])
   print "</DIV>"
-  print "<DIV CLASS=td>&nbsp;"
+  print "<DIV CLASS=td><DIV CLASS=controls>"
   print aWeb.button('delete',DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=neutron_action&name=%s&id=%s&op=remove'%(net['display_name'],net['uuid']), MSG='Delete network?')
-  print "</DIV>"
-  print "</DIV>"
+  print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
@@ -111,17 +110,15 @@ def action(aWeb):
     # Do we select one or many VMI:s?
     print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?call=nova_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(fip['vm_interface'],fixed)
     print "<DIV CLASS=td><A TITLE='Network info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?call=neutron_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(fip['vm_network_uuid'],fip['vm_network_name'])
-    print "<DIV CLASS=td>"
+    print "<DIV CLASS=td><DIV CLASS=controls>"
     print aWeb.button('info',  DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=print&id=%s'%fip['uuid'])
     print aWeb.button('delete',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], MSG='Are you sure?', SPIN='true')
-    print "&nbsp;</DIV>"
+    print "</DIV></DIV>"
    else:
-    print "<DIV CLASS=td></DIV>"
-    print "<DIV CLASS=td></DIV>"
-    print "<DIV CLASS=td>"
+    print "<DIV CLASS=td></DIV><DIV CLASS=td></DIV><DIV CLASS=td><DIV CLASS=controls>"
     print aWeb.button('info', DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=print&id=%s'%fip['uuid'])
     print aWeb.button('add',  DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_associate_choose_vm&id=%s'%fip['uuid'])
-    print "</DIV>"
+    print "</DIV></DIV>"
    print "</DIV>"
   print "</DIV></DIV>"
 

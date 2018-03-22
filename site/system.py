@@ -19,7 +19,7 @@ def login(aWeb):
   return
 
  args = aWeb.get_args2dict(['call'])
- args['node'] = aWeb.id
+ args['node'] = aWeb.id if not args['node'] else args['node']
  data = aWeb.rest_call("%s_application"%(application),args)
  if inline == 'no':
   aWeb.put_html(data['title'])
@@ -28,6 +28,7 @@ def login(aWeb):
  if data.get('exception'):
   print "Error retrieving application info - exception info: %s"%(data['exception'])
  else:
+  print "<!-- %s -->"%str(data)
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
   print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s_%s'>"%(application,"portal" if inline=='no' else 'inline')
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']

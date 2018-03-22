@@ -71,14 +71,13 @@ def list(aWeb):
    print "CLASS=z-op DIV=main URL='sdcp.cgi?call=resources_framed&id=%s'>"%row['id']
   else:
    print "TARGET=_blank HREF='{}'>".format(row['href'])
-  print "{}</A></DIV><DIV CLASS=td>&nbsp;".format(row['title'])
+  print "{}</A></DIV><DIV CLASS=td><DIV CLASS=controls>".format(row['title'])
   print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=%i'%(row['id']), TITLE=row['id'])
   if cookie['id'] == str(row['user_id']):
    print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%i'%row['id'], MSG='Delete resource?')
-  print "</DIV></DIV>"
+  print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
-
 
 #
 #

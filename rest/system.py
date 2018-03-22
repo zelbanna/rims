@@ -255,19 +255,19 @@ def settings_fetch(aDict):
  return ret
 
 #
-#     
+#
 def settings_save(aDict):
  """Function docstring for settings_save TBD
 
  Args:
- 
+
  Output:
  """
  from sdcp.core.common import rest_call
  ret = {'config_file':SC['system']['config_file']}
  try:
   settings = {}
-  with open(SC['system']['config_file']) as sfile:         
+  with open(SC['system']['config_file']) as sfile:
    temp = loads(sfile.read())
   for section,content in temp.iteritems():
    for key,params in content.iteritems():
@@ -376,7 +376,7 @@ def node_delete(aDict):
 
  Output:
  """
- ret = {}   
+ ret = {}
  with DB() as db:
   ret['delete'] = db.do("DELETE FROM nodes WHERE id = %s"%aDict['id'])
  return ret
