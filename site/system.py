@@ -19,7 +19,7 @@ def login(aWeb):
   return
 
  args = aWeb.get_args2dict(['call'])
- args['node'] = aWeb.id if not args['node'] else args['node']
+ args['node'] = aWeb.id if not args.get('node') else args['node']
  data = aWeb.rest_call("%s_application"%(application),args)
  if inline == 'no':
   aWeb.put_html(data['title'])
