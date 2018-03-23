@@ -87,7 +87,7 @@ def info(aWeb):
  for key in menulist:
   try: 
    resource = resources.pop(key,None)
-   print "<LI CLASS='drag' ID=%s><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='%s'><IMG SRC='%s'></BUTTON></LI>"%(key,resource['title'],resource['icon'])
+   print "<LI CLASS='drag' ID={0}><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='{1}'><IMG SRC='{2}' ALT='{1}'></BUTTON></LI>".format(key,resource['title'],resource['icon'])
   except: pass
  print "</UL></DIV>"
  print "</FORM><DIV CLASS=controls>"

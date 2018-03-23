@@ -4,6 +4,24 @@ USE sdcp;
 
 
 
+DROP TABLE IF EXISTS `activities`;
+CREATE TABLE `activities` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `user_id` int(10) unsigned NOT NULL,
+  `year` tinyint(4) NOT NULL,
+  `month` tinyint(2) NOT NULL,
+  `day` tinyint(2) NOT NULL,
+  `time` int(10) unsigned NOT NULL,
+  `type` varchar(20) NOT NULL,
+  `event` text,
+  PRIMARY KEY (`id`),
+  KEY `time_stamp` (`time_stamp`),
+  KEY `fk_user` (`user_id`),
+  CONSTRAINT `activities_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 DROP TABLE IF EXISTS `bookings`;
 CREATE TABLE `bookings` (
   `device_id` int(10) unsigned NOT NULL,
@@ -11,8 +29,8 @@ CREATE TABLE `bookings` (
   `time_start` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`device_id`,`user_id`),
   KEY `fk_user` (`user_id`),
-  CONSTRAINT `fk_device` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 

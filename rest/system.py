@@ -534,3 +534,43 @@ def users_delete(aDict):
  with DB() as db:
   res = db.do("DELETE FROM users WHERE id = '%s'"%aDict['id'])
  return { 'deleted':res }
+
+######################################### ACTIVITIES ###########################################
+#
+#
+def activities_list(aDict):
+ """ Function docstring for activities_list. TBD
+
+ Args:
+  - start (optional)
+
+ Output:
+ """
+ ret = {'start':aDict.get('start','0')}
+ ret['end'] = int(ret['start']) + 50
+ with DB() as db:
+  db.do("SELECT * FROM activities ORDER BY time_stamp DESC LIMIT %s, %s"%(ret['start'],ret['end']))
+  ret['data'] = db.get_rows()
+ return ret
+
+#
+#
+def activities_info(aDict):
+ """ Function docstring for activities_info. TBD
+
+ Args:
+  - start (optional)
+
+ Output:
+ """
+ ret = {} 
+ with DB() as db:
+  db.do("SELECT id,alias FROM users ORDER BY alias")
+  ret['users'] = db.get_rows()
+  if aDict['id'] == 'new':
+   ret['activity'] = {'id':'new','user_id':None,'type':'unknown','year':'2018'}
+  else:
+   db.do("SELECT * FROM activities WHERE id = %s"%aDict['id'])
+   ret['activity'] = db.get_rows()
+
+ return ret
