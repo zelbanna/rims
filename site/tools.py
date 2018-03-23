@@ -19,7 +19,7 @@ def main(aWeb):
  data = aWeb.rest_call("system_inventory",{'node':aWeb.id,'user_id':cookie['id']})
  print "<NAV><UL>"
  if data.get('node'):
-  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=system_node_list'>Nodes</A></LI>"
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=system_node_list'>Settings</A></LI>"
  if data.get('logs'):
   print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
   for node in data['logs']:

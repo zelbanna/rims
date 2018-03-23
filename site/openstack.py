@@ -46,39 +46,6 @@ def portal(aWeb):
  print "<SECTION CLASS=content ID=div_content></SECTION>"
  print "</MAIN>"
 
-#
-#
-def inline(aWeb):
- cookie = aWeb.cookie_unjar('openstack')
-
- if not cookie.get('authenticated'):
-  (pid,pname) = aWeb.get('project','none_none').split('_')
-  res = aWeb.rest_call("openstack_authenticate",{'node':cookie['node'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
-  if res['authenticated'] == "OK":
-   cookie.update({'authenticated':'OK','token':res['token'],'username':aWeb['username'],'project_id':pid})
-   aWeb.put_cookie('openstack',cookie,res['expires'])
-  else:
-   print "Error logging in - please try login again"
-   return
- else:
-  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('token'),cookie['node']))
- print "<NAV><UL>"
- print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=heat_list'>Orchestration</A></LI>"
- print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=neutron_list'>Virtual Networks</A></LI>"
- print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?call=nova_list'>Virtual Machines</A></LI>"
- print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?call=appformix_list'>Usage Report</A></LI>"
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=openstack_inline'></A></LI>"
- print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout DIV=main COOKIE=openstack>Logout</A></LI>"
- print "<LI CLASS='right'><A CLASS='z-op green' TARGET=_blank HREF='sdcp.cgi?call=openstack_portal'>Tab</A></LI>"
- print "<LI CLASS='dropdown right'><A>Debug</A><DIV CLASS=dropdown-content>"
- print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_info>Info</A>"
- print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_api>REST</A>"
- print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?call=openstack_fqname>FQDN</A>"
- print "</DIV></LI>"
- print "</UL></NAV>"
- print "<SECTION CLASS=content ID=div_content></SECTION>"
-
-
 ############################################## Formatting ##############################################
 #
 # Assume div_os_info

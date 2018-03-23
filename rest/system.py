@@ -40,12 +40,15 @@ def authenticate(aDict):
  """Function docstring for authenticate. Provide cookie with lifetime. TODO should set auth and ID here
 
  Args:
+  - id (required)
 
  Output:
  """
  from datetime import datetime,timedelta
  ret = {}
- ret['authenticated'] = 'OK'
+ try:    tmp = int(aDict['id'])
+ except: ret['authenticated'] = 'NOT_OK'
+ else:   ret['authenticated'] = 'OK'
  ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 
@@ -97,24 +100,30 @@ def menu(aDict):
 
  Output:
  """
- ret = {}
- with DB() as db:
-  start = db.do("SELECT id,view,href FROM resources WHERE id = (SELECT CAST(value AS UNSIGNED) FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start')"%aDict['node'])
-  if start > 0:
-   info = db.get_row()
-   ret['start'] = True
-   ret['menu'] = [{'id':info['id'],'icon':'images/icon-start.png', 'title':'Start', 'href':info['href'], 'view':info['view'] }]
-  else:
-   ret['start'] = False
-   ret['menu'] = []
-  if aDict['node'] == 'master':
-   db.do("SELECT menulist FROM users WHERE id = '%s'"%aDict['id'])
-   menulist = db.get_val('menulist')
-   select = "type = 'menuitem'" if menulist == 'default' else "id IN (%s) ORDER BY FIELD(id,%s)"%(menulist,menulist)
-  else:
-   select = "type = 'menuitem'"
-  db.do("SELECT id, icon, title, href, view FROM resources WHERE node = '%s' AND %s"%(aDict['node'],select))
-  ret['menu'].extend(db.get_rows())
+ try:
+  id = int(aDict['id'])
+ except:
+  ret = {'authenticated':'NOT_OK'}
+ else:
+  ret = {}
+  with DB() as db:
+   start = db.do("SELECT id,view,href FROM resources WHERE id = (SELECT CAST(value AS UNSIGNED) FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start')"%aDict['node'])
+   if start > 0:
+    info = db.get_row()
+    ret['start'] = True
+    ret['menu'] = [{'id':info['id'],'icon':'images/icon-start.png', 'title':'Start', 'href':info['href'], 'view':info['view'] }]
+   else:
+    ret['start'] = False
+    ret['menu'] = []
+   if aDict['node'] == 'master':
+    db.do("SELECT menulist FROM users WHERE id = '%s'"%aDict['id'])
+    menulist = db.get_val('menulist')
+    select = "type = 'menuitem'" if menulist == 'default' else "id IN (%s) ORDER BY FIELD(id,%s)"%(menulist,menulist)
+   else:
+    select = "type = 'menuitem'"
+   db.do("SELECT id, icon, title, href, view FROM resources WHERE node = '%s' AND %s"%(aDict['node'],select))
+   ret['menu'].extend(db.get_rows())
+ 
  return ret
 
 

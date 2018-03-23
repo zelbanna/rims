@@ -13,16 +13,14 @@ __status__= "Production"
 def login(aWeb):
  application = aWeb.get('application','system')
  cookie = aWeb.cookie_unjar(application)
- inline = aWeb.get('inline','no')
- if cookie.get('authenticated') == 'OK' and inline == 'no':
+ if cookie.get('authenticated') == 'OK':
   aWeb.put_redirect("sdcp.cgi?call=%s_portal"%application)
   return
 
  args = aWeb.get_args2dict(['call'])
  args['node'] = aWeb.id if not args.get('node') else args['node']
  data = aWeb.rest_call("%s_application"%(application),args)
- if inline == 'no':
-  aWeb.put_html(data['title'])
+ aWeb.put_html(data['title'])
  aWeb.put_cookie(application,data['cookie'],data['expires'])
  print "<DIV CLASS='background overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message']
  if data.get('exception'):
@@ -30,7 +28,7 @@ def login(aWeb):
  else:
   print "<!-- %s -->"%str(data)
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
-  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s_%s'>"%(application,"portal" if inline=='no' else 'inline')
+  print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s_portal'>"%(application)
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
   print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   for choice in data.get('choices'):
@@ -42,7 +40,7 @@ def login(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s'></DIV></DIV>"%(param['display'],param['data'],param['id'])
   print "</DIV></DIV>"
   print "</FORM><DIV CLASS=controls>"
-  print "<BUTTON CLASS='z-op' %s STYLE='margin:20px 20px 30px 40px;' FRM=login_form>Enter</BUTTON>"%("OP=submit" if not aWeb['inline'] == 'yes' else "DIV=main URL=sdcp.cgi")
+  print "<BUTTON CLASS='z-op' OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=login_form>Enter</BUTTON>"
  print "</DIV></ARTICLE></DIV>"
 
 ############################################## SDCP ###############################################
@@ -51,20 +49,21 @@ def login(aWeb):
 # Base SDCP Portal, creates DIVs for layout
 #
 def portal(aWeb):
- cookie = aWeb.cookie_unjar('system')
  aWeb.put_html(aWeb.get('title','Portal'))
- if cookie.get('id') is None:
-  id,username = aWeb.get('system_login',"None_None").split('_')
+ cookie = aWeb.cookie_unjar('system')
+ id = cookie.get('id','NOID')
+ if id == 'NOID':
+  id,_,username = aWeb.get('system_login',"NOID_NONAME").partition('_')
   res = aWeb.rest_call("system_authenticate",{'id':id,'username':username})
   if not res['authenticated'] == "OK":
+   print "<SCRIPT>erase_cookie('system');</SCRIPT>"
    aWeb.put_redirect("index.cgi")
    return
-  cookie.update({'id':id,'authenticated':'OK'})
-  aWeb.put_cookie('system',cookie,res['expires'])
-  aWeb.log("Entering as {}-'{}'".format(id,username))
- else:
-  id = cookie.get('id')
+  else:
+   cookie.update({'id':id,'authenticated':'OK'})
+   aWeb.put_cookie('system',cookie,res['expires'])
 
+ # proper id here
  menu = aWeb.rest_call("system_menu",{"id":id,'node':aWeb.id})
  print "<HEADER>"
  for item in menu['menu']:
