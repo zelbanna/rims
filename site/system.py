@@ -26,7 +26,6 @@ def login(aWeb):
  if data.get('exception'):
   print "Error retrieving application info - exception info: %s"%(data['exception'])
  else:
-  print "<!-- %s -->"%str(data)
   print "<FORM ACTION=sdcp.cgi METHOD=POST ID=login_form>"
   print "<INPUT TYPE=HIDDEN NAME=call VALUE='%s_portal'>"%(application)
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
