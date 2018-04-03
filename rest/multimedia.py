@@ -27,6 +27,31 @@ def list(aDict):
 
 #
 #
+def cleanup(aDict):
+ """Function docstring for list TBD
+
+ Args:
+  
+ Output:
+ """
+ from os import walk, remove, rmdir
+ from sdcp.SettingsContainer import SC
+ ret = {'root':SC['multimedia']['torrent_directory'],'items':[]}
+ for path,dirs,files in walk(ret['root']):
+  for item in files:
+   try: remove(ospath.join(path,item))
+   except Exception as err: ret['error'].append({'item':'error','info':str(err)})
+   else: ret['items'].append({'item':'file','info':item})
+  for item in dirs:
+   if item == '.':
+    continue
+   try: rmdir(ospath.join(path,item))
+   except Exception as err: ret['error'].append({'item':'error','info':str(err)})
+   else: ret['items'].append({'item':'dir','info':item})
+ return ret
+
+#
+#
 def transfer(aDict):
  """Function docstring for transfer TBD
 
@@ -44,6 +69,23 @@ def transfer(aDict):
  else: ret['res'] = 'OK'
  return ret
 
+#
+#
+def delete(aDict):    
+ """Function docstring for transfer TBD
+
+ Args:
+  - path (required)   
+  - file (required)       
+  
+ Output:
+ """
+ from os import remove
+ ret = {'res':'NOT_OK'}
+ try: remove(ospath.join(aDict['path'],aDict['file']))
+ except Exception as err: ret['error'] = str(err)
+ else: ret['res'] = 'OK'
+ return ret
 
 ################################################# Media Functions ################################################
 #
@@ -81,6 +123,10 @@ def check_title(aDict):
   - file (cond optional)
 
  Output:
+  - name
+  - info
+  - type
+  - episode (in case type == 'series')
  """
  from re import search
  if aDict.get('filepath'):
@@ -125,7 +171,6 @@ def check_title(aDict):
    ret['name'] = ret['info']
 
  ret['name']="%s.%s"%(ret['name'].replace(" ","."),filename[-3:])
- ret['destination']= ospath.abspath(ospath.join(ret['path'],ret['name']))
  return ret
 
 #
@@ -144,7 +189,7 @@ def check_content(aDict):
  """ 
  from subprocess import Popen, PIPE, STDOUT
  ret = {'res':'NOT_OK'}
- filename = (aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file')))
+ filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret['video'] = {'language':'eng', 'set_default':False}
  ret['audio'] = {'add':[], 'remove':[], 'add_aac':True }
  ret['subtitle'] = {'add':[], 'remove':[], 'languages':[] }
@@ -206,19 +251,17 @@ def process(aDict):
  from subprocess import check_call, call
  from os import devnull,chmod,rename,remove
  from sdcp.core.logger import log
- if aDict.get('filepath'):
-  filename = aDict.get('filepath')
- else:
-  filename = ospath.join(aDict.get('path'),aDict.get('file'))
+ filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'res':'NOT_OK','error':None}
- info = check_title({'filepath':filename})
  srt  = check_srt({'filepath':filename})
- ret.update({'info':info,'srt':srt,'changes':{'subtitle':"",'audio':"",'srt':""}})
+ info = aDict if aDict.get('name') and aDict.get('info') else check_title({'filepath':filename})
+ dest = ospath.abspath(ospath.join(info['path'],info['name']))
+ ret.update({'info':info,'srt':srt,'changes':{'subtitle':"",'audio':"",'srt':""},'dest':dest})
 
  try:
 
-  if filename != info['destination']:
-   try:  rename(filename,info['destination'])
+  if filename != dest:
+   try:  rename(filename,dest)
    except Exception, e: ret['error'] = str(e)
    else: ret['rename'] = True
 
@@ -229,7 +272,7 @@ def process(aDict):
     ret['changes']['srt']="--language 0:{0} --track-name 0:{0} -s 0 -D -A {1}".format(srt['code'], repr(ospath.abspath(srtfile)))
     rename(srt['file'],srtfile)
 
-   probe = check_content({'filepath':info['destination'],'srt':srt.get('code')})
+   probe = check_content({'filepath':dest,'srt':srt.get('code')})
    ret['probe'] = probe
 
    # if forced download or if there are subs to remove but no subs to add left 
@@ -245,17 +288,17 @@ def process(aDict):
 
     if ret['rename']:
      ret['update_title'] = info['info']
-     call(['mkvpropedit', '--set', "title=" + info['info'], info['destination']], stdout=FNULL, stderr=FNULL)
+     call(['mkvpropedit', '--set', "title=" + info['info'], dest], stdout=FNULL, stderr=FNULL)
 
     if probe['video']['set_default']:
-     call(['mkvpropedit', '--edit', 'track:v1', '--set', 'language=eng', info['destination']], stdout=FNULL, stderr=FNULL)
+     call(['mkvpropedit', '--edit', 'track:v1', '--set', 'language=eng', dest], stdout=FNULL, stderr=FNULL)
 
     if probe['audio']['add_aac'] or len(ret['changes']['audio']) or len(ret['changes']['subtitle']) or srt['code']:
      from sdcp.SettingsContainer import SC
      from tempfile import mkdtemp
      log("INFO - %s - Modifying addaac:%s Modify: %s %s"%(probe['audio']['add_aac'],ret['changes']['subtitle'],ret['changes']['audio'], ret['changes']['srt']) )
      tmpfile = filename + ".process"
-     rename(info['destination'],tmpfile)
+     rename(dest,tmpfile)
      tempd   = SC['multimedia']['temp_directory'] 
      tempdir = mkdtemp(suffix = "",prefix = 'aac.',dir = tempd)
 
@@ -265,7 +308,7 @@ def process(aDict):
       check_call(['faac', '-c', '48000', '-b', '160', '-q', '100', '-s', tempdir + '/audiofile.wav', '-o',tempdir + '/audiofile.aac'], stdout=FNULL, stderr=FNULL)
       ret['changes']['srt'] = "--language 0:{} --default-track 0 {}/audiofile.aac ".format(probe['video']['language'], tempdir) + ret['changes']['srt']
 
-     call(["mkvmerge -o '{}' {} {} '{}' {}".format(info['destination'],ret['changes']['subtitle'],ret['changes']['audio'],tmpfile, ret['changes']['srt'])], stdout=FNULL, stderr=FNULL, shell=True)
+     call(["mkvmerge -o '{}' {} {} '{}' {}".format(dest,ret['changes']['subtitle'],ret['changes']['audio'],tmpfile, ret['changes']['srt'])], stdout=FNULL, stderr=FNULL, shell=True)
      call(['rm','-fR',tempdir])
      remove(tmpfile)
 
@@ -275,15 +318,15 @@ def process(aDict):
    FNULL = open(devnull, 'w')
    if srt['code']:
     tmpfile = filename + ".process"
-    rename(info['destination'],tmpfile)
+    rename(dest,tmpfile)
     chmod(srt['file'], 0666)
-    chmod(info['destination'], 0666)
-    call(['MP4Box -add {0}:hdlr=sbtl:lang={1}:name={2}:group=2:layer=-1:disable {3} -out {4}'.format( repr(srt['file']), srt['code'], srt['name'], repr(tmpfile), repr(info['destination']))], shell=True, stdout=FNULL)
+    chmod(dest, 0666)
+    call(['MP4Box -add {0}:hdlr=sbtl:lang={1}:name={2}:group=2:layer=-1:disable {3} -out {4}'.format( repr(srt['file']), srt['code'], srt['name'], repr(tmpfile), repr(dest))], shell=True, stdout=FNULL)
     rename(srt['file'],"%s.processed"%srt['file'])
     remove(tmpfile)
    if aDict['modify']:
     if info['episode']:
-     call(['mp4tags', '-o', info['episode'], '-n', info['episode'][1:3], '-M', info['episode'][4:6], '-S', info['title'], '-m', info['info'], info['destination']], stdout=FNULL, stderr=FNULL)
+     call(['mp4tags', '-o', info['episode'], '-n', info['episode'][1:3], '-M', info['episode'][4:6], '-S', info['title'], '-m', info['info'], dest], stdout=FNULL, stderr=FNULL)
     else:
      log("WARN - %s - Movie modifications not implemented"%filename)
 
@@ -292,9 +335,9 @@ def process(aDict):
   log("XCPT - %s - Error: %s"%(filename,str(err)))
  else:
   ret['seconds'] = (int(time()) - ret['timestamp'])
-  if ospath.exists(info['destination']):
+  if ospath.exists(dest):
    log("INFO - %s - Success - processed in % seconds"%(filename,ret['seconds']))
-   chmod(info['destination'], 0666)
+   chmod(dest, 0666)
    ret['res'] = 'OK'
   else:
    log("ERRR - %s - FAILURE PROCESSING!"%filename)
@@ -318,7 +361,7 @@ def mkv_delay_set(aDict):
  from time import time
  from subprocess import Popen, PIPE, check_call, call, STDOUT
  from os import devnull,rename,remove
- filename = (aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file')))
+ filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret = {'res':'NOT_OK','timestamp':int(time())}
 
  absfile = ospath.abspath(filename)

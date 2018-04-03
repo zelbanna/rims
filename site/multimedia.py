@@ -26,33 +26,46 @@ def list(aWeb):
  print "<SECTION CLASS=content-left  ID=div_content_left>"
  print "<ARTICLE><P>Files</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=multimedia_list')
- print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>File</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
+ print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?call=multimedia_cleanup')
+ print "</DIV><DIV CLASS=table><DIV CLASS=tbody>"
  for row in data['files']:
-  print "<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:310px'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['file'])
-  print aWeb.button('info',     DIV='div_content_right', URL='sdcp.cgi?call=multimedia_title&path=%s&file=%s'%(row['path'],row['file']))
-  print aWeb.button('search',   DIV='div_content_right', URL='sdcp.cgi?call=multimedia_lookup&path=%s&file=%s'%(row['path'],row['file']))
-  print aWeb.button('document', DIV='div_content_right', URL='sdcp.cgi?call=multimedia_subtitles&path=%s&file=%s'%(row['path'],row['file']))
+  print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:290px'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['file'])
+  print aWeb.button('info',     DIV='div_content_right', TITLE='Title info', URL='sdcp.cgi?call=multimedia_title&path=%s&file=%s'%(row['path'],row['file']))
+  print aWeb.button('search',   DIV='div_content_right', TITLE='Lookup info',URL='sdcp.cgi?call=multimedia_lookup&path=%s&file=%s'%(row['path'],row['file']))
+  print aWeb.button('document', DIV='div_content_right', TITLE='Subtitles',  URL='sdcp.cgi?call=multimedia_subtitles&path=%s&file=%s'%(row['path'],row['file']))
+  print aWeb.button('trash',   DIV='div_content_right', TITLE='Delete file',URL='sdcp.cgi?call=multimedia_delete&path=%s&file=%s'%(row['path'],row['file']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 #
 #
+def cleanup(aWeb):
+ data = aWeb.rest_call("multimedia_cleanup")
+ print "<ARTICLE CLASS=info><P>Delete</P>"
+ print "<DIV CLASS=table><DIV CLASS=tbody>"
+ for item in data['items']:
+  print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(item['item'],item['info'])
+ print "</DIV></DIV></ARTICLE>"
+
+#
+#
 def title(aWeb):
  data = aWeb.rest_call("multimedia_check_title",{'path':aWeb['path'],'file':aWeb['file']})
  print "<ARTICLE CLASS=info><P>%s</P>"%aWeb['file']
+ print "<FORM ID=multimedia_info_form>"
+ print "<INPUT TYPE=hidden VALUE='%s' NAME=file>"%(aWeb['file'])
  print "<DIV CLASS=table><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['type']
- print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['title']
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=type></DIV></DIV>"%data['type']
+ print "<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=title></DIV></DIV>"%data['title']
  if data.get('episode'):
-  print "<DIV CLASS=tr><DIV CLASS=td>Episode:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['episode']
- print "<DIV CLASS=tr><DIV CLASS=td>File Info:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['info']
- print "<DIV CLASS=tr><DIV CLASS=td>File Name:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['name']
- print "<DIV CLASS=tr><DIV CLASS=td>File Path:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['path']
- print "<DIV CLASS=tr><DIV CLASS=td>Destination:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['destination']
- print "</DIV></DIV><DIV CLASS=controls>"
- print aWeb.button('start',DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=multimedia_process&path=%s&file=%s'%(aWeb['path'],aWeb['file']))
- print aWeb.button('sync', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=multimedia_transfer&path=%s&file=%s'%(aWeb['path'],aWeb['file']))
+  print "<DIV CLASS=tr><DIV CLASS=td>Episode:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=episode></DIV></DIV>"%data['episode']
+ print "<DIV CLASS=tr><DIV CLASS=td>File Info:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=info></DIV></DIV>"%data['info']
+ print "<DIV CLASS=tr><DIV CLASS=td>File Name:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=name></DIV></DIV>"%data['name']
+ print "<DIV CLASS=tr><DIV CLASS=td>File Path:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s' NAME=path></DIV></DIV>"%data['path']
+ print "</DIV></DIV></FORM><DIV CLASS=controls>"
+ print aWeb.button('start',DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=multimedia_process',  FRM='multimedia_info_form')
+ print aWeb.button('sync', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=multimedia_transfer', FRM='multimedia_info_form')
  print "</DIV></ARTICLE>"
 
 #
@@ -83,7 +96,8 @@ def lookup(aWeb):
 #
 #
 def process(aWeb):
- data = aWeb.rest_full(aWeb._rest_url,"multimedia_process",{'path':aWeb['path'],'file':aWeb['file']},aTimeout = 360)['data']
+ args = aWeb.get_args2dict(['call'])
+ data = aWeb.rest_full(aWeb._rest_url,"multimedia_process",args,aTimeout = 360)['data']
  print "<ARTICLE CLASS=info><P>%s</P>"%aWeb['file']
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  for key in data.keys():
@@ -103,3 +117,8 @@ def transfer(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Destination:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['destination']
  print "</DIV></DIV></ARTICLE>"
 
+#
+#
+def delete(aWeb):
+ data = aWeb.rest_call("multimedia_delete",{'path':aWeb['path'],'file':aWeb['file']})
+ print "<ARTICLE>Delete: %s/%s => %s</ARTICLE>"%(aWeb['path'],aWeb['file'],data)
