@@ -26,10 +26,10 @@ def list(aWeb):
  print "<SECTION CLASS=content-left  ID=div_content_left>"
  print "<ARTICLE><P>Files</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=multimedia_list')
- print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?call=multimedia_cleanup')
+ print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?call=multimedia_cleanup', MSG='Are you sure?')
  print "</DIV><DIV CLASS=table><DIV CLASS=tbody>"
  for row in data['files']:
-  print "<DIV CLASS=tr><DIV CLASS=td STYLE='width:290px'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['file'])
+  print "<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:290px'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['file'])
   print aWeb.button('info',     DIV='div_content_right', TITLE='Title info', URL='sdcp.cgi?call=multimedia_title&path=%s&file=%s'%(row['path'],row['file']))
   print aWeb.button('search',   DIV='div_content_right', TITLE='Lookup info',URL='sdcp.cgi?call=multimedia_lookup&path=%s&file=%s'%(row['path'],row['file']))
   print aWeb.button('document', DIV='div_content_right', TITLE='Subtitles',  URL='sdcp.cgi?call=multimedia_subtitles&path=%s&file=%s'%(row['path'],row['file']))
