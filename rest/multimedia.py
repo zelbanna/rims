@@ -87,6 +87,18 @@ def delete(aDict):
  else: ret['res'] = 'OK'
  return ret
 
+#
+#
+def services(aDict):
+ """Function docstring for services TBD
+
+ Args:
+ 
+ Output:
+ """
+ from sdcp.SettingsContainer import SC
+ return {'services':[{'name':x,'service':SC['services'][x]} for x in SC['services'].keys()]}
+
 ################################################# Media Functions ################################################
 #
 #

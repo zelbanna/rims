@@ -11,9 +11,18 @@ __icon__ = 'images/icon-multimedia.png'
 #
 #
 def main(aWeb):
- ip = aWeb.rest_call("dns_external_ip")['ip']
+ if not aWeb.cookies.get('system'):
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
+ cookie = aWeb.cookie_unjar('system')
+ ip   = aWeb.rest_call("dns_external_ip")['ip']
+ svcs = aWeb.rest_call("multimedia_services")
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=multimedia_list'>Media files</A></LI>"
+ print "<LI CLASS='dropdown'><A>Services</A><DIV CLASS='dropdown-content'>"
+ for svc in svcs.get('services',[]):
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_services_info&node=%s&service=%s'>%s</A>"%(aWeb.id,svc['service'],svc['name'])
+ print "</DIV></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=multimedia_main'></A></LI>"
  print "<LI CLASS='right navinfo'><A>%s</A></LI>"%(ip)
  print "</UL></NAV>"
