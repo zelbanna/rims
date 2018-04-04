@@ -35,17 +35,8 @@ def list(aWeb):
 #
 def info(aWeb):
  cookie = aWeb.cookie_unjar('system')
- data = {'id':aWeb.get('id','new'),'node':aWeb['node']}
- if aWeb['op'] == 'update' or aWeb['id'] == 'new':
-  data['op']       = aWeb['op']
-  data['value']    = aWeb.get('value','Not set')
-  data['section']  = aWeb.get('section','Not set')
-  data['parameter'] = aWeb.get('parameter','Not set')
-  data['description'] = aWeb.get('description','Not set') 
-  if aWeb['op'] == 'update':
-   data = aWeb.rest_call("system_settings_info",data)['data']
- else:
-  data = aWeb.rest_call("system_settings_info",data)['data']
+ args = aWeb.get_args2dict(['call'])
+ data = aWeb.rest_call("system_settings_info",args)['data']
  print "<ARTICLE CLASS=info><P>Settings</P>"
  print "<FORM ID=settings_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])

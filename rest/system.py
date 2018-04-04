@@ -180,8 +180,12 @@ def settings_info(aDict):
    else:
     ret['update'] = db.insert_dict('settings',args)
     id = db.get_last_id()
-  ret['xist'] = db.do("SELECT * FROM settings WHERE id = '%s'"%id)
-  ret['data'] = db.get_row()
+
+  if id == 'new':
+   ret['data'] = {'id':'new','value':'Not SET','section':'Not SET','parameter':'Not SET','description':'Not SET'}
+  else:
+   ret['xist'] = db.do("SELECT * FROM settings WHERE id = '%s'"%id)
+   ret['data'] = db.get_row()
  return ret
 
 #
@@ -592,11 +596,11 @@ def activities_info(aDict):
    year,month,day = args.pop('date','1970-01-01').split('-')
    args.update({'year':year,'month':month,'day':day,'hour':hour,'minute':minute})
 
-   if id == 'new':
+   if not id == 'new':
+    ret['update'] = db.update_dict('activities',args,'id = %s'%id)
+   else:
     ret['update'] = db.insert_dict('activities',args)
     id = db.get_last_id()
-   else:
-    ret['update'] = db.update_dict('activities',args,'id = %s'%id)
 
   if id == 'new':
    from time import localtime
@@ -605,7 +609,7 @@ def activities_info(aDict):
    dt = date.today()
    ret['activity'] = {'id':'new','user_id':None,'type':'unknown','date':"%i-%02i-%02i"%(dt.year,dt.month,dt.day),'time':"%02i:%02i"%(tm.tm_hour,tm.tm_min),'event':'empty'}
   else:
-   db.do("SELECT * FROM activities WHERE id = %s"%id)
+   ret['xist'] = db.do("SELECT * FROM activities WHERE id = %s"%id)
    act = db.get_row()
    ret['activity'] = {'id':id,'user_id':act['user_id'],'type':act['type'],'date':"%i-%02i-%02i"%(act['year'],act['month'],act['day']),'time':"%02i:%02i"%(act['hour'],act['minute']),'event':act['event']}
 
