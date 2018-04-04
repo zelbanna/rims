@@ -7,16 +7,15 @@ USE sdcp;
 DROP TABLE IF EXISTS `activities`;
 CREATE TABLE `activities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `user_id` int(10) unsigned NOT NULL,
-  `year` tinyint(4) NOT NULL,
-  `month` tinyint(2) NOT NULL,
-  `day` tinyint(2) NOT NULL,
-  `time` int(10) unsigned NOT NULL,
+  `year` int(4) unsigned NOT NULL,
+  `month` tinyint(2) unsigned NOT NULL,
+  `day` tinyint(2) unsigned NOT NULL,
+  `hour` tinyint(2) unsigned NOT NULL,
+  `minute` tinyint(2) unsigned NOT NULL,
   `type` varchar(20) NOT NULL,
   `event` text,
   PRIMARY KEY (`id`),
-  KEY `time_stamp` (`time_stamp`),
   KEY `fk_user` (`user_id`),
   CONSTRAINT `activities_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

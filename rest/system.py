@@ -549,8 +549,23 @@ def activities_list(aDict):
  ret = {'start':aDict.get('start','0')}
  ret['end'] = int(ret['start']) + 50
  with DB() as db:
-  db.do("SELECT * FROM activities ORDER BY time_stamp DESC LIMIT %s, %s"%(ret['start'],ret['end']))
+  db.do("SELECT id, type, CONCAT(hour,':',minute) AS time, CONCAT(year,'-',month,'-',day) AS date FROM activities ORDER BY year,month,day DESC LIMIT %s, %s"%(ret['start'],ret['end']))
   ret['data'] = db.get_rows()
+ return ret
+
+#
+#
+def activities_delete(aDict):
+ """ Function docstring for activities_delete. TBD
+
+ Args:
+  - id (required)
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  ret['delete'] = db.do("DELETE FROM activities WHERE id = '%s'"%aDict['id'])
  return ret
 
 #
@@ -559,18 +574,39 @@ def activities_info(aDict):
  """ Function docstring for activities_info. TBD
 
  Args:
+  - id (required). 'new'/<id>
   - start (optional)
 
  Output:
  """
- ret = {} 
+ ret = {}
+ args = aDict
+ id = args.pop('id',None)
+ op = args.pop('op',None)
+
  with DB() as db:
   db.do("SELECT id,alias FROM users ORDER BY alias")
   ret['users'] = db.get_rows()
-  if aDict['id'] == 'new':
-   ret['activity'] = {'id':'new','user_id':None,'type':'unknown','year':'2018'}
+  if op == 'update':
+   hour,minute    = args.pop('time','00:00').split(':')
+   year,month,day = args.pop('date','1970-01-01').split('-')
+   args.update({'year':year,'month':month,'day':day,'hour':hour,'minute':minute})
+
+   if id == 'new':
+    ret['update'] = db.insert_dict('activities',args)
+    id = db.get_last_id()
+   else:
+    ret['update'] = db.update_dict('activities',args,'id = %s'%id)
+
+  if id == 'new':
+   from time import localtime
+   from datetime import date
+   tm = localtime()
+   dt = date.today()
+   ret['activity'] = {'id':'new','user_id':None,'type':'unknown','date':"%i-%02i-%02i"%(dt.year,dt.month,dt.day),'time':"%02i:%02i"%(tm.tm_hour,tm.tm_min),'event':'empty'}
   else:
-   db.do("SELECT * FROM activities WHERE id = %s"%aDict['id'])
-   ret['activity'] = db.get_rows()
+   db.do("SELECT * FROM activities WHERE id = %s"%id)
+   act = db.get_row()
+   ret['activity'] = {'id':id,'user_id':act['user_id'],'type':act['type'],'date':"%i-%02i-%02i"%(act['year'],act['month'],act['day']),'time':"%02i:%02i"%(act['hour'],act['minute']),'event':act['event']}
 
  return ret
