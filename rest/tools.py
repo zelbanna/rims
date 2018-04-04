@@ -214,7 +214,7 @@ def service_info(aDict):
  if aDict.get('op'):
   from time import sleep
   try:
-   command = "sudo /etc/init.d/%s %s"%(aDict['service'],aDict['operation'])
+   command = "sudo /etc/init.d/%s %s"%(aDict['service'],aDict['op'])
    ret['op'] = check_output(command.split()).strip()
   except CalledProcessError, c:
    ret['op'] = c.output.strip()
