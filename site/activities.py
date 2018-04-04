@@ -33,8 +33,8 @@ def list(aWeb):
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Date</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>%s - %s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;</DIV>"%(row['date'],row['time'],row['type'])
-  print aWeb.button('info',  DIV='div_content_right', URL='sdcp.cgi?call=activities_info&id=%s'%row['id'])
-  print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?call=activities_delete&id=%s'%row['id'])
+  print aWeb.button('info',   DIV='div_content_right', URL='sdcp.cgi?call=activities_info&id=%s'%row['id'])
+  print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=activities_delete&id=%s'%row['id'])
   print "</DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -44,8 +44,6 @@ def list(aWeb):
 def info(aWeb):
  cookie = aWeb.cookie_unjar('system')
  args = aWeb.get_args2dict(['call'])
- if aWeb['op']:
-  args['op'] = aWeb['op']
  data = aWeb.rest_call("system_activities_info",args)
  activity = data['activity']
  print "<ARTICLE CLASS='info'><P>Activity (%s)</P>"%(activity['id'])
@@ -54,7 +52,7 @@ def info(aWeb):
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>User:</DIV><DIV CLASS=td><SELECT NAME=user_id>"
  for user in data['users']:
-  selected = 'selected' if activity['user_id'] == user['id'] else ''
+  selected = 'selected' if activity['user_id'] == user['id'] or (activity['id'] == 'new' and cookie['id'] == str(user['id'])) else ''
   print "<OPTION %s VALUE='%s'>%s</OPTION>"%(selected,user['id'],user['alias'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Date:</DIV><DIV CLASS=td><INPUT TYPE=date NAME=date VALUE='%s'> <INPUT TYPE=time NAME=time VALUE='%s'></DIV></DIV>"%(activity['date'],activity['time'])
@@ -62,7 +60,8 @@ def info(aWeb):
  print "</DIV></DIV>"
  print "<TEXTAREA STYLE='width:100%; height:70px;' NAME=event>{}</TEXTAREA>".format(activity['event'])
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=activities_delete&id={0}'.format(activity['id']), MSG='Really remove activity?')
+ if activity['id'] != 'new':
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=activities_delete&id={0}'.format(activity['id']), MSG='Really remove activity?')
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=activities_info&op=update', FRM='activity_form')
  print "</DIV></ARTICLE>"
 
