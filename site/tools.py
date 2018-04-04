@@ -169,9 +169,7 @@ def logs_show(aWeb):
 #
 #
 def services_info(aWeb):
- args = {'service':aWeb['service']}
- if aWeb['op']:
-  args['operation'] = aWeb['op']
+ args = aWeb.get_args2dict(['call','node'])
  data  = aWeb.rest_call('tools_service_info&node=%s'%aWeb['node'],args)
  state = 'start' if data['state'] == 'inactive' else 'stop'
  print "<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)<DIV CLASS=controls>"%(aWeb['service'],data['state'],data['info'])

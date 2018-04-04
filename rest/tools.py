@@ -205,19 +205,19 @@ def service_info(aDict):
 
  Args:
   - service  (required)
-  - operation (optional): 'start','stop'
+  - op (optional): 'start','stop'
 
  Output:
  """
  from subprocess import check_output, CalledProcessError
  ret = {'state':None}
- if aDict.get('operation'):
+ if aDict.get('op'):
   from time import sleep
   try:
    command = "sudo /etc/init.d/%s %s"%(aDict['service'],aDict['operation'])
-   ret['operation'] = check_output(command.split()).strip()
+   ret['op'] = check_output(command.split()).strip()
   except CalledProcessError, c:
-   ret['operation'] = c.output.strip()
+   ret['op'] = c.output.strip()
   else:
    sleep(2)
 
@@ -236,4 +236,3 @@ def service_info(aDict):
    ret['info'] = state[1][1:-1]
    break
  return ret
-
