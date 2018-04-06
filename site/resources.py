@@ -60,7 +60,7 @@ def list(aWeb):
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list&node=%s'%node)
- print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&node=%s&id=new'%node)
+ print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&node=%s&id=new&user_id=%s'%(node,cookie['id']))
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
@@ -83,22 +83,8 @@ def list(aWeb):
 #
 def info(aWeb):
  cookie = aWeb.cookie_unjar('system')
- data  = {'id':aWeb.get('id','new'),'op':aWeb['op']}
- if aWeb['op'] or data['id'] == 'new':
-  data['title'] = aWeb.get('title','Not set')
-  data['href']  = aWeb.get('href','Not set')
-  data['type']  = aWeb['type']
-  data['icon']  = aWeb['icon']
-  data['node']  = aWeb['node']
-  data['view']  = aWeb.get('view','0')
-  data['private'] = aWeb.get('private',"0")
-  data['user_id'] = aWeb.get('user_id',cookie['id'])
-  if aWeb['op'] == 'update':
-   res = aWeb.rest_call("system_resources_info",data)
-   data['id'] = res['id']
- else:
-  data = aWeb.rest_call("system_resources_info",data)['data']
-
+ args = aWeb.get_args2dict(['call'])
+ data = aWeb.rest_call("system_resources_info",args)['data']
  print "<ARTICLE><P>Resource entity ({})</P>".format(data['id'])
  print "<FORM ID=resource_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=node VALUE={}>".format(data['node'])

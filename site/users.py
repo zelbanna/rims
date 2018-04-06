@@ -55,20 +55,8 @@ def list(aWeb):
 #
 def info(aWeb):
  cookie = aWeb.cookie_unjar('system')
- data = {'id':aWeb.get('id','new'),'op':aWeb['op']}
- if aWeb['op'] == 'update' or data['id'] == 'new':
-  data['name']  = aWeb.get('name',"unknown")
-  data['alias'] = aWeb.get('alias',"unknown")
-  data['email'] = aWeb.get('email',"unknown")
-  data['view_public']  = aWeb.get('view_public','0')
-  data['menulist'] = aWeb.get('menulist','default')
-  if aWeb['op'] == 'update':
-   res = aWeb.rest_call("system_users_info",data)
-   if data['id'] == 'new':
-    data['id'] = res['id']
- else:
-  data = aWeb.rest_call("system_users_info",data)['data']
-
+ args = aWeb.get_args2dict(['call'])
+ data = aWeb.rest_call("system_users_info",args)['data']
  resources = aWeb.rest_call("system_resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.id})['data']
  print aWeb.dragndrop()
  print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])

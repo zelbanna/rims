@@ -53,7 +53,7 @@ def leases(aDict):
 
 #
 def update_server(aDict):
- """Function docstring for update_server:  reload the DHCP server to use new info
+ """Function docstring for update_server:  reload the DHCP server to use updated info
 
  Args:
   - entries (required). entries is a list of dict objects containing hostname, mac, ip etc
@@ -62,7 +62,7 @@ def update_server(aDict):
  """
  from sdcp.core.common import SC,rest_call
  entries = rest_call("%s?device_list_mac"%SC['system']['master'])['data']
- # Create new file
+ # Create file
  with open(SC['dhcp']['static'],'w') as leasefile:
   for entry in entries:
    leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Subnet {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['subnet_id'],entry['id']))
