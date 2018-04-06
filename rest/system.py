@@ -171,7 +171,7 @@ def settings_info(aDict):
  """
  ret = {}
  args = aDict
- id = args.pop('id',None)
+ id = args.pop('id','new')
  op = args.pop('op',None)
  with DB() as db:
   if op == 'update' and not (aDict['section'] == 'system' or aDict['section'] =='node'):
@@ -364,10 +364,10 @@ def node_info(aDict):
 
  Output:
  """
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
  ret = {}
  args = aDict
+ id = args.pop('id','new')
+ op = args.pop('op',None)
  with DB() as db:
   if op == 'update':
    if not id == 'new':
@@ -450,10 +450,10 @@ def resources_info(aDict):
 
  Output:
  """
- id = aDict.pop('id',None)
- op = aDict.pop('op',None)
- ret = {'id':id}
+ ret = {}
  args = aDict
+ id = args.pop('id','new')
+ op = args.pop('op',None)
  with DB() as db:
   if op == 'update':
    if not id == 'new':
@@ -507,6 +507,7 @@ def users_info(aDict):
 
  Args:
   - id (required) -  <x|'new'>
+  - op (optional)
   - name (optional)
   - view_public (optional)
   - menulist (optional)
@@ -514,12 +515,11 @@ def users_info(aDict):
   - email (optional)
 
  Output:
-  - op (pop)
  """
- ret = {'id':aDict['id']}
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
+ ret = {}
  args = aDict
+ id = args.pop('id','new')
+ op = args.pop('op',None)
  with DB() as db:
   if op == 'update':
    if not id == 'new':
@@ -595,9 +595,8 @@ def activities_info(aDict):
  """
  ret = {}
  args = aDict
- id = args.pop('id',None)
+ id = args.pop('id','new')
  op = args.pop('op',None)
-
  with DB() as db:
   db.do("SELECT id,alias FROM users ORDER BY alias")
   ret['users'] = db.get_rows()

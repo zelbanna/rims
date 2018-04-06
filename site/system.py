@@ -88,8 +88,7 @@ def node_list(aWeb):
  print "<ARTICLE><P>Nodes</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=system_node_list')
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=system_node_info&id=new')
- print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
- print "<DIV CLASS=tbody>"
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for row in nodes:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['node'],row['url'])
   print aWeb.button('info',DIV='div_content_right', URL='sdcp.cgi?call=system_node_info&id=%s'%row['id'])
