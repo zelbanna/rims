@@ -529,10 +529,10 @@ def users_info(aDict):
     id = db.get_last_id()
   
   if not id == 'new':
-   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','view_public':'0','menulist':'default'}
-  else:
    ret['xist'] = db.do("SELECT users.* FROM users WHERE id = '%s'"%id)
    ret['data'] = db.get_row()
+  else:
+   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','view_public':'0','menulist':'default'}
  return ret
 
 #

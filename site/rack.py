@@ -82,7 +82,7 @@ def inventory(aWeb):
 #
 #
 def info(aWeb):
- if aWeb.get('op') == 'save':
+ if aWeb.get('op') == 'update':
   data = {'name':aWeb['name'],'size':aWeb['size'],'pdu_1':aWeb['pdu_1'],'pdu_2':aWeb['pdu_2'],'console':aWeb['console'],'image_url':aWeb['image_url'],'id':aWeb['id']}
   res = aWeb.rest_call("rack_update",data)
   id = res['id']
@@ -119,7 +119,7 @@ def info(aWeb):
  print "<SPAN CLASS='right small-text' ID=update_results></SPAN>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?call=rack_info&id={0}'.format(id))
- print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?call=rack_info&op=save', FRM='rack_info_form')
+ print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?call=rack_info&op=update', FRM='rack_info_form')
  if not id == 'new':
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_delete&id=%s'%(id))
  print "</DIV></ARTICLE>"

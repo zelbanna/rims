@@ -25,8 +25,8 @@ def list(aDict):
 
 #
 #
-def info(aDict):
- """Function docstring for info TBD
+def inventory(aDict):
+ """Function docstring for inventory TBD
 
  Args:
   - id (optional)
@@ -52,6 +52,7 @@ def info(aDict):
    for type in ['console','pdu']:
     db.do(sql%(type))
     ret[type] = db.get_rows()
+
  return ret
 
 #
