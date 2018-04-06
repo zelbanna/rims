@@ -14,10 +14,7 @@ def list(aWeb):
  print "<ARTICLE><P>Subnets</P><DIV CLASS='controls'>"
  print aWeb.button('reload', DIV='div_content_left',  URL='sdcp.cgi?call=ipam_list')
  print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?call=ipam_info&id=new')
- print "</DIV>"
- print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
- print "<DIV CLASS=tbody>"
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for net in res['subnets']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=ipam_layout&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(net['id'],net['id'],net['subasc'],net['description'])
   print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=ipam_info&id=%i'%net['id'])
@@ -27,18 +24,12 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- if aWeb['op'] == 'update':
-  data = aWeb.get_args2dict(['call','op'])
-  res = aWeb.rest_call("ipam_update",data)
-  data['gateway'] = res['gateway']
-  data['id']      = res['id']
- else:
-  data = aWeb.rest_call("ipam_info",{'id':aWeb['id']})['data']
+ args = aWeb.get_args2dict(['call'])
+ data = aWeb.rest_call("ipam_info",args)['data']
  lock = "readonly" if not data['id'] == 'new' else ""
-
- print "<ARTICLE CLASS=info><P>Subnet Info {}</P>".format("(new)" if data['id'] == 'new' else "")
+ print "<ARTICLE CLASS=info><P>Subnet Info (%s)</P>"%(data['id'])
  print "<FORM ID=ipam_info_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(data['id'])
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=description VALUE={}></DIV></DIV>".format(data['description'])
  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=subnet  VALUE={} {}></DIV></DIV>".format(data['subnet'],lock)

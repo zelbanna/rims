@@ -28,17 +28,45 @@ def info(aDict):
 
  Args:
   - id (required) ('new' / <no>)
+  - subnet (optional)
+  - description (optional)
+  - mask (optional)
+  - gateway (optional)
 
  Output:
  """
  ret = {}
- if aDict['id'] == 'new':
-  ret['xist'] = 0
-  ret['data'] = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }
- else:
-  with DB() as db:
-   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(subnet) AS subnet, INET_NTOA(gateway) AS gateway FROM subnets WHERE id = '%s'"%aDict['id'])
+ args = aDict
+ id = args.pop('id','new')
+ op = args.pop('op',None)
+ with DB() as db:
+  if op == 'update':
+   from struct import unpack
+   from socket import inet_aton
+   def GL_ip2int(addr):
+    return unpack("!I", inet_aton(addr))[0]
+
+   # Check gateway
+   low   = GL_ip2int(args['subnet'])
+   high  = low + 2**(32-int(args['mask'])) - 1
+   try:    gwint = GL_ip2int(args['gateway'])
+   except: gwint = 0
+   if not (low < gwint and gwint < high):
+    gwint = low + 1
+    ret['info'] = "illegal gateway"
+   args['gateway'] = str(gwint)
+   args['subnet']  = str(low)
+   if id == 'new':
+    ret['update'] = db.insert_dict('subnets',args,'ON DUPLICATE KEY UPDATE id = id')
+    id = db.get_last_id() if ret['update'] > 0 else "new"
+   else:
+    ret['update'] = db.update_dict('subnets',args,'id=%s'%id)
+
+  if not id == 'new':
+   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(subnet) AS subnet, INET_NTOA(gateway) AS gateway FROM subnets WHERE id = %s"%id)
    ret['data'] = db.get_row()
+  else:
+   ret['data'] = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }
  return ret
 
 #
@@ -67,54 +95,6 @@ def inventory(aDict):
    gw['gateway'] = 1
   else:
    ret['devices'][subnet['gateway']] = {'id':None,'ip':subnet['gateway'],'hostname':'gateway','gateway':1}
- return ret
-
-#
-#
-def update(aDict):
- """Function docstring for update TBD
-
- Args:
-  - subnet (required)
-  - description (required)
-  - mask (required)
-  - gateway (required)
-  - id (required)
-
- Output:
- """
- from struct import pack,unpack
- from socket import inet_aton,inet_ntoa
-
- def GL_ip2int(addr):
-  return unpack("!I", inet_aton(addr))[0]
- def GL_int2ip(addr):
-  return inet_ntoa(pack("!I", addr))
-
- ret = {}
- id = aDict.pop('id',None)
- args = aDict
-
- # Check gateway
- low   = GL_ip2int(args['subnet'])
- high  = low + 2**(32-int(args['mask'])) - 1
- try:    gwint = GL_ip2int(args['gateway'])
- except: gwint = 0
- if (low < gwint and gwint < high):
-  ret['gateway'] = args['gateway']
- else:
-  gwint = low + 1
-  ret['gateway'] = GL_int2ip(gwint)
-  ret['info'] = "illegal gateway"
- args['gateway'] = str(gwint)
- args['subnet']  = str(low)
- with DB() as db:
-  if id == 'new':
-   ret['update'] = db.insert_dict('subnets',args,'ON DUPLICATE KEY UPDATE id = id')
-   ret['id'] = db.get_last_id() if ret['update'] > 0 else "new"
-  else:
-   ret['update'] = db.update_dict('subnets',args,'id=%s'%id)
-   ret['id'] = id
  return ret
 
 #
