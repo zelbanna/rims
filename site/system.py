@@ -102,21 +102,14 @@ def node_list(aWeb):
 #
 #
 def node_info(aWeb):
- data = {'id':aWeb.get('id','new')}
- if aWeb['op'] == 'update' or aWeb['id'] == 'new':
-  data['op']   = aWeb['op']
-  data['node'] = aWeb.get('node','Not set')
-  data['url']  = aWeb.get('url','Not set')
-  if aWeb['op'] == 'update':
-   data = aWeb.rest_call("system_node_info",data)['data']
- else:
-  data = aWeb.rest_call("system_node_info",data)['data']
+ args = aWeb.get_args2dict(['call'])
+ data = aWeb.rest_call("system_node_info",args)['data']
  print "<ARTICLE CLASS='info'><P>Node Info</DIV>"
  print "<FORM ID=system_node_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id'])
  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=node STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['node'])
- print "<DIV CLASS=tr><DIV CLASS=td>URL:</DIV><DIV CLASS=td><INPUT  TYPE=TEXT NAME=url  STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['url'])
+ print "<DIV CLASS=tr><DIV CLASS=td>URL:</DIV><DIV CLASS=td><INPUT  TYPE=URL  NAME=url  STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['url'])
  print "</DIV></DIV>"
  print "<SPAN></SPAN>"
  print "</FORM><DIV CLASS=controls>"

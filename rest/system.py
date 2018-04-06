@@ -181,11 +181,11 @@ def settings_info(aDict):
     ret['update'] = db.insert_dict('settings',args)
     id = db.get_last_id()
 
-  if id == 'new':
-   ret['data'] = {'id':'new','value':'Not SET','section':'Not SET','parameter':'Not SET','description':'Not SET'}
-  else:
+  if not id == 'new':
    ret['xist'] = db.do("SELECT * FROM settings WHERE id = '%s'"%id)
    ret['data'] = db.get_row()
+  else:
+   ret['data'] = {'id':'new','value':'Not SET','section':'Not SET','parameter':'Not SET','description':'Not SET'}
  return ret
 
 #
@@ -375,8 +375,12 @@ def node_info(aDict):
    else:
     ret['update'] = db.insert_dict('nodes',args)
     id = db.get_last_id()
-  ret['xist'] = db.do("SELECT * FROM nodes WHERE id = '%s'"%id)
-  ret['data'] = db.get_row()
+
+  if not id == 'new':
+   ret['xist'] = db.do("SELECT * FROM nodes WHERE id = '%s'"%id)
+   ret['data'] = db.get_row()
+  else:
+   ret['data'] = {'id':'new','node':'Unknown','url':'Unknown'}
  return ret
 
 #
@@ -452,17 +456,17 @@ def resources_info(aDict):
  args = aDict
  with DB() as db:
   if op == 'update':
-   if id == 'new':
+   if not id == 'new':
+    ret['update'] = db.update_dict('resources',args,'id=%s'%id)
+   else:
     ret['update'] = db.insert_dict('resources',args)
     id = db.get_last_id()
-   else:
-    ret['update'] = db.update_dict('resources',args,'id=%s'%id)
 
-  if id == 'new':
-   ret['data'] = {'id':'new','node':aDict['node'],'user_id':aDict['user_id'],'title':'Unknown','href':'Unknown','type':None,'icon':None,'private':0,'view':0}
-  else:
+  if not id == 'new':
    db.do("SELECT * FROM resources WHERE id = '%s'"%id)
    ret['data'] = db.get_row()
+  else:
+   ret['data'] = {'id':'new','node':aDict['node'],'user_id':aDict['user_id'],'title':'Unknown','href':'Unknown','type':None,'icon':None,'private':0,'view':0}
  return ret
 
 #
@@ -518,13 +522,13 @@ def users_info(aDict):
  args = aDict
  with DB() as db:
   if op == 'update':
-   if id == 'new':
+   if not id == 'new':
+    ret['update'] = db.update_dict('users',args,"id=%s"%id)
+   else:
     ret['update'] = db.insert_dict('users',args)
     id = db.get_last_id()
-   else:
-    ret['update'] = db.update_dict('users',args,"id=%s"%id)
   
-  if id == 'new':
+  if not id == 'new':
    ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','view_public':'0','menulist':'default'}
   else:
    ret['xist'] = db.do("SELECT users.* FROM users WHERE id = '%s'"%id)
@@ -608,15 +612,14 @@ def activities_info(aDict):
     ret['update'] = db.insert_dict('activities',args)
     id = db.get_last_id()
 
-  if id == 'new':
+  if not id == 'new':
+   ret['xist'] = db.do("SELECT * FROM activities WHERE id = %s"%id)
+   act = db.get_row()
+   ret['data'] = {'id':id,'user_id':act['user_id'],'type':act['type'],'date':"%i-%02i-%02i"%(act['year'],act['month'],act['day']),'time':"%02i:%02i"%(act['hour'],act['minute']),'event':act['event']}
+  else:
    from time import localtime
    from datetime import date
    tm = localtime()
    dt = date.today()
    ret['data'] = {'id':'new','user_id':None,'type':'unknown','date':"%i-%02i-%02i"%(dt.year,dt.month,dt.day),'time':"%02i:%02i"%(tm.tm_hour,tm.tm_min),'event':'empty'}
-  else:
-   ret['xist'] = db.do("SELECT * FROM activities WHERE id = %s"%id)
-   act = db.get_row()
-   ret['data'] = {'id':id,'user_id':act['user_id'],'type':act['type'],'date':"%i-%02i-%02i"%(act['year'],act['month'],act['day']),'time':"%02i:%02i"%(act['hour'],act['minute']),'event':act['event']}
-
  return ret
