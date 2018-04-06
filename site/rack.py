@@ -12,7 +12,7 @@ __type__ = 'menuitem'
 ################################################## Basic Rack Info ######################################################
 
 def main(aWeb):
- racks = aWeb.rest_call("racks_list")
+ racks = aWeb.rest_call("rack_list")
  print "<NAV><UL>&nbsp;</UL></NAV>"
  print "<H1 CLASS='centered'>Rack Overview</H1>"
  print "<DIV CLASS='centered'>"
@@ -25,7 +25,7 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- racks = aWeb.rest_call("racks_list",{"sort":"name"})
+ racks = aWeb.rest_call("rack_list",{"sort":"name"})
  print "<ARTICLE><P>Rack</P>"
  print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=rack_list')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=rack_info&id=new')
@@ -53,7 +53,7 @@ def list_infra(aWeb):
 #
 #
 def inventory(aWeb):
- data = aWeb.rest_call("racks_devices",{"id":aWeb['rack']})
+ data = aWeb.rest_call("rack_devices",{"id":aWeb['rack']})
  size = data['size']
  print "<DIV STYLE='display:grid; justify-items:stretch; align-items:stretch; margin:10px; grid: repeat({}, 20px)/20px 220px 20px 20px 20px 220px 20px;'>".format(size)
  # Create rack and some text, then place devs
@@ -84,11 +84,11 @@ def inventory(aWeb):
 def info(aWeb):
  if aWeb.get('op') == 'save':
   data = {'name':aWeb['name'],'size':aWeb['size'],'pdu_1':aWeb['pdu_1'],'pdu_2':aWeb['pdu_2'],'console':aWeb['console'],'image_url':aWeb['image_url'],'id':aWeb['id']}
-  res = aWeb.rest_call("racks_update",data)
+  res = aWeb.rest_call("rack_update",data)
   id = res['id']
  else:
   id = aWeb['id']
- info = aWeb.rest_call("racks_infra",{'id':id,'consoles':True,'pdus':True,'images':True,'types':False})
+ info = aWeb.rest_call("rack_infra",{'id':id,'consoles':True,'pdus':True,'images':True,'types':False})
  print "<ARTICLE CLASS=info><P>Rack Info {}</P>".format("(new)" if id == 'new' else "")
  print "<FORM ID=rack_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(id)
@@ -127,5 +127,5 @@ def info(aWeb):
 #
 #
 def delete(aWeb):
- res = aWeb.rest_call("racks_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("rack_delete",{'id':aWeb['id']})
  print "<ARTICLE>Rack %s deleted (%s)</ARTICLE>"%(aWeb['id'],res)

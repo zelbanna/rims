@@ -21,7 +21,7 @@ def main(aWeb):
  if target == 'vm':
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?{}'></A></LI>".format(aWeb.get_args())
  else:
-  data = aWeb.rest_call("racks_info",{'id':arg} if target == 'rack_id' else None)
+  data = aWeb.rest_call("rack_info",{'id':arg} if target == 'rack_id' else None)
   for type in ['pdu','console']:
    if len(data[type]) > 0:
     print "<LI CLASS='dropdown'><A>%s</A><DIV CLASS='dropdown-content'>"%(type.title())

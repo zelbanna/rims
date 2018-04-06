@@ -30,7 +30,7 @@ def info(aDict):
   typexist = db.do("SELECT id, name, base FROM devicetypes")
   types    = db.get_dict('name') 
   if 'infra' in info:
-   from racks import infra
+   from rack import infra
    ret['infra'] = infra({'types':True,'consoles':True,'pdus':True})
    ret['infra']['domainxist'] = db.do("SELECT domains.* FROM domains WHERE name NOT LIKE '%%arpa' ORDER BY name")
    ret['infra']['domains'] = db.get_rows()

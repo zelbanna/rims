@@ -185,7 +185,7 @@ def settings_info(aDict):
    ret['xist'] = db.do("SELECT * FROM settings WHERE id = '%s'"%id)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = {'id':'new','value':'Not SET','section':'Not SET','parameter':'Not SET','description':'Not SET'}
+   ret['data'] = {'id':'new','value':'Unknown','section':'Unknown','parameter':'Unknown','description':'Unknown'}
  return ret
 
 #
