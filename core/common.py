@@ -90,9 +90,8 @@ class DB(object):
   return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join([ key + "=" + ("NULL" if value == 'NULL' else "'%s'"%value) for key,value in aDict.iteritems()]),aCondition))
 
  def insert_dict(self, aTable, aDict, aException = ""):
-  """Assumes not inserting NULL"""
   self._dirty = True
-  return self._curs.execute("INSERT INTO %s(%s) VALUES('%s') %s"%(aTable,",".join(aDict.keys()),"','".join(aDict.values()),aException))
+  return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(aDict.keys()),",".join(["'%s'"%val if not val == 'NULL' else 'NULL' for val in aDict.values()]),aException))
 
 
 ######################################### REST ########################################

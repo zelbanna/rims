@@ -39,18 +39,15 @@ def user(aWeb):
 def list(aWeb):
  rows = aWeb.rest_call("system_users_list")['data']
  print "<SECTION CLASS=content-left  ID=div_content_left>"
- print "<ARTICLE><P>Users</P>"
- print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?call=users_list')
+ print "<ARTICLE><P>Users</P><DIV CLASS=controls>"
+ print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=users_list')
  print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?call=users_info&id=new')
- print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV>"
- print "<DIV CLASS=tbody>"
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV><DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=users_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
-#
 #
 #
 def info(aWeb):
@@ -59,7 +56,7 @@ def info(aWeb):
  data = aWeb.rest_call("system_users_info",args)['data']
  resources = aWeb.rest_call("system_resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.id})['data']
  print aWeb.dragndrop()
- print "<ARTICLE CLASS='info'><P>User Info ({})</P>".format(data['id'])
+ print "<ARTICLE CLASS='info'><P>User Info (%s)</P>"%(data['id'])
  print "<FORM ID=user_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<INPUT TYPE=HIDDEN NAME=menulist ID=menulist VALUE='{}'>".format(data['menulist'])

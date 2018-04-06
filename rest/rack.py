@@ -25,6 +25,50 @@ def list(aDict):
 
 #
 #
+def info(aDict):
+ """Function docstring for info TBD
+
+ Args:
+  - id (required)
+  - op (optional)
+
+ Output:
+ """
+ ret =  {}
+ args = aDict
+ id = args.pop('id','new')
+ op = args.pop('op',None)
+ with DB() as db:
+  if op == 'update':
+   if not id == 'new':
+    ret['update'] = db.update_dict('racks',args,'id=%s'%id)
+   else:
+    ret['update'] = db.insert_dict('racks',args)
+    id = db.get_last_id() 
+  if not id == 'new':
+   ret['rackxist'] = db.do("SELECT racks.* FROM racks WHERE id = %s"%id)
+   ret['rack']     = db.get_row()
+  else:
+   ret['rack']     = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None, 'image_url':None }
+
+  ret['consolexist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'")
+  ret['consoles']    = db.get_rows()
+  ret['consoles'].append({ 'id':'NULL', 'hostname':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1', 'type':'NULL' })
+  ret['pduxist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'pdu' ORDER BY devices.hostname")
+  ret['pdus']    = db.get_rows()
+  ret['pdus'].append({ 'id':'NULL', 'hostname':'No PDU', 'ip':2130706433, 'ipasc':'127.0.0.1', 'type':'NULL'})
+  db.do("SELECT pduinfo.* FROM pduinfo")
+  ret['pduinfo'] = db.get_dict('device_id')
+  ret['pduinfo']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
+
+ from os import listdir, path
+ directory = listdir(path.join(SC['generic']['docroot'],"images")) if not SC['generic'].get('rack_image_directory') else SC['generic']['rack_image_directory']
+ ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
+ return ret
+
+
+#
+#
 def inventory(aDict):
  """Function docstring for inventory TBD
 
@@ -77,33 +121,6 @@ def devices(aDict):
 
 #
 #
-def update(aDict):
- """Function docstring for update TBD
-
- Args:
-  - console (required)
-  - name (required)
-  - image_url (required)
-  - pdu_1 (required)
-  - pdu_2 (required)
-  - id (required)
-  - size (required)
-
- Output:
- """
- ret = {'id':aDict['id']}
- id = aDict.pop('id',None)
- args = aDict
- with DB() as db:
-  if id == 'new':
-   ret['update'] = db.insert_dict('racks',args)
-   ret['id']   = db.get_last_id() 
-  else:
-   ret['update'] = db.update_dict('racks',args,'id=%s'%id)
- return ret
-
-#
-#
 def delete(aDict):
  """Function docstring for delete TBD
 
@@ -115,48 +132,3 @@ def delete(aDict):
  with DB() as db:
   deleted = db.do("DELETE FROM racks WHERE id = %s"%aDict['id'])
  return {'deleted':deleted}
-
-#
-#
-def infra(aDict):
- """Function docstring for infra TBD
-
- Args:
-  - id (optional), id of rack to get specific information on, 'new'|<x>, if left out, all racks are collected
-  - pdus (optional)
-  - consoles (optional)
-  - images (optional)
-  - types (optional)
-
- Output:
- """
- ret =  {}
- with DB() as db:
-  if aDict.get('id'):
-   if aDict.get('id') == 'new':
-    ret['rackxist'] = 0
-    ret['rack']     = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None, 'image_url':None }
-   else:
-    ret['rackxist'] = db.do("SELECT racks.* FROM racks WHERE id = %s"%aDict['id'])
-    ret['rack']     = db.get_row()
-  else:
-   ret['rackxist'] = db.do("SELECT racks.* FROM racks")
-   ret['racks']    =  db.get_rows()
-   ret['racks'].append({ 'id':'NULL', 'name':'Not used'})
-  if aDict.get('consoles',False):
-   ret['consolexist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'console'") 
-   ret['consoles']    = db.get_rows()
-   ret['consoles'].append({ 'id':'NULL', 'hostname':'No Console', 'ip':2130706433, 'ipasc':'127.0.0.1', 'type':'NULL' })
-  if aDict.get('pdus',False):
-   ret['pduxist'] = db.do("SELECT devices.id, devices.hostname, ip, INET_NTOA(ip) AS ipasc, devicetypes.name AS type FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = 'pdu' ORDER BY devices.hostname")
-   ret['pdus']    = db.get_rows()
-   ret['pdus'].append({ 'id':'NULL', 'hostname':'No PDU', 'ip':2130706433, 'ipasc':'127.0.0.1', 'type':'NULL'})
-   db.do("SELECT pduinfo.* FROM pduinfo")
-   ret['pduinfo'] = db.get_dict('device_id')
-   ret['pduinfo']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
-
- if aDict.get('images',False):
-  from os import listdir, path
-  directory = listdir(path.join(SC['generic']['docroot'],"images")) if not SC['generic'].get('rack_image_directory') else SC['generic']['rack_image_directory']
-  ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
- return ret
