@@ -181,7 +181,7 @@ def record_update(aDict):
  """Function docstring for record_update TBD
 
  Args:
-  - id (required) - id/0/'new'
+  - id (required)
   - name (required)
   - content (required)
   - type (required)

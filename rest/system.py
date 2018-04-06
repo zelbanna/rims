@@ -179,7 +179,7 @@ def settings_info(aDict):
     ret['update'] = db.update_dict('settings',args,"id=%s"%id) 
    else:
     ret['update'] = db.insert_dict('settings',args)
-    id = db.get_last_id()
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
    ret['xist'] = db.do("SELECT * FROM settings WHERE id = '%s'"%id)
@@ -374,7 +374,7 @@ def node_info(aDict):
     ret['update'] = db.update_dict('nodes',args,'id=%s AND (system = 0 OR www = 0)'%id)
    else:
     ret['update'] = db.insert_dict('nodes',args)
-    id = db.get_last_id()
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
    ret['xist'] = db.do("SELECT * FROM nodes WHERE id = '%s'"%id)
@@ -460,7 +460,7 @@ def resources_info(aDict):
     ret['update'] = db.update_dict('resources',args,'id=%s'%id)
    else:
     ret['update'] = db.insert_dict('resources',args)
-    id = db.get_last_id()
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
    db.do("SELECT * FROM resources WHERE id = '%s'"%id)
@@ -506,7 +506,7 @@ def users_info(aDict):
  """Function docstring for users_info TBD
 
  Args:
-  - id (required) -  <x|'new'>
+  - id (required)
   - op (optional)
   - name (optional)
   - view_public (optional)
@@ -526,7 +526,7 @@ def users_info(aDict):
     ret['update'] = db.update_dict('users',args,"id=%s"%id)
    else:
     ret['update'] = db.insert_dict('users',args)
-    id = db.get_last_id()
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
   
   if not id == 'new':
    ret['xist'] = db.do("SELECT users.* FROM users WHERE id = '%s'"%id)
@@ -588,7 +588,7 @@ def activities_info(aDict):
  """ Function docstring for activities_info. TBD
 
  Args:
-  - id (required). 'new'/<id>
+  - id (required)
   - start (optional)
 
  Output:
@@ -609,7 +609,7 @@ def activities_info(aDict):
     ret['update'] = db.update_dict('activities',args,'id = %s'%id)
    else:
     ret['update'] = db.insert_dict('activities',args)
-    id = db.get_last_id()
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
    ret['xist'] = db.do("SELECT * FROM activities WHERE id = %s"%id)

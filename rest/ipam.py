@@ -27,7 +27,7 @@ def info(aDict):
  """Function docstring for info TBD
 
  Args:
-  - id (required) ('new' / <no>)
+  - id (required)
   - subnet (optional)
   - description (optional)
   - mask (optional)
@@ -58,7 +58,7 @@ def info(aDict):
    args['subnet']  = str(low)
    if id == 'new':
     ret['update'] = db.insert_dict('subnets',args,'ON DUPLICATE KEY UPDATE id = id')
-    id = db.get_last_id() if ret['update'] > 0 else "new"
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
    else:
     ret['update'] = db.update_dict('subnets',args,'id=%s'%id)
 

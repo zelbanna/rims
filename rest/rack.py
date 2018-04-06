@@ -44,7 +44,7 @@ def info(aDict):
     ret['update'] = db.update_dict('racks',args,'id=%s'%id)
    else:
     ret['update'] = db.insert_dict('racks',args)
-    id = db.get_last_id() 
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
   if not id == 'new':
    ret['rackxist'] = db.do("SELECT racks.* FROM racks WHERE id = %s"%id)
    ret['rack']     = db.get_row()
