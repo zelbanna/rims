@@ -4,7 +4,7 @@ HTML5 Ajax Device calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__ = "Production"
 __icon__ = 'images/icon-network.png'
 __type__ = 'menuitem'
@@ -176,7 +176,7 @@ def info(aWeb):
  print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%'><SPAN>Comments:</SPAN><INPUT CLASS='background' STYLE='width:{}px; overflow-x:auto;' TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV>".format(width-90,"" if not dev['info']['comment'] else dev['info']['comment'])
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=device_info&id=%i'%dev['id'])
- print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
+ print aWeb.button('trash',DIV='div_content_right',URL='sdcp.cgi?call=device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?call=device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
  print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?call=device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')

@@ -4,7 +4,7 @@ HTML5 Ajax SDCP generic module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__= "Production"
 
 #
@@ -114,7 +114,7 @@ def node_info(aWeb):
  print "</FORM><DIV CLASS=controls>"
  if str(data.get('system','0')) == '0':
   print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?call=system_node_info&op=update', FRM='system_node_form')
-  print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=system_node_delete', FRM='system_node_form')
+  print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?call=system_node_delete', FRM='system_node_form')
  print "</DIV></ARTICLE>"
 
 #

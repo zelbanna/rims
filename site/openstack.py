@@ -5,7 +5,7 @@ HTML5 Ajax Openstack Generic calls module
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__= "Production"
 
 ############################################## Openstack ###############################################

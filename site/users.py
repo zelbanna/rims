@@ -5,7 +5,7 @@ HTML5 Ajax Users calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__ = "Production"
 __icon__ = 'images/icon-users.png'
 __type__ = 'menuitem'
@@ -76,9 +76,9 @@ def info(aWeb):
   except: pass
  print "</UL></DIV>"
  print "</FORM><DIV CLASS=controls>"
- if data['id'] != 'new' and ((cookie['id'] == str(data['id']) or cookie['id'] == "1")):
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=users_delete&id={0}'.format(data['id']), MSG='Really remove user?')
  print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=users_info&op=update', FRM='user_info_form')
+ if data['id'] != 'new' and ((cookie['id'] == str(data['id']) or cookie['id'] == "1")):
+  print aWeb.button('trash',DIV='div_content_right',URL='sdcp.cgi?call=users_delete&id={0}'.format(data['id']), MSG='Really remove user?')
  print "</DIV>"
  print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>"
  for id,resource in resources.iteritems():

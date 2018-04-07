@@ -4,7 +4,7 @@ HTML5 Ajax Settings calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__= "Production"
 
 #
@@ -50,8 +50,8 @@ def info(aWeb):
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&op=update', FRM='settings_info_form')
  if data['id'] != 'new':
-  print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=settings_delete&id=%s&node=%s'%(data['id'],aWeb['node']), MSG='Delete settings?')
-  print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&id=new&section=%s&node=%s'%(data['section'],aWeb['node']))
+  print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?call=settings_delete&id=%s&node=%s'%(data['id'],aWeb['node']), MSG='Delete settings?')
+  print aWeb.button('add',   DIV='div_content_right', URL='sdcp.cgi?call=settings_info&id=new&section=%s&node=%s'%(data['section'],aWeb['node']))
  print "</DIV></ARTICLE>"
 
 #

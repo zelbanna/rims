@@ -4,7 +4,7 @@ HTML5 Ajax IPAM calls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__= "Production"
 
 #
@@ -40,7 +40,7 @@ def info(aWeb):
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?call=ipam_info&id=%s'%data['id'])
  print aWeb.button('save'  ,DIV='div_content_right',URL='sdcp.cgi?call=ipam_info&op=update', FRM='ipam_info_form')
  if not data['id'] == 'new':
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=ipam_delete&id=%s'%data['id'],MSG='Are you really sure')
+  print aWeb.button('trash',DIV='div_content_right',URL='sdcp.cgi?call=ipam_delete&id=%s'%data['id'],MSG='Are you really sure')
  print "</DIV>"
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</ARTICLE>"

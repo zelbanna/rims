@@ -4,7 +4,7 @@ HTML5 Ajax Racks calls module
 
 """
 __author__= "Zacharias El Banna"                     
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__ = "Production"
 __icon__ = 'images/icon-rack.png'
 __type__ = 'menuitem'
@@ -113,7 +113,7 @@ def info(aWeb):
  print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?call=rack_info&id={0}'.format(data['id']))
  print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?call=rack_info&op=update', FRM='rack_info_form')
  if not id == 'new':
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_delete&id=%s'%(data['id']))
+  print aWeb.button('trash',DIV='div_content_right',URL='sdcp.cgi?call=rack_delete&id=%s'%(data['id']))
  print "</DIV></ARTICLE>"
 
 #
