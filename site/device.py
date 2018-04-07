@@ -117,14 +117,11 @@ def info(aWeb):
  print "<DIV STYLE='margin:3px; float:left;'>"
  print "<DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV>"
- if dev['info']['vm']:
-  print "<DIV CLASS=td>Not used <INPUT TYPE=hidden NAME=rackinfo_rack_id VALUE=NULL></DIV>"
- else:
-  print "<DIV CLASS=td><SELECT NAME=rackinfo_rack_id>"
-  for rack in dev['infra']['racks']:
-   extra = " selected" if ((dev['racked'] == 0 and rack['id'] == 'NULL') or (dev['racked'] == 1 and dev['info']['rack_id'] == rack['id'])) else ""
-   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
-  print "</SELECT></DIV>"
+ print "<DIV CLASS=td><SELECT NAME=rackinfo_rack_id>"
+ for rack in dev['infra']['racks']:
+  extra = " selected" if ((dev['racked'] == 0 and rack['id'] == 'NULL') or (dev['racked'] == 1 and dev['info']['rack_id'] == rack['id'])) else ""
+  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
+ print "</SELECT></DIV>"
  print "</DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>DNS A ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_a_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['a_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>DNS PTR ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ptr_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['ptr_id'])
