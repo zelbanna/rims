@@ -44,13 +44,14 @@ def list(aWeb):
 def info(aWeb):
  cookie = aWeb.cookie_unjar('system')
  args = aWeb.get_args2dict(['call'])
- data = aWeb.rest_call("system_activities_info",args)['data']
+ res  = aWeb.rest_call("system_activities_info",args)
+ data = res['data']
  print "<ARTICLE CLASS='info'><P>Activity (%s)</P>"%(data['id'])
  print "<FORM ID=activity_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>User:</DIV><DIV CLASS=td><SELECT NAME=user_id>"
- for user in data['users']:
+ for user in res['users']:
   selected = 'selected' if data['user_id'] == user['id'] or (data['id'] == 'new' and cookie['id'] == str(user['id'])) else ''
   print "<OPTION %s VALUE='%s'>%s</OPTION>"%(selected,user['id'],user['alias'])
  print "</SELECT></DIV></DIV>"
