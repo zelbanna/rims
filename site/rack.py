@@ -77,43 +77,43 @@ def inventory(aWeb):
 
 #
 #
-#
 def info(aWeb):
  args = aWeb.get_args2dict(['call'])
- data = aWeb.rest_call("rack_info",args)
- print "<ARTICLE CLASS=info><P>Rack Info (%s)</P>"%(data['rack']['id'])
+ res  = aWeb.rest_call("rack_info",args)
+ data = res['data']
+ print "<ARTICLE CLASS=info><P>Rack Info (%s)</P>"%(data['id'])
  print "<FORM ID=rack_info_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['rack']['id'])
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id'])
  print "<DIV CLASS=table><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='%s'></DIV></DIV>"%(data['rack']['name'])
- print "<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT VALUE='%s'></DIV></DIV>"%(data['rack']['size'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='%s'></DIV></DIV>"%(data['name'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT VALUE='%s'></DIV></DIV>"%(data['size'])
  print "<DIV CLASS=tr><DIV CLASS=td>Console:</DIV><DIV CLASS=td><SELECT NAME=console>"
- for unit in data['consoles']:
-  extra = " selected" if (data['rack']['console'] == unit['id']) or (not data['rack']['console'] and unit['id'] == 'NULL') else ""
+ for unit in res['consoles']:
+  extra = " selected" if (data['console'] == unit['id']) or (not data['console'] and unit['id'] == 'NULL') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname'])
  print "</SELECT></DIV></DIV>"
 
  for key in ['pdu_1','pdu_2']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME=%s>"%(key.capitalize(),key)
-  for unit in data['pdus']:
-   extra = " selected" if (data['rack'][key] == unit['id']) or (not data['rack'][key] and unit['id'] == 'NULL') else ""
+  for unit in res['pdus']:
+   extra = " selected" if (data[key] == unit['id']) or (not data[key] and unit['id'] == 'NULL') else ""
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname'])
   print "</SELECT></DIV></DIV>"
 
  print "<DIV CLASS=tr><DIV CLASS=td>Image</DIV><DIV CLASS=td><SELECT NAME=image_url>"
  print "<OPTION VALUE=NULL>No picture</OPTION>"
- for image in data['images']:
-  extra = " selected" if (data['rack']['image_url'] == image) or (data['rack']['image_url'] and image == 'NULL') else ""
+ for image in res['images']:
+  extra = " selected" if (data['image_url'] == image) or (data['image_url'] and image == 'NULL') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(image,extra,image[:-4])
  print "</SELECT></DIV></DIV>"
 
  print "</DIV></DIV>"
  print "<SPAN CLASS='right small-text' ID=update_results></SPAN>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?call=rack_info&id={0}'.format(data['rack']['id']))
+ print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?call=rack_info&id={0}'.format(data['id']))
  print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?call=rack_info&op=update', FRM='rack_info_form')
  if not id == 'new':
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_delete&id=%s'%(data['rack']['id']))
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=rack_delete&id=%s'%(data['id']))
  print "</DIV></ARTICLE>"
 
 #

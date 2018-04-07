@@ -29,13 +29,6 @@ def info(aDict):
   # Prep types for lookup
   typexist = db.do("SELECT id, name, base FROM devicetypes")
   types    = db.get_dict('name') 
-  if 'infra' in info:
-   from rack import infra
-   ret['infra'] = infra({'types':True,'consoles':True,'pdus':True})
-   ret['infra']['domainxist'] = db.do("SELECT domains.* FROM domains WHERE name NOT LIKE '%%arpa' ORDER BY name")
-   ret['infra']['domains'] = db.get_rows()
-   ret['infra']['typexist'] = typexist
-   ret['infra']['types']    = types
 
   # Move aDict to args for op
   operation = aDict.pop('op',None)
@@ -96,18 +89,34 @@ def info(aDict):
    ret['mac']  = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
    if not ret['info']['functions']:
     ret['info']['functions'] = ""
-   if 'username' in info:
-    ret['username'] = SC['netconf']['username']
-   if 'booking' in info:
-    ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id']))
-    if ret['booked'] > 0:
-     ret['booking'] = db.get_row()
+   ret['username'] = SC['netconf']['username']
+   ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id']))
+   if ret['booked'] > 0:
+    ret['booking'] = db.get_row()
+
+   # Rack infrastructure
+   ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
+   ret['infra']['types'] = types
+   db.do("SELECT domains.* FROM domains WHERE name NOT LIKE '%%arpa' ORDER BY name")
+   ret['infra']['domains'] = db.get_rows()
    if ret['info']['vm'] == 1:
     ret['racked'] = 0
    else:
+    db.do("SELECT id, name FROM racks")
+    ret['infra']['racks'].extend(db.get_rows())
     ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(devices.ip) AS console_ip, devices.hostname AS console_name FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.console_id WHERE rackinfo.device_id = %i"%(ret['id']))
     if ret['racked'] > 0:
      ret['info'].update(db.get_row())
+     sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = '%s' ORDER BY devices.hostname"
+     db.do(sqlbase%('console'))
+     ret['infra']['consoles'] = db.get_rows()
+     ret['infra']['consoles'].append({ 'id':'NULL', 'hostname':'No Console' })
+     db.do(sqlbase%('pdu'))
+     ret['infra']['pdus'] = db.get_rows()
+     ret['infra']['pdus'].append({ 'id':'NULL', 'hostname':'No PDU' })
+     db.do("SELECT pduinfo.* FROM pduinfo")
+     ret['infra']['pduinfo'] = db.get_dict('device_id')
+     ret['infra']['pduinfo']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
 
   if operation == 'update' and ret['racked']:
    for pem in [0,1]:

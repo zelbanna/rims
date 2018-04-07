@@ -148,21 +148,21 @@ def info(aWeb):
  print "</DIV>"
  print "</DIV></DIV></DIV>"
 
- print "<!-- Rack Info if such exists -->"
+ print "<!-- Rack Info -->"
  if dev['racked'] == 1 and not dev['type'] == 'pdu':
   print "<DIV STYLE='margin:3px; float:left;'>"
   print "<DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
   if not dev['type'] == 'controlplane':
    print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['info']['rack_size'])
    print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['info']['rack_unit'])
-  if not dev['type'] == 'console' and dev['infra']['consolexist'] > 0:
+  if not dev['type'] == 'console' and len(dev['infra']['consoles']) > 0:
    print "<DIV CLASS=tr><DIV CLASS=td>TS:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_console_id>"
    for console in dev['infra']['consoles']:
     extra = " selected='selected'" if (dev['info']['console_id'] == console['id']) or (not dev['info']['console_id'] and console['id'] == 'NULL') else ""
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['hostname'])
    print "</SELECT></DIV></DIV>"
    print "<DIV CLASS=tr><DIV CLASS=td>TS Port:</DIV><DIV CLASS=td TITLE='Console port in rack TS'><INPUT NAME=rackinfo_console_port TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['info']['console_port'])
-  if not dev['type'] == 'controlplane' and dev['infra']['pduxist'] > 0:
+  if not dev['type'] == 'controlplane' and len(dev['infra']['pdus']) > 0:
    for pem in ['pem0','pem1']:
     print "<DIV CLASS=tr><DIV CLASS=td>{0} PDU:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_{1}_pdu_slot_id>".format(pem.upper(),pem)
     for pdu in dev['infra']['pdus']:
