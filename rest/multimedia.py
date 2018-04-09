@@ -40,13 +40,13 @@ def cleanup(aDict):
  for path,dirs,files in walk(ret['root']):
   for item in files:
    try: remove(ospath.join(path,item))
-   except Exception as err: ret['error'].append({'item':'error','info':str(err)})
+   except Exception as err: ret['items'].append({'item':'error','info':str(err)})
    else: ret['items'].append({'item':'file','info':item})
   for item in dirs:
    if item == '.':
     continue
    try: rmdir(ospath.join(path,item))
-   except Exception as err: ret['error'].append({'item':'error','info':str(err)})
+   except Exception as err: ret['items'].append({'item':'error','info':str(err)})
    else: ret['items'].append({'item':'dir','info':item})
  return ret
 

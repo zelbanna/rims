@@ -13,6 +13,23 @@ __status__ = "Production"
 # - dimmable switch object in vera
 # - use nodes :-)
 
+#
+#
+def portal(aWeb):
+ aWeb.put_html('Vera')
+ res = aWeb.rest_call("vera_infra&node=master",{'node':'vera'})
+ print "<MAIN STYLE='top:0px;' ID=main>"
+ print "<ARTICLE CLASS='mobile'>"
+ print "<DIV CLASS=table><DIV CLASS=tbody>"
+ for scen in res['scenes'].values():
+  id = scen['id']
+  name = scen['name'].replace('_',' ')
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_scene_info&node=vera&scene=%s>%s</A></DIV>"%(id,name)
+  print "<DIV CLASS=td><DIV CLASS=controls ID=scene_%s>"%id
+  print aWeb.button('start' if scen['active'] == 0 else 'stop',URL='sdcp.cgi?call=vera_scene_state&node=vera&scene=%s&op=%s'%(id,"run" if scen['active'] == 0 else "off"),DIV='scene_%s'%id)
+  print "</DIV></DIV></DIV>"
+ print "</DIV></DIV></ARTICLE>"
+ print "</MAIN>"
 
 ########################################## Vera Operations ##########################################
 #
@@ -109,5 +126,4 @@ def scenes(aWeb):
 
 def scene_state(aWeb):
  res = aWeb.rest_call("vera_scene&node=master",{'node':aWeb['node'],'scene':aWeb['scene'],'op':aWeb['op']})
- print "<!-- %s -->"%str(res)
  print aWeb.button('stop' if aWeb['op'] == "run" else 'start',URL='sdcp.cgi?call=vera_scene_state&node=%s&scene=%s&op=%s'%(aWeb['node'],aWeb['scene'],"run" if aWeb['op'] == "off" else "off"),DIV='div_scene_%s'%aWeb['id'])
