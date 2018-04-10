@@ -16,7 +16,7 @@ __status__ = "Production"
 #
 #
 def portal(aWeb):
- aWeb.put_html('Vera')
+ aWeb.put_html('Vera','lights')
  res = aWeb.rest_call("vera_infra&node=master",{'node':'vera'})
  print "<MAIN STYLE='top:0px;' ID=main>"
  print "<ARTICLE CLASS='mobile'>"
