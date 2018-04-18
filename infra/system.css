@@ -80,6 +80,11 @@ div.td > input:-webkit-input-placeholder { color: #9CA6B0; }
 div.td > input:-moz-placeholder {          color: #9CA6B0; opacity:1; }
 div.controls { display:inline; font-size:5px; }
 
+article.mobile div.table .tbody .tr { line-height:88px; }
+article.mobile div.td { font-size:64px; }
+article.mobile button.small > img { height:88px; width:88px; }
+article.mobile button.small { height: 88px; width: 88px; }
+
 /*#############################################################################*/
  
 .warning {     background-color:red!important; font-weight:bold; color:#FFFFFF }
