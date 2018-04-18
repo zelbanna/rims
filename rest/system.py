@@ -49,7 +49,7 @@ def authenticate(aDict):
  try:    tmp = int(aDict['id'])
  except: ret['authenticated'] = 'NOT_OK'
  else:   ret['authenticated'] = 'OK'
- ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+ ret['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 
 #
@@ -563,6 +563,7 @@ def activities_list(aDict):
  ret = {'start':aDict.get('start','0')}
  ret['end'] = int(ret['start']) + 50
  with DB() as db:
+  db.do("SET NAMES utf8")
   db.do("SELECT id, type, CONCAT(hour,':',minute) AS time, CONCAT(year,'-',month,'-',day) AS date FROM activities ORDER BY year,month,day DESC LIMIT %s, %s"%(ret['start'],ret['end']))
   ret['data'] = db.get_rows()
  return ret
@@ -611,6 +612,7 @@ def activities_info(aDict):
     ret['update'] = db.insert_dict('activities',args)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
+  db.do("SET NAMES utf8")
   if not id == 'new':
    ret['xist'] = db.do("SELECT * FROM activities WHERE id = %s"%id)
    act = db.get_row()
