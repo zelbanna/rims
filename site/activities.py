@@ -32,7 +32,7 @@ def list(aWeb):
  print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?call=activities_info&id=new')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Date</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s - %s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;</DIV>"%(row['date'],row['time'],row['type'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{} - {}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;</DIV>".format(row['date'],row['time'],row['type'].encode("utf-8"))
   print aWeb.button('info',   DIV='div_content_right', URL='sdcp.cgi?call=activities_info&id=%s'%row['id'])
   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=activities_delete&id=%s'%row['id'])
   print "</DIV>"
@@ -56,7 +56,7 @@ def info(aWeb):
   print "<OPTION %s VALUE='%s'>%s</OPTION>"%(selected,user['id'],user['alias'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Date:</DIV><DIV CLASS=td><INPUT TYPE=date NAME=date VALUE='%s'> <INPUT TYPE=time NAME=time VALUE='%s'></DIV></DIV>"%(data['date'],data['time'])
- print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE='%s'></DIV></DIV>"%(data['type'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE='%s'></DIV></DIV>"%(data['type'].encode("utf-8"))
  print "</DIV></DIV>"
  print "<TEXTAREA STYLE='width:100%; height:70px;' NAME=event>{}</TEXTAREA>".format(data['event'])
  print "</FORM><DIV CLASS=controls>"
