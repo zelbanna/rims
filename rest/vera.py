@@ -100,6 +100,7 @@ def devices(aDict):
 
  Args:
   - node (required)
+  - room (optional)
 
  Output:
  """
@@ -107,9 +108,9 @@ def devices(aDict):
   ret = {}
   node = SC['node'][aDict['node']]
   info = rest_call("%s?id=sdata"%node)['data']
-  ret['devices'] = info['devices']
+  ret['devices'] = info['devices'] if not aDict.get('room') else [ x for x in info['devices'] if x['room'] == int(aDict.get('room')) ]
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
-  ret['rooms']   = { d['id']: d['name'] for d in info['rooms'] }
+  ret['rooms']   = { d['id']:d['name'] for d in info['rooms'] }
  except Exception,e:
   ret = e[0] 
  return ret

@@ -65,7 +65,8 @@ def status(aWeb):
 #
 #
 def devices(aWeb):
- res = aWeb.rest_call("vera_devices&node=master",{'node':aWeb['node']})
+ args = aWeb.get_args2dict(['call'])
+ res = aWeb.rest_call("vera_devices&node=master",args)
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
  print "<DIV CLASS=table>"
@@ -97,12 +98,11 @@ def device_info(aWeb):
 #
 def rooms(aWeb):
  res = aWeb.rest_call("vera_infra&node=master",{'node':aWeb['node']})
- print "<SECTION CLASS=content-left ID=div_content_left>"
- print "<ARTICLE>"
+ print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Section</DIV></DIV><DIV CLASS=tbody>"
  for room in res['rooms'].values():
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%room['id']
-  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_room_info&node=%s&id=%s>%s</A></DIV>"%(aWeb['node'],room['id'],room['name'])
+  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=vera_devices&node=%s&room=%s>%s</A></DIV>"%(aWeb['node'],room['id'],room['name'])
   print "<DIV CLASS=td>%s</DIV></DIV>"%(res['sections'][str(room['section'])])
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"

@@ -328,7 +328,7 @@ def to_node(aDict):
   dev = db.get_row()
   for test in ['ip','fqdn','hostname']:
    if db.do("SELECT node FROM nodes WHERE url LIKE '%{}%'".format(dev[test])) > 0:
-    ret['node']  = db.get_val('parameter')
+    ret['node']  = db.get_val('node')
     ret['found'] = test
     break
  return ret
