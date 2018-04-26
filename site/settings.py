@@ -18,15 +18,15 @@ def list(aWeb):
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Settings</P>"
  print "<DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=settings_list&node=%s'%aWeb['node'])
- print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=settings_info&id=new&node=%s'%aWeb['node'])
- print aWeb.button('document', DIV='div_content_right', URL='sdcp.cgi?call=settings_view&node=%s'%aWeb['node'])
- print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?call=settings_save&node=%s'%aWeb['node'])
+ print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?settings_list&node=%s'%aWeb['node'])
+ print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?settings_info&id=new&node=%s'%aWeb['node'])
+ print aWeb.button('document', DIV='div_content_right', URL='sdcp.cgi?settings_view&node=%s'%aWeb['node'])
+ print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?settings_save&node=%s'%aWeb['node'])
  print "</DIV>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Section</DIV><DIV CLASS=th>Parameter</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res.get('data'):
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=settings_view&section={1}&node={2}'>{1}</A></DIV><DIV CLASS=td TITLE='{3}'><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=settings_info&id={0}&node={2}'>{4}</A></DIV>".format(row['id'],row['section'],aWeb['node'],row['description'],row['parameter'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?settings_view&section={1}&node={2}'>{1}</A></DIV><DIV CLASS=td TITLE='{3}'><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?settings_info&id={0}&node={2}'>{4}</A></DIV>".format(row['id'],row['section'],aWeb['node'],row['description'],row['parameter'])
   print "</DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -48,10 +48,10 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT></DIV></DIV>"%(data['description'])
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=settings_info&op=update', FRM='settings_info_form')
+ print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?settings_info&op=update', FRM='settings_info_form')
  if data['id'] != 'new':
-  print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?call=settings_delete&id=%s&node=%s'%(data['id'],aWeb['node']), MSG='Delete settings?')
-  print aWeb.button('add',   DIV='div_content_right', URL='sdcp.cgi?call=settings_info&id=new&section=%s&node=%s'%(data['section'],aWeb['node']))
+  print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?settings_delete&id=%s&node=%s'%(data['id'],aWeb['node']), MSG='Delete settings?')
+  print aWeb.button('add',   DIV='div_content_right', URL='sdcp.cgi?settings_info&id=new&section=%s&node=%s'%(data['section'],aWeb['node']))
  print "</DIV></ARTICLE>"
 
 #

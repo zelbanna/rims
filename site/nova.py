@@ -20,20 +20,20 @@ def list(aWeb):
  data = aWeb.rest_call("openstack_call",{'token':cookie['token'],'service':"nova",'call':"servers/detail"})['data']
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Nova Servers</P>"
  print "<DIV CLASS=controls>"
- print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=nova_list')
- print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=nova_select_parameters')
+ print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?nova_list')
+ print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?nova_select_parameters')
  print "</DIV>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:135px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for server in data.get('servers'):
   print "<DIV CLASS=tr>"
   print "<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state'])
-  print "<DIV CLASS=td STYLE='max-width:200px'><A CLASS='z-op' TITLE='VM info' DIV=div_content_right URL=sdcp.cgi?call=nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
+  print "<DIV CLASS=td STYLE='max-width:200px'><A CLASS='z-op' TITLE='VM info' DIV=div_content_right URL=sdcp.cgi?nova_action&id={}&op=info SPIN=true>{}</A></DIV>".format(server['id'],server['name'])
   print "<DIV CLASS=td><DIV CLASS=controls>"
   qserver = get_quote(server['name'])
-  actionurl = 'sdcp.cgi?call=nova_action&name=%s&id=%s&op={}'%(qserver,server['id'])
-  print aWeb.a_button('term', TARGET='_blank', HREF='sdcp.cgi?call=nova_console&name=%s&id=%s'%(qserver,server['id']), TITLE='New window console')
-  print aWeb.button('term-frame', DIV='div_content_right', URL='sdcp.cgi?call=nova_console&inline=yes&id=%s'%server['id'], TITLE='Embedded console')
+  actionurl = 'sdcp.cgi?nova_action&name=%s&id=%s&op={}'%(qserver,server['id'])
+  print aWeb.a_button('term', TARGET='_blank', HREF='sdcp.cgi?nova_console&name=%s&id=%s'%(qserver,server['id']), TITLE='New window console')
+  print aWeb.button('term-frame', DIV='div_content_right', URL='sdcp.cgi?nova_console&inline=yes&id=%s'%server['id'], TITLE='Embedded console')
   print aWeb.button('delete', DIV='div_content_right', URL=actionurl.format('remove'), MSG='Are you sure you want to delete VM?', SPIN='true')
   if not server['OS-EXT-STS:task_state']:
    if   server['status'] == 'ACTIVE':
@@ -73,7 +73,7 @@ def select_parameters(aWeb):
  print "</DIV></DIV>"
  print "<DIV CLASS='border'><UL CLASS='drop vertical' ID=ul_network DEST=os_network></UL></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=nova_action&id=new&op=add',FRM='frm_os_create_vm', SPIN='true')
+ print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?nova_action&id=new&op=add',FRM='frm_os_create_vm', SPIN='true')
  print "</DIV>"
  print "<DIV CLASS='border'><UL CLASS='drop vertical' ID=ul_avail>"
  for net in resources['networks']:
@@ -99,12 +99,12 @@ def action(aWeb):
   args['call'] = "servers/%s"%aWeb['id']
   server = aWeb.rest_call("openstack_call",args)['data']['server']
   qserver = get_quote(server['name'])
-  tmpl = "<BUTTON CLASS='z-op' TITLE='{}' DIV=div_os_info URL=sdcp.cgi?call=nova_action&id=%s&op={} SPIN=true>{}</BUTTON>"%aWeb['id']
+  tmpl = "<BUTTON CLASS='z-op' TITLE='{}' DIV=div_os_info URL=sdcp.cgi?nova_action&id=%s&op={} SPIN=true>{}</BUTTON>"%aWeb['id']
   print "<DIV>"
   print tmpl.format('Details','details','VM Details')
   print tmpl.format('Diagnostics','diagnostics','Diagnostics')
   print tmpl.format('Networks','networks','Networks')
-  print "<A CLASS=btn TITLE='New-tab Console' TARGET=_blank HREF='sdcp.cgi?call=nova_console&name={0}&id={1}'>Console</A>".format(qserver,aWeb['id'])
+  print "<A CLASS=btn TITLE='New-tab Console' TARGET=_blank HREF='sdcp.cgi?nova_console&name={0}&id={1}'>Console</A>".format(qserver,aWeb['id'])
   print "</DIV>"
   print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
   dict2html(server,server['name'])
@@ -142,11 +142,11 @@ def action(aWeb):
    print "<DIV CLASS=tr>"
    print "<DIV CLASS=td>{}</DIV>".format(intf['mac_address'])
    print "<DIV CLASS=td>{}</DIV>".format(intf['routing-instance'])
-   print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=sdcp.cgi?call=neutron_action&id={0}&op=info>{1}</A></DIV>".format(intf['network_uuid'],intf['network_fqdn'])
+   print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=sdcp.cgi?neutron_action&id={0}&op=info>{1}</A></DIV>".format(intf['network_uuid'],intf['network_fqdn'])
    print "<DIV CLASS=td>{}</DIV>".format(intf['ip_address'])
    if intf.get('floating_ip_address'):
     print "<DIV CLASS=td>{} ({})</DIV><DIV CLASS=td>&nbsp;".format(intf['floating_ip_address'],intf['floating_ip_name'])
-    print aWeb.button('delete',DIV='div_os_info', URL='sdcp.cgi?call=neutron_action&op=fi_disassociate&id=%s'%intf['floating_ip_uuid'], SPIN='true')
+    print aWeb.button('delete',DIV='div_os_info', URL='sdcp.cgi?neutron_action&op=fi_disassociate&id=%s'%intf['floating_ip_uuid'], SPIN='true')
     print "</DIV>"
    else:
     print "<DIV CLASS=td>&nbsp;</DIV>"

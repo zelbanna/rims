@@ -18,12 +18,12 @@ def main(aWeb):
  ip   = aWeb.rest_call("dns_external_ip")['ip']
  svcs = aWeb.rest_call("multimedia_services")
  print "<NAV><UL>"
- print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=multimedia_list'>Media files</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?multimedia_list'>Media files</A></LI>"
  print "<LI CLASS='dropdown'><A>Services</A><DIV CLASS='dropdown-content'>"
  for svc in svcs.get('services',[]):
-  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_services_info&node=%s&service=%s'>%s</A>"%(aWeb.id,svc['service'],svc['name'])
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?tools_services_info&node=%s&service=%s'>%s</A>"%(aWeb.id,svc['service'],svc['name'])
  print "</DIV></LI>"
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=multimedia_main'></A></LI>"
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?multimedia_main'></A></LI>"
  print "<LI CLASS='right navinfo'><A>%s</A></LI>"%(ip)
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
@@ -34,15 +34,15 @@ def list(aWeb):
  data = aWeb.rest_call("multimedia_list")
  print "<SECTION CLASS=content-left  ID=div_content_left>"
  print "<ARTICLE><P>Files</P><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=multimedia_list')
- print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?call=multimedia_cleanup', MSG='Are you sure?')
+ print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?multimedia_list')
+ print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?multimedia_cleanup', MSG='Are you sure?')
  print "</DIV><DIV CLASS=table><DIV CLASS=tbody>"
  for row in data['files']:
   print "<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:290px'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['file'])
-  print aWeb.button('info',     DIV='div_content_right', TITLE='Title info', URL='sdcp.cgi?call=multimedia_title&path=%s&file=%s'%(row['path'],row['file']))
-  print aWeb.button('search',   DIV='div_content_right', TITLE='Lookup info',URL='sdcp.cgi?call=multimedia_lookup&path=%s&file=%s'%(row['path'],row['file']))
-  print aWeb.button('document', DIV='div_content_right', TITLE='Subtitles',  URL='sdcp.cgi?call=multimedia_subtitles&path=%s&file=%s'%(row['path'],row['file']))
-  print aWeb.button('trash',   DIV='div_content_right', TITLE='Delete file',URL='sdcp.cgi?call=multimedia_delete&path=%s&file=%s'%(row['path'],row['file']))
+  print aWeb.button('info',     DIV='div_content_right', TITLE='Title info', URL='sdcp.cgi?multimedia_title&path=%s&file=%s'%(row['path'],row['file']))
+  print aWeb.button('search',   DIV='div_content_right', TITLE='Lookup info',URL='sdcp.cgi?multimedia_lookup&path=%s&file=%s'%(row['path'],row['file']))
+  print aWeb.button('document', DIV='div_content_right', TITLE='Subtitles',  URL='sdcp.cgi?multimedia_subtitles&path=%s&file=%s'%(row['path'],row['file']))
+  print aWeb.button('trash',   DIV='div_content_right', TITLE='Delete file',URL='sdcp.cgi?multimedia_delete&path=%s&file=%s'%(row['path'],row['file']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -73,8 +73,8 @@ def title(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>File Name:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=name></DIV></DIV>"%data['name']
  print "<DIV CLASS=tr><DIV CLASS=td>File Path:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s' NAME=path></DIV></DIV>"%data['path']
  print "</DIV></DIV></FORM><DIV CLASS=controls>"
- print aWeb.button('start',DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=multimedia_process',  FRM='multimedia_info_form')
- print aWeb.button('sync', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=multimedia_transfer', FRM='multimedia_info_form')
+ print aWeb.button('start',DIV='div_content_right', SPIN='true', URL='sdcp.cgi?multimedia_process',  FRM='multimedia_info_form')
+ print aWeb.button('sync', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?multimedia_transfer', FRM='multimedia_info_form')
  print "</DIV></ARTICLE>"
 
 #

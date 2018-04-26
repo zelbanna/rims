@@ -173,7 +173,7 @@ if settings['system']['id'] == 'master':
 
   sql ="INSERT INTO resources(node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
   for item in resources:
-   try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?call=%s_main"%item['name'],item['icon'],item['type']))
+   try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?%s_main"%item['name'],item['icon'],item['type']))
    except Exception as err:
     res['resources_errors'] = str(err)
 

@@ -14,7 +14,7 @@ def login(aWeb):
  application = aWeb.get('application','system')
  cookie = aWeb.cookie_unjar(application)
  if cookie.get('authenticated') == 'OK':
-  aWeb.put_redirect("sdcp.cgi?call=%s_portal"%application)
+  aWeb.put_redirect("sdcp.cgi?%s_portal"%application)
   return
 
  args = aWeb.get_args2dict(['call'])
@@ -26,7 +26,7 @@ def login(aWeb):
  if data.get('exception'):
   print "Error retrieving application info - exception info: %s"%(data['exception'])
  else:
-  print "<FORM ACTION='sdcp.cgi?call=%s_portal' METHOD=POST ID=login_form>"%(application)
+  print "<FORM ACTION='sdcp.cgi?%s_portal' METHOD=POST ID=login_form>"%(application)
   print "<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title']
   print "<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>"
   for choice in data.get('choices'):
@@ -68,16 +68,16 @@ def portal(aWeb):
   if   item['view'] == 0:
    print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s'/></BUTTON>"%(item['title'],item['href'],item['title'],item['icon'])
   elif item['view'] == 1:
-   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='sdcp.cgi?call=resources_framed&id=%s'><IMG ALT='%s' SRC='%s'/></BUTTON>"%(item['title'],item['id'],item['title'],item['icon'])
+   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='sdcp.cgi?resources_framed&id=%s'><IMG ALT='%s' SRC='%s'/></BUTTON>"%(item['title'],item['id'],item['title'],item['icon'])
   else:
    print "<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s'/></A>"%(item['title'],item['href'],item['title'],item['icon'])
- print "<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=system URL=sdcp.cgi?call=system_login>Log out</BUTTON>"
- print "<BUTTON CLASS='z-op menu right' TITLE='Tools' DIV=main URL='sdcp.cgi?call=tools_main&node=%s'><IMG SRC='images/icon-config'/></BUTTON>"%aWeb.id
- print "<BUTTON CLASS='z-op menu right' TITLE='User'  DIV=main URL='sdcp.cgi?call=users_%s'><IMG SRC='images/icon-users.png'></BUTTON>"%("main" if id == '1' else "user&id=%s"%id)
+ print "<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=system URL=sdcp.cgi?system_login>Log out</BUTTON>"
+ print "<BUTTON CLASS='z-op menu right' TITLE='Tools' DIV=main URL='sdcp.cgi?tools_main&node=%s'><IMG SRC='images/icon-config'/></BUTTON>"%aWeb.id
+ print "<BUTTON CLASS='z-op menu right' TITLE='User'  DIV=main URL='sdcp.cgi?users_%s'><IMG SRC='images/icon-users.png'></BUTTON>"%("main" if id == '1' else "user&id=%s"%id)
  print "</HEADER>"
  print "<MAIN ID=main></MAIN>"
  if menu['start']:
-  print "<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['href'] if menu['menu'][0]['view'] == 0 else "sdcp.cgi?call=resources_framed&id=%s"%menu['menu'][0]['id'])
+  print "<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['href'] if menu['menu'][0]['view'] == 0 else "sdcp.cgi?resources_framed&id=%s"%menu['menu'][0]['id'])
 
 #
 #
@@ -85,14 +85,14 @@ def node_list(aWeb):
  nodes = aWeb.rest_call("system_node_list")['data']
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Nodes</P><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=system_node_list')
- print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=system_node_info&id=new')
+ print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?system_node_list')
+ print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?system_node_info&id=new')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for row in nodes:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['node'],row['url'])
-  print aWeb.button('info',DIV='div_content_right', URL='sdcp.cgi?call=system_node_info&id=%s'%row['id'])
+  print aWeb.button('info',DIV='div_content_right', URL='sdcp.cgi?system_node_info&id=%s'%row['id'])
   if row['system']:
-   print aWeb.button('document',DIV='div_content', URL='sdcp.cgi?call=settings_list&node=%s'%row['node']) 
+   print aWeb.button('document',DIV='div_content', URL='sdcp.cgi?settings_list&node=%s'%row['node']) 
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -112,8 +112,8 @@ def node_info(aWeb):
  print "<SPAN></SPAN>"
  print "</FORM><DIV CLASS=controls>"
  if str(data.get('system','0')) == '0':
-  print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?call=system_node_info&op=update', FRM='system_node_form')
-  print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?call=system_node_delete', FRM='system_node_form')
+  print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?system_node_info&op=update', FRM='system_node_form')
+  print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?system_node_delete', FRM='system_node_form')
  print "</DIV></ARTICLE>"
 
 #
@@ -132,7 +132,7 @@ def weathermap(aWeb):
   wms = aWeb.rest_call("system_settings_list",{'section':'weathermap'})['data']
   print "<NAV><UL>"
   for map in wms:
-   print "<LI><A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?call=system_weathermap&page={0}>{1}</A></LI>".format(map['parameter'],map['value'])
+   print "<LI><A CLASS=z-op OP=iload IFRAME=iframe_wm_cont URL=sdcp.cgi?system_weathermap&page={0}>{1}</A></LI>".format(map['parameter'],map['value'])
   print "</UL></NAV>"
   print "<SECTION CLASS='content background' ID='div_wm_content' NAME='Weathermap Content' STYLE='overflow:hidden;'>"
   print "<IFRAME ID=iframe_wm_cont src=''></IFRAME>"

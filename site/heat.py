@@ -21,8 +21,8 @@ def list(aWeb):
   return
  data = res['data']
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Heat Stacks</P><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content',URL='sdcp.cgi?call=heat_list')
- print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?call=heat_choose_template')
+ print aWeb.button('reload',DIV='div_content',URL='sdcp.cgi?heat_list')
+ print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?heat_choose_template')
  print "</DIV>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:150px;'>Status</DIV><DIV CLASS=th STYLE='width:50px;'>&nbsp;</DIV></DIV>"
@@ -32,9 +32,9 @@ def list(aWeb):
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_name'])
   print "<DIV CLASS=td>{}</DIV>".format(stack['stack_status'])
   print "<DIV CLASS=td><DIV CLASS=controls>"
-  print aWeb.button('info',DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=heat_action&name=%s&id=%s&op=info'%(stack['stack_name'],stack['id']))
+  print aWeb.button('info',DIV='div_content_right', SPIN='true', URL='sdcp.cgi?heat_action&name=%s&id=%s&op=info'%(stack['stack_name'],stack['id']))
   if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED" or stack['stack_status'] == "DELETE_FAILED":
-   print aWeb.button('delete', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?call=heat_action&name=%s&id=%s&op=remove'%(stack['stack_name'],stack['id']), MSG='Are you sure?')
+   print aWeb.button('delete', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?heat_action&name=%s&id=%s&op=remove'%(stack['stack_name'],stack['id']), MSG='Are you sure?')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE></SECTION>"
@@ -53,9 +53,9 @@ def choose_template(aWeb):
   print "<OPTION VALUE={0}>{0}</OPTION>".format(tmpl)
  print "</SELECT>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('document', DIV='div_os_info', URL='sdcp.cgi?call=heat_enter_parameters',   FRM='frm_heat_choose_template', TITLE='Enter parameters')
- print aWeb.button('info', DIV='div_os_info', URL='sdcp.cgi?call=heat_action&op=templateview', FRM='frm_heat_choose_template', TITLE='View Template')
- print aWeb.button('add', DIV='div_os_info', URL='sdcp.cgi?call=heat_add_template', TITLE='Add Template')
+ print aWeb.button('document', DIV='div_os_info', URL='sdcp.cgi?heat_enter_parameters',   FRM='frm_heat_choose_template', TITLE='Enter parameters')
+ print aWeb.button('info', DIV='div_os_info', URL='sdcp.cgi?heat_action&op=templateview', FRM='frm_heat_choose_template', TITLE='View Template')
+ print aWeb.button('add', DIV='div_os_info', URL='sdcp.cgi?heat_add_template', TITLE='Add Template')
  print "</DIV><BR><DIV ID=div_os_info></DIV>"
  print "</DIV></ARTICLE>"
 
@@ -72,7 +72,7 @@ def enter_parameters(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value)
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('forward',DIV='div_content_right', URL='sdcp.cgi?call=heat_action&op=create',FRM='frm_heat_template_parameters', SPIN='true')
+ print aWeb.button('forward',DIV='div_content_right', URL='sdcp.cgi?heat_action&op=create',FRM='frm_heat_template_parameters', SPIN='true')
  print "</DIV>"
 
 def add_template(aWeb):
@@ -83,7 +83,7 @@ def add_template(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Parameters:</DIV><DIV CLASS=td><TEXTAREA STYLE='width:100%; height:100px;' NAME=os_parameters></TEXTAREA></DIV></DIV>"
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=heat_action&op=add_template',FRM='frm_heat_template_parameters', SPIN='true')
+ print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?heat_action&op=add_template',FRM='frm_heat_template_parameters', SPIN='true')
  print "</DIV>"
 #
 # Heat Actions
@@ -102,7 +102,7 @@ def action(aWeb):
  op   = aWeb.get('op','info')
 
  if   op == 'info':
-  tmpl = "<BUTTON CLASS='z-op' TITLE='{}' DIV=div_os_info URL=sdcp.cgi?call=heat_action&name=%s&id=%s&op={} SPIN=true>{}</BUTTON>"%(name,id)
+  tmpl = "<BUTTON CLASS='z-op' TITLE='{}' DIV=div_os_info URL=sdcp.cgi?heat_action&name=%s&id=%s&op={} SPIN=true>{}</BUTTON>"%(name,id)
   print "<DIV>"
   print tmpl.format('Stack Details','details','Stack Details')
   print tmpl.format('Stack Parameters','events','Events')

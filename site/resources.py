@@ -27,7 +27,7 @@ def view(aWeb):
  cookie = aWeb.cookie_unjar('system')
  res = aWeb.rest_call("system_resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'node':aWeb.get('node',aWeb.id)})
  inline = "<BUTTON CLASS='z-op menu' DIV=main URL='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
- framed = "<BUTTON CLASS='z-op menu' DIV=main URL='sdcp.cgi?call=resources_framed&id={0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
+ framed = "<BUTTON CLASS='z-op menu' DIV=main URL='sdcp.cgi?resources_framed&id={0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
  tabbed = "<A CLASS='btn menu' TARGET=_blank HREF='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></A>"
  print "<DIV CLASS=centered STYLE='align-items:initial'>"
  for row in res['data']:
@@ -59,22 +59,22 @@ def list(aWeb):
  res = aWeb.rest_call("system_resources_list",{'node':node,'user_id':cookie['id']})
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?call=resources_list&node=%s'%node)
- print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&node=%s&id=new&user_id=%s'%(node,cookie['id']))
+ print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?resources_list&node=%s'%node)
+ print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?resources_info&node=%s&id=new&user_id=%s'%(node,cookie['id']))
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=resources_view&type=%s&node=%s>%s</A></DIV><DIV CLASS=td><A TITLE='%s' "%(row['type'],node,row['type'],row['title'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content URL=sdcp.cgi?resources_view&type=%s&node=%s>%s</A></DIV><DIV CLASS=td><A TITLE='%s' "%(row['type'],node,row['type'],row['title'])
   if   row['view'] == 0:
    print "CLASS=z-op DIV=main URL='{}'>".format(row['href'])
   elif row['view'] == 1:
-   print "CLASS=z-op DIV=main URL='sdcp.cgi?call=resources_framed&id=%s'>"%row['id']
+   print "CLASS=z-op DIV=main URL='sdcp.cgi?resources_framed&id=%s'>"%row['id']
   else:
    print "TARGET=_blank HREF='{}'>".format(row['href'])
   print "{}</A></DIV><DIV CLASS=td><DIV CLASS=controls>".format(row['title'])
-  print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?call=resources_info&id=%i'%(row['id']), TITLE=row['id'])
+  print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?resources_info&id=%i'%(row['id']), TITLE=row['id'])
   if cookie['id'] == str(row['user_id']):
-   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%i'%row['id'], MSG='Delete resource?')
+   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?resources_delete&id=%i'%row['id'], MSG='Delete resource?')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -112,9 +112,9 @@ def info(aWeb):
   print "<BUTTON CLASS='menu' TYPE=button STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></BUTTON>".format(data['icon'])
  print "</FORM><BR><DIV CLASS=controls>"
  if cookie['id'] == str(data['user_id']):
-  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?call=resources_info&op=update', FRM='resource_info_form', TITLE='Save')
+  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?resources_info&op=update', FRM='resource_info_form', TITLE='Save')
   if data['id'] != 'new':
-   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=resources_delete&id=%s'%data['id'], MSG='Delete resource?')
+   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?resources_delete&id=%s'%data['id'], MSG='Delete resource?')
  print "</DIV></ARTICLE>"
 
 #

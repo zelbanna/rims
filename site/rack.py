@@ -16,8 +16,8 @@ def main(aWeb):
  print "<NAV><UL>&nbsp;</UL></NAV>"
  print "<H1 CLASS='centered'>Rack Overview</H1>"
  print "<DIV CLASS='centered'>"
- rackstr = "<DIV STYLE='float:left; margin:6px;'><A TITLE='{1}' CLASS=z-op DIV=main URL=sdcp.cgi?call=device_main&target=rack_id&arg={0}><IMG STYLE='max-height:400px; max-width:200px;' ALT='{1} ({2})' SRC='images/{2}'></A></DIV>"
- print "<DIV STYLE='float:left; margin:6px;'><A CLASS=z-op DIV=main URL=sdcp.cgi?call=device_main&target=vm&arg=1><IMG STYLE='max-height:400px; max-width:200px;' ALT='VMs' SRC='images/hypervisor.png'></A></DIV>"
+ rackstr = "<DIV STYLE='float:left; margin:6px;'><A TITLE='{1}' CLASS=z-op DIV=main URL=sdcp.cgi?device_main&target=rack_id&arg={0}><IMG STYLE='max-height:400px; max-width:200px;' ALT='{1} ({2})' SRC='images/{2}'></A></DIV>"
+ print "<DIV STYLE='float:left; margin:6px;'><A CLASS=z-op DIV=main URL=sdcp.cgi?device_main&target=vm&arg=1><IMG STYLE='max-height:400px; max-width:200px;' ALT='VMs' SRC='images/hypervisor.png'></A></DIV>"
  for rack in racks:
   print rackstr.format(rack['id'], rack['name'], rack['image_url'])
  print "</DIV>"
@@ -27,11 +27,11 @@ def main(aWeb):
 def list(aWeb):
  racks = aWeb.rest_call("rack_list",{"sort":"name"})
  print "<ARTICLE><P>Rack</P><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?call=rack_list')
- print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?call=rack_info&id=new')
+ print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?rack_list')
+ print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?rack_info&id=new')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV></DIV><DIV CLASS=tbody>"
  for unit in racks:
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?call=rack_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['size'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?rack_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV></DIV>".format(unit['id'],unit['name'],unit['size'])
  print "</DIV></DIV></ARTICLE>"
 
 #
@@ -39,11 +39,11 @@ def list_infra(aWeb):
  type = aWeb['type']
  devices = aWeb.rest_call("device_list_type",{'base':type})['data']
  print "<ARTICLE><P>%ss</P><DIV CLASS=controls>"%type.title()
- print aWeb.button('reload',DIV='div_content_left', URL='sdcp.cgi?call=rack_list_infra&type=%s'%type)
+ print aWeb.button('reload',DIV='div_content_left', URL='sdcp.cgi?rack_list_infra&type=%s'%type)
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for dev in devices:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?call=device_info&id=%s'>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?call=%s_inventory&ip=%s'>%s</A></DIV><DIV CLASS=td>"%(dev['id'],dev['id'],dev['type_name'],dev['ipasc'],dev['hostname'])
-  print aWeb.button('info',DIV='main',URL='sdcp.cgi?call=%s_manage&id=%s&ip=%s&hostname=%s'%(dev['type_name'],dev['id'],dev['ipasc'],dev['hostname']))
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?device_info&id=%s'>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?%s_inventory&ip=%s'>%s</A></DIV><DIV CLASS=td>"%(dev['id'],dev['id'],dev['type_name'],dev['ipasc'],dev['hostname'])
+  print aWeb.button('info',DIV='main',URL='sdcp.cgi?%s_manage&id=%s&ip=%s&hostname=%s'%(dev['type_name'],dev['id'],dev['ipasc'],dev['hostname']))
   print "</DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
@@ -71,7 +71,7 @@ def inventory(aWeb):
   rowend   = rowstart + dev['rack_size']
   col = "2" if dev['rack_unit'] > 0 else "6"
   print "<DIV CLASS='rack-data centered' STYLE='grid-column:{0}; grid-row:{1}/{2}; background:{3};'>".format(col,rowstart,rowend,"#00cc66" if not dev.get('user_id') else "#df3620")
-  print "<A CLASS='z-op' TITLE='Show device info for {0}' DIV='div_content_right' URL='sdcp.cgi?call=device_info&id={1}'>{0}</A></CENTER>".format(dev['hostname'],dev['id'])
+  print "<A CLASS='z-op' TITLE='Show device info for {0}' DIV='div_content_right' URL='sdcp.cgi?device_info&id={1}'>{0}</A></CENTER>".format(dev['hostname'],dev['id'])
   print "</DIV>"
  print "</DIV>"
 
@@ -110,10 +110,10 @@ def info(aWeb):
  print "</DIV></DIV>"
  print "<SPAN CLASS='right small-text' ID=update_results></SPAN>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?call=rack_info&id={0}'.format(data['id']))
- print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?call=rack_info&op=update', FRM='rack_info_form')
+ print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?rack_info&id={0}'.format(data['id']))
+ print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?rack_info&op=update', FRM='rack_info_form')
  if not id == 'new':
-  print aWeb.button('trash',DIV='div_content_right',URL='sdcp.cgi?call=rack_delete&id=%s'%(data['id']))
+  print aWeb.button('trash',DIV='div_content_right',URL='sdcp.cgi?rack_delete&id=%s'%(data['id']))
  print "</DIV></ARTICLE>"
 
 #
