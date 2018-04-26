@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax Settings calls module
+HTML5 Ajax Settings module
 
 """
 __author__= "Zacharias El Banna"

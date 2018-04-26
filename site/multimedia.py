@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax Multimedia Controls calls module
+HTML5 Ajax Multimedia Controls module
 
 """
 __author__= "Zacharias El Banna"

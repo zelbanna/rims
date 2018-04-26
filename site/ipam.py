@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax IPAM calls module
+HTML5 Ajax IPAM module
 
 """
 __author__= "Zacharias El Banna"

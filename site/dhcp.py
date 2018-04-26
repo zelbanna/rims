@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax DHCP calls module
+HTML5 Ajax DHCP module
 
 """
 __author__= "Zacharias El Banna"

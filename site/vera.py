@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax Vera Z-wave controller calls module
+HTML5 Ajax Vera Z-wave controller module
 
 """
 __author__= "Zacharias El Banna"

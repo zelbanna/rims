@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax Openstack Neutron/Contrail calls module
+HTML5 Ajax Openstack Neutron/Contrail module
 
 """
 __author__= "Zacharias El Banna"

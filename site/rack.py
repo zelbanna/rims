@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax Racks calls module
+HTML5 Ajax Racks module
 
 """
 __author__= "Zacharias El Banna"                     

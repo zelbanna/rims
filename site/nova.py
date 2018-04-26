@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax Openstack NOVA calls module
+HTML5 Ajax Openstack NOVA module
 
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """

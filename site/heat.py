@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax Openstack HEAT calls module
+HTML5 Ajax Openstack HEAT module
 
 """
 __author__= "Zacharias El Banna"

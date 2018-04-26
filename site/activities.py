@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax Activities calls module
+HTML5 Ajax Activities module
 
 
 """
@@ -17,8 +17,8 @@ def main(aWeb):
   return
  cookie = aWeb.cookie_unjar('system')
  print "<NAV><UL>"
- print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=activities_list'>Activities</A></LI>"
- print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=activities_report'>Report</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?activities_list'>Activities</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?activities_report'>Report</A></LI>"
  print "</UL></NAV>"
  print "<SECTION CLASS=content       ID=div_content></SECTION>"
 
@@ -28,13 +28,13 @@ def list(aWeb):
  rows = aWeb.rest_call("system_activities_list")['data']
  print "<SECTION CLASS=content-left  ID=div_content_left>"
  print "<ARTICLE><P>Activities</P><DIV CLASS=controls>"
- print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?call=activities_list')
- print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?call=activities_info&id=new')
+ print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?activities_list')
+ print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?activities_info&id=new')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Date</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>{} - {}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;</DIV>".format(row['date'],row['time'],row['type'].encode("utf-8"))
-  print aWeb.button('info',   DIV='div_content_right', URL='sdcp.cgi?call=activities_info&id=%s'%row['id'])
-  print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?call=activities_delete&id=%s'%row['id'])
+  print aWeb.button('info',   DIV='div_content_right', URL='sdcp.cgi?activities_info&id=%s'%row['id'])
+  print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?activities_delete&id=%s'%row['id'])
   print "</DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -61,8 +61,8 @@ def info(aWeb):
  print "<TEXTAREA STYLE='width:100%; height:70px;' NAME=event>{}</TEXTAREA>".format(data['event'])
  print "</FORM><DIV CLASS=controls>"
  if data['id'] != 'new':
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?call=activities_delete&id={0}'.format(data['id']), MSG='Really remove activity?')
- print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?call=activities_info&op=update', FRM='activity_form')
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?activities_delete&id={0}'.format(data['id']), MSG='Really remove activity?')
+ print aWeb.button('save',DIV='div_content_right', URL='sdcp.cgi?activities_info&op=update', FRM='activity_form')
  print "</DIV></ARTICLE>"
 
 #

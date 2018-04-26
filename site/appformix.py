@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax Appformix calls module
+HTML5 Ajax Appformix module
 
 """
 __author__= "Zacharias El Banna"

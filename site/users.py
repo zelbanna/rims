@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax Users calls module
+HTML5 Ajax Users module
 
 
 """
