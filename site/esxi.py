@@ -71,7 +71,7 @@ def list(aWeb,aIP = None):
 #
 def op(aWeb):
  cookie = aWeb.cookie_unjar('system')
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  args['user_id'] = cookie['id']
  res = aWeb.rest_call("esxi_op",args)
  if aWeb['output'] == 'div':

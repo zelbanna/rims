@@ -17,7 +17,6 @@ def main(aWeb):
   return
  cookie = aWeb.cookie_unjar('system')
  data = aWeb.rest_call("system_inventory",{'node':aWeb.id,'user_id':cookie['id']})
- print "<!-- %s -->"%aWeb.call
  print "<NAV><UL>"
  if data.get('node'):
   print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?system_node_list'>Settings</A></LI>"
@@ -170,7 +169,7 @@ def logs_show(aWeb):
 #
 #
 def services_info(aWeb):
- args = aWeb.get_args2dict(['call','node'])
+ args = aWeb.get_args2dict(['node'])
  data  = aWeb.rest_call('tools_service_info&node=%s'%aWeb['node'],args)
  state = 'start' if data['state'] == 'inactive' else 'stop'
  print "<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)<DIV CLASS=controls>"%(aWeb['service'],data['state'],data['info'])

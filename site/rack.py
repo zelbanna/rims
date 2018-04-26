@@ -78,7 +78,7 @@ def inventory(aWeb):
 #
 #
 def info(aWeb):
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  res  = aWeb.rest_call("rack_info",args)
  data = res['data']
  print "<ARTICLE CLASS=info><P>Rack Info (%s)</P>"%(data['id'])

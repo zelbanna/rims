@@ -24,7 +24,7 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  data = aWeb.rest_call("ipam_info",args)['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  print "<ARTICLE CLASS=info><P>Subnet Info (%s)</P>"%(data['id'])

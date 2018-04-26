@@ -88,7 +88,7 @@ def api(aWeb):
  print "Choose Service and enter API call: <SELECT CLASS='white' STYLE='width:auto; height:22px;' NAME=os_service>"
  for service in services:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(service['service'])
- print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_call><BR>"
+ print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_api><BR>"
  print "Or enter HREF: <DIV ID=div_href STYLE='display:inline-block;'><INPUT CLASS='white' STYLE='width:716px;' TYPE=TEXT NAME=os_href></DIV><BR>"
  print "Call 'Method': <SELECT STYLE='width:auto; height:22px;' NAME=os_method>"
  for method in ['GET','POST','DELETE','PUT']:
@@ -119,7 +119,7 @@ def fqname(aWeb):
    if res['result'] == 'OK':
     print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
     print "<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(res['data']['fq_name']))
-    print "<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?openstack_result&os_service=contrail&os_call={0}/{1}>{0}</A></DIV></DIV>".format(res['data']['type'],aWeb['os_uuid'])
+    print "<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?openstack_result&os_service=contrail&os_api={0}/{1}>{0}</A></DIV></DIV>".format(res['data']['type'],aWeb['os_uuid'])
     print "</DIV></DIV><BR>"
    else:
     print "<DIV CLASS=table STYLE='width:100%'><DIV CLASS=tbody>"
@@ -133,7 +133,7 @@ def fqname(aWeb):
 #
 def result(aWeb):
  cookie = aWeb.cookie_unjar('openstack')
- if (not aWeb['os_call'] and not aWeb['os_href']) or not cookie.get('token'):
+ if (not aWeb['os_api'] and not aWeb['os_href']) or not cookie.get('token'):
   return
  from json import dumps,loads
  try:    arguments = loads(aWeb['os_args'])
@@ -143,7 +143,7 @@ def result(aWeb):
   args['href'] = aWeb['os_href']
  else:
   args['service'] = aWeb['os_service']
-  args['call'] = aWeb['os_call']
+  args['call'] = aWeb['os_api']
  res = aWeb.rest_call("openstack_rest",args)
  print "<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>"
  if res['result'] == 'OK':

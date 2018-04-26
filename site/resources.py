@@ -83,7 +83,7 @@ def list(aWeb):
 #
 def info(aWeb):
  cookie = aWeb.cookie_unjar('system')
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  data = aWeb.rest_call("system_resources_info",args)['data']
  print "<ARTICLE><P>Resource entity ({})</P>".format(data['id'])
  print "<FORM ID=resource_info_form>"

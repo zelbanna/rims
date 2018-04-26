@@ -35,7 +35,7 @@ def list(aWeb):
 #
 def info(aWeb):
  cookie = aWeb.cookie_unjar('system')
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  data = aWeb.rest_call("system_settings_info",args)['data']
  print "<ARTICLE CLASS=info><P>Settings</P>"
  print "<FORM ID=settings_info_form>"

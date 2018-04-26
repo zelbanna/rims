@@ -52,7 +52,7 @@ def list(aWeb):
 #
 def info(aWeb):
  cookie = aWeb.cookie_unjar('system')
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  data = aWeb.rest_call("system_users_info",args)['data']
  resources = aWeb.rest_call("system_resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.id})['data']
  print aWeb.dragndrop()

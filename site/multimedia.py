@@ -105,7 +105,7 @@ def lookup(aWeb):
 #
 #
 def process(aWeb):
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  data = aWeb.rest_full(aWeb._rest_url,"multimedia_process",args,aTimeout = 360)['data']
  print "<ARTICLE CLASS=info><P>%s</P>"%aWeb['file']
  print "<DIV CLASS=table><DIV CLASS=tbody>"

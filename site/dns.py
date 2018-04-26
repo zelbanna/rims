@@ -31,7 +31,7 @@ def list(aWeb):
 # Domain info
 def domain_info(aWeb):
  if aWeb['op'] == 'update':
-  data = aWeb.get_args2dict(['call','op'])
+  data = aWeb.get_args2dict(['op'])
   res = aWeb.rest_call("dns_domain_update",data)
   data['id'] = res['id']
  else:
@@ -101,7 +101,7 @@ def records(aWeb):
 #
 def record_info(aWeb):
  if aWeb['op'] == 'update':
-  data = aWeb.get_args2dict(['call','op'])
+  data = aWeb.get_args2dict(['op'])
   res = aWeb.rest_call("dns_record_update",data)
   data['id'] = res['id']
  else:

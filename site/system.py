@@ -17,7 +17,7 @@ def login(aWeb):
   aWeb.put_redirect("sdcp.cgi?%s_portal"%application)
   return
 
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  args['node'] = aWeb.id if not args.get('node') else args['node']
  data = aWeb.rest_call("%s_application"%(application),args)
  aWeb.put_html(data['title'])
@@ -100,7 +100,7 @@ def node_list(aWeb):
 #
 #
 def node_info(aWeb):
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  data = aWeb.rest_call("system_node_info",args)['data']
  print "<ARTICLE CLASS='info'><P>Node Info</DIV>"
  print "<FORM ID=system_node_form>"

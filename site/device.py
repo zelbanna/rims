@@ -19,7 +19,7 @@ def main(aWeb):
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list{0}'>Devices</A></LI>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?bookings_list'>Bookings</A></LI>"
  if target == 'vm':
-  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args(['call']))
+  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
  else:
   data = aWeb.rest_call("rack_inventory",{'id':arg} if target == 'rack_id' else None)
   for type in ['pdu','console']:
@@ -30,7 +30,7 @@ def main(aWeb):
     print "</DIV></LI>"
   if data.get('name'):
    print "<LI><A CLASS='z-op' DIV=div_content_right  URL='sdcp.cgi?rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,data['name'])
-  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args(['call']))
+  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
   print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?ipam_list'>IPAM</A></LI>"
   print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?dns_list'>DNS</A></LI>"
   print "<LI CLASS='right dropdown'><A>Rackinfo</A><DIV CLASS='dropdown-content'>"
@@ -53,8 +53,8 @@ def list(aWeb):
   args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
  res = aWeb.rest_call("device_list",args)
  print "<ARTICLE><P>Devices</P><DIV CLASS='controls'>"
- print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?device_list&{}'.format(aWeb.get_args(['call'])))
- print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?device_new&{}'.format(aWeb.get_args(['call'])))
+ print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?device_list&{}'.format(aWeb.get_args()))
+ print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?device_new&{}'.format(aWeb.get_args()))
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_discover')
  print aWeb.button('save'  ,DIV='div_content_right', URL='sdcp.cgi?device_graph_save')
  print "</DIV>"
@@ -77,7 +77,7 @@ def info(aWeb):
 
  cookie = aWeb.cookie_unjar('system')
 
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  args['info'] = ['username','booking','infra']
  dev = aWeb.rest_call("device_info",args)
 

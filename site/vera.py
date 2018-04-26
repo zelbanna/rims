@@ -65,7 +65,7 @@ def status(aWeb):
 #
 #
 def devices(aWeb):
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  res = aWeb.rest_call("vera_devices&node=master",args)
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE>"
@@ -139,7 +139,7 @@ def scene_state(aWeb):
 #
 #
 def scene_info(aWeb):
- args = aWeb.get_args2dict(['call'])
+ args = aWeb.get_args2dict()
  res = aWeb.rest_call("vera_scene",args)
  print "<ARTICLE>"
  print "<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>"
