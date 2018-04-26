@@ -75,7 +75,7 @@ def devices(aWeb):
  for dev in res['devices']:
    print "<DIV CLASS=tr>"
    print "<DIV CLASS=td>%s</DIV>"%dev['id']
-   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_device_info&node=%s&id=%s>%s</A></DIV>"%(aWeb['node'],dev['id'],dev['name'])
+   print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=vera_device_info&node=%s&category=%s&id=%s>%s</A></DIV>"%(aWeb['node'],dev['category'],dev['id'],dev['name'])
    print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV>"%(res['categories'].get(str(dev['category'])),res['rooms'].get(str(dev['room']),'Unassigned'))
    print "</DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
@@ -85,12 +85,18 @@ def devices(aWeb):
 #
 def device_info(aWeb):
  res = aWeb.rest_call("vera_device_info&node=master",{'node':aWeb['node'],'device':aWeb['id']})
- print "<ARTICLE>"
- print "<DIV CLASS=title>Device %s</DIV>"%aWeb['id']
+ print "<ARTICLE><DIV CLASS=title>Device %s</DIV>"%aWeb['id']
+ print "<FORM ID=device_state>"
+ print "<INPUT TYPE=HIDDEN NAME='node' VALUE='%s'>"%(aWeb['node'])
+ print "<INPUT TYPE=HIDDEN NAME='id' VALUE='%s'>"%(aWeb['id'])
+ print "<INPUT TYPE=HIDDEN NAME='category' VALUE='%s'>"%(aWeb['category'])
+ print "<INPUT TYPE=RANGE MIN=0 MAX=100 VALUE='%s' CLASS='slider' NAME='load' HTML='output'><SPAN ID='output'>%s</SPAN></FORM><DIV CLASS=controls>"%(aWeb.get('load',"50"),aWeb.get('load',"50"))
+ print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?call=vera_device_info&op=update', FRM='device_state')
+ print "</DIV>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Variable</DIV><DIV CLASS=th>Service</DIV><DIV CLASS=th>Value</DIV></DIV>"
  print "<DIV CLASS=tbody>"
- for row in res['states']:
+ for row in res['info']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['variable'],row['service'],row['value'])
  print "</DIV></DIV></ARTICLE>"
 
@@ -133,4 +139,11 @@ def scene_state(aWeb):
 #
 #
 def scene_info(aWeb):
- pass
+ args = aWeb.get_args2dict(['call'])
+ res = aWeb.rest_call("vera_scene",args)
+ print "<ARTICLE>"
+ print "<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for key,value in res.iteritems():
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value)
+ print "</DIV></DIV></ARTICLE>"

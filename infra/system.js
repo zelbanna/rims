@@ -41,6 +41,17 @@ function get_utc(dst,ts) {
 }
 
 //
+function slide_monitor(e) {
+ var dest  = $("#"+$(this).attr("html"))
+ var input = $("#"+$(this).attr("input"));
+ data = e.target.value;
+ if (dest)
+  dest.html(data);
+ if (input)
+  input.val(data);
+}
+
+//
 // Button functions - accepts proper JScript object:
 //  Set attribute log=true to log operation
 //

@@ -91,8 +91,6 @@ def scene(aDict):
   ret = e[0]         
  return ret     
 
-
-
 #
 #
 def devices(aDict):
@@ -129,7 +127,8 @@ def device_info(aDict):
  ret = {}
  try:
   node = SC['node'][aDict['node']]
-  ret['states'] = rest_call("%s?id=status&DeviceNum=%s"%(node,aDict['device']))['data']['Device_Num_%s'%aDict['device']]['states']
+  info = rest_call("%s?id=status&DeviceNum=%s"%(node,aDict['device']))['data']
+  ret['info'] = info['Device_Num_%s'%aDict['device']]['states']
  except Exception,e:
   ret = e[0] 
  return ret
