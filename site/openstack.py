@@ -26,8 +26,6 @@ def portal(aWeb):
   else:
    print "Error logging in - please try login again"
    return
- else:
-  aWeb.log("openstack_portal - using existing %s for %s"%(cookie.get('token'),cookie['node']))
 
  print "<MAIN CLASS='background' STYLE='top:0px;' ID=main>"
  print "<NAV><UL>"

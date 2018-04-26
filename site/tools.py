@@ -17,6 +17,7 @@ def main(aWeb):
   return
  cookie = aWeb.cookie_unjar('system')
  data = aWeb.rest_call("system_inventory",{'node':aWeb.id,'user_id':cookie['id']})
+ print "<!-- %s -->"%aWeb.call
  print "<NAV><UL>"
  if data.get('node'):
   print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=system_node_list'>Settings</A></LI>"

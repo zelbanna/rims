@@ -14,11 +14,13 @@ class Web(object):
 
  def __init__(self,aREST,aID):
   from os import getenv
-  self._rest_url = aREST
-  self.id = aID
-  self.form  = None
-  self.cookies = {}
   cookies = getenv("HTTP_COOKIE")
+  call = getenv("QUERY_STRING").partition('&')[0]
+  self._rest_url = aREST
+  self.id   = aID
+  self.form = None
+  self.call = call if call else "system_login"
+  self.cookies = {}
   if cookies:
    for cookie in cookies.split('; '):
     k,_,v = cookie.partition('=')
@@ -32,10 +34,6 @@ class Web(object):
 
  def get(self,aKey,aDefault = None):
   return self.form.getfirst(aKey,aDefault)
-
- def log(self, aMsg):
-  from logger import log
-  log(aMsg,'sdcp')
 
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None):
