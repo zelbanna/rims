@@ -120,15 +120,38 @@ def device_info(aDict):
 
  Args:
   - node (required)
-  - device (required)
+  - id (required)
+  - op (optional)
+  - category (optional)
+  - service (optional)
+  - variable (optional)
+  - value (optional)
 
  Output:
  """
- ret = {}
+ ret = {'op':None}
+ op = aDict.pop("op",None)
  try:
   node = SC['node'][aDict['node']]
-  info = rest_call("%s?id=status&DeviceNum=%s"%(node,aDict['device']))['data']
-  ret['info'] = info['Device_Num_%s'%aDict['device']]['states']
+  if op == 'update':
+   ret['op'] = {}
+   if aDict['category'] == '2' and aDict['service'] == 'urn:upnp-org:serviceId:Dimming1' and aDict['variable'] == 'LoadLevelTarget':
+    ret['op']['response'] = rest_call("%s?id=action&output_format=json&DeviceNum=%s&serviceId=urn:upnp-org:serviceId:Dimming1&action=SetLoadLevelTarget&newLoadlevelTarget=%s"%(node,aDict['id'],aDict['value']))['data']
+    response = ret['op']['response'].get('u:SetLoadLevelTargetResponse')
+    if response:
+     ret['op']['job'] = response.get('JobID')
+     ret['op']['result'] = rest_call("%s?id=jobstatus&job=%s&plugin=zwave"%(node,response.get('JobID')))['data']
+ 
+  res  = rest_call("%s?id=status&DeviceNum=%s"%(node,aDict['id']))['data']
+  info = res['Device_Num_%s'%aDict['id']]['states']
+  for x in info:
+   try:
+    service = x['service'].split(':')
+    if service[1] <> 'micasaverde-com':
+     entry = ret.get(x['service'],{})
+     entry[x['variable']] = x['value']
+     ret[x['service']] = entry
+   except: pass
  except Exception,e:
   ret = e[0] 
  return ret
