@@ -84,21 +84,34 @@ def devices(aWeb):
 #
 #
 def device_info(aWeb):
- res = aWeb.rest_call("vera_device_info&node=master",{'node':aWeb['node'],'device':aWeb['id']})
+ args = aWeb.get_args2dict()
+ res = aWeb.rest_call("vera_device_info&node=master",args)
  print "<ARTICLE><DIV CLASS=title>Device %s</DIV>"%aWeb['id']
- print "<FORM ID=device_state>"
- print "<INPUT TYPE=HIDDEN NAME='node' VALUE='%s'>"%(aWeb['node'])
- print "<INPUT TYPE=HIDDEN NAME='id' VALUE='%s'>"%(aWeb['id'])
- print "<INPUT TYPE=HIDDEN NAME='category' VALUE='%s'>"%(aWeb['category'])
- print "<INPUT TYPE=RANGE MIN=0 MAX=100 VALUE='%s' CLASS='slider' NAME='load' HTML='output'><SPAN ID='output'>%s</SPAN></FORM><DIV CLASS=controls>"%(aWeb.get('load',"50"),aWeb.get('load',"50"))
- print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?vera_device_info&op=update', FRM='device_state')
- print "</DIV>"
- print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Variable</DIV><DIV CLASS=th>Service</DIV><DIV CLASS=th>Value</DIV></DIV>"
- print "<DIV CLASS=tbody>"
- for row in res['info']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['variable'],row['service'],row['value'])
- print "</DIV></DIV></ARTICLE>"
+ if aWeb['category'] == '2':
+  load  = res['urn:upnp-org:serviceId:Dimming1']['LoadLevelStatus']
+  state = res['urn:upnp-org:serviceId:SwitchPower1']['Status']
+  print "<FORM ID=device_state>"
+  print "<INPUT TYPE=HIDDEN NAME='node' VALUE='%s'>"%(aWeb['node'])
+  print "<INPUT TYPE=HIDDEN NAME='id' VALUE='%s'>"%(aWeb['id'])
+  print "<INPUT TYPE=HIDDEN NAME='service' VALUE='urn:upnp-org:serviceId:Dimming1'>"
+  print "<INPUT TYPE=HIDDEN NAME='category' VALUE='%s'>"%(aWeb['category'])
+  print "<INPUT TYPE=RANGE MIN=0 MAX=100 VALUE='%s' CLASS='slider' NAME='value' HTML='output'><SPAN ID='output'>%s</SPAN></FORM><DIV CLASS=controls>"%(load,load)
+  print "<INPUT TYPE=RADIO ID='on' NAME='state' VALUE='on' %s><LABEL FOR='on'>On</LABEL> <INPUT TYPE=RADIO ID='off' NAME='state' VALUE='off' %s><LABEL FOR='off'>Off</LABEL>"%("checked" if state == "1" else "","checked" if state == "0" else "")
+  print aWeb.button('start',DIV='div_content_right', URL='sdcp.cgi?vera_device_info&op=update&variable=LoadLevelTarget', FRM='device_state')
+  print "</DIV>"
+  if res['op']:
+   print "<DIV CLASS=table><DIV CLASS=tbody>"
+   print "<DIV CLASS=tr><DIV CLASS=td>Response</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res['op']['response'])
+   print "<DIV CLASS=tr><DIV CLASS=td>Job</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res['op'].get('job'))
+   print "<DIV CLASS=tr><DIV CLASS=td>Result</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res['op'].get('result'))
+   print "</DIV></DIV>"
+ else:
+  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Service</DIV><DIV CLASS=th>Variable</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
+  for svc,entry in res.iteritems():
+   for var,val in entry.iteritems():
+    print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(svc.encode("utf-8"),var.encode("utf-8"),val.encode("utf-8"))
+  print "</DIV></DIV>"
+ print "</ARTICLE>"
 
 #
 #

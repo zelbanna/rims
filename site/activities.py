@@ -32,10 +32,10 @@ def list(aWeb):
  print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?activities_info&id=new')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Date</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td>{} - {}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>&nbsp;</DIV>".format(row['date'],row['time'],row['type'].encode("utf-8"))
+  print "<DIV CLASS=tr><DIV CLASS=td>{} - {}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(row['date'],row['time'],row['type'].encode("utf-8"))
   print aWeb.button('info',   DIV='div_content_right', URL='sdcp.cgi?activities_info&id=%s'%row['id'])
   print aWeb.button('delete', DIV='div_content_right', URL='sdcp.cgi?activities_delete&id=%s'%row['id'])
-  print "</DIV>"
+  print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
