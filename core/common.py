@@ -60,6 +60,9 @@ class DB(object):
  def is_dirty(self):
   return self._dirty
 
+ def utf8(self):
+  self._curs.execute("SET NAMES utf8")
+
  ################# Fetch info ##################
 
  def get_row(self):
