@@ -251,3 +251,16 @@ def service_info(aDict):
    ret['info'] = state[1][1:-1]
    break
  return ret
+
+#
+#
+def database_backup(aDict):
+ """Function docstring for database_backup. Does Database Backup to file
+
+ Args:
+  - filename (required)
+
+ Output:
+ """
+ ret = {'filename':aDict['filename']}
+ return ret

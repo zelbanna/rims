@@ -317,6 +317,16 @@ def settings_save(aDict):
   ret['error'] = str(e)
  return ret
 
+
+def settings_view(aDict):
+ """Function docstring for register TBD
+
+ Args:
+
+ Output:
+ """
+ return SC
+
 ################################################# NODE ##############################################
 #
 #
