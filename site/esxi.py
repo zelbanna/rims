@@ -53,7 +53,6 @@ def manage(aWeb):
 #
 #
 def list(aWeb,aIP = None):
- print aWeb
  ip   = aWeb.get('ip',aIP)
  sort = aWeb.get('sort','name') 
  res = aWeb.rest_call("esxi_list",{'ip':ip,'sort':sort})
