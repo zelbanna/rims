@@ -61,30 +61,3 @@ def opendns_my_ip():
   log("OpenDNS Error - Resolve: " + str(exresolve))
   return False
  
-############################### PDNS SYSTEM FUNCTIONS ##################################
-#
-
-def pdns_get():
- from subprocess import check_output
- recursor = check_output(["sudo","/bin/grep", "^recursor","/etc/powerdns/pdns.conf"])
- return recursor.split('=')[1].split('#')[0].strip()
-
-#
-# All-in-one, runs check, verify and (if needed) set and reload pdns service
-# - returns True if was in sync and False if modified
-# 
-def pdns_sync(dnslist):
- from sdcp.core.extras import file_replace
- pdns = pdns_get()
- if not pdns in dnslist:
-  from subprocess import check_call
-  from time import sleep
-  log("System Info - updating recursor to " + dnslist[0])
-  file_replace('/etc/powerdns/pdns.conf', pdns, dnslist[0])
-  try:
-   check_call(["/bin/systemctl","restart","pdns"])
-   sleep(1)
-  except Exception as svcerr:
-   log("System Error - Reloading PowerDNS: " + str(svcerr))
-  return False
- return True  
