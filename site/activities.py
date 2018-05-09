@@ -24,6 +24,16 @@ def main(aWeb):
 
 #
 #
+def report(aWeb):
+ rows = aWeb.rest_call("system_activities_list",{'group':'month'})['data']
+ print "<ARTICLE>"
+ for row in rows:
+  print row
+  print "<BR>"
+ print "</ARTICLE>"
+
+#
+#
 def list(aWeb):
  rows = aWeb.rest_call("system_activities_list")['data']
  print "<SECTION CLASS=content-left  ID=div_content_left>"
