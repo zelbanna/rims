@@ -15,11 +15,11 @@ class Web(object):
  def __init__(self,aREST,aID):
   from os import getenv
   cookies = getenv("HTTP_COOKIE")
-  call = getenv("QUERY_STRING").partition('&')[0]
+  query   = getenv("QUERY_STRING")
+  self.call = query.partition('&')[0] if query else "system_login"
   self._rest_url = aREST
   self.id   = aID
   self.form = None
-  self.call = call if call else "system_login"
   self.cookies = {}
   if cookies:
    for cookie in cookies.split('; '):

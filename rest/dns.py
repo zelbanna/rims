@@ -38,13 +38,13 @@ def domain_list(aDict):
   with DB() as db:
    xist = db.do("SELECT domains.* FROM domains")
    cache = db.get_dict('id')
-  for dom in ret['domains']:
-   if not cache.pop(dom['id'],None):
-    ret['added'].append(dom)
-    db.insert_dict('domains',dom,"ON DUPLICATE KEY UPDATE name = '%s'"%dom['name'])
-  for id,dom in cache.iteritems():
-   ret['deleted'].append(dom)
-   db.do("DELETE FROM domains WHERE id = '%s'"%id)
+   for dom in ret['domains']:
+    if not cache.pop(dom['id'],None):
+     ret['added'].append(dom)
+     db.insert_dict('domains',{'id':dom['id'],'name':dom['name']},"ON DUPLICATE KEY UPDATE name = '%s'"%dom['name'])
+   for id,dom in cache.iteritems():
+    ret['deleted'].append(dom)
+    db.do("DELETE FROM domains WHERE id = '%s'"%id)
  return ret
 
 #

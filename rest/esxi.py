@@ -14,9 +14,15 @@ def list(aDict):
 
  Output:
  """
+ ret = {}
  from sdcp.devices.esxi import Device
- esxi = Device(aDict['ip'])
- return esxi.get_vm_list(aDict.get('sort','name'))
+ try:
+  esxi = Device(aDict['ip'])
+  ret['data'] = esxi.get_vm_list(aDict.get('sort','name'))
+ except Exception as err:
+  ret['error'] = str(err)
+  ret['data'] = []
+ return ret 
 
 #
 #

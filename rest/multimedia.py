@@ -15,8 +15,9 @@ def list(aDict):
  """
  from os import walk
  from sdcp.SettingsContainer import SC
- ret = {'root':SC['multimedia']['torrent_directory'],'files':[]}
+ ret = {'files':[]}
  try:
+  ret['root'] = SC['multimedia']['torrent_directory']
   for path,_,files in walk(ret['root']):
    for file in files:
     if file[-3:] in ['mp4','mkv']:

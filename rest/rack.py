@@ -59,9 +59,12 @@ def info(aDict):
   ret['pdus'] = db.get_rows()
   ret['pdus'].append({ 'id':'NULL', 'hostname':'No PDU'})
 
- from os import listdir, path
- directory = listdir(path.join(SC['generic']['docroot'],"images")) if not SC['generic'].get('rack_image_directory') else SC['generic']['rack_image_directory']
- ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
+ try:
+  from os import listdir, path
+  directory = listdir(path.join(SC['generic']['docroot'],"images")) if not SC['generic'].get('rack_image_directory') else SC['generic']['rack_image_directory']
+  ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
+ except Exception as err:
+  ret['error'] = "Error loading generic -> rack_image_directory: %s"%str(err)
  return ret
 
 

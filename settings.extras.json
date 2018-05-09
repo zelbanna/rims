@@ -24,13 +24,13 @@
             "description": "Log formatting", 
             "value": "/var/log/network/{}.operations.log"
         }, 
+        "shutdownfile": {
+            "description": "Log file for shutdown operations", 
+            "value": "/var/log/network/{}.shutdown.log"
+        }, 
         "password": {
             "description": "Password", 
             "value": "PASSWORD"
-        }, 
-        "shutdownfile": {
-            "description": "Shutdown template", 
-            "value": "/var/tmp/esxi.{}.vmstate.log"
         }, 
         "username": {
             "description": "Username", 
@@ -127,12 +127,6 @@
         "username": {
             "description": "Username", 
             "value": "USERNAME"
-        }
-    }, 
-    "node": {
-        "master": {
-            "description": "Master", 
-            "value": "http://127.0.0.1/rest.cgi"
         }
     }, 
     "snmp": {

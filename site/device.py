@@ -208,7 +208,7 @@ def conf_gen(aWeb):
  if res['result'] == 'OK':
   print "<BR>".join(res['data'])
  else:
-  print "<B>Error in devdata: %s</B>"%res['info']
+  print "<B>%s</B>"%res['info']
  print "</ARTICLE>"
 
 #

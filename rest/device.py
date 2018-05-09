@@ -376,9 +376,12 @@ def configuration_template(aDict):
   module = import_module("sdcp.devices.%s"%data['type'])
   dev = getattr(module,'Device',lambda x: None)(ip)
   ret['data'] = dev.configuration(data)
-  ret['result'] = 'OK'
  except Exception as err:
-  ret = {'result':'ERROR','info':str(err)} 
+  ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%str(err)
+  ret['result'] = 'NOT_OK'
+ else:
+  ret['result'] = 'OK'
+  
  return ret
 
 #
@@ -432,7 +435,7 @@ def discover(aDict):
      continue
     sema.acquire()
     t = Thread(target = __detect_thread, args=[ipint, db_new, sema])
-    t.name = "Detect %s"%ip
+    t.name = "Detect %s"%ipint
     t.start()
 
    # Join all threads by acquiring all semaphore resources
@@ -447,8 +450,8 @@ def discover(aDict):
   except Exception as err:
    ret['info']   = "Error:{}".format(str(err))
    ret['errors'] += 1
-
-  ret['info'] = "Time spent:{}".format(int(time()) - start_time)
+  else:
+   ret['info'] = "Time spent:{}".format(int(time()) - start_time)
   ret['found']= len(db_new)
  return ret
 
@@ -464,7 +467,9 @@ def detect(aDict):
  """
  from os import system
  if system("ping -c 1 -w 1 {} > /dev/null 2>&1".format(aDict['ip'])) != 0:
-  return {'result':'NOT_OK'}
+  return {'result':'NOT_OK', 'info':'Not pingable' }
+
+ ret = {'result':'OK'}
 
  from netsnmp import VarList, Varbind, Session
  try:
@@ -473,32 +478,33 @@ def detect(aDict):
   devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'))
   session = Session(Version = 2, DestHost = aDict['ip'], Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
   session.get(devobjs)
- except:
-  pass
+ except Exception as err:
+  ret['snmp'] = "Not able to do SNMP lookup (check snmp -> read_community): %s"%str(err) 
 
- info = {'model':'unknown', 'type':'generic','snmp':devobjs[1].val.lower() if devobjs[1].val else 'unknown'}
+ ret['info'] = {'model':'unknown', 'type':'generic','snmp':devobjs[1].val.lower() if devobjs[1].val else 'unknown'}
+
 
  if devobjs[0].val:
   infolist = devobjs[0].val.split()
   if infolist[0] == "Juniper":
    if infolist[1] == "Networks,":
-    info['model'] = infolist[3].lower()
+    ret['info']['model'] = infolist[3].lower()
     for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-     if tp in info['model']:
-      info['type'] = tp
+     if tp in ret['info']['model']:
+      ret['info']['type'] = tp
       break
    else:
     subinfolist = infolist[1].split(",")
-    info['model'] = subinfolist[2]
+    ret['info']['model'] = subinfolist[2]
   elif infolist[0] == "VMware":
-   info['model'] = "esxi"
-   info['type']  = "esxi"
+   ret['info']['model'] = "esxi"
+   ret['info']['type']  = "esxi"
   elif infolist[0] == "Linux":
-   info['model'] = 'debian' if "Debian" in devobjs[0].val else 'generic'
+   ret['info']['model'] = 'debian' if "Debian" in devobjs[0].val else 'generic'
   else:
-   info['model'] = " ".join(infolist[0:4])
+   ret['info']['model'] = " ".join(infolist[0:4])
 
- return {'result':'OK','info':info}
+ return ret
  
 
 #
