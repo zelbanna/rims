@@ -139,6 +139,8 @@ def device_info(aDict):
     ret['op']['response'] = rest_call("%s?id=action&output_format=json&DeviceNum=%s&serviceId=urn:upnp-org:serviceId:Dimming1&action=SetLoadLevelTarget&newLoadlevelTarget=%s"%(node,aDict['id'],aDict['value']))['data']
     response = ret['op']['response'].get('u:SetLoadLevelTargetResponse')
     if response:
+     from time import sleep
+     sleep(1)
      ret['op']['job'] = response.get('JobID')
      ret['op']['result'] = rest_call("%s?id=jobstatus&job=%s&plugin=zwave"%(node,response.get('JobID')))['data']
  
