@@ -53,9 +53,11 @@ def manage(aWeb):
 #
 #
 def list(aWeb,aIP = None):
+ print aWeb
  ip   = aWeb.get('ip',aIP)
  sort = aWeb.get('sort','name') 
- statelist = aWeb.rest_call("esxi_list",{'ip':ip,'sort':sort})
+ res = aWeb.rest_call("esxi_list",{'ip':ip,'sort':sort})
+ statelist = res['data']
  print "<ARTICLE>"
  print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='sdcp.cgi?esxi_list&ip=%s&sort=%s'%(ip,sort))
  print "<DIV CLASS=table>"

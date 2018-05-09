@@ -24,6 +24,10 @@
             "description": "Log formatting", 
             "value": "/var/log/network/{}.operations.log"
         }, 
+        "shutdownfile": {
+            "description": "Log file for shutdown operations", 
+            "value": "/var/log/network/{}.shutdown.log"
+        }, 
         "password": {
             "description": "Password", 
             "value": "PASSWORD"
