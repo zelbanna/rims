@@ -28,10 +28,6 @@
             "description": "Password", 
             "value": "PASSWORD"
         }, 
-        "shutdownfile": {
-            "description": "Shutdown template", 
-            "value": "/var/tmp/esxi.{}.vmstate.log"
-        }, 
         "username": {
             "description": "Username", 
             "value": "USERNAME"
@@ -127,12 +123,6 @@
         "username": {
             "description": "Username", 
             "value": "USERNAME"
-        }
-    }, 
-    "node": {
-        "master": {
-            "description": "Master", 
-            "value": "http://127.0.0.1/rest.cgi"
         }
     }, 
     "snmp": {

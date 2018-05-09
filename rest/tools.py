@@ -186,14 +186,16 @@ def files_list(aDict):
  """
  from os import listdir
  from  sdcp.SettingsContainer import SC
- dir = SC['files'][aDict['setting']] if not aDict['setting'] == 'images' else 'images'
- ret = {'result':'OK','directory':dir, 'files':[]}
+ ret = {'files':[]}
  try:
+  ret['directory'] = SC['files'][aDict['setting']] if not aDict['setting'] == 'images' else 'images'
   for file in listdir(ospath.abspath(ret['directory'])):
    ret['files'].append(file)
  except Exception as e:
   ret['info'] = str(e)
   ret['result'] = 'NOT_OK'
+ else:
+  ret['result'] = 'OK'
  ret['files'].sort()
  return ret
 
