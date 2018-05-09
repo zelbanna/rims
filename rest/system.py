@@ -280,7 +280,7 @@ def settings_save(aDict):
  ret = {'config_file':SC['system']['config_file']}
  try:
   settings = {}
-  with open(SC['system']['config_file']) as sfile:
+  with open(ret['config_file']) as sfile:
    temp = loads(sfile.read())
   for section,content in temp.iteritems():
    for key,params in content.iteritems():
@@ -289,7 +289,7 @@ def settings_save(aDict):
     settings[section][key] = params['value'] 
   settings['system']['config_file'] = ret['config_file']
 
-  if SC['system']['id'] == 'master':
+  if settings['system']['id'] == 'master':
    with DB() as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
@@ -317,7 +317,8 @@ def settings_save(aDict):
   ret['error'] = str(e)
  return ret
 
-
+#
+#
 def settings_view(aDict):
  """Function docstring for register TBD
 
