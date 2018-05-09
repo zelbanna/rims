@@ -106,8 +106,10 @@ def device_info(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>Result</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res['op'].get('result'))
    print "</DIV></DIV>"
  else:
+  res.pop('op',None)
   print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Service</DIV><DIV CLASS=th>Variable</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
   for svc,entry in res.iteritems():
+   print "<!-- %s -->"%svc
    for var,val in entry.iteritems():
     print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(svc.encode("utf-8"),var.encode("utf-8"),val.encode("utf-8"))
   print "</DIV></DIV>"
