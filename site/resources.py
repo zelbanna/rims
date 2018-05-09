@@ -95,7 +95,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>HREF:</DIV><DIV     CLASS=td><INPUT NAME=href  TYPE=URL  VALUE='%s' REQUIRED></DIV></DIV>"%data['href']
  print "<DIV CLASS=tr><DIV CLASS=td>Icon URL:</DIV><DIV CLASS=td><INPUT NAME=icon  TYPE=URL  VALUE='%s'></DIV></DIV>"%data['icon']
  print "<DIV CLASS=tr><DIV CLASS=td>View:</DIV><DIV     CLASS=td>"
- for name,view in [('inline','0'),('framed','1'),('tabbed','2')]:
+ for name,view in [('inline','0'),('framed','1'),('new tab','2')]:
   print "<INPUT NAME=view TYPE=RADIO VALUE=%s %s>%s"%(view,"checked" if str(data['view']) == view else "",name)
  print " </DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Private:</DIV><DIV  CLASS=td><INPUT NAME=private {} {}             TYPE=CHECKBOX VALUE=1   ></DIV></DIV>".format("checked=checked" if data['private'] == 1 or data['private'] == "1" else "","disabled" if cookie['id'] <> str(data['user_id']) else "")

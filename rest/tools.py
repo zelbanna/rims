@@ -202,6 +202,19 @@ def files_list(aDict):
 ######################################### Controls ########################################
 #
 #
+def service_list(aDict):
+ """Function docstring for service_list TBD
+
+ Args:
+
+ Output:          
+ """
+ from sdcp.SettingsContainer import SC
+ return {'services':[{'name':x,'service':SC['services'][x]} for x in SC['services'].keys()]}
+
+
+#
+#
 def service_info(aDict):
  """Function docstring for service_info. TBD
 
