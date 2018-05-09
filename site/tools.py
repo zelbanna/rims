@@ -1,10 +1,10 @@
 """Module docstring.
 
-HTML5 Ajax Tools calls module
+HTML5 Ajax Tools module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__= "Production"
 __icon__ = 'images/icon-config.png'
 __type__ = 'menuitem'
@@ -19,40 +19,40 @@ def main(aWeb):
  data = aWeb.rest_call("system_inventory",{'node':aWeb.id,'user_id':cookie['id']})
  print "<NAV><UL>"
  if data.get('node'):
-  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=system_node_list'>Settings</A></LI>"
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?system_node_list'>Settings</A></LI>"
  if data.get('logs'):
   print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
   for node in data['logs']:
-   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=tools_logs_show&node=%s>%s - show</A>"%(node,node)
-   print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?call=tools_logs_clear&node=%s'>%s - clear</A>"%(node,node)
+   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?tools_logs_show&node=%s>%s - show</A>"%(node,node)
+   print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?tools_logs_clear&node=%s'>%s - clear</A>"%(node,node)
   print "</DIV></LI>"
  if data.get('www'):
   print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
   for node in data['www']:
-   print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=resources_list&node=%s'>%s</A>"%(node,node)
+   print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?resources_list&node=%s'>%s</A>"%(node,node)
   print "</DIV></LI>"  
  if data.get('users'):
-  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=users_list'>Users</A></LI>"
-  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=bookings_list'>Booking</A></LI>"
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?users_list'>Users</A></LI>"
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?bookings_list'>Booking</A></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
  for tool in data.get('tools',[]): 
   print "<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title'])
  for svc in data.get('services',[]):
-  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_services_info&node=%s&service=%s'>%s</A>"%(aWeb['node'],svc['service'],svc['name'])
+  print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?tools_services_info&node=%s&service=%s'>%s</A>"%(aWeb['node'],svc['service'],svc['name'])
  if data.get('dhcp'):
   dhcp = (data['dhcp']['node'],data['dhcp']['type'])
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%dhcp
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=active>DHCP - Active</A>"%dhcp
-  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?call=dhcp_leases&node=%s&type=%s&lease=free>DHCP - Free</A>"%dhcp
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%dhcp
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?dhcp_leases&node=%s&type=%s&lease=active>DHCP - Active</A>"%dhcp
+  print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?dhcp_leases&node=%s&type=%s&lease=free>DHCP - Free</A>"%dhcp
  if data.get('extra'):
   print "<A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB - View relational diagram</A>"
-  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?call=device_mac_sync'>Find MAC Info</A>"
+  print "<A CLASS=z-op DIV=div_content SPIN=true URL='sdcp.cgi?device_mac_sync'>Find MAC Info</A>"
  print "</DIV></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_main&node=%s'>Debug</A>"%aWeb['node']
- print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?call=tools_rest_explore'>Explore</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?tools_rest_main&node=%s'>Debug</A>"%aWeb['node']
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?tools_rest_explore'>Explore</A>"
  print "</DIV></LI>"
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=tools_main&node=%s'></A></LI>"%aWeb['node']
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?tools_main&node=%s'></A></LI>"%aWeb['node']
  if data.get('navinfo'):
   for info in data['navinfo']:
    print "<LI CLASS='right navinfo'><A>%s</A></LI>"%info
@@ -86,7 +86,7 @@ def rest_main(aWeb):
  print "</SELECT>"
  print "<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:70px;' NAME=arguments></TEXTAREA>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?call=tools_rest_execute', FRM='frm_rest')
+ print aWeb.button('start',  DIV='div_rest_info', URL='sdcp.cgi?tools_rest_execute', FRM='frm_rest')
  print aWeb.button('delete', DIV='div_rest_info', OP='empty', TITLE='Clear results view')
  print "</DIV></ARTICLE>"
  print "<DIV ID=div_rest_info></DIV>"
@@ -128,7 +128,7 @@ def rest_explore(aWeb):
  print "<ARTICLE><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>API</DIV><DIV CLASS=th>Function</DIV></DIV><DIV CLASS=tbody>"
  for item in res['data']:
   for fun in item['functions']:
-   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?call=tools_rest_information&api=%s&function=%s>%s</A></DIV></DIV>"%(item['api'],item['api'],fun,fun)
+   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?tools_rest_information&api=%s&function=%s>%s</A></DIV></DIV>"%(item['api'],item['api'],fun,fun)
  print "</DIV></DIV></ARTICLE>"
  print "</SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -169,11 +169,11 @@ def logs_show(aWeb):
 #
 #
 def services_info(aWeb):
- args = aWeb.get_args2dict(['call','node'])
+ args = aWeb.get_args2dict(['node'])
  data  = aWeb.rest_call('tools_service_info&node=%s'%aWeb['node'],args)
  state = 'start' if data['state'] == 'inactive' else 'stop'
  print "<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)<DIV CLASS=controls>"%(aWeb['service'],data['state'],data['info'])
- print aWeb.button(state, DIV='div_content', SPIN='true', URL='sdcp.cgi?call=tools_services_info&service=%s&node=%s&op=%s'%(args['service'],aWeb['node'],state))
+ print aWeb.button(state, DIV='div_content', SPIN='true', URL='sdcp.cgi?tools_services_info&service=%s&node=%s&op=%s'%(args['service'],aWeb['node'],state))
  print "</DIV></ARTICLE>"
 
 ############################################## Files ###############################################

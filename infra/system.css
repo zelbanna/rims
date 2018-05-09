@@ -80,6 +80,10 @@ div.td > input:-webkit-input-placeholder { color: #9CA6B0; }
 div.td > input:-moz-placeholder {          color: #9CA6B0; opacity:1; }
 div.controls { display:inline; font-size:5px; }
 
+article.mobile .table .tbody .tr { line-height:44px; font-size:44px }
+article.mobile .controls button { width:88px; height:88px; }
+article.mobile .controls img    { width:88px; height:88px; }
+
 /*#############################################################################*/
  
 .warning {     background-color:red!important; font-weight:bold; color:#FFFFFF }
@@ -110,7 +114,6 @@ div.rest > div { min-width:100px; white-space:normal; }
 .highlight { border: 1px solid #3E84F4; }
 
 div.overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:10000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
-
 div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; }
  /* Spin properties */
  @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
@@ -125,6 +128,10 @@ ul.drop {        -ms-touch-action: none; touch-action: none; display:flex; flex-
 ul.drop li {     font-size:11px; }
 ul.vertical {    display:block!important; }
 ul.vertical li { display:table!important; }
+
+.slider {                       height: 10px; border-radius: 3px; background:#9CA6B0; outline: none; opacity: 0.7; -webkit-appearance: none;} 
+.slider::-webkit-slider-thumb { height: 15px; border-radius: 50%; background:#3E84F4; width:15px; cursor: pointer; -webkit-appearance: none; appearance: none;}
+.slider::-moz-range-thumb {     height: 15px; border-radius: 50%; background:#3E84F4; width:15px; cursor: pointer; }
 
 /*################################ Common ###################################*/
 

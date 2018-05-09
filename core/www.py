@@ -4,7 +4,7 @@ Generic WWW/HTMLinterworking module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__= "Production"
 
 #
@@ -14,11 +14,13 @@ class Web(object):
 
  def __init__(self,aREST,aID):
   from os import getenv
-  self._rest_url = aREST
-  self.id = aID
-  self.form  = None
-  self.cookies = {}
   cookies = getenv("HTTP_COOKIE")
+  call = getenv("QUERY_STRING").partition('&')[0]
+  self._rest_url = aREST
+  self.id   = aID
+  self.form = None
+  self.call = call if call else "system_login"
+  self.cookies = {}
   if cookies:
    for cookie in cookies.split('; '):
     k,_,v = cookie.partition('=')
@@ -32,10 +34,6 @@ class Web(object):
 
  def get(self,aKey,aDefault = None):
   return self.form.getfirst(aKey,aDefault)
-
- def log(self, aMsg):
-  from logger import log
-  log(aMsg,'sdcp')
 
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None):
@@ -67,14 +65,14 @@ class Web(object):
   print "<SCRIPT> window.location.replace('%s'); </SCRIPT>"%(aLocation)
 
  # Put full header and listener
- def put_html(self, aTitle = None):
+ def put_html(self, aTitle = None, aIcon = 'sdcp.png'):
   from sys import stdout
   stdout.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'>\n<LINK REL='stylesheet' TYPE='text/css' HREF='system.css'>")
   if aTitle:
    stdout.write("<TITLE>" + aTitle + "</TITLE>")
-  stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/sdcp.png'/>")
+  stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/%s'/>"%(aIcon))
   stdout.write("<SCRIPT SRC='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></SCRIPT>\n<SCRIPT SRC='system.js'></SCRIPT>")
-  stdout.write("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ); });</SCRIPT>")
+  stdout.write("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ) .on('input','.slider',slide_monitor); });</SCRIPT>")
   stdout.write("</HEAD>")
   stdout.flush()
 
@@ -90,8 +88,7 @@ class Web(object):
   self.form = cgi.FieldStorage()
   stdout.write("Content-Type:text/html\r\n\n")
   try:
-   mod_fun = self.get('call','system_login')
-   (mod,void,fun) = mod_fun.partition('_')
+   (mod,void,fun) = self.call.partition('_')
    module = import_module("sdcp.site." + mod)
    getattr(module,fun,None)(self)
   except Exception, e:

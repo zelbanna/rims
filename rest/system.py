@@ -1,6 +1,6 @@
 """SDCP generic REST module. Provides system and DB interaction for appication, settings and resources"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'master'
@@ -49,7 +49,7 @@ def authenticate(aDict):
  try:    tmp = int(aDict['id'])
  except: ret['authenticated'] = 'NOT_OK'
  else:   ret['authenticated'] = 'OK'
- ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+ ret['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 
 #
@@ -563,8 +563,53 @@ def activities_list(aDict):
  ret = {'start':aDict.get('start','0')}
  ret['end'] = int(ret['start']) + 50
  with DB() as db:
-  db.do("SELECT id, type, CONCAT(hour,':',minute) AS time, CONCAT(year,'-',month,'-',day) AS date FROM activities ORDER BY year,month,day DESC LIMIT %s, %s"%(ret['start'],ret['end']))
+  db.utf8()
+  db.do("SELECT activities.id, activity_types.type AS type, CONCAT(hour,':',minute) AS time, CONCAT(year,'-',month,'-',day) AS date FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id ORDER BY year,month,day DESC LIMIT %s, %s"%(ret['start'],ret['end']))
   ret['data'] = db.get_rows()
+ return ret
+
+#
+#
+def activities_info(aDict):
+ """ Function docstring for activities_info. TBD
+
+ Args:
+  - id (required)
+  - start (optional)
+
+ Output:
+ """
+ ret = {}
+ args = aDict
+ id = args.pop('id','new')
+ op = args.pop('op',None)
+ with DB() as db:
+  db.utf8()
+  db.do("SELECT * FROM activity_types")
+  ret['types'] = db.get_rows()
+  db.do("SELECT id,alias FROM users ORDER BY alias")
+  ret['users'] = db.get_rows()
+  if op == 'update':
+   hour,minute    = args.pop('time','00:00').split(':')
+   year,month,day = args.pop('date','1970-01-01').split('-')
+   args.update({'year':year,'month':month,'day':day,'hour':hour,'minute':minute})
+
+   if not id == 'new':
+    ret['update'] = db.update_dict('activities',args,'id = %s'%id)
+   else:
+    ret['update'] = db.insert_dict('activities',args)
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
+
+  if not id == 'new':
+   ret['xist'] = db.do("SELECT * FROM activities WHERE id = %s"%id)
+   act = db.get_row()
+   ret['data'] = {'id':id,'user_id':act['user_id'],'type_id':act['type_id'],'date':"%i-%02i-%02i"%(act['year'],act['month'],act['day']),'time':"%02i:%02i"%(act['hour'],act['minute']),'event':act['event']}
+  else:
+   from time import localtime
+   from datetime import date
+   tm = localtime()
+   dt = date.today()
+   ret['data'] = {'id':'new','user_id':None,'type_id':None,'date':"%i-%02i-%02i"%(dt.year,dt.month,dt.day),'time':"%02i:%02i"%(tm.tm_hour,tm.tm_min),'event':'empty'}
  return ret
 
 #
@@ -584,12 +629,26 @@ def activities_delete(aDict):
 
 #
 #
-def activities_info(aDict):
- """ Function docstring for activities_info. TBD
+def activities_type_list(aDict):
+ """ Function docstring for activities_type_list. TBD
+
+ Args:                
+
+ Output:
+ """    
+ ret = {}
+ with DB() as db:
+  db.utf8()
+  db.do("SELECT * FROM activity_types")
+  ret['data'] = db.get_rows()
+ return ret
+
+#
+#
+def activities_type_info(aDict):
+ """ Function docstring for activities_type_info. TBD
 
  Args:
-  - id (required)
-  - start (optional)
 
  Output:
  """
@@ -598,27 +657,32 @@ def activities_info(aDict):
  id = args.pop('id','new')
  op = args.pop('op',None)
  with DB() as db:
-  db.do("SELECT id,alias FROM users ORDER BY alias")
-  ret['users'] = db.get_rows()
   if op == 'update':
-   hour,minute    = args.pop('time','00:00').split(':')
-   year,month,day = args.pop('date','1970-01-01').split('-')
-   args.update({'year':year,'month':month,'day':day,'hour':hour,'minute':minute})
-
    if not id == 'new':
-    ret['update'] = db.update_dict('activities',args,'id = %s'%id)
+    ret['update'] = db.update_dict('activity_types',args,"id=%s"%id) 
    else:
-    ret['update'] = db.insert_dict('activities',args)
+    ret['update'] = db.insert_dict('activity_types',args)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
+  db.utf8()
   if not id == 'new':
-   ret['xist'] = db.do("SELECT * FROM activities WHERE id = %s"%id)
-   act = db.get_row()
-   ret['data'] = {'id':id,'user_id':act['user_id'],'type':act['type'],'date':"%i-%02i-%02i"%(act['year'],act['month'],act['day']),'time':"%02i:%02i"%(act['hour'],act['minute']),'event':act['event']}
+   ret['xist'] = db.do("SELECT * FROM activity_types WHERE id = '%s'"%id)
+   ret['data'] = db.get_row()
   else:
-   from time import localtime
-   from datetime import date
-   tm = localtime()
-   dt = date.today()
-   ret['data'] = {'id':'new','user_id':None,'type':'unknown','date':"%i-%02i-%02i"%(dt.year,dt.month,dt.day),'time':"%02i:%02i"%(tm.tm_hour,tm.tm_min),'event':'empty'}
+   ret['data'] = {'id':'new','type':'Unknown'}
+ return ret
+ 
+#
+#
+def activities_type_delete(aDict):
+ """ Function docstring for activity_type_delete. TBD
+
+ Args:
+  - id (required)
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  ret['delete'] = db.do("DELETE FROM activity_types WHERE id = '%s'"%aDict['id'])
  return ret

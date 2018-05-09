@@ -8,16 +8,26 @@ DROP TABLE IF EXISTS `activities`;
 CREATE TABLE `activities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
+  `type_id` int(10) unsigned NOT NULL,
   `year` int(4) unsigned NOT NULL,
   `month` tinyint(2) unsigned NOT NULL,
   `day` tinyint(2) unsigned NOT NULL,
   `hour` tinyint(2) unsigned NOT NULL,
   `minute` tinyint(2) unsigned NOT NULL,
-  `type` varchar(20) NOT NULL,
   `event` text,
   PRIMARY KEY (`id`),
   KEY `fk_user` (`user_id`),
-  CONSTRAINT `activities_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `fk_type` (`type_id`),
+  CONSTRAINT `activities_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `activities_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `activity_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `activity_types`;
+CREATE TABLE `activity_types` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 

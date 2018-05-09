@@ -4,7 +4,7 @@ DB module
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__ = "Production"
 
 
@@ -59,6 +59,9 @@ class DB(object):
 
  def is_dirty(self):
   return self._dirty
+
+ def utf8(self):
+  self._curs.execute("SET NAMES utf8")
 
  ################# Fetch info ##################
 

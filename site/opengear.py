@@ -1,10 +1,10 @@
 """Module docstring.
 
-HTML5 Ajax Console calls module
+HTML5 Ajax Console module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__= "Production"
 
 
@@ -20,7 +20,7 @@ def manage(aWeb):
 
  print "<NAV><UL>"
  print "<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname)
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?call=opengear_main&id=%s&ip=%s&hostname=%s'></A></LI>"%(id,ip,hostname)
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?opengear_main&id=%s&ip=%s&hostname=%s'></A></LI>"%(id,ip,hostname)
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"

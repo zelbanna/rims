@@ -1,6 +1,6 @@
 """Device API module. This is the main device interaction module for device info, update, listing,discovery etc"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.03.16"
+__version__ = "18.04.07GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -328,7 +328,7 @@ def to_node(aDict):
   dev = db.get_row()
   for test in ['ip','fqdn','hostname']:
    if db.do("SELECT node FROM nodes WHERE url LIKE '%{}%'".format(dev[test])) > 0:
-    ret['node']  = db.get_val('parameter')
+    ret['node']  = db.get_val('node')
     ret['found'] = test
     break
  return ret
