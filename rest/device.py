@@ -376,9 +376,12 @@ def configuration_template(aDict):
   module = import_module("sdcp.devices.%s"%data['type'])
   dev = getattr(module,'Device',lambda x: None)(ip)
   ret['data'] = dev.configuration(data)
-  ret['result'] = 'OK'
  except Exception as err:
-  ret = {'result':'ERROR','info':str(err)} 
+  ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%str(err)
+  ret['result'] = 'NOT_OK'
+ else:
+  ret['result'] = 'OK'
+  
  return ret
 
 #
