@@ -263,4 +263,18 @@ def database_backup(aDict):
  Output:
  """
  ret = {'filename':aDict['filename']}
+ from sdcp.SettingsContainer import SC
+ if SC['system']['id'] == 'master':
+  from mysql import dump
+  data = dump({'mode':'database'})['output']
+ else:
+  data = rest_call("%s?mysql_dump"%settings['system']['master'],{'mode':'database'})['output']
+ 
+ try:
+  with open(ret['filename'],'w+') as f:
+   f.write("\n".join(data))
+  ret['result'] = 'OK'
+ except Exception as err:
+  ret['error'] = str(err) 
+  ret['result'] = 'NOT_OK'
  return ret

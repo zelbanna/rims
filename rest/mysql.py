@@ -1,6 +1,7 @@
 __author__ = "Zacharias El Banna"
 __version__ = "18.04.07GA"
 __status__ = "Production"
+__add_globals__ = lambda x: globals().update(x)
 
 
 #
@@ -42,7 +43,7 @@ def dump(aDict):
  except Exception,e:
   output = ["DumpError:{}".format(str(e))]
   res = 'NOT_OK'
- return {'res':res, 'output':output}
+ return {'res':res, 'output':output,'mode':mode,'full':aDict.get('full',True)}
 
 #
 #
