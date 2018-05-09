@@ -268,8 +268,12 @@ def database_backup(aDict):
   from mysql import dump
   data = dump({'mode':'database'})['output']
  else:
-  data = rest_call("%s?mysql_dump"%settings['system']['master'],{'mode':'database'})['output']
- 
+  from sdcp.core.common import rest_call
+  res = rest_call("%s?mysql_dump"%SC['system']['master'],{'mode':'database'})
+  if res['info'].get("x-z-res") == "OK":
+   data = res['data']['output']
+  else:
+   data = []
  try:
   with open(ret['filename'],'w+') as f:
    f.write("\n".join(data))
