@@ -205,7 +205,7 @@ def settings_parameter(aDict):
 
 #
 #
-def settings_all(aDict):
+def settings_comprehensive(aDict):
  """Function docstring for settings_all TBD
 
  Args:
@@ -319,7 +319,7 @@ def settings_save(aDict):
 
 #
 #
-def settings_view(aDict):
+def settings_container(aDict):
  """Function docstring for register TBD
 
  Args:

@@ -47,6 +47,8 @@ def info(aDict):
      args['devices_vm'] = 0
     if not args.get('devices_comment'):
      args['devices_comment'] = 'NULL'
+    if not args.get('devices_webpage'):
+     args['devices_webpage'] = 'NULL'
     if args.get('devices_mac'):
      try: args['devices_mac'] = int(args['devices_mac'].replace(":",""),16)
      except: aDict['devices_mac'] = 0

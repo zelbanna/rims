@@ -20,13 +20,13 @@ def list(aWeb):
  print "<DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?settings_list&node=%s'%aWeb['node'])
  print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?settings_info&id=new&node=%s'%aWeb['node'])
- print aWeb.button('document', DIV='div_content_right', URL='sdcp.cgi?settings_view&node=%s'%aWeb['node'])
+ print aWeb.button('document', DIV='div_content_right', URL='sdcp.cgi?settings_comprehensive&node=%s'%aWeb['node'])
  print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?settings_save&node=%s'%aWeb['node'])
  print "</DIV>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Section</DIV><DIV CLASS=th>Parameter</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res.get('data'):
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?settings_view&section={1}&node={2}'>{1}</A></DIV><DIV CLASS=td TITLE='{3}'><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?settings_info&id={0}&node={2}'>{4}</A></DIV>".format(row['id'],row['section'],aWeb['node'],row['description'],row['parameter'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?settings_comprehensive&section={1}&node={2}'>{1}</A></DIV><DIV CLASS=td TITLE='{3}'><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?settings_info&id={0}&node={2}'>{4}</A></DIV>".format(row['id'],row['section'],aWeb['node'],row['description'],row['parameter'])
   print "</DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -56,8 +56,8 @@ def info(aWeb):
 
 #
 #
-def view(aWeb):
- settings = aWeb.rest_call("system_settings_all",{'node':aWeb['node'],'section':aWeb['section']})
+def comprehensive(aWeb):
+ settings = aWeb.rest_call("system_settings_comprehensive",{'node':aWeb['node'],'section':aWeb['section']})
  print "<ARTICLE><P>Settings</P>"
  for section,parameters in settings.iteritems():
   print "<P>%s</P>"%section

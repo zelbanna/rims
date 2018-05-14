@@ -195,10 +195,10 @@ def consistency(aWeb):
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV>"%(rec['name'],rec['type'],rec['content'],rec['id'])
   print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV>"%(rec['dns_id'],rec['fqdn'])
-  print "<DIV CLASS=td>&nbsp;" + aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='sdcp.cgi?dns_record_delete&id=%s'%(rec['id']))
+  print "<DIV CLASS=td><DIV CLASS=controls>" + aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='sdcp.cgi?dns_record_delete&id=%s'%(rec['id']))
   if rec['fqdn']:
    print aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='sdcp.cgi?dns_record_transfer&record_id=%s&device_id=%s&type=%s'%(rec['id'],rec['device_id'],rec['type']))
-  print "</DIV></DIV>"
+  print "</DIV></DIV></DIV>"
  for dev in data['devices']:
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>-</DIV><DIV CLASS=td>-</DIV>"%(dev['ipasc'],dev['type'])
