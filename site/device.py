@@ -15,7 +15,6 @@ __type__ = 'menuitem'
 def main(aWeb):
  target = aWeb['target']
  arg    = aWeb['arg']
-
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list{0}'>Devices</A></LI>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?bookings_list'>Bookings</A></LI>"
@@ -109,6 +108,7 @@ def info(aWeb):
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
  print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
+ print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
 
  print "<!-- Additional info -->"
