@@ -197,13 +197,16 @@ def record_lookup(aDict):
 
  Args:
   - id (required)
-  - domain_id (required)
+  - domain_id (optional)
 
  Output:
  """
  ret = {}
  with DB(SC['dns']['database'],'localhost',SC['dns']['username'],SC['dns']['password']) as db:
-  ret['xist'] = db.do("SELECT records.* FROM records WHERE id = '{}' AND domain_id = '{}'".format(aDict['id'],aDict['domain_id']))
+  sql = "SELECT records.* FROM records WHERE id = '%s'"%(aDict['id'])
+  if aDict.get('domain_id'):
+   sql = sql + " AND domain_id = '%s'"%(aDict.get('domain_id','0'))
+  ret['xist'] = db.do(sql)
   ret['data'] = db.get_row() if ret['xist'] > 0 else {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
  return ret
 
