@@ -89,7 +89,7 @@ def info(aWeb):
 
  width = 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
 
- print "<ARTICLE CLASS='info' STYLE='position:relative; height:271px; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id'])
+ print "<ARTICLE CLASS='info' STYLE='position:relative; height:290px; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id'])
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
@@ -173,16 +173,21 @@ def info(aWeb):
     print "</SELECT></DIV></DIV>"
     print "<DIV CLASS=tr><DIV CLASS=td>{0} Unit:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_{1}_pdu_unit TYPE=TEXT PLACEHOLDER='{2}'></DIV></DIV>".format(pem.upper(),pem,dev['info'][pem + "_pdu_unit"])
   print "</DIV></DIV></DIV>"
- print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%'><SPAN>Comments:</SPAN><INPUT CLASS='background' STYLE='width:{}px; overflow-x:auto;' TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV>".format(width-90,"" if not dev['info']['comment'] else dev['info']['comment'])
+ print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%'><DIV CLASS=table><DIV CLASS=tbody>"
+ print "<DIV CLASS='tr white'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=background STYLE='overflow-x:auto;' TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV></DIV>".format("" if not dev['info']['comment'] else dev['info']['comment'])
+ print "<DIV CLASS='tr white'><DIV CLASS=td>Web page:</DIV><DIV CLASS=td><INPUT CLASS=background STYLE='overflow-x:auto;' TYPE=TEXT NAME=devices_webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage'])
+ print "</DIV></DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?device_info&id=%i'%dev['id'])
- print aWeb.button('trash',DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
+ print aWeb.button('trash', DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_info&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
  print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
  print aWeb.a_button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['info']['console_ip'] and dev['info'].get('console_port',0) > 0):
   print aWeb.a_button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['info']['console_ip'],6000+dev['info']['console_port']))
+ if dev['info'].get('webpage'):
+  print aWeb.a_button('web',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('webpage'))
  print "<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result',''))
  print "</DIV></ARTICLE>"
 
@@ -194,7 +199,7 @@ def info(aWeb):
   else:
    print "<LI><A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?device_function&ip={0}&type={1}&op={2}'>{3}</A></LI>".format(dev['ip'], dev['info']['type_name'], fun, fun.title())
  print "</UL></NAV>"
- print "<SECTION CLASS='content' ID=div_dev_data STYLE='top:311px; overflow-x:hidden; overflow-y:auto;'></SECTION>"
+ print "<SECTION CLASS='content' ID=div_dev_data STYLE='top:330px; overflow-x:hidden; overflow-y:auto;'></SECTION>"
 
 
 ####################################################### Functions #######################################################

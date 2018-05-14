@@ -39,6 +39,13 @@ def info(aDict):
    if operation == 'lookup' and ret['ip']:
     lookup = detect({'ip':ret['ip']})
     ret['result']['lookup'] = lookup['result']
+    # Add DNS to lookup
+    #if args.get('devices_a_id') or args.get('devices_ptr_id'):
+    # from sdcp.rest.dns import record_lookup
+    # for type in ['a_id','ptr_id']:
+    #  if args.get('devices_%s'%type):
+    #   ret['result'][type] = record_lookup({'id':args.get('devices_%s'%type)})['data']['content']
+
     if lookup['result'] == 'OK':
      args.update({'devices_model':lookup['info']['model'],'devices_snmp':lookup['info']['snmp'],'devices_type_id':types[lookup['info']['type']]['id']})
 

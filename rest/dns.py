@@ -161,12 +161,12 @@ def record_lookup(aDict):
  """Function docstring for record_lookup TBD
 
  Args:
-  - domain_id (required)
   - id (required)
+  - domain_id (optional)
 
  Output:
  """
- args = {'domain_id':aDict['domain_id'],'id':aDict['id']}
+ args = {'domain_id':aDict.get('domain_id'),'id':aDict['id']}
  if SC['dns'].get('node',SC['system']['id']) == SC['system']['id']:
   module = import_module("sdcp.rest.%s"%SC['dns']['type'])  
   fun = getattr(module,'record_lookup',None)
@@ -412,5 +412,11 @@ def consistency(aDict):
 #
 #
 def external_ip(aDict):
+ """Function docstring for external_ip. TBD
+
+ Args:
+
+ Output:
+ """
  from sdcp.core.genlib import external_ip
  return {'ip':external_ip() }
