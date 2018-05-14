@@ -10,7 +10,8 @@ __icon__ = 'images/icon-network.png'
 __type__ = 'menuitem'
 
 ########################################## Device Operations ##########################################
-
+#
+#
 def main(aWeb):
  target = aWeb['target']
  arg    = aWeb['arg']
@@ -65,9 +66,6 @@ def list(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?device_info&id=%i'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['ipasc'], row['fqdn'], row['model'])
  print "</DIV></DIV></ARTICLE>"
 
-#
-#
-################################ Gigantic Device info and Ops function #################################
 #
 #
 def info(aWeb):
@@ -182,7 +180,8 @@ def info(aWeb):
  print aWeb.button('trash', DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_info&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
- print aWeb.button('document',  DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
+ print aWeb.button('document', DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
+ print aWeb.button('network',  DIV='div_dev_data', URL='sdcp.cgi?device_connections&id=%i'%(dev['id']),TITLE='Device Connections')
  print aWeb.a_button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['info']['console_ip'] and dev['info'].get('console_port',0) > 0):
   print aWeb.a_button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['info']['console_ip'],6000+dev['info']['console_port']))
@@ -204,9 +203,14 @@ def info(aWeb):
 
 ####################################################### Functions #######################################################
 #
-# View operation data / widgets
 #
+def connections(aWeb):
+ print "<ARTICLE>"
+ print "hej"
+ print "</ARTICLE>"
 
+#
+#
 def conf_gen(aWeb):
  print "<ARTICLE>"
  res = aWeb.rest_call("device_configuration_template",{'id':aWeb['id']})
@@ -216,7 +220,6 @@ def conf_gen(aWeb):
   print "<B>%s</B>"%res['info']
  print "</ARTICLE>"
 
-#
 #
 #
 def function(aWeb):
@@ -243,7 +246,6 @@ def function(aWeb):
 
 #
 #
-#
 def mac_sync(aWeb):
  macs = aWeb.rest_call("device_mac_sync")
  print "<ARTICLE CLASS=info>"
@@ -255,7 +257,6 @@ def mac_sync(aWeb):
  print "</DIV></DIV></ARTICLE>"
 
 #
-# new device:
 #
 def new(aWeb):
  cookie = aWeb.cookie_unjar('system')
@@ -319,7 +320,6 @@ def delete(aWeb):
  print "<ARTICLE>Unit {} deleted, op:{}</ARTICLE>".format(aWeb['id'],res)
 
 #
-# find devices operations
 #
 def discover(aWeb):
  if aWeb['op']:
@@ -348,14 +348,12 @@ def discover(aWeb):
   print "</DIV></ARTICLE>"
 
 #
-# clear db
 #
 def clear_db(aWeb):
  res = aWeb.rest_call("device_clear")
  print "<<ARTICLE>%s</ARTICLE>"%(res)
 
 #
-# Generate output for munin, until we have other types
 #
 def graph_save(aWeb):
  res = aWeb.rest_call("device_graph_save")
@@ -365,7 +363,6 @@ def graph_save(aWeb):
 #
 def graph_info(aWeb):
  dev = aWeb.rest_call("device_graph_info",{'id':aWeb['id'],'graph_proxy':aWeb['graph_proxy'],'graph_update':aWeb['graph_update'],'op':aWeb['op']})
-
  print "<ARTICLE CLASS='info'><P>Graph for %s</DIV>"%(dev['fqdn'])
  print "<FORM ID=device_graph_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id'])

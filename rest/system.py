@@ -11,7 +11,7 @@ from sdcp.core.common import DB,SC
 #
 #
 def application(aDict):
- """Function docstring for application TBD
+ """Function docstring for application. Pick up 'portal' section from settings ('title', 'message' and resource 'id' of start page)
 
  Args:
 

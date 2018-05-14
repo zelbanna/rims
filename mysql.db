@@ -60,6 +60,7 @@ CREATE TABLE `devices` (
   `graph_update` tinyint(1) unsigned DEFAULT '0',
   `graph_proxy` int(10) unsigned DEFAULT '2130706433',
   `comment` text,
+  `webpage` varchar(60) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ip` (`ip`,`subnet_id`),
   UNIQUE KEY `hostname` (`hostname`,`a_dom_id`),
