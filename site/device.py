@@ -93,7 +93,7 @@ def info(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
  print "<!-- Reachability Info -->"
  print "<DIV STYLE='margin:3px; float:left;'>"
- print "<DIV CLASS=table STYLE='width:210px; height:176px'><DIV CLASS=tbody>"
+ print "<DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['info']['hostname'])
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE={} READONLY></DIV></DIV>".format(dev['ip'])
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=devices_a_dom_id>"
@@ -171,9 +171,10 @@ def info(aWeb):
     print "</SELECT></DIV></DIV>"
     print "<DIV CLASS=tr><DIV CLASS=td>{0} Unit:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_{1}_pdu_unit TYPE=TEXT PLACEHOLDER='{2}'></DIV></DIV>".format(pem.upper(),pem,dev['info'][pem + "_pdu_unit"])
   print "</DIV></DIV></DIV>"
- print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%'><DIV CLASS=table><DIV CLASS=tbody>"
- print "<DIV CLASS='tr white'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=background STYLE='overflow-x:auto;' TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV></DIV>".format("" if not dev['info']['comment'] else dev['info']['comment'])
- print "<DIV CLASS='tr white'><DIV CLASS=td>Web page:</DIV><DIV CLASS=td><INPUT CLASS=background STYLE='overflow-x:auto;' TYPE=TEXT NAME=devices_webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage'])
+ print "<!-- Text fields -->"
+ print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%;'><DIV CLASS=table><DIV CLASS=tbody>"
+ print "<DIV CLASS='tr white'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=background TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV></DIV>".format("" if not dev['info']['comment'] else dev['info']['comment'])
+ print "<DIV CLASS='tr white'><DIV CLASS=td>Web page:</DIV><DIV CLASS=td><INPUT CLASS=background TYPE=TEXT NAME=devices_webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage'])
  print "</DIV></DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?device_info&id=%i'%dev['id'])
