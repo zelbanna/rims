@@ -181,7 +181,7 @@ def info(aWeb):
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_info&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
  print aWeb.button('document', DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
- print aWeb.button('network',  DIV='div_dev_data', URL='sdcp.cgi?device_connections&id=%i'%(dev['id']),TITLE='Device Connections')
+ print aWeb.button('network',  DIV='div_dev_data', URL='sdcp.cgi?device_connections_list&id=%i'%(dev['id']),TITLE='Device Connections')
  print aWeb.a_button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['info']['console_ip'] and dev['info'].get('console_port',0) > 0):
   print aWeb.a_button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['info']['console_ip'],6000+dev['info']['console_port']))
@@ -202,13 +202,6 @@ def info(aWeb):
 
 
 ####################################################### Functions #######################################################
-#
-#
-def connections(aWeb):
- print "<ARTICLE>"
- print "hej"
- print "</ARTICLE>"
-
 #
 #
 def conf_gen(aWeb):
@@ -375,3 +368,18 @@ def graph_info(aWeb):
  print aWeb.button('save',  DIV='div_content_right', URL='sdcp.cgi?device_graph_info&id=%s&op=update', FRM='device_graph_form')
  print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?device_graph_info&id=%s&op=detect', FRM='device_graph_form')
  print "</DIV></ARTICLE>"
+
+################################################## Connections #################################################
+#
+#
+def connections_list(aWeb):
+ print "<ARTICLE><P>Connections</P><DIV CLASS='controls'>"
+ print aWeb.button('reload',DIV='div_dev_data',URL='sdcp.cgi?device_connections_list&id=%s'%(aWeb['id']))
+ print aWeb.button('add',   DIV='div_dev_data',URL='sdcp.cgi?device_connections_add&id=%s'%(aWeb['id']))
+ print aWeb.button('search',DIV='div_dev_data',URL='sdcp.cgi?device_connections_discover&id=%s'%(aWeb['id']))
+ print "</DIV>"   
+ print "<DIV CLASS=table>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Graph Type</DIV><DIV CLASS=th>Graph Index</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Peer IP</DIV><DIV CLASS=th>Peer Interface</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ print "</DIV></DIV>"
+ print "</ARTICLE>"
