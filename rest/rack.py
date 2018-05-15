@@ -51,7 +51,7 @@ def info(aDict):
   else:
    ret['data'] = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None, 'image_url':None }
 
-  sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = '%s' ORDER BY devices.hostname"
+  sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
   db.do(sqlbase%('console'))
   ret['consoles'] = db.get_rows()
   ret['consoles'].append({ 'id':'NULL', 'hostname':'No Console'})
@@ -79,7 +79,7 @@ def inventory(aDict):
  Output:
  """
  ret = {'name': None, 'console':[], 'pdu':[] }
- sqlbase = "SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, devicetypes.name AS type, devicetypes.base AS base FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE %s ORDER BY devices.hostname"
+ sqlbase = "SELECT devices.id, devices.hostname, INET_NTOA(ip) AS ipasc, device_types.name AS type, device_types.base AS base FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY devices.hostname"
 
  with DB() as db:
   if aDict.get('id'):
@@ -93,7 +93,7 @@ def inventory(aDict):
      ret[item['base']].append(item)
   else:
    for type in ['console','pdu']:
-    db.do(sqlbase%("devicetypes.base = '%s'"%type))
+    db.do(sqlbase%("device_types.base = '%s'"%type))
     ret[type] = db.get_rows()
 
  return ret

@@ -13,9 +13,9 @@ def debug(aDict):
  Args:
 
  Output:
- """ 
+ """
  print "Set-Cookie: debug=true; Path=/"
- from sys import path as syspath 
+ from sys import path as syspath
  return { 'globals':[x for x in globals().keys() if not x[0:2] == '__'], 'path':syspath }
 
 ############################################ REST tools ############################################

@@ -68,13 +68,13 @@ CREATE TABLE `devices` (
   KEY `type_id` (`type_id`),
   KEY `subnet_id` (`subnet_id`),
   CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`a_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `devicetypes` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`subnet_id`) REFERENCES `subnets` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
-DROP TABLE IF EXISTS `devicetypes`;
-CREATE TABLE `devicetypes` (
+DROP TABLE IF EXISTS `device_types`;
+CREATE TABLE `device_types` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(20) DEFAULT NULL,
   `base` varchar(40) DEFAULT NULL,

@@ -27,7 +27,7 @@ def info(aDict):
   # Fetch selection info
   info = aDict.pop('info',[])
   # Prep types for lookup
-  typexist = db.do("SELECT id, name, base FROM devicetypes")
+  typexist = db.do("SELECT id, name, base FROM device_types")
   types    = db.get_dict('name') 
 
   # Move aDict to args for op
@@ -88,7 +88,7 @@ def info(aDict):
     ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%(ret['id'])),'rack_info':db.update_dict_prefixed('rackinfo',args,"device_id='%s'"%(ret['id']))}
 
   # Now fetch info
-  ret['xist'] = db.do("SELECT devices.*, base, devicetypes.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(srch))
+  ret['xist'] = db.do("SELECT devices.*, base, device_types.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(subnets.subnet),'/',subnets.mask) AS subnet, INET_NTOA(subnets.gateway) AS gateway FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id LEFT JOIN subnets ON subnets.id = subnet_id WHERE {}".format(srch))
   if ret['xist'] > 0:
    ret['info'] = db.get_row()
    ret['id'] = ret['info'].pop('id',None)
@@ -116,7 +116,7 @@ def info(aDict):
     ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(devices.ip) AS console_ip, devices.hostname AS console_name FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.console_id WHERE rackinfo.device_id = %i"%(ret['id']))
     if ret['racked'] > 0:
      ret['info'].update(db.get_row())
-     sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devicetypes.base = '%s' ORDER BY devices.hostname"
+     sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
      db.do(sqlbase%('console'))
      ret['infra']['consoles'] = db.get_rows()
      ret['infra']['consoles'].append({ 'id':'NULL', 'hostname':'No Console' })
@@ -130,7 +130,7 @@ def info(aDict):
   if operation == 'update' and ret['racked']:
    for pem in [0,1]:
     if ret['info']['pem%i_pdu_id'%(pem)] > 0:
-     db.do("SELECT INET_NTOA(ip) AS ip, hostname, name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
+     db.do("SELECT INET_NTOA(ip) AS ip, hostname, name FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
      pdu_info = db.get_row()
      args_pem = {'ip':pdu_info['ip'],'unit':ret['info']['pem%i_pdu_unit'%(pem)],'slot':ret['info']['pem%i_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem)}
      try:
@@ -203,8 +203,8 @@ def list_type(aDict):
  """
  ret = {}
  with DB() as db:
-  select = "devicetypes.%s ='%s'"%(('name',aDict.get('name')) if aDict.get('name') else ('base',aDict.get('base')))
-  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, devicetypes.base as type_base, devicetypes.name as type_name FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE %s ORDER BY type_name,hostname"%select)
+  select = "device_types.%s ='%s'"%(('name',aDict.get('name')) if aDict.get('name') else ('base',aDict.get('base')))
+  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, device_types.base as type_base, device_types.name as type_name FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY type_name,hostname"%select)
   ret['data'] = db.get_rows()
  return ret
 
@@ -295,7 +295,7 @@ def delete(aDict):
  from sdcp.core.logger import log
  log("device_remove({})".format(aDict))
  with DB() as db:
-  existing = db.do("SELECT hostname, mac, a_id, ptr_id, devicetypes.* FROM devices LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = {}".format(aDict['id']))
+  existing = db.do("SELECT hostname, mac, a_id, ptr_id, device_types.* FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = {}".format(aDict['id']))
   if existing == 0:
    ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
@@ -378,7 +378,7 @@ def configuration_template(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, mask, INET_NTOA(gateway) AS gateway, INET_NTOA(subnet) AS subnet, devicetypes.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN devicetypes ON devicetypes.id = devices.type_id LEFT JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = '%s'"%aDict['id'])
+  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, mask, INET_NTOA(gateway) AS gateway, INET_NTOA(subnet) AS subnet, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id LEFT JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = '%s'"%aDict['id'])
   data = db.get_row()
  ip = data.pop('ipasc',None)
  try:
@@ -423,7 +423,7 @@ def discover(aDict):
  ret = {'errors':0 }
 
  with DB() as db:
-  db.do("SELECT id,name FROM devicetypes")
+  db.do("SELECT id,name FROM device_types")
   devtypes = db.get_dict('name')
   db.do("SELECT subnet,mask FROM subnets WHERE id = '%s'"%aDict['subnet_id'])
   net = db.get_row()
@@ -592,7 +592,7 @@ def graph_info(aDict):
    args['graph_update'] = 0 if not aDict.get('graph_update') else int(aDict.get('graph_update'))
    ret['update'] = db.do("UPDATE devices SET graph_proxy = INET_ATON('%s'), graph_update = %i WHERE id = %i"%(args['graph_proxy'],int(args['graph_update']),args['id']))
 
-  db.do("SELECT INET_NTOA(ip) AS ip, graph_update, devicetypes.name AS type_name, INET_NTOA(graph_proxy) AS graph_proxy, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id LEFT JOIN devicetypes ON devices.type_id = devicetypes.id WHERE devices.id = '%s'"%aDict['id'])
+  db.do("SELECT INET_NTOA(ip) AS ip, graph_update, device_types.name AS type_name, INET_NTOA(graph_proxy) AS graph_proxy, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = '%s'"%aDict['id'])
   ret.update(db.get_row())
   db.do("SELECT value AS plugin_file FROM settings WHERE section = 'graph' AND parameter = 'plugins'")
   ret.update(db.get_row())
