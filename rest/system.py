@@ -574,7 +574,6 @@ def activities_list(aDict):
  ret = {'start':aDict.get('start','0')}
  ret['end'] = int(ret['start']) + 50
  with DB() as db:
-  db.utf8()
   db.do("SELECT activities.id, activity_types.type AS type, CONCAT(hour,':',minute) AS time, CONCAT(year,'-',month,'-',day) AS date FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id ORDER BY year,month,day DESC LIMIT %s, %s"%(ret['start'],ret['end']))
   ret['data'] = db.get_rows()
  return ret
@@ -595,7 +594,6 @@ def activities_info(aDict):
  id = args.pop('id','new')
  op = args.pop('op',None)
  with DB() as db:
-  db.utf8()
   db.do("SELECT * FROM activity_types")
   ret['types'] = db.get_rows()
   db.do("SELECT id,alias FROM users ORDER BY alias")
@@ -649,7 +647,6 @@ def activities_type_list(aDict):
  """
  ret = {}
  with DB() as db:
-  db.utf8()
   db.do("SELECT * FROM activity_types")
   ret['data'] = db.get_rows()
  return ret
@@ -675,7 +672,6 @@ def activities_type_info(aDict):
     ret['update'] = db.insert_dict('activity_types',args)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
-  db.utf8()
   if not id == 'new':
    ret['xist'] = db.do("SELECT * FROM activity_types WHERE id = '%s'"%id)
    ret['data'] = db.get_row()

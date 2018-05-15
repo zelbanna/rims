@@ -39,7 +39,7 @@ class DB(object):
  def connect(self):
   from pymysql import connect
   from pymysql.cursors import DictCursor
-  self._conn = connect(host=self._host, port=3306, user=self._user, passwd=self._pass, db=self._db, cursorclass=DictCursor)
+  self._conn = connect(host=self._host, port=3306, user=self._user, passwd=self._pass, db=self._db, cursorclass=DictCursor, charset='utf8')
   self._curs = self._conn.cursor()
 
  def close(self):
@@ -59,9 +59,6 @@ class DB(object):
 
  def is_dirty(self):
   return self._dirty
-
- def utf8(self):
-  self._curs.execute("SET NAMES utf8")
 
  ################# Fetch info ##################
 

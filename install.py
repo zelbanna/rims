@@ -166,7 +166,7 @@ if settings['system']['id'] == 'master':
   res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
   res['register'] = db.do("INSERT INTO nodes(node,url,system,www) VALUES('{0}','{1}',1,{2}) ON DUPLICATE KEY UPDATE system = 1, www = {2}, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['rest'],modes.get('front','0')))
   res['node_id']= db.get_last_id()
-  sql ="INSERT INTO devicetypes(name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
+  sql ="INSERT INTO device_types(name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
   for type in device_types:
    try:    res['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
    except Exception as err: res['device_errors'] = str(err)
