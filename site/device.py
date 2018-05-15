@@ -174,7 +174,7 @@ def info(aWeb):
   print "</DIV></DIV></DIV>"
  print "<!-- Text fields -->"
  print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%;'><DIV CLASS=table><DIV CLASS=tbody>"
- print "<DIV CLASS='tr white'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=background TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV></DIV>".format("" if not dev['info']['comment'] else dev['info']['comment'])
+ print "<DIV CLASS='tr white'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=background TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV></DIV>".format("" if not dev['info']['comment'] else dev['info']['comment'].encode("utf-8"))
  print "<DIV CLASS='tr white'><DIV CLASS=td>Web page:</DIV><DIV CLASS=td><INPUT CLASS=background TYPE=TEXT NAME=devices_webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage'])
  print "</DIV></DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
