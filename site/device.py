@@ -393,7 +393,7 @@ def connection_list(aWeb):
  print "<ARTICLE><P>Connections</P><DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_dev_data',URL='sdcp.cgi?device_connection_list&device_id=%s'%(aWeb['device_id']))
  print aWeb.button('add',   DIV='div_dev_data',URL='sdcp.cgi?device_connection_info&device_id=%s&id=new'%aWeb['device_id'])
- print aWeb.button('search',DIV='div_dev_data',URL='sdcp.cgi?device_connection_discover&device_id=%s'%(aWeb['device_id']))
+ print aWeb.button('search',DIV='div_dev_data',URL='sdcp.cgi?device_connection_discover&device_id=%s'%(aWeb['device_id']), SPIN='true')
  print "</DIV>"   
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Graph Type</DIV><DIV CLASS=th>Graph Index</DIV><DIV CLASS=th>Peer IP</DIV><DIV CLASS=th>Peer Interface</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
@@ -430,3 +430,13 @@ def connection_info(aWeb):
   print aWeb.button('trash', DIV='div_dev_data', URL='sdcp.cgi?device_connection_list&op=delete&device_id=%s&id=%s'%(data['device_id'],data['id']), MSG='Delete connection?')
  print "</DIV></ARTICLE>"
 
+#
+#
+def connection_discover(aWeb):
+ res = aWeb.rest_call("device_connection_discover",{"device_id":aWeb['device_id']})
+ print "<ARTICLE CLASS=info STYLE='width:100%'><P>Discovery</P>"
+ print "<DIV CLASS=controls>"
+ print aWeb.button('back', DIV='div_dev_data', URL='sdcp.cgi?device_connection_list&device_id=%s'%aWeb['device_id'])
+ print "</DIV>"
+ print res
+ print "</ARTICLE>"
