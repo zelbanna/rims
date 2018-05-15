@@ -357,6 +357,87 @@ def webpage_list(aDict):
   ret['data'] = db.get_rows()
  return ret
 
+#
+#
+def connection_list(aDict):
+ """Function docstring for connection_list TBD. List connections for a specific device
+
+ Args:
+  - device_id (required)
+
+ Output:
+ """
+ ret = {}
+ id = aDict['device_id']
+ with DB() as db:
+  ret['xist'] = db.do("SELECT id,alias,description,graph_type,graph_index,INET_NTOA(peer_ip) AS peer_ip, peer_interface FROM device_connections WHERE device_id = %s"%id)
+  ret['data'] = db.get_rows()
+ return ret
+
+#
+#
+def connection_info(aDict):
+ """Function docstring for connection_info TBD. Show specific connection for a device 
+
+ Args:             
+  - id (required)
+  - device_id (required)
+  - alias
+  - description
+  - graph_type
+  - graph_index
+  - peer_ip (string)
+  - peer_interface
+
+ Output:
+ """
+ ret = {}
+ args = aDict
+ id = args.pop('id','new')
+ op = args.pop('op',None)
+ with DB() as db:
+  if op == 'update':
+   from struct import unpack
+   from socket import inet_aton
+   def GL_ip2int(addr):
+    return unpack("!I", inet_aton(addr))[0]
+   args['peer_ip'] = GL_ip2int(args.get('peer_ip','0'))
+   if not id == 'new':
+    ret['update'] = db.update_dict('device_connections',args,"id=%s"%id) 
+   else:
+    ret['update'] = db.insert_dict('device_connections',args)
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
+
+  if not id == 'new':
+   from struct import pack
+   from socket import inet_ntoa
+   def GL_int2ip(addr):
+    return inet_ntoa(pack("!I", addr))
+   ret['xist'] = db.do("SELECT * FROM device_connections WHERE id = '%s'"%id)
+   ret['data'] = db.get_row()
+   ret['data']['peer_ip'] = GL_int2ip(ret['data']['peer_ip'])
+   ret['data']['id'] = ret['data']['id']
+  else:
+   ret['data'] = {'id':'new','device_id':int(aDict['device_id']),'alias':'Unknown','description':'Unknown','graph_type':'SNMP','graph_index':None,'peer_ip':'0.0.0.0','peer_interface':None}
+ return ret
+
+#
+#
+def connection_delete(aDict):
+ """Function docstring for connection_delete TBD. Delete a certain connection
+
+ Args:
+  - id (required)
+  - device_id (required)
+
+ Output:
+ """
+ ret = {}
+ id = aDict['id']
+ with DB() as db:
+  ret['deleted'] = db.do("DELETE FROM device_connections WHERE id = %s"%id)
+ return ret
+
 ############################################# Specials ###########################################
 #
 #

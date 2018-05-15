@@ -27,7 +27,6 @@ ul {     list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
 li {     display:inline-block; }
 
 /*###################################### Content Model ########################################*/
-.background {   background-color:#F1F1F1; }
 header {        position:fixed; height:75px;          width:100%; padding-left:5px; background-color: #3E84F4;}
 main {          position:fixed; top:75px; bottom:0px; width:100%; background-color:#F1F1F1;}
 
@@ -66,8 +65,8 @@ div.table .thead {     display: table-header-group; }
 div.table .thead .th { display: table-cell; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 4px; }
 div.table .tbody {     display: table-row-group; }
 div.table .tbody .tr { display: table-row; line-height:22px; counter-increment:ztable; font-size:11px; }
-div.table .tbody .tr:nth-child(even) { background-color: #F1F1F1; }
-div.table .tbody .tr:nth-child(odd)  { background-color: #FFFFFF; }
+div.table .tbody .tr:nth-child(even) { background-color: #FFFFFF; }
+div.table .tbody .tr:nth-child(odd)  { background-color: #F1F1F1; }
 div.table .tbody .tr .td { display:table-cell; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:0px 0px 0px 6px; }
 div.table .tfoot {     display: table-footer-group; }
 
@@ -85,7 +84,7 @@ article.mobile .controls button { width:88px; height:88px; }
 article.mobile .controls img    { width:88px; height:88px; }
 
 /*#############################################################################*/
- 
+
 .warning {     background-color:red!important; font-weight:bold; color:#FFFFFF }
 .right   {     float:right!important; }
 .border {      border:solid 1px black; }
@@ -93,13 +92,16 @@ article.mobile .controls img    { width:88px; height:88px; }
 .small-text {  font-size:9px; }
 .centered {    align-items:center; justify-content:center; display:flex; flex-wrap:wrap }
 .machine-text { font-family:Courier New, serif; font-size: 12px; margin: 0px; }
-
+.background {  background-color:#F1F1F1; }
 .blue {  background-color:#33CAFF!important; }
 .red {   background-color:#DF3620!important; }
 .green { background-color:#00CC66!important; }
 .orange {background-color:orange!important;  }
 .white { background-color:#FFFFFF!important; }
 .grey {  background-color:#9CA6B0!important; }
+
+.even {  background-color:#FFFFFF!important; }
+.odd  {  background-color:#F1F1F1!important; }
 
 div.rack-indx { font-weight:bold; font-size:8px; color:grey; padding:2px; }
 div.rack-data { border: solid 2px grey; font-size:12px; text-align:center;}
