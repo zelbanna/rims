@@ -53,10 +53,11 @@ def list(aWeb):
   args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
  res = aWeb.rest_call("device_list",args)
  print "<ARTICLE><P>Devices</P><DIV CLASS='controls'>"
- print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?device_list&{}'.format(aWeb.get_args()))
- print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?device_new&{}'.format(aWeb.get_args()))
- print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_discover')
- print aWeb.button('save'  ,DIV='div_content_right', URL='sdcp.cgi?device_graph_save')
+ print aWeb.button('reload',DIV='div_content_left',  TITLE='Reload', URL='sdcp.cgi?device_list&{}'.format(aWeb.get_args()))
+ print aWeb.button('add',DIV='div_content_right',    TITLE='Add device', URL='sdcp.cgi?device_new&{}'.format(aWeb.get_args()))
+ print aWeb.button('search',DIV='div_content_right', TITLE='Discover', URL='sdcp.cgi?device_discover')
+ print aWeb.button('save'  ,DIV='div_content_right', TITLE='Save graph config', URL='sdcp.cgi?device_graph_save')
+ print aWeb.button('web'   ,DIV='div_content_right', TITLE='Show webpages', URL='sdcp.cgi?device_webpages')
  print "</DIV>"
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&sort=ip&{0}'>IP</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&sort=hostname&{0}'>FQDN</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args(['sort']))
@@ -203,6 +204,17 @@ def info(aWeb):
 
 
 ####################################################### Functions #######################################################
+#
+#
+def webpages(aWeb):
+ res = aWeb.rest_call("device_webpage_list")
+ print "<ARTICLE CLASS=info STYLE='width:100%'>"
+ print "<DIV CLASS=table><DIV CLASS=tbody>"
+ for row in res['data']:
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op URL='sdcp.cgi?device_info&id=%s' DIV=div_content_right>%s</A></DIV><DIV CLASS=td><A HREF='%s' TARGET=_blank>%s</A></DIV></DIV>"%(row['id'],row['hostname'],row['webpage'],row['webpage'])
+ print "</DIV></DIV>"
+ print "</ARTICLE>"
+
 #
 #
 def conf_gen(aWeb):

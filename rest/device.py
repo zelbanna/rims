@@ -342,6 +342,21 @@ def to_node(aDict):
     break
  return ret
 
+#
+#
+def webpage_list(aDict):
+ """Function docstring for webpage_list TBD. List webpages for devices
+
+ Args:
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT id,hostname,webpage FROM devices WHERE webpage IS NOT NULL")
+  ret['data'] = db.get_rows()
+ return ret
+
 ############################################# Specials ###########################################
 #
 #

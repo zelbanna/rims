@@ -20,7 +20,7 @@ CREATE TABLE `activities` (
   KEY `fk_type` (`type_id`),
   CONSTRAINT `activities_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `activities_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `activity_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `activity_types`;
@@ -28,7 +28,7 @@ CREATE TABLE `activity_types` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `type` varchar(20) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `bookings`;
@@ -40,7 +40,29 @@ CREATE TABLE `bookings` (
   KEY `fk_user` (`user_id`),
   CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `device_connections`;
+CREATE TABLE `device_connections` (
+  `device_id` int(10) unsigned NOT NULL,
+  `alias` varchar(20) NOT NULL,
+  `graph_type` varchar(10) NOT NULL DEFAULT 'SNMP',
+  `graph_index` varchar(40) DEFAULT NULL,
+  UNIQUE KEY `device_id` (`device_id`),
+  CONSTRAINT `device_connections_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `device_types`;
+CREATE TABLE `device_types` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) DEFAULT NULL,
+  `base` varchar(40) DEFAULT NULL,
+  `functions` varchar(255) DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `devices`;
@@ -70,18 +92,7 @@ CREATE TABLE `devices` (
   CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`a_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`subnet_id`) REFERENCES `subnets` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-
-DROP TABLE IF EXISTS `device_types`;
-CREATE TABLE `device_types` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(20) DEFAULT NULL,
-  `base` varchar(40) DEFAULT NULL,
-  `functions` varchar(255) DEFAULT '',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `domains`;
@@ -90,7 +101,7 @@ CREATE TABLE `domains` (
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `events`;
@@ -101,7 +112,7 @@ CREATE TABLE `events` (
   `user_id` int(10) unsigned DEFAULT NULL,
   `command` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `nodes`;
@@ -113,7 +124,7 @@ CREATE TABLE `nodes` (
   `www` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `node` (`node`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `openstack_services`;
@@ -125,7 +136,7 @@ CREATE TABLE `openstack_services` (
   `service_id` varchar(50) DEFAULT NULL,
   UNIQUE KEY `id_service` (`id`,`service`),
   CONSTRAINT `openstack_services_ibfk_1` FOREIGN KEY (`id`) REFERENCES `openstack_tokens` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `openstack_tokens`;
@@ -139,7 +150,7 @@ CREATE TABLE `openstack_tokens` (
   `node` varchar(40) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `token` (`token`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `pduinfo`;
@@ -152,7 +163,7 @@ CREATE TABLE `pduinfo` (
   `slots` tinyint(1) NOT NULL DEFAULT '1',
   UNIQUE KEY `device_id` (`device_id`),
   CONSTRAINT `pduinfo_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `rackinfo`;
@@ -179,7 +190,7 @@ CREATE TABLE `rackinfo` (
   CONSTRAINT `rackinfo_ibfk_3` FOREIGN KEY (`pem0_pdu_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `rackinfo_ibfk_4` FOREIGN KEY (`pem1_pdu_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `rackinfo_ibfk_5` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `racks`;
@@ -199,7 +210,7 @@ CREATE TABLE `racks` (
   CONSTRAINT `racks_ibfk_1` FOREIGN KEY (`console`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `racks_ibfk_2` FOREIGN KEY (`pdu_1`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `racks_ibfk_3` FOREIGN KEY (`pdu_2`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `resources`;
@@ -219,7 +230,7 @@ CREATE TABLE `resources` (
   KEY `node` (`node`),
   CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `resources_ibfk_2` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `settings`;
@@ -233,7 +244,7 @@ CREATE TABLE `settings` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `parameter` (`node`,`section`,`parameter`),
   CONSTRAINT `settings_ibfk_1` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `subnets`;
@@ -244,7 +255,7 @@ CREATE TABLE `subnets` (
   `gateway` int(10) unsigned DEFAULT NULL,
   `description` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `users`;
@@ -256,6 +267,6 @@ CREATE TABLE `users` (
   `view_public` tinyint(1) unsigned DEFAULT '1',
   `menulist` varchar(60) DEFAULT 'default',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

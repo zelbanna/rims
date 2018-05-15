@@ -643,10 +643,10 @@ def activities_delete(aDict):
 def activities_type_list(aDict):
  """ Function docstring for activities_type_list. TBD
 
- Args:                
+ Args:
 
  Output:
- """    
+ """
  ret = {}
  with DB() as db:
   db.utf8()
@@ -670,7 +670,7 @@ def activities_type_info(aDict):
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('activity_types',args,"id=%s"%id) 
+    ret['update'] = db.update_dict('activity_types',args,"id=%s"%id)
    else:
     ret['update'] = db.insert_dict('activity_types',args)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
