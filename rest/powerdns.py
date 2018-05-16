@@ -99,24 +99,8 @@ def domain_list(aDict):
 
 #
 #
-def domain_lookup(aDict):
- """Function docstring for domain_lookup TBD
-
- Args:
-  - id (required)
-
- Output:
- """
- ret = {}
- with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
-  ret['xist'] = db.do("SELECT id,name,master,type,notified_serial FROM domains WHERE id = '{}'".format(aDict['id']))
-  ret['data'] = db.get_row() if ret['xist'] > 0 else {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
- return ret
-
-#
-#
-def domain_update(aDict):
- """Function docstring for domain_update TBD
+def domain_info(aDict):
+ """Function docstring for domain_info TBD
 
  Args:
   - type (required)
@@ -126,28 +110,33 @@ def domain_update(aDict):
 
  Output:
  """
- ret = {'result':'OK'}
+ ret = {}
  id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  args = aDict
  with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
-  if id == 'new':
-   # Create and insert a lot of records
-   ret['update'] = db.insert_dict('domains',args,'ON DUPLICATE KEY UPDATE id = id')
-   if ret['update'] > 0:
-    ret['id'] = db.get_last_id()
-    from time import strftime
-    ret['serial'] = strftime("%Y%m%d%H")
-    # Find DNS for MASTER to be placed into SOA record
-    existing = db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%args['master'])
-    ret['soa'] = db.get_row() if existing > 0 else {'server':'server.local','domain':'local'}
-    sql = "INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ({},'{}','{}','{}' ,25200,'{}',0)"
-    db.do(sql.format(ret['id'],args['name'],"%s hostmaster.%s 0 21600 300 3600"%(ret['soa']['server'],ret['soa']['domain']),'SOA',ret['serial']))
-    db.do(sql.format(ret['id'],args['name'],ret['soa']['server'],'NS', ret['serial']))
+  if op == 'update':
+   if id == 'new':
+    # Create and insert a lot of records
+    ret['update'] = db.insert_dict('domains',args,'ON DUPLICATE KEY UPDATE id = id')
+    if ret['update'] > 0:
+     id = db.get_last_id()
+     from time import strftime
+     serial = strftime("%Y%m%d%H")
+     # Find DNS for MASTER to be placed into SOA record
+     master = db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%args['master'])
+     soa    = db.get_row() if master > 0 else {'server':'server.local','domain':'local'}
+     sql = "INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ('%s','%s','{}','{}' ,25200,'%s',0)"%(id,args['name'],serial)
+     db.do(sql.format("%s hostmaster.%s 0 21600 300 3600"%(soa['server'],soa['domain']),'SOA'))
+     db.do(sql.format(soa['server'],'NS'))
+     ret['extra'] = {'serial':serial,'master':master,'soa':soa}
+    else:
+     id = 'existing'
    else:
-    ret['id'] = 'existing'
-  else:
-   ret['update'] = db.update_dict('domains',args,"id=%s"%id)
-   ret['id']   = id
+    ret['update'] = db.update_dict('domains',args,"id=%s"%id)
+
+  ret['xist'] = db.do("SELECT id,name,master,type,notified_serial FROM domains WHERE id = '%s'"%id)
+  ret['data'] = db.get_row() if ret['xist'] > 0 else {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
  return ret
 
 #
