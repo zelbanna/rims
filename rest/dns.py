@@ -119,13 +119,11 @@ def domain_list(aDict):
      db.do("DELETE FROM domains WHERE id = '%s'"%id)
 
   filter = []
-  if aDict.get('node_server'):
-   node,_,server = aDict.get('node_server').partition('_')
-   db.do("SELECT domain_servers.id FROM domain_servers LEFT JOIN nodes ON domain_servers.node_id = nodes.id WHERE nodes.node = '%s' AND domain_servers.server = '%s'"%(node,server))
-   filter.append('server_id = %s'%(db.get_val('id')))
   if aDict.get('filter'):
    filter.append("name %s LIKE '%%arpa'"%('' if aDict.get('filter') == 'reverse' else "NOT"))
   if aDict.get('exclude'):
+   db.do("SELECT server_id FROM domains WHERE id = '%s'"%(aDict.get('exclude')))
+   filter.append('server_id = %s'%(db.get_val('server_id')))
    filter.append("domains.id <> '%s'"%aDict.get('exclude'))
 
   ret['xist'] = db.do("SELECT domains.*, CONCAT(nodes.node,'_',domain_servers.server) AS node_server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id LEFT JOIN nodes ON nodes.id = domain_servers.node_id WHERE %s ORDER BY name"%('TRUE' if len(filter) == 0 else " AND ".join(filter)))
@@ -179,20 +177,19 @@ def domain_delete(aDict):
  Output:
  """
  ret = {'result':'NOT_OK'}
- with DB() as db:
-  try:
+ if aDict['from'] != aDict['to']:
+  with DB() as db:
+   db.do("SELECT server, nodes.node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id LEFT JOIN nodes ON domain_servers.node_id = nodes.id WHERE domains.id = %s"%aDict['from'])
+   ret['infra'] = db.get_row()
    ret['transfer'] = db.do("UPDATE devices SET a_dom_id = %s WHERE a_dom_id = %s"%(aDict['to'],aDict['from']))
    ret['deleted']  = db.do("DELETE FROM domains WHERE id = %s"%(aDict['from']))
    ret['result']   = 'OK'
-  except:
-   pass
-  else:
-   if SC['dns'].get('node',SC['system']['id']) == SC['system']['id']:
-    module = import_module("sdcp.rest.%s"%SC['dns']['type'])
+   if SC['system']['id'] == ret['infra']['node']:
+    module = import_module("sdcp.rest.%s"%ret['infra']['server'])
     fun = getattr(module,'domain_delete',None)
     ret.update(fun({'id':aDict['from']}))
    else:
-    ret.update(rest_call(__rest_format__('domain_delete'),{'id':aDict['from']})['data'])
+    ret.update(rest_call("%s?%s_domain_delete"%(SC['node'][ret['infra']['node']],ret['infra']['server']),{'id':aDict['from']})['data'])
  return ret
 
 ######################################## Records ####################################
