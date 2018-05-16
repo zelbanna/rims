@@ -7,13 +7,62 @@ __author__= "Zacharias El Banna"
 __version__ = "18.04.07GA"
 __status__= "Production"
 
+############################################ Servers ###########################################
+def server_list(aWeb):
+ res = aWeb.rest_call("dns_server_list")
+ print "<ARTICLE><P>Domains</P><DIV CLASS='controls'>"
+ print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?dns_server_list')
+ print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?dns_server_info&id=new',TITLE='Add domain')
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
+ for srv in res['servers']:
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(srv['id'],srv['node'],srv['type'])
+  print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?dns_server_info&id=%s'%(srv['id']))
+  print "</DIV></DIV></DIV>"
+ print "</DIV></DIV>"
+ print "</ARTICLE>"
+
+#
+#
+def server_info(aWeb):
+ args = aWeb.get_args2dict()
+ res  = aWeb.rest_call("dns_server_info",args)
+ data = res['data']
+ print "<ARTICLE CLASS=info><P>Server</P>"
+ print "<FORM ID=server_info_form>"
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(data['id'])
+ print "<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><SELECT NAME=node_id>"
+ for node in res['nodes']:
+  extra = " selected" if (data['node_id'] == node['id']) else ""
+  print "<OPTION VALUE=%s %s>%s</OPTION>"%(node['id'],extra,node['node'])
+ print "</SELECT></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT NAME=type>"
+ for type in res['types']:
+  extra = " selected" if (data['type'] == type) else ""
+  print "<OPTION VALUE=%s %s>%s</OPTION>"%(type,extra,type)
+ print "</SELECT></DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Master:</DIV><DIV CLASS=td><INPUT NAME=master VALUE='%s' TYPE=TEXT REQUIRED></DIV></DIV>"%(data['master'])
+ print "</DIV></DIV>"
+ print "</FORM><DIV CLASS=controls>"
+ print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?dns_server_info&op=update', FRM='server_info_form')
+ if data['id'] != 'new':
+  print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?dns_server_delete&id=%s'%(data['id']), MSG='Delete server?')
+ print "</DIV></ARTICLE>"
+
+#
+#
+def server_delete(aWeb):
+ res = aWeb.rest_call("dns_server_delete",{'id':aWeb['id']})
+ print "<ARTICLE>%s</ARTICLE>"%str(res)
+
+
 ############################################ Domains ###########################################
 #
 #
-def list(aWeb):
+def domain_list(aWeb):
  domains = aWeb.rest_call("dns_domain_list")
  print "<ARTICLE><P>Domains</P><DIV CLASS='controls'>"
- print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?dns_list')
+ print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?dns_domain_list')
  print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?dns_load_cache',TITLE='ReSync DNS cache',SPIN='true')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=new',TITLE='Add domain')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?dns_consistency',TITLE='Check Backend Consistency',SPIN='true')

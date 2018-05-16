@@ -416,7 +416,6 @@ def connection_info(aDict):
    ret['xist'] = db.do("SELECT * FROM device_connections WHERE id = '%s'"%id)
    ret['data'] = db.get_row()
    ret['data']['peer_ip'] = GL_int2ip(ret['data']['peer_ip'])
-   ret['data']['id'] = ret['data']['id']
   else:
    ret['data'] = {'id':'new','device_id':int(aDict['device_id']),'alias':'Unknown','description':'Unknown','graph_type':'SNMP','graph_index':None,'peer_ip':'0.0.0.0','peer_interface':None}
  return ret

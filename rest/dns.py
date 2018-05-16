@@ -14,6 +14,68 @@ from sdcp.core.common import DB,SC,rest_call
 def __rest_format__(aFunction):
  return "%s?%s_%s&node=%s"%(SC['node'][SC['dns']['node']], SC['dns']['type'], aFunction, SC['dns']['node'])
 
+
+#
+#
+def server_list(aDict):
+ """Function docstring for server_list TBD
+
+ Args:
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  db.do("SELECT domain_servers.id,type, nodes.node AS node FROM domain_servers LEFT JOIN nodes ON domain_servers.node_id = nodes.id")
+  ret['servers']= db.get_rows()
+ return ret
+
+#
+#
+def server_info(aDict):
+ """Function docstring for server_info TBD
+
+ Args:
+
+ Output:
+ """
+ ret = {}
+ args = aDict
+ id = args.pop('id','new')
+ op = args.pop('op',None)
+ with DB() as db:
+  db.do("SELECT id,node FROM nodes")
+  ret['types'] = ['powerdns','infoblox']
+  ret['nodes'] = db.get_rows()
+  if op == 'update':
+   if not id == 'new':
+    ret['update'] = db.update_dict('domain_servers',args,"id=%s"%id) 
+   else:
+    ret['update'] = db.insert_dict('domain_servers',args)
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
+
+  if not id == 'new':
+   ret['xist'] = db.do("SELECT * FROM domain_servers WHERE id = '%s'"%id)
+   ret['data'] = db.get_row()
+  else:
+   ret['data'] = {'id':'new','node_id':None,'type':'Unknown','master':'127.0.0.1'}
+ return ret
+
+#
+#
+def server_delete(aDict):
+ """Function docstring for server_delete TBD
+
+ Args:
+  - id (required)
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  ret['deleted'] = db.do("DELETE FROM domain_servers WHERE id = %s"%aDict['id'])
+ return ret
+
 #
 #
 def domain_list(aDict):

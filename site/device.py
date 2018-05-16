@@ -32,7 +32,10 @@ def main(aWeb):
    print "<LI><A CLASS='z-op' DIV=div_content_right  URL='sdcp.cgi?rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,data['name'])
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
   print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?ipam_list'>IPAM</A></LI>"
-  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?dns_list'>DNS</A></LI>"
+  print "<LI CLASS='right dropdown'><A>DNS</A><DIV CLASS='dropdown-content'>"
+  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?dns_server_list'>Servers</A>"
+  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?dns_domain_list'>Domains</A>"
+  print "</DIV></LI>"
   print "<LI CLASS='right dropdown'><A>Rackinfo</A><DIV CLASS='dropdown-content'>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?rack_list_infra&type=pdu'>PDUs</A>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?rack_list_infra&type=console'>Consoles</A>"
