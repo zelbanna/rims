@@ -58,7 +58,7 @@ def server_info(aDict):
    ret['xist'] = db.do("SELECT * FROM domain_servers WHERE id = '%s'"%id)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = {'id':'new','node_id':None,'type':'Unknown','master':'127.0.0.1'}
+   ret['data'] = {'id':'new','node_id':None,'type':'Unknown'}
  return ret
 
 #
@@ -89,43 +89,36 @@ def domain_list(aDict):
  Output:
   - filter:forward/reverse
  """
- if SC['dns'].get('node',SC['system']['id']) == SC['system']['id']:
-  module = import_module("sdcp.rest.%s"%SC['dns']['type'])
-  fun = getattr(module,'domains',None)
-  ret = fun(aDict)
- else:
-  ret = rest_call(__rest_format__('domains'),aDict)['data']
- if aDict.get('sync'):
-  ret.update({'added':[],'deleted':[]})
-  with DB() as db:
-   xist = db.do("SELECT domains.* FROM domains")
-   cache = db.get_dict('id')
-   for dom in ret['domains']:
-    if not cache.pop(dom['id'],None):
-     ret['added'].append(dom)
-     db.insert_dict('domains',{'id':dom['id'],'name':dom['name']},"ON DUPLICATE KEY UPDATE name = '%s'"%dom['name'])
-   for id,dom in cache.iteritems():
-    ret['deleted'].append(dom)
-    db.do("DELETE FROM domains WHERE id = '%s'"%id)
- return ret
-
-#
-#
-def domain_list_cache(aDict):
- """Function docstring for domain_list_cache TBD
-
- Args:
-  - filter (optional)
-  - dict (optional)
-
- Output:
- """
  ret = {}
  with DB() as db:
+  if aDict.get('sync') == 'true':
+   org = {}
+   db.do("SELECT domain_servers.id, type, nodes.node, nodes.url FROM domain_servers LEFT JOIN nodes ON domain_servers.node_id = nodes.id")
+   servers = db.get_rows()
+   for server in servers:
+    if SC['system']['id'] == server['node']:
+     module = import_module("sdcp.rest.%s"%server['type'])
+     fun = getattr(module,'domains',None)
+     org[server['id']] = fun({})['domains']
+    else:
+     org[server['id']] = rest_call("%s?%s_domains&node=%s"%(server['url'],server['type'],server['node']))['data']['domains']
+   ret.update({'sync':{'added':[],'deleted':[]}})
+   db.do("SELECT domains.* FROM domains")
+   cache = db.get_dict('id')
+   for srv,domains in org.iteritems():
+    for dom in domains:
+     if not cache.pop(dom['id'],None):
+      ret['sync']['added'].append(dom)
+      # Add forward here
+      db.insert_dict('domains',{'id':dom['id'],'name':dom['name'],'server_id':srv},"ON DUPLICATE KEY UPDATE name = '%s'"%dom['name'])
+    for id,dom in cache.iteritems():
+     ret['sync']['deleted'].append(dom)
+     db.do("DELETE FROM domains WHERE id = '%s'"%id)
+
   if aDict.get('filter'):
-   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
-  else:
-   ret['xist'] = db.do("SELECT domains.* FROM domains")
+   ret['xist'] = db.do("SELECT domains.*, domain_servers.type AS server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
+  else:      
+   ret['xist'] = db.do("SELECT domains.*, domain_servers.type AS server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id")
   ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 

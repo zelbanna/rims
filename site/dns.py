@@ -41,7 +41,6 @@ def server_info(aWeb):
   extra = " selected" if (data['type'] == type) else ""
   print "<OPTION VALUE=%s %s>%s</OPTION>"%(type,extra,type)
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Master:</DIV><DIV CLASS=td><INPUT NAME=master VALUE='%s' TYPE=TEXT REQUIRED></DIV></DIV>"%(data['master'])
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?dns_server_info&op=update', FRM='server_info_form')
@@ -60,20 +59,21 @@ def server_delete(aWeb):
 #
 #
 def domain_list(aWeb):
- domains = aWeb.rest_call("dns_domain_list")
+ domains = aWeb.rest_call("dns_domain_list",{'sync':aWeb['sync']})
  print "<ARTICLE><P>Domains</P><DIV CLASS='controls'>"
- print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?dns_domain_list')
- print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?dns_load_cache',TITLE='ReSync DNS cache',SPIN='true')
+ print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?dns_domain_list&sync=true',TITLE='Resync cache')
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=new',TITLE='Add domain')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?dns_consistency',TITLE='Check Backend Consistency',SPIN='true')
  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?dns_dedup',TITLE='Find Duplicates',SPIN='true')
  print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?dns_top', SPIN='true')
- print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for dom in domains['domains']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?dns_records&type={}&id={}>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(dom['id'],"a" if not 'arpa' in dom['name'] else "ptr",dom['id'],dom['name'],dom['notified_serial'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?dns_records&type={}&id={}>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(dom['id'],"a" if not 'arpa' in dom['name'] else "ptr",dom['id'],dom['name'],dom['server'])
   print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=%s'%(dom['id']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
+ if domains['sync']:
+  print "<SPAN>Added: %s, Removed: %s</SPAN>"%(domains['sync']['added'],domains['sync']['deleted'])
  print "</ARTICLE>"
 
 #
@@ -195,12 +195,6 @@ def record_transfer(aWeb):
  print "Updated device %s - Results:%s"%(aWeb['device_id'],str(res))
 
 ############################################ Tools ###########################################
-#
-#
-def load_cache(aWeb):
- res = aWeb.rest_call("dns_domain_list",{'sync':True})
- print "<ARTICLE>Added:%s Removed:%s</ARTICLE>"%(res['added'],res['deleted'])
-
 #
 # DNS top
 #
