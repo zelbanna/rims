@@ -29,7 +29,7 @@ def leases(aDict):
  from sdcp.SettingsContainer import SC
  result = []
  lease  = {}
- with open(SC['dhcp']['active'],'r') as leasefile: 
+ with open(SC['iscdhcp']['active'],'r') as leasefile: 
   for line in leasefile:
    if line == '\n':
     continue
@@ -63,7 +63,7 @@ def update_server(aDict):
  from sdcp.core.common import SC,rest_call
  entries = rest_call("%s?device_list_mac"%SC['system']['master'])['data']
  # Create file
- with open(SC['dhcp']['static'],'w') as leasefile:
+ with open(SC['iscdhcp']['static'],'w') as leasefile:
   for entry in entries:
    leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Subnet {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['subnet_id'],entry['id']))
 
@@ -71,8 +71,10 @@ def update_server(aDict):
  from subprocess import check_output, CalledProcessError
  ret = {}
  try:
-  ret['output'] = check_output(SC['dhcp']['reload'].split())
+  ret['output'] = check_output(SC['iscdhcp']['reload'].split())
  except CalledProcessError, c:
   ret['code'] = c.returncode
   ret['output'] = c.output
+ 
+ ret['result'] = 'NOT_OK' if ret['output'] else 'OK'
  return ret
