@@ -31,15 +31,15 @@ def server_info(aWeb):
  print "<FORM ID=server_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(data['id'])
  print "<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><SELECT NAME=node_id>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><SELECT NAME=node>"
  for node in res['nodes']:
-  extra = " selected" if (data['node_id'] == node['id']) else ""
-  print "<OPTION VALUE=%s %s>%s</OPTION>"%(node['id'],extra,node['node'])
+  extra = " selected" if (data['node'] == node['node']) else ""
+  print "<OPTION VALUE=%s %s>%s</OPTION>"%(node['node'],extra,node['node'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Server:</DIV><DIV CLASS=td><SELECT NAME=server>"
  for srv in res['servers']:
-  extra = " selected" if (data['server'] == srv) else ""
-  print "<OPTION VALUE=%s %s>%s</OPTION>"%(srv,extra,srv)
+  extra = " selected" if (data['server'] == srv['server']) else ""
+  print "<OPTION VALUE=%s %s>%s</OPTION>"%(srv['server'],extra,srv['server'])
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
@@ -69,7 +69,7 @@ def domain_list(aWeb):
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for dom in domains['domains']:
   server = dom['node_server'].partition('_')[2]
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?dns_records&node_server=%s&type=%s&domain_id=%s>%s</A></DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(dom['id'],dom['node_server'],"a" if not 'arpa' in dom['name'] else "ptr",dom['id'],dom['name'],server)
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?dns_record_list&type=%s&domain_id=%s>%s</A></DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(dom['id'],"a" if not 'arpa' in dom['name'] else "ptr",dom['id'],dom['name'],server)
   print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=%s'%(dom['id']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
@@ -102,21 +102,20 @@ def domain_info(aWeb):
  print "<SPAN CLASS='results' ID=update_results>{}</SPAN>".format("lookup" if not aWeb.get('op') else aWeb['op'])
  print "<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(data['id'])
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=%s&node_server=%s'%(data['id'],aWeb['node_server']))
+ print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=%s'%(data['id']))
  if data['id'] == 'new':
   print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&op=update',FRM='dns_info_form')
  else:
-  print aWeb.button('trash',DIV='div_content_right',URL='sdcp.cgi?dns_domain_%s&id=%s&node_server=%s_%s'%("transfer" if not "arpa" in data['name'] else "delete",data['id'],res['infra']['node'],res['infra']['server']))
+  print aWeb.button('trash',DIV='div_content_right',URL='sdcp.cgi?dns_domain_%s&id=%s'%("transfer" if not "arpa" in data['name'] else "delete",data['id']))
  print "</DIV></ARTICLE>"
 
 #
 #
 def domain_transfer(aWeb):
- domains = aWeb.rest_call("dns_domain_list",{"filter":"arpa","exclude":aWeb['id'],"node_server":aWeb['node_server']})
+ domains = aWeb.rest_call("dns_domain_list",{"filter":"arpa","exclude":aWeb['id']})
  print "<ARTICLE STYLE='display:inline-block'>"
  print "<FORM ID=dns_transfer>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
- print "<INPUT TYPE=HIDDEN NAME=node_server VALUE=%s>"%(aWeb['node_server'])
  print "Transfer all records to <SELECT NAME=transfer>"
  for domain in domains['domains']:
   print "<OPTION VALUE={}>{}</OPTION>".format(domain['id'],domain['name'])
@@ -135,10 +134,10 @@ def domain_delete(aWeb):
 ############################################ Records ###########################################
 #
 #
-def records(aWeb):
+def record_list(aWeb):
  dns = aWeb.rest_call("dns_record_list",{'domain_id':aWeb['domain_id']})
  print "<ARTICLE><P>Records</P><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?dns_records&id=%s'%(aWeb['domain_id']))
+ print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?dns_record_list&domain_id=%s'%(aWeb['domain_id']))
  print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?dns_record_info&id=new&domain_id=%s'%(aWeb['domain_id']))
  print "<SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>TTL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
@@ -148,7 +147,7 @@ def records(aWeb):
   print "</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(rec['type'],rec['ttl'])
   print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?dns_record_info&id=%i&domain_id=%s'%(rec['id'],aWeb['domain_id']))
   if rec['type'] in ['A','CNAME','PTR']:
-   print aWeb.button('delete',DIV='span_dns',URL='sdcp.cgi?dns_record_delete&id=%i'%(rec['id']))
+   print aWeb.button('delete',DIV='span_dns',URL='sdcp.cgi?dns_record_delete&id=%s&domain_id=%s'%(rec['id'],aWeb['domain_id']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"
@@ -156,14 +155,9 @@ def records(aWeb):
 #
 #
 def record_info(aWeb):
- if aWeb['op'] == 'update':
-  data = aWeb.get_args2dict(['op'])
-  res = aWeb.rest_call("dns_record_update",data)
-  data['id'] = res['id']
- else:
-  res = aWeb.rest_call("dns_record_lookup",{'id':aWeb['id'],'domain_id':aWeb['domain_id']})
-  data = res['data']
- lock = "readonly" if not data['id'] == 'new' else ""
+ args = aWeb.get_args2dict()
+ res = aWeb.rest_call("dns_record_info",args)
+ data = res['data']
  print "<ARTICLE CLASS=info><P>Record Info (%s)</P>"%(data['id'])
  print "<FORM ID=dns_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id        VALUE={}>".format(data['id'])
@@ -177,29 +171,29 @@ def record_info(aWeb):
  print "</DIV></DIV>"
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?dns_record_info&id={}&domain_id={}'.format(data['id'],data['domain_id']))
+ print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?dns_record_info&id=%s&domain_id=%s'%(data['id'],data['domain_id']))
  print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?dns_record_info&op=update',FRM='dns_info_form')
  if not data['id'] == 'new':
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?dns_record_delete&id={}'.format(data['id']))
+  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?dns_record_delete&id=%s&domain_id=%s'%(data['id'],data['domain_id']))
  print "</DIV></ARTICLE>"
 
 #
 #
 def record_delete(aWeb):
- res = aWeb.rest_call("dns_record_delete",{'id': aWeb['id']})
+ res = aWeb.rest_call("dns_record_delete",{'id': aWeb['id'],'domain_id': aWeb['domain_id']})
  print "<ARTICLE>Remove {} - Results:{}</ARTICLE>".format(aWeb['id'],res)
-
-#
-#
-def record_create(aWeb):
- res = aWeb.rest_call("dns_record_device_create",{'type':aWeb['type'],'domain_id':aWeb['domain_id'],'fqdn':aWeb['fqdn'],'ip':aWeb['ip'],'id':aWeb['id']})
- print "Create result:%s"%str(res)
 
 #
 #
 def record_transfer(aWeb):
  res = aWeb.rest_call("dns_record_transfer",{'device_id':aWeb['device_id'],'type':aWeb['type'],'record_id':aWeb['record_id']})
  print "Updated device %s - Results:%s"%(aWeb['device_id'],str(res))
+
+#
+#
+def record_create(aWeb):
+ res = aWeb.rest_call("dns_record_device_create",{'type':aWeb['type'],'domain_id':aWeb['domain_id'],'fqdn':aWeb['fqdn'],'ip':aWeb['ip'],'id':aWeb['id']})
+ print "Create result:%s"%str(res)
 
 ############################################ Tools ###########################################
 #
@@ -257,3 +251,4 @@ def consistency(aWeb):
   print "</DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"
+
