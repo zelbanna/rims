@@ -60,8 +60,8 @@ def domain_info(aDict):
   if op == 'update':
    if id == 'new':
     # Create and insert a lot of records
-    ret['update'] = db.insert_dict('domains',args,'ON DUPLICATE KEY UPDATE id = id')
-    if ret['update'] > 0:
+    ret['insert'] = db.insert_dict('domains',args,'ON DUPLICATE KEY UPDATE id = id')
+    if ret['insert'] > 0:
      id = db.get_last_id()
      from time import strftime
      serial = strftime("%Y%m%d%H")
