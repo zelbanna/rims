@@ -80,8 +80,8 @@ def info(aDict):
      dns = record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip']})
      # ret['result']['dns'] = dns
      for type in ['a','ptr']:
-      if dns[type.upper()] and not (str(dns[type.upper()]['data']['id']) == str(args['devices_%s_id'%type])):
-       args['devices_%s_id'%type] = dns[type.upper()]['data']['id']
+      if dns[type.upper()] and not (str(dns[type.upper()]['id']) == str(args['devices_%s_id'%type])):
+       args['devices_%s_id'%type] = dns[type.upper()]['id']
       else:
        args.pop('devices_%s_id'%type,None)
 
