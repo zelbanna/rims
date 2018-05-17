@@ -143,9 +143,9 @@ def domain_info(aDict):
  ret = {'id':aDict['id']}
  args = aDict
  with DB() as db:
-  db.do("SELECT id, server, node FROM domain_servers")
-  ret['servers'] = db.get_rows()
   if args['id'] == 'new' and not (args.get('op') == 'update'):
+   db.do("SELECT id, server, node FROM domain_servers")
+   ret['servers'] = db.get_rows()
    ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
   else:
    if args['id'] == 'new':
