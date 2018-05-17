@@ -15,64 +15,6 @@ __add_globals__ = lambda x: globals().update(x)
 
 from sdcp.core.common import DB,SC
 
-############################### Tools #################################
-#
-#
-def dedup(aDict):
- """Function docstring for dedup. Removes name duplicates.. (assume order by name => duplicate names :-))
-
- Args:
-
- Output:
- """
- with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
-  db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
-  rows = db.get_rows();
-  remove = []
-  previous = {'content':None,'name':None}
-  for row in rows:
-   if previous['content'] == row['content'] and previous['name'] == row['name']:
-    db.do("DELETE FROM records WHERE id = '{}'".format(row['id'] if row['id'] > previous['id'] else previous['id']))
-    row.pop('id',None)
-    remove.append(row)
-   else:
-    previous = row
- return {'removed':remove}
-
-#
-#
-def top(aDict):
- """Function docstring for top TBD
-
- Args:
-  - count (optional)
-
- Output:
- """
- def GL_get_host_name(aIP):
-  from socket import gethostbyaddr
-  try:    return gethostbyaddr(aIP)[0].partition('.')[0]
-  except: return None
-    
- count = int(aDict.get('count',10))
- fqdn_top = {}
- fqdn_who = {}
- with open(SC['powerdns']['logfile'],'r') as logfile:
-  for line in logfile:
-   parts = line.split()
-   if not parts[5] == 'Remote':
-    continue
-   fqdn  = parts[8].split('|')[0][1:]
-   fqdn_top[fqdn] = fqdn_top.get(fqdn,0)+1
-   fqdn_who[fqdn+"#"+parts[6]] = fqdn_who.get(fqdn+"#"+parts[6],0)+1
- from collections import Counter
- top = map(lambda x: {'fqdn':x[0],'count':x[1]}, Counter(fqdn_top).most_common(count))
- who = []
- for item in  Counter(fqdn_who).most_common(count):
-  parts = item[0].split('#')
-  who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL_get_host_name(parts[1]), 'count':item[1]})
- return {'top':top,'who':who }
-
 #################################### Domains #######################################
 #
 #
@@ -158,7 +100,7 @@ def domain_delete(aDict):
 #################################### Records #######################################
 #
 #
-def records(aDict):
+def record_list(aDict):
  """Function docstring for records TBD
 
  Args:
@@ -181,50 +123,35 @@ def records(aDict):
 
 #
 #
-def record_lookup(aDict):
+def record_info(aDict):
  """Function docstring for record_lookup TBD
 
  Args:
+  - op (optional)
   - id (required)
-  - domain_id (optional)
-
- Output:
- """
- ret = {}
- with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
-  sql = "SELECT records.* FROM records WHERE id = '%s'"%(aDict['id'])
-  if aDict.get('domain_id'):
-   sql = sql + " AND domain_id = '%s'"%(aDict.get('domain_id','0'))
-  ret['xist'] = db.do(sql)
-  ret['data'] = db.get_row() if ret['xist'] > 0 else {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
- return ret
-
-#
-#
-def record_update(aDict):
- """Function docstring for record_update TBD
-
- Args:
-  - id (required) - id/0/'new'
-  - name (required)
-  - content (required)
-  - type (required)
   - domain_id (required)
+  - name (optional)
+  - content (optional)
+  - type (optional)
 
  Output:
  """
- from time import strftime
  ret = {}
  id = aDict.pop('id','new')
- args = aDict
- args.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
+ op = aDict.pop('op',None)
  with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
-  if str(id) in ['new','0']:
-   ret['update'] = db.insert_dict('records',args,"ON DUPLICATE KEY UPDATE id = id")
-   ret['id'] = db.get_last_id() if ret['update'] > 0 else "new"
-  else:
-   ret['update'] = db.update_dict('records',args,"id='%s'"%id)
-   ret['id']=id
+  if op == 'update':
+   args = aDict
+   if str(id) in ['new','0']:
+    from time import strftime
+    args.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
+    ret['update'] = db.insert_dict('records',args,"ON DUPLICATE KEY UPDATE id = id")
+    id = db.get_last_id() if ret['update'] > 0 else "new"
+   else:
+    ret['update'] = db.update_dict('records',args,"id='%s'"%id)
+ 
+  ret['xist'] = db.do("SELECT records.* FROM records WHERE id = '%s' AND domain_id = '%s'"%(id,aDict['domain_id']))
+  ret['data'] = db.get_row() if ret['xist'] > 0 else {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
  return ret
 
 #
@@ -240,3 +167,62 @@ def record_delete(aDict):
  with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
   deleted = db.do("DELETE FROM records WHERE id = '%s'"%(aDict['id']))
  return {'deleted':deleted}
+
+############################### Tools #################################
+#
+#
+def dedup(aDict):
+ """Function docstring for dedup. Removes name duplicates.. (assume order by name => duplicate names :-))
+
+ Args:
+
+ Output:
+ """
+ with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
+  db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
+  rows = db.get_rows();
+  remove = []
+  previous = {'content':None,'name':None}
+  for row in rows:
+   if previous['content'] == row['content'] and previous['name'] == row['name']:
+    db.do("DELETE FROM records WHERE id = '{}'".format(row['id'] if row['id'] > previous['id'] else previous['id']))
+    row.pop('id',None)
+    remove.append(row)
+   else:
+    previous = row
+ return {'removed':remove}
+
+#
+#
+def top(aDict):
+ """Function docstring for top TBD
+
+ Args:
+  - count (optional)
+
+ Output:
+ """
+ def GL_get_host_name(aIP):
+  from socket import gethostbyaddr
+  try:    return gethostbyaddr(aIP)[0].partition('.')[0]
+  except: return None
+    
+ count = int(aDict.get('count',10))
+ fqdn_top = {}
+ fqdn_who = {}
+ with open(SC['powerdns']['logfile'],'r') as logfile:
+  for line in logfile:
+   parts = line.split()
+   if not parts[5] == 'Remote':
+    continue
+   fqdn  = parts[8].split('|')[0][1:]
+   fqdn_top[fqdn] = fqdn_top.get(fqdn,0)+1
+   fqdn_who[fqdn+"#"+parts[6]] = fqdn_who.get(fqdn+"#"+parts[6],0)+1
+ from collections import Counter
+ top = map(lambda x: {'fqdn':x[0],'count':x[1]}, Counter(fqdn_top).most_common(count))
+ who = []
+ for item in  Counter(fqdn_who).most_common(count):
+  parts = item[0].split('#')
+  who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL_get_host_name(parts[1]), 'count':item[1]})
+ return {'top':top,'who':who }
+
