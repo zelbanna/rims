@@ -100,12 +100,29 @@ CREATE TABLE `devices` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `domain_servers`;
+CREATE TABLE `domain_servers` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `node` varchar(40) NOT NULL,
+  `server` varchar(40) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `node` (`node`),
+  CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `domains`;
 CREATE TABLE `domains` (
-  `id` int(10) unsigned NOT NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `foreign_id` int(10) unsigned NOT NULL,
   `name` varchar(255) DEFAULT NULL,
+  `server_id` int(10) unsigned NOT NULL,
+  `type` varchar(7) NOT NULL DEFAULT 'forward',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
+  KEY `server_id` (`server_id`)
+  UNIQUE KEY `server_foreign` (`server_id`,`foreign_id`)
+  UNIQUE KEY `server_name` (`server_id`,`name`)
+  CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `domain_servers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

@@ -122,7 +122,7 @@ def domain_list(aDict):
    filter.append('server_id = %s'%(db.get_val('server_id')))
    filter.append("domains.id <> '%s'"%aDict.get('exclude'))
 
-  ret['xist'] = db.do("SELECT domains.*, CONCAT(node,'_',server) AS node_server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE %s ORDER BY name"%('TRUE' if len(filter) == 0 else " AND ".join(filter)))
+  ret['xist'] = db.do("SELECT domains.*, server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE %s ORDER BY name"%('TRUE' if len(filter) == 0 else " AND ".join(filter)))
   ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 
@@ -136,6 +136,7 @@ def domain_info(aDict):
   - type (required)
   - master (required)
   - name (required)
+  - server_id (optional)
 
  Output:
  """
@@ -143,16 +144,15 @@ def domain_info(aDict):
  args = aDict
  with DB() as db:
   if args['id'] == 'new' and not (args.get('op') == 'update'):
-   db.do("SELECT server, node FROM domain_servers")
+   db.do("SELECT id, server, node FROM domain_servers")
    ret['servers'] = db.get_rows()
    ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
   else:
    if args['id'] == 'new':
-    node,_,server = aDict.pop('node_server','None_None').partition('_')
-    ret['infra'] = {'node':node,'server':server}
+    db.do("SELECT server, node FROM domain_servers WHERE id = %s"%args.pop('server_id','0'))
    else:
     db.do("SELECT server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%args['id'])
-    ret['infra'] = db.get_row()
+   ret['infra'] = db.get_row()
    if SC['system']['id'] == ret['infra']['node']:
     module = import_module("sdcp.rest.%s"%ret['infra']['server'])
     fun = getattr(module,'domain_info',None)
@@ -198,7 +198,8 @@ def record_list(aDict):
 
  Args:
   - type (optional)
-  - domain_id (required)
+  - domain_id (optional required)
+  - server_id (optional required)
 
  Output:
  """

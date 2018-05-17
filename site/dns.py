@@ -68,8 +68,7 @@ def domain_list(aWeb):
  print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?dns_top', SPIN='true')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for dom in domains['domains']:
-  server = dom['node_server'].partition('_')[2]
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?dns_record_list&type=%s&domain_id=%s>%s</A></DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(dom['id'],"a" if not 'arpa' in dom['name'] else "ptr",dom['id'],dom['name'],server)
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?dns_record_list&type=%s&domain_id=%s>%s</A></DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(dom['id'],"a" if not 'arpa' in dom['name'] else "ptr",dom['id'],dom['name'],dom['server'])
   print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=%s'%(dom['id']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
@@ -87,9 +86,9 @@ def domain_info(aWeb):
  print "<FORM ID=dns_info_form>"
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  if data['id'] == 'new':
-  print "<DIV CLASS=tr><DIV CLASS=td>Server</DIV><DIV CLASS=td><SELECT NAME=node_server>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Server</DIV><DIV CLASS=td><SELECT NAME=server_id>"
   for srv in res['servers']:
-   print "<OPTION VALUE=%s_%s>%s on %s</OPTION>"%(srv['node'],srv['server'],srv['server'],srv['node'])
+   print "<OPTION VALUE=%s>%s on %s</OPTION>"%(srv['id'],srv['server'],srv['node'])
   print "</SELECT></DIV></DIV>"
  else:
   print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=node VALUE=%s READONLY></DIV></DIV>"%(res['infra']['node'])
@@ -118,7 +117,7 @@ def domain_transfer(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
  print "Transfer all records to <SELECT NAME=transfer>"
  for domain in domains['domains']:
-  print "<OPTION VALUE={}>{}</OPTION>".format(domain['id'],domain['name'])
+  print "<OPTION VALUE=%s>%s</OPTION>"%(domain['id'],domain['name'])
  print "</SELECT>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('back',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info',FRM='dns_transfer')
