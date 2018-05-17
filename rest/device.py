@@ -76,12 +76,12 @@ def info(aDict):
 
     # Make sure everything is there to update DNS records, if records are not the same as old ones, update device, otherwise pop
     if args.get('devices_a_id') and args.get('devices_ptr_id') and args.get('devices_a_dom_id') and args.get('devices_hostname') and ret['ip']:
-     from dns import record_device_update
+     from sdcp.rest.dns import record_device_update
      dns = record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip']})
      # ret['result']['dns'] = dns
      for type in ['a','ptr']:
-      if not str(dns[type.upper()]['id']) == str(args['devices_%s_id'%type]):
-       args['devices_%s_id'%type] = dns[type.upper()]['id']
+      if dns[type.upper()] and not (str(dns[type.upper()]['data']['id']) == str(args['devices_%s_id'%type])):
+       args['devices_%s_id'%type] = dns[type.upper()]['data']['id']
       else:
        args.pop('devices_%s_id'%type,None)
 
@@ -246,8 +246,6 @@ def new(aDict):
   - target is 'rack_id' or nothing
   - arg is rack_id
  """
- from sdcp.core.logger import log
- log("device_new({})".format(aDict))
  def GL_ip2int(addr):
   from struct import unpack
   from socket import inet_aton
@@ -292,14 +290,14 @@ def delete(aDict):
 
  Output:
  """
- args = {'a_id':data['a_id'],'a_domain_id':data['a_dom_id']}
  with DB() as db:
   existing = db.do("SELECT hostname, INET_NTOA(ip) AS ipasc, mac, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = {}".format(aDict['id']))
   if existing == 0:
    ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
    data = db.get_row()
-   from dns import record_device_delete
+   args = {'a_id':data['a_id'],'a_domain_id':data['a_dom_id']}
+   from sdcp.rest.dns import record_device_delete
 
    if data['ptr_id'] != 0:
     def GL_ip2ptr(addr):
@@ -312,7 +310,6 @@ def delete(aDict):
     if db.do("SELECT id FROM domains WHERE name = '%s'"%(arpa)) > 0:
      args['ptr_id']= data['ptr_id']
      args['ptr_domain_id'] = db.get_val('id')
-    
    ret = record_device_delete(args)
    if data['base'] == 'pdu':
     ret['pem0'] = db.update_dict('rackinfo',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))

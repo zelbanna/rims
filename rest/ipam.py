@@ -17,6 +17,8 @@ def list(aDict):
  """
  ret = {}
  with DB() as db:
+  dhcp = db.do("SELECT parameter,value FROM settings WHERE section = 'dhcp'")
+  ret['dhcp'] = db.get_dict('parameter') if dhcp > 0 else None
   ret['xist']    = db.do("SELECT id, CONCAT(INET_NTOA(subnet),'/',mask) AS subasc, INET_NTOA(gateway) AS gateway, description, mask, subnet FROM subnets ORDER by subnet")
   ret['subnets'] = db.get_rows()
  return ret

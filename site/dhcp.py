@@ -10,7 +10,7 @@ __status__= "Production"
 #
 #
 def update(aWeb):
- print "<ARTICLE>%s</ARTICLE>"%(aWeb.rest_call("%s_update_server&node=%s"%(aWeb['type'],aWeb['node'])))
+ print "<ARTICLE>DHCP Server Update:%s</ARTICLE>"%(aWeb.rest_call("%s_update_server&node=%s"%(aWeb['type'],aWeb['node'])))
 
 #
 #

@@ -11,10 +11,6 @@ __add_globals__ = lambda x: globals().update(x)
 
 from sdcp.core.common import DB,SC,rest_call
 
-def __rest_format__(aFunction):
- return "%s?%s_%s"%(SC['node'][SC['dns']['node']], SC['dns']['type'], aFunction)
-
- 
 ################################ SERVERS ##################################
 #
 #
@@ -275,6 +271,90 @@ def record_delete(aDict):
 ################################## DEVICE FUNCTIONS ##################################
 #
 #
+def record_device_update(aDict):
+ """Function docstring for record_device_update TBD
+
+ Args:
+  - ip (required)
+  - hostname (required)
+  - a_domain_id (required)
+  - a_id (required)   - id/0/new
+  - ptr_id (required) - id/0/new
+
+ Output:
+ """
+ ret = {'A':{'xist':0},'PTR':{'xist':0}}
+ args = aDict
+ args['a_id']   = 'new' if str(args['a_id'])   == '0' else args['a_id']
+ args['ptr_id'] = 'new' if str(args['ptr_id']) == '0' else args['ptr_id']
+ data = {}
+
+ with DB() as db:
+  # A record
+  xist = db.do("SELECT name, server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.id = '%s'"%(args['a_domain_id']))
+  if xist > 0:
+   infra = db.get_row()
+   fqdn = "%s.%s"%(args['hostname'],infra['name'])
+   data['A']=   {'server':infra['server'], 'node':infra['node'], 'args':{'type':'A','id':args['a_id'], 'domain_id':args['a_domain_id'], 'content':args['ip'], 'name':fqdn}}
+  else:
+   fqdn = None
+
+  def GL_ip2ptr(addr):
+   octets = addr.split('.')
+   octets.reverse()
+   octets.append("in-addr.arpa")
+   return ".".join(octets)
+
+  ptr = GL_ip2ptr(args['ip'])
+  arpa = ptr.partition('.')[2]
+
+  xist = db.do("SELECT domains.id, server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.name = '%s'"%(arpa))
+  if xist > 0 and fqdn:
+   infra = db.get_row()
+   data['PTR']= {'server':infra['server'], 'node':infra['node'], 'args':{'type':'PTR','id':args['ptr_id'], 'domain_id':infra['id'], 'content':fqdn, 'name':ptr}}
+
+ for type,infra in data.iteritems():
+  if infra['server']:
+   infra['args']['op'] = 'update'
+   if SC['system']['id'] == infra['node']:
+    module = import_module("sdcp.rest.%s"%infra['server'])  
+    fun = getattr(module,'record_info',None)
+    ret[type] = fun(infra['args'])
+   else:
+    ret[type] = rest_call("%s?%s_record_info"%(SC['node'][infra['node']],infra['server']),infra['args'])['data']
+ return ret
+
+#
+#
+def record_device_delete(aDict):
+ """Function docstring for record_device_delete TBD
+
+ Args:
+  - a_id (optional) - id/0
+  - ptr_id (optional) - id/0
+  - a_domain_id (optional required)
+  - ptr_domain_id (optional required)
+
+ Output:
+ """
+ ret = {'A':None,'PTR':None}
+ with DB() as db:
+  for tp in ['a','ptr']:
+   domain_id = aDict.get('%s_domain_id'%tp)
+   id = str(aDict.get('%s_id'%tp,'0'))
+   if domain_id and id != '0':
+    db.do("SELECT server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.id = '%s'"%(domain_id))
+    infra = db.get_row()
+    if SC['system']['id'] == infra['node']:
+     module = import_module("sdcp.rest.%s"%infra['server'])
+     fun = getattr(module,'record_delete',None)
+     ret[tp.upper()] = fun({'id':id})['deleted']
+    else:
+     ret[tp.upper()] = rest_call("%s?%s_record_delete"%(SC['node'][infra['node']],infra['server']),{'id':id})['data']['deleted']
+ return ret
+
+#
+#
 def record_transfer(aDict):
  """Function docstring for record_transfer. Update IPAM device with correct A/PTR records
 
@@ -289,7 +369,6 @@ def record_transfer(aDict):
   update = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),aDict['record_id'],aDict['device_id']))
  return {'transfered':update}
 
-############ ZEB: TODO ##############
 #
 #
 def record_device_create(aDict):
@@ -332,87 +411,6 @@ def record_device_create(aDict):
    ret['update'] = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),ret['dns']['id'],aDict['id']))
  return ret
 
-#
-#
-def record_device_update(aDict):
- """Function docstring for record_device_update TBD
-
- Args:
-  - ip (required)
-  - hostname (required)
-  - a_domain_id (required)
-  - a_id (required)   - id/0
-  - ptr_id (required) - id/0
-
- Output:
- """
- def GL_ip2ptr(addr):
-  octets = addr.split('.')
-  octets.reverse()
-  octets.append("in-addr.arpa")
-  return ".".join(octets)
-
- ret = {}
- data = {}
-
- with DB() as db:
-  # A record
-  xist = db.do("SELECT name, server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE id = '%s'"%(aDict['a_domain_id']))
-  if xist > 0:
-   infra = db.get_row()
-   fqdn = "%s.%s"%(aDict['hostname'],data['name'])
-   data['A']=   {'server':infra['server'], 'node':infra['node'], 'args':{'type':'A','id':aDict['a_id'], 'domain_id':aDict['a_domain_id'], 'content':aDict['ip'], 'name':fqdn}}
-  else:
-   fqdn = None
-
-  ptr = GL_ip2ptr(aDict['ip'])
-  arpa = ptr.partition('.')[2]
-
-  xist = db.do("SELECT id, server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE name = '%s'"%(arpa))
-  if xist > 0 and fqdn:
-   infra = db.get_row()
-   data['PTR']= {'server':infra['server'], 'node':infra['node'], 'args':{'type':'PTR','id':aDict['ptr_id'], 'domain_id':infra['id'], 'content':fqdn, 'name':ptr}}
-
- for type,infra in data.iteritems():
-  if infra['server']:
-   if SC['system']['id'] == data['node']:
-    module = import_module("sdcp.rest.%s"%infra['server'])  
-    fun = getattr(module,'record_update',None)
-    ret[type] = fun(infra['args'])
-   else:
-    ret[type] = rest_call("%s?%s_record_update"%(SC['node'][infra['node']],infra['server']),infra['args'])['data']
- return ret
-
-#
-#
-def record_device_delete(aDict):
- """Function docstring for record_device_delete TBD
-
- Args:
-  - a_id (optional) - id/0
-  - ptr_id (optional) - id/0
-  - a_domain_id (optional required)
-  - ptr_domain_id (optional required)
-
- Output:
- """
- ret = {'A':None,'PTR':None}
- with DB() as db:
-  for tp in ['a','ptr']:
-   domain_id = aDict.get('%s_domain_id'%tp)
-   id = str(aDict.get('%s_id'%tp,'0'))
-   if domain_id and id != '0':
-    db.do("SELECT server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE id = '%s'"%(domain_id))
-    infra = db.get_row()
-    if SC['system']['id'] == infra['node']:
-     module = import_module("sdcp.rest.%s"%infra['server'])
-     fun = getattr(module,'record_delete',None)
-     ret[tp.upper()] = fun({'id':id})['deleted']
-    else:
-     ret[tp.upper()] = rest_call("%s?%s_record_delete"%(SC['node'][infra['node']],infra['server']),{'id':id})['data']['deleted']
- return ret
-
-
 ###################################### Tools ####################################
 
 #
@@ -423,13 +421,20 @@ def dedup(aDict):
  Args:
 
  Output:
+
  """
- if SC['dns'].get('node',SC['system']['id']) == SC['system']['id']:
-  module = import_module("sdcp.rest.%s"%SC['dns']['type'])  
-  fun = getattr(module,'dedup',None)
-  ret = fun({})
- else:  
-  ret = rest_call(__rest_format__('dedup'))['data']
+ ret = {}
+ with DB() as db: 
+  db.do("SELECT server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id")
+  servers = db.get_rows()
+ for infra in servers:
+  if SC['system']['id'] == infra['node']:
+   module = import_module("sdcp.rest.%s"%infra['server'])  
+   fun = getattr(module,'dedup',None)
+   res = fun({})
+  else:  
+   res = rest_call("%s?%s_dedup"%(SC['node'][infra['node']],infra['server']))['data']
+  ret["%s_%s"%(infra['node'],infra['server'])] = res['removed']
  return ret
 
 #
@@ -442,12 +447,20 @@ def top(aDict):
 
  Output:
  """
- if SC['dns'].get('node',SC['system']['id']) == SC['system']['id']:
-  module = import_module("sdcp.rest.%s"%SC['dns']['type'])  
-  fun = getattr(module,'top',None)
-  ret = fun(aDict)
- else:  
-  ret = rest_call(__rest_format__('top'),aDict)['data']
+ ret = {'top':{},'who':{}}
+ args = {'count':aDict.get('count',20)}
+ with DB() as db: 
+  db.do("SELECT server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id")
+  servers = db.get_rows()
+ for infra in servers:
+  if SC['system']['id'] == infra['node']:
+   module = import_module("sdcp.rest.%s"%infra['server'])  
+   fun = getattr(module,'top',None)
+   res = fun(args)
+  else:  
+   res = rest_call("%s?%s_top"%(SC['node'][infra['node']],infra['server']),args)['data']
+  ret['top']["%s_%s"%(infra['node'],infra['server'])] = res['top']
+  ret['who']["%s_%s"%(infra['node'],infra['server'])] = res['who']
  return ret
 
 #

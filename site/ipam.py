@@ -12,8 +12,10 @@ __status__= "Production"
 def list(aWeb):
  res = aWeb.rest_call("ipam_list")
  print "<ARTICLE><P>Subnets</P><DIV CLASS='controls'>"
- print aWeb.button('reload', DIV='div_content_left',  URL='sdcp.cgi?ipam_list')
- print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?ipam_info&id=new')
+ print aWeb.button('reload', DIV='div_content_left',  URL='sdcp.cgi?ipam_list', TITLE='Reload list')
+ print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?ipam_info&id=new', TITLE='New subnet')
+ if res['dhcp']:
+  print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?dhcp_update&node=%s&type=%s'%(res['dhcp']['node']['value'],res['dhcp']['type']['value']), SPIN='true', TITLE='Update DHCP server')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for net in res['subnets']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?ipam_layout&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(net['id'],net['id'],net['subasc'],net['description'])

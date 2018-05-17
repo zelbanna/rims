@@ -197,35 +197,39 @@ def record_create(aWeb):
 
 ############################################ Tools ###########################################
 #
-# DNS top
-#
-def top(aWeb):
- dnstop = aWeb.rest_call("dns_top", {'count':20})
- print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>"
- if len(dnstop['top']) > 0:
-  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>"
-  for row in dnstop['top']:
-   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['count'],row['fqdn'])
-  print "</DIV></DIV>"
- print "</ARTICLE>"
- print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN per Client</P>"
- if len(dnstop['who']) > 0:
-  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Count</DIV><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>Hostname</DIV></DIV><DIV CLASS=tbody>"
-  for row in dnstop['who']:
-   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['count'],row['fqdn'],row['who'],row['hostname'])
-  print "</DIV></DIV>"
- print "</ARTICLE>"
-
-#
 # Cleanup duplicate entries
 #
 def dedup(aWeb):
  dns = aWeb.rest_call("dns_dedup")
  print "<ARTICLE><P>Duplicate Removal</P>"
- if len(dns['removed']) > 0:
-  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV></DIV><DIV CLASS=tbody>"
-  for row in dns['removed']:
-   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['name'],row['content'])
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV></DIV><DIV CLASS=tbody>"
+ for node_server,res in dns.iteritems():
+  node,server = node_server.split('_')
+  for row in res:
+   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,server,row['name'],row['content'])
+ print "</DIV></DIV>"
+ print "</ARTICLE>"
+
+
+#
+# DNS top
+#
+def top(aWeb):
+ dns = aWeb.rest_call("dns_top")
+ print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>"
+ for node_server,res in dns['top'].iteritems():
+  node,server = node_server.split('_')
+  for row in res:
+   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,server,row['count'],row['fqdn'])
+  print "</DIV></DIV>"
+ print "</ARTICLE>"
+ print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN per Client</P>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>"
+ for node_server,res in dns['who'].iteritems():
+  node,server = node_server.split('_')
+  for row in res:
+   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td TITLE='%s'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,server,row['count'],row['who'],row['hostname'],row['fqdn'])
   print "</DIV></DIV>"
  print "</ARTICLE>"
 
