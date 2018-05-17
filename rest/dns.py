@@ -143,9 +143,9 @@ def domain_info(aDict):
  ret = {'id':aDict['id']}
  args = aDict
  with DB() as db:
+  db.do("SELECT id, server, node FROM domain_servers")
+  ret['servers'] = db.get_rows()
   if args['id'] == 'new' and not (args.get('op') == 'update'):
-   db.do("SELECT id, server, node FROM domain_servers")
-   ret['servers'] = db.get_rows()
    ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
   else:
    if args['id'] == 'new':
@@ -188,9 +188,9 @@ def domain_delete(aDict):
    if SC['system']['id'] == ret['infra']['node']:
     module = import_module("sdcp.rest.%s"%ret['infra']['server'])
     fun = getattr(module,'domain_delete',None)
-    ret.update(fun({'id':infra['foreign_id']}))
+    ret.update(fun({'id':ret['infra']['foreign_id']}))
    else:
-    ret.update(rest_call("%s?%s_domain_delete"%(SC['node'][ret['infra']['node']],ret['infra']['server']),{'id':infra['foreign_id']})['data'])
+    ret.update(rest_call("%s?%s_domain_delete"%(SC['node'][ret['infra']['node']],ret['infra']['server']),{'id':ret['infra']['foreign_id']})['data'])
  return ret
 
 ######################################## Records ####################################

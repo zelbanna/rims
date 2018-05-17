@@ -81,7 +81,6 @@ def domain_list(aWeb):
 def domain_info(aWeb):
  args = aWeb.get_args2dict()
  res  = aWeb.rest_call("dns_domain_info",args)
- print res
  data = res['data']
  print "<ARTICLE CLASS=info><P>Domain Info (%s)</P>"%res['id']
  print "<FORM ID=dns_info_form>"
