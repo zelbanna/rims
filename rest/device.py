@@ -76,7 +76,7 @@ def info(aDict):
 
     # Make sure everything is there to update DNS records, if records are not the same as old ones, update device, otherwise pop
     if args.get('devices_a_id') and args.get('devices_ptr_id') and args.get('devices_a_dom_id') and args.get('devices_hostname') and ret['ip']:
-     from dns import record_device_update
+     from sdcp.rest.dns import record_device_update
      dns = record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip']})
      # ret['result']['dns'] = dns
      for type in ['a','ptr']:
@@ -246,8 +246,6 @@ def new(aDict):
   - target is 'rack_id' or nothing
   - arg is rack_id
  """
- from sdcp.core.logger import log
- log("device_new({})".format(aDict))
  def GL_ip2int(addr):
   from struct import unpack
   from socket import inet_aton
@@ -299,7 +297,7 @@ def delete(aDict):
   else:
    data = db.get_row()
    args = {'a_id':data['a_id'],'a_domain_id':data['a_dom_id']}
-   from dns import record_device_delete
+   from sdcp.rest.dns import record_device_delete
 
    if data['ptr_id'] != 0:
     def GL_ip2ptr(addr):

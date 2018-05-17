@@ -217,7 +217,7 @@ def dedup(aWeb):
 def top(aWeb):
  dns = aWeb.rest_call("dns_top")
  print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>"
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Count</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>"
  for node_server,res in dns['top'].iteritems():
   node,server = node_server.split('_')
   for row in res:
@@ -225,7 +225,7 @@ def top(aWeb):
   print "</DIV></DIV>"
  print "</ARTICLE>"
  print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN per Client</P>"
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Count</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>"
  for node_server,res in dns['who'].iteritems():
   node,server = node_server.split('_')
   for row in res:

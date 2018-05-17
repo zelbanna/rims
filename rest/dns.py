@@ -11,10 +11,6 @@ __add_globals__ = lambda x: globals().update(x)
 
 from sdcp.core.common import DB,SC,rest_call
 
-def __rest_format__(aFunction):
- return "%s?%s_%s"%(SC['node'][SC['dns']['node']], SC['dns']['type'], aFunction)
-
-
 ################################ SERVERS ##################################
 #
 #
