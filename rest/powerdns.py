@@ -158,7 +158,7 @@ def domain_delete(aDict):
 #################################### Records #######################################
 #
 #
-def records(aDict):
+def record_list(aDict):
  """Function docstring for records TBD
 
  Args:
@@ -181,50 +181,35 @@ def records(aDict):
 
 #
 #
-def record_lookup(aDict):
+def record_info(aDict):
  """Function docstring for record_lookup TBD
 
  Args:
+  - op (optional)
   - id (required)
-  - domain_id (optional)
-
- Output:
- """
- ret = {}
- with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
-  sql = "SELECT records.* FROM records WHERE id = '%s'"%(aDict['id'])
-  if aDict.get('domain_id'):
-   sql = sql + " AND domain_id = '%s'"%(aDict.get('domain_id','0'))
-  ret['xist'] = db.do(sql)
-  ret['data'] = db.get_row() if ret['xist'] > 0 else {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
- return ret
-
-#
-#
-def record_update(aDict):
- """Function docstring for record_update TBD
-
- Args:
-  - id (required) - id/0/'new'
-  - name (required)
-  - content (required)
-  - type (required)
   - domain_id (required)
+  - name (optional)
+  - content (optional)
+  - type (optional)
 
  Output:
  """
- from time import strftime
  ret = {}
  id = aDict.pop('id','new')
- args = aDict
- args.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
+ op = aDict.pop('op',None)
  with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
-  if str(id) in ['new','0']:
-   ret['update'] = db.insert_dict('records',args,"ON DUPLICATE KEY UPDATE id = id")
-   ret['id'] = db.get_last_id() if ret['update'] > 0 else "new"
-  else:
-   ret['update'] = db.update_dict('records',args,"id='%s'"%id)
-   ret['id']=id
+  if op == 'update':
+   args = aDict
+   if str(id) in ['new','0']:
+    from time import strftime
+    args.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
+    ret['update'] = db.insert_dict('records',args,"ON DUPLICATE KEY UPDATE id = id")
+    id = db.get_last_id() if ret['update'] > 0 else "new"
+   else:
+    ret['update'] = db.update_dict('records',args,"id='%s'"%id)
+ 
+  ret['xist'] = db.do("SELECT records.* FROM records WHERE id = '%s' AND domain_id = '%s'"%(id,aDict['domain_id']))
+  ret['data'] = db.get_row() if ret['xist'] > 0 else {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
  return ret
 
 #
