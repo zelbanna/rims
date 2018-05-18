@@ -236,22 +236,25 @@ def top(aWeb):
 #
 #
 def consistency(aWeb):
- data = aWeb.rest_call("dns_consistency")
+ data = aWeb.rest_call("dns_consistency_check")
  print "<ARTICLE><P>DNS Consistency</P><SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>Hostname (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Id (Dev)</DIV><DIV CLASS=th>FQDN (Dev)</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for rec in data['records']:
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV>"%(rec['name'],rec['type'],rec['content'],rec['id'])
-  print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV>"%(rec['dns_id'],rec['fqdn'])
-  print "<DIV CLASS=td><DIV CLASS=controls>" + aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='sdcp.cgi?dns_record_delete&id=%s'%(rec['id']))
-  if rec['fqdn']:
+  print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV>"%(rec['record_id'],rec['fqdn'])
+  print "<DIV CLASS=td><DIV CLASS=controls>"
+  print "<!-- %s -->"%rec
+  print aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='sdcp.cgi?dns_record_delete&domain_id=%s&id=%s'%(rec['domain_id'],rec['id']))
+  if str(rec['device_id']) != '0':
    print aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='sdcp.cgi?dns_record_transfer&record_id=%s&device_id=%s&type=%s'%(rec['id'],rec['device_id'],rec['type']))
   print "</DIV></DIV></DIV>"
  for dev in data['devices']:
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>-</DIV><DIV CLASS=td>-</DIV>"%(dev['ipasc'],dev['type'])
-  print "<DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?device_info&id=%s>%s</A></DIV>"%(dev['dns_id'],dev['device_id'],dev['fqdn'])
-  print "<DIV CLASS=td>&nbsp;" + aWeb.button('add',DIV='span_dns',URL='sdcp.cgi?dns_record_create&type={}&id={}&ip={}&fqdn={}&domain_id={}'.format(dev['type'],dev['device_id'],dev['ipasc'],dev['fqdn'],dev['domain_id']))
-  print "</DIV></DIV>"
+  print "<DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?device_info&id=%s>%s</A></DIV>"%(dev['record_id'],dev['device_id'],dev['fqdn'])
+  print "<DIV CLASS=td><DIV CLASS=controls>"
+  print aWeb.button('add',DIV='span_dns',URL='sdcp.cgi?dns_record_create&type={}&id={}&ip={}&fqdn={}&domain_id={}'.format(dev['type'],dev['device_id'],dev['ipasc'],dev['fqdn'],dev['domain_id']))
+  print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"

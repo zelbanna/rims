@@ -113,7 +113,7 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
   try:    head.update(aHeader)
   except: pass
   from logger import log
-  log("rest_call -> %s,'%s'"%(aURL,dumps(aArgs)))
+  log("rest_call -> %s '%s'"%(aURL,dumps(aArgs)))
   req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
   if aMethod:
    req.get_method = lambda: aMethod

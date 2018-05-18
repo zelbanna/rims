@@ -209,10 +209,15 @@ def record_list(aDict):
  """
  args = aDict
  with DB() as db:
-  db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%args['domain_id'])
-  infra = db.get_row()
-
- args['domain_id'] = infra['foreign_id'] 
+  if aDict.get('domain_id'):
+   db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%aDict['domain_id'])
+   infra = db.get_row()
+   args['domain_id'] = infra['foreign_id'] 
+  else:
+   id = aDict.pop('server_id','0')
+   db.do("SELECT server, node FROM domain_servers WHERE id = %s"%id)
+   infra = db.get_row()
+  
  if SC['system']['id'] == infra['node']:
   module = import_module("sdcp.rest.%s"%infra['server'])
   fun = getattr(module,'record_list',None)
@@ -480,8 +485,8 @@ def top(aDict):
 
 #
 #
-def consistency(aDict):
- """Function docstring for consistency. Pulls all A and PTR records from domain server, expects domain cache to be up-to-date
+def consistency_check(aDict):
+ """Function docstring for consistency_check. Pulls all A and PTR records from domain servers, expects domain cache to be up-to-date
 
  Args:
 
@@ -493,22 +498,43 @@ def consistency(aDict):
   octets.append("in-addr.arpa")
   return ".".join(octets)
 
- ret = {'records':[],'devices':[]}
+ ret = {'records':[],'devices':[],'domains':{}}
  with DB() as db:
-  db.do("SELECT id,name FROM domains WHERE name LIKE '%%in-addr.arpa'")
+  # Collect DNS severs
+  db.do("SELECT id, server, node FROM domain_servers")
+  servers = db.get_dict('id')
+  # Fetch domains
+  db.do("SELECT id,foreign_id,name FROM domains")
   domains = db.get_dict('name')
+
+  # Save domains foreign_ids to output 
+  for dom in domains.values():
+   ret['domains'][dom['foreign_id']] = {'id':dom['id'],'name':dom['name']}
+
+  # Go through A and PTR records
   for type in ['a','ptr']:
-   records = record_list({'type':type})['records']
-   db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ip) AS ipasc, %s_id AS dns_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))
+   records = {}
+   # Fetch records from each server
+   for id,data in servers.iteritems():
+    records[id] = record_list({'type':type,'server_id':id})['records']
+   # Get 'type' data for all devices
+   db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ip) AS ipasc, %s_id AS record_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))
    devices = db.get_dict('ipasc' if type == 'a' else 'fqdn')
-   for rec in records:
-    dev = devices.pop(rec['content'],None)
-    if not dev or dev['dns_id'] != rec['id']:
-     rec.update(dev if dev else {'dns_id':None,'fqdn':None})
-     ret['records'].append(rec)
+ 
+   # Now check them records for matching devices
+   for srv,recs in records.iteritems():
+    for rec in recs:
+     dev = devices.pop(rec['content'],{'record_id':0,'fqdn':None,'device_id':0,'a_dom_id':None})
+     if (dev['record_id'] != rec['id']) or (rec['type'] == 'A' and ret['domains'][rec['domain_id']]['id'] != dev['a_dom_id']):
+      rec['server_id'] = srv
+      # rec['fqdn'] = rec['content'] if rec['type'] == 'PTR' else rec['name']
+      rec.update({'record_id':dev['record_id'],'fqdn':dev['fqdn'],'device_id':dev['device_id']})
+      ret['records'].append(rec)
+   # All devices that are left have no match
    for dev in devices.values():
     dev['type'] = type.upper()
-    dev['domain_id'] = dev['a_dom_id'] if type == 'a' else domains[GL_ip2arpa(dev['ipasc'])]['id']
+    a_dom_id = dev.pop('a_dom_id','0')
+    dev['domain_id'] = a_dom_id if type == 'a' else domains[GL_ip2arpa(dev['ipasc'])]['id']
     ret['devices'].append(dev)
  return ret
 
