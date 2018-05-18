@@ -381,13 +381,16 @@ def record_transfer(aDict):
  Args:
   - record_id (required)
   - device_id (required)
+  - domain_id (required)
   - type (required)
 
  Output:
  """
+ ret = {}
  with DB() as db:
-  update = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),aDict['record_id'],aDict['device_id']))
- return {'transfered':update}
+  update = "a_id = '%s', a_dom_id ='%s'"%(aDict['record_id'],aDict['domain_id']) if aDict['type'].lower() == 'a' else "ptr_id = '%s'"%aDict['record_id']
+  ret['update'] = db.do("UPDATE devices SET %s WHERE id = '%s'"%(update,aDict['device_id']))
+ return ret
 
 #
 #
@@ -395,6 +398,7 @@ def record_device_create(aDict):
  """Function docstring for record_device_create TBD
 
  Args:
+  - device_id (required)
   - ip (required)
   - type (required)
   - domain_id (required)
@@ -402,11 +406,11 @@ def record_device_create(aDict):
 
  Output:
  """
- ret = {'result':'OK'}
- args = {'op':'update','id':'new','domain_id':aDict['domain_id'],'type':aDict['type'].upper()}
+ ret = {}
+ args = {'op':'update','id':'new','type':aDict['type'].upper()}
  if args['type'] == 'A':
   args['name'] = aDict['fqdn']
-  args['content'] = aDict['ip']               
+  args['content'] = aDict['ip']
  elif args['type'] == 'PTR':
   def GL_ip2ptr(addr):
    octets = addr.split('.')
@@ -417,18 +421,20 @@ def record_device_create(aDict):
   args['content'] = aDict['fqdn']
 
  with DB() as db: 
-  db.do("SELECT server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%aDict['domain_id'])
+  db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%aDict['domain_id'])
   infra = db.get_row()
+  args['domain_id'] = infra['foreign_id']
   if SC['system']['id'] == infra['node']:
    module = import_module("sdcp.rest.%s"%infra['server'])
    fun = getattr(module,'record_info',None)
-   ret['dns'] = fun(args)
+   ret['record'] = fun(args)
   else:
-   ret['dns'] = rest_call("%s?%s_record_info"%(SC['node'][infra['node']],infra['server']),args)['data']
+   ret['record'] = rest_call("%s?%s_record_info"%(SC['node'][infra['node']],infra['server']),args)['data']
 
-  if str(ret['dns']['update']) == "1" and (args['type'] == 'A' or args['type'] == 'PTR'):
-   ret['device'] = {'id':aDict['id']}
-   ret['update'] = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),ret['dns']['id'],aDict['id']))
+  opres = str(ret['record'].get('update')) == "1" or str(ret['record'].get('insert')) == "1"
+  if opres and (args['type'] in ['A','PTR']):
+   ret['device'] = {'id':aDict['device_id']}
+   ret['device']['update'] = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),ret['record']['data']['id'],aDict['device_id']))
  return ret
 
 ###################################### Tools ####################################
@@ -498,7 +504,7 @@ def consistency_check(aDict):
   octets.append("in-addr.arpa")
   return ".".join(octets)
 
- ret = {'records':[],'devices':[],'domains':{}}
+ ret = {'records':[],'devices':[]}
  with DB() as db:
   # Collect DNS severs
   db.do("SELECT id, server, node FROM domain_servers")
@@ -506,10 +512,10 @@ def consistency_check(aDict):
   # Fetch domains
   db.do("SELECT id,foreign_id,name FROM domains")
   domains = db.get_dict('name')
-
+  foreign = {}
   # Save domains foreign_ids to output 
   for dom in domains.values():
-   ret['domains'][dom['foreign_id']] = {'id':dom['id'],'name':dom['name']}
+   foreign[dom['foreign_id']] = {'id':dom['id'],'name':dom['name']}
 
   # Go through A and PTR records
   for type in ['a','ptr']:
@@ -521,12 +527,14 @@ def consistency_check(aDict):
    db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ip) AS ipasc, %s_id AS record_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))
    devices = db.get_dict('ipasc' if type == 'a' else 'fqdn')
  
-   # Now check them records for matching devices
+   # Now check them records for matching devices and translate domain_id into centralized cached one 
    for srv,recs in records.iteritems():
     for rec in recs:
-     dev = devices.pop(rec['content'],{'record_id':0,'fqdn':None,'device_id':0,'a_dom_id':None})
-     if (dev['record_id'] != rec['id']) or (rec['type'] == 'A' and ret['domains'][rec['domain_id']]['id'] != dev['a_dom_id']):
+     dev = devices.pop(rec['content'],{'record_id':None,'fqdn':None,'device_id':None,'a_dom_id':None})
+     dom = foreign[rec['domain_id']]['id']
+     if (dev['record_id'] != rec['id']) or (rec['type'] == 'A' and dom != dev['a_dom_id']):
       rec['server_id'] = srv
+      rec['domain_id'] = dom
       # rec['fqdn'] = rec['content'] if rec['type'] == 'PTR' else rec['name']
       rec.update({'record_id':dev['record_id'],'fqdn':dev['fqdn'],'device_id':dev['device_id']})
       ret['records'].append(rec)
