@@ -285,62 +285,21 @@ def record_delete(aDict):
 ################################## DEVICE FUNCTIONS ##################################
 #
 #
-def record_device_update(aDict):
- """Function docstring for record_device_update TBD
+def record_device_correct(aDict):
+ """Function docstring for record_device_correct. Update IPAM with correct A/PTR records
 
  Args:
-  - ip (required)
-  - hostname (required)
-  - a_domain_id (required)
-  - a_id (required)   - id/0/new
-  - ptr_id (required) - id/0/new
+  - record_id (required)
+  - device_id (required)
+  - domain_id (required)
+  - type (required)
 
  Output:
  """
- from sdcp.core.logger import log
- from json import dumps
- log("record_device_update -> '%s'"%dumps(aDict))
- 
- ret = {'A':{'xist':0},'PTR':{'xist':0}}
- args = aDict
- args['a_id']   = 'new' if str(args['a_id'])   == '0' else args['a_id']
- args['ptr_id'] = 'new' if str(args['ptr_id']) == '0' else args['ptr_id']
- data = {}
-
+ ret = {}
  with DB() as db:
-  # A record
-  xist = db.do("SELECT foreign_id, name, server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.id = '%s'"%(args['a_domain_id']))
-  if xist > 0:
-   infra = db.get_row()
-   fqdn = "%s.%s"%(args['hostname'],infra['name'])
-   data['A']=   {'server':infra['server'], 'node':infra['node'], 'args':{'type':'A','id':args['a_id'], 'domain_id':infra['foreign_id'], 'content':args['ip'], 'name':fqdn}}
-  else:
-   fqdn = None
-
-  def GL_ip2ptr(addr):
-   octets = addr.split('.')
-   octets.reverse()
-   octets.append("in-addr.arpa")
-   return ".".join(octets)
-
-  ptr = GL_ip2ptr(args['ip'])
-  arpa = ptr.partition('.')[2]
-
-  xist = db.do("SELECT foreign_id, server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.name = '%s'"%(arpa))
-  if xist > 0 and fqdn:
-   infra = db.get_row()
-   data['PTR']= {'server':infra['server'], 'node':infra['node'], 'args':{'type':'PTR','id':args['ptr_id'], 'domain_id':infra['foreign_id'], 'content':fqdn, 'name':ptr}}
-
- for type,infra in data.iteritems():
-  if infra['server']:
-   infra['args']['op'] = 'update'
-   if SC['system']['id'] == infra['node']:
-    module = import_module("sdcp.rest.%s"%infra['server'])  
-    fun = getattr(module,'record_info',None)
-    ret[type] = fun(infra['args'])
-   else:
-    ret[type] = rest_call("%s?%s_record_info"%(SC['node'][infra['node']],infra['server']),infra['args'])['data']
-   ret[type]['id'] = ret[type]['data']['id']
+  update = "a_id = '%s', a_dom_id ='%s'"%(aDict['record_id'],aDict['domain_id']) if aDict['type'].lower() == 'a' else "ptr_id = '%s'"%aDict['record_id']
+  ret['update'] = db.do("UPDATE devices SET %s WHERE id = '%s'"%(update,aDict['device_id']))
  return ret
 
 #
@@ -375,21 +334,104 @@ def record_device_delete(aDict):
 
 #
 #
-def record_transfer(aDict):
- """Function docstring for record_transfer. Update IPAM device with correct A/PTR records
+def record_device_update(aDict):
+ """Function docstring for record_device_update. Tries to update DNS server with new info and fetch A and PTR id if they exist... (None, A, A + PTR)
+  "Tricky" part is when device MOVED from one domain to another AND this means server change, then we need to do delete first on old server. If IP address changed.
 
  Args:
-  - record_id (required)
-  - device_id (required)
-  - domain_id (required)
-  - type (required)
+  - id (required) id/new
+  - ip (required)
+  - hostname (required)
+  - a_domain_id (required)
+  - a_id (required)   - id/0/new
+  - ptr_id (required) - id/0/new
 
  Output:
  """
- ret = {}
+ from json import dumps
+ from sdcp.core.logger import log
+ log("dns_record_device_update '%s'"%dumps(aDict))
+ ret  = {'A':{'xist':0},'PTR':{'xist':0},'device':{'xist':0},'server':{}}
+ aDict['a_domain_id'] = int(aDict['a_domain_id'])
+ data = {}
+
+ def _record_delete(server,node,id):
+  if SC['system']['id'] == node:
+   module = import_module("sdcp.rest.%s"%server)
+   fun = getattr(module,'record_delete',None)
+   ret = fun({'id':id})
+  else:
+   ret = rest_call("%s?%s_record_delete"%(SC['node'][node],server),{'id':id})['data']
+  return ret
+
+ def GL_ip2ptr(addr):
+  octets = addr.split('.')
+  octets.reverse()
+  octets.append("in-addr.arpa")
+  return ".".join(octets)
+
  with DB() as db:
-  update = "a_id = '%s', a_dom_id ='%s'"%(aDict['record_id'],aDict['domain_id']) if aDict['type'].lower() == 'a' else "ptr_id = '%s'"%aDict['record_id']
-  ret['update'] = db.do("UPDATE devices SET %s WHERE id = '%s'"%(update,aDict['device_id']))
+  domains = {'name':{},'foreign_id':{}}
+  db.do("SELECT domains.id AS domain_id, server_id, foreign_id, name, server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id")
+  domains['id']   = db.get_dict('domain_id')
+  for dom in domains['id'].values():
+   domains['name'][dom['name']] = dom
+   domains['foreign_id'][dom['foreign_id']] = dom
+
+  ret['device']['xist'] = db.do("SELECT hostname, a_dom_id AS a_domain_id, INET_NTOA(ip) AS ip FROM devices WHERE id = '%s'"%(aDict['id'])) if not aDict['id'] == 'new' else 0
+  device = db.get_row() if ret['device']['xist'] > 0 else None
+  #
+  # A record: check if valid domain, then if not a_id == 'new' make sure we didn't move server otherwise delete record and set a_id to new
+  #
+  a_id  = 'new' if str(aDict['a_id']) == '0' else aDict['a_id']
+  infra = domains['id'].get(aDict['a_domain_id'],None)
+  
+  if not infra:
+   return ret
+
+  if a_id != 'new' and device:
+   old = domains['id'].get(device['a_domain_id'],None) 
+   if old['server_id'] != infra['server_id']:
+    ret['server']['A'] = _record_delete(old['server'],old['node'],a_id)
+    a_id = 'new'
+   else:
+    ret['server']['A'] = 'remain'
+  fqdn  = "%s.%s"%(aDict['hostname'], infra['name'])
+  data['A']= {'server':infra['server'], 'node':infra['node'], 'args':{'type':'A','id':a_id, 'domain_id':infra['foreign_id'], 'content':aDict['ip'], 'name':fqdn}}
+
+  #
+  # PTR record:  check if valid domain, then if not a_id == 'new' make sure we didn't move server otherwise delete record and set ptr_id to new
+  # 
+  ptr_id = 'new' if str(aDict['ptr_id']) == '0' else aDict['ptr_id']
+  ptr  = GL_ip2ptr(aDict['ip'])
+  arpa = ptr.partition('.')[2]
+  infra = domains['name'].get(arpa,None)
+  if infra and fqdn:
+   if ptr_id != 'new' and device:
+    old_ptr  = GL_ip2ptr(device['ip'])
+    old_arpa = ptr.partition('.')[2]
+    old = domains['name'].get(old_arpa,None)
+    if old['server_id'] != infra['server_id']:
+     ret['server']['PTR'] = _record_delete(old['server'],old['node'],ptr_id)
+     ptr_id = 'new'
+    else:
+     ret['server']['PTR'] = 'remain'
+   data['PTR']= {'server':infra['server'], 'node':infra['node'], 'args':{'type':'PTR','id':ptr_id, 'domain_id':infra['foreign_id'], 'content':fqdn, 'name':ptr}}
+
+ for type,infra in data.iteritems():
+  if infra['server']:
+   infra['args']['op'] = 'update'
+   if SC['system']['id'] == infra['node']:
+    module = import_module("sdcp.rest.%s"%infra['server'])  
+    fun = getattr(module,'record_info',None)
+    res = fun(infra['args'])
+   else:
+    res = rest_call("%s?%s_record_info"%(SC['node'][infra['node']],infra['server']),infra['args'])['data']
+   
+   ret[type]['record_id'] = res['data']['id']
+   ret[type]['domain_id'] = domains['foreign_id'].get(res['data']['domain_id'],{'domain_id':0})['domain_id']
+   ret[type]['xist'] = res['xist']
+   ret[type]['update'] = res['update']
  return ret
 
 #
@@ -530,7 +572,7 @@ def consistency_check(aDict):
    # Now check them records for matching devices and translate domain_id into centralized cached one 
    for srv,recs in records.iteritems():
     for rec in recs:
-     dev = devices.pop(rec['content'],{'record_id':None,'fqdn':None,'device_id':None,'a_dom_id':None})
+     dev = devices.pop(rec['content'],{'record_id':0,'fqdn':None,'device_id':None,'a_dom_id':None})
      dom = foreign[rec['domain_id']]['id']
      if (dev['record_id'] != rec['id']) or (rec['type'] == 'A' and dom != dev['a_dom_id']):
       rec['server_id'] = srv

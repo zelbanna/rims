@@ -185,9 +185,9 @@ def record_delete(aWeb):
 
 #
 #
-def record_transfer(aWeb):
+def record_correct(aWeb):
  args = aWeb.get_args2dict()
- res = aWeb.rest_call("dns_record_transfer",args)
+ res = aWeb.rest_call("dns_record_device_correct",args)
  print "Updated device %s - Results:%s"%(aWeb['device_id'],str(res))
 
 #
