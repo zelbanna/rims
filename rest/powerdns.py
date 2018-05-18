@@ -93,8 +93,9 @@ def domain_delete(aDict):
  """
  ret = {}
  with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
-  ret['deleted'] = db.do("DELETE FROM domains WHERE id = %i"%(int(aDict['id'])))
-  ret['records'] = db.do("DELETE FROM records WHERE domain_id = %i"%(int(aDict['id'])))
+  id = int(aDict['id'])
+  ret['records'] = db.do("DELETE FROM records WHERE domain_id = %i"%(id))
+  ret['domain']  = db.do("DELETE FROM domains WHERE id = %i"%(id))
  return ret
 
 #################################### Records #######################################
