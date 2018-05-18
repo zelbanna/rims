@@ -56,6 +56,12 @@ def info(aDict):
      args['devices_comment'] = 'NULL'
     if not args.get('devices_webpage'):
      args['devices_webpage'] = 'NULL'
+    if args.get('devices_ip'):
+     def GL_ip2int(addr):
+      from struct import unpack
+      from socket import inet_aton
+      return unpack("!I", inet_aton(addr))[0]
+     args['ip'] = GL_ip2int(args['ip'])
     if args.get('devices_mac'):
      try: args['devices_mac'] = int(args['devices_mac'].replace(":",""),16)
      except: aDict['devices_mac'] = 0
@@ -74,16 +80,23 @@ def info(aDict):
         (args['rackinfo_%s_pdu_id'%pem],args['rackinfo_%s_pdu_slot'%pem]) = pem_pdu_slot_id.split('.')
        except: pass
 
+    #
     # Make sure everything is there to update DNS records, if records are not the same as old ones, update device, otherwise pop
+    #
     if args.get('devices_a_id') and args.get('devices_ptr_id') and args.get('devices_a_dom_id') and args.get('devices_hostname') and ret['ip']:
      from sdcp.rest.dns import record_device_update
-     dns = record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip']})
+     dns = record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip'],'id':ret['id']})
      # ret['result']['dns'] = dns
      for type in ['a','ptr']:
-      if dns[type.upper()] and not (str(dns[type.upper()]['id']) == str(args['devices_%s_id'%type])):
-       args['devices_%s_id'%type] = dns[type.upper()]['id']
-      else:
-       args.pop('devices_%s_id'%type,None)
+      if dns[type.upper()]['xist'] > 0:
+       if not (str(dns[type.upper()]['record_id']) == str(args['devices_%s_id'%type])):
+        args['devices_%s_id'%type] = dns[type.upper()]['record_id']
+       else:
+        args.pop('devices_%s_id'%type,None)
+     if (str(dns['A']['domain_id']) == str(args['devices_a_dom_id'])):
+      args['devices_a_dom_id'] = dns['A']['domain_id']
+     else:
+      args.pop('devices_a_dom_id',None)
 
     ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%(ret['id'])),'rack_info':db.update_dict_prefixed('rackinfo',args,"device_id='%s'"%(ret['id']))}
 
