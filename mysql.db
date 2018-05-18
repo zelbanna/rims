@@ -119,20 +119,9 @@ CREATE TABLE `domains` (
   `server_id` int(10) unsigned NOT NULL,
   `type` varchar(7) NOT NULL DEFAULT 'forward',
   PRIMARY KEY (`id`),
-  KEY `server_id` (`server_id`),
   UNIQUE KEY `server_name` (`server_id`,`name`),
+  KEY `server_id` (`server_id`),
   CONSTRAINT `domains_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `domain_servers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `events`;
-CREATE TABLE `events` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `periodic` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `name` varchar(30) DEFAULT NULL,
-  `user_id` int(10) unsigned DEFAULT NULL,
-  `command` varchar(200) DEFAULT NULL,
-  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
