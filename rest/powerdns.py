@@ -124,7 +124,7 @@ def record_list(aDict):
 #
 #
 def record_info(aDict):
- """Function docstring for record_lookup TBD
+ """Function docstring for record_info TBD
 
  Args:
   - op (optional)
@@ -145,8 +145,8 @@ def record_info(aDict):
    if str(id) in ['new','0']:
     from time import strftime
     args.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
-    ret['update'] = db.insert_dict('records',args,"ON DUPLICATE KEY UPDATE id = id")
-    id = db.get_last_id() if ret['update'] > 0 else "new"
+    ret['insert'] = db.insert_dict('records',args,"ON DUPLICATE KEY UPDATE id = id")
+    id = db.get_last_id() if ret['insert'] > 0 else "new"
    else:
     ret['update'] = db.update_dict('records',args,"id='%s'"%id)
  
