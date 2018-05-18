@@ -168,29 +168,28 @@ def domain_info(aDict):
 #
 #
 def domain_delete(aDict):
- """Function docstring for domain_delete. Should cover nested case too TODO
+ """Function docstring for domain_delete.
 
  Args:
-  - from (required)
-  - to (optional)
+  - id (required)
+  - transfer (optional)
 
  Output:
  """
- ret = {'result':'NOT_OK'}
- if aDict['from'] != aDict.get('to'):
+ ret = {}
+ if aDict['id'] != aDict.get('transfer'):
   with DB() as db:
-   db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%aDict['from'])
-   ret['infra'] = db.get_row()
-   if aDict.get('to'):
-    ret['transfer'] = db.do("UPDATE devices SET a_dom_id = %s WHERE a_dom_id = %s"%(aDict['to'],aDict['from']))
-   ret['deleted']  = db.do("DELETE FROM domains WHERE id = %s"%(aDict['from']))
-   ret['result']   = 'OK'
-   if SC['system']['id'] == ret['infra']['node']:
-    module = import_module("sdcp.rest.%s"%ret['infra']['server'])
+   db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = '%s'"%aDict['id'])
+   infra = db.get_row()
+   if SC['system']['id'] == infra['node']:
+    module = import_module("sdcp.rest.%s"%infra['server'])
     fun = getattr(module,'domain_delete',None)
-    ret.update(fun({'id':ret['infra']['foreign_id']}))
+    res = fun({'id':infra['foreign_id']})
    else:
-    ret.update(rest_call("%s?%s_domain_delete"%(SC['node'][ret['infra']['node']],ret['infra']['server']),{'id':ret['infra']['foreign_id']})['data'])
+    res = rest_call("%s?%s_domain_delete"%(SC['node'][infra['node']],infra['server']),{'id':infra['foreign_id']})['data']
+   ret.update(res)
+   ret['devices'] = db.do("UPDATE devices SET a_id = 0, a_dom_id = '%s' WHERE a_dom_id = %s"%(aDict.get('transfer',0),aDict['id']))
+   ret['cache']   = db.do("DELETE FROM domains WHERE id = %s"%(aDict['id']))
  return ret
 
 ######################################## Records ####################################
@@ -431,7 +430,8 @@ def record_device_update(aDict):
    ret[type]['record_id'] = res['data']['id']
    ret[type]['domain_id'] = domains['foreign_id'].get(res['data']['domain_id'],{'domain_id':0})['domain_id']
    ret[type]['xist'] = res['xist']
-   ret[type]['update'] = res['update']
+   ret[type]['update'] = res.get('update',0)
+   ret[type]['insert'] = res.get('insert',0)
  return ret
 
 #

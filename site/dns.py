@@ -128,7 +128,7 @@ def domain_transfer(aWeb):
 #
 #
 def domain_delete(aWeb):
- res = aWeb.rest_call("dns_domain_delete",{'from':aWeb['id'],'to':aWeb['transfer']})
+ res = aWeb.rest_call("dns_domain_delete",{'id':aWeb['id'],'transfer':aWeb['transfer']})
  print "<ARTICLE>%s</ARTICLE>"%res
 
 ############################################ Records ###########################################
