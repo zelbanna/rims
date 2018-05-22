@@ -113,7 +113,7 @@ def info(aWeb):
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
  print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
- print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Database Id</DIV><DIV CLASS=td>%s</DIV></DIV>"%(dev['id'])
  print "</DIV></DIV></DIV>"
 
  print "<!-- Additional info -->"
@@ -407,22 +407,25 @@ def connection_list(aWeb):
   opres = aWeb.rest_call("device_connection_delete",{'id':aWeb['id'],'device_id':aWeb['device_id']})
  elif aWeb['op'] == 'discover':
   opres = aWeb.rest_call("device_connection_discover",{'device_id':aWeb['device_id'],'delete_nonexisting':True})
+ elif aWeb['op'] == 'link':
+  opres = aWeb.rest_call("device_connection_link",{'id':aWeb['id'],'peer_connection':aWeb['peer_connection']})
  else:
   opres = ""
  res = aWeb.rest_call("device_connection_list",{'device_id':aWeb['device_id']})
- print "<ARTICLE><P>Connections</P><DIV CLASS='controls'>"
+ print "<ARTICLE><P>Connections (%s)</P><DIV CLASS='controls'>"%(aWeb['device_id'])
  print aWeb.button('reload', DIV='div_dev_data',URL='sdcp.cgi?device_connection_list&device_id=%s'%(aWeb['device_id']))
  print aWeb.button('add',    DIV='div_dev_data',URL='sdcp.cgi?device_connection_info&device_id=%s&id=new'%aWeb['device_id'])
- print aWeb.button('search', DIV='div_dev_data',URL='sdcp.cgi?device_connection_list&op=discover&device_id=%s'%(aWeb['device_id']), SPIN='true')
+ print aWeb.button('search', DIV='div_dev_data',URL='sdcp.cgi?device_connection_list&op=discover&device_id=%s'%(aWeb['device_id']), SPIN='true', MSG='Rediscover connections?')
  print aWeb.button('network',DIV='div_dev_data',URL='sdcp.cgi?device_connection_network&device_id=%s'%(aWeb['device_id']), SPIN='true')
  print "</DIV><SPAN CLASS=results>%s</SPAN>"%(opres) 
  print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Peer IP</DIV><DIV CLASS=th>Peer Interface</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Peer Connection</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_ip'],row['peer_interface'])
-  print aWeb.button('info', DIV='div_dev_data',URL='sdcp.cgi?device_connection_info&device_id=%s&id=%s'%(aWeb['device_id'],row['id']))
-  print aWeb.button('trash',DIV='div_dev_data',URL='sdcp.cgi?device_connection_list&op=delete&device_id=%s&id=%s'%(aWeb['device_id'],row['id']), MSG='Delete connection?')
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_connection'])
+  print aWeb.button('trash', DIV='div_dev_data',URL='sdcp.cgi?device_connection_list&op=delete&device_id=%s&id=%s'%(aWeb['device_id'],row['id']), MSG='Delete connection?')
+  print aWeb.button('info',  DIV='div_dev_data',URL='sdcp.cgi?device_connection_info&device_id=%s&id=%s'%(aWeb['device_id'],row['id']))
+  print aWeb.button('sync',  DIV='div_dev_data',URL='sdcp.cgi?device_connection_link_device&device_id=%s&id=%s&name=%s'%(aWeb['device_id'],row['id'],row['name']), TITLE='Connect')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"
@@ -440,9 +443,12 @@ def connection_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT        NAME=name        VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['name'])
  print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['description'])
  print "<DIV CLASS=tr><DIV CLASS=td>SNMP Index:</DIV><DIV CLASS=td><INPUT  NAME=snmp_index  VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['snmp_index'])
- print "<DIV CLASS=tr><DIV CLASS=td>Peer IP:</DIV><DIV CLASS=td><INPUT     NAME=peer_ip     VALUE='%s'  TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['peer_ip'])
- print "<DIV CLASS=tr><DIV CLASS=td>Peer Interface:</DIV><DIV CLASS=td><INPUT NAME=peer_interface VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['peer_interface'])
- print "</DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Peer Connection:</DIV><DIV CLASS=td>"
+ if data['peer_connection'] and data['peer_device']:
+  print "<A CLASS=z-op DIV=div_dev_data URL=sdcp.cgi?device_connection_list&device_id=%s>%s</A>"%(data['peer_device'],data['peer_connection'])
+ else:
+  print "None"
+ print "</DIV></DIV></DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('back', DIV='div_dev_data', URL='sdcp.cgi?device_connection_list', FRM='connection_info_form')
  print aWeb.button('save', DIV='div_dev_data', URL='sdcp.cgi?device_connection_info&op=update', FRM='connection_info_form')
@@ -452,11 +458,33 @@ def connection_info(aWeb):
 
 #
 #
-def connection_discover(aWeb):
- res = aWeb.rest_call("device_connection_discover",{"device_id":aWeb['device_id']})
- print "<ARTICLE CLASS=info STYLE='width:100%'><P>Discovery</P>"
- print "<DIV CLASS=controls>"
- print aWeb.button('back', DIV='div_dev_data', URL='sdcp.cgi?device_connection_list&device_id=%s'%aWeb['device_id'])
- print "</DIV>"
- print res
- print "</ARTICLE>"
+def connection_link_device(aWeb):
+ print "<ARTICLE>"
+ print "<FORM ID=device_connection_link>"
+ print "<INPUT TYPE=HIDDEN NAME=device_id VALUE=%s>"%aWeb['device_id']
+ print "<INPUT TYPE=HIDDEN NAME=id   VALUE=%s>"%aWeb['id']
+ print "<INPUT TYPE=HIDDEN NAME=name VALUE=%s>"%aWeb['name']
+ print "Connect '%s' to device id: <INPUT CLASS='background' REQUIRED TYPE=TEXT NAME='peer' STYLE='width:100px' VALUE='%s'>"%(aWeb['name'],aWeb.get('peer','0'))
+ print "</FORM><DIV CLASS=controls>"
+ print aWeb.button('back',    DIV='div_dev_data', URL='sdcp.cgi?device_connection_list&device_id=%s'%aWeb['device_id'])
+ print aWeb.button('forward', DIV='div_dev_data', URL='sdcp.cgi?device_connection_link_interface', FRM='device_connection_link')
+ print "</DIV></ARTICLE>"
+
+#
+#
+def connection_link_interface(aWeb):
+ res = aWeb.rest_call("device_connection_list",{'device_id':aWeb['peer']})
+ print "<ARTICLE>"
+ print "<FORM ID=device_connection_link>"
+ print "<INPUT TYPE=HIDDEN NAME=device_id VALUE=%s>"%aWeb['device_id']
+ print "<INPUT TYPE=HIDDEN NAME=id   VALUE=%s>"%aWeb['id']
+ print "<INPUT TYPE=HIDDEN NAME=name VALUE=%s>"%aWeb['name']
+ print "Connect '%s' to device id: <INPUT CLASS='background' READONLY TYPE=TEXT NAME='peer' STYLE='width:100px' VALUE=%s> on"%(aWeb['name'],aWeb['peer'])
+ print "<SELECT NAME=peer_connection>"
+ for intf in res.get('data',[]):
+  print "<OPTION VALUE=%s>%s (%s)</OPTION>"%(intf['id'],intf['name'],intf['description'])
+ print "</SELECT>"
+ print "</FORM><DIV CLASS=controls>"
+ print aWeb.button('back',    DIV='div_dev_data', URL='sdcp.cgi?device_connection_link_device', FRM='device_connection_link')
+ print aWeb.button('forward', DIV='div_dev_data', URL='sdcp.cgi?device_connection_list&op=link', FRM='device_connection_link')
+ print "</DIV></ARTICLE>"

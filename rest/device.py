@@ -393,7 +393,7 @@ def connection_list(aDict):
  ret = {}
  id = aDict['device_id']
  with DB() as db:
-  ret['xist'] = db.do("SELECT id,name,description,snmp_index,INET_NTOA(peer_ip) AS peer_ip, peer_interface FROM device_connections WHERE device_id = %s ORDER BY snmp_index"%id)
+  ret['xist'] = db.do("SELECT id,name,description,snmp_index,peer_connection FROM device_connections WHERE device_id = %s ORDER BY snmp_index"%id)
   ret['data'] = db.get_rows()
  return ret
 
@@ -408,8 +408,7 @@ def connection_info(aDict):
   - name
   - description
   - snmp_index
-  - peer_ip (string)
-  - peer_interface
+  - peer_connection
 
  Output:
  """
@@ -419,11 +418,6 @@ def connection_info(aDict):
  op = args.pop('op',None)
  with DB() as db:
   if op == 'update':
-   from struct import unpack
-   from socket import inet_aton
-   def GL_ip2int(addr):
-    return unpack("!I", inet_aton(addr))[0]
-   args['peer_ip'] = GL_ip2int(args.get('peer_ip','0'))
    if not id == 'new':
     ret['update'] = db.update_dict('device_connections',args,"id=%s"%id) 
    else:
@@ -432,15 +426,10 @@ def connection_info(aDict):
     id = db.get_last_id() if ret['insert'] > 0 else 'new'
 
   if not id == 'new':
-   from struct import pack
-   from socket import inet_ntoa
-   def GL_int2ip(addr):
-    return inet_ntoa(pack("!I", addr))
-   ret['xist'] = db.do("SELECT * FROM device_connections WHERE id = '%s'"%id)
+   ret['xist'] = db.do("SELECT device_connections.*, peer.device_id AS peer_device FROM device_connections LEFT JOIN device_connections AS peer ON device_connections.peer_connection = peer.id WHERE device_connections.id = '%s'"%id)
    ret['data'] = db.get_row()
-   ret['data']['peer_ip'] = GL_int2ip(ret['data']['peer_ip'])
   else:
-   ret['data'] = {'id':'new','device_id':int(aDict['device_id']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_ip':'0.0.0.0','peer_interface':None}
+   ret['data'] = {'id':'new','device_id':int(aDict['device_id']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_connection':None,'peer_device':None}
  return ret
 
 #
@@ -460,6 +449,59 @@ def connection_delete(aDict):
   ret['deleted'] = db.do("DELETE FROM device_connections WHERE id = %s"%id)
  return ret
 
+#
+#
+def connection_link(aDict):
+ """Function docstring for connection_link. Link two device interfaces simultaneously to each other
+
+ Args:
+  - id (required)
+  - peer_connection (required)
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  sql = "UPDATE device_connections SET peer_connection = %s WHERE id = %s"
+  ret['id']   = (db.do(sql%(aDict['peer_connection'],aDict['id'])) == 1)
+  ret['peer'] = (db.do(sql%(aDict['id'],aDict['peer_connection'])) == 1)
+ return ret
+
+#
+#
+def connection_link_advanced(aDict):
+ """Function docstring for connection_link_advanced. Link two IP and SNMP index:s (i.e. physical or logical interfaces) to each other simultaneously
+
+ Args:
+  - a_ip (required)
+  - a_index (required)
+  - b_ip (required)
+  - b_index (required)
+
+ Output:
+ """
+ ret = {'error':None,'a':{},'b':{}}
+ with DB() as db:
+  sql_dev  ="SELECT id FROM devices WHERE ip = INET_ATON('%s')"
+  sql_indx = "SELECT id FROM device_connections WHERE device_id = '%s' AND snmp_index = '%s'"
+  for peer in ['a','b']:
+   xist = db.do(sql_dev%aDict['%s_ip'%peer])
+   if xist > 0:
+    ret[peer]['device'] = db.get_val('id')
+    xist = db.do(sql_indx%(ret[peer]['device'],aDict['%s_index'%peer]))
+    if xist > 0:
+     ret[peer]['index'] = db.get_val('id')
+    else:
+     db.insert_dict('device_connections',{'device_id':ret[peer]['device'],'name':'Unknown','description':'Unknown','snmp_index':aDict['%s_index'%peer],'peer_connection':None})
+     ret[peer]['index'] = db.get_last_id()
+   else:
+    ret['error'] = "IP not found (%s)"%aDict['%s_ip'%peer]
+  if not ret['error']:
+   sql = "UPDATE device_connections SET peer_connection = %s WHERE id = %s"
+   ret['a']['peer'] = (db.do(sql%(ret['b']['index'],ret['a']['index'])) == 1)
+   ret['b']['peer'] = (db.do(sql%(ret['a']['index'],ret['b']['index'])) == 1)
+
+ return ret
 
 #
 #
@@ -491,11 +533,11 @@ def connection_discover(aDict):
     entry = interfaces.pop(con['snmp_index'],None)
     if entry:
      if not ((entry['name'] == con['name']) and (entry['description'] == con['description'])):
-      ret['update'] += db.do("UPDATE device_connections SET name = '%s', description = '%s' WHERE id = %s"%(entry['name'][0:39],entry['description'],con['id']))
+      ret['update'] += db.do("UPDATE device_connections SET name = '%s', description = '%s' WHERE id = %s"%(entry['name'][0:24],entry['description'],con['id']))
     elif aDict.get('delete_nonexisting',False) == True:
      ret['delete'] += db.do("DELETE FROM device_connections WHERE id = %s AND manual = 0"%(con['id']))
    for key, entry in interfaces.iteritems():
-    args = {'device_id':int(aDict['device_id']),'name':entry['name'][0:39],'description':entry['description'],'snmp_index':key,'peer_ip':0,'peer_interface':None}
+    args = {'device_id':int(aDict['device_id']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key,'peer_connection':None}
     ret['insert'] += db.insert_dict('device_connections',args)
  return ret
 
