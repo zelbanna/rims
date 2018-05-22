@@ -66,14 +66,15 @@ def domain_list(aWeb):
  print aWeb.button('search',  DIV='div_content_right',URL='sdcp.cgi?dns_consistency',TITLE='Check Backend Consistency',SPIN='true')
  print aWeb.button('delete',  DIV='div_content_right',URL='sdcp.cgi?dns_dedup',TITLE='Find Duplicates',SPIN='true')
  print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?dns_top', SPIN='true')
- print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
+ print "</DIV>"
+ if domains.get('sync'):
+  print "<SPAN CLASS='results'>%s</SPAN>"%(domains['sync'])
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for dom in domains['domains']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?dns_record_list&type=%s&domain_id=%s>%s</A></DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(dom['id'],"a" if not 'arpa' in dom['name'] else "ptr",dom['id'],dom['name'],dom['server'])
   print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=%s'%(dom['id']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
- if domains.get('sync'):
-  print "<SPAN>Added: %s, Removed: %s</SPAN>"%(domains['sync']['added'],domains['sync']['deleted'])
  print "</ARTICLE>"
 
 #
