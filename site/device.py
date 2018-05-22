@@ -406,7 +406,7 @@ def connection_list(aWeb):
  if   aWeb['op'] == 'delete':
   opres = aWeb.rest_call("device_connection_delete",{'id':aWeb['id'],'device_id':aWeb['device_id']})
  elif aWeb['op'] == 'discover':
-  opres = aWeb.rest_call("device_connection_discover",{'device_id':aWeb['device_id']})
+  opres = aWeb.rest_call("device_connection_discover",{'device_id':aWeb['device_id'],'delete_nonexisting':True})
  else:
   opres = ""
  res = aWeb.rest_call("device_connection_list",{'device_id':aWeb['device_id']})

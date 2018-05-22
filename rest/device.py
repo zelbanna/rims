@@ -427,6 +427,7 @@ def connection_info(aDict):
    if not id == 'new':
     ret['update'] = db.update_dict('device_connections',args,"id=%s"%id) 
    else:
+    args['manual'] = 1
     ret['insert'] = db.insert_dict('device_connections',args)
     id = db.get_last_id() if ret['insert'] > 0 else 'new'
 
@@ -492,7 +493,7 @@ def connection_discover(aDict):
      if not ((entry['name'] == con['name']) and (entry['description'] == con['description'])):
       ret['update'] += db.do("UPDATE device_connections SET name = '%s', description = '%s' WHERE id = %s"%(entry['name'][0:39],entry['description'],con['id']))
     elif aDict.get('delete_nonexisting',False) == True:
-     ret['delete'] += db.do("DELETE FROM device_connections WHERE id = %s"%(con['id']))
+     ret['delete'] += db.do("DELETE FROM device_connections WHERE id = %s AND manual = 0"%(con['id']))
    for key, entry in interfaces.iteritems():
     args = {'device_id':int(aDict['device_id']),'name':entry['name'][0:39],'description':entry['description'],'snmp_index':key,'peer_ip':0,'peer_interface':None}
     ret['insert'] += db.insert_dict('device_connections',args)
