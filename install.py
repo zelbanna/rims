@@ -202,7 +202,7 @@ if settings['system']['id'] == 'master':
    from eralchemy import render_er
    render_er(erd_input,erd_output)
    res['ERD'] = 'OK'
-  except Exception, e:
+  except Exception as e:
    res['ERD'] = str(e)
 
  except Exception as e:
@@ -220,7 +220,7 @@ else:
  #
  from sdcp.core.common import rest_call
  try: res['register'] = rest_call("%s?system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':modes.get('rest','0'),'www':modes.get('front','0')})['data']
- except Exception,e: res['register'] = str(e)
+ except Exception as e: res['register'] = str(e)
  try: master   = rest_call("%s?system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
  except: pass
  else:
@@ -237,7 +237,7 @@ try:
  with open(container,'w') as f:
   f.write("SC=%s\n"%dumps(settings))
   res['container'] = 'OK'
-except Exception,e:
+except Exception as e:
  res['container'] = str(e)
 
 ############################################### ALL #################################################

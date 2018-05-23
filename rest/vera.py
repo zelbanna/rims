@@ -33,7 +33,7 @@ def status(aDict):
  try:
   node = SC['node'][aDict['node']]
   ret = rest_call("%s?id=sdata"%node)['data']
- except Exception,e:
+ except Exception as e:
   ret = e[0] 
  return ret
 
@@ -55,7 +55,7 @@ def infra(aDict):
   ret['rooms']    = { d['id']: d for d in info['rooms'] }
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
   ret['scenes']   = { d['id']: d for d in info['scenes'] }
- except Exception,e:
+ except Exception as e:
   ret = e[0]         
  return ret        
 
@@ -87,7 +87,7 @@ def scene(aDict):
      break
   else:
    ret = rest_call("%s?id=scene&action=list&scene=%s"%(node,aDict['scene']))['data']
- except Exception,e:
+ except Exception as e:
   ret = e[0]         
  return ret     
 
@@ -109,7 +109,7 @@ def devices(aDict):
   ret['devices'] = info['devices'] if not aDict.get('room') else [ x for x in info['devices'] if x['room'] == int(aDict.get('room')) ]
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
   ret['rooms']   = { d['id']:d['name'] for d in info['rooms'] }
- except Exception,e:
+ except Exception as e:
   ret = e[0] 
  return ret
 
@@ -154,6 +154,6 @@ def device_info(aDict):
      entry[x['variable']] = x['value']
      ret[x['service']] = entry
    except: pass
- except Exception,e:
+ except Exception as e:
   ret = e[0] 
  return ret

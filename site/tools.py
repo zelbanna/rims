@@ -103,7 +103,7 @@ def rest_execute(aWeb):
   elif aWeb['device'] == 'vera':
    url = "http://%s:3480/data_request"%(aWeb['host'])
   ret = aWeb.rest_full(url,aWeb['api'],arguments,aWeb['method'])
- except Exception,e:
+ except Exception as e:
   ret = e[0]
  data = ret.pop('data',None)
  print "<ARTICLE STYLE='width:auto'>"

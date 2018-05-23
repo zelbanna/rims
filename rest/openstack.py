@@ -334,7 +334,7 @@ def vm_console(aDict):
    ret['result'] = 'OK'
   elif res['code'] == 401 and res['data'] == 'Authentication required':
    ret.update({'info':'Authentication required'})
- except Exception,e: ret = e[0]
+ except Exception as e: ret = e[0]
  return ret
 
 #

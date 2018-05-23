@@ -72,7 +72,7 @@ def update_server(aDict):
  ret = {}
  try:
   ret['output'] = check_output(SC['iscdhcp']['reload'].split())
- except CalledProcessError, c:
+ except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output
  

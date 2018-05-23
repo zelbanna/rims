@@ -312,7 +312,7 @@ def settings_save(aDict):
   with open(container,'w') as f:
    f.write("SC=%s\n"%dumps(settings))
   ret['result'] = 'OK'
- except Exception,e:
+ except Exception as e:
   ret['result'] = 'NOT_OK'
   ret['error'] = str(e)
  return ret

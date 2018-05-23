@@ -91,7 +91,7 @@ class Web(object):
    (mod,void,fun) = self.call.partition('_')
    module = import_module("sdcp.site." + mod)
    getattr(module,fun,None)(self)
-  except Exception, e:
+  except Exception as e:
    stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; sdcp.site.%s_%s<BR>"%(mod,fun))
    try:
     stdout.write("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))

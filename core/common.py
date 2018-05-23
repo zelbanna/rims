@@ -134,13 +134,13 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
    output['info'].pop('content-type',None)
    output['exception'] = 'RESTError'
   sock.close()
- except HTTPError, h:
+ except HTTPError as h:
   raw = h.read()
   try:    data = loads(raw)
   except: data = raw
   output = { 'result':'ERROR', 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
- except URLError, e:  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
- except Exception, e: output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
+ except URLError as e:  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
+ except Exception as e: output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
  if output.get('exception'):
   raise Exception(output)
  return output

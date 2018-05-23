@@ -40,7 +40,7 @@ def dump(aDict):
      line = " ".join(parts)
     output.append(line)
   res = 'OK'
- except Exception,e:
+ except Exception as e:
   output = ["DumpError:{}".format(str(e))]
   res = 'NOT_OK'
  return {'res':res, 'output':output,'mode':mode,'full':aDict.get('full',True)}
@@ -59,7 +59,7 @@ def restore(aDict):
   cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '<',aDict['file']]
   output = check_output(" ".join(cmd), shell=True)
   return { 'res':'OK','output':output.split('\n') }
- except Exception,e:
+ except Exception as e:
   return {'res':'NOT_OK', 'output':[str(e)] }
 
 #

@@ -52,7 +52,7 @@ def server(aNodeID):
    except Exception as err: raise Exception(err)
    else: output = dumps(res['data'])
    stdout.write("X-Z-Res:%s\r\n"%res['info']['x-z-res'])
- except Exception, e:
+ except Exception as e:
   stdout.write("X-Z-Res:ERROR\r\n")
   stdout.write("X-Z-Args:%s\r\n"%args)
   stdout.write("X-Z-Info:%s\r\n"%str(e))

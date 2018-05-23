@@ -551,28 +551,30 @@ def connection_network(aDict):
  """ Function produces a dictionary tree of connections and devices
  Args:
   - device_id (required)
-  - levels (optional) integer from 1-3, defaults to 1 to build graph
+  - diameter (optional) integer from 1-3, defaults to 1 to build graph
  Output:
  """
  devices = {int(aDict['device_id']):{'traversed':False,'connections':0,'multipoint':0}}
  connections = []
- level = aDict.get('levels',2)
  with DB() as db:
   # Connected and Multipoint
-  sql_multi     = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index FROM device_connections AS dc WHERE dc.multipoint = 1 AND dc.device_id = {0}"
-  sql_connected = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index, dc.peer_connection AS peer_interface, peer.snmp_index AS peer_index, peer.name AS peer_name, peer.device_id AS peer_device FROM device_connections AS dc LEFT JOIN device_connections AS peer ON dc.peer_connection = peer.id WHERE peer.device_id IS NOT NULL AND dc.device_id = {0}"
-  for lvl in range(0,level):
+  sql_multipoint = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index FROM device_connections AS dc WHERE dc.multipoint = 1 AND dc.device_id = {0}"
+  sql_multi_peer = "SELECT {0} AS local_device, {1}"
+  sql_connected  = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index, dc.peer_connection AS peer_interface, peer.snmp_index AS peer_index, peer.name AS peer_name, peer.device_id AS peer_device FROM device_connections AS dc LEFT JOIN device_connections AS peer ON dc.peer_connection = peer.id WHERE peer.device_id IS NOT NULL AND dc.device_id = {0}"
+  for lvl in range(0,aDict.get('diameter',2)):
    new = {}
-   print "Level:",lvl
+   print "Hop:",lvl
    for key,dev in devices.iteritems():
     if not dev['traversed']:
      # Find connections and multipoint
-     dev['multipoint'] += db.do(sql_multi.format(key))
-     mps = db.get_rows()
-     print mps
-
      dev['connections'] += db.do(sql_connected.format(key))
      cons = db.get_rows()
+
+     dev['multipoint'] += db.do(sql_multipoint.format(key))
+     mps = db.get_rows()
+     for mp in mps:
+      print mp
+
 
      # process them
      for con in cons:

@@ -67,7 +67,7 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(stateobj)
    return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
-  except Exception,e:
+  except Exception as e:
    self.log_msg("Avocent : error getting state:" + str(e))
    return {'res':'NOT_OK','info':str(e), 'state':'unknown' }
 

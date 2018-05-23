@@ -71,7 +71,7 @@ def rest_analyze(aDict):
        pass
       else:
        data['undecoded'].append({'part':part,'line':line_no})
-    except Exception, e:
+    except Exception as  e:
      data['undecoded'].append({'error':str(e),'line':line_no})
    elif data['function'] and "from" in line:
     data['imports'].append(line.lstrip())
@@ -96,7 +96,7 @@ def rest_explore(aDict):
   try:
    module = import_module("sdcp.rest.%s"%(aFile))
    data['functions'] = [item for item in dir(module) if item[0:2] != "__" and isinstance(getattr(module,item,None),function)]
-  except Exception,e: data['error'] = str(e)
+  except Exception as e: data['error'] = str(e)
   return data
 
  ret = {'data':[]}
@@ -231,7 +231,7 @@ def service_info(aDict):
   try:
    command = "sudo /etc/init.d/%s %s"%(aDict['service'],aDict['op'])
    ret['op'] = check_output(command.split()).strip()
-  except CalledProcessError, c:
+  except CalledProcessError as c:
    ret['op'] = c.output.strip()
   else:
    sleep(2)
@@ -240,7 +240,7 @@ def service_info(aDict):
   command = "sudo /etc/init.d/%s status"%aDict['service']
   output = check_output(command.split())
   ret['code'] = 0
- except CalledProcessError, c:
+ except CalledProcessError as c:
   output = c.output
   ret['code'] = c.returncode
  for line in output.split('\n'):

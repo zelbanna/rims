@@ -216,7 +216,7 @@ def check_content(aDict):
   p1 = Popen(["avprobe", filename], stdout=PIPE, stderr=PIPE)
   p2 = Popen(["sed","-n","s/.*Stream #[0-9]\\:\\([0-9]*\\)\(.*\\): \\([AVS][a-z]*\\)/\\3#\\1#\\2#/p"], stdin=p1.stderr, stdout=PIPE)
   entries = p2.communicate()[0]
- except Exception, e:
+ except Exception as e:
   ret['error'] = str(err)
  else:
   from re import sub
@@ -275,7 +275,7 @@ def process(aDict):
 
   if filename != dest:
    try:  rename(filename,dest)
-   except Exception, e: ret['error'] = str(e)
+   except Exception as e: ret['error'] = str(e)
    else: ret['rename'] = True
 
   if ret['suffix'] == 'mkv' and not ret['error']:

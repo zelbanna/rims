@@ -36,7 +36,7 @@ def authenticate(aDict):
   ret['auth'] = res['auth']
   ret['token'] = controller.get_token()
   ret['expires'] = controller.get_cookie_expire()
- except Exception,e : ret = e[0]
+ except Exception as e: ret = e[0]
  return ret
 
 #
