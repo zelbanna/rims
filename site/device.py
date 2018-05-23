@@ -187,8 +187,9 @@ def info(aWeb):
  print aWeb.button('trash', DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_info&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
- print aWeb.button('document', DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
- print aWeb.button('connections',  DIV='div_dev_data', URL='sdcp.cgi?device_connection_list&device_id=%i'%(dev['id']),TITLE='Device Connections')
+ print aWeb.button('document',    DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
+ print aWeb.button('connections', DIV='div_dev_data', URL='sdcp.cgi?device_connection_list&device_id=%i'%(dev['id']),TITLE='Device Connections')
+ print aWeb.button('network',     DIV='div_dev_data', URL='sdcp.cgi?device_connection_network&device_id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
  print aWeb.a_button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['info']['console_ip'] and dev['info'].get('console_port',0) > 0):
   print aWeb.a_button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['info']['console_ip'],6000+dev['info']['console_port']))
@@ -416,13 +417,12 @@ def connection_list(aWeb):
  print aWeb.button('reload', DIV='div_dev_data',URL='sdcp.cgi?device_connection_list&device_id=%s'%(aWeb['device_id']))
  print aWeb.button('add',    DIV='div_dev_data',URL='sdcp.cgi?device_connection_info&device_id=%s&id=new'%aWeb['device_id'])
  print aWeb.button('search', DIV='div_dev_data',URL='sdcp.cgi?device_connection_list&op=discover&device_id=%s'%(aWeb['device_id']), SPIN='true', MSG='Rediscover connections?')
- print aWeb.button('network',DIV='div_dev_data',URL='sdcp.cgi?device_connection_network&device_id=%s'%(aWeb['device_id']), SPIN='true')
  print "</DIV><SPAN CLASS=results>%s</SPAN>"%(opres) 
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Peer Connection</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_connection'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_connection'] if not row['multipoint'] else 'multipoint')
   print aWeb.button('trash', DIV='div_dev_data',URL='sdcp.cgi?device_connection_list&op=delete&device_id=%s&id=%s'%(aWeb['device_id'],row['id']), MSG='Delete connection?')
   print aWeb.button('info',  DIV='div_dev_data',URL='sdcp.cgi?device_connection_info&device_id=%s&id=%s'%(aWeb['device_id'],row['id']))
   print aWeb.button('sync',  DIV='div_dev_data',URL='sdcp.cgi?device_connection_link_device&device_id=%s&id=%s&name=%s'%(aWeb['device_id'],row['id'],row['name']), TITLE='Connect')
@@ -443,6 +443,7 @@ def connection_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT        NAME=name        VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['name'])
  print "<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['description'])
  print "<DIV CLASS=tr><DIV CLASS=td>SNMP Index:</DIV><DIV CLASS=td><INPUT  NAME=snmp_index  VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['snmp_index'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Multipoint:</DIV><DIV CLASS=td><INPUT  NAME=multipoint  VALUE=1    TYPE=CHECKBOX %s></DIV></DIV>"%("checked" if data['multipoint'] else "")
  print "<DIV CLASS=tr><DIV CLASS=td>Peer Connection:</DIV><DIV CLASS=td>"
  if data['peer_connection'] and data['peer_device']:
   print "<A CLASS=z-op DIV=div_dev_data URL=sdcp.cgi?device_connection_list&device_id=%s>%s</A>"%(data['peer_device'],data['peer_connection'])
@@ -488,3 +489,9 @@ def connection_link_interface(aWeb):
  print aWeb.button('back',    DIV='div_dev_data', URL='sdcp.cgi?device_connection_link_device', FRM='device_connection_link')
  print aWeb.button('forward', DIV='div_dev_data', URL='sdcp.cgi?device_connection_list&op=link', FRM='device_connection_link')
  print "</DIV></ARTICLE>"
+
+#
+#
+def connection_network(aWeb):
+ res = aWeb.rest_call("device_connection_network",{'device_id':aWeb['device_id']})
+ print res

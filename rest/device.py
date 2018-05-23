@@ -50,8 +50,7 @@ def info(aDict):
      args.update({'devices_model':lookup['info']['model'],'devices_snmp':lookup['info']['snmp'],'devices_type_id':types[lookup['info']['type']]['id']})
 
    if (operation == 'update' or (operation == 'lookup' and ret['result']['lookup'] == 'OK')) and ret['id']:
-    if not args.get('devices_vm'):
-     args['devices_vm'] = 0
+    args['devices_vm'] = args.get('devices_vm',0)
     if not args.get('devices_comment'):
      args['devices_comment'] = 'NULL'
     if not args.get('devices_webpage'):
@@ -367,7 +366,7 @@ def to_node(aDict):
 #
 #
 def webpage_list(aDict):
- """Function docstring for webpage_list TBD. List webpages for devices
+ """ List webpages for devices
 
  Args:
 
@@ -383,7 +382,7 @@ def webpage_list(aDict):
 #
 #
 def connection_list(aDict):
- """Function docstring for connection_list TBD. List connections for a specific device
+ """List connections for a specific device
 
  Args:
   - device_id (required)
@@ -393,14 +392,14 @@ def connection_list(aDict):
  ret = {}
  id = aDict['device_id']
  with DB() as db:
-  ret['xist'] = db.do("SELECT id,name,description,snmp_index,peer_connection FROM device_connections WHERE device_id = %s ORDER BY snmp_index"%id)
+  ret['xist'] = db.do("SELECT id,name,description,snmp_index,peer_connection,multipoint FROM device_connections WHERE device_id = %s ORDER BY snmp_index"%id)
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
 def connection_info(aDict):
- """Function docstring for connection_info TBD. Show specific connection for a device 
+ """Show or update a specific connection for a device 
 
  Args:             
   - id (required)
@@ -409,6 +408,7 @@ def connection_info(aDict):
   - description
   - snmp_index
   - peer_connection
+  - multipoint (0/1)
 
  Output:
  """
@@ -418,6 +418,10 @@ def connection_info(aDict):
  op = args.pop('op',None)
  with DB() as db:
   if op == 'update':
+   # If multipoint there should not be any single peer connection
+   args['multipoint'] = aDict.get('multipoint',0)
+   if int(args['multipoint']) == 1:
+    args['peer_connection'] = None
    if not id == 'new':
     ret['update'] = db.update_dict('device_connections',args,"id=%s"%id) 
    else:
@@ -426,10 +430,11 @@ def connection_info(aDict):
     id = db.get_last_id() if ret['insert'] > 0 else 'new'
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT device_connections.*, peer.device_id AS peer_device FROM device_connections LEFT JOIN device_connections AS peer ON device_connections.peer_connection = peer.id WHERE device_connections.id = '%s'"%id)
+   ret['xist'] = db.do("SELECT dc.*, peer.device_id AS peer_device FROM device_connections AS dc LEFT JOIN device_connections AS peer ON dc.peer_connection = peer.id WHERE dc.id = '%s'"%id)
    ret['data'] = db.get_row()
+   ret['data'].pop('manual',None)
   else:
-   ret['data'] = {'id':'new','device_id':int(aDict['device_id']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_connection':None,'peer_device':None}
+   ret['data'] = {'id':'new','device_id':int(aDict['device_id']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_connection':None,'peer_device':None,'multipoint':0}
  return ret
 
 #
@@ -462,7 +467,7 @@ def connection_link(aDict):
  """
  ret = {}
  with DB() as db:
-  sql = "UPDATE device_connections SET peer_connection = %s WHERE id = %s"
+  sql = "UPDATE device_connections SET peer_connection = %s WHERE id = %s AND multipoint = 0"
   ret['id']   = (db.do(sql%(aDict['peer_connection'],aDict['id'])) == 1)
   ret['peer'] = (db.do(sql%(aDict['id'],aDict['peer_connection'])) == 1)
  return ret
@@ -497,7 +502,7 @@ def connection_link_advanced(aDict):
    else:
     ret['error'] = "IP not found (%s)"%aDict['%s_ip'%peer]
   if not ret['error']:
-   sql = "UPDATE device_connections SET peer_connection = %s WHERE id = %s"
+   sql = "UPDATE device_connections SET peer_connection = %s WHERE id = %s AND multipoint = 0"
    ret['a']['peer'] = (db.do(sql%(ret['b']['index'],ret['a']['index'])) == 1)
    ret['b']['peer'] = (db.do(sql%(ret['a']['index'],ret['b']['index'])) == 1)
 
@@ -506,7 +511,7 @@ def connection_link_advanced(aDict):
 #
 #
 def connection_discover(aDict):
- """Function docstring for connection_discover. Discovery function for detecting interfaces. Will try SNMP to detect all interfaces first.
+ """ Discovery function for detecting interfaces. Will try SNMP to detect all interfaces first.
   Later stage is to do LLDP or similar to populate neighbor information
 
  Args:
@@ -540,6 +545,48 @@ def connection_discover(aDict):
     args = {'device_id':int(aDict['device_id']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key,'peer_connection':None}
     ret['insert'] += db.insert_dict('device_connections',args)
  return ret
+
+
+def connection_network(aDict):
+ """ Function produces a dictionary tree of connections and devices
+ Args:
+  - device_id (required)
+  - levels (optional) integer from 1-3, defaults to 1 to build graph
+ Output:
+ """
+ devices = {int(aDict['device_id']):{'traversed':False,'connections':0,'multipoint':0}}
+ connections = []
+ level = aDict.get('levels',2)
+ with DB() as db:
+  # Connected and Multipoint
+  sql_multi     = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index FROM device_connections AS dc WHERE dc.multipoint = 1 AND dc.device_id = {0}"
+  sql_connected = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index, dc.peer_connection AS peer_interface, peer.snmp_index AS peer_index, peer.name AS peer_name, peer.device_id AS peer_device FROM device_connections AS dc LEFT JOIN device_connections AS peer ON dc.peer_connection = peer.id WHERE peer.device_id IS NOT NULL AND dc.device_id = {0}"
+  for lvl in range(0,level):
+   new = {}
+   print "Level:",lvl
+   for key,dev in devices.iteritems():
+    if not dev['traversed']:
+     # Find connections and multipoint
+     dev['multipoint'] += db.do(sql_multi.format(key))
+     mps = db.get_rows()
+     print mps
+
+     dev['connections'] += db.do(sql_connected.format(key))
+     cons = db.get_rows()
+
+     # process them
+     for con in cons:
+      if not con['peer_device'] in devices.keys():
+       new[con['peer_device']] = {'traversed':False,'connections':0,'multipoint':0}
+     dev['traversed'] = True
+     connections.extend(cons)
+   devices.update(new)
+  db.do("SELECT id, hostname FROM devices WHERE id IN (%s)"%(",".join(str(x) for x in devices.keys())))
+  names = db.get_rows()
+  for name in names:
+   devices[name['id']]['hostname'] = name['hostname']
+
+ return {'devices':devices, 'connections':connections}
 
 ############################################# Specials ###########################################
 #
