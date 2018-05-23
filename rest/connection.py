@@ -189,19 +189,21 @@ def network(aDict):
  connections = []
  with DB() as db:
   # Connected and Multipoint
-  sql_connected  = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index, dc.peer_connection AS peer_interface, peer.snmp_index AS peer_index, peer.name AS peer_name, peer.device_id AS peer_device FROM device_connections AS dc LEFT JOIN device_connections AS peer ON dc.peer_connection = peer.id WHERE peer.device_id IS NOT NULL AND dc.device_id = {0}"
-  sql_multipoint = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index FROM device_connections AS dc WHERE dc.multipoint = 1 AND dc.device_id = {0}"
+  sql_connected  = "SELECT CAST({0} AS UNSIGNED) AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index, dc.peer_connection AS peer_interface, peer.snmp_index AS peer_index, peer.name AS peer_name, peer.device_id AS peer_device FROM device_connections AS dc LEFT JOIN device_connections AS peer ON dc.peer_connection = peer.id WHERE dc.peer_connection IS NOT NULL AND dc.device_id = {0}"
+  sql_multipoint = "SELECT CAST({0} AS UNSIGNED) AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index FROM device_connections AS dc WHERE dc.multipoint = 1 AND dc.device_id = {0}"
   sql_multi_peer = "SELECT dc.id AS peer_interface, dc.snmp_index AS peer_index, dc.device_id AS peer_device, dc.name AS peer_name FROM device_connections AS dc WHERE dc.peer_connection = {0}"
   for lvl in range(0,aDict.get('diameter',2)):
    new = {}
    for key,dev in devices.iteritems():
     if not dev['processed']:
-     # Find connections and multipoint
+     # Find straight connections
      dev['connections'] += db.do(sql_connected.format(key))
      cons = db.get_rows()
 
+     # Find local multipoint
      dev['multipoint'] += db.do(sql_multipoint.format(key))
      multipoints = db.get_rows()
+     # Check 'other side' and add that connection
      for interface in multipoints:
       db.do(sql_multi_peer.format(interface['local_interface']))
       peers = db.get_rows()
@@ -209,12 +211,17 @@ def network(aDict):
        peer.update(interface)
       cons.extend(peers)
 
-     # process them
      for con in cons:
+      # Not seen before, add device to process next round (in case already found as new, just overwrite) and save connection
+      # 1) For straight connection we cover 'back' since the dev is processed
+      # 2) For multipoint the other side will (ON SQL) see a straight connection so also covered by processed
+      # 3) There is no multipoint to multipoint
       if not con['peer_device'] in devices.keys():
        new[con['peer_device']] = {'processed':False,'connections':0,'multipoint':0,'distance':lvl + 1}
+       connections.append(con)
+
      dev['processed'] = True
-     connections.extend(cons)
+   # After all device leafs are processed we can add (net) new
    devices.update(new)
   db.do("SELECT id, hostname FROM devices WHERE id IN (%s)"%(",".join(str(x) for x in devices.keys())))
   names = db.get_rows()
