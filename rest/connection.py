@@ -26,9 +26,9 @@ def list(aDict):
 #
 #
 def info(aDict):
- """Show or update a specific connection for a device 
+ """Show or update a specific connection for a device
 
- Args:             
+ Args:
   - id (required)
   - device_id (required)
   - name
@@ -50,7 +50,7 @@ def info(aDict):
    if int(args['multipoint']) == 1:
     args['peer_connection'] = None
    if not id == 'new':
-    ret['update'] = db.update_dict('device_connections',args,"id=%s"%id) 
+    ret['update'] = db.update_dict('device_connections',args,"id=%s"%id)
    else:
     args['manual'] = 1
     ret['insert'] = db.insert_dict('device_connections',args)
@@ -124,7 +124,7 @@ def link_advanced(aDict):
     if xist > 0:
      ret[peer]['index'] = db.get_val('id')
     else:
-     db.insert_dict('device_connections',{'device_id':ret[peer]['device'],'name':'Unknown','description':'Unknown','snmp_index':aDict['%s_index'%peer],'peer_connection':None})
+     db.insert_dict('device_connections',{'device_id':ret[peer]['device'],'name':'Unknown','description':'Unknown','snmp_index':aDict['%s_index'%peer]})
      ret[peer]['index'] = db.get_last_id()
    else:
     ret['error'] = "IP not found (%s)"%aDict['%s_ip'%peer]
@@ -153,7 +153,7 @@ def discover(aDict):
   db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, device_types.name AS type FROM devices LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aDict['device_id'])
   info = db.get_row()
   db.do("SELECT id, snmp_index, name, description FROM device_connections WHERE device_id = %s"%aDict['device_id'])
-  existing = db.get_rows()  
+  existing = db.get_rows()
   try:
    module  = import_module("sdcp.devices.%s"%(info['type']))
    dev = getattr(module,'Device',lambda x: None)(info['ipasc'])
@@ -169,7 +169,7 @@ def discover(aDict):
     elif aDict.get('delete_nonexisting',False) == True:
      ret['delete'] += db.do("DELETE FROM device_connections WHERE id = %s AND manual = 0"%(con['id']))
    for key, entry in interfaces.iteritems():
-    args = {'device_id':int(aDict['device_id']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key,'peer_connection':None}
+    args = {'device_id':int(aDict['device_id']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key}
     ret['insert'] += db.insert_dict('device_connections',args)
  return ret
 
