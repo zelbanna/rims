@@ -22,6 +22,8 @@ def list(aDict):
   sort = aDict.get('sort','snmp_index')
   ret['xist'] = db.do("SELECT id,name,description,snmp_index,peer_connection,multipoint FROM device_connections WHERE device_id = %s ORDER BY %s"%(id,sort))
   ret['data'] = db.get_rows()
+  db.do("SELECT hostname FROM devices WHERE id = %s"%id)
+  ret['hostname'] = db.get_val('hostname')
  return ret
 
 #
@@ -79,25 +81,29 @@ def delete(aDict):
  ret = {}
  id = aDict['id']
  with DB() as db:
+  ret['cleared'] = db.do("UPDATE device_connections SET peer_connection = NULL WHERE peer_connection = %s"%id)
   ret['deleted'] = db.do("DELETE FROM device_connections WHERE id = %s"%id)
  return ret
 
 #
 #
 def link(aDict):
- """Function docstring for connection_link. Link two device interfaces simultaneously to each other
+ """Function docstring for connection_link. Link two device interfaces simultaneously to each other, remove old connections before (unless multipoint)
 
  Args:
-  - id (required)
-  - peer_connection (required)
+  - a_id (required)
+  - b_id (required)
 
  Output:
  """
- ret = {}
+ ret = {'a':{},'b':{}}
  with DB() as db:
-  sql = "UPDATE device_connections SET peer_connection = %s WHERE id = %s AND multipoint = 0"
-  ret['id']   = (db.do(sql%(aDict['peer_connection'],aDict['id'])) == 1)
-  ret['peer'] = (db.do(sql%(aDict['id'],aDict['peer_connection'])) == 1)
+  sql_clear = "UPDATE device_connections SET peer_connection = NULL WHERE peer_connection = %s AND multipoint = 0"
+  sql_set   = "UPDATE device_connections SET peer_connection = %s WHERE id = %s AND multipoint = 0"
+  ret['a']['clear'] = db.do(sql_clear%(aDict['a_id']))
+  ret['b']['clear'] = db.do(sql_clear%(aDict['b_id']))
+  ret['a']['set']   = (db.do(sql_set%(aDict['b_id'],aDict['a_id'])) == 1)
+  ret['b']['set']   = (db.do(sql_set%(aDict['a_id'],aDict['b_id'])) == 1)
  return ret
 
 #
@@ -130,9 +136,12 @@ def link_advanced(aDict):
    else:
     ret['error'] = "IP not found (%s)"%aDict['%s_ip'%peer]
   if not ret['error']:
-   sql = "UPDATE device_connections SET peer_connection = %s WHERE id = %s AND multipoint = 0"
-   ret['a']['peer'] = (db.do(sql%(ret['b']['index'],ret['a']['index'])) == 1)
-   ret['b']['peer'] = (db.do(sql%(ret['a']['index'],ret['b']['index'])) == 1)
+   sql_clear = "UPDATE device_connections SET peer_connection = NULL WHERE peer_connection = %s AND multipoint = 0"
+   sql_set   = "UPDATE device_connections SET peer_connection = %s WHERE id = %s AND multipoint = 0"
+   ret['a']['clear'] = db.do(sql_clear%(aDict['a_id']))
+   ret['b']['clear'] = db.do(sql_clear%(aDict['b_id']))
+   ret['a']['set']   = (db.do(sql_set%(aDict['b_id'],aDict['a_id'])) == 1)
+   ret['b']['set']   = (db.do(sql_set%(aDict['a_id'],aDict['b_id'])) == 1)
 
  return ret
 
@@ -212,18 +221,25 @@ def network(aDict):
        peer.update(interface)
       cons.extend(peers)
 
+     # Deduce if connection is registered (the hard way, as no double dictionary)
      for con in cons:
-      # Not seen before, add device to process next round (in case already found as new, just overwrite) and save connection
+      seen = devices.get(con['peer_device'])
+      # If not seen before, add device to process next round (in case already found as new, just overwrite) and save connection. Else, check if processed (then those connections are made) if not add connection
       # 1) For straight connection we cover 'back' since the dev is processed
       # 2) For multipoint the other side will (ON SQL) see a straight connection so also covered by processed
       # 3) There is no multipoint to multipoint
-      if not con['peer_device'] in devices.keys():
+      if not seen:
        new[con['peer_device']] = {'processed':False,'connections':0,'multipoint':0,'distance':lvl + 1}
+       connections.append(con)
+      elif not seen['processed']:
+       # exist but connection has not been registered, this covers loops as we set processed last :-)
        connections.append(con)
 
      dev['processed'] = True
-   # After all device leafs are processed we can add (net) new
+   # After all device leafs are processed we can add (net) new devices
    devices.update(new)
+
+  # Now update devices with hostname and type and model
   db.do("SELECT id, hostname FROM devices WHERE id IN (%s)"%(",".join(str(x) for x in devices.keys())))
   names = db.get_rows()
   for name in names:

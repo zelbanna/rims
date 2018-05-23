@@ -16,11 +16,11 @@ def list(aWeb):
  elif aWeb['op'] == 'discover':
   opres = aWeb.rest_call("connection_discover",{'device_id':aWeb['device_id'],'delete_nonexisting':True})
  elif aWeb['op'] == 'link':
-  opres = aWeb.rest_call("connection_link",{'id':aWeb['id'],'peer_connection':aWeb['peer_connection']})
+  opres = aWeb.rest_call("connection_link",{'a_id':aWeb['id'],'b_id':aWeb['peer_connection']})
  else:
   opres = ""
  res = aWeb.rest_call("connection_list",{'device_id':aWeb['device_id']})
- print "<ARTICLE><P>Connections (%s)</P><DIV CLASS='controls'>"%(aWeb['device_id'])
+ print "<ARTICLE><P>Connectivity (%s)</P><DIV CLASS='controls'>"%(res['hostname'])
  print aWeb.button('reload', DIV='div_dev_data',URL='sdcp.cgi?connection_list&device_id=%s'%(aWeb['device_id']))
  print aWeb.button('add',    DIV='div_dev_data',URL='sdcp.cgi?connection_info&device_id=%s&id=new'%aWeb['device_id'])
  print aWeb.button('search', DIV='div_dev_data',URL='sdcp.cgi?connection_list&op=discover&device_id=%s'%(aWeb['device_id']), SPIN='true', MSG='Rediscover connections?')
