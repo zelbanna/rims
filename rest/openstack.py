@@ -67,10 +67,10 @@ def authenticate(aDict):
    db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node) VALUES('%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],SC['node'][aDict['node']]))
    token_id = db.get_last_id()
    for service in ['heat','nova','neutron','glance']:
-    port,url,id = controller.get_service(service,'public')
-    if len(url) > 0:
-     url = url + '/'
-    db.do("INSERT INTO openstack_services(id,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(token_id,service,port,url,id))
+    svc = controller.get_service(service,'public')
+    if len(svc['path']) > 0:
+     svc['path'] = svc['path'] + '/'
+    db.do("INSERT INTO openstack_services(id,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(token_id,service,svc['port'],svc['path'],svc['id']))
    db.do("INSERT INTO openstack_services(id,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(token_id,"contrail",8082,'',''))
   log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],aDict['node']))
  else:

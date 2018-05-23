@@ -558,9 +558,9 @@ def connection_network(aDict):
  connections = []
  with DB() as db:
   # Connected and Multipoint
-  sql_multipoint = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index FROM device_connections AS dc WHERE dc.multipoint = 1 AND dc.device_id = {0}"
-  sql_multi_peer = "SELECT {0} AS local_device, {1}"
   sql_connected  = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index, dc.peer_connection AS peer_interface, peer.snmp_index AS peer_index, peer.name AS peer_name, peer.device_id AS peer_device FROM device_connections AS dc LEFT JOIN device_connections AS peer ON dc.peer_connection = peer.id WHERE peer.device_id IS NOT NULL AND dc.device_id = {0}"
+  sql_multipoint = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index FROM device_connections AS dc WHERE dc.multipoint = 1 AND dc.device_id = {0}"
+  sql_multi_peer = "SELECT dc.id AS peer_interface, dc.snmp_index AS peer_snmp_index, dc.device_id AS peer_device, dc.name AS peer_name FROM device_connections AS dc WHERE dc.peer_connection = {0}"
   for lvl in range(0,aDict.get('diameter',2)):
    new = {}
    print "Hop:",lvl
@@ -573,7 +573,12 @@ def connection_network(aDict):
      dev['multipoint'] += db.do(sql_multipoint.format(key))
      mps = db.get_rows()
      for mp in mps:
+      db.do(sql_multi_peer.format(mp['local_interface']))
+      peer_ifs = db.get_rows()
+      print "**Multipoint***" 
       print mp
+      print peer_ifs
+    
 
 
      # process them

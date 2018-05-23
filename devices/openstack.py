@@ -82,13 +82,16 @@ class Device(object):
  # - service link
  # - service id
  def get_service(self,aService,aType):
+  ret = {'port':None,'path':None,'id':None}
   for svc in self._catalog[aService]['endpoints']:
    if svc['interface'] == aType:
-    # http : //x.y.z : port / lnk
-    (port,_,lnk) = svc['url'].split(':')[2].partition('/')
-    return (port,lnk,svc['id'])
-  else:
-   return (None,None,None)
+    # http : //x.y.z : port / path
+    (port,_,path) = svc['url'].split(':')[2].partition('/')
+    ret['port'] = port
+    ret['path'] = path
+    ret['id']   = svc['id']
+    break
+  return ret
 
  # call and href
  # Input:
