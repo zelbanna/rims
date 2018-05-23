@@ -53,7 +53,7 @@ class Device(object):
     res['auth'] = 'OK'
    else:
     res['auth'] = 'NOT_OK'
-  except Exception, e:
+  except Exception as e:
    res = e[0]
    res['auth'] = 'NOT_OK'
   return res
