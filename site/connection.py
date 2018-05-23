@@ -81,7 +81,7 @@ def link_device(aWeb):
 #
 #
 def link_interface(aWeb):
- res = aWeb.rest_call("connection_list",{'device_id':aWeb['peer']})
+ res = aWeb.rest_call("connection_list",{'device_id':aWeb['peer'],'sort':'name'})
  print "<ARTICLE>"
  print "<FORM ID=connection_link>"
  print "<INPUT TYPE=HIDDEN NAME=device_id VALUE=%s>"%aWeb['device_id']

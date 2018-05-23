@@ -13,13 +13,14 @@ def list(aDict):
 
  Args:
   - device_id (required)
-
+  - sort (optional, default to 'snmp_index')
  Output:
  """
  ret = {}
  id = aDict['device_id']
  with DB() as db:
-  ret['xist'] = db.do("SELECT id,name,description,snmp_index,peer_connection,multipoint FROM device_connections WHERE device_id = %s ORDER BY snmp_index"%id)
+  sort = aDict.get('sort','snmp_index')
+  ret['xist'] = db.do("SELECT id,name,description,snmp_index,peer_connection,multipoint FROM device_connections WHERE device_id = %s ORDER BY %s"%(id,sort))
   ret['data'] = db.get_rows()
  return ret
 
