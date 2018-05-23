@@ -47,15 +47,17 @@ DROP TABLE IF EXISTS `device_connections`;
 CREATE TABLE `device_connections` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `device_id` int(10) unsigned NOT NULL,
-  `alias` varchar(20) NOT NULL,
-  `graph_type` varchar(10) NOT NULL DEFAULT 'SNMP',
-  `graph_index` varchar(40) DEFAULT NULL,
-  `peer_ip` int(10) unsigned NOT NULL DEFAULT '0',
-  `peer_interface` varchar(20) DEFAULT NULL,
-  `description` varchar(40) DEFAULT NULL,
+  `peer_connection` int(10) unsigned DEFAULT NULL,
+  `manual` tinyint(1) unsigned DEFAULT '0',
+  `multipoint` tinyint(1) unsigned DEFAULT '0',
+  `snmp_index` int(10) unsigned DEFAULT NULL,
+  `name` varchar(25) NOT NULL,
+  `description` varchar(25) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `device_id` (`device_id`),
-  CONSTRAINT `device_connections_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `peer_connection` (`peer_connection`),
+  CONSTRAINT `device_connections_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `device_connections_ibfk_2` FOREIGN KEY (`peer_connection`) REFERENCES `device_connections` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

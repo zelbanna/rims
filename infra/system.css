@@ -111,6 +111,8 @@ span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidd
 div.rest { float:left; margin-left:1px; margin-top:1px; border:solid 1px #9CA6B0; }
 div.rest > div:first-child { font-weight:bold; background-color:#9CA6B0!important; }
 div.rest > div { min-width:100px; white-space:normal; }
+
+div.network { width:100%; height:500px; }
 /*################################ JS tools ####################################*/
 
 .highlight { border: 1px solid #3E84F4; }
