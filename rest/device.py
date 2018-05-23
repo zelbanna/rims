@@ -548,44 +548,44 @@ def connection_discover(aDict):
 
 
 def connection_network(aDict):
- """ Function produces a dictionary tree of connections and devices
+ """ Function produces a dictionary tree of connections and devices. Build a graph using center device and then add edge connections to leaf nodes (devices) and iterate this process for 'diameter' times
+
  Args:
   - device_id (required)
-  - diameter (optional) integer from 1-3, defaults to 1 to build graph
+  - diameter (optional) integer from 1-3, defaults to 2 to build graph
  Output:
+  - connections. Local and peer interfaces and interface properties]
+  - devices. Encompassed devices, with name, id and connection information
  """
- devices = {int(aDict['device_id']):{'traversed':False,'connections':0,'multipoint':0}}
+ devices = {int(aDict['device_id']):{'processed':False,'connections':0,'multipoint':0,'distance':0}}
  connections = []
  with DB() as db:
   # Connected and Multipoint
   sql_connected  = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index, dc.peer_connection AS peer_interface, peer.snmp_index AS peer_index, peer.name AS peer_name, peer.device_id AS peer_device FROM device_connections AS dc LEFT JOIN device_connections AS peer ON dc.peer_connection = peer.id WHERE peer.device_id IS NOT NULL AND dc.device_id = {0}"
   sql_multipoint = "SELECT {0} AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index FROM device_connections AS dc WHERE dc.multipoint = 1 AND dc.device_id = {0}"
-  sql_multi_peer = "SELECT dc.id AS peer_interface, dc.snmp_index AS peer_snmp_index, dc.device_id AS peer_device, dc.name AS peer_name FROM device_connections AS dc WHERE dc.peer_connection = {0}"
+  sql_multi_peer = "SELECT dc.id AS peer_interface, dc.snmp_index AS peer_index, dc.device_id AS peer_device, dc.name AS peer_name FROM device_connections AS dc WHERE dc.peer_connection = {0}"
   for lvl in range(0,aDict.get('diameter',2)):
    new = {}
-   print "Hop:",lvl
    for key,dev in devices.iteritems():
-    if not dev['traversed']:
+    if not dev['processed']:
      # Find connections and multipoint
      dev['connections'] += db.do(sql_connected.format(key))
      cons = db.get_rows()
 
      dev['multipoint'] += db.do(sql_multipoint.format(key))
-     mps = db.get_rows()
-     for mp in mps:
-      db.do(sql_multi_peer.format(mp['local_interface']))
-      peer_ifs = db.get_rows()
-      print "**Multipoint***" 
-      print mp
-      print peer_ifs
-    
-
+     multipoints = db.get_rows()
+     for interface in multipoints:
+      db.do(sql_multi_peer.format(interface['local_interface']))
+      peers = db.get_rows()
+      for peer in peers:
+       peer.update(interface)
+      cons.extend(peers)
 
      # process them
      for con in cons:
       if not con['peer_device'] in devices.keys():
-       new[con['peer_device']] = {'traversed':False,'connections':0,'multipoint':0}
-     dev['traversed'] = True
+       new[con['peer_device']] = {'processed':False,'connections':0,'multipoint':0,'distance':lvl + 1}
+     dev['processed'] = True
      connections.extend(cons)
    devices.update(new)
   db.do("SELECT id, hostname FROM devices WHERE id IN (%s)"%(",".join(str(x) for x in devices.keys())))
