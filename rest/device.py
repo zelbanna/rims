@@ -553,6 +553,7 @@ def connection_network(aDict):
  Args:
   - device_id (required)
   - diameter (optional) integer from 1-3, defaults to 2 to build graph
+
  Output:
   - connections. Local and peer interfaces and interface properties]
   - devices. Encompassed devices, with name, id and connection information
