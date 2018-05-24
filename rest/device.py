@@ -787,16 +787,18 @@ def network(aDict):
  """ Function produces a dictionary tree of interfaces and devices. Build a graph using center device and then add edge interfaces to leaf nodes (devices) and iterate this process for 'diameter' times
 
  Args:
-  - device_id (required)
+  - id (optional required)
+  - ip (optional required)
   - diameter (optional) integer from 1-3, defaults to 2 to build graph
 
  Output:
   - interfaces. Local and peer interfaces and interface properties]
   - devices. Encompassed devices, with name, id and interface information
  """
- devices = {int(aDict['device_id']):{'processed':False,'interfaces':0,'multipoint':0,'distance':0}}
- interfaces = []
  with DB() as db:
+
+  devices = {int(aDict['id']):{'processed':False,'interfaces':0,'multipoint':0,'distance':0}}
+  interfaces = []
   # Connected and Multipoint
   sql_connected  = "SELECT CAST({0} AS UNSIGNED) AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index, dc.peer_interface AS peer_interface, peer.snmp_index AS peer_index, peer.name AS peer_name, peer.device_id AS peer_device FROM device_interfaces AS dc LEFT JOIN device_interfaces AS peer ON dc.peer_interface = peer.id WHERE dc.peer_interface IS NOT NULL AND dc.device_id = {0}"
   sql_multipoint = "SELECT CAST({0} AS UNSIGNED) AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index FROM device_interfaces AS dc WHERE dc.multipoint = 1 AND dc.device_id = {0}"
