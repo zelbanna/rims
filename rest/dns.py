@@ -498,7 +498,7 @@ def dedup(aDict):
  """
  ret = {}
  with DB() as db: 
-  db.do("SELECT server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id")
+  db.do("SELECT server, node FROM domain_servers")
   servers = db.get_rows()
  for infra in servers:
   if SC['system']['id'] == infra['node']:

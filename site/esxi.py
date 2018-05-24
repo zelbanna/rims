@@ -15,15 +15,17 @@ def main(aWeb):
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Hostname</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Type</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(row['type_name'])
+  print "<DIV CLASS=tr><DIV CLASS=td>"
   if row['type_name'] == 'esxi':
    print "<A CLASS=z-op DIV=main URL='sdcp.cgi?esxi_manage&id={}'>{}</A>".format(row['id'],row['hostname'])
   elif row['type_name'] == 'vcenter':
    print "<A TARGET=_blank HREF='https://{}:9443/vsphere-client/'>{}</A>".format(row['ipasc'],row['hostname'])
-  print "</DIV></DIV>"
+  else:
+   print "&nbsp;"
+  print "</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['type_name'])
  print "</DIV></DIV></ARTICLE>"
  print "</SECTION>"
  print "</SECTION>"
