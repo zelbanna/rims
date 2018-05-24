@@ -155,7 +155,7 @@ if settings['system']['id'] == 'master':
  res['resources_new'] = 0
 
  #
- # Common settings and user
+ # Common settings and user - for master...
  #
  from sdcp.core.common import DB
  try:
@@ -163,15 +163,19 @@ if settings['system']['id'] == 'master':
   db = DB(database,host,username,password)
   db.connect()
 
-  res['admin_user'] = db.do("INSERT INTO users(id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
-  res['register'] = db.do("INSERT INTO nodes(node,url,system,www) VALUES('{0}','{1}',1,{2}) ON DUPLICATE KEY UPDATE system = 1, www = {2}, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['rest'],modes.get('front','0')))
-  res['node_id']= db.get_last_id()
-  sql ="INSERT INTO device_types(name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
+  res['admin_user'] = db.do("INSERT users (id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
+  res['node_add'] = db.do("INSERT nodes (node,url,system,www) VALUES('{0}','{1}',1,{2}) ON DUPLICATE KEY UPDATE system = 1, www = {2}, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['rest'],modes.get('front','0')))
+  res['node_id']  = db.get_last_id()
+  res['dns_server_add'] = db.do("INSERT domain_servers (node,server) VALUES ('master','nodns') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)")
+  res['dns_server_id']  = db.get_last_id()
+  res['dns_domain_add'] = db.do("INSERT domains (foreign_id,name,server_id,type ) VALUES (0,'local',{},'forward') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)".format(res['dns_server_id']))
+  res['dns_domain_id']  = db.get_last_id() 
+  sql ="INSERT device_types (name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
   for type in device_types:
    try:    res['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
    except Exception as err: res['device_errors'] = str(err)
 
-  sql ="INSERT INTO resources(node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
+  sql = "INSERT resources (node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
   for item in resources:
    try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?%s_main"%item['name'],item['icon'],item['type']))
    except Exception as err:
