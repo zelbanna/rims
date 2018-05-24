@@ -111,7 +111,7 @@ def info(aWeb):
   extra = " selected" if dev['info']['type_id'] == type['id'] or (not dev['info']['type_id'] and type['name'] == 'generic') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id'],extra,type['name'])
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=devices_model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
  print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
  print "</DIV></DIV></DIV>"
 
@@ -449,7 +449,7 @@ def interface_link_device(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=device_id VALUE=%s>"%aWeb['device_id']
  print "<INPUT TYPE=HIDDEN NAME=id   VALUE=%s>"%aWeb['id']
  print "<INPUT TYPE=HIDDEN NAME=name VALUE=%s>"%aWeb['name']
- print "Connect '%s' to device id: <INPUT CLASS='background' REQUIRED TYPE=TEXT NAME='peer' STYLE='width:100px' VALUE='%s'>"%(aWeb['name'],aWeb.get('peer','0'))
+ print "Connect '%s' to device (Id or IP): <INPUT CLASS='background' REQUIRED TYPE=TEXT NAME='peer' STYLE='width:100px' VALUE='%s'>"%(aWeb['name'],aWeb.get('peer','0'))
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('back',    DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&device_id=%s'%aWeb['device_id'])
  print aWeb.button('forward', DIV='div_dev_data', URL='sdcp.cgi?device_interface_link_interface', FRM='interface_link')
@@ -458,14 +458,14 @@ def interface_link_device(aWeb):
 #
 #
 def interface_link_interface(aWeb):
- res = aWeb.rest_call("device_interface_list",{'device_id':aWeb['peer'],'sort':'name'})
+ res = aWeb.rest_call("device_interface_list",{'device':aWeb['peer'],'sort':'name'})
  print "<ARTICLE>"
  print "<FORM ID=interface_link>"
  print "<INPUT TYPE=HIDDEN NAME=device_id VALUE=%s>"%aWeb['device_id']
  print "<INPUT TYPE=HIDDEN NAME=id   VALUE=%s>"%aWeb['id']
  print "<INPUT TYPE=HIDDEN NAME=name VALUE=%s>"%aWeb['name']
- print "Connect '%s' to device id: <INPUT CLASS='background' READONLY TYPE=TEXT NAME='peer' STYLE='width:100px' VALUE=%s> on"%(aWeb['name'],aWeb['peer'])
- print "<SELECT NAME=peer_interface>"
+ print "Connect '%s' to device id: <INPUT CLASS='background' READONLY TYPE=TEXT NAME='peer' STYLE='width:100px' VALUE=%s> on"%(aWeb['name'],res['id'])
+ print "<SELECT NAME=peer_interface REQUIRED>"
  for intf in res.get('data',[]):
   print "<OPTION VALUE=%s>%s (%s)</OPTION>"%(intf['id'],intf['name'],intf['description'])
  print "</SELECT>"

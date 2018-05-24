@@ -41,7 +41,7 @@ def server_info(aDict):
  id = args.pop('id','new')
  op = args.pop('op',None)
  with DB() as db:
-  ret['servers'] = [{'server':'local'},{'server':'powerdns'},{'server':'infoblox'}]
+  ret['servers'] = [{'server':'nodns'},{'server':'powerdns'},{'server':'infoblox'}]
   db.do("SELECT node FROM nodes")
   ret['nodes'] = db.get_rows()
   if op == 'update':

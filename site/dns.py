@@ -86,7 +86,7 @@ def domain_info(aWeb):
  print "<ARTICLE CLASS=info><P>Domain Info (%s)</P>"%res['id']
  print "<FORM ID=dns_info_form>"
  print "<DIV CLASS=table><DIV CLASS=tbody>"
- if res['id'] == 'new':
+ if res['id'] == 'new' and res.get('servers'):
   print "<DIV CLASS=tr><DIV CLASS=td>Server</DIV><DIV CLASS=td><SELECT NAME=server_id>"
   for srv in res['servers']:
    print "<OPTION VALUE=%s>%s on %s</OPTION>"%(srv['id'],srv['server'],srv['node'])
@@ -103,10 +103,10 @@ def domain_info(aWeb):
  print "<SPAN CLASS='results' ID=update_results>{}</SPAN>".format("lookup" if not aWeb.get('op') else aWeb['op'])
  print "<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(res['id'])
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=%s'%(res['id']))
  if res['id'] == 'new':
   print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&op=update',FRM='dns_info_form')
  else:
+  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=%s'%(res['id']))
   print aWeb.button('trash',DIV='div_content_right',URL='sdcp.cgi?dns_domain_%s&id=%s'%("transfer" if not "arpa" in data['name'] else "delete",res['id']))
  print "</DIV></ARTICLE>"
 

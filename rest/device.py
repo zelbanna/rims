@@ -575,18 +575,32 @@ def interface_list(aDict):
  """List interfaces for a specific device
 
  Args:
-  - device_id (required)
+  - device_id (optional)
+  - device_ip (optional)
+  - device    (ip or id... :-))
   - sort (optional, default to 'snmp_index')
  Output:
  """
- ret = {}
- id = aDict['device_id']
+ def is_int(val):
+  try: int(val)
+  except: return False
+  else:   return True
+
  with DB() as db:
-  sort = aDict.get('sort','snmp_index')
-  ret['xist'] = db.do("SELECT id,name,description,snmp_index,peer_interface,multipoint FROM device_interfaces WHERE device_id = %s ORDER BY %s"%(id,sort))
-  ret['data'] = db.get_rows()
-  db.do("SELECT hostname FROM devices WHERE id = %s"%id)
-  ret['hostname'] = db.get_val('hostname')
+  id, ip = None,None
+  if aDict.get('device_id'):
+   db.do("SELECT id, hostname FROM devices WHERE id = %s"%aDict['device_id'])
+  elif is_int(aDict.get('device')):
+   db.do("SELECT id, hostname FROM devices WHERE id = %s"%aDict['device'])
+  else:
+   db.do("SELECT id, hostname FROM devices WHERE ip = INET_ATON('%s')"%(aDict['device_ip'] if aDict.get('device_ip') else aDict['device']))
+  ret = db.get_row()
+  if ret:
+   sort = aDict.get('sort','snmp_index')
+   ret['xist'] = db.do("SELECT id,name,description,snmp_index,peer_interface,multipoint FROM device_interfaces WHERE device_id = %s ORDER BY %s"%(ret['id'],sort))
+   ret['data'] = db.get_rows()
+  else:
+   ret = {'id':None,'hostname':None,'data':[],'xist':0}
  return ret
 
 #
