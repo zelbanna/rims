@@ -43,11 +43,11 @@ CREATE TABLE `bookings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `device_connections`;
-CREATE TABLE `device_connections` (
+DROP TABLE IF EXISTS `device_interfaces`;
+CREATE TABLE `device_interfaces` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `device_id` int(10) unsigned NOT NULL,
-  `peer_connection` int(10) unsigned DEFAULT NULL,
+  `peer_interface` int(10) unsigned DEFAULT NULL,
   `manual` tinyint(1) unsigned DEFAULT '0',
   `multipoint` tinyint(1) unsigned DEFAULT '0',
   `snmp_index` int(10) unsigned DEFAULT NULL,
@@ -55,9 +55,9 @@ CREATE TABLE `device_connections` (
   `description` varchar(25) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `device_id` (`device_id`),
-  KEY `peer_connection` (`peer_connection`),
-  CONSTRAINT `device_connections_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `device_connections_ibfk_2` FOREIGN KEY (`peer_connection`) REFERENCES `device_connections` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  KEY `peer_interface` (`peer_interface`),
+  CONSTRAINT `device_interfaces_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `device_interfaces_ibfk_2` FOREIGN KEY (`peer_interface`) REFERENCES `device_interfaces` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
