@@ -54,10 +54,10 @@ def layout(aWeb):
  startn  = int(data['start'])
  starta  = int(data['subnet'].split('.')[3])
  devices = data['devices']
- green = "<BUTTON CLASS='z-op ipam green' TITLE='New' DIV=div_content_right URL=sdcp.cgi?device_new&subnet_id="+ aWeb['id'] +"&ipint={}>{}</BUTTON>"
- red   = "<BUTTON CLASS='z-op ipam red'   TITLE='{}' DIV=div_content_right URL=sdcp.cgi?device_info&id={}>{}</BUTTON>"
- blue  = "<BUTTON CLASS='z-op ipam blue'  TITLE='{}'>{}</BUTTON>"
- print "<ARTICLE><P>%s/%s</P>"%(data['subnet'],data['mask'])
+ green = "<A CLASS='z-op btn small ipam green' TITLE='New' DIV=div_content_right URL=sdcp.cgi?device_new&subnet_id="+ aWeb['id'] +"&ipint={}>{}</A>"
+ red   = "<A CLASS='z-op btn small ipam red'   TITLE='{}' DIV=div_content_right URL=sdcp.cgi?device_info&id={}>{}</A>"
+ blue  = "<A CLASS='z-op btn small ipam blue'  TITLE='{}'>{}</A>"
+ print "<ARTICLE><P>%s/%s</P><DIV CLASS=controls"%(data['subnet'],data['mask'])
  print blue.format('network',starta % 256)
  for cnt in range(1,int(data['no'])-1):
   dev = devices.get(str(cnt + startn))
@@ -66,7 +66,7 @@ def layout(aWeb):
   else:
    print green.format(cnt + startn,(cnt + starta) % 256)
  print blue.format('broadcast',(starta + int(data['no'])-1)% 256)
- print "</ARTICLE>"
+ print "</DIV></ARTICLE>"
 
 #
 #

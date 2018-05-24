@@ -650,6 +650,28 @@ def interface_delete(aDict):
 
 #
 #
+def interface_delete_list(aDict):
+ """Function docstring for interface_delete TBD. Delete a certain interface
+
+ Args:
+  - device_id (required)
+  - interface_<x> (required). 0/1, deletes interface x if set to 1
+
+ Output:
+  - count. Reports number of deleted interfaces
+ """
+ ret = {'count':0,'interfaces':[]}
+ dev = aDict.pop('device_id')
+ op  = aDict.pop('op')
+ for intf_id,value in aDict.iteritems():
+  _,_,id = intf_id.partition('_')[2]
+  if id:
+   ret['count'] += int(value)
+   ret['interfaces'].append(id)
+ return ret
+
+#
+#
 def interface_link(aDict):
  """Function docstring for interface_link. Link two device interfaces simultaneously to each other, remove old interfaces before (unless multipoint)
 
@@ -716,8 +738,7 @@ def interface_discover(aDict):
 
  Args:
   - device_id (required)
-  - delete_nonexisting (optional, boolean)
-  - neighbor_discovery (optional, boolean)
+  - cleanup (optional, boolean). Deletes non-existing interfaces (except manually added) by default
 
  Output:
  """
@@ -739,14 +760,15 @@ def interface_discover(aDict):
     if entry:
      if not ((entry['name'] == con['name']) and (entry['description'] == con['description'])):
       ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', description = '%s' WHERE id = %s"%(entry['name'][0:24],entry['description'],con['id']))
-    elif aDict.get('delete_nonexisting',False) == True:
+    elif aDict.get('cleanup',True) == True:
      ret['delete'] += db.do("DELETE FROM device_interfaces WHERE id = %s AND manual = 0"%(con['id']))
    for key, entry in interfaces.iteritems():
     args = {'device_id':int(aDict['device_id']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key}
     ret['insert'] += db.insert_dict('device_interfaces',args)
  return ret
 
-
+#
+#
 def network(aDict):
  """ Function produces a dictionary tree of interfaces and devices. Build a graph using center device and then add edge interfaces to leaf nodes (devices) and iterate this process for 'diameter' times
 

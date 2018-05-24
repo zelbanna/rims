@@ -32,7 +32,7 @@ def list(aWeb):
   print "<DIV CLASS=td><DIV CLASS=controls>"
   qserver = get_quote(server['name'])
   actionurl = 'sdcp.cgi?nova_action&name=%s&id=%s&op={}'%(qserver,server['id'])
-  print aWeb.a_button('term', TARGET='_blank', HREF='sdcp.cgi?nova_console&name=%s&id=%s'%(qserver,server['id']), TITLE='New window console')
+  print aWeb.button('term', TARGET='_blank', HREF='sdcp.cgi?nova_console&name=%s&id=%s'%(qserver,server['id']), TITLE='New window console')
   print aWeb.button('term-frame', DIV='div_content_right', URL='sdcp.cgi?nova_console&inline=yes&id=%s'%server['id'], TITLE='Embedded console')
   print aWeb.button('delete', DIV='div_content_right', URL=actionurl.format('remove'), MSG='Are you sure you want to delete VM?', SPIN='true')
   if not server['OS-EXT-STS:task_state']:

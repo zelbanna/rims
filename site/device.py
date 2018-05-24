@@ -184,11 +184,11 @@ def info(aWeb):
  print aWeb.button('document',    DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
  print aWeb.button('connections', DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&device_id=%i'%(dev['id']),TITLE='Device interfaces')
  print aWeb.button('network',     DIV='div_content_right', URL='sdcp.cgi?device_network&device_id=%s&hostname=%s'%(dev['id'],dev['info']['hostname']), SPIN='true', TITLE='Network map')
- print aWeb.a_button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
+ print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['info']['console_ip'] and dev['info'].get('console_port',0) > 0):
-  print aWeb.a_button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['info']['console_ip'],6000+dev['info']['console_port']))
+  print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['info']['console_ip'],6000+dev['info']['console_port']))
  if dev['info'].get('webpage'):
-  print aWeb.a_button('web',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('webpage'))
+  print aWeb.button('web',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('webpage'))
  print "<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result',''))
  print "</DIV></ARTICLE>"
 
@@ -388,8 +388,12 @@ def network(aWeb):
 def interface_list(aWeb):
  if   aWeb['op'] == 'delete':
   opres = aWeb.rest_call("device_interface_delete",{'id':aWeb['id'],'device_id':aWeb['device_id']})
+ elif aWeb['op'] == 'delete_list':
+  print aWeb
+  args = aWeb.get_args2dict()
+  opres = aWeb.rest_call("device_interface_delete_list",args)
  elif aWeb['op'] == 'discover':
-  opres = aWeb.rest_call("device_interface_discover",{'device_id':aWeb['device_id'],'delete_nonexisting':True})
+  opres = aWeb.rest_call("device_interface_discover",{'device_id':aWeb['device_id']})
  elif aWeb['op'] == 'link':
   opres = aWeb.rest_call("device_interface_link",{'a_id':aWeb['id'],'b_id':aWeb['peer_interface']})
  else:
@@ -398,19 +402,21 @@ def interface_list(aWeb):
  print "<ARTICLE><P>Interfaces (%s)</P><DIV CLASS='controls'>"%(res['hostname'])
  print aWeb.button('reload', DIV='div_dev_data',URL='sdcp.cgi?device_interface_list&device_id=%s'%(aWeb['device_id']))
  print aWeb.button('add',    DIV='div_dev_data',URL='sdcp.cgi?device_interface_info&device_id=%s&id=new'%aWeb['device_id'])
- print aWeb.button('search', DIV='div_dev_data',URL='sdcp.cgi?device_interface_list&op=discover&device_id=%s'%(aWeb['device_id']), SPIN='true', MSG='Rediscover interfaces?')
- print "</DIV><SPAN CLASS=results>%s</SPAN>"%(opres) 
+ print aWeb.button('search', DIV='div_dev_data',URL='sdcp.cgi?device_interface_list&device_id=%s&op=discover'%(aWeb['device_id']), SPIN='true', MSG='Rediscover interfaces?')
+ print aWeb.button('trash',  DIV='div_dev_data',URL='sdcp.cgi?device_interface_list&device_id=%s&op=delete_list'%(aWeb['device_id']), MSG='Delete interfaces?', FRM='interface_list', TITLE='Delete selected interfaces')
+ print "</DIV><SPAN CLASS=results>%s</SPAN><FORM ID=interface_list>"%(opres)
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Peer interface</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_interface'] if not row['multipoint'] else 'multipoint')
+  print "<INPUT TYPE=CHECKBOX VALUE=1 NAME='interface_%s'>"%row['id']
   print aWeb.button('trash', DIV='div_dev_data',URL='sdcp.cgi?device_interface_list&op=delete&device_id=%s&id=%s'%(aWeb['device_id'],row['id']), MSG='Delete interface?')
   print aWeb.button('info',  DIV='div_dev_data',URL='sdcp.cgi?device_interface_info&device_id=%s&id=%s'%(aWeb['device_id'],row['id']))
   print aWeb.button('sync',  DIV='div_dev_data',URL='sdcp.cgi?device_interface_link_device&device_id=%s&id=%s&name=%s'%(aWeb['device_id'],row['id'],row['name']), TITLE='Connect')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
- print "</ARTICLE>"
+ print "</FORM></ARTICLE>"
 
 #
 #
