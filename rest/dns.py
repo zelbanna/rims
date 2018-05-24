@@ -319,7 +319,7 @@ def record_device_delete(aDict):
 
  Output:
  """
- ret = {'A':None,'PTR':None}
+ ret = {'A':0,'PTR':0}
  with DB() as db:
   for tp in ['a','ptr']:
    domain_id = aDict.get('%s_domain_id'%tp)
