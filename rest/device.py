@@ -658,16 +658,20 @@ def interface_delete_list(aDict):
   - interface_<x> (required). 0/1, deletes interface x if set to 1
 
  Output:
-  - count. Reports number of deleted interfaces
+  - interfaces. List of id:s of deleted interfaces
  """
- ret = {'count':0,'interfaces':[]}
+ ret = {'interfaces':[],'cleared':0,'deleted':0}
  dev = aDict.pop('device_id')
  op  = aDict.pop('op')
- for intf_id,value in aDict.iteritems():
-  _,_,id = intf_id.partition('_')[2]
-  if id:
-   ret['count'] += int(value)
-   ret['interfaces'].append(id)
+ with DB() as db:
+  for intf,value in aDict.iteritems():
+   if intf[0:10] == 'interface_' and str(value) == '1':
+    try: id = int(intf[10:])
+    except:pass
+    else:
+     ret['cleared'] += db.do("UPDATE device_interfaces SET peer_interface = NULL WHERE peer_interface = %s"%id)
+     ret['deleted'] += db.do("DELETE FROM device_interfaces WHERE id = %s"%id)
+     ret['interfaces'].append(id)
  return ret
 
 #

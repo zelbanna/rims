@@ -389,7 +389,6 @@ def interface_list(aWeb):
  if   aWeb['op'] == 'delete':
   opres = aWeb.rest_call("device_interface_delete",{'id':aWeb['id'],'device_id':aWeb['device_id']})
  elif aWeb['op'] == 'delete_list':
-  print aWeb
   args = aWeb.get_args2dict()
   opres = aWeb.rest_call("device_interface_delete_list",args)
  elif aWeb['op'] == 'discover':
@@ -411,7 +410,6 @@ def interface_list(aWeb):
  for row in res['data']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_interface'] if not row['multipoint'] else 'multipoint')
   print "<INPUT TYPE=CHECKBOX VALUE=1 NAME='interface_%s'>"%row['id']
-  print aWeb.button('trash', DIV='div_dev_data',URL='sdcp.cgi?device_interface_list&op=delete&device_id=%s&id=%s'%(aWeb['device_id'],row['id']), MSG='Delete interface?')
   print aWeb.button('info',  DIV='div_dev_data',URL='sdcp.cgi?device_interface_info&device_id=%s&id=%s'%(aWeb['device_id'],row['id']))
   print aWeb.button('sync',  DIV='div_dev_data',URL='sdcp.cgi?device_interface_link_device&device_id=%s&id=%s&name=%s'%(aWeb['device_id'],row['id'],row['name']), TITLE='Connect')
   print "</DIV></DIV></DIV>"
