@@ -369,7 +369,7 @@ def discover(aWeb):
 #
 #
 def network(aWeb):
- res = aWeb.rest_call("interface_network",{'device_id':aWeb['device_id']})
+ res = aWeb.rest_call("device_network",{'device_id':aWeb['device_id']})
  nodes = ["{id:%s, label:'%s'}"%(key,val['hostname']) for key,val in res['devices'].iteritems()]
  edges = ["{from:%s, to:%s}"%(con['local_device'],con['peer_device']) for con in res['interfaces']]
  print "<ARTICLE><P>Device '%s' network</P><DIV CLASS=controls>"%aWeb['hostname']
@@ -387,14 +387,14 @@ def network(aWeb):
 #
 def interface_list(aWeb):
  if   aWeb['op'] == 'delete':
-  opres = aWeb.rest_call("interface_delete",{'id':aWeb['id'],'device_id':aWeb['device_id']})
+  opres = aWeb.rest_call("device_interface_delete",{'id':aWeb['id'],'device_id':aWeb['device_id']})
  elif aWeb['op'] == 'discover':
-  opres = aWeb.rest_call("interface_discover",{'device_id':aWeb['device_id'],'delete_nonexisting':True})
+  opres = aWeb.rest_call("device_interface_discover",{'device_id':aWeb['device_id'],'delete_nonexisting':True})
  elif aWeb['op'] == 'link':
-  opres = aWeb.rest_call("interface_link",{'a_id':aWeb['id'],'b_id':aWeb['peer_interface']})
+  opres = aWeb.rest_call("device_interface_link",{'a_id':aWeb['id'],'b_id':aWeb['peer_interface']})
  else:
   opres = ""
- res = aWeb.rest_call("interface_list",{'device_id':aWeb['device_id']})
+ res = aWeb.rest_call("device_interface_list",{'device_id':aWeb['device_id']})
  print "<ARTICLE><P>Interfaces (%s)</P><DIV CLASS='controls'>"%(res['hostname'])
  print aWeb.button('reload', DIV='div_dev_data',URL='sdcp.cgi?device_interface_list&device_id=%s'%(aWeb['device_id']))
  print aWeb.button('add',    DIV='div_dev_data',URL='sdcp.cgi?device_interface_info&device_id=%s&id=new'%aWeb['device_id'])
@@ -416,7 +416,7 @@ def interface_list(aWeb):
 #
 def interface_info(aWeb):
  args = aWeb.get_args2dict()
- data = aWeb.rest_call("interface_info",args)['data']
+ data = aWeb.rest_call("device_interface_info",args)['data']
  print "<ARTICLE CLASS=info STYLE='width:100%;'><P>Interface</P>"
  print "<FORM ID=interface_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(data['id'])
@@ -454,7 +454,7 @@ def interface_link_device(aWeb):
 #
 #
 def interface_link_interface(aWeb):
- res = aWeb.rest_call("interface_list",{'device_id':aWeb['peer'],'sort':'name'})
+ res = aWeb.rest_call("device_interface_list",{'device_id':aWeb['peer'],'sort':'name'})
  print "<ARTICLE>"
  print "<FORM ID=interface_link>"
  print "<INPUT TYPE=HIDDEN NAME=device_id VALUE=%s>"%aWeb['device_id']
