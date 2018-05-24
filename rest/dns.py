@@ -177,9 +177,9 @@ def domain_delete(aDict):
  Output:
  """
  ret = {}
- if aDict['id'] != aDict.get('transfer'):
+ if aDict['id'] != aDict.get('transfer') and int(aDict['id']) > 0:
   with DB() as db:
-   db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = '%s'"%aDict['id'])
+   db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%aDict['id'])
    infra = db.get_row()
    if SC['system']['id'] == infra['node']:
     module = import_module("sdcp.rest.%s"%infra['server'])
@@ -188,8 +188,10 @@ def domain_delete(aDict):
    else:
     res = rest_call("%s?%s_domain_delete"%(SC['node'][infra['node']],infra['server']),{'id':infra['foreign_id']})['data']
    ret.update(res)
-   ret['devices'] = db.do("UPDATE devices SET a_id = 0, a_dom_id = '%s' WHERE a_dom_id = %s"%(aDict.get('transfer',0),aDict['id']))
+   ret['devices'] = db.do("UPDATE devices SET a_id = 0, a_dom_id = %s WHERE a_dom_id = %s"%(aDict.get('transfer',0),aDict['id']))
    ret['cache']   = db.do("DELETE FROM domains WHERE id = %s"%(aDict['id']))
+ else:
+  ret = {'devices':0,'cache':0,'records':0}
  return ret
 
 ######################################## Records ####################################

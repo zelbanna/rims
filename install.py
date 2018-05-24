@@ -168,8 +168,7 @@ if settings['system']['id'] == 'master':
   res['node_id']  = db.get_last_id()
   res['dns_server_add'] = db.do("INSERT domain_servers (node,server) VALUES ('master','nodns') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)")
   res['dns_server_id']  = db.get_last_id()
-  res['dns_domain_add'] = db.do("INSERT domains (foreign_id,name,server_id,type ) VALUES (0,'local',{},'forward') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)".format(res['dns_server_id']))
-  res['dns_domain_id']  = db.get_last_id() 
+  res['dns_domain_add'] = db.do("INSERT domains (id,foreign_id,name,server_id,type ) VALUES (0,0,'local',{},'forward') ON DUPLICATE KEY UPDATE id = 0".format(res['dns_server_id']))
   sql ="INSERT device_types (name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
   for type in device_types:
    try:    res['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
