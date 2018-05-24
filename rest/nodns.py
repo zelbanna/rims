@@ -105,7 +105,7 @@ def dedup(aDict):
 
  Output:
  """
- return {'removed':0}
+ return {'removed':[]}
 
 #
 #

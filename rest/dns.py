@@ -201,18 +201,19 @@ def record_list(aDict):
 
  Args:
   - type (optional)
-  - domain_id (optional required)
-  - server_id (optional required)
+  - domain_id (required), <B>use cached one</B>
 
  Output:
  """
+ ret = {'domain_id':aDict.get('domain_id',0)}
  args = aDict
  with DB() as db:
   if aDict.get('domain_id'):
    db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%aDict['domain_id'])
    infra = db.get_row()
-   args['domain_id'] = infra['foreign_id'] 
+   args['domain_id'] = infra['foreign_id']
   else:
+   # Strictly internal use - this one fetch all records for consistency check
    id = aDict.pop('server_id','0')
    db.do("SELECT server, node FROM domain_servers WHERE id = %s"%id)
    infra = db.get_row()
@@ -220,9 +221,10 @@ def record_list(aDict):
  if SC['system']['id'] == infra['node']:
   module = import_module("sdcp.rest.%s"%infra['server'])
   fun = getattr(module,'record_list',None)
-  ret = fun(args)
+  res = fun(args)
  else:
-  ret = rest_call("%s?%s_record_list"%(SC['node'][infra['node']],infra['server']),args)['data']
+  res = rest_call("%s?%s_record_list"%(SC['node'][infra['node']],infra['server']),args)['data']
+ ret.update(res)
  return ret
 
 #
@@ -242,12 +244,14 @@ def record_info(aDict):
  """
  ret = {}
  args = aDict
+ domain_id = aDict['domain_id'] 
+
  with DB() as db:
-  db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%args['domain_id'])
-  infra = db.get_row()
   if aDict['id'] == 'new' and not (aDict.get('op') == 'update'):
-   ret['data'] = {'id':'new','domain_id':infra['foreign_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600'}
+   ret['data'] = {'id':'new','domain_id':domain_id,'name':'key','content':'value','type':'type-of-record','ttl':'3600','foreign_id':'NA'}
   else:
+   db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%domain_id)
+   infra = db.get_row()
    args['domain_id'] = infra['foreign_id']
    if SC['system']['id'] == infra['node']:
     module = import_module("sdcp.rest.%s"%infra['server'])
@@ -255,7 +259,8 @@ def record_info(aDict):
     ret = fun(args)
    else:
     ret = rest_call("%s?%s_record_info"%(SC['node'][infra['node']],infra['server']),args)['data']
-  return ret
+   ret['data']['domain_id']  = domain_id
+ return ret
 
 #
 #

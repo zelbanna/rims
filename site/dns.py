@@ -168,7 +168,6 @@ def record_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td TITLE='E.g. A:IP, PTR:FQDN'>Content:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=content VALUE='{}'></DIV></DIV>".format(data['content'])
  print "<DIV CLASS=tr><DIV CLASS=td>TTL:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=ttl VALUE={}></DIV></DIV>".format(data['ttl'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE={}></DIV></DIV>".format(data['type'])
- print "<DIV CLASS=tr><DIV CLASS=td>Foreign domain (id):</DIV><DIV CLASS=td>{}</DIV></DIV>".format(data['domain_id'])
  print "</DIV></DIV>"
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</FORM><DIV CLASS=controls>"
@@ -225,7 +224,7 @@ def top(aWeb):
   node,server = node_server.split('_')
   for row in res:
    print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,server,row['count'],row['fqdn'])
-  print "</DIV></DIV>"
+ print "</DIV></DIV>"
  print "</ARTICLE>"
  print "<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN per Client</P>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>"
@@ -233,7 +232,7 @@ def top(aWeb):
   node,server = node_server.split('_')
   for row in res:
    print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td TITLE='%s'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,server,row['count'],row['who'],row['hostname'],row['fqdn'])
-  print "</DIV></DIV>"
+ print "</DIV></DIV>"
  print "</ARTICLE>"
 
 #
