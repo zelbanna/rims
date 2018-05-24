@@ -38,12 +38,6 @@ def info(aDict):
    if operation == 'lookup' and ret['ip']:
     lookup = detect({'ip':ret['ip']})
     ret['result']['lookup'] = lookup['result']
-    # Add DNS to lookup
-    #if args.get('devices_a_id') or args.get('devices_ptr_id'):
-    # from sdcp.rest.dns import record_lookup
-    # for type in ['a_id','ptr_id']:
-    #  if args.get('devices_%s'%type):
-    #   ret['result'][type] = record_lookup({'id':args.get('devices_%s'%type)})['data']['content']
 
     if lookup['result'] == 'OK':
      args.update({'devices_model':lookup['info']['model'],'devices_snmp':lookup['info']['snmp'],'devices_type_id':types[lookup['info']['type']]['id']})
@@ -82,8 +76,9 @@ def info(aDict):
     # Make sure everything is there to update DNS records, if records are not the same as old ones, update device, otherwise pop
     #
     if args.get('devices_a_id') and args.get('devices_ptr_id') and args.get('devices_a_dom_id') and args.get('devices_hostname') and ret['ip']:
-     from sdcp.rest.dns import record_device_update
-     dns = record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip'],'id':ret['id']})
+     import sdcp.rest.dns as DNS
+     DNS.__add_globals__({'import_module':import_module})
+     dns = DNS.record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip'],'id':ret['id']})
      # ret['result']['dns'] = dns
      for type in ['a','ptr']:
       if dns[type.upper()]['xist'] > 0:
@@ -271,7 +266,8 @@ def delete(aDict):
   else:
    data = db.get_row()
    args = {'a_id':data['a_id'],'a_domain_id':data['a_dom_id']}
-   from sdcp.rest.dns import record_device_delete
+   import sdcp.rest.dns as DNS
+   DNS.__add_globals__({'import_module':import_module})
 
    if data['ptr_id'] != 0:
     def GL_ip2ptr(addr):
@@ -284,7 +280,7 @@ def delete(aDict):
     if db.do("SELECT id FROM domains WHERE name = '%s'"%(arpa)) > 0:
      args['ptr_id']= data['ptr_id']
      args['ptr_domain_id'] = db.get_val('id')
-   ret = record_device_delete(args)
+   ret = DNS.record_device_delete(args)
    if data['base'] == 'pdu':
     ret['pem0'] = db.update_dict('rackinfo',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
     ret['pem1'] = db.update_dict('rackinfo',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))

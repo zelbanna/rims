@@ -4,7 +4,7 @@ Settings:
  - type
 
  ISC
- - reload (argument from CLI)
+ - reload (argument for CLI)
  - active (file storing current leases)
  - static (file storing configuration for ISCDHCP
 
