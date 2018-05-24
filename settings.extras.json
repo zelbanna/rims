@@ -55,20 +55,6 @@
             "value": "esxi3.mgmt"
         }
     }, 
-    "graph": {
-        "file": {
-            "description": "Munin conf-file", 
-            "value": "/etc/munin/munin-conf.d/sdcp.conf"
-        }, 
-        "plugins": {
-            "description": "Graph plugins file", 
-            "value": "/var/www/device.graph.plugins"
-        }, 
-        "type": {
-            "description": "Munin graphing ATM", 
-            "value": "munin"
-        }
-    }, 
     "ipmi": {
         "password": {
             "description": "Password", 

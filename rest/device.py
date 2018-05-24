@@ -18,7 +18,6 @@ def info(aDict):
   - op (optional)
 
  Output:
-  - info: username,booking,infra => make 'exclude' arg in final function instead
  """
  srch = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('%s')"%(aDict.get('ip'))
  ret  = {'id':aDict.pop('id',None),'ip':aDict.pop('ip',None)}
@@ -204,43 +203,6 @@ def list(aDict):
 
 #
 #
-def list_type(aDict):
- """Function docstring for list_type TBD
-
- Args:
-  - base (optional)
-  - name (optional)
-
- Output:
- """
- ret = {}
- with DB() as db:
-  select = "device_types.%s ='%s'"%(('name',aDict.get('name')) if aDict.get('name') else ('base',aDict.get('base')))
-  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, device_types.base as type_base, device_types.name as type_name FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY type_name,hostname"%select)
-  ret['data'] = db.get_rows()
- return ret
-
-#
-#
-def list_mac(aDict):
- """Function docstring for list_mac TBD
-
- Args:
-
- Output:
- """
- def GL_int2mac(aInt):
-  return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
-
- with DB() as db:
-  db.do("SELECT devices.id, CONCAT(hostname,'.',domains.name) as fqdn, INET_NTOA(ip) as ip, mac, subnet_id FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT mac = 0 ORDER BY ip")
-  rows = db.get_rows()
- for row in rows:
-  row['mac'] = GL_int2mac(row['mac'])
- return rows
-
-#
-#
 def new(aDict):
  """Function docstring for new TBD
 
@@ -331,106 +293,6 @@ def delete(aDict):
 
 #
 #
-def clear(aDict):
- """Function docstring for clear TBD
-
- Args:
-
- Output:
- """
- with DB() as db:
-  res = db.do("DELETE FROM devices")
- return { 'result':res }
-
-#
-#
-def to_node(aDict):
- """Function docstring for to_node TBD
-
- Args:
-  - id
-
- Output:
- """
- ret = {}
- with DB() as db:
-  res = db.do("SELECT INET_NTOA(ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id'])
-  dev = db.get_row()
-  for test in ['ip','fqdn','hostname']:
-   if db.do("SELECT node FROM nodes WHERE url LIKE '%{}%'".format(dev[test])) > 0:
-    ret['node']  = db.get_val('node')
-    ret['found'] = test
-    break
- return ret
-
-#
-#
-def webpage_list(aDict):
- """ List webpages for devices
-
- Args:
-
- Output:
- """
- ret = {}
- with DB() as db:
-  ret['xist'] = db.do("SELECT id,hostname,webpage FROM devices WHERE webpage IS NOT NULL")
-  ret['data'] = db.get_rows()
- return ret
-
-############################################# Specials ###########################################
-#
-#
-def function(aDict):
- """Function docstring for function TBD
-
- Args:
-  - ip (required)
-  - op (required)
-  - type (required)
-
- Output:
- """
- ret = {}
- try:
-  module = import_module("sdcp.devices.%s"%(aDict['type']))
-  dev = getattr(module,'Device',lambda x: None)(aDict['ip'])
-  with dev:
-   ret['data'] = getattr(dev,aDict['op'],None)()
-  ret['result'] = 'OK'
- except Exception as err:
-  ret = {'result':'ERROR','info':str(err)}
- return ret
-
-#
-#
-def configuration_template(aDict):
- """Function docstring for configuration_template TBD
-
- Args:
-  - id (required)
-
- Output:
- """
- ret = {}
- with DB() as db:
-  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, mask, INET_NTOA(gateway) AS gateway, INET_NTOA(subnet) AS subnet, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id LEFT JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = '%s'"%aDict['id'])
-  data = db.get_row()
- ip = data.pop('ipasc',None)
- try:
-  module = import_module("sdcp.devices.%s"%data['type'])
-  dev = getattr(module,'Device',lambda x: None)(ip)
-  ret['data'] = dev.configuration(data)
- except Exception as err:
-  ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%str(err)
-  ret['result'] = 'NOT_OK'
- else:
-  ret['result'] = 'OK'
-  
- return ret
-
-#
-#
 def discover(aDict):
  """Function docstring for discover TBD
 
@@ -503,7 +365,7 @@ def discover(aDict):
 #
 #
 def detect(aDict):
- """Function docstring for detect TBD
+ """Function docstring for detect TBD. TODO -> make this a function of generic device instead !!! ZEB
 
  Args:
   - ip (required)
@@ -550,7 +412,130 @@ def detect(aDict):
    ret['info']['model'] = " ".join(infolist[0:4])
 
  return ret
- 
+
+############################################## Specials ###############################################
+#
+#
+def list_type(aDict):
+ """Function docstring for list_type TBD
+
+ Args:
+  - base (optional)
+  - name (optional)
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  select = "device_types.%s ='%s'"%(('name',aDict.get('name')) if aDict.get('name') else ('base',aDict.get('base')))
+  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, device_types.base as type_base, device_types.name as type_name FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY type_name,hostname"%select)
+  ret['data'] = db.get_rows()
+ return ret
+
+#
+#
+def list_mac(aDict):
+ """Function docstring for list_mac TBD
+
+ Args:
+
+ Output:
+ """
+ def GL_int2mac(aInt):
+  return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
+
+ with DB() as db:
+  db.do("SELECT devices.id, CONCAT(hostname,'.',domains.name) as fqdn, INET_NTOA(ip) as ip, mac, subnet_id FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT mac = 0 ORDER BY ip")
+  rows = db.get_rows()
+ for row in rows:
+  row['mac'] = GL_int2mac(row['mac'])
+ return rows
+
+#
+#
+def to_node(aDict):
+ """Function docstring for to_node TBD
+
+ Args:
+  - id
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  res = db.do("SELECT INET_NTOA(ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id'])
+  dev = db.get_row()
+  for test in ['ip','fqdn','hostname']:
+   if db.do("SELECT node FROM nodes WHERE url LIKE '%{}%'".format(dev[test])) > 0:
+    ret['node']  = db.get_val('node')
+    ret['found'] = test
+    break
+ return ret
+
+#
+#
+def webpage_list(aDict):
+ """ List webpages for devices
+
+ Args:
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT id,hostname,webpage FROM devices WHERE webpage IS NOT NULL")
+  ret['data'] = db.get_rows()
+ return ret
+
+#
+#
+def function(aDict):
+ """Function docstring for function TBD
+
+ Args:
+  - ip (required)
+  - op (required)
+  - type (required)
+
+ Output:
+ """
+ ret = {}
+ try:
+  module = import_module("sdcp.devices.%s"%(aDict['type']))
+  dev = getattr(module,'Device',lambda x: None)(aDict['ip'])
+  with dev:
+   ret['data'] = getattr(dev,aDict['op'],None)()
+  ret['result'] = 'OK'
+ except Exception as err:
+  ret = {'result':'ERROR','info':str(err)}
+ return ret
+
+#
+#
+def configuration_template(aDict):
+ """Function docstring for configuration_template TBD
+
+ Args:
+  - id (required)
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, mask, INET_NTOA(gateway) AS gateway, INET_NTOA(subnet) AS subnet, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id LEFT JOIN subnets ON subnets.id = devices.subnet_id WHERE devices.id = '%s'"%aDict['id'])
+  data = db.get_row()
+ ip = data.pop('ipasc',None)
+ try:
+  module = import_module("sdcp.devices.%s"%data['type'])
+  dev = getattr(module,'Device',lambda x: None)(ip)
+  ret['data'] = dev.configuration(data)
+ except Exception as err:
+  ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%str(err)
+  ret['result'] = 'NOT_OK'
+ else:
+  ret['result'] = 'OK'
+  
+ return ret 
 
 #
 #
@@ -582,85 +567,4 @@ def mac_sync(aDict):
      ret.append(row)
      db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL_mac2int(row['found']),row['id']))
  except: pass
- return ret
-
-############################################# Munin ###########################################
-#
-#
-def graph_save(aDict):
- """Function docstring for graph_save TBD
-
- Args:
-
- Output:
- """
- ret = {}
- with DB() as db:
-  db.do("SELECT value FROM settings WHERE section='graph' AND parameter = 'file'")
-  graph_file = db.get_val('value')
-  ret['xist'] = db.do("SELECT hostname, INET_NTOA(graph_proxy) AS proxy, domains.name AS domain FROM devices INNER JOIN domains ON domains.id = devices.a_dom_id WHERE graph_update = 1")
-  rows = db.get_rows()
- with open(graph_file,'w') as output:
-  for row in rows:
-   output.write("[{}.{}]\n".format(row['hostname'],row['domain']))
-   output.write("address {}\n".format(row['proxy']))
-   output.write("update yes\n\n")
- return ret
-
-#
-#
-def graph_info(aDict):
- """Function docstring for graph_info TBD
-
- Args:
-  - id (required)
-  - op (optional)
-  - graph_proxy (optional)
-  - graph_update (optional)
-
-
- Output:
- """
- with DB() as db:
-  ret = {}
-  if aDict.get('op') == 'update':
-   args = {'graph_proxy':aDict.get('graph_proxy'),'id':int(aDict['id'])}
-   args['graph_update'] = 0 if not aDict.get('graph_update') else int(aDict.get('graph_update'))
-   ret['update'] = db.do("UPDATE devices SET graph_proxy = INET_ATON('%s'), graph_update = %i WHERE id = %i"%(args['graph_proxy'],int(args['graph_update']),args['id']))
-
-  db.do("SELECT INET_NTOA(ip) AS ip, graph_update, device_types.name AS type_name, INET_NTOA(graph_proxy) AS graph_proxy, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = '%s'"%aDict['id'])
-  ret.update(db.get_row())
-  db.do("SELECT value AS plugin_file FROM settings WHERE section = 'graph' AND parameter = 'plugins'")
-  ret.update(db.get_row())
-
-  if aDict.get('op') == 'detect':
-   def GL_ping_os(ip):
-    from os import system
-    return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
-  
-   if GL_ping_os(ret['ip']):
-    try:
-     if ret['type_name'] in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-      from sdcp.devices.junos import Junos
-      activeinterfaces = []
-      if not ret['type_name'] == 'wlc':
-       with Junos(ret['ip']) as jdev:
-        activeinterfaces = jdev.get_up_interfaces()
-       with open(ret['plugin_file'], 'a') as graphfile:
-        graphfile.write('ln -s /usr/local/sbin/plugins/snmp__{0} /etc/munin/plugins/snmp_{1}_{0}\n'.format(ret['type_name'],ret['fqdn']))
-        graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + ret['fqdn'] + '_uptime\n')
-        graphfile.write('ln -s /usr/share/munin/plugins/snmp__users  /etc/munin/plugins/snmp_' + ret['fqdn'] + '_users\n')
-        for ifd in activeinterfaces:
-         graphfile.write('ln -s /usr/share/munin/plugins/snmp__if_    /etc/munin/plugins/snmp_' + ret['fqdn'] + '_if_'+ ifd['SNMP'] +'\n')
-     elif ret['type_name'] == "esxi":
-      with open(ret['plugin_file'], 'a') as graphfile:
-       graphfile.write('ln -s /usr/share/munin/plugins/snmp__uptime /etc/munin/plugins/snmp_' + ret['fqdn'] + '_uptime\n')              
-       graphfile.write('ln -s /usr/local/sbin/plugins/snmp__esxi    /etc/munin/plugins/snmp_' + ret['fqdn'] + '_esxi\n')
-    except Exception as err:
-     ret['op'] = "Error:%s"%str(err)
-    else:
-     ret['op'] = 'OK'
-   else:
-    ret['op'] = 'NO_PING'
-
  return ret

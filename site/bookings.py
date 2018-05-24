@@ -43,6 +43,6 @@ def update(aWeb):
   if aWeb['op'] == 'debook':
    print "<DIV CLASS=td>Booking:</DIV><DIV CLASS='td green'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?bookings_update&op=book&id=%s'>Book</A></DIV>"%aWeb['id']
   else:
-   print "<DIV CLASS=td>Booked by:</DIV><DIV CLASS='td red'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?bookings_update&op=debook&id=%s'>%s</A></DIV>"%(aWeb['id'],res['alias'])
+   print "<DIV CLASS=td>Booking:</DIV><DIV CLASS='td red'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?bookings_update&op=debook&id=%s'>%s</A></DIV>"%(aWeb['id'],res['alias'])
  else:
   print "<DIV CLASS=td>Booking:</DIV><DIV CLASS='td blue'>Error Updating</DIV>"
