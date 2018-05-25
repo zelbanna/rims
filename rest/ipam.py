@@ -19,7 +19,7 @@ def list(aDict):
  with DB() as db:
   dhcp = db.do("SELECT parameter,value FROM settings WHERE section = 'dhcp'")
   ret['dhcp'] = db.get_dict('parameter') if dhcp > 0 else None
-  ret['xist']    = db.do("SELECT id, CONCAT(INET_NTOA(subnet),'/',mask) AS subasc, INET_NTOA(gateway) AS gateway, description, mask, subnet FROM subnets ORDER by subnet")
+  ret['xist']    = db.do("SELECT id, CONCAT(INET_NTOA(subnet),'/',mask) AS subasc, INET_NTOA(gateway) AS gateway, description, mask, subnet FROM ipam_subnets ORDER by subnet")
   ret['subnets'] = db.get_rows()
  return ret
 
@@ -59,13 +59,13 @@ def info(aDict):
    args['gateway'] = str(gwint)
    args['subnet']  = str(low)
    if id == 'new':
-    ret['update'] = db.insert_dict('subnets',args,'ON DUPLICATE KEY UPDATE id = id')
+    ret['update'] = db.insert_dict('ipam_subnets',args,'ON DUPLICATE KEY UPDATE id = id')
     id = db.get_last_id() if ret['update'] > 0 else 'new'
    else:
-    ret['update'] = db.update_dict('subnets',args,'id=%s'%id)
+    ret['update'] = db.update_dict('ipam_subnets',args,'id=%s'%id)
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(subnet) AS subnet, INET_NTOA(gateway) AS gateway FROM subnets WHERE id = %s"%id)
+   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(subnet) AS subnet, INET_NTOA(gateway) AS gateway FROM ipam_subnets WHERE id = %s"%id)
    ret['data'] = db.get_row()
   else:
    ret['data'] = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }
@@ -83,7 +83,7 @@ def inventory(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT mask, subnet, INET_NTOA(subnet) as subasc, gateway, INET_NTOA(gateway) as gwasc FROM subnets WHERE id = {}".format(aDict['id']))
+  db.do("SELECT mask, subnet, INET_NTOA(subnet) as subasc, gateway, INET_NTOA(gateway) as gwasc FROM ipam_subnets WHERE id = {}".format(aDict['id']))
   subnet = db.get_row()
   ret['start']  = subnet['subnet']
   ret['no']     = 2**(32-subnet['mask'])
@@ -116,7 +116,7 @@ def find(aDict):
   return inet_ntoa(pack("!I", addr))
 
  with DB() as db:
-  db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM subnets WHERE id = {}".format(aDict['id']))
+  db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM ipam_subnets WHERE id = {}".format(aDict['id']))
   sub = db.get_row()
   db.do("SELECT ip FROM devices WHERE subnet_id = {}".format(aDict['id']))
   iplist = db.get_dict('ip')
@@ -155,6 +155,6 @@ def delete(aDict):
  ret = {}
  with DB() as db:
   ret['devices'] = db.do("DELETE FROM devices WHERE subnet_id = " + aDict['id'])
-  ret['deleted'] = db.do("DELETE FROM subnets WHERE id = " + aDict['id'])
+  ret['deleted'] = db.do("DELETE FROM ipam_subnets WHERE id = " + aDict['id'])
  return ret
  
