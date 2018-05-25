@@ -368,24 +368,6 @@ def discover(aWeb):
 ################################################## interfaces #################################################
 #
 #
-def network(aWeb):
- res = aWeb.rest_call("device_network",{'id':aWeb['id']})
- nodes = ["{'id':%s, 'label':'%s', 'shape':'image', 'image':'%s', 'font':'14px verdana blue'}"%(key,val['hostname'],val['icon']) for key,val in res['devices'].iteritems()]
- edges = ["{'from':%s, 'to':%s, title:'%s:%s <-> %s:%s' }"%(con['a_device'],con['b_device'],res['devices'][str(con['a_device'])]['hostname'],con['a_name'],res['devices'][str(con['b_device'])]['hostname'],con['b_name']) for con in res['interfaces']]
- print "<ARTICLE><P>Device '%s':s network (dynamic:%s)</P><DIV CLASS=controls>"%(aWeb['hostname'],aWeb.get('physics','false'))
- print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?device_network&id=%s&hostname=%s&physics=%s'%(aWeb['id'],aWeb['hostname'],"false" if aWeb.get('physics','false') == 'true' else 'true'), TITLE='Reload with physics')
- print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%aWeb['id'], TITLE='Back')
- print "</DIV><DIV ID='device_network' CLASS='network'></DIV><SCRIPT>"
- print "var nodes = new vis.DataSet([%s]);"%(",".join(nodes))
- print "var edges = new vis.DataSet([%s]);"%",".join(edges)
- print "var data  = { 'nodes': nodes, 'edges': edges };"
- print "var options = { 'nodes':{ 'shadow':true }, 'edges':{ 'length':220, 'smooth':{ 'type':'dynamic'} } };"
- print "var network = new vis.Network(document.getElementById('device_network'), data, options);"
- print "network.on('stabilizationIterationsDone', function () { network.setOptions( { physics: %s } );});"%(aWeb.get('physics','false'))
- print "</SCRIPT></ARTICLE>"
-
-#
-#
 def interface_list(aWeb):
  if   aWeb['op'] == 'delete':
   opres = aWeb.rest_call("device_interface_delete",{'id':aWeb['id'],'device_id':aWeb['device_id']})
@@ -474,3 +456,26 @@ def interface_link_interface(aWeb):
  print aWeb.button('back',    DIV='div_dev_data', URL='sdcp.cgi?device_interface_link_device', FRM='interface_link')
  print aWeb.button('forward', DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&op=link', FRM='interface_link')
  print "</DIV></ARTICLE>"
+
+#
+#
+def network(aWeb):
+ res = aWeb.rest_call("device_network",{'id':aWeb['id']})
+ nodes = ["{'id':%s, 'label':'%s', 'shape':'image', 'image':'%s', 'font':'14px verdana blue'}"%(key,val['hostname'],val['icon']) for key,val in res['devices'].iteritems()]
+ edges = ["{'from':%s, 'to':%s, title:'%s:%s <-> %s:%s' }"%(con['a_device'],con['b_device'],res['devices'][str(con['a_device'])]['hostname'],con['a_name'],res['devices'][str(con['b_device'])]['hostname'],con['b_name']) for con in res['interfaces']]
+ print "<ARTICLE><P>Device '%s':s network</P><DIV CLASS=controls>"%(aWeb['hostname'])
+ print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?device_network&id=%s&hostname=%s'%(aWeb['id'],aWeb['hostname']), TITLE='Reload')
+ print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%aWeb['id'], TITLE='Back')
+ print aWeb.button('start',  onclick='network_start()')
+ print aWeb.button('stop',   onclick='network_stop()')
+ print "</DIV><DIV ID='device_network' CLASS='network'></DIV><SCRIPT>"
+ print "var nodes = new vis.DataSet([%s]);"%(",".join(nodes))
+ print "var edges = new vis.DataSet([%s]);"%",".join(edges)
+ print "var data  = { 'nodes': nodes, 'edges': edges };"
+ print "var options = { 'nodes':{ 'shadow':true }, 'edges':{ 'length':220, 'smooth':{ 'type':'dynamic'} } };"
+ print "var network = new vis.Network(document.getElementById('device_network'), data, options);"
+ print "network.on('stabilizationIterationsDone', function () { network.setOptions({ physics: %s }); console.log('stabilize done!'); });"%(aWeb.get('physics','false'))
+ print "function network_start(){ network.setOptions({ physics:true  });; console.log('dynamics on!');  };"
+ print "function network_stop(){  network.setOptions({ physics:false });; console.log('dynamics off!'); };"
+ print "</SCRIPT></ARTICLE>"
+
