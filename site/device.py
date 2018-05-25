@@ -370,16 +370,16 @@ def discover(aWeb):
 #
 def network(aWeb):
  res = aWeb.rest_call("device_network",{'id':aWeb['id']})
- nodes = ["{'id':%s, 'label':'%s', 'shape':'image', 'image':'%s', 'font':'18px verdana blue'}"%(key,val['hostname'],val['icon']) for key,val in res['devices'].iteritems()]
+ nodes = ["{'id':%s, 'label':'%s', 'shape':'image', 'image':'%s', 'font':'14px verdana blue'}"%(key,val['hostname'],val['icon']) for key,val in res['devices'].iteritems()]
  edges = ["{'from':%s, 'to':%s, title:'%s:%s <-> %s:%s' }"%(con['a_device'],con['b_device'],res['devices'][str(con['a_device'])]['hostname'],con['a_name'],res['devices'][str(con['b_device'])]['hostname'],con['b_name']) for con in res['interfaces']]
- print "<ARTICLE><P>Device '%s' network</P><DIV CLASS=controls>"%aWeb['hostname']
+ print "<ARTICLE><P>Device '%s':s network (dynamic:%s)</P><DIV CLASS=controls>"%(aWeb['hostname'],aWeb.get('physics','false'))
  print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?device_network&id=%s&hostname=%s&physics=%s'%(aWeb['id'],aWeb['hostname'],"false" if aWeb.get('physics','false') == 'true' else 'true'), TITLE='Reload with physics')
  print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%aWeb['id'], TITLE='Back')
  print "</DIV><DIV ID='device_network' CLASS='network'></DIV><SCRIPT>"
  print "var nodes = new vis.DataSet([%s]);"%(",".join(nodes))
  print "var edges = new vis.DataSet([%s]);"%",".join(edges)
  print "var data  = { 'nodes': nodes, 'edges': edges };"
- print "var options = { 'edges':{ 'length':220, 'smooth':{ 'type':'dynamic','roundness':0.8} } };"
+ print "var options = { 'nodes':{ 'shadow':true }, 'edges':{ 'length':220, 'smooth':{ 'type':'dynamic'} } };"
  print "var network = new vis.Network(document.getElementById('device_network'), data, options);"
  print "network.on('stabilizationIterationsDone', function () { network.setOptions( { physics: %s } );});"%(aWeb.get('physics','false'))
  print "</SCRIPT></ARTICLE>"
