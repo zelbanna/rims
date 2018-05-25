@@ -624,7 +624,7 @@ def interface_info(aDict):
    # If multipoint there should not be any single peer interface
    args['multipoint'] = aDict.get('multipoint',0)
    if int(args['multipoint']) == 1:
-    args['peer_interface'] = None
+    args['peer_interface'] = 'NULL'
    if not id == 'new':
     ret['update'] = db.update_dict('device_interfaces',args,"id=%s"%id)
    else:

@@ -93,6 +93,32 @@ class DB(object):
   self._dirty = True
   return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(aDict.keys()),",".join(["'%s'"%val if not val == 'NULL' else 'NULL' for val in aDict.values()]),aException))
 
+######################################### NODE ########################################
+#
+#
+def node_call(aNode, aModule, aFunction, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20):
+ """ Node call function, automatically translates node call to rest call with shortcut for local node. Typical usage is REST call from within REST...
+
+  Args:
+   - aNode (required)
+   - aModule (required)
+   - aFunction (required)
+   - aArgs (optional)
+   - ... (optional)
+
+  Output:
+   - de-json:ed data structure that function returns (hence status codes etc is not available)
+
+ """
+ ret = {}
+ if SC['system']['id'] == aNode:
+  from importlib import import_module
+  module = import_module("sdcp.rest.%s"%aModule)
+  fun = getattr(module,aFunction,None)
+  ret = fun(aArgs)
+ else:              
+  ret = rest_call("%s?%s_%s"%(SC['node'][aNode],aModule,aFunction),aArgs)['data']
+ return ret
 
 ######################################### REST ########################################
 #
@@ -104,7 +130,9 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
    - aArgs (optional)
    - ... (optional)
 
-  Output: de-json:ed data structure
+  Output:
+   - de-json:ed data structure that function returns and all status codes
+
  """
  from json import loads, dumps
  from urllib2 import urlopen, Request, URLError, HTTPError
