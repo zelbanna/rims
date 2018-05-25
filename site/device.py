@@ -370,11 +370,13 @@ def discover(aWeb):
 #
 def network(aWeb):
  res = aWeb.rest_call("device_network",{'id':aWeb['id']})
+ icons = aWeb.rest_call("device_network_icons")
+ print icons
  nodes = ["{id:%s, label:'%s'}"%(key,val['hostname']) for key,val in res['devices'].iteritems()]
  edges = ["{from:%s, to:%s}"%(con['local_device'],con['peer_device']) for con in res['interfaces']]
  print "<ARTICLE><P>Device '%s' network</P><DIV CLASS=controls>"%aWeb['hostname']
- print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?device_network&device_id=%s&hostname=%s'%(aWeb['id'],aWeb['hostname']), TITLE='Reload')
- print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%aWeb['device_id'], TITLE='Back')
+ print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?device_network&id=%s&hostname=%s'%(aWeb['id'],aWeb['hostname']), TITLE='Reload')
+ print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%aWeb['id'], TITLE='Back')
  print "</DIV><DIV ID='device_network' CLASS='network'></DIV><SCRIPT>"
  print "var nodes = new vis.DataSet([%s]);"%(",".join(nodes))
  print "var edges = new vis.DataSet([%s]);"%",".join(edges)

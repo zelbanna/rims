@@ -796,8 +796,13 @@ def network(aDict):
   - devices. Encompassed devices, with name, id and interface information
  """
  with DB() as db:
+  if aDict.get('ip'):
+   db.do("SELECT id FROM devices WHERE ip = INET_ATON('%s')"%aDict['ip'])
+   id = db.get_val('id')
+  else:
+   id = int(aDict['id'])
 
-  devices = {int(aDict['id']):{'processed':False,'interfaces':0,'multipoint':0,'distance':0}}
+  devices = {id:{'processed':False,'interfaces':0,'multipoint':0,'distance':0}}
   interfaces = []
   # Connected and Multipoint
   sql_connected  = "SELECT CAST({0} AS UNSIGNED) AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index, dc.peer_interface AS peer_interface, peer.snmp_index AS peer_index, peer.name AS peer_name, peer.device_id AS peer_device FROM device_interfaces AS dc LEFT JOIN device_interfaces AS peer ON dc.peer_interface = peer.id WHERE dc.peer_interface IS NOT NULL AND dc.device_id = {0}"
@@ -841,9 +846,24 @@ def network(aDict):
    devices.update(new)
 
   # Now update devices with hostname and type and model
-  db.do("SELECT id, hostname FROM devices WHERE id IN (%s)"%(",".join(str(x) for x in devices.keys())))
+  db.do("SELECT devices.id, hostname, model, name AS type FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id IN (%s)"%(",".join(str(x) for x in devices.keys())))
   names = db.get_rows()
   for name in names:
-   devices[name['id']]['hostname'] = name['hostname']
+   devices[name['id']].update(name)
 
  return {'devices':devices, 'interfaces':interfaces}
+
+#
+#
+def network_icons(aDict):
+ """ Retrieve icons for network vizualization
+
+ Args:
+
+ Output:
+  - icons, list of icon names and corresponding file
+ """
+ from os import listdir
+ imagedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','images'))
+ ret = {file[4:-4]:ospath.join('images',file) for file in listdir(imagedir) if file[0:3] == 'viz'}
+ return ret
