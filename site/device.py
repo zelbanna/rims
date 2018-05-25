@@ -370,10 +370,8 @@ def discover(aWeb):
 #
 def network(aWeb):
  res = aWeb.rest_call("device_network",{'id':aWeb['id']})
- icons = aWeb.rest_call("device_network_icons")
- print icons
- nodes = ["{id:%s, label:'%s'}"%(key,val['hostname']) for key,val in res['devices'].iteritems()]
- edges = ["{from:%s, to:%s}"%(con['local_device'],con['peer_device']) for con in res['interfaces']]
+ nodes = ["{id:%s, label:'%s', shape:'image', image:'%s'}"%(key,val['hostname'],val['icon']) for key,val in res['devices'].iteritems()]
+ edges = ["{from:%s, to:%s}"%(con['a_device'],con['b_device']) for con in res['interfaces']]
  print "<ARTICLE><P>Device '%s' network</P><DIV CLASS=controls>"%aWeb['hostname']
  print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?device_network&id=%s&hostname=%s'%(aWeb['id'],aWeb['hostname']), TITLE='Reload')
  print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%aWeb['id'], TITLE='Back')

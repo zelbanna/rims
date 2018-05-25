@@ -130,9 +130,10 @@ if settings['system']['id'] == 'master':
    try:
     mod = import_module("sdcp.devices.{}".format(pyfile))
     type = getattr(mod,'__type__',None)
+    icon = getattr(mod,'__icon__','images/viz-generic.png')
     dev = getattr(mod,'Device',None)
     if type:
-     device_types.append({'name':pyfile, 'base':type, 'functions':dev.get_functions() })
+     device_types.append({'name':pyfile, 'base':type, 'functions':dev.get_functions(),'icon':icon })
    except: pass
  res['device_found'] = len(device_types)
  res['device_new'] = 0
@@ -169,9 +170,9 @@ if settings['system']['id'] == 'master':
   res['dns_server_add'] = db.do("INSERT domain_servers (node,server) VALUES ('master','nodns') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)")
   res['dns_server_id']  = db.get_last_id()
   res['dns_domain_add'] = db.do("INSERT domains (id,foreign_id,name,server_id,type ) VALUES (0,0,'local',{},'forward') ON DUPLICATE KEY UPDATE id = 0".format(res['dns_server_id']))
-  sql ="INSERT device_types (name,base,functions) VALUES ('{0}','{1}','{2}') ON DUPLICATE KEY UPDATE functions = '{2}'"
+  sql ="INSERT device_types (name,base,icon,functions) VALUES ('{0}','{1}','{2}','{3}') ON DUPLICATE KEY UPDATE icon = '{2}', functions = '{3}'"
   for type in device_types:
-   try:    res['device_new'] += db.do(sql.format(type['name'],type['base'],",".join(type['functions'])))
+   try:    res['device_new'] += db.do(sql.format(type['name'],type['base'],type['icon'],",".join(type['functions'])))
    except Exception as err: res['device_errors'] = str(err)
 
   sql = "INSERT resources (node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']

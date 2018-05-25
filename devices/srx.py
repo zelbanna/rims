@@ -3,10 +3,11 @@
 SRX Module
 
 """
-__author__ = "Zacharias El Banna"
+__author__  = "Zacharias El Banna"
 __version__ = "18.04.07GA"
-__status__ = "Production"
-__type__ = "network"
+__status__  = "Production"
+__type__    = "network"
+__icon__    = "images/viz-srx.png"
 
 from junos import Junos
 

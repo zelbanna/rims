@@ -805,9 +805,9 @@ def network(aDict):
   devices = {id:{'processed':False,'interfaces':0,'multipoint':0,'distance':0}}
   interfaces = []
   # Connected and Multipoint
-  sql_connected  = "SELECT CAST({0} AS UNSIGNED) AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index, dc.peer_interface AS peer_interface, peer.snmp_index AS peer_index, peer.name AS peer_name, peer.device_id AS peer_device FROM device_interfaces AS dc LEFT JOIN device_interfaces AS peer ON dc.peer_interface = peer.id WHERE dc.peer_interface IS NOT NULL AND dc.device_id = {0}"
-  sql_multipoint = "SELECT CAST({0} AS UNSIGNED) AS local_device, dc.id AS local_interface, dc.name AS local_name, dc.snmp_index AS local_index FROM device_interfaces AS dc WHERE dc.multipoint = 1 AND dc.device_id = {0}"
-  sql_multi_peer = "SELECT dc.id AS peer_interface, dc.snmp_index AS peer_index, dc.device_id AS peer_device, dc.name AS peer_name FROM device_interfaces AS dc WHERE dc.peer_interface = {0}"
+  sql_connected  = "SELECT CAST({0} AS UNSIGNED) AS a_device, dc.id AS a_interface, dc.name AS a_name, dc.snmp_index AS a_index, dc.peer_interface AS b_interface, peer.snmp_index AS b_index, peer.name AS b_name, peer.device_id AS b_device FROM device_interfaces AS dc LEFT JOIN device_interfaces AS peer ON dc.peer_interface = peer.id WHERE dc.peer_interface IS NOT NULL AND dc.device_id = {0}"
+  sql_multipoint = "SELECT CAST({0} AS UNSIGNED) AS a_device, dc.id AS a_interface, dc.name AS a_name, dc.snmp_index AS a_index FROM device_interfaces AS dc WHERE dc.multipoint = 1 AND dc.device_id = {0}"
+  sql_multi_peer = "SELECT dc.id AS b_interface, dc.snmp_index AS b_index, dc.device_id AS b_device, dc.name AS b_name FROM device_interfaces AS dc WHERE dc.peer_interface = {0}"
   for lvl in range(0,aDict.get('diameter',2)):
    new = {}
    for key,dev in devices.iteritems():
@@ -821,7 +821,7 @@ def network(aDict):
      multipoints = db.get_rows()
      # Check 'other side' and add that interface
      for interface in multipoints:
-      db.do(sql_multi_peer.format(interface['local_interface']))
+      db.do(sql_multi_peer.format(interface['a_interface']))
       peers = db.get_rows()
       for peer in peers:
        peer.update(interface)
@@ -829,13 +829,13 @@ def network(aDict):
 
      # Deduce if interface is registered (the hard way, as no double dictionary)
      for con in cons:
-      seen = devices.get(con['peer_device'])
+      seen = devices.get(con['b_device'])
       # If not seen before, add device to process next round (in case already found as new, just overwrite) and save interface. Else, check if processed (then those interfaces are made) if not add interface
       # 1) For straight interface we cover 'back' since the dev is processed
       # 2) For multipoint the other side will (ON SQL) see a straight interface so also covered by processed
       # 3) There is no multipoint to multipoint
       if not seen:
-       new[con['peer_device']] = {'processed':False,'interfaces':0,'multipoint':0,'distance':lvl + 1}
+       new[con['b_device']] = {'processed':False,'interfaces':0,'multipoint':0,'distance':lvl + 1}
        interfaces.append(con)
       elif not seen['processed']:
        # exist but interface has not been registered, this covers loops as we set processed last :-)
@@ -846,7 +846,7 @@ def network(aDict):
    devices.update(new)
 
   # Now update devices with hostname and type and model
-  db.do("SELECT devices.id, hostname, model, name AS type FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id IN (%s)"%(",".join(str(x) for x in devices.keys())))
+  db.do("SELECT devices.id, hostname, model, name AS type, icon FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id IN (%s)"%(",".join(str(x) for x in devices.keys())))
   names = db.get_rows()
   for name in names:
    devices[name['id']].update(name)
@@ -855,8 +855,8 @@ def network(aDict):
 
 #
 #
-def network_icons(aDict):
- """ Retrieve icons for network vizualization
+def sync_icons(aDict):
+ """ Retrieve icons for network vizualization. Used internally to populate models... somehow
 
  Args:
 

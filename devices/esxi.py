@@ -7,6 +7,7 @@ __author__  = "Zacharias El Banna"
 __version__ = "18.04.07GA"
 __status__  = "Production"
 __type__    = "hypervisor"
+__icon__    = "images/viz-server.png"
 
 from sdcp.SettingsContainer import SC
 from generic import Device as GenericDevice
