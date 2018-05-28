@@ -115,7 +115,7 @@ def node_call(aNode, aModule, aFunction, aArgs = None, aMethod = None, aHeader =
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%aModule)
   fun = getattr(module,aFunction,None)
-  ret = fun(aArgs)
+  ret = fun(aArgs if aArgs else {})
  else:              
   ret = rest_call("%s?%s_%s"%(SC['node'][aNode],aModule,aFunction),aArgs)['data']
  return ret

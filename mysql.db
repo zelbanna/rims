@@ -76,7 +76,7 @@ CREATE TABLE `device_types` (
 DROP TABLE IF EXISTS `devices`;
 CREATE TABLE `devices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `ip` int(10) unsigned NOT NULL,
+  `ip` int(10) unsigned DEFAULT NULL,
   `hostname` varchar(40) DEFAULT 'unknown',
   `a_id` int(10) unsigned DEFAULT '0',
   `a_dom_id` int(10) unsigned DEFAULT NULL,
@@ -134,7 +134,9 @@ CREATE TABLE `ipam_subnets` (
   `mask` tinyint(3) unsigned NOT NULL DEFAULT '24',
   `gateway` int(10) unsigned DEFAULT NULL,
   `description` text,
-  PRIMARY KEY (`id`)
+  `vrf` varchar(40) DEFAULT 'default',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `subnet_vrf` (`subnet`,`vrf`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
