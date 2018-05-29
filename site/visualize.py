@@ -11,10 +11,11 @@ __status__ = "Production"
 #
 def network(aWeb):
  from json import dumps
- res = aWeb.rest_call("visualize_network",{'device_id':aWeb['device_id']})
- print "<ARTICLE><P>Device '%s':s network</P><DIV CLASS=controls>"%(res['name'])
- print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?visualize_network&id=%s'%(aWeb['device_id']), TITLE='Reload')
- print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%aWeb['device_id'], TITLE='Back')
+ id = aWeb['device_id']
+ res = aWeb.rest_call("visualize_network",{'device_id':id})
+ print "<ARTICLE><P>'%s' network</P><DIV CLASS=controls>"%(res['name'])
+ print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?visualize_network&device_id=%s'%id, TITLE='Reload')
+ print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&device_id=%s'%id, TITLE='Back')
  print aWeb.button('start',  onclick='network_start()')
  print aWeb.button('stop',   onclick='network_stop()')
  print aWeb.button('save',   onclick='network_save()')
@@ -37,7 +38,7 @@ def network(aWeb):
  };
 
  function network_save(){
-  var output = { options:options,edges:[],nodes:{},name:$("#network_name").val()};
+  var output = { options:options,edges:[],nodes:{},name:$('#network_name').val()};
   positions = network.getPositions();
   Object.entries(nodes._data).forEach(([key,value]) => {
    var node = value;
