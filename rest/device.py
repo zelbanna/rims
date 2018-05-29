@@ -856,6 +856,38 @@ def network(aDict):
 
 #
 #
+def network_save(aDict):
+ """ Saves network config for later visualizer retrieval and edit
+
+ Args:
+  - name (required)
+  - options (required)
+  - nodes (required)
+  - edges (required)
+
+ Output:
+  - result
+ """
+ return {'result':"OK - saved '%s'"%aDict['name']}
+
+#
+#
+def network_load(aDict):
+ """ Retrieve network config
+
+ Args:
+  - id
+ 
+ Output:
+  - name
+  - options
+  - nodes
+  - edges
+ """
+ return "TBD"
+
+#
+#
 def sync_icons(aDict):
  """ Retrieve icons for network vizualization. Used internally to populate models... somehow
 
