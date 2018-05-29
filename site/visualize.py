@@ -9,21 +9,19 @@ __status__ = "Production"
 
 #
 #
-def device(aWeb):
+def network(aWeb):
  from json import dumps
- res = aWeb.rest_call("visualize_device",{'id':aWeb['id']})
- edges = ["{'from':%s, 'to':%s, title:'%s:%s <-> %s:%s' }"%(con['a_device'],con['b_device'],res['nodes'][str(con['a_device'])]['label'],con['a_name'],res['nodes'][str(con['b_device'])]['label'],con['b_name']) for con in res['edges']]
- opts  = res['options']
- print "<ARTICLE><P>Device '%s':s network</P><DIV CLASS=controls>"%(aWeb['hostname'])
- print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?visualize_device&id=%s&hostname=%s'%(aWeb['id'],aWeb['hostname']), TITLE='Reload')
- print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%aWeb['id'], TITLE='Back')
+ res = aWeb.rest_call("visualize_network",{'device_id':aWeb['device_id']})
+ print "<ARTICLE><P>Device '%s':s network</P><DIV CLASS=controls>"%(res['name'])
+ print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?visualize_network&id=%s'%(aWeb['device_id']), TITLE='Reload')
+ print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%aWeb['device_id'], TITLE='Back')
  print aWeb.button('start',  onclick='network_start()')
  print aWeb.button('stop',   onclick='network_stop()')
  print aWeb.button('save',   onclick='network_save()')
- print "</DIV><LABEL FOR=network_name>Name:</LABEL><INPUT TYPE=TEXT CLASS=background STYLE='width:120px' ID=network_name><SPAN CLASS='results' ID=network_result></SPAN>"
+ print "</DIV><LABEL FOR=network_name>Name:</LABEL><INPUT TYPE=TEXT CLASS=background STYLE='width:120px' VALUE='%s' ID=network_name><SPAN CLASS='results' ID=network_result></SPAN>"%res['name']
  print "<DIV ID='device_network' CLASS='network'></DIV><SCRIPT>"
- print "var nodes = new vis.DataSet(%s);"%dumps(res['nodes'].values())
- print "var edges = new vis.DataSet([%s]);"%",".join(edges)
+ print "var nodes = new vis.DataSet(%s);"%dumps(res['nodes'])
+ print "var edges = new vis.DataSet(%s);"%dumps(res['edges'])
  print "var options = %s;"%(dumps(res['options']))
  print """
  var data = {nodes:nodes, edges:edges};
