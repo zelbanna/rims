@@ -183,7 +183,7 @@ def info(aWeb):
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
  print aWeb.button('document',    DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
  print aWeb.button('connections', DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&device_id=%i'%(dev['id']),TITLE='Device interfaces')
- print aWeb.button('network',     DIV='div_content_right', URL='sdcp.cgi?device_network&id=%s&hostname=%s'%(dev['id'],dev['info']['hostname']), SPIN='true', TITLE='Network map')
+ print aWeb.button('network',     DIV='div_content_right', URL='sdcp.cgi?visualize_device&id=%s&hostname=%s'%(dev['id'],dev['info']['hostname']), SPIN='true', TITLE='Network map')
  print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['info']['console_ip'] and dev['info'].get('console_port',0) > 0):
   print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['info']['console_ip'],6000+dev['info']['console_port']))
@@ -469,12 +469,12 @@ def network(aWeb):
  print aWeb.button('start',  onclick='network_start()')
  print aWeb.button('stop',   onclick='network_stop()')
  print aWeb.button('save',   onclick='network_save()')
- print "</DIV>Name:<INPUT TYPE=TEXT CLASS=background STYLE='width:70px' ID=network_name><SPAN CLASS='results' ID=network_result></SPAN>"
+ print "</DIV><LABEL FOR=network_name>Name:</LABEL><INPUT TYPE=TEXT CLASS=background STYLE='width:120px' ID=network_name><SPAN CLASS='results' ID=network_result></SPAN>"
  print "<DIV ID='device_network' CLASS='network'></DIV><DIV ID=network_config><SCRIPT>"
- print "var original = { nodes:[%s], edges:[%s]};"%(",".join(nodes),",".join(edges))
  print "var nodes = new vis.DataSet([%s]);"%",".join(nodes)
  print "var edges = new vis.DataSet([%s]);"%",".join(edges)
  print """
+ var data = {nodes:nodes, edges:edges};
  var options = { 'nodes':{ 'shadow':true }, 'edges':{ 'length':220, 'smooth':{ 'type':'dynamic'} } };
  var network = new vis.Network(document.getElementById('device_network'), data, options);
  network.on('stabilizationIterationsDone', function () { network.setOptions({ physics: false }); });
@@ -492,22 +492,18 @@ def network(aWeb):
   positions = network.getPositions();
   Object.entries(nodes._data).forEach(([key,value]) => {
    var node = value;
-   node.x = positions[key].x;
-   node.y = positions[key].y;
+   node.x   = positions[key].x;
+   node.y   = positions[key].y;
    output.nodes[key] = node;
   });
   Object.entries(edges._data).forEach(([key,value]) => {
-   var edge = {};
-   edge.from = value.from;;
-   edge.to = value.to;
+   var edge   = {};
+   edge.from  = value.from;
+   edge.to    = value.to;
    edge.title = value.title;
    output.edges.push(edge);
   });
   $.post('rest.cgi?device_network_save',JSON.stringify(output), result => { $('#network_result').html(JSON.stringify(result)); console.log(result);});
- };
-
- function populate_node(elem,index){
-  elem.connection = network.getConnectedNodes(index);
  };
  """
  print "</SCRIPT></DIV></ARTICLE>"

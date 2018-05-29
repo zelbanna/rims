@@ -83,6 +83,8 @@ article.mobile .table .tbody .tr { line-height:44px; font-size:44px }
 article.mobile .controls a { width:88px; height:88px; margin:0; padding:0; border:none }
 article.mobile .controls img    { width:88px; height:88px; }
 
+label { font-size:11px; font-weight:bold; }
+
 /*#############################################################################*/
 
 .warning {     background-color:red!important; font-weight:bold; color:#FFFFFF }
