@@ -105,7 +105,6 @@ def info(aWeb):
   extra = " selected" if dev['info']['a_dom_id'] == dom['id'] else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(dom['id'],extra,dom['name'])
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?ipam_layout&id=%s>%s</A></DIV></DIV>"%(dev['info']['subnet_id'],dev['info']['subnet'])
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type_id>"
  for type in dev['infra']['types'].values():
@@ -114,6 +113,7 @@ def info(aWeb):
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=devices_model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
  print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
+ print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
 
  print "<!-- Additional info -->"
@@ -209,13 +209,22 @@ def info(aWeb):
 #
 def search(aWeb):
  print "<ARTICLE STYLE='width:100%'>"
- print "Search for device using:"
- print "<FORM ID='device_search'>"
- print "<SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='hostname'>Hostname</OPTION></SELECT>"
- print "<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' VALUE='%s'>"%(aWeb.get('search',""))
- print "</FORM><DIV CLASS=controls>"
- print aWeb.button('start', DIV='div_content_right', URL='sdcp.cgi?device_search', FRM='device_search')
- print "</DIV></ARTICLE>"
+ if aWeb['field']:
+  args = aWeb.get_args2dict()
+  res = aWeb.rest_call("device_basics",args)
+  if res['xist'] > 0:
+   print "<A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?device_info&id=%s>%s.%s</A>"%(res['id'],res['hostname'],res['domain'])
+  else:
+   print "Not found"
+ else:
+  print "Search for device using:"
+  print "<FORM ID='device_search'>"
+  print "<SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='mac'>MAC</OPTION></SELECT>"
+  print "<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' VALUE='%s'>"%(aWeb.get('search',""))
+  print "</FORM><DIV CLASS=controls>"
+  print aWeb.button('search', DIV='div_content_right', URL='sdcp.cgi?device_search', FRM='device_search')
+  print "</DIV>"
+ print "</ARTICLE>"
 
 #
 #
@@ -286,13 +295,13 @@ def new(aWeb):
  name   = aWeb.get('hostname','unknown')
  mac    = aWeb.get('mac',"00:00:00:00:00:00")
  op     = aWeb['op']
- subnet_id = aWeb['subnet_id']
+ ipam_id = aWeb['ipam_id']
  if not ip:
   from sdcp.core import genlib as GL
   ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
 
  if op == 'new':
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb['a_dom_id'], 'subnet_id':subnet_id }
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb['a_dom_id'], 'ipam_id':ipam_id }
   if aWeb['vm']:
    args['vm'] = 1
   else:
@@ -302,7 +311,7 @@ def new(aWeb):
   res = aWeb.rest_call("device_new",args)
   print "Operation:%s"%str(res)
  elif op == 'find':
-  print aWeb.rest_call("ipam_find",{'id':subnet_id})['ip']
+  print aWeb.rest_call("ipam_find",{'id':ipam_id})['ip']
  else:
   subnets = aWeb.rest_call("ipam_list")['subnets']
   domains = aWeb.rest_call("dns_domain_list",{'filter':'forward'})['domains']
@@ -314,9 +323,9 @@ def new(aWeb):
   for d in domains:
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == aWeb['domain'] else "",d['name'])
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=subnet_id>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_id>"
   for s in subnets:
-   print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == subnet_id else "", s['subasc'],s['description'])
+   print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == ipam_id else "", s['subasc'],s['description'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT  NAME=ip ID=device_ip TYPE=TEXT VALUE='{}'></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
@@ -342,7 +351,7 @@ def delete(aWeb):
 #
 def discover(aWeb):
  if aWeb['op']:
-  res = aWeb.rest_full(aWeb._rest_url,"device_discover",{ 'subnet_id':aWeb['ipam_subnet'], 'a_dom_id':aWeb['a_dom_id']}, aTimeout = 200)['data']
+  res = aWeb.rest_full(aWeb._rest_url,"device_discover",{ 'ipam_id':aWeb['ipam_subnet'], 'a_dom_id':aWeb['a_dom_id']}, aTimeout = 200)['data']
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
   subnets = aWeb.rest_call("ipam_list")['subnets']

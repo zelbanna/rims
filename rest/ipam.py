@@ -90,7 +90,7 @@ def inventory(aDict):
   ret['mask']   = subnet['mask']
   ret['subnet'] = subnet['subasc']
   ret['gateway']= subnet['gwasc']
-  ret['xist_devices'] = db.do("SELECT ip,id,hostname,0 AS gateway FROM devices WHERE subnet_id = {} ORDER BY ip".format(aDict['id']))
+  ret['xist_devices'] = db.do("SELECT ip,id,hostname,0 AS gateway FROM devices WHERE ipam_id = {} ORDER BY ip".format(aDict['id']))
   ret['devices'] = db.get_dict('ip')
   gw = ret['devices'].get(subnet['gateway'])
   if gw:
@@ -118,7 +118,7 @@ def find(aDict):
  with DB() as db:
   db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM ipam_networks WHERE id = {}".format(aDict['id']))
   sub = db.get_row()
-  db.do("SELECT ip FROM devices WHERE subnet_id = {}".format(aDict['id']))
+  db.do("SELECT ip FROM devices WHERE ipam_id = {}".format(aDict['id']))
   iplist = db.get_dict('ip')
  subnet = int(sub.get('subnet'))
  start  = None
@@ -154,7 +154,7 @@ def delete(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['devices'] = db.do("DELETE FROM devices WHERE subnet_id = " + aDict['id'])
+  ret['devices'] = db.do("DELETE FROM devices WHERE ipam_id = " + aDict['id'])
   ret['deleted'] = db.do("DELETE FROM ipam_networks WHERE id = " + aDict['id'])
  return ret
  

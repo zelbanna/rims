@@ -94,7 +94,7 @@ def info(aDict):
     ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%(ret['id'])),'rack_info':db.update_dict_prefixed('rackinfo',args,"device_id='%s'"%(ret['id']))}
 
   # Now fetch info
-  ret['xist'] = db.do("SELECT devices.*, base, device_types.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc, CONCAT(INET_NTOA(ipam_networks.subnet),'/',ipam_networks.mask) AS subnet FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id LEFT JOIN ipam_networks ON ipam_networks.id = subnet_id WHERE {}".format(srch))
+  ret['xist'] = db.do("SELECT devices.*, base, device_types.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE {}".format(srch))
   if ret['xist'] > 0:
    ret['info'] = db.get_row()
    ret['id'] = ret['info'].pop('id',None)
@@ -150,17 +150,31 @@ def info(aDict):
 #
 #
 def basics(aDict):
- """Function docstring for basics TBD
+ """Find basic info give a number of options (use either id or field + search-string)
 
  Args:
-  - id (required)
+  - id (optional)
+  - field (optional) 'ip/mac/hostname'
+  - search (optional) 
 
  Output:
  """
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT INET_NTOA(ip) as ip, hostname, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = '%s'"%aDict['id'])
-  ret.update(db.get_row())
+  if aDict.get('field'):
+   if   aDict['field'] == 'ip':
+    search = "devices.ip = INET_ATON('%s')"%aDict['search']
+   elif aDict['field'] == 'hostname':
+    search = "hostname = '%s'"%aDict['search']
+   elif aDict['field'] == 'mac':
+    def GL_mac2int(aMAC):               
+     try:    return int(aMAC.replace(":",""),16)
+     except: return 0
+    search = "mac = %s"%GL_mac2int(aDict['search'])
+  else:
+   search = "devices.id = %s"%aDict['id']
+  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) as ip, hostname, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"%search)
+  ret.update(db.get_row() if ret['xist'] > 0 else {})
  return ret
 
 #
@@ -205,7 +219,7 @@ def new(aDict):
   - a_dom_id (required)
   - hostname (required)
   - target (optional)
-  - subnet_id (optional)
+  - ipam_id (optional)
   - ip (optional)
   - vm (optional)
   - mac (optional)
@@ -225,20 +239,20 @@ def new(aDict):
 
  ip    = aDict.get('ip')
  ipint = GL_ip2int(ip)
- subnet_id = aDict.get('subnet_id')
+ ipam_id = aDict.get('ipam_id')
  ret = {'info':None}
  with DB() as db:
   # ZEB TODO -> replace with ipam function
-  in_sub = db.do("SELECT subnet FROM ipam_networks WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(subnet_id,ipint))
+  in_sub = db.do("SELECT subnet FROM ipam_networks WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(ipam_id,ipint))
   if in_sub == 0:
    ret['info'] = "IP not in subnet range"
   elif aDict['hostname'] == 'unknown':
    ret['info'] = "Hostname unknown not allowed"
   else:
-   ret['xist'] = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE subnet_id = {} AND (ip = {} OR hostname = '{}')".format(subnet_id,ipint,aDict['hostname']))
+   ret['xist'] = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE ipam_id = {} AND (ip = {} OR hostname = '{}')".format(ipam_id,ipint,aDict['hostname']))
    if ret['xist'] == 0:
     mac = GL_mac2int(aDict.get('mac',0))
-    args = {'ip':str(ipint), 'vm':str(aDict.get('vm','0')), 'mac':str(mac), 'a_dom_id':aDict['a_dom_id'], 'subnet_id':str(subnet_id), 'hostname':aDict['hostname'], 'snmp':'unknown', 'model':'unknown'}
+    args = {'ip':str(ipint), 'vm':str(aDict.get('vm','0')), 'mac':str(mac), 'a_dom_id':aDict['a_dom_id'], 'ipam_id':str(ipam_id), 'hostname':aDict['hostname'], 'snmp':'unknown', 'model':'unknown'}
     ret['insert'] = db.insert_dict('devices',args)
     ret['id']   = db.get_last_id()
     if aDict.get('target') == 'rack_id' and aDict.get('arg'):
@@ -295,7 +309,7 @@ def discover(aDict):
 
  Args:
   - a_dom_id (required)
-  - subnet_id (required)
+  - ipam_id (required)
 
  Output:
  """
@@ -320,7 +334,7 @@ def discover(aDict):
  with DB() as db:
   db.do("SELECT id,name FROM device_types")
   devtypes = db.get_dict('name')
-  db.do("SELECT subnet,mask FROM ipam_networks WHERE id = '%s'"%aDict['subnet_id'])
+  db.do("SELECT subnet,mask FROM ipam_networks WHERE id = '%s'"%aDict['ipam_id'])
   net = db.get_row()
 
   ip_start = net['subnet'] + 1
@@ -346,11 +360,11 @@ def discover(aDict):
    for i in range(10):
     sema.acquire()
    # We can now do inserts only (no update) as either we clear or we skip existing :-)
-   sql = "INSERT INTO devices (ip, a_dom_id, subnet_id, snmp, model, type_id, hostname) VALUES ('{}',"+aDict['a_dom_id']+",{},'{}','{}','{}','{}')"
+   sql = "INSERT INTO devices (ip, a_dom_id, ipam_id, snmp, model, type_id, hostname) VALUES ('{}',"+aDict['a_dom_id']+",{},'{}','{}','{}','{}')"
    count = 0
    for ipint,entry in db_new.iteritems():
     count += 1
-    db.do(sql.format(ipint,aDict['subnet_id'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
+    db.do(sql.format(ipint,aDict['ipam_id'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
   except Exception as err:
    ret['info']   = "Error:{}".format(str(err))
    ret['errors'] += 1
@@ -441,7 +455,7 @@ def list_mac(aDict):
   return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
 
  with DB() as db:
-  db.do("SELECT devices.id, CONCAT(hostname,'.',domains.name) as fqdn, INET_NTOA(ip) as ip, mac, subnet_id FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT mac = 0 ORDER BY ip")
+  db.do("SELECT devices.id, CONCAT(hostname,'.',domains.name) as fqdn, INET_NTOA(ip) as ip, mac, ipam_id FROM devices JOIN domains ON domains.id = devices.a_dom_id WHERE NOT mac = 0 ORDER BY ip")
   rows = db.get_rows()
  for row in rows:
   row['mac'] = GL_int2mac(row['mac'])
@@ -518,7 +532,7 @@ def configuration_template(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, mask, INET_NTOA(gateway) AS gateway, INET_NTOA(subnet) AS subnet, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id LEFT JOIN ipam_networks ON ipam_networks.id = devices.subnet_id WHERE devices.id = '%s'"%aDict['id'])
+  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, mask, INET_NTOA(gateway) AS gateway, INET_NTOA(subnet) AS subnet, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id LEFT JOIN ipam_networks ON ipam_networks.id = devices.ipam_id WHERE devices.id = '%s'"%aDict['id'])
   data = db.get_row()
  ip = data.pop('ipasc',None)
  try:

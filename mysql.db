@@ -81,7 +81,7 @@ CREATE TABLE `devices` (
   `a_id` int(10) unsigned DEFAULT '0',
   `a_dom_id` int(10) unsigned DEFAULT NULL,
   `ptr_id` int(10) unsigned DEFAULT '0',
-  `subnet_id` int(10) unsigned DEFAULT NULL,
+  `ipam_id` int(10) unsigned DEFAULT NULL,
   `type_id` int(10) unsigned DEFAULT NULL,
   `mac` bigint(20) unsigned DEFAULT '0',
   `vm` tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -90,14 +90,14 @@ CREATE TABLE `devices` (
   `webpage` varchar(60) DEFAULT NULL,
   `comment` text,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `ip` (`ip`,`subnet_id`),
+  UNIQUE KEY `ip` (`ip`,`ipam_id`),
   UNIQUE KEY `hostname` (`hostname`,`a_dom_id`),
   KEY `a_dom_id` (`a_dom_id`),
   KEY `type_id` (`type_id`),
-  KEY `subnet_id` (`subnet_id`),
+  KEY `ipam_id` (`ipam_id`),
   CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`a_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`subnet_id`) REFERENCES `ipam_networks` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`ipam_id`) REFERENCES `ipam_networks` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
