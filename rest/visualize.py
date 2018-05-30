@@ -97,10 +97,10 @@ def info(aDict):
     ret['update']= db.do("UPDATE visualize SET options='%s',nodes='%s',edges='%s' WHERE id = %s"%(aDict['options'],aDict['nodes'],aDict['edges'],id))
     ret['result']= 'update (%s)'%(ret['update'] > 0)
   ret['xist'] = db.do("SELECT * FROM visualize WHERE id = %s"%id)
-  data = db.get_row()
+  data = db.get_row() if ret['xist'] > 0 else {}
   ret['name'] = data.get('name',"")
   for var in ['nodes','edges','options']:
-   ret[var] = loads(data.get(var,""))
+   ret[var] = loads(data.get(var,'null'))
   ret['id'] = id
  return ret
  
@@ -155,7 +155,7 @@ def device(aDict):
   else:
    id = int(aDict['id'])
  
-  devices = {id:{'processed':False,'interfaces':0,'multipoint':0,'distance':0}}
+  devices = {id:{'processed':False,'interfaces':0,'multipoint':0,'distance':0,'uplink':0}}
   interfaces = []
   ret['options'] = {'edges': {'length': 120, 'smooth':{'type': 'dynamic'}}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image' }}
 
@@ -194,7 +194,9 @@ def device(aDict):
       # 2) For multipoint the other side will (ON SQL) see a straight interface so also covered by processed
       # 3) There is no multipoint to multipoint
       if not seen:
-       new_dev[con['b_device']] = {'processed':False,'interfaces':0,'multipoint':0,'distance':lvl + 1}
+       new = new_dev.get(con['b_device'],{'processed':False,'interfaces':0,'multipoint':0,'distance':lvl + 1,'uplink':0})
+       new['uplink'] += 1
+       new_dev[con['b_device']] = new
        new_int.append(con)
       elif not seen['processed']:
        # exist but interface has not been registered, this covers loops as we set processed last :-)
@@ -215,4 +217,5 @@ def device(aDict):
  ret['nodes'] = nodes
  ret['name']  = devices[id]['hostname']
  ret['edges'] = [{'from':intf['a_device'],'to':intf['b_device'],'title':"%s:%s <-> %s:%s"%(devices[intf['a_device']]['hostname'],intf['a_name'],devices[intf['b_device']]['hostname'],intf['b_name'])} for intf in interfaces]
+ print dumps(devices,indent=4)
  return ret
