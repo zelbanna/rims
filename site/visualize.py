@@ -12,7 +12,7 @@ __status__ = "Production"
 def list(aWeb):
  res = aWeb.rest_call("visualize_list")
  print "<SECTION CLASS=content-left ID=div_content_left>"
- print "<ARTICLE><P>Networks</P><DIV CLASS=controls>"
+ print "<ARTICLE><P>Maps</P><DIV CLASS=controls>"
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?visualize_list', TITLE='Reload')
  print "</DIV><DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS='th maxed'>Name</DIV><DIV CLASS=th STYLE='width:50px'>&nbsp;</DIV></DIV>"
@@ -59,7 +59,8 @@ def network(aWeb):
  print "<ARTICLE><P>'%s' network</P><DIV CLASS=controls>"%(res['name'])
  print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?visualize_network&type=%s&id=%s'%(aWeb['type'],id), TITLE='Reload')
  if aWeb['type'] == 'device':
-  print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%id, TITLE='Back')
+  print aWeb.button('back', DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%id, TITLE='Back')
+ print aWeb.button('document', onclick='network_edit()', TITLE='Enable editor')
  print aWeb.button('start',  onclick='network_start()')
  print aWeb.button('stop',   onclick='network_stop()')
  print aWeb.button('save',   onclick='network_save()')
@@ -68,9 +69,7 @@ def network(aWeb):
  print "<INPUT TYPE=HIDDEN VALUE=%s ID=network_type>"%aWeb['type']
  print "<DIV ID='device_network' CLASS='network'></DIV><SCRIPT>"
  print "var nodes = new vis.DataSet(%s);"%dumps(res['nodes'])
- print ""
  print "var edges = new vis.DataSet(%s);"%dumps(res['edges'])
- print ""
  print "var options = %s;"%(dumps(res['options']))
  print """
  var data = {nodes:nodes, edges:edges};
@@ -86,7 +85,7 @@ def network(aWeb):
  };
 
  function network_edit(){
-  network.enableEditMode();
+  network.setOptions({ manipulation:{ enabled:true }});
  };
 
  function network_save(){

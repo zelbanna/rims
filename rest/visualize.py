@@ -129,7 +129,6 @@ def network(aDict):
   for var in ['nodes','edges','options']:
    ret[var] = loads(data.get(var,""))
   ret['options']['physics'] = {'enabled':True, 'stabilization':{'onlyDynamicEdges':True}}
-  ret['options']['manipulation'] = {'enabled':True}
   ret['options']['nodes']['image'] = 'images/viz-generic.png'
   ret['result']  = 'OK' if ret['xist'] > 0 else 'NON_EXISTANT'
  return ret
