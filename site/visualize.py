@@ -19,7 +19,6 @@ def list(aWeb):
  print "<DIV CLASS=tbody>"
  for map in res['maps']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS='z-op' DIV='div_content_right' URL='sdcp.cgi?visualize_network&type=network&id=%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='controls'>"%(map['id'],map['id'],map['name'])
-  print aWeb.button('trash',    DIV='div_content_right', URL='sdcp.cgi?visualize_delete&id=%s'%map['id'], TITLE='Delete map') 
   print aWeb.button('document', DIV='div_content_right', URL='sdcp.cgi?visualize_info&id=%s'%map['id'],   TITLE='Show config') 
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
@@ -34,11 +33,12 @@ def info(aWeb):
  res = aWeb.rest_call("visualize_info",args)
  print "<ARTICLE><P>Info for %s</P><DIV CLASS=controls>"%(res['name'])
  print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?visualize_info&id=%s'%aWeb['id'])
+ print aWeb.button('trash',  DIV='div_content_right', URL='sdcp.cgi?visualize_delete&id=%s'%aWeb['id'], TITLE='Delete map') 
  print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?visualize_info&op=update', FRM='network_config')
+ print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.config' DIV='div_options'>Options</A>"
+ print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.config' DIV='div_nodes'>Nodes</A>"
+ print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.config' DIV='div_edges'>Edges</A>"
  print "</DIV><SPAN CLASS=results>%s</SPAN><FORM ID='network_config'><INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(res.get('result'),aWeb['id'])
- print "<A CLASS='z-op btn' OP='single' SELECTOR='.config' DIV='div_options'>Options</A>"
- print "<A CLASS='z-op btn' OP='single' SELECTOR='.config' DIV='div_nodes'>Nodes</A>"
- print "<A CLASS='z-op btn' OP='single' SELECTOR='.config' DIV='div_edges'>Edges</A>"
  print "<DIV CLASS='config' ID='div_options'><TEXTAREA CLASS=maxed STYLE='height:400px' NAME=options>%s</TEXTAREA></DIV>"%dumps(res['options'],indent=4)
  print "<DIV CLASS='config' STYLE='display:none' ID='div_nodes'><TEXTAREA CLASS=maxed STYLE='height:400px' NAME=nodes>%s</TEXTAREA></DIV>"%dumps(res['nodes'],indent=4)
  print "<DIV CLASS='config' STYLE='display:none' ID='div_edges'><TEXTAREA CLASS=maxed STYLE='height:400px' NAME=edges>%s</TEXTAREA></DIV>"%dumps(res['edges'],indent=4)
