@@ -8,30 +8,155 @@ from sdcp.core.common import DB
 
 #
 #
-def network(aDict):
- """ Function produces a dictionary tree of edges and nodes.
-  - For devices it builds a graph using center device and then add edge interfaces to leaf nodes (devices) and iterate this process for 'diameter' times
-  - for id or name it will retrieve whatever info is there
+def list(aDict):
+ """ Function produces a list of available maps/networks
 
  Args:
-  - device_id (optional required)
-  - device_ip (optional required)
+
+ Output:
+  - maps: list of (id,name)
+ """
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT id,name FROM visualize")
+  ret['maps'] = db.get_rows()
+ return ret
+
+#
+#
+def delete(aDict):
+ """ Deletes a map
+
+ Args:
+  - id
+ 
+ Output:
+  - deleted
+ """
+ ret = {}
+ with DB() as db:
+  ret['deleted'] = db.do("DELETE FROM visualize WHERE id = %s"%aDict['id'])
+ return ret
+
+#
+#
+def save(aDict):
+ """ Saves config for later visualizer retrieval and edit
+
+ Args:
+  - id (required)
+  - type (required)
+  - name (required)
+  - options (required)
+  - nodes (required)
+  - edges (required)
+
+ Output:
+  - result
+ """
+ name    = aDict['name']
+ options = dumps(aDict['options'])
+ nodes   = dumps(aDict['nodes'])
+ edges   = dumps(aDict['edges'])
+ ret = {}
+ try:
+  with DB() as db:
+   if aDict['type'] == 'network':
+    ret['update'] = db.do("UPDATE visualize SET name='%s', options='%s', nodes='%s', edges='%s' WHERE id = %s"%(name,options,nodes,edges,aDict['id']))
+    ret['id'] = aDict['id']
+    ret['result'] = 'OK' if ret['update'] > 0 else 'NOT_OK'
+   else:
+    ret['insert'] = db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%s','%s','%s','%s') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), name=name"%(name,options,nodes,edges))
+    ret['id'] = db.get_last_id()
+    ret['result'] = 'OK' if ret['insert'] == 1 else 'EXISTED'
+ except Exception as err:
+  ret['result'] = "ERROR"
+  ret['error'] = str(err)
+ return ret
+
+#
+#
+def info(aDict):
+ """ Info function to update information for specific id
+ Args:
+  - id (required)
+  - name (required)
+  - options (required)
+  - nodes (required)
+  - edges (required)
+
+ Output:
+  - result
+ """
+ id = aDict.pop('id',0)
+ op = aDict.pop('op',None)
+ ret = {'result':None}
+ with DB() as db:
+  if op == 'update':
+   if id == 'new':
+    ret['insert']= db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%s','%s','%s','%s')"%(aDict['name'],aDict['options'],aDict['nodes'],aDict['edges']))
+    id = db.get_last_id()
+   else:
+    ret['update']= db.do("UPDATE visualize SET options='%s',nodes='%s',edges='%s' WHERE id = %s"%(aDict['options'],aDict['nodes'],aDict['edges'],id))
+  ret['xist'] = db.do("SELECT * FROM visualize WHERE id = %s"%id)
+  data = db.get_row()
+  ret['name'] = data.get('name',"")
+  for var in ['nodes','edges','options']:
+   ret[var] = loads(data.get(var,""))
+  ret['id'] = id
+ return ret
+ 
+
+#
+#
+def network(aDict):
+ """ Function produces a dictionary tree of edges and nodes based on saved config
+
+ Args:
+  - id
+ 
+ Output:
+  - name
+  - options
+  - nodes
+  - edges
+ """
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT * FROM visualize WHERE id = %s"%aDict['id'])
+  data = db.get_row()
+  ret['name'] = data.get('name',"")
+  for var in ['nodes','edges','options']:
+   ret[var] = loads(data.get(var,""))
+  ret['options']['physics'] = {'enabled':True, 'stabilization':{'onlyDynamicEdges':True}}
+  ret['options']['manipulation'] = {'enabled':True}
+  ret['options']['nodes']['image'] = 'images/viz-generic.png'
+  ret['result']  = 'OK' if ret['xist'] > 0 else 'NON_EXISTANT'
+ return ret
+
+#
+#
+def device(aDict):
+ """ Function produces a dictionary tree of edges and nodes based on device id or ip
+
+ Args:
+  - id (optional required)
+  - ip (optional required)
   - diameter (optional) integer from 1-3, defaults to 2 to build graph
 
  Output:
   - name
-  - edges
-  - nodes
   - options
-  
+  - edges
+  - nodes  
  """
  ret = {}
  with DB() as db:
-  if aDict.get('device_ip'):
-   db.do("SELECT id FROM devices WHERE ip = INET_ATON('%s')"%aDict['device_ip'])
+  if aDict.get('ip'):
+   db.do("SELECT id FROM devices WHERE ip = INET_ATON('%s')"%aDict['ip'])
    id = db.get_val('id')
   else:
-   id = int(aDict['device_id'])
+   id = int(aDict['id'])
  
   devices = {id:{'processed':False,'interfaces':0,'multipoint':0,'distance':0}}
   interfaces = []
@@ -73,14 +198,15 @@ def network(aDict):
       # 3) There is no multipoint to multipoint
       if not seen:
        new_dev[con['b_device']] = {'processed':False,'interfaces':0,'multipoint':0,'distance':lvl + 1}
-       interfaces.append(con)
+       new_int.append(con)
       elif not seen['processed']:
        # exist but interface has not been registered, this covers loops as we set processed last :-)
-       interfaces.append(con)
+       new_int.append(con)
 
      dev['processed'] = True
    # After all device leafs are processed we can add (net) new devices
    devices.update(new_dev)
+   interfaces.extend(new_int)
 
   # Now update devices with hostname and type and model, rename fields to fitting info
   db.do("SELECT devices.id, hostname AS label, model, icon AS image FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id IN (%s)"%(",".join(str(x) for x in devices.keys())))
@@ -92,59 +218,4 @@ def network(aDict):
  ret['nodes'] = nodes
  ret['name']  = devices[id]['hostname']
  ret['edges'] = [{'from':intf['a_device'],'to':intf['b_device'],'title':"%s:%s <-> %s:%s"%(devices[intf['a_device']]['hostname'],intf['a_name'],devices[intf['b_device']]['hostname'],intf['b_name'])} for intf in interfaces]
- return ret
-
-#
-#
-def save(aDict):
- """ Saves config for later visualizer retrieval and edit
-
- Args:
-  - name (required)
-  - options (required)
-  - nodes (required)
-  - edges (required)
-
- Output:
-  - result
- """
- from sdcp.core.logger import log
- name    = aDict['name']
- options = dumps(aDict['options'])
- nodes   = dumps(aDict['nodes'])
- edges   = dumps(aDict['edges'])
- log("args%s"%aDict)
- ret = {}
- try:
-  with DB() as db:
-   ret['insert'] = db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%s','%s','%s','%s') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID()"%(name,options,nodes,edges))
-   ret['id'] = db.get_last_id()
-   ret['result'] = 'OK' if ret['insert'] > 0 else 'EXISTED'
- except Exception as err:
-  ret['result'] = "ERROR"
-  ret['error'] = str(err)
- return ret
-
-#
-#
-def load(aDict):
- """ Retrieve network config
-
- Args:
-  - id
- 
- Output:
-  - name
-  - options
-  - nodes
-  - edges
- """
- ret = {}
- with DB() as db:
-  ret['xist'] = db.do("SELECT * FROM visualize WHERE id = %s"%aDict['id'])
-  data = db.get_row()
-  ret['name'] = data.get('name',"")
-  for var in ['nodes','edges','options']:
-   ret[var] = loads(data.get(var,""))
-  ret['result']  = 'OK' if ret['xist'] > 0 else 'NON_EXISTANT'
  return ret

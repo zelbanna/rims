@@ -80,14 +80,14 @@ div.td > input:-moz-placeholder {          color: #9CA6B0; opacity:1; }
 div.controls { display:inline; font-size:5px; }
 
 article.mobile .table .tbody .tr { line-height:44px; font-size:44px }
-article.mobile .controls a { width:88px; height:88px; margin:0; padding:0; border:none }
-article.mobile .controls img    { width:88px; height:88px; }
+article.mobile .controls a {       width:88px; height:88px; margin:0; padding:0; border:none }
+article.mobile .controls img    {  width:88px; height:88px; }
 
-label { font-size:11px; font-weight:bold; }
 
 /*#############################################################################*/
 
 .warning {     background-color:red!important; font-weight:bold; color:#FFFFFF }
+.maxed {       width:99%; }
 .right   {     float:right!important; }
 .border {      border:solid 1px black; }
 .border-grey { border:solid 1px #9CA6B0; }
@@ -107,6 +107,8 @@ label { font-size:11px; font-weight:bold; }
 
 div.rack-indx { font-weight:bold; font-size:8px; color:grey; padding:2px; }
 div.rack-data { border: solid 2px grey; font-size:12px; text-align:center;}
+
+label { font-size:11px; font-weight:bold; }
 
 span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; font-family: Verdana,sans-serif; }
 
