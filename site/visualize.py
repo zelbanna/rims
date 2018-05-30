@@ -104,7 +104,7 @@ def network(aWeb):
    edge.title = value.title;
    output.edges.push(edge);
   });
-  $.post('rest.cgi?visualize_save',JSON.stringify(output), result => { $('#network_result').html(JSON.stringify(result)); console.log(result);});
+  $.post('rest.cgi?visualize_save',JSON.stringify(output), result => { $('#network_result').html(JSON.stringify(result)); });
  };
  """
  print "</SCRIPT></ARTICLE>"

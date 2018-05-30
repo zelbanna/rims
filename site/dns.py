@@ -61,10 +61,11 @@ def server_delete(aWeb):
 def domain_list(aWeb):
  domains = aWeb.rest_call("dns_domain_list",{'sync':aWeb['sync']})
  print "<ARTICLE><P>Domains</P><DIV CLASS='controls'>"
- print aWeb.button('reload',  DIV='div_content_left', URL='sdcp.cgi?dns_domain_list&sync=true',TITLE='Resync cache')
+ print aWeb.button('reload',  DIV='div_content_left', URL='sdcp.cgi?dns_domain_list',TITLE='Reload')
+ print aWeb.button('sync',    DIV='div_content_left', URL='sdcp.cgi?dns_domain_list&sync=true',TITLE='Resync cache')
  print aWeb.button('add',     DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=new',TITLE='Add domain')
  print aWeb.button('search',  DIV='div_content_right',URL='sdcp.cgi?dns_consistency',TITLE='Check Backend Consistency',SPIN='true')
- print aWeb.button('delete',  DIV='div_content_right',URL='sdcp.cgi?dns_dedup',TITLE='Find Duplicates',SPIN='true')
+ print aWeb.button('analyze',  DIV='div_content_right',URL='sdcp.cgi?dns_dedup',TITLE='Find Duplicates',SPIN='true')
  print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?dns_top', SPIN='true')
  print "</DIV>"
  if domains.get('sync'):

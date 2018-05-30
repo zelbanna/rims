@@ -17,7 +17,6 @@ def main(aWeb):
  arg    = aWeb['arg']
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list{0}'>Devices</A></LI>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
- print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?bookings_list'>Bookings</A></LI>"
  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?visualize_list'>Maps</A></LI>"
  if target == 'vm':
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
@@ -42,6 +41,7 @@ def main(aWeb):
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?rack_list_infra&type=console'>Consoles</A>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?rack_list'>Racks</A>"
   print "</DIV></LI>"
+ print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL='sdcp.cgi?bookings_list'>Bookings</A></LI>"
  print "</UL></NAV>"
  print "<SECTION CLASS=content       ID=div_content>"
  print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"

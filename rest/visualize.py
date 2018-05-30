@@ -59,19 +59,15 @@ def save(aDict):
  nodes   = dumps(aDict['nodes'])
  edges   = dumps(aDict['edges'])
  ret = {}
- try:
-  with DB() as db:
-   if aDict['type'] == 'network':
-    ret['update'] = db.do("UPDATE visualize SET name='%s', options='%s', nodes='%s', edges='%s' WHERE id = %s"%(name,options,nodes,edges,aDict['id']))
-    ret['id'] = aDict['id']
-    ret['result'] = 'OK' if ret['update'] > 0 else 'NOT_OK'
-   else:
-    ret['insert'] = db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%s','%s','%s','%s') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), name=name"%(name,options,nodes,edges))
-    ret['id'] = db.get_last_id()
-    ret['result'] = 'OK' if ret['insert'] == 1 else 'EXISTED'
- except Exception as err:
-  ret['result'] = "ERROR"
-  ret['error'] = str(err)
+ with DB() as db:
+  if aDict['type'] == 'network':
+   ret['update'] = db.do("UPDATE visualize SET name='%s', options='%s', nodes='%s', edges='%s' WHERE id = %s"%(name,options,nodes,edges,aDict['id']))
+   ret['id'] = aDict['id']
+   ret['result'] = 'OK' if ret['update'] > 0 else 'NOT_OK'
+  else:
+   ret['insert'] = db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%s','%s','%s','%s') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), name=name"%(name,options,nodes,edges))
+   ret['id'] = db.get_last_id()
+   ret['result'] = 'OK' if ret['insert'] == 1 else 'EXISTED'
  return ret
 
 #
@@ -96,8 +92,10 @@ def info(aDict):
    if id == 'new':
     ret['insert']= db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%s','%s','%s','%s')"%(aDict['name'],aDict['options'],aDict['nodes'],aDict['edges']))
     id = db.get_last_id()
+    ret['result']= 'insert (%s)'%(ret['insert'])
    else:
     ret['update']= db.do("UPDATE visualize SET options='%s',nodes='%s',edges='%s' WHERE id = %s"%(aDict['options'],aDict['nodes'],aDict['edges'],id))
+    ret['result']= 'update (%s)'%(ret['update'] > 0)
   ret['xist'] = db.do("SELECT * FROM visualize WHERE id = %s"%id)
   data = db.get_row()
   ret['name'] = data.get('name',"")
@@ -159,7 +157,7 @@ def device(aDict):
  
   devices = {id:{'processed':False,'interfaces':0,'multipoint':0,'distance':0}}
   interfaces = []
-  ret['options'] = {'edges': {'length': 220, 'smooth':{'type': 'dynamic'}}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image' }}
+  ret['options'] = {'edges': {'length': 120, 'smooth':{'type': 'dynamic'}}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image' }}
 
   # Connected and Multipoint
   sql_connected  = "SELECT CAST({0} AS UNSIGNED) AS a_device, dc.id AS a_interface, dc.name AS a_name, dc.snmp_index AS a_index, dc.peer_interface AS b_interface, peer.snmp_index AS b_index, peer.name AS b_name, peer.device_id AS b_device FROM device_interfaces AS dc LEFT JOIN device_interfaces AS peer ON dc.peer_interface = peer.id WHERE dc.peer_interface IS NOT NULL AND dc.device_id = {0}"
