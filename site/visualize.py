@@ -19,7 +19,7 @@ def list(aWeb):
  print "<DIV CLASS=tbody>"
  for map in res['maps']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS='z-op' DIV='div_content_right' URL='sdcp.cgi?visualize_show&id=%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='controls'>"%(map['id'],map['id'],map['name'])
-  print aWeb.button('configure',  DIV='div_content_right', URL='sdcp.cgi?visualize_info&type=map&id=%s'%map['id'],   TITLE='Show and Edit map') 
+  print aWeb.button('configure',  DIV='div_content_right', URL='sdcp.cgi?visualize_network&type=map&id=%s'%map['id'],   TITLE='Show and Edit map') 
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
@@ -47,18 +47,18 @@ def show(aWeb):
 
 #
 #
-def info(aWeb):
+def network(aWeb):
  from json import dumps
  args = aWeb.get_args2dict()
- res = aWeb.rest_call("visualize_info",args)
+ res = aWeb.rest_call("visualize_network",args)
  print "<ARTICLE><P>Info for %s</P><DIV CLASS=controls>"%(res['name'])
- print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?visualize_info&type=%s&id=%s'%(res['type'],res['id']))
+ print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?visualize_network&type=%s&id=%s'%(res['type'],res['id']))
  print aWeb.button('trash',  DIV='div_content_right', URL='sdcp.cgi?visualize_delete&id=%s'%res['id'], TITLE='Delete map') 
  print aWeb.button('document', onclick='network_edit()', TITLE='Enable editor')
  print aWeb.button('start',  onclick='network_start()', TITLE='Enable physics')
  print aWeb.button('stop',   onclick='network_stop()', TITLE='Disable physics')
  print aWeb.button('sync',   onclick='network_sync()',TITLE='Sync graph to config')
- print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?visualize_info&op=update', FRM='network_config', TITLE='Save config')
+ print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?visualize_network&op=update', FRM='network_config', TITLE='Save config')
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_network'><IMG SRC='images/btn-network.png'></A>"
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_options'>Options</A>"
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_nodes'>Nodes</A>"

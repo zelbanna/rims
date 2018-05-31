@@ -67,8 +67,8 @@ def show(aDict):
 
 #
 #
-def info(aDict):
- """ Function to view or update information for specific map id or generate map for device id/ip
+def network(aDict):
+ """ Function to view or update information for specific network map id or generate a network map for device id/ip
 
  Args:
   - id (optional required)

@@ -184,7 +184,7 @@ def info(aWeb):
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
  print aWeb.button('document',    DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
  print aWeb.button('connections', DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&device_id=%i'%(dev['id']),TITLE='Device interfaces')
- print aWeb.button('network',     DIV='div_content_right', URL='sdcp.cgi?visualize_info&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
+ print aWeb.button('network',     DIV='div_content_right', URL='sdcp.cgi?visualize_network&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
  print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['info']['console_ip'] and dev['info'].get('console_port',0) > 0):
   print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['info']['console_ip'],6000+dev['info']['console_port']))
