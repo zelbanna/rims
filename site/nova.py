@@ -5,7 +5,7 @@ HTML5 Ajax Openstack NOVA module
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.04.07GA"
+__version__ = "18.05.31GA"
 __status__= "Production"
 
 ################################# Nova ###############################

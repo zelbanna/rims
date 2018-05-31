@@ -4,7 +4,7 @@ HTML5 Ajax Visualize module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.04.07GA"
+__version__ = "18.05.31GA"
 __status__ = "Production"
 
 #
@@ -19,7 +19,7 @@ def list(aWeb):
  print "<DIV CLASS=tbody>"
  for map in res['maps']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS='z-op' DIV='div_content_right' URL='sdcp.cgi?visualize_show&id=%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='controls'>"%(map['id'],map['id'],map['name'])
-  print aWeb.button('edit',  DIV='div_content_right', URL='sdcp.cgi?visualize_info&type=map&id=%s'%map['id'],   TITLE='Show and Edit map') 
+  print aWeb.button('configure',  DIV='div_content_right', URL='sdcp.cgi?visualize_info&type=map&id=%s'%map['id'],   TITLE='Show and Edit map') 
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"

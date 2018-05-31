@@ -4,7 +4,7 @@ HTML5 Ajax SDCP generic module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "18.04.07GA"
+__version__ = "18.05.31GA"
 __status__= "Production"
 
 #
@@ -37,9 +37,8 @@ def login(aWeb):
   for param in data.get('parameters'):
    print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s'></DIV></DIV>"%(param['display'],param['data'],param['id'])
   print "</DIV></DIV>"
-  print "</FORM><DIV CLASS=controls>"
-  print "<BUTTON CLASS='z-op' OP=submit STYLE='margin:20px 20px 30px 40px;' FRM=login_form>Enter</BUTTON>"
- print "</DIV></ARTICLE></DIV>"
+  print "</FORM><DIV CLASS=controls><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='images/icon-start.png'</BUTTON></DIV>"
+  print "</ARTICLE></DIV>"
 
 ############################################## SDCP ###############################################
 #

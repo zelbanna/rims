@@ -1,6 +1,6 @@
 """SDCP tools REST module. Provides various tools that are not bound to a node"""
 __author__ = "Zacharias El Banna"
-__version__ = "18.04.07GA"
+__version__ = "18.05.31GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'any'
