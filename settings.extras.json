@@ -124,11 +124,5 @@
             "description": "Write community", 
             "value": "private"
         }
-    }, 
-    "weathermap": {
-        "wm_main-map": {
-            "description": "Weathermap", 
-            "value": "Main Map"
-        }
     }
 }

@@ -34,7 +34,8 @@ def delete(aWeb):
 #
 def show(aWeb):
  from json import dumps
- res = aWeb.rest_call("visualize_show",{'id':aWeb['id']})
+ args = {'id':aWeb['id']} if aWeb['id'] else {'name':aWeb['name']}
+ res = aWeb.rest_call("visualize_show",args)
  print "<ARTICLE><DIV CLASS='network' ID='div_network'></DIV><SCRIPT>"
  print "var nodes = new vis.DataSet(%s);"%dumps(res['nodes'])
  print "var edges = new vis.DataSet(%s);"%dumps(res['edges'])
