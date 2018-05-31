@@ -24,10 +24,11 @@ def dump(aDict):
 
   output = []
   if aDict.get('full',True):
-   output.extend(["DROP DATABASE IF EXISTS "+db+";","CREATE DATABASE "+db+";"])
+   output.append("SET sql_mode='NO_AUTO_VALUE_ON_ZERO';")
+   output.extend(["DROP DATABASE IF EXISTS %s;"%db,"CREATE DATABASE %s;"%db])
   else:
    cmd.extend(['--no-create-info','--skip-triggers'])
-  output.append("USE " + db + ";")
+  output.append("USE %s;"%db)
   data = check_output(cmd)
   for line in data.split('\n'):
    if not line[:2] in [ '/*','--']:
