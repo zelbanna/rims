@@ -96,12 +96,18 @@ def network(aWeb):
  };
 
  function network_fixate(){
+  var fixed = 0;
+  var unfix = 0;
   Object.entries(network.body.data.nodes._data).forEach(([id,node]) => {
    if (node.fixed) {
     node.fixed = false;
-   } else
+    unfix = unfix + 1;
+   } else {
     node.fixed = true;
+    fixed = fixed + 1;
+   }
   });
+  $("#result").html("Fixed:"+ fixed + " Un-fixed:" + unfix);
  };
 
  function network_sync(){
