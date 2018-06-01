@@ -92,7 +92,7 @@ def network(aDict):
  """
  args = dict(aDict)
  op   = args.pop('op',None)
- ret = {'id':args.pop('id',0),'result':None,'type':args.pop('type','map')}
+ ret = {'id':args.pop('id',0),'type':args.pop('type','map')}
  with DB() as db:
   if op == 'update':
    if ret['id'] == 'new' or ret['type'] == 'device':
