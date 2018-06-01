@@ -71,7 +71,7 @@ class Web(object):
  # jquery.js: https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js
  def put_html(self, aTitle = None, aIcon = 'sdcp.png'):
   from sys import stdout
-  stdout.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='4.21.0.vis.min.css'><LINK REL='stylesheet' TYPE='text/css' HREF='system.css'>")
+  stdout.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='system.css'>")
   if aTitle:
    stdout.write("<TITLE>" + aTitle + "</TITLE>")
   stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/%s'/>"%(aIcon))

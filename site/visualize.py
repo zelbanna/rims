@@ -53,7 +53,7 @@ def network(aWeb):
  res = aWeb.rest_call("visualize_network",args)
  print "<ARTICLE><P>Info for %s</P><DIV CLASS=controls>"%(res['name'])
  print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?visualize_network&type=%s&id=%s'%(res['type'],res['id']))
- print aWeb.button('trash',  DIV='div_content_right', URL='sdcp.cgi?visualize_delete&id=%s'%res['id'], TITLE='Delete map')
+ print aWeb.button('trash',  DIV='div_content_right', URL='sdcp.cgi?visualize_delete&id=%s'%res['id'], TITLE='Delete map', MSG='Really delete map?')
  if aWeb['type'] == 'device':
   print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%res['id'], TITLE='Return to device')
  print aWeb.button('document', onclick='network_edit()', TITLE='Enable editor')
@@ -82,13 +82,20 @@ def network(aWeb):
  var data = {nodes:nodes, edges:edges};
  var network = new vis.Network(document.getElementById('div_network'), data, options);
  network.on('stabilizationIterationsDone', function () { network.setOptions({ physics: false }); });
+ network.on('dragEnd',function(params){ 
+  network.storePositions();
+  $("#nodes").val(JSON.stringify(nodes.get(),undefined,4));
+  $("#result").html('Moved ' + nodes.get(params.nodes[0]).label);
+ });
 
  function network_start(){ 
   network.setOptions({ physics:true  });
+  $("#result").html("Enable physics");
  };
 
  function network_stop(){
   network.setOptions({ physics:false });
+  $("#result").html("Diable physics");
  };
 
  function network_edit(){
@@ -96,35 +103,15 @@ def network(aWeb):
  };
 
  function network_fixate(){
-  var fixed = 0;
-  var unfix = 0;
-  Object.entries(network.body.data.nodes._data).forEach(([id,node]) => {
-   if (node.fixed) {
-    node.fixed = false;
-    unfix = unfix + 1;
-   } else {
-    node.fixed = true;
-    fixed = fixed + 1;
-   }
-  });
-  $("#result").html("Fixed:"+ fixed + " Un-fixed:" + unfix);
+  nodes.forEach(function(node,id){ nodes.update({id:id,fixed:!(node.fixed)}); });
+  $("#result").html("Toggle fix");
  };
 
  function network_sync(){
   network.storePositions();
-  var sync = { edges:[],nodes:[]};
-  Object.entries(network.body.data.nodes._data).forEach(([key,value]) => {
-   var node = value;
-   node.x   = value.x;
-   node.y   = value.y;
-   sync.nodes.push(node);
-  });
-  Object.entries(network.body.data.edges._data).forEach(([key,value]) => {
-   sync.edges.push(value);
-  });
-  $("#options").val(JSON.stringify(options,undefined,4));
-  $("#nodes").val(JSON.stringify(sync.nodes,undefined,4));
-  $("#edges").val(JSON.stringify(sync.edges,undefined,4));
+  $("#nodes").val(JSON.stringify(nodes.get(),undefined,4));
+  $("#edges").val(JSON.stringify(edges.get(),undefined,4));
+  $("#result").html("Synced config");
  };
  """
  print "</SCRIPT></ARTICLE>"
