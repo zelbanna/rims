@@ -118,7 +118,7 @@ def network(aDict):
  
    devices = {ret['id']:{'processed':False,'interfaces':0,'multipoint':0,'distance':0,'uplink':0}}
    interfaces = []
-   ret['options'] = {'physics':{'enabled':True,'stabilization':{'onlyDynamicEdges':True}},'edges': {'length': 120, 'smooth':{'type': 'dynamic'}}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'images/viz-generic.png' }}
+   ret['options'] = {'physics':{'enabled':True },'edges': {'length': 120 }, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'images/viz-generic.png' }}
 
    # Connected and Multipoint
    sql_connected  = "SELECT CAST({0} AS UNSIGNED) AS a_device, dc.id AS a_interface, dc.name AS a_name, dc.snmp_index AS a_index, dc.peer_interface AS b_interface, peer.snmp_index AS b_index, peer.name AS b_name, peer.device_id AS b_device FROM device_interfaces AS dc LEFT JOIN device_interfaces AS peer ON dc.peer_interface = peer.id WHERE dc.peer_interface IS NOT NULL AND dc.device_id = {0}"
@@ -127,14 +127,14 @@ def network(aDict):
    for lvl in range(0,args.get('diameter',2)):
     new_dev = {}
     new_int = []
-    for key,dev in devices.iteritems():
-     if not dev['processed']:
+    for from_id,from_dev in devices.iteritems():
+     if not from_dev['processed']:
       # Find straight interfaces
-      dev['interfaces'] += db.do(sql_connected.format(key))
+      from_dev['interfaces'] += db.do(sql_connected.format(from_id))
       cons = db.get_rows()
 
       # Find local multipoint
-      dev['multipoint'] += db.do(sql_multipoint.format(key))
+      from_dev['multipoint'] += db.do(sql_multipoint.format(from_id))
       multipoints = db.get_rows()
       # Check 'other side' and add that interface
       for interface in multipoints:
@@ -146,7 +146,8 @@ def network(aDict):
 
       # Deduce if interface is registered (the hard way, as no double dictionary)
       for con in cons:
-       seen = devices.get(con['b_device'])
+       to = con['b_device']
+       seen = devices.get(to)
        # If not seen before:
        #  - Add device to process next round and save interface
        #  -- in case already found as new, it means there is already such a connection, find that one and make both interfaces 'dynamic'
@@ -155,17 +156,21 @@ def network(aDict):
        # 2) For multipoint the other side will (ON SQL) see a straight interface so also covered by processed
        # 3) There is no multipoint to multipoint
        if not seen:
-        new = new_dev.get(con['b_device'],{'processed':False,'interfaces':0,'multipoint':0,'distance':lvl + 1,'uplink':0})
+        new = new_dev.get(to,{'processed':False,'interfaces':0,'multipoint':0,'distance':lvl + 1,'uplink':0})
         new['uplink'] += 1
-        new_dev[con['b_device']] = new
+        new_dev[to] = new
         new_int.append(con)
        elif not seen['processed']:
         # exist but interface has not been registered, this covers loops as we set processed last :-)
         new_int.append(con)
 
-      dev['processed'] = True
+      from_dev['processed'] = True
     # After all device leafs are processed we can add (net) new devices
     devices.update(new_dev)
+    # Check if a connection is multihomed, then make dynamic, else straight
+    multihomed = [k for k,v in new_dev.iteritems() if v['uplink'] > 1]
+    for con in new_int:
+     con['type'] = {'type':'dynamic'} if con['b_device'] in multihomed else False
     interfaces.extend(new_int)
 
    # Now update devices with hostname and type and model, rename fields to fitting info
@@ -174,5 +179,5 @@ def network(aDict):
    for node in ret['nodes']:
     devices[node['id']]['hostname'] = node['label']
    ret['name']  = devices[ret['id']]['hostname']
-   ret['edges'] = [{'from':intf['a_device'],'to':intf['b_device'],'title':"%s:%s <-> %s:%s"%(devices[intf['a_device']]['hostname'],intf['a_name'],devices[intf['b_device']]['hostname'],intf['b_name'])} for intf in interfaces]
+   ret['edges'] = [{'from':intf['a_device'],'to':intf['b_device'],'smooth':intf['type'],'title':"%s:%s <-> %s:%s"%(devices[intf['a_device']]['hostname'],intf['a_name'],devices[intf['b_device']]['hostname'],intf['b_name'])} for intf in interfaces]
  return ret
