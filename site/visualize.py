@@ -57,16 +57,17 @@ def network(aWeb):
  if aWeb['type'] == 'device':
   print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%res['id'], TITLE='Return to device')
  print aWeb.button('document', onclick='network_edit()', TITLE='Enable editor')
- print aWeb.button('start',  onclick='network_start()', TITLE='Enable physics')
- print aWeb.button('stop',   onclick='network_stop()', TITLE='Disable physics')
- print aWeb.button('sync',   onclick='network_sync()',TITLE='Sync graph to config')
+ print aWeb.button('start',  onclick='network_start()',  TITLE='Enable physics')
+ print aWeb.button('stop',   onclick='network_stop()',   TITLE='Disable physics')
+ print aWeb.button('fix',    onclick='network_fixate()', TITLE='Fix node positions')
+ print aWeb.button('sync',   onclick='network_sync()',   TITLE='Sync graph to config')
  print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?visualize_network&op=update', FRM='network_config', TITLE='Save config')
  print aWeb.button('network',DIV='div_network', OP='single', SELECTOR='.tab')
  print aWeb.button('help', HREF='http://visjs.org/docs/network/', TARGET='_blank', STYLE='float:right;', TITLE='vis.js help for configuring options/nodes/edges')
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_options'>Options</A>"
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_nodes'>Nodes</A>"
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_edges'>Edges</A>"
- print "<LABEL FOR=name>Name:</LABEL><FORM ID='network_config'><INPUT TYPE=TEXT CLASS=background STYLE='width:120px' VALUE='%s' NAME=name><SPAN ID=result CLASS=results>%s</SPAN></DIV>"%(res['name'],res.get('result',""))
+ print "</DIV><LABEL FOR=name>Name:</LABEL><FORM ID='network_config'><INPUT TYPE=TEXT CLASS=background STYLE='width:120px' VALUE='%s' NAME=name><SPAN ID=result CLASS=results>%s</SPAN>"%(res['name'],res.get('result',""))
  print "<DIV CLASS='tab' STYLE='display:none' ID='div_options'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=options NAME=options>%s</TEXTAREA></DIV>"%dumps(res['options'],indent=4)
  print "<DIV CLASS='tab' STYLE='display:none' ID='div_nodes'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=nodes NAME=nodes>%s</TEXTAREA></DIV>"%dumps(res['nodes'],indent=4)
  print "<DIV CLASS='tab' STYLE='display:none' ID='div_edges'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=edges NAME=edges>%s</TEXTAREA></DIV>"%dumps(res['edges'],indent=4)
@@ -94,6 +95,15 @@ def network(aWeb):
   network.setOptions({ manipulation:{ enabled:true }});
  };
 
+ function network_fixate(){
+  Object.entries(network.body.data.nodes._data).forEach(([id,node]) => {
+   if (node.fixed) {
+    node.fixed = false;
+   } else
+    node.fixed = true;
+  });
+ };
+
  function network_sync(){
   network.storePositions();
   var sync = { edges:[],nodes:[]};
@@ -104,11 +114,7 @@ def network(aWeb):
    sync.nodes.push(node);
   });
   Object.entries(network.body.data.edges._data).forEach(([key,value]) => {
-   var edge   = {};
-   edge.from  = value.from;
-   edge.to    = value.to;
-   edge.title = value.title;
-   sync.edges.push(edge);
+   sync.edges.push(value);
   });
   $("#options").val(JSON.stringify(options,undefined,4));
   $("#nodes").val(JSON.stringify(sync.nodes,undefined,4));
