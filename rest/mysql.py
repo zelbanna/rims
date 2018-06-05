@@ -16,15 +16,15 @@ def dump(aDict):
  try:
   mode = aDict.get('mode','structure')
   cmd  = ["mysqldump", "-u" + username, "-p" + password, db]
+  output = []
 
   if   mode == 'structure':
    cmd.extend(['--no-data','--add-drop-database'])
   elif mode == 'database':
+   output.append("SET sql_mode='NO_AUTO_VALUE_ON_ZERO';")
    cmd.extend(['-c','--skip-extended-insert'])
 
-  output = []
   if aDict.get('full',True):
-   output.append("SET sql_mode='NO_AUTO_VALUE_ON_ZERO';")
    output.extend(["DROP DATABASE IF EXISTS %s;"%db,"CREATE DATABASE %s;"%db])
   else:
    cmd.extend(['--no-create-info','--skip-triggers'])
