@@ -68,9 +68,9 @@ def network(aWeb):
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_nodes'>Nodes</A>"
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_edges'>Edges</A>"
  print "</DIV><LABEL FOR=name>Name:</LABEL><FORM ID='network_config'><INPUT TYPE=TEXT CLASS=background STYLE='width:120px' VALUE='%s' NAME=name><SPAN ID=result CLASS=results>%s</SPAN>"%(res['name'],res.get('result',""))
- print "<DIV CLASS='tab' STYLE='display:none' ID='div_options'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=options NAME=options>%s</TEXTAREA></DIV>"%dumps(res['options'],indent=4)
- print "<DIV CLASS='tab' STYLE='display:none' ID='div_nodes'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=nodes NAME=nodes>%s</TEXTAREA></DIV>"%dumps(res['nodes'],indent=4)
- print "<DIV CLASS='tab' STYLE='display:none' ID='div_edges'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=edges NAME=edges>%s</TEXTAREA></DIV>"%dumps(res['edges'],indent=4)
+ print "<DIV CLASS='tab' STYLE='display:none' ID='div_options'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=options NAME=options>%s</TEXTAREA></DIV>"%dumps(res['options'],indent=2)
+ print "<DIV CLASS='tab' STYLE='display:none' ID='div_nodes'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=nodes NAME=nodes>%s</TEXTAREA></DIV>"%dumps(res['nodes'],indent=2)
+ print "<DIV CLASS='tab' STYLE='display:none' ID='div_edges'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=edges NAME=edges>%s</TEXTAREA></DIV>"%dumps(res['edges'],indent=2)
  print "<INPUT TYPE=HIDDEN VALUE='%s' NAME=id>"%res['id']
  print "<INPUT TYPE=HIDDEN VALUE='%s' NAME=type>"%res['type']
  print "</FORM>"
@@ -84,7 +84,7 @@ def network(aWeb):
  network.on('stabilizationIterationsDone', function () { network.setOptions({ physics: false }); });
  network.on('dragEnd',function(params){ 
   network.storePositions();
-  $("#nodes").val(JSON.stringify(nodes.get(),undefined,4));
+  $("#nodes").val(JSON.stringify(nodes.get(),undefined,2));
   $("#result").html('Moved ' + nodes.get(params.nodes[0]).label);
  });
 
@@ -109,8 +109,8 @@ def network(aWeb):
 
  function network_sync(){
   network.storePositions();
-  $("#nodes").val(JSON.stringify(nodes.get(),undefined,4));
-  $("#edges").val(JSON.stringify(edges.get(),undefined,4));
+  $("#nodes").val(JSON.stringify(nodes.get(),undefined,2));
+  $("#edges").val(JSON.stringify(edges.get(),undefined,2));
   $("#result").html("Synced config");
  };
  """
