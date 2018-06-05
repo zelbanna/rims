@@ -59,7 +59,7 @@ def server_delete(aWeb):
 #
 #
 def domain_list(aWeb):
- domains = aWeb.rest_call("dns_domain_list",{'sync':aWeb['sync']})
+ domains = aWeb.rest_call("dns_domain_list",{'sync':True if aWeb['sync'] == 'true' else False})
  print "<ARTICLE><P>Domains</P><DIV CLASS='controls'>"
  print aWeb.button('reload',  DIV='div_content_left', URL='sdcp.cgi?dns_domain_list',TITLE='Reload')
  print aWeb.button('sync',    DIV='div_content_left', URL='sdcp.cgi?dns_domain_list&sync=true',TITLE='Resync cache')

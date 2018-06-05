@@ -90,24 +90,28 @@ def domain_list(aDict):
  """
  ret = {}
  with DB() as db:
-  if aDict.get('sync') == 'true':
+  if aDict.get('sync'):
    org = {}
    db.do("SELECT id, server, node FROM domain_servers")
    servers = db.get_rows()
    for server in servers:
     org[server['id']] = node_call(server['node'],server['server'],'domain_list')['domains']
-   ret.update({'sync':{'added':[],'deleted':[]}})
-   db.do("SELECT domains.* FROM domains")
-   cache = db.get_dict('foreign_id')
+   ret.update({'sync':{'added':[],'deleted':[],'type_fix':0}})
+   db.do("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
+   cache = db.get_dict('srv_id')
    for srv,domains in org.iteritems():
     for dom in domains:
-     if not cache.pop(dom['id'],None):
+     tmp = cache.pop("%s_%s"%(srv,dom['id']),None)
+     if not tmp:
       ret['sync']['added'].append(dom)
       # Add forward here
-      db.insert_dict('domains',{'name':dom['name'],'server_id':srv,'foreign_id':dom['id']},"ON DUPLICATE KEY UPDATE name = '%s'"%dom['name'])
+      db.insert_dict('domains',{'name':dom['name'],'server_id':srv,'foreign_id':dom['id'],'type':'reverse' if 'arpa' in dom['name'] else 'forward'},"ON DUPLICATE KEY UPDATE name = '%s'"%dom['name'])
+     else:
+      ret['sync']['type_fix'] += db.do("UPDATE domains SET type = '%s' WHERE id = %s"%('reverse' if 'arpa' in dom['name'] else 'forward',tmp['id']))
    for id,dom in cache.iteritems():
+    dom.pop('srv_id',None)
     ret['sync']['deleted'].append(dom)
-    db.do("DELETE FROM domains WHERE id = '%s'"%id)
+    db.do("DELETE FROM domains WHERE id = '%s'"%dom['id'])
 
   filter = []
   if aDict.get('filter'):
