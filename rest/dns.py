@@ -115,7 +115,7 @@ def domain_list(aDict):
 
   filter = []
   if aDict.get('filter'):
-   filter.append("name %s LIKE '%%arpa'"%('' if aDict.get('filter') == 'reverse' else "NOT"))
+   filter.append("type = '%s'"%aDict.get('filter'))
   if aDict.get('exclude'):
    db.do("SELECT server_id FROM domains WHERE id = '%s'"%(aDict.get('exclude')))
    filter.append('server_id = %s'%(db.get_val('server_id')))

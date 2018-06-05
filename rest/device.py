@@ -116,7 +116,7 @@ def info(aDict):
    # Rack infrastructure
    ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
    ret['infra']['types'] = types
-   db.do("SELECT domains.* FROM domains WHERE name NOT LIKE '%%arpa' ORDER BY name")
+   db.do("SELECT domains.* FROM domains WHERE type = 'forward' ORDER BY name")
    ret['infra']['domains'] = db.get_rows()
    if ret['info']['vm'] == 1:
     ret['racked'] = 0
