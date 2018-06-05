@@ -161,19 +161,21 @@ def delete(aDict):
  
 #
 #
-def check_ip(aDict):
- """ Function returns state of IP relative a specific network, within or outside. TODO, should be used to confirm availability too (!)... i.e. function should be allocate and bool should indicate status of allocation
+def allocate_ip(aDict):
+ """ Function allocate IP relative a specific network.
 
  Args:
   - ip (required)
-  - ipam_network (required)
+  - network (required)
 
  Output:
-  - boolean
+  - valid (boolean) Indicates valid within network
+  - success (boolean)
  """
+ ret = {'success':True}
  with DB() as db:
-  result = (db.do("SELECT subnet FROM ipam_networks WHERE id = {0} AND INET_ATON('{1}') > subnet AND INET_ATON('{1}') < (subnet + POW(2,(32-mask))-1)".format(aDict['ipam_network'],aDict['ip'])) == 1)
- return result
+  ret['valid'] = (db.do("SELECT subnet FROM ipam_networks WHERE id = {0} AND INET_ATON('{1}') > subnet AND INET_ATON('{1}') < (subnet + POW(2,(32-mask))-1)".format(aDict['network'],aDict['ip'])) == 1)
+ return ret
 
 #
 #

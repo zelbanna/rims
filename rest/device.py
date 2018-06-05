@@ -242,9 +242,12 @@ def new(aDict):
  ipam_id = aDict.get('ipam_id')
  ret = {'info':None}
  with DB() as db:
-  from sdcp.rest.ipam import check_ip
-  if not check_ip({'ip':ip,'ipam_network':ipam_id}):
-   ret['info'] = "IP not in subnet range"
+  from sdcp.rest.ipam import allocate_ip
+  alloc = allocate_ip({'ip':ip,'network':ipam_id})
+  if   not alloc['valid']:
+   ret['info'] = "IP not in network range"
+  elif not alloc['success']:
+   ret['info'] = "IP not available"
   elif aDict['hostname'] == 'unknown':
    ret['info'] = "Hostname unknown not allowed"
   else:
