@@ -412,7 +412,7 @@ def record_device_update(aDict):
 #
 #
 def record_device_create(aDict):
- """Function docstring for record_device_create TBD
+ """Function docstring for record_device_create. This one does not expect 'overlapping' reverse or forwarding zones - hence bypassing IPAM's PTR registration and does lookup for first available reverse record
 
  Args:
   - device_id (required)

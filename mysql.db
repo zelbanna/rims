@@ -136,8 +136,11 @@ CREATE TABLE `ipam_networks` (
   `gateway` int(10) unsigned DEFAULT NULL,
   `description` text,
   `vrf` varchar(40) DEFAULT 'default',
+  `reverse_zone_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `network_vrf` (`network`,`vrf`)
+  KEY `reverse_zone` (`reverse_zone_id`),
+  UNIQUE KEY `network_vrf` (`network`,`vrf`),
+  CONSTRAINT `ipam_networks_ibfk_1` FOREIGN KEY (`reverse_zone_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
