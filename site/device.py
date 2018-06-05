@@ -291,17 +291,17 @@ def new(aWeb):
  if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- ip     = aWeb.get('ip')
- name   = aWeb.get('hostname','unknown')
- mac    = aWeb.get('mac',"00:00:00:00:00:00")
- op     = aWeb['op']
- ipam_id = aWeb['ipam_id']
+ ip   = aWeb.get('ip')
+ name = aWeb.get('hostname','unknown')
+ mac  = aWeb.get('mac',"00:00:00:00:00:00")
+ op   = aWeb['op']
+ network = aWeb['network']
  if not ip:
   from sdcp.core import genlib as GL
   ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
 
  if op == 'new':
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb['a_dom_id'], 'ipam_id':ipam_id }
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb['a_dom_id'], 'ipam_id':network }
   if aWeb['vm']:
    args['vm'] = 1
   else:
@@ -311,10 +311,10 @@ def new(aWeb):
   res = aWeb.rest_call("device_new",args)
   print "Operation:%s"%str(res)
  elif op == 'find':
-  print aWeb.rest_call("ipam_find",{'network':ipam_id})['ip']
+  print aWeb.rest_call("ipam_find",{'network':network})['ip']
  else:
-  subnets = aWeb.rest_call("ipam_list")['subnets']
-  domains = aWeb.rest_call("dns_domain_list",{'filter':'forward'})['domains']
+  networks = aWeb.rest_call("ipam_list")['networks']
+  domains  = aWeb.rest_call("dns_domain_list",{'filter':'forward'})['domains']
   print "<ARTICLE CLASS=info><P>Device Add</P>"
   print "<FORM ID=device_new_form>"
   print "<DIV CLASS=table><DIV CLASS=tbody>"
@@ -323,9 +323,9 @@ def new(aWeb):
   for d in domains:
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == aWeb['domain'] else "",d['name'])
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_id>"
-  for s in subnets:
-   print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == ipam_id else "", s['subasc'],s['description'])
+  print "<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><SELECT NAME=network>"
+  for s in networks:
+   print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == network else "", s['netasc'],s['description'])
   print "</SELECT></DIV></DIV>"
   print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT  NAME=ip ID=device_ip TYPE=TEXT VALUE='{}'></DIV></DIV>".format(ip)
   print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac)
@@ -354,7 +354,7 @@ def discover(aWeb):
   res = aWeb.rest_full(aWeb._rest_url,"device_discover",{ 'network':aWeb['network'], 'a_dom_id':aWeb['a_dom_id']}, aTimeout = 200)['data']
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
-  subnets = aWeb.rest_call("ipam_list")['subnets']
+  networks = aWeb.rest_call("ipam_list")['networks']
   domains = aWeb.rest_call("dns_domain_list",{'filter':'forward'})['domains']
   dom_name = aWeb['domain']
   print "<ARTICLE CLASS=info><P>Device Discovery</P>"
@@ -366,9 +366,9 @@ def discover(aWeb):
    extra = "" if not dom_name == d.get('name') else "selected=selected"
    print "<OPTION VALUE=%s %s>%s</OPTION>"%(d.get('id'),extra,d.get('name'))
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=network>"
-  for s in subnets:
-   print "<OPTION VALUE=%s>%s (%s)</OPTION>"%(s['id'],s['subasc'],s['description'])
+  print "<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><SELECT NAME=network>"
+  for s in networks:
+   print "<OPTION VALUE=%s>%s (%s)</OPTION>"%(s['id'],s['netasc'],s['description'])
   print "</SELECT></DIV></DIV>"
   print "</DIV></DIV>"
   print "</FORM><DIV CLASS=controls>"

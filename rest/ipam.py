@@ -1,4 +1,4 @@
-"""IPAM API module. Provides subnet management for devices"""
+"""IPAM API module. Provides network management for devices"""
 __author__ = "Zacharias El Banna"
 __version__ = "18.05.31GA"
 __status__ = "Production"
@@ -9,7 +9,7 @@ from sdcp.core.common import DB
 #
 #
 def list(aDict):
- """Function docstring for list: lists subnets
+ """Function docstring for list: lists networks
 
  Args:
 
@@ -19,8 +19,8 @@ def list(aDict):
  with DB() as db:
   dhcp = db.do("SELECT parameter,value FROM settings WHERE section = 'dhcp'")
   ret['dhcp'] = db.get_dict('parameter') if dhcp > 0 else None
-  ret['xist']    = db.do("SELECT id, CONCAT(INET_NTOA(subnet),'/',mask) AS subasc, INET_NTOA(gateway) AS gateway, description, mask, subnet FROM ipam_networks ORDER by subnet")
-  ret['subnets'] = db.get_rows()
+  ret['xist']    = db.do("SELECT id, CONCAT(INET_NTOA(network),'/',mask) AS netasc, INET_NTOA(gateway) AS gateway, description, mask, network FROM ipam_networks ORDER by network")
+  ret['networks'] = db.get_rows()
  return ret
 
 #
@@ -30,7 +30,7 @@ def info(aDict):
 
  Args:
   - id (required)
-  - subnet (optional)
+  - network (optional)
   - description (optional)
   - mask (optional)
   - gateway (optional)
@@ -49,7 +49,7 @@ def info(aDict):
     return unpack("!I", inet_aton(addr))[0]
 
    # Check gateway
-   low   = GL_ip2int(args['subnet'])
+   low   = GL_ip2int(args['network'])
    high  = low + 2**(32-int(args['mask'])) - 1
    try:    gwint = GL_ip2int(args['gateway'])
    except: gwint = 0
@@ -57,7 +57,7 @@ def info(aDict):
     gwint = low + 1
     ret['info'] = "illegal gateway"
    args['gateway'] = str(gwint)
-   args['subnet']  = str(low)
+   args['network']  = str(low)
    if id == 'new':
     ret['update'] = db.insert_dict('ipam_networks',args,'ON DUPLICATE KEY UPDATE id = id')
     id = db.get_last_id() if ret['update'] > 0 else 'new'
@@ -65,16 +65,16 @@ def info(aDict):
     ret['update'] = db.update_dict('ipam_networks',args,'id=%s'%id)
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(subnet) AS subnet, INET_NTOA(gateway) AS gateway FROM ipam_networks WHERE id = %s"%id)
+   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(network) AS network, INET_NTOA(gateway) AS gateway FROM ipam_networks WHERE id = %s"%id)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = { 'id':'new', 'subnet':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }
+   ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }
  return ret
 
 #
 #
 def inventory(aDict):
- """Function docstring for inventory: Allocation of IP addresses within a subnet.
+ """Function docstring for inventory: Allocation of IP addresses within a network.
 
  Args:
   - network (required)
@@ -83,20 +83,20 @@ def inventory(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT mask, subnet, INET_NTOA(subnet) as subasc, gateway, INET_NTOA(gateway) as gwasc FROM ipam_networks WHERE id = {}".format(aDict['network']))
-  subnet = db.get_row()
-  ret['start']  = subnet['subnet']
-  ret['no']     = 2**(32-subnet['mask'])
-  ret['mask']   = subnet['mask']
-  ret['subnet'] = subnet['subasc']
-  ret['gateway']= subnet['gwasc']
+  db.do("SELECT mask, network, INET_NTOA(network) as netasc, gateway, INET_NTOA(gateway) as gwasc FROM ipam_networks WHERE id = {}".format(aDict['network']))
+  network = db.get_row()
+  ret['start']  = network['network']
+  ret['no']     = 2**(32-network['mask'])
+  ret['mask']   = network['mask']
+  ret['network'] = network['netasc']
+  ret['gateway']= network['gwasc']
   ret['xist_devices'] = db.do("SELECT ip,id,hostname,0 AS gateway FROM devices WHERE ipam_id = {} ORDER BY ip".format(aDict['network']))
   ret['devices'] = db.get_dict('ip')
-  gw = ret['devices'].get(subnet['gateway'])
+  gw = ret['devices'].get(network['gateway'])
   if gw:
    gw['gateway'] = 1
   else:
-   ret['devices'][subnet['gateway']] = {'id':None,'ip':subnet['gateway'],'hostname':'gateway','gateway':1}
+   ret['devices'][network['gateway']] = {'id':None,'ip':network['gateway'],'hostname':'gateway','gateway':1}
  return ret
 
 #
@@ -117,14 +117,14 @@ def find(aDict):
 
  consecutive = int(aDict.get('consecutive',1))
  with DB() as db:
-  db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM ipam_networks WHERE id = {}".format(aDict['network']))
-  sub = db.get_row()
+  db.do("SELECT network, INET_NTOA(network) as netasc, mask FROM ipam_networks WHERE id = {}".format(aDict['network']))
+  net = db.get_row()
   db.do("SELECT ip FROM devices WHERE ipam_id = {}".format(aDict['network']))
   iplist = db.get_dict('ip')
- subnet = int(sub.get('subnet'))
+ network = int(net.get('network'))
  start  = None
- ret    = { 'subnet':sub['subasc'] }
- for ip in range(subnet + 1, subnet + 2**(32-int(sub.get('mask')))-1):
+ ret    = { 'network':net['netasc'] }
+ for ip in range(network + 1, network + 2**(32-int(net.get('mask')))-1):
   if iplist.get(ip):
    start = None
   elif not start:
@@ -174,7 +174,7 @@ def allocate_ip(aDict):
  """
  ret = {'success':True}
  with DB() as db:
-  ret['valid'] = (db.do("SELECT subnet FROM ipam_networks WHERE id = {0} AND INET_ATON('{1}') > subnet AND INET_ATON('{1}') < (subnet + POW(2,(32-mask))-1)".format(aDict['network'],aDict['ip'])) == 1)
+  ret['valid'] = (db.do("SELECT network FROM ipam_networks WHERE id = {0} AND INET_ATON('{1}') > network AND INET_ATON('{1}') < (network + POW(2,(32-mask))-1)".format(aDict['network'],aDict['ip'])) == 1)
  return ret
 
 #
@@ -223,10 +223,10 @@ def discover(aDict):
  ret = {'addresses':addresses}
 
  with DB() as db:
-  db.do("SELECT subnet,mask FROM ipam_networks WHERE id = '%s'"%aDict['network'])
+  db.do("SELECT network,mask FROM ipam_networks WHERE id = '%s'"%aDict['network'])
   net = db.get_row()
-  ip_start = net['subnet'] + 1
-  ip_end   = net['subnet'] + 2**(32 - net['mask']) - 1
+  ip_start = net['network'] + 1
+  ip_end   = net['network'] + 2**(32 - net['mask']) - 1
   ret.update({'start':{'ip':ip_start,'ipasc':GL_int2ip(ip_start)},'end':{'ip':ip_end,'ipasc':GL_int2ip(ip_end)}})
 
  try:

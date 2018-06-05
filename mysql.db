@@ -131,13 +131,13 @@ CREATE TABLE `domains` (
 DROP TABLE IF EXISTS `ipam_networks`;
 CREATE TABLE `ipam_networks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `subnet` int(10) unsigned NOT NULL,
+  `network` int(10) unsigned NOT NULL,
   `mask` tinyint(3) unsigned NOT NULL DEFAULT '24',
   `gateway` int(10) unsigned DEFAULT NULL,
   `description` text,
   `vrf` varchar(40) DEFAULT 'default',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `subnet_vrf` (`subnet`,`vrf`)
+  UNIQUE KEY `network_vrf` (`network`,`vrf`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
