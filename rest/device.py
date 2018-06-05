@@ -4,7 +4,7 @@ __version__ = "18.05.31GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from sdcp.core.common import DB,SC
+from sdcp.core.common import DB
 
 #
 #
@@ -36,9 +36,10 @@ def info(aDict):
    ret['result'] = {}
 
    if operation == 'lookup' and ret['ip']:
-    lookup = detect({'ip':ret['ip']})
+    from sdcp.devices.generic import Device
+    dev = Device(ret['ip'])
+    lookup = dev.detect()
     ret['result']['lookup'] = lookup['result']
-
     if lookup['result'] == 'OK':
      args.update({'devices_model':lookup['info']['model'],'devices_snmp':lookup['info']['snmp'],'devices_type_id':types[lookup['info']['type']]['id']})
 
@@ -104,7 +105,10 @@ def info(aDict):
    ret['mac']  = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
    if not ret['info']['functions']:
     ret['info']['functions'] = ""
-   ret['username'] = SC['netconf']['username']
+   # Pick login name from settings
+   db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'netconf'")
+   netconf = db.get_dict('parameter')
+   ret['username'] = netconf['username']['value']
    ret['booked'] = db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id']))
    if ret['booked'] > 0:
     ret['booking'] = db.get_row()
@@ -318,9 +322,11 @@ def discover(aDict):
  from time import time
  from threading import Thread, BoundedSemaphore
  from sdcp.rest.ipam import discover as ipam_discover
+ from sdcp.devices.generic import Device
 
  def __detect_thread(aIP,aDB,aSema):
-  aDB[aIP['ip']] = detect({'ip':aIP['ipasc']})['info']
+  __dev = Device(aIP['ipasc'])
+  aDB[aIP['ip']] = __dev.detect()['info']
   aSema.release()
   return True
 
@@ -357,51 +363,6 @@ def discover(aDict):
    db.do(sql.format(ipint,aDict['network'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
  ret['time'] = int(time()) - start_time
  ret['found']= len(db_new)
- return ret
-
-#
-#
-def detect(aDict):
- """Function docstring for detect TBD. TODO -> make this a function of generic device instead !!! ZEB
-
- Args:
-  - ip (required)
-
- Output:
- """
- ret = {'result':'OK'}
-
- from netsnmp import VarList, Varbind, Session
- try:
-  # .1.3.6.1.2.1.1.1.0 : Device info
-  # .1.3.6.1.2.1.1.5.0 : Device name
-  devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'))
-  session = Session(Version = 2, DestHost = aDict['ip'], Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-  session.get(devobjs)
- except Exception as err:
-  ret['snmp'] = "Not able to do SNMP lookup (check snmp -> read_community): %s"%str(err) 
- else:
-  ret['info'] = {'model':'unknown', 'type':'generic','snmp':devobjs[1].val.lower() if devobjs[1].val else 'unknown'}
-  if devobjs[0].val:
-   infolist = devobjs[0].val.split()
-   if infolist[0] == "Juniper":
-    if infolist[1] == "Networks,":
-     ret['info']['model'] = infolist[3].lower()
-     for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-      if tp in ret['info']['model']:
-       ret['info']['type'] = tp
-       break
-    else:
-     subinfolist = infolist[1].split(",")
-     ret['info']['model'] = subinfolist[2]
-   elif infolist[0] == "VMware":
-    ret['info']['model'] = "esxi"
-    ret['info']['type']  = "esxi"
-   elif infolist[0] == "Linux":
-    ret['info']['model'] = 'debian' if "Debian" in devobjs[0].val else 'generic'
-   else:
-    ret['info']['model'] = " ".join(infolist[0:4])
-
  return ret
 
 ############################################## Specials ###############################################

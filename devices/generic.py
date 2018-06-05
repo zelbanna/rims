@@ -50,8 +50,10 @@ class Device(object):
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
 
  def log_msg(self, aMsg):
-  from sdcp.core.logger import log
-  log(aMsg)
+  try:
+   from sdcp.core.logger import log
+   log(aMsg)
+  except: pass
 
  def configuration(self,argdict):
   return ["No config for device"]
@@ -75,3 +77,38 @@ class Device(object):
    self.log_msg("Generic : error traversing interfaces: " + str(exception_error))
   return interfaces
 
+ def detect(self):
+  ret = {}
+  from sdcp.SettingsContainer import SC
+  from netsnmp import VarList, Varbind, Session
+  try:
+   # .1.3.6.1.2.1.1.1.0 : Device info
+   # .1.3.6.1.2.1.1.5.0 : Device name
+   devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'))
+   session = Session(Version = 2, DestHost = self._ip, Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session.get(devobjs)
+   ret['result'] = "OK" if (session.ErrorInd == 0) else "NOT_OK"
+  except Exception as err:
+   ret['snmp'] = "Not able to do SNMP lookup (check snmp -> read_community): %s"%str(err)
+  else:
+   ret['info'] = {'model':'unknown', 'type':'generic','snmp':devobjs[1].val.lower() if devobjs[1].val else 'unknown'}
+   if devobjs[0].val:
+    infolist = devobjs[0].val.split()
+    if infolist[0] == "Juniper":
+     if infolist[1] == "Networks,":
+      ret['info']['model'] = infolist[3].lower()
+      for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
+       if tp in ret['info']['model']:
+        ret['info']['type'] = tp
+        break
+     else:
+      subinfolist = infolist[1].split(",")
+      ret['info']['model'] = subinfolist[2]
+    elif infolist[0] == "VMware":
+     ret['info']['model'] = "esxi"
+     ret['info']['type']  = "esxi"
+    elif infolist[0] == "Linux":
+     ret['info']['model'] = 'debian' if "Debian" in devobjs[0].val else 'generic'
+    else:
+     ret['info']['model'] = " ".join(infolist[0:4])
+  return ret
