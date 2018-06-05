@@ -4,7 +4,7 @@ __version__ = "18.05.31GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from sdcp.core.common import DB,SC
+from sdcp.core.common import DB
 
 #
 #
@@ -58,13 +58,15 @@ def info(aDict):
   db.do(sqlbase%('pdu'))
   ret['pdus'] = db.get_rows()
   ret['pdus'].append({ 'id':'NULL', 'hostname':'No PDU'})
-
- try:
-  from os import listdir, path
-  directory = listdir(path.join(SC['generic']['docroot'],"images")) if not SC['generic'].get('rack_image_directory') else SC['generic']['rack_image_directory']
-  ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
- except Exception as err:
-  ret['error'] = "Error loading generic -> rack_image_directory: %s"%str(err)
+ 
+  try:
+   from os import listdir, path
+   db.do("SELECT parameter,value FROM settings WHERE section = 'generic' AND node = 'master'")
+   settings = db.get_dict('parameter')
+   directory = listdir(path.join(settings['docroot']['value'],"images")) if not settings.get('rack_image_directory') else settings['rack_image_directory']['value']
+   ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
+  except Exception as err:
+   ret['error'] = "Error loading generic -> rack_image_directory: %s"%str(err)
  return ret
 
 

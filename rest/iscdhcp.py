@@ -60,7 +60,8 @@ def update_server(aDict):
 
  Output:
  """
- from sdcp.core.common import SC,node_call
+ from sdcp.SettingsContainer import SC
+ from sdcp.core.common import node_call
  entries = node_call('master','device','list_mac')
  # Create file
  with open(SC['iscdhcp']['static'],'w') as leasefile:

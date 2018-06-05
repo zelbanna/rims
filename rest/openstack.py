@@ -4,8 +4,10 @@ __version__ = "18.05.31GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
+from sdcp.SettingsContainer import SC
 from sdcp.devices.openstack import Device
-from sdcp.core.common import DB,SC,rest_call
+from sdcp.core.common import DB,rest_call
+
 #
 #
 def application(aDict):
