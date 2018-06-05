@@ -60,12 +60,12 @@ def update_server(aDict):
 
  Output:
  """
- from sdcp.core.common import SC,rest_call
- entries = rest_call("%s?device_list_mac"%SC['system']['master'])['data']
+ from sdcp.core.common import SC,node_call
+ entries = node_call(SC['system']['master'],"device","list_mac")['data']
  # Create file
  with open(SC['iscdhcp']['static'],'w') as leasefile:
   for entry in entries:
-   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Subnet {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['ipam_id'],entry['id']))
+   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Network {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['ipam_id'],entry['id']))
 
  # Reload
  from subprocess import check_output, CalledProcessError
