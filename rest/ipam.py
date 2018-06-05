@@ -77,20 +77,20 @@ def inventory(aDict):
  """Function docstring for inventory: Allocation of IP addresses within a subnet.
 
  Args:
-  - id (required)
+  - network (required)
 
  Output:
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT mask, subnet, INET_NTOA(subnet) as subasc, gateway, INET_NTOA(gateway) as gwasc FROM ipam_networks WHERE id = {}".format(aDict['id']))
+  db.do("SELECT mask, subnet, INET_NTOA(subnet) as subasc, gateway, INET_NTOA(gateway) as gwasc FROM ipam_networks WHERE id = {}".format(aDict['network']))
   subnet = db.get_row()
   ret['start']  = subnet['subnet']
   ret['no']     = 2**(32-subnet['mask'])
   ret['mask']   = subnet['mask']
   ret['subnet'] = subnet['subasc']
   ret['gateway']= subnet['gwasc']
-  ret['xist_devices'] = db.do("SELECT ip,id,hostname,0 AS gateway FROM devices WHERE ipam_id = {} ORDER BY ip".format(aDict['id']))
+  ret['xist_devices'] = db.do("SELECT ip,id,hostname,0 AS gateway FROM devices WHERE ipam_id = {} ORDER BY ip".format(aDict['network']))
   ret['devices'] = db.get_dict('ip')
   gw = ret['devices'].get(subnet['gateway'])
   if gw:
@@ -105,7 +105,7 @@ def find(aDict):
  """Function docstring for find TBD
 
  Args:
-  - id (required)
+  - network (required)
   - consecutive (optional)
 
  Output:
@@ -117,9 +117,9 @@ def find(aDict):
 
  consecutive = int(aDict.get('consecutive',1))
  with DB() as db:
-  db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM ipam_networks WHERE id = {}".format(aDict['id']))
+  db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM ipam_networks WHERE id = {}".format(aDict['network']))
   sub = db.get_row()
-  db.do("SELECT ip FROM devices WHERE ipam_id = {}".format(aDict['id']))
+  db.do("SELECT ip FROM devices WHERE ipam_id = {}".format(aDict['network']))
   iplist = db.get_dict('ip')
  subnet = int(sub.get('subnet'))
  start  = None
@@ -155,8 +155,8 @@ def delete(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['devices'] = db.do("DELETE FROM devices WHERE ipam_id = " + aDict['id'])
-  ret['deleted'] = db.do("DELETE FROM ipam_networks WHERE id = " + aDict['id'])
+  ret['devices'] = db.do("DELETE FROM devices WHERE ipam_id = " + aDict['network'])
+  ret['deleted'] = db.do("DELETE FROM ipam_networks WHERE id = " + aDict['network'])
  return ret
  
 #
@@ -174,6 +174,21 @@ def check_ip(aDict):
  with DB() as db:
   result = (db.do("SELECT subnet FROM ipam_networks WHERE id = {0} AND INET_ATON('{1}') > subnet AND INET_ATON('{1}') < (subnet + POW(2,(32-mask))-1)".format(aDict['ipam_network'],aDict['ip'])) == 1)
  return result
+
+#
+#
+def id_to_ip(aDict):
+ """ Funtion returns mapping between IPAM id and ip,network_id
+
+ Args:
+  - id (required)
+
+ Output:
+  - ip
+  - ipasc
+  - ipam_network
+ """
+ return {}
 
 #
 #

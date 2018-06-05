@@ -50,7 +50,7 @@ def info(aWeb):
 #
 #
 def layout(aWeb):
- data = aWeb.rest_call("ipam_inventory",{'id':aWeb['id']})
+ data = aWeb.rest_call("ipam_inventory",{'network':aWeb['id']})
  startn  = int(data['start'])
  starta  = int(data['subnet'].split('.')[3])
  devices = data['devices']
@@ -71,5 +71,5 @@ def layout(aWeb):
 #
 #
 def delete(aWeb):
- data = aWeb.rest_call("ipam_delete",{'id':aWeb['id']})
+ data = aWeb.rest_call("ipam_delete",{'network':aWeb['id']})
  print "<ARTICLE>%s</ARTICLE"%(data)
