@@ -511,11 +511,14 @@ def configuration_template(aDict):
 
  Output:
  """
+ from sdcp.rest.ipam import info as ipam_info
  ret = {}
  with DB() as db:
-  db.do("SELECT INET_NTOA(ip) AS ipasc, hostname, mask, INET_NTOA(gateway) AS gateway, INET_NTOA(subnet) AS subnet, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id LEFT JOIN ipam_networks ON ipam_networks.id = devices.ipam_id WHERE devices.id = '%s'"%aDict['id'])
+  db.do("SELECT ipam_id, INET_NTOA(ip) AS ipasc, hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aDict['id'])
   data = db.get_row()
  ip = data.pop('ipasc',None)
+ ipam = ipam_info({'id':data.pop('ipam_id',None)})['data']
+ data.update({'mask':ipam['mask'],'gateway':ipam['gateway'],'network':ipam['network']})
  try:
   module = import_module("sdcp.devices.%s"%data['type'])
   dev = getattr(module,'Device',lambda x: None)(ip)
@@ -525,7 +528,7 @@ def configuration_template(aDict):
   ret['result'] = 'NOT_OK'
  else:
   ret['result'] = 'OK'
-  
+
  return ret 
 
 #

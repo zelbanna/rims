@@ -129,7 +129,7 @@ class Junos(GenericDevice):
               '%s system ntp server %s'%(base,SC['netconf']['ntpsrv']),
               '%s routing-options static route 0.0.0.0/0 next-hop %s'%(base,argdict['gateway']),
               '%s routing-options static route 0.0.0.0/0 no-readvertise'%base,
-              '%s snmp community %s clients %s/%s'%(base,SC['snmp']['read_community'],argdict['subnet'],argdict['mask']),
+              '%s snmp community %s clients %s/%s'%(base,SC['snmp']['read_community'],argdict['network'],argdict['mask']),
               '%s protocols lldp port-id-subtype interface-name'%base,
               '%s protocols lldp interface all'%base,
               '%s class-of-service host-outbound-traffic forwarding-class network-control'%base,

@@ -37,7 +37,7 @@ def application(aDict):
 #
 #
 def authenticate(aDict):
- """Function docstring for authenticate. Provide cookie with lifetime. TODO should set auth and ID here
+ """Function docstring for authenticate. Provide cookie with lifetime.
 
  Args:
   - id (required)
