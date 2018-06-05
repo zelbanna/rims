@@ -7,7 +7,6 @@ __author__ = "Zacharias El Banna"
 __version__ = "18.05.31GA"
 __status__ = "Production"
 
-
 ############################################ Database ######################################
 #
 # Database Class

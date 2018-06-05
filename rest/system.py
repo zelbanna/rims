@@ -330,6 +330,7 @@ def settings_container(aDict):
 
  Output:
  """
+ from sdcp.SettingsContainer import SC
  return SC
 
 ################################################# NODE ##############################################
