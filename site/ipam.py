@@ -27,9 +27,10 @@ def list(aWeb):
 #
 def info(aWeb):
  args = aWeb.get_args2dict()
- data = aWeb.rest_call("ipam_info",args)['data']
+ res  = aWeb.rest_call("ipam_info",args)
+ data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
- print "<ARTICLE CLASS=info><P>network Info (%s)</P>"%(data['id'])
+ print "<ARTICLE CLASS=info><P>Network Info (%s)</P>"%(data['id'])
  print "<FORM ID=ipam_info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(data['id'])
  print "<DIV CLASS=table><DIV CLASS=tbody>"
@@ -37,6 +38,11 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=network  VALUE='{}' '{}'></DIV></DIV>".format(data['network'],lock)
  print "<DIV CLASS=tr><DIV CLASS=td>Mask:</DIV><DIV CLASS=td><INPUT    TYPE=TEXT NAME=mask    VALUE='{}' '{}'></DIV></DIV>".format(data['mask'],lock)
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=gateway VALUE='{}'></DIV></DIV>".format(data['gateway'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Reverse Zone:</DIV><DIV CLASS=td><SELECT NAME=reverse_zone_id>"
+ for dom in res['domains']:
+  extra = "selected" if (dom['id'] == data['reverse_zone_id']) or (not data['reverse_zone_id'] and dom['id'] == 'NULL') else ''
+  print "<OPTION VALUE='%s' %s>%s (%s)</OPTION>"%(dom['id'],extra,dom['server'],dom['name'])
+ print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?ipam_info&id=%s'%data['id'])

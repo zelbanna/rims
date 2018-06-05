@@ -34,6 +34,7 @@ def info(aDict):
   - description (optional)
   - mask (optional)
   - gateway (optional)
+  - reverse_zone_id (optional)
 
  Output:
  """
@@ -65,10 +66,19 @@ def info(aDict):
     ret['update'] = db.update_dict('ipam_networks',args,'id=%s'%id)
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(network) AS network, INET_NTOA(gateway) AS gateway FROM ipam_networks WHERE id = %s"%id)
+   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(network) AS network, INET_NTOA(gateway) AS gateway, reverse_zone_id FROM ipam_networks WHERE id = %s"%id)
    ret['data'] = db.get_row()
   else:
    ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }
+
+  def GL_ip2arpa(addr):          
+   octets = addr.split('.')[:3]          
+   octets.reverse()
+   octets.append("in-addr.arpa")    
+   return ".".join(octets)
+  db.do("SELECT domains.id, name, CONCAT(server,'@',node) AS server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.name = '%s'"%(GL_ip2arpa(ret['data']['network'])))
+  ret['domains'] = db.get_rows()
+  ret['domains'].append({'id':'NULL','name':None,'server':None})
  return ret
 
 #
