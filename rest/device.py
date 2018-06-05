@@ -311,7 +311,7 @@ def discover(aDict):
 
  Args:
   - a_dom_id (required)
-  - ipam_network (required)
+  - network (required)
 
  Output:
  """
@@ -325,13 +325,13 @@ def discover(aDict):
   return True
 
  start_time = int(time())
- ipam = ipam_discover({'ipam_network':aDict['ipam_network']})
+ ipam = ipam_discover({'network':aDict['network']})
  ret = {'errors':0, 'start':ipam['start'],'end':ipam['end'] }
 
  with DB() as db:
   db.do("SELECT id,name FROM device_types")
   devtypes = db.get_dict('name')
-  ret['xist'] = db.do("SELECT ip, INET_NTOA(ip) AS ipasc FROM devices WHERE ip >= {} and ip <= {} and ipam_id = {}".format(ipam['start']['ip'],ipam['end']['ip'],aDict['ipam_network']))
+  ret['xist'] = db.do("SELECT ip, INET_NTOA(ip) AS ipasc FROM devices WHERE ip >= {} and ip <= {} and ipam_id = {}".format(ipam['start']['ip'],ipam['end']['ip'],aDict['network']))
  db_old = db.get_dict('ip')
  db_new = {}
  try:
@@ -354,7 +354,7 @@ def discover(aDict):
   count = 0
   for ipint,entry in db_new.iteritems():
    count += 1
-   db.do(sql.format(ipint,aDict['ipam_network'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
+   db.do(sql.format(ipint,aDict['network'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
  ret['time'] = int(time()) - start_time
  ret['found']= len(db_new)
  return ret

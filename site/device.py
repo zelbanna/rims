@@ -351,7 +351,7 @@ def delete(aWeb):
 #
 def discover(aWeb):
  if aWeb['op']:
-  res = aWeb.rest_full(aWeb._rest_url,"device_discover",{ 'ipam_network':aWeb['ipam_network'], 'a_dom_id':aWeb['a_dom_id']}, aTimeout = 200)['data']
+  res = aWeb.rest_full(aWeb._rest_url,"device_discover",{ 'network':aWeb['network'], 'a_dom_id':aWeb['a_dom_id']}, aTimeout = 200)['data']
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
   subnets = aWeb.rest_call("ipam_list")['subnets']
@@ -366,7 +366,7 @@ def discover(aWeb):
    extra = "" if not dom_name == d.get('name') else "selected=selected"
    print "<OPTION VALUE=%s %s>%s</OPTION>"%(d.get('id'),extra,d.get('name'))
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=ipam_network>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Subnet:</DIV><DIV CLASS=td><SELECT NAME=network>"
   for s in subnets:
    print "<OPTION VALUE=%s>%s (%s)</OPTION>"%(s['id'],s['subasc'],s['description'])
   print "</SELECT></DIV></DIV>"

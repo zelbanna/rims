@@ -188,17 +188,17 @@ def id_to_ip(aDict):
  Output:
   - ip
   - ipasc
-  - ipam_network
+  - network
  """
  return {}
 
 #
 #
 def discover(aDict):
- """ Function discovers IP:s that answer to ping within a certain ipam_network. A list of such IP:s are returned for inspection
+ """ Function discovers IP:s that answer to ping within a certain network. A list of such IP:s are returned for inspection
 
  Args:
-  - ipam_network (required)
+  - network (required)
   - simultaneous (optional). Simultaneouse threads
 
  Output:
@@ -223,7 +223,7 @@ def discover(aDict):
  ret = {'addresses':addresses}
 
  with DB() as db:
-  db.do("SELECT subnet,mask FROM ipam_networks WHERE id = '%s'"%aDict['ipam_network'])
+  db.do("SELECT subnet,mask FROM ipam_networks WHERE id = '%s'"%aDict['network'])
   net = db.get_row()
   ip_start = net['subnet'] + 1
   ip_end   = net['subnet'] + 2**(32 - net['mask']) - 1
