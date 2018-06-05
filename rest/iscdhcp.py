@@ -61,7 +61,7 @@ def update_server(aDict):
  Output:
  """
  from sdcp.core.common import SC,node_call
- entries = node_call(SC['system']['master'],"device","list_mac")['data']
+ entries = node_call('master','device','list_mac')['data']
  # Create file
  with open(SC['iscdhcp']['static'],'w') as leasefile:
   for entry in entries:
