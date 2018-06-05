@@ -109,14 +109,13 @@ def node_call(aNode, aModule, aFunction, aArgs = None, aMethod = None, aHeader =
 
  """
  from sdcp.SettingsContainer import SC
- ret = {}
- if SC['system']['id'] == aNode:
+ if SC['system']['id'] != aNode:
+  ret = rest_call("%s?%s_%s"%(SC['node'][aNode],aModule,aFunction),aArgs)['data']
+ else:
   from importlib import import_module
   module = import_module("sdcp.rest.%s"%aModule)
   fun = getattr(module,aFunction,None)
   ret = fun(aArgs if aArgs else {})
- else:              
-  ret = rest_call("%s?%s_%s"%(SC['node'][aNode],aModule,aFunction),aArgs)['data']
  return ret
 
 ######################################### REST ########################################
