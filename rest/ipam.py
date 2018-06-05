@@ -70,15 +70,9 @@ def info(aDict):
    ret['data'] = db.get_row()
   else:
    ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New' }
-
-  def GL_ip2arpa(addr):          
-   octets = addr.split('.')[:3]          
-   octets.reverse()
-   octets.append("in-addr.arpa")    
-   return ".".join(octets)
-  db.do("SELECT domains.id, name, CONCAT(server,'@',node) AS server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.name = '%s'"%(GL_ip2arpa(ret['data']['network'])))
-  ret['domains'] = db.get_rows()
-  ret['domains'].append({'id':'NULL','name':None,'server':None})
+ from sdcp.rest.dns import domain_ptr_list
+ ret['domains'] = domain_ptr_list({'prefix':ret['data']['network']})
+ ret['domains'].append({'id':'NULL','name':None,'server':None})
  return ret
 
 #

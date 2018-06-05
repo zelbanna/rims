@@ -181,6 +181,27 @@ def domain_delete(aDict):
   ret = {'devices':0,'cache':0,'records':0}
  return ret
 
+#
+#
+def domain_ptr_list(aDict):
+ """ Function returns matching PTR domain id's and extra server info for a prefix
+
+ Args:
+  - prefix
+
+ Output:
+  - List of id,servers and names which matches the prefix
+ """
+ def GL_ip2arpa(addr):                  
+  octets = addr.split('.')[:3]          
+  octets.reverse()                 
+  octets.append("in-addr.arpa")           
+  return ".".join(octets)
+ with DB() as db:
+  db.do("SELECT domains.id, name, CONCAT(server,'@',node) AS server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.name = '%s'"%(GL_ip2arpa(aDict['prefix'])))
+  domains = db.get_rows()
+ return domains
+
 ######################################## Records ####################################
 
 #
