@@ -6,6 +6,39 @@ HTML5 Ajax SDCP generic module
 __author__= "Zacharias El Banna"
 __version__ = "18.05.31GA"
 __status__= "Production"
+__icon__ = 'images/icon-examine.png'
+__type__ = 'menuitem'
+
+#
+#
+def main(aWeb):
+ if not aWeb.cookies.get('system'):
+  print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
+  return
+ cookie = aWeb.cookie_unjar('system')
+ data = aWeb.rest_call("system_inventory",{'node':aWeb.id,'user_id':cookie['id']})
+ print "<NAV><UL>"
+ if data.get('logs'):
+  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
+  for node in data['logs']:
+   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?tools_logs_show&node=%s>%s - show</A>"%(node,node)
+   print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?tools_logs_clear&node=%s'>%s - clear</A>"%(node,node)
+  print "</DIV></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?activities_report'>Activities</A></LI>"
+ if data.get('users'):
+  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?bookings_list'>Bookings</A></LI>"
+ print "<LI><A CLASS=z-op TARGET=_blank            HREF='sdcp.pdf'>DB</A></LI>"
+ print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?tools_rest_main&node=%s'>Debug</A>"%aWeb['node']
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?tools_rest_explore'>Explore</A>"
+ print "</DIV></LI>"
+ print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?tools_main&node=%s'></A></LI>"%aWeb['node']
+ if data.get('navinfo'):
+  for info in data['navinfo']:
+   print "<LI CLASS='right navinfo'><A>%s</A></LI>"%info
+ print "</UL></NAV>"
+ print "<SECTION CLASS=content ID=div_content></SECTION>"
+
 
 #
 # Generic Login - REST based apps required

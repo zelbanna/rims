@@ -115,6 +115,7 @@ def find(aDict):
  def GL_int2ip(addr):
   return inet_ntoa(pack("!I", addr))
 
+ consecutive = int(aDict.get('consecutive',1))
  with DB() as db:
   db.do("SELECT subnet, INET_NTOA(subnet) as subasc, mask FROM ipam_networks WHERE id = {}".format(aDict['id']))
   sub = db.get_row()
@@ -127,7 +128,7 @@ def find(aDict):
   if iplist.get(ip):
    start = None
   elif not start:
-   count = int(aDict.get('consecutive',1))
+   count = consecutive
    if count > 1:
     start = ip
    else:
@@ -136,7 +137,7 @@ def find(aDict):
   else:
    if count == 2:
     ret['start'] = GL_int2ip(start)
-    ret['end'] = GL_int2ip(start+int(aDict.get('consecutive'))-1)
+    ret['end'] = GL_int2ip(start + consecutive - 1)
     break
    else:
     count = count - 1
@@ -158,3 +159,69 @@ def delete(aDict):
   ret['deleted'] = db.do("DELETE FROM ipam_networks WHERE id = " + aDict['id'])
  return ret
  
+#
+#
+def check_ip(aDict):
+ """ Function returns state of IP relative a specific network, within or outside. TODO, should be used to confirm availability too (!)... i.e. function should be allocate and bool should indicate status of allocation
+
+ Args:
+  - ip (required)
+  - ipam_network (required)
+
+ Output:
+  - boolean
+ """
+ with DB() as db:
+  result = (db.do("SELECT subnet FROM ipam_networks WHERE id = {0} AND INET_ATON('{1}') > subnet AND INET_ATON('{1}') < (subnet + POW(2,(32-mask))-1)".format(aDict['ipam_network'],aDict['ip'])) == 1)
+ return result
+
+#
+#
+def discover(aDict):
+ """ Function discovers IP:s that answer to ping within a certain ipam_network. A list of such IP:s are returned for inspection
+
+ Args:
+  - ipam_network (required)
+  - simultaneous (optional). Simultaneouse threads
+
+ Output:
+  - addresses. list of ip:s and ip_int pairs that answer to ping
+ """
+ from threading import Thread, BoundedSemaphore
+ from struct import pack
+ from socket import inet_ntoa
+ from os import system
+ def GL_int2ip(addr):
+  return inet_ntoa(pack("!I", addr))
+
+ def __detect_thread(aIPint,aIPs,aSema):
+  __ip = GL_int2ip(aIPint)
+  if system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(__ip)) == 0:
+   aIPs.append({'ip':aIPint,'ipasc':__ip})
+  aSema.release()
+  return True
+
+ addresses = []
+ simultaneous = int(aDict.get('simultaneous',20))
+ ret = {'addresses':addresses}
+
+ with DB() as db:
+  db.do("SELECT subnet,mask FROM ipam_networks WHERE id = '%s'"%aDict['ipam_network'])
+  net = db.get_row()
+  ip_start = net['subnet'] + 1
+  ip_end   = net['subnet'] + 2**(32 - net['mask']) - 1
+  ret.update({'start':{'ip':ip_start,'ipasc':GL_int2ip(ip_start)},'end':{'ip':ip_end,'ipasc':GL_int2ip(ip_end)}})
+
+ try:
+  sema = BoundedSemaphore(simultaneous)
+  for ip in range(ip_start,ip_end):
+   sema.acquire()
+   t = Thread(target = __detect_thread, args=[ip, addresses, sema])
+   t.name = "Detect %s"%ip
+   t.start()
+  for i in range(simultaneous):
+   sema.acquire()
+ except Exception as err:
+  ret['error']   = str(err)
+
+ return ret

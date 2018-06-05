@@ -20,12 +20,6 @@ def main(aWeb):
  print "<NAV><UL>"
  if data.get('node'):
   print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?system_node_list'>Settings</A></LI>"
- if data.get('logs'):
-  print "<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>"
-  for node in data['logs']:
-   print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?tools_logs_show&node=%s>%s - show</A>"%(node,node)
-   print "<A CLASS=z-op DIV=div_content MSG='Clear Network Logs?' URL='sdcp.cgi?tools_logs_clear&node=%s'>%s - clear</A>"%(node,node)
-  print "</DIV></LI>"
  if data.get('www'):
   print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
   for node in data['www']:
@@ -33,7 +27,6 @@ def main(aWeb):
   print "</DIV></LI>"  
  if data.get('users'):
   print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?users_list'>Users</A></LI>"
-  print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?bookings_list'>Bookings</A></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
  for tool in data.get('tools',[]): 
   print "<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title'])

@@ -242,9 +242,8 @@ def new(aDict):
  ipam_id = aDict.get('ipam_id')
  ret = {'info':None}
  with DB() as db:
-  # ZEB TODO -> replace with ipam function
-  in_sub = db.do("SELECT subnet FROM ipam_networks WHERE id = {0} AND {1} > subnet AND {1} < (subnet + POW(2,(32-mask))-1)".format(ipam_id,ipint))
-  if in_sub == 0:
+  from sdcp.rest.ipam import check_ip
+  if not check_ip({'ip':ip,'ipam_network':ipam_id}):
    ret['info'] = "IP not in subnet range"
   elif aDict['hostname'] == 'unknown':
    ret['info'] = "Hostname unknown not allowed"
@@ -309,68 +308,52 @@ def discover(aDict):
 
  Args:
   - a_dom_id (required)
-  - ipam_id (required)
+  - ipam_network (required)
 
  Output:
  """
  from time import time
  from threading import Thread, BoundedSemaphore
- from struct import pack
- from socket import inet_ntoa
+ from sdcp.rest.ipam import discover as ipam_discover
 
- def GL_int2ip(addr):
-  return inet_ntoa(pack("!I", addr))
-
- def __detect_thread(aIPint,aDB,aSema):
-  res = detect({'ip':GL_int2ip(aIPint)})
-  if res['result'] == 'OK':
-   aDB[aIPint] = res['info']
+ def __detect_thread(aIP,aDB,aSema):
+  aDB[aIP['ip']] = detect({'ip':aIP['ipasc']})['info']
   aSema.release()
   return True
 
  start_time = int(time())
- ret = {'errors':0 }
+ ipam = ipam_discover({'ipam_network':aDict['ipam_network']})
+ ret = {'errors':0, 'start':ipam['start'],'end':ipam['end'] }
 
  with DB() as db:
   db.do("SELECT id,name FROM device_types")
   devtypes = db.get_dict('name')
-  db.do("SELECT subnet,mask FROM ipam_networks WHERE id = '%s'"%aDict['ipam_id'])
-  net = db.get_row()
+  ret['xist'] = db.do("SELECT ip, INET_NTOA(ip) AS ipasc FROM devices WHERE ip >= {} and ip <= {} and ipam_id = {}".format(ipam['start']['ip'],ipam['end']['ip'],aDict['ipam_network']))
+ db_old = db.get_dict('ip')
+ db_new = {}
+ try:
+  sema = BoundedSemaphore(20)
+  for ip in ipam['addresses']:
+   if db_old.get(ip['ip']):
+    continue
+   sema.acquire()
+   t = Thread(target = __detect_thread, args=[ip, db_new, sema])
+   t.name = "Detect %s"%ip['ipasc']
+   t.start()
+  for i in range(20):
+   sema.acquire()
+ except Exception as err:
+  ret['error']   = "Error:{}".format(str(err))
 
-  ip_start = net['subnet'] + 1
-  ip_end   = net['subnet'] + 2**(32 - net['mask']) - 1
-  ret.update({'start':GL_int2ip(ip_start),'end':GL_int2ip(ip_end)})
-
-  db_old, db_new = {}, {}
-  ret['xist'] = db.do("SELECT ip FROM devices WHERE ip >= {} and ip <= {}".format(ip_start,ip_end))
-  rows = db.get_rows()
-  for item in rows:
-   db_old[item['ip']] = True
-  try:
-   sema = BoundedSemaphore(10)
-   for ipint in range(ip_start,ip_end):
-    if db_old.get(ipint):
-     continue
-    sema.acquire()
-    t = Thread(target = __detect_thread, args=[ipint, db_new, sema])
-    t.name = "Detect %s"%ipint
-    t.start()
-
-   # Join all threads by acquiring all semaphore resources
-   for i in range(10):
-    sema.acquire()
-   # We can now do inserts only (no update) as either we clear or we skip existing :-)
-   sql = "INSERT INTO devices (ip, a_dom_id, ipam_id, snmp, model, type_id, hostname) VALUES ('{}',"+aDict['a_dom_id']+",{},'{}','{}','{}','{}')"
-   count = 0
-   for ipint,entry in db_new.iteritems():
-    count += 1
-    db.do(sql.format(ipint,aDict['ipam_id'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
-  except Exception as err:
-   ret['info']   = "Error:{}".format(str(err))
-   ret['errors'] += 1
-  else:
-   ret['info'] = "Time spent:{}".format(int(time()) - start_time)
-  ret['found']= len(db_new)
+ # We can now do inserts only (no update) as we skip existing :-)
+ with DB() as db:
+  sql = "INSERT INTO devices (ip, a_dom_id, ipam_id, snmp, model, type_id, hostname) VALUES ('{}',"+aDict['a_dom_id']+",{},'{}','{}','{}','{}')"
+  count = 0
+  for ipint,entry in db_new.iteritems():
+   count += 1
+   db.do(sql.format(ipint,aDict['ipam_network'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
+ ret['time'] = int(time()) - start_time
+ ret['found']= len(db_new)
  return ret
 
 #
@@ -383,10 +366,6 @@ def detect(aDict):
 
  Output:
  """
- from os import system
- if system("ping -c 1 -w 1 {} > /dev/null 2>&1".format(aDict['ip'])) != 0:
-  return {'result':'NOT_OK', 'info':'Not pingable' }
-
  ret = {'result':'OK'}
 
  from netsnmp import VarList, Varbind, Session
@@ -398,28 +377,27 @@ def detect(aDict):
   session.get(devobjs)
  except Exception as err:
   ret['snmp'] = "Not able to do SNMP lookup (check snmp -> read_community): %s"%str(err) 
-
- ret['info'] = {'model':'unknown', 'type':'generic','snmp':devobjs[1].val.lower() if devobjs[1].val else 'unknown'}
-
- if devobjs[0].val:
-  infolist = devobjs[0].val.split()
-  if infolist[0] == "Juniper":
-   if infolist[1] == "Networks,":
-    ret['info']['model'] = infolist[3].lower()
-    for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-     if tp in ret['info']['model']:
-      ret['info']['type'] = tp
-      break
+ else:
+  ret['info'] = {'model':'unknown', 'type':'generic','snmp':devobjs[1].val.lower() if devobjs[1].val else 'unknown'}
+  if devobjs[0].val:
+   infolist = devobjs[0].val.split()
+   if infolist[0] == "Juniper":
+    if infolist[1] == "Networks,":
+     ret['info']['model'] = infolist[3].lower()
+     for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
+      if tp in ret['info']['model']:
+       ret['info']['type'] = tp
+       break
+    else:
+     subinfolist = infolist[1].split(",")
+     ret['info']['model'] = subinfolist[2]
+   elif infolist[0] == "VMware":
+    ret['info']['model'] = "esxi"
+    ret['info']['type']  = "esxi"
+   elif infolist[0] == "Linux":
+    ret['info']['model'] = 'debian' if "Debian" in devobjs[0].val else 'generic'
    else:
-    subinfolist = infolist[1].split(",")
-    ret['info']['model'] = subinfolist[2]
-  elif infolist[0] == "VMware":
-   ret['info']['model'] = "esxi"
-   ret['info']['type']  = "esxi"
-  elif infolist[0] == "Linux":
-   ret['info']['model'] = 'debian' if "Debian" in devobjs[0].val else 'generic'
-  else:
-   ret['info']['model'] = " ".join(infolist[0:4])
+    ret['info']['model'] = " ".join(infolist[0:4])
 
  return ret
 
