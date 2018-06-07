@@ -1,4 +1,4 @@
-"""IPAM API module. Provides network management for devices"""
+"""IPAM API module. Provides IP network and address management"""
 __author__ = "Zacharias El Banna"
 __version__ = "18.05.31GA"
 __status__ = "Production"
