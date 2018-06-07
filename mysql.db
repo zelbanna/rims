@@ -91,9 +91,9 @@ CREATE TABLE `devices` (
   `comment` text,
   PRIMARY KEY (`id`),
   UNIQUE KEY `hostname` (`hostname`,`a_dom_id`),
+  UNIQUE KEY `ipam_id` (`ipam_id`),
   KEY `a_dom_id` (`a_dom_id`),
   KEY `type_id` (`type_id`),
-  UNIQUE KEY `ipam_id` (`ipam_id`),
   CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`a_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`ipam_id`) REFERENCES `ipam_addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
