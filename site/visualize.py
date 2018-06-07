@@ -11,7 +11,6 @@ __status__ = "Production"
 #
 def list(aWeb):
  res = aWeb.rest_call("visualize_list")
- print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Maps</P><DIV CLASS=controls>"
  print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?visualize_list', TITLE='Reload')
  print "</DIV><DIV CLASS=table>"
@@ -21,8 +20,7 @@ def list(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS='z-op' DIV='div_content_right' URL='sdcp.cgi?visualize_show&id=%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='controls'>"%(map['id'],map['id'],map['name'])
   print aWeb.button('configure',  DIV='div_content_right', URL='sdcp.cgi?visualize_network&type=map&id=%s'%map['id'],   TITLE='Show and Edit map') 
   print "</DIV></DIV></DIV>"
- print "</DIV></DIV></ARTICLE></SECTION>"
- print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+ print "</DIV></DIV></ARTICLE>"
 
 #
 #

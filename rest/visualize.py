@@ -113,7 +113,7 @@ def network(aDict):
     ret[var] = loads(data.get(var,'null'))
   else:
    if args.get('ip'):
-    db.do("SELECT id FROM devices WHERE ip = INET_ATON('%s')"%args['ip'])
+    db.do("SELECT devices.id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.ip = INET_ATON('%s')"%args['ip'])
     ret['id'] = db.get_val('id')
  
    devices = {ret['id']:{'processed':False,'interfaces':0,'multipoint':0,'distance':0,'uplink':0}}

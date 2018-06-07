@@ -358,7 +358,7 @@ def record_device_update(aDict):
    domains['name'][dom['name']] = dom
    domains['foreign_id'][dom['foreign_id']] = dom
 
-  ret['device']['xist'] = db.do("SELECT hostname, a_dom_id AS a_domain_id, INET_NTOA(ip) AS ip FROM devices WHERE id = '%s'"%(aDict['id'])) if not aDict['id'] == 'new' else 0
+  ret['device']['xist'] = db.do("SELECT hostname, a_dom_id AS a_domain_id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id = '%s'"%(aDict['id'])) if not aDict['id'] == 'new' else 0
   device = db.get_row() if ret['device']['xist'] > 0 else None
   #
   # A record: check if valid domain, then if not a_id == 'new' make sure we didn't move server otherwise delete record and set a_id to new
@@ -525,7 +525,7 @@ def consistency_check(aDict):
    for id,data in servers.iteritems():
     records[id] = record_list({'type':type,'server_id':id})['records']
    # Get 'type' data for all devices
-   db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ip) AS ipasc, %s_id AS record_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))
+   db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ia.ip) AS ipasc, %s_id AS record_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))
    devices = db.get_dict('ipasc' if type == 'a' else 'fqdn')
  
    # Now check them records for matching devices and translate domain_id into centralized cached one 

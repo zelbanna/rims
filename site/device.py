@@ -16,8 +16,11 @@ def main(aWeb):
  target = aWeb['target']
  arg    = aWeb['arg']
  print "<NAV><UL>"
- print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list{0}'>Devices</A></LI>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
- print "<LI><A CLASS=z-op DIV=div_content URL='sdcp.cgi?visualize_list'>Maps</A></LI>"
+ print "<LI CLASS='dropdown'><A>Devices</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list{0}'>List</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
+ print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_search'>Search</A>"
+ print "</DIV></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?visualize_list'>Maps</A></LI>"
  if target == 'vm':
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
  else:
@@ -57,11 +60,10 @@ def list(aWeb):
  if aWeb['target']:
   args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
  res = aWeb.rest_call("device_list",args)
- print "<ARTICLE><P>Devices</P><DIV CLASS='controls'>"
+ print "<ARTICLE><P>Device List</P><DIV CLASS='controls'>"
  print aWeb.button('reload',  DIV='div_content_left',  TITLE='Reload', URL='sdcp.cgi?device_list&{}'.format(aWeb.get_args()))
  print aWeb.button('add',     DIV='div_content_right', TITLE='Add device', URL='sdcp.cgi?device_new&{}'.format(aWeb.get_args()))
  print aWeb.button('network', DIV='div_content_right', TITLE='Discover', URL='sdcp.cgi?device_discover')
- print aWeb.button('search',  DIV='div_content_right', TITLE='Search', URL='sdcp.cgi?device_search')
  print aWeb.button('web',     DIV='div_content_right', TITLE='Show webpages', URL='sdcp.cgi?device_webpages')
  print "</DIV>"
  print "<DIV CLASS=table>"
@@ -74,12 +76,11 @@ def list(aWeb):
 #
 #
 def search(aWeb):
- print "<ARTICLE STYLE='width:100%'>"
- print "Search for device using:"
+ print "<ARTICLE><P>Device Search</P>"
  print "<FORM ID='device_search'>"
  print "<INPUT TYPE=HIDDEN NAME=sort VALUE='hostname'>"
- print "<SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='mac'>MAC</OPTION></SELECT>"
- print "<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' VALUE='%s'>"%(aWeb.get('search',""))
+ print "Field:<SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='id'>ID</OPTION></SELECT>"
+ print "<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' REQUIRED>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('search', DIV='div_content_left', URL='sdcp.cgi?device_list', FRM='device_search')
  print "</DIV>"

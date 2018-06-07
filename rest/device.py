@@ -22,7 +22,7 @@ def info(aDict):
  if   aDict.get('id'):
   srch = "devices.id = %s"%aDict.get('id')     
  elif aDict.get('ip'):
-  srch = "devices.ip = INET_ATON('%s')"%aDict.get('ip')  
+  srch = "ia.ip = INET_ATON('%s')"%aDict.get('ip')  
  elif aDict.get('ipam_id'):
   srch = "devices.ipam_id = %s"%aDict.get('ipam_id')
   aDict.pop('op',None)
@@ -99,7 +99,7 @@ def info(aDict):
     ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%(ret['id'])),'rack_info':db.update_dict_prefixed('rackinfo',args,"device_id='%s'"%(ret['id']))}
 
   # Now fetch info
-  ret['xist'] = db.do("SELECT devices.*, base, device_types.name as type_name, functions, a.name as domain, INET_NTOA(ip) as ipasc FROM devices LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE {}".format(srch))
+  ret['xist'] = db.do("SELECT devices.*, base, device_types.name as type_name, functions, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE {}".format(srch))
   if ret['xist'] > 0:
    ret['info'] = db.get_row()
    ret['id'] = ret['info'].pop('id',None)
@@ -127,7 +127,7 @@ def info(aDict):
    else:
     db.do("SELECT id, name FROM racks")
     ret['infra']['racks'].extend(db.get_rows())
-    ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(devices.ip) AS console_ip, devices.hostname AS console_name FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.console_id WHERE rackinfo.device_id = %i"%(ret['id']))
+    ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(ia.ip) AS console_ip, devices.hostname AS console_name FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.console_id LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE rackinfo.device_id = %i"%(ret['id']))
     if ret['racked'] > 0:
      ret['info'].update(db.get_row())
      sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
@@ -144,7 +144,7 @@ def info(aDict):
   if operation == 'update' and ret['racked']:
    for pem in [0,1]:
     if ret['info']['pem%i_pdu_id'%(pem)] > 0:
-     db.do("SELECT INET_NTOA(ip) AS ip, hostname, name FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
+     db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
      pdu_info = db.get_row()
      args_pem = {'ip':pdu_info['ip'],'unit':ret['info']['pem%i_pdu_unit'%(pem)],'slot':ret['info']['pem%i_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem)}
      try:
@@ -210,7 +210,7 @@ def list(aDict):
   elif aDict['field']== 'id':
    tune = "WHERE devices.id = %s"%aDict['id']
 
- ret = {'sort':'devices.id'} if aDict.get('sort','id') == 'id' else {'sort':'ia.ip'}
+ ret = {'sort':'ia.ip'} if aDict.get('sort','ip') == 'ip' else {'sort':'devices.hostname'}
  with DB() as db:
   sql = "SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, CONCAT(devices.hostname,'.',domains.name) AS fqdn, model FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
   ret['xist'] = db.do(sql)
@@ -248,11 +248,6 @@ def new(aDict):
   elif not alloc['success']:
    return {'info':'IP not available'}
 
- def GL_ip2int(addr):
-  from struct import unpack
-  from socket import inet_aton
-  return unpack("!I", inet_aton(addr))[0]
-
  def GL_mac2int(aMAC):
   try:    return int(aMAC.replace(":",""),16)
   except: return 0
@@ -262,9 +257,8 @@ def new(aDict):
   ret['xist'] = db.do("SELECT id, hostname, a_dom_id FROM devices WHERE hostname = '%s' AND a_dom_id = %s"%(aDict['hostname'],aDict['a_dom_id']))
   if ret['xist'] == 0:
    mac     = GL_mac2int(aDict.get('mac',0))
-   ipint   = GL_ip2int(aDict['ip']) if alloc else 'NULL'
    ipam_id = alloc['id'] if alloc else 'NULL'
-   ret['insert'] = db.do("INSERT INTO devices(ip,vm,mac,a_dom_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(ipint,aDict.get('vm','0'),mac,aDict['a_dom_id'],ipam_id,aDict['hostname']))
+   ret['insert'] = db.do("INSERT INTO devices(vm,mac,a_dom_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['a_dom_id'],ipam_id,aDict['hostname']))
    ret['id']   = db.get_last_id()
    if aDict.get('target') == 'rack_id' and aDict.get('arg'):
     db.do("INSERT INTO rackinfo SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict.get('arg')))
@@ -290,7 +284,7 @@ def delete(aDict):
  Output:
  """
  with DB() as db:
-  existing = db.do("SELECT hostname, INET_NTOA(ia.ip) AS ipasc, ipam_id, mac, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = {}".format(aDict['id']))
+  existing = db.do("SELECT hostname, ine.reverse_zone_id, ipam_id, mac, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = {}".format(aDict['id']))
   if existing == 0:
    ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
@@ -300,17 +294,9 @@ def delete(aDict):
    DNS.__add_globals__({'import_module':import_module})
    from sdcp.rest.ipam import ip_delete
 
-   if data['ptr_id'] != 0:
-    def GL_ip2ptr(addr):
-     octets = addr.split('.')
-     octets.reverse()
-     octets.append("in-addr.arpa")
-     return ".".join(octets)
-    ptr    = GL_ip2ptr(data['ipasc'])
-    arpa   = ptr.partition('.')[2]
-    if db.do("SELECT id FROM domains WHERE name = '%s'"%(arpa)) > 0:
-     args['ptr_id']= data['ptr_id']
-     args['ptr_domain_id'] = db.get_val('id')
+   if data['ptr_id'] != 0 and data['reverse_zone_id']:
+    args['ptr_id']= data['ptr_id']
+    args['ptr_domain_id'] = data['reverse_zone_id']
    ret = DNS.record_device_delete(args)
    if data['base'] == 'pdu':
     ret['pem0'] = db.update_dict('rackinfo',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
@@ -352,12 +338,12 @@ def discover(aDict):
  with DB() as db:
   db.do("SELECT id,name FROM device_types")
   devtypes = db.get_dict('name')
- db_new = {}
+ dev_list = {}
  try:
   sema = BoundedSemaphore(20)
   for ip in ipam['addresses']:
    sema.acquire()
-   t = Thread(target = __detect_thread, args=[ip, db_new, sema])
+   t = Thread(target = __detect_thread, args=[ip, dev_list, sema])
    t.name = "Detect %s"%ip['ipasc']
    t.start()
   for i in range(20):
@@ -367,15 +353,15 @@ def discover(aDict):
 
  # We can now do inserts only (no update) as we skip existing :-)
  with DB() as db:
-  sql = "INSERT INTO devices (ip, a_dom_id, ipam_id, snmp, model, type_id, hostname) VALUES ('{}',"+aDict['a_dom_id']+",{},'{}','{}','{}','{}')"
+  sql = "INSERT INTO devices (a_dom_id, ipam_id, snmp, model, type_id, hostname) VALUES ("+aDict['a_dom_id']+",{},'{}','{}','{}','{}')"
   count = 0
-  for ipint,entry in db_new.iteritems():
+  for entry in dev_list.values():
    count += 1
    alloc = ip_allocate({'ip':entry['ipasc'],'network_id':aDict['network_id']})
    if alloc['success']:
-    db.do(sql.format(ipint,alloc['id'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
+    db.do(sql.format(alloc['id'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
  ret['time'] = int(time()) - start_time
- ret['found']= len(db_new)
+ ret['found']= len(dev_list)
  return ret
 
 ############################################## Specials ###############################################
@@ -393,7 +379,7 @@ def list_type(aDict):
  ret = {}
  with DB() as db:
   select = "device_types.%s ='%s'"%(('name',aDict.get('name')) if aDict.get('name') else ('base',aDict.get('base')))
-  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) AS ipasc, hostname, device_types.base as type_base, device_types.name as type_name FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY type_name,hostname"%select)
+  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, hostname, device_types.base AS type_base, device_types.name AS type_name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY type_name,hostname"%select)
   ret['data'] = db.get_rows()
  return ret
 
@@ -682,7 +668,7 @@ def interface_link_advanced(aDict):
  """
  ret = {'error':None,'a':{},'b':{}}
  with DB() as db:
-  sql_dev  ="SELECT id FROM devices WHERE ip = INET_ATON('%s')"
+  sql_dev  ="SELECT devices.id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.ip = INET_ATON('%s')"
   sql_indx = "SELECT id FROM device_interfaces WHERE device = '%s' AND snmp_index = '%s'"
   for peer in ['a','b']:
    xist = db.do(sql_dev%aDict['%s_ip'%peer])
