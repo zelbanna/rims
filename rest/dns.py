@@ -317,7 +317,7 @@ def record_device_delete(aDict):
   for tp in ['a','ptr']:
    domain_id = aDict.get('%s_domain_id'%tp)
    id = str(aDict.get('%s_id'%tp,'0'))
-   if domain_id and id != '0':
+   if domain_id > 0 and id != '0':
     db.do("SELECT foreign_id, server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.id = '%s'"%(domain_id))
     infra = db.get_row()
     args = {'id':id,'domain_id':infra['foreign_id']}
