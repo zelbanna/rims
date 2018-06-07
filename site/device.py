@@ -291,7 +291,7 @@ def new(aWeb):
  name = aWeb.get('hostname','unknown')
  mac  = aWeb.get('mac',"00:00:00:00:00:00")
  op   = aWeb['op']
- network = aWeb['network']
+ network = aWeb['ipam_network_id']
  if not ip:
   from sdcp.core import genlib as GL
   ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
@@ -319,7 +319,7 @@ def new(aWeb):
   for d in domains:
    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(d['id'],"selected" if d['name'] == aWeb['domain'] else "",d['name'])
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><SELECT NAME=network>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><SELECT NAME=ipam_network_id>"
   for s in networks:
    print "<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == network else "", s['netasc'],s['description'])
   print "</SELECT></DIV></DIV>"

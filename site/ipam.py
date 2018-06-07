@@ -67,7 +67,7 @@ def network_layout(aWeb):
  print blue.format('network',starta % 256)
  for cnt in range(1,int(data['no'])-1):
   ip = addresses.get(str(cnt + startn))
-  if ip:
+  if ip and ip.get('id'):
    print red.format(ip['id'],(cnt + starta) % 256)
   else:
    print green.format(cnt + startn,(cnt + starta) % 256)
