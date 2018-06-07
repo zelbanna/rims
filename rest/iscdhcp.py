@@ -66,7 +66,7 @@ def update_server(aDict):
  # Create file
  with open(SC['iscdhcp']['static'],'w') as leasefile:
   for entry in entries:
-   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Network {3}, Id: {4}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['ipam_id'],entry['id']))
+   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['id']))
 
  # Reload
  from subprocess import check_output, CalledProcessError

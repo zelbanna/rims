@@ -20,7 +20,9 @@ def info(aDict):
  Output:
  """
  srch = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('%s')"%(aDict.get('ip'))
- ret  = {'id':aDict.pop('id',None),'ip':aDict.pop('ip',None)}
+ ret  = {'id':aDict.pop('id',None),'ip':aDict.get('ip',None)}
+ # Make sure we don't change IP here as it breaks too much, instead user must resync to another VRF and network
+ _    = aDict.pop('devices_ip',None)
 
  with DB() as db:
   # Fetch selection info
@@ -48,13 +50,7 @@ def info(aDict):
     if not args.get('devices_comment'):
      args['devices_comment'] = 'NULL'
     if not args.get('devices_webpage'):
-     args['devices_webpage'] = 'NULL'
-    if args.get('devices_ip'):
-     def GL_ip2int(addr):
-      from struct import unpack
-      from socket import inet_aton
-      return unpack("!I", inet_aton(addr))[0]
-     args['ip'] = GL_ip2int(args['ip'])
+     args['devices_webpage'] = 'NULL'    
     if args.get('devices_mac'):
      try: args['devices_mac'] = int(args['devices_mac'].replace(":",""),16)
      except: aDict['devices_mac'] = 0
@@ -154,31 +150,17 @@ def info(aDict):
 #
 #
 def basics(aDict):
- """Find basic info give a number of options (use either id or field + search-string)
+ """Find basic info given device id
 
  Args:
-  - id (optional)
-  - field (optional) 'ip/mac/hostname'
-  - search (optional) 
+  - id
 
  Output:
  """
  ret = {}
  with DB() as db:
-  if aDict.get('field'):
-   if   aDict['field'] == 'ip':
-    search = "devices.ip = INET_ATON('%s')"%aDict['search']
-   elif aDict['field'] == 'hostname':
-    search = "hostname = '%s'"%aDict['search']
-   elif aDict['field'] == 'mac':
-    def GL_mac2int(aMAC):               
-     try:    return int(aMAC.replace(":",""),16)
-     except: return 0
-    search = "mac = %s"%GL_mac2int(aDict['search'])
-  else:
-   search = "devices.id = %s"%aDict['id']
-  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) as ip, hostname, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"%search)
-  ret.update(db.get_row() if ret['xist'] > 0 else {})
+  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ip) as ip, hostname, domains.name AS domain FROM devices LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id'])
+  ret.update(db.get_row()) if ret['xist'] > 0 else {}
  return ret
 
 #
@@ -188,13 +170,17 @@ def list(aDict):
 
  Args:
   - filter (optional)
-  - sort (optional)
-  - dict (optional)
+  - sort (optional) (sort on id or hostname or...)
+  - dict (optional) (output as dictionary instead of list)
+
   - rack (optional)
+  - field (optional) 'id/ip/mac/hostname' as search fields
+  - search (optional) 
 
  Output:
  """
  ret = {}
+ tune = ""
  if aDict.get('rack'):
   if aDict.get('rack') == 'vm':
    tune = "WHERE vm = 1"
@@ -204,8 +190,18 @@ def list(aDict):
    tune += " AND type_id = %s"%(aDict.get('filter'))
  elif aDict.get('filter'):
   tune = "WHERE type_id = %s"%(aDict.get('filter'))
- else:
-  tune = ""
+ elif aDict.get('search'):
+  if   aDict['field'] == 'ip':
+   tune = "WHERE devices.ip = INET_ATON('%s')"%aDict['search']
+  elif aDict['field'] == 'hostname':
+   tune = "WHERE hostname LIKE '%%%s%%'"%aDict['search']
+  elif aDict['field'] == 'mac':
+   def GL_mac2int(aMAC):               
+    try:    return int(aMAC.replace(":",""),16)
+    except: return 0
+   tune = "WHERE mac = %s"%GL_mac2int(aDict['search'])
+  elif aDict['field']== 'id':
+   tune = "WHERE devices.id = %s"%aDict['id']
 
  ret = {'sort':aDict.get('sort','devices.id')}
  with DB() as db:
@@ -223,7 +219,7 @@ def new(aDict):
   - a_dom_id (required)
   - hostname (required)
   - target (optional)
-  - ipam_id (optional)
+  - ipam_network_id (optional)
   - ip (optional)
   - vm (optional)
   - mac (optional)
@@ -233,41 +229,47 @@ def new(aDict):
   - target is 'rack_id' or nothing
   - arg is rack_id
  """
+ alloc = None
+ # Test if hostname ok or if IP supplied and then if ok and available
+ if aDict['hostname'] == 'unknown':
+  return {'info':'Hostname unknown not allowed'}
+ elif aDict.get('ipam_network_id') and aDict.get('ip'):
+  from sdcp.rest.ipam import ip_allocate
+  alloc = ip_allocate({'ip':aDict['ip'],'network_id':aDict['ipam_network_id']})
+  if   not alloc['valid']:
+   return {'info':'IP not in network range'}
+  elif not alloc['success']:
+   return {'info':'IP not available'}
+
  def GL_ip2int(addr):
   from struct import unpack
   from socket import inet_aton
   return unpack("!I", inet_aton(addr))[0]
+
  def GL_mac2int(aMAC):
   try:    return int(aMAC.replace(":",""),16)
   except: return 0
 
- ip    = aDict.get('ip')
- ipint = GL_ip2int(ip)
- ipam_id = aDict.get('ipam_id')
  ret = {'info':None}
  with DB() as db:
-  from sdcp.rest.ipam import allocate_ip
-  alloc = allocate_ip({'ip':ip,'network':ipam_id})
-  if   not alloc['valid']:
-   ret['info'] = "IP not in network range"
-  elif not alloc['success']:
-   ret['info'] = "IP not available"
-  elif aDict['hostname'] == 'unknown':
-   ret['info'] = "Hostname unknown not allowed"
+  ret['xist'] = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE hostname = '%s' AND a_dom_id = %s"%(aDict['hostname'],aDict['a_dom_id']))
+  if ret['xist'] == 0:
+   mac     = GL_mac2int(aDict.get('mac',0))
+   ipint   = GL_ip2int(aDict['ip']) if alloc else 'NULL'
+   ipam_id = alloc['id'] if alloc else 'NULL'
+   ret['insert'] = db.do("INSERT INTO devices(ip,vm,mac,a_dom_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(ipint,aDict.get('vm','0'),mac,aDict['a_dom_id'],ipam_id,aDict['hostname']))
+   ret['id']   = db.get_last_id()
+   if aDict.get('target') == 'rack_id' and aDict.get('arg'):
+    db.do("INSERT INTO rackinfo SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict.get('arg')))
+    ret['rack'] = aDict.get('arg')
+    ret['info'] = "rack"
   else:
-   ret['xist'] = db.do("SELECT id, hostname, INET_NTOA(ip) AS ipasc, a_dom_id FROM devices WHERE ipam_id = {} AND (ip = {} OR hostname = '{}')".format(ipam_id,ipint,aDict['hostname']))
-   if ret['xist'] == 0:
-    mac = GL_mac2int(aDict.get('mac',0))
-    args = {'ip':str(ipint), 'vm':str(aDict.get('vm','0')), 'mac':str(mac), 'a_dom_id':aDict['a_dom_id'], 'ipam_id':str(ipam_id), 'hostname':aDict['hostname'], 'snmp':'unknown', 'model':'unknown'}
-    ret['insert'] = db.insert_dict('devices',args)
-    ret['id']   = db.get_last_id()
-    if aDict.get('target') == 'rack_id' and aDict.get('arg'):
-     db.do("INSERT INTO rackinfo SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict.get('arg')))
-     ret['rack'] = aDict.get('arg')
-     ret['info'] = "rack"
-   else:
-    ret['info']  = "existing"
-    ret.update(db.get_row())
+   ret.update(db.get_row())
+
+ # also remove allocation if existed..
+ if ret['xist'] > 0: 
+  from sdcp.rest.ipam import ip_delete
+  ret['info'] = "existing (%s)"%ip_delete({'id':alloc['id']})
  return ret
 
 #
@@ -281,7 +283,7 @@ def delete(aDict):
  Output:
  """
  with DB() as db:
-  existing = db.do("SELECT hostname, INET_NTOA(ip) AS ipasc, mac, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = {}".format(aDict['id']))
+  existing = db.do("SELECT hostname, INET_NTOA(ip) AS ipasc, ipam_id, mac, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = {}".format(aDict['id']))
   if existing == 0:
    ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
@@ -289,6 +291,7 @@ def delete(aDict):
    args = {'a_id':data['a_id'],'a_domain_id':data['a_dom_id']}
    import sdcp.rest.dns as DNS
    DNS.__add_globals__({'import_module':import_module})
+   from sdcp.rest.ipam import ip_delete
 
    if data['ptr_id'] != 0:
     def GL_ip2ptr(addr):
@@ -306,6 +309,8 @@ def delete(aDict):
     ret['pem0'] = db.update_dict('rackinfo',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
     ret['pem1'] = db.update_dict('rackinfo',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
    ret.update({'deleted':db.do("DELETE FROM devices WHERE id = '%s'"%aDict['id'])})
+ # Avoid race condition on DB, do this when DB is closed...
+ ret.update(ip_delete({'id':data['ipam_id']}))
  return ret
 
 #
@@ -315,7 +320,7 @@ def discover(aDict):
 
  Args:
   - a_dom_id (required)
-  - network (required)
+  - network_id (required)
 
  Output:
  """
@@ -323,10 +328,11 @@ def discover(aDict):
  from threading import Thread, BoundedSemaphore
  from sdcp.rest.ipam import discover as ipam_discover
  from sdcp.devices.generic import Device
-
+ from sdcp.rest.ipam import ip_allocate
  def __detect_thread(aIP,aDB,aSema):
   __dev = Device(aIP['ipasc'])
   aDB[aIP['ip']] = __dev.detect()['info']
+  aDB[aIP['ip']]['ipasc'] = aIP['ipasc'] 
   aSema.release()
   return True
 
@@ -337,7 +343,7 @@ def discover(aDict):
  with DB() as db:
   db.do("SELECT id,name FROM device_types")
   devtypes = db.get_dict('name')
-  ret['xist'] = db.do("SELECT ip, INET_NTOA(ip) AS ipasc FROM devices WHERE ip >= {} and ip <= {} and ipam_id = {}".format(ipam['start']['ip'],ipam['end']['ip'],aDict['network']))
+  ret['xist'] = db.do("SELECT devices.hostname, devices.ip, INET_NTOA(devices.ip) AS ipasc FROM devices LEFT JOIN ipam_addresses ON ipam_addresses.id = devices.ipam_id WHERE devices.ip >= {} and devices.ip <= {} and ipam_addresses.network_id = {}".format(ipam['start']['ip'],ipam['end']['ip'],aDict['network_id']))
  db_old = db.get_dict('ip')
  db_new = {}
  try:
@@ -360,7 +366,9 @@ def discover(aDict):
   count = 0
   for ipint,entry in db_new.iteritems():
    count += 1
-   db.do(sql.format(ipint,aDict['network'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
+   alloc = ip_allocate({'ip':entry['ipasc'],'network_id':aDict['network_id']})
+   if alloc['success']:
+    db.do(sql.format(ipint,alloc['id'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
  ret['time'] = int(time()) - start_time
  ret['found']= len(db_new)
  return ret

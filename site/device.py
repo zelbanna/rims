@@ -31,7 +31,7 @@ def main(aWeb):
   if data.get('name'):
    print "<LI><A CLASS='z-op' DIV=div_content_right  URL='sdcp.cgi?rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,data['name'])
   print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
-  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?ipam_list'>IPAM</A></LI>"
+  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?ipam_network_list'>IPAM</A></LI>"
   print "<LI CLASS='right dropdown'><A>DNS</A><DIV CLASS='dropdown-content'>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?dns_server_list'>Servers</A>"
   print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?dns_domain_list'>Domains</A>"
@@ -52,7 +52,8 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- args = {'sort':aWeb.get('sort','ip')}
+ args = aWeb.get_args2dict()
+ args['sort'] = aWeb.get('sort','ip')
  if aWeb['target']:
   args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
  res = aWeb.rest_call("device_list",args)
@@ -69,6 +70,20 @@ def list(aWeb):
  for row in res['data']:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?device_info&id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['id'],row['ipasc'], row['fqdn'], row['model'])
  print "</DIV></DIV></ARTICLE>"
+
+#
+#
+def search(aWeb):
+ print "<ARTICLE STYLE='width:100%'>"
+ print "Search for device using:"
+ print "<FORM ID='device_search'>"
+ print "<INPUT TYPE=HIDDEN NAME=sort VALUE='hostname'>"
+ print "<SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='mac'>MAC</OPTION></SELECT>"
+ print "<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' VALUE='%s'>"%(aWeb.get('search',""))
+ print "</FORM><DIV CLASS=controls>"
+ print aWeb.button('search', DIV='div_content_left', URL='sdcp.cgi?device_list', FRM='device_search')
+ print "</DIV>"
+ print "</ARTICLE>"
 
 #
 #
@@ -94,6 +109,7 @@ def info(aWeb):
  print "<ARTICLE CLASS='info' STYLE='position:relative; height:290px; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id'])
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
+ print "<INPUT TYPE=HIDDEN NAME=ip VALUE={}>".format(dev['ip'])
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
  print "<!-- Reachability Info -->"
  print "<DIV STYLE='margin:3px; float:left;'>"
@@ -126,8 +142,6 @@ def info(aWeb):
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
  print "</SELECT></DIV>"
  print "</DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>A ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_a_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['a_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>PTR ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ptr_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['ptr_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%(dev['info']['snmp'])
  print "<DIV CLASS=tr ID=div_booking_info><DIV CLASS=td>Booking:</DIV>"
  if dev['booked']:
@@ -140,7 +154,10 @@ def info(aWeb):
  else:
   print "<DIV CLASS='td green'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?bookings_update&op=book&id=%s'>Book</A></DIV>"%dev['id']
  print "</DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>DB ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(dev['id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>A ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_a_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['a_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>PTR ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ptr_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['ptr_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Device ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(dev['id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(dev['info']['ipam_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
 
@@ -179,7 +196,7 @@ def info(aWeb):
  print "</DIV></DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?device_info&id=%i'%dev['id'])
- print aWeb.button('trash', DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device')
+ print aWeb.button('trash', DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_info&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
  print aWeb.button('document',    DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
@@ -205,27 +222,6 @@ def info(aWeb):
 
 
 ####################################################### Functions #######################################################
-#
-#
-def search(aWeb):
- print "<ARTICLE STYLE='width:100%'>"
- if aWeb['field']:
-  args = aWeb.get_args2dict()
-  res = aWeb.rest_call("device_basics",args)
-  if res['xist'] > 0:
-   print "<A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?device_info&id=%s>%s.%s</A>"%(res['id'],res['hostname'],res['domain'])
-  else:
-   print "Not found"
- else:
-  print "Search for device using:"
-  print "<FORM ID='device_search'>"
-  print "<SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='mac'>MAC</OPTION></SELECT>"
-  print "<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' VALUE='%s'>"%(aWeb.get('search',""))
-  print "</FORM><DIV CLASS=controls>"
-  print aWeb.button('search', DIV='div_content_right', URL='sdcp.cgi?device_search', FRM='device_search')
-  print "</DIV>"
- print "</ARTICLE>"
-
 #
 #
 def webpages(aWeb):
@@ -301,7 +297,7 @@ def new(aWeb):
   ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
 
  if op == 'new':
-  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb['a_dom_id'], 'ipam_id':network }
+  args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb['a_dom_id'], 'ipam_network_id':network }
   if aWeb['vm']:
    args['vm'] = 1
   else:
@@ -311,9 +307,9 @@ def new(aWeb):
   res = aWeb.rest_call("device_new",args)
   print "Operation:%s"%str(res)
  elif op == 'find':
-  print aWeb.rest_call("ipam_find",{'network':network})['ip']
+  print aWeb.rest_call("ipam_ip_find",{'network_id':network})['ip']
  else:
-  networks = aWeb.rest_call("ipam_list")['networks']
+  networks = aWeb.rest_call("ipam_network_list")['networks']
   domains  = aWeb.rest_call("dns_domain_list",{'filter':'forward'})['domains']
   print "<ARTICLE CLASS=info><P>Device Add</P>"
   print "<FORM ID=device_new_form>"
@@ -351,7 +347,7 @@ def delete(aWeb):
 #
 def discover(aWeb):
  if aWeb['op']:
-  res = aWeb.rest_full(aWeb._rest_url,"device_discover",{ 'network':aWeb['network'], 'a_dom_id':aWeb['a_dom_id']}, aTimeout = 200)['data']
+  res = aWeb.rest_full(aWeb._rest_url,"device_discover",{ 'network_id':aWeb['network_id'], 'a_dom_id':aWeb['a_dom_id']}, aTimeout = 200)['data']
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
   networks = aWeb.rest_call("ipam_list")['networks']
@@ -366,7 +362,7 @@ def discover(aWeb):
    extra = "" if not dom_name == d.get('name') else "selected=selected"
    print "<OPTION VALUE=%s %s>%s</OPTION>"%(d.get('id'),extra,d.get('name'))
   print "</SELECT></DIV></DIV>"
-  print "<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><SELECT NAME=network>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><SELECT NAME=network_id>"
   for s in networks:
    print "<OPTION VALUE=%s>%s (%s)</OPTION>"%(s['id'],s['netasc'],s['description'])
   print "</SELECT></DIV></DIV>"
