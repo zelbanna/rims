@@ -130,7 +130,7 @@ class Junos(GenericDevice):
               '%s routing-options static route 0.0.0.0/0 next-hop %s'%(base,argdict['gateway']),
               '%s routing-options static route 0.0.0.0/0 no-readvertise'%base,
               '%s snmp community %s clients %s/%s'%(base,SC['snmp']['read_community'],argdict['network'],argdict['mask']),
-              '%s protocols lldp port-id-subtype interface-name'%base,
+              '%s protocols lldp port-description-type interface-description'%base,
               '%s protocols lldp interface all'%base,
               '%s class-of-service host-outbound-traffic forwarding-class network-control'%base,
               'set apply-groups default_system'])
