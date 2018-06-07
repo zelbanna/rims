@@ -558,7 +558,7 @@ def interface_list(aDict):
   ret = db.get_row()
   if ret:
    sort = aDict.get('sort','snmp_index')
-   ret['xist'] = db.do("SELECT id,name,description,snmp_index,peer_interface,multipoint FROM device_interfaces WHERE device_id = %s ORDER BY %s"%(ret['id'],sort))
+   ret['xist'] = db.do("SELECT id,name,description,snmp_index,peer_interface,multipoint FROM device_interfaces WHERE device = %s ORDER BY %s"%(ret['id'],sort))
    ret['data'] = db.get_rows()
   else:
    ret = {'id':None,'hostname':None,'data':[],'xist':0}
@@ -571,7 +571,7 @@ def interface_info(aDict):
 
  Args:
   - id (required)
-  - device_id (required)
+  - device (required)
   - name
   - description
   - snmp_index
@@ -598,11 +598,11 @@ def interface_info(aDict):
     id = db.get_last_id() if ret['insert'] > 0 else 'new'
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT dc.*, peer.device_id AS peer_device FROM device_interfaces AS dc LEFT JOIN device_interfaces AS peer ON dc.peer_interface = peer.id WHERE dc.id = '%s'"%id)
+   ret['xist'] = db.do("SELECT dc.*, peer.device AS peer_device FROM device_interfaces AS dc LEFT JOIN device_interfaces AS peer ON dc.peer_interface = peer.id WHERE dc.id = '%s'"%id)
    ret['data'] = db.get_row()
    ret['data'].pop('manual',None)
   else:
-   ret['data'] = {'id':'new','device_id':int(aDict['device_id']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_interface':None,'peer_device':None,'multipoint':0}
+   ret['data'] = {'id':'new','device':int(aDict['device']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_interface':None,'peer_device':None,'multipoint':0}
  return ret
 
 #
@@ -612,7 +612,6 @@ def interface_delete(aDict):
 
  Args:
   - id (required)
-  - device_id (required)
 
  Output:
  """
@@ -629,14 +628,12 @@ def interface_delete_list(aDict):
  """Function docstring for interface_delete TBD. Delete a certain interface
 
  Args:
-  - device_id (required)
   - interface_<x> (required). 0/1, deletes interface x if set to 1
 
  Output:
   - interfaces. List of id:s of deleted interfaces
  """
  ret = {'interfaces':[],'cleared':0,'deleted':0}
- dev = aDict.pop('device_id')
  op  = aDict.pop('op')
  with DB() as db:
   for intf,value in aDict.iteritems():
@@ -686,7 +683,7 @@ def interface_link_advanced(aDict):
  ret = {'error':None,'a':{},'b':{}}
  with DB() as db:
   sql_dev  ="SELECT id FROM devices WHERE ip = INET_ATON('%s')"
-  sql_indx = "SELECT id FROM device_interfaces WHERE device_id = '%s' AND snmp_index = '%s'"
+  sql_indx = "SELECT id FROM device_interfaces WHERE device = '%s' AND snmp_index = '%s'"
   for peer in ['a','b']:
    xist = db.do(sql_dev%aDict['%s_ip'%peer])
    if xist > 0:
@@ -695,7 +692,7 @@ def interface_link_advanced(aDict):
     if xist > 0:
      ret[peer]['index'] = db.get_val('id')
     else:
-     db.insert_dict('device_interfaces',{'device_id':ret[peer]['device'],'name':'Unknown','description':'Unknown','snmp_index':aDict['%s_index'%peer]})
+     db.insert_dict('device_interfaces',{'device':ret[peer]['device'],'name':'Unknown','description':'Unknown','snmp_index':aDict['%s_index'%peer]})
      ret[peer]['index'] = db.get_last_id()
    else:
     ret['error'] = "IP not found (%s)"%aDict['%s_ip'%peer]
@@ -716,16 +713,16 @@ def interface_discover(aDict):
   Later stage is to do LLDP or similar to populate neighbor information
 
  Args:
-  - device_id (required)
+  - device (required)
   - cleanup (optional, boolean). Deletes non-existing interfaces (except manually added) by default
 
  Output:
  """
  ret = {'insert':0,'update':0,'delete':0}
  with DB() as db:
-  db.do("SELECT INET_NTOA(ia.ip) AS ipasc, hostname, device_types.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aDict['device_id'])
+  db.do("SELECT INET_NTOA(ia.ip) AS ipasc, hostname, device_types.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aDict['device'])
   info = db.get_row()
-  db.do("SELECT id, snmp_index, name, description FROM device_interfaces WHERE device_id = %s"%aDict['device_id'])
+  db.do("SELECT id, snmp_index, name, description FROM device_interfaces WHERE device = %s"%aDict['device'])
   existing = db.get_rows()
   try:
    module  = import_module("sdcp.devices.%s"%(info['type']))
@@ -742,6 +739,6 @@ def interface_discover(aDict):
     elif aDict.get('cleanup',True) == True:
      ret['delete'] += db.do("DELETE FROM device_interfaces WHERE id = %s AND manual = 0"%(con['id']))
    for key, entry in interfaces.iteritems():
-    args = {'device_id':int(aDict['device_id']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key}
+    args = {'device':int(aDict['device']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key}
     ret['insert'] += db.insert_dict('device_interfaces',args)
  return ret
