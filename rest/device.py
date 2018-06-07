@@ -19,10 +19,14 @@ def info(aDict):
 
  Output:
  """
- srch = "devices.id = '{}'".format(aDict.get('id')) if aDict.get('id') else "devices.ip = INET_ATON('%s')"%(aDict.get('ip'))
- ret  = {'id':aDict.pop('id',None),'ip':aDict.get('ip',None)}
- # Make sure we don't change IP here as it breaks too much, instead user must resync to another VRF and network
- _    = aDict.pop('devices_ip',None)
+ if   aDict.get('id'):
+  srch = "devices.id = %s"%aDict.get('id')     
+ elif aDict.get('ip'):
+  srch = "devices.ip = INET_ATON('%s')"%aDict.get('ip')  
+ elif aDict.get('ipam_id'):
+  srch = "devices.ipam_id = %s"%aDict.get('ipam_id')
+  aDict.pop('op',None)
+ ret = {'id':aDict.pop('id',None),'ip':aDict.get('ip',None)}
 
  with DB() as db:
   # Fetch selection info
@@ -34,6 +38,8 @@ def info(aDict):
   # Move aDict to args for op
   operation = aDict.pop('op',None)
   if operation:
+   # Make sure we don't change IP here as it breaks too much, instead user must resync to another VRF and network
+   _ = aDict.pop('devices_ip',None)
    args = aDict
    ret['result'] = {}
 
@@ -326,7 +332,7 @@ def discover(aDict):
  """
  from time import time
  from threading import Thread, BoundedSemaphore
- from sdcp.rest.ipam import discover as ipam_discover
+ from sdcp.rest.ipam import network_discover as ipam_discover
  from sdcp.devices.generic import Device
  from sdcp.rest.ipam import ip_allocate
  def __detect_thread(aIP,aDB,aSema):
@@ -337,7 +343,7 @@ def discover(aDict):
   return True
 
  start_time = int(time())
- ipam = ipam_discover({'network':aDict['network']})
+ ipam = ipam_discover({'id':aDict['network_id']})
  ret = {'errors':0, 'start':ipam['start'],'end':ipam['end'] }
 
  with DB() as db:
@@ -532,14 +538,13 @@ def mac_sync(aDict):
  except: pass
  return ret
 
+############################################### INTERFACES ################################################
 #
 #
 def interface_list(aDict):
  """List interfaces for a specific device
 
  Args:
-  - device_id (optional)
-  - device_ip (optional)
   - device    (ip or id... :-))
   - sort (optional, default to 'snmp_index')
  Output:
@@ -550,13 +555,10 @@ def interface_list(aDict):
   else:   return True
 
  with DB() as db:
-  id, ip = None,None
-  if aDict.get('device_id'):
-   db.do("SELECT id, hostname FROM devices WHERE id = %s"%aDict['device_id'])
-  elif is_int(aDict.get('device')):
+  if is_int(aDict.get('device')):
    db.do("SELECT id, hostname FROM devices WHERE id = %s"%aDict['device'])
   else:
-   db.do("SELECT id, hostname FROM devices WHERE ip = INET_ATON('%s')"%(aDict['device_ip'] if aDict.get('device_ip') else aDict['device']))
+   db.do("SELECT id, hostname FROM devices WHERE ip = INET_ATON('%s')"%aDict['device'])
   ret = db.get_row()
   if ret:
    sort = aDict.get('sort','snmp_index')

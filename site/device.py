@@ -200,7 +200,7 @@ def info(aWeb):
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_info&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
  print aWeb.button('document',    DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
- print aWeb.button('connections', DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&device_id=%i'%(dev['id']),TITLE='Device interfaces')
+ print aWeb.button('connections', DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&device=%i'%(dev['id']),TITLE='Device interfaces')
  print aWeb.button('network',     DIV='div_content_right', URL='sdcp.cgi?visualize_network&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
  print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] == 1 and (dev['info']['console_ip'] and dev['info'].get('console_port',0) > 0):
@@ -350,7 +350,7 @@ def discover(aWeb):
   res = aWeb.rest_full(aWeb._rest_url,"device_discover",{ 'network_id':aWeb['network_id'], 'a_dom_id':aWeb['a_dom_id']}, aTimeout = 200)['data']
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
-  networks = aWeb.rest_call("ipam_list")['networks']
+  networks = aWeb.rest_call("ipam_network_list")['networks']
   domains = aWeb.rest_call("dns_domain_list",{'filter':'forward'})['domains']
   dom_name = aWeb['domain']
   print "<ARTICLE CLASS=info><P>Device Discovery</P>"
@@ -386,7 +386,7 @@ def interface_list(aWeb):
   opres = aWeb.rest_call("device_interface_link",{'a_id':aWeb['id'],'b_id':aWeb['peer_interface']})
  else:
   opres = ""
- res = aWeb.rest_call("device_interface_list",{'device_id':aWeb['device_id']})
+ res = aWeb.rest_call("device_interface_list",{'device':aWeb['device']})
  print "<ARTICLE><P>Interfaces (%s)</P><DIV CLASS='controls'>"%(res['hostname'])
  print aWeb.button('reload', DIV='div_dev_data',URL='sdcp.cgi?device_interface_list&device_id=%s'%(aWeb['device_id']))
  print aWeb.button('add',    DIV='div_dev_data',URL='sdcp.cgi?device_interface_info&device_id=%s&id=new'%aWeb['device_id'])
