@@ -50,7 +50,7 @@ def domain_delete(aDict):
 
  Output:
  """
- return {'records':0,'domain':0}
+ return {'records':0,'domain':1}
 
 #################################### Records #######################################
 #
@@ -64,7 +64,12 @@ def record_list(aDict):
 
  Output:
  """
- return {'count':0, 'records':[]}
+ from sdcp.core.common import DB
+ ret = {}
+ with DB() as db:
+  ret['count'] = db.do("SELECT devices.id, 0 AS domain_id, CONCAT(hostname,'.local') AS name, INET_NTOA(ia.ip) AS content, 'A' AS type, 3600 AS ttl FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.a_dom_id = 0")
+  ret['records']= db.get_rows()
+ return ret
 
 #
 #
@@ -81,7 +86,16 @@ def record_info(aDict):
 
  Output:
  """
- return {'xist':0, 'data':{'id':0,'domain_id':aDict.get('domain_id',0) ,'name':aDict.get('name','no_record'),'content':aDict.get('content','no_record'),'type':aDict.get('type','A'),'ttl':'3600' }}
+ from sdcp.core.common import DB
+ from sdcp.core.logger import log
+ from json import dumps
+ log("record_info",dumps(aDict))
+ ret = {}
+ with DB() as db:
+  search = "ia.ip = INET_ATON('%s')"%aDict['content'] if aDict['id'] == 'new' and aDict.get('op') == 'update' and aDict.get('type') == 'A' else "devices.id = %s"%aDict['id']
+  ret['xist'] = db.do("SELECT devices.id, 0 AS domain_id, CONCAT(hostname,'.local') AS name, INET_NTOA(ia.ip) AS content, 'A' AS type, 3600 AS ttl FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.a_dom_id = 0 AND %s"%search)
+  ret['data'] = db.get_row()
+ return ret
 
 #
 #
@@ -93,7 +107,7 @@ def record_delete(aDict):
 
  Output:
  """
- return {'deleted':0}
+ return {'deleted':1}
 
 ############################### Tools #################################
 #
