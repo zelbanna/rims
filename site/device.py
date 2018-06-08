@@ -242,13 +242,17 @@ def update(aWeb):
   extra = " selected" if dev['info']['a_dom_id'] == dom['id'] else ""
   print "<OPTION VALUE='%s' %s>%s</OPTION>"%(dom['id'],extra,dom['name'])
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='%s' READONLY></DIV></DIV>"%(dev['ip'])
+ print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='%s'></DIV><DIV CLASS=td>"%(dev['ip'])
+ print aWeb.button('sync',DIV='div_content_right', FRM='info_form', URL='sdcp.cgi?device_update&previous_ip=%s'%dev['ip'], TITLE='Re-Sync new IP')
+ print "</DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type_id>"
  for type in dev['infra']['types'].values():
   extra = " selected" if dev['info']['type_id'] == type['id'] or (not dev['info']['type_id'] and type['name'] == 'generic') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id'],extra,type['name'])
- print "</SELECT></DIV></DIV>"
+ print "</SELECT></DIV><DIV CLASS=td>"
+ print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_update&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
+ print "</DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=devices_model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
  print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
  print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%(dev['info']['snmp'])
@@ -294,7 +298,6 @@ def update(aWeb):
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?device_update&id=%i'%dev['id'])
  print aWeb.button('back',  DIV='div_content_right',URL='sdcp.cgi?device_info&id=%i'%dev['id'])
- print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_update&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_update&op=update', FRM='info_form', TITLE='Save Device Information')
  print "</DIV></ARTICLE>"
 
