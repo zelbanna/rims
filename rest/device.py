@@ -157,6 +157,132 @@ def info(aDict):
 
 #
 #
+def update(aDict):
+ """Function update updates device info, either through direct fields or through lookup
+
+ Args:
+  - id (required)
+  - op (optional)
+
+ Output:
+  - all device info
+ """
+ ret = {'id':aDict.pop('id',None), 'ip':aDict.pop('ip',None)}
+
+ with DB() as db:
+  # Prep types for lookup
+  typexist = db.do("SELECT id, name, base FROM device_types")
+  types    = db.get_dict('name') 
+
+  # Move aDict to args for op
+  operation = aDict.pop('op',None)
+  if operation:
+   # Make sure we don't change IP here as it breaks too much, instead user must resync to another VRF and network
+   _ = aDict.pop('devices_ip',None)
+   args = aDict
+   ret['result'] = {}
+
+   if operation == 'lookup' and ret['ip']:
+    from sdcp.devices.generic import Device
+    dev = Device(ret['ip'])
+    lookup = dev.detect()
+    ret['result']['lookup'] = lookup['result']
+    if lookup['result'] == 'OK':
+     args.update({'devices_model':lookup['info']['model'],'devices_snmp':lookup['info']['snmp'],'devices_type_id':types[lookup['info']['type']]['id']})
+
+   if (operation == 'update' or (operation == 'lookup' and ret['result']['lookup'] == 'OK')) and ret['id']:
+    args['devices_vm'] = args.get('devices_vm',0)
+    if not args.get('devices_comment'):
+     args['devices_comment'] = 'NULL'
+    if not args.get('devices_webpage'):
+     args['devices_webpage'] = 'NULL'    
+    if args.get('devices_mac'):
+     try: args['devices_mac'] = int(args['devices_mac'].replace(":",""),16)
+     except: aDict['devices_mac'] = 0
+    racked = args.pop('racked',None)
+    if racked:
+     if   racked == '1' and args.get('rackinfo_rack_id') == 'NULL':
+      db.do("DELETE FROM rackinfo WHERE device_id = %s"%ret['id'])
+      args.pop('rackinfo_pem0_pdu_slot_id',None)
+      args.pop('rackinfo_pem1_pdu_slot_id',None)
+     elif racked == '0' and args.get('rackinfo_rack_id') != 'NULL':
+      db.do("INSERT INTO rackinfo SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(ret['id'],args.get('rackinfo_rack_id')))
+     elif racked == '1':
+      for pem in ['pem0','pem1']:
+       try:
+        pem_pdu_slot_id = args.pop('rackinfo_%s_pdu_slot_id'%pem,None)
+        (args['rackinfo_%s_pdu_id'%pem],args['rackinfo_%s_pdu_slot'%pem]) = pem_pdu_slot_id.split('.')
+       except: pass
+
+    #
+    # Make sure everything is there to update DNS records, if records are not the same as old ones, update device, otherwise pop
+    #
+    if args.get('devices_a_id') and args.get('devices_ptr_id') and args.get('devices_a_dom_id') and args.get('devices_hostname') and ret['ip']:
+     import sdcp.rest.dns as DNS
+     DNS.__add_globals__({'import_module':import_module})
+     dns = DNS.record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip'],'id':ret['id']})
+     # ret['result']['dns'] = dns
+     for type in ['a','ptr']:
+      if dns[type.upper()]['xist'] > 0:
+       if not (str(dns[type.upper()]['record_id']) == str(args['devices_%s_id'%type])):
+        args['devices_%s_id'%type] = dns[type.upper()]['record_id']
+       else:
+        args.pop('devices_%s_id'%type,None)
+     if (str(dns['A']['domain_id']) == str(args['devices_a_dom_id'])):
+      args['devices_a_dom_id'] = dns['A']['domain_id']
+     else:
+      args.pop('devices_a_dom_id',None)
+
+    ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%(ret['id'])),'rack_info':db.update_dict_prefixed('rackinfo',args,"device_id='%s'"%(ret['id']))}
+
+  # Now fetch info
+  ret['xist'] = db.do("SELECT devices.*, base, device_types.name as type_name, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = %s"%ret['id'])
+  if ret['xist'] > 0:
+   ret['info'] = db.get_row()
+   ret['id'] = ret['info'].pop('id',None)
+   ret['ip'] = ret['info'].pop('ipasc',None)
+   ret['type'] = ret['info'].pop('base',None)
+   ret['mac']  = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
+   # Rack infrastructure
+   ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
+   ret['infra']['types'] = types
+   db.do("SELECT domains.* FROM domains WHERE type = 'forward' ORDER BY name")
+   ret['infra']['domains'] = db.get_rows()
+   if ret['info']['vm'] == 1:
+    ret['racked'] = 0
+   else:
+    db.do("SELECT id, name FROM racks")
+    ret['infra']['racks'].extend(db.get_rows())
+    ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(ia.ip) AS console_ip, devices.hostname AS console_name FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.console_id LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE rackinfo.device_id = %i"%(ret['id']))
+    if ret['racked'] > 0:
+     ret['info'].update(db.get_row())
+     sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
+     db.do(sqlbase%('console'))
+     ret['infra']['consoles'] = db.get_rows()
+     ret['infra']['consoles'].append({ 'id':'NULL', 'hostname':'No Console' })
+     db.do(sqlbase%('pdu'))
+     ret['infra']['pdus'] = db.get_rows()
+     ret['infra']['pdus'].append({ 'id':'NULL', 'hostname':'No PDU' })
+     db.do("SELECT pduinfo.* FROM pduinfo")
+     ret['infra']['pduinfo'] = db.get_dict('device_id')
+     ret['infra']['pduinfo']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
+
+  if operation == 'update' and ret['racked']:
+   for pem in [0,1]:
+    if ret['info']['pem%i_pdu_id'%(pem)] > 0:
+     db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
+     pdu_info = db.get_row()
+     args_pem = {'ip':pdu_info['ip'],'unit':ret['info']['pem%i_pdu_unit'%(pem)],'slot':ret['info']['pem%i_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem)}
+     try:
+      module = import_module("sdcp.rest.%s"%pdu_info['name'])
+      pdu_update = getattr(module,'pdu_update',None)
+      ret['result']['pem%i'%pem] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem))
+     except Exception as err:
+      ret['result']['pem%i'%pem] = str(err)
+ return ret
+
+#
+#
 def basics(aDict):
  """Find basic info given device id
 
