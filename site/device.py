@@ -65,10 +65,10 @@ def list(aWeb):
  print aWeb.button('add',     DIV='div_content_right', TITLE='Add device', URL='sdcp.cgi?device_new&{}'.format(aWeb.get_args()))
  print aWeb.button('network', DIV='div_content_right', TITLE='Discover', URL='sdcp.cgi?device_discover')
  print aWeb.button('web',     DIV='div_content_right', TITLE='Show webpages', URL='sdcp.cgi?device_webpages')
- print "</DIV>"
- print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&sort=ip&{0}'>IP&darr;</A></DIV><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&sort=hostname&{0}'>FQDN&darr;</A></DIV><DIV CLASS=th>Model</DIV></DIV>".format(aWeb.get_args(['sort']))
- print "<DIV CLASS=tbody>"
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead>"
+ for sort in ['IP','Hostname']:
+  print "<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red")
+ print "<DIV CLASS=th>Model</DIV></DIV><DIV CLASS=tbody>"
  for row in res['data']:
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?device_info&id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['id'],row['ipasc'], row['fqdn'], row['model'])
  print "</DIV></DIV></ARTICLE>"
