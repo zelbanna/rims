@@ -94,124 +94,80 @@ def info(aWeb):
   return
 
  cookie = aWeb.cookie_unjar('system')
-
  args = aWeb.get_args2dict()
- args['info'] = ['username','booking','infra']
  dev = aWeb.rest_call("device_info",args)
-
- if dev['xist'] == 0:
+ if not dev['xist']:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
   return
-
  ########################## Data Tables ######################
-
- width = 680 if dev['racked'] == 1 and not dev['type'] == 'pdu' else 470
-
+ width = 680 if dev['racked'] and not dev['info']['type_base'] == 'pdu' else 470
  print "<ARTICLE CLASS='info' STYLE='position:relative; height:290px; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id'])
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
- print "<INPUT TYPE=HIDDEN NAME=ip VALUE={}>".format(dev['ip'])
- print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
  print "<!-- Reachability Info -->"
- print "<DIV STYLE='margin:3px; float:left;'>"
- print "<DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['info']['hostname'])
- print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE={} READONLY></DIV></DIV>".format(dev['ip'])
- print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=devices_a_dom_id>"
- for dom in dev['infra']['domains']:
-  extra = " selected" if dev['info']['a_dom_id'] == dom['id'] else ""
-  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(dom['id'],extra,dom['name'])
- print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])
- print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type_id>"
- for type in dev['infra']['types'].values():
-  extra = " selected" if dev['info']['type_id'] == type['id'] or (not dev['info']['type_id'] and type['name'] == 'generic') else ""
-  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id'],extra,type['name'])
- print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=devices_model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
- print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
+ print "<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:  </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['hostname']
+ print "<DIV CLASS=tr><DIV CLASS=td>IP:    </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['ip']
+ print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['domain']
+ print "<DIV CLASS=tr><DIV CLASS=td>MAC:   </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=mac VALUE='%s'></DIV></DIV>"%dev['info']['mac']
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:  </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['type_name']
+ print "<DIV CLASS=tr><DIV CLASS=td>Model: </DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
+ print "<DIV CLASS=tr><DIV CLASS=td>VM:    </DIV><DIV CLASS=td><INPUT NAME=vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
  print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
-
  print "<!-- Additional info -->"
- print "<DIV STYLE='margin:3px; float:left;'>"
- print "<DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV>"
- print "<DIV CLASS=td><SELECT NAME=rackinfo_rack_id>"
- for rack in dev['infra']['racks']:
-  extra = " selected" if ((dev['racked'] == 0 and rack['id'] == 'NULL') or (dev['racked'] == 1 and dev['info']['rack_id'] == rack['id'])) else ""
-  print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
- print "</SELECT></DIV>"
- print "</DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%(dev['info']['snmp'])
+ print "<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info'].get('rack_name',"Not used")
+ print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['snmp']
  print "<DIV CLASS=tr ID=div_booking_info><DIV CLASS=td>Booking:</DIV>"
  if dev['booked']:
   print "<DIV CLASS='td %s'>"%("red" if dev['booking']['valid'] == 1 else "orange")
-  if dev['booking']['user_id'] == int(cookie['id']):
-   print "<A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?bookings_update&op=debook&id=%s'>%s</A>"%(dev['id'],dev['booking']['alias'])
-  else:
-   print dev['booking']['alias']
+  print dev['booking']['alias'] if dev['booking']['user_id'] != int(cookie['id']) else "<A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?bookings_update&op=debook&id=%s'>%s</A>"%(dev['id'],dev['booking']['alias'])
   print "</DIV>"
  else:
   print "<DIV CLASS='td green'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?bookings_update&op=book&id=%s'>Book</A></DIV>"%dev['id']
  print "</DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>A ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_a_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['a_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>PTR ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ptr_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['ptr_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>Device ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(dev['id'])
- print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(dev['info']['ipam_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>A ID:     </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['a_id']
+ print "<DIV CLASS=tr><DIV CLASS=td>PTR ID:   </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['ptr_id']
+ print "<DIV CLASS=tr><DIV CLASS=td>Device ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['id']
+ print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:  </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['ipam_id']
  print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
-
  print "<!-- Rack Info -->"
- if dev['racked'] == 1 and not dev['type'] == 'pdu':
-  print "<DIV STYLE='margin:3px; float:left;'>"
-  print "<DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
-  if not dev['type'] == 'controlplane':
-   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['info']['rack_size'])
-   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['info']['rack_unit'])
-  if not dev['type'] == 'console' and len(dev['infra']['consoles']) > 0:
-   print "<DIV CLASS=tr><DIV CLASS=td>TS:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_console_id>"
-   for console in dev['infra']['consoles']:
-    extra = " selected='selected'" if (dev['info']['console_id'] == console['id']) or (not dev['info']['console_id'] and console['id'] == 'NULL') else ""
-    print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['hostname'])
-   print "</SELECT></DIV></DIV>"
-   print "<DIV CLASS=tr><DIV CLASS=td>TS Port:</DIV><DIV CLASS=td TITLE='Console port in rack TS'><INPUT NAME=rackinfo_console_port TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['info']['console_port'])
-  if not dev['type'] == 'controlplane' and len(dev['infra']['pdus']) > 0:
-   for pem in ['pem0','pem1']:
-    print "<DIV CLASS=tr><DIV CLASS=td>{0} PDU:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_{1}_pdu_slot_id>".format(pem.upper(),pem)
-    for pdu in dev['infra']['pdus']:
-     pduinfo = dev['infra']['pduinfo'].get(str(pdu['id']))
-     if pduinfo:
-      for slotid in range(0,pduinfo['slots']):
-       pdu_slot_id   = pduinfo[str(slotid)+"_slot_id"]
-       pdu_slot_name = pduinfo[str(slotid)+"_slot_name"]
-       extra = "selected" if ((dev['info'][pem+"_pdu_id"] == pdu['id']) and (dev['info'][pem+"_pdu_slot"] == pdu_slot_id)) or (not dev['info'][pem+"_pdu_id"] and  pdu['id'] == 'NULL') else ""
-       print "<OPTION VALUE=%s.%s %s>%s</OPTION>"%(pdu['id'],pdu_slot_id, extra, pdu['hostname']+":"+pdu_slot_name)
-    print "</SELECT></DIV></DIV>"
-    print "<DIV CLASS=tr><DIV CLASS=td>{0} Unit:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_{1}_pdu_unit TYPE=TEXT PLACEHOLDER='{2}'></DIV></DIV>".format(pem.upper(),pem,dev['info'][pem + "_pdu_unit"])
+ if dev['racked'] and not dev['info']['type_base'] == 'pdu':
+  print "<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
+  if not dev['info']['type_base'] == 'controlplane':
+   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['rack_size']
+   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['rack_unit']
+  if not dev['info']['type_base'] == 'console':
+   print "<DIV CLASS=tr><DIV CLASS=td>TS:      </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['console_name']
+   print "<DIV CLASS=tr><DIV CLASS=td>TS Port: </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['console_port']
+  print "<DIV CLASS=tr><DIV CLASS=td>PEM1 PDU: </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['pem0_pdu_name']
+  print "<DIV CLASS=tr><DIV CLASS=td>PEM1 Port:</DIV><DIV CLASS=td>%s.%s</DIV></DIV>"%(dev['rack']['pem0_pdu_slot'],dev['rack']['pem0_pdu_unit'])
+  print "<DIV CLASS=tr><DIV CLASS=td>PEM2 PDU: </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['pem1_pdu_name']
+  print "<DIV CLASS=tr><DIV CLASS=td>PEM2 Port:</DIV><DIV CLASS=td>%s.%s</DIV></DIV>"%(dev['rack']['pem1_pdu_slot'],dev['rack']['pem1_pdu_unit'])
   print "</DIV></DIV></DIV>"
  print "<!-- Text fields -->"
  print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%;'><DIV CLASS=table><DIV CLASS=tbody>"
- print "<DIV CLASS='tr even'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=devices_comment VALUE='{}'></DIV></DIV>".format("" if not dev['info']['comment'] else dev['info']['comment'].encode("utf-8"))
- print "<DIV CLASS='tr even'><DIV CLASS=td>Web page:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=devices_webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage'])
+ print "<DIV CLASS='tr even'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=comment VALUE='{}'></DIV></DIV>".format("" if not dev['info']['comment'] else dev['info']['comment'].encode("utf-8"))
+ print "<DIV CLASS='tr even'><DIV CLASS=td>Web page:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage'])
  print "</DIV></DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?device_info&id=%i'%dev['id'])
- print aWeb.button('configure',DIV='div_content_right',URL='sdcp.cgi?device_update&id=%i'%dev['id'])
- print aWeb.button('trash', DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
- print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_info&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
- print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Device Information and Update DDI and PDU')
- print aWeb.button('document',    DIV='div_dev_data', URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
- print aWeb.button('connections', DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&device=%i'%(dev['id']),TITLE='Device interfaces')
- print aWeb.button('network',     DIV='div_content_right', URL='sdcp.cgi?visualize_network&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
+ print aWeb.button('reload',     DIV='div_content_right',URL='sdcp.cgi?device_info&id=%i'%dev['id'])
+ print aWeb.button('trash',      DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
+ print aWeb.button('configure',  DIV='div_content_right',URL='sdcp.cgi?device_update&id=%i'%dev['id'], TITLE='Configure Extended Device Information')
+ print aWeb.button('save',       DIV='div_content_right',URL='sdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Basic Device Information')
+ print aWeb.button('document',   DIV='div_dev_data',     URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
+ print aWeb.button('connections',DIV='div_dev_data',     URL='sdcp.cgi?device_interface_list&device=%i'%(dev['id']),TITLE='Device interfaces')
+ print aWeb.button('network',    DIV='div_content_right',URL='sdcp.cgi?visualize_network&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
  print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
- if dev['racked'] == 1 and (dev['info']['console_ip'] and dev['info'].get('console_port',0) > 0):
-  print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['info']['console_ip'],6000+dev['info']['console_port']))
+ if dev['racked'] and dev['rack'].get('console_ip'):
+  # Hardcoded port to 60xx
+  print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
  if dev['info'].get('webpage'):
   print aWeb.button('web',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('webpage'))
  print "<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result',''))
  print "</DIV></ARTICLE>"
-
  print "<!-- Function navbar and content -->"
  print "<NAV><UL>"
  for fun in dev['info']['functions'].split(','):
@@ -229,7 +185,7 @@ def update(aWeb):
  args = aWeb.get_args2dict()
  dev = aWeb.rest_call("device_update",args)
 
- print "<ARTICLE CLASS='info'><P>Device Info</P>"
+ print "<ARTICLE CLASS='info'><P>Device Update Info</P>"
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
  print "<INPUT TYPE=HIDDEN NAME=ip VALUE={}>".format(dev['ip'])
@@ -245,15 +201,15 @@ def update(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='%s'></DIV><DIV CLASS=td>"%(dev['ip'])
  print aWeb.button('sync',DIV='div_content_right', FRM='info_form', URL='sdcp.cgi?device_update&previous_ip=%s'%dev['ip'], TITLE='Re-Sync new IP')
  print "</DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['mac'])
- print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td TITLE='Device type'><SELECT NAME=devices_type_id>"
+ print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['info']['mac'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT NAME=devices_type_id>"
  for type in dev['infra']['types'].values():
   extra = " selected" if dev['info']['type_id'] == type['id'] or (not dev['info']['type_id'] and type['name'] == 'generic') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id'],extra,type['name'])
  print "</SELECT></DIV><DIV CLASS=td>"
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_update&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print "</DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=devices_model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td STYLE='max-width:250px;'><INPUT TYPE=TEXT NAME=devices_model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
  print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
  print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%(dev['info']['snmp'])
  print "<DIV CLASS=tr><DIV CLASS=td>A ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_a_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['a_id'])
@@ -265,18 +221,18 @@ def update(aWeb):
   extra = " selected" if ((dev['racked'] == 0 and rack['id'] == 'NULL') or (dev['racked'] == 1 and dev['info']['rack_id'] == rack['id'])) else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name'])
  print "</SELECT></DIV></DIV>"
- if dev['racked'] == 1 and not dev['type'] == 'pdu':
-  if not dev['type'] == 'controlplane':
+ if dev['racked'] == 1 and not dev['info']['type_base'] == 'pdu':
+  if not dev['info']['type_base'] == 'controlplane':
    print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_rack_size TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['info']['rack_size'])
    print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td TITLE='Top rack unit of device placement'><INPUT NAME=rackinfo_rack_unit TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['info']['rack_unit'])
-  if not dev['type'] == 'console' and len(dev['infra']['consoles']) > 0:
+  if not dev['info']['type_base'] == 'console' and len(dev['infra']['consoles']) > 0:
    print "<DIV CLASS=tr><DIV CLASS=td>TS:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_console_id>"
    for console in dev['infra']['consoles']:
     extra = " selected='selected'" if (dev['info']['console_id'] == console['id']) or (not dev['info']['console_id'] and console['id'] == 'NULL') else ""
     print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['hostname'])
    print "</SELECT></DIV></DIV>"
    print "<DIV CLASS=tr><DIV CLASS=td>TS Port:</DIV><DIV CLASS=td TITLE='Console port in rack TS'><INPUT NAME=rackinfo_console_port TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['info']['console_port'])
-  if not dev['type'] == 'controlplane' and len(dev['infra']['pdus']) > 0:
+  if not dev['info']['type_base'] == 'controlplane' and len(dev['infra']['pdus']) > 0:
    for pem in ['pem0','pem1']:
     print "<DIV CLASS=tr><DIV CLASS=td>{0} PDU:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_{1}_pdu_slot_id>".format(pem.upper(),pem)
     for pdu in dev['infra']['pdus']:
@@ -293,11 +249,12 @@ def update(aWeb):
  print "<!-- Text fields -->"
  print "<DIV CLASS='tr even'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=devices_comment VALUE='%s'></DIV></DIV>"%("" if not dev['info']['comment'] else dev['info']['comment'].encode("utf-8"))
  print "<DIV CLASS='tr even'><DIV CLASS=td>Web page:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=devices_webpage VALUE='%s'></DIV></DIV>"%("" if not dev['info']['webpage'] else dev['info']['webpage'])
- print "<DIV CLASS='tr even'><DIV CLASS=td>Result:  </DIV><DIV CLASS=td ID=update_results>%s</DIV></DIV>"%str(dev.get('result',''))
+ print "<DIV CLASS='tr even'><DIV CLASS=td STYLE='font-style:italic'>Result:  </DIV><DIV CLASS=td ID=update_results>%s</DIV></DIV>"%str(dev.get('result',''))
  print "</DIV></DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?device_update&id=%i'%dev['id'])
  print aWeb.button('back',  DIV='div_content_right',URL='sdcp.cgi?device_info&id=%i'%dev['id'])
+ print aWeb.button('trash', DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_update&op=update', FRM='info_form', TITLE='Save Device Information')
  print "</DIV></ARTICLE>"
 
