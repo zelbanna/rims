@@ -167,16 +167,14 @@ def update(aDict):
    # Rack infrastructure
    ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
    ret['infra']['types'] = types
-   db.do("SELECT domains.* FROM domains WHERE type = 'forward' ORDER BY name")
-   ret['infra']['domains'] = db.get_rows()
    if ret['info']['vm'] == 1:
     ret['racked'] = 0
    else:
     db.do("SELECT id, name FROM racks")
     ret['infra']['racks'].extend(db.get_rows())
-    ret['racked'] = db.do("SELECT rackinfo.*, INET_NTOA(ia.ip) AS console_ip, devices.hostname AS console_name FROM rackinfo LEFT JOIN devices ON devices.id = rackinfo.console_id LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE rackinfo.device_id = %i"%(ret['id']))
+    ret['racked'] = db.do("SELECT rackinfo.* FROM rackinfo WHERE rackinfo.device_id = %i"%(ret['id']))
     if ret['racked'] > 0:
-     ret['info'].update(db.get_row())
+     ret['rack'] = db.get_row()
      sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
      db.do(sqlbase%('console'))
      ret['infra']['consoles'] = db.get_rows()
