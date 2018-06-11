@@ -109,18 +109,10 @@ def info(aWeb):
  print "<!-- Reachability Info -->"
  print "<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>Name:  </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['hostname']
- print "<DIV CLASS=tr><DIV CLASS=td>IP:    </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['ip']
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['domain']
+ print "<DIV CLASS=tr><DIV CLASS=td>IP:    </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['ip']
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:   </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=mac VALUE='%s'></DIV></DIV>"%dev['info']['mac']
- print "<DIV CLASS=tr><DIV CLASS=td>Type:  </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['type_name']
- print "<DIV CLASS=tr><DIV CLASS=td>Model: </DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
- print "<DIV CLASS=tr><DIV CLASS=td>VM:    </DIV><DIV CLASS=td><INPUT NAME=vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
- print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
- print "</DIV></DIV></DIV>"
- print "<!-- Additional info -->"
- print "<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack'].get('rack_name',"Not used")
- print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['snmp']
+ print "<DIV CLASS=tr><DIV CLASS=td>VM:    </DIV><DIV CLASS=td><INPUT NAME=vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "")
  print "<DIV CLASS=tr ID=div_booking_info><DIV CLASS=td>Booking:</DIV>"
  if dev['booked']:
   print "<DIV CLASS='td %s'>"%("red" if dev['booking']['valid'] == 1 else "orange")
@@ -129,25 +121,30 @@ def info(aWeb):
  else:
   print "<DIV CLASS='td green'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?bookings_update&op=book&id=%s'>Book</A></DIV>"%dev['id']
  print "</DIV>"
+ print "<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
+ print "</DIV></DIV></DIV>"
+ print "<!-- Additional info -->"
+ print "<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>"
+ print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['snmp']
+ print "<DIV CLASS=tr><DIV CLASS=td>Device ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['id']
  print "<DIV CLASS=tr><DIV CLASS=td>A ID:     </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['a_id']
  print "<DIV CLASS=tr><DIV CLASS=td>PTR ID:   </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['ptr_id']
- print "<DIV CLASS=tr><DIV CLASS=td>Device ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['id']
- print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:  </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['ipam_id']
- print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:  </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['type_name']
+ print "<DIV CLASS=tr><DIV CLASS=td>Model: </DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
+ print "<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
  print "<!-- Rack Info -->"
  if dev['racked'] and not dev['info']['type_base'] == 'pdu':
   print "<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
+  print "<DIV CLASS=tr><DIV CLASS=td>Rack/Pos: </DIV><DIV CLASS=td>%s (%s)</DIV></DIV>"%(dev['rack']['rack_name'],dev['rack']['rack_unit'])
   if not dev['info']['type_base'] == 'controlplane':
-   print "<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['rack_size']
-   print "<DIV CLASS=tr><DIV CLASS=td>Rack Unit:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['rack_unit']
+   print "<DIV CLASS=tr><DIV CLASS=td>Size:    </DIV><DIV CLASS=td>%s U</DIV></DIV>"%(dev['rack']['rack_size'])
   if not dev['info']['type_base'] == 'console':
-   print "<DIV CLASS=tr><DIV CLASS=td>TS:      </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['console_name']
-   print "<DIV CLASS=tr><DIV CLASS=td>TS Port: </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['console_port']
-  print "<DIV CLASS=tr><DIV CLASS=td>PEM1 PDU: </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['pem0_pdu_name']
-  print "<DIV CLASS=tr><DIV CLASS=td>PEM1 Port:</DIV><DIV CLASS=td>%s.%s</DIV></DIV>"%(dev['rack']['pem0_pdu_slot'],dev['rack']['pem0_pdu_unit'])
-  print "<DIV CLASS=tr><DIV CLASS=td>PEM2 PDU: </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['rack']['pem1_pdu_name']
-  print "<DIV CLASS=tr><DIV CLASS=td>PEM2 Port:</DIV><DIV CLASS=td>%s.%s</DIV></DIV>"%(dev['rack']['pem1_pdu_slot'],dev['rack']['pem1_pdu_unit'])
+   print "<DIV CLASS=tr><DIV CLASS=td>TS/Port: </DIV><DIV CLASS=td>%s (%s)</DIV></DIV>"%(dev['rack']['console_name'],dev['rack']['console_port'])
+  for pem in ['pem0','pem1']:
+   if dev['rack']['%s_pdu_id'%pem]:
+    print "<DIV CLASS=tr><DIV CLASS=td>%s PDU: </DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.upper(),dev['rack']['%s_pdu_name'%pem])
+    print "<DIV CLASS=tr><DIV CLASS=td>%s Port:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.upper(),dev['rack']['%s_pdu_unit'%pem])
   print "</DIV></DIV></DIV>"
  print "<!-- Text fields -->"
  print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%;'><DIV CLASS=table><DIV CLASS=tbody>"
@@ -212,11 +209,12 @@ def update(aWeb):
  print "</SELECT></DIV><DIV CLASS=td>"
  print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_update&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print "</DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Model:</DIV><DIV CLASS=td STYLE='max-width:250px;'><INPUT TYPE=TEXT NAME=devices_model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
- print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
- print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%(dev['info']['snmp'])
- print "<DIV CLASS=tr><DIV CLASS=td>A ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_a_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['a_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>PTR ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ptr_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['ptr_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Model:  </DIV><DIV CLASS=td STYLE='max-width:250px;'><INPUT TYPE=TEXT NAME=devices_model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
+ print "<DIV CLASS=tr><DIV CLASS=td>VM:     </DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
+ print "<DIV CLASS=tr><DIV CLASS=td>SNMP:   </DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%(dev['info']['snmp'])
+ print "<DIV CLASS=tr><DIV CLASS=td>A ID:   </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_a_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['a_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>PTR ID: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ptr_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['ptr_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%dev['info']['ipam_id']
  print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "<!-- Rack Info -->"
  print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_rack_id>"
@@ -244,8 +242,8 @@ def update(aWeb):
       for slotid in range(0,pduinfo['slots']):
        pdu_slot_id   = pduinfo[str(slotid)+"_slot_id"]
        pdu_slot_name = pduinfo[str(slotid)+"_slot_name"]
-       extra = "selected" if ((dev['rack'][pem+"_pdu_id"] == pdu['id']) and (dev['rack'][pem+"_pdu_slot"] == pdu_slot_id)) or (not dev['rack'][pem+"_pdu_id"] and  pdu['id'] == 'NULL') else ""
-       print "<OPTION VALUE=%s.%s %s>%s</OPTION>"%(pdu['id'],pdu_slot_id, extra, pdu['hostname']+":"+pdu_slot_name)
+       extra = "selected" if ((dev['rack'][pem+"_pdu_id"] == pdu['id']) and (dev['rack'][pem+"_pdu_slot"] == slotid)) or (not dev['rack'][pem+"_pdu_id"] and  pdu['id'] == 'NULL') else ""
+       print "<OPTION VALUE=%s.%s %s>%s</OPTION>"%(pdu['id'],slotid, extra, pdu['hostname']+":"+pdu_slot_name)
     print "</SELECT></DIV></DIV>"
     print "<DIV CLASS=tr><DIV CLASS=td>{0} Unit:</DIV><DIV CLASS=td><INPUT NAME=rackinfo_{1}_pdu_unit TYPE=TEXT PLACEHOLDER='{2}'></DIV></DIV>".format(pem.upper(),pem,dev['rack'][pem + "_pdu_unit"])
  print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"

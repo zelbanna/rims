@@ -19,9 +19,9 @@ def info(aDict):
  Output:
  """
  if   aDict.get('id'):
-  srch = "devices.id = %s"%aDict.get('id')     
+  srch = "devices.id = %s"%aDict.get('id')
  elif aDict.get('ip'):
-  srch = "ia.ip = INET_ATON('%s')"%aDict.get('ip')  
+  srch = "ia.ip = INET_ATON('%s')"%aDict.get('ip')
  elif aDict.get('ipam_id'):
   srch = "devices.ipam_id = %s"%aDict.get('ipam_id')
   aDict.pop('op',None)
@@ -37,7 +37,7 @@ def info(aDict):
    if not args.get('comment'):
     args['comment'] = 'NULL'
    if not args.get('webpage'):
-    args['webpage'] = 'NULL'    
+    args['webpage'] = 'NULL'
    if args.get('mac'):
     try: args['mac'] = int(args['mac'].replace(":",""),16)
     except: args['mac'] = 0
@@ -65,16 +65,24 @@ def info(aDict):
    else:
     ret['racked'] = (db.do("SELECT rackinfo.*, racks.name AS rack_name FROM rackinfo LEFT JOIN racks ON racks.id = rackinfo.rack_id WHERE rackinfo.device_id = %i"%(ret['id'])) == 1)
     if ret['racked']:
-     ret['rack'] = db.get_row()
+     rack = db.get_row()
+     ret['rack'] = rack
      infra = ['console','pem0_pdu','pem1_pdu']
-     sql = [str(ret['rack']["%s_id"%x]) for x in ['console','pem0_pdu','pem1_pdu'] if ret['rack']["%s_id"%x]]
+     sql = [str(rack["%s_id"%x]) for x in infra if rack["%s_id"%x]]
      if len(sql) > 0:
       db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, hostname FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id IN (%s)"%",".join(sql))
       devices = db.get_dict('id')
-     for tp in infra:
-      id = ret['rack']["%s_id"%tp]
-      ret['rack']["%s_name"%tp] = devices[id]['hostname'] if id else None
-      ret['rack']["%s_ip"%tp]   = devices[id]['ip']       if id else None
+     else:
+      devices = {}
+     console = devices.get(rack['console_id'],{'hostname':None,'ip':None})
+     rack.update({'console_name':console['hostname'],'console_ip':console['ip']})
+     pdu_ids = ",".join([str(x) for x in [rack["pem0_pdu_id"],rack["pem1_pdu_id"]] if x])
+     if len(pdu_ids) > 0:
+      db.do("SELECT * FROM pduinfo WHERE device_id IN (%s)"%pdu_ids)
+      pdus = db.get_dict('device_id')
+     for pem in ['pem0','pem1']:
+      pdu = pdus.get(rack["%s_pdu_id"%pem])
+      rack["%s_pdu_name"%pem] = "%s:%s"%(devices[pdu['device_id']]['hostname'],pdu['%s_slot_name'%(rack["%s_pdu_slot"%pem])]) if pdu else None
  return ret
 
 #
@@ -117,7 +125,7 @@ def update(aDict):
     if not args.get('devices_comment'):
      args['devices_comment'] = 'NULL'
     if not args.get('devices_webpage'):
-     args['devices_webpage'] = 'NULL'    
+     args['devices_webpage'] = 'NULL'
     if args.get('devices_mac'):
      try: args['devices_mac'] = int(args['devices_mac'].replace(":",""),16)
      except: args['devices_mac'] = 0
