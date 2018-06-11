@@ -16,8 +16,13 @@ def main(aWeb):
  if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
   return
- print "<NAV><UL>&nbsp;</UL></NAV>"
- print "<SECTION CLASS=content ID=div_content>"
+ print "<NAV><UL>"
+ print "<LI CLASS='right dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?resources_view&type=bookmark'>Bookmarks</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?resources_view&type=menuitem'>Menuitems</A>"
+ print "<A CLASS=z-op DIV=div_content URL='sdcp.cgi?resources_view&type=tool'>Tools</A>"
+ print "</DIV></LI>"
+ print "</UL></NAV><SECTION CLASS=content ID=div_content>"
  view(aWeb)
  print "</SECTION>"
 

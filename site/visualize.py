@@ -12,7 +12,7 @@ __status__ = "Production"
 def list(aWeb):
  res = aWeb.rest_call("visualize_list")
  print "<ARTICLE><P>Maps</P><DIV CLASS=controls>"
- print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?visualize_list', TITLE='Reload')
+ print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?visualize_list', TITLE='Reload')
  print "</DIV><DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS='th maxed'>Name</DIV><DIV CLASS=th STYLE='width:50px'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -54,7 +54,7 @@ def network(aWeb):
  print aWeb.button('trash',  DIV='div_content_right', URL='sdcp.cgi?visualize_delete&id=%s'%res['id'], TITLE='Delete map', MSG='Really delete map?')
  if aWeb['type'] == 'device':
   print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%res['id'], TITLE='Return to device')
- print aWeb.button('document', onclick='network_edit()', TITLE='Enable editor')
+ print aWeb.button('edit', onclick='network_edit()', TITLE='Enable editor')
  print aWeb.button('start',  onclick='network_start()',  TITLE='Enable physics')
  print aWeb.button('stop',   onclick='network_stop()',   TITLE='Disable physics')
  print aWeb.button('fix',    onclick='network_fixate()', TITLE='Fix node positions')

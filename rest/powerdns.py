@@ -99,6 +99,18 @@ def domain_delete(aDict):
   ret['domain']  = db.do("DELETE FROM domains WHERE id = %i"%(id))
  return ret
 
+#
+#
+def domain_save(aDict):      
+ """NO OP
+
+ Args:
+  - id (required)
+
+ Output:
+ """
+ return {'result':'NO_OP'}      
+
 #################################### Records #######################################
 #
 #

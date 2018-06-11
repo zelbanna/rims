@@ -19,9 +19,9 @@ def list(aWeb):
  print "<ARTICLE><P>Settings</P>"
  print "<DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='sdcp.cgi?settings_list&node=%s'%aWeb['node'])
- print aWeb.button('add', DIV='div_content_right', URL='sdcp.cgi?settings_info&id=new&node=%s'%aWeb['node'])
- print aWeb.button('document', DIV='div_content_right', URL='sdcp.cgi?settings_comprehensive&node=%s'%aWeb['node'])
- print aWeb.button('save', DIV='div_content_right', URL='sdcp.cgi?settings_save&node=%s'%aWeb['node'])
+ print aWeb.button('add',   DIV='div_content_right', URL='sdcp.cgi?settings_info&id=new&node=%s'%aWeb['node'])
+ print aWeb.button('info',  DIV='div_content_right', URL='sdcp.cgi?settings_comprehensive&node=%s'%aWeb['node'])
+ print aWeb.button('save',  DIV='div_content_right', URL='sdcp.cgi?settings_save&node=%s'%aWeb['node'])
  print "</DIV>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Section</DIV><DIV CLASS=th>Parameter</DIV></DIV>"
  print "<DIV CLASS=tbody>"

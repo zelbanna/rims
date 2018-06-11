@@ -18,8 +18,9 @@ def network_list(aWeb):
   print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?dhcp_update&node=%s&type=%s'%(res['dhcp']['node']['value'],res['dhcp']['type']['value']), SPIN='true', TITLE='Update DHCP server')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for net in res['networks']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='sdcp.cgi?ipam_network_layout&id={}'>{}</A></DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(net['id'],net['id'],net['netasc'],net['description'])
-  print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?ipam_network_info&id=%i'%net['id'])
+  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(net['id'],net['netasc'],net['description'])
+  print aWeb.button('configure', DIV='div_content_right', URL='sdcp.cgi?ipam_network_info&id=%i'%net['id'])
+  print aWeb.button('info',DIV='div_content_right', URL='sdcp.cgi?ipam_network_layout&id=%i'%net['id'])
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 

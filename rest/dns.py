@@ -202,6 +202,25 @@ def domain_ptr_list(aDict):
   domains = db.get_rows()
  return domains
 
+#
+#
+def domain_save(aDict):
+ """Function saves state and records for a domain, for dynamic DNS servers this is a No OP
+
+ Args:
+  - id (required)
+
+ Output:
+  - result
+ """
+ ret = {}
+ id = aDict['id']
+ with DB() as db:
+  db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%id)
+  infra = db.get_row()
+  ret = node_call(infra['node'],infra['server'],'domain_save',{'id':infra['foreign_id']})
+ return {'result':ret['result']}
+
 ######################################## Records ####################################
 
 #

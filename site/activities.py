@@ -25,12 +25,11 @@ def main(aWeb):
 #
 #
 def report(aWeb):
- rows = aWeb.rest_call("system_activities_list",{'group':'month'})['data']
- print "<ARTICLE>"
- for row in rows:
-  print row
-  print "<BR>"
- print "</ARTICLE>"
+ activities = aWeb.rest_call("system_activities_list",{'group':'month','mode':'full'})['data']
+ print "<ARTICLE><P>Activities Report</P><DIV CLASS=table><DIV CLASS=tbody>"
+ for act in activities:
+  print "<DIV CLASS=tr><DIV CLASS=td>{} - {}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(act['date'],act['time'],act['type'].encode("utf-8"),act['event'].encode("utf-8"))
+ print "</DIV></DIV></ARTICLE>"
 
 #
 #
@@ -66,7 +65,7 @@ def info(aWeb):
   selected = 'selected' if data['user_id'] == user['id'] or (data['id'] == 'new' and cookie['id'] == str(user['id'])) else ''
   print "<OPTION %s VALUE='%s'>%s</OPTION>"%(selected,user['id'],user['alias'])
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>User:</DIV><DIV CLASS=td><SELECT NAME=type_id>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT NAME=type_id>"
  for type in res['types']:
   selected = 'selected' if data['type_id'] == type['id'] else ''
   print "<OPTION %s VALUE='%s'>%s</OPTION>"%(selected,type['id'],type['type'].encode("utf-8"))

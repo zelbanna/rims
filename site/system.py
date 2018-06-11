@@ -124,7 +124,7 @@ def node_list(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['node'],row['url'])
   print aWeb.button('info',DIV='div_content_right', URL='sdcp.cgi?system_node_info&id=%s'%row['id'])
   if row['system']:
-   print aWeb.button('document',DIV='div_content', URL='sdcp.cgi?settings_list&node=%s'%row['node']) 
+   print aWeb.button('items',DIV='div_content', URL='sdcp.cgi?settings_list&node=%s'%row['node']) 
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"

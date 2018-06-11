@@ -52,6 +52,18 @@ def domain_delete(aDict):
  """
  return {'records':0,'domain':1}
 
+#
+#
+def domain_save(aDict):
+ """NO OP
+
+ Args:
+  - id (required)
+
+ Output:
+ """
+ return {'result':'NO_OP'}
+
 #################################### Records #######################################
 #
 #

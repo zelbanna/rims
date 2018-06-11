@@ -573,13 +573,19 @@ def activities_list(aDict):
 
  Args:
   - start (optional)
+  - mode (optional), 'basic' (default)/'full'
 
  Output:
  """
- ret = {'start':aDict.get('start','0')}
+ ret = {'start':aDict.get('start',0)}
  ret['end'] = int(ret['start']) + 50
+ ret['mode']= aDict.get('mode','basic')
+ if ret['mode'] == 'full':
+  select = "activities.id, activities.event"
+ else:
+  select = "activities.id"
  with DB() as db:
-  db.do("SELECT activities.id, activity_types.type AS type, CONCAT(hour,':',minute) AS time, CONCAT(year,'-',month,'-',day) AS date FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id ORDER BY year,month,day DESC LIMIT %s, %s"%(ret['start'],ret['end']))
+  db.do("SELECT %s, activity_types.type AS type, CONCAT(hour,':',minute) AS time, CONCAT(year,'-',LPAD(month,2,0),'-',LPAD(day,2,0)) AS date, alias AS user FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id LEFT JOIN users ON users.id = activities.user_id ORDER BY year,month,day DESC LIMIT %s, %s"%(select,ret['start'],ret['end']))
   ret['data'] = db.get_rows()
  return ret
 

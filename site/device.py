@@ -17,8 +17,8 @@ def main(aWeb):
  arg    = aWeb['arg']
  print "<NAV><UL>"
  print "<LI CLASS='dropdown'><A>Devices</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list{0}'>List</A>".format('' if (not target or not arg) else "&target="+target+"&arg="+arg)
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_search'>Search</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list{0}'>List</A>".format(aWeb.get_args())
  print "</DIV></LI>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?visualize_list'>Maps</A></LI>"
  if target == 'vm':
@@ -61,10 +61,11 @@ def list(aWeb):
   args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
  res = aWeb.rest_call("device_list",args)
  print "<ARTICLE><P>Device List</P><DIV CLASS='controls'>"
- print aWeb.button('reload',  DIV='div_content_left',  TITLE='Reload', URL='sdcp.cgi?device_list&{}'.format(aWeb.get_args()))
- print aWeb.button('add',     DIV='div_content_right', TITLE='Add device', URL='sdcp.cgi?device_new&{}'.format(aWeb.get_args()))
- print aWeb.button('network', DIV='div_content_right', TITLE='Discover', URL='sdcp.cgi?device_discover')
- print aWeb.button('web',     DIV='div_content_right', TITLE='Show webpages', URL='sdcp.cgi?device_webpages')
+ print aWeb.button('reload', DIV='div_content_left',  TITLE='Reload', URL='sdcp.cgi?device_list&{}'.format(aWeb.get_args()))
+ print aWeb.button('items',  DIV='div_content_left',  TITLE='List All', URL='sdcp.cgi?device_list&sort=%s'%args['sort'])
+ print aWeb.button('add',    DIV='div_content_right', TITLE='Add device', URL='sdcp.cgi?device_new&{}'.format(aWeb.get_args()))
+ print aWeb.button('network',DIV='div_content_right', TITLE='Discover', URL='sdcp.cgi?device_discover')
+ print aWeb.button('web',    DIV='div_content_right', TITLE='Show webpages', URL='sdcp.cgi?device_webpages')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead>"
  for sort in ['IP','Hostname']:
   print "<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red")
@@ -79,10 +80,11 @@ def search(aWeb):
  print "<ARTICLE><P>Device Search</P>"
  print "<FORM ID='device_search'>"
  print "<INPUT TYPE=HIDDEN NAME=sort VALUE='hostname'>"
- print "Field:<SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='id'>ID</OPTION></SELECT>"
+ print "<SPAN>Field:</SPAN><SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='id'>ID</OPTION></SELECT>"
  print "<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' REQUIRED>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('search', DIV='div_content_left', URL='sdcp.cgi?device_list', FRM='device_search')
+ print aWeb.button('items',  DIV='div_content_left', URL='sdcp.cgi?device_list', TITLE='List All items')
  print "</DIV>"
  print "</ARTICLE>"
 
@@ -199,7 +201,7 @@ def update(aWeb):
   print "<OPTION VALUE='%s' %s>%s</OPTION>"%(dom['id'],extra,dom['name'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='%s'></DIV><DIV CLASS=td>"%(dev['ip'])
- print aWeb.button('sync',DIV='div_content_right', FRM='info_form', URL='sdcp.cgi?device_update&previous_ip=%s'%dev['ip'], TITLE='Re-Sync new IP')
+ print aWeb.button('sync',DIV='div_content_right', FRM='info_form', URL='sdcp.cgi?device_update_ip&id=%s'%dev['id'], TITLE='Modify IP')
  print "</DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['info']['mac'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT NAME=devices_type_id>"
@@ -257,6 +259,11 @@ def update(aWeb):
  print aWeb.button('trash', DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
  print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_update&op=update', FRM='info_form', TITLE='Save Device Information')
  print "</DIV></ARTICLE>"
+
+def update_ip(aWeb):
+ print "<ARTICLE>"
+ print "To Be Done"
+ print "</ARTICLE>"
 
 ####################################################### Functions #######################################################
 #
