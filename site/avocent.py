@@ -20,7 +20,7 @@ def manage(aWeb):
  print "<NAV><UL>"
  print "<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname)
  print "<LI><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?avocent_info&id=%s&ip=%s&hostname=%s'>Info</A></LI>"%(id,ip,hostname)
- print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?avocent_inventory&id=%s&ip=%s'>Inventory</A></LI>"%(id,ip)
+ print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?avocent_inventory&id=%s&ip=%s' SPIN=true>Inventory</A></LI>"%(id,ip)
  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?avocent_manage&id=%s&ip=%s&hostname=%s'></A></LI>"%(id,ip,hostname)
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"

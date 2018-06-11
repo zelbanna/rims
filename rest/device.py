@@ -68,21 +68,20 @@ def info(aDict):
      rack = db.get_row()
      ret['rack'] = rack
      infra = ['console','pem0_pdu','pem1_pdu']
-     sql = [str(rack["%s_id"%x]) for x in infra if rack["%s_id"%x]]
-     if len(sql) > 0:
-      db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, hostname FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id IN (%s)"%",".join(sql))
-      devices = db.get_dict('id')
-     else:
-      devices = {}
-     console = devices.get(rack['console_id'],{'hostname':None,'ip':None})
-     rack.update({'console_name':console['hostname'],'console_ip':console['ip']})
+     dev_ids = ",".join([str(rack["%s_id"%x]) for x in infra if rack["%s_id"%x]])
+     if len(dev_ids) > 0:
+      db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, hostname FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id IN (%s)"%dev_ids)
+     devices = db.get_dict('id') if len(dev_ids) > 0 else {}
      pdu_ids = ",".join([str(x) for x in [rack["pem0_pdu_id"],rack["pem1_pdu_id"]] if x])
      if len(pdu_ids) > 0:
       db.do("SELECT * FROM pduinfo WHERE device_id IN (%s)"%pdu_ids)
-      pdus = db.get_dict('device_id')
+     pdus = db.get_dict('device_id') if len(pdu_ids) > 0 else {}
+     console = devices.get(rack['console_id'],{'hostname':None,'ip':None})
+     rack.update({'console_name':console['hostname'],'console_ip':console['ip']})
      for pem in ['pem0','pem1']:
       pdu = pdus.get(rack["%s_pdu_id"%pem])
       rack["%s_pdu_name"%pem] = "%s:%s"%(devices[pdu['device_id']]['hostname'],pdu['%s_slot_name'%(rack["%s_pdu_slot"%pem])]) if pdu else None
+      rack["%s_pdu_ip"%pem] = devices[pdu['device_id']]['ip'] if pdu else None
  return ret
 
 #

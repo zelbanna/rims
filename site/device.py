@@ -103,7 +103,7 @@ def info(aWeb):
   return
  ########################## Data Tables ######################
  width = 680 if dev['racked'] and not dev['info']['type_base'] == 'pdu' else 470
- print "<ARTICLE CLASS='info' STYLE='position:relative; height:290px; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id'])
+ print "<ARTICLE CLASS='info' STYLE='position:relative; height:268px; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id'])
  print "<FORM ID=info_form>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id'])
  print "<!-- Reachability Info -->"
@@ -142,9 +142,8 @@ def info(aWeb):
   if not dev['info']['type_base'] == 'console':
    print "<DIV CLASS=tr><DIV CLASS=td>TS/Port: </DIV><DIV CLASS=td>%s (%s)</DIV></DIV>"%(dev['rack']['console_name'],dev['rack']['console_port'])
   for pem in ['pem0','pem1']:
-   if dev['rack']['%s_pdu_id'%pem]:
-    print "<DIV CLASS=tr><DIV CLASS=td>%s PDU: </DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.upper(),dev['rack']['%s_pdu_name'%pem])
-    print "<DIV CLASS=tr><DIV CLASS=td>%s Port:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.upper(),dev['rack']['%s_pdu_unit'%pem])
+   print "<DIV CLASS=tr><DIV CLASS=td>%s PDU: </DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.upper(),dev['rack']['%s_pdu_name'%pem])
+   print "<DIV CLASS=tr><DIV CLASS=td>%s Port:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.upper(),dev['rack']['%s_pdu_unit'%pem])
   print "</DIV></DIV></DIV>"
  print "<!-- Text fields -->"
  print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%;'><DIV CLASS=table><DIV CLASS=tbody>"
@@ -175,7 +174,7 @@ def info(aWeb):
   else:
    print "<LI><A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?device_function&ip={0}&type={1}&op={2}'>{3}</A></LI>".format(dev['ip'], dev['info']['type_name'], fun, fun.title())
  print "</UL></NAV>"
- print "<SECTION CLASS='content' ID=div_dev_data STYLE='top:330px; overflow-x:hidden; overflow-y:auto;'></SECTION>"
+ print "<SECTION CLASS='content' ID=div_dev_data STYLE='top:308px; overflow-x:hidden; overflow-y:auto;'></SECTION>"
 
 ####################################### UPDATE INFO ###################################
 #
