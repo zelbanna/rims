@@ -72,7 +72,7 @@ def info(aWeb):
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Date:</DIV><DIV CLASS=td><INPUT TYPE=date NAME=date VALUE='%s'> <INPUT TYPE=time NAME=time VALUE='%s'></DIV></DIV>"%(data['date'],data['time'])
  print "</DIV></DIV>"
- print "<TEXTAREA STYLE='width:100%; height:70px;' NAME=event>{}</TEXTAREA>".format(data['event'])
+ print "<TEXTAREA STYLE='width:100%; height:70px;' NAME=event>{}</TEXTAREA>".format(data['event'].encode("utf-8"))
  print "</FORM><DIV CLASS=controls>"
  if data['id'] != 'new':
   print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?activities_delete&id={0}'.format(data['id']), MSG='Really remove activity?')

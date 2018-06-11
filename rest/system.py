@@ -585,7 +585,7 @@ def activities_list(aDict):
  else:
   select = "activities.id"
  with DB() as db:
-  db.do("SELECT %s, activity_types.type AS type, CONCAT(hour,':',minute) AS time, CONCAT(year,'-',LPAD(month,2,0),'-',LPAD(day,2,0)) AS date, alias AS user FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id LEFT JOIN users ON users.id = activities.user_id ORDER BY year,month,day DESC LIMIT %s, %s"%(select,ret['start'],ret['end']))
+  db.do("SELECT %s, activity_types.type AS type, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, alias AS user FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id LEFT JOIN users ON users.id = activities.user_id ORDER BY date_time DESC LIMIT %s, %s"%(select,ret['start'],ret['end']))
   ret['data'] = db.get_rows()
  return ret
 
@@ -610,9 +610,7 @@ def activities_info(aDict):
   db.do("SELECT id,alias FROM users ORDER BY alias")
   ret['users'] = db.get_rows()
   if op == 'update':
-   hour,minute    = args.pop('time','00:00').split(':')
-   year,month,day = args.pop('date','1970-01-01').split('-')
-   args.update({'year':year,'month':month,'day':day,'hour':hour,'minute':minute})
+   args['date_time'] ="%s %s:00"%(args.pop('date','1970-01-01'),args.pop('time','00:01'))
 
    if not id == 'new':
     ret['update'] = db.update_dict('activities',args,'id = %s'%id)
@@ -621,9 +619,8 @@ def activities_info(aDict):
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT * FROM activities WHERE id = %s"%id)
-   act = db.get_row()
-   ret['data'] = {'id':id,'user_id':act['user_id'],'type_id':act['type_id'],'date':"%i-%02i-%02i"%(act['year'],act['month'],act['day']),'time':"%02i:%02i"%(act['hour'],act['minute']),'event':act['event']}
+   ret['xist'] = db.do("SELECT id,user_id,type_id, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, event FROM activities WHERE id = %s"%id)
+   ret['data'] = db.get_row()
   else:
    from time import localtime
    from datetime import date
