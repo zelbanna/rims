@@ -9,7 +9,7 @@ from sdcp.SettingsContainer import SC
 
 #
 #
-def inventory_list(aDict):
+def inventories_list(aDict):
  """Function docstring for inventory_list TBD
 
  Args:
@@ -17,7 +17,21 @@ def inventory_list(aDict):
 
  Output:
  """
- ret = {}
  controller = Device(SC['node'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  return controller.inventories()
+
+#
+#
+def hosts_list(aDict):
+ """Function retrieves all hosts from AWX node
+
+ Args:
+  - node (required)
+
+ Output:
+ """
+ controller = Device(SC['node'][aDict['node']])
+ controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
+ return controller.hosts()
+ 

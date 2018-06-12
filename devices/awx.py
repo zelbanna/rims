@@ -83,7 +83,7 @@ class Device(object):
   while next:
    data = self.href(next)['data']
    for row in data['results']:
-    res.append({'id':row['id'],'name':row['name'],'url':row['url']})
+    res.append({k: row.get(k) for k in ('id','name','url')})
    next = data['next']
   return res
 
@@ -93,6 +93,6 @@ class Device(object):
   while next:
    data = self.href(next)['data']
    for row in data['results']:
-    res.append({'id':row['id'],'name':row['name'],'url':row['url'],'inventory':row['inventory'],'description':row['description'],'enabled':row['enabled']})
+    res.append({k:row.get(k) for k in ('id','name','url','inventory','description','enabled','instance_id')})
    next = data['next']
   return res
