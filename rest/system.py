@@ -260,7 +260,7 @@ def settings_delete(aDict):
 
  Output:
  """
- ret = {} 
+ ret = {}
  with DB() as db:
   ret['deleted'] = db.do("DELETE FROM settings WHERE id = '%s' AND node = '%s'"%(aDict['id'],aDict['node']))
  return ret
@@ -272,7 +272,7 @@ def settings_fetch(aDict):
 
  Args:
   - node (required)
- 
+
  Output:
  """
  ret = {}
@@ -308,7 +308,7 @@ def settings_save(aDict):
    for key,params in content.iteritems():
     if not settings.get(section):
      settings[section] = {}
-    settings[section][key] = params['value'] 
+    settings[section][key] = params['value']
   settings['system']['config_file'] = ret['config_file']
 
   if settings['system']['id'] == 'master':
@@ -318,9 +318,9 @@ def settings_save(aDict):
     db.do("SELECT 'node' AS section, node AS parameter, url AS value FROM nodes")
     data.extend(db.get_rows())
    for setting in data:
-    section = setting.pop('section') 
-    if not settings.get(section): 
-     settings[section] = {} 
+    section = setting.pop('section')
+    if not settings.get(section):
+     settings[section] = {}
     settings[section][setting['parameter']] = setting['value']
   else:
    try: master = rest_call("%s?system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']

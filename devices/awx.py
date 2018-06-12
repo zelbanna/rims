@@ -27,20 +27,23 @@ class Device(object):
   return "AWX[{}] Token[{},{}]".format(self._node, self._token, self._expire)
 
  #
- # { 'username','password' }
+ # { 'username','password','mode' }
+ # mode: 'basic'/'full' auth process
  #
  def auth(self, aAuth):
   from sdcp.core.common import rest_call,basic_auth
-  token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']
+  self._token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']
   try:
-   ret = rest_call("%s/me"%self._node,None,None,{'Authorization':token})
-   ret.pop('data',None)
-   ret.pop('node',None)
+   if aAuth.get('mode','full') == 'full':
+    ret = rest_call("%s/me"%self._node,None,None,{'Authorization':self._token})
+    ret.pop('data',None)
+    ret.pop('node',None)
+   else:
+    ret = {}
   except Exception as e:
    ret = e[0]
    ret['auth'] = 'NOT_OK'
   else:
-   self._token = token
    ret['auth'] = 'OK'
   return ret
 

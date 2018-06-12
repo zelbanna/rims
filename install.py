@@ -44,7 +44,7 @@ res['modes'] = modes
 # Write Logger
 #
 logger = ospath.abspath(ospath.join(packagedir,'core','logger.py'))
-try: remove(logger)    
+try: remove(logger)
 except: pass
 with open(logger,'w') as f:
  f.write("def log(aMsg,aID=None):\n")
@@ -183,13 +183,13 @@ if settings['system']['id'] == 'master':
 
   db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
   data = db.get_rows()
-  db.do("SELECT 'node' AS section, node AS parameter, url AS value FROM nodes") 
+  db.do("SELECT 'node' AS section, node AS parameter, url AS value FROM nodes")
   data.extend(db.get_rows())
 
   for setting in data:
    section = setting.pop('section')
    if not settings.get(section):
-    settings[section] = {} 
+    settings[section] = {}
    settings[section][setting['parameter']] = setting['value']
 
   db.close()
