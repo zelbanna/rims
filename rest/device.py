@@ -234,7 +234,7 @@ def list(aDict):
   - dict (optional) (output as dictionary instead of list)
 
   - rack (optional)
-  - field (optional) 'id/ip/mac/hostname' as search fields
+  - field (optional) 'id/ip/mac/hostname/type' as search fields
   - search (optional)
 
  Output:
@@ -247,10 +247,12 @@ def list(aDict):
  elif aDict.get('filter'):
   tune = "WHERE type_id IN (%s)"%(aDict.get('filter'))
  elif aDict.get('search'):
-  if   aDict['field'] == 'ip':
-   tune = "WHERE ia.ip = INET_ATON('%s')"%aDict['search']
-  elif aDict['field'] == 'hostname':
+  if   aDict['field'] == 'hostname':
    tune = "WHERE hostname LIKE '%%%s%%'"%aDict['search']
+  elif aDict['field'] == 'ip':
+   tune = "WHERE ia.ip = INET_ATON('%s')"%aDict['search']
+  elif aDict['field'] == 'type':
+   tune = "LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dt.name = '%s'"%aDict['search']
   elif aDict['field'] == 'mac':
    def GL_mac2int(aMAC):
     try:    return int(aMAC.replace(":",""),16)

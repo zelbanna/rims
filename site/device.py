@@ -96,7 +96,7 @@ def type_list(aWeb):
  print "<ARTICLE><P>Device Types<P>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Base</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Icon</DIV></DIV><DIV CLASS=tbody>"
  for tp in res['types']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(tp['id'],tp['base'],tp['name'],tp['icon'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&field=type&search=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV></DIV>"%(tp['id'],tp['base'],tp['name'],tp['name'],tp['icon'])
  print "</DIV></DIV>"
  print "</ARTICLE>"
 #
