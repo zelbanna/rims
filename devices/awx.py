@@ -42,7 +42,6 @@ class Device(object):
   else:
    self._token = token
    ret['auth'] = 'OK'
-  print dumps(ret,indent=4)
   return ret
 
  def get_token(self):
