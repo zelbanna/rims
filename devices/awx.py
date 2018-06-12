@@ -71,3 +71,25 @@ class Device(object):
   try: res = rest_call(aURL, aArgs, aMethod, head)
   except Exception as e: res = e[0]
   return res
+
+ ##################################### Functions ######################################
+
+ def get_inventories(self):
+  res  = []
+  next = "%s/inventories"%self._node
+  while next:
+   data = self.href(next)['data']
+   for row in data['results']:
+    res.append({'id':row['id'],'name':row['name'],'url':row['url']})
+   next = data['next']
+  return res
+
+ def get_hosts(self):
+  res  = []
+  next = "%s/hosts"%self._node
+  while next:
+   data = self.href(next)['data']
+   for row in data['results']:
+    res.append({'id':row['id'],'name':row['name'],'url':row['url'],'inventory':row['inventory'],'description':row['description'],'enabled':row['enabled']})
+   next = data['next']
+  return res
