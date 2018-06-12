@@ -259,6 +259,7 @@ def list(aDict):
   elif aDict['field']== 'id':
    tune = "WHERE devices.id = %s"%aDict['id']
 
+ ret = {}
  sort = 'ia.ip' if aDict.get('sort','ip') == 'ip' else 'devices.hostname'
  with DB() as db:
   sql = "SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, CONCAT(devices.hostname,'.',domains.name) AS fqdn, model FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort)
