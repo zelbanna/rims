@@ -235,36 +235,33 @@ def list(aDict):
 
   - rack (optional)
   - field (optional) 'id/ip/mac/hostname' as search fields
-  - search (optional) 
+  - search (optional)
 
  Output:
  """
  tune = ""
  if aDict.get('rack'):
-  if aDict.get('rack') == 'vm':
-   tune = "WHERE vm = 1"
-  else:
-   tune = "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = %s"%(aDict.get('rack'))
+  tune = "WHERE vm = 1" if aDict.get('rack') == 'vm' else "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = %s"%(aDict.get('rack'))
   if aDict.get('filter'):
-   tune += " AND type_id = %s"%(aDict.get('filter'))
+   tune += " AND type_id IN (%s)"%(aDict.get('filter'))
  elif aDict.get('filter'):
-  tune = "WHERE type_id = %s"%(aDict.get('filter'))
+  tune = "WHERE type_id IN (%s)"%(aDict.get('filter'))
  elif aDict.get('search'):
   if   aDict['field'] == 'ip':
    tune = "WHERE ia.ip = INET_ATON('%s')"%aDict['search']
   elif aDict['field'] == 'hostname':
    tune = "WHERE hostname LIKE '%%%s%%'"%aDict['search']
   elif aDict['field'] == 'mac':
-   def GL_mac2int(aMAC):               
+   def GL_mac2int(aMAC):
     try:    return int(aMAC.replace(":",""),16)
     except: return 0
    tune = "WHERE mac = %s"%GL_mac2int(aDict['search'])
   elif aDict['field']== 'id':
    tune = "WHERE devices.id = %s"%aDict['id']
 
- ret = {'sort':'ia.ip'} if aDict.get('sort','ip') == 'ip' else {'sort':'devices.hostname'}
+ sort = 'ia.ip' if aDict.get('sort','ip') == 'ip' else 'devices.hostname'
  with DB() as db:
-  sql = "SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, CONCAT(devices.hostname,'.',domains.name) AS fqdn, model FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,ret['sort'])
+  sql = "SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, CONCAT(devices.hostname,'.',domains.name) AS fqdn, model FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort)
   ret['xist'] = db.do(sql)
   ret['data'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
@@ -320,7 +317,7 @@ def new(aDict):
    ret.update(db.get_row())
 
  # also remove allocation if existed..
- if ret['xist'] > 0 and alloc['success']: 
+ if ret['xist'] > 0 and alloc['success']:
   from sdcp.rest.ipam import ip_delete
   ret['info'] = "existing (%s)"%ip_delete({'id':alloc['id']})
  return ret
@@ -414,6 +411,21 @@ def discover(aDict):
     db.do(sql.format(alloc['id'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
  ret['time'] = int(time()) - start_time
  ret['found']= len(dev_list)
+ return ret
+
+#
+#
+def type_list(aDict):
+ """Function lists currenct device types
+
+ Args:
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  ret['xist'] = db.do("SELECT * FROM device_types")
+  ret['types'] = db.get_rows() 
  return ret
 
 ############################################## Specials ###############################################
