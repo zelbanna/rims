@@ -56,7 +56,19 @@ class Device(object):
   except: pass
 
  def configuration(self,argdict):
-  return ["No config for device"]
+  from sdcp.SettingsContainer import SC
+  output = ["No config template for this device type.","",
+   "Please set the following manually:",
+   "- Username: %s"%SC['netconf']['username'],
+   "- Password: %s"%SC['netconf']['password'],
+   "- Domain:   %s"%argdict['domain'],
+   "- Nameserver: %s"%SC['netconf']['dnssrv'],
+   "- NTP: %s"%SC['netconf']['ntpsrv'],
+   "- Gateway: %s"%argdict['gateway'],
+   "- Network/Mask: %s/%s"%(argdict['network'],argdict['mask']),
+   "- SNMP read community: %s"%SC['snmp']['read_community'],
+   "- SNMP write community: %s"%SC['snmp']['write_community']]
+  return output
 
  def interfaces(self):
   from sdcp.SettingsContainer import SC

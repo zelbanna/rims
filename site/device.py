@@ -50,7 +50,6 @@ def main(aWeb):
  print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
  print "</SECTION>"
- print "<SCRIPT>include_html('div_content_right','README.devices.html');</SCRIPT>"
 
 #
 #
@@ -61,11 +60,12 @@ def list(aWeb):
   args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
  res = aWeb.rest_call("device_list",args)
  print "<ARTICLE><P>Device List</P><DIV CLASS='controls'>"
- print aWeb.button('reload', DIV='div_content_left',  TITLE='Reload', URL='sdcp.cgi?device_list&{}'.format(aWeb.get_args()))
- print aWeb.button('items',  DIV='div_content_left',  TITLE='List All', URL='sdcp.cgi?device_list&sort=%s'%args['sort'])
- print aWeb.button('add',    DIV='div_content_right', TITLE='Add device', URL='sdcp.cgi?device_new&{}'.format(aWeb.get_args()))
- print aWeb.button('network',DIV='div_content_right', TITLE='Discover', URL='sdcp.cgi?device_discover')
- print aWeb.button('web',    DIV='div_content_right', TITLE='Show webpages', URL='sdcp.cgi?device_webpages')
+ print aWeb.button('reload', DIV='div_content_left',  URL='sdcp.cgi?device_list&%s'%aWeb.get_args(), TITLE='Reload')
+ print aWeb.button('items',  DIV='div_content_left',  URL='sdcp.cgi?device_list&sort=%s'%args['sort'], TITLE='List All')
+ print aWeb.button('search', DIV='div_content_left',  URL='sdcp.cgi?device_search', TITLE='Search')
+ print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?device_new&%s'%aWeb.get_args(), TITLE='Add device')
+ print aWeb.button('network',DIV='div_content_right', URL='sdcp.cgi?device_discover', TITLE='Discover')
+ print aWeb.button('web',    DIV='div_content_right', URL='sdcp.cgi?device_webpages',TITLE='Show webpages')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead>"
  for sort in ['IP','Hostname']:
   print "<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red")
@@ -111,7 +111,7 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Name:  </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['hostname']
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['domain']
  print "<DIV CLASS=tr><DIV CLASS=td>IP:    </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['ip']
- print "<DIV CLASS=tr><DIV CLASS=td>MAC:   </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=mac VALUE='%s'></DIV></DIV>"%dev['info']['mac']
+ print "<DIV CLASS=tr><DIV CLASS=td>MAC:   </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=mac VALUE='%s'></DIV></DIV>"%dev['info']['mac'].upper()
  print "<DIV CLASS=tr><DIV CLASS=td>VM:    </DIV><DIV CLASS=td><INPUT NAME=vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "")
  print "<DIV CLASS=tr ID=div_booking_info><DIV CLASS=td>Booking:</DIV>"
  if dev['booked']:
