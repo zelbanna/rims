@@ -143,7 +143,7 @@ def log(aDict):
   log(aDict['msg'])
  except Exception as e:
   ret['info'] = str(e)
-  ret['result']:'NOT_OK'
+  ret['result'] = 'NOT_OK'
  return ret
 
 ############################################ SETTINGS ########################################
