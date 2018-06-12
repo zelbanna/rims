@@ -124,9 +124,27 @@ def menu(aDict):
     select = "type = 'menuitem'"
    db.do("SELECT id, icon, title, href, view FROM resources WHERE node = '%s' AND %s"%(aDict['node'],select))
    ret['menu'].extend(db.get_rows())
- 
+
  return ret
 
+#
+#
+def log(aDict):
+ """ Function 'log' logs to default system log whatever is in parameter 'msg'
+
+ Args:
+  - msg
+
+ Output:
+ """
+ ret = {'result':'OK'}
+ try:
+  from sdcp.core.logger import log
+  log(aDict['msg'])
+ except Exception as e:
+  ret['info'] = str(e)
+  ret['result']:'NOT_OK'
+ return ret
 
 ############################################ SETTINGS ########################################
 #
@@ -543,7 +561,7 @@ def users_info(aDict):
    else:
     ret['update'] = db.insert_dict('users',args)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-  
+
   if not id == 'new':
    ret['xist'] = db.do("SELECT users.* FROM users WHERE id = '%s'"%id)
    ret['data'] = db.get_row()
@@ -686,7 +704,7 @@ def activities_type_info(aDict):
   else:
    ret['data'] = {'id':'new','type':'Unknown'}
  return ret
- 
+
 #
 #
 def activities_type_delete(aDict):
