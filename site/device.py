@@ -213,7 +213,9 @@ def update(aWeb):
  print "</DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['info']['mac'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT NAME=devices_type_id>"
- for type in dev['infra']['types'].values():
+ types = dev['infra']['types'].values()
+ types.sort(key=lambda x: x['name'])
+ for type in types:
   extra = " selected" if dev['info']['type_id'] == type['id'] or (not dev['info']['type_id'] and type['name'] == 'generic') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id'],extra,type['name'])
  print "</SELECT></DIV><DIV CLASS=td>"

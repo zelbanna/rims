@@ -101,7 +101,7 @@ def update(aDict):
  with DB() as db:
   # Prep types for lookup
   typexist = db.do("SELECT id, name, base FROM device_types")
-  types    = db.get_dict('name') 
+  types    = db.get_dict('name')
 
   # Move aDict to args for op
   operation = aDict.pop('op',None)

@@ -16,7 +16,7 @@ class Device(object):
 
  @classmethod
  def get_functions(cls):
-  return []
+  return ['manage']
 
  def __init__(self, aREST, aToken = None):
   self._token = aToken
@@ -74,7 +74,7 @@ class Device(object):
 
  ##################################### Functions ######################################
 
- def get_inventories(self):
+ def inventories(self):
   res  = []
   next = "%s/inventories"%self._node
   while next:
@@ -84,7 +84,7 @@ class Device(object):
    next = data['next']
   return res
 
- def get_hosts(self):
+ def hosts(self):
   res  = []
   next = "%s/hosts"%self._node
   while next:

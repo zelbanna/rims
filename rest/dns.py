@@ -192,10 +192,10 @@ def domain_ptr_list(aDict):
  Output:
   - List of id,servers and names which matches the prefix
  """
- def GL_ip2arpa(addr):                  
-  octets = addr.split('.')[:3]          
-  octets.reverse()                 
-  octets.append("in-addr.arpa")           
+ def GL_ip2arpa(addr):
+  octets = addr.split('.')[:3]
+  octets.reverse()
+  octets.append("in-addr.arpa")
   return ".".join(octets)
  with DB() as db:
   db.do("SELECT domains.id, name, CONCAT(server,'@',node) AS server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.name = '%s'"%(GL_ip2arpa(aDict['prefix'])))
