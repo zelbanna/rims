@@ -422,13 +422,15 @@ def type_list(aDict):
  """Function lists currenct device types
 
  Args:
+  - sort (optional), class/name
 
  Output:
  """
  ret = {}
+ sort = 'name' if aDict.get('sort','name') == 'name' else 'base'
  with DB() as db:
-  ret['xist'] = db.do("SELECT * FROM device_types")
-  ret['types'] = db.get_rows() 
+  ret['xist'] = db.do("SELECT * FROM device_types ORDER BY %s"%sort)
+  ret['types'] = db.get_rows()
  return ret
 
 ############################################## Specials ###############################################

@@ -17,8 +17,8 @@ def main(aWeb):
  arg    = aWeb['arg']
  print "<NAV><UL>"
  print "<LI CLASS='dropdown'><A>Devices</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&{0}'>List</A>".format(aWeb.get_args())
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_search'>Search</A>"
- print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list{0}'>List</A>".format(aWeb.get_args())
  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_type_list'>Types</A>"
  print "</DIV></LI>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?visualize_list'>Maps</A></LI>"
@@ -94,9 +94,9 @@ def search(aWeb):
 def type_list(aWeb):
  res = aWeb.rest_call("device_type_list")
  print "<ARTICLE><P>Device Types<P>"
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Base</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Icon</DIV></DIV><DIV CLASS=tbody>"
+ print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Class</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Icon</DIV></DIV><DIV CLASS=tbody>"
  for tp in res['types']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&field=type&search=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV></DIV>"%(tp['id'],tp['base'],tp['name'],tp['name'],tp['icon'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&field=type&search=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV></DIV>"%(tp['base'],tp['name'],tp['name'],tp['icon'])
  print "</DIV></DIV>"
  print "</ARTICLE>"
 #
