@@ -194,17 +194,17 @@ def update(aDict):
      ret['infra']['pduinfo']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
 
   if operation == 'update' and ret['racked']:
-   for pem in [0,1]:
-    if ret['info']['pem%i_pdu_id'%(pem)] > 0:
-     db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %i"%(ret['info']['pem%i_pdu_id'%(pem)]))
+   for pem in ['pem0','pem1']:
+    if ret['rack']['%s_pdu_id'%(pem)] > 0:
+     db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %i"%(ret['rack']['%s_pdu_id'%(pem)]))
      pdu_info = db.get_row()
-     args_pem = {'ip':pdu_info['ip'],'unit':ret['info']['pem%i_pdu_unit'%(pem)],'slot':ret['info']['pem%i_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem)}
+     args_pem = {'ip':pdu_info['ip'],'unit':ret['rack']['%s_pdu_unit'%(pem)],'slot':ret['rack']['%s_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem[3])}
      try:
       module = import_module("sdcp.rest.%s"%pdu_info['name'])
-      pdu_update = getattr(module,'pdu_update',None)
-      ret['result']['pem%i'%pem] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem))
+      pdu_update = getattr(module,'update',None)
+      ret['result'][pem] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem))
      except Exception as err:
-      ret['result']['pem%i'%pem] = str(err)
+      ret['result'][pem] = "Error: %s"%str(err)
  return ret
 
 #
