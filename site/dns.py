@@ -11,12 +11,12 @@ __status__= "Production"
 def server_list(aWeb):
  res = aWeb.rest_call("dns_server_list")
  print "<ARTICLE><P>Domains</P><DIV CLASS='controls'>"
- print aWeb.button('reload',DIV='div_content_left',URL='sdcp.cgi?dns_server_list')
- print aWeb.button('add',DIV='div_content_right',URL='sdcp.cgi?dns_server_info&id=new',TITLE='Add domain')
+ print aWeb.button('reload',DIV='div_content_left',URL='zdcp.cgi?dns_server_list')
+ print aWeb.button('add',DIV='div_content_right',URL='zdcp.cgi?dns_server_info&id=new',TITLE='Add domain')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for srv in res['servers']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(srv['id'],srv['node'],srv['server'])
-  print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?dns_server_info&id=%s'%(srv['id']))
+  print aWeb.button('info',DIV='div_content_right',URL='zdcp.cgi?dns_server_info&id=%s'%(srv['id']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"
@@ -43,9 +43,9 @@ def server_info(aWeb):
  print "</SELECT></DIV></DIV>"
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('save',    DIV='div_content_right', URL='sdcp.cgi?dns_server_info&op=update', FRM='server_info_form')
+ print aWeb.button('save',    DIV='div_content_right', URL='zdcp.cgi?dns_server_info&op=update', FRM='server_info_form')
  if data['id'] != 'new':
-  print aWeb.button('trash', DIV='div_content_right', URL='sdcp.cgi?dns_server_delete&id=%s'%(data['id']), MSG='Delete server?')
+  print aWeb.button('trash', DIV='div_content_right', URL='zdcp.cgi?dns_server_delete&id=%s'%(data['id']), MSG='Delete server?')
  print "</DIV></ARTICLE>"
 
 #
@@ -61,20 +61,20 @@ def server_delete(aWeb):
 def domain_list(aWeb):
  domains = aWeb.rest_call("dns_domain_list",{'sync':True if aWeb['sync'] == 'true' else False})
  print "<ARTICLE><P>Domains</P><DIV CLASS='controls'>"
- print aWeb.button('items', DIV='div_content_left', URL='sdcp.cgi?dns_domain_list',TITLE='List domains')
- print aWeb.button('sync',   DIV='div_content_left', URL='sdcp.cgi?dns_domain_list&sync=true',TITLE='Resync cache')
- print aWeb.button('add',    DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=new',TITLE='Add domain')
- print aWeb.button('search', DIV='div_content_right',URL='sdcp.cgi?dns_consistency',TITLE='Check Backend Consistency',SPIN='true')
- print aWeb.button('analyze',DIV='div_content_right',URL='sdcp.cgi?dns_dedup',TITLE='Find Duplicates',SPIN='true')
- print aWeb.button('document',DIV='div_content_right',URL='sdcp.cgi?dns_top', SPIN='true')
+ print aWeb.button('items', DIV='div_content_left', URL='zdcp.cgi?dns_domain_list',TITLE='List domains')
+ print aWeb.button('sync',   DIV='div_content_left', URL='zdcp.cgi?dns_domain_list&sync=true',TITLE='Resync cache')
+ print aWeb.button('add',    DIV='div_content_right',URL='zdcp.cgi?dns_domain_info&id=new',TITLE='Add domain')
+ print aWeb.button('search', DIV='div_content_right',URL='zdcp.cgi?dns_consistency',TITLE='Check Backend Consistency',SPIN='true')
+ print aWeb.button('analyze',DIV='div_content_right',URL='zdcp.cgi?dns_dedup',TITLE='Find Duplicates',SPIN='true')
+ print aWeb.button('document',DIV='div_content_right',URL='zdcp.cgi?dns_top', SPIN='true')
  print "</DIV>"
  if domains.get('sync'):
   print "<SPAN CLASS='results'>%s</SPAN>"%(domains['sync'])
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for dom in domains['domains']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(dom['id'],dom['name'],dom['server'])
-  print aWeb.button('info', DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=%s'%(dom['id']))
-  print aWeb.button('items',DIV='div_content_right',URL='sdcp.cgi?dns_record_list&domain_id=%s'%(dom['id']))
+  print aWeb.button('info', DIV='div_content_right',URL='zdcp.cgi?dns_domain_info&id=%s'%(dom['id']))
+  print aWeb.button('items',DIV='div_content_right',URL='zdcp.cgi?dns_record_list&domain_id=%s'%(dom['id']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"
@@ -106,10 +106,10 @@ def domain_info(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(res['id'])
  print "</FORM><DIV CLASS=controls>"
  if res['id'] == 'new':
-  print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&op=update',FRM='dns_info_form')
+  print aWeb.button('save',DIV='div_content_right',URL='zdcp.cgi?dns_domain_info&op=update',FRM='dns_info_form')
  else:
-  print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info&id=%s'%(res['id']))
-  print aWeb.button('trash',DIV='div_content_right',URL='sdcp.cgi?dns_domain_%s&id=%s'%("transfer" if not "arpa" in data['name'] else "delete",res['id']))
+  print aWeb.button('reload',DIV='div_content_right',URL='zdcp.cgi?dns_domain_info&id=%s'%(res['id']))
+  print aWeb.button('trash',DIV='div_content_right',URL='zdcp.cgi?dns_domain_%s&id=%s'%("transfer" if not "arpa" in data['name'] else "delete",res['id']))
  print "</DIV></ARTICLE>"
 
 #
@@ -124,8 +124,8 @@ def domain_transfer(aWeb):
   print "<OPTION VALUE=%s>%s</OPTION>"%(domain['id'],domain['name'])
  print "</SELECT>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('back',DIV='div_content_right',URL='sdcp.cgi?dns_domain_info',FRM='dns_transfer')
- print aWeb.button('forward',DIV='div_content_right',URL='sdcp.cgi?dns_domain_delete',FRM='dns_transfer')
+ print aWeb.button('back',DIV='div_content_right',URL='zdcp.cgi?dns_domain_info',FRM='dns_transfer')
+ print aWeb.button('forward',DIV='div_content_right',URL='zdcp.cgi?dns_domain_delete',FRM='dns_transfer')
  print "</DIV></ARTICLE>"
 
 #
@@ -148,18 +148,18 @@ def domain_save(aWeb):
 def record_list(aWeb):
  dns = aWeb.rest_call("dns_record_list",{'domain_id':aWeb['domain_id']})
  print "<ARTICLE><P>Records</P><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?dns_record_list&domain_id=%s'%(aWeb['domain_id']))
- print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?dns_domain_save&id=%s'%(aWeb['domain_id']))
- print aWeb.button('add',   DIV='div_content_right',URL='sdcp.cgi?dns_record_info&id=new&domain_id=%s'%(aWeb['domain_id']))
+ print aWeb.button('reload',DIV='div_content_right',URL='zdcp.cgi?dns_record_list&domain_id=%s'%(aWeb['domain_id']))
+ print aWeb.button('save',  DIV='div_content_right',URL='zdcp.cgi?dns_domain_save&id=%s'%(aWeb['domain_id']))
+ print aWeb.button('add',   DIV='div_content_right',URL='zdcp.cgi?dns_record_info&id=new&domain_id=%s'%(aWeb['domain_id']))
  print "<SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>"
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>TTL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for rec in dns['records']:
   print "<DIV CLASS=tr><DIV CLASS=td>%i</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(rec['id'],rec['name'])
-  print rec['content'] if not rec['type'] == 'A' else "<A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?device_info&ip=%s>%s</A>"%(rec['content'],rec['content'])
+  print rec['content'] if not rec['type'] == 'A' else "<A CLASS=z-op DIV=div_content_right URL=zdcp.cgi?device_info&ip=%s>%s</A>"%(rec['content'],rec['content'])
   print "</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(rec['type'],rec['ttl'])
-  print aWeb.button('info',DIV='div_content_right',URL='sdcp.cgi?dns_record_info&id=%i&domain_id=%s'%(rec['id'],aWeb['domain_id']))
+  print aWeb.button('info',DIV='div_content_right',URL='zdcp.cgi?dns_record_info&id=%i&domain_id=%s'%(rec['id'],aWeb['domain_id']))
   if rec['type'] in ['A','CNAME','PTR']:
-   print aWeb.button('delete',DIV='span_dns',URL='sdcp.cgi?dns_record_delete&id=%s&domain_id=%s'%(rec['id'],aWeb['domain_id']))
+   print aWeb.button('delete',DIV='span_dns',URL='zdcp.cgi?dns_record_delete&id=%s&domain_id=%s'%(rec['id'],aWeb['domain_id']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"
@@ -182,10 +182,10 @@ def record_info(aWeb):
  print "</DIV></DIV>"
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?dns_record_info&id=%s&domain_id=%s'%(data['id'],data['domain_id']))
- print aWeb.button('save',DIV='div_content_right',URL='sdcp.cgi?dns_record_info&op=update',FRM='dns_info_form')
+ print aWeb.button('reload',DIV='div_content_right',URL='zdcp.cgi?dns_record_info&id=%s&domain_id=%s'%(data['id'],data['domain_id']))
+ print aWeb.button('save',DIV='div_content_right',URL='zdcp.cgi?dns_record_info&op=update',FRM='dns_info_form')
  if not data['id'] == 'new':
-  print aWeb.button('delete',DIV='div_content_right',URL='sdcp.cgi?dns_record_delete&id=%s&domain_id=%s'%(data['id'],data['domain_id']))
+  print aWeb.button('delete',DIV='div_content_right',URL='zdcp.cgi?dns_record_delete&id=%s&domain_id=%s'%(data['id'],data['domain_id']))
  print "</DIV></ARTICLE>"
 
 #
@@ -257,16 +257,16 @@ def consistency(aWeb):
   print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV>"%(rec['name'],rec['type'],rec['content'],rec['id'])
   print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV>"%(rec['device_id'],rec['record_id'],rec['fqdn'])
   print "<DIV CLASS=td><DIV CLASS=controls>"
-  print aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='sdcp.cgi?dns_record_delete&domain_id=%s&id=%s'%(rec['domain_id'],rec['id']))
+  print aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='zdcp.cgi?dns_record_delete&domain_id=%s&id=%s'%(rec['domain_id'],rec['id']))
   if rec['device_id']:
-   print aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='sdcp.cgi?dns_record_transfer&&domain_id=%s&record_id=%s&device_id=%s&type=%s'%(rec['domain_id'],rec['id'],rec['device_id'],rec['type']))
+   print aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='zdcp.cgi?dns_record_transfer&&domain_id=%s&record_id=%s&device_id=%s&type=%s'%(rec['domain_id'],rec['id'],rec['device_id'],rec['type']))
   print "</DIV></DIV></DIV>"
  for dev in data['devices']:
   print "<DIV CLASS=tr>"
   print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>-</DIV><DIV CLASS=td>-</DIV>"%(dev['ipasc'],dev['type'])
-  print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?device_info&id=%s>%s</A></DIV>"%(dev['device_id'],dev['record_id'],dev['device_id'],dev['fqdn'])
+  print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=zdcp.cgi?device_info&id=%s>%s</A></DIV>"%(dev['device_id'],dev['record_id'],dev['device_id'],dev['fqdn'])
   print "<DIV CLASS=td><DIV CLASS=controls>"
-  print aWeb.button('add',DIV='span_dns',URL='sdcp.cgi?dns_record_create&type={}&device_id={}&ip={}&fqdn={}&domain_id={}'.format(dev['type'],dev['device_id'],dev['ipasc'],dev['fqdn'],dev['domain_id']))
+  print aWeb.button('add',DIV='span_dns',URL='zdcp.cgi?dns_record_create&type={}&device_id={}&ip={}&fqdn={}&domain_id={}'.format(dev['type'],dev['device_id'],dev['ipasc'],dev['fqdn'],dev['domain_id']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"

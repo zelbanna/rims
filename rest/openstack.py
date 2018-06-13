@@ -4,9 +4,9 @@ __version__ = "18.05.31GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from sdcp.SettingsContainer import SC
-from sdcp.devices.openstack import Device
-from sdcp.core.common import DB,rest_call
+from zdcp.SettingsContainer import SC
+from zdcp.devices.openstack import Device
+from zdcp.core.common import DB,rest_call
 
 #
 #
@@ -58,7 +58,7 @@ def authenticate(aDict):
 
  Output:
  """
- from sdcp.core.logger import log
+ from zdcp.core.logger import log
  ret = {}
  controller = Device(SC['node'][aDict['node']],None)
  res = controller.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })

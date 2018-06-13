@@ -64,7 +64,7 @@ if modes.get('rest'):
 if modes.get('front'):
  from shutil import copy
  destinations.append('index')
- destinations.append('sdcp')
+ destinations.append('zdcp')
  # Copy files
  for type,dest in [('images',ospath.join(settings['system']['docroot'],'images')), ('infra',settings['system']['docroot'])]:
   for file in listdir(ospath.join(packagedir,type)):
@@ -80,10 +80,10 @@ for dest in destinations:
   wr("from sys import path as syspath\n")
   wr("syspath.insert(1, '{}')\n".format(basedir))
   if dest == 'rest':
-   wr("from sdcp.core.rest import server\n")
+   wr("from zdcp.core.rest import server\n")
    wr("server('%s')\n"%(settings['system']['id']))
   else:
-   wr("from sdcp.core.www import Web\n")
+   wr("from zdcp.core.www import Web\n")
    wr("cgi = Web('%s','%s')\n"%(settings['system']['rest'], settings['system']['id']))
    wr("cgi.server()\n")
  chmod(site,0755)
@@ -128,7 +128,7 @@ if settings['system']['id'] == 'master':
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
-    mod = import_module("sdcp.devices.{}".format(pyfile))
+    mod = import_module("zdcp.devices.{}".format(pyfile))
     type = getattr(mod,'__type__',None)
     icon = getattr(mod,'__icon__','images/viz-generic.png')
     dev = getattr(mod,'Device',None)
@@ -147,7 +147,7 @@ if settings['system']['id'] == 'master':
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
-    mod  = import_module("sdcp.site.%s"%(pyfile))
+    mod  = import_module("zdcp.site.%s"%(pyfile))
     type = getattr(mod,'__type__',None)
     icon = getattr(mod,'__icon__',None)
     if type:
@@ -158,7 +158,7 @@ if settings['system']['id'] == 'master':
  #
  # Common settings and user - for master...
  #
- from sdcp.core.common import DB
+ from zdcp.core.common import DB
  try:
   database,host,username,password = settings['system']['db_name'],settings['system']['db_host'],settings['system']['db_user'],settings['system']['db_pass'] 
   db = DB(database,host,username,password)
@@ -177,7 +177,7 @@ if settings['system']['id'] == 'master':
 
   sql = "INSERT resources (node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
   for item in resources:
-   try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"sdcp.cgi?%s_main"%item['name'],item['icon'],item['type']))
+   try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"zdcp.cgi?%s_main"%item['name'],item['icon'],item['type']))
    except Exception as err:
     res['resources_errors'] = str(err)
 
@@ -194,14 +194,14 @@ if settings['system']['id'] == 'master':
 
   db.close()
 
-  from sdcp.rest.mysql import diff
+  from zdcp.rest.mysql import diff
   res['diff']= diff({'username':username,'password':password,'database':database,'file':ospath.join(packagedir,'mysql.db')})
 
   #
   # Generate ERD and save
   #
   erd_input = "mysql+pymysql://%s:%s@%s/%s"%(username,password,host,database)
-  erd_output= ospath.join(settings['system']['docroot'],"sdcp.pdf")
+  erd_output= ospath.join(settings['system']['docroot'],"zdcp.pdf")
   try:
    from eralchemy import render_er
    render_er(erd_input,erd_output)
@@ -222,7 +222,7 @@ else:
  #
  # Fetch and update settings from central repo
  #
- from sdcp.core.common import rest_call
+ from zdcp.core.common import rest_call
  try: res['register'] = rest_call("%s?system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':modes.get('rest','0'),'www':modes.get('front','0')})['data']
  except Exception as e: res['register'] = str(e)
  try: master   = rest_call("%s?system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']

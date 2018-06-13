@@ -42,13 +42,13 @@ def server(aNodeID):
   node = additional.get('node',aNodeID if not mod == 'system' else 'master')
 
   if node == aNodeID:
-   module = import_module("sdcp.rest.%s"%mod)
+   module = import_module("zdcp.rest.%s"%mod)
    module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
    output = dumps(getattr(module,fun,None)(args))
    stdout.write("X-API-Res:OK\r\n")
   else:
-   from sdcp.core.common import rest_call
-   from sdcp.SettingsContainer import SC
+   from zdcp.core.common import rest_call
+   from zdcp.SettingsContainer import SC
    try: res = rest_call("%s?%s"%(SC['node'][node],query),args)
    except Exception as err: raise Exception(err)
    else: output = dumps(res['data'])

@@ -28,7 +28,7 @@ class Device(GenericDevice):
 
  def get_inventory(self):
   from netsnmp import VarList, Varbind, Session
-  from sdcp.SettingsContainer import SC
+  from zdcp.SettingsContainer import SC
   result = []
   try:
    portobjs = VarList(Varbind('.1.3.6.1.4.1.25049.17.2.1.2'))

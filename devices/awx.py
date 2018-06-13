@@ -31,7 +31,7 @@ class Device(object):
  # mode: 'basic'/'full' auth process
  #
  def auth(self, aAuth):
-  from sdcp.core.common import rest_call,basic_auth
+  from zdcp.core.common import rest_call,basic_auth
   self._token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']
   try:
    if aAuth.get('mode','full') == 'full':
@@ -67,7 +67,7 @@ class Device(object):
   return self.href("%s/%s"%(self._node,query), aArgs=args, aMethod=method, aHeader = header)
 
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
-  from sdcp.core.common import rest_call
+  from zdcp.core.common import rest_call
   head = {'Authorization':self._token}
   try: head.update(aHeader)
   except: pass

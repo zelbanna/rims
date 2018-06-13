@@ -37,12 +37,12 @@ class Web(object):
 
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None):
-  from sdcp.core.common import rest_call
+  from zdcp.core.common import rest_call
   return rest_call("%s?%s"%(self._rest_url, aAPI), aArgs, aTimeout = 60)['data']
 
  # Generic REST call with full output
  def rest_full(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
-  from sdcp.core.common import rest_call
+  from zdcp.core.common import rest_call
   return rest_call("%s?%s"%(aURL, aAPI) if aAPI else aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
  ############################# Cookies #############################
@@ -69,7 +69,7 @@ class Web(object):
  # vis.css:   https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css
  # vis.js:    https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js
  # jquery.js: https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js
- def put_html(self, aTitle = None, aIcon = 'sdcp.png'):
+ def put_html(self, aTitle = None, aIcon = 'zdcp.png'):
   from sys import stdout
   stdout.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='system.css'>")
   if aTitle:
@@ -93,10 +93,10 @@ class Web(object):
   stdout.write("Content-Type:text/html\r\n\n")
   try:
    (mod,void,fun) = self.call.partition('_')
-   module = import_module("sdcp.site." + mod)
+   module = import_module("zdcp.site." + mod)
    getattr(module,fun,None)(self)
   except Exception as e:
-   stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; sdcp.site.%s_%s<BR>"%(mod,fun))
+   stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
    try:
     stdout.write("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
     try:

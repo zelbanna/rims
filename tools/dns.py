@@ -6,7 +6,7 @@
 __author__ = "Zacharias El Banna"                     
 __version__ = "18.05.31GA"
 __status__ = "Production"
-from sdcp.core.logger import log
+from zdcp.core.logger import log
 
 ################################ LOOPIA DNS ###################################
 #
@@ -14,7 +14,7 @@ from sdcp.core.logger import log
 #
 
 def set_loopia_ip(subdomain, newip):
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  import xmlrpclib
  try:
   client = xmlrpclib.ServerProxy(uri = SC['loopia']['rpc_server'], encoding = 'utf-8')
@@ -31,7 +31,7 @@ def set_loopia_ip(subdomain, newip):
 # Get Loopia settings for subdomain
 #
 def get_loopia_ip(subdomain):
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  import xmlrpclib
  try:
   client = xmlrpclib.ServerProxy(uri = SC['loopia']['rpc_server'], encoding = 'utf-8')
@@ -42,7 +42,7 @@ def get_loopia_ip(subdomain):
   return False
 
 def get_loopia_suffix():
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  return "." + SC['loopia']['domain']
 
 ################################# OpenDNS ######################################

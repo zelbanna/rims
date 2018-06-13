@@ -29,16 +29,16 @@ def portal(aWeb):
 
  print "<MAIN CLASS='background' STYLE='top:0px;' ID=main>"
  print "<NAV><UL>"
- print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?heat_list'>Orchestration</A></LI>"
- print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?neutron_list'>Virtual Networks</A></LI>"
- print "<LI><A CLASS=z-op           DIV=div_content URL='sdcp.cgi?nova_list'>Virtual Machines</A></LI>"
- print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='sdcp.cgi?appformix_list'>Usage Report</A></LI>"
- print "<LI><A CLASS='z-op reload' OP=redirect URL='sdcp.cgi?openstack_portal'></A></LI>"
- print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='sdcp.cgi?system_login&application=openstack&node={}&name={}&appformix={}'>Log out</A></LI>".format(cookie['node'],cookie.get('name'),cookie.get('appformix'))
+ print "<LI><A CLASS=z-op           DIV=div_content URL='zdcp.cgi?heat_list'>Orchestration</A></LI>"
+ print "<LI><A CLASS=z-op           DIV=div_content URL='zdcp.cgi?neutron_list'>Virtual Networks</A></LI>"
+ print "<LI><A CLASS=z-op           DIV=div_content URL='zdcp.cgi?nova_list'>Virtual Machines</A></LI>"
+ print "<LI><A CLASS=z-op SPIN=true DIV=div_content URL='zdcp.cgi?appformix_list'>Usage Report</A></LI>"
+ print "<LI><A CLASS='z-op reload' OP=redirect URL='zdcp.cgi?openstack_portal'></A></LI>"
+ print "<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='zdcp.cgi?system_login&application=openstack&node={}&name={}&appformix={}'>Log out</A></LI>".format(cookie['node'],cookie.get('name'),cookie.get('appformix'))
  print "<LI CLASS='dropdown right'><A>Debug</A><DIV CLASS=dropdown-content>"
- print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?openstack_info>Info</A>"
- print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?openstack_api>REST</A>"
- print "<A CLASS='z-op'  DIV=div_content URL=sdcp.cgi?openstack_fqname>FQDN</A>"
+ print "<A CLASS='z-op'  DIV=div_content URL=zdcp.cgi?openstack_info>Info</A>"
+ print "<A CLASS='z-op'  DIV=div_content URL=zdcp.cgi?openstack_api>REST</A>"
+ print "<A CLASS='z-op'  DIV=div_content URL=zdcp.cgi?openstack_fqname>FQDN</A>"
  print "</DIV></LI>"
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content></SECTION>"
@@ -58,7 +58,7 @@ def data2html(aData):
   for k,v in aData.iteritems():
    print "<DIV CLASS=tr><DIV CLASS=td STYLE='padding:0px;'><I>{}</I>:</DIV><DIV CLASS=td STYLE='white-space:normal; overflow:auto; width:100%'>".format(k)
    if 'href' in k:
-    print "<A CLASS=z-op DIV=div_content URL=sdcp.cgi?openstack_result&method=GET&os_href={0}>{0}</A>".format(v)
+    print "<A CLASS=z-op DIV=div_content URL=zdcp.cgi?openstack_result&method=GET&os_href={0}>{0}</A>".format(v)
    else:
     data2html(v)
    print "</DIV></DIV>"
@@ -97,7 +97,7 @@ def api(aWeb):
  print "Arguments/Body<BR>"
  print "<TEXTAREA STYLE='width:100%; height:100px;' NAME=os_args></TEXTAREA>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('start',  DIV='div_os_info', URL='sdcp.cgi?openstack_result', FRM='frm_os_api')
+ print aWeb.button('start',  DIV='div_os_info', URL='zdcp.cgi?openstack_result', FRM='frm_os_api')
  print aWeb.button('delete', DIV='div_os_info', OP='empty', TITLE='Clear results view')
  print "</DIV></ARTICLE>"
  print "<DIV ID=div_os_info></DIV>"
@@ -107,7 +107,7 @@ def api(aWeb):
 def fqname(aWeb):
  print "<ARTICLE>"
  print "<FORM ID=frm_os_uuid>Contrail UUID:<INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM><DIV CLASS=controls>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else "")
- print aWeb.button('start',  DIV='div_content', URL='sdcp.cgi?openstack_fqname', FRM='frm_os_uuid')
+ print aWeb.button('start',  DIV='div_content', URL='zdcp.cgi?openstack_fqname', FRM='frm_os_uuid')
  print "</DIV>"
  if aWeb['os_uuid']:
   cookie = aWeb.cookie_unjar('openstack')
@@ -119,7 +119,7 @@ def fqname(aWeb):
    if res['result'] == 'OK':
     print "<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>"
     print "<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(res['data']['fq_name']))
-    print "<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?openstack_result&os_service=contrail&os_api={0}/{1}>{0}</A></DIV></DIV>".format(res['data']['type'],aWeb['os_uuid'])
+    print "<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL=zdcp.cgi?openstack_result&os_service=contrail&os_api={0}/{1}>{0}</A></DIV></DIV>".format(res['data']['type'],aWeb['os_uuid'])
     print "</DIV></DIV><BR>"
    else:
     print "<DIV CLASS=table STYLE='width:100%'><DIV CLASS=tbody>"

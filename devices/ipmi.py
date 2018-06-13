@@ -11,7 +11,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "18.05.31GA"
 __status__ = "Production"
 
-from sdcp.SettingsContainer import SC
+from zdcp.SettingsContainer import SC
 from generic import Device as GenericDevice
 
 ################################### IPMI #######################################
@@ -35,7 +35,7 @@ class Device(GenericDevice):
   from io import open
   from os import devnull
   from subprocess import check_call
-  from sdcp.core.extras import str2hex
+  from zdcp.core.extras import str2hex
   FNULL = open(devnull, 'w')
   rear  = str2hex(arear)
   front = str2hex(afront)

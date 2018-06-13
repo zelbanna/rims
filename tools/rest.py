@@ -15,7 +15,7 @@ def execute(argv):
  print "Executing:{}_{}({})".format(mod,fun,args)
 
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
- module = import_module("sdcp.rest.%s"%mod)
+ module = import_module("zdcp.rest.%s"%mod)
  module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
  function = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })
  return function(args)

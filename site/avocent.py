@@ -19,9 +19,9 @@ def manage(aWeb):
 
  print "<NAV><UL>"
  print "<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname)
- print "<LI><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?avocent_info&id=%s&ip=%s&hostname=%s'>Info</A></LI>"%(id,ip,hostname)
- print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?avocent_inventory&id=%s&ip=%s' SPIN=true>Inventory</A></LI>"%(id,ip)
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?avocent_manage&id=%s&ip=%s&hostname=%s'></A></LI>"%(id,ip,hostname)
+ print "<LI><A CLASS=z-op DIV=div_content_right URL='zdcp.cgi?avocent_info&id=%s&ip=%s&hostname=%s'>Info</A></LI>"%(id,ip,hostname)
+ print "<LI><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?avocent_inventory&id=%s&ip=%s' SPIN=true>Inventory</A></LI>"%(id,ip)
+ print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?avocent_manage&id=%s&ip=%s&hostname=%s'></A></LI>"%(id,ip,hostname)
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left></SECTION>"
@@ -34,13 +34,13 @@ def inventory(aWeb,aIP = None):
  ip = aWeb['ip'] if not aIP else aIP
  data = aWeb.rest_call("avocent_inventory",{'ip':ip})
  print "<ARTICLE>"
- print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='sdcp.cgi?avocent_inventory&ip=%s'%ip)
+ print aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='zdcp.cgi?avocent_inventory&ip=%s'%ip)
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th STYLE='width:63px;'>State</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for counter,value in enumerate(data,1):
   print "<DIV CLASS=tr><DIV CLASS=td TITLE='Open up a browser tab for {0}'><A TARGET='_blank' HREF='https://{0}:3502'>{0}</A></DIV><DIV CLASS=td>{1}</DIV>".format(ip,value['slotname']+'.'+value['unit'])
-  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?avocent_unit_info&ip={0}&slot={1}&unit={2}&text={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td ID=div_pdu_{5}>&nbsp;".format(ip,value['slot'],value['unit'],value['name'], value['slotname'],counter)
-  url = 'sdcp.cgi?avocent_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(ip,value['slot'],value['unit'],counter)
+  print "<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='zdcp.cgi?avocent_unit_info&ip={0}&slot={1}&unit={2}&text={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV CLASS=td ID=div_pdu_{5}>&nbsp;".format(ip,value['slot'],value['unit'],value['name'], value['slotname'],counter)
+  url = 'zdcp.cgi?avocent_op&ip=%s&slot=%s&unit=%s&id=%i&nstate={}'%(ip,value['slot'],value['unit'],counter)
   div = 'div_pdu_%i'%counter
   if value['state'] == "off":
    print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'))
@@ -54,7 +54,7 @@ def inventory(aWeb,aIP = None):
 #
 def op(aWeb):
  res = aWeb.rest_call("avocent_op",{'state':aWeb['nstate'],'ip':aWeb['ip'],'slot':aWeb['slot'],'unit':aWeb['unit']})
- url = 'sdcp.cgi?avocent_op&ip=%s&slot=%s&unit=%s&id=%s&nstate={}'%(aWeb['ip'],aWeb['slot'],aWeb['unit'],aWeb['id'])
+ url = 'zdcp.cgi?avocent_op&ip=%s&slot=%s&unit=%s&id=%s&nstate={}'%(aWeb['ip'],aWeb['slot'],aWeb['unit'],aWeb['id'])
  div = 'div_pdu_%s'%aWeb['id']
  print "&nbsp;"
  if res['state'] == "off":
@@ -79,8 +79,8 @@ def info(aWeb):
 
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right', URL='sdcp.cgi?avocent_info&id=%s&ip=%s&hostname=%s'%(aWeb['id'],aWeb['ip'],aWeb['hostname']))
- print aWeb.button('search',DIV='div_content_right', URL='sdcp.cgi?avocent_info&id=%s&ip=%s&hostname=%s&op=lookup'%(aWeb['id'],aWeb['ip'],aWeb['hostname']), TITLE='Fetch information')
+ print aWeb.button('reload',DIV='div_content_right', URL='zdcp.cgi?avocent_info&id=%s&ip=%s&hostname=%s'%(aWeb['id'],aWeb['ip'],aWeb['hostname']))
+ print aWeb.button('search',DIV='div_content_right', URL='zdcp.cgi?avocent_info&id=%s&ip=%s&hostname=%s&op=lookup'%(aWeb['id'],aWeb['ip'],aWeb['hostname']), TITLE='Fetch information')
  print "</DIV></ARTICLE>"
 
 ####################################### Device Operations #########################################
@@ -103,5 +103,5 @@ def unit_info(aWeb):
  print "</DIV></DIV>"
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('save',DIV='update_results', URL='sdcp.cgi?avocent_unit_info&op=update', FRM='pdu_form')
+ print aWeb.button('save',DIV='update_results', URL='zdcp.cgi?avocent_unit_info&op=update', FRM='pdu_form')
  print "</DIV></ARTICLE>"

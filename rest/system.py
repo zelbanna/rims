@@ -5,7 +5,7 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'master'
 
-from sdcp.core.common import DB
+from zdcp.core.common import DB
 
 ######################################### APPLICATION ############################################
 #
@@ -84,7 +84,7 @@ def inventory(aDict):
   db.do("SELECT title, href FROM resources WHERE node = '%s' AND type = 'tool' AND view < 2 AND (user_id = %s OR private = 0) ORDER BY type,title"%(aDict['node'],aDict.get('user_id',1)))
   ret['tools'] = db.get_rows()
   db.do("SELECT section,value FROM settings WHERE parameter = 'node' AND node = '%s'"%aDict['node'])
-  from sdcp.SettingsContainer import SC
+  from zdcp.SettingsContainer import SC
   for row in db.get_rows():
    ret[row['section']]= {'node':row['value'],'type':SC[row['section']].get('type') }
 
@@ -139,7 +139,7 @@ def log(aDict):
  """
  ret = {'result':'OK'}
  try:
-  from sdcp.core.logger import log
+  from zdcp.core.logger import log
   log(aDict['msg'])
  except Exception as e:
   ret['info'] = str(e)
@@ -160,7 +160,7 @@ def settings_list(aDict):
 
  Output:
  """
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',SC['system']['id']) }
  if aDict.get('section'):
   filter = "AND section = '%s'"%aDict.get('section')
@@ -219,7 +219,7 @@ def settings_parameter(aDict):
 
  Output:
  """
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  try: ret = {'value':SC[aDict['section']][aDict['parameter']]}
  except: ret = {'value':None }
  return ret
@@ -297,8 +297,8 @@ def settings_save(aDict):
 
  Output:
  """
- from sdcp.core.common import rest_call
- from sdcp.SettingsContainer import SC
+ from zdcp.core.common import rest_call
+ from zdcp.SettingsContainer import SC
  ret = {'config_file':SC['system']['config_file']}
  try:
   settings = {}
@@ -348,7 +348,7 @@ def settings_container(aDict):
 
  Output:
  """
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  return SC
 
 ################################################# NODE ##############################################

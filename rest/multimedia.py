@@ -14,7 +14,7 @@ def list(aDict):
  Output:
  """
  from os import walk
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  ret = {'files':[]}
  try:
   ret['root'] = SC['multimedia']['torrent_directory']
@@ -36,7 +36,7 @@ def cleanup(aDict):
  Output:
  """
  from os import walk, remove, rmdir
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  ret = {'root':SC['multimedia']['torrent_directory'],'items':[]}
  for path,dirs,files in walk(ret['root']):
   for item in files:
@@ -63,7 +63,7 @@ def transfer(aDict):
  Output:
  """
  from shutil import move
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  ret = {'res':'NOT_OK','source':ospath.join(aDict['path'],aDict['file']),'destination':ospath.join(SC['multimedia']['media_directory'],aDict['file'])}
  try: move(ret['source'],ret['destination'])
  except Exception as err: ret['error'] = str(err)
@@ -97,7 +97,7 @@ def services(aDict):
  
  Output:
  """
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  return {'services':[{'name':x,'service':SC['services'][x]} for x in SC['services'].keys()]}
 
 ################################################# Media Functions ################################################
@@ -263,7 +263,7 @@ def process(aDict):
  from time import time
  from subprocess import check_call, call
  from os import devnull,chmod,rename,remove
- from sdcp.core.logger import log
+ from zdcp.core.logger import log
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'res':'NOT_OK','error':None}
  srt  = check_srt({'filepath':filename})
@@ -307,7 +307,7 @@ def process(aDict):
      call(['mkvpropedit', '--edit', 'track:v1', '--set', 'language=eng', dest], stdout=FNULL, stderr=FNULL)
 
     if probe['audio']['add_aac'] or len(ret['changes']['audio']) or len(ret['changes']['subtitle']) or srt['code']:
-     from sdcp.SettingsContainer import SC
+     from zdcp.SettingsContainer import SC
      from tempfile import mkdtemp
      log("INFO - %s - Modifying addaac:%s Modify: %s %s"%(probe['audio']['add_aac'],ret['changes']['subtitle'],ret['changes']['audio'], ret['changes']['srt']) )
      tmpfile = filename + ".process"

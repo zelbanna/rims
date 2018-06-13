@@ -4,7 +4,7 @@ __version__ = "18.05.31GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from sdcp.core.common import DB
+from zdcp.core.common import DB
 
 ############################################## Networks ##################################################
 #
@@ -80,7 +80,7 @@ def network_info(aDict):
    ret['data'] = db.get_row()
   else:
    ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New','reverse_zone_id':None }
- from sdcp.rest.dns import domain_ptr_list
+ from zdcp.rest.dns import domain_ptr_list
  ret['domains'] = domain_ptr_list({'prefix':ret['data']['network']})
  ret['domains'].append({'id':'NULL','name':None,'server':None})
  return ret

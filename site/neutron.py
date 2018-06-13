@@ -19,7 +19,7 @@ def list(aWeb):
 
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE STYLE='overflow-x:hidden;'><P>Contrail VNs</P>"
- print aWeb.button('reload',DIV='div_content',  URL='sdcp.cgi?neutron_list')
+ print aWeb.button('reload',DIV='div_content',  URL='zdcp.cgi?neutron_list')
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Network</DIV><DIV CLASS=th>Subnet</DIV><DIV CLASS=th STYLE='width:50px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -28,7 +28,7 @@ def list(aWeb):
    continue
   print "<DIV CLASS=tr>"
   print "<!-- {} -->".format(net.get('href'))
-  print "<DIV CLASS=td STYLE='max-width:175px;'><A TITLE='Info {1}' CLASS='z-op' DIV=div_content_right URL=sdcp.cgi?neutron_action&id={0}&op=info SPIN=true>{1}</A></DIV>".format(net['uuid'],net['display_name'])
+  print "<DIV CLASS=td STYLE='max-width:175px;'><A TITLE='Info {1}' CLASS='z-op' DIV=div_content_right URL=zdcp.cgi?neutron_action&id={0}&op=info SPIN=true>{1}</A></DIV>".format(net['uuid'],net['display_name'])
   print "<DIV CLASS=td STYLE='max-width:175px;'>"
   if net.get('network_ipam_refs'):
    for ipam in net['network_ipam_refs']:
@@ -36,13 +36,13 @@ def list(aWeb):
      print "{}/{}".format(sub['subnet']['ip_prefix'],sub['subnet']['ip_prefix_len'])
   print "</DIV>"
   print "<DIV CLASS=td><DIV CLASS=controls>"
-  print aWeb.button('delete',DIV='div_content_right', SPIN='true', URL='sdcp.cgi?neutron_action&name=%s&id=%s&op=remove'%(net['display_name'],net['uuid']), MSG='Delete network?')
+  print aWeb.button('delete',DIV='div_content_right', SPIN='true', URL='zdcp.cgi?neutron_action&name=%s&id=%s&op=remove'%(net['display_name'],net['uuid']), MSG='Delete network?')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 
 def action(aWeb):
- from sdcp.site.openstack import dict2html
+ from zdcp.site.openstack import dict2html
  cookie = aWeb.cookie_unjar('openstack')
  token  = cookie.get('token')
  if not token:
@@ -56,7 +56,7 @@ def action(aWeb):
   args['call'] = 'virtual-network/%s'%(id)
   vn = aWeb.rest_call("openstack_call",args)['data']['virtual-network']
   name = vn['display_name']
-  tmpl = "<BUTTON CLASS='z-op' DIV=div_os_info URL=sdcp.cgi?neutron_action&name=%s&id=%s&op={} SPIN=true>{}</BUTTON>"%(name,id)
+  tmpl = "<BUTTON CLASS='z-op' DIV=div_os_info URL=zdcp.cgi?neutron_action&name=%s&id=%s&op={} SPIN=true>{}</BUTTON>"%(name,id)
   print "<DIV>"
   print tmpl.format('details','Network details')
   if vn.get('instance_ip_back_refs'):
@@ -82,14 +82,14 @@ def action(aWeb):
   for ip in vn['ip_addresses']:
    print "<DIV CLASS=tr>"
    if ip.get('vm_uuid'):
-    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=sdcp.cgi?nova_action&id={0}>{1}</A></DIV>".format(ip['vm_uuid'],ip['ip_address'])
+    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_content_right SPIN=true URL=zdcp.cgi?nova_action&id={0}>{1}</A></DIV>".format(ip['vm_uuid'],ip['ip_address'])
    else:
     print "<DIV CLASS=td>{}</DIV>".format(ip['ip_address'])
    print "<DIV CLASS=td>{}</DIV>".format(ip['mac_address'])
    if ip.get('vm_binding'):
     print "<DIV CLASS=td>{}</DIV>".format(ip['vm_binding'])
    elif ip.get('logical_interface'):
-    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_os_info SPIN=true URL=sdcp.cgi?neutron_action&op=print&id={}>{}</A></DIV>".format(ip['logical_interface_uuid'],ip['logical_interface'])
+    print "<DIV CLASS=td><A CLASS='z-op' DIV=div_os_info SPIN=true URL=zdcp.cgi?neutron_action&op=print&id={}>{}</A></DIV>".format(ip['logical_interface_uuid'],ip['logical_interface'])
    else:
     print "<DIV CLASS=td>{}</DIV>".format(vmi['vm_interface_owner'])
    print "</DIV>"
@@ -108,16 +108,16 @@ def action(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV>".format(fip['pool_name'],fip['ip_address'])
    if fixed:
     # Do we select one or many VMI:s?
-    print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?nova_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(fip['vm_interface'],fixed)
-    print "<DIV CLASS=td><A TITLE='Network info' CLASS='z-op' DIV=div_content_right  URL=sdcp.cgi?neutron_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(fip['vm_network_uuid'],fip['vm_network_name'])
+    print "<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right  URL=zdcp.cgi?nova_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(fip['vm_interface'],fixed)
+    print "<DIV CLASS=td><A TITLE='Network info' CLASS='z-op' DIV=div_content_right  URL=zdcp.cgi?neutron_action&op=info&id={0} SPIN=true>{1}</A></DIV>".format(fip['vm_network_uuid'],fip['vm_network_name'])
     print "<DIV CLASS=td><DIV CLASS=controls>"
-    print aWeb.button('info',  DIV='div_os_info', URL='sdcp.cgi?neutron_action&op=print&id=%s'%fip['uuid'])
-    print aWeb.button('delete',DIV='div_os_info', URL='sdcp.cgi?neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], MSG='Are you sure?', SPIN='true')
+    print aWeb.button('info',  DIV='div_os_info', URL='zdcp.cgi?neutron_action&op=print&id=%s'%fip['uuid'])
+    print aWeb.button('delete',DIV='div_os_info', URL='zdcp.cgi?neutron_action&op=fi_disassociate&id=%s'%fip['uuid'], MSG='Are you sure?', SPIN='true')
     print "</DIV></DIV>"
    else:
     print "<DIV CLASS=td></DIV><DIV CLASS=td></DIV><DIV CLASS=td><DIV CLASS=controls>"
-    print aWeb.button('info', DIV='div_os_info', URL='sdcp.cgi?neutron_action&op=print&id=%s'%fip['uuid'])
-    print aWeb.button('add',  DIV='div_os_info', URL='sdcp.cgi?neutron_action&op=fi_associate_choose_vm&id=%s'%fip['uuid'])
+    print aWeb.button('info', DIV='div_os_info', URL='zdcp.cgi?neutron_action&op=print&id=%s'%fip['uuid'])
+    print aWeb.button('add',  DIV='div_os_info', URL='zdcp.cgi?neutron_action&op=fi_associate_choose_vm&id=%s'%fip['uuid'])
     print "</DIV></DIV>"
    print "</DIV>"
   print "</DIV></DIV>"
@@ -150,7 +150,7 @@ def action(aWeb):
   for vm in vms:
    print "<OPTION VALUE={0}#{1}>{0}</OPTION>".format(vm['name'],vm['id'])
   print "</SELECT></FORM><DIV CLASS=controls>"
-  print aWeb.button('forward', DIV='div_os_info', FRM='frm_fi_assoc_vm', URL='sdcp.cgi?neutron_action&op=fi_associate_choose_interface')
+  print aWeb.button('forward', DIV='div_os_info', FRM='frm_fi_assoc_vm', URL='zdcp.cgi?neutron_action&op=fi_associate_choose_interface')
   print "</DIV>"
 
  elif op == 'fi_associate_choose_interface':
@@ -165,8 +165,8 @@ def action(aWeb):
    print "<OPTION VALUE={0}#{1}>{2} ({1})</OPTION>".format(vmi['uuid'],vmi['ip_address'],vmi['virtual_network'])
   print "</SELECT>"
   print "</FORM><DIV CLASS=controls>"
-  print aWeb.button('back', DIV='div_os_info', URL='sdcp.cgi?neutron_action&op=fi_associate_choose_vm&id=%s'%id, TITLE='Change VM')
-  print aWeb.button('forward', DIV='div_os_info', URL='sdcp.cgi?neutron_action&op=fi_associate', FRM='frm_fi_assoc_vmi', TITLE='Commit')
+  print aWeb.button('back', DIV='div_os_info', URL='zdcp.cgi?neutron_action&op=fi_associate_choose_vm&id=%s'%id, TITLE='Change VM')
+  print aWeb.button('forward', DIV='div_os_info', URL='zdcp.cgi?neutron_action&op=fi_associate', FRM='frm_fi_assoc_vmi', TITLE='Commit')
   print "</DIV>"
 
  elif op == 'fi_associate':

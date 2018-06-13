@@ -4,8 +4,8 @@ __version__ = "18.05.31GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from sdcp.devices.awx import Device
-from sdcp.SettingsContainer import SC
+from zdcp.devices.awx import Device
+from zdcp.SettingsContainer import SC
 
 #
 #
@@ -17,7 +17,7 @@ def inventory(aDict):
 
  Output:
  """
- from sdcp.rest.device import to_node
+ from zdcp.rest.device import to_node
  ret = to_node({'id':aDict['device_id']})
  controller = Device(SC['node'][ret['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
@@ -56,7 +56,7 @@ def inventory_sync(aDict):
   - result (boolean)
   - info (optional)
  """
- from sdcp.rest.device import list as device_list
+ from zdcp.rest.device import list as device_list
  hosts = {}
  devices = device_list({'search':aDict['search'],'field':aDict['field']})['data']
  ret = {'devices':devices,'result':'OK','extra':[]}

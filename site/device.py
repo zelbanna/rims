@@ -17,35 +17,35 @@ def main(aWeb):
  arg    = aWeb['arg']
  print "<NAV><UL>"
  print "<LI CLASS='dropdown'><A>Devices</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&{0}'>List</A>".format(aWeb.get_args())
- print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_search'>Search</A>"
- print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_type_list'>Types</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_list&{0}'>List</A>".format(aWeb.get_args())
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_search'>Search</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_type_list'>Types</A>"
  print "</DIV></LI>"
- print "<LI><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?visualize_list'>Maps</A></LI>"
+ print "<LI><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?visualize_list'>Maps</A></LI>"
  if target == 'vm':
-  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
+  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
  else:
   data = aWeb.rest_call("rack_inventory",{'id':arg} if target == 'rack_id' else None)
   for type in ['pdu','console']:
    if len(data[type]) > 0:
     print "<LI CLASS='dropdown'><A>%s</A><DIV CLASS='dropdown-content'>"%(type.title())
     for row in data[type]:
-     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='sdcp.cgi?%s_inventory&ip=%s'>%s</A>"%(row['type'],row['ipasc'],row['hostname'])
+     print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='zdcp.cgi?%s_inventory&ip=%s'>%s</A>"%(row['type'],row['ipasc'],row['hostname'])
     print "</DIV></LI>"
   if data.get('name'):
-   print "<LI><A CLASS='z-op' DIV=div_content_right  URL='sdcp.cgi?rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,data['name'])
-  print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
-  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?ipam_network_list'>IPAM</A></LI>"
+   print "<LI><A CLASS='z-op' DIV=div_content_right  URL='zdcp.cgi?rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,data['name'])
+  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
+  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?ipam_network_list'>IPAM</A></LI>"
   print "<LI CLASS='right dropdown'><A>DNS</A><DIV CLASS='dropdown-content'>"
-  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?dns_server_list'>Servers</A>"
-  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?dns_domain_list'>Domains</A>"
+  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?dns_server_list'>Servers</A>"
+  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?dns_domain_list'>Domains</A>"
   print "</DIV></LI>"
   print "<LI CLASS='right dropdown'><A>Rackinfo</A><DIV CLASS='dropdown-content'>"
-  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?rack_list_infra&type=pdu'>PDUs</A>"
-  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?rack_list_infra&type=console'>Consoles</A>"
-  print "<A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?rack_list'>Racks</A>"
+  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?rack_list_infra&type=pdu'>PDUs</A>"
+  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?rack_list_infra&type=console'>Consoles</A>"
+  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?rack_list'>Racks</A>"
   print "</DIV></LI>"
- print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL='sdcp.cgi?bookings_list'>Bookings</A></LI>"
+ print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL='zdcp.cgi?bookings_list'>Bookings</A></LI>"
  print "</UL></NAV>"
  print "<SECTION CLASS=content       ID=div_content>"
  print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
@@ -61,18 +61,18 @@ def list(aWeb):
   args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
  res = aWeb.rest_call("device_list",args)
  print "<ARTICLE><P>Device List</P><DIV CLASS='controls'>"
- print aWeb.button('reload', DIV='div_content_left',  URL='sdcp.cgi?device_list&%s'%aWeb.get_args(), TITLE='Reload')
- print aWeb.button('items',  DIV='div_content_left',  URL='sdcp.cgi?device_list&sort=%s'%args['sort'], TITLE='List All')
- print aWeb.button('search', DIV='div_content_left',  URL='sdcp.cgi?device_search', TITLE='Search')
- print aWeb.button('add',    DIV='div_content_right', URL='sdcp.cgi?device_new&%s'%aWeb.get_args(), TITLE='Add device')
- print aWeb.button('network',DIV='div_content_right', URL='sdcp.cgi?device_discover', TITLE='Discover')
- print aWeb.button('web',    DIV='div_content_right', URL='sdcp.cgi?device_webpages',TITLE='Show webpages')
+ print aWeb.button('reload', DIV='div_content_left',  URL='zdcp.cgi?device_list&%s'%aWeb.get_args(), TITLE='Reload')
+ print aWeb.button('items',  DIV='div_content_left',  URL='zdcp.cgi?device_list&sort=%s'%args['sort'], TITLE='List All')
+ print aWeb.button('search', DIV='div_content_left',  URL='zdcp.cgi?device_search', TITLE='Search')
+ print aWeb.button('add',    DIV='div_content_right', URL='zdcp.cgi?device_new&%s'%aWeb.get_args(), TITLE='Add device')
+ print aWeb.button('network',DIV='div_content_right', URL='zdcp.cgi?device_discover', TITLE='Discover')
+ print aWeb.button('web',    DIV='div_content_right', URL='zdcp.cgi?device_webpages',TITLE='Show webpages')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead>"
  for sort in ['IP','Hostname']:
-  print "<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red")
+  print "<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_list&sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red")
  print "<DIV CLASS=th>Model</DIV></DIV><DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='sdcp.cgi?device_info&id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['id'],row['ipasc'], row['fqdn'], row['model'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='zdcp.cgi?device_info&id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['id'],row['ipasc'], row['fqdn'], row['model'])
  print "</DIV></DIV></ARTICLE>"
 
 #
@@ -84,8 +84,8 @@ def search(aWeb):
  print "<SPAN>Field:</SPAN><SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='type'>Type</OPTION><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='id'>ID</OPTION></SELECT>"
  print "<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' REQUIRED>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('search', DIV='div_content_left', URL='sdcp.cgi?device_list', FRM='device_search')
- print aWeb.button('items',  DIV='div_content_left', URL='sdcp.cgi?device_list', TITLE='List All items')
+ print aWeb.button('search', DIV='div_content_left', URL='zdcp.cgi?device_list', FRM='device_search')
+ print aWeb.button('items',  DIV='div_content_left', URL='zdcp.cgi?device_list', TITLE='List All items')
  print "</DIV>"
  print "</ARTICLE>"
 
@@ -96,7 +96,7 @@ def type_list(aWeb):
  print "<ARTICLE><P>Device Types<P>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Class</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Icon</DIV></DIV><DIV CLASS=tbody>"
  for tp in res['types']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?device_list&field=type&search=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV></DIV>"%(tp['base'],tp['name'],tp['name'],tp['icon'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_list&field=type&search=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV></DIV>"%(tp['base'],tp['name'],tp['name'],tp['icon'])
  print "</DIV></DIV>"
  print "</ARTICLE>"
 #
@@ -127,10 +127,10 @@ def info(aWeb):
  print "<DIV CLASS=tr ID=div_booking_info><DIV CLASS=td>Booking:</DIV>"
  if dev['booked']:
   print "<DIV CLASS='td %s'>"%("red" if dev['booking']['valid'] == 1 else "orange")
-  print dev['booking']['alias'] if dev['booking']['user_id'] != int(cookie['id']) else "<A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?bookings_update&op=debook&id=%s'>%s</A>"%(dev['id'],dev['booking']['alias'])
+  print dev['booking']['alias'] if dev['booking']['user_id'] != int(cookie['id']) else "<A CLASS=z-op DIV=div_booking_info URL='zdcp.cgi?bookings_update&op=debook&id=%s'>%s</A>"%(dev['id'],dev['booking']['alias'])
   print "</DIV>"
  else:
-  print "<DIV CLASS='td green'><A CLASS=z-op DIV=div_booking_info URL='sdcp.cgi?bookings_update&op=book&id=%s'>Book</A></DIV>"%dev['id']
+  print "<DIV CLASS='td green'><A CLASS=z-op DIV=div_booking_info URL='zdcp.cgi?bookings_update&op=book&id=%s'>Book</A></DIV>"%dev['id']
  print "</DIV>"
  print "<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
@@ -162,13 +162,13 @@ def info(aWeb):
  print "<DIV CLASS='tr even'><DIV CLASS=td>Web page:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage'])
  print "</DIV></DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('reload',     DIV='div_content_right',URL='sdcp.cgi?device_info&id=%i'%dev['id'])
- print aWeb.button('trash',      DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
- print aWeb.button('configure',  DIV='div_content_right',URL='sdcp.cgi?device_update&id=%i'%dev['id'], TITLE='Configure Extended Device Information')
- print aWeb.button('save',       DIV='div_content_right',URL='sdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Basic Device Information')
- print aWeb.button('document',   DIV='div_dev_data',     URL='sdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
- print aWeb.button('connections',DIV='div_dev_data',     URL='sdcp.cgi?device_interface_list&device=%i'%(dev['id']),TITLE='Device interfaces')
- print aWeb.button('network',    DIV='div_content_right',URL='sdcp.cgi?visualize_network&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
+ print aWeb.button('reload',     DIV='div_content_right',URL='zdcp.cgi?device_info&id=%i'%dev['id'])
+ print aWeb.button('trash',      DIV='div_content_right',URL='zdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
+ print aWeb.button('configure',  DIV='div_content_right',URL='zdcp.cgi?device_update&id=%i'%dev['id'], TITLE='Configure Extended Device Information')
+ print aWeb.button('save',       DIV='div_content_right',URL='zdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Basic Device Information')
+ print aWeb.button('document',   DIV='div_dev_data',     URL='zdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
+ print aWeb.button('connections',DIV='div_dev_data',     URL='zdcp.cgi?device_interface_list&device=%i'%(dev['id']),TITLE='Device interfaces')
+ print aWeb.button('network',    DIV='div_content_right',URL='zdcp.cgi?visualize_network&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
  print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] and dev['rack'].get('console_ip'):
   # Hardcoded port to 60xx
@@ -181,9 +181,9 @@ def info(aWeb):
  print "<NAV><UL>"
  for fun in dev['info']['functions'].split(','):
   if fun == 'manage':
-   print "<LI><A CLASS=z-op DIV=main URL='sdcp.cgi?%s_manage&id=%i'>Manage</A></LI>"%(dev['info']['type_name'],dev['id'])
+   print "<LI><A CLASS=z-op DIV=main URL='zdcp.cgi?%s_manage&id=%i'>Manage</A></LI>"%(dev['info']['type_name'],dev['id'])
   else:
-   print "<LI><A CLASS=z-op DIV=div_dev_data SPIN=true URL='sdcp.cgi?device_function&ip={0}&type={1}&op={2}'>{3}</A></LI>".format(dev['ip'], dev['info']['type_name'], fun, fun.title())
+   print "<LI><A CLASS=z-op DIV=div_dev_data SPIN=true URL='zdcp.cgi?device_function&ip={0}&type={1}&op={2}'>{3}</A></LI>".format(dev['ip'], dev['info']['type_name'], fun, fun.title())
  print "</UL></NAV>"
  print "<SECTION CLASS='content' ID=div_dev_data STYLE='top:308px; overflow-x:hidden; overflow-y:auto;'></SECTION>"
 
@@ -209,7 +209,7 @@ def update(aWeb):
   print "<OPTION VALUE='%s' %s>%s</OPTION>"%(dom['id'],extra,dom['name'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='%s'></DIV><DIV CLASS=td>"%(dev['ip'])
- print aWeb.button('sync',DIV='div_content_right', FRM='info_form', URL='sdcp.cgi?device_update_ip&id=%s'%dev['id'], TITLE='Modify IP')
+ print aWeb.button('sync',DIV='div_content_right', FRM='info_form', URL='zdcp.cgi?device_update_ip&id=%s'%dev['id'], TITLE='Modify IP')
  print "</DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_mac VALUE={}></DIV></DIV>".format(dev['info']['mac'])
  print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT NAME=devices_type_id>"
@@ -219,7 +219,7 @@ def update(aWeb):
   extra = " selected" if dev['info']['type_id'] == type['id'] or (not dev['info']['type_id'] and type['name'] == 'generic') else ""
   print "<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id'],extra,type['name'])
  print "</SELECT></DIV><DIV CLASS=td>"
- print aWeb.button('search',DIV='div_content_right',URL='sdcp.cgi?device_update&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
+ print aWeb.button('search',DIV='div_content_right',URL='zdcp.cgi?device_update&op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information')
  print "</DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Model:  </DIV><DIV CLASS=td STYLE='max-width:250px;'><INPUT TYPE=TEXT NAME=devices_model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
  print "<DIV CLASS=tr><DIV CLASS=td>VM:     </DIV><DIV CLASS=td><INPUT NAME=devices_vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "") 
@@ -265,10 +265,10 @@ def update(aWeb):
  print "<DIV CLASS='tr even'><DIV CLASS=td STYLE='font-style:italic'>Result:  </DIV><DIV CLASS=td ID=update_results>%s</DIV></DIV>"%str(dev.get('result',''))
  print "</DIV></DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right',URL='sdcp.cgi?device_update&id=%i'%dev['id'])
- print aWeb.button('back',  DIV='div_content_right',URL='sdcp.cgi?device_info&id=%i'%dev['id'])
- print aWeb.button('trash', DIV='div_content_right',URL='sdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
- print aWeb.button('save',  DIV='div_content_right',URL='sdcp.cgi?device_update&op=update', FRM='info_form', TITLE='Save Device Information')
+ print aWeb.button('reload',DIV='div_content_right',URL='zdcp.cgi?device_update&id=%i'%dev['id'])
+ print aWeb.button('back',  DIV='div_content_right',URL='zdcp.cgi?device_info&id=%i'%dev['id'])
+ print aWeb.button('trash', DIV='div_content_right',URL='zdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
+ print aWeb.button('save',  DIV='div_content_right',URL='zdcp.cgi?device_update&op=update', FRM='info_form', TITLE='Save Device Information')
  print "</DIV></ARTICLE>"
 
 def update_ip(aWeb):
@@ -284,7 +284,7 @@ def webpages(aWeb):
  print "<ARTICLE CLASS=info STYLE='width:100%'>"
  print "<DIV CLASS=table><DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op URL='sdcp.cgi?device_info&id=%s' DIV=div_content_right>%s</A></DIV><DIV CLASS=td><A HREF='%s' TARGET=_blank>%s</A></DIV></DIV>"%(row['id'],row['hostname'],row['webpage'],row['webpage'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op URL='zdcp.cgi?device_info&id=%s' DIV=div_content_right>%s</A></DIV><DIV CLASS=td><A HREF='%s' TARGET=_blank>%s</A></DIV></DIV>"%(row['id'],row['hostname'],row['webpage'],row['webpage'])
  print "</DIV></DIV>"
  print "</ARTICLE>"
 
@@ -348,7 +348,7 @@ def new(aWeb):
  op   = aWeb['op']
  network = aWeb['ipam_network_id']
  if not ip:
-  from sdcp.core import genlib as GL
+  from zdcp.core import genlib as GL
   ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
 
  if op == 'new':
@@ -387,8 +387,8 @@ def new(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV  CLASS=td><INPUT NAME=vm  TYPE=CHECKBOX VALUE=1  {0} ></DIV></DIV>".format("checked" if aWeb['target'] == 'vm' else '')
   print "</DIV></DIV>"
   print "</FORM><DIV CLASS=controls>"
-  print aWeb.button('start', DIV='device_span', URL='sdcp.cgi?device_new&op=new',  FRM='device_new_form', TITLE='Create')
-  print aWeb.button('search',DIV='device_ip',   URL='sdcp.cgi?device_new&op=find', FRM='device_new_form', TITLE='Find IP',INPUT='True')
+  print aWeb.button('start', DIV='device_span', URL='zdcp.cgi?device_new&op=new',  FRM='device_new_form', TITLE='Create')
+  print aWeb.button('search',DIV='device_ip',   URL='zdcp.cgi?device_new&op=find', FRM='device_new_form', TITLE='Find IP',INPUT='True')
   print "</DIV><SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'></SPAN>"
   print "</ARTICLE>"
 
@@ -423,7 +423,7 @@ def discover(aWeb):
   print "</SELECT></DIV></DIV>"
   print "</DIV></DIV>"
   print "</FORM><DIV CLASS=controls>"
-  print aWeb.button('start', DIV='div_content_right', SPIN='true', URL='sdcp.cgi?device_discover', FRM='device_discover_form')
+  print aWeb.button('start', DIV='div_content_right', SPIN='true', URL='zdcp.cgi?device_discover', FRM='device_discover_form')
   print "</DIV></ARTICLE>"
 
 ################################################## interfaces #################################################
@@ -443,10 +443,10 @@ def interface_list(aWeb):
   opres = ""
  res = aWeb.rest_call("device_interface_list",{'device':aWeb['device']})
  print "<ARTICLE><P>Interfaces (%s)</P><DIV CLASS='controls'>"%(res['hostname'])
- print aWeb.button('reload', DIV='div_dev_data',URL='sdcp.cgi?device_interface_list&device=%s'%res['id'])
- print aWeb.button('add',    DIV='div_dev_data',URL='sdcp.cgi?device_interface_info&device=%s&id=new'%res['id'])
- print aWeb.button('search', DIV='div_dev_data',URL='sdcp.cgi?device_interface_list&device=%s&op=discover'%res['id'], SPIN='true', MSG='Rediscover interfaces?')
- print aWeb.button('trash',  DIV='div_dev_data',URL='sdcp.cgi?device_interface_list&device=%s&op=delete_list'%res['id'], MSG='Delete interfaces?', FRM='interface_list', TITLE='Delete selected interfaces')
+ print aWeb.button('reload', DIV='div_dev_data',URL='zdcp.cgi?device_interface_list&device=%s'%res['id'])
+ print aWeb.button('add',    DIV='div_dev_data',URL='zdcp.cgi?device_interface_info&device=%s&id=new'%res['id'])
+ print aWeb.button('search', DIV='div_dev_data',URL='zdcp.cgi?device_interface_list&device=%s&op=discover'%res['id'], SPIN='true', MSG='Rediscover interfaces?')
+ print aWeb.button('trash',  DIV='div_dev_data',URL='zdcp.cgi?device_interface_list&device=%s&op=delete_list'%res['id'], MSG='Delete interfaces?', FRM='interface_list', TITLE='Delete selected interfaces')
  print "</DIV><SPAN CLASS=results>%s</SPAN><FORM ID=interface_list>"%(opres)
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Peer interface</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
@@ -454,8 +454,8 @@ def interface_list(aWeb):
  for row in res['data']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_interface'] if not row['multipoint'] else 'multipoint')
   print "<INPUT TYPE=CHECKBOX VALUE=1 NAME='interface_%s'>"%row['id']
-  print aWeb.button('info',  DIV='div_dev_data',URL='sdcp.cgi?device_interface_info&device=%s&id=%s'%(aWeb['device'],row['id']))
-  print aWeb.button('sync',  DIV='div_dev_data',URL='sdcp.cgi?device_interface_link_device&device=%s&id=%s&name=%s'%(aWeb['device'],row['id'],row['name']), TITLE='Connect')
+  print aWeb.button('info',  DIV='div_dev_data',URL='zdcp.cgi?device_interface_info&device=%s&id=%s'%(aWeb['device'],row['id']))
+  print aWeb.button('sync',  DIV='div_dev_data',URL='zdcp.cgi?device_interface_link_device&device=%s&id=%s&name=%s'%(aWeb['device'],row['id'],row['name']), TITLE='Connect')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</FORM></ARTICLE>"
@@ -476,13 +476,13 @@ def interface_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Multipoint:</DIV><DIV CLASS=td><INPUT  NAME=multipoint  VALUE=1    TYPE=CHECKBOX %s></DIV></DIV>"%("checked" if data['multipoint'] else "")
  print "<DIV CLASS=tr><DIV CLASS=td>Peer interface:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['peer_interface']
  if data['peer_device']:
-  print "<DIV CLASS=tr><DIV CLASS=td>Peer Device</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=sdcp.cgi?device_info&id=%s>%s</A></DIV></DIV>"%(data['peer_device'],data['peer_device'])
+  print "<DIV CLASS=tr><DIV CLASS=td>Peer Device</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=zdcp.cgi?device_info&id=%s>%s</A></DIV></DIV>"%(data['peer_device'],data['peer_device'])
  print "</DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('back', DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&device=%s'%data['device'])
- print aWeb.button('save', DIV='div_dev_data', URL='sdcp.cgi?device_interface_info&op=update', FRM='interface_info_form')
+ print aWeb.button('back', DIV='div_dev_data', URL='zdcp.cgi?device_interface_list&device=%s'%data['device'])
+ print aWeb.button('save', DIV='div_dev_data', URL='zdcp.cgi?device_interface_info&op=update', FRM='interface_info_form')
  if data['id'] != 'new':
-  print aWeb.button('trash', DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&op=delete&device=%s&id=%s'%(data['device'],data['id']), MSG='Delete interface?')
+  print aWeb.button('trash', DIV='div_dev_data', URL='zdcp.cgi?device_interface_list&op=delete&device=%s&id=%s'%(data['device'],data['id']), MSG='Delete interface?')
  print "</DIV></ARTICLE>"
 
 #
@@ -495,8 +495,8 @@ def interface_link_device(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=name VALUE=%s>"%aWeb['name']
  print "Connect '%s' to device (Id or IP): <INPUT CLASS='background' REQUIRED TYPE=TEXT NAME='peer' STYLE='width:100px' VALUE='%s'>"%(aWeb['name'],aWeb.get('peer','0'))
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('back',    DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&device=%s'%aWeb['device'])
- print aWeb.button('forward', DIV='div_dev_data', URL='sdcp.cgi?device_interface_link_interface', FRM='interface_link')
+ print aWeb.button('back',    DIV='div_dev_data', URL='zdcp.cgi?device_interface_list&device=%s'%aWeb['device'])
+ print aWeb.button('forward', DIV='div_dev_data', URL='zdcp.cgi?device_interface_link_interface', FRM='interface_link')
  print "</DIV></ARTICLE>"
 
 #
@@ -514,8 +514,8 @@ def interface_link_interface(aWeb):
   print "<OPTION VALUE=%s>%s (%s)</OPTION>"%(intf['id'],intf['name'],intf['description'])
  print "</SELECT>"
  print "</FORM><DIV CLASS=controls>"
- print aWeb.button('back',    DIV='div_dev_data', URL='sdcp.cgi?device_interface_link_device', FRM='interface_link')
- print aWeb.button('forward', DIV='div_dev_data', URL='sdcp.cgi?device_interface_list&op=link', FRM='interface_link')
+ print aWeb.button('back',    DIV='div_dev_data', URL='zdcp.cgi?device_interface_link_device', FRM='interface_link')
+ print aWeb.button('forward', DIV='div_dev_data', URL='zdcp.cgi?device_interface_list&op=link', FRM='interface_link')
  print "</DIV></ARTICLE>"
 
 #
@@ -525,8 +525,8 @@ def network(aWeb):
  nodes = ["{'id':%s, 'label':'%s', 'shape':'image', 'image':'%s', 'font':'14px verdana blue'}"%(key,val['hostname'],val['icon']) for key,val in res['devices'].iteritems()]
  edges = ["{'from':%s, 'to':%s, title:'%s:%s <-> %s:%s' }"%(con['a_device'],con['b_device'],res['devices'][str(con['a_device'])]['hostname'],con['a_name'],res['devices'][str(con['b_device'])]['hostname'],con['b_name']) for con in res['interfaces']]
  print "<ARTICLE><P>Device '%s':s network</P><DIV CLASS=controls>"%(aWeb['hostname'])
- print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?device_network&id=%s&hostname=%s'%(aWeb['id'],aWeb['hostname']), TITLE='Reload')
- print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%aWeb['id'], TITLE='Back')
+ print aWeb.button('reload', DIV='div_content_right', URL='zdcp.cgi?device_network&id=%s&hostname=%s'%(aWeb['id'],aWeb['hostname']), TITLE='Reload')
+ print aWeb.button('back',   DIV='div_content_right', URL='zdcp.cgi?device_info&id=%s'%aWeb['id'], TITLE='Back')
  print aWeb.button('start',  onclick='network_start()')
  print aWeb.button('stop',   onclick='network_stop()')
  print aWeb.button('save',   onclick='network_save()')

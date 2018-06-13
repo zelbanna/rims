@@ -27,7 +27,7 @@ def list(aWeb):
  res = aWeb.rest_call("appformix_report_projects",{'node':cookie_appformix['node'],'token':cookie_appformix['token'],'project':cookie_openstack['project_id']})
  print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Usage Reports</P>"
  print "<DIV CLASS=controls>"
- print aWeb.button('reload', DIV='div_content', URL='sdcp.cgi?appformix_list')
+ print aWeb.button('reload', DIV='div_content', URL='zdcp.cgi?appformix_list')
  print "</DIV>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Report</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -37,7 +37,7 @@ def list(aWeb):
   print "<DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden;'>%s</DIV>"%rep['ReportId']
   print "<DIV CLASS=td>%s</DIV>"%datetime.utcfromtimestamp(float(rep['Start'])/1e3)
   print "<DIV CLASS=td>"
-  print aWeb.button('info', DIV='div_content_right', URL='sdcp.cgi?appformix_info&report=%s'%(rep['ReportId']))
+  print aWeb.button('info', DIV='div_content_right', URL='zdcp.cgi?appformix_info&report=%s'%(rep['ReportId']))
   print "</DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE></SECTION>"
@@ -47,7 +47,7 @@ def info(aWeb):
  cookie_openstack = aWeb.cookie_unjar('openstack')
  cookie_appformix = aWeb.cookie_unjar('appformix')
  reports = aWeb.rest_call("appformix_project_reports",{'node':cookie_appformix['node'],'token':cookie_appformix['token'],'report':aWeb['report']})
- from sdcp.site.openstack import dict2html
+ from zdcp.site.openstack import dict2html
  for project in reports['Data']:
   if project['Project_Id'] == cookie_openstack['project_id']:
    print "<ARTICLE STYLE='overflow:auto;'>"

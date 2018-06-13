@@ -9,7 +9,7 @@ __version__ = "18.05.31GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from sdcp.core.common import DB,node_call
+from zdcp.core.common import DB,node_call
 
 ################################ SERVERS ##################################
 #
@@ -575,5 +575,5 @@ def external_ip(aDict):
 
  Output:
  """
- from sdcp.core.genlib import external_ip
+ from zdcp.core.genlib import external_ip
  return {'ip':external_ip() }

@@ -20,7 +20,7 @@ def main(aWeb):
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>"
   if row['type_name'] == 'esxi':
-   print "<A CLASS=z-op DIV=main URL='sdcp.cgi?esxi_manage&id={}'>{}</A>".format(row['id'],row['hostname'])
+   print "<A CLASS=z-op DIV=main URL='zdcp.cgi?esxi_manage&id={}'>{}</A>".format(row['id'],row['hostname'])
   elif row['type_name'] == 'vcenter':
    print "<A TARGET=_blank HREF='https://{}:9443/vsphere-client/'>{}</A>".format(row['ipasc'],row['hostname'])
   else:
@@ -38,11 +38,11 @@ def manage(aWeb):
  id = aWeb['id']
  data = aWeb.rest_call("device_basics",{'id':id})
  print "<NAV><UL>"
- print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='sdcp.cgi?esxi_op&ip=%s&next-state=poweroff&id=%s'>Shutdown</A></LI>".format(data['ip'],id)
- print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['hostname'],data['domain'])
- print "<LI><A CLASS=z-op DIV=div_content_right  URL=sdcp.cgi?esxi_logs&hostname={0}&domain={1}>Logs</A></LI>".format(data['hostname'],data['domain'])
+ print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='zdcp.cgi?esxi_op&ip=%s&next-state=poweroff&id=%s'>Shutdown</A></LI>".format(data['ip'],id)
+ print "<LI><A CLASS=z-op DIV=div_content_right  URL=zdcp.cgi?esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['hostname'],data['domain'])
+ print "<LI><A CLASS=z-op DIV=div_content_right  URL=zdcp.cgi?esxi_logs&hostname={0}&domain={1}>Logs</A></LI>".format(data['hostname'],data['domain'])
  print "<LI><A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A></LI>".format(data['ip'])
- print "<LI><A CLASS='z-op reload' DIV=main URL='sdcp.cgi?esxi_manage&id=%s'></A></LI>"%(id)
+ print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?esxi_manage&id=%s'></A></LI>"%(id)
  print "<LI CLASS='right navinfo'><A>{}</A></LI>".format(data['hostname'])
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
@@ -60,9 +60,9 @@ def list(aWeb,aIP = None):
  res = aWeb.rest_call("esxi_list",{'ip':ip,'sort':sort})
  statelist = res['data']
  print "<ARTICLE>"
- print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='sdcp.cgi?esxi_list&ip=%s&sort=%s'%(ip,sort))
+ print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='zdcp.cgi?esxi_list&ip=%s&sort=%s'%(ip,sort))
  print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='sdcp.cgi?esxi_list&ip=%s&sort=%s'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"%(ip,"id" if sort == "name" else "name")
+ print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?esxi_list&ip=%s&sort=%s'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"%(ip,"id" if sort == "name" else "name")
  print "<DIV CLASS=tbody>"
  for vm in statelist:
   print "<DIV CLASS=tr STYLE='padding:0px;'><DIV CLASS=td STYLE='padding:0px;'>%s</DIV><DIV CLASS='td controls' ID=div_vm_%s STYLE='width:120px'>"%(vm['name'],vm['id'])
@@ -86,7 +86,7 @@ def op(aWeb):
 #
 def _vm_options(aWeb,aIP,aVM,aHighlight):
  div = "div_vm_%s"%aVM['id']
- url = "sdcp.cgi?esxi_op&ip=%s&next-state={}&id=%s"%(aIP,aVM['id'])
+ url = "zdcp.cgi?esxi_op&ip=%s&next-state={}&id=%s"%(aIP,aVM['id'])
  if aHighlight:
   print "<DIV CLASS='border'>"
  if int(aVM['state_id']) == 1:
@@ -100,7 +100,7 @@ def _vm_options(aWeb,aIP,aVM,aHighlight):
  elif int(aVM['state_id']) == 2:
   print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start')
   print aWeb.button('snapshot',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-snapshot.create'), TITLE='Snapshot')
-  print aWeb.button('info',    DIV='div_content_right',SPIN='true',URL='sdcp.cgi?esxi_snapshot&ip={}&id={}'.format(aIP,aVM['id']), TITLE='Snapshot info')
+  print aWeb.button('info',    DIV='div_content_right',SPIN='true',URL='zdcp.cgi?esxi_snapshot&ip={}&id={}'.format(aIP,aVM['id']), TITLE='Snapshot info')
  else:
   print "Unknown state [{}]".format(aVM['state_id'])
  if aHighlight:
@@ -111,7 +111,7 @@ def _vm_options(aWeb,aIP,aVM,aHighlight):
 # Graphing
 #
 def graph(aWeb):
- from sdcp.tools.munin import widget_cols
+ from zdcp.tools.munin import widget_cols
  hostname = aWeb['hostname']
  domain   = aWeb['domain']
  print "<ARTICLE STYLE='overflow-x:auto;'>"
@@ -134,7 +134,7 @@ def snapshot(aWeb):
  print "<DIV CLASS=tbody>"
  for snap in res['data']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS='td controls'>".format(snap['name'],snap['id'],snap['desc'],snap['created'],snap['state'])
-  print aWeb.button('revert', TITLE='Revert', DIV='div_content_right',SPIN='true', URL='sdcp.cgi?esxi_op&ip=%s&id=%s&next-state=vmsvc-snapshot.revert&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id']))
-  print aWeb.button('delete', TITLE='Delete', DIV='div_content_right',SPIN='true', URL='sdcp.cgi?esxi_op&ip=%s&id=%s&next-state=vmsvc-snapshot.remove&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id']))
+  print aWeb.button('revert', TITLE='Revert', DIV='div_content_right',SPIN='true', URL='zdcp.cgi?esxi_op&ip=%s&id=%s&next-state=vmsvc-snapshot.revert&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id']))
+  print aWeb.button('delete', TITLE='Delete', DIV='div_content_right',SPIN='true', URL='zdcp.cgi?esxi_op&ip=%s&id=%s&next-state=vmsvc-snapshot.remove&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id']))
   print "</DIV></DIV>"
  print "</DIV></DIV>"

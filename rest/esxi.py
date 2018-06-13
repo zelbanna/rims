@@ -15,7 +15,7 @@ def list(aDict):
  Output:
  """
  ret = {}
- from sdcp.devices.esxi import Device
+ from zdcp.devices.esxi import Device
  try:
   esxi = Device(aDict['ip'])
   ret['data'] = esxi.get_vm_list(aDict.get('sort','name'))
@@ -38,7 +38,7 @@ def op(aDict):
 
  Output:
  """
- from sdcp.devices.esxi import Device
+ from zdcp.devices.esxi import Device
  ret = {'id':aDict['id'],'res':'OK'}
  with Device(aDict['ip']) as esxi:
   try:
@@ -77,7 +77,7 @@ def logs(aDict):
  Output:
  """
  from subprocess import check_output
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  ret = {'res':'OK'}
  hostname = aDict['hostname']
  count = aDict.get('count','30')
@@ -100,7 +100,7 @@ def snapshots(aDict):
 
  Output:
  """
- from sdcp.devices.esxi import Device
+ from zdcp.devices.esxi import Device
  ret = {'res':'OK', 'data':[],'highest':0}
  with Device(aDict['ip']) as esxi:
   data = {}                  

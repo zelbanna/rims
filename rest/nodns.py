@@ -76,7 +76,7 @@ def record_list(aDict):
 
  Output:
  """
- from sdcp.core.common import DB
+ from zdcp.core.common import DB
  ret = {}
  with DB() as db:
   ret['count'] = db.do("SELECT devices.id, 0 AS domain_id, CONCAT(hostname,'.local') AS name, INET_NTOA(ia.ip) AS content, 'A' AS type, 3600 AS ttl FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.a_dom_id = 0")
@@ -102,7 +102,7 @@ def record_info(aDict):
  if aDict['id'] == 'new':
   ret = {'xist':0, 'data':{'id':0,'domain_id':0,'name':aDict.get('name','no_record'),'content':aDict.get('content','no_record'),'type':aDict.get('type','A'),'ttl':'3600' }}
  else:
-  from sdcp.core.common import DB
+  from zdcp.core.common import DB
   with DB() as db:
    ret['xist'] = db.do("SELECT devices.id, 0 AS domain_id, CONCAT(hostname,'.local') AS name, INET_NTOA(ia.ip) AS content, 'A' AS type, 3600 AS ttl FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.a_dom_id = 0 AND devices.id = %s"%aDict['id'])
    ret['data'] = db.get_row()

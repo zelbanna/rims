@@ -13,8 +13,8 @@ __version__ = "18.05.31GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from sdcp.core.common import DB
-from sdcp.SettingsContainer import SC
+from zdcp.core.common import DB
+from zdcp.SettingsContainer import SC
 
 #################################### Domains #######################################
 #

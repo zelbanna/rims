@@ -9,7 +9,7 @@ __status__  = "Production"
 __type__    = "hypervisor"
 __icon__    = "images/viz-server.png"
 
-from sdcp.SettingsContainer import SC
+from zdcp.SettingsContainer import SC
 from generic import Device as GenericDevice
 
 ########################################### ESXi ############################################

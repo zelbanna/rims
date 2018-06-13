@@ -26,7 +26,7 @@ def leases(aDict):
   from socket import inet_aton
   return unpack("!I", inet_aton(addr))[0]
 
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  result = []
  lease  = {}
  with open(SC['iscdhcp']['active'],'r') as leasefile: 
@@ -60,8 +60,8 @@ def update_server(aDict):
 
  Output:
  """
- from sdcp.SettingsContainer import SC
- from sdcp.core.common import node_call
+ from zdcp.SettingsContainer import SC
+ from zdcp.core.common import node_call
  entries = node_call('master','device','list_mac')
  # Create file
  with open(SC['iscdhcp']['static'],'w') as leasefile:

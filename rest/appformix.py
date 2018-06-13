@@ -4,8 +4,8 @@ __version__ = "18.05.31GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from sdcp.devices.appformix import Device
-from sdcp.SettingsContainer import SC
+from zdcp.devices.appformix import Device
+from zdcp.SettingsContainer import SC
 
 #
 def alarm(aDict):
@@ -15,7 +15,7 @@ def alarm(aDict):
 
  Output:
  """
- from sdcp.core.logger import log
+ from zdcp.core.logger import log
  log("appformix_alarm({})".format(str(aDict)))
  return { 'result':'OK', 'info':'got alarm', 'data':'waiting to find out what to do with it :-)'}
 

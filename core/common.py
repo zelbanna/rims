@@ -18,7 +18,7 @@ class DB(object):
   self._curs = None
   self._dirty = False
   if not aDB:
-   from sdcp.SettingsContainer import SC
+   from zdcp.SettingsContainer import SC
    self._db, self._host, self._user, self._pass = SC['system']['db_name'],SC['system']['db_host'],SC['system']['db_user'],SC['system']['db_pass']
   else:
    self._db, self._host, self._user, self._pass = aDB, aHost, aUser, aPass
@@ -107,12 +107,12 @@ def node_call(aNode, aModule, aFunction, aArgs = None, aMethod = None, aHeader =
    - de-json:ed data structure that function returns (hence status codes etc is not available)
 
  """
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  if SC['system']['id'] != aNode:
   ret = rest_call("%s?%s_%s"%(SC['node'][aNode],aModule,aFunction),aArgs)['data']
  else:
   from importlib import import_module
-  module = import_module("sdcp.rest.%s"%aModule)
+  module = import_module("zdcp.rest.%s"%aModule)
   fun = getattr(module,aFunction,None)
   ret = fun(aArgs if aArgs else {})
  return ret

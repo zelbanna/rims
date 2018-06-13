@@ -8,7 +8,7 @@
     "system": {
         "application": {
             "description": "Default Application", 
-            "value": "sdcp"
+            "value": "zdcp"
         }, 
         "db_host": {
             "description": "DB host IP", 
@@ -16,7 +16,7 @@
         }, 
         "db_name": {
             "description": "DB name", 
-            "value": "sdcp"
+            "value": "zdcp"
         }, 
         "db_pass": {
             "description": "DB Password", 

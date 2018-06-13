@@ -47,12 +47,12 @@ class Device(object):
 
  def log_msg(self, aMsg):
   try:
-   from sdcp.core.logger import log
+   from zdcp.core.logger import log
    log(aMsg)
   except: pass
 
  def configuration(self,argdict):
-  from sdcp.SettingsContainer import SC
+  from zdcp.SettingsContainer import SC
   output = ["No config template for this device type.","",
    "Please set the following manually:",
    "- Username: %s"%SC['netconf']['username'],
@@ -67,7 +67,7 @@ class Device(object):
   return output
 
  def interfaces(self):
-  from sdcp.SettingsContainer import SC
+  from zdcp.SettingsContainer import SC
   from netsnmp import VarList, Varbind, Session
   interfaces = {}
   try:
@@ -87,7 +87,7 @@ class Device(object):
 
  def detect(self):
   ret = {}
-  from sdcp.SettingsContainer import SC
+  from zdcp.SettingsContainer import SC
   from netsnmp import VarList, Varbind, Session
   try:
    # .1.3.6.1.2.1.1.1.0 : Device info

@@ -12,13 +12,13 @@ __status__ = "Production"
 def list(aWeb):
  res = aWeb.rest_call("visualize_list")
  print "<ARTICLE><P>Maps</P><DIV CLASS=controls>"
- print aWeb.button('reload', DIV='div_content_left', URL='sdcp.cgi?visualize_list', TITLE='Reload')
+ print aWeb.button('reload', DIV='div_content_left', URL='zdcp.cgi?visualize_list', TITLE='Reload')
  print "</DIV><DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS='th maxed'>Name</DIV><DIV CLASS=th STYLE='width:50px'>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for map in res['maps']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS='z-op' DIV='div_content_right' URL='sdcp.cgi?visualize_show&id=%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='controls'>"%(map['id'],map['id'],map['name'])
-  print aWeb.button('configure',  DIV='div_content_right', URL='sdcp.cgi?visualize_network&type=map&id=%s'%map['id'],   TITLE='Show and Edit map') 
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS='z-op' DIV='div_content_right' URL='zdcp.cgi?visualize_show&id=%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='controls'>"%(map['id'],map['id'],map['name'])
+  print aWeb.button('configure',  DIV='div_content_right', URL='zdcp.cgi?visualize_network&type=map&id=%s'%map['id'],   TITLE='Show and Edit map') 
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
@@ -50,16 +50,16 @@ def network(aWeb):
  args = aWeb.get_args2dict()
  res = aWeb.rest_call("visualize_network",args)
  print "<ARTICLE><P>Info for %s</P><DIV CLASS=controls>"%(res['name'])
- print aWeb.button('reload', DIV='div_content_right', URL='sdcp.cgi?visualize_network&type=%s&id=%s'%(res['type'],res['id']))
- print aWeb.button('trash',  DIV='div_content_right', URL='sdcp.cgi?visualize_delete&id=%s'%res['id'], TITLE='Delete map', MSG='Really delete map?')
+ print aWeb.button('reload', DIV='div_content_right', URL='zdcp.cgi?visualize_network&type=%s&id=%s'%(res['type'],res['id']))
+ print aWeb.button('trash',  DIV='div_content_right', URL='zdcp.cgi?visualize_delete&id=%s'%res['id'], TITLE='Delete map', MSG='Really delete map?')
  if aWeb['type'] == 'device':
-  print aWeb.button('back',   DIV='div_content_right', URL='sdcp.cgi?device_info&id=%s'%res['id'], TITLE='Return to device')
+  print aWeb.button('back',   DIV='div_content_right', URL='zdcp.cgi?device_info&id=%s'%res['id'], TITLE='Return to device')
  print aWeb.button('edit', onclick='network_edit()', TITLE='Enable editor')
  print aWeb.button('start',  onclick='network_start()',  TITLE='Enable physics')
  print aWeb.button('stop',   onclick='network_stop()',   TITLE='Disable physics')
  print aWeb.button('fix',    onclick='network_fixate()', TITLE='Fix node positions')
  print aWeb.button('sync',   onclick='network_sync()',   TITLE='Sync graph to config')
- print aWeb.button('save',   DIV='div_content_right', URL='sdcp.cgi?visualize_network&op=update', FRM='network_config', TITLE='Save config')
+ print aWeb.button('save',   DIV='div_content_right', URL='zdcp.cgi?visualize_network&op=update', FRM='network_config', TITLE='Save config')
  print aWeb.button('network',DIV='div_network', OP='single', SELECTOR='.tab')
  print aWeb.button('help', HREF='http://visjs.org/docs/network/', TARGET='_blank', STYLE='float:right;', TITLE='vis.js help for configuring options/nodes/edges')
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_options'>Options</A>"

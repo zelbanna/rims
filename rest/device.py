@@ -4,7 +4,7 @@ __version__ = "18.05.31GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from sdcp.core.common import DB
+from zdcp.core.common import DB
 
 #
 #
@@ -112,7 +112,7 @@ def update(aDict):
    ret['result'] = {}
 
    if operation == 'lookup' and ret['ip']:
-    from sdcp.devices.generic import Device
+    from zdcp.devices.generic import Device
     dev = Device(ret['ip'])
     lookup = dev.detect()
     ret['result']['lookup'] = lookup['result']
@@ -147,7 +147,7 @@ def update(aDict):
     # Make sure everything is there to update DNS records, if records are not the same as old ones, update device, otherwise pop
     #
     if args.get('devices_a_id') and args.get('devices_ptr_id') and args.get('devices_a_dom_id') and args.get('devices_hostname') and ret['ip']:
-     import sdcp.rest.dns as DNS
+     import zdcp.rest.dns as DNS
      DNS.__add_globals__({'import_module':import_module})
      dns = DNS.record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip'],'id':ret['id']})
      # ret['result']['dns'] = dns
@@ -200,7 +200,7 @@ def update(aDict):
      pdu_info = db.get_row()
      args_pem = {'ip':pdu_info['ip'],'unit':ret['rack']['%s_pdu_unit'%(pem)],'slot':ret['rack']['%s_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem[3])}
      try:
-      module = import_module("sdcp.rest.%s"%pdu_info['name'])
+      module = import_module("zdcp.rest.%s"%pdu_info['name'])
       pdu_update = getattr(module,'update',None)
       ret['result'][pem] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem))
      except Exception as err:
@@ -293,7 +293,7 @@ def new(aDict):
  if aDict['hostname'] == 'unknown':
   return {'info':'Hostname unknown not allowed'}
  elif aDict.get('ipam_network_id') and aDict.get('ip'):
-  from sdcp.rest.ipam import ip_allocate
+  from zdcp.rest.ipam import ip_allocate
   alloc = ip_allocate({'ip':aDict['ip'],'network_id':aDict['ipam_network_id']})
   if   not alloc['valid']:
    return {'info':'IP not in network range'}
@@ -321,7 +321,7 @@ def new(aDict):
 
  # also remove allocation if existed..
  if ret['xist'] > 0 and alloc['success']:
-  from sdcp.rest.ipam import ip_delete
+  from zdcp.rest.ipam import ip_delete
   ret['info'] = "existing (%s)"%ip_delete({'id':alloc['id']})
  return ret
 
@@ -342,9 +342,9 @@ def delete(aDict):
   else:
    data = db.get_row()
    args = {'a_id':data['a_id'],'a_domain_id':data['a_dom_id']}
-   import sdcp.rest.dns as DNS
+   import zdcp.rest.dns as DNS
    DNS.__add_globals__({'import_module':import_module})
-   from sdcp.rest.ipam import ip_delete
+   from zdcp.rest.ipam import ip_delete
 
    if data['ptr_id'] != 0 and data['reverse_zone_id']:
     args['ptr_id']= data['ptr_id']
@@ -372,9 +372,9 @@ def discover(aDict):
  """
  from time import time
  from threading import Thread, BoundedSemaphore
- from sdcp.rest.ipam import network_discover as ipam_discover
- from sdcp.devices.generic import Device
- from sdcp.rest.ipam import ip_allocate
+ from zdcp.rest.ipam import network_discover as ipam_discover
+ from zdcp.devices.generic import Device
+ from zdcp.rest.ipam import ip_allocate
 
  def __detect_thread(aIP,aDB,aSema):
   __dev = Device(aIP['ipasc'])
@@ -518,7 +518,7 @@ def function(aDict):
  """
  ret = {}
  try:
-  module = import_module("sdcp.devices.%s"%(aDict['type']))
+  module = import_module("zdcp.devices.%s"%(aDict['type']))
   dev = getattr(module,'Device',lambda x: None)(aDict['ip'])
   with dev:
    ret['data'] = getattr(dev,aDict['op'],None)()
@@ -543,7 +543,7 @@ def configuration_template(aDict):
   data = db.get_row()
  ip = data.pop('ipasc',None)
  try:
-  module = import_module("sdcp.devices.%s"%data['type'])
+  module = import_module("zdcp.devices.%s"%data['type'])
   dev = getattr(module,'Device',lambda x: None)(ip)
   ret['data'] = dev.configuration(data)
  except Exception as err:
@@ -777,7 +777,7 @@ def interface_discover(aDict):
   db.do("SELECT id, snmp_index, name, description FROM device_interfaces WHERE device = %s"%aDict['device'])
   existing = db.get_rows()
   try:
-   module  = import_module("sdcp.devices.%s"%(info['type']))
+   module  = import_module("zdcp.devices.%s"%(info['type']))
    dev = getattr(module,'Device',lambda x: None)(info['ipasc'])
    interfaces = dev.interfaces()
   except Exception as err:

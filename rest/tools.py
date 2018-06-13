@@ -94,7 +94,7 @@ def rest_explore(aDict):
  def __analyze(aFile):
   data = {'api':aFile, 'functions':[]}
   try:
-   module = import_module("sdcp.rest.%s"%(aFile))
+   module = import_module("zdcp.rest.%s"%(aFile))
    data['functions'] = [item for item in dir(module) if item[0:2] != "__" and isinstance(getattr(module,item,None),function)]
   except Exception as e: data['error'] = str(e)
   return data
@@ -121,7 +121,7 @@ def rest_information(aDict):
 
  Output:
  """ 
- mod = import_module("sdcp.rest.%s"%(aDict['api']))
+ mod = import_module("zdcp.rest.%s"%(aDict['api']))
  fun = getattr(mod,aDict['function'],None)
  return {'api':aDict['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}
 
@@ -136,8 +136,8 @@ def logs_clear(aDict):
 
  Output:
  """
- from sdcp.SettingsContainer import SC
- from sdcp.core.logger import log
+ from zdcp.SettingsContainer import SC
+ from zdcp.core.logger import log
  ret = {'node':SC['system']['id'],'file':{}}
  for name,file in SC['logs'].iteritems():
   try:
@@ -158,7 +158,7 @@ def logs_get(aDict):
 
  Output:
  """
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  ret = {}
  count = int(aDict.get('count',15))
  for name,file in SC['logs'].iteritems():
@@ -185,7 +185,7 @@ def files_list(aDict):
  Output: List of files in 'files'
  """
  from os import listdir
- from  sdcp.SettingsContainer import SC
+ from  zdcp.SettingsContainer import SC
  ret = {'files':[]}
  try:
   ret['directory'] = SC['files'][aDict['setting']] if not aDict['setting'] == 'images' else 'images'
@@ -209,7 +209,7 @@ def service_list(aDict):
 
  Output:          
  """
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  return {'services':[{'name':x,'service':SC['services'][x]} for x in SC['services'].keys()]}
 
 
@@ -263,12 +263,12 @@ def database_backup(aDict):
  Output:
  """
  ret = {'filename':aDict['filename']}
- from sdcp.SettingsContainer import SC
+ from zdcp.SettingsContainer import SC
  if SC['system']['id'] == 'master':
   from mysql import dump
   data = dump({'mode':'database'})['output']
  else:
-  from sdcp.core.common import rest_call
+  from zdcp.core.common import rest_call
   res = rest_call("%s?mysql_dump"%SC['system']['master'],{'mode':'database'})
   if res['info'].get("x-api-res") == "OK":
    data = res['data']['output']
