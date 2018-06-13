@@ -1,13 +1,13 @@
-# sdcp
-Small or Simple DC Project
+# zdcp
+DC Project
 
 - devices: contains modules for device handling 
 - core: Generic stuff
 - tools: various modules 
-- site: the web frontend (pane) and ajax for driving the web gui
-- rest: backend SYSTEM system
+- site: the web frontend and ajax for driving the web gui until React
+- rest: backend REST system
 
-Then run install to write site cgi files into docroot, finally enter mysql structure (from mysql.db) into database
+Run install.py with settings.json (using appropriate values)
 
 ############################### Good to know stuff #############################
 - Don't forgets:
