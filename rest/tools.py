@@ -270,7 +270,7 @@ def database_backup(aDict):
  else:
   from sdcp.core.common import rest_call
   res = rest_call("%s?mysql_dump"%SC['system']['master'],{'mode':'database'})
-  if res['info'].get("x-z-res") == "OK":
+  if res['info'].get("x-api-res") == "OK":
    data = res['data']['output']
   else:
    data = []

@@ -149,10 +149,10 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
    from ssl import _create_unverified_context
    sock = urlopen(req,context=_create_unverified_context(), timeout = aTimeout)
   output = {'info':dict(sock.info()), 'code':sock.code }
-  output['node'] = output['info'].pop('x-z-node','_no_node_')
+  output['node'] = output['info'].pop('x-api-node','_no_node_')
   try:    output['data'] = loads(sock.read())
   except: output['data'] = None
-  if (output['info'].get('x-z-res','OK') == 'ERROR'):
+  if (output['info'].get('x-api-res','OK') == 'ERROR'):
    output['info'].pop('server',None)
    output['info'].pop('connection',None)
    output['info'].pop('transfer-encoding',None)
@@ -166,7 +166,7 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
   output = { 'result':'ERROR', 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
  except URLError as e:  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
  except Exception as e: output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
- output['info']['x-z-code'] = code_to_string(sock.code)
+ output['info']['x-api-code'] = code_to_string(sock.code)
  if output.get('exception'):
   raise Exception(output)
  return output
