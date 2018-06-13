@@ -38,7 +38,7 @@ def inventory_hosts(aDict):
  ret = {}
  controller = Device(SC['node'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
- ret = controller.call("inventories/%s/hosts/"%aDict['id']).get('data')
+ ret = controller.call("inventories/%(id)s/hosts/"%aDict).get('data')
  return ret
 
 #
@@ -74,10 +74,10 @@ def inventory_sync(aDict):
      hosts[row['instance_id']] = {k:row.get(k) for k in ('id','name','url','inventory','description','enabled','instance_id')}
    next = data['next']
   for dev in devices:
-   args = {"name": dev['fqdn'],"description": "%s (%s)"%(dev['model'],dev['ipasc']),"inventory": aDict['id'],"enabled": True,"instance_id": dev['id'], "variables": "" }
+   args = {"name": dev['fqdn'],"description": "%(model)s (%(ipasc)s)"%dev,"inventory": aDict['id'],"enabled": True,"instance_id": dev['id'], "variables": "" }
 
    host = hosts.get(str(dev['id']))
-   res = controller.call("hosts/",args,"POST") if not host else controller.call("hosts/%s/"%host['id'],args,"PATCH")
+   res = controller.call("hosts/",args,"POST") if not host else controller.call("hosts/%(id)s/"%host,args,"PATCH")
    dev['sync'] = {'code':res['code'],'id':res['data']['id']}
  except Exception as e:
   ret['info'] = str(e)

@@ -71,5 +71,5 @@ def project_reports(aDict):
  """
  ret = {}
  controller = Device(SC['node'][aDict['node']],aDict['token'])
- ret = controller.call("reports/project/%s"%aDict['report'])['data']['UsageReport']
+ ret = controller.call("reports/project/%(report)s"%aDict)['data']['UsageReport']
  return ret
