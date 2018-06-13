@@ -3,7 +3,7 @@
 OpenGear Console module
 """
 __author__  = "Zacharias El Banna"
-__version__ = "18.05.31GA"
+__version__ = "1.0GA"
 __status__  = "Production"
 __type__    = "console"
 

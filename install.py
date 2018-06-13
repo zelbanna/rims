@@ -6,7 +6,7 @@ Installs System
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "18.05.31GA"
+__version__ = "1.0GA"
 __status__ = "Production"
 
 from sys import argv, stdout, path as syspath

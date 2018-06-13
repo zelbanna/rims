@@ -9,7 +9,7 @@ Exports:
 
 """  
 __author__ = "Zacharias El Banna"
-__version__ = "18.05.31GA"
+__version__ = "1.0GA"
 __status__ = "Production"
 
 def _print_graph_link(asource, aX = "399", aY = "224"):

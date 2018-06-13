@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
-__version__ = "18.05.31GA"
+__version__ = "1.0GA"
 __status__ = "Production"
 
 def execute(argv):
