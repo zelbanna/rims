@@ -96,3 +96,6 @@ class Device(object):
     res.append({k:row.get(k) for k in ('id','name','url','inventory','description','enabled','instance_id')})
    next = data['next']
   return res
+
+ def host_create(self,aParams):
+  res = self.call("hosts/%s/",{k:aParams.get(k) for k in ('name','inventory','description','enabled','instance_id','variables')},"POST")

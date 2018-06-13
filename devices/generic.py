@@ -8,15 +8,12 @@ __version__ = "18.05.31GA"
 __status__  = "Production"
 __type__    = "generic"
 
+############################################# Device ##########################################
 class Device(object):
 
  @classmethod
  def get_functions(cls):
   return []
-
- # set a number of entries available for all subclasses:
- # - _ip
- # - _id
 
  def __init__(self, aIP, aID = None):
   self._id = aID
@@ -31,7 +28,6 @@ class Device(object):
  def __exit__(self, *ctx_info):
   pass
 
- #
  def threading(self, aOperation, aArgs = None):
   try:
    from threading import Thread

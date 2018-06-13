@@ -81,7 +81,7 @@ def search(aWeb):
  print "<ARTICLE><P>Device Search</P>"
  print "<FORM ID='device_search'>"
  print "<INPUT TYPE=HIDDEN NAME=sort VALUE='hostname'>"
- print "<SPAN>Field:</SPAN><SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='id'>ID</OPTION></SELECT>"
+ print "<SPAN>Field:</SPAN><SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='type'>Type</OPTION><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='id'>ID</OPTION></SELECT>"
  print "<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' REQUIRED>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('search', DIV='div_content_left', URL='sdcp.cgi?device_list', FRM='device_search')

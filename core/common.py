@@ -166,6 +166,7 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
   output = { 'result':'ERROR', 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
  except URLError as e:  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
  except Exception as e: output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
+ output['info']['x-z-code'] = code_to_string(sock.code)
  if output.get('exception'):
   raise Exception(output)
  return output
@@ -175,3 +176,10 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
 #
 def basic_auth(aUsername,aPassword):
  return {'Authorization':'Basic ' + (("%s:%s"%(aUsername,aPassword)).encode('base64')).replace('\n','') }
+
+#
+# HTML Code translator
+#
+def code_to_string(aCode):
+ codes = {200:'OK',201:'Created',204:'No Content',304:'Not Modified',400:'Bad Request',401:'Unauthorized',403:'Forbidden',404:'Not Found',500:'Internal Server Error',591:'Z-Exception'}
+ return codes.get(aCode,'%s Code Not Encoded'%aCode)
