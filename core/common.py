@@ -80,7 +80,7 @@ class DB(object):
 
  def update_dict_prefixed(self, aTable, aDict, aCondition):
   self._dirty = True
-  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join([ key.partition('_')[2] + "=" + ("NULL" if value == 'NULL' else "'%s'"%value) for key,value in aDict.iteritems() if key.split('_')[0] == aTable]),aCondition))
+  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join([ key.partition('_')[2] + "=" + ("NULL" if value == 'NULL' else "'%s'"%value) for key,value in aDict.iteritems() if key.startswith(aTable)]),aCondition))
 
  def update_dict(self, aTable, aDict, aCondition):
   self._dirty = True

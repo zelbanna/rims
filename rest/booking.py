@@ -21,14 +21,14 @@ def update(aDict):
  """
  ret = {'op':aDict['op']}
  if aDict['op'] == 'book':
-  sql = "INSERT INTO bookings (device_id,user_id) VALUES('{}','{}')"
+  sql = "INSERT INTO bookings (device_id,user_id) VALUES('%(device_id)s','%(user_id)s')"
  elif aDict['op'] == 'debook':
-  sql = "DELETE FROM bookings WHERE device_id = '{}' AND user_id = '{}'"
+  sql = "DELETE FROM bookings WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"
  elif aDict['op'] == 'extend':
-  sql = "UPDATE bookings SET time_start = NOW() WHERE device_id = '{}' AND user_id = '{}'"
+  sql = "UPDATE bookings SET time_start = NOW() WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"
  with DB() as db:
-  ret['update'] = db.do(sql.format(aDict['device_id'],aDict['user_id']))
-  db.do("SELECT alias FROM users WHERE id = '%s'"%aDict['user_id'])
+  ret['update'] = db.do(sql%aDict)
+  db.do("SELECT alias FROM users WHERE id = '%(user_id)s'"%aDict)
   ret['alias'] = db.get_val('alias')
  return ret
 
