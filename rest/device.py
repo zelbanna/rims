@@ -483,13 +483,10 @@ def to_node(aDict):
  """
  ret = {}
  with DB() as db:
-  res = db.do("SELECT INET_NTOA(ia.ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id'])
-  dev = db.get_row()
-  for test in ['ip','fqdn','hostname']:
-   if db.do("SELECT node FROM nodes WHERE url LIKE '%{}%'".format(dev[test])) > 0:
-    ret['node']  = db.get_val('node')
-    ret['found'] = test
-    break
+  db.do("SELECT INET_NTOA(ia.ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id'])
+  ret['device'] = db.get_row()
+  ret['found'] = (db.do("SELECT node FROM nodes WHERE url LIKE '%{}%' OR url LIKE '%{}%' OR url LIKE '%{}%'".format(ret['device']['ip'],ret['device']['hostname'],ret['device']['fqdn'])) > 0)
+  ret['node'] = db.get_val('node') if ret['found'] else None
  return ret
 
 #
