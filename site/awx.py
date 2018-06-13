@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax ESXi module
+HTML5 Ajax AWX module
 
 """
 __author__= "Zacharias El Banna"
@@ -71,16 +71,10 @@ def inventory_sync_choose(aWeb):
 def inventory_sync_execute(aWeb):
  args = aWeb.get_args2dict()
  res = aWeb.rest_call("awx_inventory_sync",args)
- print "<ARTICLE><P>Synced Devices</P>"
- print "<DIV CLASS=table><DIV CLASS=tbody>"
+ print "<ARTICLE><P>Synced Devices</P><DIV CLASS=controls>"
+ print aWeb.button('forward', DIV='div_content_right', URL='sdcp.cgi?awx_inventory_hosts&node=%s&id=%s'%(aWeb['node'],aWeb['id']))
+ print "</DIV><DIV CLASS=table><DIV CLASS=tbody>"
  for row in res['devices']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['fqdn'],row['ipasc'],row['sync'])
  print "</DIV></DIV>"
  print "</ARTICLE>"
-
-#
-#
-def host_delete(aWeb):
- args = aWeb.get_args2dict()
- res = aWeb.rest_call("awx_hosts_delete",args)
- print "<ARTICLE>%s</ARTICLE>"%res
