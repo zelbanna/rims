@@ -35,7 +35,7 @@ def delete(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['deleted'] = db.do("DELETE FROM visualize WHERE id = %s"%aDict['id'])
+  ret['deleted'] = db.do("DELETE FROM visualize WHERE id = %(id)s"%aDict)
  return ret
 
 #
@@ -55,7 +55,7 @@ def show(aDict):
  """
  ret = {}
  with DB() as db:
-  search = "id = %s"%aDict['id'] if aDict.get('id') else "name = '%s'"%aDict['name']
+  search = "id = %(id)s"%aDict if aDict.get('id') else "name = '%(name)s'"%aDict
   ret['xist'] = db.do("SELECT * FROM visualize WHERE %s"%search)
   if ret['xist'] > 0:
    data = db.get_row() 
@@ -92,16 +92,16 @@ def network(aDict):
  """
  args = dict(aDict)
  op   = args.pop('op',None)
- ret = {'id':args.pop('id',0),'type':args.pop('type','map')}
+ ret = {'id':args.get('id',0),'type':args.pop('type','map')}
  with DB() as db:
   if op == 'update':
    if ret['id'] == 'new' or ret['type'] == 'device':
-    ret['insert']= db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%s','%s','%s','%s')"%(args['name'],args['options'],args['nodes'],args['edges']))
+    ret['insert']= db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%(name)s','%(options)s','%(nodes)s','%(edges)s')"%args)
     ret['id']    = db.get_last_id()
     ret['type']  = 'map'
-    ret['result']= 'insert (%s)'%(ret['insert'])
+    ret['result']= 'insert (%s)'%(ret['insert'] > 0)
    else:
-    ret['update']= db.do("UPDATE visualize SET name='%s',options='%s',nodes='%s',edges='%s' WHERE id = %s"%(args['name'],args['options'],args['nodes'],args['edges'],ret['id']))
+    ret['update']= db.do("UPDATE visualize SET name='%(name)s',options='%(options)s',nodes='%(nodes)s',edges='%(edges)s' WHERE id = %(id)s"%args)
     ret['result']= 'update (%s)'%(ret['update'] > 0)
 
   ret['id'] = int(ret['id'])
@@ -113,7 +113,7 @@ def network(aDict):
     ret[var] = loads(data.get(var,'null'))
   else:
    if args.get('ip'):
-    db.do("SELECT devices.id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.ip = INET_ATON('%s')"%args['ip'])
+    db.do("SELECT devices.id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.ip = INET_ATON('%(ip)s')"%args)
     ret['id'] = db.get_val('id')
  
    devices = {ret['id']:{'processed':False,'interfaces':0,'multipoint':0,'distance':0,'uplink':0}}
