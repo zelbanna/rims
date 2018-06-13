@@ -74,7 +74,7 @@ def info(aDict):
      devices = db.get_dict('id') if len(dev_ids) > 0 else {}
      pdu_ids = ",".join([str(x) for x in [rack["pem0_pdu_id"],rack["pem1_pdu_id"]] if x])
      if len(pdu_ids) > 0:
-      db.do("SELECT * FROM pduinfo WHERE device_id IN (%s)"%pdu_ids)
+      db.do("SELECT * FROM pdu_info WHERE device_id IN (%s)"%pdu_ids)
      pdus = db.get_dict('device_id') if len(pdu_ids) > 0 else {}
      console = devices.get(rack['console_id'],{'hostname':None,'ip':None})
      rack.update({'console_name':console['hostname'],'console_ip':console['ip']})
@@ -189,9 +189,9 @@ def update(aDict):
      db.do(sqlbase%('pdu'))
      ret['infra']['pdus'] = db.get_rows()
      ret['infra']['pdus'].append({ 'id':'NULL', 'hostname':'No PDU' })
-     db.do("SELECT pduinfo.* FROM pduinfo")
-     ret['infra']['pduinfo'] = db.get_dict('device_id')
-     ret['infra']['pduinfo']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
+     db.do("SELECT pdu_info.* FROM pdu_info")
+     ret['infra']['pdu_info'] = db.get_dict('device_id')
+     ret['infra']['pdu_info']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
 
   if operation == 'update' and ret['racked']:
    for pem in ['pem0','pem1']:

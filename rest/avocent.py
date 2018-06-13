@@ -48,13 +48,13 @@ def info(aDict):
    args = {'slots':slotn,'0_slot_id':slotl[0][0],'0_slot_name':slotl[0][1]}
    if slotn == 2:
     args.update({'1_slot_id':slotl[1][0],'1_slot_name':slotl[1][1]})
-   db.update_dict('pduinfo',args,"device_id = %s"%aDict['id'])
+   db.update_dict('pdu_info',args,"device_id = %s"%aDict['id'])
 
-  ret['xist'] = db.do("SELECT * FROM pduinfo WHERE device_id = '%s'"%aDict['id'])
+  ret['xist'] = db.do("SELECT * FROM pdu_info WHERE device_id = '%s'"%aDict['id'])
   if ret['xist'] == 1:
    ret['data'] = db.get_row()
   else:
-   db.do("INSERT INTO pduinfo SET device_id = %s, slots = 1"%(aDict['id']))
+   db.do("INSERT INTO pdu_info SET device_id = %s, slots = 1"%(aDict['id']))
    ret['data'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':1, '1_slot_name':'' }
  return ret
 

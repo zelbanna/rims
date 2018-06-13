@@ -188,8 +188,8 @@ CREATE TABLE `openstack_tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `pduinfo`;
-CREATE TABLE `pduinfo` (
+DROP TABLE IF EXISTS `pdu_info`;
+CREATE TABLE `pdu_info` (
   `device_id` int(10) unsigned NOT NULL,
   `0_slot_name` varchar(10) NOT NULL DEFAULT 'default',
   `1_slot_name` varchar(10) NOT NULL DEFAULT 'default',
@@ -197,7 +197,7 @@ CREATE TABLE `pduinfo` (
   `1_slot_id` tinyint(3) unsigned NOT NULL DEFAULT '1',
   `slots` tinyint(1) NOT NULL DEFAULT '1',
   UNIQUE KEY `device_id` (`device_id`),
-  CONSTRAINT `pduinfo_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `pdu_info_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

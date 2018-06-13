@@ -249,11 +249,11 @@ def update(aWeb):
    for pem in ['pem0','pem1']:
     print "<DIV CLASS=tr><DIV CLASS=td>{0} PDU:</DIV><DIV CLASS=td><SELECT NAME=rackinfo_{1}_pdu_slot_id>".format(pem.upper(),pem)
     for pdu in dev['infra']['pdus']:
-     pduinfo = dev['infra']['pduinfo'].get(str(pdu['id']))
-     if pduinfo:
-      for slotid in range(0,pduinfo['slots']):
-       pdu_slot_id   = pduinfo[str(slotid)+"_slot_id"]
-       pdu_slot_name = pduinfo[str(slotid)+"_slot_name"]
+     pdu_info = dev['infra']['pdu_info'].get(str(pdu['id']))
+     if pdu_info:
+      for slotid in range(0,pdu_info['slots']):
+       pdu_slot_id   = pdu_info[str(slotid)+"_slot_id"]
+       pdu_slot_name = pdu_info[str(slotid)+"_slot_name"]
        extra = "selected" if ((dev['rack'][pem+"_pdu_id"] == pdu['id']) and (dev['rack'][pem+"_pdu_slot"] == slotid)) or (not dev['rack'][pem+"_pdu_id"] and  pdu['id'] == 'NULL') else ""
        print "<OPTION VALUE=%s.%s %s>%s</OPTION>"%(pdu['id'],slotid, extra, pdu['hostname']+":"+pdu_slot_name)
     print "</SELECT></DIV></DIV>"
