@@ -201,8 +201,8 @@ CREATE TABLE `pdu_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `rackinfo`;
-CREATE TABLE `rackinfo` (
+DROP TABLE IF EXISTS `rack_info`;
+CREATE TABLE `rack_info` (
   `device_id` int(10) unsigned NOT NULL,
   `rack_unit` tinyint(3) DEFAULT '0',
   `rack_size` tinyint(3) DEFAULT '1',
@@ -220,11 +220,11 @@ CREATE TABLE `rackinfo` (
   KEY `pem0_pdu_id` (`pem0_pdu_id`),
   KEY `pem1_pdu_id` (`pem1_pdu_id`),
   KEY `rack_id` (`rack_id`),
-  CONSTRAINT `rackinfo_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `rackinfo_ibfk_2` FOREIGN KEY (`console_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `rackinfo_ibfk_3` FOREIGN KEY (`pem0_pdu_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `rackinfo_ibfk_4` FOREIGN KEY (`pem1_pdu_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `rackinfo_ibfk_5` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `rack_info_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `rack_info_ibfk_2` FOREIGN KEY (`console_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `rack_info_ibfk_3` FOREIGN KEY (`pem0_pdu_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `rack_info_ibfk_4` FOREIGN KEY (`pem1_pdu_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `rack_info_ibfk_5` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

@@ -63,7 +63,7 @@ def info(aDict):
    if ret['info']['vm'] == 1:
     ret['racked'] = False
    else:
-    ret['racked'] = (db.do("SELECT rackinfo.*, racks.name AS rack_name FROM rackinfo LEFT JOIN racks ON racks.id = rackinfo.rack_id WHERE rackinfo.device_id = %i"%ret['id']) == 1)
+    ret['racked'] = (db.do("SELECT rack_info.*, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%ret['id']) == 1)
     if ret['racked']:
      rack = db.get_row()
      ret['rack'] = rack
@@ -130,17 +130,17 @@ def update(aDict):
      except: args['devices_mac'] = 0
     racked = args.pop('racked',None)
     if racked:
-     if   racked == '1' and args.get('rackinfo_rack_id') == 'NULL':
-      db.do("DELETE FROM rackinfo WHERE device_id = %s"%ret['id'])
-      args.pop('rackinfo_pem0_pdu_slot_id',None)
-      args.pop('rackinfo_pem1_pdu_slot_id',None)
-     elif racked == '0' and args.get('rackinfo_rack_id') != 'NULL':
-      db.do("INSERT INTO rackinfo SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(ret['id'],args.get('rackinfo_rack_id')))
+     if   racked == '1' and args.get('rack_info_rack_id') == 'NULL':
+      db.do("DELETE FROM rack_info WHERE device_id = %s"%ret['id'])
+      args.pop('rack_info_pem0_pdu_slot_id',None)
+      args.pop('rack_info_pem1_pdu_slot_id',None)
+     elif racked == '0' and args.get('rack_info_rack_id') != 'NULL':
+      db.do("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(ret['id'],args.get('rack_info_rack_id')))
      elif racked == '1':
       for pem in ['pem0','pem1']:
        try:
-        pem_pdu_slot_id = args.pop('rackinfo_%s_pdu_slot_id'%pem,None)
-        (args['rackinfo_%s_pdu_id'%pem],args['rackinfo_%s_pdu_slot'%pem]) = pem_pdu_slot_id.split('.')
+        pem_pdu_slot_id = args.pop('rack_info_%s_pdu_slot_id'%pem,None)
+        (args['rack_info_%s_pdu_id'%pem],args['rack_info_%s_pdu_slot'%pem]) = pem_pdu_slot_id.split('.')
        except: pass
 
     #
@@ -162,7 +162,7 @@ def update(aDict):
      else:
       args.pop('devices_a_dom_id',None)
 
-    ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%ret['id']),'rack_info':db.update_dict_prefixed('rackinfo',args,"device_id='%s'"%ret['id'])}
+    ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%ret['id']),'rack_info':db.update_dict_prefixed('rack_info',args,"device_id='%s'"%ret['id'])}
 
   # Now fetch info
   ret['xist'] = (db.do("SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
@@ -179,7 +179,7 @@ def update(aDict):
    else:
     db.do("SELECT id, name FROM racks")
     ret['infra']['racks'].extend(db.get_rows())
-    ret['racked'] = db.do("SELECT rackinfo.* FROM rackinfo WHERE rackinfo.device_id = %(id)i"%ret)
+    ret['racked'] = db.do("SELECT rack_info.* FROM rack_info WHERE rack_info.device_id = %(id)i"%ret)
     if ret['racked'] > 0:
      ret['rack'] = db.get_row()
      sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
@@ -241,7 +241,7 @@ def list(aDict):
  """
  tune = ""
  if aDict.get('rack'):
-  tune = "WHERE vm = 1" if aDict.get('rack') == 'vm' else "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = %(rack)s"%aDict
+  tune = "WHERE vm = 1" if aDict.get('rack') == 'vm' else "INNER JOIN rack_info ON rack_info.device_id = devices.id WHERE rack_info.rack_id = %(rack)s"%aDict
   if aDict.get('filter'):
    tune += " AND type_id IN (%(filter)s)"%aDict
  elif aDict.get('filter'):
@@ -313,7 +313,7 @@ def new(aDict):
    ret['insert'] = db.do("INSERT INTO devices(vm,mac,a_dom_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['a_dom_id'],ipam_id,aDict['hostname']))
    ret['id']   = db.get_last_id()
    if aDict.get('target') == 'rack_id' and aDict.get('arg'):
-    db.do("INSERT INTO rackinfo SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict.get('arg')))
+    db.do("INSERT INTO rack_info SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict.get('arg')))
     ret['rack'] = aDict.get('arg')
     ret['info'] = "rack"
   else:
@@ -351,8 +351,8 @@ def delete(aDict):
     args['ptr_domain_id'] = data['reverse_zone_id']
    ret = DNS.record_device_delete(args)
    if data['base'] == 'pdu':
-    ret['pem0'] = db.update_dict('rackinfo',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
-    ret['pem1'] = db.update_dict('rackinfo',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem1_pdu_id = %s'%(aDict['id']))
+    ret['pem0'] = db.update_dict('rack_info',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
+    ret['pem1'] = db.update_dict('rack_info',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem1_pdu_id = %s'%(aDict['id']))
    ret.update({'deleted':db.do("DELETE FROM devices WHERE id = %(id)s"%aDict)})
  # Avoid race condition on DB, do this when DB is closed...
  if data['ipam_id']:
