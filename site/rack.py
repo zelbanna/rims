@@ -26,8 +26,9 @@ def list(aWeb):
  print aWeb.button('add',DIV='div_content_right',URL='zdcp.cgi?rack_info&id=new')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for unit in racks:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' DIV=main URL='zdcp.cgi?device_main&target=rack_id&arg={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(unit['id'],unit['name'],unit['size'])
-  print aWeb.button('info', DIV='div_content_right', URL='zdcp.cgi?rack_info&id=%s'%unit['id'])
+  print "<DIV CLASS=tr><DIV CLASS='td maxed'><A CLASS='z-op' DIV=main URL='zdcp.cgi?device_main&target=rack_id&arg={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(unit['id'],unit['name'],unit['size'])
+  print aWeb.button('configure', DIV='div_content_right', URL='zdcp.cgi?rack_info&id=%s'%unit['id'])
+  print aWeb.button('info',      DIV='main',              URL='zdcp.cgi?device_main&target=rack_id&arg=%s'%unit['id'],TITLE='Rack inventory')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
