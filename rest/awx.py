@@ -13,7 +13,7 @@ def inventory(aDict):
  """Function main produces an inventory list for a device id
 
  Args:
-  - device_id
+  - device_id (required)
 
  Output:
  """
@@ -22,6 +22,24 @@ def inventory(aDict):
  controller = Device(SC['node'][ret['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  ret['inventories'] = controller.inventories()
+ return ret
+
+#
+#
+def inventory_delete(aDict):
+ """Function deletes inventory with id x
+
+ Args:
+  - node (required)
+  - id (required)
+
+ Output:
+ """
+ from zdcp.rest.device import to_node
+ controller = Device(SC['node'][aDict['node']])
+ controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
+ res = controller.call("inventories/%(id)s/"%aDict,None,"DELETE")
+ ret = {'result':"deleted" if res['code'] == 204 else res['info']['x-api-code']}
  return ret
 
 #
