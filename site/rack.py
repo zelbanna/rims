@@ -3,7 +3,7 @@
 HTML5 Ajax Racks module
 
 """
-__author__= "Zacharias El Banna"                     
+__author__= "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
 __icon__ = 'images/icon-rack.png'
@@ -21,7 +21,7 @@ def main(aWeb):
 #
 def list(aWeb):
  racks = aWeb.rest_call("rack_list",{"sort":"name"})
- print "<ARTICLE><P>Rack</P><DIV CLASS=controls>"
+ print "<ARTICLE><P>Racks</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_left',URL='zdcp.cgi?rack_list')
  print aWeb.button('add',DIV='div_content_right',URL='zdcp.cgi?rack_info&id=new')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"

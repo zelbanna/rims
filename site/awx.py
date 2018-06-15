@@ -39,7 +39,7 @@ def inventory_hosts(aWeb):
  print "<ARTICLE><P>Hosts</P><DIV CLASS=controls>"
  print aWeb.button('reload', DIV='div_content_right', URL='zdcp.cgi?awx_inventory_hosts&node=%s&id=%s'%(aWeb['node'],aWeb['id']))
  print aWeb.button('sync',   DIV='div_content_right', URL='zdcp.cgi?awx_inventory_sync_choose&node=%s&id=%s'%(aWeb['node'],aWeb['id']), TITLE='Sync with AWX')
- print aWeb.button('trash',  DIV='div_content_right', URL='zdcp.cgi?awx_inventory_hosts&node=%s&id=%s&op=delete_list'%(aWeb['node'],aWeb['id']), MSG='Delete hosts?', FRM='host_list')
+ print aWeb.button('trash',  DIV='div_content_right', URL='zdcp.cgi?awx_inventory_hosts&node=%s&id=%s&op=delete_list'%(aWeb['node'],aWeb['id']), MSG='Delete hosts?', FRM='host_list', SPIN='true')
  print "</DIV><SPAN CLASS=results>%s</SPAN><FORM ID=host_list>"%(opres)
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Group</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for row in res['results']:
