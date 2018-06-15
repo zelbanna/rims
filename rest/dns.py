@@ -176,7 +176,7 @@ def domain_delete(aDict):
    infra = db.get_row()
    ret = node_call(infra['node'],infra['server'],'domain_delete',{'id':infra['foreign_id']})
    ret['devices'] = db.do("UPDATE devices SET a_id = 0, a_dom_id = %s WHERE a_dom_id = %s"%(aDict.get('transfer',0),aDict['id']))
-   ret['cache']   = db.do("DELETE FROM domains WHERE id = %s"%(aDict['id']))
+   ret['cache']   = db.do("DELETE FROM domains WHERE id = %s"%aDict['id'])
  else:
   ret = {'devices':0,'cache':0,'records':0}
  return ret
@@ -314,7 +314,7 @@ def record_device_correct(aDict):
  """
  ret = {}
  with DB() as db:
-  update = "a_id = '%s', a_dom_id ='%s'"%(aDict['record_id'],aDict['domain_id']) if aDict['type'].lower() == 'a' else "ptr_id = '%s'"%aDict['record_id']
+  update = "a_id = '%(record_id)s', a_dom_id = %(domain_id)s"%aDict if aDict['type'].lower() == 'a' else "ptr_id = '%(record_id)s'"%aDict
   ret['update'] = db.do("UPDATE devices SET %s WHERE id = '%s'"%(update,aDict['device_id']))
  return ret
 
@@ -377,7 +377,7 @@ def record_device_update(aDict):
    domains['name'][dom['name']] = dom
    domains['foreign_id'][dom['foreign_id']] = dom
 
-  ret['device']['xist'] = db.do("SELECT hostname, a_dom_id AS a_domain_id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id = '%s'"%(aDict['id'])) if not aDict['id'] == 'new' else 0
+  ret['device']['xist'] = db.do("SELECT hostname, a_dom_id AS a_domain_id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id = %s"%aDict['id']) if not aDict['id'] == 'new' else 0
   device = db.get_row() if ret['device']['xist'] > 0 else None
   #
   # A record: check if valid domain, then if not a_id == 'new' make sure we didn't move server otherwise delete record and set a_id to new
@@ -464,7 +464,7 @@ def record_device_create(aDict):
   opres = str(ret['record'].get('update')) == "1" or str(ret['record'].get('insert')) == "1"
   if opres and (args['type'] in ['A','PTR']):
    ret['device'] = {'id':aDict['device_id']}
-   ret['device']['update'] = db.do("UPDATE devices SET %s_id = '%s' WHERE id = '%s'"%(aDict['type'].lower(),ret['record']['data']['id'],aDict['device_id']))
+   ret['device']['update'] = db.do("UPDATE devices SET %s_id = '%s' WHERE id = %s"%(aDict['type'].lower(),ret['record']['data']['id'],aDict['device_id']))
  return ret
 
 ###################################### Tools ####################################
@@ -485,7 +485,7 @@ def dedup(aDict):
   servers = db.get_rows()
  for infra in servers:
   res = node_call(infra['node'],infra['server'],'dedup')
-  ret["%s_%s"%(infra['node'],infra['server'])] = res['removed']
+  ret["%(node)s_%(server)s"%infra] = res['removed']
  return ret
 
 #
@@ -505,8 +505,8 @@ def top(aDict):
   servers = db.get_rows()
  for infra in servers:
   res = node_call(infra['node'],infra['server'],'top',args)
-  ret['top']["%s_%s"%(infra['node'],infra['server'])] = res['top']
-  ret['who']["%s_%s"%(infra['node'],infra['server'])] = res['who']
+  ret['top']["%(node)s_%(server)s"%infra] = res['top']
+  ret['who']["%(node)s_%(server)s"%infra] = res['who']
  return ret
 
 #

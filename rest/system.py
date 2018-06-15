@@ -262,7 +262,7 @@ def settings_delete(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['deleted'] = db.do("DELETE FROM settings WHERE id = '%s' AND node = '%s'"%(aDict['id'],aDict['node']))
+  ret['deleted'] = db.do("DELETE FROM settings WHERE id = %(id)s AND node = '%(node)s'"%aDict)
  return ret
 
 #
@@ -368,7 +368,7 @@ def node_register(aDict):
  ret = {}
  args = {'node':aDict['node'],'url':aDict['url'],'system':aDict.get('system','0'),'www':aDict.get('www','0')}
  with DB() as db:
-  ret['update'] = db.insert_dict('nodes',args,"ON DUPLICATE KEY UPDATE system = %s, www = %s, url = '%s'"%(args['system'],args['www'],args['url']))
+  ret['update'] = db.insert_dict('nodes',args,"ON DUPLICATE KEY UPDATE system = %(system)s, www = %(www)s, url = '%(url)s'"%args)
  return ret
 
 #

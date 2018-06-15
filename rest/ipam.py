@@ -97,14 +97,14 @@ def network_inventory(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT mask, network, INET_NTOA(network) as netasc, gateway, INET_NTOA(gateway) as gwasc FROM ipam_networks WHERE id = %s"%(aDict['id']))
+  db.do("SELECT mask, network, INET_NTOA(network) as netasc, gateway, INET_NTOA(gateway) as gwasc FROM ipam_networks WHERE id = %(id)s"%aDict)
   network = db.get_row()
   ret['start']  = network['network']
   ret['no']     = 2**(32-network['mask'])
   ret['mask']   = network['mask']
   ret['network'] = network['netasc']
   ret['gateway']= network['gwasc']
-  ret['xist_addresses'] = db.do("SELECT ip,id,0 AS gateway FROM ipam_addresses WHERE network_id = %s ORDER BY ip"%(aDict['id']))
+  ret['xist_addresses'] = db.do("SELECT ip,id,0 AS gateway FROM ipam_addresses WHERE network_id = %(id)s ORDER BY ip"%aDict)
   ret['addresses'] = db.get_dict('ip')
   gw = ret['addresses'].get(network['gateway'])
   if gw:
@@ -202,9 +202,9 @@ def ip_find(aDict):
 
  consecutive = int(aDict.get('consecutive',1))
  with DB() as db:
-  db.do("SELECT network, INET_NTOA(network) as netasc, mask FROM ipam_networks WHERE id = %s"%(aDict['network_id']))
+  db.do("SELECT network, INET_NTOA(network) as netasc, mask FROM ipam_networks WHERE id = %(network_id)s"%aDict)
   net = db.get_row()
-  db.do("SELECT ip FROM ipam_addresses WHERE network_id = %s"%(aDict['network_id']))
+  db.do("SELECT ip FROM ipam_addresses WHERE network_id = %(network_id)s"%aDict)
   iplist = db.get_dict('ip')
  network = int(net.get('network'))
  start  = None
@@ -244,10 +244,10 @@ def ip_allocate(aDict):
  """
  ret = {'success':False}
  with DB() as db:
-  ret['valid'] = (db.do("SELECT network FROM ipam_networks WHERE id = {0} AND INET_ATON('{1}') > network AND INET_ATON('{1}') < (network + POW(2,(32-mask))-1)".format(aDict['network_id'],aDict['ip'])) == 1)
+  ret['valid'] = (db.do("SELECT network FROM ipam_networks WHERE id = %(network_id)s AND INET_ATON('%(ip)s') > network AND INET_ATON('%(ip)s') < (network + POW(2,(32-mask))-1)"%aDict) == 1)
   if ret['valid']:
    try:
-    ret['success'] = (db.do("INSERT INTO ipam_addresses(ip,network_id) VALUES(INET_ATON('%s'),%s)"%(aDict['ip'],aDict['network_id'])) == 1)
+    ret['success'] = (db.do("INSERT INTO ipam_addresses(ip,network_id) VALUES(INET_ATON('%(ip)s'),%(network_id)s)"%aDict) == 1)
     ret['id']= db.get_last_id() if ret['success'] else None
    except: pass
  return ret
@@ -260,7 +260,7 @@ def ip_realloc(aDict):
  Args:
   - id (required)
   - ip (required)
-  - network_id (optional)
+  - network_id (required)
 
  Output:
   - valid (boolean)
@@ -269,13 +269,12 @@ def ip_realloc(aDict):
  """
  ret = {'success':False,'valid':False,'available':False}
  with DB() as db:
-  id_match = "id = %s"%aDict['network_id'] if aDict.get('network_id') else "id IN (SELECT network_id FROM ipam_addresses WHERE id = %s)"%aDict['id']
-  ret['valid'] = (db.do("SELECT network FROM ipam_networks WHERE {0} AND INET_ATON('{1}') > network AND INET_ATON('{1}') < (network + POW(2,(32-mask))-1)".format(id_match,aDict['ip'])) == 1)
+  ret['valid'] = (db.do("SELECT network FROM ipam_networks WHERE id = '%(network_id)s AND INET_ATON('%(ip)s') > network AND INET_ATON('%(ip)s') < (network + POW(2,(32-mask))-1)"%aDict) == 1)
 
   if ret['valid']:
-   ret['available'] = (db.do("SELECT id FROM ipam_addresses WHERE ip = INET_ATON('%s') AND network_%s"%(aDict['ip'],id_match)) == 0)
+   ret['available'] = (db.do("SELECT id FROM ipam_addresses WHERE ip = INET_ATON('%(ip)s') AND network_id = %(network_id)s"%aDict) == 0)
    if ret['available']:
-    ret['success'] = (db.do("UPDATE ipam_addresses SET ip = INET_ATON('%s'), network_id = %s WHERE id = %s"%(aDict['ip'],aDict['network_id'],aDict['id'])) == 1)
+    ret['success'] = (db.do("UPDATE ipam_addresses SET ip = INET_ATON('%(ip)s'), network_id = %(network_id)s WHERE id = %(id)s"%aDict) == 1)
  return ret
 
 
@@ -292,7 +291,7 @@ def ip_delete(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['result'] = db.do("DELETE FROM ipam_addresses WHERE id = %s"%aDict['id'])
+  ret['result'] = db.do("DELETE FROM ipam_addresses WHERE id = %(id)s"%aDict)
  return ret
 
 #
@@ -310,6 +309,6 @@ def ip_from_id(aDict):
   - netasc
  """
  with DB() as db:
-  db.do("SELECT ip, INET_NTOA(ip) AS ipasc, network_id, INET_NTOA(network) AS netasc, mask FROM ipam_addresses LEFT JOIN ipam_networks ON ipam_networks.id = ipam_addresses.network_id WHERE ipam_addresses.id = %s"%aDict['id'])
+  db.do("SELECT ip, INET_NTOA(ip) AS ipasc, network_id, INET_NTOA(network) AS netasc, mask FROM ipam_addresses LEFT JOIN ipam_networks ON ipam_networks.id = ipam_addresses.network_id WHERE ipam_addresses.id = %(id)s"%aDict)
   ret = db.get_row()
  return ret

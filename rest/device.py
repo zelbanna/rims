@@ -63,7 +63,7 @@ def info(aDict):
    if ret['info']['vm'] == 1:
     ret['racked'] = False
    else:
-    ret['racked'] = (db.do("SELECT rackinfo.*, racks.name AS rack_name FROM rackinfo LEFT JOIN racks ON racks.id = rackinfo.rack_id WHERE rackinfo.device_id = %i"%(ret['id'])) == 1)
+    ret['racked'] = (db.do("SELECT rackinfo.*, racks.name AS rack_name FROM rackinfo LEFT JOIN racks ON racks.id = rackinfo.rack_id WHERE rackinfo.device_id = %i"%ret['id']) == 1)
     if ret['racked']:
      rack = db.get_row()
      ret['rack'] = rack
@@ -162,7 +162,7 @@ def update(aDict):
      else:
       args.pop('devices_a_dom_id',None)
 
-    ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%(ret['id'])),'rack_info':db.update_dict_prefixed('rackinfo',args,"device_id='%s'"%(ret['id']))}
+    ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%ret['id']),'rack_info':db.update_dict_prefixed('rackinfo',args,"device_id='%s'"%ret['id'])}
 
   # Now fetch info
   ret['xist'] = (db.do("SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
@@ -179,7 +179,7 @@ def update(aDict):
    else:
     db.do("SELECT id, name FROM racks")
     ret['infra']['racks'].extend(db.get_rows())
-    ret['racked'] = db.do("SELECT rackinfo.* FROM rackinfo WHERE rackinfo.device_id = %i"%(ret['id']))
+    ret['racked'] = db.do("SELECT rackinfo.* FROM rackinfo WHERE rackinfo.device_id = %(id)i"%ret)
     if ret['racked'] > 0:
      ret['rack'] = db.get_row()
      sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
@@ -195,10 +195,10 @@ def update(aDict):
 
   if operation == 'update' and ret['racked']:
    for pem in ['pem0','pem1']:
-    if ret['rack']['%s_pdu_id'%(pem)] > 0:
-     db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %i"%(ret['rack']['%s_pdu_id'%(pem)]))
+    if ret['rack']['%s_pdu_id'%pem] > 0:
+     db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %i"%(ret['rack']['%s_pdu_id'%pem]))
      pdu_info = db.get_row()
-     args_pem = {'ip':pdu_info['ip'],'unit':ret['rack']['%s_pdu_unit'%(pem)],'slot':ret['rack']['%s_pdu_slot'%(pem)],'text':"%s-P%s"%(ret['info']['hostname'],pem[3])}
+     args_pem = {'ip':pdu_info['ip'],'unit':ret['rack']['%s_pdu_unit'%pem],'slot':ret['rack']['%s_pdu_slot'%pem],'text':"%s-P%s"%(ret['info']['hostname'],pem[3])}
      try:
       module = import_module("zdcp.rest.%s"%pdu_info['name'])
       pdu_update = getattr(module,'update',None)
@@ -241,30 +241,30 @@ def list(aDict):
  """
  tune = ""
  if aDict.get('rack'):
-  tune = "WHERE vm = 1" if aDict.get('rack') == 'vm' else "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = %s"%(aDict.get('rack'))
+  tune = "WHERE vm = 1" if aDict.get('rack') == 'vm' else "INNER JOIN rackinfo ON rackinfo.device_id = devices.id WHERE rackinfo.rack_id = %(rack)s"%aDict
   if aDict.get('filter'):
-   tune += " AND type_id IN (%s)"%(aDict.get('filter'))
+   tune += " AND type_id IN (%(filter)s)"%aDict
  elif aDict.get('filter'):
-  tune = "WHERE type_id IN (%s)"%(aDict.get('filter'))
+  tune = "WHERE type_id IN (%(filter)s)"%aDict
  elif aDict.get('search'):
   if   aDict['field'] == 'hostname':
-   tune = "WHERE hostname LIKE '%%%s%%'"%aDict['search']
+   tune = "WHERE hostname LIKE '%%%(search)s%%'"%aDict
   elif aDict['field'] == 'ip':
-   tune = "WHERE ia.ip = INET_ATON('%s')"%aDict['search']
+   tune = "WHERE ia.ip = INET_ATON('%(search)s')"%aDict
   elif aDict['field'] == 'type':
-   tune = "LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dt.name = '%s'"%aDict['search']
+   tune = "LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dt.name = '%(search)s'"%aDict
   elif aDict['field'] == 'mac':
    def GL_mac2int(aMAC):
     try:    return int(aMAC.replace(":",""),16)
     except: return 0
    tune = "WHERE mac = %s"%GL_mac2int(aDict['search'])
   elif aDict['field']== 'id':
-   tune = "WHERE devices.id = %s"%aDict['id']
+   tune = "WHERE devices.id = %(id)s"%aDict
 
  ret = {}
  sort = 'ia.ip' if aDict.get('sort','ip') == 'ip' else 'devices.hostname'
  with DB() as db:
-  sql = "SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, CONCAT(devices.hostname,'.',domains.name) AS fqdn, model FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id JOIN domains ON domains.id = devices.a_dom_id {0} ORDER BY {1}".format(tune,sort)
+  sql = "SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, CONCAT(devices.hostname,'.',domains.name) AS fqdn, model FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id JOIN domains ON domains.id = devices.a_dom_id %s ORDER BY %s"%(tune,sort)
   ret['xist'] = db.do(sql)
   ret['data'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
@@ -306,7 +306,7 @@ def new(aDict):
 
  ret = {'info':None}
  with DB() as db:
-  ret['xist'] = db.do("SELECT id, hostname, a_dom_id FROM devices WHERE hostname = '%s' AND a_dom_id = %s"%(aDict['hostname'],aDict['a_dom_id']))
+  ret['xist'] = db.do("SELECT id, hostname, a_dom_id FROM devices WHERE hostname = '%(hostname)s' AND a_dom_id = %(a_dom_id)s"%aDict)
   if ret['xist'] == 0:
    mac     = GL_mac2int(aDict.get('mac',0))
    ipam_id = alloc['id'] if alloc else 'NULL'
@@ -336,7 +336,7 @@ def delete(aDict):
  Output:
  """
  with DB() as db:
-  existing = db.do("SELECT hostname, ine.reverse_zone_id, ipam_id, mac, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = {}".format(aDict['id']))
+  existing = db.do("SELECT hostname, ine.reverse_zone_id, ipam_id, mac, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %s"%aDict['id'])
   if existing == 0:
    ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
@@ -352,8 +352,8 @@ def delete(aDict):
    ret = DNS.record_device_delete(args)
    if data['base'] == 'pdu':
     ret['pem0'] = db.update_dict('rackinfo',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
-    ret['pem1'] = db.update_dict('rackinfo',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
-   ret.update({'deleted':db.do("DELETE FROM devices WHERE id = '%s'"%aDict['id'])})
+    ret['pem1'] = db.update_dict('rackinfo',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem1_pdu_id = %s'%(aDict['id']))
+   ret.update({'deleted':db.do("DELETE FROM devices WHERE id = %(id)s"%aDict)})
  # Avoid race condition on DB, do this when DB is closed...
  if data['ipam_id']:
   ret.update(ip_delete({'id':data['ipam_id']}))
@@ -447,7 +447,7 @@ def list_type(aDict):
  """
  ret = {}
  with DB() as db:
-  select = "device_types.%s ='%s'"%(('name',aDict.get('name')) if aDict.get('name') else ('base',aDict.get('base')))
+  select = "device_types.%s ='%s'"%(('name',aDict['name']) if aDict.get('name') else ('base',aDict['base']))
   ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, hostname, device_types.base AS type_base, device_types.name AS type_name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY type_name,hostname"%select)
   ret['data'] = db.get_rows()
  return ret
@@ -483,9 +483,9 @@ def to_node(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT INET_NTOA(ia.ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id'])
+  db.do("SELECT INET_NTOA(ia.ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %(id)s"%aDict)
   ret['device'] = db.get_row()
-  ret['found'] = (db.do("SELECT node FROM nodes WHERE url LIKE '%{}%' OR url LIKE '%{}%' OR url LIKE '%{}%'".format(ret['device']['ip'],ret['device']['hostname'],ret['device']['fqdn'])) > 0)
+  ret['found'] = (db.do("SELECT node FROM nodes WHERE url LIKE '%%%(ip)s%%' OR url LIKE '%%%(hostname)s%%' OR url LIKE '%%%(fqdn)s%%'"%ret['device']) > 0)
   ret['node'] = db.get_val('node') if ret['found'] else None
  return ret
 
@@ -553,38 +553,6 @@ def configuration_template(aDict):
   ret['result'] = 'OK'
 
  return ret 
-
-#
-#
-def mac_sync(aDict):
- """Function docstring for mac_sync TBD
-
- Args:
-
- Output:
- """
- def GL_mac2int(aMAC):
-  try:    return int(aMAC.replace(":",""),16)
-  except: return 0
- ret = []
- try:
-  arps = {}
-  with open('/proc/net/arp') as f:
-   _ = f.readline()
-   for data in f:
-    ( ip, _, _, mac, _, _ ) = data.split()
-    if not mac == '00:00:00:00:00:00':
-     arps[ip] = mac
-  with DB() as db:
-   db.do("SELECT devices.id, hostname, INET_NTOA(ia.ip) as ipasc, mac FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE hostname <> 'unknown' ORDER BY ip")
-   rows = db.get_rows()
-   for row in rows:
-    if arps.get(row['ipasc']):
-     row['found'] = arps.get(row['ipasc'])
-     ret.append(row)
-     db.do("UPDATE devices SET mac = {} WHERE id = {}".format(GL_mac2int(row['found']),row['id']))
- except: pass
- return ret
 
 ############################################### INTERFACES ################################################
 #
@@ -762,7 +730,6 @@ def interface_link_advanced(aDict):
 #
 def interface_discover(aDict):
  """ Discovery function for detecting interfaces. Will try SNMP to detect all interfaces first.
-  Later stage is to do LLDP or similar to populate neighbor information
 
  Args:
   - device (required)

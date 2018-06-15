@@ -325,18 +325,6 @@ def function(aWeb):
 
 #
 #
-def mac_sync(aWeb):
- macs = aWeb.rest_call("device_mac_sync")
- print "<ARTICLE CLASS=info>"
- print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>MAC</DIV></DIV>"
- print "<DIV CLASS=tbody>"
- for row in macs:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['id'],row['ipasc'],row['hostname'],row['found'])
- print "</DIV></DIV></ARTICLE>"
-
-#
-#
 def new(aWeb):
  cookie = aWeb.cookie_unjar('system')
  if not aWeb.cookies.get('system'):

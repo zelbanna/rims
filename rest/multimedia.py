@@ -167,8 +167,8 @@ def check_title(aDict):
   if info_end != info_start:
    ret['episode'] = ret['episode'] + prefix[info_start:info_end]
 
-  ret['info'] = "%s - %s"%(ret['title'],ret['episode'])
-  ret['name'] = "%s %s"%(ret['title'],ret['episode'])
+  ret['info'] = "%(title)s - %(episode)s"%ret
+  ret['name'] = "%(title)s %(episode)s"%ret
  else:
   ret['type'] = 'movie'
   has_year=search(r"\.(?:19|20)[0-9]{2}",prefix)

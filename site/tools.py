@@ -39,7 +39,6 @@ def main(aWeb):
   print "<A CLASS=z-op DIV=div_content URL=zdcp.cgi?dhcp_leases&node=%s&type=%s&lease=free>DHCP - Free</A>"%dhcp
  if data.get('extra'):
   print "<A CLASS=z-op TARGET=_blank            HREF='zdcp.pdf'>DB - View relational diagram</A>"
-  print "<A CLASS=z-op DIV=div_content SPIN=true URL='zdcp.cgi?device_mac_sync'>Find MAC Info</A>"
  print "</DIV></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_rest_main&node=%s'>Debug</A>"%aWeb['node']
