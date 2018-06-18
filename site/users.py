@@ -24,6 +24,8 @@ def main(aWeb):
  print "</UL></NAV>"
  print "<SECTION CLASS=content       ID=div_content></SECTION>"
 
+#
+#
 def user(aWeb):
  if not aWeb.cookies.get('system'):
   print "<SCRIPT>location.replace('index.cgi')</SCRIPT>"
@@ -36,6 +38,8 @@ def user(aWeb):
  print "</SECTION>"
  print "</SECTION>"
 
+#
+#
 def list(aWeb):
  rows = aWeb.rest_call("system_users_list")['data']
  print "<SECTION CLASS=content-left  ID=div_content_left>"
@@ -44,7 +48,9 @@ def list(aWeb):
  print aWeb.button('add',    DIV='div_content_right',URL='zdcp.cgi?users_info&id=new')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV><DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='zdcp.cgi?users_info&id={0}'>{1}</A></DIV><DIV CLASS=td>{2}</DIV><DIV CLASS=td>{3}</DIV></DIV>".format(row['id'],row['alias'],row['name'],row['email'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(alias)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%row
+  print aWeb.button('info', DIV='div_content_right', URL='zdcp.cgi?users_info&id=%(id)s'%row)
+  print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE></SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
 

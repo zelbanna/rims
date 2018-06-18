@@ -15,17 +15,15 @@ def main(aWeb):
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Type</DIV></DIV>"
+ print "<DIV CLASS=thead><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td>"
+  print "<DIV CLASS=tr><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(type_name)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%row
   if row['type_name'] == 'esxi':
-   print "<A CLASS=z-op DIV=main URL='zdcp.cgi?esxi_manage&id={}'>{}</A>".format(row['id'],row['hostname'])
+   print aWeb.button('info', DIV='main', URL='zdcp.cgi?esxi_manage&id=%s'%row['id'])
   elif row['type_name'] == 'vcenter':
-   print "<A TARGET=_blank HREF='https://{}:9443/vsphere-client/'>{}</A>".format(row['ipasc'],row['hostname'])
-  else:
-   print "&nbsp;"
-  print "</DIV><DIV CLASS=td>{}</DIV></DIV>".format(row['type_name'])
+   print aWeb.button('info', TARGET='_blank', HREF='https://%s:9443/vsphere-client/'%row['ipasc'])
+  print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
  print "</SECTION>"
  print "</SECTION>"
