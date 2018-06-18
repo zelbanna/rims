@@ -109,29 +109,13 @@ def domain_info(aWeb):
   print aWeb.button('save',DIV='div_content_right',URL='zdcp.cgi?dns_domain_info&op=update',FRM='dns_info_form')
  else:
   print aWeb.button('reload',DIV='div_content_right',URL='zdcp.cgi?dns_domain_info&id=%s'%(res['id']))
-  print aWeb.button('trash',DIV='div_content_right',URL='zdcp.cgi?dns_domain_%s&id=%s'%("transfer" if not "arpa" in data['name'] else "delete",res['id']))
- print "</DIV></ARTICLE>"
-
-#
-#
-def domain_transfer(aWeb):
- domains = aWeb.rest_call("dns_domain_list",{"filter":"forward","exclude":aWeb['id']})
- print "<ARTICLE STYLE='display:inline-block'>"
- print "<FORM ID=dns_transfer>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
- print "Transfer all records to <SELECT NAME=transfer>"
- for domain in domains['domains']:
-  print "<OPTION VALUE=%s>%s</OPTION>"%(domain['id'],domain['name'])
- print "</SELECT>"
- print "</FORM><DIV CLASS=controls>"
- print aWeb.button('back',DIV='div_content_right',URL='zdcp.cgi?dns_domain_info',FRM='dns_transfer')
- print aWeb.button('forward',DIV='div_content_right',URL='zdcp.cgi?dns_domain_delete',FRM='dns_transfer')
+  print aWeb.button('trash',DIV='div_content_right',URL='zdcp.cgi?dns_domain_delete&id=%s'%res['id'])
  print "</DIV></ARTICLE>"
 
 #
 #
 def domain_delete(aWeb):
- res = aWeb.rest_call("dns_domain_delete",{'id':aWeb['id'],'transfer':aWeb['transfer']})
+ res = aWeb.rest_call("dns_domain_delete",{'id':aWeb['id']})
  print "<ARTICLE>%s</ARTICLE>"%res
 
 #

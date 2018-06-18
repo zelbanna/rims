@@ -264,7 +264,7 @@ def list(aDict):
  ret = {}
  sort = 'ia.ip' if aDict.get('sort','ip') == 'ip' else 'devices.hostname'
  with DB() as db:
-  sql = "SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, CONCAT(devices.hostname,'.',domains.name) AS fqdn, model FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id JOIN domains ON domains.id = devices.a_dom_id %s ORDER BY %s"%(tune,sort)
+  sql = "SELECT devices.id, devices.hostname, INET_NTOA(ia.ip) AS ipasc, domains.name AS domain, model FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id JOIN domains ON domains.id = devices.a_dom_id %s ORDER BY %s"%(tune,sort)
   ret['xist'] = db.do(sql)
   ret['data'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret

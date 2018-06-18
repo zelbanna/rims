@@ -49,11 +49,10 @@ def domain_delete(aDict):
   - id (required)
 
  Output:
-  - records (number of removed or transferred records)
+  - records (number of removed records)
   - domain: True or false, did op succeed
-  - transfer: True or false, did a transfer happen
  """
- return {'records':0,'domain':True,'transfer':False}
+ return {'records':0,'domain':False}
 
 #
 #

@@ -72,7 +72,7 @@ def list(aWeb):
   print "<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_list&sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red")
  print "<DIV CLASS=th>Model</DIV></DIV><DIV CLASS=tbody>"
  for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='zdcp.cgi?device_info&id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['id'],row['ipasc'], row['fqdn'], row['model'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='zdcp.cgi?device_info&id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['id'],row['ipasc'], row['hostname'], row['model'])
  print "</DIV></DIV></ARTICLE>"
 
 #

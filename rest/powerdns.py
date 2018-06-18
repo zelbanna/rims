@@ -89,20 +89,14 @@ def domain_delete(aDict):
 
  Args:
   - id (required)
-  - transfer (optional)
 
  Output:
   - records. number
   - domain. boolean
-  - transfer. if transfer operation and successful
  """
  ret = {}
  with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
   id = int(aDict['id'])
-  transfer = int(aDict.get('transfer',0))
-  ret['transfer'] = (transfer > 0)
-  if ret['transfer']:
-   ret['transfered'] = db.do("UPDATE records SET domain_id = %i WHERE (TYPE = 'A' OR TYPE = 'PTR') AND domain_id = %i"%(transfer,id))
   ret['records'] else db.do("DELETE FROM records WHERE domain_id = %i"%id)
   ret['domain']   = (db.do("DELETE FROM domains WHERE id = %i"%(id)) == 1)
  return ret

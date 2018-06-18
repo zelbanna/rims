@@ -92,7 +92,7 @@ def inventory_sync(aDict):
      hosts[row['instance_id']] = {k:row.get(k) for k in ('id','name','url','inventory','description','enabled','instance_id')}
    next = data['next']
   for dev in devices:
-   args = {"name": dev['fqdn'],"description": "%(model)s (%(ipasc)s)"%dev,"inventory": aDict['id'],"enabled": True,"instance_id": dev['id'], "variables": "" }
+   args = {"name": "%s.%s"%(dev['hostname'],dev['domain']),"description": "%(model)s (%(ipasc)s)"%dev,"inventory": aDict['id'],"enabled": True,"instance_id": dev['id'], "variables": "" }
 
    host = hosts.get(str(dev['id']))
    res = controller.call("hosts/",args,"POST") if not host else controller.call("hosts/%(id)s/"%host,args,"PATCH")
