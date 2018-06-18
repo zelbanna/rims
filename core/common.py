@@ -83,7 +83,7 @@ class DB(object):
  def update_dict_prefixed(self, aTable, aDict, aCondition = "TRUE"):
   self._dirty = True
   key_len = len(aTable) + 1
-  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k[key_len:],"'%s'"%v if v != 'NULL' else 'NULL') for k,v in args.iteritems() if k.startswith(aTable)]),aCondition))
+  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k[key_len:],"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.iteritems() if k.startswith(aTable)]),aCondition))
 
  def update_dict(self, aTable, aDict, aCondition = "TRUE"):
   self._dirty = True

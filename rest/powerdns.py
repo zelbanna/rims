@@ -8,7 +8,7 @@ Settings:
  - soa (e.g. 'xyz.domain hostmaster.domain 0 86400 3600 604800')
 
 """
-__author__ = "Zacharias El Banna"                     
+__author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
@@ -33,7 +33,7 @@ def domain_list(aDict):
  with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
   if aDict.get('filter'):
    ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
-  else:      
+  else:
    ret['xist'] = db.do("SELECT domains.* FROM domains")
   ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
   if aDict.get('dict') and aDict.get('exclude'):
@@ -89,19 +89,24 @@ def domain_delete(aDict):
 
  Args:
   - id (required)
-
+  - transfer (optional)
  Output:
+  - records. number
+  - domain. boolean
+  - transfer. if transfer operation and successful
  """
  ret = {}
  with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
   id = int(aDict['id'])
-  ret['records'] = db.do("DELETE FROM records WHERE domain_id = %i"%(id))
-  ret['domain']  = db.do("DELETE FROM domains WHERE id = %i"%(id))
+  transfer = int(aDict.get('transfer',0))
+  ret['transfer'] = (transfer > 0)
+  ret['records']  = db.do("UPDATE records SET domain_id = %i WHERE domain_id = %i"%(transfer,id)) if ret['transfer'] else db.do("DELETE FROM records WHERE domain_id = %i"%id)
+  ret['domain']   = (db.do("DELETE FROM domains WHERE id = %i"%(id)) == 1)
  return ret
 
 #
 #
-def domain_save(aDict):      
+def domain_save(aDict):
  """NO OP
 
  Args:
@@ -109,7 +114,7 @@ def domain_save(aDict):
 
  Output:
  """
- return {'result':'NO_OP'}      
+ return {'result':'NO_OP'}
 
 #################################### Records #######################################
 #
@@ -220,7 +225,7 @@ def top(aDict):
   from socket import gethostbyaddr
   try:    return gethostbyaddr(aIP)[0].partition('.')[0]
   except: return None
-    
+
  count = int(aDict.get('count',10))
  fqdn_top = {}
  fqdn_who = {}

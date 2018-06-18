@@ -115,7 +115,7 @@ def domain_info(aWeb):
 #
 #
 def domain_transfer(aWeb):
- domains = aWeb.rest_call("dns_domain_list",{"filter":"arpa","exclude":aWeb['id']})
+ domains = aWeb.rest_call("dns_domain_list",{"filter":"forward","exclude":aWeb['id']})
  print "<ARTICLE STYLE='display:inline-block'>"
  print "<FORM ID=dns_transfer>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])

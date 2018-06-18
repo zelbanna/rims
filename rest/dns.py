@@ -1,4 +1,4 @@
-"""DNS API module. This module is a REST wrapper for interfaces to a particular DNS server (device) type module.           
+"""DNS API module. This module is a REST wrapper for interfaces to a particular DNS server (device) type module.
 Settings:
  - node
  - type
@@ -46,7 +46,7 @@ def server_info(aDict):
   ret['nodes'] = db.get_rows()
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('domain_servers',args,"id=%s"%id) 
+    ret['update'] = db.update_dict('domain_servers',args,"id=%s"%id)
    else:
     ret['update'] = db.insert_dict('domain_servers',args)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
@@ -162,7 +162,8 @@ def domain_info(aDict):
 #
 #
 def domain_delete(aDict):
- """Function docstring for domain_delete.
+ """Function domain_delete deletes a domain from local cache and remote DNS server. If (local) transfer id is supplied it will first try to move all records to new domain id before removing domain.
+ If unsuccessful or if DNS servers reside on different nodes and servers the op will be a regular delete and all records will be transferred to default (0) domain.
 
  Args:
   - id (required)
@@ -170,15 +171,23 @@ def domain_delete(aDict):
 
  Output:
  """
- if aDict['id'] != aDict.get('transfer') and int(aDict['id']) > 0:
+ ret = {}
+ id = int(aDict['id'])
+ transfer = int(aDict.get('transfer',0))
+ if id != transfer and int(id) > 0:
   with DB() as db:
-   db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%aDict['id'])
-   infra = db.get_row()
-   ret = node_call(infra['node'],infra['server'],'domain_delete',{'id':infra['foreign_id']})
-   ret['devices'] = db.do("UPDATE devices SET a_id = 0, a_dom_id = %s WHERE a_dom_id = %s"%(aDict.get('transfer',0),aDict['id']))
-   ret['cache']   = db.do("DELETE FROM domains WHERE id = %s"%aDict['id'])
+   db.do("SELECT domains.id, foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id IN (%s,%s)"%(id,transfer))
+   infra = db.get_dict('id')
+   frm = infra[id]
+   to  = infra[transfer]
+   args = {'id':frm['foreign_id'],'transfer_id':to['foreign_id']}
+   if not ((frm['node'] == to['node']) and (frm['server'] == to['server'])):
+    transfer = 0
+   ret = node_call(frm['node'],frm['server'],'domain_delete',args)
+   ret['local'] = db.do("UPDATE devices SET a_dom_id = %s WHERE a_dom_id = %s"%(transfer if ret['transfer'] else 0,id))
+   ret['cache']   = db.do("DELETE FROM domains WHERE id = %s"%id)
  else:
-  ret = {'devices':0,'cache':0,'records':0}
+  ret = {'devices':0,'cache':0,'records':0,'call':None}
  return ret
 
 #
