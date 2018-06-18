@@ -180,7 +180,7 @@ def domain_delete(aDict):
    infra = db.get_dict('id')
    frm = infra[id]
    to  = infra[transfer]
-   args = {'id':frm['foreign_id'],'transfer_id':to['foreign_id']}
+   args = {'id':frm['foreign_id'],'transfer':to['foreign_id']}
    if not ((frm['node'] == to['node']) and (frm['server'] == to['server'])):
     transfer = 0
    ret = node_call(frm['node'],frm['server'],'domain_delete',args)

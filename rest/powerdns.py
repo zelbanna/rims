@@ -90,6 +90,7 @@ def domain_delete(aDict):
  Args:
   - id (required)
   - transfer (optional)
+
  Output:
   - records. number
   - domain. boolean
@@ -100,7 +101,9 @@ def domain_delete(aDict):
   id = int(aDict['id'])
   transfer = int(aDict.get('transfer',0))
   ret['transfer'] = (transfer > 0)
-  ret['records']  = db.do("UPDATE records SET domain_id = %i WHERE domain_id = %i"%(transfer,id)) if ret['transfer'] else db.do("DELETE FROM records WHERE domain_id = %i"%id)
+  if ret['transfer']:
+   ret['transfered'] = db.do("UPDATE records SET domain_id = %i WHERE (TYPE = 'A' OR TYPE = 'PTR') AND domain_id = %i"%(transfer,id))
+  ret['records'] else db.do("DELETE FROM records WHERE domain_id = %i"%id)
   ret['domain']   = (db.do("DELETE FROM domains WHERE id = %i"%(id)) == 1)
  return ret
 
