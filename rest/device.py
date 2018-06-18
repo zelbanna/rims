@@ -483,12 +483,27 @@ def to_node(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT INET_NTOA(ia.ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %(id)s"%aDict)
+  db.do("SELECT devices.id, INET_NTOA(ia.ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %(id)s"%aDict)
   ret['device'] = db.get_row()
   ret['found'] = (db.do("SELECT node FROM nodes WHERE url LIKE '%%%(ip)s%%' OR url LIKE '%%%(hostname)s%%' OR url LIKE '%%%(fqdn)s%%'"%ret['device']) > 0)
   ret['node'] = db.get_val('node') if ret['found'] else None
  return ret
 
+#
+#
+def from_node(aDict):
+ """ Translate node to device
+
+ Args:
+  - node
+ 
+ Output:
+  - device
+  - id
+ """
+ ret = {'node':aDict['node']}
+
+ return ret
 #
 #
 def webpage_list(aDict):

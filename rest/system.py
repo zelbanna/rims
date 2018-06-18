@@ -432,7 +432,6 @@ def node_delete(aDict):
   ret['delete'] = db.do("DELETE FROM nodes WHERE id = %s"%aDict['id'])
  return ret
 
-
 ############################################# RESOURCES #############################################
 
 #

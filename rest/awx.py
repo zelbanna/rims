@@ -13,12 +13,19 @@ def inventory(aDict):
  """Function main produces an inventory list for a device id
 
  Args:
-  - device_id (required)
+  - device_id (optional required)
+  - node (optional required)
 
  Output:
+  - inventories
  """
- from zdcp.rest.device import to_node
- ret = to_node({'id':aDict['device_id']})
+ if not aDict.get('node'):
+  from zdcp.rest.device import to_node
+  ret = to_node({'id':aDict['device_id']})
+  ret['id'] = aDict['device_id']
+ else:
+  from zdcp.rest.device import from_node
+  ret = from_node({'node':aDict['node']})
  controller = Device(SC['node'][ret['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  ret['inventories'] = controller.inventories()
