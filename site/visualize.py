@@ -39,9 +39,14 @@ def show(aWeb):
  print "var nodes = new vis.DataSet(%s);"%dumps(res['nodes'])
  print "var edges = new vis.DataSet(%s);"%dumps(res['edges'])
  print "var options = %s;"%(dumps(res['options']))
- print "var data = {nodes:nodes, edges:edges};"
- print "var network = new vis.Network(document.getElementById('div_network'), data, options);"
- print "network.on('stabilizationIterationsDone', function () { network.setOptions({ physics: false }); });"
+ print """
+ var data = {nodes:nodes, edges:edges};
+ var network = new vis.Network(document.getElementById('div_network'), data, options);
+ network.on('stabilizationIterationsDone', function () { network.setOptions({ physics: false }); });
+ network.on('doubleClick', function(params){
+  console.log('DoubleClick',params.nodes);
+ });
+ """
  print "</SCRIPT></ARTICLE>"
 
 #
@@ -81,13 +86,17 @@ def network(aWeb):
  var data = {nodes:nodes, edges:edges};
  var network = new vis.Network(document.getElementById('div_network'), data, options);
  network.on('stabilizationIterationsDone', function () { network.setOptions({ physics: false }); });
- network.on('dragEnd',function(params){ 
+ network.on('dragEnd',function(params){
   network.storePositions();
   $("#nodes").val(JSON.stringify(nodes.get(),undefined,2));
   $("#result").html('Moved ' + nodes.get(params.nodes[0]).label);
  });
 
- function network_start(){ 
+ network.on('doubleClick', function(params){
+  console.log('DoubleClick',params.nodes);
+ });
+
+ function network_start(){
   network.setOptions({ physics:true  });
   $("#result").html("Enable physics");
  };

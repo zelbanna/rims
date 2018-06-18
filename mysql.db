@@ -236,7 +236,6 @@ CREATE TABLE `racks` (
   `console` int(10) unsigned DEFAULT NULL,
   `pdu_1` int(10) unsigned DEFAULT NULL,
   `pdu_2` int(10) unsigned DEFAULT NULL,
-  `image_url` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `console` (`console`),

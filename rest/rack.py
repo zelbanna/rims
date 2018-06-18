@@ -49,7 +49,7 @@ def info(aDict):
    ret['xist'] = db.do("SELECT racks.* FROM racks WHERE id = %s"%id)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None, 'image_url':None }
+   ret['data'] = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None  }
 
   sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
   db.do(sqlbase%('console'))
@@ -58,17 +58,7 @@ def info(aDict):
   db.do(sqlbase%('pdu'))
   ret['pdus'] = db.get_rows()
   ret['pdus'].append({ 'id':'NULL', 'hostname':'No PDU'})
- 
-  try:
-   from os import listdir, path
-   db.do("SELECT parameter,value FROM settings WHERE section = 'generic' AND node = 'master'")
-   settings = db.get_dict('parameter')
-   directory = listdir(path.join(settings['docroot']['value'],"images")) if not settings.get('rack_image_directory') else settings['rack_image_directory']['value']
-   ret['images'] = [f for f in listdir(directory) if (f[-3:] == "png" or f[-3:] == "jpg") and not (f[:4] == 'btn-' or f[:5] == 'icon-')]
-  except Exception as err:
-   ret['error'] = "Error loading generic -> rack_image_directory: %s"%str(err)
  return ret
-
 
 #
 #
