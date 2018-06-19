@@ -9,7 +9,7 @@ from zdcp.SettingsContainer import SC
 
 #
 #
-def inventory(aDict):
+def inventory_list(aDict):
  """Function main produces an inventory list for a device id
 
  Args:
@@ -51,8 +51,8 @@ def inventory_delete(aDict):
 
 #
 #
-def inventory_hosts(aDict):
- """Function produces list of hosts for a specific inventory
+def inventory_info(aDict):
+ """Function produces inventory info for a specific inventory
 
  Args:
   - node (required)
@@ -112,7 +112,7 @@ def inventory_sync(aDict):
 #
 #
 def inventory_delete_list(aDict):
- """Deletes a host
+ """Deletes hosts
 
  Args:
   - node (required)

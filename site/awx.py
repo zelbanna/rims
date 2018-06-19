@@ -11,7 +11,7 @@ __status__ = "Production"
 #
 def manage(aWeb):
  args = { 'device_id':aWeb['id']} if aWeb['id'] else {'node':aWeb['node']}
- data = aWeb.rest_call("awx_inventory",args)
+ data = aWeb.rest_call("awx_inventory_list",args)
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op HREF=http://%s     target=_blank>UI</A></LI>"%(data['device']['ip'])
  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?awx_manage&id=%s'></A></LI>"%(data['id'])
@@ -36,7 +36,7 @@ def inventory(aWeb):
   opres = aWeb.rest_call("awx_inventory_delete_list",args)
  else:
   opres = ""
- res = aWeb.rest_call("awx_inventory_hosts",args)
+ res = aWeb.rest_call("awx_inventory_info",args)
  print "<ARTICLE><P>Hosts</P><DIV CLASS=controls>"
  print aWeb.button('reload', DIV='div_content_right', URL='zdcp.cgi?awx_inventory&node=%s&id=%s'%(aWeb['node'],aWeb['id']))
  print aWeb.button('add',    DIV='div_content_right', URL='zdcp.cgi?awx_inventory_sync_choose&node=%s&id=%s'%(aWeb['node'],aWeb['id']), TITLE='Sync with AWX')
