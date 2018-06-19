@@ -168,7 +168,7 @@ def info(aWeb):
  print aWeb.button('save',       DIV='div_content_right',URL='zdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Basic Device Information')
  print aWeb.button('document',   DIV='div_dev_data',     URL='zdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
  print aWeb.button('connections',DIV='div_dev_data',     URL='zdcp.cgi?device_interface_list&device=%i'%(dev['id']),TITLE='Device interfaces')
- print aWeb.button('network',    DIV='div_content_right',URL='zdcp.cgi?visualize_network&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
+ print aWeb.button('visualize',  DIV='div_content_right',URL='zdcp.cgi?visualize_network&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
  print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] and dev['rack'].get('console_ip'):
   # Hardcoded port to 60xx

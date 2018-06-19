@@ -16,9 +16,9 @@ def main(aWeb):
  print "<LI><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?visualize_list'>Maps</A></LI>"
  print "</UL></NAV>"
  print "<SECTION CLASS=content       ID=div_content>"
- print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
+ print "<SECTION CLASS=content-left  ID=div_content_left>"
  list(aWeb)
- print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+ print "</SECTION><SECTION CLASS=content-right ID=div_content_right></SECTION>"
  print "</SECTION>"
 #
 #
@@ -32,7 +32,7 @@ def list(aWeb):
  for map in res['maps']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS='controls'>"%(map['id'],map['name'])
   print aWeb.button('configure',  DIV='div_content_right', URL='zdcp.cgi?visualize_network&type=map&id=%s'%map['id'],   TITLE='Show and Edit map') 
-  print aWeb.button('show',       DIV='div_content_right', URL='zdcp.cgi?visualize_show&id=%s'%map['id'],   TITLE='Show map') 
+  print aWeb.button('visualize',       DIV='div_content_right', URL='zdcp.cgi?visualize_show&id=%s'%map['id'],   TITLE='Show map')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
@@ -79,7 +79,7 @@ def network(aWeb):
  print aWeb.button('fix',    onclick='network_fixate()', TITLE='Fix node positions')
  print aWeb.button('sync',   onclick='network_sync()',   TITLE='Sync graph to config')
  print aWeb.button('save',   DIV='div_content_right', URL='zdcp.cgi?visualize_network&op=update', FRM='network_config', TITLE='Save config')
- print aWeb.button('network',DIV='div_network', OP='single', SELECTOR='.tab')
+ print aWeb.button('visualize',DIV='div_network', OP='single', SELECTOR='.tab')
  print aWeb.button('help', HREF='http://visjs.org/docs/network/', TARGET='_blank', STYLE='float:right;', TITLE='vis.js help for configuring options/nodes/edges')
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_options'>Options</A>"
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_nodes'>Nodes</A>"
