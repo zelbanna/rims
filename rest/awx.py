@@ -64,7 +64,7 @@ def inventory_info(aDict):
  controller = Device(SC['node'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  ret['hosts']  = controller.fetch_list("inventories/%(id)s/hosts/"%aDict,('id','instance_id','name','description'))
- ret['groups'] = controller.fetch_list("inventories/%(id)s/groups/"%aDict,('id','name','description','total_hosts'))
+ ret['groups'] = controller.fetch_dict("inventories/%(id)s/groups/"%aDict,('id','name','description','total_hosts'),'name')
  return ret
 
 #
@@ -88,13 +88,14 @@ def inventory_sync(aDict):
  ret = {'devices':devices,'result':'OK','extra':[]}
  controller = Device(SC['node'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
+ controller.fetch_dict("inventories/%(id)s/groups/"%aDict,('id','name','description','total_hosts'),'name')
  try:
-  controller.fetch_dict("hosts/",('id','name','url','inventory','description','enabled','instance_id'),'instance_id')
+  controller.fetch_dict("inventories/%(id)s/hosts/"%aDict,('id','name','url','description','enabled','instance_id'),'instance_id')
 
   for dev in devices:
-   args = {"name": "%s.%s"%(dev['hostname'],dev['domain']),"description": "%(model)s (%(ipasc)s)"%dev,"inventory": aDict['id'],"enabled": True,"instance_id": dev['id'], "variables": "" }
+   args = {"name": "%s.%s"%(dev['hostname'],dev['domain']),"description": "%(model)s (%(ipasc)s)"%dev,"enabled": True,"instance_id": dev['id'], "variables": "" }
    host = hosts.get(str(dev['id']))
-   res = controller.call("hosts/",args,"POST") if not host else controller.call("hosts/%(id)s/"%host,args,"PATCH")
+   res = controller.call("inventories/%(id)s/hosts/"%aDict,args,"POST") if not host else controller.call("inventories/%s/hosts/%s/"%(aDict['id'],host['id']),args,"PATCH")
    dev['sync'] = {'code':res['code'],'id':res['data']['id']}
  except Exception as e:
   ret['info'] = str(e)
