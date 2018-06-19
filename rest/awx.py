@@ -28,7 +28,17 @@ def inventory_list(aDict):
   ret = from_node({'node':aDict['node']})
  controller = Device(SC['node'][ret['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
- ret['inventories'] = controller.inventories()
+ ret['inventories'] = []
+ base = "inventories/"
+ next = base
+ while True:
+  data = controller.call(next)['data']
+  for row in data['results']:
+   ret['inventories'].append({k:row.get(k) for k in ('id','name','url')})
+  try:
+   _,_,page = data['next'].rpartition('?')
+   next = "%s?%s"%(base,page)
+  except: break
  return ret
 
 #
@@ -60,10 +70,19 @@ def inventory_info(aDict):
 
  Output:
  """
- ret = {}
+ ret = {'hosts':[]}
  controller = Device(SC['node'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
- ret = controller.call("inventories/%(id)s/hosts/"%aDict).get('data')
+ base = "inventories/%(id)s/hosts/"%aDict
+ next = base
+ while True:
+  data = controller.call(next)['data']
+  for row in data['results']:
+   ret['hosts'].append({k:row.get(k) for k in ('id','instance_id','name','description')})
+  try:
+   _,_,page = data['next'].rpartition('?')
+   next = "%s?%s"%(base,page)
+  except: break
  return ret
 
 #
@@ -88,8 +107,9 @@ def inventory_sync(aDict):
  controller = Device(SC['node'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  try:
-  next = "hosts"
-  while next:
+  base = "hosts/"
+  next = base
+  while True:
    data = controller.call(next)['data']
    for row in data['results']:
     info = {k:row.get(k) for k in ('id','name','url','inventory','description','enabled','id')}
@@ -97,7 +117,11 @@ def inventory_sync(aDict):
      ret['extra'].append({k:row.get(k) for k in ('id','name')})
     else:
      hosts[row['instance_id']] = {k:row.get(k) for k in ('id','name','url','inventory','description','enabled','instance_id')}
-   next = data['next']
+   try:
+    _,_,page = data['next'].rpartition('?')
+    next = "%s?%s"%(base,page)
+   except: break
+
   for dev in devices:
    args = {"name": "%s.%s"%(dev['hostname'],dev['domain']),"description": "%(model)s (%(ipasc)s)"%dev,"inventory": aDict['id'],"enabled": True,"instance_id": dev['id'], "variables": "" }
 
@@ -147,4 +171,15 @@ def hosts_list(aDict):
  """
  controller = Device(SC['node'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
- return controller.hosts()
+ ret['hosts'] = []
+ base = "hosts/"
+ next = base
+ while True:
+  data = controller.call(next)['data']
+  for row in data['results']:
+   ret['hosts'].append({k:row.get(k) for k in ('id','name','url','inventory','description','enabled','instance_id')})
+  try:
+   _,_,page = data['next'].rpartition('?')
+   next = "%s?%s"%(base,page)
+  except: break
+ return ret

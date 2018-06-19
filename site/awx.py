@@ -43,7 +43,7 @@ def inventory(aWeb):
  print aWeb.button('trash',  DIV='div_content_right', URL='zdcp.cgi?awx_inventory&node=%s&id=%s&op=delete_list'%(aWeb['node'],aWeb['id']), MSG='Delete hosts?', FRM='host_list', SPIN='true')
  print "</DIV><SPAN CLASS=results>%s</SPAN><FORM ID=host_list>"%(opres)
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Group</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
- for row in res['results']:
+ for row in res['hosts']:
   name = "<A CLASS=z-op DIV=div_content_right URL='zdcp.cgi?device_info&id=%s'>%s</A>"%(row['instance_id'],row['name']) if row['instance_id'] != "" else row['name']
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['id'],name,row['description'],"TBD")
   print "<INPUT TYPE=CHECKBOX VALUE=1 NAME='host_%s'>"%row['id']
