@@ -170,7 +170,7 @@ def info(aWeb):
  print aWeb.button('connections',DIV='div_dev_data',     URL='zdcp.cgi?device_interface_list&device=%i'%(dev['id']),TITLE='Device interfaces')
  print aWeb.button('visualize',  DIV='div_content_right',URL='zdcp.cgi?visualize_network&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
  print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
- if dev['racked'] and dev['rack'].get('console_ip'):
+ if dev['racked'] and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
   # Hardcoded port to 60xx
   print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
  if dev['info'].get('webpage'):
