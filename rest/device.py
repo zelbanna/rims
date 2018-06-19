@@ -243,36 +243,40 @@ def list(aDict):
  ret = {}
  sort = 'ia.ip' if aDict.get('sort','ip') == 'ip' else 'devices.hostname'
  fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ipasc', 'domains.name AS domain','model']
-
- tune = ""
+ tune = ['ipam_addresses AS ia ON ia.id = devices.ipam_id','domains ON domains.id = devices.a_dom_id']
+ filter = ['TRUE']
  if aDict.get('rack'):
-  tune = "WHERE vm = 1" if aDict.get('rack') == 'vm' else "INNER JOIN rack_info ON rack_info.device_id = devices.id WHERE rack_info.rack_id = %(rack)s"%aDict
-  if aDict.get('filter'):
-   tune += " AND type_id IN (%(filter)s)"%aDict
- elif aDict.get('filter'):
-  tune = "WHERE type_id IN (%(filter)s)"%aDict
- elif aDict.get('search'):
-  if   aDict['field'] == 'hostname':
-   tune = "WHERE hostname LIKE '%%%(search)s%%'"%aDict
+  if aDict.get('rack') == 'vm':
+   filter.append("devices.vm = 1")
+  else:
+   tune.append("rack_info AS ri ON ri.device_id = devices.id")
+   filter.append("ri.rack_id = %(rack)s"%aDict)
+ if aDict.get('filter'):
+  filter.append("type_id IN (%(filter)s)"%aDict)
+ if aDict.get('search'):
+  if aDict['field'] == 'hostname':
+   filter.append("hostname LIKE '%%%(search)s%%'"%aDict)
   elif aDict['field'] == 'ip':
-   tune = "WHERE ia.ip = INET_ATON('%(search)s')"%aDict
+   filter.append("ia.ip = INET_ATON('%(search)s')"%aDict)
   elif aDict['field'] == 'type':
-   tune = "LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dt.name = '%(search)s'"%aDict
+   tune.append("device_types AS dt ON dt.id = devices.type_id")
+   filter.append("dt.name = '%(search)s'"%aDict)
   elif aDict['field'] == 'mac':
    def GL_mac2int(aMAC):
     try:    return int(aMAC.replace(":",""),16)
     except: return 0
-   tune = "WHERE mac = %s"%GL_mac2int(aDict['search'])
+   aDict['search'] = GL_mac2int(aDict['search'])
+   filter.append("mac = %(search)s"%aDict)
   elif aDict['field']== 'id':
-   tune = "WHERE devices.id = %(id)s"%aDict
+   filter.append("devices.id = %(search)s"%aDict)
 
  if  aDict.get('extra') == 'type':
   fields.append('dt.name AS type')
   if not aDict.get('field') == 'type':
-   tune = "LEFT JOIN device_types AS dt ON dt.id = devices.type_id"
+   tune.append("device_types AS dt ON dt.id = devices.type_id")
 
  with DB() as db:
-  sql = "SELECT %s FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id JOIN domains ON domains.id = devices.a_dom_id %s ORDER BY %s"%(",".join(fields),tune,sort)
+  sql = "SELECT %s FROM devices LEFT JOIN %s WHERE %s ORDER BY %s"%(", ".join(fields)," LEFT JOIN ".join(tune)," AND ".join(filter),sort)
   ret['xist'] = db.do(sql)
   ret['data'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
