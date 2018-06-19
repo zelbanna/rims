@@ -63,7 +63,8 @@ def inventory_info(aDict):
  ret = {'hosts':[]}
  controller = Device(SC['node'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
- ret['hosts'] = controller.fetch_list("inventories/%(id)s/hosts/"%aDict,('id','instance_id','name','description'))
+ ret['hosts']  = controller.fetch_list("inventories/%(id)s/hosts/"%aDict,('id','instance_id','name','description'))
+ ret['groups'] = controller.fetch_list("inventories/%(id)s/groups/"%aDict,('id','name','description','total_hosts'))
  return ret
 
 #

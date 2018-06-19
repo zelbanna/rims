@@ -236,9 +236,14 @@ def list(aDict):
   - rack (optional)
   - field (optional) 'id/ip/mac/hostname/type' as search fields
   - search (optional)
+  - extra (optional) None/'type'
 
  Output:
  """
+ ret = {}
+ sort = 'ia.ip' if aDict.get('sort','ip') == 'ip' else 'devices.hostname'
+ fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ipasc', 'domains.name AS domain','model']
+
  tune = ""
  if aDict.get('rack'):
   tune = "WHERE vm = 1" if aDict.get('rack') == 'vm' else "INNER JOIN rack_info ON rack_info.device_id = devices.id WHERE rack_info.rack_id = %(rack)s"%aDict
@@ -261,14 +266,19 @@ def list(aDict):
   elif aDict['field']== 'id':
    tune = "WHERE devices.id = %(id)s"%aDict
 
- ret = {}
- sort = 'ia.ip' if aDict.get('sort','ip') == 'ip' else 'devices.hostname'
+ if  aDict.get('extra') == 'type':
+  fields.append('dt.name AS type')
+  if not aDict.get('field') == 'type':
+   tune = "LEFT JOIN device_types AS dt ON dt.id = devices.type_id"
+
  with DB() as db:
-  sql = "SELECT devices.id, devices.hostname, INET_NTOA(ia.ip) AS ipasc, domains.name AS domain, model FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id JOIN domains ON domains.id = devices.a_dom_id %s ORDER BY %s"%(tune,sort)
+  sql = "SELECT %s FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id JOIN domains ON domains.id = devices.a_dom_id %s ORDER BY %s"%(",".join(fields),tune,sort)
   ret['xist'] = db.do(sql)
   ret['data'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 
+#
+#
 def search(aDict):
  """ Functions returns device id for device matching conditions
 
