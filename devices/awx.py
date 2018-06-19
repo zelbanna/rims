@@ -74,3 +74,29 @@ class Device(object):
   try: res = rest_call(aURL, aArgs, aMethod, head)
   except Exception as e: res = e[0]
   return res
+
+ def fetch_list(self,aBase,aSet):
+  ret  = []
+  next = aBase
+  while True:
+   data = self.call(next)['data']
+   for row in data['results']:
+    ret.append({k:row.get(k) for k in aSet})
+   try:
+    _,_,page = data['next'].rpartition('?')
+    next = "%s?%s"%(base,page)
+   except: break
+  return ret
+
+ def fetch_dict(self,aBase,aSet,aKey):
+  ret  = {}
+  next = aBase
+  while True:
+   data = self.call(next)['data']
+   for row in data['results']:
+    ret[row[aKey]] ={k:row.get(k) for k in aSet if row.get(aKey) and row[aKey] != ""}
+   try:
+    _,_,page = data['next'].rpartition('?')
+    next = "%s?%s"%(base,page)
+   except: break
+  return ret
