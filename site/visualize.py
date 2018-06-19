@@ -6,7 +6,20 @@ HTML5 Ajax Visualize module
 __author__= "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
+__icon__ = 'images/icon-visualize.png'
+__type__ = 'menuitem'
 
+#
+#
+def main(aWeb):
+ print "<NAV><UL>"
+ print "<LI><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?visualize_list'>Maps</A></LI>"
+ print "</UL></NAV>"
+ print "<SECTION CLASS=content       ID=div_content>"
+ print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
+ list(aWeb)
+ print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+ print "</SECTION>"
 #
 #
 def list(aWeb):

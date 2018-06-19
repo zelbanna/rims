@@ -99,12 +99,12 @@ def action(aWeb):
   args['call'] = "servers/%s"%aWeb['id']
   server = aWeb.rest_call("openstack_call",args)['data']['server']
   qserver = get_quote(server['name'])
-  tmpl = "<BUTTON CLASS='z-op' TITLE='{}' DIV=div_os_info URL=zdcp.cgi?nova_action&id=%s&op={} SPIN=true>{}</BUTTON>"%aWeb['id']
+  tmpl = "<A CLASS='z-op btn small text' TITLE='{}' DIV=div_os_info URL=zdcp.cgi?nova_action&id=%s&op={} SPIN=true>{}</A>"%aWeb['id']
   print "<DIV>"
   print tmpl.format('Details','details','VM Details')
   print tmpl.format('Diagnostics','diagnostics','Diagnostics')
   print tmpl.format('Networks','networks','Networks')
-  print "<A CLASS=btn TITLE='New-tab Console' TARGET=_blank HREF='zdcp.cgi?nova_console&name={0}&id={1}'>Console</A>".format(qserver,aWeb['id'])
+  print "<A CLASS='btn small text' TITLE='New-tab Console' TARGET=_blank HREF='zdcp.cgi?nova_console&name={0}&id={1}'>Console</A>".format(qserver,aWeb['id'])
   print "</DIV>"
   print "<ARTICLE STYLE='overflow:auto;' ID=div_os_info>"
   dict2html(server,server['name'])

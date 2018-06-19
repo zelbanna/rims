@@ -56,7 +56,7 @@ def action(aWeb):
   args['call'] = 'virtual-network/%s'%(id)
   vn = aWeb.rest_call("openstack_call",args)['data']['virtual-network']
   name = vn['display_name']
-  tmpl = "<BUTTON CLASS='z-op' DIV=div_os_info URL=zdcp.cgi?neutron_action&name=%s&id=%s&op={} SPIN=true>{}</BUTTON>"%(name,id)
+  tmpl = "<A CLASS='z-op btn small text' DIV=div_os_info URL=zdcp.cgi?neutron_action&name=%s&id=%s&op={} SPIN=true>{}</A>"%(name,id)
   print "<DIV>"
   print tmpl.format('details','Network details')
   if vn.get('instance_ip_back_refs'):

@@ -85,11 +85,11 @@ def api(aWeb):
  services = aWeb.rest_call("openstack_services",{'token':cookie['token']})['services']
  print "<ARTICLE><P>OpenStack REST API inspection</P>"
  print "<FORM ID=frm_os_api>"
- print "Choose Service and enter API call: <SELECT CLASS='white' STYLE='width:auto; height:22px;' NAME=os_service>"
+ print "Choose Service and enter API call: <SELECT STYLE='width:auto; height:22px;' NAME=os_service>"
  for service in services:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(service['service'])
- print "</SELECT> <INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_api><BR>"
- print "Or enter HREF: <DIV ID=div_href STYLE='display:inline-block;'><INPUT CLASS='white' STYLE='width:716px;' TYPE=TEXT NAME=os_href></DIV><BR>"
+ print "</SELECT><INPUT CLASS='background' STYLE='width:500px;' TYPE=TEXT NAME=os_api><BR>"
+ print "Or enter HREF: <DIV ID=div_href STYLE='display:inline-block;'><INPUT CLASS='background' STYLE='width:716px;' TYPE=TEXT NAME=os_href></DIV><BR>"
  print "Call 'Method': <SELECT STYLE='width:auto; height:22px;' NAME=os_method>"
  for method in ['GET','POST','DELETE','PUT']:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(method)

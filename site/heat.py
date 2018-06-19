@@ -102,7 +102,7 @@ def action(aWeb):
  op   = aWeb.get('op','info')
 
  if   op == 'info':
-  tmpl = "<BUTTON CLASS='z-op' TITLE='{}' DIV=div_os_info URL=zdcp.cgi?heat_action&name=%s&id=%s&op={} SPIN=true>{}</BUTTON>"%(name,id)
+  tmpl = "<A CLASS='z-op btn small text' TITLE='{}' DIV=div_os_info URL=zdcp.cgi?heat_action&name=%s&id=%s&op={} SPIN=true>{}</A>"%(name,id)
   print "<DIV>"
   print tmpl.format('Stack Details','details','Stack Details')
   print tmpl.format('Stack Parameters','events','Events')
