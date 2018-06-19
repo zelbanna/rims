@@ -269,6 +269,19 @@ def list(aDict):
   ret['data'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 
+def search(aDict):
+ """ Functions returns device id for device matching conditions
+
+ Args:
+  - device
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  ret['found'] = db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE hostname LIKE '%%%(device)s%%' OR CONCAT(hostname,'.',domains.name) LIKE '%%%(device)s%%'"%aDict)
+  ret['device']= db.get_row()
+ return ret
 #
 #
 def new(aDict):
