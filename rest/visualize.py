@@ -29,7 +29,7 @@ def delete(aDict):
 
  Args:
   - id
- 
+
  Output:
   - deleted
  """

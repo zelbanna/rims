@@ -419,10 +419,8 @@ def discover(aWeb):
 #
 def interface_list(aWeb):
  if   aWeb['op'] == 'delete':
-  opres = aWeb.rest_call("device_interface_delete",{'id':aWeb['id'],'device':aWeb['device']})
- elif aWeb['op'] == 'delete_list':
   args = aWeb.get_args2dict()
-  opres = aWeb.rest_call("device_interface_delete_list",args)
+  opres = aWeb.rest_call("device_interface_delete",args)
  elif aWeb['op'] == 'discover':
   opres = aWeb.rest_call("device_interface_discover",{'device':aWeb['device']})
  elif aWeb['op'] == 'link':
@@ -434,7 +432,7 @@ def interface_list(aWeb):
  print aWeb.button('reload', DIV='div_dev_data',URL='zdcp.cgi?device_interface_list&device=%s'%res['id'])
  print aWeb.button('add',    DIV='div_dev_data',URL='zdcp.cgi?device_interface_info&device=%s&id=new'%res['id'])
  print aWeb.button('search', DIV='div_dev_data',URL='zdcp.cgi?device_interface_list&device=%s&op=discover'%res['id'], SPIN='true', MSG='Rediscover interfaces?')
- print aWeb.button('trash',  DIV='div_dev_data',URL='zdcp.cgi?device_interface_list&device=%s&op=delete_list'%res['id'], MSG='Delete interfaces?', FRM='interface_list', TITLE='Delete selected interfaces')
+ print aWeb.button('trash',  DIV='div_dev_data',URL='zdcp.cgi?device_interface_list&device=%s&op=delete'%res['id'], MSG='Delete interfaces?', FRM='interface_list', TITLE='Delete selected interfaces')
  print "</DIV><SPAN CLASS=results>%s</SPAN><FORM ID=interface_list>"%(opres)
  print "<DIV CLASS=table>"
  print "<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Peer interface</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"

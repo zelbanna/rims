@@ -52,7 +52,7 @@ def inventory_delete(aDict):
 #
 #
 def inventory_info(aDict):
- """Function produces inventory info for a specific inventory
+ """Function produces inventory info for a specific inventory id
 
  Args:
   - node (required)
@@ -70,7 +70,7 @@ def inventory_info(aDict):
 #
 #
 def inventory_sync(aDict):
- """Function retrieves and matches AWX hosts with local ones and updates missing
+ """Function retrieves and matches AWX hosts with local ones and updates missing info
 
  Args:
   - node (required)
@@ -102,10 +102,26 @@ def inventory_sync(aDict):
   ret['result'] = 'NOT_OK'
  return ret
 
+########################################## Hosts ##########################################
+#
+#
+def hosts_list(aDict):
+ """Function retrieves all hosts from AWX node
+
+ Args:
+  - node (required)
+
+ Output:
+ """
+ controller = Device(SC['node'][aDict['node']])
+ controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
+ ret = {'hosts':controller.fetch_list("hosts/",('id','name','url','inventory','description','enabled','instance_id'))}
+ return ret
+
 #
 #
 def inventory_delete_list(aDict):
- """Deletes hosts
+ """Deletes a list of hosts, represented as host_xx, host_xy and so on (where xx and xy are awx id:s)
 
  Args:
   - node (required)
@@ -127,18 +143,3 @@ def inventory_delete_list(aDict):
    ret['hosts'][host_id] = "OK" if res['code'] == 204 else res['info']['x-api-code']
  return ret
 
-########################################## Hosts ##########################################
-#
-#
-def hosts_list(aDict):
- """Function retrieves all hosts from AWX node
-
- Args:
-  - node (required)
-
- Output:
- """
- controller = Device(SC['node'][aDict['node']])
- controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
- ret = {'hosts':controller.fetch_list("hosts/",('id','name','url','inventory','description','enabled','instance_id'))}
- return ret
