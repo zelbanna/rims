@@ -180,9 +180,10 @@ def record_delete(aDict):
 
  Output:
  """
+ ret = {}
  with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
-  deleted = db.do("DELETE FROM records WHERE id = '%s'"%(aDict['id']))
- return {'deleted':deleted}
+  ret['deleted'] = (db.do("DELETE FROM records WHERE id = '%s'"%(aDict['id'])) > 0)
+ return ret
 
 ############################### Tools #################################
 #
