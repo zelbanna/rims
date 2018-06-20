@@ -365,7 +365,7 @@ def delete(aDict):
  """
  with DB() as db:
   found = (db.do("SELECT hostname, ine.reverse_zone_id, ipam_id, mac, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %s"%aDict['id']) > 0)
-  if found:
+  if not found:
    ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
    data = db.get_row()
@@ -381,9 +381,9 @@ def delete(aDict):
    if data['base'] == 'pdu':
     ret['pem0'] = db.update_dict('rack_info',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
     ret['pem1'] = db.update_dict('rack_info',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem1_pdu_id = %s'%(aDict['id']))
-   ret.update({'deleted':db.do("DELETE FROM devices WHERE id = %(id)s"%aDict)})
+   ret.update({'deleted':(db.do("DELETE FROM devices WHERE id = %(id)s"%aDict) > 0)})
  # Avoid race condition on DB, do this when DB is closed...
- if data['ipam_id']:
+ if found and data['ipam_id']:
   ret.update(ip_delete({'id':data['ipam_id']}))
  return ret
 
