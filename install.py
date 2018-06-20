@@ -36,7 +36,7 @@ for section,content in temp.iteritems():
    settings[section] = {}
   settings[section][key] = params['value'] 
 settings['system']['config_file'] = settingsfilename
-modes = { mode:'1' for mode in settings['system']['mode'].split(',') }
+modes = { mode:True for mode in settings['system']['mode'].split(',') }
 res['modes'] = modes
 
 ############################################### ALL #################################################
@@ -164,12 +164,12 @@ if settings['system']['id'] == 'master':
   db = DB(database,host,username,password)
   db.connect()
 
-  res['admin_user'] = db.do("INSERT users (id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id")
-  res['node_add'] = db.do("INSERT nodes (node,url,system,www) VALUES('{0}','{1}',1,{2}) ON DUPLICATE KEY UPDATE system = 1, www = {2}, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['rest'],modes.get('front','0')))
+  res['admin_user'] = (db.do("INSERT users (id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id") > 0)
+  res['node_add'] = (db.do("INSERT nodes (node,url,system,www) VALUES('{0}','{1}',1,{2}) ON DUPLICATE KEY UPDATE system = 1, www = {2}, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['rest'],"1" if modes.get('front') else '0')) > 0)
   res['node_id']  = db.get_last_id()
-  res['dns_server_add'] = db.do("INSERT domain_servers (node,server) VALUES ('master','nodns') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)")
+  res['dns_server_add'] = (db.do("INSERT domain_servers (node,server) VALUES ('master','nodns') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
   res['dns_server_id']  = db.get_last_id()
-  res['dns_domain_add'] = db.do("INSERT domains (id,foreign_id,name,server_id,type ) VALUES (0,0,'local',{},'forward') ON DUPLICATE KEY UPDATE id = 0".format(res['dns_server_id']))
+  res['dns_domain_add'] = (db.do("INSERT domains (id,foreign_id,name,server_id,type ) VALUES (0,0,'local',{},'forward') ON DUPLICATE KEY UPDATE id = 0".format(res['dns_server_id'])) > 0)
   sql ="INSERT device_types (name,base,icon,functions) VALUES ('{0}','{1}','{2}','{3}') ON DUPLICATE KEY UPDATE icon = '{2}', functions = '{3}'"
   for type in device_types:
    try:    res['device_new'] += db.do(sql.format(type['name'],type['base'],type['icon'],",".join(type['functions'])))
@@ -223,7 +223,7 @@ else:
  # Fetch and update settings from central repo
  #
  from zdcp.core.common import rest_call
- try: res['register'] = rest_call("%s?system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':modes.get('rest','0'),'www':modes.get('front','0')})['data']
+ try: res['register'] = rest_call("%s?system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':"1" if modes.get('rest') else '0','www':"1" if modes.get('front') else '0'})['data']
  except Exception as e: res['register'] = str(e)
  try: master   = rest_call("%s?system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
  except: pass
