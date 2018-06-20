@@ -157,6 +157,7 @@ CREATE TABLE `nodes` (
   `url` varchar(40) NOT NULL,
   `system` tinyint(1) DEFAULT '0',
   `www` tinyint(1) DEFAULT '0',
+  `device_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `node` (`node`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
