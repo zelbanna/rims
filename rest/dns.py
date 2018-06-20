@@ -419,11 +419,12 @@ def record_device_update(aDict):
   if infra['server']:
    infra['args']['op'] = 'update'
    res = node_call(infra['node'],infra['server'],'record_info',infra['args'])
-   ret[type]['record_id'] = res['data']['id']
-   ret[type]['domain_id'] = domains['foreign_id'].get(res['data']['domain_id'],{'domain_id':0})['domain_id']
    ret[type]['found']  = res['found']
-   ret[type]['update'] = res.get('update',0)
-   ret[type]['insert'] = res.get('insert',0)
+   if res['found']:
+    ret[type]['record_id'] = res['data']['id']
+    ret[type]['domain_id'] = domains['foreign_id'].get(res['data']['domain_id'],{'domain_id':0})['domain_id']
+    ret[type]['update'] = res.get('update',False)
+    ret[type]['insert'] = res.get('insert',False)
  return ret
 
 #
