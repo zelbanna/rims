@@ -183,7 +183,7 @@ if settings['system']['id'] == 'master':
 
   db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
   data = db.get_rows()
-  db.do("SELECT 'node' AS section, node AS parameter, url AS value FROM nodes")
+  db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
   data.extend(db.get_rows())
 
   for setting in data:

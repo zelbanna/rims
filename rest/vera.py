@@ -17,7 +17,7 @@ def node_to_ui(aDict):
 
  Output:
  """
- node = SC['node'][aDict.get('node','vera')]
+ node = SC['nodes'][aDict.get('node','vera')]
  parts = node.partition('//')
  host = "%s//%s/cmh/"%(parts[0],(parts[2].split('/')[0]).split(':')[0])
  return {'ui':host }
@@ -33,7 +33,7 @@ def status(aDict):
  Output:
  """
  try:
-  node = SC['node'][aDict['node']]
+  node = SC['nodes'][aDict['node']]
   ret = rest_call("%s?id=sdata"%node)['data']
  except Exception as e:
   ret = e[0] 
@@ -51,7 +51,7 @@ def infra(aDict):
  """
  try:
   ret = {}
-  node = SC['node'][aDict['node']]
+  node = SC['nodes'][aDict['node']]
   info = rest_call("%s?id=sdata"%node)['data']
   ret['sections'] = { d['id']: d['name'] for d in info['sections'] }
   ret['rooms']    = { d['id']: d for d in info['rooms'] }
@@ -76,7 +76,7 @@ def scene(aDict):
  """                
  try:      
   ret = {}
-  node = SC['node'][aDict['node']]
+  node = SC['nodes'][aDict['node']]
   if aDict.get('op'):
    ret['op'] = "RunScene" if aDict.get('op')== "run" else "SceneOff"
    res = rest_call("%s?id=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(node,ret['op'],aDict['scene']))
@@ -106,7 +106,7 @@ def devices(aDict):
  """
  try:
   ret = {}
-  node = SC['node'][aDict['node']]
+  node = SC['nodes'][aDict['node']]
   info = rest_call("%s?id=sdata"%node)['data']
   ret['devices'] = info['devices'] if not aDict.get('room') else [ x for x in info['devices'] if x['room'] == int(aDict.get('room')) ]
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
@@ -134,7 +134,7 @@ def device_info(aDict):
  ret = {'op':None}
  op = aDict.pop("op",None)
  try:
-  node = SC['node'][aDict['node']]
+  node = SC['nodes'][aDict['node']]
   if op == 'update':
    ret['op'] = {}
    if aDict['category'] == '2' and aDict['service'] == 'urn:upnp-org:serviceId:Dimming1' and aDict['variable'] == 'LoadLevelTarget':

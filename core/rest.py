@@ -49,7 +49,7 @@ def server(aNodeID):
   else:
    from zdcp.core.common import rest_call
    from zdcp.SettingsContainer import SC
-   try: res = rest_call("%s?%s"%(SC['node'][node],query),args)
+   try: res = rest_call("%s?%s"%(SC['nodes'][node],query),args)
    except Exception as err: raise Exception(err)
    else: output = dumps(res['data'])
    stdout.write("X-API-Res:%s\r\n"%res['info']['x-api-res'])

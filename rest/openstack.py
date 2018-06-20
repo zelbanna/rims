@@ -24,9 +24,9 @@ def application(aDict):
  ret = {'title':"%s 2 Cloud"%(aDict.get('name','iaas')),'choices':[],'message':"Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas')),'portal':'openstack' }
  try:
   if aDict.get('token'):
-   controller = Device(SC['node'][aDict['node']],aDict.get('token'))
+   controller = Device(SC['nodes'][aDict['node']],aDict.get('token'))
   else:
-   controller = Device(SC['node'][aDict['node']],None)
+   controller = Device(SC['nodes'][aDict['node']],None)
    res = controller.auth({'project':SC['openstack']['project'], 'username':SC['openstack']['username'],'password':SC['openstack']['password']})
   auth = controller.call("5000","v3/projects")
   if auth['code'] == 200:
@@ -60,13 +60,13 @@ def authenticate(aDict):
  """
  from zdcp.core.logger import log
  ret = {}
- controller = Device(SC['node'][aDict['node']],None)
+ controller = Device(SC['nodes'][aDict['node']],None)
  res = controller.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
  ret = {'authenticated':res['auth']}
  if res['auth'] == 'OK':
   with DB() as db:
    ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'token':controller.get_token(),'expires':controller.get_cookie_expire()})
-   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node) VALUES('%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],SC['node'][aDict['node']]))
+   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node) VALUES('%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],SC['nodes'][aDict['node']]))
    token_id = db.get_last_id()
    for service in ['heat','nova','neutron','glance']:
     svc = controller.get_service(service,'public')

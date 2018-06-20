@@ -194,7 +194,7 @@ def settings_info(aDict):
  id = args.pop('id','new')
  op = args.pop('op',None)
  with DB() as db:
-  if op == 'update' and not (aDict['section'] == 'system' or aDict['section'] =='node'):
+  if op == 'update' and not (aDict['section'] == 'system' or aDict['section'] =='nodes'):
    if not id == 'new':
     ret['update'] = db.update_dict('settings',args,"id=%s"%id) 
    else:
@@ -279,7 +279,7 @@ def settings_fetch(aDict):
  with DB() as db:
   db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aDict['node'])
   data = db.get_rows()
-  db.do("SELECT 'node' AS section, node AS parameter, url AS value FROM nodes")
+  db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
   data.extend(db.get_rows())
  for setting in data:
   section = setting.pop('section')
@@ -315,7 +315,7 @@ def settings_save(aDict):
    with DB() as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
-    db.do("SELECT 'node' AS section, node AS parameter, url AS value FROM nodes")
+    db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
     data.extend(db.get_rows())
    for setting in data:
     section = setting.pop('section')

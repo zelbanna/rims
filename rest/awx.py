@@ -17,7 +17,7 @@ def node_to_ui(aDict):
 
  Output:
  """
- node = SC['node'][aDict.get('node','awx')]
+ node = SC['nodes'][aDict.get('node','awx')]
  parts = node.partition('//')
  host = "%s//%s/"%(parts[0],(parts[2].split('/')[0]).split(':')[0])
  return {'ui':host }
@@ -36,7 +36,7 @@ def inventory_list(aDict):
  """
  from zdcp.rest.device import node_mapping
  ret = node_mapping(aDict)
- controller = Device(SC['node'][ret['node']])
+ controller = Device(SC['nodes'][ret['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  ret['inventories'] = controller.fetch_list("inventories/",('id','name','url'))
  return ret
@@ -52,7 +52,7 @@ def inventory_delete(aDict):
 
  Output:
  """
- controller = Device(SC['node'][aDict['node']])
+ controller = Device(SC['nodes'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  res = controller.call("inventories/%(id)s/"%aDict,None,"DELETE")
  ret = {'result':"deleted" if res['code'] == 204 else res['info']['x-api-code']}
@@ -70,7 +70,7 @@ def inventory_info(aDict):
  Output:
  """
  ret = {'hosts':[]}
- controller = Device(SC['node'][aDict['node']])
+ controller = Device(SC['nodes'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  ret['hosts']  = controller.fetch_list("inventories/%(id)s/hosts/"%aDict,('id','instance_id','name','description'))
  ret['groups'] = controller.fetch_dict("inventories/%(id)s/groups/"%aDict,('id','name','description','total_hosts'),'name')
@@ -95,7 +95,7 @@ def inventory_sync(aDict):
  hosts = {}
  devices = device_list({'search':aDict['search'],'field':aDict['field']})['data']
  ret = {'devices':devices,'result':'OK','extra':[]}
- controller = Device(SC['node'][aDict['node']])
+ controller = Device(SC['nodes'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  controller.fetch_dict("inventories/%(id)s/groups/"%aDict,('id','name','description','total_hosts'),'name')
  try:
@@ -126,7 +126,7 @@ def inventory_delete_hosts(aDict):
  ret = {'hosts':{}}
  node = aDict.pop('node',None)
  id   = aDict.pop('id',None)
- controller = Device(SC['node'][node])
+ controller = Device(SC['nodes'][node])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  args = aDict
  for host in aDict.keys():
@@ -147,7 +147,7 @@ def host_list(aDict):
 
  Output:
  """
- controller = Device(SC['node'][aDict['node']])
+ controller = Device(SC['nodes'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  ret = {'hosts':controller.fetch_list("hosts/",('id','name','url','inventory','description','enabled','instance_id'))}
  return ret
