@@ -276,7 +276,8 @@ def database_backup(aDict):
    data = []
  try:
   with open(ret['filename'],'w+') as f:
-   f.write("\n".join(data))
+   output = "\n".join(data)
+   f.write(output.encode("utf-8"))
   ret['result'] = 'OK'
  except Exception as err:
   ret['error'] = str(err) 
