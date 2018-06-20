@@ -670,12 +670,12 @@ def interface_info(aDict):
 #
 #
 def interface_delete(aDict):
- """Function docstring for interface_delete TBD. Delete a certain interface
+ """Delete device interfaces using either id of interface, a list of interfaces or all free interfaces
 
  Args:
-  - interface_<x> (optional required). 0/1, deletes interface x if set to 1
-  - id (optional required)
-  - device_id (optional required). Device to delete free interfaces from
+  - id (optional required) id of interface
+  - interface_<id> (optional required)
+  - device_id (optional required). Device to delete 'free' interfaces from
 
  Output:
   - interfaces. List of id:s of deleted interfaces
@@ -683,18 +683,21 @@ def interface_delete(aDict):
   - deleted. Number of deleted interfaces
  """
  ret = {'interfaces':[],'cleared':0,'deleted':0}
- op  = aDict.pop('op')
+ op  = aDict.pop('op',None)
  with DB() as db:
-  for intf,value in aDict.iteritems():
-   if intf[0:10] == 'interface_' and str(value) == '1':
-    try:    id = int(intf[10:])
-    except: continue
-   elif intf == 'id':
-    id = int(value)
-   else: continue
-   ret['cleared'] += db.do("UPDATE device_interfaces SET peer_interface = NULL WHERE peer_interface = %s"%id)
-   ret['deleted'] += db.do("DELETE FROM device_interfaces WHERE id = %s"%id)
-   ret['interfaces'].append(id)
+  if aDict.get('device_id'):
+   ret['deleted'] = db.do("DELETE FROM device_interfaces WHERE device = %s AND peer_interface IS NULL AND multipoint = 0 AND manual = 0"%aDict['device_id'])
+  else:
+   for intf,value in aDict.iteritems():
+    if intf[0:10] == 'interface_':
+     try:    id = int(intf[10:])
+     except: continue
+    elif intf == 'id':
+     id = int(value)
+    else: continue
+    ret['cleared'] += db.do("UPDATE device_interfaces SET peer_interface = NULL WHERE peer_interface = %s"%id)
+    ret['deleted'] += db.do("DELETE FROM device_interfaces WHERE id = %s"%id)
+    ret['interfaces'].append(id)
  return ret
 
 #
