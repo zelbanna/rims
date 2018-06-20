@@ -11,23 +11,23 @@
             "value": "zdcp"
         }, 
         "db_host": {
-            "description": "DB host IP", 
+            "description": "DB host IP - master role only", 
             "value": "127.0.0.1"
         }, 
         "db_name": {
-            "description": "DB name", 
+            "description": "DB name - master role only", 
             "value": "zdcp"
         }, 
         "db_pass": {
-            "description": "DB Password", 
+            "description": "DB Password - master role only", 
             "value": "PASSWORD"
         }, 
         "db_type": {
-            "description": "DB type", 
+            "description": "DB type - master role only", 
             "value": "mysql"
         }, 
         "db_user": {
-            "description": "DB Username", 
+            "description": "DB Username - master role only", 
             "value": "USERNAME"
         }, 
         "docroot": {
@@ -43,11 +43,11 @@
             "value": "http://127.0.0.1/rest.cgi"
         }, 
         "mode": {
-            "description": "Local device function [front,master,rest]", 
+            "description": "Local device role/function [front,master,rest]", 
             "value": "front,master,rest"
         },
         "rest": {
-            "description": "Local Node REST interface", 
+            "description": "Local device REST interface", 
             "value": "http://127.0.0.1/rest.cgi"
         }
     }
