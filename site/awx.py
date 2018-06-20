@@ -12,11 +12,11 @@ __status__ = "Production"
 def manage(aWeb):
  args = aWeb.get_args2dict()
  data = aWeb.rest_call("awx_inventory_list",args)
- ui   = aWeb.rest_call("awx_node_to_ui",data['node'])
+ ui   = aWeb.rest_call("awx_node_to_ui",{'node':data['node']})
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op HREF=%s     target=_blank>UI</A></LI>"%(ui)
  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?awx_manage&id=%s'></A></LI>"%(data['id'])
- print "<LI CLASS='right navinfo'><A>%s</A></LI>"%(data['device']['hostname'])
+ print "<LI CLASS='right navinfo'><A>%s</A></LI>"%(data['hostname'])
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content><SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Inventories</P>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
@@ -34,7 +34,7 @@ def manage(aWeb):
 def inventory(aWeb):
  args = aWeb.get_args2dict()
  if aWeb['op'] == 'delete_list':
-  opres = aWeb.rest_call("awx_inventory_delete_list",args)
+  opres = aWeb.rest_call("awx_inventory_delete_hosts",args)
  else:
   opres = ""
  res = aWeb.rest_call("awx_inventory_info",args)
