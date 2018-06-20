@@ -90,7 +90,7 @@ class Web(object):
   from importlib import import_module
   from sys import stdout
   self.form = cgi.FieldStorage()
-  stdout.write("Content-Type:text/html\r\n\n")
+  stdout.write("Content-Type: text/html; charset=utf-8\r\n\n")
   try:
    (mod,void,fun) = self.call.partition('_')
    module = import_module("zdcp.site." + mod)

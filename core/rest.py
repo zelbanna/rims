@@ -61,7 +61,7 @@ def server(aNodeID):
  stdout.write("X-API-Node:%s\r\n"%node)
  stdout.write("X-API-Module:%s\r\n"%mod)
  stdout.write("X-API-Function:%s\r\n"%fun)
- stdout.write("Content-Type: application/json\r\n")
+ stdout.write("Content-Type: application/json; charset=utf-8\r\n")
  stdout.flush()
  stdout.write("\r\n")
  stdout.write(output)
