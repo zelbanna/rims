@@ -32,9 +32,9 @@ def domain_list(aDict):
  ret = {}
  with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
   if aDict.get('filter'):
-   ret['xist'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
+   ret['count'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
   else:
-   ret['xist'] = db.do("SELECT domains.* FROM domains")
+   ret['count'] = db.do("SELECT domains.* FROM domains")
   ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
   if aDict.get('dict') and aDict.get('exclude'):
    ret['domains'].pop(aDict.get('exclude'),None)
@@ -78,8 +78,8 @@ def domain_info(aDict):
    else:
     ret['update'] = db.update_dict('domains',args,"id=%s"%id)
 
-  ret['xist'] = db.do("SELECT id,name,master,type,notified_serial FROM domains WHERE id = '%s'"%id)
-  ret['data'] = db.get_row() if ret['xist'] > 0 else {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
+  ret['found'] = (db.do("SELECT id,name,master,type,notified_serial FROM domains WHERE id = '%s'"%id) > 0)
+  ret['data'] = db.get_row() if ret['found'] else {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
  return ret
 
 #
@@ -166,8 +166,8 @@ def record_info(aDict):
    else:
     ret['update'] = db.update_dict('records',args,"id='%s'"%id)
  
-  ret['xist'] = db.do("SELECT records.* FROM records WHERE id = '%s' AND domain_id = '%s'"%(id,aDict['domain_id']))
-  ret['data'] = db.get_row() if ret['xist'] > 0 else {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
+  ret['found'] = (db.do("SELECT records.* FROM records WHERE id = '%s' AND domain_id = '%s'"%(id,aDict['domain_id'])) > 0)
+  ret['data']  = db.get_row() if ret['found'] else {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
  return ret
 
 #

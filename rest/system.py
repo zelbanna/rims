@@ -169,8 +169,8 @@ def settings_list(aDict):
   filter = ""
   ret['section'] = 'all'
  with DB() as db:
-  ret['xist'] = db.do("SELECT * FROM settings WHERE node = '%s' %s ORDER BY section,parameter"%(ret['node'],filter))
-  ret['data'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
+  ret['count'] = db.do("SELECT * FROM settings WHERE node = '%s' %s ORDER BY section,parameter"%(ret['node'],filter))
+  ret['data']  = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
  return ret
 
 #
@@ -202,8 +202,8 @@ def settings_info(aDict):
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT * FROM settings WHERE id = '%s'"%id)
-   ret['data'] = db.get_row()
+   ret['found'] = (db.do("SELECT * FROM settings WHERE id = '%s'"%id) > 0)
+   ret['data']  = db.get_row()
   else:
    ret['data'] = {'id':'new','value':'Unknown','section':aDict.get('section','Unknown'),'parameter':'Unknown','description':'Unknown'}
  return ret
@@ -391,8 +391,8 @@ def node_list(aDict):
  ret = {}
  args = aDict
  with DB() as db:
-  ret['xist'] = db.do("SELECT * FROM nodes")
-  ret['data'] = db.get_rows()
+  ret['count'] = db.do("SELECT * FROM nodes")
+  ret['data']  = db.get_rows()
  return ret
 
 #
@@ -420,7 +420,7 @@ def node_info(aDict):
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id)
+   ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
   else:
    ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':None}
@@ -469,8 +469,8 @@ def resources_list(aDict):
   type = "type = '%s'"%aDict['type'] if aDict.get('type') else "true"
   user = "(user_id = %s OR %s)"%(ret['user_id'],'false' if not ret['view_public'] else 'private = 0')
   select = "%s AND %s AND %s"%(node,type,user)
-  ret['xist'] = db.do("SELECT id, node, icon, title, href, type, view, user_id FROM resources WHERE %s ORDER BY type,title"%select)
-  ret['data'] = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
+  ret['count'] = db.do("SELECT id, node, icon, title, href, type, view, user_id FROM resources WHERE %s ORDER BY type,title"%select)
+  ret['data']  = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
  return ret
 
 #
@@ -538,8 +538,8 @@ def users_list(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT id, alias, name, email FROM users ORDER by name")
-  ret['data'] = db.get_rows()
+  ret['count'] = db.do("SELECT id, alias, name, email FROM users ORDER by name")
+  ret['data']  = db.get_rows()
  return ret
 
 #
@@ -571,7 +571,7 @@ def users_info(aDict):
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT users.* FROM users WHERE id = '%s'"%id)
+   ret['found'] = (db.do("SELECT users.* FROM users WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
   else:
    ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','view_public':'0','menulist':'default'}
@@ -645,7 +645,7 @@ def activities_info(aDict):
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT id,user_id,type_id, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, event FROM activities WHERE id = %s"%id)
+   ret['found'] = (db.do("SELECT id,user_id,type_id, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, event FROM activities WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
    from time import localtime
@@ -707,7 +707,7 @@ def activities_type_info(aDict):
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT * FROM activity_types WHERE id = '%s'"%id)
+   ret['found'] = (db.do("SELECT * FROM activity_types WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
   else:
    ret['data'] = {'id':'new','type':'Unknown'}

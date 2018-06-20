@@ -18,8 +18,8 @@ def list(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT id,name FROM visualize")
-  ret['maps'] = db.get_rows()
+  ret['count'] = db.do("SELECT id,name FROM visualize")
+  ret['maps']  = db.get_rows()
  return ret
 
 #
@@ -56,8 +56,8 @@ def show(aDict):
  ret = {}
  with DB() as db:
   search = "id = %(id)s"%aDict if aDict.get('id') else "name = '%(name)s'"%aDict
-  ret['xist'] = db.do("SELECT * FROM visualize WHERE %s"%search)
-  if ret['xist'] > 0:
+  ret['found'] = (db.do("SELECT * FROM visualize WHERE %s"%search) > 0)
+  if ret['found']:
    data = db.get_row() 
    ret['id']   = data['id']
    ret['name'] = data['name']
@@ -106,8 +106,8 @@ def network(aDict):
 
   ret['id'] = int(ret['id'])
   if ret['type'] == 'map':
-   ret['xist'] = db.do("SELECT * FROM visualize WHERE id = %s"%ret['id'])
-   data = db.get_row() if ret['xist'] > 0 else {}
+   ret['found'] = (db.do("SELECT * FROM visualize WHERE id = %s"%ret['id']) > 0)
+   data = db.get_row() if ret['found'] else {}
    ret['name'] = data.get('name',"")
    for var in ['nodes','edges','options']:
     ret[var] = loads(data.get(var,'null'))

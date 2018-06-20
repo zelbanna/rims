@@ -19,7 +19,7 @@ def list(aWeb):
  if aWeb['op']:
   aWeb.rest_call("booking_update",{'device_id':aWeb['device_id'],'user_id':aWeb['user_id'],'op':aWeb['op']})
 
- rows = aWeb.rest_call("booking_list")['list']
+ rows = aWeb.rest_call("booking_list")['data']
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Bookings</P>"
  print aWeb.button('reload', DIV='div_content', URL='zdcp.cgi?bookings_list')

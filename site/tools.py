@@ -151,7 +151,6 @@ def logs_clear(aWeb):
 #
 def logs_show(aWeb):           
  res = aWeb.rest_call('tools_logs_get&node=%s'%aWeb['node'],{'count':18})
- res.pop('xist',None)               
  print "<ARTICLE>"   
  for file,logs in res.iteritems():
   print "<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))

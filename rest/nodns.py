@@ -21,7 +21,7 @@ def domain_list(aDict):
 
  Output:
  """
- return {'xist':1,'domains':[{'id':0,'name':'local'}]}
+ return {'count':1,'domains':[{'id':0,'name':'local'}]}
 
 #
 #
@@ -37,7 +37,7 @@ def domain_info(aDict):
 
  Output:
  """
- ret = {'insert':0, 'update':0, 'xist':1, 'data':{'id':'0','name':'local','master':'127.0.0.1','type':'MASTER', 'notified_serial':0 }}
+ ret = {'insert':0, 'update':0, 'found':True, 'data':{'id':'0','name':'local','master':'127.0.0.1','type':'MASTER', 'notified_serial':0 }}
  return ret
 
 #
@@ -102,11 +102,11 @@ def record_info(aDict):
  """
  ret = {}
  if aDict['id'] == 'new':
-  ret = {'xist':0, 'data':{'id':0,'domain_id':0,'name':aDict.get('name','no_record'),'content':aDict.get('content','no_record'),'type':aDict.get('type','A'),'ttl':'3600' }}
+  ret = {'found':False, 'data':{'id':0,'domain_id':0,'name':aDict.get('name','no_record'),'content':aDict.get('content','no_record'),'type':aDict.get('type','A'),'ttl':'3600' }}
  else:
   from zdcp.core.common import DB
   with DB() as db:
-   ret['xist'] = db.do("SELECT devices.id, 0 AS domain_id, CONCAT(hostname,'.local') AS name, INET_NTOA(ia.ip) AS content, 'A' AS type, 3600 AS ttl FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.a_dom_id = 0 AND devices.id = %s"%aDict['id'])
+   ret['found'] = (db.do("SELECT devices.id, 0 AS domain_id, CONCAT(hostname,'.local') AS name, INET_NTOA(ia.ip) AS content, 'A' AS type, 3600 AS ttl FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.a_dom_id = 0 AND devices.id = %s"%aDict['id']) > 0)
    ret['data'] = db.get_row()
  return ret
 

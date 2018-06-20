@@ -52,7 +52,7 @@ def server_info(aDict):
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT * FROM domain_servers WHERE id = '%s'"%id)
+   ret['found'] = (db.do("SELECT * FROM domain_servers WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
   else:
    ret['data'] = {'id':'new','node':None,'server':'Unknown'}
@@ -121,7 +121,7 @@ def domain_list(aDict):
    filter.append('server_id = %s'%(db.get_val('server_id')))
    filter.append("domains.id <> '%s'"%aDict.get('exclude'))
 
-  ret['xist'] = db.do("SELECT domains.*, server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE %s ORDER BY name"%('TRUE' if len(filter) == 0 else " AND ".join(filter)))
+  ret['count']   = db.do("SELECT domains.*, server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE %s ORDER BY name"%('TRUE' if len(filter) == 0 else " AND ".join(filter)))
   ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 
@@ -357,7 +357,7 @@ def record_device_update(aDict):
 
  Output:
  """
- ret  = {'A':{'xist':0},'PTR':{'xist':0},'device':{'xist':0},'server':{}}
+ ret  = {'A':{'found':False},'PTR':{'found':False},'device':{'found':False},'server':{}}
  aDict['a_domain_id'] = int(aDict['a_domain_id'])
  data = {}
 
@@ -375,8 +375,8 @@ def record_device_update(aDict):
    domains['name'][dom['name']] = dom
    domains['foreign_id'][dom['foreign_id']] = dom
 
-  ret['device']['xist'] = db.do("SELECT hostname, a_dom_id AS a_domain_id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id = %s"%aDict['id']) if not aDict['id'] == 'new' else 0
-  device = db.get_row() if ret['device']['xist'] > 0 else None
+  ret['device']['found'] = (db.do("SELECT hostname, a_dom_id AS a_domain_id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id = %s"%aDict['id']) > 0) if not aDict['id'] == 'new' else False
+  device = db.get_row() if ret['device']['found'] else None
   #
   # A record: check if valid domain, then if not a_id == 'new' make sure we didn't move server otherwise delete record and set a_id to new
   #
@@ -421,7 +421,7 @@ def record_device_update(aDict):
    res = node_call(infra['node'],infra['server'],'record_info',infra['args'])
    ret[type]['record_id'] = res['data']['id']
    ret[type]['domain_id'] = domains['foreign_id'].get(res['data']['domain_id'],{'domain_id':0})['domain_id']
-   ret[type]['xist'] = res['xist']
+   ret[type]['found']  = res['found']
    ret[type]['update'] = res.get('update',0)
    ret[type]['insert'] = res.get('insert',0)
  return ret

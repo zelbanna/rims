@@ -46,7 +46,7 @@ def info(aDict):
     ret['update'] = db.insert_dict('racks',args)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
   if not id == 'new':
-   ret['xist'] = db.do("SELECT racks.* FROM racks WHERE id = %s"%id)
+   ret['found'] = (db.do("SELECT racks.* FROM racks WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
    ret['data'] = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None  }
@@ -106,7 +106,7 @@ def devices(aDict):
  with DB() as db:
   db.do("SELECT name, size FROM racks where id = %s"%id)
   ret.update(db.get_row())
-  ret['xist']    = db.do("SELECT devices.id, hostname, rack_info.rack_unit, rack_info.rack_size, bookings.user_id FROM devices LEFT JOIN bookings ON devices.id = bookings.device_id INNER JOIN rack_info ON devices.id = rack_info.device_id WHERE rack_info.rack_id = %s ORDER BY %s"%(id,ret['sort']))
+  ret['count']   = db.do("SELECT devices.id, hostname, rack_info.rack_unit, rack_info.rack_size, bookings.user_id FROM devices LEFT JOIN bookings ON devices.id = bookings.device_id INNER JOIN rack_info ON devices.id = rack_info.device_id WHERE rack_info.rack_id = %s ORDER BY %s"%(id,ret['sort']))
   ret['devices'] = db.get_rows()
  return ret
 

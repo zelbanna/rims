@@ -94,7 +94,7 @@ def services(aDict):
  with DB() as db:
   db.do("SELECT id FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
   id = db.get_val('id')
-  ret['xist'] = db.do("SELECT %s FROM openstack_services WHERE id = '%s'"%("*" if not aDict.get('filter') else aDict.get('filter'), id))
+  ret['count']    = db.do("SELECT %s FROM openstack_services WHERE id = '%s'"%("*" if not aDict.get('filter') else aDict.get('filter'), id))
   ret['services'] = db.get_rows()
  return ret
 
@@ -179,7 +179,7 @@ def info(aDict):
  from datetime import datetime
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT id, token, node, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires, (UNIX_TIMESTAMP() < expires) AS valid FROM openstack_tokens WHERE username = '%s'"%aDict['username'])
+  ret['found'] = (db.do("SELECT id, token, node, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires, (UNIX_TIMESTAMP() < expires) AS valid FROM openstack_tokens WHERE username = '%s'"%aDict['username']) > 0)
   ret['data'] = db.get_rows()
  return ret
 
@@ -196,7 +196,7 @@ def token_info(aDict):
  from datetime import datetime
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("node, SELECT CAST(NOW() AS CHAR(50)) AS time, INET_NTOA(controller) AS controller, id, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
+  ret['found'] = (db.do("node, SELECT CAST(NOW() AS CHAR(50)) AS time, INET_NTOA(controller) AS controller, id, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires FROM openstack_tokens WHERE token = '%s'"%aDict['token']) > 0)
   ret['data'] = db.get_row()
  return ret
 

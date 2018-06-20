@@ -109,7 +109,7 @@ def info(aWeb):
  cookie = aWeb.cookie_unjar('system')
  args = aWeb.get_args2dict()
  dev = aWeb.rest_call("device_info",args)
- if not dev['xist']:
+ if not dev['found']:
   print "<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip'])
   return
  ########################## Data Tables ######################

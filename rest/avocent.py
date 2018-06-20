@@ -50,8 +50,8 @@ def info(aDict):
     args.update({'1_slot_id':slotl[1][0],'1_slot_name':slotl[1][1]})
    db.update_dict('pdu_info',args,"device_id = %(id)s"%aDict)
 
-  ret['xist'] = db.do("SELECT * FROM pdu_info WHERE device_id = '%(id)s'"%aDict)
-  if ret['xist'] == 1:
+  ret['found'] = (db.do("SELECT * FROM pdu_info WHERE device_id = '%(id)s'"%aDict) > 0)
+  if ret['found']:
    ret['data'] = db.get_row()
   else:
    db.do("INSERT INTO pdu_info SET device_id = %(id)s, slots = 1"%aDict)

@@ -26,7 +26,7 @@ def info(aDict):
   srch = "devices.ipam_id = %s"%aDict.get('ipam_id')
   aDict.pop('op',None)
  else:
-  return {'xist':0}
+  return {'found':False}
  ret = {'id':aDict.pop('id',None),'ip':aDict.get('ip',None)}
 
  op = aDict.pop('op',None)
@@ -43,8 +43,8 @@ def info(aDict):
     except: args['mac'] = 0
    ret['update'] = (db.update_dict('devices',args,"id=%s"%ret['id']) == 1)
   # Now fetch info
-  ret['xist'] = (db.do("SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, functions, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE {}".format(srch)) == 1)
-  if ret['xist']:
+  ret['found'] = (db.do("SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, functions, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE {}".format(srch)) == 1)
+  if ret['found']:
    ret['info'] = db.get_row()
    ret['id'] = ret['info'].pop('id',None)
    ret['ip'] = ret['info'].pop('ipasc',None)
@@ -100,8 +100,8 @@ def update(aDict):
 
  with DB() as db:
   # Prep types for lookup
-  typexist = db.do("SELECT id, name, base FROM device_types")
-  types    = db.get_dict('name')
+  db.do("SELECT id, name, base FROM device_types")
+  types = db.get_dict('name')
 
   # Move aDict to args for op
   operation = aDict.pop('op',None)
@@ -152,7 +152,7 @@ def update(aDict):
      dns = DNS.record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip'],'id':ret['id']})
      # ret['result']['dns'] = dns
      for type in ['a','ptr']:
-      if dns[type.upper()]['xist'] > 0:
+      if dns[type.upper()]['found']:
        if not (str(dns[type.upper()]['record_id']) == str(args['devices_%s_id'%type])):
         args['devices_%s_id'%type] = dns[type.upper()]['record_id']
        else:
@@ -165,8 +165,8 @@ def update(aDict):
     ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%ret['id']),'rack_info':db.update_dict_prefixed('rack_info',args,"device_id='%s'"%ret['id'])}
 
   # Now fetch info
-  ret['xist'] = (db.do("SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
-  if ret['xist']:
+  ret['found'] = (db.do("SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  if ret['found']:
    ret['info'] = db.get_row()
    ret['id'] = ret['info'].pop('id',None)
    ret['ip'] = ret['info'].pop('ipasc',None)
@@ -219,8 +219,8 @@ def basics(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ia.ip) as ip, hostname, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id'])
-  ret.update(db.get_row()) if ret['xist'] > 0 else {}
+  ret['found'] = (db.do("SELECT devices.id, INET_NTOA(ia.ip) as ip, hostname, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id']) > 0)
+  ret.update(db.get_row()) if ret['found'] else {}
  return ret
 
 #
@@ -277,7 +277,7 @@ def list(aDict):
 
  with DB() as db:
   sql = "SELECT %s FROM devices LEFT JOIN %s WHERE %s ORDER BY %s"%(", ".join(fields)," LEFT JOIN ".join(tune)," AND ".join(filter),sort)
-  ret['xist'] = db.do(sql)
+  ret['count'] = db.do(sql)
   ret['data'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 
@@ -334,8 +334,8 @@ def new(aDict):
 
  ret = {'info':None}
  with DB() as db:
-  ret['xist'] = db.do("SELECT id, hostname, a_dom_id FROM devices WHERE hostname = '%(hostname)s' AND a_dom_id = %(a_dom_id)s"%aDict)
-  if ret['xist'] == 0:
+  ret['found'] = (db.do("SELECT id, hostname, a_dom_id FROM devices WHERE hostname = '%(hostname)s' AND a_dom_id = %(a_dom_id)s"%aDict) > 0)
+  if not ret['found']:
    mac     = GL_mac2int(aDict.get('mac',0))
    ipam_id = alloc['id'] if alloc else 'NULL'
    ret['insert'] = db.do("INSERT INTO devices(vm,mac,a_dom_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['a_dom_id'],ipam_id,aDict['hostname']))
@@ -348,7 +348,7 @@ def new(aDict):
    ret.update(db.get_row())
 
  # also remove allocation if existed..
- if ret['xist'] > 0 and alloc['success']:
+ if ret['found'] and alloc['success']:
   from zdcp.rest.ipam import ip_delete
   ret['info'] = "existing (%s)"%ip_delete({'id':alloc['id']})
  return ret
@@ -364,8 +364,8 @@ def delete(aDict):
  Output:
  """
  with DB() as db:
-  existing = db.do("SELECT hostname, ine.reverse_zone_id, ipam_id, mac, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %s"%aDict['id'])
-  if existing == 0:
+  found = (db.do("SELECT hostname, ine.reverse_zone_id, ipam_id, mac, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %s"%aDict['id']) > 0)
+  if found:
    ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
    data = db.get_row()
@@ -457,7 +457,7 @@ def type_list(aDict):
  ret = {}
  sort = 'name' if aDict.get('sort','name') == 'name' else 'base'
  with DB() as db:
-  ret['xist'] = db.do("SELECT * FROM device_types ORDER BY %s"%sort)
+  ret['count'] = db.do("SELECT * FROM device_types ORDER BY %s"%sort)
   ret['types'] = db.get_rows()
  return ret
 
@@ -476,8 +476,8 @@ def list_type(aDict):
  ret = {}
  with DB() as db:
   select = "device_types.%s ='%s'"%(('name',aDict['name']) if aDict.get('name') else ('base',aDict['base']))
-  ret['xist'] = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, hostname, device_types.base AS type_base, device_types.name AS type_name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY type_name,hostname"%select)
-  ret['data'] = db.get_rows()
+  ret['count'] = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, hostname, device_types.base AS type_base, device_types.name AS type_name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY type_name,hostname"%select)
+  ret['data']  = db.get_rows()
  return ret
 
 #
@@ -518,14 +518,14 @@ def node_mapping(aDict):
  """
  with DB() as db:
   if aDict.get('id'):
-   xist = db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%aDict['id'])
-   ret = db.get_row() if xist else {} 
+   found = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%aDict['id']) > 0)
+   ret = db.get_row() if found else {} 
    ret['found'] = (db.do("SELECT node FROM nodes WHERE device_id = %s"%aDict['id']) > 0)
    ret['node']  = db.get_val('node') if ret['found'] else None
    ret['id']    = int(aDict['id'])
   else:
-   xist = db.do("SELECT device_id FROM nodes WHERE node = '%s'"%aDict['node'])
-   ret = {'id':db.get_val('device_id') if xist > 0 else None, 'node':aDict['node'], 'found':False}
+   found = (db.do("SELECT device_id FROM nodes WHERE node = '%s'"%aDict['node']) > 0)
+   ret = {'id':db.get_val('device_id') if found else None, 'node':aDict['node'], 'found':False}
    if ret['id']:
     ret['found'] = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%ret['id']) > 0)
     ret.update(db.get_row())
@@ -542,7 +542,7 @@ def webpage_list(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['xist'] = db.do("SELECT id,hostname,webpage FROM devices WHERE webpage IS NOT NULL")
+  ret['count'] = db.do("SELECT id,hostname,webpage FROM devices WHERE webpage IS NOT NULL")
   ret['data'] = db.get_rows()
  return ret
 
@@ -620,10 +620,10 @@ def interface_list(aDict):
   ret = db.get_row()
   if ret:
    sort = aDict.get('sort','snmp_index')
-   ret['xist'] = db.do("SELECT id,name,description,snmp_index,peer_interface,multipoint FROM device_interfaces WHERE device = %s ORDER BY %s"%(ret['id'],sort))
+   ret['count'] = db.do("SELECT id,name,description,snmp_index,peer_interface,multipoint FROM device_interfaces WHERE device = %s ORDER BY %s"%(ret['id'],sort))
    ret['data'] = db.get_rows()
   else:
-   ret = {'id':None,'hostname':None,'data':[],'xist':0}
+   ret = {'id':None,'hostname':None,'data':[],'count':0}
  return ret
 
 #
@@ -660,7 +660,7 @@ def interface_info(aDict):
     id = db.get_last_id() if ret['insert'] > 0 else 'new'
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT dc.*, peer.device AS peer_device FROM device_interfaces AS dc LEFT JOIN device_interfaces AS peer ON dc.peer_interface = peer.id WHERE dc.id = '%s'"%id)
+   ret['found'] = (db.do("SELECT dc.*, peer.device AS peer_device FROM device_interfaces AS dc LEFT JOIN device_interfaces AS peer ON dc.peer_interface = peer.id WHERE dc.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
    ret['data'].pop('manual',None)
   else:
@@ -739,11 +739,11 @@ def interface_link_advanced(aDict):
   sql_dev  ="SELECT devices.id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.ip = INET_ATON('%s')"
   sql_indx = "SELECT id FROM device_interfaces WHERE device = '%s' AND snmp_index = '%s'"
   for peer in ['a','b']:
-   xist = db.do(sql_dev%aDict['%s_ip'%peer])
-   if xist > 0:
+   found = (db.do(sql_dev%aDict['%s_ip'%peer]) > 0)
+   if found:
     ret[peer]['device'] = db.get_val('id')
-    xist = db.do(sql_indx%(ret[peer]['device'],aDict['%s_index'%peer]))
-    if xist > 0:
+    found = (db.do(sql_indx%(ret[peer]['device'],aDict['%s_index'%peer])) > 0)
+    if found:
      ret[peer]['index'] = db.get_val('id')
     else:
      db.insert_dict('device_interfaces',{'device':ret[peer]['device'],'name':'Unknown','description':'Unknown','snmp_index':aDict['%s_index'%peer]})

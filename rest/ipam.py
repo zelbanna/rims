@@ -26,8 +26,8 @@ def network_list(aDict):
  ret = {}
  with DB() as db:
   dhcp = db.do("SELECT parameter,value FROM settings WHERE section = 'dhcp'")
-  ret['dhcp'] = db.get_dict('parameter') if dhcp > 0 else None
-  ret['xist']    = db.do("SELECT id, CONCAT(INET_NTOA(network),'/',mask) AS netasc, INET_NTOA(gateway) AS gateway, description, mask, network FROM ipam_networks ORDER by network")
+  ret['dhcp']     = db.get_dict('parameter') if dhcp > 0 else None
+  ret['count']    = db.do("SELECT id, CONCAT(INET_NTOA(network),'/',mask) AS netasc, INET_NTOA(gateway) AS gateway, description, mask, network FROM ipam_networks ORDER by network")
   ret['networks'] = db.get_rows()
  return ret
 
@@ -76,7 +76,7 @@ def network_info(aDict):
     ret['update'] = db.update_dict('ipam_networks',args,'id=%s'%id)
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT id, mask, description, INET_NTOA(network) AS network, INET_NTOA(gateway) AS gateway, reverse_zone_id FROM ipam_networks WHERE id = %s"%id)
+   ret['found'] = (db.do("SELECT id, mask, description, INET_NTOA(network) AS network, INET_NTOA(gateway) AS gateway, reverse_zone_id FROM ipam_networks WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
    ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New','reverse_zone_id':None }
@@ -104,7 +104,7 @@ def network_inventory(aDict):
   ret['mask']   = network['mask']
   ret['network'] = network['netasc']
   ret['gateway']= network['gwasc']
-  ret['xist_addresses'] = db.do("SELECT ip,id,0 AS gateway FROM ipam_addresses WHERE network_id = %(id)s ORDER BY ip"%aDict)
+  ret['count']  = db.do("SELECT ip,id,0 AS gateway FROM ipam_addresses WHERE network_id = %(id)s ORDER BY ip"%aDict)
   ret['addresses'] = db.get_dict('ip')
   gw = ret['addresses'].get(network['gateway'])
   if gw:
