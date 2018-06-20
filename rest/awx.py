@@ -9,23 +9,33 @@ from zdcp.SettingsContainer import SC
 
 #
 #
+def node_to_ui(aDict):
+ """Function docstring for node_to_ui TBD
+
+ Args:
+  - node (required)
+
+ Output:
+ """
+ node = SC['node'][aDict.get('node','awx')]
+ parts = node.partition('//')
+ host = "%s//%s/"%(parts[0],(parts[2].split('/')[0]).split(':')[0])
+ return {'ui':host }
+
+#
+#
 def inventory_list(aDict):
  """Function main produces an inventory list for a device id
 
  Args:
-  - device_id (optional required)
+  - id (optional required)
   - node (optional required)
 
  Output:
   - inventories
  """
- if not aDict.get('node'):
-  from zdcp.rest.device import to_node
-  ret = to_node({'id':aDict['device_id']})
-  ret['id'] = aDict['device_id']
- else:
-  from zdcp.rest.device import from_node
-  ret = from_node({'node':aDict['node']})
+ from zdcp.rest.device import node_mapping
+ ret = node_mapping(aDict)
  controller = Device(SC['node'][ret['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  ret['inventories'] = controller.fetch_list("inventories/",('id','name','url'))
@@ -42,7 +52,6 @@ def inventory_delete(aDict):
 
  Output:
  """
- from zdcp.rest.device import to_node
  controller = Device(SC['node'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  res = controller.call("inventories/%(id)s/"%aDict,None,"DELETE")

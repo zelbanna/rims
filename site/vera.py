@@ -38,7 +38,7 @@ def manage(aWeb):
  if aWeb['node']:
   node = aWeb['node']
  elif aWeb['id']:
-  node = aWeb.rest_call("device_to_node",{'id':aWeb['id']})['node']
+  node = aWeb.rest_call("device_node_mapping",{'id':aWeb['id']})['node']
  ui = aWeb.rest_call("vera_node_to_ui",{'node':node}).get('ui','#')
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content URL=zdcp.cgi?vera_status&node=%s>Status</A></LI>"%node

@@ -353,6 +353,14 @@ def settings_container(aDict):
 
 ################################################# NODE ##############################################
 #
+# A node represent a system entity that can run REST commands remote (or locally),
+# - system indicates it was registered and should not be deletable
+# - www indicates that it was registered as having a www/front 'mode'
+# - device_id: connected to a device in the device/IPAM DB:s
+#
+
+
+#
 #
 def node_register(aDict):
  """Function docstring for register TBD
@@ -402,19 +410,20 @@ def node_info(aDict):
  args = aDict
  id = args.pop('id','new')
  op = args.pop('op',None)
+ args.pop('hostname',None)
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('nodes',args,'id=%s AND (system = 0 OR www = 0)'%id)
+    ret['update'] = db.update_dict('nodes',args,'id=%s'%id)
    else:
     ret['update'] = db.insert_dict('nodes',args)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   ret['xist'] = db.do("SELECT * FROM nodes WHERE id = '%s'"%id)
+   ret['xist'] = db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = {'id':'new','node':'Unknown','url':'Unknown'}
+   ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':None}
  return ret
 
 #
@@ -429,7 +438,7 @@ def node_delete(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['delete'] = db.do("DELETE FROM nodes WHERE id = %s"%aDict['id'])
+  ret['delete'] = db.do("DELETE FROM nodes WHERE id = %s AND node <> 'master'"%aDict['id'])
  return ret
 
 ############################################# RESOURCES #############################################

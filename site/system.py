@@ -111,6 +111,7 @@ def portal(aWeb):
  if menu['start']:
   print "<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['href'] if menu['menu'][0]['view'] == 0 else "zdcp.cgi?resources_framed&id=%s"%menu['menu'][0]['id'])
 
+############################# NODE ###########################
 #
 #
 def node_list(aWeb):
@@ -136,16 +137,18 @@ def node_info(aWeb):
  data = aWeb.rest_call("system_node_info",args)['data']
  print "<ARTICLE CLASS='info'><P>Node Info</DIV>"
  print "<FORM ID=system_node_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id'])
  print "<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=node STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['node'])
- print "<DIV CLASS=tr><DIV CLASS=td>URL:</DIV><DIV CLASS=td><INPUT  TYPE=URL  NAME=url  STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['url'])
+ print "<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id'])
+ print "<INPUT TYPE=HIDDEN NAME=device_id ID=device_id VALUE='%s'>"%(data['device_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><INPUT   TYPE=TEXT NAME=node STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['node'])
+ print "<DIV CLASS=tr><DIV CLASS=td>URL:</DIV><DIV CLASS=td><INPUT    TYPE=URL  NAME=url  STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['url'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Device:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=hostname STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['hostname']) 
  print "</DIV></DIV>"
- print "<SPAN></SPAN>"
- print "</FORM><DIV CLASS=controls>"
- if str(data.get('system','0')) == '0':
-  print aWeb.button('save',   DIV='div_content_right', URL='zdcp.cgi?system_node_info&op=update', FRM='system_node_form')
-  print aWeb.button('trash', DIV='div_content_right', URL='zdcp.cgi?system_node_delete', FRM='system_node_form')
+ print "</FORM>" 
+ print "<DIV CLASS=controls>"
+ print aWeb.button('search', DIV='device_id', INPUT='true', URL='zdcp.cgi?system_node_device_id',      FRM='system_node_form')
+ print aWeb.button('save',   DIV='div_content_right',       URL='zdcp.cgi?system_node_info&op=update', FRM='system_node_form')
+ print aWeb.button('trash',  DIV='div_content_right',       URL='zdcp.cgi?system_node_delete',         FRM='system_node_form', MSG='Are you really sure you want to delete node?')
  print "</DIV></ARTICLE>"
 
 #
@@ -153,6 +156,12 @@ def node_info(aWeb):
 def node_delete(aWeb):
  res = aWeb.rest_call("system_node_delete",{'id':aWeb['id']})
  print "<ARTICLE>Result: %s</ARTICLE>"%(res)
+
+#
+#
+def node_device_id(aWeb):
+ res = aWeb.rest_call("device_search",{'device':aWeb['hostname']})
+ print res['device']['id'] if res['found'] > 0 else 'NULL'
 
 ##################################################################################################
 #

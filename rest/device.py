@@ -296,6 +296,7 @@ def search(aDict):
   ret['found'] = db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE hostname LIKE '%%%(device)s%%' OR CONCAT(hostname,'.',domains.name) LIKE '%%%(device)s%%'"%aDict)
   ret['device']= db.get_row()
  return ret
+
 #
 #
 def new(aDict):
@@ -500,37 +501,36 @@ def list_mac(aDict):
 
 #
 #
-def to_node(aDict):
- """Function docstring for to_node TBD
+def node_mapping(aDict):
+ """Node mapping translates between nodes and devices and provide the same info, it depends on the device existing or node having mapped a device (else 'found' is false)
 
  Args:
-  - id
+  - id (optional required)
+  - node (optional required)
 
  Output:
+  - found. boolean
+  - id. device id
+  - node. node name
+  - hostname. device hostname
+  - ip. device ip
+  - domain. Device domain name
  """
- ret = {}
  with DB() as db:
-  db.do("SELECT devices.id, INET_NTOA(ia.ip) as ip, hostname, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %(id)s"%aDict)
-  ret['device'] = db.get_row()
-  ret['found'] = (db.do("SELECT node FROM nodes WHERE url LIKE '%%%(ip)s%%' OR url LIKE '%%%(hostname)s%%' OR url LIKE '%%%(fqdn)s%%'"%ret['device']) > 0)
-  ret['node'] = db.get_val('node') if ret['found'] else None
+  if aDict.get('id'):
+   xist = db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%aDict['id'])
+   ret = db.get_row() if xist else {} 
+   ret['found'] = (db.do("SELECT node FROM nodes WHERE device_id = %s"%aDict['id']) > 0)
+   ret['node']  = db.get_val('node') if ret['found'] else None
+   ret['id']    = int(aDict['id'])
+  else:
+   xist = db.do("SELECT device_id FROM nodes WHERE node = '%s'"%aDict['node'])
+   ret = {'id':db.get_val('device_id') if xist > 0 else None, 'node':aDict['node'], 'found':False}
+   if ret['id']:
+    ret['found'] = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%ret['id']) > 0)
+    ret.update(db.get_row())
  return ret
 
-#
-#
-def from_node(aDict):
- """ Translate node to device
-
- Args:
-  - node
- 
- Output:
-  - device
-  - id
- """
- ret = {'node':aDict['node']}
-
- return ret
 #
 #
 def webpage_list(aDict):

@@ -10,10 +10,11 @@ __status__ = "Production"
 #
 #
 def manage(aWeb):
- args = { 'device_id':aWeb['id']} if aWeb['id'] else {'node':aWeb['node']}
+ args = aWeb.get_args2dict()
  data = aWeb.rest_call("awx_inventory_list",args)
+ ui   = aWeb.rest_call("awx_node_to_ui",data['node'])
  print "<NAV><UL>"
- print "<LI><A CLASS=z-op HREF=http://%s     target=_blank>UI</A></LI>"%(data['device']['ip'])
+ print "<LI><A CLASS=z-op HREF=%s     target=_blank>UI</A></LI>"%(ui)
  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?awx_manage&id=%s'></A></LI>"%(data['id'])
  print "<LI CLASS='right navinfo'><A>%s</A></LI>"%(data['device']['hostname'])
  print "</UL></NAV>"
