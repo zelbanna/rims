@@ -24,11 +24,11 @@ def main(aWeb):
   print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
   for node in data['www']:
    print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?resources_list&node=%s'>%s</A>"%(node,node)
-  print "</DIV></LI>"  
+  print "</DIV></LI>"
  if data.get('users'):
   print "<LI><A CLASS=z-op DIV=div_content URL='zdcp.cgi?users_list'>Users</A></LI>"
  print "<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>"
- for tool in data.get('tools',[]): 
+ for tool in data.get('tools',[]):
   print "<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title'])
  for svc in data.get('services',[]):
   print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_services_info&node=%s&service=%s'>%s</A>"%(aWeb['node'],svc['service'],svc['name'])
@@ -38,7 +38,7 @@ def main(aWeb):
   print "<A CLASS=z-op DIV=div_content URL=zdcp.cgi?dhcp_leases&node=%s&type=%s&lease=active>DHCP - Active</A>"%dhcp
   print "<A CLASS=z-op DIV=div_content URL=zdcp.cgi?dhcp_leases&node=%s&type=%s&lease=free>DHCP - Free</A>"%dhcp
  if data.get('extra'):
-  print "<A CLASS=z-op TARGET=_blank            HREF='zdcp.pdf'>DB - View relational diagram</A>"
+  print "<A CLASS=z-op TARGET=_blank HREF='zdcp.pdf'>DB - View relational diagram</A>"
  print "</DIV></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_rest_main&node=%s'>Debug</A>"%aWeb['node']

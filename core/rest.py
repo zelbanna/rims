@@ -25,7 +25,7 @@ __status__= "Production"
 #
 def server(aNodeID):
  from os import getenv, path as ospath
- from sys import stdout, stdin, path as syspath 
+ from sys import stdout, stdin, path as syspath
  from json import loads, dumps
  from importlib import import_module
  query,output,api,args,mod,fun,additional= getenv("QUERY_STRING"),'null',None,None,None,None,{}
@@ -59,8 +59,7 @@ def server(aNodeID):
   stdout.write("X-API-Info:%s\r\n"%str(e))
   stdout.write("X-API-Xcpt:%s\r\n"%type(e).__name__)
  stdout.write("X-API-Node:%s\r\n"%node)
- stdout.write("X-API-Module:%s\r\n"%mod)
- stdout.write("X-API-Function:%s\r\n"%fun)
+ stdout.write("X-API-Function:%s\r\n"%api)
  stdout.write("Content-Type: application/json; charset=utf-8\r\n")
  stdout.flush()
  stdout.write("\r\n")
