@@ -26,7 +26,7 @@ if __name__ == "__main__":
     params = db.get_rows()
     for param in params:
      key = param.pop('parameter',None)
-     if key in ['username', 'password', 'encrypted','url','domain']:
+     if key in ['username', 'password', 'encrypted','url','domain','community','node']:
       param['value'] = key.upper()
      config[sect][key] = param
   try:

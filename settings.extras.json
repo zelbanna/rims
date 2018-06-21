@@ -2,31 +2,17 @@
     "dhcp": {
         "node": {
             "description": "ISC DHCP REST API", 
-            "value": "master"
+            "value": "NODE"
         }, 
         "type": {
             "description": "DHCP server type", 
             "value": "iscdhcp"
         }
     }, 
-    "dns": {
-        "node": {
-            "description": "PowerDNS REST API", 
-            "value": "master"
-        }, 
-        "type": {
-            "description": "DNS server type", 
-            "value": "powerdns"
-        }
-    }, 
     "esxi": {
         "logformat": {
             "description": "Log formatting", 
             "value": "/var/log/network/{}.operations.log"
-        }, 
-        "shutdownfile": {
-            "description": "Log file for shutdown operations", 
-            "value": "/var/log/network/{}.shutdown.log"
         }, 
         "password": {
             "description": "Password", 
@@ -37,22 +23,10 @@
             "value": "USERNAME"
         }
     }, 
-    "generic": {
-        "nodes": {
-            "description": "System Nodes", 
-            "value": "master,services"
-        }, 
-        "rack_image_directory": {
-            "description": "Directory for rack images", 
-            "value": "/var/www/images"
-        }, 
-        "title": {
-            "description": "Portal Title", 
-            "value": "El Banna portal"
-        }, 
-        "upshost": {
-            "description": "UPS host", 
-            "value": "esxi3.mgmt"
+    "files": {
+        "certs": {
+            "description": "Docroot relative directory for cert files", 
+            "value": "certs"
         }
     }, 
     "ipmi": {
@@ -65,6 +39,7 @@
             "value": "USERNAME"
         }
     }, 
+    "iscdhcp": {}, 
     "logs": {
         "network": {
             "description": "Network log", 
@@ -89,6 +64,7 @@
             "value": "USERNAME"
         }
     }, 
+    "multimedia": {}, 
     "netconf": {
         "anonftp": {
             "description": "Anonymous FTP", 
@@ -115,6 +91,22 @@
             "value": "USERNAME"
         }
     }, 
+    "portal": {
+        "message": {
+            "description": "Welcome message", 
+            "value": "Welcome to El Banna Management"
+        }, 
+        "start": {
+            "description": "Start page", 
+            "value": "243"
+        }, 
+        "title": {
+            "description": "Title", 
+            "value": "Management Portal"
+        }
+    }, 
+    "powerdns": {}, 
+    "services": {}, 
     "snmp": {
         "read_community": {
             "description": "Read Community", 
