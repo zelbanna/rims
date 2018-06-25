@@ -13,29 +13,36 @@ from sys import argv, stdout, path as syspath
 from pip import main as pipmain
 from json import load,dump,dumps
 syspath.insert(1, '../')
-if len(argv) < 2:
- stdout.write("Usage: {} </path/json file>\n\n!!! Import DB structure from mysql.db before installing !!!\n\n".format(argv[0]))
- exit(0)
-
 from os import remove, chmod, listdir, path as ospath
 packagedir = ospath.abspath(ospath.dirname(__file__))
 basedir = ospath.abspath(ospath.join(packagedir,'..'))
 res = {}
+
+if len(argv) < 2:
+ try: 
+  from zdcp.SettingsContainer import SC as Old
+ except:
+  stdout.write("Usage: {} </path/json file>\n\n!!! Import DB structure from mysql.db before installing !!!\n\n".format(argv[0]))
+  exit(0)
+ else:
+  settingsfilename = Old['system']['config_file']
+else:
+ settingfilename = argv[1]
 
 ############################################### ALL #################################################
 #
 # load settings
 #
 settings = {}
-settingsfilename = ospath.abspath(argv[1])
-with open(settingsfilename) as sfile:
+settingsfile = ospath.abspath(settingsfilename)
+with open(settingsfile) as sfile:
  temp = load(sfile)
 for section,content in temp.iteritems():
  for key,params in content.iteritems():
   if not settings.get(section):
    settings[section] = {}
   settings[section][key] = params['value'] 
-settings['system']['config_file'] = settingsfilename
+settings['system']['config_file'] = settingsfile
 modes = { mode:True for mode in settings['system']['mode'].split(',') }
 res['modes'] = modes
 
