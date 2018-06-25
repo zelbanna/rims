@@ -52,12 +52,24 @@ def show(aWeb):
  print "var nodes = new vis.DataSet(%s);"%dumps(res['nodes'])
  print "var edges = new vis.DataSet(%s);"%dumps(res['edges'])
  print "var options = %s;"%(dumps(res['options']))
+ print "var url = '%s';"%aWeb._rest_url
  print """
  var data = {nodes:nodes, edges:edges};
  var network = new vis.Network(document.getElementById('div_network'), data, options);
  network.on('stabilizationIterationsDone', function () { network.setOptions({ physics: false }); });
  network.on('doubleClick', function(params){
   console.log('DoubleClick',params.nodes);
+  if (params.nodes[0]){
+   var args = {op:'basics',id:params.nodes[0]};
+   $.ajax({ type:"POST", url: url + '?device_info', data: JSON.stringify(args), dataType:'json',success: function(data){
+    if (data && data.found){
+     if(data.info.webpage)
+      window.open(data.info.webpage);
+     else
+      window.open("ssh://" + data.username + "@" + data.ip,"_self");
+    }
+   }});
+  }
  });
  """
  print "</SCRIPT></ARTICLE>"
