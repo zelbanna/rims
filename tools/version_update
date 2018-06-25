@@ -11,6 +11,8 @@ from sys import argv, exit
 if len(argv) < 2:
  print argv[0],"<version>"
  exit(0)
+else:
+ print "New version [%s]"%(argv[1])
 
 for root,dirs,files in walk('.'):
  if ".git" in dirs:

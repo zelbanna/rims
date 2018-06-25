@@ -14,7 +14,7 @@ def info(aDict):
  Args:
   - ip (optional)
   - id (optional)
-  - op (optional)
+  - op (optional), None/'basic'/'update'
 
  Output:
  """
@@ -42,46 +42,52 @@ def info(aDict):
     try: args['mac'] = int(args['mac'].replace(":",""),16)
     except: args['mac'] = 0
    ret['update'] = (db.update_dict('devices',args,"id=%s"%ret['id']) == 1)
-  # Now fetch info
-  ret['found'] = (db.do("SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, functions, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE {}".format(srch)) == 1)
+
+  # Basic or complete info?
+  if op == 'basics':
+   sql = "SELECT devices.id, devices.webpage, INET_NTOA(ia.ip) as ipasc, hostname, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
+  else:
+   sql = "SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, functions, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE %s"
+  ret['found'] = (db.do(sql%srch) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['id'] = ret['info'].pop('id',None)
    ret['ip'] = ret['info'].pop('ipasc',None)
-   ret['info']['mac']  = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
-   if not ret['info']['functions']:
-    ret['info']['functions'] = ""
    # Pick login name from settings
    db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'netconf'")
    netconf = db.get_dict('parameter')
    ret['username'] = netconf['username']['value']
-   ret['booked'] = (db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1)
-   if ret['booked']:
-    ret['booking'] = db.get_row()
+   if not op == 'basics':
+    ret['info']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
+    if not ret['info']['functions']:
+     ret['info']['functions'] = ""
+    ret['booked'] = (db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1)
+    if ret['booked']:
+     ret['booking'] = db.get_row()
+    # Rack infrastructure ?
+    if ret['info']['vm'] == 1:
+     ret['racked'] = False
+    else:
+     ret['racked'] = (db.do("SELECT rack_info.*, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%ret['id']) == 1)
+     if ret['racked']:
+      rack = db.get_row()
+      ret['rack'] = rack
+      infra = ['console','pem0_pdu','pem1_pdu']
+      dev_ids = ",".join([str(rack["%s_id"%x]) for x in infra if rack["%s_id"%x]])
+      if len(dev_ids) > 0:
+       db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, hostname FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id IN (%s)"%dev_ids)
+      devices = db.get_dict('id') if len(dev_ids) > 0 else {}
+      pdu_ids = ",".join([str(x) for x in [rack["pem0_pdu_id"],rack["pem1_pdu_id"]] if x])
+      if len(pdu_ids) > 0:
+       db.do("SELECT * FROM pdu_info WHERE device_id IN (%s)"%pdu_ids)
+      pdus = db.get_dict('device_id') if len(pdu_ids) > 0 else {}
+      console = devices.get(rack['console_id'],{'hostname':None,'ip':None})
+      rack.update({'console_name':console['hostname'],'console_ip':console['ip']})
+      for pem in ['pem0','pem1']:
+       pdu = pdus.get(rack["%s_pdu_id"%pem])
+       rack["%s_pdu_name"%pem] = "%s:%s"%(devices[pdu['device_id']]['hostname'],pdu['%s_slot_name'%(rack["%s_pdu_slot"%pem])]) if pdu else None
+       rack["%s_pdu_ip"%pem] = devices[pdu['device_id']]['ip'] if pdu else None
 
-   # Rack infrastructure
-   if ret['info']['vm'] == 1:
-    ret['racked'] = False
-   else:
-    ret['racked'] = (db.do("SELECT rack_info.*, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%ret['id']) == 1)
-    if ret['racked']:
-     rack = db.get_row()
-     ret['rack'] = rack
-     infra = ['console','pem0_pdu','pem1_pdu']
-     dev_ids = ",".join([str(rack["%s_id"%x]) for x in infra if rack["%s_id"%x]])
-     if len(dev_ids) > 0:
-      db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, hostname FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id IN (%s)"%dev_ids)
-     devices = db.get_dict('id') if len(dev_ids) > 0 else {}
-     pdu_ids = ",".join([str(x) for x in [rack["pem0_pdu_id"],rack["pem1_pdu_id"]] if x])
-     if len(pdu_ids) > 0:
-      db.do("SELECT * FROM pdu_info WHERE device_id IN (%s)"%pdu_ids)
-     pdus = db.get_dict('device_id') if len(pdu_ids) > 0 else {}
-     console = devices.get(rack['console_id'],{'hostname':None,'ip':None})
-     rack.update({'console_name':console['hostname'],'console_ip':console['ip']})
-     for pem in ['pem0','pem1']:
-      pdu = pdus.get(rack["%s_pdu_id"%pem])
-      rack["%s_pdu_name"%pem] = "%s:%s"%(devices[pdu['device_id']]['hostname'],pdu['%s_slot_name'%(rack["%s_pdu_slot"%pem])]) if pdu else None
-      rack["%s_pdu_ip"%pem] = devices[pdu['device_id']]['ip'] if pdu else None
  return ret
 
 #

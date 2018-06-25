@@ -106,7 +106,9 @@ def network(aWeb):
  });
 
  network.on('doubleClick', function(params){
-  console.log('DoubleClick',params.nodes);
+  if (params.nodes[0]){
+   network_node_page(params.nodes[0]);
+  }
  });
 
  function network_start(){
@@ -121,6 +123,7 @@ def network(aWeb):
 
  function network_edit(){
   network.setOptions({ manipulation:{ enabled:true }});
+  $("#result").html("Enable edit");
  };
 
  function network_fixate(){
@@ -132,7 +135,13 @@ def network(aWeb):
   network.storePositions();
   $("#nodes").val(JSON.stringify(nodes.get(),undefined,2));
   $("#edges").val(JSON.stringify(edges.get(),undefined,2));
-  $("#result").html("Synced config");
+  $("#result").html("Synced graph to config views");
+ };
+
+ function network_node_page(id){
+  var url = 'zdcp.cgi?device_info&id=' + id;
+  var div = $('#div_content_right');
+  $.get(url, result => { load_result(div,result,false,false); });
  };
  """
  print "</SCRIPT></ARTICLE>"

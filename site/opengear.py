@@ -14,9 +14,9 @@ def manage(aWeb):
   ip = aWeb['ip']
   hostname = aWeb['hostname']
  else:
-  data = aWeb.rest_call("device_basics",{'id':id})
+  data = aWeb.rest_call("device_info",{'id':id,'op':'basics'})
   ip = data['ip']
-  hostname = data['hostname']
+  hostname = data['info']['hostname']
 
  print "<NAV><UL>"
  print "<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname)
@@ -25,7 +25,7 @@ def manage(aWeb):
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
  inventory(aWeb,ip)
- print "</SECTION>" 
+ print "</SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
  print "</SECTION>"
 
