@@ -16,7 +16,7 @@ if __name__ == "__main__":
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
  from zdcp.rest import mysql
  file = ospath.abspath(ospath.join(getcwd(),argv[1]))
- diffs= mysql.diff({'file':file})
+ diffs= mysql.diff({'schema_file':file})
  print diffs['diffs']
  for line in diffs['output']:
   print line.rstrip('\n')
