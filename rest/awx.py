@@ -9,21 +9,6 @@ from zdcp.SettingsContainer import SC
 
 #
 #
-def node_to_ui(aDict):
- """Function docstring for node_to_ui TBD
-
- Args:
-  - node (required)
-
- Output:
- """
- node = SC['nodes'][aDict.get('node','awx')]
- parts = node.partition('//')
- host = "%s//%s/"%(parts[0],(parts[2].split('/')[0]).split(':')[0])
- return {'ui':host }
-
-#
-#
 def inventory_list(aDict):
  """Function main produces an inventory list for a device id
 

@@ -12,9 +12,8 @@ __status__ = "Production"
 def manage(aWeb):
  args = aWeb.get_args2dict()
  data = aWeb.rest_call("awx_inventory_list",args)
- ui   = aWeb.rest_call("awx_node_to_ui",{'node':data['node']})
  print "<NAV><UL>"
- print "<LI><A CLASS=z-op HREF=%s     target=_blank>UI</A></LI>"%(ui)
+ print "<LI><A CLASS=z-op HREF=%s     target=_blank>UI</A></LI>"%(data['webpage'])
  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?awx_manage&id=%s'></A></LI>"%(data['id'])
  print "<LI CLASS='right navinfo'><A>%s</A></LI>"%(data['hostname'])
  print "</UL></NAV>"

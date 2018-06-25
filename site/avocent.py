@@ -8,14 +8,14 @@ __version__ = "1.0GA"
 __status__= "Production"
 
 def manage(aWeb):
- id = aWeb['id'] 
+ id = aWeb['id']
  if aWeb['ip']:
   ip = aWeb['ip']
   hostname = aWeb['hostname']
  else:
-  data = aWeb.rest_call("device_basics",{'id':id})
+  data = aWeb.rest_call("device_info",{'id':id,'op':'basics'})
   ip = data['ip']
-  hostname = data['hostname']
+  hostname = data['info']['hostname']
 
  print "<NAV><UL>"
  print "<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname)

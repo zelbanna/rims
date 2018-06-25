@@ -271,12 +271,26 @@ def update(aWeb):
  print aWeb.button('save',  DIV='div_content_right',URL='zdcp.cgi?device_update&op=update', FRM='info_form', TITLE='Save Device Information')
  print "</DIV></ARTICLE>"
 
+#
+#
 def update_ip(aWeb):
  print "<ARTICLE>"
  print "To Be Done"
  print "</ARTICLE>"
 
+#
+#
+def delete(aWeb):
+ res = aWeb.rest_call("device_delete",{ 'id':aWeb['id'] })
+ print "<ARTICLE>Unit {} deleted, op:{}</ARTICLE>".format(aWeb['id'],res)
+
 ####################################################### Functions #######################################################
+#
+#
+def to_console(aWeb):
+ res = aWeb.rest_call("device_info&op=basics",{'id':aWeb['id']})
+ aWeb.put_redirect("%s&title=%s"%(res['url'],aWeb['name']))
+
 #
 #
 def webpages(aWeb):
@@ -379,12 +393,6 @@ def new(aWeb):
   print aWeb.button('search',DIV='device_ip',   URL='zdcp.cgi?device_new&op=find', FRM='device_new_form', TITLE='Find IP',INPUT='True')
   print "</DIV><SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'></SPAN>"
   print "</ARTICLE>"
-
-#
-#
-def delete(aWeb):
- res = aWeb.rest_call("device_delete",{ 'id':aWeb['id'] })
- print "<ARTICLE>Unit {} deleted, op:{}</ARTICLE>".format(aWeb['id'],res)
 
 #
 #
@@ -504,54 +512,3 @@ def interface_link_interface(aWeb):
  print aWeb.button('back',    DIV='div_dev_data', URL='zdcp.cgi?device_interface_link_device', FRM='interface_link')
  print aWeb.button('forward', DIV='div_dev_data', URL='zdcp.cgi?device_interface_list&op=link', FRM='interface_link')
  print "</DIV></ARTICLE>"
-
-#
-#
-def network(aWeb):
- res = aWeb.rest_call("device_network",{'id':aWeb['id']})
- nodes = ["{'id':%s, 'label':'%s', 'shape':'image', 'image':'%s', 'font':'14px verdana blue'}"%(key,val['hostname'],val['icon']) for key,val in res['devices'].iteritems()]
- edges = ["{'from':%s, 'to':%s, title:'%s:%s <-> %s:%s' }"%(con['a_device'],con['b_device'],res['devices'][str(con['a_device'])]['hostname'],con['a_name'],res['devices'][str(con['b_device'])]['hostname'],con['b_name']) for con in res['interfaces']]
- print "<ARTICLE><P>Device '%s':s network</P><DIV CLASS=controls>"%(aWeb['hostname'])
- print aWeb.button('reload', DIV='div_content_right', URL='zdcp.cgi?device_network&id=%s&hostname=%s'%(aWeb['id'],aWeb['hostname']), TITLE='Reload')
- print aWeb.button('back',   DIV='div_content_right', URL='zdcp.cgi?device_info&id=%s'%aWeb['id'], TITLE='Back')
- print aWeb.button('start',  onclick='network_start()')
- print aWeb.button('stop',   onclick='network_stop()')
- print aWeb.button('save',   onclick='network_save()')
- print "</DIV><LABEL FOR=network_name>Name:</LABEL><INPUT TYPE=TEXT CLASS=background STYLE='width:120px' ID=network_name><SPAN CLASS='results' ID=network_result></SPAN>"
- print "<DIV ID='device_network' CLASS='network'></DIV><DIV ID=network_config><SCRIPT>"
- print "var nodes = new vis.DataSet([%s]);"%",".join(nodes)
- print "var edges = new vis.DataSet([%s]);"%",".join(edges)
- print """
- var data = {nodes:nodes, edges:edges};
- var options = { 'nodes':{ 'shadow':true }, 'edges':{ 'length':220, 'smooth':{ 'type':'dynamic'} } };
- var network = new vis.Network(document.getElementById('device_network'), data, options);
- network.on('stabilizationIterationsDone', function () { network.setOptions({ physics: false }); });
-
- function network_start(){ 
-  network.setOptions({ physics:true  });
- };
-
- function network_stop(){
-  network.setOptions({ physics:false });
- };
-
- function network_save(){
-  var output = { options:options,edges:[],nodes:{},name:$("#network_name").val()};
-  positions = network.getPositions();
-  Object.entries(nodes._data).forEach(([key,value]) => {
-   var node = value;
-   node.x   = positions[key].x;
-   node.y   = positions[key].y;
-   output.nodes[key] = node;
-  });
-  Object.entries(edges._data).forEach(([key,value]) => {
-   var edge   = {};
-   edge.from  = value.from;
-   edge.to    = value.to;
-   edge.title = value.title;
-   output.edges.push(edge);
-  });
-  $.post('rest.cgi?device_network_save',JSON.stringify(output), result => { $('#network_result').html(JSON.stringify(result)); console.log(result);});
- };
- """
- print "</SCRIPT></DIV></ARTICLE>"

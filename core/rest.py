@@ -40,7 +40,7 @@ def server(aNodeID):
     additional[k] = v
   # Node is always master for system calls
   node = additional.get('node',aNodeID if not mod == 'system' else 'master')
-
+  stdout.write("X-API-Node:%s\r\n"%node)
   if node == aNodeID:
    module = import_module("zdcp.rest.%s"%mod)
    module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
@@ -58,7 +58,6 @@ def server(aNodeID):
   stdout.write("X-API-Args:%s\r\n"%args)
   stdout.write("X-API-Info:%s\r\n"%str(e))
   stdout.write("X-API-Xcpt:%s\r\n"%type(e).__name__)
- stdout.write("X-API-Node:%s\r\n"%node)
  stdout.write("X-API-Function:%s\r\n"%api)
  stdout.write("Content-Type: application/json; charset=utf-8\r\n")
  stdout.flush()

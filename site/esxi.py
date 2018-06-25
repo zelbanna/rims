@@ -34,19 +34,20 @@ def main(aWeb):
 #
 def manage(aWeb):
  id = aWeb['id']
- data = aWeb.rest_call("device_basics",{'id':id})
+ data = aWeb.rest_call("device_info",{'id':id,'op':'basics'})
  print "<NAV><UL>"
  print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='zdcp.cgi?esxi_op&ip=%s&next-state=poweroff&id=%s'>Shutdown</A></LI>".format(data['ip'],id)
- print "<LI><A CLASS=z-op DIV=div_content_right  URL=zdcp.cgi?esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['hostname'],data['domain'])
- print "<LI><A CLASS=z-op DIV=div_content_right  URL=zdcp.cgi?esxi_logs&hostname={0}&domain={1}>Logs</A></LI>".format(data['hostname'],data['domain'])
- print "<LI><A CLASS=z-op HREF=https://{0}/ui     target=_blank>UI</A></LI>".format(data['ip'])
+ print "<LI><A CLASS=z-op DIV=div_content_right  URL=zdcp.cgi?esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['info']['hostname'],data['info']['domain'])
+ print "<LI><A CLASS=z-op DIV=div_content_right  URL=zdcp.cgi?esxi_logs&hostname={0}&domain={1}>Logs</A></LI>".format(data['info']['hostname'],data['info']['domain'])
+ if data['info']['webpage']:
+  print "<LI><A CLASS=z-op HREF='%s'     target=_blank>UI</A></LI>"%(data['info']['webpage'])
  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?esxi_manage&id=%s'></A></LI>"%(id)
- print "<LI CLASS='right navinfo'><A>{}</A></LI>".format(data['hostname'])
+ print "<LI CLASS='right navinfo'><A>{}</A></LI>".format(data['info']['hostname'])
  print "</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
  list(aWeb,data['ip'])
- print "</SECTION>" 
+ print "</SECTION>"
  print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
  print "</SECTION>"
 
@@ -54,7 +55,7 @@ def manage(aWeb):
 #
 def list(aWeb,aIP = None):
  ip   = aWeb.get('ip',aIP)
- sort = aWeb.get('sort','name') 
+ sort = aWeb.get('sort','name')
  res = aWeb.rest_call("esxi_list",{'ip':ip,'sort':sort})
  statelist = res['data']
  print "<ARTICLE>"
