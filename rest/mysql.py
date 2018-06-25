@@ -3,7 +3,6 @@ __version__ = "1.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-
 #
 #
 def dump(aDict):
@@ -68,7 +67,7 @@ def restore(aDict):
 def diff(aDict):
  from difflib import unified_diff
  with open(aDict['file']) as f:
-  data = f.read() 
+  data = f.read()
  ret = {}
  aDict.update({'mode':'structure'})
  db = dump(aDict)
@@ -78,4 +77,39 @@ def diff(aDict):
  for line in ret['output']:
   if "@@" in line:
    ret['diffs'] += 1
+ return ret
+
+#
+#
+def patch(aDict):
+ from os import remove
+ file = aDict['schema_file']
+ ret = {}
+ with open('mysql.backup','w') as f:
+  res = dump({'mode':'database','full':True})
+  ret['database_backup_result'] = res['res']
+  f.write("\n".join(res['output']))
+
+ with open('mysql.values','w') as f:
+  res = dump({'mode':'database','full':False})
+  ret['data_backup_result'] = res['res']
+  f.write("\n".join(res['output']))
+
+ if ret['database_backup_result'] == 'OK' and ret['data_backup_result'] == 'OK':
+  res = restore({'file':file})
+  ret['struct_install_result']= res['res']
+  if not res['res'] == 'OK':
+   ret['struct_install_error']= res['output']
+  else:
+   res = restore({'file':'mysql.values'})
+   ret['data_restore_result'] = res['res']
+   if not res['res'] == 'OK':
+    ret['data_restore_error'] = res['output']
+    ret['data_restore_extra'] = "Warning - patch failed, trying to restore old data"
+    res = restore({'file':'mysql.backup'})
+    ret['database_restore_result'] = res['res']
+    ret['database_restore_output'] = res['output']
+   else:
+    remove('mysql.backup')
+    remove('mysql.values')
  return ret

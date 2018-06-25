@@ -19,7 +19,7 @@ basedir = ospath.abspath(ospath.join(packagedir,'..'))
 res = {}
 
 if len(argv) < 2:
- try: 
+ try:
   from zdcp.SettingsContainer import SC as Old
  except:
   stdout.write("Usage: {} </path/json file>\n\n!!! Import DB structure from mysql.db before installing !!!\n\n".format(argv[0]))
@@ -27,8 +27,7 @@ if len(argv) < 2:
  else:
   settingsfilename = Old['system']['config_file']
 else:
- settingfilename = argv[1]
-
+ settingsfilename = argv[1]
 ############################################### ALL #################################################
 #
 # load settings
@@ -41,7 +40,7 @@ for section,content in temp.iteritems():
  for key,params in content.iteritems():
   if not settings.get(section):
    settings[section] = {}
-  settings[section][key] = params['value'] 
+  settings[section][key] = params['value']
 settings['system']['config_file'] = settingsfile
 modes = { mode:True for mode in settings['system']['mode'].split(',') }
 res['modes'] = modes
