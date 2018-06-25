@@ -215,22 +215,6 @@ def update(aDict):
 
 #
 #
-def basics(aDict):
- """Find basic info given device id
-
- Args:
-  - id
-
- Output:
- """
- ret = {}
- with DB() as db:
-  ret['found'] = (db.do("SELECT devices.id, INET_NTOA(ia.ip) as ip, hostname, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE devices.id = %s"%aDict['id']) > 0)
-  ret.update(db.get_row()) if ret['found'] else {}
- return ret
-
-#
-#
 def list(aDict):
  """Function docstring for list TBD
 

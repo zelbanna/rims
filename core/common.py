@@ -169,7 +169,7 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
   output = { 'result':'ERROR', 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
  except URLError as e:  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
  except Exception as e: output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
- output['info']['x-api-code'] = code_to_string(sock.code)
+ output['info']['x-api-code'] = code_to_string(output['code'])
  if output.get('exception'):
   raise Exception(output)
  return output

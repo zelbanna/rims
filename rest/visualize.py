@@ -178,6 +178,4 @@ def network(aDict):
     nodes[node['id']]['hostname'] = node['label']
    ret['name']  = nodes[ret['id']]['hostname']
    ret['edges'] = [{'from':intf['a_device'],'to':intf['b_device'],'smooth':intf['type'],'title':"%s:%s <-> %s:%s"%(nodes[intf['a_device']]['hostname'],intf['a_name'],nodes[intf['b_device']]['hostname'],intf['b_name'])} for intf in edges]
- # print dumps(nodes,indent=2,sort_keys=True)
- #return None
  return ret

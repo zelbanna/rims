@@ -20,11 +20,10 @@ class Device(object):
 
  def __init__(self, aREST, aToken = None):
   self._token = aToken
-  self._expire = None
   self._node = aREST
 
  def __str__(self):
-  return "AWX[{}] Token[{},{}]".format(self._node, self._token, self._expire)
+  return "AWX(%s,%s)".format(self._node, self._token)
 
  #
  # { 'username','password','mode' }
@@ -49,12 +48,6 @@ class Device(object):
 
  def get_token(self):
   return self._token
-
- def get_cookie_expire(self):
-  return None
-
- def get_token_expire(self):
-  return None
 
  # call and href
  # Input:
