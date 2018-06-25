@@ -95,6 +95,8 @@ def network(aDict):
  ret = {'id':args.get('id',0),'type':args.pop('type','map')}
  with DB() as db:
   if op == 'update':
+   for type in ['options','nodes','edges']:
+    args[type] = dumps(loads(args[type]))
    if ret['id'] == 'new' or ret['type'] == 'device':
     ret['insert']= db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%(name)s','%(options)s','%(nodes)s','%(edges)s')"%args)
     ret['id']    = db.get_last_id()
