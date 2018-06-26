@@ -12,7 +12,8 @@ def server_list(aWeb):
  res = aWeb.rest_call("dns_server_list")
  print "<ARTICLE><P>Domains</P><DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='zdcp.cgi?dns_server_list')
- print aWeb.button('add',DIV='div_content_right',URL='zdcp.cgi?dns_server_info&id=new',TITLE='Add domain')
+ print aWeb.button('add', DIV='div_content_right',URL='zdcp.cgi?dns_server_info&id=new',TITLE='Add domain')
+ print aWeb.button('help',DIV='div_content_right',URL='zdcp.cgi?dns_server_help')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for srv in res['servers']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(srv['id'],srv['node'],srv['server'])
@@ -54,6 +55,17 @@ def server_delete(aWeb):
  res = aWeb.rest_call("dns_server_delete",{'id':aWeb['id']})
  print "<ARTICLE>%s</ARTICLE>"%str(res)
 
+#
+#
+def server_help(aWeb):
+ print """<ARTICLE CLASS='help' STYLE='overflow:auto'><PRE>
+ DNS servers manages the location of DNS servers, i.e. the system (!) REST nodes where they offer an interface
+
+ This is helpful in case:
+  - the server doesn't offer a good REST API - then other tools can be used directly on that server
+  - there are multiple DNS servers serving different zones
+
+ </PRE></ARTICLE"""
 
 ############################################ Domains ###########################################
 #
