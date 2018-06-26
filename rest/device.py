@@ -161,10 +161,12 @@ def update(aDict):
         args['devices_%s_id'%type] = dns[type.upper()]['record_id']
        else:
         args.pop('devices_%s_id'%type,None)
+      else:
+       args['devices_%s_id'%type] = 0
      if (str(dns['A']['domain_id']) == str(args['devices_a_dom_id'])):
-      args['devices_a_dom_id'] = dns['A']['domain_id']
-     else:
       args.pop('devices_a_dom_id',None)
+     else:
+      args['devices_a_dom_id'] = dns['A']['domain_id']
     ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%ret['id']),'rack_info':db.update_dict_prefixed('rack_info',args,"device_id='%s'"%ret['id'])}
   # Now fetch info
   ret['found'] = (db.do("SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)

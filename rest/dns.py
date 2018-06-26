@@ -382,23 +382,23 @@ def record_device_update(aDict):
   #
   a_id  = 'new' if str(aDict['a_id']) == '0' else aDict['a_id']
   infra = domains['id'].get(aDict['a_domain_id'],None)
-  
+
   if not infra:
    return ret
 
   if a_id != 'new' and device:
-   old = domains['id'].get(device['a_domain_id'],None) 
+   old = domains['id'].get(device['a_domain_id'],None)
    if old['server_id'] != infra['server_id']:
     ret['server']['A'] = node_call(old['node'],old['server'],'record_delete',{'id':a_id})
     a_id = 'new'
    else:
     ret['server']['A'] = 'remain'
   fqdn  = "%s.%s"%(aDict['hostname'], infra['name'])
-  data['A']= {'server':infra['server'], 'node':infra['node'], 'args':{'type':'A','id':a_id, 'domain_id':infra['foreign_id'], 'content':aDict['ip'], 'name':fqdn}}
+  data['A']= {'server':infra['server'], 'node':infra['node'], 'domain_id':infra['domain_id'],'args':{'type':'A','id':a_id, 'domain_id':infra['foreign_id'], 'content':aDict['ip'], 'name':fqdn}}
 
   #
   # PTR record:  check if valid domain, then if not a_id == 'new' make sure we didn't move server otherwise delete record and set ptr_id to new
-  # 
+  #
   ptr_id = 'new' if str(aDict['ptr_id']) == '0' else aDict['ptr_id']
   ptr  = GL_ip2ptr(aDict['ip'])
   arpa = ptr.partition('.')[2]
@@ -413,7 +413,7 @@ def record_device_update(aDict):
      ptr_id = 'new'
     else:
      ret['server']['PTR'] = 'remain'
-   data['PTR']= {'server':infra['server'], 'node':infra['node'], 'args':{'type':'PTR','id':ptr_id, 'domain_id':infra['foreign_id'], 'content':fqdn, 'name':ptr}}
+   data['PTR']= {'server':infra['server'], 'node':infra['node'], 'domain_id':infra['domain_id'], 'args':{'type':'PTR','id':ptr_id, 'domain_id':infra['foreign_id'], 'content':fqdn, 'name':ptr}}
 
  for type,infra in data.iteritems():
   if infra['server']:
@@ -425,6 +425,9 @@ def record_device_update(aDict):
     ret[type]['domain_id'] = domains['foreign_id'].get(res['data']['domain_id'],{'domain_id':0})['domain_id']
     ret[type]['update'] = res.get('update',False)
     ret[type]['insert'] = res.get('insert',False)
+   else:
+    ret[type]['record_id'] = 0
+    ret[type]['domain_id'] = infra['domain_id']
  return ret
 
 #
