@@ -1,7 +1,7 @@
 """ISCDHCP API module. The specific ISCDHCP REST interface to reload and fetch info from ISCDHCP server.
-Settings: 
+Settings:
  - reload (argument from CLI)
- - active (file storing current leases)          
+ - active (file storing current leases)
  - static (file storing configuration for ISCDHCP
 
 """
@@ -29,7 +29,7 @@ def leases(aDict):
  from zdcp.SettingsContainer import SC
  result = []
  lease  = {}
- with open(SC['iscdhcp']['active'],'r') as leasefile: 
+ with open(SC['iscdhcp']['active'],'r') as leasefile:
   for line in leasefile:
    if line == '\n':
     continue
@@ -62,7 +62,7 @@ def update_server(aDict):
  """
  from zdcp.SettingsContainer import SC
  from zdcp.core.common import node_call
- entries = node_call('master','device','list_mac')
+ entries = node_call('master','device','mac_list')
  # Create file
  with open(SC['iscdhcp']['static'],'w') as leasefile:
   for entry in entries:
@@ -76,6 +76,6 @@ def update_server(aDict):
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output
- 
+
  ret['result'] = 'NOT_OK' if ret['output'] else 'OK'
  return ret

@@ -217,33 +217,27 @@ def list(aDict):
  """Function docstring for list TBD
 
  Args:
-  - filter (optional)
   - sort (optional) (sort on id or hostname or...)
   - dict (optional) (output as dictionary instead of list)
 
-  - rack (optional)
-  - field (optional) 'id/ip/mac/hostname/type/base' as search fields
+  - field (optional) 'id/ip/mac/hostname/type/base/vm' as search fields
   - search (optional)
   - extra (optional) list of extra info to add, None/'type'/'webpage'
+  - rack (optional), id of rack to filter devices from
 
  Output:
  """
  ret = {}
- sort = 'ia.ip' if aDict.get('sort','ip') == 'ip' else 'devices.hostname'
+ sort = 'ORDER BY ia.ip' if aDict.get('sort','ip') == 'ip' else 'ORDER BY devices.hostname'
  fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ipasc', 'domains.name AS domain','model']
  tune = ['ipam_addresses AS ia ON ia.id = devices.ipam_id','domains ON domains.id = devices.a_dom_id']
  filter = ['TRUE']
  if aDict.get('rack'):
-  if aDict.get('rack') == 'vm':
-   filter.append("devices.vm = 1")
-  else:
-   tune.append("rack_info AS ri ON ri.device_id = devices.id")
-   filter.append("ri.rack_id = %(rack)s"%aDict)
- if aDict.get('filter'):
-  filter.append("type_id IN (%(filter)s)"%aDict)
+  tune.append("rack_info AS ri ON ri.device_id = devices.id")
+  filter.append("ri.rack_id = %(rack)s"%aDict)
  if aDict.get('search'):
   if aDict['field'] == 'hostname':
-   filter.append("hostname LIKE '%%%(search)s%%'"%aDict)
+   filter.append("devices.hostname LIKE '%%%(search)s%%'"%aDict)
   elif aDict['field'] == 'ip':
    filter.append("ia.ip = INET_ATON('%(search)s')"%aDict)
   elif aDict['field'] == 'type':
@@ -258,21 +252,30 @@ def list(aDict):
     except: return 0
    aDict['search'] = GL_mac2int(aDict['search'])
    filter.append("mac = %(search)s"%aDict)
-  elif aDict['field']== 'id':
-   filter.append("devices.id = %(search)s"%aDict)
+  else:
+   filter.append("devices.%(field)s = %(search)s"%aDict)
 
- if  aDict.get('extra'):
-  if 'type' in aDict['extra']:
+ extras = aDict.get('extra')
+ if  extras:
+  if 'type' in extras:
    fields.append('dt.name AS type_name, dt.base AS type_base')
    if not (aDict.get('field') == 'type' or aDict.get('field') == 'base'):
     tune.append("device_types AS dt ON dt.id = devices.type_id")
-  if 'webpage' in aDict['extra']:
+  if 'webpage' in extras:
    fields.append('devices.webpage')
+  if 'mac' in extras:
+   fields.append('devices.mac')
 
  with DB() as db:
-  sql = "SELECT %s FROM devices LEFT JOIN %s WHERE %s ORDER BY %s"%(", ".join(fields)," LEFT JOIN ".join(tune)," AND ".join(filter),sort)
+  sql = "SELECT %s FROM devices LEFT JOIN %s WHERE %s %s"%(", ".join(fields)," LEFT JOIN ".join(tune)," AND ".join(filter),sort)
   ret['count'] = db.do(sql)
-  ret['data'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
+  data = db.get_rows()
+  if extras and 'mac' in extras:
+   def GL_int2mac(aInt):
+    return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
+   for row in data:
+    row['mac'] = GL_int2mac(row['mac'])
+  ret['data'] = data if not aDict.get('dict') else { row[aDict['dict']]: row for row in data }
  return ret
 
 #
@@ -440,7 +443,7 @@ def discover(aDict):
 
 #
 #
-def type_list(aDict):
+def types_list(aDict):
  """Function lists currenct device types
 
  Args:
@@ -473,8 +476,8 @@ def webpage_list(aDict):
 
 #
 #
-def list_mac(aDict):
- """Function docstring for list_mac. Used by IPAM DHCP update to fetch all mac address, IP, FQDN pairs
+def mac_list(aDict):
+ """Used by IPAM DHCP update to fetch all mac address, IP, FQDN pairs
 
  Args:
 

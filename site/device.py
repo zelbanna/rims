@@ -13,19 +13,15 @@ __type__ = 'menuitem'
 #
 #
 def main(aWeb):
- target = aWeb['target']
- arg    = aWeb['arg']
  print "<NAV><UL>"
  print "<LI CLASS='dropdown'><A>Devices</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_list&{0}'>List</A>".format(aWeb.get_args())
  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_search'>Search</A>"
- print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_type_list'>Types</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_types_list'>Types</A>"
  print "</DIV></LI>"
  print "<LI><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?visualize_list'>Maps</A></LI>"
- if target == 'vm':
-  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
- else:
-  data = aWeb.rest_call("rack_inventory",{'id':arg} if target == 'rack_id' else None)
+ if aWeb['rack']:
+  data = aWeb.rest_call("rack_inventory",{'id':aWeb['rack']})
   for type in ['pdu','console']:
    if len(data[type]) > 0:
     print "<LI CLASS='dropdown'><A>%s</A><DIV CLASS='dropdown-content'>"%(type.title())
@@ -33,19 +29,19 @@ def main(aWeb):
      print "<A CLASS=z-op DIV=div_content_left SPIN=true URL='zdcp.cgi?%s_inventory&ip=%s'>%s</A>"%(row['type'],row['ipasc'],row['hostname'])
     print "</DIV></LI>"
   if data.get('name'):
-   print "<LI><A CLASS='z-op' DIV=div_content_right  URL='zdcp.cgi?rack_inventory&rack=%s'>'%s' info</A></LI>"%(arg,data['name'])
-  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
-  print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?ipam_network_list'>IPAM</A></LI>"
-  print "<LI CLASS='right dropdown'><A>DNS</A><DIV CLASS='dropdown-content'>"
-  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?dns_server_list'>Servers</A>"
-  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?dns_domain_list'>Domains</A>"
-  print "</DIV></LI>"
-  print "<LI CLASS='right dropdown'><A>Rackinfo</A><DIV CLASS='dropdown-content'>"
-  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?rack_list_infra&type=pdu'>PDUs</A>"
-  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?rack_list_infra&type=console'>Consoles</A>"
-  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?rack_list'>Racks</A>"
-  print "</DIV></LI>"
+   print "<LI><A CLASS='z-op' DIV=div_content_right  URL='zdcp.cgi?rack_inventory&rack=%s'>'%s'</A></LI>"%(aWeb['rack'],data['name'])
+ print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
  print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL='zdcp.cgi?bookings_list'>Bookings</A></LI>"
+ print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?ipam_network_list'>IPAM</A></LI>"
+ print "<LI CLASS='right dropdown'><A>DNS</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?dns_server_list'>Servers</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?dns_domain_list'>Domains</A>"
+ print "</DIV></LI>"
+ print "<LI CLASS='right dropdown'><A>Rack</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?rack_list'>Racks</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?rack_list_infra&type=pdu'>PDUs</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?rack_list_infra&type=console'>Consoles</A>"
+ print "</DIV></LI>"
  print "</UL></NAV>"
  print "<SECTION CLASS=content       ID=div_content>"
  print "<SECTION CLASS=content-left  ID=div_content_left></SECTION>"
@@ -57,8 +53,6 @@ def main(aWeb):
 def list(aWeb):
  args = aWeb.get_args2dict()
  args['sort'] = aWeb.get('sort','ip')
- if aWeb['target']:
-  args['rack'] = "vm" if aWeb['target'] == "vm" else aWeb['arg']
  res = aWeb.rest_call("device_list",args)
  print "<ARTICLE><P>Device List</P><DIV CLASS='controls'>"
  print aWeb.button('reload', DIV='div_content_left',  URL='zdcp.cgi?device_list&%s'%aWeb.get_args(), TITLE='Reload')
@@ -91,8 +85,8 @@ def search(aWeb):
 
 #
 #
-def type_list(aWeb):
- res = aWeb.rest_call("device_type_list")
+def types_list(aWeb):
+ res = aWeb.rest_call("device_types_list")
  print "<ARTICLE><P>Device Types<P>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Class</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Icon</DIV></DIV><DIV CLASS=tbody>"
  for tp in res['types']:

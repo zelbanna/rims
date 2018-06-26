@@ -93,7 +93,7 @@ def inventory(aDict):
 #
 #
 def devices(aDict):
- """Function docstring for devices TBD
+ """Devices finds device information for rack such that we can build a rack "layout"
 
  Args:
   - id (required)
