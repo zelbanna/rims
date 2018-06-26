@@ -60,19 +60,19 @@ def network_layout(aWeb):
  data = aWeb.rest_call("ipam_network_inventory",{'id':aWeb['id']})
  startn  = int(data['start'])
  starta  = int(data['network'].split('.')[3])
- addresses = data['addresses']
+ addresses = data['entries']
  green = "<A CLASS='z-op btn small ipam green' TITLE='New' DIV=div_content_right URL=zdcp.cgi?device_new&ipam_network_id="+ aWeb['id'] +"&ipint={}>{}</A>"
  red   = "<A CLASS='z-op btn small ipam red'   TITLE='Used' DIV=div_content_right URL=zdcp.cgi?device_info&ipam_id={}>{}</A>"
  blue  = "<A CLASS='z-op btn small ipam blue'  TITLE='{}'>{}</A>"
- print "<ARTICLE><P>%s/%s</P><DIV CLASS=controls"%(data['network'],data['mask'])
+ print "<ARTICLE><P>%s/%s</P><DIV CLASS=controls>"%(data['network'],data['mask'])
  print blue.format('network',starta % 256)
- for cnt in range(1,int(data['no'])-1):
+ for cnt in range(1,int(data['size'])-1):
   ip = addresses.get(str(cnt + startn))
-  if ip and ip.get('id'):
+  if ip:
    print red.format(ip['id'],(cnt + starta) % 256)
   else:
    print green.format(cnt + startn,(cnt + starta) % 256)
- print blue.format('broadcast',(starta + int(data['no'])-1)% 256)
+ print blue.format('broadcast',(starta + int(data['size'])-1)% 256)
  print "</DIV></ARTICLE>"
 
 #

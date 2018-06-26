@@ -99,18 +99,14 @@ def network_inventory(aDict):
  with DB() as db:
   db.do("SELECT mask, network, INET_NTOA(network) as netasc, gateway, INET_NTOA(gateway) as gwasc FROM ipam_networks WHERE id = %(id)s"%aDict)
   network = db.get_row()
-  ret['start']  = network['network']
-  ret['no']     = 2**(32-network['mask'])
-  ret['mask']   = network['mask']
-  ret['network'] = network['netasc']
-  ret['gateway']= network['gwasc']
-  ret['count']  = db.do("SELECT ip,id,0 AS gateway FROM ipam_addresses WHERE network_id = %(id)s ORDER BY ip"%aDict)
-  ret['addresses'] = db.get_dict('ip')
-  gw = ret['addresses'].get(network['gateway'])
-  if gw:
-   gw['gateway'] = 1
-  else:
-   ret['addresses'][network['gateway']] = {'id':None,'ip':network['gateway'],'gateway':1}
+  ret['start']     = network['network']
+  ret['size']      = 2**(32-network['mask'])
+  ret['mask']      = network['mask']
+  ret['network']   = network['netasc']
+  ret['gateway_ip']= network['gwasc']
+  ret['count']     = db.do("SELECT ip AS ipint, INET_NTOA(ip) AS ip,id FROM ipam_addresses WHERE network_id = %(id)s"%aDict)
+  ret['entries']   = db.get_dict('ipint')
+  ret['gateway_id'] = ret['entries'].get(network['gateway'],{'id':None})['id']
  return ret
 
 #
@@ -164,7 +160,7 @@ def network_discover(aDict):
   net = db.get_row()
   ip_start = net['network'] + 1
   ip_end   = net['network'] + 2**(32 - net['mask']) - 1
-  ret.update({'start':{'ip':ip_start,'ipasc':GL_int2ip(ip_start)},'end':{'ip':ip_end,'ipasc':GL_int2ip(ip_end)}})
+  ret.update({'start':{'ipint':ip_start,'ip':GL_int2ip(ip_start)},'end':{'ipint':ip_end,'ip':GL_int2ip(ip_end)}})
   db.do("SELECT ip FROM ipam_addresses WHERE network_id = %s"%aDict['id'])
   ip_list = db.get_dict('ip')
 
@@ -304,11 +300,10 @@ def ip_from_id(aDict):
 
  Output:
   - ip
-  - ipasc
   - network
-  - netasc
+  - network_id
  """
  with DB() as db:
-  db.do("SELECT ip, INET_NTOA(ip) AS ipasc, network_id, INET_NTOA(network) AS netasc, mask FROM ipam_addresses LEFT JOIN ipam_networks ON ipam_networks.id = ipam_addresses.network_id WHERE ipam_addresses.id = %(id)s"%aDict)
+  db.do("SELECT INET_NTOA(ip) AS ip, network_id, INET_NTOA(network) AS network, mask FROM ipam_addresses LEFT JOIN ipam_networks ON ipam_networks.id = ipam_addresses.network_id WHERE ipam_addresses.id = %(id)s"%aDict)
   ret = db.get_row()
  return ret

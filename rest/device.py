@@ -394,9 +394,8 @@ def discover(aDict):
  """
  from time import time
  from threading import Thread, BoundedSemaphore
- from zdcp.rest.ipam import network_discover as ipam_discover
+ from zdcp.rest.ipam import network_discover as ipam_discover, ip_allocate
  from zdcp.devices.generic import Device
- from zdcp.rest.ipam import ip_allocate
 
  def __detect_thread(aIP,aDB,aSema):
   __dev = Device(aIP)
