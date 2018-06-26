@@ -1,5 +1,5 @@
 """ISCDHCP API module. The specific ISCDHCP REST interface to reload and fetch info from ISCDHCP server.
-Settings:
+Settings under section 'iscdhcp':
  - reload (argument from CLI)
  - active (file storing current leases)
  - static (file storing configuration for ISCDHCP
@@ -65,7 +65,7 @@ def update_server(aDict):
  entries = node_call('master','device','list',{'field':'mac','search':'all','extra':['mac']})
  # Create file
  with open(SC['iscdhcp']['static'],'w') as leasefile:
-  for entry in entries:
+  for entry in entries['data']:
    leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id']))
 
  # Reload
