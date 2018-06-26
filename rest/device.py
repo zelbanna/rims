@@ -472,25 +472,6 @@ def webpage_list(aDict):
 
 #
 #
-def mac_list(aDict):
- """Used by IPAM DHCP update to fetch all mac address, IP, FQDN pairs
-
- Args:
-
- Output:
- """
- def GL_int2mac(aInt):
-  return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
-
- with DB() as db:
-  db.do("SELECT devices.id, CONCAT(hostname,'.',domains.name) as fqdn, INET_NTOA(ia.ip) as ip, mac FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE NOT mac = 0 ORDER BY ip")
-  rows = db.get_rows()
- for row in rows:
-  row['mac'] = GL_int2mac(row['mac'])
- return rows
-
-#
-#
 def node_mapping(aDict):
  """Node mapping translates between nodes and devices and provide the same info, it depends on the device existing or node having mapped a device (else 'found' is false)
 
