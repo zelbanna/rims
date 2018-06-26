@@ -86,7 +86,7 @@ def inventory_sync(aDict):
  try:
   hosts = controller.fetch_dict("inventories/%(id)s/hosts/"%aDict,('id','name','url','description','enabled','instance_id'),'instance_id')
   for dev in devices:
-   args = {"name": "%s.%s"%(dev['hostname'],dev['domain']),"description": "%(model)s (%(ipasc)s)"%dev,"enabled": True,"instance_id": dev['id'], "variables": "" }
+   args = {"name": "%s.%s"%(dev['hostname'],dev['domain']),"description": "%(model)s (%(ip)s)"%dev,"enabled": True,"instance_id": dev['id'], "variables": "" }
    host = hosts.get(str(dev['id']))
    res  = controller.call("hosts/%s/"%(host['id']),args,"PATCH") if host else controller.call("inventories/%s/hosts/"%aDict['id'],args,"POST")
    dev['sync'] = {'code':res['code'],'id':res['data']['id']}

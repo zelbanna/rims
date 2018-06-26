@@ -151,7 +151,7 @@ def network_discover(aDict):
  def __detect_thread(aIPint,aIPs,aSema):
   __ip = GL_int2ip(aIPint)
   if system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(__ip)) == 0:
-   aIPs.append({'ip':aIPint,'ipasc':__ip})
+   aIPs.append(__ip)
   aSema.release()
   return True
 

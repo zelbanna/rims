@@ -71,7 +71,7 @@ def inventory(aDict):
  Output:
  """
  ret = {'name': None, 'console':[], 'pdu':[] }
- sqlbase = "SELECT devices.id, devices.hostname, INET_NTOA(ia.ip) AS ipasc, device_types.name AS type, device_types.base AS base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id INNER JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY devices.hostname"
+ sqlbase = "SELECT devices.id, devices.hostname, INET_NTOA(ia.ip) AS ip, device_types.name AS type, device_types.base AS base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id INNER JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY devices.hostname"
 
  with DB() as db:
   if aDict.get('id'):

@@ -259,10 +259,10 @@ def consistency(aWeb):
   print "</DIV></DIV></DIV>"
  for dev in data['devices']:
   print "<DIV CLASS=tr>"
-  print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>-</DIV><DIV CLASS=td>-</DIV>"%(dev['ipasc'],dev['type'])
+  print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>-</DIV><DIV CLASS=td>-</DIV>"%(dev['ip'],dev['type'])
   print "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=zdcp.cgi?device_info&id=%s>%s</A></DIV>"%(dev['device_id'],dev['record_id'],dev['device_id'],dev['fqdn'])
   print "<DIV CLASS=td><DIV CLASS=controls>"
-  print aWeb.button('add',DIV='span_dns',URL='zdcp.cgi?dns_record_create&type={}&device_id={}&ip={}&fqdn={}&domain_id={}'.format(dev['type'],dev['device_id'],dev['ipasc'],dev['fqdn'],dev['domain_id']))
+  print aWeb.button('add',DIV='span_dns',URL='zdcp.cgi?dns_record_create&type={}&device_id={}&ip={}&fqdn={}&domain_id={}'.format(dev['type'],dev['device_id'],dev['ip'],dev['fqdn'],dev['domain_id']))
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"

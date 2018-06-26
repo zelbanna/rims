@@ -62,7 +62,7 @@ def inventory_delete(aWeb):
 #
 def inventory_sync_choose(aWeb):
  args = aWeb.get_args2dict()
- types = aWeb.rest_call("device_type_list")['types']
+ types = aWeb.rest_call("device_types_list")['types']
  print "<ARTICLE STYLE='display:inline-block'>"
  print "<FORM ID=awx_sync>"
  print "<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id'])
@@ -83,6 +83,6 @@ def inventory_sync_execute(aWeb):
  print aWeb.button('forward', DIV='div_content_right', URL='zdcp.cgi?awx_inventory&node=%s&id=%s'%(aWeb['node'],aWeb['id']))
  print "</DIV><DIV CLASS=table><DIV CLASS=tbody>"
  for row in res['devices']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s.%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['hostname'],row['domain'],row['ipasc'],row['sync'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s.%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['hostname'],row['domain'],row['ip'],row['sync'])
  print "</DIV></DIV>"
  print "</ARTICLE>"

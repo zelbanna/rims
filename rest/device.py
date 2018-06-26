@@ -45,14 +45,14 @@ def info(aDict):
 
   # Basic or complete info?
   if op == 'basics':
-   sql = "SELECT devices.id, devices.webpage, INET_NTOA(ia.ip) as ipasc, hostname, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
+   sql = "SELECT devices.id, devices.webpage, INET_NTOA(ia.ip) as ip, hostname, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
   else:
-   sql = "SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, functions, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE %s"
+   sql = "SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, functions, a.name as domain, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE %s"
   ret['found'] = (db.do(sql%srch) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['id'] = ret['info'].pop('id',None)
-   ret['ip'] = ret['info'].pop('ipasc',None)
+   ret['ip'] = ret['info'].pop('ip',None)
    # Pick login name from settings
    db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'netconf'")
    netconf = db.get_dict('parameter')
@@ -169,11 +169,11 @@ def update(aDict):
       args['devices_a_dom_id'] = dns['A']['domain_id']
     ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%ret['id']),'rack_info':db.update_dict_prefixed('rack_info',args,"device_id='%s'"%ret['id'])}
   # Now fetch info
-  ret['found'] = (db.do("SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, a.name as domain, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['id'] = ret['info'].pop('id',None)
-   ret['ip'] = ret['info'].pop('ipasc',None)
+   ret['ip'] = ret['info'].pop('ip',None)
    ret['info']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
    # Rack infrastructure
    ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
@@ -221,7 +221,7 @@ def list(aDict):
   - dict (optional) (output as dictionary instead of list)
 
   - field (optional) 'id/ip/mac/hostname/type/base/vm' as search fields
-  - search (optional)
+  - search (optional) content to match on field, special case for mac where non-correct MAC will match all that are not '00:00:00:00:00:00'
   - extra (optional) list of extra info to add, None/'type'/'webpage'
   - rack (optional), id of rack to filter devices from
 
@@ -229,7 +229,7 @@ def list(aDict):
  """
  ret = {}
  sort = 'ORDER BY ia.ip' if aDict.get('sort','ip') == 'ip' else 'ORDER BY devices.hostname'
- fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ipasc', 'domains.name AS domain','model']
+ fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ip', 'domains.name AS domain','model']
  tune = ['ipam_addresses AS ia ON ia.id = devices.ipam_id','domains ON domains.id = devices.a_dom_id']
  filter = ['TRUE']
  if aDict.get('rack'):
@@ -247,11 +247,8 @@ def list(aDict):
    tune.append("device_types AS dt ON dt.id = devices.type_id")
    filter.append("dt.base = '%(search)s'"%aDict)
   elif aDict['field'] == 'mac':
-   def GL_mac2int(aMAC):
-    try:    return int(aMAC.replace(":",""),16)
-    except: return 0
-   aDict['search'] = GL_mac2int(aDict['search'])
-   filter.append("mac = %(search)s"%aDict)
+   try:    filter.append("mac = %i"%int(aDict['search'].replace(":",""),16))
+   except: filter.append("mac <> 0")
   else:
    filter.append("devices.%(field)s = %(search)s"%aDict)
 
@@ -402,9 +399,8 @@ def discover(aDict):
  from zdcp.rest.ipam import ip_allocate
 
  def __detect_thread(aIP,aDB,aSema):
-  __dev = Device(aIP['ipasc'])
+  __dev = Device(aIP)
   aDB[aIP['ip']] = __dev.detect()['info']
-  aDB[aIP['ip']]['ipasc'] = aIP['ipasc'] 
   aSema.release()
   return True
 
@@ -421,7 +417,7 @@ def discover(aDict):
   for ip in ipam['addresses']:
    sema.acquire()
    t = Thread(target = __detect_thread, args=[ip, dev_list, sema])
-   t.name = "Detect %s"%ip['ipasc']
+   t.name = "Detect %s"%ip
    t.start()
   for i in range(20):
    sema.acquire()
@@ -432,9 +428,9 @@ def discover(aDict):
  with DB() as db:
   sql = "INSERT INTO devices (a_dom_id, ipam_id, snmp, model, type_id, hostname) VALUES ("+aDict['a_dom_id']+",{},'{}','{}','{}','{}')"
   count = 0
-  for entry in dev_list.values():
+  for ip,entry in dev_list.iteritems():
    count += 1
-   alloc = ip_allocate({'ip':entry['ipasc'],'network_id':aDict['network_id']})
+   alloc = ip_allocate({'ip':ip,'network_id':aDict['network_id']})
    if alloc['success']:
     db.do(sql.format(alloc['id'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
  ret['time'] = int(time()) - start_time
@@ -560,9 +556,9 @@ def configuration_template(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT ine.mask,INET_NTOA(ine.gateway) AS gateway,INET_NTOA(ine.network) AS network, INET_NTOA(ia.ip) AS ipasc, hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aDict['id'])
+  db.do("SELECT ine.mask,INET_NTOA(ine.gateway) AS gateway,INET_NTOA(ine.network) AS network, INET_NTOA(ia.ip) AS ip, hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aDict['id'])
   data = db.get_row()
- ip = data.pop('ipasc',None)
+ ip = data.pop('ip',None)
  try:
   module = import_module("zdcp.devices.%s"%data['type'])
   dev = getattr(module,'Device',lambda x: None)(ip)
@@ -752,13 +748,13 @@ def interface_discover(aDict):
  """
  ret = {'insert':0,'update':0,'delete':0}
  with DB() as db:
-  db.do("SELECT INET_NTOA(ia.ip) AS ipasc, hostname, device_types.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aDict['device'])
+  db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, device_types.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aDict['device'])
   info = db.get_row()
   db.do("SELECT id, snmp_index, name, description FROM device_interfaces WHERE device = %s"%aDict['device'])
   existing = db.get_rows()
   try:
    module  = import_module("zdcp.devices.%s"%(info['type']))
-   dev = getattr(module,'Device',lambda x: None)(info['ipasc'])
+   dev = getattr(module,'Device',lambda x: None)(info['ip'])
    interfaces = dev.interfaces()
   except Exception as err:
    ret['error'] = str(err)

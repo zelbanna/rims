@@ -535,7 +535,7 @@ def consistency_check(aDict):
   db.do("SELECT id,foreign_id,name FROM domains")
   domains = db.get_dict('name')
   foreign = {}
-  # Save domains foreign_ids to output 
+  # Save domains foreign_ids to output
   for dom in domains.values():
    foreign[dom['foreign_id']] = {'id':dom['id'],'name':dom['name']}
 
@@ -546,9 +546,9 @@ def consistency_check(aDict):
    for id,data in servers.iteritems():
     records[id] = record_list({'type':type,'server_id':id})['records']
    # Get 'type' data for all devices
-   db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ia.ip) AS ipasc, %s_id AS record_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))
-   devices = db.get_dict('ipasc' if type == 'a' else 'fqdn')
- 
+   db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ia.ip) AS ip, %s_id AS record_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))
+   devices = db.get_dict('ip' if type == 'a' else 'fqdn')
+
    # Now check them records for matching devices and translate domain_id into centralized cached one 
    for srv,recs in records.iteritems():
     for rec in recs:
@@ -564,7 +564,7 @@ def consistency_check(aDict):
    for dev in devices.values():
     dev['type'] = type.upper()
     a_dom_id = dev.pop('a_dom_id','0')
-    dev['domain_id'] = a_dom_id if type == 'a' else domains[GL_ip2arpa(dev['ipasc'])]['id']
+    dev['domain_id'] = a_dom_id if type == 'a' else domains[GL_ip2arpa(dev['ip'])]['id']
     ret['devices'].append(dev)
  return ret
 
