@@ -456,21 +456,6 @@ def types_list(aDict):
 ############################################## Specials ###############################################
 #
 #
-def webpage_list(aDict):
- """ List webpages for devices
-
- Args:
-
- Output:
- """
- ret = {}
- with DB() as db:
-  ret['count'] = db.do("SELECT id,hostname,webpage FROM devices WHERE webpage IS NOT NULL")
-  ret['data'] = db.get_rows()
- return ret
-
-#
-#
 def node_mapping(aDict):
  """Node mapping translates between nodes and devices and provide the same info, it depends on the device existing or node having mapped a device (else 'found' is false)
 

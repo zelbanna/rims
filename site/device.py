@@ -60,7 +60,6 @@ def list(aWeb):
  print aWeb.button('search', DIV='div_content_left',  URL='zdcp.cgi?device_search', TITLE='Search')
  print aWeb.button('add',    DIV='div_content_right', URL='zdcp.cgi?device_new&%s'%aWeb.get_args(), TITLE='Add device')
  print aWeb.button('network',DIV='div_content_right', URL='zdcp.cgi?device_discover', TITLE='Discover')
- print aWeb.button('web',    DIV='div_content_right', URL='zdcp.cgi?device_webpages',TITLE='Show webpages')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead>"
  for sort in ['IP','Hostname']:
   print "<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_list&sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red")
@@ -284,17 +283,6 @@ def delete(aWeb):
 def to_console(aWeb):
  res = aWeb.rest_call("device_info&op=basics",{'id':aWeb['id']})
  aWeb.put_redirect("%s&title=%s"%(res['url'],aWeb['name']))
-
-#
-#
-def webpages(aWeb):
- res = aWeb.rest_call("device_webpage_list")
- print "<ARTICLE CLASS=info STYLE='width:100%'>"
- print "<DIV CLASS=table><DIV CLASS=tbody>"
- for row in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op URL='zdcp.cgi?device_info&id=%s' DIV=div_content_right>%s</A></DIV><DIV CLASS=td><A HREF='%s' TARGET=_blank>%s</A></DIV></DIV>"%(row['id'],row['hostname'],row['webpage'],row['webpage'])
- print "</DIV></DIV>"
- print "</ARTICLE>"
 
 #
 #
