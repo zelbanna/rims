@@ -46,7 +46,7 @@ def list(aWeb):
  print "<ARTICLE><P>Users</P><DIV CLASS=controls>"
  print aWeb.button('reload', DIV='div_content', URL='zdcp.cgi?users_list')
  print aWeb.button('add',    DIV='div_content_right',URL='zdcp.cgi?users_info&id=new')
- print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>E-mail</DIV></DIV><DIV CLASS=tbody>"
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(alias)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%row
   print aWeb.button('info', DIV='div_content_right', URL='zdcp.cgi?users_info&id=%(id)s'%row)
