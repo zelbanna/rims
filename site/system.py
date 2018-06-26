@@ -120,6 +120,7 @@ def node_list(aWeb):
  print "<ARTICLE><P>Nodes</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='zdcp.cgi?system_node_list')
  print aWeb.button('add', DIV='div_content_right', URL='zdcp.cgi?system_node_info&id=new')
+ print aWeb.button('help', DIV='div_content_right', URL='zdcp.cgi?system_node_help')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for row in nodes:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['node'],row['url'])
@@ -162,6 +163,16 @@ def node_delete(aWeb):
 def node_device_id(aWeb):
  res = aWeb.rest_call("device_search",{'device':aWeb['hostname']})
  print res['device']['id'] if res['found'] > 0 else 'NULL'
+
+def node_help(aWeb):
+ print """<ARTICLE CLASS='help' STYLE='overflow:auto'><PRE>
+ Nodes offers an interface to add and delete nodes for the system
+
+ There are two types of nodes, system generated and user inserted:
+  - system generated are created during install phase for that node. These can have settings
+  - user generated are for nodes that serves a particular funtion (i.e. a mapping between a name 'node' and the REST URL)
+
+ </PRE></ARTICLE"""
 
 ##################################################################################################
 #

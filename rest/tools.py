@@ -21,67 +21,6 @@ def debug(aDict):
 ############################################ REST tools ############################################
 #
 #
-def rest_analyze(aDict):
- """Function docstring for rest_analyze. Analyzes REST files to deduce parameter inputs
-
- Args:
-  - file (required)
-
- Output:
- """
- restdir = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','rest'))
- ret = {'file':aDict['file'],'functions':[],'global':[]}
- data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[],'arg':None,'imports':[]}
-
- with open(ospath.abspath(ospath.join(restdir,aDict['file'])),'r') as file:
-  line_no = 0
-  for line in file:
-   line_no += 1
-   line = line.rstrip()
-   line = line.replace("%s","<var>")
-   if line[0:4] =='from':
-    ret['global'].append(line)
-   if line[0:4] == 'def ':
-    if data['function']:
-     ret['functions'].append(data)
-     data = {'function':None,'required':{},'optional':{},'pop':{},'undecoded':[],'arg':None,'imports':[]}
-    name_end = line.index('(')
-    data['arg'] = line[name_end+1:-2]
-    data['function'] = line[4:name_end].lstrip()
-   elif data['function'] and data['arg'] in line:
-    try:
-     parts = line.split(data['arg'])
-     for part in parts[1:]:
-      if part[0:2] == "['":
-       end = part.index("]")
-       argument = part[2:end-1]
-       if not data['required'].get(argument):
-        data['required'][argument] = (data['optional'].get(argument) is None)
-      elif part[0:6] == ".get('":
-       end = part[6:].index("'")
-       argument = part[6:6+end]
-       if not data['optional'].get(argument):
-        data['optional'][argument] = (data['required'].get(argument) is None)
-      elif part[0:6] == ".pop('":
-       end = part[6:].index("'")
-       argument = part[6:6+end]
-       if not data['required'].get(argument) and not data['optional'].get(argument):
-        data['pop'][argument] = True
-      elif part[0:7]== ".keys()" or part[0] == ")" or part[0:12] == ".iteritems()":
-       pass
-      else:
-       data['undecoded'].append({'part':part,'line':line_no})
-    except Exception as  e:
-     data['undecoded'].append({'error':str(e),'line':line_no})
-   elif data['function'] and "from" in line:
-    data['imports'].append(line.lstrip())
-  if data['function']:
-   ret['functions'].append(data)
- return ret
-
-
-#
-#
 def rest_explore(aDict):
  """Function docstring for rest_explore TBD
 
@@ -120,7 +59,7 @@ def rest_information(aDict):
   - function (required)
 
  Output:
- """ 
+ """
  mod = import_module("zdcp.rest.%s"%(aDict['api']))
  fun = getattr(mod,aDict['function'],None)
  return {'api':aDict['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}

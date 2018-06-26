@@ -22,6 +22,7 @@ def list(aWeb):
  print aWeb.button('add',   DIV='div_content_right', URL='zdcp.cgi?settings_info&id=new&node=%s'%aWeb['node'])
  print aWeb.button('info',  DIV='div_content_right', URL='zdcp.cgi?settings_comprehensive&node=%s'%aWeb['node'])
  print aWeb.button('save',  DIV='div_content_right', URL='zdcp.cgi?settings_save&node=%s'%aWeb['node'])
+ print aWeb.button('help',  DIV='div_content_right', URL='zdcp.cgi?settings_help')
  print "</DIV>"
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Section</DIV><DIV CLASS=th>Parameter</DIV></DIV>"
  print "<DIV CLASS=tbody>"
@@ -76,3 +77,16 @@ def delete(aWeb):
 #
 def save(aWeb):
  print "<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("system_settings_save&node=%s"%aWeb['node']))
+
+#
+#
+def help(aWeb):
+ print """<ARTICLE CLASS='help' STYLE='overflow:auto'><PRE>
+ Settings offers an interface to manipulate different settings for a system (REST) node.
+
+ Settings are applied to sections, typically:
+  - matching a specific function (e.g. username/passwords for ESXi, Openstack)
+  - indicating on which node a function resides (like DNS server's node and type)
+
+ </PRE></ARTICLE"""
+

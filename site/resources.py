@@ -66,6 +66,7 @@ def list(aWeb):
  print "<ARTICLE><P>Resources</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='zdcp.cgi?resources_list&node=%s'%node)
  print aWeb.button('add', DIV='div_content_right', URL='zdcp.cgi?resources_info&node=%s&id=new&user_id=%s'%(node,cookie['id']))
+ print aWeb.button('help',DIV='div_content_right', URL='zdcp.cgi?resources_help', TITLE='Help information')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
  print "<DIV CLASS=tbody>"
  for row in res['data']:
@@ -127,3 +128,27 @@ def info(aWeb):
 def delete(aWeb):
  res = aWeb.rest_call("system_resources_delete",{'id':aWeb['id']})
  print "<ARTICLE>Result: %s</ARTICLE>"%(res)
+
+#
+#
+def help(aWeb):
+ print """<ARTICLE><PRE>
+ Resources offers advanced bookmarking functions.
+
+ There are four types of resources:
+  - menuitem. Typically generated directly by system
+  - bookmark. Generic bookmarks created by users
+  - tool. Special bookmarks for external tools
+  - demo. Special bookmark used for demo purposes
+
+  All resources are viewed as either:
+  - inline (integrated with the CSS system and interactive buttons)
+  - framed (looks like inline but a separate frame)
+  - tabbed (opens up a new tab when clicked)
+
+  All resources have:
+  - A URL that is opened when button is clicked
+  - An icon that is shown with menu button properties (size, shadow etc)
+  - View
+  - private (to the user creating the resource)
+ </PRE></ARTICLE"""
