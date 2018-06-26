@@ -62,11 +62,11 @@ def update_server(aDict):
  """
  from zdcp.SettingsContainer import SC
  from zdcp.core.common import node_call
- entries = node_call('master','device','mac_list')
+ entries = node_call('master','device','device_list',{'field':'mac','search':'all','extra':['mac']})
  # Create file
  with open(SC['iscdhcp']['static'],'w') as leasefile:
   for entry in entries:
-   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}\n".format(entry['fqdn'],entry['mac'],entry['ip'],entry['id']))
+   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id']))
 
  # Reload
  from subprocess import check_output, CalledProcessError
