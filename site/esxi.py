@@ -10,7 +10,7 @@ __icon__ = 'images/icon-servers.png'
 __type__ = 'menuitem'
 
 def main(aWeb):
- rows = aWeb.rest_call("device_list_type",{'base':'hypervisor'})['data']
+ rows = aWeb.rest_call("device_list",{'field':'base','search':'hypervisor','extra':['type','webpage'],'sort':'hostname'})['data']
  print "<NAV><UL>&nbsp;</UL></NAV>"
  print "<SECTION CLASS=content ID=div_content>"
  print "<SECTION CLASS=content-left ID=div_content_left>"
@@ -20,9 +20,9 @@ def main(aWeb):
  for row in rows:
   print "<DIV CLASS=tr><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(type_name)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%row
   if row['type_name'] == 'esxi':
-   print aWeb.button('info', DIV='main', URL='zdcp.cgi?esxi_manage&id=%s'%row['id'])
-  elif row['type_name'] == 'vcenter':
-   print aWeb.button('info', TARGET='_blank', HREF='https://%s:9443/vsphere-client/'%row['ipasc'])
+   print aWeb.button('info', DIV='main', URL='zdcp.cgi?esxi_manage&id=%s'%row['id'], TITLE='Management')
+  if row['webpage']:
+   print aWeb.button('web', TARGET='_blank', HREF='%s'%row['webpage'], TITLE='UI')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
  print "</SECTION>"

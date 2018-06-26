@@ -87,7 +87,6 @@ def info(aDict):
        pdu = pdus.get(rack["%s_pdu_id"%pem])
        rack["%s_pdu_name"%pem] = "%s:%s"%(devices[pdu['device_id']]['hostname'],pdu['%s_slot_name'%(rack["%s_pdu_slot"%pem])]) if pdu else None
        rack["%s_pdu_ip"%pem] = devices[pdu['device_id']]['ip'] if pdu else None
-
  return ret
 
 #
@@ -148,7 +147,6 @@ def update(aDict):
         pem_pdu_slot_id = args.pop('rack_info_%s_pdu_slot_id'%pem,None)
         (args['rack_info_%s_pdu_id'%pem],args['rack_info_%s_pdu_slot'%pem]) = pem_pdu_slot_id.split('.')
        except: pass
-
     #
     # Make sure everything is there to update DNS records, if records are not the same as old ones, update device, otherwise pop
     #
@@ -167,9 +165,7 @@ def update(aDict):
       args['devices_a_dom_id'] = dns['A']['domain_id']
      else:
       args.pop('devices_a_dom_id',None)
-
     ret['result']['update'] = {'device_info':db.update_dict_prefixed('devices',args,"id='%s'"%ret['id']),'rack_info':db.update_dict_prefixed('rack_info',args,"device_id='%s'"%ret['id'])}
-
   # Now fetch info
   ret['found'] = (db.do("SELECT devices.*, device_types.base AS type_base, device_types.name as type_name, a.name as domain, ia.ip, INET_NTOA(ia.ip) as ipasc FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
@@ -224,9 +220,9 @@ def list(aDict):
   - dict (optional) (output as dictionary instead of list)
 
   - rack (optional)
-  - field (optional) 'id/ip/mac/hostname/type' as search fields
+  - field (optional) 'id/ip/mac/hostname/type/base' as search fields
   - search (optional)
-  - extra (optional) None/'type'
+  - extra (optional) list of extra info to add, None/'type'/'webpage'
 
  Output:
  """
@@ -251,6 +247,9 @@ def list(aDict):
   elif aDict['field'] == 'type':
    tune.append("device_types AS dt ON dt.id = devices.type_id")
    filter.append("dt.name = '%(search)s'"%aDict)
+  elif aDict['field'] == 'base':
+   tune.append("device_types AS dt ON dt.id = devices.type_id")
+   filter.append("dt.base = '%(search)s'"%aDict)
   elif aDict['field'] == 'mac':
    def GL_mac2int(aMAC):
     try:    return int(aMAC.replace(":",""),16)
@@ -260,10 +259,13 @@ def list(aDict):
   elif aDict['field']== 'id':
    filter.append("devices.id = %(search)s"%aDict)
 
- if  aDict.get('extra') == 'type':
-  fields.append('dt.name AS type')
-  if not aDict.get('field') == 'type':
-   tune.append("device_types AS dt ON dt.id = devices.type_id")
+ if  aDict.get('extra'):
+  if 'type' in aDict['extra']:
+   fields.append('dt.name AS type_name, dt.base AS type_base')
+   if not (aDict.get('field') == 'type' or aDict.get('field') == 'base'):
+    tune.append("device_types AS dt ON dt.id = devices.type_id")
+  if 'webpage' in aDict['extra']:
+   fields.append('devices.webpage')
 
  with DB() as db:
   sql = "SELECT %s FROM devices LEFT JOIN %s WHERE %s ORDER BY %s"%(", ".join(fields)," LEFT JOIN ".join(tune)," AND ".join(filter),sort)
@@ -454,26 +456,23 @@ def type_list(aDict):
 ############################################## Specials ###############################################
 #
 #
-def list_type(aDict):
- """Function docstring for list_type TBD
+def webpage_list(aDict):
+ """ List webpages for devices
 
  Args:
-  - base (optional)
-  - name (optional)
 
  Output:
  """
  ret = {}
  with DB() as db:
-  select = "device_types.%s ='%s'"%(('name',aDict['name']) if aDict.get('name') else ('base',aDict['base']))
-  ret['count'] = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ipasc, hostname, device_types.base AS type_base, device_types.name AS type_name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY type_name,hostname"%select)
-  ret['data']  = db.get_rows()
+  ret['count'] = db.do("SELECT id,hostname,webpage FROM devices WHERE webpage IS NOT NULL")
+  ret['data'] = db.get_rows()
  return ret
 
 #
 #
 def list_mac(aDict):
- """Function docstring for list_mac. Used by IPAM DHCP update to fetch all mac address, IP, FQDN pairs 
+ """Function docstring for list_mac. Used by IPAM DHCP update to fetch all mac address, IP, FQDN pairs
 
  Args:
 
@@ -519,21 +518,6 @@ def node_mapping(aDict):
    if ret['id']:
     ret['found'] = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain, webpage FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%ret['id']) > 0)
     ret.update(db.get_row())
- return ret
-
-#
-#
-def webpage_list(aDict):
- """ List webpages for devices
-
- Args:
-
- Output:
- """
- ret = {}
- with DB() as db:
-  ret['count'] = db.do("SELECT id,hostname,webpage FROM devices WHERE webpage IS NOT NULL")
-  ret['data'] = db.get_rows()
  return ret
 
 #
