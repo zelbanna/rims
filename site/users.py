@@ -85,7 +85,7 @@ def info(aWeb):
  print aWeb.button('save',DIV='div_content_right', URL='zdcp.cgi?users_info&op=update', FRM='user_info_form')
  if data['id'] != 'new' and ((cookie['id'] == str(data['id']) or cookie['id'] == "1")):
   print aWeb.button('trash',DIV='div_content_right',URL='zdcp.cgi?users_delete&id={0}'.format(data['id']), MSG='Really remove user?')
- print "</DIV>"
+ print "</DIV><SPAN STYLE='display:block'>Available menu options</SPAN>"
  print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>"
  for id,resource in resources.iteritems():
   print "<LI CLASS='drag' ID={0}><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='{1}'><IMG SRC='{2}' ALT='{1}'></BUTTON></LI>".format(id,resource['title'],resource['icon'])

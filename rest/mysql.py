@@ -1,3 +1,4 @@
+"""MYSQL API module. This module provides system support for mysql DB operations"""
 __author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
@@ -6,6 +7,16 @@ __add_globals__ = lambda x: globals().update(x)
 #
 #
 def dump(aDict):
+ """ Function dumps database schema or values or full database info
+
+ Args:
+  - mode (required) 'structure'/'full'
+  - username (optional)
+  - password (optional)
+  - database (optional)
+
+ Output:
+ """
  from subprocess import check_output
  if aDict.get('username') and aDict.get('password') and aDict.get('database'):
   db,username,password = aDict['database'],aDict['username'],aDict['password']
@@ -48,6 +59,15 @@ def dump(aDict):
 #
 #
 def restore(aDict):
+ """ Function restores database schema or values or full database info, Caution (!) if restoring a schema there will be no/0 rows in any table in the database
+
+ Args:
+  - username (optional)
+  - password (optional)
+
+ Output:
+  - result
+ """
  from subprocess import check_output
  if aDict.get('username') and aDict.get('password'):
   username,password = aDict['username'],aDict['password']
@@ -65,6 +85,19 @@ def restore(aDict):
 #
 #
 def diff(aDict):
+ """ Function makes a diff between current database schema and the supplied schema file.
+
+ Args:
+  - schema_file (required)
+  - username (optional)
+  - password (optional)
+  - database (optional)
+
+ Output:
+  - diffs. counter
+  - output. list of lines indicating where the diff is
+ """
+
  from difflib import unified_diff
  with open(aDict['schema_file']) as f:
   data = f.read()
@@ -82,6 +115,16 @@ def diff(aDict):
 #
 #
 def patch(aDict):
+ """ Function patches current database schema with the supplied schema file. If not successful it will try to restore entire old database. Intermediate files are mysql.backup (entire DB) and mysql.values (INSERTs only - used for restoring) 
+
+ Args:
+  - schema_file (required)
+  - username (optional)
+  - password (optional)
+  - database (optional)
+
+ Output:
+ """
  from os import remove
  args = dict(aDict)
  args['mode'] = 'database'
