@@ -35,14 +35,16 @@ def list(aWeb):
 #
 def list_infra(aWeb):
  type = aWeb['type']
- devices = aWeb.rest_call("device_list_type",{'base':type})['data']
+ devices = aWeb.rest_call("device_list",{'field':'base','search':type,'extra':['type']})['data']
  print "<ARTICLE><P>%ss</P><DIV CLASS=controls>"%type.title()
  print aWeb.button('reload',DIV='div_content_left', URL='zdcp.cgi?rack_list_infra&type=%s'%type)
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for dev in devices:
-  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='zdcp.cgi?device_info&id=%s'>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?%s_inventory&ip=%s'>%s</A></DIV><DIV CLASS=td>"%(dev['id'],dev['id'],dev['type_name'],dev['ipasc'],dev['hostname'])
+  print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='zdcp.cgi?device_info&id=%s'>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?%s_inventory&ip=%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS=controls>"%(dev['id'],dev['id'],dev['type_name'],dev['ipasc'],dev['hostname'])
   print aWeb.button('info',DIV='main',URL='zdcp.cgi?%s_manage&id=%s&ip=%s&hostname=%s'%(dev['type_name'],dev['id'],dev['ipasc'],dev['hostname']))
-  print "</DIV></DIV>"
+  if dev.get('webpage'):
+   print aWeb.button('www', HREF=dev['webpage'], TARGET='_blank', TITLE='UI')
+  print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
 #
