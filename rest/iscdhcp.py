@@ -62,7 +62,7 @@ def update_server(aDict):
  """
  from zdcp.SettingsContainer import SC
  from zdcp.core.common import node_call
- entries = node_call('master','device','device_list',{'field':'mac','search':'all','extra':['mac']})
+ entries = node_call('master','device','list',{'field':'mac','search':'all','extra':['mac']})
  # Create file
  with open(SC['iscdhcp']['static'],'w') as leasefile:
   for entry in entries:
