@@ -287,7 +287,7 @@ def ip_delete(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['result'] = db.do("DELETE FROM ipam_addresses WHERE id = %(id)s"%aDict)
+  ret['result'] = (db.do("DELETE FROM ipam_addresses WHERE id = %(id)s"%aDict) > 0)
  return ret
 
 #

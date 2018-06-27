@@ -328,8 +328,8 @@ def new(aDict):
 
  ret = {'info':None}
  with DB() as db:
-  ret['found'] = (db.do("SELECT id, hostname, a_dom_id FROM devices WHERE hostname = '%(hostname)s' AND a_dom_id = %(a_dom_id)s"%aDict) > 0)
-  if not ret['found']:
+  ret['fqdn'] = (db.do("SELECT id AS existing_device_id, hostname, a_dom_id FROM devices WHERE hostname = '%(hostname)s' AND a_dom_id = %(a_dom_id)s"%aDict) == 0)
+  if ret['fqdn']:
    mac     = GL_mac2int(aDict.get('mac',0))
    ipam_id = alloc['id'] if alloc else 'NULL'
    ret['insert'] = db.do("INSERT INTO devices(vm,mac,a_dom_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['a_dom_id'],ipam_id,aDict['hostname']))
@@ -341,10 +341,10 @@ def new(aDict):
   else:
    ret.update(db.get_row())
 
- # also remove allocation if existed..
- if ret['found'] and alloc['success']:
+ # also remove allocation if fqdn busy..
+ if alloc['success'] and not ret['fqdn']:
   from zdcp.rest.ipam import ip_delete
-  ret['info'] = "existing (%s)"%ip_delete({'id':alloc['id']})
+  ret['info'] = "deallocating ip (%s)"%ip_delete({'id':alloc['id']})['result']
  return ret
 
 #

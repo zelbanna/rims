@@ -419,7 +419,10 @@ def record_device_update(aDict):
   if infra['server']:
    infra['args']['op'] = 'update'
    res = node_call(infra['node'],infra['server'],'record_info',infra['args'])
-   ret[type]['found']  = res['found']
+   if not res['found']:
+    # real 'op' should be insert as we now reset the record id to create new one
+    infra['args']['id'] = 'new'
+    res = node_call(infra['node'],infra['server'],'record_info',infra['args'])
    if res['found']:
     ret[type]['record_id'] = res['data']['id']
     ret[type]['domain_id'] = domains['foreign_id'].get(res['data']['domain_id'],{'domain_id':0})['domain_id']
@@ -428,6 +431,7 @@ def record_device_update(aDict):
    else:
     ret[type]['record_id'] = 0
     ret[type]['domain_id'] = infra['domain_id']
+   ret[type]['found'] = res['found']
  return ret
 
 #
