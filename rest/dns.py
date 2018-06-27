@@ -264,7 +264,7 @@ def record_info(aDict):
  """
  ret = {}
  args = aDict
- domain_id = aDict['domain_id'] 
+ domain_id = aDict['domain_id']
 
  with DB() as db:
   if aDict['id'] == 'new' and not (aDict.get('op') == 'update'):
@@ -348,7 +348,7 @@ def record_device_update(aDict):
   "Tricky" part is when device MOVED from one domain to another AND this means server change, then we need to do delete first on old server. If IP address changed.
 
  Args:
-  - id (required) id/new
+  - id (required)     - id/new. ID is used to detect if moving device between domains... i.e. to fetch old info
   - ip (required)
   - hostname (required)
   - a_domain_id (required)

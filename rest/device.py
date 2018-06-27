@@ -315,8 +315,8 @@ def new(aDict):
  if aDict['hostname'] == 'unknown':
   return {'info':'Hostname unknown not allowed'}
  elif aDict.get('ipam_network_id') and aDict.get('ip'):
-  from zdcp.rest.ipam import ip_allocate
-  alloc = ip_allocate({'ip':aDict['ip'],'network_id':aDict['ipam_network_id']})
+  from zdcp.rest.ipam import address_allocate
+  alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['ipam_network_id']})
   if   not alloc['valid']:
    return {'info':'IP not in network range'}
   elif not alloc['success']:
@@ -331,8 +331,14 @@ def new(aDict):
   ret['fqdn'] = (db.do("SELECT id AS existing_device_id, hostname, a_dom_id FROM devices WHERE hostname = '%(hostname)s' AND a_dom_id = %(a_dom_id)s"%aDict) == 0)
   if ret['fqdn']:
    mac     = GL_mac2int(aDict.get('mac',0))
-   ipam_id = alloc['id'] if alloc else 'NULL'
-   ret['insert'] = db.do("INSERT INTO devices(vm,mac,a_dom_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['a_dom_id'],ipam_id,aDict['hostname']))
+   if alloc:
+    import zdcp.rest.dns as DNS
+    DNS.__add_globals__({'import_module':import_module})
+    dns = DNS.record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip':aDict['ip']})
+    ret['insert'] = db.do("INSERT INTO devices(vm,mac,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
+   else:
+    ret['insert'] = db.do("INSERT INTO devices(vm,mac,hostname,snmp,model) VALUES(%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['hostname']))
+
    ret['id']   = db.get_last_id()
    if aDict.get('target') == 'rack_id' and aDict.get('arg'):
     db.do("INSERT INTO rack_info SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict.get('arg')))
@@ -343,8 +349,8 @@ def new(aDict):
 
  # also remove allocation if fqdn busy..
  if alloc['success'] and not ret['fqdn']:
-  from zdcp.rest.ipam import ip_delete
-  ret['info'] = "deallocating ip (%s)"%ip_delete({'id':alloc['id']})['result']
+  from zdcp.rest.ipam import address_delete
+  ret['info'] = "deallocating ip (%s)"%address_delete({'id':alloc['id']})['result']
  return ret
 
 #
@@ -366,7 +372,6 @@ def delete(aDict):
    args = {'a_id':data['a_id'],'a_domain_id':data['a_dom_id']}
    import zdcp.rest.dns as DNS
    DNS.__add_globals__({'import_module':import_module})
-   from zdcp.rest.ipam import ip_delete
 
    if data['ptr_id'] != 0 and data['reverse_zone_id']:
     args['ptr_id']= data['ptr_id']
@@ -378,7 +383,8 @@ def delete(aDict):
    ret.update({'deleted':(db.do("DELETE FROM devices WHERE id = %(id)s"%aDict) > 0)})
  # Avoid race condition on DB, do this when DB is closed...
  if found and data['ipam_id']:
-  ret.update(ip_delete({'id':data['ipam_id']}))
+  from zdcp.rest.ipam import address_delete
+  ret.update(address_delete({'id':data['ipam_id']}))
  return ret
 
 #
@@ -394,7 +400,7 @@ def discover(aDict):
  """
  from time import time
  from threading import Thread, BoundedSemaphore
- from zdcp.rest.ipam import network_discover as ipam_discover, ip_allocate
+ from zdcp.rest.ipam import network_discover as ipam_discover, address_allocate
  from zdcp.devices.generic import Device
 
  def __detect_thread(aIP,aDB,aSema):
@@ -429,7 +435,7 @@ def discover(aDict):
   count = 0
   for ip,entry in dev_list.iteritems():
    count += 1
-   alloc = ip_allocate({'ip':ip,'network_id':aDict['network_id']})
+   alloc = address_allocate({'ip':ip,'network_id':aDict['network_id']})
    if alloc['success']:
     db.do(sql.format(alloc['id'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
  ret['time'] = int(time()) - start_time

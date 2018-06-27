@@ -346,7 +346,7 @@ def new(aWeb):
   res = aWeb.rest_call("device_new",args)
   print "Operation:%s"%str(res)
  elif op == 'find':
-  print aWeb.rest_call("ipam_ip_find",{'network_id':network})['ip']
+  print aWeb.rest_call("ipam_address_find",{'network_id':network})['ip']
  else:
   networks = aWeb.rest_call("ipam_network_list")['networks']
   domains  = aWeb.rest_call("dns_domain_list",{'filter':'forward'})['domains']

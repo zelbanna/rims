@@ -15,7 +15,7 @@ def network_list(aDict):
  Args:
 
  Output:
-  - networks. List of: 
+  - networks. List of:
   -- id
   -- netasc
   -- gateway
@@ -92,6 +92,8 @@ def network_inventory(aDict):
 
  Args:
   - id (required)
+  - dict(optional)
+  - extra (optional) list of extra info
 
  Output:
  """
@@ -99,14 +101,16 @@ def network_inventory(aDict):
  with DB() as db:
   db.do("SELECT mask, network, INET_NTOA(network) as netasc, gateway, INET_NTOA(gateway) as gwasc FROM ipam_networks WHERE id = %(id)s"%aDict)
   network = db.get_row()
-  ret['start']     = network['network']
-  ret['size']      = 2**(32-network['mask'])
-  ret['mask']      = network['mask']
-  ret['network']   = network['netasc']
-  ret['gateway_ip']= network['gwasc']
-  ret['count']     = db.do("SELECT ip AS ipint, INET_NTOA(ip) AS ip,id FROM ipam_addresses WHERE network_id = %(id)s"%aDict)
-  ret['entries']   = db.get_dict('ipint')
-  ret['gateway_id'] = ret['entries'].get(network['gateway'],{'id':None})['id']
+  ret['start']   = network['network']
+  ret['size']    = 2**(32-network['mask'])
+  ret['mask']    = network['mask']
+  ret['network'] = network['netasc']
+  ret['gateway'] = network['gwasc']
+  fields = ['ip AS ip_integer','INET_NTOA(ip) AS ip','id']
+  if aDict.get('extra'):
+   fields.extend(aDict['extra'])
+  ret['count']   = db.do("SELECT %s FROM ipam_addresses WHERE network_id = %s ORDER BY ip"%(",".join(fields),aDict['id']))
+  ret['entries'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict['dict'])
  return ret
 
 #
@@ -182,8 +186,8 @@ def network_discover(aDict):
 ############################################## Addresses ##################################################
 #
 #
-def ip_find(aDict):
- """Function docstring for ip_find TBD
+def address_find(aDict):
+ """Function docstring for address_find TBD
 
  Args:
   - network_id (required)
@@ -226,7 +230,7 @@ def ip_find(aDict):
  
 #
 #
-def ip_allocate(aDict):
+def address_allocate(aDict):
  """ Function allocate IP relative a specific network.
 
  Args:
@@ -250,7 +254,7 @@ def ip_allocate(aDict):
 
 #
 #
-def ip_realloc(aDict):
+def address_realloc(aDict):
  """ Function re allocate address ID to a new IP within the same or a new network.
 
  Args:
@@ -276,14 +280,14 @@ def ip_realloc(aDict):
 
 #
 #
-def ip_delete(aDict):
+def address_delete(aDict):
  """Function deletes an IP id
 
  Args:
   - id (required)
 
  Output:
-  - result
+  - result (always) boolean
  """
  ret = {}
  with DB() as db:
@@ -292,7 +296,7 @@ def ip_delete(aDict):
 
 #
 #
-def ip_from_id(aDict):
+def address_from_id(aDict):
  """ Funtion returns mapping between IPAM id and ip,network_id
 
  Args:
