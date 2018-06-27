@@ -299,16 +299,13 @@ def new(aDict):
  Args:
   - a_dom_id (required)
   - hostname (required)
-  - target (optional)
   - ipam_network_id (optional)
   - ip (optional)
   - vm (optional)
   - mac (optional)
-  - arg (optional)
+  - rack (optional)
 
  Output:
-  - target is 'rack_id' or nothing
-  - arg is rack_id
  """
  alloc = None
  # Test if hostname ok or if IP supplied and then if ok and available
@@ -340,10 +337,8 @@ def new(aDict):
     ret['insert'] = db.do("INSERT INTO devices(vm,mac,hostname,snmp,model) VALUES(%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['hostname']))
 
    ret['id']   = db.get_last_id()
-   if aDict.get('target') == 'rack_id' and aDict.get('arg'):
-    db.do("INSERT INTO rack_info SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict.get('arg')))
-    ret['rack'] = aDict.get('arg')
-    ret['info'] = "rack"
+   if aDict.get('rack');
+    ret['racked'] = (db.do("INSERT INTO rack_info SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict['rack'])) == 1)
   else:
    ret.update(db.get_row())
 
