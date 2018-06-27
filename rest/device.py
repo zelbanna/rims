@@ -304,6 +304,7 @@ def new(aDict):
   - vm (optional)
   - mac (optional)
   - rack (optional)
+  - consecutive (optional)
 
  Output:
  """
@@ -319,15 +320,12 @@ def new(aDict):
   elif not alloc['success']:
    return {'info':'IP not available'}
 
- def GL_mac2int(aMAC):
-  try:    return int(aMAC.replace(":",""),16)
-  except: return 0
-
  ret = {'info':None}
  with DB() as db:
   ret['fqdn'] = (db.do("SELECT id AS existing_device_id, hostname, a_dom_id FROM devices WHERE hostname = '%(hostname)s' AND a_dom_id = %(a_dom_id)s"%aDict) == 0)
   if ret['fqdn']:
-   mac     = GL_mac2int(aDict.get('mac',0))
+   try:    mac = int(aDict.get('mac','0').replace(":",""),16)
+   except: mac = 0
    if alloc:
     import zdcp.rest.dns as DNS
     DNS.__add_globals__({'import_module':import_module})
