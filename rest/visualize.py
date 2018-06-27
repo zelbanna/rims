@@ -157,7 +157,7 @@ def network(aDict):
        # 2) For multipoint the other side will (through SQL) see the same interface so also covered by processed
        # 3) There is no multipoint to multipoint (!)
        if not to_node['processed']:
-        # If first time seen, it's root will become the current id and it should be added to nodes
+        # If first time seen, i.e. no connections. it's root connection is the current id and it should be added to nodes
         if len(to_node['connected']) == 0:
          nodes[to_id] = to_node
         to_node['connected'].append(current_id)
@@ -177,5 +177,5 @@ def network(aDict):
    for node in ret['nodes']:
     nodes[node['id']]['hostname'] = node['label']
    ret['name']  = nodes[ret['id']]['hostname']
-   ret['edges'] = [{'from':intf['a_device'],'to':intf['b_device'],'smooth':intf['type'],'title':"%s:%s <-> %s:%s"%(nodes[intf['a_device']]['hostname'],intf['a_name'],nodes[intf['b_device']]['hostname'],intf['b_name'])} for intf in edges]
+   ret['edges'] = [{'id':"zdcp_%(a_interface)i_%(b_interface)i"%intf,'from':intf['a_device'],'to':intf['b_device'],'smooth':intf['type'],'title':"%s:%s <-> %s:%s"%(nodes[intf['a_device']]['hostname'],intf['a_name'],nodes[intf['b_device']]['hostname'],intf['b_name'])} for intf in edges]
  return ret
