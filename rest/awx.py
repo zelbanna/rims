@@ -54,17 +54,28 @@ def inventory_info(aDict):
 
  Output:
  """
- ret = {'hosts':[]}
+ ret = {}
  controller = Device(SC['nodes'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
- ret['hosts']  = controller.fetch_list("inventories/%(id)s/hosts/"%aDict,('id','instance_id','name','description'))
  ret['groups'] = controller.fetch_dict("inventories/%(id)s/groups/"%aDict,('id','name','description','total_hosts'),'name')
+ ret['hosts'] = []
+ next = "inventories/%(id)s/hosts/"%aDict
+ while True:
+  data = controller.call(next)['data']
+  for row in data['results']:
+   insert = {k:row.get(k) for k in ('id','instance_id','name','description')}
+   insert['groups'] = row['summary_fields']['groups']['results']
+   ret['hosts'].append(insert)
+  try:
+   _,_,page = data['next'].rpartition('?')
+   next = "%s?%s"%(base,page)
+  except: break
  return ret
 
 #
 #
 def inventory_sync(aDict):
- """Function retrieves and matches AWX hosts with local ones and updates missing info
+ """Function retrieves and matches AWX hosts with devices - and add/updates missing info and groups
 
  Args:
   - node (required)
@@ -73,23 +84,73 @@ def inventory_sync(aDict):
   - field (required)
 
  Output:
-  - result (boolean)
+  - result (always) 'OK' / 'NOT_OK'
   - info (optional)
+  - devices (always)
+  - groups (always)
  """
  from zdcp.rest.device import list as device_list
- hosts = {}
  devices = device_list({'search':aDict['search'],'field':aDict['field'],'extra':'type'})['data']
- ret = {'devices':devices,'result':'OK','extra':[]}
+ ret = {'devices':devices,'result':'OK','groups':{}}
+ if len(devices) == 0:
+  return ret
  controller = Device(SC['nodes'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  ret['groups'] = controller.fetch_dict("inventories/%s/groups/"%aDict['id'],('id','name','description','total_hosts'),'name')
  try:
-  hosts = controller.fetch_dict("inventories/%(id)s/hosts/"%aDict,('id','name','url','description','enabled','instance_id'),'instance_id')
+  hosts = {}
+  next = "inventories/%(id)s/hosts/"%aDict
+  while True:
+   data = controller.call(next)['data']
+   for row in data['results']:
+    insert = {k:row.get(k) for k in ('id','name','description','enabled')}
+    insert['groups'] = row['summary_fields']['groups']['results']
+    hosts[row['instance_id']] = insert
+   try:
+    _,_,page = data['next'].rpartition('?')
+    next = "%s?%s"%(base,page)
+   except: break
   for dev in devices:
-   args = {"name": "%s.%s"%(dev['hostname'],dev['domain']),"description": "%(model)s (%(ip)s)"%dev,"enabled": True,"instance_id": dev['id'], "variables": "" }
-   host = hosts.get(str(dev['id']))
-   res  = controller.call("hosts/%s/"%(host['id']),args,"PATCH") if host else controller.call("inventories/%s/hosts/"%aDict['id'],args,"POST")
-   dev['sync'] = {'code':res['code'],'id':res['data']['id']}
+   # Check device group
+   group = ret['groups'].get(dev['type_name'],{'id':None})
+   if not group['id']:
+    group = {'name':dev['type_name'], 'description':"%s devices"%dev['type_name']}
+    res = controller.call("inventories/%s/groups/"%(aDict['id']),group,"POST")
+    if res['code'] == 201:
+     group.update({'id':res['data']['id'],'info':'CREATED','total_hosts':0})
+    else:
+     group.update({'id':None,'error':res['code'],'info':'NOT_CREATED','total_hosts':0})
+    ret['groups'][dev['type_name']] = group
+
+   # Now the group 'exists', so patch host if exist and add to group if not exist
+   # If available group, add host to it somehow
+   if group['id']:
+    host  = hosts.get(str(dev['id']))
+    args = {"name": "%s.%s"%(dev['hostname'],dev['domain']),"description": "%(model)s (%(ip)s)"%dev,"enabled": True,"instance_id": str(dev['id']), "variables": "" }
+    if host:
+     res  = controller.call("hosts/%s/"%(host['id']),args,"PATCH")
+     dev['awx'] = {'code':res['code'],'id':res['data']['id']}
+     # Check if already in group otherwise add to group
+     for hgrp in host['groups']:
+      if hgrp['id'] == group['id']:
+       dev['awx']['group'] = 'REMAIN_IN_GROUP'
+       break
+     else:
+      res  = controller.call("groups/%s/hosts/"%(group['id']),{'id':host['id']},"POST")
+      if res['code'] == 204:
+       dev['awx']['group'] = 'ADDED_TO_GROUP'
+       group['total_hosts'] += 1
+      else:
+       dev['awx']['group'] = 'ERROR:%i'%res['code']
+    else:
+     # No host, create directly to group (belonging to inventory) x :-)
+     res  = controller.call("groups/%s/hosts/"%(group['id']),args,"POST")
+     dev['awx'] = {'code':res['code'],'id':res['data']['id'],'group':'CREATED_TO_GROUP'}
+     args['id'] = res['data']['id']
+     hosts[str(dev['id'])] = args
+     group['total_hosts'] += 1
+   else:
+    dev['awx'] = {'code':600,'group':'NO_GROUP_ID'}
  except Exception as e:
   ret['info'] = str(e)
   ret['result'] = 'NOT_OK'
