@@ -31,8 +31,8 @@ def list(aWeb):
  print "<DIV CLASS=tbody>"
  for map in res['maps']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS='controls'>"%(map['id'],map['name'])
-  print aWeb.button('configure',  DIV='div_content_right', URL='zdcp.cgi?visualize_network&type=map&id=%s'%map['id'],   TITLE='Show and Edit map') 
-  print aWeb.button('visualize',       DIV='div_content_right', URL='zdcp.cgi?visualize_show&id=%s'%map['id'],   TITLE='Show map')
+  print aWeb.button('edit',      DIV='div_content_right', URL='zdcp.cgi?visualize_network&type=map&id=%s'%map['id'],   TITLE='Show and Edit map') 
+  print aWeb.button('visualize', DIV='div_content_right', URL='zdcp.cgi?visualize_show&id=%s'%map['id'],   TITLE='Show map')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 

@@ -27,8 +27,8 @@ def list(aWeb):
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for unit in racks:
   print "<DIV CLASS=tr><DIV CLASS='td maxed'>%(name)s</DIV><DIV CLASS=td>%(size)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%unit
-  print aWeb.button('configure', DIV='div_content_right', URL='zdcp.cgi?rack_info&id=%s'%unit['id'])
-  print aWeb.button('show',      DIV='main',              URL='zdcp.cgi?device_main&rack=%s'%unit['id'],TITLE='Rack inventory')
+  print aWeb.button('edit', DIV='div_content_right', URL='zdcp.cgi?rack_info&id=%s'%unit['id'])
+  print aWeb.button('show', DIV='main',              URL='zdcp.cgi?device_main&rack=%s'%unit['id'],TITLE='Rack inventory')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 

@@ -157,7 +157,7 @@ def info(aWeb):
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',     DIV='div_content_right',URL='zdcp.cgi?device_info&id=%i'%dev['id'])
  print aWeb.button('trash',      DIV='div_content_right',URL='zdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
- print aWeb.button('configure',  DIV='div_content_right',URL='zdcp.cgi?device_update&id=%i'%dev['id'], TITLE='Configure Extended Device Information')
+ print aWeb.button('edit',       DIV='div_content_right',URL='zdcp.cgi?device_update&id=%i'%dev['id'], TITLE='Configure Extended Device Information')
  print aWeb.button('save',       DIV='div_content_right',URL='zdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Basic Device Information')
  print aWeb.button('document',   DIV='div_dev_data',     URL='zdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
  print aWeb.button('connections',DIV='div_dev_data',     URL='zdcp.cgi?device_interface_list&device=%i'%(dev['id']),TITLE='Device interfaces')

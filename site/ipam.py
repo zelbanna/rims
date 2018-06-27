@@ -19,9 +19,9 @@ def network_list(aWeb):
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for net in res['networks']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(net['id'],net['netasc'],net['description'])
-  print aWeb.button('info',      DIV='div_content_right', URL='zdcp.cgi?ipam_network_layout&id=%i'%net['id'])
-  print aWeb.button('items',     DIV='div_content_right', URL='zdcp.cgi?ipam_network_entries&id=%i'%net['id'])
-  print aWeb.button('configure', DIV='div_content_right', URL='zdcp.cgi?ipam_network_info&id=%i'%net['id'])
+  print aWeb.button('info',  DIV='div_content_right', URL='zdcp.cgi?ipam_network_layout&id=%i'%net['id'])
+  print aWeb.button('items', DIV='div_content_right', URL='zdcp.cgi?ipam_network_entries&id=%i'%net['id'])
+  print aWeb.button('edit',  DIV='div_content_right', URL='zdcp.cgi?ipam_network_info&id=%i'%net['id'])
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
