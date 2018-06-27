@@ -43,7 +43,7 @@ def list_infra(aWeb):
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='zdcp.cgi?device_info&id=%s'>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?%s_inventory&ip=%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS=controls>"%(dev['id'],dev['id'],dev['type_name'],dev['ip'],dev['hostname'])
   print aWeb.button('info',DIV='main',URL='zdcp.cgi?%s_manage&id=%s&ip=%s&hostname=%s'%(dev['type_name'],dev['id'],dev['ip'],dev['hostname']))
   if dev.get('webpage'):
-   print aWeb.button('www', HREF=dev['webpage'], TARGET='_blank', TITLE='UI')
+   print aWeb.button('ui', HREF=dev['webpage'], TARGET='_blank', TITLE='UI')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
