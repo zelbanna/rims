@@ -20,8 +20,8 @@ def network_list(aWeb):
  for net in res['networks']:
   print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(net['id'],net['netasc'],net['description'])
   print aWeb.button('info',      DIV='div_content_right', URL='zdcp.cgi?ipam_network_layout&id=%i'%net['id'])
-  print aWeb.button('configure', DIV='div_content_right', URL='zdcp.cgi?ipam_network_info&id=%i'%net['id'])
   print aWeb.button('items',     DIV='div_content_right', URL='zdcp.cgi?ipam_network_entries&id=%i'%net['id'])
+  print aWeb.button('configure', DIV='div_content_right', URL='zdcp.cgi?ipam_network_info&id=%i'%net['id'])
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
@@ -86,10 +86,10 @@ def network_delete(aWeb):
 #
 def network_entries(aWeb):
  data = aWeb.rest_call("ipam_network_inventory",{'id':aWeb['id'],'extra':['type']})
- print "<ARTICLE><P>Allocated IP Addresses</P><DIV CLASS=table><DIV CLASS=tbody>"
+ print "<ARTICLE><P>Allocated IP Addresses</P><SPAN CLASS=results ID=ipam_address_operation></SPAN><DIV CLASS=table><DIV CLASS=tbody>"
  for row in data['entries']:
   print "<DIV CLASS=tr><DIV CLASS=td>%(id)i</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(type)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%row
-  print aWeb.button('delete', DIV='div_content_right', URL='zdcp.cgi?ipam_address_delete&id=%(id)i&ip=%(ip)s'%row)
+  print aWeb.button('delete', DIV='ipam_address_operation', URL='zdcp.cgi?ipam_address_delete&id=%(id)i&ip=%(ip)s'%row)
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
@@ -107,6 +107,5 @@ def address_info(aWeb):
 #
 def address_delete(aWeb):
  res = aWeb.rest_call("ipam_address_delete",{'id':aWeb['id']})
- print "<ARTICLE>%s</ARTICLE>"%res
- pass
+ print "Deleted: %(result)s"%res
 

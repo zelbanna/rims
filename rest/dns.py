@@ -357,7 +357,7 @@ def record_device_update(aDict):
 
  Output:
  """
- ret  = {'A':{'found':False},'PTR':{'found':False},'device':{'found':False},'server':{}}
+ ret  = {'A':{'found':False,'record_id':0,'domain_id':aDict['a_domain_id']},'PTR':{'found':False,'record_id':0},'device':{'found':False},'server':{}}
  aDict['a_domain_id'] = int(aDict['a_domain_id'])
  data = {}
 
@@ -424,20 +424,18 @@ def record_device_update(aDict):
     infra['args']['id'] = 'new'
     res = node_call(infra['node'],infra['server'],'record_info',infra['args'])
    if res['found']:
+    ret[type]['found']     = True
     ret[type]['record_id'] = res['data']['id']
     ret[type]['domain_id'] = domains['foreign_id'].get(res['data']['domain_id'],{'domain_id':0})['domain_id']
-    ret[type]['update'] = res.get('update',False)
-    ret[type]['insert'] = res.get('insert',False)
-   else:
-    ret[type]['record_id'] = 0
-    ret[type]['domain_id'] = infra['domain_id']
-   ret[type]['found'] = res['found']
+    ret[type]['update']    = res.get('update',False)
+    ret[type]['insert']    = res.get('insert',False)
  return ret
 
 #
 #
 def record_device_create(aDict):
- """Function docstring for record_device_create. This one does not expect 'overlapping' reverse or forwarding zones - hence bypassing IPAM's PTR registration and does lookup for first available reverse record
+ """Function docstring for record_device_create. The function actually only creates records for an existing device, and update the device..
+ It does not expect 'overlapping' reverse or forwarding zones - hence bypassing IPAM's PTR registration and does lookup for first available reverse record
 
  Args:
   - device_id (required)
@@ -462,7 +460,7 @@ def record_device_create(aDict):
   args['name'] = GL_ip2ptr(aDict['ip'])
   args['content'] = aDict['fqdn']
 
- with DB() as db: 
+ with DB() as db:
   db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%aDict['domain_id'])
   infra = db.get_row()
   args['domain_id'] = infra['foreign_id']

@@ -335,9 +335,8 @@ def new(aDict):
     ret['insert'] = db.do("INSERT INTO devices(vm,mac,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
    else:
     ret['insert'] = db.do("INSERT INTO devices(vm,mac,hostname,snmp,model) VALUES(%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['hostname']))
-
    ret['id']   = db.get_last_id()
-   if aDict.get('rack');
+   if aDict.get('rack'):
     ret['racked'] = (db.do("INSERT INTO rack_info SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict['rack'])) == 1)
   else:
    ret.update(db.get_row())

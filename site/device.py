@@ -340,8 +340,7 @@ def new(aWeb):
   if aWeb['vm']:
    args['vm'] = 1
   else:
-   args['target'] = aWeb['target']
-   args['arg']    = aWeb['arg']
+   args['rack'] = aWeb['rack']
    args['vm'] = 0
   res = aWeb.rest_call("device_new",args)
   print "Operation:%s"%str(res)
@@ -368,6 +367,10 @@ def new(aWeb):
    print "<INPUT TYPE=HIDDEN NAME=rack VALUE={}>".format(aWeb['rack'])
   else:
    print "<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV  CLASS=td><INPUT NAME=vm  TYPE=CHECKBOX VALUE=1  {0} ></DIV></DIV>".format("checked" if aWeb['target'] == 'vm' else '')
+  print "<DIV CLASS=tr><DIV CLASS=td>Count:</DIV><DIV CLASS=td><SELECT NAME=count>"
+  for n in range(1,11):
+   print "<OPTION ID=%i>%i</OPTION>"%(n,n)
+  print "</SELECT></DIV></DIV>"
   print "</DIV></DIV>"
   print "</FORM><DIV CLASS=controls>"
   print aWeb.button('start', DIV='device_span', URL='zdcp.cgi?device_new&op=new',  FRM='device_new_form', TITLE='Create')
