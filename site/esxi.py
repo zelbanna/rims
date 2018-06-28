@@ -22,7 +22,7 @@ def main(aWeb):
   if row['type_name'] == 'esxi':
    print aWeb.button('info', DIV='main', URL='zdcp.cgi?esxi_manage&id=%s'%row['id'], TITLE='Management')
   if row['webpage']:
-   print aWeb.button('web', TARGET='_blank', HREF=row['webpage'], TITLE='UI')
+   print aWeb.button('ui', TARGET='_blank', HREF=row['webpage'], TITLE='UI')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
  print "</SECTION>"

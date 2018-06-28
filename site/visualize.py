@@ -32,7 +32,7 @@ def list(aWeb):
  for map in res['maps']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS='controls'>"%(map['id'],map['name'])
   print aWeb.button('edit',      DIV='div_content_right', URL='zdcp.cgi?visualize_network&type=map&id=%s'%map['id'],   TITLE='Show and Edit map') 
-  print aWeb.button('visualize', DIV='div_content_right', URL='zdcp.cgi?visualize_show&id=%s'%map['id'],   TITLE='Show map')
+  print aWeb.button('network', DIV='div_content_right', URL='zdcp.cgi?visualize_show&id=%s'%map['id'],   TITLE='Show map')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
@@ -91,7 +91,7 @@ def network(aWeb):
  print aWeb.button('fix',    onclick='network_fixate()', TITLE='Fix node positions')
  print aWeb.button('sync',   onclick='network_sync()',   TITLE='Sync graph to config')
  print aWeb.button('save',   DIV='div_content_right', URL='zdcp.cgi?visualize_network&op=update', FRM='network_config', TITLE='Save config')
- print aWeb.button('visualize',DIV='div_network', OP='single', SELECTOR='.tab')
+ print aWeb.button('network',DIV='div_network', OP='single', SELECTOR='.tab')
  print aWeb.button('help', HREF='http://visjs.org/docs/network/', TARGET='_blank', STYLE='float:right;', TITLE='vis.js help for configuring options/nodes/edges')
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_options'>Options</A>"
  print "<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_nodes'>Nodes</A>"

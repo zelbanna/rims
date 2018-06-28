@@ -59,7 +59,7 @@ def list(aWeb):
  print aWeb.button('items',  DIV='div_content_left',  URL='zdcp.cgi?device_list&sort=%s'%args['sort'], TITLE='List All')
  print aWeb.button('search', DIV='div_content_left',  URL='zdcp.cgi?device_search', TITLE='Search')
  print aWeb.button('add',    DIV='div_content_right', URL='zdcp.cgi?device_new&%s'%aWeb.get_args(), TITLE='Add device')
- print aWeb.button('network',DIV='div_content_right', URL='zdcp.cgi?device_discover', TITLE='Discover')
+ print aWeb.button('devices',DIV='div_content_right', URL='zdcp.cgi?device_discover', TITLE='Discover')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead>"
  for sort in ['IP','Hostname']:
   print "<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?device_list&sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red")
@@ -161,13 +161,13 @@ def info(aWeb):
  print aWeb.button('save',       DIV='div_content_right',URL='zdcp.cgi?device_info&op=update', FRM='info_form', TITLE='Save Basic Device Information')
  print aWeb.button('document',   DIV='div_dev_data',     URL='zdcp.cgi?device_conf_gen&id=%i'%(dev['id']),TITLE='Generate System Conf')
  print aWeb.button('connections',DIV='div_dev_data',     URL='zdcp.cgi?device_interface_list&device=%i'%(dev['id']),TITLE='Device interfaces')
- print aWeb.button('visualize',  DIV='div_content_right',URL='zdcp.cgi?visualize_network&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
+ print aWeb.button('network',  DIV='div_content_right',URL='zdcp.cgi?visualize_network&type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map')
  print aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip']))
  if dev['racked'] and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
   # Hardcoded port to 60xx
   print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
  if dev['info'].get('webpage'):
-  print aWeb.button('web',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('webpage'))
+  print aWeb.button('ui',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('webpage'))
  print "<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result',''))
  print "</DIV></ARTICLE>"
  print "<!-- Function navbar and content -->"
