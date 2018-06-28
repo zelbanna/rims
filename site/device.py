@@ -432,7 +432,7 @@ def interface_list(aWeb):
  print "<DIV CLASS=tbody>"
  for row in res['data']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_interface'] if not row['multipoint'] else 'multipoint')
-  print "<INPUT TYPE=CHECKBOX VALUE=1 NAME='interface_%s'>"%row['id']
+  print "<INPUT TYPE=CHECKBOX VALUE=%(id)s NAME='interface_%(id)s'>"%row
   print aWeb.button('info',  DIV='div_dev_data',URL='zdcp.cgi?device_interface_info&device=%s&id=%s'%(aWeb['device'],row['id']))
   print aWeb.button('sync',  DIV='div_dev_data',URL='zdcp.cgi?device_interface_link_device&device=%s&id=%s&name=%s'%(aWeb['device'],row['id'],row['name']), TITLE='Connect')
   print "</DIV></DIV></DIV>"

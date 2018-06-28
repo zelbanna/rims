@@ -75,13 +75,14 @@ def inventory_info(aDict):
 #
 #
 def inventory_sync(aDict):
- """Function retrieves and matches AWX hosts with devices - and add/updates missing info and groups
+ """Function retrieves and matches AWX hosts with devices - and add/updates missing info and groups. Either a list of device_xy id are supplied
 
  Args:
   - node (required)
   - id (required)
-  - search (required)
-  - field (required)
+  - device_<xy> (optional required). Argument value must be <xy> as well (!)
+  - search (optional required)
+  - field (optional required)
 
  Output:
   - result (always) 'OK' / 'NOT_OK'
@@ -89,8 +90,14 @@ def inventory_sync(aDict):
   - devices (always)
   - groups (always)
  """
+ if aDict.get('search'):
+  field = aDict['field']
+  search= aDict['search']
+ else:
+  search = ",".join([v for k,v in aDict.iteritems() if k[0:7] == 'device_'])
+  field  = 'id'
  from zdcp.rest.device import list as device_list
- devices = device_list({'search':aDict['search'],'field':aDict['field'],'extra':'type'})['data']
+ devices = device_list({'search':search,'field':field,'extra':'type'})['data']
  ret = {'devices':devices,'result':'OK','groups':{}}
  if len(devices) == 0:
   return ret
@@ -159,12 +166,12 @@ def inventory_sync(aDict):
 #
 #
 def inventory_delete_hosts(aDict):
- """Deletes a list of hosts, represented as host_xx, host_xy and so on (where xx and xy are awx id:s)
+ """Deletes a list of hosts, represented as host_<xy>
 
  Args:
   - node (required)
   - id (required)
-  - host_xx (required)
+  - host_<xy> (required). argument value must be xy as well (!)
 
  Output:
  """
@@ -174,9 +181,8 @@ def inventory_delete_hosts(aDict):
  controller = Device(SC['nodes'][node])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  args = aDict
- for host in aDict.keys():
+ for host,host_id in aDict.iteritems():
   if host[0:5] == 'host_':
-   host_id = host[5:]
    res = controller.call("hosts/%s/"%host_id,None,"DELETE")
    ret['hosts'][host_id] = "OK" if res['code'] == 204 else res['info']['x-api-code']
  return ret

@@ -217,13 +217,12 @@ def list(aDict):
  """Function docstring for list TBD
 
  Args:
-  - sort (optional) (sort on id or hostname or...)
-  - dict (optional) (output as dictionary instead of list)
-
-  - field (optional) 'id/ip/mac/hostname/type/base/vm' as search fields
+  - field (optional) 'id/ip/mac/hostname/type/base/vm' as search fields 
   - search (optional) content to match on field, special case for mac where non-correct MAC will match all that are not '00:00:00:00:00:00'
   - extra (optional) list of extra info to add, None/'type'/'webpage'
   - rack (optional), id of rack to filter devices from
+  - sort (optional) (sort on id or hostname or...)
+  - dict (optional) (output as dictionary instead of list)
 
  Output:
  """
@@ -250,7 +249,7 @@ def list(aDict):
    try:    filter.append("mac = %i"%int(aDict['search'].replace(":",""),16))
    except: filter.append("mac <> 0")
   else:
-   filter.append("devices.%(field)s = %(search)s"%aDict)
+   filter.append("devices.%(field)s IN (%(search)s)"%aDict)
 
  extras = aDict.get('extra')
  if  extras:
@@ -612,7 +611,7 @@ def interface_delete(aDict):
 
  Args:
   - id (optional required) id of interface
-  - interface_<id> (optional required)
+  - interface_<xy> (optional required).  argument value must be <xy> as well (!)
   - device_id (optional required). Device to delete 'free' interfaces from
 
  Output:
@@ -627,10 +626,7 @@ def interface_delete(aDict):
    ret['deleted'] = db.do("DELETE FROM device_interfaces WHERE device = %s AND peer_interface IS NULL AND multipoint = 0 AND manual = 0"%aDict['device_id'])
   else:
    for intf,value in aDict.iteritems():
-    if intf[0:10] == 'interface_':
-     try:    id = int(intf[10:])
-     except: continue
-    elif intf == 'id':
+    if intf[0:10] == 'interface_' or intf == 'id':
      id = int(value)
     else: continue
     ret['cleared'] += db.do("UPDATE device_interfaces SET peer_interface = NULL WHERE peer_interface = %s"%id)

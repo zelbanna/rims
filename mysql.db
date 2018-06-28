@@ -77,7 +77,7 @@ CREATE TABLE `devices` (
   `a_id` int(10) unsigned DEFAULT '0',
   `a_dom_id` int(10) unsigned DEFAULT NULL,
   `ptr_id` int(10) unsigned DEFAULT '0',
-  `type_id` int(10) unsigned DEFAULT NULL,
+  `type_id` int(10) unsigned DEFAULT '0',
   `mac` bigint(20) unsigned DEFAULT '0',
   `vm` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `model` varchar(20) DEFAULT NULL,
