@@ -41,6 +41,8 @@ def server(aNodeID):
   # Node is always master for system calls
   node = additional.get('node',aNodeID if not mod == 'system' else 'master')
   stdout.write("X-API-Node:%s\r\n"%node)
+  from zdcp.core.logger import rest as log
+  log(node,api,dumps(args),extra)
   if node == aNodeID:
    module = import_module("zdcp.rest.%s"%mod)
    module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})

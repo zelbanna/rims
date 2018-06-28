@@ -3,6 +3,10 @@
         "syslog": {
             "description": "System log",
             "value": "/var/log/system/system.log"
+        },
+        "rest": {
+            "description": "REST server call log",
+            "value": "/var/log/system/rest.log"
         }
     },
     "system": {

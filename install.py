@@ -53,10 +53,14 @@ logger = ospath.abspath(ospath.join(packagedir,'core','logger.py'))
 try: remove(logger)
 except: pass
 with open(logger,'w') as f:
- f.write("def log(aMsg,aID=None):\n")
+ f.write("def log(aMsg,aID='None'):\n")
  f.write(" from time import localtime, strftime\n")
- f.write(" with open('" + settings['logs']['syslog'] + "', 'a') as f:\n")
- f.write(repr("  f.write(unicode('{} ({}): {}\n'.format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))")[1:-1] + "\n")
+ f.write(" with open('%s', 'a') as f:\n"%settings['logs']['syslog'])
+ f.write("  f.write(unicode(\"%s (%s): %s\\n\"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))\n\n")
+ f.write("def rest(aNode,aAPI,aArgs,aExtra):\n")
+ f.write(" from time import localtime, strftime\n")
+ f.write(" with open('%s', 'a') as f:\n"%settings['logs'].get('rest',settings['logs']['syslog']))
+ f.write("  f.write(unicode(\"%s: %s \'%s\' @ %s (%s)\\n\"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, aNode, aExtra.strip())))\n\n")
 
 ############################################### ALL #################################################
 #

@@ -32,7 +32,7 @@ def main(aWeb):
  print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_rest_main&node=%s'>Debug</A>"%aWeb['node']
  print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_rest_explore'>Explore</A>"
  print "</DIV></LI>"
- print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?tools_main&node=%s'></A></LI>"%aWeb['node']
+ print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?system_main&node=%s'></A></LI>"%aWeb['node']
  if data.get('navinfo'):
   for info in data['navinfo']:
    print "<LI CLASS='right navinfo'><A>%s</A></LI>"%info
