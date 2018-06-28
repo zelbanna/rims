@@ -42,6 +42,7 @@ def main(aWeb):
  print "</DIV></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_rest_main&node=%s'>Debug</A>"%aWeb['node']
+ print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_logs_show&name=rest&node=%s'>Logs</A>"%aWeb['node']
  print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_rest_explore'>Explore</A>"
  print "</DIV></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?tools_main&node=%s'></A></LI>"%aWeb['node']
@@ -141,7 +142,9 @@ def rest_information(aWeb):
 #
 #
 def logs_clear(aWeb):
- res = aWeb.rest_call('tools_logs_clear&node=%s'%aWeb['node'])
+ args = aWeb.get_args2dict(['node'])
+ args['count'] = 18
+ res = aWeb.rest_call('tools_logs_clear&node=%s'%aWeb['node'],args)
  print "<ARTICLE><P>%s</P>"%res['node']
  for k,v in res['file'].iteritems():
   print "%s: %s<BR>"%(k,v)
@@ -150,7 +153,9 @@ def logs_clear(aWeb):
 #
 #
 def logs_show(aWeb):           
- res = aWeb.rest_call('tools_logs_get&node=%s'%aWeb['node'],{'count':18})
+ args = aWeb.get_args2dict(['node'])
+ args['count'] = 18
+ res = aWeb.rest_call('tools_logs_get&node=%s'%aWeb['node'],args)
  print "<ARTICLE>"   
  for file,logs in res.iteritems():
   print "<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs))

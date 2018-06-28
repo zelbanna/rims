@@ -94,6 +94,7 @@ def logs_get(aDict):
 
  Args:
   - count (optional)
+  - name (optional)
 
  Output:
  """
@@ -101,17 +102,19 @@ def logs_get(aDict):
  ret = {}
  count = int(aDict.get('count',15))
  for name,file in SC['logs'].iteritems():
-  lines = ["\r" for i in range(count)]
-  pos = 0
-  try:
-   with open(file,'r') as f:
-    for line in f:
-     lines[pos] = line
-     pos = (pos + 1) % count
-    ret[name] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
-  except Exception as err:
-   ret[name] = ['ERROR: %s'%(str(err))]
+  if aDict.get('name',name) == name:
+   lines = ["\r" for i in range(count)]
+   pos = 0
+   try:
+    with open(file,'r') as f:
+     for line in f:
+      lines[pos] = line
+      pos = (pos + 1) % count
+     ret[name] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
+   except Exception as err:
+    ret[name] = ['ERROR: %s'%(str(err))]
  return ret
+
 
 ########################################### FILE ############################################
 

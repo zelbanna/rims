@@ -159,7 +159,9 @@ CREATE TABLE `nodes` (
   `www` tinyint(1) DEFAULT '0',
   `device_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `node` (`node`)
+  UNIQUE KEY `node` (`node`),
+  KEY `device_id` (`device_id`),
+  CONSTRAINT `nodes_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

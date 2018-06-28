@@ -29,7 +29,8 @@ def main(aWeb):
   print "<LI><A CLASS=z-op DIV=div_content URL='zdcp.cgi?bookings_list'>Bookings</A></LI>"
  print "<LI><A CLASS=z-op TARGET=_blank            HREF='zdcp.pdf'>DB</A></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_rest_main&node=%s'>Debug</A>"%aWeb['node']
+ print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_rest_main&node=%s'>Debug</A>"%aWeb.id
+ print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_logs_show&name=rest&node=%s'>Logs</A>"%aWeb.id
  print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_rest_explore'>Explore</A>"
  print "</DIV></LI>"
  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?system_main&node=%s'></A></LI>"%aWeb['node']
