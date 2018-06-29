@@ -33,7 +33,7 @@ def info(aDict):
  op = aDict.pop('op',None)
  with DB() as db:
   extra = aDict.pop('extra',[])
-  if 'types' in extra:
+  if 'types' in extra or op == 'lookup':
    db.do("SELECT id, name FROM device_types ORDER BY name")
    ret['types'] = db.get_rows()
 
@@ -42,15 +42,12 @@ def info(aDict):
    dev = Device(ret['ip'])
    lookup = dev.detect()
    ret['result'] = lookup
-   print lookup
    if lookup['result'] == 'OK':
-    args = {'model':lookup['info']['model'],'snmp':lookup['info']['snmp']}
+    args = {'model':lookup['info']['model'],'snmp':lookup['info']['snmp'],'type_id':0}
     for type in ret['types']:
      if type['name'] == lookup['info']['type']:
       args['type_id'] = type['id']
       break
-    else:
-     args['type_id'] = 0
     ret['update'] = (db.update_dict('devices',args,"id=%s"%ret['id']) == 1)
 
   elif op == 'update' and ret['id']:
@@ -120,21 +117,24 @@ def extended(aDict):
 
  Args:
   - id (required)
+  - ip (required)
   - op (optional), 'update'
-  - devices_<key>
+  - racked (optional)
+  - a_id
+  - ptr_id
+  - a_dom_id
+  - hostname
   - rack_info_<key>
-  - device_pems_<id>_<key>
+  - pems_<id>_<key>
 
  Output:
-  - all device info
+  - extended device info
  """
  ret = {'id':aDict.pop('id',None), 'ip':aDict.pop('ip',None)}
 
  with DB() as db:
   operation = aDict.pop('op',None)
   if operation:
-   # Make sure we don't change IP here as it breaks too much, instead user must resync to another VRF and network
-   _ = aDict.pop('devices_ip',None)
    args = aDict
    ret['result'] = {}
    if operation == 'add_pem' and ret['id']:
@@ -149,51 +149,48 @@ def extended(aDict):
       db.do("DELETE FROM rack_info WHERE device_id = %s"%ret['id'])
      elif racked == '0' and args.get('rack_info_rack_id') != 'NULL':
       db.do("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(ret['id'],args.get('rack_info_rack_id')))
-    #
-    # Make sure everything is there to update DNS records, if records are not the same as old ones, update device, otherwise pop
-    #
-    if args.get('devices_a_id') and args.get('devices_ptr_id') and args.get('devices_a_dom_id') and args.get('devices_hostname') and ret['ip']:
+    # PEMs
+    for id in [k.split('_')[1] for k in args.keys() if k.startswith('pems_') and 'name' in k]:
+     pdu_slot = args.pop('pems_%s_pdu_slot'%id,"0.0").split('.')
+     pem = {'name':args.pop('pems_%s_name'%id,None),'pdu_unit':aDict.pop('pems_%s_pdu_unit'%id,0),'pdu_id':pdu_slot[0],'pdu_slot':pdu_slot[1]}
+     ret['result']["PEM_%s"%id] = db.update_dict('device_pems',pem,'id=%s'%id)
+    # DNS management
+    a_id, ptr_id, a_dom_id, hostname = args.pop('a_id',None), args.pop('ptr_id',None), args.pop('a_dom_id',None), args.pop('hostname',None)
+    if a_id and ptr_id and a_dom_id and hostname and ret['ip']:
+     dns_args = {'a_id':a_id,'ptr_id':ptr_id,'a_domain_id':a_dom_id,'hostname':hostname,'ip':ret['ip'],'id':ret['id']}
      import zdcp.rest.dns as DNS
      DNS.__add_globals__({'import_module':import_module})
-     dns = DNS.record_device_update({'a_id':args['devices_a_id'],'ptr_id':args['devices_ptr_id'],'a_domain_id':args['devices_a_dom_id'],'hostname':args['devices_hostname'],'ip':ret['ip'],'id':ret['id']})
-     # ret['result']['dns'] = dns
+     dns_res = DNS.record_device_update(dns_args)
+     dns_args.pop('id',None)
+     dns_args.pop('ip',None)
+     if not (str(dns_res['A']['domain_id']) == str(dns_args.pop('a_domain_id',None))):
+      dns_args['a_dom_id'] = dns_res['A']['domain_id']
      for type in ['a','ptr']:
-      if dns[type.upper()]['found']:
-       if not (str(dns[type.upper()]['record_id']) == str(args['devices_%s_id'%type])):
-        args['devices_%s_id'%type] = dns[type.upper()]['record_id']
+      if dns_res[type.upper()]['found']:
+       if not (str(dns_res[type.upper()]['record_id']) == str(dns_args['%s_id'%type])):
+        dns_args['%s_id'%type] = dns_res[type.upper()]['record_id']
        else:
-        args.pop('devices_%s_id'%type,None)
+        dns_args.pop('%s_id'%type,None)
       else:
-       args['devices_%s_id'%type] = 0
-     if (str(dns['A']['domain_id']) == str(args['devices_a_dom_id'])):
-      args.pop('devices_a_dom_id',None)
-     else:
-      args['devices_a_dom_id'] = dns['A']['domain_id']
-    ret['result']['device_info'] = db.update_dict_prefixed('devices',args,"id='%s'"%ret['id'])
-    ret['result']['rack_info']   = db.update_dict_prefixed('rack_info',args,"device_id='%s'"%ret['id'])
-    # Find PEMs
-    for key,val in aDict.iteritems():
-     if key.startswith('device_pems'):
-      parts = key.split('_')
-      if parts[3] == 'name':
-       pdu_slot = aDict['device_pems_%s_pdu_slot'%parts[2]].split('.')
-       pem = {'name':val,'pdu_unit':aDict.get('device_pems_%s_pdu_unit'%parts[2],0),'pdu_id':pdu_slot[0],'pdu_slot':pdu_slot[1]}
-       ret['result']["PEM_%s"%parts[2]] = db.update_dict('device_pems',pem,'id=%s'%parts[2])
+       dns_args['%s_id'%type] = 0
+     ret['result']['device_info'] = db.update_dict('devices',dns_args,"id='%s'"%ret['id'])
+    rack_args = {k[10:]:v for k,v in args.iteritems() if k[0:10] == 'rack_info_'}
+    ret['result']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
 
   # Now fetch info
-  ret['found'] = (db.do("SELECT devices.*, dt.base AS type_base, dt.name AS type_name, a.name AS domain, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT vm, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
-   ret['id'] = ret['info'].pop('id',None)
    ret['ip'] = ret['info'].pop('ip',None)
+   vm = ret['info'].pop('vm',None)
    # Rack infrastructure
    ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
-   if ret['info']['vm'] == 1:
+   if vm == 1:
     ret['racked'] = 0
    else:
     db.do("SELECT id, name FROM racks")
     ret['infra']['racks'].extend(db.get_rows())
-    ret['racked'] = db.do("SELECT rack_info.* FROM rack_info WHERE rack_info.device_id = %(id)i"%ret)
+    ret['racked'] = db.do("SELECT rack_info.* FROM rack_info WHERE rack_info.device_id = %(id)s"%ret)
     if ret['racked'] > 0:
      ret['rack'] = db.get_row()
      ret['rack'].pop('device_id',None)

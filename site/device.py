@@ -206,8 +206,8 @@ def extended(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked'])
  print "<!-- Reachability Info -->"
  print "<DIV CLASS=table><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=devices_hostname TYPE=TEXT VALUE='%s'></DIV></DIV>"%(dev['info']['hostname'])
- print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=devices_a_dom_id>"
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE='%s'></DIV></DIV>"%(dev['info']['hostname'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_dom_id>"
  for dom in domains:
   extra = " selected" if dev['info']['a_dom_id'] == dom['id'] else ""
   print "<OPTION VALUE='%s' %s>%s</OPTION>"%(dom['id'],extra,dom['name'])
@@ -215,8 +215,8 @@ def extended(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='%s'></DIV><DIV CLASS=td>"%(dev['ip'])
  print aWeb.button('sync',DIV='div_content_right', FRM='info_form', URL='zdcp.cgi?device_update_ip&id=%s'%dev['id'], TITLE='Modify IP')
  print "</DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>A ID:   </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_a_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['a_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>PTR ID: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=devices_ptr_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['ptr_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>A ID:   </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=a_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['a_id'])
+ print "<DIV CLASS=tr><DIV CLASS=td>PTR ID: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=ptr_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['ptr_id'])
  print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%dev['info']['ipam_id']
  print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "<!-- Rack Info -->"
@@ -241,10 +241,10 @@ def extended(aWeb):
    print aWeb.button('add',DIV='div_content_right',URL='zdcp.cgi?device_extended&op=add_pem&id=%s'%(dev['id']), TITLE='Add PEM')
    print "</DIV></DIV></DIV>"
    for pem in dev['pems']:
-    print "<DIV CLASS=tr><DIV CLASS=td>PEM:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=device_pems_%(id)s_name VALUE='%(name)s'></DIV><DIV CLASS=td>"%(pem)
+    print "<DIV CLASS=tr><DIV CLASS=td>PEM:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=pems_%(id)s_name VALUE='%(name)s'></DIV><DIV CLASS=td>"%(pem)
     print aWeb.button('delete',DIV='div_content_right',URL='zdcp.cgi?device_extended&op=remove_pem&id=%s&pem_id=%s'%(dev['id'],pem['id']), TITLE='Remove PEM')
     print "</DIV></DIV>"
-    print "<DIV CLASS=tr><DIV CLASS=td>PDU:</DIV><DIV CLASS=td><SELECT NAME=device_pems_%(id)s_pdu_slot>"%pem
+    print "<DIV CLASS=tr><DIV CLASS=td>PDU:</DIV><DIV CLASS=td><SELECT NAME=pems_%(id)s_pdu_slot>"%pem
     for pdu in dev['infra']['pdus']:
      pdu_info = dev['infra']['pdu_info'].get(str(pdu['id']))
      if pdu_info:
@@ -254,14 +254,14 @@ def extended(aWeb):
        extra = "selected" if ((pem['pdu_id'] == pdu['id']) and (pem['pdu_slot'] == slotid)) or (not pem['pdu_id'] and pdu['id'] == 'NULL') else ""
        print "<OPTION VALUE=%s.%s %s>%s</OPTION>"%(pdu['id'],slotid, extra, pdu['hostname']+":"+pdu_slot_name)
     print "</SELECT></DIV></DIV>"
-    print "<DIV CLASS=tr><DIV CLASS=td>Unit:</DIV><DIV CLASS=td><INPUT NAME=device_pems_%s_pdu_unit TYPE=TEXT VALUE='%s'></DIV></DIV>"%(pem['id'],pem['pdu_unit'])
+    print "<DIV CLASS=tr><DIV CLASS=td>Unit:</DIV><DIV CLASS=td><INPUT NAME=pems_%s_pdu_unit TYPE=TEXT VALUE='%s'></DIV></DIV>"%(pem['id'],pem['pdu_unit'])
 
  print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "</DIV></DIV></FORM>"
  print "<DIV CLASS=controls>"
- print aWeb.button('reload',DIV='div_content_right',URL='zdcp.cgi?device_extended&id=%i'%dev['id'])
- print aWeb.button('back',  DIV='div_content_right',URL='zdcp.cgi?device_info&id=%i'%dev['id'])
- print aWeb.button('trash', DIV='div_content_right',URL='zdcp.cgi?device_delete&id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
+ print aWeb.button('reload',DIV='div_content_right',URL='zdcp.cgi?device_extended&id=%s'%dev['id'])
+ print aWeb.button('back',  DIV='div_content_right',URL='zdcp.cgi?device_info&id=%s'%dev['id'])
+ print aWeb.button('trash', DIV='div_content_right',URL='zdcp.cgi?device_delete&id=%s'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true')
  print aWeb.button('save',  DIV='div_content_right',URL='zdcp.cgi?device_extended&op=update', FRM='info_form', TITLE='Save Device Information')
  print "</DIV><SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result',''))
  print "</ARTICLE>"
