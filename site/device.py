@@ -145,9 +145,8 @@ def info(aWeb):
    print "<DIV CLASS=tr><DIV CLASS=td>Size:    </DIV><DIV CLASS=td>%s U</DIV></DIV>"%(dev['rack']['rack_size'])
   if not dev['info']['type_base'] == 'console':
    print "<DIV CLASS=tr><DIV CLASS=td>TS/Port: </DIV><DIV CLASS=td>%s (%s)</DIV></DIV>"%(dev['rack']['console_name'],dev['rack']['console_port'])
-  for pem in ['pem0','pem1']:
-   print "<DIV CLASS=tr><DIV CLASS=td>%s PDU: </DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.upper(),dev['rack']['%s_pdu_name'%pem])
-   print "<DIV CLASS=tr><DIV CLASS=td>%s Port:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.upper(),dev['rack']['%s_pdu_unit'%pem])
+  for pem in dev['rack']['pems']:
+   print "<DIV CLASS=tr><DIV CLASS=td>%s PDU: </DIV><DIV CLASS=td>%s (%s)</DIV></DIV>"%(pem['name'],pem['pdu_name'], pem['pdu_unit'])
   print "</DIV></DIV></DIV>"
  print "<!-- Text fields -->"
  print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%;'><DIV CLASS=table><DIV CLASS=tbody>"
@@ -239,23 +238,30 @@ def update(aWeb):
    print "</SELECT></DIV></DIV>"
    print "<DIV CLASS=tr><DIV CLASS=td>TS Port:</DIV><DIV CLASS=td TITLE='Console port in rack TS'><INPUT NAME=rack_info_console_port TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['console_port'])
   if not dev['info']['type_base'] == 'controlplane':
-   for pem in ['pem0','pem1']:
-    print "<DIV CLASS=tr><DIV CLASS=td>{0} PDU:</DIV><DIV CLASS=td><SELECT NAME=rack_info_{1}_pdu_slot_id>".format(pem.upper(),pem)
+   print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td><CENTER>Add PEM<CENTER></DIV><DIV CLASS=td><DIV CLASS=controls>"
+   print aWeb.button('add',DIV='div_content_right',URL='zdcp.cgi?device_update&op=add_pem&id=%s'%(dev['id']), TITLE='Add PEM')
+   print "</DIV></DIV></DIV>"
+   for pem in dev['rack']['pems']:
+    print "<DIV CLASS=tr><DIV CLASS=td>PEM:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=device_pems_%(id)s_name VALUE='%(name)s'></DIV><DIV CLASS=td>"%(pem)
+    print aWeb.button('delete',DIV='div_content_right',URL='zdcp.cgi?device_update&op=remove_pem&id=%s&pem_id=%s'%(dev['id'],pem['id']), TITLE='Remove PEM')
+    print "</DIV></DIV>"
+    print "<DIV CLASS=tr><DIV CLASS=td>PDU:</DIV><DIV CLASS=td><SELECT NAME=device_pems_%(id)s_pdu_slot>"%pem
     for pdu in dev['infra']['pdus']:
      pdu_info = dev['infra']['pdu_info'].get(str(pdu['id']))
      if pdu_info:
       for slotid in range(0,pdu_info['slots']):
        pdu_slot_id   = pdu_info[str(slotid)+"_slot_id"]
        pdu_slot_name = pdu_info[str(slotid)+"_slot_name"]
-       extra = "selected" if ((dev['rack'][pem+"_pdu_id"] == pdu['id']) and (dev['rack'][pem+"_pdu_slot"] == slotid)) or (not dev['rack'][pem+"_pdu_id"] and  pdu['id'] == 'NULL') else ""
+       extra = "selected" if ((pem['pdu_id'] == pdu['id']) and (pem['pdu_slot'] == slotid)) or (not pem['pdu_id'] and pdu['id'] == 'NULL') else ""
        print "<OPTION VALUE=%s.%s %s>%s</OPTION>"%(pdu['id'],slotid, extra, pdu['hostname']+":"+pdu_slot_name)
     print "</SELECT></DIV></DIV>"
-    print "<DIV CLASS=tr><DIV CLASS=td>{0} Unit:</DIV><DIV CLASS=td><INPUT NAME=rack_info_{1}_pdu_unit TYPE=TEXT PLACEHOLDER='{2}'></DIV></DIV>".format(pem.upper(),pem,dev['rack'][pem + "_pdu_unit"])
+    print "<DIV CLASS=tr><DIV CLASS=td>Unit:</DIV><DIV CLASS=td><INPUT NAME=device_pems_%s_pdu_unit TYPE=TEXT VALUE='%s'></DIV></DIV>"%(pem['id'],pem['pdu_unit'])
+
  print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "<!-- Text fields -->"
  print "<DIV CLASS='tr even'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=devices_comment VALUE='%s'></DIV></DIV>"%("" if not dev['info']['comment'] else dev['info']['comment'].encode("utf-8"))
  print "<DIV CLASS='tr even'><DIV CLASS=td>Web page:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=devices_webpage VALUE='%s'></DIV></DIV>"%("" if not dev['info']['webpage'] else dev['info']['webpage'])
- print "<DIV CLASS='tr even'><DIV CLASS=td STYLE='font-style:italic'>Result:  </DIV><DIV CLASS=td ID=update_results>%s</DIV></DIV>"%str(dev.get('result',''))
+ print "<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td><SPAN CLASS='results' STYLE='width:370px; overflow:hidden;' ID=update_results>%s</SPAN></DIV></DIV>"%str(dev.get('result',''))
  print "</DIV></DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content_right',URL='zdcp.cgi?device_update&id=%i'%dev['id'])

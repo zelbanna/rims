@@ -57,6 +57,22 @@ CREATE TABLE `device_interfaces` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `device_pems`;
+CREATE TABLE `device_pems` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `device_id` int(10) unsigned NOT NULL,
+  `pdu_id` int(10) unsigned DEFAULT NULL,
+  `pdu_unit` tinyint(3) unsigned DEFAULT '0',
+  `pdu_slot` tinyint(3) unsigned DEFAULT '0',
+  `name` varchar(10) DEFAULT 'PEM',
+  PRIMARY KEY (`id`),
+  KEY `device_id` (`device_id`),
+  KEY `pdu_id` (`pdu_id`),
+  CONSTRAINT `device_pems_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `device_pems_ibfk_2` FOREIGN KEY (`pdu_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `device_types`;
 CREATE TABLE `device_types` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -211,22 +227,12 @@ CREATE TABLE `rack_info` (
   `rack_size` tinyint(3) DEFAULT '1',
   `console_id` int(10) unsigned DEFAULT NULL,
   `console_port` int(10) unsigned DEFAULT NULL,
-  `pem0_pdu_id` int(10) unsigned DEFAULT NULL,
-  `pem0_pdu_unit` tinyint(3) unsigned DEFAULT '0',
-  `pem0_pdu_slot` tinyint(3) unsigned DEFAULT '0',
-  `pem1_pdu_id` int(10) unsigned DEFAULT NULL,
-  `pem1_pdu_unit` tinyint(3) unsigned DEFAULT '0',
-  `pem1_pdu_slot` tinyint(3) unsigned DEFAULT '0',
   `rack_id` int(10) unsigned NOT NULL,
   UNIQUE KEY `device_id` (`device_id`),
   KEY `console_id` (`console_id`),
-  KEY `pem0_pdu_id` (`pem0_pdu_id`),
-  KEY `pem1_pdu_id` (`pem1_pdu_id`),
   KEY `rack_id` (`rack_id`),
   CONSTRAINT `rack_info_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `rack_info_ibfk_2` FOREIGN KEY (`console_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `rack_info_ibfk_3` FOREIGN KEY (`pem0_pdu_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `rack_info_ibfk_4` FOREIGN KEY (`pem1_pdu_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `rack_info_ibfk_5` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
