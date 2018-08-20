@@ -188,8 +188,8 @@ def record_delete(aDict):
 ############################### Tools #################################
 #
 #
-def dedup(aDict):
- """Function docstring for dedup. Removes name duplicates.. (assume order by name => duplicate names :-))
+def sync(aDict):
+ """Function docstring for sync. Removes name duplicates.. (assume order by name => duplicate names :-))
 
  Args:
 

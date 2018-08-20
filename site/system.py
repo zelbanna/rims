@@ -179,7 +179,7 @@ def node_help(aWeb):
 
 def server_list(aWeb):
  res = aWeb.rest_call("system_server_list",{'type':aWeb['type']})
- print "<ARTICLE><P>Domains</P><DIV CLASS='controls'>"
+ print "<ARTICLE><P>Servers</P><DIV CLASS='controls'>"
  print aWeb.button('reload',DIV='div_content_left',URL='zdcp.cgi?system_server_list&type=%s'%aWeb['type'])
  print aWeb.button('add', DIV='div_content_right',URL='zdcp.cgi?system_server_info&id=new&type=%s'%aWeb['type'],TITLE='Add server')
  print aWeb.button('help',DIV='div_content_right',URL='zdcp.cgi?system_server_help')
@@ -187,6 +187,7 @@ def server_list(aWeb):
  for srv in res['servers']:
   print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(srv['id'],srv['node'],srv['server'],srv['type'])
   print aWeb.button('info',DIV='div_content_right',URL='zdcp.cgi?system_server_info&id=%s'%(srv['id']))
+  print aWeb.button('sync',DIV='div_content_right',URL='zdcp.cgi?system_server_sync&id=%s'%(srv['id']), SPIN='true', TITLE='Sync server')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV>"
  print "</ARTICLE>"
@@ -218,6 +219,12 @@ def server_info(aWeb):
  if data['id'] != 'new':
   print aWeb.button('trash', DIV='div_content_right', URL='zdcp.cgi?system_server_delete&id=%s'%(data['id']), MSG='Delete server?')
  print "</DIV></ARTICLE>"
+
+#
+#
+def server_sync(aWeb):
+ res = aWeb.rest_call("system_server_sync",{'id':aWeb['id']})
+ print "<ARTICLE>%s</ARTICLE>"%str(res)
 
 #
 #

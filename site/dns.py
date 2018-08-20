@@ -17,7 +17,6 @@ def domain_list(aWeb):
  print aWeb.button('sync',   DIV='div_content_left', URL='zdcp.cgi?dns_domain_list&sync=true',TITLE='Resync cache')
  print aWeb.button('add',    DIV='div_content_right',URL='zdcp.cgi?dns_domain_info&id=new',TITLE='Add domain')
  print aWeb.button('search', DIV='div_content_right',URL='zdcp.cgi?dns_consistency',TITLE='Check Backend Consistency',SPIN='true')
- print aWeb.button('analyze',DIV='div_content_right',URL='zdcp.cgi?dns_dedup',TITLE='Find Duplicates',SPIN='true')
  print aWeb.button('document',DIV='div_content_right',URL='zdcp.cgi?dns_top', SPIN='true')
  print "</DIV>"
  if domains.get('sync'):

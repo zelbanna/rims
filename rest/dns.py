@@ -410,26 +410,6 @@ def record_device_create(aDict):
  return ret
 
 ###################################### Tools ####################################
-
-#
-#
-def dedup(aDict):
- """Function docstring for dedup. TBD
-
- Args:
-
- Output:
-
- """
- ret = {}
- with DB() as db: 
-  db.do("SELECT server, node FROM servers")
-  servers = db.get_rows()
- for infra in servers:
-  res = node_call(infra['node'],infra['server'],'dedup')
-  ret["%(node)s_%(server)s"%infra] = res['removed']
- return ret
-
 #
 #
 def top(aDict):
@@ -469,7 +449,7 @@ def consistency_check(aDict):
  ret = {'records':[],'devices':[]}
  with DB() as db:
   # Collect DNS severs
-  db.do("SELECT id, server, node FROM servers")
+  db.do("SELECT id, server, node FROM servers WHERE type = 'DNS'")
   servers = db.get_dict('id')
   # Fetch domains
   db.do("SELECT id,foreign_id,name FROM domains")

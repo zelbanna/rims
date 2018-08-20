@@ -667,6 +667,24 @@ def server_delete(aDict):
   ret['deleted'] = db.do("DELETE FROM servers WHERE id = %s"%aDict['id'])
  return ret
 
+#
+#
+def server_sync(aDict):
+ """Server sync sends sync message to server @ node and convey result. What sync means is server dependent
+
+ Args:
+  - id (required):
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
+  if ret['found']:
+   from zdcp.core.common import node_call
+   data = db.get_row()
+   ret['result'] = node_call(data['node'],data['server'],'sync',{'id':aDict['id']})
+ return ret
 
 ######################################### ACTIVITIES ###########################################
 #

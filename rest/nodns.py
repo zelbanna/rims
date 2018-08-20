@@ -125,7 +125,7 @@ def record_delete(aDict):
 ############################### Tools #################################
 #
 #
-def dedup(aDict):
+def sync(aDict):
  """ NO OP
 
  Args:

@@ -54,8 +54,6 @@ def network_info(aWeb):
  print aWeb.button('save'  ,DIV='div_content_right',URL='zdcp.cgi?ipam_network_info&op=update', FRM='ipam_info_form')
  if not data['id'] == 'new':
   print aWeb.button('trash',DIV='div_content_right',URL='zdcp.cgi?ipam_network_delete&id=%s'%data['id'],MSG='Are you really sure')
- if data['server_id']:
-  print aWeb.button('sync'  ,DIV='div_content_right',URL='zdcp.cgi?ipam_dhcp_update&network_id=%s'%data['id'])
  print "</DIV>"
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</ARTICLE>"
@@ -97,13 +95,6 @@ def network_entries(aWeb):
   print aWeb.button('delete', DIV='ipam_address_operation', URL='zdcp.cgi?ipam_address_delete&id=%(id)i&ip=%(ip)s'%row)
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
-
-########################################### DHCP ##########################################
-#
-#
-def dhcp_update(aWeb):
- data = aWeb.rest_call("ipam_dhcp_update",{'network_id':aWeb['network_id']})
- print "<ARTICLE>DHCP server update: %s</ARTICLE>"%data
 
 ######################################### Addresses #######################################
 #

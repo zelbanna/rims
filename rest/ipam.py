@@ -184,28 +184,6 @@ def network_discover(aDict):
 
  return ret
 
-#################################### DHCP ################################
-#
-#
-def dhcp_update(aDict):
- """dhcp_update sends update command for DHCP server corresponding to the network (id) supplied as argument
-
- Args:
-  - network_id (required)
-
- Output:
-  - result
- """
- ret = {}
- with DB() as db:
-  ret['found'] = (db.do("SELECT node,server FROM servers LEFT JOIN ipam_networks ON servers.id = ipam_networks.server_id WHERE ipam_networks.id = %s"%aDict['network_id']) == 1)
-  if ret['found']:
-   from zdcp.core.common import node_call
-   data = db.get_row()
-   ret['data'] = node_call(data['node'],data['server'],'update',{'network_id':aDict['network_id']})
- return ret
-
-
 ################################## Addresses #############################
 #
 #
