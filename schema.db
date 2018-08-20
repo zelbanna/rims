@@ -111,18 +111,6 @@ CREATE TABLE `devices` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `domain_servers`;
-CREATE TABLE `domain_servers` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `node` varchar(40) NOT NULL,
-  `server` varchar(40) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `node_server` (`node`,`server`),
-  KEY `node` (`node`),
-  CONSTRAINT `domain_servers_ibfk_1` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
 DROP TABLE IF EXISTS `domains`;
 CREATE TABLE `domains` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -133,7 +121,7 @@ CREATE TABLE `domains` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `server_name` (`server_id`,`name`),
   KEY `server_id` (`server_id`),
-  CONSTRAINT `domains_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `domain_servers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `domains_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -273,6 +261,19 @@ CREATE TABLE `resources` (
   KEY `node` (`node`),
   CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `resources_ibfk_2` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `servers`;
+CREATE TABLE `servers` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `node` varchar(40) NOT NULL,
+  `server` varchar(40) NOT NULL,
+  `type` varchar(10) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `node_server` (`node`,`server`),
+  KEY `node` (`node`),
+  CONSTRAINT `servers_ibfk_1` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
