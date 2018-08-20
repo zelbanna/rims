@@ -479,6 +479,7 @@ def node_mapping(aDict):
   - hostname. device hostname
   - ip. device ip
   - domain. Device domain name
+  - webpage
  """
  with DB() as db:
   if aDict.get('id'):

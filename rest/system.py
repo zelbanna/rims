@@ -411,6 +411,10 @@ def node_info(aDict):
  id = args.pop('id','new')
  op = args.pop('op',None)
  args.pop('hostname',None)
+ try:
+  args['device_id'] = int(args.get('device_id'))
+ except:
+  args['device_id'] = 'NULL'
  with DB() as db:
   if op == 'update':
    if not id == 'new':

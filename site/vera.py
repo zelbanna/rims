@@ -36,10 +36,12 @@ def portal(aWeb):
 #
 def manage(aWeb):
  if aWeb['node']:
-  node = aWeb['node']
+  args = {'node':aWeb['node']}
  elif aWeb['id']:
-  node = aWeb.rest_call("device_node_mapping",{'id':aWeb['id']})['node']
- ui = aWeb.rest_call("vera_node_to_ui",{'node':node}).get('ui','#')
+  args = {'id':aWeb['id']}
+ dev = aWeb.rest_call("device_node_mapping",args)
+ node = dev['node']
+ ui = dev['webpage']
  print "<NAV><UL>"
  print "<LI><A CLASS=z-op DIV=div_content URL=zdcp.cgi?vera_status&node=%s>Status</A></LI>"%node
  print "<LI><A CLASS=z-op DIV=div_content URL=zdcp.cgi?vera_devices&node=%s>Devices</A></LI>"%node
