@@ -206,7 +206,7 @@ def server_info(aWeb):
   extra = " selected" if (data['node'] == node['node']) else ""
   print "<OPTION VALUE=%s %s>%s</OPTION>"%(node['node'],extra,node['node'])
  print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['type']
+ print "<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY NAME=type VALUE='%s'></DIV></DIV>"%data['type']
  print "<DIV CLASS=tr><DIV CLASS=td>Server:</DIV><DIV CLASS=td><SELECT NAME=server>"
  for srv in res['servers']:
   extra = " selected" if (data['server'] == srv['server']) else ""

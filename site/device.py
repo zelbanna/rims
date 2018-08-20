@@ -33,6 +33,7 @@ def main(aWeb):
  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
  print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL='zdcp.cgi?bookings_list'>Bookings</A></LI>"
  print "<LI CLASS='right dropdown'><A>IPAM</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?system_server_list&type=DHCP'>Servers</A>"
  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?ipam_network_list'>Networks</A>"
  print "</DIV></LI>"
  print "<LI CLASS='right dropdown'><A>DNS</A><DIV CLASS='dropdown-content'>"
