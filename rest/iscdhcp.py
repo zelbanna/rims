@@ -52,8 +52,8 @@ def leases(aDict):
   return {'data':result }
 
 #
-def update_server(aDict):
- """Function docstring for update_server:  reload the DHCP server to use updated info
+def update(aDict):
+ """Function docstring for update:  reload the DHCP server to use updated info
 
  Args:
   - entries (required). entries is a list of dict objects containing hostname, mac, ip etc

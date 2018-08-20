@@ -14,7 +14,7 @@ def network_list(aWeb):
  print "<ARTICLE><P>Networks</P><DIV CLASS='controls'>"
  print aWeb.button('reload', DIV='div_content_left',  URL='zdcp.cgi?ipam_network_list', TITLE='Reload list')
  print aWeb.button('add',    DIV='div_content_right', URL='zdcp.cgi?ipam_network_info&id=new', TITLE='New network')
- print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>DHCP</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for net in res['networks']:
   print "<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(netasc)s</DIV><DIV CLASS=td>%(description)s</DIV><DIV CLASS=td>%(server)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%net
   print aWeb.button('info',  DIV='div_content_right', URL='zdcp.cgi?ipam_network_layout&id=%i'%net['id'])
@@ -41,7 +41,7 @@ def network_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Server</DIV><DIV CLASS=td><SELECT NAME=server_id>"
  for srv in res['servers']:
   extra = "selected='selected'" if srv['id'] == data['server_id'] or srv['id'] == 'NULL' and data['server_id'] == None else ""
-  print "<OPTION VALUE='%s' %s>%s on %s</OPTION>"%(srv['id'],extra,srv['server'],srv['node'])
+  print "<OPTION VALUE='%s' %s>%s@%s</OPTION>"%(srv['id'],extra,srv['server'],srv['node'])
  print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Reverse Zone:</DIV><DIV CLASS=td><SELECT NAME=reverse_zone_id>"
  for dom in res['domains']:
@@ -54,6 +54,8 @@ def network_info(aWeb):
  print aWeb.button('save'  ,DIV='div_content_right',URL='zdcp.cgi?ipam_network_info&op=update', FRM='ipam_info_form')
  if not data['id'] == 'new':
   print aWeb.button('trash',DIV='div_content_right',URL='zdcp.cgi?ipam_network_delete&id=%s'%data['id'],MSG='Are you really sure')
+ if data['server_id']:
+  print aWeb.button('sync'  ,DIV='div_content_right',URL='zdcp.cgi?ipam_dhcp_update&network_id=%s'%data['id'])
  print "</DIV>"
  print "<SPAN CLASS='results' ID=update_results></SPAN>"
  print "</ARTICLE>"
@@ -96,6 +98,14 @@ def network_entries(aWeb):
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
 
+########################################### DHCP ##########################################
+#
+#
+def dhcp_update(aWeb):
+ data = aWeb.rest_call("ipam_dhcp_update",{'network_id':aWeb['network_id']})
+ print "<ARTICLE>DHCP server update: %s</ARTICLE>"%data
+
+######################################### Addresses #######################################
 #
 #
 def address_new(aWeb):
