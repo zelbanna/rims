@@ -12,8 +12,9 @@ __status__= "Production"
 def network_list(aWeb):
  res = aWeb.rest_call("ipam_network_list")
  print "<ARTICLE><P>Networks</P><DIV CLASS='controls'>"
- print aWeb.button('reload', DIV='div_content_left',  URL='zdcp.cgi?ipam_network_list', TITLE='Reload list')
- print aWeb.button('add',    DIV='div_content_right', URL='zdcp.cgi?ipam_network_info&id=new', TITLE='New network')
+ print aWeb.button('reload',  DIV='div_content_left',  URL='zdcp.cgi?ipam_network_list', TITLE='Reload list')
+ print aWeb.button('add',     DIV='div_content_right', URL='zdcp.cgi?ipam_network_info&id=new', TITLE='New network')
+ print aWeb.button('document',DIV='div_content_right', URL='zdcp.cgi?ipam_server_leases', SPIN='true')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>DHCP</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for net in res['networks']:
   print "<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(netasc)s</DIV><DIV CLASS=td>%(description)s</DIV><DIV CLASS=td>%(server)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%net
@@ -95,6 +96,19 @@ def network_entries(aWeb):
   print aWeb.button('delete', DIV='ipam_address_operation', URL='zdcp.cgi?ipam_address_delete&id=%(id)i&ip=%(ip)s'%row)
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
+
+########################################## Server #########################################
+#
+#
+def server_leases(aWeb):
+ leases = aWeb.rest_call("ipam_server_leases",{'type':'active'})
+ print "<ARTICLE><P>Leases (%s)</P>"%(aWeb['type'])
+ print "<DIV CLASS=table><DIV class=thead><DIV class=th>Ip</DIV><DIV class=th>Mac</DIV><DIV class=th>Hostname</DIV><DIV class=th>Starts</DIV><DIV class=th>Ends</DIV></DIV>"
+ print "<DIV CLASS=tbody>"
+ for data in leases['data']:
+  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(data['ip'],data['mac'],data.get('hostname',"None"),data['starts'],data['ends'])
+ print "</DIV></DIV>"
+ print "</ARTICLE>"
 
 ######################################### Addresses #######################################
 #

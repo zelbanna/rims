@@ -53,7 +53,7 @@ def domain_list(aDict):
 
   filter = []
   if aDict.get('filter'):
-   filter.append("type = '%s'"%aDict.get('filter'))
+   filter.append("domains.type = '%s'"%aDict.get('filter'))
   if aDict.get('exclude'):
    db.do("SELECT server_id FROM domains WHERE id = '%s'"%(aDict.get('exclude')))
    filter.append('server_id = %s'%(db.get_val('server_id')))

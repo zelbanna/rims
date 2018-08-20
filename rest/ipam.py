@@ -187,6 +187,29 @@ def network_discover(aDict):
 ################################## Addresses #############################
 #
 #
+def server_leases(aDict):
+ """Server_leases returns free or active server leases for DHCP servers
+
+ Args:
+  - type (required). active/free
+
+ Output:
+ """
+ from zdcp.core.common import node_call
+ ret = {'data':[]}
+ with DB() as db:
+  ret['servers'] = db.do("SELECT server,node FROM servers WHERE type = 'DHCP'")
+  servers = db.get_rows()
+ for srv in servers:
+  data = node_call(srv['node'],srv['server'],'leases',{'type':aDict['type']})['data']
+  if data:
+   ret['data'].extend(data)
+ return ret
+
+
+################################## Addresses #############################
+#
+#
 def address_find(aDict):
  """Function docstring for address_find TBD
 
