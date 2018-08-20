@@ -52,21 +52,21 @@ def leases(aDict):
   return {'data':result }
 
 #
-def update(aDict):
- """Function docstring for update:  reload the DHCP server to use updated info
+def sync(aDict):
+ """Function docstring for sync:  reload the DHCP server to use updated info
 
  Args:
-  - entries (required). entries is a list of dict objects containing hostname, mac, ip etc
+  - id (required). Server id on master node
 
  Output:
  """
  from zdcp.SettingsContainer import SC
  from zdcp.core.common import node_call
- entries = node_call('master','device','list',{'field':'mac','search':'all','extra':['mac']})
+ entries = node_call('master','device','server_macs',{'id':aDict['id']})
  # Create file
  with open(SC['iscdhcp']['static'],'w') as leasefile:
   for entry in entries['data']:
-   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id']))
+   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}, Network: {4}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id'],entry['network']))
 
  # Reload
  from subprocess import check_output, CalledProcessError
