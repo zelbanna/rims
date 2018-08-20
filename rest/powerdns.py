@@ -12,6 +12,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
+__type__ = "DNS"
 
 from zdcp.core.common import DB
 from zdcp.SettingsContainer import SC
