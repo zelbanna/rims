@@ -31,7 +31,7 @@ def main(aWeb):
   if data.get('name'):
    print "<LI><A CLASS='z-op' DIV=div_content_right  URL='zdcp.cgi?rack_inventory&rack=%s'>'%s'</A></LI>"%(aWeb['rack'],data['name'])
  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
- print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL='zdcp.cgi?bookings_list'>Bookings</A></LI>"
+ print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL='zdcp.cgi?reservations_list'>Reservations</A></LI>"
  print "<LI CLASS='right dropdown'><A>IPAM</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?system_server_list&type=DHCP'>Servers</A>"
  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?ipam_network_list'>Networks</A>"
@@ -128,13 +128,13 @@ def info(aWeb):
  print "<!-- Additional info -->"
  print "<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>"
  print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['snmp']
- print "<DIV CLASS=tr ID=div_booking_info><DIV CLASS=td>Booking:</DIV>"
- if dev['booked']:
-  print "<DIV CLASS='td %s'>"%("red" if dev['booking']['valid'] == 1 else "orange")
-  print dev['booking']['alias'] if dev['booking']['user_id'] != int(cookie['id']) else "<A CLASS=z-op DIV=div_booking_info URL='zdcp.cgi?bookings_update&op=debook&id=%s'>%s</A>"%(dev['id'],dev['booking']['alias'])
+ print "<DIV CLASS=tr ID=div_reservation_info><DIV CLASS=td>Reserve:</DIV>"
+ if dev['reserved']:
+  print "<DIV CLASS='td %s'>"%("red" if dev['reservation']['valid'] == 1 else "orange")
+  print dev['reservation']['alias'] if dev['reservation']['user_id'] != int(cookie['id']) else "<A CLASS=z-op DIV=div_reservation_info URL='zdcp.cgi?reservations_update&op=drop&id=%s'>%s</A>"%(dev['id'],dev['reservation']['alias'])
   print "</DIV>"
  else:
-  print "<DIV CLASS='td green'><A CLASS=z-op DIV=div_booking_info URL='zdcp.cgi?bookings_update&op=book&id=%s'>Book</A></DIV>"%dev['id']
+  print "<DIV CLASS='td green'><A CLASS=z-op DIV=div_reservation_info URL='zdcp.cgi?reservations_update&op=reserve&id=%s'>Available</A></DIV>"%dev['id']
  print "</DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>MAC:   </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=mac VALUE='%s'></DIV></DIV>"%dev['info']['mac'].upper()
  print "<DIV CLASS=tr><DIV CLASS=td>VM:    </DIV><DIV CLASS=td><INPUT NAME=vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else "")

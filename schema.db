@@ -27,18 +27,6 @@ CREATE TABLE `activity_types` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `bookings`;
-CREATE TABLE `bookings` (
-  `device_id` int(10) unsigned NOT NULL,
-  `user_id` int(10) unsigned NOT NULL,
-  `time_start` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`device_id`,`user_id`),
-  KEY `fk_user` (`user_id`),
-  CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
 DROP TABLE IF EXISTS `device_interfaces`;
 CREATE TABLE `device_interfaces` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -241,6 +229,18 @@ CREATE TABLE `racks` (
   CONSTRAINT `racks_ibfk_1` FOREIGN KEY (`console`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `racks_ibfk_2` FOREIGN KEY (`pdu_1`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `racks_ibfk_3` FOREIGN KEY (`pdu_2`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `reservations`;
+CREATE TABLE `reservations` (
+  `device_id` int(10) unsigned NOT NULL,
+  `user_id` int(10) unsigned NOT NULL,
+  `time_start` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`device_id`,`user_id`),
+  KEY `fk_user` (`user_id`),
+  CONSTRAINT `reservations_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `reservations_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

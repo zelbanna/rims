@@ -80,9 +80,9 @@ def info(aDict):
     ret['info']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
     if not ret['info']['functions']:
      ret['info']['functions'] = ""
-    ret['booked'] = (db.do("SELECT users.alias, bookings.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM bookings LEFT JOIN users ON bookings.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1)
-    if ret['booked']:
-     ret['booking'] = db.get_row()
+    ret['reserved'] = (db.do("SELECT users.alias, reservations.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM reservations LEFT JOIN users ON reservations.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1)
+    if ret['reserved']:
+     ret['reservation'] = db.get_row()
     # Rack infrastructure ?
     if ret['info']['vm'] == 1:
      ret['racked'] = False

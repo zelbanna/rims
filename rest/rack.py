@@ -106,7 +106,7 @@ def devices(aDict):
  with DB() as db:
   db.do("SELECT name, size FROM racks where id = %s"%id)
   ret.update(db.get_row())
-  ret['count']   = db.do("SELECT devices.id, hostname, rack_info.rack_unit, rack_info.rack_size, bookings.user_id FROM devices LEFT JOIN bookings ON devices.id = bookings.device_id INNER JOIN rack_info ON devices.id = rack_info.device_id WHERE rack_info.rack_id = %s ORDER BY %s"%(id,ret['sort']))
+  ret['count']   = db.do("SELECT devices.id, hostname, rack_info.rack_unit, rack_info.rack_size, reservations.user_id FROM devices LEFT JOIN reservations ON devices.id = reservations.device_id INNER JOIN rack_info ON devices.id = rack_info.device_id WHERE rack_info.rack_id = %s ORDER BY %s"%(id,ret['sort']))
   ret['devices'] = db.get_rows()
  return ret
 
