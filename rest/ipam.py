@@ -6,7 +6,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 from zdcp.core.common import DB
 
-############################################## Networks ##################################################
+##################################### Networks ####################################
 #
 #
 def network_list(aDict):
