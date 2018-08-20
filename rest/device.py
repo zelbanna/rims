@@ -462,6 +462,26 @@ def types_list(aDict):
   ret['types'] = db.get_rows()
  return ret
 
+#
+#
+def server_macs(aDict):
+ """Function returns all MACs for devices belonging to networks beloning to particular server
+
+ Args:
+  - id (required)
+
+ Output:
+ """
+ ret = {}
+ def GL_int2mac(aInt):
+  return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
+ with DB() as db:
+  ret['count'] = db.do("SELECT devices.id, hostname, mac, name AS domain, INET_NTOA(ia.ip) AS ip, ia.network_id AS network FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks ON ipam_networks.id = ia.network_id WHERE mac > 0 AND ipam_networks.server_id = %s"%aDict['id'])
+  ret['data']  = db.get_rows()
+  for row in ret['data']:
+   row['mac'] = GL_int2mac(row['mac'])
+ return ret
+
 ############################################## Specials ###############################################
 #
 #
