@@ -32,11 +32,6 @@ def main(aWeb):
   print "<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title'])
  for svc in data.get('services',[]):
   print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_services_info&node=%s&service=%s'>%s</A>"%(aWeb['node'],svc['service'],svc['name'])
- if data.get('dhcp'):
-  dhcp = (data['dhcp']['node'],data['dhcp']['type'])
-  print "<A CLASS=z-op DIV=div_content URL=zdcp.cgi?dhcp_update&node=%s&type=%s SPIN=true>DHCP - Update Server</A>"%dhcp
-  print "<A CLASS=z-op DIV=div_content URL=zdcp.cgi?dhcp_leases&node=%s&type=%s&lease=active>DHCP - Active</A>"%dhcp
-  print "<A CLASS=z-op DIV=div_content URL=zdcp.cgi?dhcp_leases&node=%s&type=%s&lease=free>DHCP - Free</A>"%dhcp
  if data.get('extra'):
   print "<A CLASS=z-op TARGET=_blank HREF='zdcp.pdf'>DB - View relational diagram</A>"
  print "</DIV></LI>"

@@ -66,7 +66,7 @@ def inventory(aDict):
  ret = {'navinfo':[]}
  with DB() as db:
   if aDict['node'] == 'master':
-   ret.update({'node':True,'extra':True,'users':True})
+   ret.update({'node':True,'users':True})
    db.do("SELECT node FROM nodes WHERE system = 1")
    ret['logs'] = [x['node'] for x in db.get_rows()]
    db.do("SELECT node FROM nodes WHERE www = 1")
@@ -83,10 +83,6 @@ def inventory(aDict):
 
   db.do("SELECT title, href FROM resources WHERE node = '%s' AND type = 'tool' AND view < 2 AND (user_id = %s OR private = 0) ORDER BY type,title"%(aDict['node'],aDict.get('user_id',1)))
   ret['tools'] = db.get_rows()
-  db.do("SELECT section,value FROM settings WHERE parameter = 'node' AND node = '%s'"%aDict['node'])
-  from zdcp.SettingsContainer import SC
-  for row in db.get_rows():
-   ret[row['section']]= {'node':row['value'],'type':SC[row['section']].get('type') }
 
  return ret
 
