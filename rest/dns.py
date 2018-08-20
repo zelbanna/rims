@@ -30,7 +30,7 @@ def domain_list(aDict):
  with DB() as db:
   if aDict.get('sync'):
    org = {}
-   db.do("SELECT id, server, node FROM servers")
+   db.do("SELECT id, server, node FROM servers WHERE type = 'DNS'")
    servers = db.get_rows()
    for server in servers:
     org[server['id']] = node_call(server['node'],server['server'],'domain_list')['domains']
@@ -81,7 +81,7 @@ def domain_info(aDict):
  args = aDict
  with DB() as db:
   if args['id'] == 'new' and not (args.get('op') == 'update'):
-   db.do("SELECT id, server, node FROM servers")
+   db.do("SELECT id, server, node FROM servers WHERE type = 'DNS'")
    ret['servers'] = db.get_rows()
    ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
   else:

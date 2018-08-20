@@ -14,11 +14,9 @@ def network_list(aWeb):
  print "<ARTICLE><P>Networks</P><DIV CLASS='controls'>"
  print aWeb.button('reload', DIV='div_content_left',  URL='zdcp.cgi?ipam_network_list', TITLE='Reload list')
  print aWeb.button('add',    DIV='div_content_right', URL='zdcp.cgi?ipam_network_info&id=new', TITLE='New network')
- if res['dhcp']:
-  print aWeb.button('save',  DIV='div_content_right', URL='zdcp.cgi?dhcp_update&node=%s&type=%s'%(res['dhcp']['node']['value'],res['dhcp']['type']['value']), SPIN='true', TITLE='Update DHCP server')
- print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
+ print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for net in res['networks']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td><DIV CLASS=controls>".format(net['id'],net['netasc'],net['description'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(netasc)s</DIV><DIV CLASS=td>%(description)s</DIV><DIV CLASS=td>%(server)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%net
   print aWeb.button('info',  DIV='div_content_right', URL='zdcp.cgi?ipam_network_layout&id=%i'%net['id'])
   print aWeb.button('items', DIV='div_content_right', URL='zdcp.cgi?ipam_network_entries&id=%i'%net['id'])
   print aWeb.button('edit',  DIV='div_content_right', URL='zdcp.cgi?ipam_network_info&id=%i'%net['id'])
@@ -40,6 +38,11 @@ def network_info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=network  VALUE='{}' '{}'></DIV></DIV>".format(data['network'],lock)
  print "<DIV CLASS=tr><DIV CLASS=td>Mask:</DIV><DIV CLASS=td><INPUT    TYPE=TEXT NAME=mask    VALUE='{}' '{}'></DIV></DIV>".format(data['mask'],lock)
  print "<DIV CLASS=tr><DIV CLASS=td>Gateway:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=gateway VALUE='{}'></DIV></DIV>".format(data['gateway'])
+ print "<DIV CLASS=tr><DIV CLASS=td>Server</DIV><DIV CLASS=td><SELECT NAME=server_id>"
+ for srv in res['servers']:
+  extra = "selected='selected'" if srv['id'] == data['server_id'] or srv['id'] == 'NULL' and data['server_id'] == None else ""
+  print "<OPTION VALUE='%s' %s>%s on %s</OPTION>"%(srv['id'],extra,srv['server'],srv['node'])
+ print "</SELECT></DIV></DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Reverse Zone:</DIV><DIV CLASS=td><SELECT NAME=reverse_zone_id>"
  for dom in res['domains']:
   extra = "selected" if (dom['id'] == data['reverse_zone_id']) or (not data['reverse_zone_id'] and dom['id'] == 'NULL') else ''
@@ -86,7 +89,7 @@ def network_delete(aWeb):
 #
 def network_entries(aWeb):
  data = aWeb.rest_call("ipam_network_inventory",{'id':aWeb['id'],'extra':['type']})
- print "<ARTICLE><P>Allocated IP Addresses</P><SPAN CLASS=results ID=ipam_address_operation></SPAN><DIV CLASS=table><DIV CLASS=tbody>"
+ print "<ARTICLE><P>Allocated IP Addresses</P><SPAN CLASS=results ID=ipam_address_operation></SPAN><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Type</DIV></DIV><DIV CLASS=tbody>"
  for row in data['entries']:
   print "<DIV CLASS=tr><DIV CLASS=td>%(id)i</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(type)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%row
   print aWeb.button('delete', DIV='ipam_address_operation', URL='zdcp.cgi?ipam_address_delete&id=%(id)i&ip=%(ip)s'%row)

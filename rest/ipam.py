@@ -25,9 +25,7 @@ def network_list(aDict):
  """
  ret = {}
  with DB() as db:
-  dhcp = db.do("SELECT parameter,value FROM settings WHERE section = 'dhcp'")
-  ret['dhcp']     = db.get_dict('parameter') if dhcp > 0 else None
-  ret['count']    = db.do("SELECT id, CONCAT(INET_NTOA(network),'/',mask) AS netasc, INET_NTOA(gateway) AS gateway, description, mask, network FROM ipam_networks ORDER by network")
+  ret['count']    = db.do("SELECT ipam_networks.id, CONCAT(INET_NTOA(network),'/',mask) AS netasc, INET_NTOA(gateway) AS gateway, description, mask, network, server FROM ipam_networks LEFT JOIN servers ON ipam_networks.server_id = servers.id ORDER by network")
   ret['networks'] = db.get_rows()
  return ret
 
@@ -53,6 +51,9 @@ def network_info(aDict):
  id = args.pop('id','new')
  op = args.pop('op',None)
  with DB() as db:
+  db.do("SELECT id, server, node FROM servers WHERE type = 'DHCP'")
+  ret['servers'] = db.get_rows()
+  ret['servers'].append({'id':'NULL','server':None,'node':None})
   if op == 'update':
    from struct import unpack
    from socket import inet_aton
@@ -76,10 +77,10 @@ def network_info(aDict):
     ret['update'] = db.update_dict('ipam_networks',args,'id=%s'%id)
 
   if not id == 'new':
-   ret['found'] = (db.do("SELECT id, mask, description, INET_NTOA(network) AS network, INET_NTOA(gateway) AS gateway, reverse_zone_id FROM ipam_networks WHERE id = %s"%id) > 0)
+   ret['found'] = (db.do("SELECT id, mask, description, INET_NTOA(network) AS network, INET_NTOA(gateway) AS gateway, reverse_zone_id, server_id FROM ipam_networks WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New','reverse_zone_id':None }
+   ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New','reverse_zone_id':None,'server_id':None }
  from zdcp.rest.dns import domain_ptr_list
  ret['domains'] = domain_ptr_list({'prefix':ret['data']['network']})
  ret['domains'].append({'id':'NULL','name':None,'server':None})

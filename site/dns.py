@@ -24,7 +24,7 @@ def domain_list(aWeb):
   print "<SPAN CLASS='results'>%s</SPAN>"%(domains['sync'])
  print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
  for dom in domains['domains']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(dom['id'],dom['name'],dom['server'])
+  print "<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>%(server)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%dom
   print aWeb.button('info', DIV='div_content_right',URL='zdcp.cgi?dns_domain_info&id=%s'%(dom['id']))
   print aWeb.button('items',DIV='div_content_right',URL='zdcp.cgi?dns_record_list&domain_id=%s'%(dom['id']))
   print "</DIV></DIV></DIV>"
