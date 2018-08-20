@@ -22,7 +22,7 @@ if len(argv) < 2:
  try:
   from zdcp.SettingsContainer import SC as Old
  except:
-  stdout.write("Usage: {} </path/json file>\n\n!!! Import DB structure from mysql.db before installing !!!\n\n".format(argv[0]))
+  stdout.write("Usage: {} </path/json file>\n\n!!! Import DB structure from schema.db before installing !!!\n\n".format(argv[0]))
   exit(0)
  else:
   settingsfilename = Old['system']['config_file']
@@ -178,7 +178,7 @@ if settings['system']['id'] == 'master':
  from zdcp.rest.mysql import diff,patch
  try:
   database,host,username,password = settings['system']['db_name'],settings['system']['db_host'],settings['system']['db_user'],settings['system']['db_pass']
-  database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(packagedir,'mysql.db')}
+  database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(packagedir,'schema.db')}
   res['database']= {}
   res['database']['diff'] = diff(database_args)
   if res['database']['diff']['diffs'] > 0:
@@ -186,7 +186,7 @@ if settings['system']['id'] == 'master':
    if res['database']['patch']['result'] == 'NOT_OK':
     stdout.write("Database patching failed!")
     if res['database']['patch'].get('database_restore_result') == 'OK':
-     stdout.write("Restore should be OK - please check mysql.db schema file\n")
+     stdout.write("Restore should be OK - please check schema.db schema file\n")
     else:
      stdout.write("Restore failed too! Restore manually\n")
      exit(1)
