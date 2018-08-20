@@ -595,6 +595,79 @@ def users_delete(aDict):
   res = db.do("DELETE FROM users WHERE id = '%s'"%aDict['id'])
  return { 'deleted':res }
 
+
+################################ SERVERS ##################################
+#
+#
+def server_list(aDict):
+ """Function docstring for server_list TBD
+
+ Args:
+  - type (optional)
+
+ Output:
+ """
+ ret = {}
+ if aDict.get('type'):
+  sql = "SELECT id, server, node, type FROM servers WHERE type = '%s'"%aDict['type']
+ else:
+  sql = "SELECT id, server, node, type FROM servers"
+ with DB() as db:
+  db.do(sql)
+  ret['servers']= db.get_rows()
+ return ret
+
+#
+#
+def server_info(aDict):
+ """Function docstring for server_info TBD
+
+ Args:
+
+ Output:
+ """
+ ret = {}
+ args = aDict
+ id = args.pop('id','new')
+ op = args.pop('op',None)
+ with DB() as db:
+  db.do("SELECT node FROM nodes")
+  ret['nodes'] = db.get_rows()
+  if op == 'update':
+   if not id == 'new':
+    ret['update'] = db.update_dict('servers',args,"id=%s"%id)
+   else:
+    ret['update'] = db.insert_dict('servers',args)
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
+
+  if not id == 'new':
+   ret['found'] = (db.do("SELECT * FROM servers WHERE id = '%s'"%id) > 0)
+   ret['data'] = db.get_row()
+  else:
+   ret['data'] = {'id':'new','node':None,'server':'Unknown','type':aDict.get('type')}
+  if   ret['data']['type'] == 'DNS':
+   ret['servers'] = [{'server':'nodns','type':'DNS'},{'server':'powerdns','type':'DNS'},{'server':'infoblox','type':'DNS'}]
+  elif ret['data']['type'] == 'DHCP':
+   ret['servers'] = [{'server':'nodhcp','type':'DHCP'},{'server':'iscdhcp','type':'DHCP'}]
+
+ return ret
+
+#
+#
+def server_delete(aDict):
+ """Function docstring for server_delete TBD
+
+ Args:
+  - id (required)
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  ret['deleted'] = db.do("DELETE FROM servers WHERE id = %s"%aDict['id'])
+ return ret
+
+
 ######################################### ACTIVITIES ###########################################
 #
 #

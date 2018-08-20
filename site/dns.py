@@ -7,66 +7,6 @@ __author__= "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__= "Production"
 
-############################################ Servers ###########################################
-def server_list(aWeb):
- res = aWeb.rest_call("dns_server_list")
- print "<ARTICLE><P>Domains</P><DIV CLASS='controls'>"
- print aWeb.button('reload',DIV='div_content_left',URL='zdcp.cgi?dns_server_list')
- print aWeb.button('add', DIV='div_content_right',URL='zdcp.cgi?dns_server_info&id=new',TITLE='Add domain')
- print aWeb.button('help',DIV='div_content_right',URL='zdcp.cgi?dns_server_help')
- print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>"
- for srv in res['servers']:
-  print "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(srv['id'],srv['node'],srv['server'])
-  print aWeb.button('info',DIV='div_content_right',URL='zdcp.cgi?dns_server_info&id=%s'%(srv['id']))
-  print "</DIV></DIV></DIV>"
- print "</DIV></DIV>"
- print "</ARTICLE>"
-
-#
-#
-def server_info(aWeb):
- args = aWeb.get_args2dict()
- res  = aWeb.rest_call("dns_server_info",args)
- data = res['data']
- print "<ARTICLE CLASS=info><P>Server</P>"
- print "<FORM ID=server_info_form>"
- print "<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(data['id'])
- print "<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><SELECT NAME=node>"
- for node in res['nodes']:
-  extra = " selected" if (data['node'] == node['node']) else ""
-  print "<OPTION VALUE=%s %s>%s</OPTION>"%(node['node'],extra,node['node'])
- print "</SELECT></DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>Server:</DIV><DIV CLASS=td><SELECT NAME=server>"
- for srv in res['servers']:
-  extra = " selected" if (data['server'] == srv['server']) else ""
-  print "<OPTION VALUE=%s %s>%s</OPTION>"%(srv['server'],extra,srv['server'])
- print "</SELECT></DIV></DIV>"
- print "</DIV></DIV>"
- print "</FORM><DIV CLASS=controls>"
- print aWeb.button('save',    DIV='div_content_right', URL='zdcp.cgi?dns_server_info&op=update', FRM='server_info_form')
- if data['id'] != 'new':
-  print aWeb.button('trash', DIV='div_content_right', URL='zdcp.cgi?dns_server_delete&id=%s'%(data['id']), MSG='Delete server?')
- print "</DIV></ARTICLE>"
-
-#
-#
-def server_delete(aWeb):
- res = aWeb.rest_call("dns_server_delete",{'id':aWeb['id']})
- print "<ARTICLE>%s</ARTICLE>"%str(res)
-
-#
-#
-def server_help(aWeb):
- print """<ARTICLE CLASS='help' STYLE='overflow:auto'><PRE>
- DNS servers manages the location of DNS servers, i.e. the system (!) REST nodes where they offer an interface
-
- This is helpful in case:
-  - the server doesn't offer a good REST API - then other tools can be used directly on that server
-  - there are multiple DNS servers serving different zones
-
- </PRE></ARTICLE"""
-
 ############################################ Domains ###########################################
 #
 #

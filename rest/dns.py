@@ -11,68 +11,6 @@ __add_globals__ = lambda x: globals().update(x)
 
 from zdcp.core.common import DB,node_call
 
-################################ SERVERS ##################################
-#
-#
-def server_list(aDict):
- """Function docstring for server_list TBD
-
- Args:
-
- Output:
- """
- ret = {}
- with DB() as db:
-  db.do("SELECT id, server, node FROM domain_servers")
-  ret['servers']= db.get_rows()
- return ret
-
-#
-#
-def server_info(aDict):
- """Function docstring for server_info TBD
-
- Args:
-
- Output:
- """
- ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
- with DB() as db:
-  ret['servers'] = [{'server':'nodns'},{'server':'powerdns'},{'server':'infoblox'}]
-  db.do("SELECT node FROM nodes")
-  ret['nodes'] = db.get_rows()
-  if op == 'update':
-   if not id == 'new':
-    ret['update'] = db.update_dict('domain_servers',args,"id=%s"%id)
-   else:
-    ret['update'] = db.insert_dict('domain_servers',args)
-    id = db.get_last_id() if ret['update'] > 0 else 'new'
-
-  if not id == 'new':
-   ret['found'] = (db.do("SELECT * FROM domain_servers WHERE id = '%s'"%id) > 0)
-   ret['data'] = db.get_row()
-  else:
-   ret['data'] = {'id':'new','node':None,'server':'Unknown'}
- return ret
-
-#
-#
-def server_delete(aDict):
- """Function docstring for server_delete TBD
-
- Args:
-  - id (required)
-
- Output:
- """
- ret = {}
- with DB() as db:
-  ret['deleted'] = db.do("DELETE FROM domain_servers WHERE id = %s"%aDict['id'])
- return ret
-
 ################################ Domains ##################################
 #
 #
@@ -92,7 +30,7 @@ def domain_list(aDict):
  with DB() as db:
   if aDict.get('sync'):
    org = {}
-   db.do("SELECT id, server, node FROM domain_servers")
+   db.do("SELECT id, server, node FROM servers")
    servers = db.get_rows()
    for server in servers:
     org[server['id']] = node_call(server['node'],server['server'],'domain_list')['domains']
@@ -121,7 +59,7 @@ def domain_list(aDict):
    filter.append('server_id = %s'%(db.get_val('server_id')))
    filter.append("domains.id <> '%s'"%aDict.get('exclude'))
 
-  ret['count']   = db.do("SELECT domains.*, server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE %s ORDER BY name"%('TRUE' if len(filter) == 0 else " AND ".join(filter)))
+  ret['count']   = db.do("SELECT domains.*, server FROM domains LEFT JOIN servers ON domains.server_id = servers.id WHERE %s ORDER BY name"%('TRUE' if len(filter) == 0 else " AND ".join(filter)))
   ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 
@@ -143,14 +81,14 @@ def domain_info(aDict):
  args = aDict
  with DB() as db:
   if args['id'] == 'new' and not (args.get('op') == 'update'):
-   db.do("SELECT id, server, node FROM domain_servers")
+   db.do("SELECT id, server, node FROM servers")
    ret['servers'] = db.get_rows()
    ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
   else:
    if args['id'] == 'new':
-    db.do("SELECT id, 'new' AS foreign_id, server, node FROM domain_servers WHERE id = %s"%args.pop('server_id','0'))
+    db.do("SELECT id, 'new' AS foreign_id, server, node FROM servers WHERE id = %s"%args.pop('server_id','0'))
    else:
-    db.do("SELECT domain_servers.id, foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%args['id'])
+    db.do("SELECT servers.id, foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%args['id'])
    ret['infra'] = db.get_row()
    args['id']   = ret['infra'].pop('foreign_id',None)
    ret.update(node_call(ret['infra']['node'],ret['infra']['server'],'domain_info',args))
@@ -172,7 +110,7 @@ def domain_delete(aDict):
  ret = {}
  id = int(aDict['id'])
  with DB() as db:
-  db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %i"%id)
+  db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %i"%id)
   infra = db.get_row()
   ret = node_call(infra['node'],infra['server'],'domain_delete',{'id':infra['foreign_id']})
   ret['local'] = db.do("UPDATE devices SET a_dom_id = 0 WHERE a_dom_id = %i"%id)
@@ -196,7 +134,7 @@ def domain_ptr_list(aDict):
   octets.append("in-addr.arpa")
   return ".".join(octets)
  with DB() as db:
-  db.do("SELECT domains.id, name, CONCAT(server,'@',node) AS server FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.name = '%s'"%(GL_ip2arpa(aDict['prefix'])))
+  db.do("SELECT domains.id, name, CONCAT(server,'@',node) AS server FROM domains LEFT JOIN servers ON domains.server_id = servers.id WHERE domains.name = '%s'"%(GL_ip2arpa(aDict['prefix'])))
   domains = db.get_rows()
  return domains
 
@@ -214,7 +152,7 @@ def domain_save(aDict):
  ret = {}
  id = aDict['id']
  with DB() as db:
-  db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%id)
+  db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%id)
   infra = db.get_row()
   ret = node_call(infra['node'],infra['server'],'domain_save',{'id':infra['foreign_id']})
  return {'result':ret['result']}
@@ -235,13 +173,13 @@ def record_list(aDict):
  args = aDict
  with DB() as db:
   if aDict.get('domain_id'):
-   db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%aDict['domain_id'])
+   db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aDict['domain_id'])
    infra = db.get_row()
    args['domain_id'] = infra['foreign_id']
   else:
    # Strictly internal use - this one fetch all records for consistency check
    id = aDict.pop('server_id','0')
-   db.do("SELECT server, node FROM domain_servers WHERE id = %s"%id)
+   db.do("SELECT server, node FROM servers WHERE id = %s"%id)
    infra = db.get_row()
  ret = node_call(infra['node'],infra['server'],'record_list',args)
  ret['domain_id'] = aDict.get('domain_id',0)
@@ -270,7 +208,7 @@ def record_info(aDict):
   if aDict['id'] == 'new' and not (aDict.get('op') == 'update'):
    ret['data'] = {'id':'new','domain_id':domain_id,'name':'key','content':'value','type':'type-of-record','ttl':'3600','foreign_id':'NA'}
   else:
-   db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%domain_id)
+   db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%domain_id)
    infra = db.get_row()
    args['domain_id'] = infra['foreign_id']
    ret = node_call(infra['node'],infra['server'],'record_info',args)
@@ -290,7 +228,7 @@ def record_delete(aDict):
  """
  args = aDict
  with DB() as db:
-  db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%args['domain_id'])
+  db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%args['domain_id'])
   infra = db.get_row()
  args['domain_id'] = infra['foreign_id']
  ret = node_call(infra['node'],infra['server'],'record_delete',args)
@@ -335,7 +273,7 @@ def record_device_delete(aDict):
    domain_id = aDict.get('%s_domain_id'%tp)
    id = str(aDict.get('%s_id'%tp,'0'))
    if domain_id > 0 and id != '0':
-    db.do("SELECT foreign_id, server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id WHERE domains.id = '%s'"%(domain_id))
+    db.do("SELECT foreign_id, server, node FROM domains LEFT JOIN servers ON domains.server_id = servers.id WHERE domains.id = '%s'"%(domain_id))
     infra = db.get_row()
     args = {'id':id,'domain_id':infra['foreign_id']}
     ret[tp.upper()] = node_call(infra['node'],infra['server'],'record_delete',args)['deleted']
@@ -369,7 +307,7 @@ def record_device_update(aDict):
 
  with DB() as db:
   domains = {'name':{},'foreign_id':{}}
-  db.do("SELECT domains.id AS domain_id, server_id, foreign_id, name, server, node FROM domains LEFT JOIN domain_servers ON domains.server_id = domain_servers.id")
+  db.do("SELECT domains.id AS domain_id, server_id, foreign_id, name, server, node FROM domains LEFT JOIN servers ON domains.server_id = servers.id")
   domains['id']   = db.get_dict('domain_id')
   for dom in domains['id'].values():
    domains['name'][dom['name']] = dom
@@ -461,7 +399,7 @@ def record_device_create(aDict):
   args['content'] = aDict['fqdn']
 
  with DB() as db:
-  db.do("SELECT foreign_id, server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id WHERE domains.id = %s"%aDict['domain_id'])
+  db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aDict['domain_id'])
   infra = db.get_row()
   args['domain_id'] = infra['foreign_id']
   ret['record'] = node_call(infra['node'],infra['server'],'record_info',args)
@@ -485,7 +423,7 @@ def dedup(aDict):
  """
  ret = {}
  with DB() as db: 
-  db.do("SELECT server, node FROM domain_servers")
+  db.do("SELECT server, node FROM servers")
   servers = db.get_rows()
  for infra in servers:
   res = node_call(infra['node'],infra['server'],'dedup')
@@ -505,7 +443,7 @@ def top(aDict):
  ret = {'top':{},'who':{}}
  args = {'count':aDict.get('count',20)}
  with DB() as db: 
-  db.do("SELECT server, node FROM domain_servers LEFT JOIN domains ON domains.server_id = domain_servers.id")
+  db.do("SELECT server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id")
   servers = db.get_rows()
  for infra in servers:
   res = node_call(infra['node'],infra['server'],'top',args)
@@ -531,7 +469,7 @@ def consistency_check(aDict):
  ret = {'records':[],'devices':[]}
  with DB() as db:
   # Collect DNS severs
-  db.do("SELECT id, server, node FROM domain_servers")
+  db.do("SELECT id, server, node FROM servers")
   servers = db.get_dict('id')
   # Fetch domains
   db.do("SELECT id,foreign_id,name FROM domains")

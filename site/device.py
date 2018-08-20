@@ -32,9 +32,11 @@ def main(aWeb):
    print "<LI><A CLASS='z-op' DIV=div_content_right  URL='zdcp.cgi?rack_inventory&rack=%s'>'%s'</A></LI>"%(aWeb['rack'],data['name'])
  print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?device_main&{}'></A></LI>".format(aWeb.get_args())
  print "<LI CLASS='right'><A CLASS=z-op DIV=div_content URL='zdcp.cgi?bookings_list'>Bookings</A></LI>"
- print "<LI CLASS=right><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?ipam_network_list'>IPAM</A></LI>"
+ print "<LI CLASS='right dropdown'><A>IPAM</A><DIV CLASS='dropdown-content'>"
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?ipam_network_list'>Networks</A>"
+ print "</DIV></LI>"
  print "<LI CLASS='right dropdown'><A>DNS</A><DIV CLASS='dropdown-content'>"
- print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?dns_server_list'>Servers</A>"
+ print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?system_server_list&type=DNS'>Servers</A>"
  print "<A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?dns_domain_list'>Domains</A>"
  print "</DIV></LI>"
  print "<LI CLASS='right dropdown'><A>Rack</A><DIV CLASS='dropdown-content'>"
