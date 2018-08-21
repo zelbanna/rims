@@ -148,7 +148,7 @@ def node_info(aWeb):
  print "</DIV></DIV>"
  print "</FORM>" 
  print "<DIV CLASS=controls>"
- print aWeb.button('search', DIV='device_id', INPUT='true', URL='zdcp.cgi?system_node_device_id',      FRM='system_node_form')
+ print aWeb.button('search', DIV='device_id', INPUT='true', URL='zdcp.cgi?system_node_device_id',      FRM='system_node_form', TITLE='Find matching device id using hostname')
  print aWeb.button('save',   DIV='div_content_right',       URL='zdcp.cgi?system_node_info&op=update', FRM='system_node_form')
  print aWeb.button('trash',  DIV='div_content_right',       URL='zdcp.cgi?system_node_delete',         FRM='system_node_form', MSG='Are you really sure you want to delete node?')
  print "</DIV></ARTICLE>"
