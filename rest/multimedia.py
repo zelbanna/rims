@@ -327,7 +327,7 @@ def process(aDict):
 
     if srt['code']: rename(srtfile,srtfile + "ed")
 
-  elif ret['suffix'] == 'mp4' and ret['rename'] and (srt['code'] or aDict['modify']):
+  elif ret['suffix'] == 'mp4' and ret['rename'] and (srt['code'] or aDict.get('modify')):
    FNULL = open(devnull, 'w')
    if srt['code']:
     tmpfile = filename + ".process"
@@ -337,7 +337,7 @@ def process(aDict):
     call(['MP4Box -add {0}:hdlr=sbtl:lang={1}:name={2}:group=2:layer=-1:disable {3} -out {4}'.format( repr(srt['file']), srt['code'], srt['name'], repr(tmpfile), repr(dest))], shell=True, stdout=FNULL)
     rename(srt['file'],"%s.processed"%srt['file'])
     remove(tmpfile)
-   if aDict['modify']:
+   if aDict.get('modify'):
     if info['episode']:
      call(['mp4tags', '-o', info['episode'], '-n', info['episode'][1:3], '-M', info['episode'][4:6], '-S', info['title'], '-m', info['info'], dest], stdout=FNULL, stderr=FNULL)
     else:
