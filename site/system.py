@@ -27,7 +27,7 @@ def main(aWeb):
  print "<LI><A CLASS=z-op DIV=div_content URL='zdcp.cgi?activities_report'>Activities</A></LI>"
  if data.get('users'):
   print "<LI><A CLASS=z-op DIV=div_content URL='zdcp.cgi?reservations_list'>Reservations</A></LI>"
- print "<LI><A CLASS=z-op TARGET=_blank            HREF='zdcp.pdf'>DB</A></LI>"
+ print "<LI><A CLASS=z-op TARGET=_blank            HREF='zdcp.pdf'>ERD</A></LI>"
  print "<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>"
  print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_rest_main&node=%s'>Debug</A>"%aWeb.id
  print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?tools_logs_show&name=rest&node=%s'>Logs</A>"%aWeb.id
