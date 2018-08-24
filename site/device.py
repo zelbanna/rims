@@ -117,11 +117,11 @@ def info(aWeb):
  print "<INPUT TYPE=HIDDEN NAME=ip VALUE={}>".format(dev['ip'])
  print "<!-- Reachability Info -->"
  print "<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>Name:  </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['hostname']
- print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['domain']
- print "<DIV CLASS=tr><DIV CLASS=td>IP:    </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['ip']
- print "<DIV CLASS=tr><DIV CLASS=td>Device ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['id']
- print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['snmp']
+ print "<DIV CLASS=tr><DIV CLASS=td>Name:  </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['hostname']
+ print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['domain']
+ print "<DIV CLASS=tr><DIV CLASS=td>IP:    </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['ip']
+ print "<DIV CLASS=tr><DIV CLASS=td>Device ID:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['id']
+ print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['snmp']
  print "<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
@@ -166,7 +166,7 @@ def info(aWeb):
  print "<!-- Text fields -->"
  print "<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%;'><DIV CLASS=table><DIV CLASS=tbody>"
  print "<DIV CLASS='tr even'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=comment VALUE='{}'></DIV></DIV>".format("" if not dev['info']['comment'] else dev['info']['comment'].encode("utf-8"))
- print "<DIV CLASS='tr even'><DIV CLASS=td>Web page:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage'])
+ print "<DIV CLASS='tr even'><DIV CLASS=td>Web UI:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage'])
  print "</DIV></DIV></DIV>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('reload',     DIV='div_content_right',URL='zdcp.cgi?device_info&id=%i'%dev['id'])
