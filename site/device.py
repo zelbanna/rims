@@ -121,13 +121,12 @@ def info(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['domain']
  print "<DIV CLASS=tr><DIV CLASS=td>IP:    </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['ip']
  print "<DIV CLASS=tr><DIV CLASS=td>Device ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['id']
- print "<DIV CLASS=tr><DIV CLASS=td>A ID:     </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['a_id']
- print "<DIV CLASS=tr><DIV CLASS=td>PTR ID:   </DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['ptr_id']
+ print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['snmp']
+ print "<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
  print "<!-- Additional info -->"
  print "<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>"
- print "<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS=td>%s</DIV></DIV>"%dev['info']['snmp']
  print "<DIV CLASS=tr ID=div_reservation_info><DIV CLASS=td>Reserve:</DIV>"
  if dev['reserved']:
   print "<DIV CLASS='td %s'>"%("red" if dev['reservation']['valid'] == 1 else "orange")
@@ -149,6 +148,7 @@ def info(aWeb):
   print "<DIV CLASS=td>%s</DIV>"%dev['info']['type_name']
  print "</DIV>"
  print "<DIV CLASS=tr><DIV CLASS=td>Model: </DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=model VALUE='%s'></DIV></DIV>"%(dev['info']['model'])
+ print "<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "</DIV></DIV></DIV>"
  print "<!-- Rack Info -->"
@@ -219,9 +219,9 @@ def extended(aWeb):
  print "<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='%s'></DIV><DIV CLASS=td>"%(dev['ip'])
  print aWeb.button('sync',DIV='div_content_right', FRM='info_form', URL='zdcp.cgi?device_update_ip&id=%s'%dev['id'], TITLE='Modify IP')
  print "</DIV></DIV>"
- print "<DIV CLASS=tr><DIV CLASS=td>A ID:   </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=a_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['a_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>PTR ID: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=ptr_id VALUE='%s' READONLY></DIV></DIV>"%(dev['info']['ptr_id'])
- print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s'></DIV></DIV>"%dev['info']['ipam_id']
+ print "<DIV CLASS=tr><DIV CLASS=td>A ID:   </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['a_id']
+ print "<DIV CLASS=tr><DIV CLASS=td>PTR ID: </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['ptr_id']
+ print "<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['ipam_id']
  print "<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"
  print "<!-- Rack Info -->"
  print "<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=rack_info_rack_id>"

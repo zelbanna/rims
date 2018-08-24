@@ -75,6 +75,7 @@ article.info div.td:last-child { width:100%; }
 div.td > select,input[type='text'],input[type='url'] { width:99%; -webkit-appearance: none; }
 div.td > input:-moz-read-only { font-style:italic; }
 div.td > input:read-only {      font-style:italic; }
+div.readonly {                  font-style:italic; }
 div.td > input:-webkit-input-placeholder { color: #9CA6B0; }
 div.td > input:-moz-placeholder {          color: #9CA6B0; opacity:1; }
 div.controls { display:inline; font-size:5px; }

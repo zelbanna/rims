@@ -155,25 +155,26 @@ def extended(aDict):
      pem = {'name':args.pop('pems_%s_name'%id,None),'pdu_unit':aDict.pop('pems_%s_pdu_unit'%id,0),'pdu_id':pdu_slot[0],'pdu_slot':pdu_slot[1]}
      ret['result']["PEM_%s"%id] = db.update_dict('device_pems',pem,'id=%s'%id)
     # DNS management
-    a_id, ptr_id, a_dom_id, hostname = args.pop('a_id',None), args.pop('ptr_id',None), args.pop('a_dom_id',None), args.pop('hostname',None)
-    if a_id and ptr_id and a_dom_id and hostname and ret['ip']:
-     dns_args = {'a_id':a_id,'ptr_id':ptr_id,'a_domain_id':a_dom_id,'hostname':hostname,'ip':ret['ip'],'id':ret['id']}
-     import zdcp.rest.dns as DNS
-     DNS.__add_globals__({'import_module':import_module})
-     dns_res = DNS.record_device_update(dns_args)
-     dns_args.pop('id',None)
-     dns_args.pop('ip',None)
-     if not (str(dns_res['A']['domain_id']) == str(dns_args.pop('a_domain_id',None))):
-      dns_args['a_dom_id'] = dns_res['A']['domain_id']
-     for type in ['a','ptr']:
-      if dns_res[type.upper()]['found']:
-       if not (str(dns_res[type.upper()]['record_id']) == str(dns_args['%s_id'%type])):
-        dns_args['%s_id'%type] = dns_res[type.upper()]['record_id']
+
+    if args.get('a_dom_id') and args.get('hostname') and ret['ip']:
+     # Fetch info first
+     # .. then check if anything has changed
+     db.do("SELECT hostname, a_id, ptr_id, a_dom_id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id = %s"%ret['id'])
+     old_info = db.get_row()
+
+     if not (old_info['hostname'] == args['hostname']) or not (str(old_info['a_dom_id']) == str(args['a_dom_id'])):
+      dns_args = {'a_id':old_info['a_id'],'ptr_id':old_info['ptr_id'],'a_domain_id_new':args['a_dom_id'],'a_domain_id_old':old_info['a_dom_id'],'hostname':args['hostname'],'ip_new':ret['ip'],'ip_old':old_info['ip'],'id':ret['id']}
+      import zdcp.rest.dns as DNS
+      DNS.__add_globals__({'import_module':import_module})
+      dns_res = DNS.record_device_update(dns_args)
+      new_info = {'hostname':args['hostname'],'a_dom_id':dns_res['A']['domain_id']}
+      for type in ['a','ptr']:
+       if dns_res[type.upper()]['found']:
+        if not (str(dns_res[type.upper()]['record_id']) == str(dns_args['%s_id'%type])):
+         new_info['%s_id'%type] = dns_res[type.upper()]['record_id']
        else:
-        dns_args.pop('%s_id'%type,None)
-      else:
-       dns_args['%s_id'%type] = 0
-     ret['result']['device_info'] = db.update_dict('devices',dns_args,"id='%s'"%ret['id'])
+        new_info['%s_id'%type] = 0
+      ret['result']['device_info'] = db.update_dict('devices',new_info,"id='%s'"%ret['id'])
     rack_args = {k[10:]:v for k,v in args.iteritems() if k[0:10] == 'rack_info_'}
     ret['result']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
 
