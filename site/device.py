@@ -183,7 +183,7 @@ def info(aWeb):
   print aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port']))
  if dev['info'].get('webpage'):
   print aWeb.button('ui',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('webpage'))
- print "<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result',''))
+ print "<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('update',''))
  print "</DIV></ARTICLE>"
  print "<!-- Function navbar and content -->"
  print "<NAV><UL>"
