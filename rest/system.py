@@ -69,8 +69,6 @@ def inventory(aDict):
    ret.update({'node':True,'users':True})
    db.do("SELECT node FROM nodes WHERE system = 1")
    ret['logs'] = [x['node'] for x in db.get_rows()]
-   db.do("SELECT node FROM nodes WHERE www = 1")
-   ret['www'] = [x['node'] for x in db.get_rows()]
   else:
    ret['logs']  = [aDict['node']]
 

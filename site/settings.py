@@ -19,6 +19,7 @@ def list(aWeb):
  print "<ARTICLE><P>Settings</P>"
  print "<DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='zdcp.cgi?settings_list&node=%s'%aWeb['node'])
+ print aWeb.button('back',  DIV='div_content', URL='zdcp.cgi?system_node_list')
  print aWeb.button('add',   DIV='div_content_right', URL='zdcp.cgi?settings_info&id=new&node=%s'%aWeb['node'])
  print aWeb.button('info',  DIV='div_content_right', URL='zdcp.cgi?settings_comprehensive&node=%s'%aWeb['node'])
  print aWeb.button('save',  DIV='div_content_right', URL='zdcp.cgi?settings_save&node=%s'%aWeb['node'])
@@ -86,7 +87,7 @@ def help(aWeb):
 
  Settings are applied to sections, typically:
   - matching a specific function (e.g. username/passwords for ESXi, Openstack)
-  - indicating on which node a function resides (like DNS server's node and type)
+  - provides settings for a function like sections: logs -> log x -> location
 
  </PRE></ARTICLE"""
 

@@ -19,12 +19,7 @@ def main(aWeb):
  data = aWeb.rest_call("system_inventory",{'node':aWeb.id,'user_id':cookie['id']})
  print "<NAV><UL>"
  if data.get('node'):
-  print "<LI><A CLASS=z-op DIV=div_content URL='zdcp.cgi?system_node_list'>Settings</A></LI>"
- if data.get('www'):
-  print "<LI CLASS='dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>"
-  for node in data['www']:
-   print "<A CLASS=z-op DIV=div_content URL='zdcp.cgi?resources_list&node=%s'>%s</A>"%(node,node)
-  print "</DIV></LI>"
+  print "<LI><A CLASS=z-op DIV=div_content URL='zdcp.cgi?system_node_list'>Nodes</A></LI>"
  if data.get('users'):
   print "<LI><A CLASS=z-op DIV=div_content URL='zdcp.cgi?users_list'>Users</A></LI>"
  tools = data.get('tools',[])

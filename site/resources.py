@@ -65,6 +65,7 @@ def list(aWeb):
  print "<SECTION CLASS=content-left ID=div_content_left>"
  print "<ARTICLE><P>Resources</P><DIV CLASS=controls>"
  print aWeb.button('reload',DIV='div_content', URL='zdcp.cgi?resources_list&node=%s'%node)
+ print aWeb.button('back',DIV='div_content', URL='zdcp.cgi?system_node_list')
  print aWeb.button('add', DIV='div_content_right', URL='zdcp.cgi?resources_info&node=%s&id=new&user_id=%s'%(node,cookie['id']))
  print aWeb.button('help',DIV='div_content_right', URL='zdcp.cgi?resources_help', TITLE='Help information')
  print "</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
