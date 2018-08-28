@@ -341,7 +341,7 @@ def new(aDict):
    if alloc:
     import zdcp.rest.dns as DNS
     DNS.__add_globals__({'import_module':import_module})
-    dns = DNS.record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip':aDict['ip']})
+    dns = DNS.record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']})
     ret['insert'] = db.do("INSERT INTO devices(vm,mac,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
    else:
     ret['insert'] = db.do("INSERT INTO devices(vm,mac,hostname,snmp,model) VALUES(%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['hostname']))

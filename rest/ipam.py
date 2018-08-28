@@ -110,7 +110,7 @@ def network_inventory(aDict):
   fields = ['ip AS ip_integer','INET_NTOA(ip) AS ip','id']
   if aDict.get('extra'):
    fields.extend(aDict['extra'])
-  ret['count']   = db.do("SELECT %s FROM ipam_addresses WHERE network_id = %s ORDER BY ip"%(",".join(fields),aDict['id']))
+  ret['count']   = db.do("SELECT %s FROM ipam_addresses WHERE network_id = %s ORDER BY ip_integer"%(",".join(fields),aDict['id']))
   ret['entries'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict['dict'])
  return ret
 

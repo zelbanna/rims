@@ -291,16 +291,14 @@ def record_device_update(aDict):
   - ptr_id (required) - id/0/new
   - hostname (required)
 
-  - ip_old (required)
+  - ip_old (optional required)
   - ip_new (required)
-  - a_domain_id_old (required)
+  - a_domain_id_old (optional required)
   - a_domain_id_new (required)
 
  Output:
  """
  ret  = {'A':{'found':False,'record_id':0,'domain_id':aDict['a_domain_id_new']},'PTR':{'found':False,'record_id':0},'device':{'found':False},'server':{}}
- aDict['a_domain_id_old'] = int(aDict['a_domain_id_old'])
- aDict['a_domain_id_new'] = int(aDict['a_domain_id_new'])
  data = {}
 
  def GL_ip2ptr(addr):
@@ -321,13 +319,13 @@ def record_device_update(aDict):
   # A record: check if valid domain, then if not a_id == 'new' check if we moved to new server, if so delete record and set a_id to new
   #
   a_id  = 'new' if str(aDict['a_id']) == '0' else aDict['a_id']
-  infra = domains['id'].get(aDict['a_domain_id_new'],None)
+  infra = domains['id'].get(int(aDict['a_domain_id_new']),None)
 
   if not infra:
    return ret
 
   if a_id != 'new':
-   old = domains['id'].get(aDict['a_domain_id_old'],None)
+   old = domains['id'].get(int(aDict.get('a_domain_id_old',0)),None)
    if old['server_id'] != infra['server_id']:
     ret['server']['A'] = node_call(old['node'],old['server'],'record_delete',{'id':a_id})
     a_id = 'new'
