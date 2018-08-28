@@ -184,6 +184,22 @@ def network_discover(aDict):
 
  return ret
 
+#
+#
+def network_discrepancy(aDict):
+ """Function retrieves orphan entries with no matching device or other use
+
+ Args:
+
+ Output:
+  entries. list of ID and IP which are orphan
+ """
+ ret = {}
+ with DB() as db:
+  db.do("SELECT id, ip AS ip_integer, INET_NTOA(ip) AS ip FROM ipam_addresses WHERE id NOT IN (SELECT ipam_id FROM devices) ORDER BY ip_integer")
+  ret['entries'] = db.get_rows()
+ return ret
+
 ################################## Addresses #############################
 #
 #
