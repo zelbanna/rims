@@ -180,7 +180,8 @@ CREATE TABLE `openstack_tokens` (
   `token` varchar(50) NOT NULL,
   `project_id` varchar(50) NOT NULL,
   `username` varchar(50) NOT NULL,
-  `node` varchar(40) NOT NULL,
+  `node_url` varchar(40) NOT NULL,
+  `node_name` varchar(40) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `token` (`token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
