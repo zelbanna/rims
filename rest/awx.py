@@ -60,6 +60,7 @@ def inventory_info(aDict):
  ret['groups'] = controller.fetch_dict("inventories/%(id)s/groups/"%aDict,('id','name','description','total_hosts'),'name')
  ret['hosts'] = []
  next = "inventories/%(id)s/hosts/"%aDict
+ base = next
  while True:
   data = controller.call(next)['data']
   for row in data['results']:
@@ -107,6 +108,7 @@ def inventory_sync(aDict):
  try:
   hosts = {}
   next = "inventories/%(id)s/hosts/"%aDict
+  base = next
   while True:
    data = controller.call(next)['data']
    for row in data['results']:
