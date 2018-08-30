@@ -22,12 +22,13 @@ def application(aDict):
  """
  from datetime import datetime,timedelta
  ret = {'title':"%s 2 Cloud"%(aDict.get('name','iaas')),'choices':[],'message':"Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas')),'portal':'openstack' }
+ node = aDict['node']
  try:
   if aDict.get('token'):
-   controller = Device(SC['nodes'][aDict['node']],aDict.get('token'))
+   controller = Device(SC['nodes'][node],aDict.get('token'))
   else:
-   controller = Device(SC['nodes'][aDict['node']],None)
-   res = controller.auth({'project':SC[aDict['node']]['project'], 'username':SC[aDict['node']]['username'],'password':SC[aDict['node']]['password']})
+   controller = Device(SC['nodes'][node],None)
+   res = controller.auth({'project':SC[node]['project'], 'username':SC[node]['username'],'password':SC[node]['password']})
   auth = controller.call("5000","v3/projects")
   if auth['code'] == 200:
    projects = []
@@ -37,7 +38,7 @@ def application(aDict):
  except Exception as e:
   ret['exception'] = str(e)
  ret['parameters'] = [{'display':'Username', 'id':'username', 'data':'text'},{'display':'Password', 'id':'password', 'data':'password'}]
- cookie = {'name':aDict.get('name','iaas'),'node':aDict['node'],'portal':'openstack'}
+ cookie = {'name':aDict.get('name','iaas'),'node':node,'portal':'openstack'}
  if aDict.get('appformix'):
   cookie['appformix'] = aDict.get('appformix')
  ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
@@ -60,13 +61,14 @@ def authenticate(aDict):
  """
  from zdcp.core.logger import log
  ret = {}
- controller = Device(SC['nodes'][aDict['node']],None)
+ node = aDict['node']
+ controller = Device(SC['nodes'][node],None)
  res = controller.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
  ret = {'authenticated':res['auth']}
  if res['auth'] == 'OK':
   with DB() as db:
    ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'token':controller.get_token(),'expires':controller.get_cookie_expire()})
-   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node_name,node_url) VALUES('%s','%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],aDict['node'],SC['nodes'][aDict['node']]))
+   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node_name,node_url) VALUES('%s','%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],node,SC['nodes'][node]))
    token_id = db.get_last_id()
    for service in ['heat','nova','neutron','glance']:
     svc = controller.get_service(service,'public')
@@ -74,7 +76,7 @@ def authenticate(aDict):
      svc['path'] = svc['path'] + '/'
     db.do("INSERT INTO openstack_services(id,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(token_id,service,svc['port'],svc['path'],svc['id']))
    db.do("INSERT INTO openstack_services(id,service,service_port,service_url,service_id) VALUES('%s','%s','%s','%s','%s')"%(token_id,"contrail",8082,'',''))
-  log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],aDict['node']))
+  log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],node))
  else:
   log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl))
  return ret
@@ -204,16 +206,20 @@ def token_info(aDict):
 #
 #
 def heat_templates(aDict):
- """Function docstring for heat_templates TBD
+ """Function docstring for heat_templates TBD. PAssing the entire cookie would be simpler but require React.JS.
 
  Args:
+  - token (required)
 
  Output:
  """
  from os import listdir
  ret = {'result':'OK','templates':[]}
+ with DB() as db:
+  db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
+  node = db.get_val('node_name')
  try:
-  for file in listdir(ospath.abspath(SC['openstack']['heat_directory'])):
+  for file in listdir(ospath.abspath(SC[node]['heat_directory'])):
    name,_,suffix = file.partition('.')
    if suffix == 'tmpl.json':
     ret['templates'].append(name)
@@ -228,12 +234,17 @@ def heat_content(aDict):
  """Function docstring for heat_content TBD
 
  Args:
+  - token (required)
   - template (required)
+
  Output:
  """
  ret = {'result':'OK','template':None}
+ with DB() as db:
+  db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
+  node = db.get_val('node_name')
  try:
-  with open(ospath.abspath(ospath.join(SC['openstack']['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
+  with open(ospath.abspath(ospath.join(SC[node]['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
    ret['template'] = loads(f.read())
  except Exception as e:
   ret['info'] = str(e)
@@ -261,7 +272,11 @@ def heat_instantiate(aDict):
  ret = {}
  args = {}
  try:
-  with open(ospath.abspath(ospath.join(SC['openstack']['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
+  with DB() as db:
+   db.do("SELECT node_name, node_url, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = 'heat'"%(aDict['token']))
+   data = db.get_row()
+   node = data['node_name']
+  with open(ospath.abspath(ospath.join(SC[node]['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
    args = loads(f.read())
   args['stack_name'] = aDict['name']
   for key,value in aDict['parameters'].iteritems():
@@ -270,9 +285,6 @@ def heat_instantiate(aDict):
   ret['info'] = str(e)
   ret['result'] = 'NOT_OK'
  else:
-  with DB() as db:
-   db.do("SELECT node_url, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = 'heat'"%(aDict['token']))
-   data = db.get_row()
   try:
    controller = Device(data['node_url'],aDict['token'])
    ret = controller.call(data['service_port'], data['service_url'] + "stacks", args, 'POST')

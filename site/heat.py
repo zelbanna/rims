@@ -45,23 +45,27 @@ def list(aWeb):
 # Add instantiation
 #
 def choose_template(aWeb):
+ cookie = aWeb.cookie_unjar('openstack')
+ token  = cookie.get('token')
+ templates = aWeb.rest_call("openstack_heat_templates",{'token':token})['templates']
  print "<ARTICLE CLASS=info STYLE='width:auto; display:inline-block; padding:6px'>"
  print "<FORM ID=frm_heat_choose_template>"
  print "Add solution from template:<SELECT NAME=template STYLE='height:22px; width:auto;'>"
- templates = aWeb.rest_call("openstack_heat_templates")['templates']
  for tmpl in templates:
   print "<OPTION VALUE={0}>{0}</OPTION>".format(tmpl)
  print "</SELECT>"
  print "</FORM><DIV CLASS=controls>"
  print aWeb.button('document', DIV='div_os_info', URL='zdcp.cgi?heat_enter_parameters',   FRM='frm_heat_choose_template', TITLE='Enter parameters')
  print aWeb.button('info', DIV='div_os_info', URL='zdcp.cgi?heat_action&op=templateview', FRM='frm_heat_choose_template', TITLE='View Template')
- print aWeb.button('add', DIV='div_os_info', URL='zdcp.cgi?heat_add_template', TITLE='Add Template')
+ print aWeb.button('add', DIV='div_os_info', URL='zdcp.cgi?heat_add_template', TITLE='Add a new template')
  print "</DIV><BR><DIV ID=div_os_info></DIV>"
  print "</DIV></ARTICLE>"
 
 def enter_parameters(aWeb):
+ cookie = aWeb.cookie_unjar('openstack')
+ token  = cookie.get('token')
  template = aWeb['template']
- data = aWeb.rest_call("openstack_heat_content",{'template':template})['template']
+ data = aWeb.rest_call("openstack_heat_content",{'template':template,'token':token})['template']
  print "<FORM ID=frm_heat_template_parameters>"
  print "<INPUT TYPE=hidden NAME=template VALUE={}>".format(template)
  print "<DIV CLASS=table>"
@@ -172,8 +176,10 @@ def action(aWeb):
   print "</ARTICLE>"
 
  elif op == 'templateview':
+  cookie = aWeb.cookie_unjar('openstack')
+  token  = cookie.get('token')
   template = aWeb['template']
-  data = aWeb.rest_call("openstack_heat_content",{'template':template})['template']
+  data = aWeb.rest_call("openstack_heat_content",{'template':template,'token':token})['template']
   data['stack_name'] = name if name else "Need_to_specify_name"
   print "<PRE>{}</PRE>".format(dumps(data, indent=4, sort_keys=True))
 
