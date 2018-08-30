@@ -196,7 +196,7 @@ def token_info(aDict):
  from datetime import datetime
  ret = {}
  with DB() as db:
-  ret['found'] = (db.do("node_url, SELECT CAST(NOW() AS CHAR(50)) AS time, INET_NTOA(controller) AS controller, id, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires FROM openstack_tokens WHERE token = '%s'"%aDict['token']) > 0)
+  ret['found'] = (db.do("SELECT node_url, SELECT CAST(NOW() AS CHAR(50)) AS time, INET_NTOA(controller) AS controller, id, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires FROM openstack_tokens WHERE token = '%s'"%aDict['token']) > 0)
   ret['data'] = db.get_row()
  return ret
 
@@ -294,7 +294,7 @@ def vm_networks(aDict):
  """
  ret = {'result':'OK','vm':None,'interfaces':[]}
  with DB() as db:
-  db.do("node_url, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = 'contrail'"%(aDict['token']))
+  db.do("SELECT node_url, service_port, service_url FROM openstack_tokens LEFT JOIN openstack_services ON openstack_tokens.id = openstack_services.id WHERE openstack_tokens.token = '%s' AND service = 'contrail'"%(aDict['token']))
   data = db.get_row()
  controller = Device(data['node_url'],aDict['token'])
  vm = controller.call(data['service_port'],data['service_url'] + "virtual-machine/%s"%aDict['vm'])['data']['virtual-machine']
@@ -467,7 +467,8 @@ def contrail_floating_ips(aDict):
  vn = controller.call(data['service_port'],data['service_url'] + "virtual-network/%s"%aDict['virtual_network'])['data']['virtual-network']
  for fipool in vn.get('floating_ip_pools',[]):
   pool = controller.call(data['service_port'],data['service_url'] +"floating-ip-pool/%s"%(fipool['uuid']) )['data']['floating-ip-pool']
-  for fips in pool['floating_ips']:
+  # print pool
+  for fips in pool.get('floating_ips',[]):
    fip = controller.call(data['service_port'],data['service_url'] + "floating-ip/%s"%(fips['uuid']))['data']['floating-ip']
    record = {'pool_uuid':pool['uuid'],'pool_name':pool['name'],'ip_address':fip['floating_ip_address'],'uuid':fip['uuid'],'vm_ip_address':fip.get('floating_ip_fixed_ip_address')}
    if fip.get('floating_ip_fixed_ip_address'):
