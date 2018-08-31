@@ -4,27 +4,34 @@ __author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
 
-def execute(argv):
- from os   import path as ospath
- from sys  import path as syspath
- from json import loads, dumps
- from importlib import import_module
- (mod,_,fun) = argv[1].partition('_')
- try:  args = loads(argv[2])
- except: args = {}
- print "Executing:{}_{}({})".format(mod,fun,args)
-
- syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
- module = import_module("zdcp.rest.%s"%mod)
- module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
- function = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })
- return function(args)
+from os   import path as ospath
+from sys  import path as syspath
+from json import loads, dumps
+syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
 
 if __name__ == "__main__":
  from json import dumps
  from sys import argv, exit
- if len(argv) < 2:
-  print argv[0] + " <rest-module_function> [<json-arg>]"
+ if len(argv) < 2 or (len(argv) > 2 and argv[2] == '-s'):
+  print argv[0] + " [-url] <URL>|<rest-module_function> [<json-arg>]"
+  print "\nOptions:\n -url: Proper socket call, followed by URL\n"
   exit(0)
  else:
-  print dumps(execute(argv), indent=4, sort_keys=True)
+  if argv[1] == '-url':
+   try: args = loads(argv[3])
+   except: args = {}
+   print "Executing:%s(%s)"%(argv[2],args)
+   from zdcp.core.common import rest_call
+   output = rest_call(argv[2],args)['data']
+  else:
+   from importlib import import_module
+   (mod,_,fun) = argv[1].partition('_')
+   try: args = loads(argv[2])
+   except: args = {}
+   print "Executing:%s_%s(%s)"%(mod,fun,args)
+   module = import_module("zdcp.rest.%s"%mod)
+   module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
+   function = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })
+   output = function(args)
+  print dumps(output,indent=4, sort_keys=True)
+
