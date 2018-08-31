@@ -95,11 +95,11 @@ class Device(object):
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  # - header = send additional headers as dictionary
  #
- def call(self,aURL = self._url, aArgs = None, aMethod = None, aHeader = None):
+ def call(self, aURL = None, aArgs = None, aMethod = None, aHeader = None):
   from zdcp.core.common import rest_call
   head = { 'X-Auth-Token':self._token }
   try: head.update(aHeader)
   except: pass
-  try: res = rest_call(aURL, aArgs, aMethod, head)
+  try: res = rest_call(aURL if aURL else self._url, aArgs, aMethod, head)
   except Exception as e: res = e[0]
   return res
