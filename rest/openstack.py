@@ -1,4 +1,12 @@
-"""Openstack REST module. Provides all REST functions to interwork with an Openstack controller for different services"""
+"""Openstack REST module. Provides all REST functions to interwork with an Openstack controller for different services
+
+- heat_directory: "Heat Templates Directory"
+- keystone:       "Keystone URL"
+- password:       "Keystone Password"
+- project:        "Keystone Project"
+- username:       "Keystone Username"
+
+"""
 __author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"

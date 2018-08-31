@@ -127,8 +127,8 @@ def node_list(aWeb):
   print aWeb.button('info',DIV='div_content_right', URL='zdcp.cgi?system_node_info&id=%s'%row['id'], TITLE='Node info')
   if row['system']:
    print aWeb.button('configure',DIV='div_content', URL='zdcp.cgi?settings_list&node=%s'%row['node'], TITLE='Node settings')
-   print aWeb.button('logs',DIV='div_content', URL='zdcp.cgi?tools_logs_show&node=%s'%row['node'], TITLE='Show Logs')
-   print aWeb.button('trash',DIV='div_content', URL='zdcp.cgi?tools_logs_clear&node=%s'%row['node'], TITLE='Clear Logs', MSG='Really clear node logs?')
+   print aWeb.button('logs',DIV='div_content_right', URL='zdcp.cgi?tools_logs_show&node=%s'%row['node'], TITLE='Show Logs')
+   print aWeb.button('trash',DIV='div_content_right', URL='zdcp.cgi?tools_logs_clear&node=%s'%row['node'], TITLE='Clear Logs', MSG='Really clear node logs?')
   if row['www']:
    print aWeb.button('items',DIV='div_content', URL='zdcp.cgi?resources_list&node=%s'%row['node'], TITLE='Node resources')
   print "</DIV></DIV></DIV>"
