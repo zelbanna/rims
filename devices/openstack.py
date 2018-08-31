@@ -1,10 +1,10 @@
 """Module docstring.
 
-Openstack Library
+Openstack Device
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "1.0GA"
+__version__ = "18.09.01GA"
 __status__  = "Production"
 __type__    = "controller"
 
@@ -18,38 +18,35 @@ class Device(object):
  def get_functions(cls):
   return []
 
- def __init__(self, aREST, aToken = None):
+ def __init__(self, aURL = None, aID = None, aToken = None):
+  self._url   = aURL
+  self._id    = aID
   self._token = aToken
   self._expire = None
-  self._node = aREST
-  self._project = None
-  self._project_id = None
-  self._catalog = None
+  self._services = None
 
  def __str__(self):
-  return "Controller[{}] Token[{},{}] Project[{},{}]".format(self._node, self._token, self._expire, self._project,self._project_id)
+  return "Controller[%s,%s,%s,%s]"%(self._id, self._url, self._token, self._expire)
 
  #
  # Keystone v3 authentication - using v2.0 compatible domain (default), project = admin unless specified
  # { 'username','password', 'project' }
  #
- def auth(self, aAuth):
+ def auth(self, aAuth, aURL = None):
   from zdcp.core.common import rest_call
   try:
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
-   url  = "%s:5000/v3/auth/tokens"%(self._node)
+   url  = "%s/v3/auth/tokens"%(aURL if aURL else self._url)
    res  = rest_call(url,auth)
    # If sock code is created (201), not ok (200) - we can expect to find a token
    if res['code'] == 201:
     token = res.pop('data',{})['token']
     self._token = res['info'].get('x-subject-token')
     self._expire = token['expires_at']
-    self._project = token['project']['name']
-    self._project_id = token['project']['id']
-    catalog = {}
+    services = {}
     for svc in token['catalog']:
-     catalog[svc['name']] = svc
-    self._catalog = catalog
+     services[svc['name']] = svc
+    self._services = services
     res['auth'] = 'OK'
    else:
     res['auth'] = 'NOT_OK'
@@ -58,14 +55,21 @@ class Device(object):
    res['auth'] = 'NOT_OK'
   return res
 
- def get_id(self):
-  return self._project_id
+ #
+ #
+ def projects(self, aURL = None):
+  query = self.call("%s/v3/projects"%(aURL if aURL else self._url))
+  projects = []
+  if query['code'] == 200:
+   for project in query['data']['projects']:
+    projects.append({'name':project['name'], 'id':project['id']})
+  return projects
 
  def get_token(self):
   return self._token
 
- def get_catalog(self):
-  return self._catalog
+ def get_services(self):
+  return self._services
 
  def get_cookie_expire(self):
   from datetime import datetime
@@ -75,36 +79,23 @@ class Device(object):
   from datetime import datetime
   return int((datetime.strptime(self._expire,"%Y-%m-%dT%H:%M:%S.%fZ") - datetime(1970,1,1)).total_seconds())
 
- #
- # Input: Service, auth-type (admin/internal/public)
- # Returns tuple with:
- # - base port
- # - service link
- # - service id
  def get_service(self,aService,aType):
-  ret = {'port':None,'path':None,'id':None}
-  for svc in self._catalog[aService]['endpoints']:
+  ret = {'url':None,'id':None}
+  for svc in self._services[aService]['endpoints']:
    if svc['interface'] == aType:
-    # http : //x.y.z : port / path
-    (port,_,path) = svc['url'].split(':')[2].partition('/')
-    ret['port'] = port
-    ret['path'] = path
+    ret['url'] = svc['url']
     ret['id']   = svc['id']
     break
   return ret
 
- # call and href
  # Input:
- # - port = base port
- # - url  = service url
+ # - url  = entire service url
+ # - query= base url appended with proper query
  # - args = dict with arguments for post operation, empty dict or nothing means no arguments (!)
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  # - header = send additional headers as dictionary
  #
- def call(self,port,query,args = None, method = None, header = None):
-  return self.href("%s:%s/%s"%(self._node,port,query), aArgs=args, aMethod=method, aHeader = header)
-
- def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
+ def call(self,aURL = self._url, aArgs = None, aMethod = None, aHeader = None):
   from zdcp.core.common import rest_call
   head = { 'X-Auth-Token':self._token }
   try: head.update(aHeader)
