@@ -164,7 +164,6 @@ DROP TABLE IF EXISTS `openstack_services`;
 CREATE TABLE `openstack_services` (
   `id` int(10) unsigned NOT NULL,
   `service` varchar(20) NOT NULL,
-  `service_port` int(5) DEFAULT NULL,
   `service_url` varchar(200) NOT NULL,
   `service_id` varchar(50) DEFAULT NULL,
   UNIQUE KEY `id_service` (`id`,`service`),
