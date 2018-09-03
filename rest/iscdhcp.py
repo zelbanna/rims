@@ -53,6 +53,7 @@ def leases(aDict):
   return {'data':result }
 
 #
+#
 def sync(aDict):
  """Function docstring for sync:  reload the DHCP server to use updated info
 
@@ -65,9 +66,9 @@ def sync(aDict):
  from zdcp.core.common import node_call
  entries = node_call('master','device','server_macs',{'id':aDict['id']})
  # Create file
- with open(SC['iscdhcp']['static'],'w') as leasefile:
+ with open(SC['iscdhcp']['static'],'w') as config_file:
   for entry in entries['data']:
-   leasefile.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}, Network: {4}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id'],entry['network']))
+   config_file.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}, Network: {4}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id'],entry['network']))
 
  # Reload
  from subprocess import check_output, CalledProcessError
@@ -80,3 +81,51 @@ def sync(aDict):
 
  ret['result'] = 'NOT_OK' if ret['output'] else 'OK'
  return ret
+
+#
+#
+def update(aDict):
+ """Function docstring for check: update specific entry 
+
+ Args:
+  - id (optional)
+  - hostname (optional required)
+  - domain (optional required)
+  - mac (optional required)
+  - ip (optional required)
+  - network (optional required)
+
+ Output:
+ """
+ devices = {}
+ ret = {}
+ from zdcp.SettingsContainer import SC
+
+ with open(SC['iscdhcp']['static'],'r') as config_file:
+  for line in config_file:
+   parts = line.split()
+   id = int(parts[11][:-1])
+   devices[id] = {'id':id,'fqdn':parts[1],'mac':parts[5],'ip':parts[7],'network':parts[3]}
+ if aDict.get('id'):
+  from zdcp.core.common import node_call
+  devices[aDict['id']] = {'id':aDict['id'],'fqdn':"%(hostname)s.%(domain)s"%aDict,'mac':aDict['mac'],'ip':aDict['ip'],'network':aDict['network']}
+  # Create file
+  with open(SC['iscdhcp']['static'],'w') as config_file:
+   for entry in devices:
+    config_file.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}, Network: {4}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id'],entry['network']))
+  # Reload
+  from subprocess import check_output, CalledProcessError
+  ret = {}
+  try:
+   ret['output'] = check_output(SC['iscdhcp']['reload'].split())
+  except CalledProcessError as c:
+   ret['code'] = c.returncode
+   ret['output'] = c.output
+
+  ret['result'] = 'NOT_OK' if ret['output'] else 'OK'
+ else:
+  ret['result'] = 'OK'
+  ret['devices'] = devices
+ return ret
+
+
