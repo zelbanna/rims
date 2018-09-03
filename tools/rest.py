@@ -22,7 +22,10 @@ if __name__ == "__main__":
    except: args = {}
    print "Executing:%s(%s)"%(argv[2],args)
    from zdcp.core.common import rest_call
-   output = rest_call(argv[2],args)['data']
+   try:
+    output = rest_call(argv[2],args)['data']
+   except Exception as e:
+    output = e[0]
   else:
    from importlib import import_module
    (mod,_,fun) = argv[1].partition('_')

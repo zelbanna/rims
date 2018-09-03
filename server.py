@@ -16,7 +16,7 @@ from importlib import import_module
 from threading import Thread
 from time import localtime, strftime, sleep
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
+syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..')))
 
 ############################### ZDCP Server ############################
 #
@@ -35,6 +35,7 @@ class Server:
 
  def start(self, aThreads):
   try:
+   print "Starting ZDCP Server"
    self._threads = [self.HttpThread(n,self._socket,'',self._id) for n in range(aThreads)]
    while True:
     sleep(3)
