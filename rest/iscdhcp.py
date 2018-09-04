@@ -27,7 +27,6 @@ def leases(aDict):
   from socket import inet_aton
   return unpack("!I", inet_aton(addr))[0]
 
- from zdcp.SettingsContainer import SC
  result = []
  lease  = {}
  with open(SC['iscdhcp']['active'],'r') as leasefile:
@@ -62,7 +61,6 @@ def sync(aDict):
 
  Output:
  """
- from zdcp.SettingsContainer import SC
  from zdcp.core.common import node_call
  entries = node_call('master','device','server_macs',{'id':aDict['id']})
  # Create file
@@ -99,7 +97,6 @@ def update(aDict):
  """
  devices = {}
  ret = {}
- from zdcp.SettingsContainer import SC
 
  with open(SC['iscdhcp']['static'],'r') as config_file:
   for line in config_file:

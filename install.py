@@ -175,14 +175,15 @@ if settings['system']['id'] == 'master':
  # Common settings and user - for master...
  #
  from zdcp.core.common import DB
- from zdcp.rest.mysql import diff,patch
+ from zdcp.rest import mysql
+ mysql.__add_globals__({'SC':settings})
  try:
   database,host,username,password = settings['system']['db_name'],settings['system']['db_host'],settings['system']['db_user'],settings['system']['db_pass']
   database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(packagedir,'schema.db')}
   res['database']= {}
-  res['database']['diff'] = diff(database_args)
+  res['database']['diff'] = mysql.diff(database_args)
   if res['database']['diff']['diffs'] > 0:
-   res['database']['patch'] = patch(database_args)
+   res['database']['patch'] = mysql.patch(database_args)
    if res['database']['patch']['result'] == 'NOT_OK':
     stdout.write("Database patching failed!")
     if res['database']['patch'].get('database_restore_result') == 'OK':

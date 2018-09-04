@@ -75,7 +75,6 @@ def logs_clear(aDict):
 
  Output:
  """
- from zdcp.SettingsContainer import SC
  from zdcp.core.logger import log
  ret = {'node':SC['system']['id'],'file':{}}
  for name,file in SC['logs'].iteritems():
@@ -98,7 +97,6 @@ def logs_get(aDict):
 
  Output:
  """
- from zdcp.SettingsContainer import SC
  ret = {}
  count = int(aDict.get('count',15))
  for name,file in SC['logs'].iteritems():
@@ -127,7 +125,6 @@ def files_list(aDict):
  Output: List of files in 'files'
  """
  from os import listdir
- from  zdcp.SettingsContainer import SC
  ret = {'files':[]}
  try:
   ret['directory'] = SC['files'][aDict['setting']] if not aDict['setting'] == 'images' else 'images'
@@ -151,7 +148,6 @@ def service_list(aDict):
 
  Output:          
  """
- from zdcp.SettingsContainer import SC
  return {'services':[{'name':x,'service':SC['services'][x]} for x in SC['services'].keys()]}
 
 
@@ -205,7 +201,6 @@ def database_backup(aDict):
  Output:
  """
  ret = {'filename':aDict['filename']}
- from zdcp.SettingsContainer import SC
  if SC['system']['id'] == 'master':
   from mysql import dump
   data = dump({'mode':'database'})['output']

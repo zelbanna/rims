@@ -164,9 +164,8 @@ def extended(aDict):
 
      if not (old_info['hostname'] == args['hostname']) or not (str(old_info['a_dom_id']) == str(args['a_dom_id'])):
       dns_args = {'a_id':old_info['a_id'],'ptr_id':old_info['ptr_id'],'a_domain_id_new':args['a_dom_id'],'a_domain_id_old':old_info['a_dom_id'],'hostname':args['hostname'],'ip_new':ret['ip'],'ip_old':old_info['ip'],'id':ret['id']}
-      import zdcp.rest.dns as DNS
-      DNS.__add_globals__({'import_module':import_module})
-      dns_res = DNS.record_device_update(dns_args)
+      from zdcp.rest.dns import record_device_update
+      dns_res = record_device_update(dns_args)
       new_info = {'hostname':args['hostname'],'a_dom_id':dns_res['A']['domain_id']}
       for type in ['a','ptr']:
        if dns_res[type.upper()]['found']:
@@ -339,9 +338,8 @@ def new(aDict):
    try:    mac = int(aDict.get('mac','0').replace(":",""),16)
    except: mac = 0
    if alloc:
-    import zdcp.rest.dns as DNS
-    DNS.__add_globals__({'import_module':import_module})
-    dns = DNS.record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']})
+    from zdcp.rest.dns import record_device_update
+    dns = record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']})
     ret['insert'] = db.do("INSERT INTO devices(vm,mac,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
    else:
     ret['insert'] = db.do("INSERT INTO devices(vm,mac,hostname,snmp,model) VALUES(%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['hostname']))
@@ -374,13 +372,11 @@ def delete(aDict):
   else:
    data = db.get_row()
    args = {'a_id':data['a_id'],'a_domain_id':data['a_dom_id']}
-   import zdcp.rest.dns as DNS
-   DNS.__add_globals__({'import_module':import_module})
-
+   from zdcp.rest.dns import record_device_delete
    if data['ptr_id'] != 0 and data['reverse_zone_id']:
     args['ptr_id']= data['ptr_id']
     args['ptr_domain_id'] = data['reverse_zone_id']
-   ret = DNS.record_device_delete(args)
+   ret = record_device_delete(args)
    if data['base'] == 'pdu':
     ret['pem0'] = db.update_dict('rack_info',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
     ret['pem1'] = db.update_dict('rack_info',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem1_pdu_id = %s'%(aDict['id']))

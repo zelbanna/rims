@@ -7,6 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
 from zdcp.core.logger import log
+from zdcp.core.common import DB
 
 ################################ LOOPIA DNS ###################################
 #
@@ -14,14 +15,16 @@ from zdcp.core.logger import log
 #
 
 def set_loopia_ip(subdomain, newip):
- from zdcp.SettingsContainer import SC
  import xmlrpclib
+ with DB() as db:
+  db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'loopia'")
+  settings = {s['parameter']:s['value'] for s in db.get_rows()}
  try:
-  client = xmlrpclib.ServerProxy(uri = SC['loopia']['rpc_server'], encoding = 'utf-8')
-  data = client.getZoneRecords(SC['loopia']['username'], SC['loopia']['password'], SC['loopia']['domain'], subdomain)[0]
+  client = xmlrpclib.ServerProxy(uri = settings['rpc_server'], encoding = 'utf-8')
+  data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], subdomain)[0]
   oldip = data['rdata']
   data['rdata'] = newip
-  status = client.updateZoneRecord(SC['loopia']['username'], SC['loopia']['password'], SC['loopia']['domain'], subdomain, data)[0]
+  status = client.updateZoneRecord(settings['username'], settings['password'], settings['domain'], subdomain, data)[0]
  except Exception as exmlrpc:
   log("System Error - Loopia set: " + str(exmlrpc))
   return False
@@ -31,19 +34,23 @@ def set_loopia_ip(subdomain, newip):
 # Get Loopia settings for subdomain
 #
 def get_loopia_ip(subdomain):
- from zdcp.SettingsContainer import SC
  import xmlrpclib
+ with DB() as db:
+  db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'loopia'")
+  settings = {s['parameter']:s['value'] for s in db.get_rows()}
  try:
-  client = xmlrpclib.ServerProxy(uri = SC['loopia']['rpc_server'], encoding = 'utf-8')
-  data = client.getZoneRecords(SC['loopia']['username'], SC['loopia']['password'], SC['loopia']['domain'], subdomain)[0]
+  client = xmlrpclib.ServerProxy(uri = settings['rpc_server'], encoding = 'utf-8')
+  data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], subdomain)[0]
   return data['rdata']
  except Exception as exmlrpc:
   log("System Error - Loopia get: " + str(exmlrpc))
   return False
 
 def get_loopia_suffix():
- from zdcp.SettingsContainer import SC
- return "." + SC['loopia']['domain']
+ with DB() as db:
+  db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'loopia'")
+  settings = {s['parameter']:s['value'] for s in db.get_rows()}
+ return "." + settings['domain']
 
 ################################# OpenDNS ######################################
 #

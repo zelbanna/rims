@@ -154,7 +154,6 @@ def settings_list(aDict):
 
  Output:
  """
- from zdcp.SettingsContainer import SC
  ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',SC['system']['id']) }
  if aDict.get('section'):
   filter = "AND section = '%s'"%aDict.get('section')
@@ -213,7 +212,6 @@ def settings_parameter(aDict):
 
  Output:
  """
- from zdcp.SettingsContainer import SC
  try: ret = {'value':SC[aDict['section']][aDict['parameter']]}
  except: ret = {'value':None }
  return ret
@@ -292,7 +290,6 @@ def settings_save(aDict):
  Output:
  """
  from zdcp.core.common import rest_call
- from zdcp.SettingsContainer import SC
  ret = {'config_file':SC['system']['config_file']}
  try:
   settings = {}
@@ -342,7 +339,6 @@ def settings_container(aDict):
 
  Output:
  """
- from zdcp.SettingsContainer import SC
  return SC
 
 ################################################# NODE ##############################################

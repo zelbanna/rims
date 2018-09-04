@@ -27,13 +27,14 @@ if __name__ == "__main__":
    except Exception as e:
     output = e[0]
   else:
+   from SettingsContainer import SC
    from importlib import import_module
    (mod,_,fun) = argv[1].partition('_')
    try: args = loads(argv[2])
    except: args = {}
    print "Executing:%s_%s(%s)"%(mod,fun,args)
    module = import_module("zdcp.rest.%s"%mod)
-   module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
+   module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
    function = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })
    output = function(args)
   print dumps(output,indent=4, sort_keys=True)

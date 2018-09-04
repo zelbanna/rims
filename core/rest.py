@@ -28,6 +28,7 @@ def server(aNodeID):
  from sys import stdout, stdin, path as syspath
  from json import loads, dumps
  from importlib import import_module
+ from zdcp.SettingsContainer import SC
  query,output,api,args,mod,fun,additional= getenv("QUERY_STRING"),'null',None,None,None,None,{}
  (api,_,extra) = query.partition('&')
  (mod,_,fun) = api.partition('_')
@@ -45,12 +46,11 @@ def server(aNodeID):
   log(node,api,dumps(args),extra)
   if node == aNodeID:
    module = import_module("zdcp.rest.%s"%mod)
-   module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module})
+   module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
    output = dumps(getattr(module,fun,None)(args))
    stdout.write("X-API-Res:OK\r\n")
   else:
    from zdcp.core.common import rest_call
-   from zdcp.SettingsContainer import SC
    try: res = rest_call("%s?%s"%(SC['nodes'][node],query),args)
    except Exception as err: raise Exception(err)
    else: output = dumps(res['data'])

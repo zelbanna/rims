@@ -17,7 +17,6 @@ __version__ = "1.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from zdcp.SettingsContainer import SC
 from zdcp.devices.openstack import Device
 from zdcp.core.common import DB,rest_call
 

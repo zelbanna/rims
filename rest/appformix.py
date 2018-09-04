@@ -5,7 +5,6 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from zdcp.devices.appformix import Device
-from zdcp.SettingsContainer import SC
 
 #
 def alarm(aDict):

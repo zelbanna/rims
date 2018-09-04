@@ -15,7 +15,6 @@ __add_globals__ = lambda x: globals().update(x)
 __type__ = "DNS"
 
 from zdcp.core.common import DB
-from zdcp.SettingsContainer import SC
 
 #################################### Domains #######################################
 #

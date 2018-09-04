@@ -21,7 +21,6 @@ def dump(aDict):
  if aDict.get('username') and aDict.get('password') and aDict.get('database'):
   db,username,password = aDict['database'],aDict['username'],aDict['password']
  else:
-  from zdcp.SettingsContainer import SC
   db,username,password = SC['system']['db_name'], SC['system']['db_user'], SC['system']['db_pass']
  try:
   mode = aDict.get('mode','structure')
@@ -72,7 +71,6 @@ def restore(aDict):
  if aDict.get('username') and aDict.get('password'):
   username,password = aDict['username'],aDict['password']
  else:
-  from zdcp.SettingsContainer import SC
   username,password = SC['system']['db_user'], SC['system']['db_pass']
 
  try:

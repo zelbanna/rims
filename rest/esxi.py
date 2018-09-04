@@ -77,7 +77,6 @@ def logs(aDict):
  Output:
  """
  from subprocess import check_output
- from zdcp.SettingsContainer import SC
  ret = {'res':'OK'}
  hostname = aDict['hostname']
  count = aDict.get('count','30')
