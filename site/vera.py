@@ -26,7 +26,7 @@ def portal(aWeb):
   name = scen['name'].replace('_',' ')
   print "<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=zdcp.cgi?vera_scene_info&node=vera&scene=%s>%s</A></DIV>"%(id,name)
   print "<DIV CLASS=td><DIV CLASS=controls ID=scene_%s>"%id
-  print "<A CLASS='z-op btn mobile' DIV='scene_{0}' URL='zdcp.cgi?vera_scene_state&node=vera&scene={0}&op={1}'><IMG SRC='images/btn-{2}.png'></A>".format(id,"run" if scen['active'] == 0 else "off",'start' if scen['active'] == 0 else 'stop')
+  print "<A CLASS='z-op btn mobile' DIV='scene_{0}' URL='zdcp.cgi?vera_scene_state&node=vera&scene={0}&op={1}'><IMG SRC='images/btn-{2}.png' /></A>".format(id,"run" if scen['active'] == 0 else "off",'start' if scen['active'] == 0 else 'stop')
   print "</DIV></DIV></DIV>"
  print "</DIV></DIV></ARTICLE>"
  print "</MAIN>"

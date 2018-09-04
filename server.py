@@ -156,6 +156,7 @@ class Server:
      output = dumps(getattr(module,fun,None)(self._form))
      headers['result'] = 'OK'
     else:
+     # TODO - settings should be part of server
      from zdcp.core.common import rest_call
      from zdcp.SettingsContainer import SC
      try: res = rest_call("%s/%s"%(SC['nodes'][headers['node']],aQuery),self._form)
@@ -213,6 +214,7 @@ class Server:
   # - store form data?
   # Check input, either rfile is args - like rest - or
   def __site(self, aQuery):
+   self.__parse_cookies()
    qparts = aQuery.partition('?')
    self.send_response(200)
    self.send_header("Content-type", 'text/html; charset=utf-8')

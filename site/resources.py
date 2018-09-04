@@ -31,9 +31,9 @@ def main(aWeb):
 def view(aWeb):
  cookie = aWeb.cookie_unjar('system')
  res = aWeb.rest_call("system_resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'node':aWeb.get('node',aWeb.id)})
- inline = "<BUTTON CLASS='z-op menu' DIV=main URL='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
- framed = "<BUTTON CLASS='z-op menu' DIV=main URL='zdcp.cgi?resources_framed&id={0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></BUTTON>"
- tabbed = "<A CLASS='btn menu' TARGET=_blank HREF='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}'></A>"
+ inline = "<BUTTON CLASS='z-op menu' DIV=main URL='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}' /></BUTTON>"
+ framed = "<BUTTON CLASS='z-op menu' DIV=main URL='zdcp.cgi?resources_framed&id={0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}' /></BUTTON>"
+ tabbed = "<A CLASS='btn menu' TARGET=_blank HREF='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}' /></A>"
  print "<DIV CLASS=centered STYLE='align-items:initial'>"
  for row in res['data']:
   print "<DIV STYLE='float:left; min-width:100px; margin:6px;'>"
@@ -116,7 +116,7 @@ def info(aWeb):
   print "</SELECT></DIV>"
  print "</DIV></DIV></DIV>"
  if data['icon'] and data['icon'] != 'NULL':
-  print "<BUTTON CLASS='menu' TYPE=button STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}'></BUTTON>".format(data['icon'])
+  print "<BUTTON CLASS='menu' TYPE=button STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}' /></BUTTON>".format(data['icon'])
  print "</FORM><BR><DIV CLASS=controls>"
  if cookie['id'] == str(data['user_id']):
   print aWeb.button('save',    DIV='div_content_right', URL='zdcp.cgi?resources_info&op=update', FRM='resource_info_form', TITLE='Save')

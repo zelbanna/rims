@@ -70,7 +70,7 @@ def login(aWeb):
   for param in data.get('parameters'):
    print "<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s'></DIV></DIV>"%(param['display'],param['data'],param['id'])
   print "</DIV></DIV>"
-  print "</FORM><DIV CLASS=controls><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='images/icon-start.png'</BUTTON></DIV>"
+  print "</FORM><DIV CLASS=controls><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='images/icon-start.png' /></BUTTON></DIV>"
   print "</ARTICLE></DIV>"
 
 ############################################## SDCP ###############################################
@@ -98,14 +98,14 @@ def portal(aWeb):
  print "<HEADER>"
  for item in menu['menu']:
   if   item['view'] == 0:
-   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s'/></BUTTON>"%(item['title'],item['href'],item['title'],item['icon'])
+   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['href'],item['title'],item['icon'])
   elif item['view'] == 1:
-   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='zdcp.cgi?resources_framed&id=%s'><IMG ALT='%s' SRC='%s'/></BUTTON>"%(item['title'],item['id'],item['title'],item['icon'])
+   print "<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='zdcp.cgi?resources_framed&id=%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['id'],item['title'],item['icon'])
   else:
-   print "<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s'/></A>"%(item['title'],item['href'],item['title'],item['icon'])
+   print "<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s' /></A>"%(item['title'],item['href'],item['title'],item['icon'])
  print "<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=system URL=zdcp.cgi?system_login>Log out</BUTTON>"
- print "<BUTTON CLASS='z-op menu right' TITLE='Tools' DIV=main URL='zdcp.cgi?tools_main&node=%s'><IMG SRC='images/icon-config'/></BUTTON>"%aWeb.id
- print "<BUTTON CLASS='z-op menu right' TITLE='User'  DIV=main URL='zdcp.cgi?users_%s'><IMG SRC='images/icon-users.png'></BUTTON>"%("main" if id == '1' else "user&id=%s"%id)
+ print "<BUTTON CLASS='z-op menu right' TITLE='Tools' DIV=main URL='zdcp.cgi?tools_main&node=%s'><IMG SRC='images/icon-config' /></BUTTON>"%aWeb.id
+ print "<BUTTON CLASS='z-op menu right' TITLE='User'  DIV=main URL='zdcp.cgi?users_%s'><IMG SRC='images/icon-users.png' /></BUTTON>"%("main" if id == '1' else "user&id=%s"%id)
  print "</HEADER>"
  print "<MAIN ID=main></MAIN>"
  if menu['start']:

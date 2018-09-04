@@ -78,7 +78,7 @@ def info(aWeb):
  for key in menulist:
   try: 
    resource = resources.pop(key,None)
-   print "<LI CLASS='drag' ID={0}><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='{1}'><IMG SRC='{2}' ALT='{1}'></BUTTON></LI>".format(key,resource['title'],resource['icon'])
+   print "<LI CLASS='drag' ID={0}><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='{1}'><IMG SRC='{2}' ALT='{1}' /></BUTTON></LI>".format(key,resource['title'],resource['icon'])
   except: pass
  print "</UL></DIV>"
  print "</FORM><DIV CLASS=controls>"
@@ -88,7 +88,7 @@ def info(aWeb):
  print "</DIV><SPAN STYLE='display:block'>Available menu options</SPAN>"
  print "<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>"
  for id,resource in resources.iteritems():
-  print "<LI CLASS='drag' ID={0}><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='{1}'><IMG SRC='{2}' ALT='{1}'></BUTTON></LI>".format(id,resource['title'],resource['icon'])
+  print "<LI CLASS='drag' ID={0}><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='{1}'><IMG SRC='{2}' ALT='{1}' /></BUTTON></LI>".format(id,resource['title'],resource['icon'])
  print "</UL></DIV>"
  print "</ARTICLE>"
 
