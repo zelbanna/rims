@@ -243,5 +243,5 @@ class Server:
 if __name__ == '__main__':
  from SettingsContainer import SC
  #
- zdcp = Server(int(SC['system']['port'])),SC['system']['id'])
+ zdcp = Server(int(SC['system']['port']),SC['system']['id'])
  zdcp.start(5)

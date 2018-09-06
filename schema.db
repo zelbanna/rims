@@ -149,7 +149,7 @@ DROP TABLE IF EXISTS `nodes`;
 CREATE TABLE `nodes` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `node` varchar(40) NOT NULL,
-  `url` varchar(40) NOT NULL,
+  `url` varchar(80) NOT NULL,
   `system` tinyint(1) DEFAULT '0',
   `www` tinyint(1) DEFAULT '0',
   `device_id` int(10) unsigned DEFAULT NULL,

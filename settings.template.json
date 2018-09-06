@@ -43,8 +43,8 @@
             "value": "master"
         },
         "master": {
-            "description": "Master node REST interface",
-            "value": "http://127.0.0.1/rest.cgi"
+            "description": "Master node REST interface from local node PoV",
+            "value": "http://127.0.0.1:9001/api"
         },
         "mode": {
             "description": "Local device role/function [front,master,rest]",
@@ -52,10 +52,10 @@
         },
         "rest": {
             "description": "Local device's globally reachable REST interface",
-            "value": "http://127.0.0.1/rest.cgi"
+            "value": "http://x.y.z.w:9001/api"
         }
         "port": {
-            "description": "REST server port",
+            "description": "Server port to register REST and infra services",
             "value": 9001               
         },
         "template": {
