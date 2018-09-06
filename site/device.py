@@ -338,8 +338,11 @@ def new(aWeb):
  op   = aWeb['op']
  network = aWeb['ipam_network_id']
  if not ip:
-  from zdcp.core import genlib as GL
-  ip = "127.0.0.1" if not aWeb['ipint'] else GL.int2ip(int(aWeb['ipint']))
+  def int2ip(addr):
+   from struct import pack
+   from socket import inet_ntoa
+   return inet_ntoa(pack("!I", addr))
+  ip = "127.0.0.1" if not aWeb['ipint'] else int2ip(int(aWeb['ipint']))
 
  if op == 'new':
   args = { 'ip':ip, 'mac':mac, 'hostname':name, 'a_dom_id':aWeb['a_dom_id'], 'ipam_network_id':network }
