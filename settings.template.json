@@ -54,5 +54,13 @@
             "description": "Local device's globally reachable REST interface",
             "value": "http://127.0.0.1/rest.cgi"
         }
+        "port": {
+            "description": "REST server port",
+            "value": 9001               
+        },
+        "template": {
+            "description": "REST server startup template",
+            "value": "server.init"             
+        }
     }
 }
