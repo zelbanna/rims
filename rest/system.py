@@ -408,7 +408,7 @@ def node_info(aDict):
    else:
     ret['update'] = db.insert_dict('nodes',args)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-
+   SC['nodes'][args['node']] = args['url']
   if not id == 'new':
    ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
@@ -428,7 +428,11 @@ def node_delete(aDict):
  """
  ret = {}
  with DB() as db:
-  ret['delete'] = db.do("DELETE FROM nodes WHERE id = %s AND node <> 'master'"%aDict['id'])
+  if db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aDict['id']) > 0:
+   SC['nodes'].pop(db.get_val('node'),None)
+   ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s'"%aDict['id']) == 1)
+  else:
+   ret['delete'] = False 
  return ret
 
 ############################################# RESOURCES #############################################
