@@ -18,35 +18,48 @@
 PKGDIR=%PKGDIR%
 PIDFILE=/var/run/zdcp.pid
 
+start() {
+ if [ -f $PIDFILE ]; then
+  echo "ZDCP already running @ `cat $PIDFILE`"
+ else
+  echo "Starting ZDCP service handler"
+  $PKGDIR/core/server.py &
+  echo $! > $PIDFILE
+ fi
+}
+
+stop() {
+ if [ -f $PIDFILE ]; then
+  echo "Stopping ZDCP service handler @`cat $PIDFILE`"
+  kill -9 `cat $PIDFILE`
+  rm $PIDFILE
+ else
+  echo "ZDCP not running"
+ fi
+}
+
 case "$1" in
  start)
-  if [ -f $PIDFILE ]; then
-   echo "ZDCP already running @ `cat $PIDFILE`"
-  else
-   echo "Starting ZDCP service handler"
-   $PKGDIR/core/server.py &
-   echo $! > $PIDFILE
-  fi
+  start
   ;;
  stop)
-  if [ -f $PIDFILE ]; then
-   echo "Stopping ZDCP service handler @`cat $PIDFILE`"
-   kill -9 `cat $PIDFILE`
-   rm $PIDFILE
-  else
-   echo "ZDCP not running"
-  fi
+  stop
+  ;;
+ restart)
+  stop
+  start
   ;;
  upgrade)
+  stop
   echo "Upgrading ZDCP"
-  ;;
- reload)
-  echo "Reload ZDCP configuration"
-  kill -12 `cat $PIDFILE`  
+  cd $PKGDIR
+  git pull
+  tools/mysql_patch.py schema.db
+  ./install.py
+  start
   ;;
  status)
-  echo "Reload ZDCP configuration"
-  kill -10 `cat $PIDFILE`
+  echo "Poking ZDCP service handler"
   ;;
  clear)
   echo "Clearing old .pyc files"
@@ -60,11 +73,11 @@ case "$1" in
   clear;
   ;;
  install)
-  echo "Installing ZDCP server"
+  echo "Installing ZDCP server startup file"
   mv $0 /etc/init.d/zdcp
   ;;
  *)
-  echo "Usage: /etc/init.d/zdcp <start|stop|upgrade|reload|clear|install>"
+  echo "Usage: /etc/init.d/zdcp <start|stop|restart|upgrade|clear|install>"
   exit 1
   ;;
 esac
