@@ -35,7 +35,7 @@ class Device(GenericDevice):
   from io import open
   from os import devnull
   from subprocess import check_call
-  from zdcp.core.extras import str2hex
+  from zdcp.core.genlib import str2hex
   FNULL = open(devnull, 'w')
   rear  = str2hex(arear)
   front = str2hex(afront)
