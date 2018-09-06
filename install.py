@@ -73,13 +73,6 @@ with open(logger,'w') as f:
   f.write("  f.write(unicode(\"%s (%s): %s\\n\"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))\n\n")
  else:
   f.write(" pass\n\n")
- f.write("def rest(aNode,aAPI,aArgs,aExtra):\n")
- if settings['logs'].get('rest'):
-  f.write(" from time import localtime, strftime\n")
-  f.write(" with open('%s', 'a') as f:\n"%settings['logs']['rest'])
-  f.write("  f.write(unicode(\"%s: %s \'%s\' @ %s (%s)\\n\"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, aNode, aExtra.strip())))\n\n")
- else:
-  f.write(" pass\n\n")
 
 ############################################### ALL #################################################
 #

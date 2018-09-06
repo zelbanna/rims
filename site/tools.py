@@ -82,10 +82,8 @@ def rest_execute(aWeb):
  try:    arguments = loads(aWeb['arguments'])
  except: arguments = None
  try:
-  if aWeb['node']:
-   url = aWeb.rest_call("system_node_info",{'id':aWeb['node']})['data']['url']
-  elif aWeb['device'] == 'vera':
-   url = "http://%s:3480/data_request"%(aWeb['host'])
+  node = aWeb.rest_call("system_node_info",{'id':aWeb['node']})['data']
+  url = "%s/api"%node['url'] if node['system'] == 1 else node['url']
   ret = aWeb.rest_full(url,aWeb['api'],arguments,aWeb['method'])
  except Exception as e:
   ret = e[0]

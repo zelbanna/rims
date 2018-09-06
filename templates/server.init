@@ -24,7 +24,7 @@ case "$1" in
    echo "ZDCP already running @ `cat $PIDFILE`"
   else
    echo "Starting ZDCP service handler"
-   $PKGDIR/server.py &
+   $PKGDIR/core/server.py &
    echo $! > $PIDFILE
   fi
   ;;

@@ -16,9 +16,10 @@ from importlib import import_module
 from threading import Thread
 from time import localtime, strftime, sleep
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
+basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..'))
 pkgpath  = ospath.join(basepath,'zdcp')
 syspath.append(basepath)
+from zdcp.SettingsContainer import SC
 
 ############################### ZDCP Server ############################
 #
@@ -115,7 +116,7 @@ class Server:
 
   def __log(self,aAPI,aArgs,aExtra):
    try:
-    with open('/var/log/system/rest.log', 'a') as f:
+    with open(SC['logs']['rest'], 'a') as f:
      f.write(unicode("%s: %s '%s' @ %s (%s) NATIVE\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._node, aExtra.strip())))
    except Exception as e:
     print "Error logging: %s"%str(e)
@@ -145,7 +146,8 @@ class Server:
    # Partition QUERY
    (api,_,extra) = aQuery.partition('&')
    (mod,_,fun)   = api.partition('_')
-   headers['api']= api
+   headers['module']= mod
+   headers['function']= fun
    if extra:
      for part in extra.split("&"):
       (k,_,v) = part.partition('=')
@@ -155,7 +157,6 @@ class Server:
    try:
     self.__parse_input()
     self.__log(api,dumps(self._form),extra)
-    from zdcp.SettingsContainer import SC
     if headers['node'] == self.server._node:
      module = import_module("zdcp.rest.%s"%mod)
      module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
@@ -164,7 +165,7 @@ class Server:
     else:
      # TODO - settings should be part of server
      from zdcp.core.common import rest_call
-     try: res = rest_call("%s/%s"%(SC['nodes'][headers['node']],aQuery),self._form)
+     try: res = rest_call("%s/api/%s"%(SC['nodes'][headers['node']],aQuery),self._form)
      except Exception as err: raise Exception(err)
      else: output = dumps(res['data'])
      headers['result'] = res['info']['x-api-res']
@@ -241,7 +242,6 @@ class Server:
    stdout.flush()
 
 if __name__ == '__main__':
- from SettingsContainer import SC
  #
  zdcp = Server(int(SC['system']['port']),SC['system']['id'])
  zdcp.start(5)
