@@ -36,9 +36,9 @@ class Web(object):
   return self.form.getfirst(aKey,aDefault)
 
  # Simplified SDCP REST call
- def rest_call(self, aAPI, aArgs = None):
+ def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
   from zdcp.core.common import rest_call
-  return rest_call("%s/%s"%(self._rest_url, aAPI), aArgs, aTimeout = 60)['data']
+  return rest_call("%s/%s"%(self._rest_url, aAPI), aArgs, aTimeout)['data']
 
  # Generic REST call with full output
  def rest_full(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):

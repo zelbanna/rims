@@ -266,9 +266,9 @@ else:
  # Fetch and update settings from central repo
  #
  from zdcp.core.common import rest_call
- try: res['register'] = rest_call("%s?system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':"1" if modes.get('rest') else '0','www':"1" if modes.get('front') else '0'})['data']
+ try: res['register'] = rest_call("%s/system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':"1" if modes.get('rest') else '0','www':"1" if modes.get('front') else '0'})['data']
  except Exception as e: res['register'] = str(e)
- try: master   = rest_call("%s?system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
+ try: master   = rest_call("%s/system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
  except: pass
  else:
   for section,content in master.iteritems():
