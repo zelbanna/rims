@@ -1,0 +1,72 @@
+#!/bin/sh
+#
+# zdcp
+#
+# chkconfig: - 10 90
+#
+### BEGIN INIT INFO
+# Provides:    zdcp
+# Required-Start:
+# Required-Stop:  
+# Default-Start:	2 3 4 5
+# Default-Stop:		0 1 6
+# X-Start-Before:
+# X-Stop-After:
+# Short-Description: Start ZDCP request handler service and system installation
+### END INIT INFO
+
+PKGDIR=%PKGDIR%
+PIDFILE=/var/run/zdcp.pid
+
+case "$1" in
+ start)
+  if [ -f $PIDFILE ]; then
+   echo "ZDCP already running @ `cat $PIDFILE`"
+  else
+   echo "Starting ZDCP service handler"
+   $PKGDIR/server.py &
+   echo $! > $PIDFILE
+  fi
+  ;;
+ stop)
+  if [ -f $PIDFILE ]; then
+   echo "Stopping ZDCP service handler @`cat $PIDFILE`"
+   kill -9 `cat $PIDFILE`
+   rm $PIDFILE
+  else
+   echo "ZDCP not running"
+  fi
+  ;;
+ upgrade)
+  echo "Upgrading ZDCP"
+  ;;
+ reload)
+  echo "Reload ZDCP configuration"
+  kill -12 `cat $PIDFILE`  
+  ;;
+ status)
+  echo "Reload ZDCP configuration"
+  kill -10 `cat $PIDFILE`
+  ;;
+ clear)
+  echo "Clearing old .pyc files"
+  rm $PKGDIR/*.pyc
+  rm $PKGDIR/site/*.pyc
+  rm $PKGDIR/rest/*.pyc
+  rm $PKGDIR/core/*.pyc
+  rm $PKGDIR/devices/*.pyc
+  rm $PKGDIR/tools/*.pyc
+  chown -R www-data:www-data $PKGDIR/*
+  clear;
+  ;;
+ install)
+  echo "Installing ZDCP server"
+  mv $0 /etc/init.d/zdcp
+  ;;
+ *)
+  echo "Usage: /etc/init.d/zdcp <start|stop|upgrade|reload|clear|install>"
+  exit 1
+  ;;
+esac
+
+exit 0

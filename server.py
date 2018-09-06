@@ -37,13 +37,15 @@ class Server:
 
  def start(self, aThreads):
   try:
-   print "Starting ZDCP Server"
    self._threads = [self.HttpThread(n,self._socket,'',self._id) for n in range(aThreads)]
+   print "ZDCP server started"
    while True:
-    sleep(3)
+    sleep(5)
+
   except:
    print " pressed, stopping ZDCP"
    self._socket.close()
+
 
  #
  # HTTP Thread
@@ -119,6 +121,9 @@ class Server:
     print "Error logging: %s"%str(e)
 
   def do_HEAD(self):
+   from sys import modules
+   zdcp = [x for x in modules.keys() if x.startswith('zdcp')]
+   print zdcp
    self.send_response(200)
    self.send_header("Content-type", "text/html")
    self.end_headers()
@@ -210,7 +215,8 @@ class Server:
 
   ########################################## Site Function ####################################
   #
-  # - Store self.rest_url? or make inline? :-)
+  # Before React.JS... do optimize more than necessary
+  #
   # - store form data?
   # Check input, either rfile is args - like rest - or
   def __site(self, aQuery):
@@ -224,50 +230,6 @@ class Server:
    self.wfile.write("%s<BR>"%aQuery)
    self.wfile.write("%s<BR>"%self._form)
 
-  def server(self):
-   try:
-    (mod,void,fun) = self.call.partition('_')
-    module = import_module("zdcp.site." + mod)
-    getattr(module,fun,None)(self)
-   except Exception as e:
-    stdout.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
-    try:
-     stdout.write("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
-     try:
-      for key,value in e[0]['info'].iteritems():
-       stdout.write("%s: %s<BR>"%(key,value))
-     except: stdout.write(e[0]['info'])
-     stdout.write("</DETAILS>")
-    except:
-     stdout.write("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS>"%(type(e).__name__,str(e)))
-    stdout.write("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(",".join(self.form.keys())))
-
-  ########################################## Extras ########################################
-
-  def __getitem__(self,aKey):
-   return self.form.getfirst(aKey,None)
-
-  def __str__(self):
-   return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Web object<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(str(self.cookies),self.form)
-
-  def get(self,aKey,aDefault = None):
-   return self.form.getfirst(aKey,aDefault)
-
-  def rest_call(self, aAPI, aArgs = None):
-   from zdcp.core.common import rest_call
-   return rest_call("%s?%s"%(self._rest_url, aAPI), aArgs, aTimeout = 60)['data']
-
-  def rest_full(self, aURL, aAPI, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
-   from zdcp.core.common import rest_call
-   return rest_call("%s?%s"%(aURL, aAPI) if aAPI else aURL, aArgs, aMethod, aHeader, True, aTimeout)
-
-  def put_cookie(self,aName,aValue,aExpires):
-   value = ",".join(["%s=%s"%(k,v) for k,v in aValue.iteritems()]) if isinstance(aValue,dict) else aValue
-   print "<SCRIPT>set_cookie('%s','%s','%s');</SCRIPT>"%(aName,value,aExpires)
-
-  def cookie_unjar(self,aName):
-   return self._cookies[aName]
-
   def put_html(self, aTitle = None, aIcon = 'zdcp.png'):
    stdout.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='zdcp.css'>")
    if aTitle:
@@ -278,26 +240,7 @@ class Server:
    stdout.write("</HEAD>")
    stdout.flush()
 
-  def get_args2dict(self,aExcept = []):
-   return { key: self[key] for key in self.form.keys() if not key in aExcept }
-
-  def get_args(self,aExcept = []):
-   return "&".join(["%s=%s"%(key,self[key]) for key in self.form.keys() if not key in aExcept])
-
-  @classmethod
-  def button(cls,aImg,**kwargs):
-   return " ".join(["<A CLASS='btn z-op small'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC=images/btn-%s.png></A>"%(aImg)])
-
-  # TODO - remove and put inline
-  def put_redirect(self,aLocation):
-   print "<SCRIPT> window.location.replace('%s'); </SCRIPT>"%(aLocation)
-
-  # TODO - remove and put inline
-  @classmethod
-  def dragndrop(cls):
-   return "<SCRIPT>dragndrop();</SCRIPT>"
-
-
 if __name__ == '__main__':
+ #
  zdcp = Server(9000,'master')
  zdcp.start(5)
