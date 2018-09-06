@@ -64,9 +64,6 @@ res['server']= settings['system']['template']
 #
 destinations = []
 
-if modes.get('rest'):
- destinations.append('rest')
-
 if modes.get('front'):
  from shutil import copy
  destinations.append('index')
