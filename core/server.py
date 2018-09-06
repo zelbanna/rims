@@ -18,7 +18,7 @@ from time import localtime, strftime, sleep
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..'))
 pkgpath  = ospath.join(basepath,'zdcp')
-syspath.append(basepath)
+syspath.insert(1, basepath)
 from zdcp.SettingsContainer import SC
 
 ############################### ZDCP Server ############################
@@ -121,12 +121,13 @@ class Server:
    except: pass
 
   def do_HEAD(self):
-   from sys import modules
-   zdcp = [x for x in modules.keys() if x.startswith('zdcp')]
-   print zdcp
    self.send_response(200)
    self.send_header("Content-type", "text/html")
    self.end_headers()
+   from sys import modules
+   zdcp = [x for x in modules.keys() if x.startswith('zdcp')]
+   print zdcp
+
 
   def do_GET(self):
    self.__route()

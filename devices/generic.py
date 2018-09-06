@@ -50,7 +50,6 @@ class Device(object):
   log(aMsg)
 
  def configuration(self,argdict):
-  from zdcp.SettingsContainer import SC
   output = ["No config template for this device type.","",
    "Please set the following manually:",
    "- Username: %s"%SC['netconf']['username'],

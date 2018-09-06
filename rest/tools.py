@@ -206,7 +206,7 @@ def database_backup(aDict):
   data = dump({'mode':'database'})['output']
  else:
   from zdcp.core.common import rest_call
-  res = rest_call("%s?mysql_dump"%SC['system']['master'],{'mode':'database'})
+  res = rest_call("%s/api/mysql_dump"%SC['system']['master'],{'mode':'database'})
   if res['info'].get("x-api-res") == "OK":
    data = res['data']['output']
   else:

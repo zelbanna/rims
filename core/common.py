@@ -125,7 +125,7 @@ def node_call(aNode, aModule, aFunction, aArgs = None, aMethod = None, aHeader =
  """
  from zdcp.SettingsContainer import SC
  if SC['system']['id'] != aNode:
-  ret = rest_call("%s?%s_%s"%(SC['nodes'][aNode],aModule,aFunction),aArgs)['data']
+  ret = rest_call("%s/api/%s_%s"%(SC['nodes'][aNode],aModule,aFunction),aArgs)['data']
  else:
   from importlib import import_module
   module = import_module("zdcp.rest.%s"%aModule)

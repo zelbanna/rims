@@ -215,7 +215,7 @@ def settings_parameter(aDict):
 #
 #
 def settings_comprehensive(aDict):
- """Function docstring for settings_all TBD
+ """Function docstring for settings_comprehensive TBD
 
  Args:
   - node (required)
@@ -288,17 +288,17 @@ def settings_save(aDict):
  from zdcp.core.common import rest_call
  ret = {'config_file':SC['system']['config_file']}
  try:
-  settings = {}
+  SC.clear()
   with open(ret['config_file']) as sfile:
    temp = loads(sfile.read())
   for section,content in temp.iteritems():
    for key,params in content.iteritems():
-    if not settings.get(section):
-     settings[section] = {}
-    settings[section][key] = params['value']
-  settings['system']['config_file'] = ret['config_file']
+    if not SC.get(section):
+     SC[section] = {}
+    SC[section][key] = params['value']
+  SC['system']['config_file'] = ret['config_file']
 
-  if settings['system']['id'] == 'master':
+  if SC['system']['id'] == 'master':
    with DB() as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
@@ -306,20 +306,20 @@ def settings_save(aDict):
     data.extend(db.get_rows())
    for setting in data:
     section = setting.pop('section')
-    if not settings.get(section):
-     settings[section] = {}
-    settings[section][setting['parameter']] = setting['value']
+    if not SC.get(section):
+     SC[section] = {}
+    SC[section][setting['parameter']] = setting['value']
   else:
-   try: master = rest_call("%s?system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
+   try: master = rest_call("%s/api/system_settings_fetch"%SC['system']['master'],{'node':SC['system']['id']})['data']
    except: pass
    else:
     for section,content in master.iteritems():
-     if settings.get(section): settings[section].update(content)
-     else: settings[section] = content
+     if SC.get(section): SC[section].update(content)
+     else: SC[section] = content
 
   container = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','SettingsContainer.py'))
   with open(container,'w') as f:
-   f.write("SC=%s\n"%dumps(settings))
+   f.write("SC=%s\n"%dumps(SC))
   ret['result'] = 'OK'
  except Exception as e:
   ret['result'] = 'NOT_OK'
