@@ -241,6 +241,7 @@ class Server:
    stdout.flush()
 
 if __name__ == '__main__':
+ from SettingsContainer import SC
  #
- zdcp = Server(9000,'master')
+ zdcp = Server(int(SC['system']['port'])),SC['system']['id'])
  zdcp.start(5)
