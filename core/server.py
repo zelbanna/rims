@@ -118,8 +118,7 @@ class Server:
    try:
     with open(SC['logs']['rest'], 'a') as f:
      f.write(unicode("%s: %s '%s' @ %s (%s) NATIVE\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._node, aExtra.strip())))
-   except Exception as e:
-    print "Error logging: %s"%str(e)
+   except: pass
 
   def do_HEAD(self):
    from sys import modules

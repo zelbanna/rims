@@ -14,7 +14,7 @@ def alarm(aDict):
 
  Output:
  """
- from zdcp.core.logger import log
+ from zdcp.core.common import log
  log("appformix_alarm({})".format(str(aDict)))
  return { 'result':'OK', 'info':'got alarm', 'data':'waiting to find out what to do with it :-)'}
 

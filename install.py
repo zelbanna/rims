@@ -60,22 +60,6 @@ res['server']= settings['system']['template']
 
 ############################################### ALL #################################################
 #
-# Write Logger
-#
-logger = ospath.abspath(ospath.join(packagedir,'core','logger.py'))
-try: remove(logger)
-except: pass
-with open(logger,'w') as f:
- f.write("def log(aMsg,aID='None'):\n")
- if settings['logs'].get('syslog'):
-  f.write(" from time import localtime, strftime\n")
-  f.write(" with open('%s', 'a') as f:\n"%settings['logs']['syslog'])
-  f.write("  f.write(unicode(\"%s (%s): %s\\n\"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))\n\n")
- else:
-  f.write(" pass\n\n")
-
-############################################### ALL #################################################
-#
 # Write CGI files
 #
 destinations = []

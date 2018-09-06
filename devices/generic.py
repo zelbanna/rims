@@ -46,10 +46,8 @@ class Device(object):
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
 
  def log_msg(self, aMsg):
-  try:
-   from zdcp.core.logger import log
-   log(aMsg)
-  except: pass
+  from zdcp.core.common import log
+  log(aMsg)
 
  def configuration(self,argdict):
   from zdcp.SettingsContainer import SC

@@ -69,7 +69,7 @@ def authenticate(aDict):
 
  Output:
  """
- from zdcp.core.logger import log
+ from zdcp.core.common import log
  ret = {}
  node = aDict['node']
  controller = Device(SC['nodes'][node])

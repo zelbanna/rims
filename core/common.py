@@ -9,6 +9,19 @@ __status__ = "Production"
 
 ############################################ Database ######################################
 #
+# Basic logger
+#
+def log(aMsg,aID='None'):
+ try:        
+  with open(SC['logs']['system'], 'a') as f:
+   from time import localtime, strftime
+   f.write(unicode("%s (%s): %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))
+ except: pass          
+
+
+
+############################################ Database ######################################
+#
 # Database Class
 #
 class DB(object):
@@ -139,8 +152,6 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
  try:
   head = { 'Content-Type': 'application/json','Accept':'application/json' }
   try:    head.update(aHeader)
-  except: pass
-  try:    from logger import log
   except: pass
   else:   log("rest_call -> %s '%s'"%(aURL,dumps(aArgs)))
   req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)

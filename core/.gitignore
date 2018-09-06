@@ -1,6 +1,5 @@
 # Compiled python modules.
 *.pyc
-logger.py
 
 # Setuptools distribution folder.
 /dist/

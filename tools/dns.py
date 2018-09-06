@@ -6,8 +6,7 @@
 __author__ = "Zacharias El Banna"                     
 __version__ = "1.0GA"
 __status__ = "Production"
-from zdcp.core.logger import log
-from zdcp.core.common import DB
+from zdcp.core.common import DB, log
 
 ################################ LOOPIA DNS ###################################
 #

@@ -75,7 +75,7 @@ def logs_clear(aDict):
 
  Output:
  """
- from zdcp.core.logger import log
+ from zdcp.core.common import log
  ret = {'node':SC['system']['id'],'file':{}}
  for name,file in SC['logs'].iteritems():
   try:

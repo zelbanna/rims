@@ -259,7 +259,7 @@ def process(aDict):
  from time import time
  from subprocess import check_call, call
  from os import devnull,chmod,rename,remove
- from zdcp.core.logger import log
+ from zdcp.core.common import log
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'res':'NOT_OK','error':None}
  srt  = check_srt({'filepath':filename})

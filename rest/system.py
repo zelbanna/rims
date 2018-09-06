@@ -132,12 +132,8 @@ def log(aDict):
  Output:
  """
  ret = {'result':'OK'}
- try:
-  from zdcp.core.logger import log
-  log(aDict['msg'])
- except Exception as e:
-  ret['info'] = str(e)
-  ret['result'] = 'NOT_OK'
+ from zdcp.core.common import log
+ log(aDict['msg'])
  return ret
 
 ############################################ SETTINGS ########################################
