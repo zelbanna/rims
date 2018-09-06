@@ -388,7 +388,7 @@ def new(aWeb):
 #
 def discover(aWeb):
  if aWeb['op']:
-  res = aWeb.rest_call("device_discover",{ 'network_id':aWeb['network_id'], 'a_dom_id':aWeb['a_dom_id']}, 200)['data']
+  res = aWeb.rest_call("device_discover",{ 'network_id':aWeb['network_id'], 'a_dom_id':aWeb['a_dom_id']}, 200)
   print "<ARTICLE>%s</ARTICLE>"%(res)
  else:
   networks = aWeb.rest_call("ipam_network_list")['networks']
