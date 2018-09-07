@@ -1,22 +1,13 @@
-"""SDCP tools REST module. Provides various tools that are not bound to a node"""
+"""
+
+Tools module for various tools
+
+
+"""
 __author__ = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
-__node__ = 'any'
-
-#
-#
-def debug(aDict):
- """Function docstring for debug TBD
-
- Args:
-
- Output:
- """
- print "Set-Cookie: debug=true; Path=/"
- from sys import path as syspath
- return { 'globals':[x for x in globals().keys() if not x[0:2] == '__'], 'path':syspath }
 
 ############################################ REST tools ############################################
 #

@@ -43,19 +43,19 @@
             "value": "master"
         },
         "master": {
-            "description": "Master node REST interface from local node PoV",
+            "description": "Master node node interface from local node PoV",
             "value": "http://127.0.0.1:9001"
         },
         "mode": {
             "description": "Local device role/function [front,master,rest]",
             "value": "front,master,rest"
         },
-        "rest": {
-            "description": "Local device's globally reachable REST interface",
+        "node": {
+            "description": "Local device's globally reachable node interface",
             "value": "http://x.y.z.w:9001"
         }
         "port": {
-            "description": "Server port to register REST and infra services",
+            "description": "Server port to register REST and infra services (aka the node)",
             "value": 9001               
         },
         "template": {

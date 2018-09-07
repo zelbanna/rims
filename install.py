@@ -87,7 +87,7 @@ for dest in destinations:
    wr("server('%s')\n"%(settings['system']['id']))
   else:
    wr("from zdcp.core.www import Web\n")
-   wr("cgi = Web('%s','%s')\n"%(settings['system']['rest'], settings['system']['id']))
+   wr("cgi = Web('%s','%s')\n"%(settings['system']['node'], settings['system']['id']))
    wr("cgi.server()\n")
  chmod(site,0755)
  res["cgi_{}".format(dest)] = 'OK'
@@ -184,7 +184,7 @@ if settings['system']['id'] == 'master':
   db.connect()
 
   res['admin_user'] = (db.do("INSERT users (id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id") > 0)
-  res['node_add'] = (db.do("INSERT nodes (node,url,system,www) VALUES('{0}','{1}',1,{2}) ON DUPLICATE KEY UPDATE system = 1, www = {2}, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['rest'],"1" if modes.get('front') else '0')) > 0)
+  res['node_add'] = (db.do("INSERT nodes (node,url,system,www) VALUES('{0}','{1}',1,{2}) ON DUPLICATE KEY UPDATE system = 1, www = {2}, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['node'],"1" if modes.get('front') else '0')) > 0)
   res['node_id']  = db.get_last_id()
   res['dns_server_add'] = (db.do("INSERT servers (node,server,type) VALUES ('master','nodns','DNS') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
   res['dns_server_id']  = db.get_last_id()
@@ -240,7 +240,7 @@ else:
  # Fetch and update settings from central repo
  #
  from zdcp.core.common import rest_call
- try: res['register'] = rest_call("%s/system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['rest'],'system':"1" if modes.get('rest') else '0','www':"1" if modes.get('front') else '0'})['data']
+ try: res['register'] = rest_call("%s/system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['node'],'system':"1" if modes.get('rest') else '0','www':"1" if modes.get('front') else '0'})['data']
  except Exception as e: res['register'] = str(e)
  try: master   = rest_call("%s/system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
  except: pass

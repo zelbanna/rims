@@ -31,22 +31,25 @@ class Server:
   import socket
   self._threads = []
   self._id = aNodeID
+  self._addr = ('', int(aPort))
   self._socket = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
   self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-  self._socket.bind(('', int(aPort)))
+  self._socket.bind(self._addr)
   self._socket.listen(5)
 
  def start(self, aThreads):
   try:
    self._threads = [self.HttpThread(n,self._socket,'',self._id) for n in range(aThreads)]
-   print "ZDCP server started"
-   while True:
-    sleep(5)
-
+   print "ZDCP server started %s workers @ %s"%(aThreads,self._addr)
+   while len(self._threads) > 0:
+    # Check if threads are still alive...
+    self._threads = [t for t in self._threads if t.is_alive()]
+    sleep(10)
   except:
-   print " pressed, stopping ZDCP"
-   self._socket.close()
-
+   print "ZDCP server interrupted"
+  else:
+   print "ZDCP server shutdown due to no live threads"
+  self._socket.close()
 
  #
  # HTTP Thread
@@ -171,7 +174,7 @@ class Server:
      headers['result'] = res['info']['x-api-res']
    except Exception as e:
     headers.update({'result':'ERROR','args':self._form,'info':str(e),'xcpt':type(e).__name__})
-   self.send_response(200 if headers['result'] == 'OK' else 590)
+   self.send_response(200 if headers['result'] == 'OK' else 500)
    self.send_header("Content-Type","application/json; charset=utf-8")
    self.send_header("Access-Control-Allow-Origin","*")
    for k,v in headers.iteritems():

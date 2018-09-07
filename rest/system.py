@@ -435,6 +435,33 @@ def node_delete(aDict):
    ret['delete'] = False 
  return ret
 
+#
+#
+def node_module_reload(aDict):
+ """Function attempts to reload a module @ a system node identified by id or node name
+
+ Args:
+  - id (optionally required)
+  - node (optionally required)
+  - module (required)
+
+ Output:
+  - result.
+ """
+ ret = {}
+ from zdcp.core.common import rest_call
+ if aDict.get('node'):
+  ret['node'] = aDict['node']
+ else:
+  with DB() as db:
+   db.do("SELECT node FROM nodes WHERE id = %s"%aDict['id'])
+   ret['node'] = db.get_val('node')
+ if ret['node'] == SC['system']['id']:
+  ret['result'] = 'module reloaded'
+ else:
+  ret['result'] = rest_call("%s/api/system_node_module_reload"%(SC['nodes'][ret['node']]),{'module':aDict['module']})['data']['result']
+ return ret
+
 ############################################# RESOURCES #############################################
 
 #
@@ -674,6 +701,26 @@ def server_sync(aDict):
    from zdcp.core.common import node_call
    data = db.get_row()
    ret['result'] = node_call(data['node'],data['server'],'sync',{'id':aDict['id']})
+ return ret
+
+#
+#
+def server_restart(aDict):
+ """Server restart attempt to restart a server @ node.
+
+ Args:
+  - id (required))
+
+ Output:
+  - result.
+ """
+ ret = {}
+ with DB() as db:
+  ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
+  if ret['found']:
+   from zdcp.core.common import node_call
+   data = db.get_row()
+   ret['result'] = node_call(data['node'],data['server'],'restart',{'id':aDict['id']})
  return ret
 
 ######################################### ACTIVITIES ###########################################
