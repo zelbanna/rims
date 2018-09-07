@@ -185,7 +185,7 @@ class Server:
   ########################################## Infra Function ####################################
   #
   def __infra(self, aPath, aQuery):
-   headers = {}
+   headers,output = {},''
    if   aQuery.endswith(".jpg"):
     headers['Content-type'] = 'image/jpg'
     headers['Content-Disposition'] = 'inline'
@@ -196,15 +196,22 @@ class Server:
     headers['Content-type']='application/javascript; charset=utf-8'
    elif aQuery.endswith(".css"):
     headers['Content-type']='text/css; charset=utf-8'
-   else:
+   elif aQuery.endswith(".pdf"):
+    headers['Content-type']='application/png'   
+   elif aQuery.endswith(".html"):
     headers['Content-type']='text/html; charset=utf-8'
+   else:
+    headers['Content-type']='application/octet-stream;'
+
+  
    try:
-    if len(aQuery) > 0:
+    if aQuery.endswith("/") or len(aQuery) == 0:
+     headers['Content-type']='text/html; charset=utf-8'
+     _, _, filelist = next(walk(ospath.join(pkgpath,aPath,aQuery)), (None, None, []))
+     output = "<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])
+    else:
      with open(ospath.join(pkgpath,aPath,aQuery), 'rb') as file:
       output = file.read()
-    else:
-      _, _, filelist = next(walk(ospath.join(pkgpath,aPath)), (None, None, []))
-      output = "<BR>".join(filelist)
    except Exception as e:
     self.send_response(404)
     headers['X-Error'] = str(e)

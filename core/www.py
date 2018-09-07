@@ -12,12 +12,12 @@ __status__= "Production"
 #
 class Web(object):
 
- def __init__(self,aREST,aID):
+ def __init__(self,aNode,aID):
   from os import getenv
   cookies = getenv("HTTP_COOKIE")
   query   = getenv("QUERY_STRING")
   self.call = query.partition('&')[0] if query else "system_login"
-  self._rest_url = aREST
+  self.node = aNode
   self.id   = aID
   self.form = None
   self.cookies = {}
@@ -38,7 +38,7 @@ class Web(object):
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
   from zdcp.core.common import rest_call
-  return rest_call("%s/api/%s"%(self._rest_url, aAPI), aArgs, aTimeout = 60)['data']
+  return rest_call("%s/api/%s"%(self.node, aAPI), aArgs, aTimeout = 60)['data']
 
  # Generic REST call with full output
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
@@ -71,11 +71,11 @@ class Web(object):
  # jquery.js: https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js
  def put_html(self, aTitle = None, aIcon = 'zdcp.png'):
   from sys import stdout
-  stdout.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='zdcp.css'>")
+  stdout.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='{0}/infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='{0}/infra/zdcp.css'>".format(self.node))
   if aTitle:
    stdout.write("<TITLE>" + aTitle + "</TITLE>")
-  stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/%s'/>"%(aIcon))
-  stdout.write("<SCRIPT SRC='3.1.1.jquery.min.js'></SCRIPT><SCRIPT SRC='4.21.0.vis.min.js'></SCRIPT><SCRIPT SRC='zdcp.js'></SCRIPT>")
+  stdout.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='%s/images/%s'/>"%(self.node,aIcon))
+  stdout.write("<SCRIPT SRC='{0}/infra/3.1.1.jquery.min.js'></SCRIPT><SCRIPT SRC='{0}/infra/4.21.0.vis.min.js'></SCRIPT><SCRIPT SRC='{0}/infra/zdcp.js'></SCRIPT>".format(self.node))
   stdout.write("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ) .on('input','.slider',slide_monitor); });</SCRIPT>")
   stdout.write("</HEAD>")
   stdout.flush()
@@ -116,9 +116,8 @@ class Web(object):
  def get_args(self,aExcept = []):
   return "&".join(["%s=%s"%(key,self[key]) for key in self.form.keys() if not key in aExcept])
 
- @classmethod
- def button(cls,aImg,**kwargs):
-  return " ".join(["<A CLASS='btn z-op small'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC=images/btn-%s.png></A>"%(aImg)])
+ def button(self,aImg,**kwargs):
+  return " ".join(["<A CLASS='btn z-op small'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC='%s/images/btn-%s.png'></A>"%(self.node,aImg)])
 
  @classmethod
  def dragndrop(cls):
