@@ -4,6 +4,9 @@
 # Backup files
 *.bck
 
+# Server files
+server.*
+
 # Setuptools distribution folder.
 /dist/
 
