@@ -16,3 +16,5 @@ server.*
 # Settings should never be pushed to central repo
 *.json
 SettingsContainer.py
+zdcp.pdf
+

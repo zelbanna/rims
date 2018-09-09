@@ -42,8 +42,6 @@ for section,content in temp.iteritems():
    settings[section] = {}
   settings[section][key] = params['value']
 settings['system']['config_file'] = settingsfile
-modes = { mode:True for mode in settings['system']['mode'].split(',') }
-res['modes'] = modes
 
 
 ############################################### ALL #################################################
@@ -59,39 +57,6 @@ chmod(ospath.abspath(ospath.join(packagedir,settings['system']['template'])),075
 res['server']= settings['system']['template']
 
 ############################################### ALL #################################################
-#
-# Write CGI files
-#
-destinations = []
-
-if modes.get('front'):
- from shutil import copy
- destinations.append('index')
- destinations.append('zdcp')
- # Copy files
- for type,dest in [('images',ospath.join(settings['system']['docroot'],'images')), ('infra',settings['system']['docroot'])]:
-  for file in listdir(ospath.join(packagedir,type)):
-   copy(ospath.join(packagedir,type,file), ospath.join(dest,file))
-  res[type] = 'OK'
-
-for dest in destinations:
- site = ospath.abspath(ospath.join(settings['system']['docroot'],"%s.cgi"%dest))
- with open(site,'w') as f:
-  wr = f.write
-  wr("#!/usr/bin/python\n")
-  wr("# -*- coding: utf-8 -*-\n")
-  wr("from sys import path as syspath\n")
-  wr("syspath.insert(1, '{}')\n".format(basedir))
-  if dest == 'rest':
-   wr("from zdcp.core.rest import server\n")
-   wr("server('%s')\n"%(settings['system']['id']))
-  else:
-   wr("from zdcp.core.www import Web\n")
-   wr("cgi = Web('%s','%s')\n"%(settings['system']['node'], settings['system']['id']))
-   wr("cgi.server()\n")
- chmod(site,0755)
- res["cgi_{}".format(dest)] = 'OK'
-
 #
 # Modules
 #
@@ -116,11 +81,10 @@ if settings['system']['id'] == 'master':
  except ImportError:
   res['pymysql'] = 'install'
   pipmain(["install", "-q","pymysql"])
- if modes.get('front'):
-  try: import eralchemy
-  except ImportError:
-   res['gitpython'] = 'install'
-   pipmain(["install","-q","eralchemy"])
+ try: import eralchemy
+ except ImportError:
+  res['gitpython'] = 'install'
+  pipmain(["install","-q","eralchemy"])
 
  #
  # Device types
@@ -184,7 +148,7 @@ if settings['system']['id'] == 'master':
   db.connect()
 
   res['admin_user'] = (db.do("INSERT users (id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id") > 0)
-  res['node_add'] = (db.do("INSERT nodes (node,url,system,www) VALUES('{0}','{1}',1,{2}) ON DUPLICATE KEY UPDATE system = 1, www = {2}, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['node'],"1" if modes.get('front') else '0')) > 0)
+  res['node_add'] = (db.do("INSERT nodes (node,url,system) VALUES('{0}','{1}',1) ON DUPLICATE KEY UPDATE system = 1, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['node'])) > 0)
   res['node_id']  = db.get_last_id()
   res['dns_server_add'] = (db.do("INSERT servers (node,server,type) VALUES ('master','nodns','DNS') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
   res['dns_server_id']  = db.get_last_id()
@@ -218,7 +182,7 @@ if settings['system']['id'] == 'master':
   # Generate ERD and save
   #
   erd_input = "mysql+pymysql://%s:%s@%s/%s"%(username,password,host,database)
-  erd_output= ospath.join(settings['system']['docroot'],"zdcp.pdf")
+  erd_output= ospath.join(packagedir,'zdcp.pdf')
   try:
    from eralchemy import render_er
    render_er(erd_input,erd_output)
@@ -240,7 +204,7 @@ else:
  # Fetch and update settings from central repo
  #
  from zdcp.core.common import rest_call
- try: res['register'] = rest_call("%s/system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['node'],'system':"1" if modes.get('rest') else '0','www':"1" if modes.get('front') else '0'})['data']
+ try: res['register'] = rest_call("%s/system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['node'],'system':'1'})['data']
  except Exception as e: res['register'] = str(e)
  try: master   = rest_call("%s/system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
  except: pass

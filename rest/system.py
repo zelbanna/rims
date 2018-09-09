@@ -106,7 +106,7 @@ def menu(aDict):
    if start > 0:
     info = db.get_row()
     ret['start'] = True
-    ret['menu'] = [{'id':info['id'],'icon':'images/icon-start.png', 'title':'Start', 'href':info['href'], 'view':info['view'] }]
+    ret['menu'] = [{'id':info['id'],'icon':'../images/icon-start.png', 'title':'Start', 'href':info['href'], 'view':info['view'] }]
    else:
     ret['start'] = False
     ret['menu'] = []
@@ -329,7 +329,7 @@ def settings_save(aDict):
 #
 #
 def settings_container(aDict):
- """Function docstring for register TBD
+ """Function returns the settings container
 
  Args:
 
@@ -341,7 +341,6 @@ def settings_container(aDict):
 #
 # A node represent a system entity that can run REST commands remote (or locally),
 # - system indicates it was registered and should not be deletable
-# - www indicates that it was registered as having a www/front 'mode'
 # - device_id: connected to a device in the device/IPAM DB:s
 #
 
@@ -355,14 +354,13 @@ def node_register(aDict):
   - node (required)
   - url (required)
   - system (optional)
-  - www (optional)
 
  Output:
  """
  ret = {}
- args = {'node':aDict['node'],'url':aDict['url'],'system':aDict.get('system','0'),'www':aDict.get('www','0')}
+ args = {'node':aDict['node'],'url':aDict['url'],'system':aDict.get('system','0')}
  with DB() as db:
-  ret['update'] = db.insert_dict('nodes',args,"ON DUPLICATE KEY UPDATE system = %(system)s, www = %(www)s, url = '%(url)s'"%args)
+  ret['update'] = db.insert_dict('nodes',args,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%args)
  return ret
 
 #

@@ -10,13 +10,13 @@ __status__= "Beta"
 ##################################### Report ##################################
 #
 def list(aWeb):
- cookie_openstack = aWeb.cookie_unjar('openstack')
- cookie_appformix = aWeb.cookie_unjar('appformix')
+ cookie_openstack = aWeb.cookie('openstack')
+ cookie_appformix = aWeb.cookie('appformix')
 
  if not cookie_appformix.get('appformix_token'):
   res = aWeb.rest_call("appformix_authenticate",{'node':cookie_openstack['appformix']})
   if not res['auth'] == "OK":
-   print "Error logging in - {}".format(str(res))
+   aWeb.wr("Error logging in - {}".format(str(res)))
    return
   else:
    cookie_appformix['token'] = res['token']
@@ -25,33 +25,33 @@ def list(aWeb):
 
  from datetime import datetime
  res = aWeb.rest_call("appformix_report_projects",{'node':cookie_appformix['node'],'token':cookie_appformix['token'],'project':cookie_openstack['project_id']})
- print "<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Usage Reports</P>"
- print "<DIV CLASS=controls>"
- print aWeb.button('reload', DIV='div_content', URL='zdcp.cgi?appformix_list')
- print "</DIV>"
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Report</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>"
- print "<DIV CLASS=tbody>"
+ aWeb.wr("<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Usage Reports</P>")
+ aWeb.wr("<DIV CLASS=controls>")
+ aWeb.wr(aWeb.button('reload', DIV='div_content', URL='appformix_list'))
+ aWeb.wr("</DIV>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Report</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tbody>")
  for rep in res['reports']:
-  print "<DIV CLASS=tr>"
-  print "<!-- %s -->"%rep
-  print "<DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden;'>%s</DIV>"%rep['ReportId']
-  print "<DIV CLASS=td>%s</DIV>"%datetime.utcfromtimestamp(float(rep['Start'])/1e3)
-  print "<DIV CLASS=td>"
-  print aWeb.button('info', DIV='div_content_right', URL='zdcp.cgi?appformix_info&report=%s'%(rep['ReportId']))
-  print "</DIV></DIV>"
- print "</DIV></DIV>"
- print "</ARTICLE></SECTION>"
- print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
+  aWeb.wr("<DIV CLASS=tr>")
+  aWeb.wr("<!-- %s -->"%rep)
+  aWeb.wr("<DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden;'>%s</DIV>"%rep['ReportId'])
+  aWeb.wr("<DIV CLASS=td>%s</DIV>"%datetime.utcfromtimestamp(float(rep['Start'])/1e3))
+  aWeb.wr("<DIV CLASS=td>")
+  aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='appformix_info?report=%s'%(rep['ReportId'])))
+  aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</ARTICLE></SECTION>")
+ aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
 
 def info(aWeb):
- cookie_openstack = aWeb.cookie_unjar('openstack')
- cookie_appformix = aWeb.cookie_unjar('appformix')
+ cookie_openstack = aWeb.cookie('openstack')
+ cookie_appformix = aWeb.cookie('appformix')
  reports = aWeb.rest_call("appformix_project_reports",{'node':cookie_appformix['node'],'token':cookie_appformix['token'],'report':aWeb['report']})
  from zdcp.site.openstack import dict2html
  for project in reports['Data']:
   if project['Project_Id'] == cookie_openstack['project_id']:
-   print "<ARTICLE STYLE='overflow:auto;'>"
-   print "<H2>Report %s</H2>"%(aWeb['report'])
+   aWeb.wr("<ARTICLE STYLE='overflow:auto;'>")
+   aWeb.wr("<H2>Report %s</H2>"%(aWeb['report']))
    dict2html(project['Instances'],"Instances")
    dict2html(project['MetaData'],"MetaData")
-   print "</ARTICLE>"
+   aWeb.wr("</ARTICLE>")

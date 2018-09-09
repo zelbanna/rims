@@ -6,27 +6,27 @@ HTML5 Ajax ESXi module
 __author__= "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__ = "Production"
-__icon__ = 'images/icon-servers.png'
+__icon__ = '../images/icon-servers.png'
 __type__ = 'menuitem'
 
 def main(aWeb):
  rows = aWeb.rest_call("device_list",{'field':'base','search':'hypervisor','extra':['type','webpage'],'sort':'hostname'})['data']
- print "<NAV><UL>&nbsp;</UL></NAV>"
- print "<SECTION CLASS=content ID=div_content>"
- print "<SECTION CLASS=content-left ID=div_content_left>"
- print "<ARTICLE><DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
- print "<DIV CLASS=tbody>"
+ aWeb.wr("<NAV><UL>&nbsp;</UL></NAV>")
+ aWeb.wr("<SECTION CLASS=content ID=div_content>")
+ aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
+ aWeb.wr("<ARTICLE><DIV CLASS=table>")
+ aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tbody>")
  for row in rows:
-  print "<DIV CLASS=tr><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(type_name)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%row
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(type_name)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%row)
   if row['type_name'] == 'esxi':
-   print aWeb.button('info', DIV='main', URL='zdcp.cgi?esxi_manage&id=%s'%row['id'], TITLE='Management')
+   aWeb.wr(aWeb.button('info', DIV='main', URL='esxi_manage?id=%s'%row['id'], TITLE='Management'))
   if row['webpage']:
-   print aWeb.button('ui', TARGET='_blank', HREF=row['webpage'], TITLE='UI')
-  print "</DIV></DIV></DIV>"
- print "</DIV></DIV></ARTICLE>"
- print "</SECTION>"
- print "</SECTION>"
+   aWeb.wr(aWeb.button('ui', TARGET='_blank', HREF=row['webpage'], TITLE='UI'))
+  aWeb.wr("</DIV></DIV></DIV>")
+ aWeb.wr("</DIV></DIV></ARTICLE>")
+ aWeb.wr("</SECTION>")
+ aWeb.wr("</SECTION>")
 
 ########################################## ESXi Operations ##########################################
 #
@@ -35,21 +35,21 @@ def main(aWeb):
 def manage(aWeb):
  id = aWeb['id']
  data = aWeb.rest_call("device_info",{'id':id,'op':'basics'})
- print "<NAV><UL>"
- print "<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='zdcp.cgi?esxi_op&ip=%s&next-state=poweroff&id=%s'>Shutdown</A></LI>".format(data['ip'],id)
- print "<LI><A CLASS=z-op DIV=div_content_right  URL=zdcp.cgi?esxi_graph&hostname={0}&domain={1}>Stats</A></LI>".format(data['info']['hostname'],data['info']['domain'])
- print "<LI><A CLASS=z-op DIV=div_content_right  URL=zdcp.cgi?esxi_logs&hostname={0}&domain={1}>Logs</A></LI>".format(data['info']['hostname'],data['info']['domain'])
+ aWeb.wr("<NAV><UL>")
+ aWeb.wr("<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='esxi_op?ip=%s&next-state=poweroff&id=%s'>Shutdown</A></LI>".format(data['ip'],id))
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content_right  URL='esxi_graph?hostname={0}&domain={1}'>Stats</A></LI>".format(data['info']['hostname'],data['info']['domain']))
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content_right  URL='esxi_logs?hostname={0}&domain={1}'>Logs</A></LI>".format(data['info']['hostname'],data['info']['domain']))
  if data['info']['webpage']:
-  print "<LI><A CLASS=z-op HREF='%s'     target=_blank>UI</A></LI>"%(data['info']['webpage'])
- print "<LI><A CLASS='z-op reload' DIV=main URL='zdcp.cgi?esxi_manage&id=%s'></A></LI>"%(id)
- print "<LI CLASS='right navinfo'><A>{}</A></LI>".format(data['info']['hostname'])
- print "</UL></NAV>"
- print "<SECTION CLASS=content ID=div_content>"
- print "<SECTION CLASS=content-left ID=div_content_left>"
+  aWeb.wr("<LI><A CLASS=z-op HREF='%s'     target=_blank>UI</A></LI>"%(data['info']['webpage']))
+ aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='esxi_manage?id=%s'></A></LI>"%(id))
+ aWeb.wr("<LI CLASS='right navinfo'><A>{}</A></LI>".format(data['info']['hostname']))
+ aWeb.wr("</UL></NAV>")
+ aWeb.wr("<SECTION CLASS=content ID=div_content>")
+ aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  list(aWeb,data['ip'])
- print "</SECTION>"
- print "<SECTION CLASS=content-right ID=div_content_right></SECTION>"
- print "</SECTION>"
+ aWeb.wr("</SECTION>")
+ aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
+ aWeb.wr("</SECTION>")
 
 #
 #
@@ -58,26 +58,26 @@ def list(aWeb,aIP = None):
  sort = aWeb.get('sort','name')
  res = aWeb.rest_call("esxi_list",{'ip':ip,'sort':sort})
  statelist = res['data']
- print "<ARTICLE>"
- print aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='zdcp.cgi?esxi_list&ip=%s&sort=%s'%(ip,sort))
- print "<DIV CLASS=table>"
- print "<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?esxi_list&ip=%s&sort=%s'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"%(ip,"id" if sort == "name" else "name")
- print "<DIV CLASS=tbody>"
+ aWeb.wr("<ARTICLE>")
+ aWeb.wr(aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='esxi_list?ip=%s&sort=%s'%(ip,sort)))
+ aWeb.wr("<DIV CLASS=table>")
+ aWeb.wr("<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='esxi_list?ip=%s&sort=%s'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"%(ip,"id" if sort == "name" else "name"))
+ aWeb.wr("<DIV CLASS=tbody>")
  for vm in statelist:
-  print "<DIV CLASS=tr STYLE='padding:0px;'><DIV CLASS=td STYLE='padding:0px;'>%s</DIV><DIV CLASS='td controls' ID=div_vm_%s STYLE='width:120px'>"%(vm['name'],vm['id'])
+  aWeb.wr("<DIV CLASS=tr STYLE='padding:0px;'><DIV CLASS=td STYLE='padding:0px;'>%s</DIV><DIV CLASS='td controls' ID=div_vm_%s STYLE='width:120px'>"%(vm['name'],vm['id']))
   _vm_options(aWeb,ip,vm,False)
-  print "</DIV></DIV>"
- print "</DIV></DIV></ARTICLE>"
+  aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
 #
 def op(aWeb):
- cookie = aWeb.cookie_unjar('system')
- args = aWeb.get_args2dict()
+ cookie = aWeb.cookie('system')
+ args = aWeb.args()
  args['user_id'] = cookie['id']
  res = aWeb.rest_call("esxi_op",args)
  if aWeb['output'] == 'div':
-  print "<ARTICLE>Carried out '{}' on '{}@{}'</ARTICLE>".format(aWeb['next-state'],aWeb['id'],aWeb['ip'])
+  aWeb.wr("<ARTICLE>Carried out '{}' on '{}@{}'</ARTICLE>".format(aWeb['next-state'],aWeb['id'],aWeb['ip']))
  else:
   _vm_options(aWeb,aWeb['ip'],res,True)
 
@@ -85,25 +85,25 @@ def op(aWeb):
 #
 def _vm_options(aWeb,aIP,aVM,aHighlight):
  div = "div_vm_%s"%aVM['id']
- url = "zdcp.cgi?esxi_op&ip=%s&next-state={}&id=%s"%(aIP,aVM['id'])
+ url = 'esxi_op?ip=%s&next-state={}&id=%s'%(aIP,aVM['id'])
  if aHighlight:
-  print "<DIV CLASS='border'>"
+  aWeb.wr("<DIV CLASS='border'>")
  if int(aVM['state_id']) == 1:
-  print aWeb.button('stop',    DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.shutdown'), TITLE='Soft shutdown')
-  print aWeb.button('reload',  DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.reboot'), TITLE='Soft reboot')
-  print aWeb.button('suspend', DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.suspend'),TITLE='Suspend')
-  print aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off')
+  aWeb.wr(aWeb.button('stop',    DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.shutdown'), TITLE='Soft shutdown'))
+  aWeb.wr(aWeb.button('reload',  DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.reboot'), TITLE='Soft reboot'))
+  aWeb.wr(aWeb.button('suspend', DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.suspend'),TITLE='Suspend'))
+  aWeb.wr(aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off'))
  elif int(aVM['state_id']) == 3:
-  print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start')
-  print aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off')
+  aWeb.wr(aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start'))
+  aWeb.wr(aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off'))
  elif int(aVM['state_id']) == 2:
-  print aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start')
-  print aWeb.button('snapshot',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-snapshot.create'), TITLE='Snapshot')
-  print aWeb.button('info',    DIV='div_content_right',SPIN='true',URL='zdcp.cgi?esxi_snapshot&ip={}&id={}'.format(aIP,aVM['id']), TITLE='Snapshot info')
+  aWeb.wr(aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start'))
+  aWeb.wr(aWeb.button('snapshot',DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-snapshot.create'), TITLE='Snapshot'))
+  aWeb.wr(aWeb.button('info',    DIV='div_content_right',SPIN='true',URL='esxi_snapshot?ip={}&id={}'.format(aIP,aVM['id']), TITLE='Snapshot info'))
  else:
-  print "Unknown state [{}]".format(aVM['state_id'])
+  aWeb.wr("Unknown state [{}]".format(aVM['state_id']))
  if aHighlight:
-  print "</DIV>"
+  aWeb.wr("</DIV>")
 
 
 #
@@ -113,27 +113,27 @@ def graph(aWeb):
  from zdcp.tools.munin import widget_cols
  hostname = aWeb['hostname']
  domain   = aWeb['domain']
- print "<ARTICLE STYLE='overflow-x:auto;'>"
+ aWeb.wr("<ARTICLE STYLE='overflow-x:auto;'>")
  widget_cols([ "{1}/{0}.{1}/esxi_vm_info".format(hostname,domain), "{1}/{0}.{1}/esxi_cpu_info".format(hostname,domain), "{1}/{0}.{1}/esxi_mem_info".format(hostname,domain) ])
- print "</ARTICLE>"
+ aWeb.wr("</ARTICLE>")
 
 #
 #
 def logs(aWeb):
  res = aWeb.rest_call("esxi_logs",{'hostname':aWeb['hostname']})
- print "<ARTICLE><P>%s operation logs</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(aWeb['hostname'],"<BR>".join(res['data']))
+ aWeb.wr("<ARTICLE><P>%s operation logs</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(aWeb['hostname'],"<BR>".join(res['data'])))
 
 #
 #
 def snapshot(aWeb):
- cookie = aWeb.cookie_unjar('system')
+ cookie = aWeb.cookie('system')
  res = aWeb.rest_call("esxi_snapshots",{'ip':aWeb['ip'],'id':aWeb['id'],'user_id':cookie['id']}) 
- print "<ARTICLE><P>Snapshots (%s) Highest ID:%s</P>"%(aWeb['id'],res['highest'])
- print "<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>"
- print "<DIV CLASS=tbody>"
+ aWeb.wr("<ARTICLE><P>Snapshots (%s) Highest ID:%s</P>"%(aWeb['id'],res['highest']))
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tbody>")
  for snap in res['data']:
-  print "<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS='td controls'>".format(snap['name'],snap['id'],snap['desc'],snap['created'],snap['state'])
-  print aWeb.button('revert', TITLE='Revert', DIV='div_content_right',SPIN='true', URL='zdcp.cgi?esxi_op&ip=%s&id=%s&next-state=vmsvc-snapshot.revert&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id']))
-  print aWeb.button('delete', TITLE='Delete', DIV='div_content_right',SPIN='true', URL='zdcp.cgi?esxi_op&ip=%s&id=%s&next-state=vmsvc-snapshot.remove&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id']))
-  print "</DIV></DIV>"
- print "</DIV></DIV>"
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS='td controls'>".format(snap['name'],snap['id'],snap['desc'],snap['created'],snap['state']))
+  aWeb.wr(aWeb.button('revert', TITLE='Revert', DIV='div_content_right',SPIN='true', URL='esxi_op?ip=%s&id=%s&next-state=vmsvc-snapshot.revert&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id'])))
+  aWeb.wr(aWeb.button('delete', TITLE='Delete', DIV='div_content_right',SPIN='true', URL='esxi_op?ip=%s&id=%s&next-state=vmsvc-snapshot.remove&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id'])))
+  aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</DIV></DIV>")

@@ -46,10 +46,6 @@
             "description": "Master node node interface from local node PoV",
             "value": "http://127.0.0.1:9001"
         },
-        "mode": {
-            "description": "Local device role/function [front,master,rest]",
-            "value": "front,master,rest"
-        },
         "node": {
             "description": "Local device's globally reachable node interface",
             "value": "http://x.y.z.w:9001"

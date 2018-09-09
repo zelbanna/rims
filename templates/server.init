@@ -46,6 +46,7 @@ case "$1" in
   stop
   ;;
  restart)
+  clear
   stop
   start
   ;;

@@ -120,7 +120,7 @@ def network(aDict):
 
    nodes = {ret['id']:{'processed':False,'edges':0,'multipoint':0,'distance':0,'connected':0}}
    edges = []
-   ret['options'] = {'layout':{'randomSeed':2}, 'physics':{'enabled':True }, 'edges':{'length':180}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'images/viz-generic.png' }}
+   ret['options'] = {'layout':{'randomSeed':2}, 'physics':{'enabled':True }, 'edges':{'length':180}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'../images/viz-generic.png' }}
 
    # Connected and Multipoint
    sql_connected  = "SELECT CAST({0} AS UNSIGNED) AS a_device, di.id AS a_interface, di.name AS a_name, di.snmp_index AS a_index, di.peer_interface AS b_interface, peer.snmp_index AS b_index, peer.name AS b_name, peer.device AS b_device FROM device_interfaces AS di LEFT JOIN device_interfaces AS peer ON di.peer_interface = peer.id WHERE di.peer_interface IS NOT NULL AND di.device = {0}"
