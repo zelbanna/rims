@@ -28,6 +28,7 @@ if len(argv) < 2:
   settingsfilename = Old['system']['config_file']
 else:
  settingsfilename = argv[1]
+ 
 ############################################### ALL #################################################
 #
 # load settings
@@ -42,7 +43,6 @@ for section,content in temp.iteritems():
    settings[section] = {}
   settings[section][key] = params['value']
 settings['system']['config_file'] = settingsfile
-
 
 ############################################### ALL #################################################
 #
@@ -68,7 +68,6 @@ try: import git
 except ImportError:
  res['gitpython'] = 'install'
  pipmain(["install","-q","gitpython"])
-
 
 ############################################ MASTER ###########################################
 #
@@ -121,6 +120,7 @@ if settings['system']['id'] == 'master':
      resources.append({'name':pyfile, 'icon':icon, 'type':type})
    except: pass
  res['resources_new'] = 0
+
 
  #
  # Common settings and user - for master...
