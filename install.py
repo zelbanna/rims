@@ -207,13 +207,12 @@ else:
  try: res['register'] = rest_call("%s/system_node_register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['node'],'system':'1'})['data']
  except Exception as e: res['register'] = str(e)
  try: master   = rest_call("%s/system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
- except Exception as e:
-  ret['fetch'] = str(e)
-  master = {}
+ except Exception as e: ret['fetch'] = str(e)
  else:
-  for section,content in master.iteritems():
-   if settings.get(section): settings[section].update(content)
-   else: settings[section] = content
+  if master:
+   for section,content in master.iteritems():
+    if settings.get(section): settings[section].update(content)
+    else: settings[section] = content
 
 
 #
