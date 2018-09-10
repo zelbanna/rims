@@ -33,17 +33,17 @@ def main(aWeb):
 def list(aWeb):
  data = aWeb.rest_call("multimedia_list")
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
- aWeb.wr("<ARTICLE><P>Files</P><DIV CLASS=controls>")
+ aWeb.wr("<ARTICLE><P>Files</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content', URL='multimedia_list'))
  aWeb.wr(aWeb.button('trash', DIV='div_content_right', URL='multimedia_cleanup', MSG='Are you sure?'))
- aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  for row in data['files']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:290px'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['file']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:290px'>%s</DIV><DIV CLASS=td>"%(row['file']))
   aWeb.wr(aWeb.button('info',     DIV='div_content_right', TITLE='Title info', URL='multimedia_title?path=%s&file=%s'%(row['path'],row['file'])))
   aWeb.wr(aWeb.button('search',   DIV='div_content_right', TITLE='Lookup info',URL='multimedia_lookup?path=%s&file=%s'%(row['path'],row['file'])))
   aWeb.wr(aWeb.button('document', DIV='div_content_right', TITLE='Subtitles',  URL='multimedia_subtitles?path=%s&file=%s'%(row['path'],row['file'])))
   aWeb.wr(aWeb.button('trash',   DIV='div_content_right', TITLE='Delete file',URL='multimedia_delete?path=%s&file=%s'%(row['path'],row['file'])))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
 
@@ -72,10 +72,10 @@ def title(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>File Info:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=info></DIV></DIV>"%data['info'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>File Name:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=name></DIV></DIV>"%data['name'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>File Path:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s' NAME=path></DIV></DIV>"%data['path'])
- aWeb.wr("</DIV></DIV></FORM><DIV CLASS=controls>")
+ aWeb.wr("</DIV></DIV></FORM>")
  aWeb.wr(aWeb.button('start',DIV='div_content_right', SPIN='true', URL='multimedia_process',  FRM='multimedia_info_form'))
  aWeb.wr(aWeb.button('sync', DIV='div_content_right', SPIN='true', URL='multimedia_transfer', FRM='multimedia_info_form'))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
 
 #
 #

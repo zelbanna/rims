@@ -57,13 +57,13 @@ def list(aWeb):
  args = aWeb.args()
  args['sort'] = aWeb.get('sort','ip')
  res = aWeb.rest_call("device_list",args)
- aWeb.wr("<ARTICLE><P>Device List</P><DIV CLASS='controls'>")
+ aWeb.wr("<ARTICLE><P>Device List</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content_left',  URL='device_list?%s'%aWeb.get_args(), TITLE='Reload'))
  aWeb.wr(aWeb.button('items',  DIV='div_content_left',  URL='device_list?sort=%s'%args['sort'], TITLE='List All'))
  aWeb.wr(aWeb.button('search', DIV='div_content_left',  URL='device_search', TITLE='Search'))
  aWeb.wr(aWeb.button('add',    DIV='div_content_right', URL='device_new?%s'%aWeb.get_args(), TITLE='Add device'))
  aWeb.wr(aWeb.button('devices',DIV='div_content_right', URL='device_discover', TITLE='Discover'))
- aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead>")
  for sort in ['IP','Hostname']:
   aWeb.wr("<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='device_list?sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red"))
  aWeb.wr("<DIV CLASS=th>Model</DIV></DIV><DIV CLASS=tbody>")
@@ -79,7 +79,7 @@ def search(aWeb):
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=sort VALUE='hostname'>")
  aWeb.wr("<SPAN>Field:</SPAN><SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='type'>Type</OPTION><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='id'>ID</OPTION></SELECT>")
  aWeb.wr("<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' REQUIRED>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM><DIV CLASS=inline>")
  aWeb.wr(aWeb.button('search', DIV='div_content_left', URL='device_list', FRM='device_search'))
  aWeb.wr(aWeb.button('items',  DIV='div_content_left', URL='device_list', TITLE='List All items'))
  aWeb.wr("</DIV>")
@@ -168,7 +168,7 @@ def info(aWeb):
  aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=comment VALUE='{}'></DIV></DIV>".format("" if not dev['info']['comment'] else dev['info']['comment'].encode("utf-8")))
  aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>Web UI:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage']))
  aWeb.wr("</DIV></DIV></DIV>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',     DIV='div_content_right',URL='device_info?id=%i'%dev['id']))
  aWeb.wr(aWeb.button('trash',      DIV='div_content_right',URL='device_delete?id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true'))
  aWeb.wr(aWeb.button('edit',       DIV='div_content_right',URL='device_extended?id=%i'%dev['id'], TITLE='Configure Extended Device Information'))
@@ -184,7 +184,7 @@ def info(aWeb):
  if dev['info'].get('webpage'):
   aWeb.wr(aWeb.button('ui',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('webpage')))
  aWeb.wr("<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('update','')))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
  aWeb.wr("<!-- Function navbar and content -->")
  aWeb.wr("<NAV><UL>")
  for fun in dev['info']['functions'].split(','):
@@ -241,9 +241,9 @@ def extended(aWeb):
    aWeb.wr("</SELECT></DIV></DIV>")
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>TS Port:</DIV><DIV CLASS=td TITLE='Console port in rack TS'><INPUT NAME=rack_info_console_port TYPE=TEXT PLACEHOLDER='{}'></DIV></DIV>".format(dev['rack']['console_port']))
   if not dev['info']['type_base'] == 'controlplane':
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td><CENTER>Add PEM<CENTER></DIV><DIV CLASS=td><DIV CLASS=controls>")
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td><CENTER>Add PEM<CENTER></DIV><DIV CLASS=td>")
    aWeb.wr(aWeb.button('add',DIV='div_content_right',URL='device_extended?op=add_pem&id=%s'%(dev['id']), TITLE='Add PEM'))
-   aWeb.wr("</DIV></DIV></DIV>")
+   aWeb.wr("</DIV></DIV>")
    for pem in dev['pems']:
     aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>PEM:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=pems_%(id)s_name VALUE='%(name)s'></DIV><DIV CLASS=td>"%(pem))
     aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='device_extended?op=remove_pem&id=%s&pem_id=%s'%(dev['id'],pem['id']), TITLE='Remove PEM'))
@@ -262,12 +262,11 @@ def extended(aWeb):
 
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
  aWeb.wr("</DIV></DIV></FORM>")
- aWeb.wr("<DIV CLASS=controls>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='device_extended?id=%s'%dev['id']))
  aWeb.wr(aWeb.button('back',  DIV='div_content_right',URL='device_info?id=%s'%dev['id']))
  aWeb.wr(aWeb.button('trash', DIV='div_content_right',URL='device_delete?id=%s'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true'))
  aWeb.wr(aWeb.button('save',  DIV='div_content_right',URL='device_extended?op=update', FRM='info_form', TITLE='Save Device Information'))
- aWeb.wr("</DIV><SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result','')))
+ aWeb.wr("<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result','')))
  aWeb.wr("</ARTICLE>")
 
 #
@@ -381,10 +380,10 @@ def new(aWeb):
   #  print "<OPTION ID=%i>%i</OPTION>"%(n,n)
   # print "</SELECT></DIV></DIV>"
   aWeb.wr("</DIV></DIV>")
-  aWeb.wr("</FORM><DIV CLASS=controls>")
+  aWeb.wr("</FORM>")
   aWeb.wr(aWeb.button('start', DIV='device_span', URL='device_new?op=new',  FRM='device_new_form', TITLE='Create'))
   aWeb.wr(aWeb.button('search',DIV='device_ip',   URL='device_new?op=find', FRM='device_new_form', TITLE='Find IP',INPUT='True'))
-  aWeb.wr("</DIV><SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'></SPAN>")
+  aWeb.wr("<SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'></SPAN>")
   aWeb.wr("</ARTICLE>")
 
 #
@@ -411,9 +410,9 @@ def discover(aWeb):
    aWeb.wr("<OPTION VALUE=%s>%s (%s)</OPTION>"%(s['id'],s['netasc'],s['description']))
   aWeb.wr("</SELECT></DIV></DIV>")
   aWeb.wr("</DIV></DIV>")
-  aWeb.wr("</FORM><DIV CLASS=controls>")
+  aWeb.wr("</FORM>")
   aWeb.wr(aWeb.button('start', DIV='div_content_right', SPIN='true', URL='device_discover', FRM='device_discover_form'))
-  aWeb.wr("</DIV></ARTICLE>")
+  aWeb.wr("</ARTICLE>")
 
 ################################################## interfaces #################################################
 #
@@ -429,22 +428,22 @@ def interface_list(aWeb):
  else:
   opres = ""
  res = aWeb.rest_call("device_interface_list",{'device':aWeb['device']})
- aWeb.wr("<ARTICLE><P>Interfaces (%s)</P><DIV CLASS='controls'>"%(res['hostname']))
+ aWeb.wr("<ARTICLE><P>Interfaces (%s)</P>"%(res['hostname']))
  aWeb.wr(aWeb.button('reload', DIV='div_dev_data',URL='device_interface_list?device=%s'%res['id']))
  aWeb.wr(aWeb.button('add',    DIV='div_dev_data',URL='device_interface_info?device=%s&id=new'%res['id']))
  aWeb.wr(aWeb.button('search', DIV='div_dev_data',URL='device_interface_list?device=%s&op=discover'%res['id'], SPIN='true', MSG='Rediscover interfaces?'))
  aWeb.wr(aWeb.button('trash',  DIV='div_dev_data',URL='device_interface_list?device=%s&op=delete'%res['id'], MSG='Delete interfaces?', FRM='interface_list', TITLE='Delete selected interfaces'))
  aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device=%(id)s&op=delete&device_id=%(id)s' TITLE='Clean up empty interfaces' SPIN=true>Cleanup</A>"%res)
- aWeb.wr("</DIV><SPAN CLASS=results>%s</SPAN><FORM ID=interface_list>"%(opres))
+ aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=interface_list>"%(opres))
  aWeb.wr("<DIV CLASS=table>")
  aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Peer interface</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  for row in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_interface'] if not row['multipoint'] else 'multipoint'))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_interface'] if not row['multipoint'] else 'multipoint'))
   aWeb.wr("<INPUT TYPE=CHECKBOX VALUE=%(id)s NAME='interface_%(id)s'>"%row)
   aWeb.wr(aWeb.button('info',  DIV='div_dev_data',URL='device_interface_info?device=%s&id=%s'%(aWeb['device'],row['id'])))
   aWeb.wr(aWeb.button('sync',  DIV='div_dev_data',URL='device_interface_link_device?device=%s&id=%s&name=%s'%(aWeb['device'],row['id'],row['name']), TITLE='Connect'))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</FORM></ARTICLE>")
 
@@ -466,12 +465,12 @@ def interface_info(aWeb):
  if data['peer_device']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Peer Device</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='device_info?id=%s'>%s</A></DIV></DIV>"%(data['peer_device'],data['peer_device']))
  aWeb.wr("</DIV></DIV>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('back', DIV='div_dev_data', URL='device_interface_list?device=%s'%data['device']))
  aWeb.wr(aWeb.button('save', DIV='div_dev_data', URL='device_interface_info?op=update', FRM='interface_info_form'))
  if data['id'] != 'new':
   aWeb.wr(aWeb.button('trash', DIV='div_dev_data', URL='device_interface_list?op=delete&device=%s&id=%s'%(data['device'],data['id']), MSG='Delete interface?'))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
 
 #
 #
@@ -482,7 +481,7 @@ def interface_link_device(aWeb):
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id   VALUE=%s>"%aWeb['id'])
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=name VALUE=%s>"%aWeb['name'])
  aWeb.wr("Connect '%s' to device (Id or IP): <INPUT CLASS='background' REQUIRED TYPE=TEXT NAME='peer' STYLE='width:100px' VALUE='%s'>"%(aWeb['name'],aWeb.get('peer','0')))
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM><DIV CLASS=inline>")
  aWeb.wr(aWeb.button('back',    DIV='div_dev_data', URL='device_interface_list?device=%s'%aWeb['device']))
  aWeb.wr(aWeb.button('forward', DIV='div_dev_data', URL='device_interface_link_interface', FRM='interface_link'))
  aWeb.wr("</DIV></ARTICLE>")
@@ -501,7 +500,7 @@ def interface_link_interface(aWeb):
  for intf in res.get('data',[]):
   aWeb.wr("<OPTION VALUE=%s>%s (%s)</OPTION>"%(intf['id'],intf['name'],intf['description']))
  aWeb.wr("</SELECT>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('back',    DIV='div_dev_data', URL='device_interface_link_device', FRM='interface_link'))
  aWeb.wr(aWeb.button('forward', DIV='div_dev_data', URL='device_interface_list?op=link', FRM='interface_link'))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")

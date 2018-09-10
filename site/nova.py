@@ -19,17 +19,15 @@ def list(aWeb):
   return
  data = aWeb.rest_call("openstack_call",{'token':cookie['token'],'service':"nova",'call':"servers/detail"})['data']
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Nova Servers</P>")
- aWeb.wr("<DIV CLASS=controls>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='nova_list'))
  aWeb.wr(aWeb.button('add', DIV='div_content_right', URL='nova_select_parameters'))
- aWeb.wr("</DIV>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:135px;'>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  for server in data.get('servers'):
   aWeb.wr("<DIV CLASS=tr>")
   aWeb.wr("<!-- {} - {} -->".format(server['status'],server['OS-EXT-STS:task_state']))
   aWeb.wr("<DIV CLASS=td STYLE='max-width:200px'><A CLASS='z-op' TITLE='VM info' DIV=div_content_right URL='nova_action?id={}&op=info' SPIN=true>{}</A></DIV>".format(server['id'],server['name']))
-  aWeb.wr("<DIV CLASS=td><DIV CLASS=controls>")
+  aWeb.wr("<DIV CLASS=td>")
   qserver = get_quote(server['name'])
   actionurl = 'nova_action?name=%s&id=%s&op={}'%(qserver,server['id'])
   aWeb.wr(aWeb.button('term', TARGET='_blank', HREF='nova_console?name=%s&id=%s'%(qserver,server['id']), TITLE='New window console'))
@@ -43,7 +41,7 @@ def list(aWeb):
     aWeb.wr(aWeb.button('start', DIV='div_content_right', URL=actionurl.format('start'), SPIN='true', TITLE='Start VM'))
   else:
    aWeb.wr(aWeb.button('info', DIV='div_content_right', URL=actionurl.format('info'), SPIN='true', TITLE='VM info'))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
@@ -72,9 +70,8 @@ def select_parameters(aWeb):
  aWeb.wr("</SELECT></DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<DIV CLASS='border'><UL CLASS='drop vertical' ID=ul_network DEST=os_network></UL></DIV>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('start',DIV='div_content_right', URL='nova_action?id=new&op=add',FRM='frm_os_create_vm', SPIN='true'))
- aWeb.wr("</DIV>")
  aWeb.wr("<DIV CLASS='border'><UL CLASS='drop vertical' ID=ul_avail>")
  for net in resources['networks']:
   if net.get('contrail:subnet_ipam'):

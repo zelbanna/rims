@@ -69,10 +69,10 @@ def rest_main(aWeb):
   aWeb.wr("<OPTION VALUE={0}>{0}</OPTION>".format(method))
  aWeb.wr("</SELECT>")
  aWeb.wr("<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:70px;' NAME=arguments></TEXTAREA>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('start',  DIV='div_rest_info', URL='tools_rest_execute', FRM='frm_rest'))
  aWeb.wr(aWeb.button('delete', DIV='div_rest_info', OP='empty', TITLE='Clear results view'))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
  aWeb.wr("<DIV ID=div_rest_info></DIV>")
 
 #
@@ -157,9 +157,9 @@ def services_info(aWeb):
  args = aWeb.get_args2dict(['node'])
  data  = aWeb.rest_call('tools_service_info&node=%s'%aWeb['node'],args)
  state = 'start' if data['state'] == 'inactive' else 'stop'
- aWeb.wr("<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)<DIV CLASS=controls>"%(aWeb['service'],data['state'],data['info']))
+ aWeb.wr("<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)"%(aWeb['service'],data['state'],data['info']))
  aWeb.wr(aWeb.button(state, DIV='div_content', SPIN='true', URL='tools_services_info?service=%s&node=%s&op=%s'%(args['service'],aWeb['node'],state)))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
 
 ############################################## Files ###############################################
 #

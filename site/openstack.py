@@ -96,17 +96,17 @@ def api(aWeb):
  aWeb.wr("</SELECT>")
  aWeb.wr("Arguments/Body<BR>")
  aWeb.wr("<TEXTAREA STYLE='width:100%; height:100px;' NAME=os_args></TEXTAREA>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('start',  DIV='div_os_info', URL='openstack_result', FRM='frm_os_api'))
  aWeb.wr(aWeb.button('delete', DIV='div_os_info', OP='empty', TITLE='Clear results view'))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
  aWeb.wr("<DIV ID=div_os_info></DIV>")
 
 #
 #
 def fqname(aWeb):
  aWeb.wr("<ARTICLE>")
- aWeb.wr("<FORM ID=frm_os_uuid>Contrail UUID:<INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM><DIV CLASS=controls>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else ""))
+ aWeb.wr("<FORM ID=frm_os_uuid>Contrail UUID:<INPUT CLASS='white' STYLE='width:500px;' TYPE=TEXT NAME=os_uuid VALUE={}></FORM><DIV CLASS=inline>".format(aWeb['os_uuid'] if aWeb['os_uuid'] else ""))
  aWeb.wr(aWeb.button('start',  DIV='div_content', URL='openstack_fqname', FRM='frm_os_uuid'))
  aWeb.wr("</DIV>")
  if aWeb['os_uuid']:

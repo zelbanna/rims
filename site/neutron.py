@@ -35,9 +35,9 @@ def list(aWeb):
     for sub in ipam['attr']['ipam_subnets']:
      aWeb.wr("{}/{}".format(sub['subnet']['ip_prefix'],sub['subnet']['ip_prefix_len']))
   aWeb.wr("</DIV>")
-  aWeb.wr("<DIV CLASS=td><DIV CLASS=controls>")
+  aWeb.wr("<DIV CLASS=td>")
   aWeb.wr(aWeb.button('delete',DIV='div_content_right', SPIN='true', URL='neutron_action?name=%s&id=%s&op=remove'%(net['display_name'],net['uuid']), MSG='Delete network?'))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
 
@@ -110,15 +110,15 @@ def action(aWeb):
     # Do we select one or many VMI:s?
     aWeb.wr("<DIV CLASS=td><A TITLE='VM info' CLASS='z-op' DIV=div_content_right  URL='nova_action?op=info&id={0}' SPIN=true>{1}</A></DIV>".format(fip['vm_interface'],fixed))
     aWeb.wr("<DIV CLASS=td><A TITLE='Network info' CLASS='z-op' DIV=div_content_right  URL='neutron_action?op=info&id={0}' SPIN=true>{1}</A></DIV>".format(fip['vm_network_uuid'],fip['vm_network_name']))
-    aWeb.wr("<DIV CLASS=td><DIV CLASS=controls>")
+    aWeb.wr("<DIV CLASS=td>")
     aWeb.wr(aWeb.button('info',  DIV='div_os_info', URL='neutron_action?op=print&id=%s'%fip['uuid']))
     aWeb.wr(aWeb.button('delete',DIV='div_os_info', URL='neutron_action?op=fi_disassociate&id=%s'%fip['uuid'], MSG='Are you sure?', SPIN='true'))
-    aWeb.wr("</DIV></DIV>")
+    aWeb.wr("</DIV>")
    else:
-    aWeb.wr("<DIV CLASS=td></DIV><DIV CLASS=td></DIV><DIV CLASS=td><DIV CLASS=controls>")
+    aWeb.wr("<DIV CLASS=td></DIV><DIV CLASS=td></DIV><DIV CLASS=td>")
     aWeb.wr(aWeb.button('info', DIV='div_os_info', URL='neutron_action?op=print&id=%s'%fip['uuid']))
     aWeb.wr(aWeb.button('add',  DIV='div_os_info', URL='neutron_action?op=fi_associate_choose_vm&id=%s'%fip['uuid']))
-    aWeb.wr("</DIV></DIV>")
+    aWeb.wr("</DIV>")
    aWeb.wr("</DIV>")
   aWeb.wr("</DIV></DIV>")
 
@@ -149,9 +149,8 @@ def action(aWeb):
   aWeb.wr("VM: <SELECT STYLE='width:auto; height:22px;' NAME=vm>")
   for vm in vms:
    aWeb.wr("<OPTION VALUE={0}#{1}>{0}</OPTION>".format(vm['name'],vm['id']))
-  aWeb.wr("</SELECT></FORM><DIV CLASS=controls>")
+  aWeb.wr("</SELECT></FORM>")
   aWeb.wr(aWeb.button('forward', DIV='div_os_info', FRM='frm_fi_assoc_vm', URL='neutron_action?op=fi_associate_choose_interface'))
-  aWeb.wr("</DIV>")
 
  elif op == 'fi_associate_choose_interface':
   vm_name,_,vm_id = aWeb['vm'].partition('#')
@@ -164,10 +163,9 @@ def action(aWeb):
   for vmi in vmis.get('interfaces',[]):
    aWeb.wr("<OPTION VALUE={0}#{1}>{2} ({1})</OPTION>".format(vmi['uuid'],vmi['ip_address'],vmi['virtual_network']))
   aWeb.wr("</SELECT>")
-  aWeb.wr("</FORM><DIV CLASS=controls>")
+  aWeb.wr("</FORM>")
   aWeb.wr(aWeb.button('back', DIV='div_os_info', URL='neutron_action?op=fi_associate_choose_vm&id=%s'%id, TITLE='Change VM'))
   aWeb.wr(aWeb.button('forward', DIV='div_os_info', URL='neutron_action?op=fi_associate', FRM='frm_fi_assoc_vmi', TITLE='Commit'))
-  aWeb.wr("</DIV>")
 
  elif op == 'fi_associate':
   vmid  = aWeb['vm']

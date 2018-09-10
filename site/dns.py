@@ -12,21 +12,20 @@ __status__= "Production"
 #
 def domain_list(aWeb):
  domains = aWeb.rest_call("dns_domain_list",{'sync':True if aWeb['sync'] == 'true' else False})
- aWeb.wr("<ARTICLE><P>Domains</P><DIV CLASS='controls'>")
+ aWeb.wr("<ARTICLE><P>Domains</P>")
  aWeb.wr(aWeb.button('items', DIV='div_content_left', URL='dns_domain_list',TITLE='List domains'))
  aWeb.wr(aWeb.button('sync',   DIV='div_content_left', URL='dns_domain_list?sync=true',TITLE='Resync cache'))
  aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='dns_domain_info?id=new',TITLE='Add domain'))
  aWeb.wr(aWeb.button('search', DIV='div_content_right',URL='dns_consistency',TITLE='Check Backend Consistency',SPIN='true'))
  aWeb.wr(aWeb.button('document',DIV='div_content_right',URL='dns_top', SPIN='true'))
- aWeb.wr("</DIV>")
  if domains.get('sync'):
   aWeb.wr("<SPAN CLASS='results'>%s</SPAN>"%(domains['sync']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for dom in domains['domains']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>%(server)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%dom)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>%(server)s</DIV><DIV CLASS=td>"%dom)
   aWeb.wr(aWeb.button('info', DIV='div_content_right',URL='dns_domain_info?id=%s'%(dom['id'])))
   aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='dns_record_list?domain_id=%s'%(dom['id'])))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
@@ -55,13 +54,13 @@ def domain_info(aWeb):
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<SPAN CLASS='results' ID=update_results>{}</SPAN>".format("lookup" if not aWeb.get('op') else aWeb['op']))
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(res['id']))
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  if res['id'] == 'new':
   aWeb.wr(aWeb.button('save',DIV='div_content_right',URL='dns_domain_info?op=update',FRM='dns_info_form'))
  else:
   aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='dns_domain_info?id=%s'%(res['id'])))
   aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='dns_domain_delete?id=%s'%res['id']))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
 
 #
 #
@@ -82,20 +81,20 @@ def domain_save(aWeb):
 #
 def record_list(aWeb):
  dns = aWeb.rest_call("dns_record_list",{'domain_id':aWeb['domain_id']})
- aWeb.wr("<ARTICLE><P>Records</P><DIV CLASS=controls>")
+ aWeb.wr("<ARTICLE><P>Records</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='dns_record_list?domain_id=%s'%(aWeb['domain_id'])))
  aWeb.wr(aWeb.button('save',  DIV='div_content_right',URL='dns_domain_save?id=%s'%(aWeb['domain_id'])))
  aWeb.wr(aWeb.button('add',   DIV='div_content_right',URL='dns_record_info?id=new&domain_id=%s'%(aWeb['domain_id'])))
  aWeb.wr("<SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>")
- aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>TTL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>TTL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for rec in dns['records']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%i</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(rec['id'],rec['name']))
   aWeb.wr(rec['content'] if not rec['type'] == 'A' else "<A CLASS=z-op DIV=div_content_right URL='device_info?ip=%s'>%s</A>"%(rec['content'],rec['content']))
-  aWeb.wr("</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(rec['type'],rec['ttl']))
+  aWeb.wr("</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(rec['type'],rec['ttl']))
   aWeb.wr(aWeb.button('info',DIV='div_content_right',URL='dns_record_info?id=%i&domain_id=%s'%(rec['id'],aWeb['domain_id'])))
   if rec['type'] in ['A','CNAME','PTR']:
    aWeb.wr(aWeb.button('delete',DIV='span_dns',URL='dns_record_delete?id=%s&domain_id=%s'%(rec['id'],aWeb['domain_id'])))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
@@ -116,12 +115,12 @@ def record_info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE={}></DIV></DIV>".format(data['type']))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<SPAN CLASS='results' ID=update_results></SPAN>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='dns_record_info?id=%s&domain_id=%s'%(data['id'],data['domain_id'])))
  aWeb.wr(aWeb.button('save',DIV='div_content_right',URL='dns_record_info?op=update',FRM='dns_info_form'))
  if not data['id'] == 'new':
   aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='dns_record_delete?id=%s&domain_id=%s'%(data['id'],data['domain_id'])))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
 
 #
 #
@@ -191,17 +190,17 @@ def consistency(aWeb):
   aWeb.wr("<DIV CLASS=tr>")
   aWeb.wr("<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV>"%(rec['name'],rec['type'],rec['content'],rec['id']))
   aWeb.wr("<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV>"%(rec['device_id'],rec['record_id'],rec['fqdn']))
-  aWeb.wr("<DIV CLASS=td><DIV CLASS=controls>")
+  aWeb.wr("<DIV CLASS=td>")
   aWeb.wr(aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='dns_record_delete?domain_id=%s&id=%s'%(rec['domain_id'],rec['id'])))
   if rec['device_id']:
    aWeb.wr(aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='dns_record_transfer?&domain_id=%s&record_id=%s&device_id=%s&type=%s'%(rec['domain_id'],rec['id'],rec['device_id'],rec['type'])))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  for dev in data['devices']:
   aWeb.wr("<DIV CLASS=tr>")
   aWeb.wr("<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>-</DIV><DIV CLASS=td>-</DIV>"%(dev['ip'],dev['type']))
   aWeb.wr("<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='device_info?id=%s'>%s</A></DIV>"%(dev['device_id'],dev['record_id'],dev['device_id'],dev['fqdn']))
-  aWeb.wr("<DIV CLASS=td><DIV CLASS=controls>")
+  aWeb.wr("<DIV CLASS=td>")
   aWeb.wr(aWeb.button('add',DIV='span_dns',URL='dns_record_create?type={}&device_id={}&ip={}&fqdn={}&domain_id={}'.format(dev['type'],dev['device_id'],dev['ip'],dev['fqdn'],dev['domain_id'])))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")

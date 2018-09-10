@@ -26,9 +26,7 @@ def list(aWeb):
  from datetime import datetime
  res = aWeb.rest_call("appformix_report_projects",{'node':cookie_appformix['node'],'token':cookie_appformix['token'],'project':cookie_openstack['project_id']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Usage Reports</P>")
- aWeb.wr("<DIV CLASS=controls>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='appformix_list'))
- aWeb.wr("</DIV>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Report</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th STYLE='width:94px;'>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  for rep in res['reports']:

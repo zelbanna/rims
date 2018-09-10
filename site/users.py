@@ -43,14 +43,14 @@ def user(aWeb):
 def list(aWeb):
  rows = aWeb.rest_call("system_users_list")['data']
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
- aWeb.wr("<ARTICLE><P>Users</P><DIV CLASS=controls>")
+ aWeb.wr("<ARTICLE><P>Users</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='users_list'))
  aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='users_info?id=new'))
- aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in rows:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(alias)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%row)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(alias)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>"%row)
   aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='users_info?id=%(id)s'%row))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
 
@@ -81,11 +81,11 @@ def info(aWeb):
    aWeb.wr("<LI CLASS='drag' ID={0}><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='{1}'><IMG SRC='{2}' ALT='{1}' /></BUTTON></LI>".format(key,resource['title'],resource['icon']))
   except: pass
  aWeb.wr("</UL></DIV>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='users_info?op=update', FRM='user_info_form'))
  if data['id'] != 'new' and ((cookie['id'] == str(data['id']) or cookie['id'] == "1")):
   aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='users_delete?id={0}'.format(data['id']), MSG='Really remove user?'))
- aWeb.wr("</DIV><SPAN STYLE='display:block'>Available menu options</SPAN>")
+ aWeb.wr("<SPAN STYLE='display:block'>Available menu options</SPAN>")
  aWeb.wr("<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>")
  for id,resource in resources.items():
   aWeb.wr("<LI CLASS='drag' ID={0}><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='{1}'><IMG SRC='{2}' ALT='{1}' /></BUTTON></LI>".format(id,resource['title'],resource['icon']))

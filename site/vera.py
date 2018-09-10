@@ -25,7 +25,7 @@ def portal(aWeb):
   id = scen['id']
   name = scen['name'].replace('_',' ')
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=vera_scene_info?node=vera&scene=%s>%s</A></DIV>"%(id,name))
-  aWeb.wr("<DIV CLASS=td><DIV CLASS=controls ID=scene_%s>"%id)
+  aWeb.wr("<DIV CLASS=td><DIV ID=scene_%s>"%id)
   aWeb.wr("<A CLASS='z-op btn mobile' DIV='scene_{0}' URL='vera_scene_state?node=vera&scene={0}&op={1}'><IMG SRC='images/btn-{2}.png' /></A>".format(id,"run" if scen['active'] == 0 else "off",'start' if scen['active'] == 0 else 'stop'))
   aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
@@ -97,10 +97,9 @@ def device_info(aWeb):
   aWeb.wr("<INPUT TYPE=HIDDEN NAME='id' VALUE='%s'>"%(aWeb['id']))
   aWeb.wr("<INPUT TYPE=HIDDEN NAME='service' VALUE='urn:upnp-org:serviceId:Dimming1'>")
   aWeb.wr("<INPUT TYPE=HIDDEN NAME='category' VALUE='%s'>"%(aWeb['category']))
-  aWeb.wr("<INPUT TYPE=RANGE MIN=0 MAX=100 VALUE='%s' CLASS='slider' NAME='value' HTML='output'><SPAN ID='output'>%s</SPAN></FORM><DIV CLASS=controls>"%(load,load))
+  aWeb.wr("<INPUT TYPE=RANGE MIN=0 MAX=100 VALUE='%s' CLASS='slider' NAME='value' HTML='output'><SPAN ID='output'>%s</SPAN></FORM>"%(load,load))
   aWeb.wr("<INPUT TYPE=RADIO ID='on' NAME='state' VALUE='on' %s><LABEL FOR='on'>On</LABEL> <INPUT TYPE=RADIO ID='off' NAME='state' VALUE='off' %s><LABEL FOR='off'>Off</LABEL>"%("checked" if state == "1" else "","checked" if state == "0" else ""))
   aWeb.wr(aWeb.button('start',DIV='div_content_right', URL='vera_device_info?op=update&variable=LoadLevelTarget', FRM='device_state'))
-  aWeb.wr("</DIV>")
   if res['op']:
    aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Response</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res['op']['response']))
@@ -141,7 +140,7 @@ def scenes(aWeb):
   id = scen['id']
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%id)
   aWeb.wr("<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=vera_scene_info?node=%s&scene=%s>%s</A></DIV>"%(aWeb['node'],id,scen['name']))
-  aWeb.wr("<DIV CLASS=td><DIV CLASS=controls ID=scene_%s>"%id)
+  aWeb.wr("<DIV CLASS=td><DIV ID=scene_%s>"%id)
   aWeb.wr(aWeb.button('start' if scen['active'] == 0 else 'stop',URL='vera_scene_state?node=%s&scene=%s&op=%s'%(aWeb['node'],id,"run" if scen['active'] == 0 else "off"),DIV='scene_%s'%id))
   aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")

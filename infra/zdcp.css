@@ -78,7 +78,6 @@ div.td > input:read-only {      font-style:italic; }
 div.readonly {                  font-style:italic; }
 div.td > input:-webkit-input-placeholder { color: #9CA6B0; }
 div.td > input:-moz-placeholder {          color: #9CA6B0; opacity:1; }
-div.controls { display:inline; font-size:5px; }
 
 article.mobile .table .tbody .tr { line-height:44px; font-size:44px }
 article.mobile .controls a {       width:88px; height:88px; margin:0; padding:0; border:none }
@@ -92,6 +91,7 @@ article.mobile .controls img    {  width:88px; height:88px; }
 .border {      border:solid 1px black; }
 .border-grey { border:solid 1px #9CA6B0; }
 .small-text {  font-size:9px; }
+.inline {      display:inline; }
 .centered {    align-items:center; justify-content:center; display:flex; flex-wrap:wrap }
 .machine-text { font-family:Courier New, serif; font-size: 12px; margin: 0px; }
 .background {  background-color:#F1F1F1; }

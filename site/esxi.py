@@ -18,12 +18,12 @@ def main(aWeb):
  aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  for row in rows:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(type_name)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%row)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(type_name)s</DIV><DIV CLASS=td>"%row)
   if row['type_name'] == 'esxi':
    aWeb.wr(aWeb.button('info', DIV='main', URL='esxi_manage?id=%s'%row['id'], TITLE='Management'))
   if row['webpage']:
    aWeb.wr(aWeb.button('ui', TARGET='_blank', HREF=row['webpage'], TITLE='UI'))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
  aWeb.wr("</SECTION>")
  aWeb.wr("</SECTION>")
@@ -64,7 +64,7 @@ def list(aWeb,aIP = None):
  aWeb.wr("<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='esxi_list?ip=%s&sort=%s'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"%(ip,"id" if sort == "name" else "name"))
  aWeb.wr("<DIV CLASS=tbody>")
  for vm in statelist:
-  aWeb.wr("<DIV CLASS=tr STYLE='padding:0px;'><DIV CLASS=td STYLE='padding:0px;'>%s</DIV><DIV CLASS='td controls' ID=div_vm_%s STYLE='width:120px'>"%(vm['name'],vm['id']))
+  aWeb.wr("<DIV CLASS=tr STYLE='padding:0px;'><DIV CLASS=td STYLE='padding:0px;'>%s</DIV><DIV CLASS=td ID=div_vm_%s STYLE='width:120px'>"%(vm['name'],vm['id']))
   _vm_options(aWeb,ip,vm,False)
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
@@ -132,7 +132,7 @@ def snapshot(aWeb):
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  for snap in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS='td controls'>".format(snap['name'],snap['id'],snap['desc'],snap['created'],snap['state']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(snap['name'],snap['id'],snap['desc'],snap['created'],snap['state']))
   aWeb.wr(aWeb.button('revert', TITLE='Revert', DIV='div_content_right',SPIN='true', URL='esxi_op?ip=%s&id=%s&next-state=vmsvc-snapshot.revert&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id'])))
   aWeb.wr(aWeb.button('delete', TITLE='Delete', DIV='div_content_right',SPIN='true', URL='esxi_op?ip=%s&id=%s&next-state=vmsvc-snapshot.remove&snapshot=%s&output=div'%(aWeb['ip'],aWeb['id'],snap['id'])))
   aWeb.wr("</DIV></DIV>")

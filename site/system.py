@@ -70,7 +70,7 @@ def login(aWeb):
   for param in data.get('parameters'):
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s'></DIV></DIV>"%(param['display'],param['data'],param['id']))
   aWeb.wr("</DIV></DIV>")
-  aWeb.wr("</FORM><DIV CLASS=controls><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='../images/icon-start.png' /></BUTTON></DIV>")
+  aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='../images/icon-start.png' /></BUTTON>")
   aWeb.wr("</ARTICLE></DIV>")
 
 ############################################## SDCP ###############################################
@@ -117,20 +117,20 @@ def portal(aWeb):
 def node_list(aWeb):
  nodes = aWeb.rest_call("system_node_list")['data']
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
- aWeb.wr("<ARTICLE><P>Nodes</P><DIV CLASS=controls>")
+ aWeb.wr("<ARTICLE><P>Nodes</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content', URL='system_node_list'))
  aWeb.wr(aWeb.button('add', DIV='div_content_right', URL='system_node_info?id=new'))
  aWeb.wr(aWeb.button('help', DIV='div_content_right', URL='system_node_help'))
- aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in nodes:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(row['node'],row['url']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>"%(row['node'],row['url']))
   aWeb.wr(aWeb.button('info',DIV='div_content_right', URL='system_node_info?id=%s'%row['id'], TITLE='Node info'))
   if row['system']:
    aWeb.wr(aWeb.button('configure',DIV='div_content', URL='settings_list?node=%s'%row['node'], TITLE='Node settings'))
    aWeb.wr(aWeb.button('logs',DIV='div_content_right', URL='tools_logs_show?node=%s'%row['node'], TITLE='Show Logs'))
    aWeb.wr(aWeb.button('trash',DIV='div_content_right', URL='tools_logs_clear?node=%s'%row['node'], TITLE='Clear Logs', MSG='Really clear node logs?'))
    aWeb.wr(aWeb.button('items',DIV='div_content', URL='resources_list?node=%s'%row['node'], TITLE='Node resources'))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
 
@@ -149,11 +149,10 @@ def node_info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Device:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=hostname STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['hostname'])) 
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</FORM>") 
- aWeb.wr("<DIV CLASS=controls>")
  aWeb.wr(aWeb.button('search', DIV='device_id', INPUT='true', URL='system_node_device_id',      FRM='system_node_form', TITLE='Find matching device id using hostname'))
  aWeb.wr(aWeb.button('save',   DIV='div_content_right',       URL='system_node_info?op=update', FRM='system_node_form'))
  aWeb.wr(aWeb.button('trash',  DIV='div_content_right',       URL='system_node_delete',         FRM='system_node_form', MSG='Are you really sure you want to delete node?'))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
 
 #
 #
@@ -181,16 +180,16 @@ def node_help(aWeb):
 
 def server_list(aWeb):
  res = aWeb.rest_call("system_server_list",{'type':aWeb['type']})
- aWeb.wr("<ARTICLE><P>Servers</P><DIV CLASS='controls'>")
+ aWeb.wr("<ARTICLE><P>Servers</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_left',URL='system_server_list?type=%s'%aWeb['type']))
  aWeb.wr(aWeb.button('add', DIV='div_content_right',URL='system_server_info?id=new&type=%s'%aWeb['type'],TITLE='Add server'))
  aWeb.wr(aWeb.button('help',DIV='div_content_right',URL='system_server_help'))
- aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for srv in res['servers']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS=controls>"%(srv['id'],srv['node'],srv['server'],srv['type']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(srv['id'],srv['node'],srv['server'],srv['type']))
   aWeb.wr(aWeb.button('info',DIV='div_content_right',URL='system_server_info?id=%s'%(srv['id'])))
   aWeb.wr(aWeb.button('sync',DIV='div_content_right',URL='system_server_sync?id=%s'%(srv['id']), SPIN='true', TITLE='Sync server'))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
@@ -216,11 +215,11 @@ def server_info(aWeb):
   aWeb.wr("<OPTION VALUE=%s %s>%s</OPTION>"%(srv['server'],extra,srv['server']))
  aWeb.wr("</SELECT></DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('save',    DIV='div_content_right', URL='system_server_info?op=update', FRM='server_info_form'))
  if data['id'] != 'new':
   aWeb.wr(aWeb.button('trash', DIV='div_content_right', URL='system_server_delete?id=%s'%(data['id']), MSG='Delete server?'))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
 
 #
 #

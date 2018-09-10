@@ -63,12 +63,12 @@ def list(aWeb):
  node = aWeb.get('node',aWeb.node())
  res = aWeb.rest_call("system_resources_list",{'node':node,'user_id':cookie['id']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
- aWeb.wr("<ARTICLE><P>Resources</P><DIV CLASS=controls>")
+ aWeb.wr("<ARTICLE><P>Resources</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content', URL='resources_list?node=%s'%node))
  aWeb.wr(aWeb.button('back',DIV='div_content', URL='system_node_list'))
  aWeb.wr(aWeb.button('add', DIV='div_content_right', URL='resources_info?node=%s&id=new&user_id=%s'%(node,cookie['id'])))
  aWeb.wr(aWeb.button('help',DIV='div_content_right', URL='resources_help', TITLE='Help information'))
- aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  for row in res['data']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content URL='resources_view?type=%s&node=%s'>%s</A></DIV><DIV CLASS=td><A TITLE='%s' "%(row['type'],node,row['type'],row['title']))
@@ -78,11 +78,11 @@ def list(aWeb):
    aWeb.wr("CLASS=z-op DIV=main URL='resources_framed?id=%s'>"%row['id'])
   else:
    aWeb.wr("TARGET=_blank HREF='{}'>".format(row['href']))
-  aWeb.wr("{}</A></DIV><DIV CLASS=td><DIV CLASS=controls>".format(row['title']))
+  aWeb.wr("{}</A></DIV><DIV CLASS=td>".format(row['title']))
   aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='resources_info?id=%i'%(row['id']), TITLE=row['id']))
   if cookie['id'] == str(row['user_id']):
    aWeb.wr(aWeb.button('delete', DIV='div_content_right', URL='resources_delete?id=%i'%row['id'], MSG='Delete resource?'))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
 
@@ -117,12 +117,12 @@ def info(aWeb):
  aWeb.wr("</DIV></DIV></DIV>")
  if data['icon'] and data['icon'] != 'NULL':
   aWeb.wr("<BUTTON CLASS='menu' TYPE=button STYLE='float:left; min-width:52px; font-size:10px; cursor:default;'><IMG ALT={0} SRC='{0}' /></BUTTON>".format(data['icon']))
- aWeb.wr("</FORM><BR><DIV CLASS=controls>")
+ aWeb.wr("</FORM><BR />")
  if cookie['id'] == str(data['user_id']):
   aWeb.wr(aWeb.button('save',    DIV='div_content_right', URL='resources_info?op=update', FRM='resource_info_form', TITLE='Save'))
   if data['id'] != 'new':
    aWeb.wr(aWeb.button('delete', DIV='div_content_right', URL='resources_delete?id=%s'%data['id'], MSG='Delete resource?'))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
 
 #
 #

@@ -24,16 +24,16 @@ def main(aWeb):
 #
 def list(aWeb):
  res = aWeb.rest_call("visualize_list")
- aWeb.wr("<ARTICLE><P>Maps</P><DIV CLASS=controls>")
+ aWeb.wr("<ARTICLE><P>Maps</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content_left', URL='visualize_list', TITLE='Reload'))
- aWeb.wr("</DIV><DIV CLASS=table>")
+ aWeb.wr("<DIV CLASS=table>")
  aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS='th maxed'>Name</DIV><DIV CLASS=th STYLE='width:50px'>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  for map in res['maps']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS='controls'>"%(map['id'],map['name']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(map['id'],map['name']))
   aWeb.wr(aWeb.button('edit',      DIV='div_content_right', URL='visualize_network?type=map&id=%s'%map['id'],   TITLE='Show and Edit map') )
   aWeb.wr(aWeb.button('network', DIV='div_content_right', URL='visualize_show?id=%s'%map['id'],   TITLE='Show map'))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -79,7 +79,7 @@ def network(aWeb):
  from json import dumps
  args = aWeb.args()
  res = aWeb.rest_call("visualize_network",args)
- aWeb.wr("<ARTICLE><P>Info for %s</P><DIV CLASS=controls>"%(res['name']))
+ aWeb.wr("<ARTICLE><P>Info for %s</P>"%(res['name']))
  aWeb.wr(aWeb.button('reload', DIV='div_content_right', URL='visualize_network?type=%s&id=%s'%(res['type'],res['id'])))
  aWeb.wr(aWeb.button('trash',  DIV='div_content_right', URL='visualize_delete?id=%s'%res['id'], TITLE='Delete map', MSG='Really delete map?'))
  if aWeb['type'] == 'device':
@@ -95,7 +95,7 @@ def network(aWeb):
  aWeb.wr("<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_options'>Options</A>")
  aWeb.wr("<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_nodes'>Nodes</A>")
  aWeb.wr("<A CLASS='z-op btn small text' OP='single' SELECTOR='.tab' DIV='div_edges'>Edges</A>")
- aWeb.wr("</DIV><LABEL FOR=name>Name:</LABEL><FORM ID='network_config'><INPUT TYPE=TEXT CLASS=background STYLE='width:120px' VALUE='%s' NAME=name><SPAN ID=result CLASS=results>%s</SPAN>"%(res['name'],res.get('result',"")))
+ aWeb.wr("<LABEL FOR=name>Name:</LABEL><FORM ID='network_config'><INPUT TYPE=TEXT CLASS=background STYLE='width:120px' VALUE='%s' NAME=name><SPAN ID=result CLASS=results>%s</SPAN>"%(res['name'],res.get('result',"")))
  aWeb.wr("<DIV CLASS='tab' STYLE='display:none' ID='div_options'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=options NAME=options>%s</TEXTAREA></DIV>"%dumps(res['options'],indent=2))
  aWeb.wr("<DIV CLASS='tab' STYLE='display:none' ID='div_nodes'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=nodes NAME=nodes>%s</TEXTAREA></DIV>"%dumps(res['nodes'],indent=2))
  aWeb.wr("<DIV CLASS='tab' STYLE='display:none' ID='div_edges'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=edges NAME=edges>%s</TEXTAREA></DIV>"%dumps(res['edges'],indent=2))

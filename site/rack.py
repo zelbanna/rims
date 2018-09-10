@@ -21,30 +21,30 @@ def main(aWeb):
 #
 def list(aWeb):
  racks = aWeb.rest_call("rack_list",{"sort":"name"})
- aWeb.wr("<ARTICLE><P>Racks</P><DIV CLASS=controls>")
+ aWeb.wr("<ARTICLE><P>Racks</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_left',URL='rack_list'))
  aWeb.wr(aWeb.button('add',DIV='div_content_right',URL='rack_info?id=new'))
- aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for unit in racks:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS='td maxed'>%(name)s</DIV><DIV CLASS=td>%(size)s</DIV><DIV CLASS=td><DIV CLASS=controls>"%unit)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS='td maxed'>%(name)s</DIV><DIV CLASS=td>%(size)s</DIV><DIV CLASS=td>"%unit)
   aWeb.wr(aWeb.button('edit', DIV='div_content_right', URL='rack_info?id=%s'%unit['id']))
   aWeb.wr(aWeb.button('show', DIV='main',              URL='device_main?rack=%s'%unit['id'],TITLE='Rack inventory'))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
 def list_infra(aWeb):
  type = aWeb['type']
  devices = aWeb.rest_call("device_list",{'field':'base','search':type,'extra':['type']})['data']
- aWeb.wr("<ARTICLE><P>%ss</P><DIV CLASS=controls>"%type.title())
+ aWeb.wr("<ARTICLE><P>%ss</P>"%type.title())
  aWeb.wr(aWeb.button('reload',DIV='div_content_left', URL='rack_list_infra?type=%s'%type))
- aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for dev in devices:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='device_info?id=%s'>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='zdcp.cgi?%s_inventory&ip=%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS=controls>"%(dev['id'],dev['id'],dev['type_name'],dev['ip'],dev['hostname']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='device_info?id=%s'>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='%s_inventory?ip=%s'>%s</A></DIV><DIV CLASS=td>"%(dev['id'],dev['id'],dev['type_name'],dev['ip'],dev['hostname']))
   aWeb.wr(aWeb.button('info',DIV='main',URL='%s_manage?id=%s&ip=%s&hostname=%s'%(dev['type_name'],dev['id'],dev['ip'],dev['hostname'])))
   if dev.get('webpage'):
    aWeb.wr(aWeb.button('ui', HREF=dev['webpage'], TARGET='_blank', TITLE='UI'))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -102,12 +102,12 @@ def info(aWeb):
 
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<SPAN CLASS='right small-text' ID=update_results></SPAN>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right', URL='rack_info?id={0}'.format(data['id'])))
  aWeb.wr(aWeb.button('save', DIV='div_content_right', URL='rack_info?op=update', FRM='rack_info_form'))
  if not id == 'new':
   aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='rack_delete?id=%s'%(data['id'])))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
 
 #
 #

@@ -76,12 +76,10 @@ def info(aWeb):
  for slot in range(0,pdudata['slots']):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Slot %s Name:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(slot,pdudata['%s_slot_name'%slot]))
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Slot %s ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(slot,pdudata['%s_slot_id'%slot]))
-
- aWeb.wr("</DIV></DIV>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</DIV></DIV></FORM>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right', URL='avocent_info?id=%s&ip=%s&hostname=%s'%(aWeb['id'],aWeb['ip'],aWeb['hostname'])))
  aWeb.wr(aWeb.button('search',DIV='div_content_right', URL='avocent_info?id=%s&ip=%s&hostname=%s&op=lookup'%(aWeb['id'],aWeb['ip'],aWeb['hostname']), TITLE='Fetch information'))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")
 
 ####################################### Device Operations #########################################
 #
@@ -102,6 +100,6 @@ def unit_info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Text:</DIV><DIV CLASS=td><INPUT NAME=text TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(aWeb['text']))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<SPAN CLASS='results' ID=update_results></SPAN>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('save',DIV='update_results', URL='avocent_unit_info?op=update', FRM='pdu_form'))
- aWeb.wr("</DIV></ARTICLE>")
+ aWeb.wr("</ARTICLE>")

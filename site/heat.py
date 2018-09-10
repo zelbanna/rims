@@ -20,10 +20,9 @@ def list(aWeb):
   aWeb.wr("<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e))
   return
  data = res['data']
- aWeb.wr("<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Heat Stacks</P><DIV CLASS=controls>")
+ aWeb.wr("<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Heat Stacks</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content',URL='heat_list'))
  aWeb.wr(aWeb.button('add',   DIV='div_content_right',URL='heat_choose_template'))
- aWeb.wr("</DIV>")
  aWeb.wr("<DIV CLASS=table>")
  aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th STYLE='width:150px;'>Status</DIV><DIV CLASS=th STYLE='width:50px;'>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
@@ -31,11 +30,11 @@ def list(aWeb):
   aWeb.wr("<DIV CLASS=tr>")
   aWeb.wr("<DIV CLASS=td>{}</DIV>".format(stack['stack_name']))
   aWeb.wr("<DIV CLASS=td>{}</DIV>".format(stack['stack_status']))
-  aWeb.wr("<DIV CLASS=td><DIV CLASS=controls>")
+  aWeb.wr("<DIV CLASS=td>")
   aWeb.wr(aWeb.button('info',DIV='div_content_right', SPIN='true', URL='heat_action?name=%s&id=%s&op=info'%(stack['stack_name'],stack['id'])))
   if stack['stack_status'] == "CREATE_COMPLETE" or stack['stack_status'] == "CREATE_FAILED" or stack['stack_status'] == "DELETE_FAILED":
    aWeb.wr(aWeb.button('delete', DIV='div_content_right', SPIN='true', URL='heat_action?name=%s&id=%s&op=remove'%(stack['stack_name'],stack['id']), MSG='Are you sure?'))
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
@@ -54,11 +53,11 @@ def choose_template(aWeb):
  for tmpl in templates:
   aWeb.wr("<OPTION VALUE={0}>{0}</OPTION>".format(tmpl))
  aWeb.wr("</SELECT>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('document', DIV='div_os_info', URL='heat_enter_parameters',   FRM='frm_heat_choose_template', TITLE='Enter parameters'))
  aWeb.wr(aWeb.button('info', DIV='div_os_info', URL='heat_action?op=templateview', FRM='frm_heat_choose_template', TITLE='View Template'))
  aWeb.wr(aWeb.button('add', DIV='div_os_info', URL='heat_add_template', TITLE='Add a new template'))
- aWeb.wr("</DIV><BR><DIV ID=div_os_info></DIV>")
+ aWeb.wr("<BR><DIV ID=div_os_info></DIV>")
  aWeb.wr("</DIV></ARTICLE>")
 
 def enter_parameters(aWeb):
@@ -75,9 +74,8 @@ def enter_parameters(aWeb):
  for key,value in data['parameters'].iteritems():
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value))
  aWeb.wr("</DIV></DIV>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('forward',DIV='div_content_right', URL='heat_action?op=create',FRM='frm_heat_template_parameters', SPIN='true'))
- aWeb.wr("</DIV>")
 
 def add_template(aWeb):
  aWeb.wr("<FORM ID=frm_heat_template_parameters>")
@@ -86,9 +84,9 @@ def add_template(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Template:</DIV><DIV CLASS=td><TEXTAREA STYLE='width:100%; height:100px;' NAME=os_template></TEXTAREA></DIV></DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Parameters:</DIV><DIV CLASS=td><TEXTAREA STYLE='width:100%; height:100px;' NAME=os_parameters></TEXTAREA></DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
- aWeb.wr("</FORM><DIV CLASS=controls>")
+ aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('start',DIV='div_content_right', URL='heat_action?op=add_template',FRM='frm_heat_template_parameters', SPIN='true'))
- aWeb.wr("</DIV>")
+
 #
 # Heat Actions
 #
