@@ -46,7 +46,7 @@ def main(aWeb):
 def login(aWeb):
  application = aWeb.get('application','system')
  cookie = aWeb.cookie(application)
- if cookie.get('authenticated') == 'OK':
+ if cookie and cookie.get('authenticated') == 'OK':
   aWeb.put_redirect("%s_portal"%application)
   return
 

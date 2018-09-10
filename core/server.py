@@ -90,23 +90,6 @@ class Server:
    self._form    = {}
    BaseHTTPRequestHandler.__init__(self,*args)
 
-  def __parse_cookies(self):
-   try: cookie_str = self.headers.get('Cookie').split('; ')
-   except: pass
-   else:
-    for cookie in cookie_str:
-     k,_,v = cookie.partition('=')
-     try:    self._cookies[k] = dict(x.split('=') for x in v.split(','))
-     except: self._cookies[k] = v
-
-  def __parse_form(self,aGet):
-   try:    body_len = int(self.headers.getheader('content-length'))
-   except: body_len = 0
-   if body_len > 0:
-    self._form.update({ k: l[0] for k,l in parse_qs(self.rfile.read(body_len), keep_blank_values=1).iteritems() })
-   if len(aGet) > 0:
-    self._form.update({ k: l[0] for k,l in parse_qs(aGet, keep_blank_values=1).iteritems() })
-
   def __route(self):
    path = self.path.lstrip('/')
    call = path.partition('/')
@@ -280,6 +263,23 @@ class Server:
 
   def args(self):
    return self._form
+
+  def __parse_cookies(self):
+   try: cookie_str = self.headers.get('Cookie').split('; ')
+   except: pass
+   else:
+    for cookie in cookie_str:
+     k,_,v = cookie.partition('=')
+     try:    self._cookies[k] = dict(x.split('=') for x in v.split(','))
+     except: self._cookies[k] = v
+
+  def __parse_form(self,aGet):
+   try:    body_len = int(self.headers.getheader('content-length'))
+   except: body_len = 0
+   if body_len > 0:
+    self._form.update({ k: l[0] for k,l in parse_qs(self.rfile.read(body_len), keep_blank_values=1).iteritems() })
+   if len(aGet) > 0:
+    self._form.update({ k: l[0] for k,l in parse_qs(aGet, keep_blank_values=1).iteritems() })
 
   def __str__(self):
    return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Web object<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(str(self._cookies),self._form)
