@@ -97,7 +97,7 @@ if settings['system']['id'] == 'master':
    try:
     mod = import_module("zdcp.devices.%s"%(pyfile))
     type = getattr(mod,'__type__',None)
-    icon = getattr(mod,'__icon__','images/viz-generic.png')
+    icon = getattr(mod,'__icon__','../images/viz-generic.png')
     dev = getattr(mod,'Device',None)
     if type:
      device_types.append({'name':pyfile, 'base':type, 'functions':dev.get_functions(),'icon':icon })

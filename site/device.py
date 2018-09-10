@@ -423,7 +423,7 @@ def interface_list(aWeb):
   args = aWeb.args()
   opres = aWeb.rest_call("device_interface_delete",args)
  elif aWeb['op'] == 'discover':
-  opres = aWeb.rest_call("device_interface_discover",{'device':aWeb['device']})
+  opres = aWeb.rest_call("device_interface_discover",{'device':aWeb['device'],'cleanup':False})
  elif aWeb['op'] == 'link':
   opres = aWeb.rest_call("device_interface_link",{'a_id':aWeb['id'],'b_id':aWeb['peer_interface']})
  else:

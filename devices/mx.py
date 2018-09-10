@@ -7,7 +7,7 @@ __author__  = "Zacharias El Banna"
 __version__ = "1.0GA"
 __status__  = "Production"
 __type__    = "network"
-__icon__    = "images/viz-mx.png"
+__icon__    = "../images/viz-mx.png"
 
 from junos import Junos
 
