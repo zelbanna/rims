@@ -158,7 +158,7 @@ class Server:
      try: res = rest_call("%s/api/%s"%(SC['nodes'][headers['node']],aQuery),args)
      except Exception as err: raise Exception(err)
      else: output = dumps(res['data'])
-     headers['result'] = res['info']['x-api-res']
+     headers['result'] = res['info'].get('x-api-result','ERROR')
    except Exception as e:
     headers.update({'result':'ERROR','args':args,'info':str(e),'xcpt':type(e).__name__})
    self.send_response(200 if headers['result'] == 'OK' else 500)

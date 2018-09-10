@@ -95,7 +95,7 @@ if settings['system']['id'] == 'master':
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
-    mod = import_module("zdcp.devices.{}".format(pyfile))
+    mod = import_module("zdcp.devices.%s"%(pyfile))
     type = getattr(mod,'__type__',None)
     icon = getattr(mod,'__icon__','images/viz-generic.png')
     dev = getattr(mod,'Device',None)
@@ -161,7 +161,7 @@ if settings['system']['id'] == 'master':
 
   sql = "INSERT resources (node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
   for item in resources:
-   try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"zdcp.cgi?%s_main"%item['name'],item['icon'],item['type']))
+   try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"%s_main"%item['name'],item['icon'],item['type']))
    except Exception as err:
     res['resources_errors'] = str(err)
 
