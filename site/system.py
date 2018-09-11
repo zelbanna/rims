@@ -26,7 +26,7 @@ def main(aWeb):
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='activities_report'>Activities</A></LI>")
  if data.get('users'):
   aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='reservations_list'>Reservations</A></LI>")
- aWeb.wr("<LI><A CLASS=z-op TARGET=_blank            HREF='../zdcp.pdf'>ERD</A></LI>")
+ aWeb.wr("<LI><A CLASS=z-op TARGET=_blank            HREF='../infra/zdcp.pdf'>ERD</A></LI>")
  aWeb.wr("<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>")
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_rest_main?node=%s'>Debug</A>"%aWeb.node())
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_logs_show?name=rest&node=%s'>Logs</A>"%aWeb.node())

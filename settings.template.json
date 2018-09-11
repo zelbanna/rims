@@ -1,6 +1,6 @@
 {
     "logs": {
-        "syslog": {
+        "system": {
             "description": "System log",
             "value": "/var/log/system/system.log"
         },

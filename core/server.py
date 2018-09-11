@@ -64,7 +64,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  def __log_rest(self,aAPI,aArgs,aExtra):
   try:
    with open(SC['logs']['rest'], 'a') as f:
-    f.write(unicode("%s: %s '%s' @ %s (%s) NATIVE\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._node, aExtra.strip())))
+    f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._node, aExtra.strip())))
   except: pass
 
  def do_HEAD(self):
@@ -80,33 +80,30 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def __route(self):
   """ Route request to the right function """
-  path = self.path.lstrip('/')
-  call = path.partition('/')
-  headers = {'X-API-Thread':self.server._id,'X-API-Method':self.command}
-  output = None
-  if call[0] == 'site':
-   self.__site(call[2])
+  path,_,query = (self.path.lstrip('/')).partition('/')
+  if path == 'site':
+   self.__site(query)
    return
 
-  if   call[0] == 'api':
+  headers = {'X-API-Thread':self.server._id,'X-API-Method':self.command}
+  output = None
+  if   path == 'api':
    # REST API  CALL
-   additional = {}
-   #print "_____________________ %s ___________________"%call[2]
-   (api,_,extra) = call[2].partition('&')
-   (mod,_,fun)   = api.partition('_')
-   if extra:
-    for part in extra.split("&"):
+   extras = {}
+   (api,_,get) = query.partition('&')
+   (mod,_,fun) = api.partition('_')
+   if get:
+    for part in get.split("&"):
      (k,_,v) = part.partition('=')
-     additional[k] = v
+     extras[k] = v
    headers.update({'X-API-Module':mod, 'X-API-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*"})
-   headers['X-API-Node'] = additional.get('node',self.server._node if not mod == 'system' else 'master')
+   headers['X-API-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
    try:
-   #if True:
     try:
      length = int(self.headers.getheader('content-length'))
      args = loads(self.rfile.read(length)) if length > 0 else {}
     except: args = {}
-    self.__log_rest(api,dumps(args),extra)
+    self.__log_rest(api,dumps(args),get)
     if headers['X-API-Node'] == self.server._node:
      module = import_module("zdcp.rest.%s"%mod)
      module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
@@ -115,7 +112,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     else:
      from urllib2 import urlopen, Request, URLError, HTTPError
      output = 'null'
-     req  = Request("%s/api/%s"%(SC['nodes'][headers['X-API-Node']],call[2]), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
+     req  = Request("%s/api/%s"%(SC['nodes'][headers['X-API-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
      try: sock = urlopen(req, timeout = 20)
      except HTTPError as h:
       raw = h.read()
@@ -129,42 +126,34 @@ class SessionHandler(BaseHTTPRequestHandler):
       except: pass
       sock.close()
       headers['X-API-Code'] = 200
-   # else:
    except Exception as e:
     headers.update({'X-API-Args':args,'X-API-Info':str(e),'X-API-Exception':type(e).__name__,'X-API-Code':500})
     output = 'null'
 
-  elif call[0] == 'infra' or call[0] == 'images':
+  elif path == 'infra' or path == 'images' or path == 'files':
    # Infra call
-   if   call[2].endswith(".jpg"):
-    headers['Content-type'] = 'image/jpg'
-    headers['Content-Disposition'] = 'inline'
-   elif call[2].endswith(".png"):
-    headers['Content-type']='image/png'
-    headers['Content-Disposition'] = 'inline'
-   elif call[2].endswith(".js"):
+   if query.endswith(".js"):
     headers['Content-type']='application/javascript; charset=utf-8'
-   elif call[2].endswith(".css"):
+   elif query.endswith(".css"):
     headers['Content-type']='text/css; charset=utf-8'
-   elif call[2].endswith(".pdf"):
-    headers['Content-type']='application/pdf'
-   elif call[2].endswith(".html"):
-    headers['Content-type']='text/html; charset=utf-8'
-   else:
-    headers['Content-type']='application/octet-stream;'
    try:
-    if call[2].endswith("/") or len(call[2]) == 0:
+    if path == 'files':
+     param,_,file = query.partition('/')
+     fullpath = ospath.join(SC['files'][param],file)
+    else:
+     fullpath = ospath.join(pkgpath,path,query)
+    if fullpath.endswith("/"):
      headers['Content-type']='text/html; charset=utf-8'
-     _, _, filelist = next(walk(ospath.join(pkgpath,call[0],call[2])), (None, None, []))
+     _, _, filelist = next(walk(fullpath), (None, None, []))
      output = "<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])
     else:
-     with open(ospath.join(pkgpath,call[0],call[2]), 'rb') as file:
+     with open(fullpath, 'rb') as file:
       output = file.read()
    except Exception as e:
-    headers.update({'X-API-Exception':str(e),'X-API-Query':call[2],'X-API-Path':call[0],'X-API-Code':404})
+    headers.update({'X-API-Exception':str(e),'X-API-Query':query,'X-API-Path':path,'X-API-Code':404,'Content-type':'text/html; charset=utf-8'})
    else:
     headers['X-API-Code'] = 200
-
+  
   else:
    # Unknown call
    headers.update({'Location':'site/system_login','X-API-Code':301})
@@ -191,12 +180,12 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
   # Remove try/except to debug
   # print "_______________________ %s _____________________"%aQuery 
-  # try:
-  if True:
+  try:
+  # if True:
    module = import_module("zdcp.site." + mod)
    getattr(module,fun,None)(self)
-  else:
-  # except Exception as e:
+  # else:
+  except Exception as e:
    self.wfile.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
    try:
     self.wfile.write("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
@@ -297,7 +286,7 @@ if __name__ == '__main__':
  port = int(SC['system']['port'])
  node = SC['system']['id']
  addr = ('', port)
- sock  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
  sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
  sock.bind(addr)
  sock.listen(5)
