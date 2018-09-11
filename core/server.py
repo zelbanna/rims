@@ -227,8 +227,10 @@ class Server:
    # Remove try/except to debug
    # print "_______________________ %s _____________________"%aQuery 
    try:
+   # if True:
     module = import_module("zdcp.site." + mod)
     getattr(module,fun,None)(self)
+   # else:
    except Exception as e:
     self.wfile.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
     try:
