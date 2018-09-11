@@ -17,9 +17,7 @@ def log(aMsg,aID='None'):
   with open(SC['logs']['system'], 'a') as f:
    from time import localtime, strftime
    f.write(unicode("%s (%s): %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))
- except: pass          
-
-
+ except: pass
 
 ############################################ Database ######################################
 #
@@ -164,10 +162,10 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
    from ssl import _create_unverified_context
    sock = urlopen(req,context=_create_unverified_context(), timeout = aTimeout)
   output = {'info':dict(sock.info()), 'code':sock.code }
-  output['node'] = output['info'].pop('x-api-node','_no_node_')
+  output['node'] = output['info'].pop('node','_no_node_')
   try:    output['data'] = loads(sock.read())
   except: output['data'] = None
-  if (output['info'].get('x-api-res','OK') == 'ERROR'):
+  if (output['info'].get('code',200) <> 200):
    output['info'].pop('server',None)
    output['info'].pop('connection',None)
    output['info'].pop('transfer-encoding',None)
@@ -178,10 +176,9 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
   raw = h.read()
   try:    data = loads(raw)
   except: data = raw
-  output = { 'result':'ERROR', 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
- except URLError as e:  output = { 'result':'ERROR', 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
- except Exception as e: output = { 'result':'ERROR', 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
- output['info']['x-api-code'] = code_to_string(output['code'])
+  output = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
+ except URLError as e:  output = { 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
+ except Exception as e: output = { 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
  if output.get('exception'):
   raise Exception(output)
  return output
@@ -191,9 +188,3 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
 #
 def basic_auth(aUsername,aPassword):
  return {'Authorization':'Basic ' + (("%s:%s"%(aUsername,aPassword)).encode('base64')).replace('\n','') }
-
-#
-# HTML Code translator
-#
-def code_to_string(aCode):
- return {200:'OK',201:'Created',204:'No Content',304:'Not Modified',400:'Bad Request',401:'Unauthorized',403:'Forbidden',404:'Not Found',500:'Internal Server Error',591:'Z-Exception'}.get(aCode,'%s Code Not Encoded'%aCode)

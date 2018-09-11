@@ -182,7 +182,7 @@ if settings['system']['id'] == 'master':
   # Generate ERD and save
   #
   erd_input = "mysql+pymysql://%s:%s@%s/%s"%(username,password,host,database)
-  erd_output= ospath.join(packagedir,'zdcp.pdf')
+  erd_output= ospath.join(packagedir,'infra','zdcp.pdf')
   try:
    from eralchemy import render_er
    render_er(erd_input,erd_output)

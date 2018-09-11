@@ -79,6 +79,7 @@ def rest_main(aWeb):
 #
 def rest_execute(aWeb):
  from json import loads,dumps
+ from cgi import escape
  try:    arguments = loads(aWeb['arguments'])
  except: arguments = None
  try:
@@ -94,7 +95,7 @@ def rest_execute(aWeb):
  if ret.get('info'):
   aWeb.wr("<DIV CLASS=tr STYLE=><DIV CLASS=td STYLE='width:100px'>INFO</DIV><DIV CLASS=td STYLE='white-space:normal'>")
   for key,value in ret.pop('info',{}).items():
-   aWeb.wr("<DIV CLASS='rest'><DIV>%s</DIV><DIV>%s</DIV></DIV>"%(key,value))
+   aWeb.wr("<DIV CLASS='rest'><DIV>%s</DIV><DIV>%s</DIV></DIV>"%(key,escape(value)))
   aWeb.wr("</DIV></DIV>")
  for key,value in ret.items():
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>%s</DIV><DIV CLASS=td STYLE='white-space:normal'>%s</DIV></DIV>"%(key.upper(),value))

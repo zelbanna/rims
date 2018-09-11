@@ -28,21 +28,21 @@ from zdcp.SettingsContainer import SC
 # HTTP Thread
 #
 class HttpThread(Thread):
- def __init__(self, aID, aSock, aAddr, aNodeID):
+ def __init__(self, aID, aSock, aAddr, aNode):
   Thread.__init__(self)
-  self._id   = aID
-  self._node = aNodeID
+  self._thread_id = aID
+  self._node = aNode
   self._sock = aSock
   self._addr = aAddr
   self.daemon = True
   self.start()
 
  def __str__(self):
-  return "HttpThread %s [Node:%s,Daemon:%s,Alive:%s]"%(self._node,self._id,self.daemon,self.is_alive())
+  return "HttpThread %s [Node:%s,Daemon:%s,Alive:%s]"%(self._node,self._thread_id,self.daemon,self.is_alive())
 
  def run(self):
   httpd = HTTPServer(self._addr, SessionHandler, False)
-  httpd._id = self._id
+  httpd._id = self._thread_id
   httpd._node = self._node
   # Prevent the HTTP server from re-binding every handler.
   # https://stackoverflow.com/questions/46210672/
@@ -56,26 +56,10 @@ class HttpThread(Thread):
 #
 class SessionHandler(BaseHTTPRequestHandler):
 
- def __init__(self, *args):
+ def __init__(self, *args, **kwargs):
   self._cookies = {}
   self._form    = {}
-  BaseHTTPRequestHandler.__init__(self,*args)
-
- def __route(self):
-  path = self.path.lstrip('/')
-  call = path.partition('/')
-  if   call[0] == 'api':
-   self.__api(call[2])
-  elif call[0] == 'infra' or call[0] == 'images':
-   self.__infra(call[0],call[2])
-  elif call[0] == 'site':
-   self.__site(call[2])
-  elif call[0] == 'zdcp.pdf':
-   self.__infra('','zdcp.pdf')
-  else:
-   self.send_response(301)
-   self.send_header('Location','site/system_login')
-   self.end_headers()
+  BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
 
  def __log_rest(self,aAPI,aArgs,aExtra):
   try:
@@ -94,88 +78,98 @@ class SessionHandler(BaseHTTPRequestHandler):
  def do_POST(self):
   self.__route()
 
- ########################################## REST Function ####################################
- #
- def __api(self, aQuery):
-  """Function process processes each call.
-   - Expecting query string encoded as <REST-NODE/api>/module_function[&node=<node>] (thus module cannot contain '_', but function can)
-   - Returns json:ed response from function
-  """
-  headers,output,additional= {'thread':self.server._id,'method':self.command},'null',{}
-  # print "_____________________ %s ___________________"%aQuery
-  # Partition QUERY
-  (api,_,extra) = aQuery.partition('&')
-  (mod,_,fun)   = api.partition('_')
-  headers['module']= mod
-  headers['function']= fun
-  if extra:
-   for part in extra.split("&"):
-    (k,_,v) = part.partition('=')
-    additional[k] = v
-  headers['node'] = additional.get('node',self.server._node if not mod == 'system' else 'master')
-  # Read data (if POST or other than GET)
-  try:
-   try:
-    length = int(self.headers.getheader('content-length'))
-    args = loads(self.rfile.read(length)) if length > 0 else {}
-   except: args = {}
-   self.__log_rest(api,dumps(args),extra)
-   if headers['node'] == self.server._node:
-    module = import_module("zdcp.rest.%s"%mod)
-    module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
-    output = dumps(getattr(module,fun,None)(args))
-    headers['result'] = 'OK'
-   else:
-    from zdcp.core.common import rest_call
-    try: res = rest_call("%s/api/%s"%(SC['nodes'][headers['node']],aQuery),args)
-    except Exception as err: raise Exception(err)
-    else: output = dumps(res['data'])
-    headers['result'] = res['info'].get('x-api-result','ERROR')
-  except Exception as e:
-   headers.update({'result':'ERROR','args':args,'info':str(e),'xcpt':type(e).__name__})
-  self.send_response(200 if headers['result'] == 'OK' else 500)
-  self.send_header("Content-Type","application/json; charset=utf-8")
-  self.send_header("Access-Control-Allow-Origin","*")
-  for k,v in headers.iteritems():
-   self.send_header("X-API-%s"%k.title(),v)
-  self.end_headers()
-  self.wfile.write(output)
+ def __route(self):
+  """ Route request to the right function """
+  path = self.path.lstrip('/')
+  call = path.partition('/')
+  headers = {'X-API-Thread':self.server._id,'X-API-Method':self.command}
+  output = None
+  if call[0] == 'site':
+   self.__site(call[2])
+   return
 
- ########################################## Infra Function ####################################
- #
- def __infra(self, aPath, aQuery):
-  headers,output = {},''
-  if   aQuery.endswith(".jpg"):
-   headers['Content-type'] = 'image/jpg'
-   headers['Content-Disposition'] = 'inline'
-  elif aQuery.endswith(".png"):
-   headers['Content-type']='image/png'
-   headers['Content-Disposition'] = 'inline'
-  elif aQuery.endswith(".js"):
-   headers['Content-type']='application/javascript; charset=utf-8'
-  elif aQuery.endswith(".css"):
-   headers['Content-type']='text/css; charset=utf-8'
-  elif aQuery.endswith(".pdf"):
-   headers['Content-type']='application/pdf'
-  elif aQuery.endswith(".html"):
-   headers['Content-type']='text/html; charset=utf-8'
-  else:
-   headers['Content-type']='application/octet-stream;'
-  try:
-   if aQuery.endswith("/") or len(aQuery) == 0:
+  if   call[0] == 'api':
+   # REST API  CALL
+   additional = {}
+   #print "_____________________ %s ___________________"%call[2]
+   (api,_,extra) = call[2].partition('&')
+   (mod,_,fun)   = api.partition('_')
+   if extra:
+    for part in extra.split("&"):
+     (k,_,v) = part.partition('=')
+     additional[k] = v
+   headers.update({'X-API-Module':mod, 'X-API-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*"})
+   headers['X-API-Node'] = additional.get('node',self.server._node if not mod == 'system' else 'master')
+   try:
+   #if True:
+    try:
+     length = int(self.headers.getheader('content-length'))
+     args = loads(self.rfile.read(length)) if length > 0 else {}
+    except: args = {}
+    self.__log_rest(api,dumps(args),extra)
+    if headers['X-API-Node'] == self.server._node:
+     module = import_module("zdcp.rest.%s"%mod)
+     module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
+     output = dumps(getattr(module,fun,None)(args))
+     headers['X-API-Code'] = 200
+    else:
+     from urllib2 import urlopen, Request, URLError, HTTPError
+     output = 'null'
+     req  = Request("%s/api/%s"%(SC['nodes'][headers['X-API-Node']],call[2]), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
+     try: sock = urlopen(req, timeout = 20)
+     except HTTPError as h:
+      raw = h.read()
+      try:    data = loads(raw)
+      except: data = raw
+      headers.update({ 'X-API-Exception':'HTTPError', 'X-API-Code':h.code, 'X-API-Info':dumps(dict(h.info())), 'X-API-Data':data })
+     except URLError  as e: headers.update({ 'X-API-Exception':'URLError', 'X-API-Code':590, 'X-API-Info':str(e)})
+     except Exception as e: headers.update({ 'X-API-Exception':type(e).__name__, 'X-API-Code':591, 'X-API-Info':str(e)})
+     else:
+      try: output = sock.read()
+      except: pass
+      sock.close()
+      headers['X-API-Code'] = 200
+   # else:
+   except Exception as e:
+    headers.update({'X-API-Args':args,'X-API-Info':str(e),'X-API-Exception':type(e).__name__,'X-API-Code':500})
+    output = 'null'
+
+  elif call[0] == 'infra' or call[0] == 'images':
+   # Infra call
+   if   call[2].endswith(".jpg"):
+    headers['Content-type'] = 'image/jpg'
+    headers['Content-Disposition'] = 'inline'
+   elif call[2].endswith(".png"):
+    headers['Content-type']='image/png'
+    headers['Content-Disposition'] = 'inline'
+   elif call[2].endswith(".js"):
+    headers['Content-type']='application/javascript; charset=utf-8'
+   elif call[2].endswith(".css"):
+    headers['Content-type']='text/css; charset=utf-8'
+   elif call[2].endswith(".pdf"):
+    headers['Content-type']='application/pdf'
+   elif call[2].endswith(".html"):
     headers['Content-type']='text/html; charset=utf-8'
-    _, _, filelist = next(walk(ospath.join(pkgpath,aPath,aQuery)), (None, None, []))
-    output = "<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])
    else:
-    with open(ospath.join(pkgpath,aPath,aQuery), 'rb') as file:
-     output = file.read()
-  except Exception as e:
-   self.send_response(404)
-   headers['X-Error'] = str(e)
-   headers['X-Query'] = aQuery
-   headers['X-Path'] = aPath
+    headers['Content-type']='application/octet-stream;'
+   try:
+    if call[2].endswith("/") or len(call[2]) == 0:
+     headers['Content-type']='text/html; charset=utf-8'
+     _, _, filelist = next(walk(ospath.join(pkgpath,call[0],call[2])), (None, None, []))
+     output = "<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])
+    else:
+     with open(ospath.join(pkgpath,call[0],call[2]), 'rb') as file:
+      output = file.read()
+   except Exception as e:
+    headers.update({'X-API-Exception':str(e),'X-API-Query':call[2],'X-API-Path':call[0],'X-API-Code':404})
+   else:
+    headers['X-API-Code'] = 200
+
   else:
-    self.send_response(200)
+   # Unknown call
+   headers.update({'Location':'site/system_login','X-API-Code':301})
+
+  self.send_response(headers['X-API-Code'])
   for k,v in headers.iteritems():
    self.send_header(k,v)
   self.end_headers()
@@ -197,12 +191,12 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
   # Remove try/except to debug
   # print "_______________________ %s _____________________"%aQuery 
-  try:
-  # if True:
+  # try:
+  if True:
    module = import_module("zdcp.site." + mod)
    getattr(module,fun,None)(self)
-  # else:
-  except Exception as e:
+  else:
+  # except Exception as e:
    self.wfile.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
    try:
     self.wfile.write("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
