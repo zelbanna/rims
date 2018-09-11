@@ -14,7 +14,7 @@ class Device(object):
 
  @classmethod
  def get_functions(cls):
-  return []
+  return ['info']
 
  def __init__(self, aIP, aID = None):
   self._id = aID
@@ -49,6 +49,9 @@ class Device(object):
  def log_msg(self, aMsg):
   from zdcp.core.common import log
   log(aMsg)
+
+ def info(self):
+  return [{'version':'N/A','model':'generic'}]
 
  def configuration(self,argdict):
   output = ["No config template for this device type.","",

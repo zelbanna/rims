@@ -4,7 +4,7 @@ Junos Router Base Class
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "4.0.1GA"
 __status__  = "Production"
 __type__    = "network"
 
@@ -18,7 +18,7 @@ class Junos(GenericDevice):
 
  @classmethod
  def get_functions(cls):
-  return ['up_interfaces','lldp' ]
+  return ['up_interfaces','lldp','info' ]
 
  def __init__(self,aIP,aID = None):
   GenericDevice.__init__(self,aIP,aID)
@@ -104,6 +104,9 @@ class Junos(GenericDevice):
    fields = len(neigh)-1
    ret.append({ 'Neighbor':neigh[fields].text, 'MAC':neigh[3].text if neigh[2].text == "Mac address" else '-','Local_port':neigh[0].text,'Destination_port':neigh[fields-1].text })
   return ret
+
+ def info(self):
+  return [{'version':self._version,'model':self._model}]
 
  def configuration(self,argdict):
   from zdcp.SettingsContainer import SC
