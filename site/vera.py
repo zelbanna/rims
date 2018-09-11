@@ -39,7 +39,7 @@ def manage(aWeb):
   args = {'node':aWeb['node']}
  elif aWeb['id']:
   args = {'id':aWeb['id']}
- dev = aWeb.rest_call("device_node_mapping",args)
+ dev = aWeb.rest_call("system_node_device_mapping",args)
  node = dev['node']
  ui = dev['webpage']
  aWeb.wr("<NAV><UL>")
