@@ -9,6 +9,12 @@
             "value": "/var/log/system/rest.log"
         }
     },
+    "files": {
+        "extra-icons": {
+            "description": "Icons directory - if needed to create own resources",
+            "value": "/var/www/images"
+        }
+    },
     "system": {
         "application": {
             "description": "Default Application",
