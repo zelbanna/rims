@@ -108,23 +108,29 @@ def logs_get(aDict):
 ########################################### FILE ############################################
 
 def file_list(aDict):
- """Function list files in directory pinpointed by setting (in settings for the node) or directory
+ """Function list files in directory pinpointed by directory (in settings for the node) or by fullpath
 
  Args:
-  - setting (optional required)
   - directory (optional required)
+  - fullpath (optional required)
 
  Output:
   - List of files in 'files'
+  - 'path' relative the api to access the files
+
  """
  from os import listdir
  ret = {'files':[]}
  try:
-  if aDict.get('directory'):
-   ret['directory'] = aDict['directory']
+  if aDict.get('fullpath'):
+   directory = aDict['fullpath']
+  elif aDict.get('directory'):
+   ret['path'] = '../files/%s'%aDict['directory']
+   directory = SC['files'][aDict['directory']]
   else:
-   ret['directory'] = SC['files'][aDict['setting']] if aDict.get('setting') == 'images' else 'images'
-  for file in listdir(ospath.abspath(ret['directory'])):
+   ret['path'] = '../images'
+   directory = 'images'
+  for file in listdir(ospath.abspath(directory)):
    ret['files'].append(file)
  except Exception as e:
   ret['info'] = str(e)

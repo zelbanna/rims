@@ -166,20 +166,20 @@ def services_info(aWeb):
 #
 #
 def file_list(aWeb):
- res = aWeb.rest_call('tools_file_list',{'setting':aWeb['setting']})
- aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Files in %s<P>"%res['directory'])
+ res = aWeb.rest_call('tools_file_list',{'directory':aWeb['directory']})
+ aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Files in %s<P>"%res.get('path','directory'))
  for file in res['files']:
-  aWeb.wr("<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{1}</A></P>".format(res['directory'],file.encode('utf-8')))
+  aWeb.wr("<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{1}</A></P>".format(res.get('path','#'),file.encode('utf-8')))
  aWeb.wr("</ARTICLE></SECTION>")
 
 #
 #
 def images(aWeb):
- res = aWeb.rest_call('tools_file_list',{'setting':'../images'})
+ res = aWeb.rest_call('tools_file_list')
  aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Images<P><DIV CLASS=table><DIV CLASS=tbody>")
  for file in res['files']:
   if file[-3:] == 'png':
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:180px'>{0}</DIV><DIV CLASS=td STYLE='width:100%;'><IMG STYLE='max-height:60px;' SRC='../images/{0}' /></DIV></DIV>".format(file))
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:180px'>{0}</DIV><DIV CLASS=td STYLE='width:100%;'><IMG STYLE='max-height:60px;' SRC='{1}/{0}' /></DIV></DIV>".format(file,res['path']))
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
 
 #
