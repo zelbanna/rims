@@ -174,7 +174,7 @@ def files_list(aWeb):
 #
 #
 def images(aWeb):
- res = aWeb.rest_call('tools_files_list',{'setting':'images'})
+ res = aWeb.rest_call('tools_file_list',{'setting':'../images'})
  aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Images<P><DIV CLASS=table><DIV CLASS=tbody>")
  for file in res['files']:
   if file[-3:] == 'png':

@@ -131,6 +131,7 @@ class Server:
     - Returns json:ed response from function
    """
    headers,output,additional= {'thread':self.server._id,'method':self.command},'null',{}
+   # print "_____________________ %s ___________________"%aQuery
    # Partition QUERY
    (api,_,extra) = aQuery.partition('&')
    (mod,_,fun)   = api.partition('_')
