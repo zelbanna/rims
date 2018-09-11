@@ -12,10 +12,10 @@ __type__ = 'menuitem'
 #
 #
 def main(aWeb):
- if not aWeb.cookie('system'):
+ cookie = aWeb.cookie('system') 
+ if not cookie.get('authenticated'):
   aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
   return
- cookie = aWeb.cookie('system')
  data = aWeb.rest_call("system_inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('logs'):
@@ -47,7 +47,7 @@ def login(aWeb):
  application = aWeb.get('application','system')
  cookie = aWeb.cookie(application)
  if cookie and cookie.get('authenticated') == 'OK':
-  aWeb.put_redirect("%s_portal"%application)
+  aWeb.wr("<SCRIPT>location.replace('%s_portal')</SCRIPT>"%application)
   return
 
  args = aWeb.args()
@@ -81,7 +81,7 @@ def login(aWeb):
 def portal(aWeb):
  aWeb.put_html(aWeb.get('title','Portal'))
  cookie = aWeb.cookie('system')
- id = cookie.get('id','NOID')
+ id = cookie.get('id','NOID') if cookie else 'NOID'
  if id == 'NOID':
   id,_,username = aWeb.get('system_login',"NOID_NONAME").partition('_')
   res = aWeb.rest_call("system_authenticate",{'id':id,'username':username})

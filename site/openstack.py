@@ -15,7 +15,6 @@ __status__= "Production"
 #
 def portal(aWeb):
  cookie = aWeb.cookie('openstack')
-
  aWeb.put_html("Openstack Portal")
  if not cookie.get('authenticated'):
   (pid,pname) = aWeb.get('project','none_none').split('_')

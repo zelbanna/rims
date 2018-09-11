@@ -12,10 +12,10 @@ __type__ = 'menuitem'
 
 ########################################### Activities #############################################
 def main(aWeb):
- if not aWeb.cookie('system'):
+ cookie = aWeb.cookie('system')
+ if not cookie.get('authenticated'):
   aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
   return
- cookie = aWeb.cookie('system')
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='activities_list'>Activities</A></LI>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='activities_report'>Report</A></LI>")

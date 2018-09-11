@@ -12,10 +12,10 @@ __type__ = 'menuitem'
 ############################################ Options ##############################################
 #
 def main(aWeb):
- if not aWeb.cookie('system'):
+ cookie = aWeb.cookie('system') 
+ if not cookie.get('authenticated'):
   aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
   return
- cookie = aWeb.cookie('system')
  data = aWeb.rest_call("system_inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('node'):

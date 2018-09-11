@@ -10,10 +10,10 @@ __status__= "Production"
 #
 #
 def list(aWeb):
- if not aWeb.cookie('system'):
+ cookie = aWeb.cookie('system') 
+ if not cookie.get('authenticated'):
   aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
   return
- cookie = aWeb.cookie('system')
  res = aWeb.rest_call("system_settings_list",{'node':aWeb['node'],'user_id':cookie['id']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Settings</P>")

@@ -260,7 +260,7 @@ class Server:
    return self.server._node
 
   def cookie(self,aName):
-   return self._cookies.get(aName)
+   return self._cookies.get(aName,{})
 
   def args(self):
    return self._form
