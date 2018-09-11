@@ -1,6 +1,6 @@
 """MYSQL API module. This module provides system support for mysql DB operations"""
 __author__ = "Zacharias El Banna"
-__version__ = "1.0GA"
+__version__ = "4.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 

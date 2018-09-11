@@ -4,7 +4,7 @@ QFX module
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "1.0GA"
+__version__ = "4.0GA"
 __status__  = "Production"
 __type__    = "network"
 __icon__    = "../images/viz-ex.png"

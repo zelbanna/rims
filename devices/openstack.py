@@ -4,7 +4,7 @@ Openstack Device
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "18.09.01GA"
+__version__ = "4.0GA"
 __status__  = "Production"
 __type__    = "controller"
 

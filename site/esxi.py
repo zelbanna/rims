@@ -4,7 +4,7 @@ HTML5 Ajax ESXi module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "1.0GA"
+__version__ = "4.0GA"
 __status__ = "Production"
 __icon__ = '../images/icon-servers.png'
 __type__ = 'menuitem'

@@ -6,11 +6,11 @@ ZDCP HTTP server.
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "1.0GA"
+__version__ = "4.0GA"
 __status__ = "Production"
 
-from os import walk, path as ospath, environ
-from sys import path as syspath, stdout
+from os import walk, path as ospath
+from sys import path as syspath
 from json import loads, dumps
 from importlib import import_module
 from threading import Thread

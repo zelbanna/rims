@@ -6,16 +6,16 @@ Installs System
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "1.0GA"
+__version__ = "4.0GA"
 __status__ = "Production"
 
 from sys import argv, stdout, path as syspath
 from pip import main as pipmain
 from json import load,dump,dumps
-syspath.insert(1, '../')
 from os import remove, chmod, listdir, path as ospath
 packagedir = ospath.abspath(ospath.dirname(__file__))
 basedir = ospath.abspath(ospath.join(packagedir,'..'))
+syspath.insert(1, basedir)
 res = {}
 
 if len(argv) < 2:
