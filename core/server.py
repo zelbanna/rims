@@ -85,7 +85,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.__site(query)
    return
 
-  headers = {'X-API-Thread':self.server._id,'X-API-Method':self.command}
+  headers = {'X-API-Thread':self.server._id,'X-API-Method':self.command,'X-API-Version':__version__}
   output = None
   if   path == 'api':
    # REST API  CALL
@@ -177,6 +177,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   (mod,_,fun)    = mod_fun.partition('_')
   self.send_response(200)
   self.send_header("Content-type", 'text/html; charset=utf-8')
+  self.send_header("X-API-Version", __version__)
   self.end_headers()
   # Remove try/except to debug
   # print "_______________________ %s _____________________"%aQuery 
