@@ -9,6 +9,20 @@ __version__ = "4.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
+#
+#
+def debug_timeout(aDict):
+ """Function tests timeout of client
+
+ Args:
+  - sleep (optional)
+
+ Output:
+ """
+ from time import sleep
+ sleep(aDict.get('sleep',10))
+ return None
+
 ################################## System #################################
 #
 #

@@ -44,13 +44,13 @@ def login(aWeb):
  application = aWeb.get('application','system')
  cookie = aWeb.cookie(application)
  if cookie.get('token'):
-  aWeb.put_redirect("%s_portal"%application)
+  aWeb.wr("<SCRIPT> window.location.replace('%s_portal'); </SCRIPT>"%application)
   return
  args = aWeb.args()
  args['node'] = aWeb.node() if not args.get('node') else args['node']
  data = aWeb.rest_call("%s_application"%(application),args)
  aWeb.put_html(data['title'])
- aWeb.put_cookie(application,data['cookie'],data['expires'])
+ aWeb.wr("<SCRIPT>set_cookie('%s','%s','%s');</SCRIPT>"%(application,data['cookie'],data['expires']))
  aWeb.wr("<DIV CLASS='background overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message'])
  if data.get('exception'):
   aWeb.wr("Error retrieving application info - exception info: %s"%(data['exception']))
@@ -83,10 +83,11 @@ def portal(aWeb):
   res = aWeb.rest_call("system_authenticate",{'id':id,'username':username})
   if res['authenticated'] == "OK":
    cookie.update({'id':id,'token':res['token']})
-   aWeb.put_cookie('system',cookie,res['expires'])
+   value = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
+   aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(value,res['expires']))
   else:
    aWeb.wr("<SCRIPT>erase_cookie('system');</SCRIPT>")
-   aWeb.put_redirect("system_login")
+   aWeb.wr("<SCRIPT> window.location.replace('system_login'); </SCRIPT>")
    return
 
  # proper id here

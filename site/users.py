@@ -56,7 +56,7 @@ def info(aWeb):
  args = aWeb.args()
  data = aWeb.rest_call("system_users_info",args)['data']
  resources = aWeb.rest_call("system_resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.node()})['data']
- aWeb.wr(aWeb.dragndrop())
+ aWeb.wr("<SCRIPT>dragndrop();</SCRIPT>")
  aWeb.wr("<ARTICLE CLASS='info'><P>User Info (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=user_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))

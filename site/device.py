@@ -283,7 +283,7 @@ def delete(aWeb):
 #
 def to_console(aWeb):
  res = aWeb.rest_call("device_info&op=basics",{'id':aWeb['id']})
- aWeb.put_redirect("%s&title=%s"%(res['url'],aWeb['name']))
+ aWeb.wr("<SCRIPT> window.location.replace('%s&title=%s'); </SCRIPT>"%(res['url'],aWeb['name']))
 
 #
 #

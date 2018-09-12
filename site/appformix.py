@@ -21,7 +21,8 @@ def list(aWeb):
   else:
    cookie_appformix['token'] = res['token']
    cookie_appformix['node'] =  cookie_openstack['appformix']
-   aWeb.put_cookie('appformix',cookie_appformix,res['expires'])
+   value = ",".join(["%s=%s"%(k,v) for k,v in cookie_appformix.iteritems()])
+   aWeb.wr("<SCRIPT>set_cookie('appformix','%s','%s');</SCRIPT>"%(value,res['expires']))
 
  from datetime import datetime
  res = aWeb.rest_call("appformix_report_projects",{'node':cookie_appformix['node'],'token':cookie_appformix['token'],'project':cookie_openstack['project_id']})

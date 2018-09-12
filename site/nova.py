@@ -53,7 +53,7 @@ def select_parameters(aWeb):
   aWeb.wr("Not logged in")
   return
  resources = aWeb.rest_call("openstack_vm_resources",{'token':token})
- aWeb.wr(aWeb.dragndrop())
+ aWeb.wr("<SCRIPT>dragndrop();</SCRIPT>")
  aWeb.wr("<ARTICLE CLASS='info'><P>New VM parameters</P>")
  aWeb.wr("<FORM ID=frm_os_create_vm>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=os_network ID=os_network>")
@@ -169,4 +169,4 @@ def console(aWeb):
  if aWeb['inline']:
   aWeb.wr("<iframe id='console_embed' src='{}' STYLE='width: 100%; height: 100%;'></iframe>".format(res['url']))
  else:
-  aWeb.put_redirect("%s&title=%s"%(res['url'],aWeb['name']))
+  aWeb.wr("<SCRIPT> window.location.replace('%s&title=%s'); </SCRIPT>"%(res['url'],aWeb['name']))

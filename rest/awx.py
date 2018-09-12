@@ -39,7 +39,7 @@ def inventory_delete(aDict):
  controller = Device(SC['nodes'][aDict['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  res = controller.call("inventories/%(id)s/"%aDict,None,"DELETE")
- ret = {'result':"deleted" if res['code'] == 204 else res['info']['x-api-code']}
+ ret = {'result':"deleted" if res['code'] == 204 else res['info']['x-code']}
  return ret
 
 #
@@ -185,7 +185,7 @@ def inventory_delete_hosts(aDict):
  for host,host_id in aDict.iteritems():
   if host[0:5] == 'host_':
    res = controller.call("hosts/%s/"%host_id,None,"DELETE")
-   ret['hosts'][host_id] = "OK" if res['code'] == 204 else res['info']['x-api-code']
+   ret['hosts'][host_id] = "OK" if res['code'] == 204 else res['info']['x-code']
  return ret
 
 ########################################## Hosts ##########################################
