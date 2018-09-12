@@ -5,12 +5,12 @@
             "value": "/var/log/system/system.log"
         },
         "rest": {
-            "description": "REST server call log",
+            "description": "REST call log",
             "value": "/var/log/system/rest.log"
         }
     },
     "files": {
-        "extra-icons": {
+        "images": {
             "description": "Icons directory - if needed to create own resources",
             "value": "/var/www/images"
         }
@@ -18,7 +18,7 @@
     "system": {
         "application": {
             "description": "Default Application",
-            "value": "zdcp"
+            "value": "system"
         },
         "db_host": {
             "description": "DB host IP - for master role only",
@@ -40,29 +40,25 @@
             "description": "DB Username - for master role only",
             "value": "USERNAME"
         },
-        "docroot": {
-            "description": "Web server document root",
-            "value": "/var/www"
-        },
         "id": {
             "description": "Local node's ID",
             "value": "master"
         },
         "master": {
-            "description": "Master node node interface from local node PoV",
-            "value": "http://127.0.0.1:9001"
+            "description": "Master node interface from local node PoV",
+            "value": "http://127.0.0.1:8080"
         },
         "node": {
             "description": "Local device's globally reachable node interface",
-            "value": "http://x.y.z.w:9001"
+            "value": "http://x.y.z.w:8080"
         }
         "port": {
-            "description": "Server port to register REST and infra services (aka the node)",
-            "value": 9001               
+            "description": "Server port to register ZDCP (aka the node)",
+            "value": 8080
         },
         "template": {
-            "description": "REST server startup template",
-            "value": "server.init"             
+            "description": "Server startup template",
+            "value": "server.init"
         }
     }
 }

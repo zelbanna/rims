@@ -23,9 +23,10 @@ def main(aWeb):
 #
 def report(aWeb):
  activities = aWeb.rest_call("system_activities_list",{'group':'month','mode':'full'})['data']
- aWeb.wr("<ARTICLE><P>Activities Report</P><DIV CLASS=table><DIV CLASS=tbody>")
+ aWeb.wr("<ARTICLE><P>Activities Report</P><DIV CLASS=table>")
+ aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>User</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Event</DIV></DIV><DIV CLASS=tbody>")
  for act in activities:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>{} - {}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(act['date'],act['time'],act['type'].encode("utf-8"),act['event'].encode("utf-8")))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>{} - {}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(act['date'],act['time'],act['user'],act['type'].encode("utf-8"),act['event'].encode("utf-8")))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #

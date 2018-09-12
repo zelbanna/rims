@@ -22,7 +22,7 @@ CREATE TABLE `activities` (
 DROP TABLE IF EXISTS `activity_types`;
 CREATE TABLE `activity_types` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `type` varchar(20) NOT NULL,
+  `type` varchar(40) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
