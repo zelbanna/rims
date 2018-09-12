@@ -60,12 +60,20 @@ def transfer(aDict):
   
  Output:
  """
- from shutil import move
- ret = {'res':'NOT_OK','source':ospath.join(aDict['path'],aDict['file']),'destination':ospath.join(SC['multimedia']['media_directory'],aDict['file'])}
- try: move(ret['source'],ret['destination'])
- except Exception as err: ret['error'] = str(err)
- else: ret['res'] = 'OK'
- return ret
+ def __transfer(aArgs):
+  from zdcp.core.common import log
+  from shutil import move
+  try: move( ospath.join(aArgs['path'],aArgs['file']), ospath.join(SC['multimedia']['media_directory'],aArgs['file']) )
+  except Exception as err: result = str(err)
+  else: result = 'OK
+  log("multimedia_transfer(%s) => %s"%s(dumps(aArgs),result))
+  return {'result':result}
+
+ from threading import Thread
+ t = Thread(target = __transfer, args=[aDict])
+ t.name = "multimedia_transfer"
+ t.start()
+ return {'res':'initiating_move'}
 
 #
 #
@@ -256,6 +264,13 @@ def process(aDict):
 
  Output:
  """
+ from threading import Thread
+ t = Thread(target = __process, args=[aDict])
+ t.name = "multimedia_process"
+ t.start()
+ return {'result':'initiating_process'}  
+
+def __process(aDict):
  from time import time
  from subprocess import check_call, call
  from os import devnull,chmod,rename,remove
@@ -351,6 +366,8 @@ def process(aDict):
    log("ERRR - %s - FAILURE PROCESSING!"%filename)
    ret['error'] = 'COMPLETE_NO_FILE'
 
+ from zdcp.core.common import log
+ log("multimedia_process(%s) => %s"%s(dumps(aDict),dumps(result)))
  return ret
 
 
