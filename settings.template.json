@@ -10,7 +10,7 @@
         }
     },
     "files": {
-        "extra-icons": {
+        "images": {
             "description": "Icons directory - if needed to create own resources",
             "value": "/var/www/images"
         }
