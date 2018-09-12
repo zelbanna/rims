@@ -12,8 +12,8 @@ __status__ = "Production"
 from sys import argv, stdout, path as syspath
 from json import load,dump,dumps
 from os import remove, chmod, listdir, path as ospath
-packagedir = ospath.abspath(ospath.dirname(__file__))
-basedir = ospath.abspath(ospath.join(packagedir,'..'))
+pkgdir = ospath.abspath(ospath.dirname(__file__))
+basedir = ospath.abspath(ospath.join(pkgdir,'..'))
 syspath.insert(1, basedir)
 res = {}
 
@@ -34,7 +34,7 @@ else:
 #
 settings = {}
 settingsfile = ospath.abspath(settingsfilename)
-with open(settingsfile) as sfile:
+with open(settingsfile,'r') as sfile:
  temp = load(sfile)
 for section,content in temp.iteritems():
  for key,params in content.iteritems():
@@ -47,12 +47,12 @@ settings['system']['config_file'] = settingsfile
 #
 # Write server operations files
 #
-with open(ospath.abspath(ospath.join(packagedir,'templates',settings['system']['template'])),'r') as f:
+with open(ospath.abspath(ospath.join(pkgdir,'templates',settings['system']['template'])),'r') as f:
  template = f.read()
-template = template.replace("%PKGDIR%",packagedir)
-with open(ospath.abspath(ospath.join(packagedir,settings['system']['template'])),'w+') as f:
+template = template.replace("%PKGDIR%",pkgdir)
+with open(ospath.abspath(ospath.join(pkgdir,settings['system']['template'])),'w+') as f:
  f.write(template)
-chmod(ospath.abspath(ospath.join(packagedir,settings['system']['template'])),0755)
+chmod(ospath.abspath(ospath.join(pkgdir,settings['system']['template'])),0755)
 res['server']= settings['system']['template']
 
 ############################################### ALL #################################################
@@ -91,7 +91,7 @@ if settings['system']['id'] == 'master':
  #
  # Device types
  #
- devdir = ospath.abspath(ospath.join(packagedir,'devices'))
+ devdir = ospath.abspath(ospath.join(pkgdir,'devices'))
  device_types = []
  for file in listdir(devdir):
   pyfile = file[:-3]
@@ -110,7 +110,7 @@ if settings['system']['id'] == 'master':
  #
  # Menu items
  #
- sitedir= ospath.abspath(ospath.join(packagedir,'site'))
+ sitedir= ospath.abspath(ospath.join(pkgdir,'site'))
  resources = []
  for file in listdir(sitedir):
   pyfile = file[:-3]
@@ -133,7 +133,7 @@ if settings['system']['id'] == 'master':
  mysql.__add_globals__({'SC':settings})
  try:
   database,host,username,password = settings['system']['db_name'],settings['system']['db_host'],settings['system']['db_user'],settings['system']['db_pass']
-  database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(packagedir,'schema.db')}
+  database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(pkgdir,'schema.db')}
   res['database']= {}
   res['database']['diff'] = mysql.diff(database_args)
   if res['database']['diff']['diffs'] > 0:
@@ -185,7 +185,7 @@ if settings['system']['id'] == 'master':
   # Generate ERD and save
   #
   erd_input = "mysql+pymysql://%s:%s@%s/%s"%(username,password,host,database)
-  erd_output= ospath.join(packagedir,'infra','zdcp.pdf')
+  erd_output= ospath.join(pkgdir,'infra','zdcp.pdf')
   try:
    from eralchemy import render_er
    render_er(erd_input,erd_output)
@@ -221,9 +221,8 @@ else:
 #
 # Write settings containers
 #
-container = ospath.abspath(ospath.join(ospath.dirname(__file__),'SettingsContainer.py'))
 try:
- with open(container,'w') as f:
+ with open(ospath.join(pkgdir,'SettingsContainer.py'),'w') as f:
   f.write("SC=%s\n"%dumps(settings))
   res['container'] = 'OK'
 except Exception as e:
