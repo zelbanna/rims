@@ -106,8 +106,7 @@ def process(aWeb):
  data = aWeb.rest_call("multimedia_process",args, 360)
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- for key in data.keys():
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"%(key.title(),data[key]))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Res:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['res'])
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -117,10 +116,6 @@ def transfer(aWeb):
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Res:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['res'])
- if data.get('error'):
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Error:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['error'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Source:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['source'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Destination:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['destination'])
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
