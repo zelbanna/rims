@@ -15,8 +15,10 @@ from json import loads, dumps
 from importlib import import_module
 from threading import Thread
 from time import localtime, strftime, sleep
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from urllib2 import urlopen, Request, URLError, HTTPError
 from urlparse import parse_qs
+from httplib import responses as http_codes
+from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..'))
 pkgpath  = ospath.join(basepath,'zdcp')
@@ -41,6 +43,7 @@ class HttpThread(Thread):
   return "HttpThread %s [Node:%s,Daemon:%s,Alive:%s]"%(self._node,self._thread_id,self.daemon,self.is_alive())
 
  def run(self):
+  BaseHTTPRequestHandler.server_version = 'ZDCP'
   httpd = HTTPServer(self._addr, SessionHandler, False)
   httpd._id = self._thread_id
   httpd._node = self._node
@@ -81,12 +84,38 @@ class SessionHandler(BaseHTTPRequestHandler):
  def __route(self):
   """ Route request to the right function """
   path,_,query = (self.path.lstrip('/')).partition('/')
+  output, headers = None,{'X-API-Thread':self.server._id,'X-API-Method':self.command,'X-API-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
+  # self.log_request()
   if path == 'site':
-   self.__site(query)
+   api,_,get = query.partition('?')
+   (mod,_,fun)    = api.partition('_')
+   self.__parse_cookies()
+   self.__parse_form(get)
+   self.wfile.write("HTTP/1.0 200 OK")
+   headers['Content-Type'] = 'text/html; charset=utf-8'
+   for k,v in headers.iteritems():
+    self.send_header(k,v)
+   self.end_headers()
+   # Remove try/except to debug
+   try:
+   # if True:
+    module = import_module("zdcp.site." + mod)
+    getattr(module,fun,None)(self)
+   # else:
+   except Exception as e:
+    self.wfile.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
+    try:
+     self.wfile.write("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
+     try:
+      for key,value in e[0]['info'].iteritems():
+       self.wfile.write("%s: %s<BR>"%(key,value))
+     except: self.wfile.write(e[0]['info'])
+     self.wfile.write("</DETAILS>")
+    except:
+     self.wfile.write("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS>"%(type(e).__name__,str(e)))
+    self.wfile.write("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(",".join(self._form.keys())))
    return
 
-  headers = {'X-API-Thread':self.server._id,'X-API-Method':self.command,'X-API-Version':__version__}
-  output = None
   if   path == 'api':
    # REST API  CALL
    extras = {}
@@ -108,12 +137,10 @@ class SessionHandler(BaseHTTPRequestHandler):
      module = import_module("zdcp.rest.%s"%mod)
      module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
      output = dumps(getattr(module,fun,None)(args))
-     headers['X-API-Code'] = 200
     else:
-     from urllib2 import urlopen, Request, URLError, HTTPError
      output = 'null'
      req  = Request("%s/api/%s"%(SC['nodes'][headers['X-API-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
-     try: sock = urlopen(req, timeout = 20)
+     try: sock = urlopen(req, timeout = 300)
      except HTTPError as h:
       raw = h.read()
       try:    data = loads(raw)
@@ -125,10 +152,9 @@ class SessionHandler(BaseHTTPRequestHandler):
       try: output = sock.read()
       except: pass
       sock.close()
-      headers['X-API-Code'] = 200
    except Exception as e:
+    output='null'
     headers.update({'X-API-Args':args,'X-API-Info':str(e),'X-API-Exception':type(e).__name__,'X-API-Code':500})
-    output = 'null'
 
   elif path == 'infra' or path == 'images' or path == 'files':
    # Infra call
@@ -150,54 +176,21 @@ class SessionHandler(BaseHTTPRequestHandler):
      with open(fullpath, 'rb') as file:
       output = file.read()
    except Exception as e:
-    headers.update({'X-API-Exception':str(e),'X-API-Query':query,'X-API-Path':path,'X-API-Code':404,'Content-type':'text/html; charset=utf-8'})
-   else:
-    headers['X-API-Code'] = 200
+    headers.update({'X-API-Exception':str(e),'X-API-Query':query,'X-API-Path':path,'Content-type':'text/html; charset=utf-8','X-API-Code':404})
   
   else:
    # Unknown call
    headers.update({'Location':'site/system_login?application=%s'%SC['system'].get('application','system'),'X-API-Code':301})
 
-  self.send_response(headers['X-API-Code'])
+  code = headers.pop('X-API-Code',200)
+  self.wfile.write("HTTP/1.1 %s %s"%(code,http_codes[code]))
+  headers['Content-Length'] = len(output)
   for k,v in headers.iteritems():
    self.send_header(k,v)
   self.end_headers()
   self.wfile.write(output)
 
  ########################################## Site Function ####################################
- #
- # Before React.JS... do not optimize more than necessary
- #
- # - store form data?
- # Check input, either rfile is args - like rest - or
- def __site(self, aQuery):
-  mod_fun,_,args = aQuery.partition('?')
-  self.__parse_cookies()
-  self.__parse_form(args)
-  (mod,_,fun)    = mod_fun.partition('_')
-  self.send_response(200)
-  self.send_header("Content-type", 'text/html; charset=utf-8')
-  self.send_header("X-API-Version", __version__)
-  self.end_headers()
-  # Remove try/except to debug
-  # print "_______________________ %s _____________________"%aQuery 
-  try:
-  # if True:
-   module = import_module("zdcp.site." + mod)
-   getattr(module,fun,None)(self)
-  # else:
-  except Exception as e:
-   self.wfile.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
-   try:
-    self.wfile.write("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
-    try:
-     for key,value in e[0]['info'].iteritems():
-      self.wfile.write("%s: %s<BR>"%(key,value))
-    except: self.wfile.write(e[0]['info'])
-    self.wfile.write("</DETAILS>")
-   except:
-    self.wfile.write("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS>"%(type(e).__name__,str(e)))
-   self.wfile.write("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(",".join(self._form.keys())))
 
  def put_html(self, aTitle = None, aIcon = 'zdcp.png'):
   self.wfile.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/zdcp.css'>")
@@ -292,15 +285,10 @@ if __name__ == '__main__':
  sock.bind(addr)
  sock.listen(5)
 
- try:
-  threads = [HttpThread(n,sock,'',node) for n in range(threadcount)]
-  print "ZDCP server started %s workers @ %s"%(threadcount,addr)
-  while len(threads) > 0:
-   # Check if threads are still alive...
-   threads = [t for t in threads if t.is_alive()]
-   sleep(10)
- except Exception as e:
-  print "ZDCP server interrupted (%s)"%str(e)
- else:
-  print "ZDCP server shutdown due to no live threads"
+ threads = [HttpThread(n,sock,'',node) for n in range(threadcount)]
+ while len(threads) > 0:
+  # Check if threads are still alive...
+  threads = [t for t in threads if t.is_alive()]
+  sleep(10)
  sock.close()
+ print "ZDCP shutdown - no active threads(!)"
