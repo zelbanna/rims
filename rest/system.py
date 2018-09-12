@@ -44,11 +44,14 @@ def authenticate(aDict):
 
  Output:
  """
+ from zdcp.core.genlib import random_string
  from datetime import datetime,timedelta
  ret = {}
  try:    tmp = int(aDict['id'])
  except: ret['authenticated'] = 'NOT_OK'
- else:   ret['authenticated'] = 'OK'
+ else:
+  ret['authenticated'] = 'OK'
+  ret['token'] = random_string(16)
  ret['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 

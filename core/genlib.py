@@ -9,6 +9,11 @@ __status__ = "Production"
 
 ################################# Generics ####################################
 
+def random_string(aLength):
+ import string
+ import random
+ return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(aLength))
+
 def get_host_name(aIP):
  from socket import gethostbyaddr
  try:    return gethostbyaddr(aIP)[0].partition('.')[0]

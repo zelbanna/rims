@@ -22,9 +22,9 @@ start() {
  if [ -f $PIDFILE ]; then
   echo "ZDCP already running @ `cat $PIDFILE`"
  else
-  echo "Starting ZDCP service handler"
   $PKGDIR/core/server.py > /dev/null 2>&1 &
   echo $! > $PIDFILE
+  echo "Starting ZDCP service handler @`cat $PIDFILE`"
  fi
 }
 

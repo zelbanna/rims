@@ -9,7 +9,45 @@ __version__ = "4.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-############################################ REST tools ############################################
+################################## System #################################
+#
+#
+def memory_usage(aDict):
+ """Function memory usage retrieves currently used memory
+
+ Args:
+
+ Output:
+  - memory
+ """
+ return None
+
+#
+#
+def memory_objects(aDict):
+ """Function memory objects retrieves number of allocated memory objects
+
+ Args:
+
+ Output:
+  - objects. list of objects
+ """
+ from gc import get_objects
+ return {'objects':len(get_objects())}
+
+#
+#
+def garbage_collect(aDict):
+ """Function garbage_collect performs a garbage collection
+
+ Args:
+
+ Output:
+ """
+ from gc import collect
+ return {'collected':collect()}
+
+################################ REST tools ###############################
 #
 #
 def rest_explore(aDict):
@@ -192,6 +230,7 @@ def service_info(aDict):
    break
  return ret
 
+################################### Database ##################################
 #
 #
 def database_backup(aDict):
@@ -209,7 +248,7 @@ def database_backup(aDict):
  else:
   from zdcp.core.common import rest_call
   res = rest_call("%s/api/mysql_dump"%SC['system']['master'],{'mode':'database'})
-  if res['info'].get("x-api-res") == "OK":
+  if res['code'] == 200:
    data = res['data']['output']
   else:
    data = []

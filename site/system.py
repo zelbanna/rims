@@ -82,7 +82,7 @@ def portal(aWeb):
    aWeb.put_redirect("system_login")
    return
   else:
-   cookie.update({'id':id,'authenticated':'OK'})
+   cookie.update({'id':id,'authenticated':'OK','token':res['token']})
    aWeb.put_cookie('system',cookie,res['expires'])
 
  # proper id here
