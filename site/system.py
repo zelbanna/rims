@@ -42,6 +42,10 @@ def main(aWeb):
 #
 def login(aWeb):
  application = aWeb.get('application','system')
+ cookie = aWeb.cookie(application)
+ if cookie.get('token'):
+  aWeb.put_redirect("%s_portal"%application)
+  return
  args = aWeb.args()
  args['node'] = aWeb.node() if not args.get('node') else args['node']
  data = aWeb.rest_call("%s_application"%(application),args)
@@ -77,13 +81,13 @@ def portal(aWeb):
  if id == 'NOID':
   id,_,username = aWeb.get('system_login',"NOID_NONAME").partition('_')
   res = aWeb.rest_call("system_authenticate",{'id':id,'username':username})
-  if not res['authenticated'] == "OK":
+  if res['authenticated'] == "OK":
+   cookie.update({'id':id,'token':res['token']})
+   aWeb.put_cookie('system',cookie,res['expires'])
+  else:
    aWeb.wr("<SCRIPT>erase_cookie('system');</SCRIPT>")
    aWeb.put_redirect("system_login")
    return
-  else:
-   cookie.update({'id':id,'authenticated':'OK','token':res['token']})
-   aWeb.put_cookie('system',cookie,res['expires'])
 
  # proper id here
  menu = aWeb.rest_call("system_menu",{"id":id,'node':aWeb.node()})
