@@ -13,9 +13,6 @@ __type__ = 'menuitem'
 #
 def main(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  data = aWeb.rest_call("system_inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('node'):

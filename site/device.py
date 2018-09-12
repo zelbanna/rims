@@ -99,9 +99,6 @@ def types_list(aWeb):
 #
 def info(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  args = aWeb.args()
  args['extra'] = ['types']
  dev = aWeb.rest_call("device_info",args)
@@ -327,9 +324,6 @@ def function(aWeb):
 #
 def new(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  ip   = aWeb.get('ip')
  name = aWeb.get('hostname','unknown')
  mac  = aWeb.get('mac',"00:00:00:00:00:00")

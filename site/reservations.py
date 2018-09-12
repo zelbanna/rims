@@ -12,9 +12,6 @@ __status__= "Production"
 #
 def list(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  if aWeb['op']:
   aWeb.rest_call("reservation_update",{'device_id':aWeb['device_id'],'user_id':aWeb['user_id'],'op':aWeb['op']})
 

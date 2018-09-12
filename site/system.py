@@ -13,9 +13,6 @@ __type__ = 'menuitem'
 #
 def main(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  data = aWeb.rest_call("system_inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('logs'):
@@ -46,10 +43,6 @@ def main(aWeb):
 def login(aWeb):
  application = aWeb.get('application','system')
  cookie = aWeb.cookie(application)
- if cookie and cookie.get('authenticated') == 'OK':
-  aWeb.wr("<SCRIPT>location.replace('%s_portal')</SCRIPT>"%application)
-  return
-
  args = aWeb.args()
  args['node'] = aWeb.node() if not args.get('node') else args['node']
  data = aWeb.rest_call("%s_application"%(application),args)

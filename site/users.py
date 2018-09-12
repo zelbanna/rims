@@ -13,9 +13,6 @@ __type__ = 'menuitem'
 ############################################ Users ##############################################
 def main(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  info = aWeb.rest_call("system_users_info",{'id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
@@ -28,9 +25,6 @@ def main(aWeb):
 #
 def user(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  aWeb.wr("<NAV><UL></UL></NAV>")
  aWeb.wr("<SECTION CLASS=content       ID=div_content>")
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left></SECTION>")

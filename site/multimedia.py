@@ -12,9 +12,6 @@ __icon__ = '../images/icon-multimedia.png'
 #
 def main(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  ip   = aWeb.rest_call("dns_external_ip")['ip']
  svcs = aWeb.rest_call("multimedia_services")
  aWeb.wr("<NAV><UL>")
