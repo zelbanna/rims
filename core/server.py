@@ -84,14 +84,14 @@ class SessionHandler(BaseHTTPRequestHandler):
  def __route(self):
   """ Route request to the right function """
   path,_,query = (self.path.lstrip('/')).partition('/')
-  output, headers = 'null',{'X-Thread':self.server._id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
+  body, headers = 'null',{'X-Thread':self.server._id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
   # self.log_request()
   if path == 'site':
    api,_,get = query.partition('?')
    (mod,_,fun)    = api.partition('_')
    self.__parse_cookies()
    self.__parse_form(get)
-   self.wfile.write("HTTP/1.0 200 OK\n")
+   self.wfile.write("HTTP/1.0 200 OK\r\n")
    headers['Content-Type'] = 'text/html; charset=utf-8'
    for k,v in headers.iteritems():
     self.send_header(k,v)
@@ -136,7 +136,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     if headers['X-Node'] == self.server._node:
      module = import_module("zdcp.rest.%s"%mod)
      module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
-     output = dumps(getattr(module,fun,None)(args))
+     body = dumps(getattr(module,fun,None)(args))
     else:
      req  = Request("%s/api/%s"%(SC['nodes'][headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
      try: sock = urlopen(req, timeout = 300)
@@ -148,7 +148,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      except URLError  as e: headers.update({ 'X-Exception':'URLError', 'X-Code':590, 'X-Info':str(e)})
      except Exception as e: headers.update({ 'X-Exception':type(e).__name__, 'X-Code':591, 'X-Info':str(e)})
      else:
-      try: output = sock.read()
+      try: body = sock.read()
       except: pass
       sock.close()
    except Exception as e:
@@ -169,10 +169,10 @@ class SessionHandler(BaseHTTPRequestHandler):
     if fullpath.endswith("/"):
      headers['Content-type']='text/html; charset=utf-8'
      _, _, filelist = next(walk(fullpath), (None, None, []))
-     output = "<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])
+     body = "<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])
     else:
      with open(fullpath, 'rb') as file:
-      output = file.read()
+      body = file.read()
    except Exception as e:
     headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
 
@@ -185,27 +185,27 @@ class SessionHandler(BaseHTTPRequestHandler):
    if   query == 'login':
     try: tmp = int(args['id'])
     except:
-     output = '"NOT_OK"'
+     body = '"NOT_OK"'
     else:
-     output = '"OK"'
+     body = '"OK"'
      from zdcp.core.genlib import random_string
      from datetime import datetime,timedelta
      headers['X-Auth-Token']  = random_string(16)
      headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
    elif query == 'check':
-    output = '"OK"'
+    body = '"OK"'
   else:
    # Unknown call
    headers.update({'Location':'site/system_login?application=%s'%SC['system'].get('application','system'),'X-Code':301})
 
   code = headers.pop('X-Code',200)
-  self.wfile.write("HTTP/1.1 %s %s\n"%(code,http_codes[code]))
-  headers.update({'Content-Length':len(output)})
-  # headers.update({'Content-Length':len(output),'Connection':'keep-alive','Keep-Alive':'timeout=10, max=5'})
+  self.wfile.write("HTTP/1.1 %s %s\r\n"%(code,http_codes[code]))
+  headers.update({'Content-Length':len(body)})
+  # headers.update({'Content-Length':len(body),'Connection':'keep-alive','Keep-Alive':'timeout=10, max=5'})
   for k,v in headers.iteritems():
    self.send_header(k,v)
   self.end_headers()
-  self.wfile.write(output)
+  self.wfile.write(body)
 
  ########################################## Site Function ####################################
 
