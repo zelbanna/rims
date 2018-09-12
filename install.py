@@ -10,7 +10,6 @@ __version__ = "4.0GA"
 __status__ = "Production"
 
 from sys import argv, stdout, path as syspath
-from pip import main as pipmain
 from json import load,dump,dumps
 from os import remove, chmod, listdir, path as ospath
 packagedir = ospath.abspath(ospath.dirname(__file__))
@@ -60,6 +59,10 @@ res['server']= settings['system']['template']
 #
 # Modules
 #
+try:
+ from pip import main as pipmain
+except:
+ from pip._internal import main as pipmain
 try: import dns
 except ImportError:
  res['dns'] = 'install'

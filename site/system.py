@@ -42,7 +42,6 @@ def main(aWeb):
 #
 def login(aWeb):
  application = aWeb.get('application','system')
- cookie = aWeb.cookie(application)
  args = aWeb.args()
  args['node'] = aWeb.node() if not args.get('node') else args['node']
  data = aWeb.rest_call("%s_application"%(application),args)

@@ -156,7 +156,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   
   else:
    # Unknown call
-   headers.update({'Location':'site/system_login','X-API-Code':301})
+   headers.update({'Location':'site/system_login?application=%s'%SC['system'].get('application','system'),'X-API-Code':301})
 
   self.send_response(headers['X-API-Code'])
   for k,v in headers.iteritems():
