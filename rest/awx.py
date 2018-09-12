@@ -18,8 +18,8 @@ def inventory_list(aDict):
  Output:
   - inventories
  """
- from zdcp.rest.device import node_mapping
- ret = node_mapping(aDict)
+ from zdcp.rest.system import node_device_mapping
+ ret = node_device_mapping(aDict)
  controller = Device(SC['nodes'][ret['node']])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
  ret['inventories'] = controller.fetch_list("inventories/",('id','name','url'))
