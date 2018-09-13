@@ -73,6 +73,18 @@ def list(aWeb):
 
 #
 #
+def report(aWeb):
+ args = aWeb.args()
+ res = aWeb.rest_call("device_list",{'extra': ['system', 'type', 'mac']})
+ aWeb.wr("<ARTICLE><P>Devices</P>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Model</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>State</DIV></DIV><DIV CLASS=tbody>")
+ for dev in res['data']:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(domain)s</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(mac)s</DIV><DIV CLASS=td>%(model)s</DIV><DIV CLASS=td>%(serial)s</DIV>"%dev)
+  aWeb.wr("<DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%{0:'grey',1:'green',2:'red'}.get(dev['state'],0))
+ aWeb.wr("</DIV></DIV></ARTICLE>")
+
+#
+#
 def search(aWeb):
  aWeb.wr("<ARTICLE><P>Device Search</P>")
  aWeb.wr("<FORM ID='device_search'>")
@@ -118,7 +130,7 @@ def info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>IP:    </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['ip'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>ID:    </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['id'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['snmp'])
- aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>State:</DIV><DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%dev['state'])
  aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
  aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("<!-- Additional info -->")
@@ -144,7 +156,7 @@ def info(aWeb):
   aWeb.wr("<DIV CLASS=td>%s</DIV>"%dev['info']['type_name'])
  aWeb.wr("</DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Model: </DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=model VALUE='%s'></DIV></DIV>"%(dev['info']['model']))
- aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>S/N: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=serial VALUE='%s'></DIV></DIV>"%(dev['info']['serial']))
  aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
  aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("<!-- Rack Info -->")
