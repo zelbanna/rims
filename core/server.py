@@ -226,7 +226,7 @@ class Stream(object):
   return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Web object<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(str(self._cookies),self._form)
 
  def output(self):
-  return "\n".join(self._body)
+  return ''.join(self._body)
 
  def wr(self,aHTML):
   self._body.append(aHTML)
