@@ -86,6 +86,7 @@ def info(aWeb):
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='%s'></DIV></DIV>"%(data['name']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Location:</DIV><DIV CLASS=td><INPUT NAME=location TYPE=TEXT VALUE='%s'></DIV></DIV>"%(data['location']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT VALUE='%s'></DIV></DIV>"%(data['size']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Console:</DIV><DIV CLASS=td><SELECT NAME=console>")
  for unit in res['consoles']:
