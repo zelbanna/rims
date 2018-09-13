@@ -59,8 +59,6 @@ class HttpThread(Thread):
 class SessionHandler(BaseHTTPRequestHandler):
 
  def __init__(self, *args, **kwargs):
-  self._cookies = {}
-  self._form    = {}
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
   self.timeout  = 60
 
