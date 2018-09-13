@@ -11,7 +11,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "4.0GA"
 __status__ = "Production"
 
-from zdcp.SettingsContainer import SC
+from zdcp.Settings import SC
 from generic import Device as GenericDevice
 
 ################################### IPMI #######################################

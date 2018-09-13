@@ -320,7 +320,7 @@ def settings_save(aDict):
      if SC.get(section): SC[section].update(content)
      else: SC[section] = content
 
-  container = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','SettingsContainer.py'))
+  container = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','Settings.py'))
   with open(container,'w') as f:
    f.write("SC=%s\n"%dumps(SC))
   ret['result'] = 'OK'

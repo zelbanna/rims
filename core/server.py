@@ -23,7 +23,7 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..'))
 pkgpath  = ospath.join(basepath,'zdcp')
 syspath.insert(1, basepath)
-from zdcp.SettingsContainer import SC
+from zdcp.Settings import SC
 
 ############################### ZDCP Server ############################
 #

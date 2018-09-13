@@ -68,7 +68,7 @@ class Device(object):
   return output
 
  def interfaces(self):
-  from zdcp.SettingsContainer import SC
+  from zdcp.Settings import SC
   from netsnmp import VarList, Varbind, Session
   interfaces = {}
   try:
@@ -88,7 +88,7 @@ class Device(object):
 
  def detect(self):
   ret = {}
-  from zdcp.SettingsContainer import SC
+  from zdcp.Settings import SC
   from netsnmp import VarList, Varbind, Session
   try:
    # .1.3.6.1.2.1.1.1.0 : Device info

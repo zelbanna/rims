@@ -19,7 +19,7 @@ res = {}
 
 if len(argv) < 2:
  try:
-  from zdcp.SettingsContainer import SC as Old
+  from zdcp.Settings import SC as Old
  except:
   stdout.write("Usage: {} </path/json file>\n\n!!! Import DB structure from schema.db before installing !!!\n\n".format(argv[0]))
   exit(0)
@@ -222,7 +222,7 @@ else:
 # Write settings containers
 #
 try:
- with open(ospath.join(pkgdir,'SettingsContainer.py'),'w') as f:
+ with open(ospath.join(pkgdir,'Settings.py'),'w') as f:
   f.write("SC=%s\n"%dumps(settings))
   res['container'] = 'OK'
 except Exception as e:

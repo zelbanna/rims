@@ -30,7 +30,7 @@ if __name__ == "__main__":
    except Exception as e:
     output = e[0]
   else:
-   from zdcp.SettingsContainer import SC
+   from zdcp.Settings import SC
    from importlib import import_module
    (mod,_,fun) = argv[1].partition('_')
    try: args = loads(argv[2])
