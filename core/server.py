@@ -218,7 +218,7 @@ class Stream(object):
   try:    body_len = int(aHandler.headers.getheader('content-length'))
   except: body_len = 0
   if body_len > 0:
-   self._form.update({ k: l[0] for k,l in parse_qs(aHandler.read(body_len), keep_blank_values=1).iteritems() })
+   self._form.update({ k: l[0] for k,l in parse_qs(aHandler.rfile.read(body_len), keep_blank_values=1).iteritems() })
   if len(aGet) > 0:
    self._form.update({ k: l[0] for k,l in parse_qs(aGet, keep_blank_values=1).iteritems() })
 
