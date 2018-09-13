@@ -193,7 +193,7 @@ class SessionHandler(BaseHTTPRequestHandler):
 
   code = headers.pop('X-Code',200)
   self.wfile.write("HTTP/1.1 %s %s\r\n"%(code,http_codes[code]))
-  headers.update({'Content-Length':len(body):'Connection':'close'})
+  headers.update({'Content-Length':len(body),'Connection':'close'})
   for k,v in headers.iteritems():
    self.send_header(k,v)
   self.end_headers()

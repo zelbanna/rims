@@ -55,8 +55,8 @@ def info(aDict):
    args['vm'] = args.get('vm',0)
    if not args.get('comment'):
     args['comment'] = 'NULL'
-   if not args.get('webpage'):
-    args['webpage'] = 'NULL'
+   if not args.get('url'):
+    args['url'] = 'NULL'
    if args.get('mac'):
     try: args['mac'] = int(args['mac'].replace(":",""),16)
     except: args['mac'] = 0
@@ -64,7 +64,7 @@ def info(aDict):
 
   # Basic or complete info?
   if op == 'basics':
-   sql = "SELECT devices.id, devices.webpage, devices.hostname, domains.name AS domain, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
+   sql = "SELECT devices.id, devices.url, devices.hostname, domains.name AS domain, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
   else:
    sql = "SELECT devices.*, dt.base AS type_base, dt.name as type_name, functions, a.name as domain, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
   ret['found'] = (db.do(sql%srch) == 1)
@@ -231,7 +231,7 @@ def list(aDict):
  Args:
   - field (optional) 'id/ip/mac/hostname/type/base/vm' as search fields 
   - search (optional) content to match on field, special case for mac where non-correct MAC will match all that are not '00:00:00:00:00:00'
-  - extra (optional) list of extra info to add, None/'type'/'webpage'
+  - extra (optional) list of extra info to add, None/'type'/'url'
   - rack (optional), id of rack to filter devices from
   - sort (optional) (sort on id or hostname or...)
   - dict (optional) (output as dictionary instead of list)
@@ -269,8 +269,8 @@ def list(aDict):
    fields.append('dt.name AS type_name, dt.base AS type_base')
    if not (aDict.get('field') == 'type' or aDict.get('field') == 'base'):
     tune.append("device_types AS dt ON dt.id = devices.type_id")
-  if 'webpage' in extras:
-   fields.append('devices.webpage')
+  if 'url' in extras:
+   fields.append('devices.url')
   if 'mac' in extras:
    fields.append('devices.mac')
 

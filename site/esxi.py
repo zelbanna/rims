@@ -10,7 +10,7 @@ __icon__ = '../images/icon-servers.png'
 __type__ = 'menuitem'
 
 def main(aWeb):
- rows = aWeb.rest_call("device_list",{'field':'base','search':'hypervisor','extra':['type','webpage'],'sort':'hostname'})['data']
+ rows = aWeb.rest_call("device_list",{'field':'base','search':'hypervisor','extra':['type','url'],'sort':'hostname'})['data']
  aWeb.wr("<NAV><UL>&nbsp;</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content ID=div_content>")
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
@@ -21,8 +21,8 @@ def main(aWeb):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(type_name)s</DIV><DIV CLASS=td>"%row)
   if row['type_name'] == 'esxi':
    aWeb.wr(aWeb.button('info', DIV='main', URL='esxi_manage?id=%s'%row['id'], TITLE='Management'))
-  if row['webpage']:
-   aWeb.wr(aWeb.button('ui', TARGET='_blank', HREF=row['webpage'], TITLE='UI'))
+  if row['url']:
+   aWeb.wr(aWeb.button('ui', TARGET='_blank', HREF=row['url'], TITLE='UI'))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
  aWeb.wr("</SECTION>")
@@ -39,8 +39,8 @@ def manage(aWeb):
  aWeb.wr("<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='esxi_op?ip=%s&next-state=poweroff&id=%s'>Shutdown</A></LI>".format(data['ip'],id))
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content_right  URL='esxi_graph?hostname={0}&domain={1}'>Stats</A></LI>".format(data['info']['hostname'],data['info']['domain']))
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content_right  URL='esxi_logs?hostname={0}&domain={1}'>Logs</A></LI>".format(data['info']['hostname'],data['info']['domain']))
- if data['info']['webpage']:
-  aWeb.wr("<LI><A CLASS=z-op HREF='%s'     target=_blank>UI</A></LI>"%(data['info']['webpage']))
+ if data['info']['url']:
+  aWeb.wr("<LI><A CLASS=z-op HREF='%s'     target=_blank>UI</A></LI>"%(data['info']['url']))
  aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='esxi_manage?id=%s'></A></LI>"%(id))
  aWeb.wr("<LI CLASS='right navinfo'><A>{}</A></LI>".format(data['info']['hostname']))
  aWeb.wr("</UL></NAV>")

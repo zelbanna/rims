@@ -41,7 +41,7 @@ def manage(aWeb):
   args = {'id':aWeb['id']}
  dev = aWeb.rest_call("system_node_device_mapping",args)
  node = dev['node']
- ui = dev['webpage']
+ ui = dev['url']
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL=vera_status?node=%s>Status</A></LI>"%node)
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL=vera_devices?node=%s>Devices</A></LI>"%node)

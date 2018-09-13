@@ -62,8 +62,8 @@ def show(aWeb):
    var args = {op:'basics',id:params.nodes[0]};
    $.ajax({ type:"POST", url: '../api/device_info', data: JSON.stringify(args), dataType:'json',success: function(data){
     if (data && data.found){
-     if(data.info.webpage)
-      window.open(data.info.webpage);
+     if(data.info.url)
+      window.open(data.info.url);
      else
       window.open("ssh://" + data.username + "@" + data.ip,"_self");
     }

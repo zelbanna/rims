@@ -162,7 +162,7 @@ def info(aWeb):
  aWeb.wr("<!-- Text fields -->")
  aWeb.wr("<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%;'><DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=comment VALUE='{}'></DIV></DIV>".format("" if not dev['info']['comment'] else dev['info']['comment'].encode("utf-8")))
- aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>Web UI:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage']))
+ aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>Web UI:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=url VALUE='{}'></DIV></DIV>".format("" if not dev['info']['url'] else dev['info']['url']))
  aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',     DIV='div_content_right',URL='device_info?id=%i'%dev['id']))
@@ -177,8 +177,8 @@ def info(aWeb):
  if dev['racked'] and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
   # Hardcoded port to 60xx
   aWeb.wr(aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port'])))
- if dev['info'].get('webpage'):
-  aWeb.wr(aWeb.button('ui',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('webpage')))
+ if dev['info'].get('url'):
+  aWeb.wr(aWeb.button('ui',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('url')))
  aWeb.wr("<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('update','')))
  aWeb.wr("</ARTICLE>")
  aWeb.wr("<!-- Function navbar and content -->")

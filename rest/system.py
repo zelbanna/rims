@@ -479,11 +479,11 @@ def node_device_mapping(aDict):
   - hostname. device hostname
   - ip. device ip
   - domain. Device domain name
-  - webpage
+  - url
  """
  with DB() as db:
   if aDict.get('id'):
-   found = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain, webpage FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%aDict['id']) > 0)
+   found = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain, url FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%aDict['id']) > 0)
    ret = db.get_row() if found else {}
    ret['found'] = (db.do("SELECT node FROM nodes WHERE device_id = %s"%aDict['id']) > 0)
    ret['node']  = db.get_val('node') if ret['found'] else None
@@ -492,7 +492,7 @@ def node_device_mapping(aDict):
    found = (db.do("SELECT device_id FROM nodes WHERE node = '%s'"%aDict['node']) > 0)
    ret = {'id':db.get_val('device_id') if found else None, 'node':aDict['node'], 'found':False}
    if ret['id']:
-    ret['found'] = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain, webpage FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%ret['id']) > 0)
+    ret['found'] = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain, url FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%ret['id']) > 0)
     ret.update(db.get_row())
  return ret
 

@@ -42,8 +42,8 @@ def list_infra(aWeb):
  for dev in devices:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='device_info?id=%s'>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='%s_inventory?ip=%s'>%s</A></DIV><DIV CLASS=td>"%(dev['id'],dev['id'],dev['type_name'],dev['ip'],dev['hostname']))
   aWeb.wr(aWeb.button('info',DIV='main',URL='%s_manage?id=%s&ip=%s&hostname=%s'%(dev['type_name'],dev['id'],dev['ip'],dev['hostname'])))
-  if dev.get('webpage'):
-   aWeb.wr(aWeb.button('ui', HREF=dev['webpage'], TARGET='_blank', TITLE='UI'))
+  if dev.get('url'):
+   aWeb.wr(aWeb.button('ui', HREF=dev['url'], TARGET='_blank', TITLE='UI'))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
