@@ -43,6 +43,14 @@ for section,content in temp.iteritems():
   settings[section][key] = params['value']
 settings['system']['config_file'] = settingsfile
 
+try:
+ from zdcp import Settings as _
+except:
+ with open(ospath.join(pkgdir,'Settings.py'),'w') as f:
+  f.write("SC=%s\n"%dumps(settings))
+ res['bootstrap'] = 'container'
+ 
+
 ############################################### ALL #################################################
 #
 # Write server operations files
@@ -219,7 +227,7 @@ else:
 
 
 #
-# Write settings containers
+# Write complete settings containers
 #
 try:
  with open(ospath.join(pkgdir,'Settings.py'),'w') as f:

@@ -121,7 +121,7 @@ CREATE TABLE `ipam_addresses` (
   `ip` int(10) unsigned NOT NULL,
   `network_id` int(10) unsigned NOT NULL,
   `type` varchar(10) DEFAULT 'device',
-  `status` tinyint(1) DEFAULT '0',
+  `state` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `ip_network` (`ip`,`network_id`),
   KEY `network_id` (`network_id`),
