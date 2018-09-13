@@ -61,8 +61,8 @@ class SessionHandler(BaseHTTPRequestHandler):
  def __init__(self, *args, **kwargs):
   self._cookies = {}
   self._form    = {}
-  self.timeout  = 60
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
+  self.timeout  = 60
 
  def __log_rest(self,aAPI,aArgs,aExtra):
   try:
@@ -89,34 +89,28 @@ class SessionHandler(BaseHTTPRequestHandler):
   if path == 'site':
    api,_,get = query.partition('?')
    (mod,_,fun)    = api.partition('_')
-   self.__parse_cookies()
-   self.__parse_form(get)
-   self.wfile.write("HTTP/1.0 200 OK\r\n")
-   headers['Content-Type'] = 'text/html; charset=utf-8'
-   for k,v in headers.iteritems():
-    self.send_header(k,v)
-   self.end_headers()
-   # Remove try/except to debug
+   stream = Stream(self,get)
+   headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200})
    try:
    # if True:
     module = import_module("zdcp.site." + mod)
-    getattr(module,fun,None)(self)
+    getattr(module,fun,None)(stream)
    # else:
    except Exception as e:
-    self.wfile.write("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
+    stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
     try:
-     self.wfile.write("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
+     stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
      try:
       for key,value in e[0]['info'].iteritems():
-       self.wfile.write("%s: %s<BR>"%(key,value))
-     except: self.wfile.write(e[0]['info'])
-     self.wfile.write("</DETAILS>")
+       stream.wr("%s: %s<BR>"%(key,value))
+     except: stream.wr(e[0]['info'])
+     stream.wr("</DETAILS>")
     except:
-     self.wfile.write("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS>"%(type(e).__name__,str(e)))
-    self.wfile.write("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(",".join(self._form.keys())))
-   return
+     stream.wr("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS>"%(type(e).__name__,str(e)))
+    stream.wr("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(",".join(self._form.keys())))
+   body = stream.output()
 
-  if   path == 'api':
+  elif path == 'api':
    # REST API  CALL
    extras = {}
    (api,_,get) = query.partition('&')
@@ -183,6 +177,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     args = loads(self.rfile.read(length)) if length > 0 else {}
    except: args = {}
    if   query == 'login':
+    # Replace with module load and provide correct headers from system_login
     try: tmp = int(args['id'])
     except:
      body = '"NOT_OK"'
@@ -192,63 +187,58 @@ class SessionHandler(BaseHTTPRequestHandler):
      from datetime import datetime,timedelta
      headers['X-Auth-Token']  = random_string(16)
      headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
-   elif query == 'check':
-    body = '"OK"'
   else:
    # Unknown call
    headers.update({'Location':'site/system_login?application=%s'%SC['system'].get('application','system'),'X-Code':301})
 
   code = headers.pop('X-Code',200)
   self.wfile.write("HTTP/1.1 %s %s\r\n"%(code,http_codes[code]))
-  headers.update({'Content-Length':len(body)})
-  # headers.update({'Content-Length':len(body),'Connection':'keep-alive','Keep-Alive':'timeout=10, max=5'})
+  headers.update({'Content-Length':len(body):'Connection':'close'})
   for k,v in headers.iteritems():
    self.send_header(k,v)
   self.end_headers()
   self.wfile.write(body)
 
- ########################################## Site Function ####################################
+########################################### Site Function ########################################
+  
+class Stream(object):
 
- def put_html(self, aTitle = None, aIcon = 'zdcp.png'):
-  self.wfile.write("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/zdcp.css'>")
-  if aTitle:
-   self.wfile.write("<TITLE>" + aTitle + "</TITLE>")
-  self.wfile.write("<LINK REL='shortcut icon' TYPE='image/png' HREF='../images/%s'/>"%(aIcon))
-  self.wfile.write("<SCRIPT SRC='../infra/3.1.1.jquery.min.js'></SCRIPT><SCRIPT SRC='../infra/4.21.0.vis.min.js'></SCRIPT><SCRIPT SRC='../infra/zdcp.js'></SCRIPT>")
-  self.wfile.write("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ) .on('input','.slider',slide_monitor); });</SCRIPT>")
-  self.wfile.write("</HEAD>")
-
- def wr(self,aTXT):
-  self.wfile.write(aTXT)
-
- def node(self):
-  return self.server._node
-
- def cookie(self,aName):
-  return self._cookies.get(aName,{})
-
- def args(self):
-  return self._form
-
- def __parse_cookies(self):
-  try: cookie_str = self.headers.get('Cookie').split('; ')
+ def __init__(self,aHandler, aGet):
+  self._cookies = {}
+  self._form    = {}
+  self._node    = aHandler.server._node
+  self._body    = []
+  try: cookie_str = aHandler.headers.get('Cookie').split('; ')
   except: pass
   else:
    for cookie in cookie_str:
     k,_,v = cookie.partition('=')
     try:    self._cookies[k] = dict(x.split('=') for x in v.split(','))
     except: self._cookies[k] = v
-
- def __parse_form(self,aGet):
-  try:    body_len = int(self.headers.getheader('content-length'))
+  try:    body_len = int(aHandler.headers.getheader('content-length'))
   except: body_len = 0
   if body_len > 0:
-   self._form.update({ k: l[0] for k,l in parse_qs(self.rfile.read(body_len), keep_blank_values=1).iteritems() })
+   self._form.update({ k: l[0] for k,l in parse_qs(self.aHandler.read(body_len), keep_blank_values=1).iteritems() })
   if len(aGet) > 0:
    self._form.update({ k: l[0] for k,l in parse_qs(aGet, keep_blank_values=1).iteritems() })
 
  def __str__(self):
   return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Web object<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(str(self._cookies),self._form)
+
+ def output(self):
+  return "\n".join(self._body)
+
+ def wr(self,aHTML):
+  self._body.append(aHTML)
+
+ def node(self):
+  return self._node
+
+ def cookie(self,aName):
+  return self._cookies.get(aName,{})
+
+ def args(self):
+  return self._form
 
  def __getitem__(self,aKey):
   return self._form.get(aKey,None)
@@ -274,6 +264,15 @@ class SessionHandler(BaseHTTPRequestHandler):
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
   from zdcp.core.common import rest_call
   return rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
+
+ def put_html(self, aTitle = None, aIcon = 'zdcp.png'):
+  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/zdcp.css'>")
+  if aTitle:
+   self._body.append("<TITLE>" + aTitle + "</TITLE>")
+  self._body.append("<LINK REL='shortcut icon' TYPE='image/png' HREF='../images/%s'/>"%(aIcon))
+  self._body.append("<SCRIPT SRC='../infra/3.1.1.jquery.min.js'></SCRIPT><SCRIPT SRC='../infra/4.21.0.vis.min.js'></SCRIPT><SCRIPT SRC='../infra/zdcp.js'></SCRIPT>")
+  self._body.append("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ) .on('input','.slider',slide_monitor); });</SCRIPT>")
+  self._body.append("</HEAD>")
 
 
 ############################### MAIN ############################
