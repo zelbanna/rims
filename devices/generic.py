@@ -105,20 +105,22 @@ class Device(object):
    if devobjs[2].val:
     try:    enterprise = devobjs[2].val.split('.')[7]
     except: enterprise = 0
-
     infolist = devobjs[0].val.split()
     if enterprise == '2636':
      # Juniper
-     for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-      if tp in ret['info']['model'].lower():
-       ret['info']['type'] = tp
-       break
      try:
       extobj = VarList(Varbind('.1.3.6.1.4.1.2636.3.1.2.0'),Varbind('.1.3.6.1.4.1.2636.3.1.3.0'))
       session.get(extobj)
-      ret['info']['model']  = " ".join(extobj[0].val.split()[1:])[0:30]
       ret['info']['serial'] = extobj[1].val
+      ret['info']['model']  = extobj[0].val.split()[1][0:30].lower()
+      if (ret['info']['model']) in ['switch','internet']:
+       ret['info']['model'] = infolist[3].lower()
      except: pass
+     else:
+      for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
+       if tp in ret['info']['model']:
+        ret['info']['type'] = tp
+        break
      try:    ret['info']['version'] = infolist[infolist.index('JUNOS') + 1][:-1].lower()
      except: pass
     elif enterprise == '4526':
