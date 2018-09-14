@@ -15,7 +15,7 @@ from json import loads, dumps
 from importlib import import_module
 from threading import Thread
 from time import localtime, strftime, sleep
-from urllib2 import urlopen, Request, URLError, HTTPError
+from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 from urlparse import parse_qs
 from httplib import responses as http_codes
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
@@ -148,6 +148,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     headers.update({'X-Args':args,'X-Info':str(e),'X-Exception':type(e).__name__,'X-Code':500})
 
   elif path == 'infra' or path == 'images' or path == 'files':
+   query = unquote(query)
    # Infra call
    if query.endswith(".js"):
     headers['Content-type']='application/javascript; charset=utf-8'

@@ -168,8 +168,7 @@ def file_list(aWeb):
  import urllib
  for f in res['files']:
   info = f.encode('utf-8')
-  # print urllib.urlencode(info.decode('utf-8'))
-  url = info
+  url  = urllib.quote(info)
   aWeb.wr("<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{2}</A></P>".format(res.get('path','#'),url,info))
  aWeb.wr("</ARTICLE></SECTION>")
 
