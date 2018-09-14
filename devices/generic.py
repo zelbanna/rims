@@ -116,7 +116,7 @@ class Device(object):
      try:
       extobj = VarList(Varbind('.1.3.6.1.4.1.2636.3.1.2.0'),Varbind('.1.3.6.1.4.1.2636.3.1.3.0'))
       session.get(extobj)
-      ret['info']['model']  = extobj[0].val
+      ret['info']['model']  = " ".join(extobj[0].val.split()[1:])[0:30]
       ret['info']['serial'] = extobj[1].val
      except: pass
      try:    ret['info']['version'] = infolist[infolist.index('JUNOS') + 1][:-1].lower()
