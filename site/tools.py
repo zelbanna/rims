@@ -165,8 +165,12 @@ def services_info(aWeb):
 def file_list(aWeb):
  res = aWeb.rest_call('tools_file_list',{'directory':aWeb['directory']})
  aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Files in %s<P>"%res.get('path','directory'))
- for file in res['files']:
-  aWeb.wr("<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{1}</A></P>".format(res.get('path','#'),file.encode('utf-8')))
+ import urllib
+ for f in res['files']:
+  info = f.encode('utf-8')
+  # print urllib.urlencode(info.decode('utf-8'))
+  url = info
+  aWeb.wr("<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{2}</A></P>".format(res.get('path','#'),url,info))
  aWeb.wr("</ARTICLE></SECTION>")
 
 #

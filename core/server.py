@@ -89,12 +89,12 @@ class SessionHandler(BaseHTTPRequestHandler):
    (mod,_,fun)    = api.partition('_')
    stream = Stream(self,get)
    headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200})
-   try:
-   # if True:
+   # try:
+   if True:
     module = import_module("zdcp.site." + mod)
     getattr(module,fun,None)(stream)
-   # else:
-   except Exception as e:
+   else:
+   # except Exception as e:
     stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
     try:
      stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
@@ -225,10 +225,10 @@ class Stream(object):
   return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Web object<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(str(self._cookies),self._form)
 
  def output(self):
-  return ''.join(self._body)
+  return ("".join(self._body)).encode('utf-8')
 
  def wr(self,aHTML):
-  self._body.append(aHTML)
+  self._body.append(aHTML.decode('utf-8'))
 
  def node(self):
   return self._node
