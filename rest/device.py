@@ -43,7 +43,7 @@ def info(aDict):
    lookup = dev.detect()
    ret['result'] = lookup
    if lookup['result'] == 'OK':
-    args = {'model':lookup['info']['model'],'snmp':lookup['info']['snmp'],'type_id':0}
+    args = {'model':lookup['info']['model'],'snmp':lookup['info']['snmp'],'sw':lookup['info']['version'],'serial':lookup['info']['serial']}
     for type in ret['types']:
      if type['name'] == lookup['info']['type']:
       args['type_id'] = type['id']

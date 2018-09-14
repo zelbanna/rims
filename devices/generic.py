@@ -93,29 +93,53 @@ class Device(object):
   try:
    # .1.3.6.1.2.1.1.1.0 : Device info
    # .1.3.6.1.2.1.1.5.0 : Device name
-   devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'))
+   # .1.3.6.1.2.1.1.2.0 : Device Enterprise Obj :-)
+   devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    session = Session(Version = 2, DestHost = self._ip, Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(devobjs)
    ret['result'] = "OK" if (session.ErrorInd == 0) else "NOT_OK"
   except Exception as err:
    ret['snmp'] = "Not able to do SNMP lookup (check snmp -> read_community): %s"%str(err)
   else:
-   ret['info'] = {'model':'unknown', 'type':'generic','snmp':devobjs[1].val.lower() if devobjs[1].val else 'unknown'}
-   if devobjs[0].val:
+   ret['info'] = {'model':'unknown', 'type':'generic','snmp':devobjs[1].val.lower() if devobjs[1].val else 'unknown','version':None,'serial':None}
+   if devobjs[2].val:
+    try:    enterprise = devobjs[2].val.split('.')[7]
+    except: enterprise = 0
+
     infolist = devobjs[0].val.split()
-    if infolist[0] == "Juniper":
-     if infolist[1] == "Networks,":
-      ret['info']['model'] = infolist[3].lower()
-      for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-       if tp in ret['info']['model']:
-        ret['info']['type'] = tp
-        break
-     else:
-      subinfolist = infolist[1].split(",")
-      ret['info']['model'] = subinfolist[2]
+    if enterprise == '2636':
+     # Juniper
+     for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
+      if tp in ret['info']['model'].lower():
+       ret['info']['type'] = tp
+       break
+     try:
+      extobj = VarList(Varbind('.1.3.6.1.4.1.2636.3.1.2.0'),Varbind('.1.3.6.1.4.1.2636.3.1.3.0'))
+      session.get(extobj)
+      ret['info']['model']  = extobj[0].val
+      ret['info']['serial'] = extobj[1].val
+     except: pass
+     try:    ret['info']['version'] = infolist[infolist.index('JUNOS') + 1][:-1].lower()
+     except: pass
+    elif enterprise == '4526':
+     # Netgear
+     ret['info']['type'] = 'netgear'
+     try:
+      extobj = VarList(Varbind('.1.3.6.1.4.1.4526.11.1.1.1.3.0'),Varbind('.1.3.6.1.4.1.4526.11.1.1.1.4.0'),Varbind('.1.3.6.1.4.1.4526.11.1.1.1.13.0'))
+      session.get(extobj)
+      ret['info']['model']  = extobj[0].val
+      ret['info']['serial'] = extobj[1].val
+      ret['info']['version'] = extobj[2].val
+     except: pass
     elif infolist[0] == "VMware":
-     ret['info']['model'] = "esxi"
      ret['info']['type']  = "esxi"
+     try:
+      extobj = VarList(Varbind('.1.3.6.1.4.1.6876.1.1.0'),Varbind('.1.3.6.1.4.1.6876.1.2.0'),Varbind('.1.3.6.1.4.1.6876.1.4.0'))
+      session.get(extobj)
+      ret['info']['model']  = extobj[0].val
+      ret['info']['version'] = "%s-%s"%(extobj[1].val,extobj[2].val)
+     except: pass
+    # Linux
     elif infolist[0] == "Linux":
      ret['info']['model'] = 'debian' if "Debian" in devobjs[0].val else 'generic'
     else:
