@@ -13,7 +13,7 @@ def manage(aWeb):
  args = aWeb.args()
  data = aWeb.rest_call("awx_inventory_list",args)
  aWeb.wr("<NAV><UL>")
- aWeb.wr("<LI><A CLASS=z-op HREF=%s     target=_blank>UI</A></LI>"%(data['webpage']))
+ aWeb.wr("<LI><A CLASS=z-op HREF=%s     target=_blank>UI</A></LI>"%(data['url']))
  aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='awx_manage?id=%s'></A></LI>"%(data['id']))
  aWeb.wr("<LI CLASS='right navinfo'><A>%s</A></LI>"%(data['hostname']))
  aWeb.wr("</UL></NAV>")

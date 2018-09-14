@@ -9,7 +9,7 @@ __status__  = "Production"
 __type__    = "pdu"
 
 from generic import Device as GenericDevice
-from zdcp.SettingsContainer import SC
+from zdcp.Settings import SC
 
 ######################################## PDU ########################################
 

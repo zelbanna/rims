@@ -43,7 +43,7 @@ def info(aDict):
    lookup = dev.detect()
    ret['result'] = lookup
    if lookup['result'] == 'OK':
-    args = {'model':lookup['info']['model'],'snmp':lookup['info']['snmp'],'type_id':0}
+    args = {'model':lookup['info']['model'],'snmp':lookup['info']['snmp'],'sw':lookup['info']['version'],'serial':lookup['info']['serial']}
     for type in ret['types']:
      if type['name'] == lookup['info']['type']:
       args['type_id'] = type['id']
@@ -52,11 +52,12 @@ def info(aDict):
 
   elif op == 'update' and ret['id']:
    args = aDict
+   args.pop('state',None)
    args['vm'] = args.get('vm',0)
    if not args.get('comment'):
     args['comment'] = 'NULL'
-   if not args.get('webpage'):
-    args['webpage'] = 'NULL'
+   if not args.get('url'):
+    args['url'] = 'NULL'
    if args.get('mac'):
     try: args['mac'] = int(args['mac'].replace(":",""),16)
     except: args['mac'] = 0
@@ -64,14 +65,15 @@ def info(aDict):
 
   # Basic or complete info?
   if op == 'basics':
-   sql = "SELECT devices.id, devices.webpage, devices.hostname, domains.name AS domain, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
+   sql = "SELECT devices.id, devices.url, devices.hostname, domains.name AS domain, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
   else:
-   sql = "SELECT devices.*, dt.base AS type_base, dt.name as type_name, functions, a.name as domain, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
+   sql = "SELECT devices.*, dt.base AS type_base, dt.name as type_name, functions, a.name as domain, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
   ret['found'] = (db.do(sql%srch) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['id'] = ret['info'].pop('id',None)
    ret['ip'] = ret['info'].pop('ip',None)
+   ret['state'] = {0:'grey',1:'green',2:'red'}[ret['info']['state']]
    # Pick login name from settings
    db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'netconf'")
    netconf = db.get_dict('parameter')
@@ -231,7 +233,7 @@ def list(aDict):
  Args:
   - field (optional) 'id/ip/mac/hostname/type/base/vm' as search fields 
   - search (optional) content to match on field, special case for mac where non-correct MAC will match all that are not '00:00:00:00:00:00'
-  - extra (optional) list of extra info to add, None/'type'/'webpage'
+  - extra (optional) list of extra info to add, None/'type'/'url'/'system'
   - rack (optional), id of rack to filter devices from
   - sort (optional) (sort on id or hostname or...)
   - dict (optional) (output as dictionary instead of list)
@@ -269,10 +271,12 @@ def list(aDict):
    fields.append('dt.name AS type_name, dt.base AS type_base')
    if not (aDict.get('field') == 'type' or aDict.get('field') == 'base'):
     tune.append("device_types AS dt ON dt.id = devices.type_id")
-  if 'webpage' in extras:
-   fields.append('devices.webpage')
+  if 'url' in extras:
+   fields.append('devices.url')
   if 'mac' in extras:
    fields.append('devices.mac')
+  if 'system' in extras:
+   fields.extend(['devices.serial','devices.sw','ia.state'])
 
  with DB() as db:
   sql = "SELECT %s FROM devices LEFT JOIN %s WHERE %s %s"%(", ".join(fields)," LEFT JOIN ".join(tune)," AND ".join(filter),sort)

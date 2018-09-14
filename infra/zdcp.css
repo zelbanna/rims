@@ -64,10 +64,10 @@ div.table {            display: table; counter-reset:ztable; }
 div.table .thead {     display: table-header-group; }
 div.table .thead .th { display: table-cell; vertical-align: middle; font-weight: bold; text-align: center; font-size: 14px; padding: 0px 2px 6px 4px; }
 div.table .tbody {     display: table-row-group; }
-div.table .tbody .tr { display: table-row; line-height:22px; counter-increment:ztable; font-size:11px; }
+div.table .tbody .tr { display: table-row; height:22px; counter-increment:ztable; font-size:11px; }
 div.table .tbody .tr:nth-child(even) { background-color: #FFFFFF; }
 div.table .tbody .tr:nth-child(odd)  { background-color: #F1F1F1; }
-div.table .tbody .tr .td { display:table-cell; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:0px 0px 0px 6px; }
+div.table .tbody .tr .td { display:table-cell; vertical-align: middle; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:0px 0px 0px 6px;}
 div.table .tfoot {     display: table-footer-group; }
 
 article.info div.td:first-child { font-weight:bold; }
@@ -117,6 +117,9 @@ div.rest > div:first-child { font-weight:bold; background-color:#9CA6B0!importan
 div.rest > div { min-width:100px; white-space:normal; }
 
 div.network { width:100%; height:500px; }
+
+div.state { border: 1px solid #9CA6B0; border-radius:16px; height:16px; width:16px; display:inline-block; }
+ 
 /*################################ JS tools ####################################*/
 
 .highlight { border: 1px solid #3E84F4; }

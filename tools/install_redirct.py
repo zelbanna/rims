@@ -20,7 +20,7 @@ basedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','..'))
 pkgdir  = ospath.join(basedir,'zdcp')
 destfile= ospath.abspath(ospath.join(argv[1],'index.cgi'))
 syspath.insert(1, basedir)
-from zdcp.SettingsContainer import SC
+from zdcp.Settings import SC
 
 with open(destfile,'w+') as f:
  f.write('#!/usr/bin/python\n')

@@ -49,7 +49,7 @@ def info(aDict):
    ret['found'] = (db.do("SELECT racks.* FROM racks WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = { 'id':'new', 'name':'new-name', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None  }
+   ret['data'] = { 'id':'new', 'name':'new-name','location':'default', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None  }
 
   sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
   db.do(sqlbase%('console'))

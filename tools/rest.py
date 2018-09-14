@@ -7,6 +7,7 @@ __status__ = "Production"
 from os   import path as ospath
 from sys  import path as syspath
 from json import loads, dumps
+from time import time
 syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
 
 if __name__ == "__main__":
@@ -17,25 +18,31 @@ if __name__ == "__main__":
   print "\nOptions:\n -url: Proper socket call, followed by URL\n"
   exit(0)
  else:
+  timestamp = int(time())
   if argv[1] == '-url':
    try: args = loads(argv[3])
    except: args = {}
-   print "Executing:%s(%s)"%(argv[2],args)
+   started = "Executing:%s(%s)"%(argv[2],args)
+   print started
    from zdcp.core.common import rest_call
    try:
-    output = rest_call(argv[2],args)['data']
+    output = rest_call(argv[2],args, aTimeout = 300)['data']
    except Exception as e:
     output = e[0]
   else:
-   from zdcp.SettingsContainer import SC
+   from zdcp.Settings import SC
    from importlib import import_module
    (mod,_,fun) = argv[1].partition('_')
    try: args = loads(argv[2])
    except: args = {}
-   print "Executing:%s_%s(%s)"%(mod,fun,args)
+   started = "Executing:%s_%s(%s)"%(mod,fun,args)
+   print started
    module = import_module("zdcp.rest.%s"%mod)
    module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
    function = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })
    output = function(args)
+  timespent = int(time()) - timestamp
+  print "Time spent: %i"%(timespent)
+  print "_" * len(started)
   print dumps(output,indent=4, sort_keys=True)
 

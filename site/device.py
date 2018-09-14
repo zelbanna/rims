@@ -68,7 +68,19 @@ def list(aWeb):
   aWeb.wr("<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='device_list?sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red"))
  aWeb.wr("<DIV CLASS=th>Model</DIV></DIV><DIV CLASS=tbody>")
  for row in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='device_info?id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['id'],row['ip'], row['hostname'], row['model']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='device_info?id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td STYLE='max-width:140px; overflow-x:hidden'>%s</DIV></DIV>"%(row['id'],row['id'],row['ip'], row['hostname'], row['model']))
+ aWeb.wr("</DIV></DIV></ARTICLE>")
+
+#
+#
+def report(aWeb):
+ args = aWeb.args()
+ res = aWeb.rest_call("device_list",{'extra': ['system', 'type', 'mac']})
+ aWeb.wr("<ARTICLE><P>Devices</P>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Model</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>State</DIV></DIV><DIV CLASS=tbody>")
+ for dev in res['data']:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(domain)s</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(mac)s</DIV><DIV CLASS=td>%(model)s</DIV><DIV CLASS=td>%(serial)s</DIV>"%dev)
+  aWeb.wr("<DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%{0:'grey',1:'green',2:'red'}.get(dev['state'],0))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -99,9 +111,6 @@ def types_list(aWeb):
 #
 def info(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  args = aWeb.args()
  args['extra'] = ['types']
  dev = aWeb.rest_call("device_info",args)
@@ -121,8 +130,8 @@ def info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>IP:    </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['ip'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>ID:    </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['id'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['snmp'])
- aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
- aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Version:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['sw'])
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>State:</DIV><DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%dev['state'])
  aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("<!-- Additional info -->")
  aWeb.wr("<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>")
@@ -147,7 +156,7 @@ def info(aWeb):
   aWeb.wr("<DIV CLASS=td>%s</DIV>"%dev['info']['type_name'])
  aWeb.wr("</DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Model: </DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=model VALUE='%s'></DIV></DIV>"%(dev['info']['model']))
- aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>S/N: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=serial VALUE='%s'></DIV></DIV>"%(dev['info']['serial']))
  aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
  aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("<!-- Rack Info -->")
@@ -165,7 +174,7 @@ def info(aWeb):
  aWeb.wr("<!-- Text fields -->")
  aWeb.wr("<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%;'><DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=comment VALUE='{}'></DIV></DIV>".format("" if not dev['info']['comment'] else dev['info']['comment'].encode("utf-8")))
- aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>Web UI:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=webpage VALUE='{}'></DIV></DIV>".format("" if not dev['info']['webpage'] else dev['info']['webpage']))
+ aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>Web UI:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=url VALUE='{}'></DIV></DIV>".format("" if not dev['info']['url'] else dev['info']['url']))
  aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',     DIV='div_content_right',URL='device_info?id=%i'%dev['id']))
@@ -180,8 +189,8 @@ def info(aWeb):
  if dev['racked'] and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
   # Hardcoded port to 60xx
   aWeb.wr(aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port'])))
- if dev['info'].get('webpage'):
-  aWeb.wr(aWeb.button('ui',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('webpage')))
+ if dev['info'].get('url'):
+  aWeb.wr(aWeb.button('ui',TITLE='WWW', TARGET='_blank', HREF=dev['info'].get('url')))
  aWeb.wr("<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('update','')))
  aWeb.wr("</ARTICLE>")
  aWeb.wr("<!-- Function navbar and content -->")
@@ -286,7 +295,7 @@ def delete(aWeb):
 #
 def to_console(aWeb):
  res = aWeb.rest_call("device_info&op=basics",{'id':aWeb['id']})
- aWeb.put_redirect("%s&title=%s"%(res['url'],aWeb['name']))
+ aWeb.wr("<SCRIPT> window.location.replace('%s&title=%s'); </SCRIPT>"%(res['url'],aWeb['name']))
 
 #
 #
@@ -327,9 +336,6 @@ def function(aWeb):
 #
 def new(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  ip   = aWeb.get('ip')
  name = aWeb.get('hostname','unknown')
  mac  = aWeb.get('mac',"00:00:00:00:00:00")

@@ -13,9 +13,6 @@ __type__ = 'menuitem'
 ############################################ Users ##############################################
 def main(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  info = aWeb.rest_call("system_users_info",{'id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
@@ -28,9 +25,6 @@ def main(aWeb):
 #
 def user(aWeb):
  cookie = aWeb.cookie('system') 
- if not cookie.get('authenticated'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  aWeb.wr("<NAV><UL></UL></NAV>")
  aWeb.wr("<SECTION CLASS=content       ID=div_content>")
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left></SECTION>")
@@ -62,7 +56,7 @@ def info(aWeb):
  args = aWeb.args()
  data = aWeb.rest_call("system_users_info",args)['data']
  resources = aWeb.rest_call("system_resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.node()})['data']
- aWeb.wr(aWeb.dragndrop())
+ aWeb.wr("<SCRIPT>dragndrop();</SCRIPT>")
  aWeb.wr("<ARTICLE CLASS='info'><P>User Info (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=user_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))
