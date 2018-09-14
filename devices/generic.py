@@ -112,9 +112,11 @@ class Device(object):
       extobj = VarList(Varbind('.1.3.6.1.4.1.2636.3.1.2.0'),Varbind('.1.3.6.1.4.1.2636.3.1.3.0'))
       session.get(extobj)
       ret['info']['serial'] = extobj[1].val
-      ret['info']['model']  = extobj[0].val.split()[1][0:30].lower()
-      if (ret['info']['model']) in ['switch','internet']:
-       ret['info']['model'] = infolist[3].lower()
+      model_list = extobj[0].val.lower().split()
+      try: ret['info']['model'] = model_list[model_list.index('juniper') + 1]
+      except: ret['info']['model'] = 'unknown'
+      if (ret['info']['model']) in ['switch','internet','unknown','virtual']:
+       ret['info']['model'] = ("%s" if not ret['info']['model'] == 'virtual' else "%s (VC)")%infolist[3].lower()
      except: pass
      else:
       for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
