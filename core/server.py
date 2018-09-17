@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Program docstring.
 
-ZDCP HTTP server.
+ZDCP Server.
 
 """
 __author__ = "Zacharias El Banna"
@@ -19,17 +19,18 @@ from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 from urlparse import parse_qs
 from httplib import responses as http_codes
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-
 basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..'))
 pkgpath  = ospath.join(basepath,'zdcp')
+api_threads = []
+wrk_threads = []
 syspath.insert(1, basepath)
 from zdcp.Settings import SC
 
 ############################### ZDCP Server ############################
 #
-# HTTP Thread
+# Threads
 #
-class HttpThread(Thread):
+class ApiThread(Thread):
  def __init__(self, aID, aSock, aAddr, aNode):
   Thread.__init__(self)
   self._thread_id = aID
@@ -40,7 +41,7 @@ class HttpThread(Thread):
   self.start()
 
  def __str__(self):
-  return "HttpThread %s [Node:%s,Daemon:%s,Alive:%s]"%(self._node,self._thread_id,self.daemon,self.is_alive())
+  return "ApiThread %s [Node:%s,Daemon:%s,Alive:%s]"%(self._node,self._thread_id,self.daemon,self.is_alive())
 
  def run(self):
   httpd = HTTPServer(self._addr, SessionHandler, False)
@@ -53,8 +54,7 @@ class HttpThread(Thread):
   try: httpd.serve_forever()
   except: pass
 
-#
-# ZDCP call handler
+############################ Call Handler ###########################
 #
 class SessionHandler(BaseHTTPRequestHandler):
 
@@ -62,11 +62,18 @@ class SessionHandler(BaseHTTPRequestHandler):
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
   self.timeout  = 60
 
- def __log_rest(self,aAPI,aArgs,aExtra):
+ def log_api(self,aAPI,aArgs,aExtra):
   try:
    with open(SC['logs']['rest'], 'a') as f:
     f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._node, aExtra.strip())))
   except: pass
+
+ def log_request(self,aReq):
+  try:
+   with open(SC['logs']['system'], 'a') as f:
+    f.write(unicode("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aReq)))
+  except: pass
+
 
  def do_HEAD(self):
   self.send_response(200)
@@ -74,27 +81,27 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
 
  def do_GET(self):
-  self.__route()
+  self.route()
 
  def do_POST(self):
-  self.__route()
+  self.route()
 
- def __route(self):
+ def route(self):
   """ Route request to the right function """
   path,_,query = (self.path.lstrip('/')).partition('/')
+  # self.log_request("%s/%s"%(path,query))
   body, headers = 'null',{'X-Thread':self.server._id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
-  # self.log_request()
   if path == 'site':
    api,_,get = query.partition('?')
    (mod,_,fun)    = api.partition('_')
    stream = Stream(self,get)
    headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200})
-   # try:
-   if True:
+   # if True:
+   try:
     module = import_module("zdcp.site." + mod)
     getattr(module,fun,None)(stream)
-   else:
-   # except Exception as e:
+   # else:
+   except Exception as e:
     stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
     try:
      stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
@@ -125,7 +132,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      length = int(self.headers.getheader('content-length'))
      args = loads(self.rfile.read(length)) if length > 0 else {}
     except: args = {}
-    self.__log_rest(api,dumps(args),get)
+    self.log_api(api,dumps(args),get)
     if headers['X-Node'] == self.server._node:
      module = import_module("zdcp.rest.%s"%mod)
      module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
@@ -199,8 +206,8 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
   self.wfile.write(body)
 
-########################################### Site Function ########################################
-  
+########################################### Web stream ########################################
+#
 class Stream(object):
 
  def __init__(self,aHandler, aGet):
@@ -274,7 +281,6 @@ class Stream(object):
   self._body.append("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ) .on('input','.slider',slide_monitor); });</SCRIPT>")
   self._body.append("</HEAD>")
 
-
 ############################### MAIN ############################
 if __name__ == '__main__':
  #
@@ -288,10 +294,11 @@ if __name__ == '__main__':
  sock.bind(addr)
  sock.listen(5)
 
- threads = [HttpThread(n,sock,'',node) for n in range(threadcount)]
- while len(threads) > 0:
+ api_threads.extend([ApiThread(n,sock,'',node) for n in range(threadcount)])
+ while len(api_threads) > 0:
   # Check if threads are still alive...
-  threads = [t for t in threads if t.is_alive()]
+  api_threads = [a for a in api_threads if a.is_alive()]
+  wrk_threads = [w for w in wrk_threads if w.is_alive()]
   sleep(10)
  sock.close()
  print "ZDCP shutdown - no active threads(!)"

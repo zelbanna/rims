@@ -899,6 +899,30 @@ def activities_type_delete(aDict):
 
 #
 #
+def task_reset(aDict):
+ """ Reset all tasks on a node
+
+ Args:
+  - node
+
+ Output:
+  - result
+ """
+ ret = {}
+ if SC['system']['id'] == 'master':
+  with DB() as db:
+   exist = (db.do("UPDATE system_tasks SET thread = 0 LEFT JOIN nodes ON nodes.id = system_tasks.id WHERE node = '%s'"%aDict['node']) > 0)
+   if aDict['node'] == 'master':
+    ret['result'] = True
+   else:
+    from zdcp.core.common import rest_call
+    ret = rest_call("%s/api/system_task_reset&node=%s"%SC['nodes'][aDict['node']],aDict['node'])
+ else:
+  exist = aDict.get('exist')
+  ret['result'] = True
+ return ret
+#
+#
 def task_add(aDict):
  """ Adds a task
 
