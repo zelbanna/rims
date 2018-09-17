@@ -894,3 +894,84 @@ def activities_type_delete(aDict):
  with DB() as db:
   ret['delete'] = db.do("DELETE FROM activity_types WHERE id = '%s'"%aDict['id'])
  return ret
+
+##################################### TASKs ###############################
+
+#
+#
+def task_add(aDict):
+ """ Adds a task
+
+ Args:
+  - node (required)
+  - module (required)
+  - func (required)
+  - args (required)
+  - state (optional). Boolean
+  - type (optional) (0: transient, 1: periodic, defaults: 0)
+  - frequency (optional required, seconds for periodic tasks, defaults: 300 seconds)
+
+ Output:
+  - result. Boolean
+ """
+ ret = {}
+ with DB() as db:
+  db.do("SELECT id FROM nodes WHERE node = '%s'"%aDict['node'])
+  node = db.get_val('id')
+  ret['add'] = (db.do("INSERT INTO system_tasks (node_id, module, func, args, state, type, frequency) VALUES(%i,'%s','%s','%s',%i,%i,%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']), 1 if aDict.get('state') else 0,aDict.get('type',0),aDict.get('frequency',300))) == 1)
+ return ret
+
+#
+#
+def task_delete(aDict):
+ """ Delete a task
+
+ Args:
+  - id (required)
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  ret['delete'] = db.do("DELETE FROM system_tasks WHERE id = '%s'"%aDict['id'])
+ return ret
+
+#
+#
+def task_list(aDict):
+ """ List tasks
+
+ Args:
+  - node (required)
+
+ Output:
+ """
+ ret = {}
+ with DB() as db:
+  db.do("SELECT id FROM nodes WHERE node = '%s'"%aDict['node'])
+  node = db.get_val('id')
+  ret['count'] = db.do("SELECT * FROM system_tasks WHERE node_id = %s"%node)
+  ret['tasks'] = db.get_rows()
+ return ret
+
+#
+#
+def task_state(aDict):
+ """ Alter tasks state
+
+ Args:
+  - id (required)
+  - state (optional: boolean, true for active and false for disabled, nothing meanse just read state)
+
+ Output:
+  - state (boolean)
+ """
+ ret = {}
+ with DB() as db:
+  if aDict.get('state'):
+   ret['updated'] = (db.do("UPDATE system_types SET active = %i WHERE id = %i"%(1 if aDict['state'] else 0, int(aDict['id']))) == 1)
+   ret['state']= aDict['state'] if ret['updated'] else None
+  else:
+   db.do("SELECT active FROM system_tasks WHERE id = %i")
+   ret['state'] = (db.get_val('active') == 1)
+ return ret

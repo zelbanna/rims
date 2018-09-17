@@ -49,7 +49,6 @@ except:
  with open(ospath.join(pkgdir,'Settings.py'),'w') as f:
   f.write("SC=%s\n"%dumps(settings))
  res['bootstrap'] = 'container'
- 
 
 ############################################### ALL #################################################
 #
@@ -114,7 +113,7 @@ if settings['system']['id'] == 'master':
    except: pass
  res['device_found'] = len(device_types)
  res['device_new'] = 0
- 
+
  #
  # Menu items
  #
