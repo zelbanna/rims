@@ -1,4 +1,4 @@
-"""SDCP generic REST module. Provides system and DB interaction for appication, settings and resources"""
+"""ZDCP generic REST module. Provides system and DB interaction for appication, settings and resources"""
 __author__ = "Zacharias El Banna"
 __version__ = "4.0GA"
 __status__ = "Production"
@@ -896,32 +896,73 @@ def activities_type_delete(aDict):
  return ret
 
 ##################################### TASKs ###############################
-
 #
+# The worker task can be carried out anywhere
 #
-def task_reset(aDict):
- """ Reset all tasks on a node
+def task_worker(aDict):
+ """Function instantiate a worker thread with arguments and bind to global worker dictionary
 
  Args:
-  - node
+  - id (required). id of task to execute
+  - module (required)
+  - func (required)
+  - args (required)
+  - type (required)
+  - frequency (optional required)
 
  Output:
   - result
  """
- ret = {}
- if SC['system']['id'] == 'master':
-  with DB() as db:
-   exist = (db.do("UPDATE system_tasks SET thread = 0 LEFT JOIN nodes ON nodes.id = system_tasks.id WHERE node = '%s'"%aDict['node']) > 0)
-   if aDict['node'] == 'master':
-    for w in workers:
-     ret['result'] = [w.stop() for w in workers.items()]
+ from threading import Thread, Lock
+ class WorkerThread(Thread):
+
+  def __init__(self, aID, aArgs):
+   Thread.__init__(self)
+   self.name = aID
+   self.lock = Lock()
+   self.exit = False
+   self.args = aArgs
+   self.daemon = True
+   workers[self.name] = self
+
+  def __str__(self):
+   return "WorkerThread(%s:%s):%s_%s(%s)"%(self.name,self.args.get('periodic'),self.args['module'],self.args['func'],self.args['args'])
+
+  def pause(self, aBlock = True):
+   return self.lock.acquire(aBlock)
+
+  def release(self):
+   try:    self.lock.release()
+   except: return False
+   else:   return True
+
+  def stop(self):
+   self.exit = True
+   return self.name
+
+  def run(self):
+   from zdcp.core.common import log
+   try:
+    mod = import_module("zdcp.rest.%s"%self.args['module'])
+    fun = getattr(mod,self.args['func'],lambda x: {'THREAD_NOT_OK'})
+   except Exception as e:
+    log("task_worker(%s) ERROR => %s"%(self.name,str(e)))
    else:
-    from zdcp.core.common import rest_call
-    ret = rest_call("%s/api/system_task_reset&node=%s"%SC['nodes'][aDict['node']],aDict['node'])
- else:
-  exist = aDict.get('exist')
-  ret['result'] = [w.stop() for w in workers.items()]
- return ret
+    if not self.args.get('periodic'):
+     fun(self.args['args'])
+    else:
+     from time import sleep, time
+     while not self.exit:
+      with self.lock:
+       fun(self.args['args'])
+      sleep(int(self.args.get('frequency',300)))
+   workers.pop(self.name,None)
+   log("task completed: %s_%s(%s) => forced exit(%s)"%(self.args['module'],self.args['func'],self.args['args'],self.exit))
+
+ t = WorkerThread(aDict.pop('id',None),aDict)
+ t.start()
+ return {'result':'OK'}
+
 #
 #
 def task_add(aDict):
@@ -932,34 +973,66 @@ def task_add(aDict):
   - module (required)
   - func (required)
   - args (required)
-  - state (optional). Boolean
-  - type (optional) (0: transient, 1: periodic, defaults: 0)
+  - periodic  (optional) (False: transient, True: periodic, defaults: False)
   - frequency (optional required, seconds for periodic tasks, defaults: 300 seconds)
 
  Output:
   - result. Boolean
  """
  ret = {}
- with DB() as db:
-  db.do("SELECT id FROM nodes WHERE node = '%s'"%aDict['node'])
-  node = db.get_val('id')
-  ret['add'] = (db.do("INSERT INTO system_tasks (node_id, module, func, args, state, type, frequency) VALUES(%i,'%s','%s','%s',%i,%i,%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']), 1 if aDict.get('state') else 0,aDict.get('type',0),aDict.get('frequency',300))) == 1)
-  ret['id'] = db.get_last_id()
+ node = aDict.pop('node',None)
+ args = aDict
+ if aDict.get('periodic'):
+  with DB() as db:
+   db.do("SELECT id FROM nodes WHERE node = '%s'"%node)
+   node_id = db.get_val('id')
+   db.do("INSERT INTO system_tasks (node_id, module, func, args, frequency) VALUES(%i,'%s','%s','%s',%i)"%(node_id,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300)))
+   args['id'] = ret['id'] = 'P%s'%db.get_last_id()
+ else:
+  from random import randint
+  args['id'] = ret['id'] = 'T%s'%randint(0,10000)
+ if node == 'master':
+  ret.update(task_worker(args))
+ else:
+  from zdcp.core.common import rest_call
+  ret.update(rest_call("%s/api/task_worker"%SC['nodes'][node],args)['data'])
+ return ret
+
+#
+#
+def task_status(aDict):
+ """ List workers status
+
+ Args:
+  - node (required)
+
+ Output:
+ """
+ ret = {}
+ if aDict['node'] == SC['system']['id']:
+  ret = {t.name:'EXITING' if t.exit else 'RUNNING' for t in workers.values()}
+ else:
+  from zdcp.core.common import rest_call
+  ret = rest_call("%s/api/task_status"%SC['nodes'][aDict['node']])['data']
  return ret
 
 #
 #
 def task_delete(aDict):
- """ Delete a task
+ """ Stop and remove worker..
 
  Args:
-  - id (required)
+  - node (required)
+  - id   (required)
 
  Output:
  """
  ret = {}
- with DB() as db:
-  ret['delete'] = db.do("DELETE FROM system_tasks WHERE id = '%s'"%aDict['id'])
+ if aDict['node'] == SC['system']['id']:
+  ret = workers['P%s'%aDict['id']].stop()
+ else:
+  from zdcp.core.common import rest_call
+  ret = rest_call("%s/api/task_delete"%SC['nodes'][aDict['node']])['data']
  return ret
 
 #
@@ -969,6 +1042,7 @@ def task_list(aDict):
 
  Args:
   - node (required)
+  - sync (optional)
 
  Output:
  """
@@ -978,6 +1052,10 @@ def task_list(aDict):
   node = db.get_val('id')
   ret['count'] = db.do("SELECT * FROM system_tasks WHERE node_id = %s"%node)
   ret['tasks'] = db.get_rows()
+  threads = task_status({'node':aDict['node']})
+  for task in ret['tasks']:
+   task['state'] = threads.pop("P%s"%task['id'],'EXITED')
+  ret['orphan'] = [t for t in threads.items()]
  return ret
 
 #
@@ -987,17 +1065,13 @@ def task_state(aDict):
 
  Args:
   - id (required)
-  - state (optional: boolean, true for active and false for disabled, nothing meanse just read state)
+  - active (required). Boolean
 
  Output:
   - state (boolean)
  """
  ret = {}
- with DB() as db:
-  if aDict.get('state'):
-   ret['updated'] = (db.do("UPDATE system_types SET active = %i WHERE id = %i"%(1 if aDict['state'] else 0, int(aDict['id']))) == 1)
-   ret['state']= aDict['state'] if ret['updated'] else None
-  else:
-   db.do("SELECT active FROM system_tasks WHERE id = %i")
-   ret['state'] = (db.get_val('active') == 1)
+ t = workers[aDict['id']]
+ ret['result'] = t.release() if aDict['active'] else t.pause(False) 
  return ret
+

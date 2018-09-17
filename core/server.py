@@ -18,6 +18,8 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from httplib import responses as http_codes
 from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 from urlparse import parse_qs
+from common import Stream
+
 
 ############################### ZDCP Server ############################
 #
@@ -27,17 +29,17 @@ class ApiThread(Thread):
  def __init__(self, aID, aVars):
   Thread.__init__(self)  
   self._vars = dict(aVars)
-  self._id   = aID,
+  self.name   = aID
   self.daemon = True
   self.start()
 
  def __str__(self):
-  return "ApiThread:%s"%(self._content)
+  return "ApiThread(%s):%s"%(self.name,self._vars)
 
  def run(self):
   httpd = HTTPServer(self._vars['address'], SessionHandler, False)
   httpd._vars = self._vars
-  httpd._id   = self._id
+  httpd._thread_id  = self.name
   # Prevent the HTTP server from re-binding every handler.
   # https://stackoverflow.com/questions/46210672/
   httpd.socket = self._vars['socket']
@@ -59,12 +61,6 @@ class SessionHandler(BaseHTTPRequestHandler):
     f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._vars['node'], aExtra.strip())))
   except: pass
 
- def log_request(self,aReq):
-  try:
-   with open(self.server._vars['settings']['logs']['system'], 'a') as f:
-    f.write(unicode("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aReq)))
-  except: pass
-
 
  def do_HEAD(self):
   self.send_response(200)
@@ -80,8 +76,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  def route(self):
   """ Route request to the right function """
   path,_,query = (self.path.lstrip('/')).partition('/')
-  # self.log_request("%s/%s"%(path,query))
-  body, headers = 'null',{'X-Thread':self.server._id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
+  body, headers = 'null',{'X-Thread':self.server._thread_id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
   if path == 'site':
    api,_,get = query.partition('?')
    (mod,_,fun)    = api.partition('_')
@@ -197,83 +192,8 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
   self.wfile.write(body)
 
-########################################### Web stream ########################################
-#
-class Stream(object):
 
- def __init__(self,aHandler, aGet):
-  self._cookies = {}
-  self._form    = {}
-  self._node    = aHandler.server._vars['node']
-  self._api     = aHandler.server._vars['settings']['system']['node']
-  self._body    = []
-  try: cookie_str = aHandler.headers.get('Cookie').split('; ')
-  except: pass
-  else:
-   for cookie in cookie_str:
-    k,_,v = cookie.partition('=')
-    try:    self._cookies[k] = dict(x.split('=') for x in v.split(','))
-    except: self._cookies[k] = v
-  try:    body_len = int(aHandler.headers.getheader('content-length'))
-  except: body_len = 0
-  if body_len > 0:
-   self._form.update({ k: l[0] for k,l in parse_qs(aHandler.rfile.read(body_len), keep_blank_values=1).iteritems() })
-  if len(aGet) > 0:
-   self._form.update({ k: l[0] for k,l in parse_qs(aGet, keep_blank_values=1).iteritems() })
-
- def __str__(self):
-  return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Web object<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(str(self._cookies),self._form)
-
- def output(self):
-  return ("".join(self._body)).encode('utf-8')
-
- def wr(self,aHTML):
-  self._body.append(aHTML.decode('utf-8'))
-
- def node(self):
-  return self._node
-
- def cookie(self,aName):
-  return self._cookies.get(aName,{})
-
- def args(self):
-  return self._form
-
- def __getitem__(self,aKey):
-  return self._form.get(aKey,None)
-
- def get(self,aKey,aDefault = None):
-  return self._form.get(aKey,aDefault)
-
- def get_args2dict(self,aExcept = []):
-  return { k:v for k,v in self._form.iteritems() if not k in aExcept }
-
- def get_args(self,aExcept = []):
-  return "&".join(["%s=%s"%(k,v) for k,v in self._form.iteritems() if not k in aExcept])
-
- def button(self,aImg,**kwargs):
-  return " ".join(["<A CLASS='btn z-op small'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC='../images/btn-%s.png'></A>"%(aImg)])
-
- # Simplified SDCP REST call
- def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
-  from zdcp.core.common import rest_call
-  return rest_call("%s/api/%s"%(self._api,aAPI), aArgs, aTimeout = 60)['data']
-
- # Generic REST call with full output
- def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
-  from zdcp.core.common import rest_call
-  return rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
-
- def put_html(self, aTitle = None, aIcon = 'zdcp.png'):
-  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/zdcp.css'>")
-  if aTitle:
-   self._body.append("<TITLE>" + aTitle + "</TITLE>")
-  self._body.append("<LINK REL='shortcut icon' TYPE='image/png' HREF='../images/%s'/>"%(aIcon))
-  self._body.append("<SCRIPT SRC='../infra/3.1.1.jquery.min.js'></SCRIPT><SCRIPT SRC='../infra/4.21.0.vis.min.js'></SCRIPT><SCRIPT SRC='../infra/zdcp.js'></SCRIPT>")
-  self._body.append("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ) .on('input','.slider',slide_monitor); });</SCRIPT>")
-  self._body.append("</HEAD>")
-
-############################### MAIN ############################
+############################################ MAIN ######################################
 from sys import path as syspath
 basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..'))
 syspath.insert(1, basepath)
@@ -281,6 +201,8 @@ syspath.insert(1, basepath)
 if __name__ == '__main__':
  #
  from zdcp.Settings import SC
+ from zdcp.core.common import DB
+ from zdcp.rest.system import task_worker
  import socket
  threadcount = 5
  port = int(SC['system']['port'])
@@ -292,6 +214,13 @@ if __name__ == '__main__':
 
  args = {'node':SC['system']['id'],'socket':sock,'address':addr,'settings':SC,'workers':{},'path':ospath.join(basepath,'zdcp')}
  api_threads = [ApiThread(n,args) for n in range(threadcount)]
+ #
+ # Boot up worker threads as well, add necessary global first
+ #
+ # with DB() as db:
+ # count = db.do("SELECT * FROM system_tasks")
+ # args['workers']
+ # 
  while len(api_threads) > 0:
   # Check if threads are still alive...
   api_threads = [a for a in api_threads if a.is_alive()]

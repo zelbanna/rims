@@ -304,8 +304,6 @@ CREATE TABLE `system_tasks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `node_id` int(10) unsigned NOT NULL,
   `user_id` int(10) unsigned DEFAULT NULL,
-  `type` tinyint(1) DEFAULT '0',
-  `state` tinyint(1) DEFAULT '0',
   `module` varchar(30) NOT NULL,
   `func` varchar(60) NOT NULL,
   `args` varchar(300) NOT NULL,
