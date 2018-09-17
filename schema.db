@@ -299,6 +299,24 @@ CREATE TABLE `settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `system_tasks`;
+CREATE TABLE `system_tasks` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `node_id` int(10) unsigned NOT NULL,
+  `user_id` int(10) unsigned DEFAULT NULL,
+  `type` tinyint(1) DEFAULT '0',
+  `state` tinyint(1) DEFAULT '0',
+  `module` varchar(30) NOT NULL,
+  `func` varchar(60) NOT NULL,
+  `args` varchar(300) NOT NULL,
+  `frequency` int(10) unsigned DEFAULT '300',
+  PRIMARY KEY (`id`),
+  KEY `fk_user` (`user_id`),
+  KEY `fk_node` (`node_id`),
+  CONSTRAINT `system_tasks_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,

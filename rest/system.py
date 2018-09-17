@@ -913,13 +913,14 @@ def task_reset(aDict):
   with DB() as db:
    exist = (db.do("UPDATE system_tasks SET thread = 0 LEFT JOIN nodes ON nodes.id = system_tasks.id WHERE node = '%s'"%aDict['node']) > 0)
    if aDict['node'] == 'master':
-    ret['result'] = True
+    for w in workers:
+     ret['result'] = [w.stop() for w in workers.items()]
    else:
     from zdcp.core.common import rest_call
     ret = rest_call("%s/api/system_task_reset&node=%s"%SC['nodes'][aDict['node']],aDict['node'])
  else:
   exist = aDict.get('exist')
-  ret['result'] = True
+  ret['result'] = [w.stop() for w in workers.items()]
  return ret
 #
 #
@@ -943,6 +944,7 @@ def task_add(aDict):
   db.do("SELECT id FROM nodes WHERE node = '%s'"%aDict['node'])
   node = db.get_val('id')
   ret['add'] = (db.do("INSERT INTO system_tasks (node_id, module, func, args, state, type, frequency) VALUES(%i,'%s','%s','%s',%i,%i,%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']), 1 if aDict.get('state') else 0,aDict.get('type',0),aDict.get('frequency',300))) == 1)
+  ret['id'] = db.get_last_id()
  return ret
 
 #

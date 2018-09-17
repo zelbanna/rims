@@ -10,46 +10,37 @@ __version__ = "4.0GA"
 __status__ = "Production"
 
 from os import walk, path as ospath
-from sys import path as syspath
 from json import loads, dumps
 from importlib import import_module
-from threading import Thread
 from time import localtime, strftime, sleep
+from threading import Thread
+from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from httplib import responses as http_codes
 from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 from urlparse import parse_qs
-from httplib import responses as http_codes
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..'))
-pkgpath  = ospath.join(basepath,'zdcp')
-api_threads = []
-wrk_threads = []
-syspath.insert(1, basepath)
-from zdcp.Settings import SC
 
 ############################### ZDCP Server ############################
 #
 # Threads
 #
 class ApiThread(Thread):
- def __init__(self, aID, aSock, aAddr, aNode):
-  Thread.__init__(self)
-  self._thread_id = aID
-  self._node = aNode
-  self._sock = aSock
-  self._addr = aAddr
+ def __init__(self, aID, aVars):
+  Thread.__init__(self)  
+  self._vars = dict(aVars)
+  self._id   = aID,
   self.daemon = True
   self.start()
 
  def __str__(self):
-  return "ApiThread %s [Node:%s,Daemon:%s,Alive:%s]"%(self._node,self._thread_id,self.daemon,self.is_alive())
+  return "ApiThread:%s"%(self._content)
 
  def run(self):
-  httpd = HTTPServer(self._addr, SessionHandler, False)
-  httpd._id = self._thread_id
-  httpd._node = self._node
+  httpd = HTTPServer(self._vars['address'], SessionHandler, False)
+  httpd._vars = self._vars
+  httpd._id   = self._id
   # Prevent the HTTP server from re-binding every handler.
   # https://stackoverflow.com/questions/46210672/
-  httpd.socket = self._sock
+  httpd.socket = self._vars['socket']
   httpd.server_bind = self.server_close = lambda self: None
   try: httpd.serve_forever()
   except: pass
@@ -64,13 +55,13 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def log_api(self,aAPI,aArgs,aExtra):
   try:
-   with open(SC['logs']['rest'], 'a') as f:
-    f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._node, aExtra.strip())))
+   with open(self.server._vars['settings']['logs']['rest'], 'a') as f:
+    f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._vars['node'], aExtra.strip())))
   except: pass
 
  def log_request(self,aReq):
   try:
-   with open(SC['logs']['system'], 'a') as f:
+   with open(self.server._vars['settings']['logs']['system'], 'a') as f:
     f.write(unicode("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aReq)))
   except: pass
 
@@ -126,19 +117,19 @@ class SessionHandler(BaseHTTPRequestHandler):
      (k,_,v) = part.partition('=')
      extras[k] = v
    headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*"})
-   headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
+   headers['X-Node'] = extras.get('node',self.server._vars['node'] if not mod == 'system' else 'master')
    try:
     try:
      length = int(self.headers.getheader('content-length'))
      args = loads(self.rfile.read(length)) if length > 0 else {}
     except: args = {}
     self.log_api(api,dumps(args),get)
-    if headers['X-Node'] == self.server._node:
+    if headers['X-Node'] == self.server._vars['node']:
      module = import_module("zdcp.rest.%s"%mod)
-     module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
+     module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':self.server._vars['settings'],'workers':self.server._vars['workers']})
      body = dumps(getattr(module,fun,None)(args))
     else:
-     req  = Request("%s/api/%s"%(SC['nodes'][headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
+     req  = Request("%s/api/%s"%(self.server._vars['settings']['nodes'][headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
      try: sock = urlopen(req, timeout = 300)
      except HTTPError as h:
       raw = h.read()
@@ -164,9 +155,9 @@ class SessionHandler(BaseHTTPRequestHandler):
    try:
     if path == 'files':
      param,_,file = query.partition('/')
-     fullpath = ospath.join(SC['files'][param],file)
+     fullpath = ospath.join(self.server._vars['settings']['files'][param],file)
     else:
-     fullpath = ospath.join(pkgpath,path,query)
+     fullpath = ospath.join(self.server._vars['path'],path,query)
     if fullpath.endswith("/"):
      headers['Content-type']='text/html; charset=utf-8'
      _, _, filelist = next(walk(fullpath), (None, None, []))
@@ -196,7 +187,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
   else:
    # Unknown call
-   headers.update({'Location':'site/system_login?application=%s'%SC['system'].get('application','system'),'X-Code':301})
+   headers.update({'Location':'site/system_login?application=%s'%self.server._vars['settings']['system'].get('application','system'),'X-Code':301})
 
   code = headers.pop('X-Code',200)
   self.wfile.write("HTTP/1.1 %s %s\r\n"%(code,http_codes[code]))
@@ -213,7 +204,8 @@ class Stream(object):
  def __init__(self,aHandler, aGet):
   self._cookies = {}
   self._form    = {}
-  self._node    = aHandler.server._node
+  self._node    = aHandler.server._vars['node']
+  self._api     = aHandler.server._vars['settings']['system']['node']
   self._body    = []
   try: cookie_str = aHandler.headers.get('Cookie').split('; ')
   except: pass
@@ -265,7 +257,7 @@ class Stream(object):
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
   from zdcp.core.common import rest_call
-  return rest_call("%s/api/%s"%(SC['system']['node'],aAPI), aArgs, aTimeout = 60)['data']
+  return rest_call("%s/api/%s"%(self._api,aAPI), aArgs, aTimeout = 60)['data']
 
  # Generic REST call with full output
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
@@ -282,23 +274,28 @@ class Stream(object):
   self._body.append("</HEAD>")
 
 ############################### MAIN ############################
+from sys import path as syspath
+basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..'))
+syspath.insert(1, basepath)
+
 if __name__ == '__main__':
  #
+ from zdcp.Settings import SC
  import socket
  threadcount = 5
  port = int(SC['system']['port'])
- node = SC['system']['id']
  addr = ('', port)
  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
  sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
  sock.bind(addr)
  sock.listen(5)
 
- api_threads.extend([ApiThread(n,sock,'',node) for n in range(threadcount)])
+ args = {'node':SC['system']['id'],'socket':sock,'address':addr,'settings':SC,'workers':{},'path':ospath.join(basepath,'zdcp')}
+ api_threads = [ApiThread(n,args) for n in range(threadcount)]
  while len(api_threads) > 0:
   # Check if threads are still alive...
   api_threads = [a for a in api_threads if a.is_alive()]
-  wrk_threads = [w for w in wrk_threads if w.is_alive()]
   sleep(10)
  sock.close()
  print "ZDCP shutdown - no active threads(!)"
+
