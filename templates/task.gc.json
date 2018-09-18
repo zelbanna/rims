@@ -4,5 +4,6 @@
  "func":"garbage_collect",
  "args":{},
  "periodic":true,
- "frequency":3600
+ "frequency":3600,
+ "output":true
 }

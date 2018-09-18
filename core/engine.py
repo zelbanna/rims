@@ -35,6 +35,7 @@ class WorkerThread(Thread):
    - args (required)
    - type (required)
    - frequency (optional required)
+   - output (optional) True/False (default)
 
   Workers:
    - workers dictionary to register oneself upon
@@ -71,12 +72,13 @@ class WorkerThread(Thread):
   return self.result
 
  def run(self):
+  from zdcp.core.common import log
   try:          
    mod = import_module("zdcp.rest.%s"%self.args['module'])
    mod.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':self.settings,'workers':self.workers})
    fun = getattr(mod,self.args['func'],lambda x: {'THREAD_NOT_OK'})
   except Exception as e:
-   log("task_worker(%s) ERROR => %s"%(self.name,str(e)))
+   log("WorkerThread(%s) ERROR => %s"%(self.name,str(e)))
   else:
    if not self.args.get('periodic'):
     self.result = fun(self.args['args'])
@@ -85,13 +87,12 @@ class WorkerThread(Thread):
     while not self.exit:
      with self.lock:
       self.result = fun(self.args['args'])
+     if self.args.get('output'):
+      log("WorkerThread(%s): %s_%s PERIODIC => %s"%(self.name,self.args['module'],self.args['func'],dumps(self.result)))
      sleep(int(self.args.get('frequency',300)))
   self.workers.pop(self.name,None)
-  args = dumps({'result':self.result,'id':self.name,'node':self.settings['system']['id']})
-  req  = Request("%s/api/system_task_result"%(self.settings['system']['master']), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = args)
-  try:    sock = urlopen(req, timeout = 20)
-  except: pass
-  else:  sock.close()
+  if self.args.get('output'):
+   log("WorkerThread(%s): %s_%s COMPLETE => %s"%(self.name,self.args['module'],self.args['func'],dumps(self.result)))
 
 #
 #

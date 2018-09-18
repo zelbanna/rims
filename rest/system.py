@@ -906,6 +906,7 @@ def task_worker(aDict):
   - args (required)
   - type (required)
   - frequency (optional required)
+  - output (optional)
 
  Output:
   - result
@@ -926,6 +927,7 @@ def task_add(aDict):
   - args (required)
   - periodic  (optional) (False: transient, True: periodic, defaults: False)
   - frequency (optional required, seconds for periodic tasks, defaults: 300 seconds)
+  - output (optional)
 
  Output:
   - result. Boolean
@@ -998,9 +1000,7 @@ def task_list(aDict):
  """
  ret = {}
  with DB() as db:
-  db.do("SELECT id FROM nodes WHERE node = '%s'"%aDict['node'])
-  node = db.get_val('id')
-  ret['count'] = db.do("SELECT * FROM task_jobs WHERE node_id = %s"%node)
+  ret['count'] = db.do("SELECT task_jobs.*, nodes.node FROM task_jobs LEFT JOIN nodes ON nodes.id = task_jobs.node_id WHERE node_id IN (SELECT id FROM nodes WHERE node LIKE '%%%s%%')"%aDict.get('node',''))
   ret['tasks'] = db.get_rows()
   if aDict.get('sync'):
    threads = task_status({'node':aDict['node']})
@@ -1025,22 +1025,3 @@ def task_state(aDict):
  t = workers[aDict['id']]
  ret['result'] = t.release() if aDict['active'] else t.pause(False) 
  return ret
-
-#
-#
-def task_result(aDict):
- """ Save task result
-
- Args:
-  - node (required)
-  - id (required)
-  - result (required)
- 
- Output:
- """
- ret = {}
- with DB() as db:
-  ret['insert'] = db.do("INSERT INTO task_results (node_id,task_id,result) VALUES ((SELECT id FROM nodes WHERE node = '%s'),'%s','%s')"%(aDict['node'],aDict['id'],dumps(aDict['result'])))
- return ret
-
-
