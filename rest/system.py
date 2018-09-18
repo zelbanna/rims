@@ -660,12 +660,9 @@ def server_list(aDict):
  Output:
  """
  ret = {}
- if aDict.get('type'):
-  sql = "SELECT id, server, node, type FROM servers WHERE type = '%s'"%aDict['type']
- else:
-  sql = "SELECT id, server, node, type FROM servers"
+ 
  with DB() as db:
-  db.do(sql)
+  db.do("SELECT id, server, node, type FROM servers %s"%("WHERE type = '%s'"%aDict['type'] if aDict.get('type') else ""))
   ret['servers']= db.get_rows()
  return ret
 
@@ -938,9 +935,7 @@ def task_add(aDict):
  args = aDict
  if aDict.get('periodic'):
   with DB() as db:
-   db.do("SELECT id FROM nodes WHERE node = '%s'"%node)
-   node_id = db.get_val('id')
-   db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency) VALUES(%i,'%s','%s','%s',%i)"%(node_id,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300)))
+   db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300)))
    args['id'] = ret['id'] = 'P%s'%db.get_last_id()
  else:
   from random import randint
@@ -1043,4 +1038,9 @@ def task_result(aDict):
  
  Output:
  """
- return None
+ ret = {}
+ with DB() as db:
+  ret['insert'] = db.do("INSERT INTO task_results (node_id,task_id,result) VALUES ((SELECT id FROM nodes WHERE node = '%s'),'%s','%s')"%(aDict['node'],aDict['id'],dumps(aDict['result'])))
+ return ret
+
+
