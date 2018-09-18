@@ -70,8 +70,8 @@ def title(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>File Name:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=name></DIV></DIV>"%data['name'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>File Path:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s' NAME=path></DIV></DIV>"%data['path'])
  aWeb.wr("</DIV></DIV></FORM>")
- aWeb.wr(aWeb.button('start',DIV='div_content_right', SPIN='true', URL='multimedia_process',  FRM='multimedia_info_form'))
- aWeb.wr(aWeb.button('sync', DIV='div_content_right', SPIN='true', URL='multimedia_transfer', FRM='multimedia_info_form'))
+ aWeb.wr(aWeb.button('start',DIV='div_content_right', SPIN='true', URL='multimedia_request?request=process',  FRM='multimedia_info_form'))
+ aWeb.wr(aWeb.button('sync', DIV='div_content_right', SPIN='true', URL='multimedia_request?request=transfer', FRM='multimedia_info_form'))
  aWeb.wr("</ARTICLE>")
 
 #
@@ -101,21 +101,13 @@ def lookup(aWeb):
 
 #
 #
-def process(aWeb):
+def request(aWeb):
  args = aWeb.args()
- data = aWeb.rest_call("multimedia_process",args, 360)
+ request = args.pop('request',None)
+ data = aWeb.rest_call("system_task_worker&node=%s"%aWeb.node(),{'module':'multimedia','func':request,'output':True,'args':args})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Res:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['res'])
- aWeb.wr("</DIV></DIV></ARTICLE>")
-
-#
-#
-def transfer(aWeb):
- data = aWeb.rest_call("multimedia_transfer",{'path':aWeb['path'],'file':aWeb['file']})
- aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Res:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['res'])
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Res:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data)
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #

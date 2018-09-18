@@ -97,7 +97,6 @@ class WorkerThread(Thread):
   self.workers.pop(self.name,None)
   if self.args.get('output'):
    log("WorkerThread(%s): %s_%s COMPLETE => %s"%(self.name,self.args['module'],self.args['func'],dumps(self.result)))
-
 #
 #
 class ApiThread(Thread):
