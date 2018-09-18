@@ -1,0 +1,120 @@
+{
+    "dhcp": {
+        "node": {
+            "description": "ISC DHCP REST API", 
+            "value": "NODE"
+        }, 
+        "type": {
+            "description": "DHCP server type", 
+            "value": "iscdhcp"
+        }
+    }, 
+    "esxi": {
+        "logformat": {
+            "description": "Log formatting", 
+            "value": "/var/log/network/{}.operations.log"
+        }, 
+        "password": {
+            "description": "Password", 
+            "value": "PASSWORD"
+        }, 
+        "username": {
+            "description": "Username", 
+            "value": "USERNAME"
+        }
+    }, 
+    "files": {
+        "certs": {
+            "description": "Docroot relative directory for cert files", 
+            "value": "certs"
+        }
+    }, 
+    "ipmi": {
+        "password": {
+            "description": "Password", 
+            "value": "PASSWORD"
+        }, 
+        "username": {
+            "description": "Username", 
+            "value": "USERNAME"
+        }
+    }, 
+    "iscdhcp": {}, 
+    "logs": {
+        "network": {
+            "description": "Network log", 
+            "value": "/var/log/network/mgmt.log"
+        }
+    }, 
+    "loopia": {
+        "domain": {
+            "description": "Domain", 
+            "value": "DOMAIN"
+        }, 
+        "password": {
+            "description": "Loopia password", 
+            "value": "PASSWORD"
+        }, 
+        "rpc_server": {
+            "description": "Loopia API server", 
+            "value": "https://api.loopia.se/RPCSERV"
+        }, 
+        "username": {
+            "description": "Loopia RPC username", 
+            "value": "USERNAME"
+        }
+    }, 
+    "multimedia": {}, 
+    "netconf": {
+        "anonftp": {
+            "description": "Anonymous FTP", 
+            "value": "192.168.121.2"
+        }, 
+        "dnssrv": {
+            "description": "DNS server", 
+            "value": "192.168.121.4"
+        }, 
+        "encrypted": {
+            "description": "Encrypted password", 
+            "value": "ENCRYPTED"
+        }, 
+        "ntpsrv": {
+            "description": "NTP server", 
+            "value": "192.168.121.1"
+        }, 
+        "password": {
+            "description": "Password", 
+            "value": "PASSWORD"
+        }, 
+        "username": {
+            "description": "Username", 
+            "value": "USERNAME"
+        }
+    }, 
+    "portal": {
+        "message": {
+            "description": "Welcome message", 
+            "value": "Welcome to El Banna Management"
+        }, 
+        "start": {
+            "description": "Start page", 
+            "value": "243"
+        }, 
+        "title": {
+            "description": "Title", 
+            "value": "Management Portal"
+        }
+    }, 
+    "powerdns": {}, 
+    "services": {}, 
+    "snmp": {
+        "read_community": {
+            "description": "Read Community", 
+            "value": "public"
+        }, 
+        "write_community": {
+            "description": "Write community", 
+            "value": "private"
+        }
+    }
+}
