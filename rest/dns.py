@@ -78,22 +78,21 @@ def domain_info(aDict):
  Output:
  """
  ret = {'id':aDict['id']}
- args = aDict
  with DB() as db:
-  if args['id'] == 'new' and not (args.get('op') == 'update'):
+  if aDict['id'] == 'new' and not (aDict.get('op') == 'update'):
    db.do("SELECT id, server, node FROM servers WHERE type = 'DNS'")
    ret['servers'] = db.get_rows()
    ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
   else:
-   if args['id'] == 'new':
-    db.do("SELECT id, 'new' AS foreign_id, server, node FROM servers WHERE id = %s"%args.pop('server_id','0'))
+   if aDict['id'] == 'new':
+    db.do("SELECT id, 'new' AS foreign_id, server, node FROM servers WHERE id = %s"%aDict.pop('server_id','0'))
    else:
-    db.do("SELECT servers.id, foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%args['id'])
+    db.do("SELECT servers.id, foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aDict['id'])
    ret['infra'] = db.get_row()
-   args['id']   = ret['infra'].pop('foreign_id',None)
-   ret.update(node_call(ret['infra']['node'],ret['infra']['server'],'domain_info',args))
+   aDict['id']   = ret['infra'].pop('foreign_id',None)
+   ret.update(node_call(ret['infra']['node'],ret['infra']['server'],'domain_info',aDict))
    if str(ret.get('insert',0)) == '1':
-    ret['cache'] = db.insert_dict('domains',{'name':args['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id']})
+    ret['cache'] = db.insert_dict('domains',{'name':aDict['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id']})
     ret['id'] = db.get_last_id() 
  return ret
 
@@ -170,18 +169,17 @@ def record_list(aDict):
 
  Output:
  """
- args = aDict
  with DB() as db:
   if aDict.get('domain_id'):
    db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aDict['domain_id'])
    infra = db.get_row()
-   args['domain_id'] = infra['foreign_id']
+   aDict['domain_id'] = infra['foreign_id']
   else:
    # Strictly internal use - this one fetch all records for consistency check
    id = aDict.pop('server_id','0')
    db.do("SELECT server, node FROM servers WHERE id = %s"%id)
    infra = db.get_row()
- ret = node_call(infra['node'],infra['server'],'record_list',args)
+ ret = node_call(infra['node'],infra['server'],'record_list',aDict)
  ret['domain_id'] = aDict.get('domain_id',0)
  return ret
 
@@ -201,7 +199,6 @@ def record_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
  domain_id = aDict['domain_id']
 
  with DB() as db:
@@ -210,8 +207,8 @@ def record_info(aDict):
   else:
    db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%domain_id)
    infra = db.get_row()
-   args['domain_id'] = infra['foreign_id']
-   ret = node_call(infra['node'],infra['server'],'record_info',args)
+   aDict['domain_id'] = infra['foreign_id']
+   ret = node_call(infra['node'],infra['server'],'record_info',aDict)
    ret['data']['domain_id']  = domain_id
  return ret
 
@@ -226,12 +223,11 @@ def record_delete(aDict):
 
  Output:
  """
- args = aDict
  with DB() as db:
-  db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%args['domain_id'])
+  db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aDict['domain_id'])
   infra = db.get_row()
- args['domain_id'] = infra['foreign_id']
- ret = node_call(infra['node'],infra['server'],'record_delete',args)
+ aDict['domain_id'] = infra['foreign_id']
+ ret = node_call(infra['node'],infra['server'],'record_delete',aDict)
  return ret
 
 ################################## DEVICE FUNCTIONS ##################################

@@ -35,15 +35,14 @@ def info(aDict):
  Output:
  """
  ret =  {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('racks',args,'id=%s'%id)
+    ret['update'] = db.update_dict('racks',aDict,'id=%s'%id)
    else:
-    ret['update'] = db.insert_dict('racks',args)
+    ret['update'] = db.insert_dict('racks',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
   if not id == 'new':
    ret['found'] = (db.do("SELECT racks.* FROM racks WHERE id = %s"%id) > 0)

@@ -51,17 +51,16 @@ def info(aDict):
     ret['update'] = (db.update_dict('devices',args,"id=%s"%ret['id']) == 1)
 
   elif op == 'update' and ret['id']:
-   args = aDict
-   args.pop('state',None)
-   args['vm'] = args.get('vm',0)
-   if not args.get('comment'):
-    args['comment'] = 'NULL'
-   if not args.get('url'):
-    args['url'] = 'NULL'
-   if args.get('mac'):
-    try: args['mac'] = int(args['mac'].replace(":",""),16)
-    except: args['mac'] = 0
-   ret['update'] = (db.update_dict('devices',args,"id=%s"%ret['id']) == 1)
+   aDict.pop('state',None)
+   aDict['vm'] = aDict.get('vm',0)
+   if not aDict.get('comment'):
+    aDict['comment'] = 'NULL'
+   if not aDict.get('url'):
+    aDict['url'] = 'NULL'
+   if aDict.get('mac'):
+    try: aDict['mac'] = int(aDict['mac'].replace(":",""),16)
+    except: aDict['mac'] = 0
+   ret['update'] = (db.update_dict('devices',aDict,"id=%s"%ret['id']) == 1)
 
   # Basic or complete info?
   if op == 'basics':

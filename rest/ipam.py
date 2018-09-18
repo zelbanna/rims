@@ -6,7 +6,58 @@ __add_globals__ = lambda x: globals().update(x)
 
 from zdcp.core.common import DB
 
+
 ##################################### Networks ####################################
+#
+#
+def status(aDict):
+ """ Initiate a status check for all or a subset of IP:s
+
+ Args:
+  - subnets (optional). List of subnet_ids to check
+
+ """
+ from zdcp.core.engine import WorkerThread
+ from zdcp.core.common import rest_call
+ ret = {'local':[],'remote':[]}
+ with DB() as db:
+  trim = "" if not aDict.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join([str(x) for x in aDict['subnets']]))
+  db.do("SELECT ipam_networks.id, servers.node, servers.server FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
+  subnets = db.get_rows()
+ for sub in subnets:
+  args = {'module':'ipam','func':'network_check','args':{'subnet_id':sub['id']},'output':True}
+  if not sub['node'] or sub['node'] == 'master':
+   t = WorkerThread(args,SC,workers)
+   ret['local'].append((t.name,sub['id']))
+  else:
+   res = rest_call("%s/api/system_task_worker&node=%s"%(SC['nodes'][sub['node']],sub['node'],args)
+   ret['remote'].append((res['id'],sub['id']))
+ return 
+
+def network_check(aDict):
+ """ Fetch a list if IP addresses and perform a ping 
+
+ Args:
+  - subnet_id (required)
+
+ Output:
+ """
+ print "network_check(%s)"%aDict
+ return None
+
+#
+#
+def network_report(aDict):
+ """ Updates IP addresses' status
+
+ Args:
+  - state (list of IP and state tuples)
+
+ Output:
+  - result
+ """
+ return None
+
 #
 #
 def network_list(aDict):
@@ -47,9 +98,8 @@ def network_info(aDict):
   - Same as above
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   db.do("SELECT id, server, node FROM servers WHERE type = 'DHCP'")
   ret['servers'] = db.get_rows()
@@ -61,20 +111,20 @@ def network_info(aDict):
     return unpack("!I", inet_aton(addr))[0]
 
    # Check gateway
-   low   = GL_ip2int(args['network'])
-   high  = low + 2**(32-int(args['mask'])) - 1
-   try:    gwint = GL_ip2int(args['gateway'])
+   low   = GL_ip2int(aDict['network'])
+   high  = low + 2**(32-int(aDict['mask'])) - 1
+   try:    gwint = GL_ip2int(aDict['gateway'])
    except: gwint = 0
    if not (low < gwint and gwint < high):
     gwint = low + 1
     ret['info'] = "illegal gateway"
-   args['gateway'] = str(gwint)
-   args['network']  = str(low)
+   aDict['gateway'] = str(gwint)
+   aDict['network']  = str(low)
    if id == 'new':
-    ret['update'] = db.insert_dict('ipam_networks',args,'ON DUPLICATE KEY UPDATE id = id')
+    ret['update'] = db.insert_dict('ipam_networks',aDict,'ON DUPLICATE KEY UPDATE id = id')
     id = db.get_last_id() if ret['update'] > 0 else 'new'
    else:
-    ret['update'] = db.update_dict('ipam_networks',args,'id=%s'%id)
+    ret['update'] = db.update_dict('ipam_networks',aDict,'id=%s'%id)
 
   if not id == 'new':
    ret['found'] = (db.do("SELECT id, mask, description, INET_NTOA(network) AS network, INET_NTOA(gateway) AS gateway, reverse_zone_id, server_id FROM ipam_networks WHERE id = %s"%id) > 0)

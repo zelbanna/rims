@@ -181,7 +181,6 @@ def inventory_delete_hosts(aDict):
  id   = aDict.pop('id',None)
  controller = Device(SC['nodes'][node])
  controller.auth({'username':SC['awx']['username'],'password':SC['awx']['password'],'mode':'basic'})
- args = aDict
  for host,host_id in aDict.iteritems():
   if host[0:5] == 'host_':
    res = controller.call("hosts/%s/"%host_id,None,"DELETE")
