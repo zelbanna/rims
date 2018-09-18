@@ -242,7 +242,7 @@ def list(aDict):
  """
  ret = {}
  sort = 'ORDER BY ia.ip' if aDict.get('sort','ip') == 'ip' else 'ORDER BY devices.hostname'
- fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ip', 'domains.name AS domain','model']
+ fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ip', 'domains.name AS domain','model','ia.state']
  tune = ['ipam_addresses AS ia ON ia.id = devices.ipam_id','domains ON domains.id = devices.a_dom_id']
  filter = ['TRUE']
  if aDict.get('rack'):
