@@ -18,7 +18,7 @@ if   input.get('a'):
  args['node'] = input.get('n',args.get('node','master'))
 elif input.get('d'):
  func = "delete"
- args = {'id':input['d']}
+ args = {'id':input['d'],'node':input.get('n','master')}
 elif input.get('l'):
  func = "list"
  args = {'node':input.get('n','master')}
