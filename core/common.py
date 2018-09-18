@@ -198,8 +198,8 @@ class Stream(object):
  def __init__(self,aHandler, aGet):
   self._cookies = {}
   self._form    = {}
-  self._node    = aHandler.server._vars['node']
-  self._api     = aHandler.server._vars['settings']['system']['node']
+  self._node    = aHandler.server._node
+  self._api     = aHandler.server._settings['system']['node']
   self._body    = []
   try: cookie_str = aHandler.headers.get('Cookie').split('; ')
   except: pass

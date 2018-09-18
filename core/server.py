@@ -26,23 +26,25 @@ from common import Stream
 # Threads
 #
 class ApiThread(Thread):
- def __init__(self, aID, aVars):
+ def __init__(self, aID, aContext):
   Thread.__init__(self)  
-  self._vars = dict(aVars)
+  self._context = dict(aContext)
   self.name   = aID
   self.daemon = True
   self.start()
 
  def __str__(self):
-  return "ApiThread(%s):%s"%(self.name,self._vars)
+  return "ApiThread(%s):%s"%(self.name,self._context)
 
  def run(self):
-  httpd = HTTPServer(self._vars['address'], SessionHandler, False)
-  httpd._vars = self._vars
-  httpd._thread_id  = self.name
+  httpd = HTTPServer(self._context['address'], SessionHandler, False)
+  httpd._context  = self._context
+  httpd._node     = self._context['node']
+  httpd._settings = self._context['settings']
+  httpd._t_id     = self.name
   # Prevent the HTTP server from re-binding every handler.
   # https://stackoverflow.com/questions/46210672/
-  httpd.socket = self._vars['socket']
+  httpd.socket = self._context['socket']
   httpd.server_bind = self.server_close = lambda self: None
   try: httpd.serve_forever()
   except: pass
@@ -57,8 +59,8 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def log_api(self,aAPI,aArgs,aExtra):
   try:
-   with open(self.server._vars['settings']['logs']['rest'], 'a') as f:
-    f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._vars['node'], aExtra.strip())))
+   with open(self.server._settings['logs']['rest'], 'a') as f:
+    f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._node, aExtra.strip())))
   except: pass
 
 
@@ -76,7 +78,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  def route(self):
   """ Route request to the right function """
   path,_,query = (self.path.lstrip('/')).partition('/')
-  body, headers = 'null',{'X-Thread':self.server._thread_id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
+  body, headers = 'null',{'X-Thread':self.server._t_id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
   if path == 'site':
    api,_,get = query.partition('?')
    (mod,_,fun)    = api.partition('_')
@@ -112,19 +114,19 @@ class SessionHandler(BaseHTTPRequestHandler):
      (k,_,v) = part.partition('=')
      extras[k] = v
    headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*"})
-   headers['X-Node'] = extras.get('node',self.server._vars['node'] if not mod == 'system' else 'master')
+   headers['X-Node'] = extras.get('node',self.server._context['node'] if not mod == 'system' else 'master')
    try:
     try:
      length = int(self.headers.getheader('content-length'))
      args = loads(self.rfile.read(length)) if length > 0 else {}
     except: args = {}
     self.log_api(api,dumps(args),get)
-    if headers['X-Node'] == self.server._vars['node']:
+    if headers['X-Node'] == self.server._node:
      module = import_module("zdcp.rest.%s"%mod)
-     module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':self.server._vars['settings'],'workers':self.server._vars['workers']})
+     module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':self.server._settings,'workers':self.server._context['workers']})
      body = dumps(getattr(module,fun,None)(args))
     else:
-     req  = Request("%s/api/%s"%(self.server._vars['settings']['nodes'][headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
+     req  = Request("%s/api/%s"%(self.server._settings['nodes'][headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
      try: sock = urlopen(req, timeout = 300)
      except HTTPError as h:
       raw = h.read()
@@ -150,9 +152,9 @@ class SessionHandler(BaseHTTPRequestHandler):
    try:
     if path == 'files':
      param,_,file = query.partition('/')
-     fullpath = ospath.join(self.server._vars['settings']['files'][param],file)
+     fullpath = ospath.join(self.server._settings['files'][param],file)
     else:
-     fullpath = ospath.join(self.server._vars['path'],path,query)
+     fullpath = ospath.join(self.server._context['path'],path,query)
     if fullpath.endswith("/"):
      headers['Content-type']='text/html; charset=utf-8'
      _, _, filelist = next(walk(fullpath), (None, None, []))
@@ -182,7 +184,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
   else:
    # Unknown call
-   headers.update({'Location':'site/system_login?application=%s'%self.server._vars['settings']['system'].get('application','system'),'X-Code':301})
+   headers.update({'Location':'site/system_login?application=%s'%self.server._settings['system'].get('application','system'),'X-Code':301})
 
   code = headers.pop('X-Code',200)
   self.wfile.write("HTTP/1.1 %s %s\r\n"%(code,http_codes[code]))
@@ -212,14 +214,14 @@ if __name__ == '__main__':
  sock.bind(addr)
  sock.listen(5)
 
- args = {'node':SC['system']['id'],'socket':sock,'address':addr,'settings':SC,'workers':{},'path':ospath.join(basepath,'zdcp')}
- api_threads = [ApiThread(n,args) for n in range(threadcount)]
+ context = {'node':SC['system']['id'],'socket':sock,'address':addr,'settings':SC,'workers':{},'path':ospath.join(basepath,'zdcp')}
+ api_threads = [ApiThread(n,context) for n in range(threadcount)]
  #
  # Boot up worker threads as well, add necessary global first
  #
  # with DB() as db:
- # count = db.do("SELECT * FROM system_tasks")
- # args['workers']
+ # count = db.do("SELECT * FROM task_jobs")
+ # context['workers']
  # 
  while len(api_threads) > 0:
   # Check if threads are still alive...

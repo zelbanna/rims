@@ -961,7 +961,7 @@ def task_worker(aDict):
 
  t = WorkerThread(aDict.pop('id',None),aDict)
  t.start()
- return {'result':'OK'}
+ return {'result':'STARTED','id':t.name}
 
 #
 #
@@ -986,7 +986,7 @@ def task_add(aDict):
   with DB() as db:
    db.do("SELECT id FROM nodes WHERE node = '%s'"%node)
    node_id = db.get_val('id')
-   db.do("INSERT INTO system_tasks (node_id, module, func, args, frequency) VALUES(%i,'%s','%s','%s',%i)"%(node_id,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300)))
+   db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency) VALUES(%i,'%s','%s','%s',%i)"%(node_id,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300)))
    args['id'] = ret['id'] = 'P%s'%db.get_last_id()
  else:
   from random import randint
@@ -1050,7 +1050,7 @@ def task_list(aDict):
  with DB() as db:
   db.do("SELECT id FROM nodes WHERE node = '%s'"%aDict['node'])
   node = db.get_val('id')
-  ret['count'] = db.do("SELECT * FROM system_tasks WHERE node_id = %s"%node)
+  ret['count'] = db.do("SELECT * FROM task_jobs WHERE node_id = %s"%node)
   ret['tasks'] = db.get_rows()
   threads = task_status({'node':aDict['node']})
   for task in ret['tasks']:
