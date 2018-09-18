@@ -104,7 +104,6 @@ def update(aDict):
    id = int(parts[11][:-1])
    devices[id] = {'id':id,'fqdn':parts[1],'mac':parts[5],'ip':parts[7],'network':parts[3]}
  if aDict.get('id'):
-  from zdcp.core.common import node_call
   devices[aDict['id']] = {'id':aDict['id'],'fqdn':"%(hostname)s.%(domain)s"%aDict,'mac':aDict['mac'],'ip':aDict['ip'],'network':aDict['network']}
   # Create file
   with open(SC['iscdhcp']['static'],'w') as config_file:

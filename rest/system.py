@@ -895,7 +895,7 @@ def activities_type_delete(aDict):
   ret['delete'] = db.do("DELETE FROM activity_types WHERE id = '%s'"%aDict['id'])
  return ret
 
-##################################### TASKs ###############################
+########################################## TASKs ##########################################
 #
 # The worker task can be carried out anywhere
 #
@@ -914,7 +914,7 @@ def task_worker(aDict):
   - result
  """
  from zdcp.core.engine import WorkerThread
- t = WorkerThread(aDict,SC,workers)
+ t = WorkerThread(aDict,SC, workers)
  return {'result':'STARTED','id':t.name}
 
 #
@@ -1031,3 +1031,16 @@ def task_state(aDict):
  ret['result'] = t.release() if aDict['active'] else t.pause(False) 
  return ret
 
+#
+#
+def task_result(aDict):
+ """ Save task result
+
+ Args:
+  - node (required)
+  - id (required)
+  - result (required)
+ 
+ Output:
+ """
+ return None

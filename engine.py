@@ -11,12 +11,12 @@ __status__ = "Production"
 
 
 from os import path as ospath
+from json import loads, dumps
+from importlib import import_module
 from time import sleep
 from sys import path as syspath, exit
 basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
 syspath.insert(1, basepath)
-from json import loads, dumps
-from importlib import import_module
 from zdcp.Settings import SC
 from zdcp.core.common import DB
 from zdcp.core.engine import ApiThread, WorkerThread
@@ -48,7 +48,7 @@ else:
 
 for task in tasks:
  args = {'id':"P%s"%task['id'],'periodic':True,'frequency':task['frequency'],'module':task['module'],'func':task['func'],'args':loads(task['args'])}
- WorkerThread(args,SC,workers)  
+ WorkerThread(args,SC,workers)
 api_threads = [ApiThread(n,context) for n in range(threadcount)]
 
 while len(api_threads) > 0:

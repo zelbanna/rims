@@ -25,7 +25,7 @@ from threading import Thread, Lock
 
 class WorkerThread(Thread):
 
- def __init__(self, aArgs, aSettings, aWorkers = {}):
+ def __init__(self, aArgs, aSettings, aWorkers):
   """
 
   Args:
@@ -42,12 +42,13 @@ class WorkerThread(Thread):
   """
   Thread.__init__(self)
   self.name = aArgs.pop('id','UNKNOWN')
-  self.lock = Lock()            
+  self.lock = Lock()
   self.exit = False
   self.args = aArgs
-  self.settings = aSettings
-  self.workers  = aWorkers
+  self.workers = aWorkers
+  self.settings= aSettings
   self.workers[self.name] = self
+  self.result = None
   self.daemon   = True
   self.start()
 
@@ -66,8 +67,10 @@ class WorkerThread(Thread):
   self.exit = True
   return self.name
 
+ def result(self):
+  return self.result
+
  def run(self):
-  from zdcp.core.common import log
   try:          
    mod = import_module("zdcp.rest.%s"%self.args['module'])
    mod.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':self.settings,'workers':self.workers})
@@ -76,15 +79,19 @@ class WorkerThread(Thread):
    log("task_worker(%s) ERROR => %s"%(self.name,str(e)))
   else:
    if not self.args.get('periodic'):
-    fun(self.args['args'])
+    self.result = fun(self.args['args'])
    else:
     from time import sleep, time
     while not self.exit:
      with self.lock:
-      fun(self.args['args'])       
+      self.result = fun(self.args['args'])
      sleep(int(self.args.get('frequency',300)))
   self.workers.pop(self.name,None)
-  log("task completed: %s_%s(%s) => forced exit(%s)"%(self.args['module'],self.args['func'],self.args['args'],self.exit))
+  args = dumps({'result':self.result,'id':self.name,'node':self.settings['system']['id']})
+  req  = Request("%s/api/system_task_result"%(self.settings['system']['master']), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = args)
+  try:    sock = urlopen(req, timeout = 20)
+  except: pass
+  else:  sock.close()
 
 #
 #
