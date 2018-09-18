@@ -25,7 +25,7 @@ from threading import Thread, Lock
 
 class WorkerThread(Thread):
 
- def __init__(self, aArgs, aWorkers = {}):
+ def __init__(self, aArgs, aSettings, aWorkers = {}):
   """
 
   Args:
@@ -45,10 +45,10 @@ class WorkerThread(Thread):
   self.lock = Lock()            
   self.exit = False
   self.args = aArgs
-  self.daemon = True
-  self.workers= aWorkers
-  # Register oneself
+  self.settings = aSettings
+  self.workers  = aWorkers
   self.workers[self.name] = self
+  self.daemon   = True
   self.start()
 
  def __str__(self):
@@ -59,28 +59,29 @@ class WorkerThread(Thread):
 
  def release(self):
   try:    self.lock.release()
-  except: return False 
+  except: return False
   else:   return True
 
  def stop(self):
   self.exit = True
-  return self.name                     
+  return self.name
 
  def run(self):
   from zdcp.core.common import log
   try:          
    mod = import_module("zdcp.rest.%s"%self.args['module'])
+   mod.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':self.settings,'workers':self.workers})
    fun = getattr(mod,self.args['func'],lambda x: {'THREAD_NOT_OK'})
   except Exception as e:
-   log("task_worker(%s) ERROR => %s"%(self.name,str(e)))                  
+   log("task_worker(%s) ERROR => %s"%(self.name,str(e)))
   else:
-   if not self.args.get('periodic'):        
+   if not self.args.get('periodic'):
     fun(self.args['args'])
-   else:              
+   else:
     from time import sleep, time
     while not self.exit:
      with self.lock:
-      fun(self.args['args'])           
+      fun(self.args['args'])       
      sleep(int(self.args.get('frequency',300)))
   self.workers.pop(self.name,None)
   log("task completed: %s_%s(%s) => forced exit(%s)"%(self.args['module'],self.args['func'],self.args['args'],self.exit))

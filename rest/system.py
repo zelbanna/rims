@@ -914,7 +914,7 @@ def task_worker(aDict):
   - result
  """
  from zdcp.core.engine import WorkerThread
- t = WorkerThread(aDict,workers)
+ t = WorkerThread(aDict,SC,workers)
  return {'result':'STARTED','id':t.name}
 
 #
@@ -947,7 +947,7 @@ def task_add(aDict):
   args['id'] = ret['id'] = 'T%s'%randint(0,10000)
  if node == 'master':
   from zdcp.core.engine import WorkerThread
-  WorkerThread(args,workers)
+  WorkerThread(args,SC,workers)
  else:
   from zdcp.core.common import rest_call
   ret.update(rest_call("%s/api/task_worker"%SC['nodes'][node],args)['data'])
@@ -1007,10 +1007,11 @@ def task_list(aDict):
   node = db.get_val('id')
   ret['count'] = db.do("SELECT * FROM task_jobs WHERE node_id = %s"%node)
   ret['tasks'] = db.get_rows()
-  threads = task_status({'node':aDict['node']})
-  for task in ret['tasks']:
-   task['state'] = threads.pop("P%s"%task['id'],'EXITED')
-  ret['orphan'] = [t for t in threads.items()]
+  if aDict.get('sync'):
+   threads = task_status({'node':aDict['node']})
+   for task in ret['tasks']:
+    task['state'] = threads.pop("P%s"%task['id'],'EXITED')
+   ret['orphan'] = [t for t in threads.items()]
  return ret
 
 #

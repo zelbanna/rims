@@ -19,7 +19,7 @@ from json import loads, dumps
 from importlib import import_module
 from zdcp.Settings import SC
 from zdcp.core.common import DB
-from zdcp.core.engine import ApiThread
+from zdcp.core.engine import ApiThread, WorkerThread
 import socket
 threadcount = 5
 port = int(SC['system']['port'])
@@ -32,14 +32,22 @@ sock.listen(5)
 workers = {}
 globals = {'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC,'workers':workers}
 context = {'node':SC['system']['id'],'socket':sock,'address':addr,'path':ospath.join(basepath,'zdcp'),'globals':globals}
-api_threads = [ApiThread(n,context) for n in range(threadcount)]
+
 #
 # Boot up worker threads as well, add necessary global first
 #
-# with DB() as db:
-# count = db.do("SELECT * FROM task_jobs")
-# context['workers']
-# 
+if SC['system']['id'] == 'master':
+ with DB() as db:
+  db.do("SELECT * FROM task_jobs LEFT JOIN nodes ON task_jobs.node_id = nodes.id WHERE node = 'master'")
+  for task in db.get_rows():
+   args = {'id':"P%s"%task['id'],'periodic':True,'frequency':task['frequency'],'module':task['module'],'func':task['func'],'args':loads(task['args'])}
+   WorkerThread(args,SC,workers)
+else:
+ from zdcp.core.common import rest_call
+ print rest_call("%s/api/task_list"%SC['system']['master'],{'node':SC['system']['id']})
+
+api_threads = [ApiThread(n,context) for n in range(threadcount)]
+
 while len(api_threads) > 0:
  # Check if threads are still alive...
  api_threads = [a for a in api_threads if a.is_alive()]

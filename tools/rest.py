@@ -38,7 +38,7 @@ if __name__ == "__main__":
    started = "Executing:%s_%s(%s)"%(mod,fun,args)
    print started
    module = import_module("zdcp.rest.%s"%mod)
-   module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC})
+   module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC,'workers':{}})
    function = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })
    output = function(args)
   timespent = int(time()) - timestamp
