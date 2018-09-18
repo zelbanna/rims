@@ -60,22 +60,13 @@ def transfer(aDict):
   
  Output:
  """
- def __transfer(aArgs):
-  from zdcp.core.common import log
-  from shutil import move
-  try: move( ospath.join(aArgs['path'],aArgs['file']), ospath.join(SC['multimedia']['media_directory'],aArgs['file']) )
-  except Exception as err:
-   result = str(err)
-  else: 
-   result = 'OK'
-  log("multimedia_transfer(%s) => %s"%(dumps(aArgs),result))
-  return {'result':result}
-
- from threading import Thread
- t = Thread(target = __transfer, args=[aDict])
- t.name = "multimedia_transfer"
- t.start()
- return {'res':'initiating_move'}
+ from shutil import move
+ try: move( ospath.join(aDict['path'],aDict['file']), ospath.join(SC['multimedia']['media_directory'],aDict['file']) )
+ except Exception as err:
+  result = str(err)
+ else: 
+  result = 'OK'
+ return {'res':result}
 
 #
 #
@@ -266,13 +257,6 @@ def process(aDict):
 
  Output:
  """
- from threading import Thread
- t = Thread(target = __process, args=[aDict])
- t.name = "multimedia_process"
- t.start()
- return {'result':'initiating_process'}  
-
-def __process(aDict):
  from time import time
  from subprocess import check_call, call
  from os import devnull,chmod,rename,remove
@@ -293,7 +277,6 @@ def __process(aDict):
 
   if ret['suffix'] == 'mkv' and not ret['error']:
    if srt['code']:
-    log("INFO - %s - SRT found:%s"%(filename,srt['code']))
     srtfile = "%s.process"%srt['file']
     ret['changes']['srt']="--language 0:{0} --track-name 0:{0} -s 0 -D -A {1}".format(srt['code'], repr(ospath.abspath(srtfile)))
     rename(srt['file'],srtfile)
@@ -309,7 +292,6 @@ def __process(aDict):
     ret['changes']['audio'] = "--atracks " + ",".join(map(str,probe['audio']['add']))
  
    if (ret['rename'] or probe['video']['set_default'] or probe['audio']['add_aac'] or len(ret['changes']['subtitle']) or len(ret['changes']['audio']) or srt['code']):
-    log("INFO - %s - Modifying file"%filename)
     FNULL = open(devnull, 'w')
 
     if ret['rename']:
@@ -321,7 +303,7 @@ def __process(aDict):
 
     if probe['audio']['add_aac'] or len(ret['changes']['audio']) or len(ret['changes']['subtitle']) or srt['code']:
      from tempfile import mkdtemp
-     log("INFO - %s - Modifying addaac:%s Modify: %s %s"%(probe['audio']['add_aac'],ret['changes']['subtitle'],ret['changes']['audio'], ret['changes']['srt']) )
+     ret['aac_probe'] = probe['audio']['add_aac']
      tmpfile = filename + ".process"
      rename(dest,tmpfile)
      tempd   = SC['multimedia']['temp_directory'] 
@@ -353,22 +335,18 @@ def __process(aDict):
     if info['episode']:
      call(['mp4tags', '-o', info['episode'], '-n', info['episode'][1:3], '-M', info['episode'][4:6], '-S', info['title'], '-m', info['info'], dest], stdout=FNULL, stderr=FNULL)
     else:
-     log("WARN - %s - Movie modifications not implemented"%filename)
+     ret['warn'] = "Movie modification not implemented"
 
  except Exception as err:
   ret['error'] = str(err)
-  log("XCPT - %s - Error: %s"%(filename,str(err)))
  else:
   ret['seconds'] = (int(time()) - ret['timestamp'])
   if ospath.exists(dest):
-   log("INFO - %s - Success - processed in % seconds"%(filename,ret['seconds']))
    chmod(dest, 0666)
    ret['res'] = 'OK'
   else:
-   log("ERRR - %s - FAILURE PROCESSING!"%filename)
    ret['error'] = 'COMPLETE_NO_FILE'
 
- log("multimedia_process(%s) => %s"%(dumps(aDict),dumps(result)))
  return ret
 
 

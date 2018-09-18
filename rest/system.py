@@ -913,7 +913,7 @@ def task_worker(aDict):
  """
  from zdcp.core.engine import WorkerThread
  t = WorkerThread(aDict,SC, workers)
- return {'id':t.name}
+ return {'id':t.name,'res':'THREAD_STARTED'}
 
 #
 #
