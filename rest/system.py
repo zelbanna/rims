@@ -900,11 +900,11 @@ def task_worker(aDict):
  """Function instantiate a worker thread with arguments and bind to global worker dictionary
 
  Args:
-  - id (required). id of task to execute
+  - id (optional)
   - module (required)
   - func (required)
   - args (required)
-  - type (required)
+  - periodic (optional)
   - frequency (optional required)
   - output (optional)
 

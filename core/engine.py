@@ -29,7 +29,7 @@ class WorkerThread(Thread):
   """
 
   Args:
-   - id of task to execute
+   - id (optional required). ID of task to execute, if none assigned a transient ID will be assigned
    - module (required)
    - func (required)
    - args (required)
