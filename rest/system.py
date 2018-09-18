@@ -913,54 +913,8 @@ def task_worker(aDict):
  Output:
   - result
  """
- from threading import Thread, Lock
- class WorkerThread(Thread):
-
-  def __init__(self, aID, aArgs):
-   Thread.__init__(self)
-   self.name = aID
-   self.lock = Lock()
-   self.exit = False
-   self.args = aArgs
-   self.daemon = True
-   workers[self.name] = self
-
-  def __str__(self):
-   return "WorkerThread(%s:%s):%s_%s(%s)"%(self.name,self.args.get('periodic'),self.args['module'],self.args['func'],self.args['args'])
-
-  def pause(self, aBlock = True):
-   return self.lock.acquire(aBlock)
-
-  def release(self):
-   try:    self.lock.release()
-   except: return False
-   else:   return True
-
-  def stop(self):
-   self.exit = True
-   return self.name
-
-  def run(self):
-   from zdcp.core.common import log
-   try:
-    mod = import_module("zdcp.rest.%s"%self.args['module'])
-    fun = getattr(mod,self.args['func'],lambda x: {'THREAD_NOT_OK'})
-   except Exception as e:
-    log("task_worker(%s) ERROR => %s"%(self.name,str(e)))
-   else:
-    if not self.args.get('periodic'):
-     fun(self.args['args'])
-    else:
-     from time import sleep, time
-     while not self.exit:
-      with self.lock:
-       fun(self.args['args'])
-      sleep(int(self.args.get('frequency',300)))
-   workers.pop(self.name,None)
-   log("task completed: %s_%s(%s) => forced exit(%s)"%(self.args['module'],self.args['func'],self.args['args'],self.exit))
-
- t = WorkerThread(aDict.pop('id',None),aDict)
- t.start()
+ from zdcp.core.engine import WorkerThread
+ t = WorkerThread(aDict,workers)
  return {'result':'STARTED','id':t.name}
 
 #
@@ -992,7 +946,8 @@ def task_add(aDict):
   from random import randint
   args['id'] = ret['id'] = 'T%s'%randint(0,10000)
  if node == 'master':
-  ret.update(task_worker(args))
+  from zdcp.core.engine import WorkerThread
+  WorkerThread(args,workers)
  else:
   from zdcp.core.common import rest_call
   ret.update(rest_call("%s/api/task_worker"%SC['nodes'][node],args)['data'])

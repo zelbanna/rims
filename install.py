@@ -52,7 +52,7 @@ except:
 
 ############################################### ALL #################################################
 #
-# Write server operations files
+# Write engine operations files
 #
 with open(ospath.abspath(ospath.join(pkgdir,'templates',settings['system']['template'])),'r') as f:
  template = f.read()
@@ -60,7 +60,7 @@ template = template.replace("%PKGDIR%",pkgdir)
 with open(ospath.abspath(ospath.join(pkgdir,settings['system']['template'])),'w+') as f:
  f.write(template)
 chmod(ospath.abspath(ospath.join(pkgdir,settings['system']['template'])),0755)
-res['server']= settings['system']['template']
+res['engine']= settings['system']['template']
 
 ############################################### ALL #################################################
 #

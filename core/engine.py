@@ -1,8 +1,6 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Program docstring.
 
-ZDCP Server.
+ZDCP Engine
 
 """
 __author__ = "Zacharias El Banna"
@@ -12,44 +10,107 @@ __status__ = "Production"
 from os import walk, path as ospath
 from json import loads, dumps
 from importlib import import_module
-from time import localtime, strftime, sleep
-from threading import Thread
+
+from time import localtime, strftime
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from httplib import responses as http_codes
 from urllib2 import urlopen, Request, URLError, HTTPError, unquote
-from urlparse import parse_qs
-from common import Stream
 
-
-############################### ZDCP Server ############################
+########################################## Threads ########################################
 #
 # Threads
+#
+
+from threading import Thread, Lock
+
+class WorkerThread(Thread):
+
+ def __init__(self, aArgs, aWorkers = {}):
+  """
+
+  Args:
+   - id of task to execute
+   - module (required)
+   - func (required)
+   - args (required)
+   - type (required)
+   - frequency (optional required)
+
+  Workers:
+   - workers dictionary to register oneself upon
+   
+  """
+  Thread.__init__(self)
+  self.name = aArgs.pop('id','UNKNOWN')
+  self.lock = Lock()            
+  self.exit = False
+  self.args = aArgs
+  self.daemon = True
+  self.workers= aWorkers
+  # Register oneself
+  self.workers[self.name] = self
+  self.start()
+
+ def __str__(self):
+  return "WorkerThread(%s:%s):%s_%s(%s)"%(self.name,self.args.get('periodic'),self.args['module'],self.args['func'],self.args['args'])
+
+ def pause(self, aBlock = True):
+  return self.lock.acquire(aBlock)
+
+ def release(self):
+  try:    self.lock.release()
+  except: return False 
+  else:   return True
+
+ def stop(self):
+  self.exit = True
+  return self.name                     
+
+ def run(self):
+  from zdcp.core.common import log
+  try:          
+   mod = import_module("zdcp.rest.%s"%self.args['module'])
+   fun = getattr(mod,self.args['func'],lambda x: {'THREAD_NOT_OK'})
+  except Exception as e:
+   log("task_worker(%s) ERROR => %s"%(self.name,str(e)))                  
+  else:
+   if not self.args.get('periodic'):        
+    fun(self.args['args'])
+   else:              
+    from time import sleep, time
+    while not self.exit:
+     with self.lock:
+      fun(self.args['args'])           
+     sleep(int(self.args.get('frequency',300)))
+  self.workers.pop(self.name,None)
+  log("task completed: %s_%s(%s) => forced exit(%s)"%(self.args['module'],self.args['func'],self.args['args'],self.exit))
+
+#
 #
 class ApiThread(Thread):
  def __init__(self, aID, aContext):
   Thread.__init__(self)  
-  self._context = dict(aContext)
-  self.name   = aID
-  self.daemon = True
+  self._context = aContext
+  self.name     = aID
+  self.daemon   = True
   self.start()
 
  def __str__(self):
-  return "ApiThread(%s):%s"%(self.name,self._context)
+  return "ApiThread(%s)"%(self.name)
 
  def run(self):
   httpd = HTTPServer(self._context['address'], SessionHandler, False)
   httpd._context  = self._context
   httpd._node     = self._context['node']
-  httpd._settings = self._context['settings']
+  httpd._settings = self._context['globals']['SC']
+  httpd._globals  = self._context['globals']
+  httpd.socket    = self._context['socket']
   httpd._t_id     = self.name
-  # Prevent the HTTP server from re-binding every handler.
-  # https://stackoverflow.com/questions/46210672/
-  httpd.socket = self._context['socket']
   httpd.server_bind = self.server_close = lambda self: None
   try: httpd.serve_forever()
   except: pass
 
-############################ Call Handler ###########################
+###################################### Call Handler ######################################
 #
 class SessionHandler(BaseHTTPRequestHandler):
 
@@ -62,7 +123,6 @@ class SessionHandler(BaseHTTPRequestHandler):
    with open(self.server._settings['logs']['rest'], 'a') as f:
     f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._node, aExtra.strip())))
   except: pass
-
 
  def do_HEAD(self):
   self.send_response(200)
@@ -123,7 +183,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     self.log_api(api,dumps(args),get)
     if headers['X-Node'] == self.server._node:
      module = import_module("zdcp.rest.%s"%mod)
-     module.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':self.server._settings,'workers':self.server._context['workers']})
+     module.__add_globals__(self.server._globals)
      body = dumps(getattr(module,fun,None)(args))
     else:
      req  = Request("%s/api/%s"%(self.server._settings['nodes'][headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
@@ -194,39 +254,82 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
   self.wfile.write(body)
 
+########################################### Web stream ########################################
+#
 
-############################################ MAIN ######################################
-from sys import path as syspath
-basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..'))
-syspath.insert(1, basepath)
+from urlparse import parse_qs
 
-if __name__ == '__main__':
- #
- from zdcp.Settings import SC
- from zdcp.core.common import DB
- from zdcp.rest.system import task_worker
- import socket
- threadcount = 5
- port = int(SC['system']['port'])
- addr = ('', port)
- sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
- sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
- sock.bind(addr)
- sock.listen(5)
+class Stream(object):
 
- context = {'node':SC['system']['id'],'socket':sock,'address':addr,'settings':SC,'workers':{},'path':ospath.join(basepath,'zdcp')}
- api_threads = [ApiThread(n,context) for n in range(threadcount)]
- #
- # Boot up worker threads as well, add necessary global first
- #
- # with DB() as db:
- # count = db.do("SELECT * FROM task_jobs")
- # context['workers']
- # 
- while len(api_threads) > 0:
-  # Check if threads are still alive...
-  api_threads = [a for a in api_threads if a.is_alive()]
-  sleep(10)
- sock.close()
- print "ZDCP shutdown - no active threads(!)"
+ def __init__(self,aHandler, aGet):
+  self._cookies = {}
+  self._form    = {}
+  self._node    = aHandler.server._node
+  self._api     = aHandler.server._settings['system']['node']
+  self._body    = []
+  try: cookie_str = aHandler.headers.get('Cookie').split('; ')
+  except: pass
+  else:
+   for cookie in cookie_str:
+    k,_,v = cookie.partition('=')
+    try:    self._cookies[k] = dict(x.split('=') for x in v.split(','))
+    except: self._cookies[k] = v
+  try:    body_len = int(aHandler.headers.getheader('content-length'))
+  except: body_len = 0
+  if body_len > 0 or len(aGet) > 0:
+   from urlparse import parse_qs
+   if body_len > 0:
+    self._form.update({ k: l[0] for k,l in parse_qs(aHandler.rfile.read(body_len), keep_blank_values=1).iteritems() })
+   if len(aGet) > 0:
+    self._form.update({ k: l[0] for k,l in parse_qs(aGet, keep_blank_values=1).iteritems() })
 
+ def __str__(self):
+  return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Web object<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(str(self._cookies),self._form)
+
+ def output(self):
+  return ("".join(self._body)).encode('utf-8')
+
+ def wr(self,aHTML):
+  self._body.append(aHTML.decode('utf-8'))
+
+ def node(self):
+  return self._node
+
+ def cookie(self,aName):
+  return self._cookies.get(aName,{})
+
+ def args(self):
+  return self._form
+
+ def __getitem__(self,aKey):
+  return self._form.get(aKey,None)
+
+ def get(self,aKey,aDefault = None):
+  return self._form.get(aKey,aDefault)
+
+ def get_args2dict(self,aExcept = []):
+  return { k:v for k,v in self._form.iteritems() if not k in aExcept }
+
+ def get_args(self,aExcept = []):
+  return "&".join(["%s=%s"%(k,v) for k,v in self._form.iteritems() if not k in aExcept])
+
+ def button(self,aImg,**kwargs):
+  return " ".join(["<A CLASS='btn z-op small'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC='../images/btn-%s.png'></A>"%(aImg)])
+
+ # Simplified SDCP REST call
+ def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
+  from common import rest_call
+  return rest_call("%s/api/%s"%(self._api,aAPI), aArgs, aTimeout = 60)['data']
+
+ # Generic REST call with full output
+ def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
+  return rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
+
+ def put_html(self, aTitle = None, aIcon = 'zdcp.png'):
+  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/zdcp.css'>")
+  if aTitle:
+   self._body.append("<TITLE>" + aTitle + "</TITLE>")
+  self._body.append("<LINK REL='shortcut icon' TYPE='image/png' HREF='../images/%s'/>"%(aIcon))
+  self._body.append("<SCRIPT SRC='../infra/3.1.1.jquery.min.js'></SCRIPT><SCRIPT SRC='../infra/4.21.0.vis.min.js'></SCRIPT><SCRIPT SRC='../infra/zdcp.js'></SCRIPT>")
+  self._body.append("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ) .on('input','.slider',slide_monitor); });</SCRIPT>")
+  self._body.append("</HEAD>")
