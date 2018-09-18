@@ -42,7 +42,11 @@ class WorkerThread(Thread):
    
   """
   Thread.__init__(self)
-  self.name = aArgs.pop('id','UNKNOWN')
+  if aArgs.get('id'):
+   self.name = aArgs['id']
+  else:
+   from random import randint
+   self.name = 'T%s'%randint(0,10000)
   self.lock = Lock()
   self.exit = False
   self.args = aArgs

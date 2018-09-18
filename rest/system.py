@@ -913,7 +913,7 @@ def task_worker(aDict):
  """
  from zdcp.core.engine import WorkerThread
  t = WorkerThread(aDict,SC, workers)
- return {'result':'STARTED','id':t.name}
+ return {'id':t.name}
 
 #
 #
@@ -938,13 +938,11 @@ def task_add(aDict):
  if aDict.get('periodic'):
   with DB() as db:
    db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300)))
-   args['id'] = ret['id'] = 'P%s'%db.get_last_id()
- else:
-  from random import randint
-  args['id'] = ret['id'] = 'T%s'%randint(0,10000)
+   args['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
   from zdcp.core.engine import WorkerThread
-  WorkerThread(args,SC,workers)
+  t = WorkerThread(args,SC,workers)
+  ret['id'] = t.name
  else:
   from zdcp.core.common import rest_call
   ret.update(rest_call("%s/api/task_worker"%SC['nodes'][node],args)['data'])
