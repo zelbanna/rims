@@ -29,7 +29,7 @@ def leases(aDict):
 
  result = []
  lease  = {}
- with open(SC['iscdhcp']['active'],'r') as leasefile:
+ with open(gSettings['iscdhcp']['active'],'r') as leasefile:
   for line in leasefile:
    if line == '\n':
     continue
@@ -64,7 +64,7 @@ def sync(aDict):
  from zdcp.core.common import node_call
  entries = node_call('master','device','server_macs',{'id':aDict['id']})
  # Create file
- with open(SC['iscdhcp']['static'],'w') as config_file:
+ with open(gSettings['iscdhcp']['static'],'w') as config_file:
   for entry in entries['data']:
    config_file.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}, Network: {4}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id'],entry['network']))
 
@@ -72,7 +72,7 @@ def sync(aDict):
  from subprocess import check_output, CalledProcessError
  ret = {}
  try:
-  ret['output'] = check_output(SC['iscdhcp']['reload'].split())
+  ret['output'] = check_output(gSettings['iscdhcp']['reload'].split())
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output
@@ -98,7 +98,7 @@ def update(aDict):
  devices = {}
  ret = {}
 
- with open(SC['iscdhcp']['static'],'r') as config_file:
+ with open(gSettings['iscdhcp']['static'],'r') as config_file:
   for line in config_file:
    parts = line.split()
    id = int(parts[11][:-1])
@@ -106,14 +106,14 @@ def update(aDict):
  if aDict.get('id'):
   devices[aDict['id']] = {'id':aDict['id'],'fqdn':"%(hostname)s.%(domain)s"%aDict,'mac':aDict['mac'],'ip':aDict['ip'],'network':aDict['network']}
   # Create file
-  with open(SC['iscdhcp']['static'],'w') as config_file:
+  with open(gSettings['iscdhcp']['static'],'w') as config_file:
    for entry in devices:
     config_file.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}, Network: {4}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id'],entry['network']))
   # Reload
   from subprocess import check_output, CalledProcessError
   ret = {}
   try:
-   ret['output'] = check_output(SC['iscdhcp']['reload'].split())
+   ret['output'] = check_output(gSettings['iscdhcp']['reload'].split())
   except CalledProcessError as c:
    ret['code'] = c.returncode
    ret['output'] = c.output

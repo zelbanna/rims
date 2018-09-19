@@ -35,8 +35,8 @@ class Device(GenericDevice):
    cssidobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.15"))
    cipobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.4"))
 
-   from zdcp.Settings import SC
-   session = Session(Version = 2, DestHost = self._ip, Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   from zdcp.Settings import Settings
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(cssidobjs)
    session.walk(cipobjs)
   except:

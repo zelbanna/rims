@@ -21,7 +21,7 @@ def dump(aDict):
  if aDict.get('username') and aDict.get('password') and aDict.get('database'):
   db,username,password = aDict['database'],aDict['username'],aDict['password']
  else:
-  db,username,password = SC['system']['db_name'], SC['system']['db_user'], SC['system']['db_pass']
+  db,username,password = gSettings['system']['db_name'], gSettings['system']['db_user'], gSettings['system']['db_pass']
  try:
   mode = aDict.get('mode','structure')
   cmd  = ["mysqldump", "-u" + username, "-p" + password, db]
@@ -71,7 +71,7 @@ def restore(aDict):
  if aDict.get('username') and aDict.get('password'):
   username,password = aDict['username'],aDict['password']
  else:
-  username,password = SC['system']['db_user'], SC['system']['db_pass']
+  username,password = gSettings['system']['db_user'], gSettings['system']['db_pass']
 
  try:
   cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '<',aDict['file']]

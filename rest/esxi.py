@@ -81,7 +81,7 @@ def logs(aDict):
  hostname = aDict['hostname']
  count = aDict.get('count','30')
  try:
-  ret['data'] = check_output("tail -n %s %s | tac"%(count,SC['esxi']['logformat'].format(hostname)), shell=True).split('\n')
+  ret['data'] = check_output("tail -n %s %s | tac"%(count,gSettings['esxi']['logformat'].format(hostname)), shell=True).split('\n')
  except Exception as e:
   ret['res'] = 'NOT_OK'
   ret['error'] = str(e)

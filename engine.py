@@ -16,14 +16,14 @@ from time import sleep
 from sys import path as syspath, exit
 basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
 syspath.insert(1, basepath)
-from zdcp.Settings import SC as Settings
+from zdcp.Settings import Settings
 from zdcp.core.common import DB
 from zdcp.core.engine import ApiThread, WorkerThread
 import socket
 
 # Socket
 threadcount = 5
-port = int(SC['system']['port'])
+port = int(Settings['system']['port'])
 addr = ('', port)
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

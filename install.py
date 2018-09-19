@@ -19,7 +19,7 @@ res = {}
 
 if len(argv) < 2:
  try:
-  from zdcp.Settings import SC as Old
+  from zdcp.Settings import Settings as Old
  except:
   stdout.write("Usage: {} </path/json file>\n\n!!! Import DB structure from schema.db before installing !!!\n\n".format(argv[0]))
   exit(0)
@@ -47,7 +47,7 @@ try:
  from zdcp import Settings as _
 except:
  with open(ospath.join(pkgdir,'Settings.py'),'w') as f:
-  f.write("SC=%s\n"%dumps(settings))
+  f.write("Settings=%s\n"%dumps(settings))
  res['bootstrap'] = 'container'
 
 ############################################### ALL #################################################
@@ -137,7 +137,7 @@ if settings['system']['id'] == 'master':
  #
  from zdcp.core.common import DB
  from zdcp.rest import mysql
- mysql.__add_globals__({'SC':settings})
+ mysql.__add_globals__({'gSettings':settings})
  try:
   database,host,username,password = settings['system']['db_name'],settings['system']['db_host'],settings['system']['db_user'],settings['system']['db_pass']
   database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(pkgdir,'schema.db')}
@@ -230,7 +230,7 @@ else:
 #
 try:
  with open(ospath.join(pkgdir,'Settings.py'),'w') as f:
-  f.write("SC=%s\n"%dumps(settings))
+  f.write("Settings=%s\n"%dumps(settings))
   res['container'] = 'OK'
 except Exception as e:
  res['container'] = str(e)

@@ -30,7 +30,7 @@ if __name__ == "__main__":
    except Exception as e:
     output = e[0]
   else:
-   from zdcp.Settings import SC
+   from zdcp.Settings import Settings
    from importlib import import_module
    (mod,_,fun) = argv[1].partition('_')
    try: args = loads(argv[2])
@@ -38,7 +38,7 @@ if __name__ == "__main__":
    started = "Executing:%s_%s(%s)"%(mod,fun,args)
    print started
    module = import_module("zdcp.rest.%s"%mod)
-   module.__add_globals__({'SC':SC,'gWorkers':{}})
+   module.__add_globals__({'Settings':Settings,'gWorkers':{},'iSession':None})
    function = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })
    output = function(args)
   timespent = int(time()) - timestamp

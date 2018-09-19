@@ -28,11 +28,11 @@ class Device(GenericDevice):
 
  def get_inventory(self):
   from netsnmp import VarList, Varbind, Session
-  from zdcp.Settings import SC
+  from zdcp.Settings import Settings
   result = []
   try:
    portobjs = VarList(Varbind('.1.3.6.1.4.1.25049.17.2.1.2'))
-   session = Session(Version = 2, DestHost = self._ip, Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(portobjs)
    for obj in portobjs:
     result.append({'interface':obj.iid,'name':obj.val,'port':str(6000+int(obj.iid))})

@@ -129,7 +129,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  def __init__(self, *args, **kwargs):
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
   self.timeout  = 60
-  self.headers  = None
+  self._headers  = None
 
  def log_api(self,aAPI,aArgs,aExtra):
   try:
@@ -147,12 +147,12 @@ class SessionHandler(BaseHTTPRequestHandler):
   """ Route request to the right function """
   path,_,query = (self.path.lstrip('/')).partition('/')
   body = 'null'
-  self.headers = {'X-Thread':self.server._t_id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
+  self._headers = {'X-Thread':self.server._t_id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
   if path == 'site':
    api,_,get = query.partition('?')
    (mod,_,fun)    = api.partition('_')
    stream = Stream(self,get)
-   headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200})
+   self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200})
    # if True:
    try:
     module = import_module("zdcp.site." + mod)
@@ -182,42 +182,42 @@ class SessionHandler(BaseHTTPRequestHandler):
     for part in get.split("&"):
      (k,_,v) = part.partition('=')
      extras[k] = v
-   headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*"})
-   headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
+   self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*"})
+   self._headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
    try:
     try:
      length = int(self.headers.getheader('content-length'))
      args = loads(self.rfile.read(length)) if length > 0 else {}
     except: args = {}
     self.log_api(api,dumps(args),get)
-    if headers['X-Node'] == self.server._node:
+    if self._headers['X-Node'] == self.server._node:
      module = import_module("zdcp.rest.%s"%mod)
-     modile.__add_globals__({'iSession':self,'gWorkers':self._workers,'gSettings':self._settings})
+     module.__add_globals__({'iSession':self,'gWorkers':self.server._workers,'gSettings':self.server._settings})
      body = dumps(getattr(module,fun,None)(args))
     else:
-     req  = Request("%s/api/%s"%(self.server._settings['nodes'][headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
+     req  = Request("%s/api/%s"%(self.server._settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
      try: sock = urlopen(req, timeout = 300)
      except HTTPError as h:
       raw = h.read()
       try:    data = loads(raw)
       except: data = raw
-      headers.update({ 'X-Exception':'HTTPError', 'X-Code':h.code, 'X-Info':dumps(dict(h.info())), 'X-Data':data })
-     except URLError  as e: headers.update({ 'X-Exception':'URLError', 'X-Code':590, 'X-Info':str(e)})
-     except Exception as e: headers.update({ 'X-Exception':type(e).__name__, 'X-Code':591, 'X-Info':str(e)})
+      self._headers.update({ 'X-Exception':'HTTPError', 'X-Code':h.code, 'X-Info':dumps(dict(h.info())), 'X-Data':data })
+     except URLError  as e: self._headers.update({ 'X-Exception':'URLError', 'X-Code':590, 'X-Info':str(e)})
+     except Exception as e: self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':591, 'X-Info':str(e)})
      else:
       try: body = sock.read()
       except: pass
       sock.close()
    except Exception as e:
-    headers.update({'X-Args':args,'X-Info':str(e),'X-Exception':type(e).__name__,'X-Code':500})
+    self._headers.update({'X-Args':args,'X-Info':str(e),'X-Exception':type(e).__name__,'X-Code':500})
 
   elif path == 'infra' or path == 'images' or path == 'files':
    query = unquote(query)
    # Infra call
    if query.endswith(".js"):
-    headers['Content-type']='application/javascript; charset=utf-8'
+    self._headers['Content-type']='application/javascript; charset=utf-8'
    elif query.endswith(".css"):
-    headers['Content-type']='text/css; charset=utf-8'
+    self._headers['Content-type']='text/css; charset=utf-8'
    try:
     if path == 'files':
      param,_,file = query.partition('/')
@@ -225,17 +225,17 @@ class SessionHandler(BaseHTTPRequestHandler):
     else:
      fullpath = ospath.join(self.server._path,path,query)
     if fullpath.endswith("/"):
-     headers['Content-type']='text/html; charset=utf-8'
+     self._headers['Content-type']='text/html; charset=utf-8'
      _, _, filelist = next(walk(fullpath), (None, None, []))
      body = "<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])
     else:
      with open(fullpath, 'rb') as file:
       body = file.read()
    except Exception as e:
-    headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
+    self._headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
 
   elif path == 'auth':
-   headers['Content-type']='application/json; charset=utf-8'
+   self._headers['Content-type']='application/json; charset=utf-8'
    try:
     length = int(self.headers.getheader('content-length'))
     args = loads(self.rfile.read(length)) if length > 0 else {}
@@ -249,16 +249,16 @@ class SessionHandler(BaseHTTPRequestHandler):
      body = '"OK"'
      from zdcp.core.genlib import random_string
      from datetime import datetime,timedelta
-     headers['X-Auth-Token']  = random_string(16)
-     headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+     self._headers['X-Auth-Token']  = random_string(16)
+     self._headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
   else:
    # Unknown call
-   headers.update({'Location':'site/system_login?application=%s'%self.server._settings['system'].get('application','system'),'X-Code':301})
+   self._headers.update({'Location':'site/system_login?application=%s'%self.server._settings['system'].get('application','system'),'X-Code':301})
 
-  code = headers.pop('X-Code',200)
+  code = self._headers.pop('X-Code',200)
   self.wfile.write("HTTP/1.1 %s %s\r\n"%(code,http_codes[code]))
-  headers.update({'Content-Length':len(body),'Connection':'close'})
-  for k,v in headers.iteritems():
+  self._headers.update({'Content-Length':len(body),'Connection':'close'})
+  for k,v in self._headers.iteritems():
    self.send_header(k,v)
   self.end_headers()
   self.wfile.write(body)

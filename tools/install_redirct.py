@@ -20,12 +20,12 @@ basedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','..'))
 pkgdir  = ospath.join(basedir,'zdcp')
 destfile= ospath.abspath(ospath.join(argv[1],'index.cgi'))
 syspath.insert(1, basedir)
-from zdcp.Settings import SC
+from zdcp.Settings import Settings
 
 with open(destfile,'w+') as f:
  f.write('#!/usr/bin/python\n')
  f.write('# -*- coding: utf-8 -*-\n')
  f.write('print "Status: 301 Moved Permanently"\n')
- f.write('print "Location: %s/site/system_login"\n'%SC['system']['node'])
+ f.write('print "Location: %s/site/system_login"\n'%Settings['system']['node'])
  f.write('print "\\r\\n"')
 chmod(destfile,0755)

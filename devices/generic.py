@@ -54,26 +54,27 @@ class Device(object):
   return [{'version':'N/A','model':'generic'}]
 
  def configuration(self,argdict):
+  from zdcp.Settings import Settings
   output = ["No config template for this device type.","",
    "Please set the following manually:",
-   "- Username: %s"%SC['netconf']['username'],
-   "- Password: %s"%SC['netconf']['password'],
+   "- Username: %s"%Settings['netconf']['username'],
+   "- Password: %s"%Settings['netconf']['password'],
    "- Domain:   %s"%argdict['domain'],
-   "- Nameserver: %s"%SC['netconf']['dnssrv'],
-   "- NTP: %s"%SC['netconf']['ntpsrv'],
+   "- Nameserver: %s"%Settings['netconf']['dnssrv'],
+   "- NTP: %s"%Settings['netconf']['ntpsrv'],
    "- Gateway: %s"%argdict['gateway'],
    "- Network/Mask: %s/%s"%(argdict['network'],argdict['mask']),
-   "- SNMP read community: %s"%SC['snmp']['read_community'],
-   "- SNMP write community: %s"%SC['snmp']['write_community']]
+   "- SNMP read community: %s"%Settings['snmp']['read_community'],
+   "- SNMP write community: %s"%Settings['snmp']['write_community']]
   return output
 
  def interfaces(self):
-  from zdcp.Settings import SC
+  from zdcp.Settings import Settings
   from netsnmp import VarList, Varbind, Session
   interfaces = {}
   try:
    objs = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2'),Varbind('.1.3.6.1.2.1.31.1.1.1.18'))
-   session = Session(Version = 2, DestHost = self._ip, Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(objs)
    for entry in objs:
     intf = interfaces.get(int(entry.iid),{'name':"None",'description':"None"})
@@ -88,14 +89,14 @@ class Device(object):
 
  def detect(self):
   ret = {}
-  from zdcp.Settings import SC
+  from zdcp.Settings import Settings
   from netsnmp import VarList, Varbind, Session
   try:
    # .1.3.6.1.2.1.1.1.0 : Device info
    # .1.3.6.1.2.1.1.5.0 : Device name
    # .1.3.6.1.2.1.1.2.0 : Device Enterprise Obj :-)
    devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
-   session = Session(Version = 2, DestHost = self._ip, Community = SC['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(devobjs)
    ret['result'] = "OK" if (session.ErrorInd == 0) else "NOT_OK"
   except Exception as err:

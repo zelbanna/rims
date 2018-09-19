@@ -123,8 +123,8 @@ def logs_clear(aDict):
  Output:
  """
  from zdcp.core.common import log
- ret = {'node':SC['system']['id'],'file':{}}
- for name,file in SC['logs'].iteritems():
+ ret = {'node':gSettings['system']['id'],'file':{}}
+ for name,file in gSettings['logs'].iteritems():
   try:
    open(file,'w').close()
    ret['file'][name] = 'CLEARED'
@@ -146,7 +146,7 @@ def logs_get(aDict):
  """
  ret = {}
  count = int(aDict.get('count',15))
- for name,file in SC['logs'].iteritems():
+ for name,file in gSettings['logs'].iteritems():
   if aDict.get('name',name) == name:
    lines = ["\r" for i in range(count)]
    pos = 0
@@ -182,7 +182,7 @@ def file_list(aDict):
    directory = aDict['fullpath']
   elif aDict.get('directory'):
    ret['path'] = '../files/%s'%aDict['directory']
-   directory = SC['files'][aDict['directory']]
+   directory = gSettings['files'][aDict['directory']]
   else:
    ret['path'] = '../images'
    directory = 'images'
@@ -206,7 +206,7 @@ def service_list(aDict):
 
  Output:          
  """
- return {'services':[{'name':x,'service':SC['services'][x]} for x in SC['services'].keys()]}
+ return {'services':[{'name':x,'service':gSettings['services'][x]} for x in gSettings['services'].keys()]}
 
 
 #
@@ -260,12 +260,12 @@ def database_backup(aDict):
  Output:
  """
  ret = {'filename':aDict['filename']}
- if SC['system']['id'] == 'master':
+ if gSettings['system']['id'] == 'master':
   from mysql import dump
   data = dump({'mode':'database'})['output']
  else:
   from zdcp.core.common import rest_call
-  res = rest_call("%s/api/mysql_dump"%SC['system']['master'],{'mode':'database'})
+  res = rest_call("%s/api/mysql_dump"%gSettings['system']['master'],{'mode':'database'})
   if res['code'] == 200:
    data = res['data']['output']
   else:

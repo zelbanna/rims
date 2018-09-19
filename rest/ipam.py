@@ -27,10 +27,10 @@ def status(aDict):
  for sub in subnets:
   args = {'module':'ipam','func':'network_check','args':{'subnet_id':sub['id']},'output':True}
   if not sub['node'] or sub['node'] == 'master':
-   t = WorkerThread(args,SC,gWorkers)
+   t = WorkerThread(args,gSettings,gWorkers)
    ret['local'].append((t.name,sub['id']))
   else:
-   res = rest_call("%s/api/system_task_worker&node=%s"%(SC['nodes'][sub['node']],sub['node']),args)['data']
+   res = rest_call("%s/api/system_task_worker&node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
    ret['remote'].append((res['id'],sub['id']))
  return 
 

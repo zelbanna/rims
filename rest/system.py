@@ -153,7 +153,7 @@ def settings_list(aDict):
 
  Output:
  """
- ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',SC['system']['id']) }
+ ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',gSettings['system']['id']) }
  if aDict.get('section'):
   filter = "AND section = '%s'"%aDict.get('section')
   ret['section'] = aDict.get('section')
@@ -210,7 +210,7 @@ def settings_parameter(aDict):
 
  Output:
  """
- try: ret = {'value':SC[aDict['section']][aDict['parameter']]}
+ try: ret = {'value':gSettings[aDict['section']][aDict['parameter']]}
  except: ret = {'value':None }
  return ret
 
@@ -290,19 +290,19 @@ def settings_save(aDict):
  from zdcp.core.common import rest_call
  from json import loads,dumps
  from os import path as ospath 
- ret = {'config_file':SC['system']['config_file']}
+ ret = {'config_file':gSettings['system']['config_file']}
  try:
-  SC.clear()
+  gSettings.clear()
   with open(ret['config_file']) as sfile:
    temp = loads(sfile.read())
   for section,content in temp.iteritems():
    for key,params in content.iteritems():
-    if not SC.get(section):
-     SC[section] = {}
-    SC[section][key] = params['value']
-  SC['system']['config_file'] = ret['config_file']
+    if not gSettings.get(section):
+     gSettings[section] = {}
+    gSettings[section][key] = params['value']
+  gSettings['system']['config_file'] = ret['config_file']
 
-  if SC['system']['id'] == 'master':
+  if gSettings['system']['id'] == 'master':
    with DB() as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
@@ -310,20 +310,22 @@ def settings_save(aDict):
     data.extend(db.get_rows())
    for setting in data:
     section = setting.pop('section')
-    if not SC.get(section):
-     SC[section] = {}
-    SC[section][setting['parameter']] = setting['value']
+    if not gSettings.get(section):
+     gSettings[section] = {}
+    gSettings[section][setting['parameter']] = setting['value']
   else:
-   try: master = rest_call("%s/api/system_settings_fetch"%SC['system']['master'],{'node':SC['system']['id']})['data']
+   try: master = rest_call("%s/api/system_settings_fetch"%gSettings['system']['master'],{'node':gSettings['system']['id']})['data']
    except: pass
    else:
     for section,content in master.iteritems():
-     if SC.get(section): SC[section].update(content)
-     else: SC[section] = content
+     if gSettings.get(section):
+      gSettings[section].update(content)
+     else:
+      gSettings[section] = content
 
   container = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','Settings.py'))
   with open(container,'w') as f:
-   f.write("SC=%s\n"%dumps(SC))
+   f.write("Settings=%s\n"%dumps(gSettings))
   ret['result'] = 'OK'
  except Exception as e:
   ret['result'] = 'NOT_OK'
@@ -339,7 +341,7 @@ def settings_container(aDict):
 
  Output:
  """
- return SC
+ return gSettings
 
 ################################################# NODE ##############################################
 #
@@ -408,7 +410,7 @@ def node_info(aDict):
    else:
     ret['update'] = db.insert_dict('nodes',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-   SC['nodes'][aDict['node']] = aDict['url']
+   gSettings['nodes'][aDict['node']] = aDict['url']
   if not id == 'new':
    ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
@@ -429,7 +431,7 @@ def node_delete(aDict):
  ret = {}
  with DB() as db:
   if db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aDict['id']) > 0:
-   SC['nodes'].pop(db.get_val('node'),None)
+   gSettings['nodes'].pop(db.get_val('node'),None)
    ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s'"%aDict['id']) == 1)
   else:
    ret['delete'] = False 
@@ -456,10 +458,10 @@ def node_module_reload(aDict):
   with DB() as db:
    db.do("SELECT node FROM nodes WHERE id = %s"%aDict['id'])
    ret['node'] = db.get_val('node')
- if ret['node'] == SC['system']['id']:
+ if ret['node'] == gSettings['system']['id']:
   ret['result'] = 'module reloaded'
  else:
-  ret['result'] = rest_call("%s/api/system_node_module_reload"%(SC['nodes'][ret['node']]),{'module':aDict['module']})['data']['result']
+  ret['result'] = rest_call("%s/api/system_node_module_reload"%(gSettings['nodes'][ret['node']]),{'module':aDict['module']})['data']['result']
  return ret
 
 #
@@ -906,7 +908,7 @@ def task_worker(aDict):
   - result
  """
  from zdcp.core.engine import WorkerThread
- t = WorkerThread(aDict,SC, gWorkers)
+ t = WorkerThread(aDict, gSettings, gWorkers)
  return {'id':t.name,'res':'THREAD_STARTED'}
 
 #
@@ -936,11 +938,11 @@ def task_add(aDict):
    aDict['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
   from zdcp.core.engine import WorkerThread
-  t = WorkerThread(aDict,SC,gWorkers)
+  t = WorkerThread(aDict, gSettings, gWorkers)
   ret['id'] = t.name
  else:
   from zdcp.core.common import rest_call
-  ret.update(rest_call("%s/api/task_worker"%SC['nodes'][node],aDict)['data'])
+  ret.update(rest_call("%s/api/task_worker"%gSettings['nodes'][node],aDict)['data'])
  return ret
 
 #
@@ -954,11 +956,11 @@ def task_status(aDict):
  Output:
  """
  ret = {}
- if aDict['node'] == SC['system']['id']:
+ if aDict['node'] == gSettings['system']['id']:
   ret = {t.name:'EXITING' if t.exit else 'RUNNING' for t in gWorkers.values()}
  else:
   from zdcp.core.common import rest_call
-  ret = rest_call("%s/api/task_status"%SC['nodes'][aDict['node']])['data']
+  ret = rest_call("%s/api/task_status"%gSettings['nodes'][aDict['node']])['data']
  return ret
 
 #
@@ -973,11 +975,11 @@ def task_delete(aDict):
  Output:
  """
  ret = {}
- if aDict['node'] == SC['system']['id']:
+ if aDict['node'] == gSettings['system']['id']:
   ret = gWorkers['P%s'%aDict['id']].stop()
  else:
   from zdcp.core.common import rest_call
-  ret = rest_call("%s/api/task_delete"%SC['nodes'][aDict['node']])['data']
+  ret = rest_call("%s/api/task_delete"%gSettings['nodes'][aDict['node']])['data']
  return ret
 
 #
