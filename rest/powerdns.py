@@ -156,14 +156,13 @@ def record_info(aDict):
  op = aDict.pop('op',None)
  with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
   if op == 'update':
-   args = aDict
    if str(id) in ['new','0']:
     from time import strftime
-    args.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
-    ret['insert'] = db.insert_dict('records',args,"ON DUPLICATE KEY UPDATE id = id")
+    aDict.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
+    ret['insert'] = db.insert_dict('records',aDict,"ON DUPLICATE KEY UPDATE id = id")
     id = db.get_last_id() if ret['insert'] > 0 else "new"
    else:
-    ret['update'] = db.update_dict('records',args,"id='%s'"%id)
+    ret['update'] = db.update_dict('records',aDict,"id='%s'"%id)
  
   ret['found'] = (db.do("SELECT records.* FROM records WHERE id = '%s' AND domain_id = '%s'"%(id,aDict['domain_id'])) > 0)
   ret['data']  = db.get_row() if ret['found'] else {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }

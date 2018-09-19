@@ -182,15 +182,14 @@ def settings_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   if op == 'update' and not (aDict['section'] == 'system' or aDict['section'] =='nodes'):
    if not id == 'new':
-    ret['update'] = db.update_dict('settings',args,"id=%s"%id) 
+    ret['update'] = db.update_dict('settings',aDict,"id=%s"%id) 
    else:
-    ret['update'] = db.insert_dict('settings',args)
+    ret['update'] = db.insert_dict('settings',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -378,7 +377,6 @@ def node_list(aDict):
  Output:
  """
  ret = {}
- args = aDict
  with DB() as db:
   ret['count'] = db.do("SELECT * FROM nodes")
   ret['data']  = db.get_rows()
@@ -396,22 +394,21 @@ def node_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
- args.pop('hostname',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
+ aDict.pop('hostname',None)
  try:
-  args['device_id'] = int(args.get('device_id'))
+  aDict['device_id'] = int(aDict.get('device_id'))
  except:
-  args['device_id'] = 'NULL'
+  aDict['device_id'] = 'NULL'
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('nodes',args,'id=%s'%id)
+    ret['update'] = db.update_dict('nodes',aDict,'id=%s'%id)
    else:
-    ret['update'] = db.insert_dict('nodes',args)
+    ret['update'] = db.insert_dict('nodes',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-   SC['nodes'][args['node']] = args['url']
+   SC['nodes'][aDict['node']] = aDict['url']
   if not id == 'new':
    ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
@@ -551,15 +548,14 @@ def resources_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('resources',args,'id=%s'%id)
+    ret['update'] = db.update_dict('resources',aDict,'id=%s'%id)
    else:
-    ret['update'] = db.insert_dict('resources',args)
+    ret['update'] = db.insert_dict('resources',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -617,15 +613,14 @@ def users_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('users',args,"id=%s"%id)
+    ret['update'] = db.update_dict('users',aDict,"id=%s"%id)
    else:
-    ret['update'] = db.insert_dict('users',args)
+    ret['update'] = db.insert_dict('users',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -678,17 +673,16 @@ def server_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   db.do("SELECT node FROM nodes")
   ret['nodes'] = db.get_rows()
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('servers',args,"id=%s"%id)
+    ret['update'] = db.update_dict('servers',aDict,"id=%s"%id)
    else:
-    ret['update'] = db.insert_dict('servers',args)
+    ret['update'] = db.insert_dict('servers',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -793,21 +787,20 @@ def activities_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   db.do("SELECT * FROM activity_types")
   ret['types'] = db.get_rows()
   db.do("SELECT id,alias FROM users ORDER BY alias")
   ret['users'] = db.get_rows()
   if op == 'update':
-   args['date_time'] ="%s %s:00"%(args.pop('date','1970-01-01'),args.pop('time','00:01'))
+   aDict['date_time'] ="%s %s:00"%(aDict.pop('date','1970-01-01'),aDict.pop('time','00:01'))
 
    if not id == 'new':
-    ret['update'] = db.update_dict('activities',args,'id = %s'%id)
+    ret['update'] = db.update_dict('activities',aDict,'id = %s'%id)
    else:
-    ret['update'] = db.insert_dict('activities',args)
+    ret['update'] = db.insert_dict('activities',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -861,15 +854,14 @@ def activities_type_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('activity_types',args,"id=%s"%id)
+    ret['update'] = db.update_dict('activity_types',aDict,"id=%s"%id)
    else:
-    ret['update'] = db.insert_dict('activity_types',args)
+    ret['update'] = db.insert_dict('activity_types',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -937,18 +929,18 @@ def task_add(aDict):
  from json import dumps
  ret = {}
  node = aDict.pop('node',None)
- args = aDict
+ aDict = aDict
  if aDict.get('periodic'):
   with DB() as db:
    db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300)))
-   args['id'] = 'P%s'%db.get_last_id()
+   aDict['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
   from zdcp.core.engine import WorkerThread
-  t = WorkerThread(args,SC,gWorkers)
+  t = WorkerThread(aDict,SC,gWorkers)
   ret['id'] = t.name
  else:
   from zdcp.core.common import rest_call
-  ret.update(rest_call("%s/api/task_worker"%SC['nodes'][node],args)['data'])
+  ret.update(rest_call("%s/api/task_worker"%SC['nodes'][node],aDict)['data'])
  return ret
 
 #
