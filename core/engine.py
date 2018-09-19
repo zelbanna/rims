@@ -79,7 +79,7 @@ class WorkerThread(Thread):
   from zdcp.core.common import log
   try:          
    mod = import_module("zdcp.rest.%s"%self.args['module'])
-   mod.__add_globals__({'SC':self.settings,'gWorkers':self.workers})
+   mod.__add_globals__({'gSettings':self.settings,'gWorkers':self.workers})
    fun = getattr(mod,self.args['func'],lambda x: {'THREAD_NOT_OK'})
   except Exception as e:
    log("WorkerThread(%s) ERROR => %s"%(self.name,str(e)))
@@ -112,10 +112,10 @@ class ApiThread(Thread):
 
  def run(self):
   httpd = HTTPServer(self._context['address'], SessionHandler, False)
-  httpd._context  = self._context
+  httpd._path     = self._context['path']
   httpd._node     = self._context['node']
-  httpd._settings = self._context['globals']['SC']
-  httpd._globals  = self._context['globals']
+  httpd._settings = self._context['gSettings']
+  httpd._workers  = self._context['gWorkers']
   httpd.socket    = self._context['socket']
   httpd._t_id     = self.name
   httpd.server_bind = self.server_close = lambda self: None
@@ -129,17 +129,13 @@ class SessionHandler(BaseHTTPRequestHandler):
  def __init__(self, *args, **kwargs):
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
   self.timeout  = 60
+  self.headers  = None
 
  def log_api(self,aAPI,aArgs,aExtra):
   try:
    with open(self.server._settings['logs']['rest'], 'a') as f:
     f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._node, aExtra.strip())))
   except: pass
-
- def do_HEAD(self):
-  self.send_response(200)
-  self.send_header("Content-type", "text/html")
-  self.end_headers()
 
  def do_GET(self):
   self.route()
@@ -150,7 +146,8 @@ class SessionHandler(BaseHTTPRequestHandler):
  def route(self):
   """ Route request to the right function """
   path,_,query = (self.path.lstrip('/')).partition('/')
-  body, headers = 'null',{'X-Thread':self.server._t_id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
+  body = 'null'
+  self.headers = {'X-Thread':self.server._t_id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
   if path == 'site':
    api,_,get = query.partition('?')
    (mod,_,fun)    = api.partition('_')
@@ -186,7 +183,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      (k,_,v) = part.partition('=')
      extras[k] = v
    headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*"})
-   headers['X-Node'] = extras.get('node',self.server._context['node'] if not mod == 'system' else 'master')
+   headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
    try:
     try:
      length = int(self.headers.getheader('content-length'))
@@ -195,7 +192,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     self.log_api(api,dumps(args),get)
     if headers['X-Node'] == self.server._node:
      module = import_module("zdcp.rest.%s"%mod)
-     module.__add_globals__(self.server._globals)
+     modile.__add_globals__({'iSession':self,'gWorkers':self._workers,'gSettings':self._settings})
      body = dumps(getattr(module,fun,None)(args))
     else:
      req  = Request("%s/api/%s"%(self.server._settings['nodes'][headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
@@ -226,7 +223,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      param,_,file = query.partition('/')
      fullpath = ospath.join(self.server._settings['files'][param],file)
     else:
-     fullpath = ospath.join(self.server._context['path'],path,query)
+     fullpath = ospath.join(self.server._path,path,query)
     if fullpath.endswith("/"):
      headers['Content-type']='text/html; charset=utf-8'
      _, _, filelist = next(walk(fullpath), (None, None, []))
