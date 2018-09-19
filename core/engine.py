@@ -79,7 +79,7 @@ class WorkerThread(Thread):
   from zdcp.core.common import log
   try:          
    mod = import_module("zdcp.rest.%s"%self.args['module'])
-   mod.__add_globals__({'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':self.settings,'workers':self.workers})
+   mod.__add_globals__({'SC':self.settings,'gWorkers':self.workers})
    fun = getattr(mod,self.args['func'],lambda x: {'THREAD_NOT_OK'})
   except Exception as e:
    log("WorkerThread(%s) ERROR => %s"%(self.name,str(e)))

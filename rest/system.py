@@ -289,6 +289,8 @@ def settings_save(aDict):
  Output:
  """
  from zdcp.core.common import rest_call
+ from json import loads,dumps
+ from os import path as ospath 
  ret = {'config_file':SC['system']['config_file']}
  try:
   SC.clear()
@@ -912,7 +914,7 @@ def task_worker(aDict):
   - result
  """
  from zdcp.core.engine import WorkerThread
- t = WorkerThread(aDict,SC, workers)
+ t = WorkerThread(aDict,SC, gWorkers)
  return {'id':t.name,'res':'THREAD_STARTED'}
 
 #
@@ -932,6 +934,7 @@ def task_add(aDict):
  Output:
   - result. Boolean
  """
+ from json import dumps
  ret = {}
  node = aDict.pop('node',None)
  args = aDict
@@ -941,7 +944,7 @@ def task_add(aDict):
    args['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
   from zdcp.core.engine import WorkerThread
-  t = WorkerThread(args,SC,workers)
+  t = WorkerThread(args,SC,gWorkers)
   ret['id'] = t.name
  else:
   from zdcp.core.common import rest_call
@@ -960,7 +963,7 @@ def task_status(aDict):
  """
  ret = {}
  if aDict['node'] == SC['system']['id']:
-  ret = {t.name:'EXITING' if t.exit else 'RUNNING' for t in workers.values()}
+  ret = {t.name:'EXITING' if t.exit else 'RUNNING' for t in gWorkers.values()}
  else:
   from zdcp.core.common import rest_call
   ret = rest_call("%s/api/task_status"%SC['nodes'][aDict['node']])['data']
@@ -979,7 +982,7 @@ def task_delete(aDict):
  """
  ret = {}
  if aDict['node'] == SC['system']['id']:
-  ret = workers['P%s'%aDict['id']].stop()
+  ret = gWorkers['P%s'%aDict['id']].stop()
  else:
   from zdcp.core.common import rest_call
   ret = rest_call("%s/api/task_delete"%SC['nodes'][aDict['node']])['data']
@@ -1020,6 +1023,6 @@ def task_state(aDict):
   - state (boolean)
  """
  ret = {}
- t = workers[aDict['id']]
+ t = gWorkers[aDict['id']]
  ret['result'] = t.release() if aDict['active'] else t.pause(False) 
  return ret

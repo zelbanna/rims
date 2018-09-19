@@ -11,8 +11,7 @@ __status__ = "Production"
 
 
 from os import path as ospath
-from json import loads, dumps
-from importlib import import_module
+from json import loads
 from time import sleep
 from sys import path as syspath, exit
 basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
@@ -33,7 +32,7 @@ sock.listen(5)
 
 # Context vars
 workers = {}
-globals = {'ospath':ospath,'loads':loads,'dumps':dumps,'import_module':import_module,'SC':SC,'workers':workers}
+globals = {'SC':SC,'gWorkers':workers}
 context = {'node':SC['system']['id'],'socket':sock,'address':addr,'path':ospath.join(basepath,'zdcp'),'globals':globals}
 
 # Workers and API threads

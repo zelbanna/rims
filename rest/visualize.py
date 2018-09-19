@@ -53,6 +53,7 @@ def show(aDict):
   - edges
   - nodes
  """
+ from json import loads
  ret = {}
  with DB() as db:
   search = "id = %(id)s"%aDict if aDict.get('id') else "name = '%(name)s'"%aDict
@@ -90,6 +91,7 @@ def network(aDict):
   - nodes
   - edges
  """
+ from json import dumps, loads
  args = dict(aDict)
  op   = args.pop('op',None)
  ret = {'id':args.get('id',0),'type':args.pop('type','map')}

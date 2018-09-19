@@ -74,6 +74,7 @@ def rest_explore(aDict):
 
  Output:
  """
+ from importlib import import_module
  from types import FunctionType as function
  def __analyze(aFile):
   data = {'api':aFile, 'functions':[]}
@@ -87,7 +88,7 @@ def rest_explore(aDict):
  if aDict.get('api'):
   ret['data'].append(__analyze(aDict.get('api')))
  else:
-  from os import listdir
+  from os import listdir, path as ospath
   restdir = ospath.abspath(ospath.join(ospath.dirname(__file__)))
   for restfile in listdir(restdir):
    if restfile[-3:] == '.py':
@@ -105,6 +106,7 @@ def rest_information(aDict):
 
  Output:
  """
+ from importlib import import_module
  mod = import_module("zdcp.rest.%s"%(aDict['api']))
  fun = getattr(mod,aDict['function'],None)
  return {'api':aDict['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}
@@ -173,7 +175,7 @@ def file_list(aDict):
   - 'path' relative the api to access the files
 
  """
- from os import listdir
+ from os import listdir, path as ospath
  ret = {'files':[]}
  try:
   if aDict.get('fullpath'):

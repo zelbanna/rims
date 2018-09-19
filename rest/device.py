@@ -210,6 +210,7 @@ def extended(aDict):
 
   # Update PDU with hostname and PEM info on the right pdu slot and unit
   if operation == 'update' and ret['racked']:
+   from importlib import import_module
    for pem in ret['pems']:
     if pem['pdu_id']:
      db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %i"%(pem['pdu_id']))
@@ -495,6 +496,7 @@ def function(aDict):
 
  Output:
  """
+ from importlib import import_module
  ret = {}
  try:
   module = import_module("zdcp.devices.%s"%(aDict['type']))
@@ -516,6 +518,7 @@ def configuration_template(aDict):
 
  Output:
  """
+ from importlib import import_module
  ret = {}
  with DB() as db:
   db.do("SELECT ine.mask,INET_NTOA(ine.gateway) AS gateway,INET_NTOA(ine.network) AS network, INET_NTOA(ia.ip) AS ip, hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aDict['id'])
@@ -705,6 +708,7 @@ def interface_discover(aDict):
 
  Output:
  """
+ from importlib import import_module
  ret = {'insert':0,'update':0,'delete':0}
  with DB() as db:
   db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, device_types.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aDict['device'])

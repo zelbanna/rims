@@ -219,7 +219,7 @@ def heat_templates(aDict):
 
  Output:
  """
- from os import listdir
+ from os import listdir, path as ospath
  ret = {'result':'OK','templates':[]}
  with DB() as db:
   db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
@@ -245,6 +245,8 @@ def heat_content(aDict):
 
  Output:
  """
+ from os import path as ospath
+ from json import loads
  ret = {'result':'OK','template':None}
  with DB() as db:
   db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
@@ -275,6 +277,8 @@ def heat_instantiate(aDict):
 
  Output:
  """
+ from json import loads
+ from os import path as ospath
  ret = {}
  args = {}
  try:

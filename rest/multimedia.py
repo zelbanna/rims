@@ -4,6 +4,7 @@ __version__ = "4.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
+from os import remove, rmdir, walk, path as ospath, devnull, chmod, rename
 #
 #
 def list(aDict):
@@ -13,7 +14,6 @@ def list(aDict):
   
  Output:
  """
- from os import walk
  ret = {'files':[]}
  try:
   ret['root'] = SC['multimedia']['torrent_directory']
@@ -34,7 +34,6 @@ def cleanup(aDict):
   
  Output:
  """
- from os import walk, remove, rmdir
  ret = {'root':SC['multimedia']['torrent_directory'],'items':[]}
  for path,dirs,files in walk(ret['root']):
   for item in files:
@@ -79,7 +78,6 @@ def delete(aDict):
   
  Output:
  """
- from os import remove
  ret = {'res':'NOT_OK'}
  try: remove(ospath.join(aDict['path'],aDict['file']))
  except Exception as err: ret['error'] = str(err)
@@ -259,7 +257,6 @@ def process(aDict):
  """
  from time import time
  from subprocess import check_call, call
- from os import devnull,chmod,rename,remove
  from zdcp.core.common import log
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'res':'NOT_OK','error':None}
@@ -364,7 +361,6 @@ def mkv_delay_set(aDict):
  """
  from time import time
  from subprocess import Popen, PIPE, check_call, call, STDOUT
- from os import devnull,rename,remove
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret = {'res':'NOT_OK','timestamp':int(time())}
 
