@@ -60,7 +60,6 @@ def garbage_collect(aDict):
 
  Output:
  """
- from zdcp.core.common import log
  from gc import collect
  return {'collected':collect()}
 
