@@ -53,6 +53,7 @@ def info(aDict):
   elif op == 'update' and ret['id']:
    aDict.pop('state',None)
    aDict['vm'] = aDict.get('vm',0)
+   aDict['shutdown'] = aDict.get('shutdown',0)
    if not aDict.get('comment'):
     aDict['comment'] = 'NULL'
    if not aDict.get('url'):

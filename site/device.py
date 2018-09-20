@@ -157,7 +157,7 @@ def info(aWeb):
  aWeb.wr("</DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Model: </DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=model VALUE='%s'></DIV></DIV>"%(dev['info']['model']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>S/N: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=serial VALUE='%s'></DIV></DIV>"%(dev['info']['serial']))
- aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Shutdown:</DIV><DIV CLASS=td><INPUT NAME=shutdown TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['shutdown'] == 1 else ""))
  aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("<!-- Rack Info -->")
  if dev['racked'] and not dev['info']['type_base'] == 'pdu':
