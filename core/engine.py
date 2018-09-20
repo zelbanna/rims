@@ -257,12 +257,14 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._body = '"NOT_OK"'
 
   elif path == 'register':
+   """ Register a new node, using node(name), port and system, assume for now that system nodes runs http and not https(!) """
    from zdcp.core.common import DB
    self._headers['Content-type']='application/json; charset=utf-8'
    try:
     length = int(self.headers.getheader('content-length'))
     args = loads(self.rfile.read(length)) if length > 0 else {}
-    params = {'node':args['node'],'url':args['url'],'system':args.get('system','0')}
+    params = {'node':args['node'],'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
+    print params
     with DB() as db:
      update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
     self._body = '{"update":%s,"success":true}'%update

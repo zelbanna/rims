@@ -45,13 +45,9 @@
             "value": "master"
         },
         "master": {
-            "description": "Master node interface from local node PoV",
+            "description": "Master node's globally reachable interface",
             "value": "http://127.0.0.1:8080"
         },
-        "node": {
-            "description": "Local device's globally reachable node interface",
-            "value": "http://x.y.z.w:8080"
-        }
         "port": {
             "description": "Engine port to register service on (aka the node)",
             "value": 8080
