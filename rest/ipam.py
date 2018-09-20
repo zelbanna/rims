@@ -66,7 +66,7 @@ def address_status(aDict):
 
  print "network_check(%s)"%(aDict['subnet_id'])
  for n in [1,2]:
-  changed = ",".join([str(dev['id']) for dev in aDict['address_listentries if dev['new'] != dev['old'] and dev['new'] == n])
+  changed = ",".join([str(dev['id']) for dev in aDict['address_list'] if dev['new'] != dev['old'] and dev['new'] == n])
   if len(changed) > 0:
    print "%s -> %s"%(n,changed)
    #with DB() as db:
