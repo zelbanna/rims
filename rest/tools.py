@@ -62,7 +62,6 @@ def garbage_collect(aDict):
  """
  from zdcp.core.common import log
  from gc import collect
- log("Garbage Collection performed")
  return {'collected':collect()}
 
 ################################ REST tools ###############################
