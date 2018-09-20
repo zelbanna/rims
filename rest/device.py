@@ -699,11 +699,12 @@ def interface_link_advanced(aDict):
 #
 #
 def interface_discover(aDict):
- """ Discovery function for detecting interfaces. Will try SNMP to detect all interfaces first.
+ """ Discovery function for detecting interfaces. Will try SNMP to detect all interfaces (in state up) first.
 
  Args:
   - device (required)
   - cleanup (optional, boolean). Deletes non-existing interfaces (except manually added) by default
+  - state (optional). 'up'(default)/'all'
 
  Output:
  """
@@ -729,6 +730,7 @@ def interface_discover(aDict):
     elif aDict.get('cleanup',True) == True:
      ret['delete'] += db.do("DELETE FROM device_interfaces WHERE id = %s AND manual = 0"%(con['id']))
    for key, entry in interfaces.iteritems():
-    args = {'device':int(aDict['device']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key}
-    ret['insert'] += db.insert_dict('device_interfaces',args)
+    if entry['state'] == 'up' or aDict.get('state') == 'all':
+     args = {'device':int(aDict['device']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key}
+     ret['insert'] += db.insert_dict('device_interfaces',args)
  return ret
