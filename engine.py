@@ -52,7 +52,7 @@ api_threads = [ApiThread(n,context) for n in range(threadcount)]
 while len(api_threads) > 0:
  # Check if threads are still alive...
  api_threads = [a for a in api_threads if a.is_alive()]
- sleep(10)
+ sleep(86400)
 sock.close()
 print "ZDCP shutdown - no active threads(!)"
 exit(1)
