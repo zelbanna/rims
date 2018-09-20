@@ -73,7 +73,7 @@ def info(aDict):
    ret['info'] = db.get_row()
    ret['id'] = ret['info'].pop('id',None)
    ret['ip'] = ret['info'].pop('ip',None)
-   ret['state'] = {0:'grey',1:'green',2:'red'}[ret['info']['state']]
+   ret['state'] = {0:'grey',1:'green',2:'red'}.get(ret['info']['state'],'orange')
    # Pick login name from settings
    db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'netconf'")
    netconf = db.get_dict('parameter')

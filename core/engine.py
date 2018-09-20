@@ -38,7 +38,7 @@ class WorkerThread(Thread):
 
   Workers:
    - workers dictionary to register oneself upon
-   
+
   """
   Thread.__init__(self)
   if aArgs.get('id'):
@@ -76,7 +76,7 @@ class WorkerThread(Thread):
 
  def run(self):
   from zdcp.core.common import log
-  try:          
+  try:
    mod = import_module("zdcp.rest.%s"%self.args['module'])
    mod.__add_globals__({'gSettings':self.settings,'gWorkers':self.workers})
    fun = getattr(mod,self.args['func'],lambda x: {'THREAD_NOT_OK'})
@@ -159,12 +159,12 @@ class SessionHandler(BaseHTTPRequestHandler):
    (mod,_,fun)    = api.partition('_')
    stream = Stream(self,get)
    self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200})
-   # if True:
-   try:
+   if True:
+   #try:
     module = import_module("zdcp.site." + mod)
     getattr(module,fun,None)(stream)
-   # else:
-   except Exception as e:
+   else:
+   #except Exception as e:
     stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
     try:
      stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
