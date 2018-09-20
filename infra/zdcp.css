@@ -71,7 +71,7 @@ div.table .tbody .tr .td { display:table-cell; vertical-align: middle; overflow:
 div.table .tfoot {     display: table-footer-group; }
 
 article.info div.td:first-child { font-weight:bold; }
-article.info div.td[title]:first-child { text-decoration-line: underline; text-decoration-style:dashed; text-decoration-skip: edges box-decoration; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
+article.info div.td[title]:first-child { text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
 article.info div.td:last-child { width:100%; }
 div.td > select,input[type='text'],input[type='url'] { width:99%; -webkit-appearance: none; }
 div.td > input:-moz-read-only { font-style:italic; }
