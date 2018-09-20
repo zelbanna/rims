@@ -6,8 +6,6 @@ __add_globals__ = lambda x: globals().update(x)
 
 from zdcp.core.common import DB
 
-
-##################################### Networks ####################################
 #
 #
 def status(aDict):
@@ -36,67 +34,7 @@ def status(aDict):
      ret['remote'].append((res['id'],sub['id']))
  return ret
 
-#
-#
-def address_status_check(aDict):
- """ Process a list of IDs, IP addresses and states {id,'ip',state} and perform a ping. State values are: 0 (not seen), 1(up), 2(down).
-  If state has changed this will be reported back. This function is node independent.
-
- Args:
-  - subnet_id
-  - address_list (required)
-
- Output:
- """
- from threading import Thread, BoundedSemaphore
- from os import system
-
- def __pinger(aDev, aSema):
-  try:    aDev['new'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip'])) == 0) else 2
-  except: aDev['new'] = None
-  finally:aSema.release()
-
- args = {}
- sema = BoundedSemaphore(20)
- for dev in aDict['address_list']:
-  sema.acquire()
-  t = Thread(target = __pinger, args=[dev, sema])
-  t.start()
- for i in range(20):
-  sema.acquire()
-
- for n in [1,2]:
-  changed = list(dev['id'] for dev in aDict['address_list'] if (dev['new'] != dev['state'] and dev['new'] == n))
-  if len(changed) > 0:
-   args['up' if n == 1 else 'down'] = changed
- if len(args.keys()) > 0:
-  if gSettings['system']['id'] == 'master':
-   address_status_report(args)
-  else:
-   rest_call("%s/api/ipam_address_status_report"%gSettings['system']['master'],args)
-  return {'result':'CHECK_COMPLETED'}
-
-#
-#
-def address_status_report(aDict):
- """ Updates IP addresses' status
-
- Args:
-  - up (optional).   list of id that changed to up
-  - down (optional). list of id that changed to down
-
- Output:
-  - result
- """
- ret = {}
- with DB() as db:
-  for chg in [('up',1),('down',2)]:
-   change = aDict.get(chg[0])
-   if change:
-    changed = ",".join(map(str,change))
-    ret[chg[0]] = db.do("UPDATE ipam_addresses SET state = %s WHERE ID IN (%s)"%(chg[1],changed))
- return ret
-
+##################################### Networks ####################################
 #
 #
 def network_list(aDict):
@@ -289,7 +227,7 @@ def network_discrepancy(aDict):
   ret['entries'] = db.get_rows()
  return ret
 
-################################## Addresses #############################
+#################################### DHCP ###############################
 #
 #
 def server_leases(aDict):
@@ -441,3 +379,64 @@ def address_from_id(aDict):
   ret = db.get_row()
  return ret
 
+#
+#
+def address_status_check(aDict):
+ """ Process a list of IDs, IP addresses and states {id,'ip',state} and perform a ping. State values are: 0 (not seen), 1(up), 2(down).
+  If state has changed this will be reported back. This function is node independent.
+
+ Args:
+  - subnet_id
+  - address_list (required)
+
+ Output:
+ """
+ from threading import Thread, BoundedSemaphore
+ from os import system
+
+ def __pinger(aDev, aSema):
+  try:    aDev['new'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip'])) == 0) else 2
+  except: aDev['new'] = None
+  finally:aSema.release()
+
+ args = {}
+ sema = BoundedSemaphore(20)
+ for dev in aDict['address_list']:
+  sema.acquire()
+  t = Thread(target = __pinger, args=[dev, sema])
+  t.start()
+ for i in range(20):
+  sema.acquire()
+
+ for n in [1,2]:
+  changed = list(dev['id'] for dev in aDict['address_list'] if (dev['new'] != dev['state'] and dev['new'] == n))
+  if len(changed) > 0:
+   args['up' if n == 1 else 'down'] = changed
+ if len(args.keys()) > 0:
+  if gSettings['system']['id'] == 'master':
+   address_status_report(args)
+  else:
+   from zdcp.core.common import rest_call
+   rest_call("%s/api/ipam_address_status_report"%gSettings['system']['master'],args)
+  return {'result':'CHECK_COMPLETED'}
+
+#
+#
+def address_status_report(aDict):
+ """ Updates IP addresses' status
+
+ Args:
+  - up (optional).   list of id that changed to up
+  - down (optional). list of id that changed to down
+
+ Output:
+  - result
+ """
+ ret = {}
+ with DB() as db:
+  for chg in [('up',1),('down',2)]:
+   change = aDict.get(chg[0])
+   if change:
+    changed = ",".join(map(str,change))
+    ret[chg[0]] = db.do("UPDATE ipam_addresses SET state = %s WHERE ID IN (%s)"%(chg[1],changed))
+ return ret
