@@ -159,12 +159,12 @@ class SessionHandler(BaseHTTPRequestHandler):
    (mod,_,fun)    = api.partition('_')
    stream = Stream(self,get)
    self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200})
-   if True:
-   #try:
+   # if True:
+   try:
     module = import_module("zdcp.site." + mod)
     getattr(module,fun,None)(stream)
-   else:
-   #except Exception as e:
+   #else:
+   except Exception as e:
     stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
     try:
      stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
@@ -190,7 +190,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      extras[k] = v
    self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*"})
    self._headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
-   try: 
+   try:
     length = int(self.headers.getheader('content-length'))
     args = loads(self.rfile.read(length)) if length > 0 else {}
    except: args = {}
