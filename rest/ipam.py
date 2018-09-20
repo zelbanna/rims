@@ -27,7 +27,7 @@ def status(aDict):
   for sub in subnets:
    count = db.do("SELECT id,INET_NTOA(ip) AS ip, state FROM ipam_addresses WHERE network_id = %s ORDER BY ip"%sub['id'])
    if count > 0:
-    args = {'module':'ipam','func':'address_status','args':{'address_list':db.get_rows(),'subnet_id':sub['id']},'output':False}
+    args = {'module':'ipam','func':'address_status_check','args':{'address_list':db.get_rows(),'subnet_id':sub['id']},'output':False}
     if not sub['node'] or sub['node'] == 'master':
      t = WorkerThread(args,gSettings,gWorkers)
      ret['local'].append((t.name,sub['id']))
@@ -38,7 +38,7 @@ def status(aDict):
 
 #
 #
-def address_status(aDict):
+def address_status_check(aDict):
  """ Process a list of IDs, IP addresses and states {id,'ip',state} and perform a ping. State values are: 0 (not seen), 1(up), 2(down).
   If state has changed this will be reported back. This function is node independent.
 
@@ -56,6 +56,7 @@ def address_status(aDict):
   except: aDev['new'] = None
   finally:aSema.release()
 
+ args = {}
  sema = BoundedSemaphore(20)
  for dev in aDict['address_list']:
   sema.acquire()
@@ -64,28 +65,37 @@ def address_status(aDict):
  for i in range(20):
   sema.acquire()
 
- print "network_check(%s)"%(aDict['subnet_id'])
  for n in [1,2]:
-  changed = ",".join([str(dev['id']) for dev in aDict['address_list'] if dev['new'] != dev['state'] and dev['new'] == n])
+  changed = list(dev['id'] for dev in aDict['address_list'] if (dev['new'] != dev['state'] and dev['new'] == n))
   if len(changed) > 0:
-   print "%s -> %s"%(n,changed)
-   #with DB() as db:
-   # db.do("UPDATE ipam_addresses SET state = %i WHERE id IN (%s)"%(n,changed))
- return None
+   args['up' if n == 1 else 'down'] = changed
+ if len(args.keys()) > 0:
+  if gSettings['system']['id'] == 'master':
+   address_status_report(args)
+  else:
+   rest_call("%s/api/ipam_address_status_report"%gSettings['system']['master'],args)
+  return {'result':'CHECK_COMPLETED'}
 
 #
 #
-def network_report(aDict):
+def address_status_report(aDict):
  """ Updates IP addresses' status
 
  Args:
-  - up.   list of id that changed to up
-  - down. list of id that changed to down
+  - up (optional).   list of id that changed to up
+  - down (optional). list of id that changed to down
 
  Output:
   - result
  """
- return None
+ ret = {}
+ with DB() as db:
+  for chg in [('up',1),('down',2)]:
+   change = aDict.get(chg[0])
+   if change:
+    changed = ",".join(map(str,change))
+    ret[chg[0]] = db.do("UPDATE ipam_addresses SET state = %s WHERE ID IN (%s)"%(chg[1],changed))
+ return ret
 
 #
 #

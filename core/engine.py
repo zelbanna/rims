@@ -334,7 +334,7 @@ class Stream(object):
   return "&".join(["%s=%s"%(k,v) for k,v in self._form.iteritems() if not k in aExcept])
 
  def button(self,aImg,**kwargs):
-  return " ".join(["<A CLASS='btn z-op small'"," ".join(["%s='%s'"%(key,value) for key,value in kwargs.iteritems()]),"><IMG SRC='../images/btn-%s.png'></A>"%(aImg)])
+  return " ".join(["<A CLASS='btn z-op small'"," ".join(list("%s='%s'"%(key,value) for key,value in kwargs.iteritems())),"><IMG SRC='../images/btn-%s.png'></A>"%(aImg)])
 
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
