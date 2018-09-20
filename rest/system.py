@@ -289,7 +289,7 @@ def settings_save(aDict):
  """
  from zdcp.core.common import rest_call
  from json import loads,dumps
- from os import path as ospath 
+ from os import path as ospath
  ret = {'config_file':gSettings['system']['config_file']}
  try:
   gSettings.clear()

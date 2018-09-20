@@ -62,9 +62,11 @@ def sync(aDict):
  Output:
  """
  from zdcp.core.common import node_call
+ from time import localtime, strftime
  entries = node_call('master','device','server_macs',{'id':aDict['id']})
  # Create file
  with open(gSettings['iscdhcp']['static'],'w') as config_file:
+  config_file.write("# Created: %s"%( strftime('%Y-%m-%d %H:%M:%S', localtime()) ))
   for entry in entries['data']:
    config_file.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}, Network: {4}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id'],entry['network']))
 
