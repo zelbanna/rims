@@ -153,7 +153,7 @@ def settings_list(aDict):
 
  Output:
  """
- ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',SC['system']['id']) }
+ ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',gSettings['system']['id']) }
  if aDict.get('section'):
   filter = "AND section = '%s'"%aDict.get('section')
   ret['section'] = aDict.get('section')
@@ -182,15 +182,14 @@ def settings_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   if op == 'update' and not (aDict['section'] == 'system' or aDict['section'] =='nodes'):
    if not id == 'new':
-    ret['update'] = db.update_dict('settings',args,"id=%s"%id) 
+    ret['update'] = db.update_dict('settings',aDict,"id=%s"%id) 
    else:
-    ret['update'] = db.insert_dict('settings',args)
+    ret['update'] = db.insert_dict('settings',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -211,7 +210,7 @@ def settings_parameter(aDict):
 
  Output:
  """
- try: ret = {'value':SC[aDict['section']][aDict['parameter']]}
+ try: ret = {'value':gSettings[aDict['section']][aDict['parameter']]}
  except: ret = {'value':None }
  return ret
 
@@ -289,19 +288,21 @@ def settings_save(aDict):
  Output:
  """
  from zdcp.core.common import rest_call
- ret = {'config_file':SC['system']['config_file']}
+ from json import loads,dumps
+ from os import path as ospath 
+ ret = {'config_file':gSettings['system']['config_file']}
  try:
-  SC.clear()
+  gSettings.clear()
   with open(ret['config_file']) as sfile:
    temp = loads(sfile.read())
   for section,content in temp.iteritems():
    for key,params in content.iteritems():
-    if not SC.get(section):
-     SC[section] = {}
-    SC[section][key] = params['value']
-  SC['system']['config_file'] = ret['config_file']
+    if not gSettings.get(section):
+     gSettings[section] = {}
+    gSettings[section][key] = params['value']
+  gSettings['system']['config_file'] = ret['config_file']
 
-  if SC['system']['id'] == 'master':
+  if gSettings['system']['id'] == 'master':
    with DB() as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
@@ -309,20 +310,22 @@ def settings_save(aDict):
     data.extend(db.get_rows())
    for setting in data:
     section = setting.pop('section')
-    if not SC.get(section):
-     SC[section] = {}
-    SC[section][setting['parameter']] = setting['value']
+    if not gSettings.get(section):
+     gSettings[section] = {}
+    gSettings[section][setting['parameter']] = setting['value']
   else:
-   try: master = rest_call("%s/api/system_settings_fetch"%SC['system']['master'],{'node':SC['system']['id']})['data']
+   try: master = rest_call("%s/api/system_settings_fetch"%gSettings['system']['master'],{'node':gSettings['system']['id']})['data']
    except: pass
    else:
     for section,content in master.iteritems():
-     if SC.get(section): SC[section].update(content)
-     else: SC[section] = content
+     if gSettings.get(section):
+      gSettings[section].update(content)
+     else:
+      gSettings[section] = content
 
   container = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','Settings.py'))
   with open(container,'w') as f:
-   f.write("SC=%s\n"%dumps(SC))
+   f.write("Settings=%s\n"%dumps(gSettings))
   ret['result'] = 'OK'
  except Exception as e:
   ret['result'] = 'NOT_OK'
@@ -338,34 +341,9 @@ def settings_container(aDict):
 
  Output:
  """
- return SC
+ return gSettings
 
 ################################################# NODE ##############################################
-#
-# A node represent a system entity that can run REST commands remote (or locally),
-# - system indicates it was registered and should not be deletable
-# - device_id: connected to a device in the device/IPAM DB:s
-#
-
-
-#
-#
-def node_register(aDict):
- """Function docstring for register TBD
-
- Args:
-  - node (required)
-  - url (required)
-  - system (optional)
-
- Output:
- """
- ret = {}
- args = {'node':aDict['node'],'url':aDict['url'],'system':aDict.get('system','0')}
- with DB() as db:
-  ret['update'] = db.insert_dict('nodes',args,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%args)
- return ret
-
 #
 #
 def node_list(aDict):
@@ -376,7 +354,6 @@ def node_list(aDict):
  Output:
  """
  ret = {}
- args = aDict
  with DB() as db:
   ret['count'] = db.do("SELECT * FROM nodes")
   ret['data']  = db.get_rows()
@@ -394,27 +371,26 @@ def node_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
- args.pop('hostname',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
+ aDict.pop('hostname',None)
  try:
-  args['device_id'] = int(args.get('device_id'))
+  aDict['device_id'] = int(aDict.get('device_id'))
  except:
-  args['device_id'] = 'NULL'
+  aDict['device_id'] = 'NULL'
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('nodes',args,'id=%s'%id)
+    ret['update'] = db.update_dict('nodes',aDict,'id=%s'%id)
    else:
-    ret['update'] = db.insert_dict('nodes',args)
+    ret['update'] = db.insert_dict('nodes',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-   SC['nodes'][args['node']] = args['url']
+   gSettings['nodes'][aDict['node']] = aDict['url']
   if not id == 'new':
    ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':None}
+   ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':None,'system':0}
  return ret
 
 #
@@ -430,7 +406,7 @@ def node_delete(aDict):
  ret = {}
  with DB() as db:
   if db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aDict['id']) > 0:
-   SC['nodes'].pop(db.get_val('node'),None)
+   gSettings['nodes'].pop(db.get_val('node'),None)
    ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s'"%aDict['id']) == 1)
   else:
    ret['delete'] = False 
@@ -457,10 +433,10 @@ def node_module_reload(aDict):
   with DB() as db:
    db.do("SELECT node FROM nodes WHERE id = %s"%aDict['id'])
    ret['node'] = db.get_val('node')
- if ret['node'] == SC['system']['id']:
+ if ret['node'] == gSettings['system']['id']:
   ret['result'] = 'module reloaded'
  else:
-  ret['result'] = rest_call("%s/api/system_node_module_reload"%(SC['nodes'][ret['node']]),{'module':aDict['module']})['data']['result']
+  ret['result'] = rest_call("%s/api/system_node_module_reload"%(gSettings['nodes'][ret['node']]),{'module':aDict['module']})['data']['result']
  return ret
 
 #
@@ -549,15 +525,14 @@ def resources_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('resources',args,'id=%s'%id)
+    ret['update'] = db.update_dict('resources',aDict,'id=%s'%id)
    else:
-    ret['update'] = db.insert_dict('resources',args)
+    ret['update'] = db.insert_dict('resources',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -615,15 +590,14 @@ def users_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('users',args,"id=%s"%id)
+    ret['update'] = db.update_dict('users',aDict,"id=%s"%id)
    else:
-    ret['update'] = db.insert_dict('users',args)
+    ret['update'] = db.insert_dict('users',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -676,17 +650,16 @@ def server_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   db.do("SELECT node FROM nodes")
   ret['nodes'] = db.get_rows()
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('servers',args,"id=%s"%id)
+    ret['update'] = db.update_dict('servers',aDict,"id=%s"%id)
    else:
-    ret['update'] = db.insert_dict('servers',args)
+    ret['update'] = db.insert_dict('servers',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -791,21 +764,20 @@ def activities_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   db.do("SELECT * FROM activity_types")
   ret['types'] = db.get_rows()
   db.do("SELECT id,alias FROM users ORDER BY alias")
   ret['users'] = db.get_rows()
   if op == 'update':
-   args['date_time'] ="%s %s:00"%(args.pop('date','1970-01-01'),args.pop('time','00:01'))
+   aDict['date_time'] ="%s %s:00"%(aDict.pop('date','1970-01-01'),aDict.pop('time','00:01'))
 
    if not id == 'new':
-    ret['update'] = db.update_dict('activities',args,'id = %s'%id)
+    ret['update'] = db.update_dict('activities',aDict,'id = %s'%id)
    else:
-    ret['update'] = db.insert_dict('activities',args)
+    ret['update'] = db.insert_dict('activities',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -859,15 +831,14 @@ def activities_type_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('activity_types',args,"id=%s"%id)
+    ret['update'] = db.update_dict('activity_types',aDict,"id=%s"%id)
    else:
-    ret['update'] = db.insert_dict('activity_types',args)
+    ret['update'] = db.insert_dict('activity_types',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -900,11 +871,11 @@ def task_worker(aDict):
  """Function instantiate a worker thread with arguments and bind to global worker dictionary
 
  Args:
-  - id (required). id of task to execute
+  - id (optional)
   - module (required)
   - func (required)
   - args (required)
-  - type (required)
+  - periodic (optional)
   - frequency (optional required)
   - output (optional)
 
@@ -912,8 +883,8 @@ def task_worker(aDict):
   - result
  """
  from zdcp.core.engine import WorkerThread
- t = WorkerThread(aDict,SC, workers)
- return {'id':t.name}
+ t = WorkerThread(aDict, gSettings, gWorkers)
+ return {'id':t.name,'res':'THREAD_STARTED'}
 
 #
 #
@@ -932,20 +903,21 @@ def task_add(aDict):
  Output:
   - result. Boolean
  """
+ from json import dumps
  ret = {}
  node = aDict.pop('node',None)
- args = aDict
+ aDict = aDict
  if aDict.get('periodic'):
   with DB() as db:
    db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300)))
-   args['id'] = 'P%s'%db.get_last_id()
+   aDict['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
   from zdcp.core.engine import WorkerThread
-  t = WorkerThread(args,SC,workers)
+  t = WorkerThread(aDict, gSettings, gWorkers)
   ret['id'] = t.name
  else:
   from zdcp.core.common import rest_call
-  ret.update(rest_call("%s/api/task_worker"%SC['nodes'][node],args)['data'])
+  ret.update(rest_call("%s/api/task_worker"%gSettings['nodes'][node],aDict)['data'])
  return ret
 
 #
@@ -959,11 +931,11 @@ def task_status(aDict):
  Output:
  """
  ret = {}
- if aDict['node'] == SC['system']['id']:
-  ret = {t.name:'EXITING' if t.exit else 'RUNNING' for t in workers.values()}
+ if aDict['node'] == gSettings['system']['id']:
+  ret = {t.name:'EXITING' if t.exit else 'RUNNING' for t in gWorkers.values()}
  else:
   from zdcp.core.common import rest_call
-  ret = rest_call("%s/api/task_status"%SC['nodes'][aDict['node']])['data']
+  ret = rest_call("%s/api/task_status"%gSettings['nodes'][aDict['node']])['data']
  return ret
 
 #
@@ -978,11 +950,11 @@ def task_delete(aDict):
  Output:
  """
  ret = {}
- if aDict['node'] == SC['system']['id']:
-  ret = workers['P%s'%aDict['id']].stop()
+ if aDict['node'] == gSettings['system']['id']:
+  ret = gWorkers['P%s'%aDict['id']].stop()
  else:
   from zdcp.core.common import rest_call
-  ret = rest_call("%s/api/task_delete"%SC['nodes'][aDict['node']])['data']
+  ret = rest_call("%s/api/task_delete"%gSettings['nodes'][aDict['node']])['data']
  return ret
 
 #
@@ -1020,6 +992,6 @@ def task_state(aDict):
   - state (boolean)
  """
  ret = {}
- t = workers[aDict['id']]
+ t = gWorkers[aDict['id']]
  ret['result'] = t.release() if aDict['active'] else t.pause(False) 
  return ret

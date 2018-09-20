@@ -30,7 +30,7 @@ def domain_list(aDict):
  Output:
  """
  ret = {}
- with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
+ with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
   if aDict.get('filter'):
    ret['count'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
   else:
@@ -56,27 +56,26 @@ def domain_info(aDict):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- args = aDict
- with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
+ with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
   if op == 'update':
    if id == 'new':
     # Create and insert a lot of records
-    ret['insert'] = db.insert_dict('domains',args,'ON DUPLICATE KEY UPDATE id = id')
+    ret['insert'] = db.insert_dict('domains',aDict,'ON DUPLICATE KEY UPDATE id = id')
     if ret['insert'] > 0:
      id = db.get_last_id()
      from time import strftime
      serial = strftime("%Y%m%d%H")
      # Find DNS for MASTER to be placed into SOA record
-     master = db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%args['master'])
+     master = db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%aDict['master'])
      soa    = db.get_row() if master > 0 else {'server':'server.local','domain':'local'}
-     sql = "INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ('%s','%s','{}','{}' ,25200,'%s',0)"%(id,args['name'],serial)
+     sql = "INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ('%s','%s','{}','{}' ,25200,'%s',0)"%(id,aDict['name'],serial)
      db.do(sql.format("%s hostmaster.%s 0 21600 300 3600"%(soa['server'],soa['domain']),'SOA'))
      db.do(sql.format(soa['server'],'NS'))
      ret['extra'] = {'serial':serial,'master':master,'soa':soa}
     else:
      id = 'existing'
    else:
-    ret['update'] = db.update_dict('domains',args,"id=%s"%id)
+    ret['update'] = db.update_dict('domains',aDict,"id=%s"%id)
 
   ret['found'] = (db.do("SELECT id,name,master,type,notified_serial FROM domains WHERE id = '%s'"%id) > 0)
   ret['data'] = db.get_row() if ret['found'] else {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
@@ -95,7 +94,7 @@ def domain_delete(aDict):
   - domain. boolean
  """
  ret = {}
- with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
+ with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
   id = int(aDict['id'])
   ret['records'] = db.do("DELETE FROM records WHERE domain_id = %i"%id)
   ret['domain']  = (db.do("DELETE FROM domains WHERE id = %i"%(id)) == 1)
@@ -132,7 +131,7 @@ def record_list(aDict):
  if aDict.get('type'):
   select.append("type = '%s'"%aDict.get('type').upper())
  tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
- with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
+ with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
   ret['count'] = db.do("SELECT id, domain_id, name, type, content,ttl,change_date FROM records %s ORDER BY type DESC"%tune)
   ret['records'] = db.get_rows()
  return ret
@@ -155,16 +154,15 @@ def record_info(aDict):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
+ with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
   if op == 'update':
-   args = aDict
    if str(id) in ['new','0']:
     from time import strftime
-    args.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
-    ret['insert'] = db.insert_dict('records',args,"ON DUPLICATE KEY UPDATE id = id")
+    aDict.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
+    ret['insert'] = db.insert_dict('records',aDict,"ON DUPLICATE KEY UPDATE id = id")
     id = db.get_last_id() if ret['insert'] > 0 else "new"
    else:
-    ret['update'] = db.update_dict('records',args,"id='%s'"%id)
+    ret['update'] = db.update_dict('records',aDict,"id='%s'"%id)
  
   ret['found'] = (db.do("SELECT records.* FROM records WHERE id = '%s' AND domain_id = '%s'"%(id,aDict['domain_id'])) > 0)
   ret['data']  = db.get_row() if ret['found'] else {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
@@ -181,7 +179,7 @@ def record_delete(aDict):
  Output:
  """
  ret = {}
- with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
+ with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
   ret['deleted'] = (db.do("DELETE FROM records WHERE id = '%s'"%(aDict['id'])) > 0)
  return ret
 
@@ -195,7 +193,7 @@ def sync(aDict):
 
  Output:
  """
- with DB(SC['powerdns']['database'],'localhost',SC['powerdns']['username'],SC['powerdns']['password']) as db:
+ with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
   rows = db.get_rows();
   remove = []
@@ -227,7 +225,7 @@ def top(aDict):
  count = int(aDict.get('count',10))
  fqdn_top = {}
  fqdn_who = {}
- with open(SC['powerdns']['logfile'],'r') as logfile:
+ with open(gSettings['powerdns']['logfile'],'r') as logfile:
   for line in logfile:
    parts = line.split()
    if not parts[5] == 'Remote':

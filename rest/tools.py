@@ -20,6 +20,8 @@ def debug_timeout(aDict):
  Output:
  """
  from time import sleep
+ from random import randint
+ id = randint(0,10000)
  sleep(aDict.get('sleep',10))
  return None
 
@@ -74,6 +76,7 @@ def rest_explore(aDict):
 
  Output:
  """
+ from importlib import import_module
  from types import FunctionType as function
  def __analyze(aFile):
   data = {'api':aFile, 'functions':[]}
@@ -87,7 +90,7 @@ def rest_explore(aDict):
  if aDict.get('api'):
   ret['data'].append(__analyze(aDict.get('api')))
  else:
-  from os import listdir
+  from os import listdir, path as ospath
   restdir = ospath.abspath(ospath.join(ospath.dirname(__file__)))
   for restfile in listdir(restdir):
    if restfile[-3:] == '.py':
@@ -105,6 +108,7 @@ def rest_information(aDict):
 
  Output:
  """
+ from importlib import import_module
  mod = import_module("zdcp.rest.%s"%(aDict['api']))
  fun = getattr(mod,aDict['function'],None)
  return {'api':aDict['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}
@@ -121,8 +125,8 @@ def logs_clear(aDict):
  Output:
  """
  from zdcp.core.common import log
- ret = {'node':SC['system']['id'],'file':{}}
- for name,file in SC['logs'].iteritems():
+ ret = {'node':gSettings['system']['id'],'file':{}}
+ for name,file in gSettings['logs'].iteritems():
   try:
    open(file,'w').close()
    ret['file'][name] = 'CLEARED'
@@ -144,7 +148,7 @@ def logs_get(aDict):
  """
  ret = {}
  count = int(aDict.get('count',15))
- for name,file in SC['logs'].iteritems():
+ for name,file in gSettings['logs'].iteritems():
   if aDict.get('name',name) == name:
    lines = ["\r" for i in range(count)]
    pos = 0
@@ -173,14 +177,14 @@ def file_list(aDict):
   - 'path' relative the api to access the files
 
  """
- from os import listdir
+ from os import listdir, path as ospath
  ret = {'files':[]}
  try:
   if aDict.get('fullpath'):
    directory = aDict['fullpath']
   elif aDict.get('directory'):
    ret['path'] = '../files/%s'%aDict['directory']
-   directory = SC['files'][aDict['directory']]
+   directory = gSettings['files'][aDict['directory']]
   else:
    ret['path'] = '../images'
    directory = 'images'
@@ -204,7 +208,7 @@ def service_list(aDict):
 
  Output:          
  """
- return {'services':[{'name':x,'service':SC['services'][x]} for x in SC['services'].keys()]}
+ return {'services':[{'name':x,'service':gSettings['services'][x]} for x in gSettings['services'].keys()]}
 
 
 #
@@ -258,12 +262,12 @@ def database_backup(aDict):
  Output:
  """
  ret = {'filename':aDict['filename']}
- if SC['system']['id'] == 'master':
+ if gSettings['system']['id'] == 'master':
   from mysql import dump
   data = dump({'mode':'database'})['output']
  else:
   from zdcp.core.common import rest_call
-  res = rest_call("%s/api/mysql_dump"%SC['system']['master'],{'mode':'database'})
+  res = rest_call("%s/api/mysql_dump"%gSettings['system']['master'],{'mode':'database'})
   if res['code'] == 200:
    data = res['data']['output']
   else:

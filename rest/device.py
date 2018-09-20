@@ -51,17 +51,16 @@ def info(aDict):
     ret['update'] = (db.update_dict('devices',args,"id=%s"%ret['id']) == 1)
 
   elif op == 'update' and ret['id']:
-   args = aDict
-   args.pop('state',None)
-   args['vm'] = args.get('vm',0)
-   if not args.get('comment'):
-    args['comment'] = 'NULL'
-   if not args.get('url'):
-    args['url'] = 'NULL'
-   if args.get('mac'):
-    try: args['mac'] = int(args['mac'].replace(":",""),16)
-    except: args['mac'] = 0
-   ret['update'] = (db.update_dict('devices',args,"id=%s"%ret['id']) == 1)
+   aDict.pop('state',None)
+   aDict['vm'] = aDict.get('vm',0)
+   if not aDict.get('comment'):
+    aDict['comment'] = 'NULL'
+   if not aDict.get('url'):
+    aDict['url'] = 'NULL'
+   if aDict.get('mac'):
+    try: aDict['mac'] = int(aDict['mac'].replace(":",""),16)
+    except: aDict['mac'] = 0
+   ret['update'] = (db.update_dict('devices',aDict,"id=%s"%ret['id']) == 1)
 
   # Basic or complete info?
   if op == 'basics':
@@ -137,7 +136,6 @@ def extended(aDict):
  with DB() as db:
   operation = aDict.pop('op',None)
   if operation:
-   args = aDict
    ret['result'] = {}
    if operation == 'add_pem' and ret['id']:
     ret['result'] = (db.do("INSERT INTO device_pems(device_id) VALUES(%s)"%ret['id']) > 0)
@@ -145,30 +143,30 @@ def extended(aDict):
     ret['result'] = (db.do("DELETE FROM device_pems WHERE device_id = %s AND id = %s "%(ret['id'],aDict['pem_id'])) > 0)
 
    if operation == 'update' and ret['id']:
-    racked = args.pop('racked',None)
+    racked = aDict.pop('racked',None)
     if racked:
-     if   racked == '1' and args.get('rack_info_rack_id') == 'NULL':
+     if   racked == '1' and aDict.get('rack_info_rack_id') == 'NULL':
       db.do("DELETE FROM rack_info WHERE device_id = %s"%ret['id'])
-     elif racked == '0' and args.get('rack_info_rack_id') != 'NULL':
-      db.do("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(ret['id'],args.get('rack_info_rack_id')))
+     elif racked == '0' and aDict.get('rack_info_rack_id') != 'NULL':
+      db.do("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(ret['id'],aDict.get('rack_info_rack_id')))
     # PEMs
-    for id in [k.split('_')[1] for k in args.keys() if k.startswith('pems_') and 'name' in k]:
-     pdu_slot = args.pop('pems_%s_pdu_slot'%id,"0.0").split('.')
-     pem = {'name':args.pop('pems_%s_name'%id,None),'pdu_unit':aDict.pop('pems_%s_pdu_unit'%id,0),'pdu_id':pdu_slot[0],'pdu_slot':pdu_slot[1]}
+    for id in [k.split('_')[1] for k in aDict.keys() if k.startswith('pems_') and 'name' in k]:
+     pdu_slot = aDict.pop('pems_%s_pdu_slot'%id,"0.0").split('.')
+     pem = {'name':aDict.pop('pems_%s_name'%id,None),'pdu_unit':aDict.pop('pems_%s_pdu_unit'%id,0),'pdu_id':pdu_slot[0],'pdu_slot':pdu_slot[1]}
      ret['result']["PEM_%s"%id] = db.update_dict('device_pems',pem,'id=%s'%id)
     # DNS management
 
-    if args.get('a_dom_id') and args.get('hostname') and ret['ip']:
+    if aDict.get('a_dom_id') and aDict.get('hostname') and ret['ip']:
      # Fetch info first
      # .. then check if anything has changed
      db.do("SELECT hostname, a_id, ptr_id, a_dom_id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id = %s"%ret['id'])
      old_info = db.get_row()
 
-     if not (old_info['hostname'] == args['hostname']) or not (str(old_info['a_dom_id']) == str(args['a_dom_id'])):
-      dns_args = {'a_id':old_info['a_id'],'ptr_id':old_info['ptr_id'],'a_domain_id_new':args['a_dom_id'],'a_domain_id_old':old_info['a_dom_id'],'hostname':args['hostname'],'ip_new':ret['ip'],'ip_old':old_info['ip'],'id':ret['id']}
+     if not (old_info['hostname'] == aDict['hostname']) or not (str(old_info['a_dom_id']) == str(aDict['a_dom_id'])):
+      dns_args = {'a_id':old_info['a_id'],'ptr_id':old_info['ptr_id'],'a_domain_id_new':aDict['a_dom_id'],'a_domain_id_old':old_info['a_dom_id'],'hostname':aDict['hostname'],'ip_new':ret['ip'],'ip_old':old_info['ip'],'id':ret['id']}
       from zdcp.rest.dns import record_device_update
       dns_res = record_device_update(dns_args)
-      new_info = {'hostname':args['hostname'],'a_dom_id':dns_res['A']['domain_id']}
+      new_info = {'hostname':aDict['hostname'],'a_dom_id':dns_res['A']['domain_id']}
       for type in ['a','ptr']:
        if dns_res[type.upper()]['found']:
         if not (str(dns_res[type.upper()]['record_id']) == str(dns_args['%s_id'%type])):
@@ -176,7 +174,7 @@ def extended(aDict):
        else:
         new_info['%s_id'%type] = 0
       ret['result']['device_info'] = db.update_dict('devices',new_info,"id='%s'"%ret['id'])
-    rack_args = {k[10:]:v for k,v in args.iteritems() if k[0:10] == 'rack_info_'}
+    rack_args = {k[10:]:v for k,v in aDict.iteritems() if k[0:10] == 'rack_info_'}
     ret['result']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
 
   # Now fetch info
@@ -211,6 +209,7 @@ def extended(aDict):
 
   # Update PDU with hostname and PEM info on the right pdu slot and unit
   if operation == 'update' and ret['racked']:
+   from importlib import import_module
    for pem in ret['pems']:
     if pem['pdu_id']:
      db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %i"%(pem['pdu_id']))
@@ -496,6 +495,7 @@ def function(aDict):
 
  Output:
  """
+ from importlib import import_module
  ret = {}
  try:
   module = import_module("zdcp.devices.%s"%(aDict['type']))
@@ -517,6 +517,7 @@ def configuration_template(aDict):
 
  Output:
  """
+ from importlib import import_module
  ret = {}
  with DB() as db:
   db.do("SELECT ine.mask,INET_NTOA(ine.gateway) AS gateway,INET_NTOA(ine.network) AS network, INET_NTOA(ia.ip) AS ip, hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aDict['id'])
@@ -581,20 +582,19 @@ def interface_info(aDict):
  Output:
  """
  ret = {}
- args = aDict
- id = args.pop('id','new')
- op = args.pop('op',None)
+ id = aDict.pop('id','new')
+ op = aDict.pop('op',None)
  with DB() as db:
   if op == 'update':
    # If multipoint there should not be any single peer interface
-   args['multipoint'] = aDict.get('multipoint',0)
-   if int(args['multipoint']) == 1:
-    args['peer_interface'] = 'NULL'
+   aDict['multipoint'] = aDict.get('multipoint',0)
+   if int(aDict['multipoint']) == 1:
+    aDict['peer_interface'] = 'NULL'
    if not id == 'new':
-    ret['update'] = db.update_dict('device_interfaces',args,"id=%s"%id)
+    ret['update'] = db.update_dict('device_interfaces',aDict,"id=%s"%id)
    else:
-    args['manual'] = 1
-    ret['insert'] = db.insert_dict('device_interfaces',args)
+    aDict['manual'] = 1
+    ret['insert'] = db.insert_dict('device_interfaces',aDict)
     id = db.get_last_id() if ret['insert'] > 0 else 'new'
 
   if not id == 'new':
@@ -706,6 +706,7 @@ def interface_discover(aDict):
 
  Output:
  """
+ from importlib import import_module
  ret = {'insert':0,'update':0,'delete':0}
  with DB() as db:
   db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, device_types.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aDict['device'])

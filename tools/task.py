@@ -6,7 +6,7 @@ from sys  import path as syspath, argv, exit
 from json import loads,load,dumps
 from time import time
 syspath.insert(1, ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
-from zdcp.Settings import SC
+from zdcp.Settings import Settings
 from zdcp.core.genlib import simple_arg_parser
 from zdcp.core.common import rest_call
 
@@ -31,7 +31,7 @@ else:
 
 started = "Executing:system_task_%s(%s)"%(func,args)
 try:
- output = rest_call("%s/api/system_task_%s"%(SC['system']['master'],func),args, aTimeout = 300)['data']
+ output = rest_call("%s/api/system_task_%s"%(Settings['system']['master'],func),args, aTimeout = 300)['data']
 except Exception as e:
  output = e[0]
 print started

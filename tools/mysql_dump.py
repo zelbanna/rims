@@ -15,8 +15,8 @@ if __name__ == "__main__":
  from os import path as ospath, getcwd
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
  from zdcp.rest import mysql
- from zdcp.Settings import SC
- mysql.__add_globals__({'SC':SC})
+ from zdcp.Settings import Settings
+ mysql.__add_globals__({'gSettings':Settings})
  file = ospath.abspath(ospath.join(getcwd(),argv[2])) if len(argv) > 2 else None
 
  if   argv[1] == '-d':
