@@ -153,7 +153,6 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
   head = { 'Content-Type': 'application/json','Accept':'application/json' }
   try:    head.update(aHeader)
   except: pass
-  log("rest_call -> %s '%s'"%(aURL,dumps(aArgs)))
   req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
   if aMethod:
    req.get_method = lambda: aMethod
