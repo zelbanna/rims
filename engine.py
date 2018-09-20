@@ -39,11 +39,13 @@ if Settings['system']['id'] == 'master':
  with DB() as db:
   db.do("SELECT * FROM task_jobs LEFT JOIN nodes ON task_jobs.node_id = nodes.id WHERE node = 'master'")
   tasks = db.get_rows()
+  for task in tasks:
+   task['output'] = (task['output'] == 1)
 else:
  from zdcp.core.common import rest_call
  tasks = rest_call("%s/api/system_task_list"%Settings['system']['master'],{'node':Settings['system']['id']})['data']['tasks']
 for task in tasks:
- args = {'id':"P%s"%task['id'],'periodic':True,'frequency':task['frequency'],'module':task['module'],'func':task['func'],'args':loads(task['args'])}
+ args = {'id':"P%s"%task['id'],'periodic':True,'frequency':task['frequency'],'module':task['module'],'func':task['func'],'args':loads(task['args']),'output':task['output']}
  WorkerThread(args,context['gSettings'],context['gWorkers'])
 api_threads = [ApiThread(n,context) for n in range(threadcount)]
 

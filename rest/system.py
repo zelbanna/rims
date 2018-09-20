@@ -909,7 +909,7 @@ def task_add(aDict):
  aDict = aDict
  if aDict.get('periodic'):
   with DB() as db:
-   db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300)))
+   db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency,output) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i,%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300),0 if not aDict.get('output') else 1))
    aDict['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
   from zdcp.core.engine import WorkerThread
@@ -972,6 +972,8 @@ def task_list(aDict):
  with DB() as db:
   ret['count'] = db.do("SELECT task_jobs.*, nodes.node FROM task_jobs LEFT JOIN nodes ON nodes.id = task_jobs.node_id WHERE node_id IN (SELECT id FROM nodes WHERE node LIKE '%%%s%%')"%aDict.get('node',''))
   ret['tasks'] = db.get_rows()
+  for task in ret['tasks']:
+   task['output'] = (task['output']== 1)
   if aDict.get('sync'):
    threads = task_status({'node':aDict['node']})
    for task in ret['tasks']:
