@@ -24,25 +24,51 @@ def status(aDict):
   trim = "" if not aDict.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join([str(x) for x in aDict['subnets']]))
   db.do("SELECT ipam_networks.id, servers.node, servers.server FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   subnets = db.get_rows()
- for sub in subnets:
-  args = {'module':'ipam','func':'network_check','args':{'subnet_id':sub['id']},'output':True}
-  if not sub['node'] or sub['node'] == 'master':
-   t = WorkerThread(args,gSettings,gWorkers)
-   ret['local'].append((t.name,sub['id']))
-  else:
-   res = rest_call("%s/api/system_task_worker&node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
-   ret['remote'].append((res['id'],sub['id']))
- return 
+  for sub in subnets:
+   count = db.do("SELECT id,INET_NTOA(ip) AS ip, state AS old FROM ipam_addresses WHERE network_id = %s ORDER BY ip"%sub['id'])
+   if count > 0:
+    args = {'module':'ipam','func':'address_status','args':{'address_list':db.get_rows()},'output':False}
+    if not sub['node'] or sub['node'] == 'master':
+     t = WorkerThread(args,gSettings,gWorkers)
+     ret['local'].append((t.name,sub['id']))
+    else:
+     res = rest_call("%s/api/system_task_worker&node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
+     ret['remote'].append((res['id'],sub['id']))
+ return ret
 
-def network_check(aDict):
- """ Fetch a list if IP addresses and perform a ping 
+#
+#
+def address_status(aDict):
+ """ Process a list of IDs, IP addresses and states {'id,'ip','state'} and perform a ping. If state has changed this will be reported back. This function is node independent
 
  Args:
-  - subnet_id (required)
+  - address_list (required)
 
  Output:
  """
+ from threading import Thread, BoundedSemaphore
+ from os import system
+
+ def __pinger(aDev, aSema):
+  try:    aDev['new'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip'])) == 0) else 2
+  except: aDev['new'] = None
+  finally:aSema.release()
+
+ sema = BoundedSemaphore(20)
+ for dev in aDict['address_list']:
+  sema.acquire()
+  t = Thread(target = __pinger, args=[dev, sema])
+  t.start()
+ for i in range(20):
+  sema.acquire()
+
  print "network_check(%s)"%aDict
+ for n in [1,2]:
+  changed = ",".join([str(dev['id']) for dev in entries if dev['new'] != dev['old'] and dev['new'] == n])
+  if len(changed) > 0:
+   print "%s -> %s"%(n,changed)
+   #with DB() as db:
+   # db.do("UPDATE ipam_addresses SET state = %i WHERE id IN (%s)"%(n,changed))
  return None
 
 #
@@ -51,7 +77,8 @@ def network_report(aDict):
  """ Updates IP addresses' status
 
  Args:
-  - state (list of IP and state tuples)
+  - up.   list of id that changed to up
+  - down. list of id that changed to down
 
  Output:
   - result

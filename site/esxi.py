@@ -37,7 +37,6 @@ def manage(aWeb):
  data = aWeb.rest_call("device_info",{'id':id,'op':'basics'})
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='esxi_op?ip=%s&next-state=poweroff&id=%s'>Shutdown</A></LI>".format(data['ip'],id))
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content_right  URL='esxi_graph?hostname={0}&domain={1}'>Stats</A></LI>".format(data['info']['hostname'],data['info']['domain']))
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content_right  URL='esxi_logs?hostname={0}&domain={1}'>Logs</A></LI>".format(data['info']['hostname'],data['info']['domain']))
  if data['info']['url']:
   aWeb.wr("<LI><A CLASS=z-op HREF='%s'     target=_blank>UI</A></LI>"%(data['info']['url']))
@@ -105,17 +104,6 @@ def _vm_options(aWeb,aIP,aVM,aHighlight):
  if aHighlight:
   aWeb.wr("</DIV>")
 
-
-#
-# Graphing
-#
-def graph(aWeb):
- from zdcp.tools.munin import widget_cols
- hostname = aWeb['hostname']
- domain   = aWeb['domain']
- aWeb.wr("<ARTICLE STYLE='overflow-x:auto;'>")
- widget_cols([ "{1}/{0}.{1}/esxi_vm_info".format(hostname,domain), "{1}/{0}.{1}/esxi_cpu_info".format(hostname,domain), "{1}/{0}.{1}/esxi_mem_info".format(hostname,domain) ])
- aWeb.wr("</ARTICLE>")
 
 #
 #
