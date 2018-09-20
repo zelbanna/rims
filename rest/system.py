@@ -345,31 +345,6 @@ def settings_container(aDict):
 
 ################################################# NODE ##############################################
 #
-# A node represent a system entity that can run REST commands remote (or locally),
-# - system indicates it was registered and should not be deletable
-# - device_id: connected to a device in the device/IPAM DB:s
-#
-
-
-#
-#
-def node_register(aDict):
- """Function docstring for register TBD
-
- Args:
-  - node (required)
-  - url (required)
-  - system (optional)
-
- Output:
- """
- ret = {}
- args = {'node':aDict['node'],'url':aDict['url'],'system':aDict.get('system','0')}
- with DB() as db:
-  ret['update'] = db.insert_dict('nodes',args,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%args)
- return ret
-
-#
 #
 def node_list(aDict):
  """Function docstring for node_list TBD
@@ -415,7 +390,7 @@ def node_info(aDict):
    ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':None}
+   ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':None,'system':0}
  return ret
 
 #

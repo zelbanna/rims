@@ -18,7 +18,7 @@ basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
 syspath.insert(1, basepath)
 from zdcp.Settings import Settings
 from zdcp.core.common import DB
-from zdcp.core.engine import ApiThread, WorkerThread
+from zdcp.core.engine import ApiThread, WorkerThread, TLS
 import socket
 
 # Socket

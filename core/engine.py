@@ -10,7 +10,7 @@ __status__ = "Production"
 from os import walk, path as ospath
 from json import loads, dumps
 from importlib import import_module
-
+from threading import Thread, Lock, local as TLS
 from time import localtime, strftime
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from httplib import responses as http_codes
@@ -21,7 +21,6 @@ from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 # Threads
 #
 
-from threading import Thread, Lock
 
 class WorkerThread(Thread):
 
@@ -101,7 +100,7 @@ class WorkerThread(Thread):
 #
 class ApiThread(Thread):
  def __init__(self, aID, aContext):
-  Thread.__init__(self)  
+  Thread.__init__(self)
   self._context = aContext
   self.name     = aID
   self.daemon   = True
@@ -111,6 +110,7 @@ class ApiThread(Thread):
   return "ApiThread(%s)"%(self.name)
 
  def run(self):
+  BaseHTTPRequestHandler.timeout  = 60
   httpd = HTTPServer(self._context['address'], SessionHandler, False)
   httpd._path     = self._context['path']
   httpd._node     = self._context['node']
@@ -127,27 +127,33 @@ class ApiThread(Thread):
 class SessionHandler(BaseHTTPRequestHandler):
 
  def __init__(self, *args, **kwargs):
+  self._headers = {}
+  self._body = 'null'
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
-  self.timeout  = 60
-  self._headers  = None
 
- def log_api(self,aAPI,aArgs,aExtra):
-  try:
-   with open(self.server._settings['logs']['rest'], 'a') as f:
-    f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aAPI, aArgs, self.server._node, aExtra.strip())))
-  except: pass
+ def header(self):
+  # Sends X-Code as response
+  self._headers.update({'X-Thread':self.server._t_id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()})
+  code = self._headers.pop('X-Code',200)
+  self.wfile.write("HTTP/1.1 %s %s\r\n"%(code,http_codes[code]))
+  self._headers.update({'Content-Length':len(self._body),'Connection':'close'})
+  for k,v in self._headers.iteritems():
+   self.send_header(k,v)
+  self.end_headers()
 
  def do_GET(self):
-  self.route()
+  self.process()
+  self.header()
+  self.wfile.write(self._body)
 
  def do_POST(self):
-  self.route()
+  self.process()
+  self.header()
+  self.wfile.write(self._body)
 
- def route(self):
+ def process(self):
   """ Route request to the right function """
   path,_,query = (self.path.lstrip('/')).partition('/')
-  body = 'null'
-  self._headers = {'X-Thread':self.server._t_id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()}
   if path == 'site':
    api,_,get = query.partition('?')
    (mod,_,fun)    = api.partition('_')
@@ -171,7 +177,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      stream.wr("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS>"%(type(e).__name__,str(e)))
     stream.wr("<DETAILS><SUMMARY>Cookie</SUMMARY><CODE>%s</CODE></DETAILS>"%(stream._cookies))
     stream.wr("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(",".join(stream._form.keys())))
-   body = stream.output()
+   self._body = stream.output()
 
   elif path == 'api':
    # REST API  CALL
@@ -184,16 +190,19 @@ class SessionHandler(BaseHTTPRequestHandler):
      extras[k] = v
    self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*"})
    self._headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
+   try: 
+    length = int(self.headers.getheader('content-length'))
+    args = loads(self.rfile.read(length)) if length > 0 else {}
+   except: args = {}
    try:
-    try:
-     length = int(self.headers.getheader('content-length'))
-     args = loads(self.rfile.read(length)) if length > 0 else {}
-    except: args = {}
-    self.log_api(api,dumps(args),get)
+    with open(self.server._settings['logs']['rest'], 'a') as f:
+     f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args), self.server._node, get.strip())))
+   except: pass
+   try:
     if self._headers['X-Node'] == self.server._node:
      module = import_module("zdcp.rest.%s"%mod)
-     module.__add_globals__({'iSession':self,'gWorkers':self.server._workers,'gSettings':self.server._settings})
-     body = dumps(getattr(module,fun,None)(args))
+     module.__add_globals__({'gWorkers':self.server._workers,'gSettings':self.server._settings})
+     self._body = dumps(getattr(module,fun,None)(args))
     else:
      req  = Request("%s/api/%s"%(self.server._settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
      try: sock = urlopen(req, timeout = 300)
@@ -205,7 +214,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      except URLError  as e: self._headers.update({ 'X-Exception':'URLError', 'X-Code':590, 'X-Info':str(e)})
      except Exception as e: self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':591, 'X-Info':str(e)})
      else:
-      try: body = sock.read()
+      try: self._body = sock.read()
       except: pass
       sock.close()
    except Exception as e:
@@ -227,10 +236,10 @@ class SessionHandler(BaseHTTPRequestHandler):
     if fullpath.endswith("/"):
      self._headers['Content-type']='text/html; charset=utf-8'
      _, _, filelist = next(walk(fullpath), (None, None, []))
-     body = "<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])
+     self._body = "<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])
     else:
      with open(fullpath, 'rb') as file:
-      body = file.read()
+      self._body = file.read()
    except Exception as e:
     self._headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
 
@@ -239,29 +248,30 @@ class SessionHandler(BaseHTTPRequestHandler):
    try:
     length = int(self.headers.getheader('content-length'))
     args = loads(self.rfile.read(length)) if length > 0 else {}
-   except: args = {}
-   if   query == 'login':
     # Replace with module load and provide correct headers from system_login
-    try: tmp = int(args['id'])
-    except:
-     body = '"NOT_OK"'
-    else:
-     body = '"OK"'
-     from zdcp.core.genlib import random_string
-     from datetime import datetime,timedelta
-     self._headers['X-Auth-Token']  = random_string(16)
-     self._headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
-  else:
-   # Unknown call
-   self._headers.update({'Location':'site/system_login?application=%s'%self.server._settings['system'].get('application','system'),'X-Code':301})
+    # There has to be a format for return function of application/authenticate
+    self._body = '"OK"'
+    self._headers['X-Auth-Token']  = random_string(16)
+    self._headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+   except:
+    self._body = '"NOT_OK"'
 
-  code = self._headers.pop('X-Code',200)
-  self.wfile.write("HTTP/1.1 %s %s\r\n"%(code,http_codes[code]))
-  self._headers.update({'Content-Length':len(body),'Connection':'close'})
-  for k,v in self._headers.iteritems():
-   self.send_header(k,v)
-  self.end_headers()
-  self.wfile.write(body)
+  elif path == 'register':
+   from zdcp.core.common import DB
+   self._headers['Content-type']='application/json; charset=utf-8'
+   try:
+    length = int(self.headers.getheader('content-length'))
+    args = loads(self.rfile.read(length)) if length > 0 else {}
+    params = {'node':args['node'],'url':args['url'],'system':args.get('system','0')}
+    with DB() as db:
+     update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
+    self._body = '{"update":%s,"success":true}'%update
+   except Exception as e:
+    self._body = '{"update":0,"error":"%s"}'%str(e)
+
+  else:
+   # Redirect to login
+   self._headers.update({'Location':'site/system_login?application=%s'%self.server._settings['system'].get('application','system'),'X-Code':301})
 
 ########################################### Web stream ########################################
 #
