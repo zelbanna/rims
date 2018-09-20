@@ -25,9 +25,9 @@ def status(aDict):
   db.do("SELECT ipam_networks.id, servers.node, servers.server FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   subnets = db.get_rows()
   for sub in subnets:
-   count = db.do("SELECT id,INET_NTOA(ip) AS ip, state AS old FROM ipam_addresses WHERE network_id = %s ORDER BY ip"%sub['id'])
+   count = db.do("SELECT id,INET_NTOA(ip) AS ip, state FROM ipam_addresses WHERE network_id = %s ORDER BY ip"%sub['id'])
    if count > 0:
-    args = {'module':'ipam','func':'address_status','args':{'address_list':db.get_rows()},'output':False}
+    args = {'module':'ipam','func':'address_status','args':{'address_list':db.get_rows(),'subnet_id':sub['id']},'output':False}
     if not sub['node'] or sub['node'] == 'master':
      t = WorkerThread(args,gSettings,gWorkers)
      ret['local'].append((t.name,sub['id']))
@@ -39,9 +39,11 @@ def status(aDict):
 #
 #
 def address_status(aDict):
- """ Process a list of IDs, IP addresses and states {'id,'ip','state'} and perform a ping. If state has changed this will be reported back. This function is node independent
+ """ Process a list of IDs, IP addresses and states {id,'ip',state} and perform a ping. State values are: 0 (not seen), 1(up), 2(down).
+  If state has changed this will be reported back. This function is node independent.
 
  Args:
+  - subnet_id
   - address_list (required)
 
  Output:
@@ -62,9 +64,9 @@ def address_status(aDict):
  for i in range(20):
   sema.acquire()
 
- print "network_check(%s)"%aDict
+ print "network_check(%s)"%(aDict['subnet_id'])
  for n in [1,2]:
-  changed = ",".join([str(dev['id']) for dev in entries if dev['new'] != dev['old'] and dev['new'] == n])
+  changed = ",".join([str(dev['id']) for dev in aDict['address_listentries if dev['new'] != dev['old'] and dev['new'] == n])
   if len(changed) > 0:
    print "%s -> %s"%(n,changed)
    #with DB() as db:
