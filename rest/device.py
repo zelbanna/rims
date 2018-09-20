@@ -43,7 +43,7 @@ def info(aDict):
    lookup = dev.detect()
    ret['result'] = lookup
    if lookup['result'] == 'OK':
-    args = {'model':lookup['info']['model'],'snmp':lookup['info']['snmp'],'sw':lookup['info']['version'],'serial':lookup['info']['serial']}
+    args = {'model':lookup['info']['model'],'snmp':lookup['info']['snmp'],'version':lookup['info']['version'],'serial':lookup['info']['serial']}
     for type in ret['types']:
      if type['name'] == lookup['info']['type']:
       args['type_id'] = type['id']
@@ -275,7 +275,7 @@ def list(aDict):
   if 'mac' in extras:
    fields.append('devices.mac')
   if 'system' in extras:
-   fields.extend(['devices.serial','devices.sw','ia.state'])
+   fields.extend(['devices.serial','devices.version','ia.state'])
 
  with DB() as db:
   sql = "SELECT %s FROM devices LEFT JOIN %s WHERE %s %s"%(", ".join(fields)," LEFT JOIN ".join(tune)," AND ".join(filter),sort)

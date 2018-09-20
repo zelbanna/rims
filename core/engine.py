@@ -285,7 +285,7 @@ class Stream(object):
   self._cookies = {}
   self._form    = {}
   self._node    = aHandler.server._node
-  self._api     = aHandler.server._settings['system']['node']
+  self._api     = aHandler.server._settings['nodes'][self._node]
   self._body    = []
   try: cookie_str = aHandler.headers.get('Cookie').split('; ')
   except: pass

@@ -84,7 +84,7 @@ CREATE TABLE `devices` (
   `type_id` int(10) unsigned DEFAULT '0',
   `mac` bigint(20) unsigned DEFAULT '0',
   `vm` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `sw` varchar(20) DEFAULT NULL,
+  `software` varchar(20) DEFAULT NULL,
   `model` varchar(30) DEFAULT NULL,
   `snmp` varchar(20) DEFAULT NULL,
   `url` varchar(60) DEFAULT NULL,
