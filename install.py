@@ -158,7 +158,7 @@ if settings['system']['id'] == 'master':
   db.connect()
 
   res['admin_user'] = (db.do("INSERT users (id,name,alias) VALUES(1,'Administrator','admin') ON DUPLICATE KEY UPDATE id = id") > 0)
-  res['node_add'] = (db.do("INSERT nodes (node,url,system) VALUES('{0}','{1}',1) ON DUPLICATE KEY UPDATE system = 1, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['node'])) > 0)
+  res['node_add'] = (db.do("INSERT nodes (node,url,system) VALUES('{0}','{1}',1) ON DUPLICATE KEY UPDATE system = 1, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['master'])) > 0)
   res['node_id']  = db.get_last_id()
   res['dns_server_add'] = (db.do("INSERT servers (node,server,type) VALUES ('master','nodns','DNS') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
   res['dns_server_id']  = db.get_last_id()
@@ -214,7 +214,7 @@ else:
  # Fetch and update settings from central repo
  #
  from zdcp.core.common import rest_call
- try: res['register'] = rest_call("%s/register"%settings['system']['master'],{'node':settings['system']['id'],'url':settings['system']['node'],'system':'1'})['data']
+ try: res['register'] = rest_call("%s/register"%settings['system']['master'],{'node':settings['system']['id'],'port':settings['system']['port'],'system':'1'})['data']
  except Exception as e: res['register'] = str(e)
  try: master   = rest_call("%s/api/system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
  except Exception as e: res['fetch'] = str(e)
