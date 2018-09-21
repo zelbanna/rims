@@ -53,6 +53,8 @@ class Device(object):
  def info(self):
   return [{'version':'N/A','model':'generic'}]
 
+ #
+ #
  def configuration(self,argdict):
   from zdcp.Settings import Settings
   output = ["No config template for this device type.","",
@@ -68,6 +70,8 @@ class Device(object):
    "- SNMP write community: %s"%Settings['snmp']['write_community']]
   return output
 
+ #
+ #
  def interfaces(self):
   from zdcp.Settings import Settings
   from netsnmp import VarList, Varbind, Session
@@ -89,6 +93,8 @@ class Device(object):
    self.log_msg("Generic : error traversing interfaces: " + str(exception_error))
   return interfaces
 
+ #
+ #
  def lldp(self):
   from binascii import b2a_hex
   from zdcp.Settings import Settings
@@ -127,19 +133,8 @@ class Device(object):
    elf.log_msg("Generic : error traversing neighbors: " + str(exception_error))
   return ret
 
- def sysmac(self):
-  from zdcp.Settings import Settings
-  from netsnmp import VarList, Varbind, Session
-  ret = {'sysmac':'00:00:00:00:00:00'}
-  try:
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
-   session.get(sysoid)
-   ret['sysmac'] = hex2ascii(sysoid[0].val)
-  except Exception as exception_error:
-   elf.log_msg("Generic : error finding sysmac: " + str(exception_error))
-  return ret
-
+ #
+ #
  def detect(self):
   from zdcp.Settings import Settings
   from netsnmp import VarList, Varbind, Session

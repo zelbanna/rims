@@ -213,7 +213,7 @@ def extended(aWeb):
  dev = aWeb.rest_call("device_extended",args)
  domains = aWeb.rest_call("dns_domain_list",{'filter':'forward'})['domains']
 
- aWeb.wr("<ARTICLE CLASS='info'><P>Device Update Info</P>")
+ aWeb.wr("<ARTICLE CLASS='info'><P>Device Extended Info</P>")
  aWeb.wr("<FORM ID=info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id']))
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=ip VALUE={}>".format(dev['ip']))
@@ -229,6 +229,7 @@ def extended(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT NAME=ip TYPE=TEXT VALUE='%s'></DIV><DIV CLASS=td>"%(dev['ip']))
  aWeb.wr(aWeb.button('sync',DIV='div_content_right', FRM='info_form', URL='device_update_ip?id=%s'%dev['id'], TITLE='Modify IP'))
  aWeb.wr("</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>LLDP MAC:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['sysmac'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>A ID:   </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['a_id'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>PTR ID: </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['ptr_id'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['ipam_id'])

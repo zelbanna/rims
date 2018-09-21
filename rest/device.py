@@ -183,11 +183,13 @@ def extended(aDict):
     ret['result']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
 
   # Now fetch info
-  ret['found'] = (db.do("SELECT vm, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT vm, sysmac, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['ip'] = ret['info'].pop('ip',None)
    vm = ret['info'].pop('vm',None)
+   try:    ret['info']['sysmac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['sysmac']))[2:].zfill(12).decode('hex')).upper() if ret['info']['sysmac'] != 0 else "00:00:00:00:00:00"
+   except: ret['info']['sysmac'] = "00:00:00:00:00:00"
    # Rack infrastructure
    ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
    if vm == 1:
@@ -436,15 +438,62 @@ def discover(aDict):
 
  # We can now do inserts only (no update) as we skip existing :-)
  with DB() as db:
-  sql = "INSERT INTO devices (a_dom_id, ipam_id, snmp, model, type_id, hostname) VALUES ("+aDict['a_dom_id']+",{},'{}','{}','{}','{}')"
+  sql = "INSERT INTO devices (a_dom_id, ipam_id, snmp, model, sysmac, type_id, hostname) VALUES ("+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
   count = 0
   for ip,entry in dev_list.iteritems():
    count += 1
    alloc = address_allocate({'ip':ip,'network_id':aDict['network_id']})
    if alloc['success']:
-    db.do(sql.format(alloc['id'],entry['snmp'],entry['model'],devtypes[entry['type']]['id'],"unknown_%i"%count))
+    db.do(sql.format(alloc['id'],entry['snmp'],entry['model'],entry['sysmac'],devtypes[entry['type']]['id'],"unknown_%i"%count))
  ret['time'] = int(time()) - start_time
  ret['found']= len(dev_list)
+ return ret
+
+#
+#
+def system_mac_discover(aDict):
+ """Function discovers system macs on a network segment
+
+ Args:
+  - network_id (required)
+
+ Output:
+ """
+ from threading import Thread, BoundedSemaphore
+ from netsnmp import VarList, Varbind, Session
+ from binascii import b2a_hex
+ from __builtin__ import list 
+
+ ret = {'count':0}
+ 
+ def __detect_thread(aDev,aSema):
+  try:
+   session = Session(Version = 2, DestHost = aDev['ip'], Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
+   session.get(sysoid)
+   if sysoid[0].val:
+    aDev['sysmac'] = int("".join(list(b2a_hex(x) for x in list(sysoid[0].val))),16)
+  except: pass
+  aSema.release()
+  return True
+
+ with DB() as db:
+  count   = db.do("SELECT hostname, devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.network_id = %s AND ia.state = 1 AND devices.sysmac = 0"%aDict['network_id'])
+  devices = db.get_rows()
+  if count > 0:
+   try:
+    sema = BoundedSemaphore(20)
+    for dev in devices:
+     sema.acquire()
+     t = Thread(target = __detect_thread, args=[dev, sema])
+     t.start()
+    for i in range(20):
+     sema.acquire()
+   except Exception as err:
+    ret['error']   = "Error: %s"%str(err)
+   for dev in devices:
+    if dev.get('sysmac'):
+     ret['count'] += db.do("UPDATE devices SET sysmac = %(sysmac)s WHERE id = %(id)s"%dev)
  return ret
 
 #
@@ -467,7 +516,7 @@ def types_list(aDict):
 #
 #
 def server_macs(aDict):
- """Function returns all MACs for devices belonging to networks beloning to particular server
+ """Function returns all MACs for devices belonging to networks belonging to particular server
 
  Args:
   - id (required)
