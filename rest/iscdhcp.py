@@ -85,7 +85,7 @@ def sync(aDict):
 #
 #
 def update(aDict):
- """Function docstring for check: update specific entry 
+ """Function docstring for check: update specific entry
 
  Args:
   - id (optional)
@@ -102,6 +102,8 @@ def update(aDict):
 
  with open(gSettings['iscdhcp']['static'],'r') as config_file:
   for line in config_file:
+   if line[0] == '#':
+    continue
    parts = line.split()
    id = int(parts[11][:-1])
    devices[id] = {'id':id,'fqdn':parts[1],'mac':parts[5],'ip':parts[7],'network':parts[3]}
