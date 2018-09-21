@@ -11,7 +11,7 @@ __status__= "Production"
 #
 #
 def list(aWeb):
- cookie = aWeb.cookie('system') 
+ cookie = aWeb.cookie('system')
  if aWeb['op']:
   aWeb.rest_call("reservation_update",{'device_id':aWeb['device_id'],'user_id':aWeb['user_id'],'op':aWeb['op']})
  rows = aWeb.rest_call("reservation_list")['data']
@@ -19,10 +19,10 @@ def list(aWeb):
  aWeb.wr("<ARTICLE><P>Reservations</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='reservations_list'))
  aWeb.wr("<DIV CLASS=table>")
- aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>User (Id)</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Until</DIV><DIV CLASS=th>Op</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>User (Id)</DIV><DIV CLASS=th STYLE='max-width:120px; overflow:hidden'>Device</DIV><DIV CLASS=th>Until</DIV><DIV CLASS=th STYLE='width:75px;'>Op</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  for row in rows:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='users_info?id={3}'>{0}</A> ({3})</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='device_info?id={4}'>{1}</A></DIV><DIV CLASS='td {5}'>{2}</DIV><DIV CLASS=td>".format(row['alias'],row['hostname'],row['end'],row['user_id'],row['device_id'],'' if row['valid'] == 1 else "orange'"))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='users_info?id={3}'>{0}</A></DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_content_right URL='device_info?id={4}'>{1}</A></DIV><DIV CLASS='td {5}'>{2}</DIV><DIV CLASS=td>".format(row['alias'],row['hostname'],row['end'],row['user_id'],row['device_id'],'' if row['valid'] == 1 else "orange'"))
   if int(cookie['id']) == row['user_id'] or row['valid'] == 0:
    aWeb.wr(aWeb.button('info',   DIV='div_content_right', TITLE='Info', URL='reservations_info?device_id=%i&user_id=%i'%(row['device_id'],row['user_id'])))
    aWeb.wr(aWeb.button('add',    DIV='div_content', TITLE='Extend reservation', URL='reservations_list?op=extend&device_id=%i&user_id=%i'%(row['device_id'],row['user_id'])))
