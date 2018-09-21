@@ -128,11 +128,8 @@ class Device(object):
   return ret
 
  def sysmac(self):
-  from binascii import b2a_hex
   from zdcp.Settings import Settings
   from netsnmp import VarList, Varbind, Session
-  def hex2ascii(aOctet):
-   return ":".join(list(b2a_hex(x) for x in list(aOctet)))
   ret = {'sysmac':'00:00:00:00:00:00'}
   try:
    session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
@@ -144,25 +141,35 @@ class Device(object):
   return ret
 
  def detect(self):
-  ret = {}
   from zdcp.Settings import Settings
   from netsnmp import VarList, Varbind, Session
+  from binascii import b2a_hex
+  def hex2ascii(aOctet):
+   return ":".join(list(b2a_hex(x) for x in list(aOctet)))
+
+  ret = {'info':{'model':'unknown', 'type':'generic','hostname':'unknown','version':None,'serial':None,'sysmac':'00:00:00:00:00:00'}}
   try:
-   # .1.3.6.1.2.1.1.1.0 : Device info
-   # .1.3.6.1.2.1.1.5.0 : Device name
-   # .1.3.6.1.2.1.1.2.0 : Device Enterprise oid :-)
-   devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   session.get(devobjs)
+   # Device info, Device name, Enterprise OID
+   devoid = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
+   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
+   session.get(devoid)
    ret['result'] = "OK" if (session.ErrorInd == 0) else "NOT_OK"
+   session.get(sysoid)
   except Exception as err:
-   ret['snmp'] = "Not able to do SNMP lookup (check snmp -> read_community): %s"%str(err)
-  else:
-   ret['info'] = {'model':'unknown', 'type':'generic','snmp':devobjs[1].val.lower() if devobjs[1].val else 'unknown','version':None,'serial':None}
-   if devobjs[2].val:
-    try:    enterprise = devobjs[2].val.split('.')[7]
+   ret['result'] = 'NOT_OK'
+   ret['error'] = "Not able to do SNMP lookup (check snmp -> read_community): %s"%str(err)
+  if ret['result'] == 'OK':
+   if sysoid[0].val:
+    try: ret['info']['sysmac'] = hex2ascii(sysoid[0].val)
+    except: pass
+   if devoid[1].val:
+    ret['info']['hostname'] = devoid[1].val.lower()
+   if devoid[2].val:
+    try:    enterprise = devoid[2].val.split('.')[7]
     except: enterprise = 0
-    infolist = devobjs[0].val.split()
+    infolist = devoid[0].val.split()
+    ret['info']['enterprise'] = enterprise
     if enterprise == '2636':
      # Juniper
      try:
@@ -182,6 +189,15 @@ class Device(object):
         break
      try:    ret['info']['version'] = infolist[infolist.index('JUNOS') + 1][:-1].lower()
      except: pass
+    elif enterprise == '14525':
+     ret['info']['type'] = 'wlc'
+     try:
+      extobj = VarList(Varbind('.1.3.6.1.4.1.14525.4.2.1.1.0'),Varbind('.1.3.6.1.4.1.14525.4.2.1.4.0'))
+      session.get(extobj)
+      ret['info']['serial'] = extobj[0].val
+      ret['info']['version'] = extobj[1].val
+     except: pass
+     ret['info']['model'] = " ".join(infolist[0:4]) 
     elif enterprise == '4526':
      # Netgear
      ret['info']['type'] = 'netgear'
@@ -192,7 +208,8 @@ class Device(object):
       ret['info']['serial'] = extobj[1].val
       ret['info']['version'] = extobj[2].val
      except: pass
-    elif infolist[0] == "VMware":
+    elif enterprise == '6876':
+     # VMware
      ret['info']['type']  = "esxi"
      try:
       extobj = VarList(Varbind('.1.3.6.1.4.1.6876.1.1.0'),Varbind('.1.3.6.1.4.1.6876.1.2.0'),Varbind('.1.3.6.1.4.1.6876.1.4.0'))
@@ -202,8 +219,9 @@ class Device(object):
      except: pass
     # Linux
     elif infolist[0] == "Linux":
-     ret['info']['model'] = 'debian' if "Debian" in devobjs[0].val else 'generic'
+     ret['info']['model'] = 'debian' if "Debian" in devoid[0].val else 'generic'
     else:
      ret['info']['model'] = " ".join(infolist[0:4])
+  else:
+   ret['error'] = 'Timeout'
   return ret
-

@@ -43,7 +43,9 @@ def info(aDict):
    lookup = dev.detect()
    ret['result'] = lookup
    if lookup['result'] == 'OK':
-    args = {'model':lookup['info']['model'],'snmp':lookup['info']['snmp'],'version':lookup['info']['version'],'serial':lookup['info']['serial']}
+    try:   sysmac = int(lookup['info']['sysmac'].replace(":",""),16)
+    except:sysmac = 0
+    args = {'model':lookup['info']['model'],'snmp':lookup['info']['hostname'],'version':lookup['info']['version'],'serial':lookup['info']['serial'],'sysmac':sysmac}
     for type in ret['types']:
      if type['name'] == lookup['info']['type']:
       args['type_id'] = type['id']
