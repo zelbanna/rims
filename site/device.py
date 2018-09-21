@@ -110,7 +110,7 @@ def types_list(aWeb):
 #
 #
 def info(aWeb):
- cookie = aWeb.cookie('system') 
+ cookie = aWeb.cookie('system')
  args = aWeb.args()
  args['extra'] = ['types']
  dev = aWeb.rest_call("device_info",args)
@@ -136,7 +136,9 @@ def info(aWeb):
  aWeb.wr("<!-- Additional info -->")
  aWeb.wr("<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr ID=div_reservation_info><DIV CLASS=td>Reserve:</DIV>")
- if dev['reserved']:
+ if dev['info']['type_name'] == 'controlplane':
+  aWeb.wr("<DIV CLASS=td>N/A</DIV>")
+ elif dev['reserved']:
   aWeb.wr("<DIV CLASS='td %s'>"%("red" if dev['reservation']['valid'] == 1 else "orange"))
   aWeb.wr(dev['reservation']['alias'] if dev['reservation']['user_id'] != int(cookie['id']) else "<A CLASS=z-op DIV=div_reservation_info URL='reservations_update?op=drop&id=%s'>%s</A>"%(dev['id'],dev['reservation']['alias']))
   aWeb.wr("</DIV>")
