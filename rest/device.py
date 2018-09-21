@@ -80,7 +80,8 @@ def info(aDict):
    netconf = db.get_dict('parameter')
    ret['username'] = netconf['username']['value']
    if not op == 'basics':
-    ret['info']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
+    try:    ret['info']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
+    except: ret['info']['mac'] = "00:00:00:00:00:00"
     if not ret['info']['functions']:
      ret['info']['functions'] = ""
     ret['reserved'] = (db.do("SELECT users.alias, reservations.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM reservations LEFT JOIN users ON reservations.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1)
