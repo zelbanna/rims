@@ -123,6 +123,7 @@ CREATE TABLE `ipam_addresses` (
   `network_id` int(10) unsigned NOT NULL,
   `type` varchar(10) DEFAULT 'device',
   `state` tinyint(1) DEFAULT '0',
+  `mac` bigint(20) unsigned DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `ip_network` (`ip`,`network_id`),
   KEY `network_id` (`network_id`),
