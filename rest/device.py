@@ -59,15 +59,16 @@ def info(aDict):
    if not aDict.get('url'):
     aDict['url'] = 'NULL'
    if aDict.get('mac'):
-    try: aDict['mac'] = int(aDict['mac'].replace(":",""),16)
-    except: aDict['mac'] = 0
+    try:   mac = int(aDict.pop('mac','0').replace(":",""),16)
+    except:mac = 0
+    db.do("UPDATE ipam_addresses SET mac = '%s' WHERE id = (SELECT ipam_id FROM devices WHERE id = %s)"%(mac,ret['id']))
    ret['update'] = (db.update_dict('devices',aDict,"id=%s"%ret['id']) == 1)
 
   # Basic or complete info?
   if op == 'basics':
    sql = "SELECT devices.id, devices.url, devices.hostname, domains.name AS domain, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
   else:
-   sql = "SELECT devices.*, dt.base AS type_base, dt.name as type_name, functions, a.name as domain, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
+   sql = "SELECT devices.*, dt.base AS type_base, dt.name as type_name, functions, a.name as domain, ia.mac, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
   ret['found'] = (db.do(sql%srch) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
@@ -260,8 +261,8 @@ def list(aDict):
    tune.append("device_types AS dt ON dt.id = devices.type_id")
    filter.append("dt.base = '%(search)s'"%aDict)
   elif aDict['field'] == 'mac':
-   try:    filter.append("mac = %i"%int(aDict['search'].replace(":",""),16))
-   except: filter.append("mac <> 0")
+   try:    filter.append("ia.mac = %i"%int(aDict['search'].replace(":",""),16))
+   except: filter.append("ia.mac <> 0")
   else:
    filter.append("devices.%(field)s IN (%(search)s)"%aDict)
 
@@ -274,7 +275,7 @@ def list(aDict):
   if 'url' in extras:
    fields.append('devices.url')
   if 'mac' in extras:
-   fields.append('devices.mac')
+   fields.append('ia.mac')
   if 'system' in extras:
    fields.extend(['devices.serial','devices.version','ia.state'])
 
@@ -283,10 +284,9 @@ def list(aDict):
   ret['count'] = db.do(sql)
   data = db.get_rows()
   if extras and 'mac' in extras:
-   def GL_int2mac(aInt):
-    return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
    for row in data:
-    row['mac'] = GL_int2mac(row['mac'])
+    try: row['mac'] = ':'.join(s.encode('hex') for s in str(hex(row['mac']))[2:].zfill(12).decode('hex')).lower()
+    except: pass
   ret['data'] = data if not aDict.get('dict') else { row[aDict['dict']]: row for row in data }
  return ret
 
@@ -339,14 +339,12 @@ def new(aDict):
  with DB() as db:
   ret['fqdn'] = (db.do("SELECT id AS existing_device_id, hostname, a_dom_id FROM devices WHERE hostname = '%(hostname)s' AND a_dom_id = %(a_dom_id)s"%aDict) == 0)
   if ret['fqdn']:
-   try:    mac = int(aDict.get('mac','0').replace(":",""),16)
-   except: mac = 0
    if alloc:
     from zdcp.rest.dns import record_device_update
     dns = record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']})
-    ret['insert'] = db.do("INSERT INTO devices(vm,mac,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
+    ret['insert'] = db.do("INSERT INTO devices(vm,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
    else:
-    ret['insert'] = db.do("INSERT INTO devices(vm,mac,hostname,snmp,model) VALUES(%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),mac,aDict['hostname']))
+    ret['insert'] = db.do("INSERT INTO devices(vm,hostname,snmp,model) VALUES(%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['hostname']))
    ret['id']   = db.get_last_id()
    if aDict.get('rack'):
     ret['racked'] = (db.do("INSERT INTO rack_info SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict['rack'])) == 1)
@@ -370,7 +368,7 @@ def delete(aDict):
  Output:
  """
  with DB() as db:
-  found = (db.do("SELECT hostname, ine.reverse_zone_id, ipam_id, mac, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %s"%aDict['id']) > 0)
+  found = (db.do("SELECT hostname, ine.reverse_zone_id, ipam_id, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %s"%aDict['id']) > 0)
   if not found:
    ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
   else:
@@ -474,13 +472,11 @@ def server_macs(aDict):
  Output:
  """
  ret = {}
- def GL_int2mac(aInt):
-  return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
  with DB() as db:
-  ret['count'] = db.do("SELECT devices.id, hostname, mac, name AS domain, INET_NTOA(ia.ip) AS ip, ia.network_id AS network FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks ON ipam_networks.id = ia.network_id WHERE mac > 0 AND ipam_networks.server_id = %s"%aDict['id'])
+  ret['count'] = db.do("SELECT devices.id, hostname, ia.mac, name AS domain, INET_NTOA(ia.ip) AS ip, ia.network_id AS network FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks ON ipam_networks.id = ia.network_id WHERE ia.mac > 0 AND ipam_networks.server_id = %s"%aDict['id'])
   ret['data']  = db.get_rows()
   for row in ret['data']:
-   row['mac'] = GL_int2mac(row['mac'])
+   row['mac'] = ':'.join(s.encode('hex') for s in str(hex(row['mac']))[2:].zfill(12).decode('hex')).lower()
  return ret
 
 ############################################## Specials ###############################################
