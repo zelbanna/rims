@@ -55,7 +55,7 @@ def main(aWeb):
 #
 def list(aWeb):
  args = aWeb.args()
- args['sort'] = aWeb.get('sort','ip')
+ args['sort'] = aWeb.get('sort','hostname')
  res = aWeb.rest_call("device_list",args)
  aWeb.wr("<ARTICLE><P>Device List</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content_left',  URL='device_list?%s'%aWeb.get_args(), TITLE='Reload'))
@@ -66,9 +66,9 @@ def list(aWeb):
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead>")
  for sort in ['IP','Hostname']:
   aWeb.wr("<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='device_list?sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red"))
- aWeb.wr("<DIV CLASS=th>State</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=th STYLE='width:30px;'>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='device_info?id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'>%s</DIV><DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%(row['id'],row['id'],row['ip'], row['hostname'], {0:'grey',1:'green',2:'red',3:'orange'}.get(row['state'],'orange')))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'><A CLASS=z-op DIV=div_content_right URL='device_info?id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%(row['ip'],row['id'],row['id'], row['hostname'], {0:'grey',1:'green',2:'red',3:'orange'}.get(row['state'],'orange')))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -104,7 +104,7 @@ def types_list(aWeb):
  aWeb.wr("<ARTICLE><P>Device Types<P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Class</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Icon</DIV></DIV><DIV CLASS=tbody>")
  for tp in res['types']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='device_list?field=type&search=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV></DIV>"%(tp['base'],tp['name'],tp['name'],tp['icon']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='device_list?field=type&search=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV></DIV>"%(tp['base'],tp['name'],tp['name'],tp['icon'].rpartition('/')[2]))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 #
