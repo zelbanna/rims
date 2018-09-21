@@ -343,9 +343,9 @@ def new(aDict):
    if alloc:
     from zdcp.rest.dns import record_device_update
     dns = record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']})
-    ret['insert'] = db.do("INSERT INTO devices(vm,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
+    ret['insert'] = db.do("INSERT INTO devices(vm,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
    else:
-    ret['insert'] = db.do("INSERT INTO devices(vm,hostname,snmp,model) VALUES(%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['hostname']))
+    ret['insert'] = db.do("INSERT INTO devices(vm,hostname,snmp,model) VALUES(%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['hostname']))
    ret['id']   = db.get_last_id()
    if aDict.get('rack'):
     ret['racked'] = (db.do("INSERT INTO rack_info SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aDict['rack'])) == 1)
