@@ -135,10 +135,16 @@ def network_inventory(aDict):
   ret['network'] = network['netasc']
   ret['gateway'] = network['gwasc']
   fields = ['ip AS ip_integer','INET_NTOA(ip) AS ip','id']
-  if aDict.get('extra'):
-   fields.extend(aDict['extra'])
+  fields.extend(aDict.get('extra',[]))
   ret['count']   = db.do("SELECT %s FROM ipam_addresses WHERE network_id = %s ORDER BY ip_integer"%(",".join(fields),aDict['id']))
-  ret['entries'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict['dict'])
+  entries = db.get_rows()
+  if 'mac' in aDict.get('extra',[]):
+   for ip in entries:
+    ip['mac'] = ':'.join(s.encode('hex') for s in str(hex(ip['mac']))[2:].zfill(12).decode('hex')).lower()
+  if not aDict.get('dict'):
+   ret['entries'] = entries
+  else:
+   ret['entries'] = {e[aDict['dict']]:e for e in entries}
  return ret
 
 #
@@ -303,6 +309,7 @@ def address_allocate(aDict):
  Args:
   - ip (required)
   - network_id (required)
+  - mac (optional)
 
  Output:
   - valid (boolean) Indicates valid within network
@@ -310,11 +317,13 @@ def address_allocate(aDict):
   - id. Id of address
  """
  ret = {'success':False}
+ try:    mac = int(str(aDict.get('mac','0')).replace(":",""),16)
+ except: mac = 0
  with DB() as db:
   ret['valid'] = (db.do("SELECT network FROM ipam_networks WHERE id = %(network_id)s AND INET_ATON('%(ip)s') > network AND INET_ATON('%(ip)s') < (network + POW(2,(32-mask))-1)"%aDict) == 1)
   if ret['valid']:
    try:
-    ret['success'] = (db.do("INSERT INTO ipam_addresses(ip,network_id) VALUES(INET_ATON('%(ip)s'),%(network_id)s)"%aDict) == 1)
+    ret['success'] = (db.do("INSERT INTO ipam_addresses(ip,network_id,mac) VALUES(INET_ATON('%s'),%s,%s)"%(aDict['ip'],aDict['network_id'],mac)) == 1)
     ret['id']= db.get_last_id() if ret['success'] else None
    except: pass
  return ret

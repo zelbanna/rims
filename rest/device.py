@@ -329,7 +329,7 @@ def new(aDict):
   return {'info':'Hostname unknown not allowed'}
  elif aDict.get('ipam_network_id') and aDict.get('ip'):
   from zdcp.rest.ipam import address_allocate
-  alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['ipam_network_id']})
+  alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['ipam_network_id'],'mac':aDict.get('mac',0)})
   if   not alloc['valid']:
    return {'info':'IP not in network range'}
   elif not alloc['success']:
