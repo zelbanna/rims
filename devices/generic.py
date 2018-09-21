@@ -89,6 +89,60 @@ class Device(object):
    self.log_msg("Generic : error traversing interfaces: " + str(exception_error))
   return interfaces
 
+ def lldp(self):
+  from binascii import b2a_hex
+  from zdcp.Settings import Settings
+  from netsnmp import VarList, Varbind, Session
+  def hex2ascii(aOctet):
+   return ":".join(list(b2a_hex(x) for x in list(aOctet)))
+  neighbors = {}
+  ret = {'sysmac':'00:00:00:00:00:00','neighbors':neighbors}
+  try:
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
+   locoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.7.1.4'))
+   # RemMac, RemDesc, RemIndx
+   remoid = VarList(Varbind('.1.0.8802.1.1.2.1.4.1.1.5'),Varbind('.1.0.8802.1.1.2.1.4.1.1.8'),Varbind('.1.0.8802.1.1.2.1.4.1.1.7'),Varbind('.1.0.8802.1.1.2.1.4.1.1.9'))
+   session.get(sysoid)
+   session.walk(locoid)
+   session.walk(remoid)
+   ret['sysmac'] = hex2ascii(sysoid[0].val)
+   for x in locoid:
+    neighbors[x.iid] = {'local_interface':x.val}
+   for entry in remoid:
+    parts = entry.tag.split('.')
+    n = neighbors.get(parts[-1],{})
+    tag = ".".join(parts[0:12])
+    if   tag == '.1.0.8802.1.1.2.1.4.1.1.5':
+     n['remote_mac'] = hex2ascii(entry.val)
+    elif tag == '.1.0.8802.1.1.2.1.4.1.1.7':
+     n['remote_identifier'] = entry.val
+    elif tag == '.1.0.8802.1.1.2.1.4.1.1.8':
+     n['remote_desc'] = entry.val
+    elif tag == '.1.0.8802.1.1.2.1.4.1.1.9':
+     n['remote_hostname'] = entry.val
+    else:
+     n['unknown'] = entry.val
+  except Exception as exception_error:
+   elf.log_msg("Generic : error traversing neighbors: " + str(exception_error))
+  return ret
+
+ def sysmac(self):
+  from binascii import b2a_hex
+  from zdcp.Settings import Settings
+  from netsnmp import VarList, Varbind, Session
+  def hex2ascii(aOctet):
+   return ":".join(list(b2a_hex(x) for x in list(aOctet)))
+  ret = {'sysmac':'00:00:00:00:00:00'}
+  try:
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
+   session.get(sysoid)
+   ret['sysmac'] = hex2ascii(sysoid[0].val)
+  except Exception as exception_error:
+   elf.log_msg("Generic : error finding sysmac: " + str(exception_error))
+  return ret
+
  def detect(self):
   ret = {}
   from zdcp.Settings import Settings
@@ -96,7 +150,7 @@ class Device(object):
   try:
    # .1.3.6.1.2.1.1.1.0 : Device info
    # .1.3.6.1.2.1.1.5.0 : Device name
-   # .1.3.6.1.2.1.1.2.0 : Device Enterprise Obj :-)
+   # .1.3.6.1.2.1.1.2.0 : Device Enterprise oid :-)
    devobjs = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(devobjs)
@@ -152,3 +206,4 @@ class Device(object):
     else:
      ret['info']['model'] = " ".join(infolist[0:4])
   return ret
+
