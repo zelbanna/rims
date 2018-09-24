@@ -905,7 +905,7 @@ def interface_sync(aDict):
     args['port'] = "di.name = '%s'"%v['port_id']
    elif v['port_type'] == 7:
     # Locally defined... should really look into remote device and see what it configures.. complex, so simplify
-    args['port'] = "di.name = '%s'"%v['port_id']
+    args['port'] = "di.name = '%s' OR di.name = '%s'"%(v['port_id'],v['port_desc'])
    if len(v['port_desc']) > 0:
     args['desc'] = "di.description COLLATE UTF8_GENERAL_CI LIKE '%%%s%%'"%v['port_desc']
    else:
