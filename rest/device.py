@@ -72,7 +72,7 @@ def info(aDict):
   if op == 'basics':
    sql = "SELECT devices.id, devices.url, devices.hostname, domains.name AS domain, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
   else:
-   sql = "SELECT devices.*, dt.base AS type_base, dt.name as type_name, functions, a.name as domain, ia.mac, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
+   sql = "SELECT devices.*, dt.base AS type_base, dt.name as type_name, functions, a.name as domain, ia.mac AS ip_mac, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
   ret['found'] = (db.do(sql%srch) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
@@ -84,7 +84,7 @@ def info(aDict):
    netconf = db.get_dict('parameter')
    ret['username'] = netconf['username']['value']
    if not op == 'basics':
-    try:    ret['info']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
+    try:    ret['info']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['ip_mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['ip_mac'] != 0 else "00:00:00:00:00:00"
     except: ret['info']['mac'] = "00:00:00:00:00:00"
     if not ret['info']['functions']:
      ret['info']['functions'] = ""
@@ -904,10 +904,10 @@ def interface_sync(aDict):
    elif v['port_type'] == 5:
     args['port'] = "di.name = '%s'"%v['port_id']
    elif v['port_type'] == 7:
-    # Locally defined... should really look into remote device and see what it configures.. complex, so simplify
+    # Locally defined... should really look into remote device and see what it configures.. complex, so simplify and guess
     args['port'] = "di.name = '%s' OR di.name = '%s'"%(v['port_id'],v['port_desc'])
    if len(v['port_desc']) > 0:
-    args['desc'] = "di.description COLLATE UTF8_GENERAL_CI LIKE '%%%s%%'"%v['port_desc']
+    args['desc'] = "di.description COLLATE UTF8_GENERAL_CI LIKE '%s'"%v['port_desc']
    else:
     args['desc'] = "FALSE"
    db.do(sql_rem%(args['id'],args['port'],args['desc']))
