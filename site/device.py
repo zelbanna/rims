@@ -462,9 +462,9 @@ def interface_sync(aWeb):
  res = aWeb.rest_call("device_interface_sync",{'id':aWeb['id']})
  tmpl = "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"
  aWeb.wr("<ARTICLE><P>LLDP sync operation</P>")
- aWeb.wr(aWeb.button('reload', DIV='div_dev_data',URL='device_interface_list?device=%s'%res['id']))
+ aWeb.wr(aWeb.button('items', DIV='div_dev_data',URL='device_interface_list?device=%s'%res['id']))
  aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device=%(id)s&op=discover' SPIN='true' MSG='Rediscover interfaces?' TITLE='Discover interfaces'>Discover</A>"%res)
- aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_sync?device=%(id)s' TITLE='LLDP Sync' SPIN=true>LLDP</A>"%res)
+ aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_sync?id=%(id)s' TITLE='LLDP Sync' SPIN=true>LLDP</A>"%res)
  aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device=%(id)s&op=delete&device_id=%(id)s' TITLE='Clean up empty interfaces' SPIN=true>Cleanup</A>"%res)
  aWeb.wr("<DIV CLASS=table>")
  aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>SNMP Name</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Chassis Type</DIV><DIV CLASS=th>Chassis ID</DIV><DIV CLASS=th>Port Type</DIV><DIV CLASS=th>Port ID</DIV><DIV CLASS=th>Port Desc</DIV><DIV CLASS=th>Sys Name</DIV><DIV CLASS=th>Local ID</DIV><DIV CLASS=th>Peer ID</DIV></DIV>")

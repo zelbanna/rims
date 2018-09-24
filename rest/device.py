@@ -185,7 +185,7 @@ def extended(aDict):
     ret['result']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
 
   # Now fetch info
-  ret['found'] = (db.do("SELECT vm, mac, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT vm, devices.mac, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['ip'] = ret['info'].pop('ip',None)
@@ -456,10 +456,10 @@ def discover(aDict):
 #
 #
 def system_mac_discover(aDict):
- """Function discovers system macs on a network segment
+ """Function discovers system macs (on a network segment)
 
  Args:
-  - network_id (required)
+  - network_id (optional)
 
  Output:
  """
@@ -482,7 +482,8 @@ def system_mac_discover(aDict):
   return True
 
  with DB() as db:
-  count   = db.do("SELECT hostname, devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.network_id = %s AND ia.state = 1 AND devices.mac = 0"%aDict['network_id'])
+  network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id'] 
+  count   = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND devices.mac = 0"%network)
   devices = db.get_rows()
   if count > 0:
    try:
@@ -797,6 +798,7 @@ def interface_sync(aDict):
 
  Output:
  """
+ from netsnmp import VarList, Varbind, Session
  from struct import unpack
  from socket import inet_aton
  from binascii import b2a_hex
@@ -815,21 +817,25 @@ def interface_sync(aDict):
  def ip2int(addr):
   return unpack("!I", inet_aton(addr))[0]
 
- def lldp(aIP):
-  from netsnmp import VarList, Varbind, Session
-  lneighbors = {}
-  lret = {'mac':'00:00:00:00:00:00','neighbors':lneighbors}
+ def interface(aIP,aIndex):
   try:
    session = Session(Version = 2, DestHost = aIP, Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
+   ifoid   = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex),Varbind('.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex))
+   session.get(ifoid)
+   name,desc = ifoid[0].val,ifoid[1].val if ifoid[1].val != "" else "None"
+  except: pass
+  return {'name':name,'description':desc}
+
+ def lldp(aIP):
+  lneighbors = {}
+  try:
+   session = Session(Version = 2, DestHost = aIP, Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    locoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.7.1.3'))
    # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
    # Types defined in 802.1AB-2005
    remoid = VarList(Varbind('.1.0.8802.1.1.2.1.4.1.1'))
-   session.get(sysoid)
    session.walk(locoid)
    session.walk(remoid)
-   lret['mac'] = hex2ascii(sysoid[0].val)
    for x in locoid:
     lneighbors[x.iid] = {'snmp_name':x.val,'snmp_index':x.iid}
    for entry in remoid:
@@ -839,10 +845,8 @@ def interface_sync(aDict):
     if   t == '4':
      n['chassis_type'] = int(entry.val)
     elif t == '5':
-     #MAC
      if n['chassis_type'] == 4:
       n['chassis_id'] = hex2ascii(entry.val)
-     # IP
      elif n['chassis_type'] == 5:
       n['chassis_id'] = hex2ascii2(entry.val).partition('.')[2]
      else:
@@ -863,18 +867,33 @@ def interface_sync(aDict):
    for k in lneighbors.keys():
     if not lneighbors[k].get('chassis_type'):
      lneighbors.pop(k,None)
-  return lret
+  return lneighbors
 
  with DB() as db:
-  db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.mac, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%(aDict['id']))
+  sql_dev = "SELECT INET_NTOA(ia.ip) AS ip, devices.mac, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"
+  sql_lcl = "SELECT id,multipoint,peer_interface FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s"
+  sql_ins = "INSERT INTO device_interfaces(device, snmp_index, name, description) VALUES(%s,%s,'%s','%s')"
+  sql_rem = "SELECT di.multipoint, di.name, di.peer_interface, di.mac, di.id, di.description, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN devices ON devices.id = di.device LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s AND (%s OR %s)"
+  sql_set = "UPDATE device_interfaces SET peer_interface = %s WHERE id = %s AND multipoint = 0"
+  db.do(sql_dev%aDict['id'])
   device = db.get_row()
   info = lldp(device['ip'])
-  for k,v in info['neighbors'].iteritems():
-   db.do("SELECT name, peer_interface, mac, id, description FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s AND multipoint = 0"%(aDict['id'],k))
+  for k,v in info.iteritems():
+   db.do(sql_lcl%(aDict['id'],k))
    local = db.get_row()
    if not local:
-    continue
-   v['local_id'] = local['id']
+    # Find a local interface
+    intf = interface(device['ip'],k)
+    db.do(sql_ins%(aDict['id'],k,intf['name'],intf['description']))
+    local = {'id':db.get_last_id(),'multipoint':0,'peer_interface':None}
+    v['local_id'] = local['id']
+    v['extra'] = 'created_local_if'
+   else:
+    if local['multipoint'] == 0:
+     v['local_id'] = local['id']
+    else:
+     v['result'] = 'multipoint'
+     continue
    args = {}
    if   v['chassis_type'] == 4:
     args['id'] = "devices.mac = %s"%mac2int(v['chassis_id'])
@@ -882,24 +901,29 @@ def interface_sync(aDict):
     args['id'] = "ia.ip = %s"%ip2int(v['chassis_id'])
    if   v['port_type'] == 3:
     args['port'] = "di.mac = %s"%mac2int(v['port_id'])
-   elif v['port_type'] == 5 or v['port_type'] == 7:
+   elif v['port_type'] == 5:
+    args['port'] = "di.name = '%s'"%v['port_id']
+   elif v['port_type'] == 7:
+    # Locally defined... should really look into remote device and see what it configures.. complex, so simplify
     args['port'] = "di.name = '%s'"%v['port_id']
    if len(v['port_desc']) > 0:
     args['desc'] = "di.description COLLATE UTF8_GENERAL_CI LIKE '%%%s%%'"%v['port_desc']
    else:
     args['desc'] = "FALSE"
-   db.do("SELECT di.multipoint, di.name, di.peer_interface, di.mac, di.id, di.description, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN devices ON devices.id = di.device LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s AND (%s OR %s)"%(args['id'],args['port'],args['desc']))
+   db.do(sql_rem%(args['id'],args['port'],args['desc']))
    remote = db.get_row()
    if remote:
     if remote['peer_interface']:
      if local['peer_interface'] == remote['id']:
       v['result'] = 'existing_connection'
      else:
-      v['result'] = 'other_mapping'
+      v['result'] = 'other_mapping_type'
     else:
      v['peer_id'] = remote['id']
+     db.do(sql_set%(v['local_id'],remote['id']))
+     db.do(sql_set%(remote['id'],v['local_id']))
      v['result'] = 'new_connection'
    else:
-    v['result'] = 'mapping_impossible'
+    v['result'] = 'chassis_mapping_impossible'
 
- return {'id':aDict['id'], 'connections':info['neighbors']}
+ return {'id':aDict['id'], 'connections':info}

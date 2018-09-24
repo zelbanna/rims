@@ -67,10 +67,10 @@ class Junos(GenericDevice):
 
  def get_interface_name(self, aifl):
   return self._interfacesname.get(aifl.split('.')[0])
- 
+
  #
  # Netconf shit
- # 
+ #
  def ping_rpc(self,ip):
   result = self._router.rpc.ping(host=ip, count='1')
   return len(result.xpath("ping-success"))
@@ -134,6 +134,7 @@ class Junos(GenericDevice):
               '%s routing-options static route 0.0.0.0/0 no-readvertise'%base,
               '%s snmp community %s clients %s/%s'%(base,Settings['snmp']['read_community'],argdict['network'],argdict['mask']),
               '%s protocols lldp port-description-type interface-description'%base,
+              '%s protocols lldp port-id-subtype interface-name'%base,
               '%s protocols lldp interface all'%base,
               '%s class-of-service host-outbound-traffic forwarding-class network-control'%base,
               'set apply-groups default_system'])
