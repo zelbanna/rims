@@ -793,14 +793,14 @@ def interface_sync(aDict):
  """Function discovers connections using lldp info
 
  Args:
-  - device (required)
+  - id (required)
 
  Output:
  """
  from struct import unpack
  from socket import inet_aton
  from binascii import b2a_hex
- from __builtin__ import list 
+ from __builtin__ import list
 
  def hex2ascii(aOctet):
   return ":".join(list(b2a_hex(x) for x in list(aOctet)))
@@ -866,11 +866,11 @@ def interface_sync(aDict):
   return lret
 
  with DB() as db:
-  db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.mac, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%(aDict['device']))
+  db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.mac, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%(aDict['id']))
   device = db.get_row()
   info = lldp(device['ip'])
   for k,v in info['neighbors'].iteritems():
-   db.do("SELECT name, peer_interface, mac, id, description FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s AND multipoint = 0"%(aDict['device'],k))
+   db.do("SELECT name, peer_interface, mac, id, description FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s AND multipoint = 0"%(aDict['id'],k))
    local = db.get_row()
    if not local:
     continue
@@ -900,6 +900,6 @@ def interface_sync(aDict):
      v['peer_id'] = remote['id']
      v['result'] = 'new_connection'
    else:
-    v['result'] = ['mapping_impossible']
+    v['result'] = 'mapping_impossible'
 
- return {'connections':info['neighbors']}
+ return {'id':aDict['id'], 'connections':info['neighbors']}
