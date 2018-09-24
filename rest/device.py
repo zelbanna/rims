@@ -917,7 +917,7 @@ def interface_sync(aDict):
      if local['peer_interface'] == remote['id']:
       v['result'] = 'existing_connection'
      else:
-      v['result'] = 'other_mapping_type'
+      v['result'] = 'other_mapping_type(%s:%s)'%(local['peer_interface'],remote['id'])
     else:
      v['peer_id'] = remote['id']
      db.do(sql_set%(v['local_id'],remote['id']))
