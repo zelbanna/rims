@@ -95,46 +95,6 @@ class Device(object):
 
  #
  #
- def lldp(self):
-  from binascii import b2a_hex
-  from zdcp.Settings import Settings
-  from netsnmp import VarList, Varbind, Session
-  def hex2ascii(aOctet):
-   return ":".join(list(b2a_hex(x) for x in list(aOctet)))
-  neighbors = {}
-  ret = {'sysmac':'00:00:00:00:00:00','neighbors':neighbors}
-  try:
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
-   locoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.7.1.4'))
-   # RemMac, RemDesc, RemIndx
-   remoid = VarList(Varbind('.1.0.8802.1.1.2.1.4.1.1.5'),Varbind('.1.0.8802.1.1.2.1.4.1.1.8'),Varbind('.1.0.8802.1.1.2.1.4.1.1.7'),Varbind('.1.0.8802.1.1.2.1.4.1.1.9'))
-   session.get(sysoid)
-   session.walk(locoid)
-   session.walk(remoid)
-   ret['sysmac'] = hex2ascii(sysoid[0].val)
-   for x in locoid:
-    neighbors[x.iid] = {'local_interface':x.val}
-   for entry in remoid:
-    parts = entry.tag.split('.')
-    n = neighbors.get(parts[-1],{})
-    tag = ".".join(parts[0:12])
-    if   tag == '.1.0.8802.1.1.2.1.4.1.1.5':
-     n['remote_mac'] = hex2ascii(entry.val)
-    elif tag == '.1.0.8802.1.1.2.1.4.1.1.7':
-     n['remote_identifier'] = entry.val
-    elif tag == '.1.0.8802.1.1.2.1.4.1.1.8':
-     n['remote_desc'] = entry.val
-    elif tag == '.1.0.8802.1.1.2.1.4.1.1.9':
-     n['remote_hostname'] = entry.val
-    else:
-     n['unknown'] = entry.val
-  except Exception as exception_error:
-   elf.log_msg("Generic : error traversing neighbors: " + str(exception_error))
-  return ret
-
- #
- #
  def detect(self):
   from zdcp.Settings import Settings
   from netsnmp import VarList, Varbind, Session
@@ -142,7 +102,7 @@ class Device(object):
   def hex2ascii(aOctet):
    return ":".join(list(b2a_hex(x) for x in list(aOctet)))
 
-  ret = {'info':{'model':'unknown', 'type':'generic','hostname':'unknown','version':None,'serial':None,'sysmac':'00:00:00:00:00:00'}}
+  ret = {'info':{'model':'unknown', 'snmp':'unknown','version':None,'serial':None,'mac':'00:00:00:00:00:00'}}
   try:
    session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    # Device info, Device name, Enterprise OID
@@ -156,15 +116,15 @@ class Device(object):
    ret['error'] = "Not able to do SNMP lookup (check snmp -> read_community): %s"%str(err)
   if ret['result'] == 'OK':
    if sysoid[0].val:
-    try: ret['info']['sysmac'] = hex2ascii(sysoid[0].val)
+    try: ret['info']['mac'] = hex2ascii(sysoid[0].val)
     except: pass
    if devoid[1].val:
-    ret['info']['hostname'] = devoid[1].val.lower()
+    ret['info']['snmp'] = devoid[1].val.lower()
    if devoid[2].val:
     try:    enterprise = devoid[2].val.split('.')[7]
     except: enterprise = 0
     infolist = devoid[0].val.split()
-    ret['info']['enterprise'] = enterprise
+    ret['enterprise_oid'] = enterprise
     if enterprise == '2636':
      # Juniper
      try:

@@ -43,11 +43,12 @@ def info(aDict):
    lookup = dev.detect()
    ret['result'] = lookup
    if lookup['result'] == 'OK':
-    try:   sysmac = int(lookup['info']['sysmac'].replace(":",""),16)
-    except:sysmac = 0
-    args = {'model':lookup['info']['model'],'snmp':lookup['info']['hostname'],'version':lookup['info']['version'],'serial':lookup['info']['serial'],'sysmac':sysmac}
+    args = lookup['info']
+    try:   args['mac'] = int(args['mac'].replace(":",""),16)
+    except:args['mac'] = 0
+    type_name = args.pop('type',None)
     for type in ret['types']:
-     if type['name'] == lookup['info']['type']:
+     if type['name'] == type_name:
       args['type_id'] = type['id']
       break
     ret['update'] = (db.update_dict('devices',args,"id=%s"%ret['id']) == 1)
@@ -61,6 +62,7 @@ def info(aDict):
    if not aDict.get('url'):
     aDict['url'] = 'NULL'
    if aDict.get('mac'):
+    # This is the IP mac and not the device MAC...
     try:   mac = int(aDict.pop('mac','0').replace(":",""),16)
     except:mac = 0
     db.do("UPDATE ipam_addresses SET mac = '%s' WHERE id = (SELECT ipam_id FROM devices WHERE id = %s)"%(mac,ret['id']))
@@ -183,13 +185,13 @@ def extended(aDict):
     ret['result']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
 
   # Now fetch info
-  ret['found'] = (db.do("SELECT vm, sysmac, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT vm, mac, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['ip'] = ret['info'].pop('ip',None)
    vm = ret['info'].pop('vm',None)
-   try:    ret['info']['sysmac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['sysmac']))[2:].zfill(12).decode('hex')).upper() if ret['info']['sysmac'] != 0 else "00:00:00:00:00:00"
-   except: ret['info']['sysmac'] = "00:00:00:00:00:00"
+   try:    ret['info']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).upper() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
+   except: ret['info']['mac'] = "00:00:00:00:00:00"
    # Rack infrastructure
    ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
    if vm == 1:
@@ -438,13 +440,15 @@ def discover(aDict):
 
  # We can now do inserts only (no update) as we skip existing :-)
  with DB() as db:
-  sql = "INSERT INTO devices (a_dom_id, ipam_id, snmp, model, sysmac, type_id, hostname) VALUES ("+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
+  sql = "INSERT INTO devices (a_dom_id, ipam_id, snmp, model, mac, type_id, hostname) VALUES ("+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
   count = 0
   for ip,entry in dev_list.iteritems():
    count += 1
    alloc = address_allocate({'ip':ip,'network_id':aDict['network_id']})
    if alloc['success']:
-    db.do(sql.format(alloc['id'],entry['snmp'],entry['model'],entry['sysmac'],devtypes[entry['type']]['id'],"unknown_%i"%count))
+    try:   entry['mac'] = int(entry['mac'].replace(":",""),16)
+    except:entry['mac'] = 0
+    db.do(sql.format(alloc['id'],entry['snmp'],entry['model'],entry['mac'],devtypes[entry.get('type','generic')]['id'],"unknown_%i"%count))
  ret['time'] = int(time()) - start_time
  ret['found']= len(dev_list)
  return ret
@@ -472,13 +476,13 @@ def system_mac_discover(aDict):
    sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
    session.get(sysoid)
    if sysoid[0].val:
-    aDev['sysmac'] = int("".join(list(b2a_hex(x) for x in list(sysoid[0].val))),16)
+    aDev['mac'] = int("".join(list(b2a_hex(x) for x in list(sysoid[0].val))),16)
   except: pass
   aSema.release()
   return True
 
  with DB() as db:
-  count   = db.do("SELECT hostname, devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.network_id = %s AND ia.state = 1 AND devices.sysmac = 0"%aDict['network_id'])
+  count   = db.do("SELECT hostname, devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.network_id = %s AND ia.state = 1 AND devices.mac = 0"%aDict['network_id'])
   devices = db.get_rows()
   if count > 0:
    try:
@@ -492,8 +496,8 @@ def system_mac_discover(aDict):
    except Exception as err:
     ret['error']   = "Error: %s"%str(err)
    for dev in devices:
-    if dev.get('sysmac'):
-     ret['count'] += db.do("UPDATE devices SET sysmac = %(sysmac)s WHERE id = %(id)s"%dev)
+    if dev.get('mac'):
+     ret['count'] += db.do("UPDATE devices SET mac = %(mac)s WHERE id = %(id)s"%dev)
  return ret
 
 #
@@ -782,3 +786,120 @@ def interface_discover(aDict):
      args = {'device':int(aDict['device']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key}
      ret['insert'] += db.insert_dict('device_interfaces',args)
  return ret
+
+#
+#
+def interface_sync(aDict):
+ """Function discovers connections using lldp info
+
+ Args:
+  - device (required)
+
+ Output:
+ """
+ from struct import unpack
+ from socket import inet_aton
+ from binascii import b2a_hex
+ from __builtin__ import list 
+
+ def hex2ascii(aOctet):
+  return ":".join(list(b2a_hex(x) for x in list(aOctet)))
+
+ def hex2ascii2(aOctet):
+  return ".".join(list(str(int(b2a_hex(x),16)) for x in list(aOctet)))
+
+ def mac2int(aMAC):
+  try:    return int(aMAC.replace(":",""),16)
+  except: return 0
+
+ def ip2int(addr):
+  return unpack("!I", inet_aton(addr))[0]
+
+ def lldp(aIP):
+  from netsnmp import VarList, Varbind, Session
+  lneighbors = {}
+  lret = {'mac':'00:00:00:00:00:00','neighbors':lneighbors}
+  try:
+   session = Session(Version = 2, DestHost = aIP, Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
+   locoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.7.1.3'))
+   # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
+   # Types defined in 802.1AB-2005
+   remoid = VarList(Varbind('.1.0.8802.1.1.2.1.4.1.1'))
+   session.get(sysoid)
+   session.walk(locoid)
+   session.walk(remoid)
+   lret['mac'] = hex2ascii(sysoid[0].val)
+   for x in locoid:
+    lneighbors[x.iid] = {'snmp_name':x.val,'snmp_index':x.iid}
+   for entry in remoid:
+    parts = entry.tag.split('.')
+    n = lneighbors.get(parts[-1],{})
+    t = parts[11]
+    if   t == '4':
+     n['chassis_type'] = int(entry.val)
+    elif t == '5':
+     #MAC
+     if n['chassis_type'] == 4:
+      n['chassis_id'] = hex2ascii(entry.val)
+     # IP
+     elif n['chassis_type'] == 5:
+      n['chassis_id'] = hex2ascii2(entry.val).partition('.')[2]
+     else:
+      n['chassis_id'] = entry.val
+    elif t == '6':
+     n['port_type'] = int(entry.val)
+    elif t == '7':
+     if n['port_type'] == 3:
+      n['port_id'] = hex2ascii(entry.val)
+     else:
+      n['port_id'] = entry.val
+    elif t == '8':
+      n['port_desc'] = entry.val
+    elif t == '9':
+     n['sys_name'] = entry.val
+  except: pass
+  else:
+   for k in lneighbors.keys():
+    if not lneighbors[k].get('chassis_type'):
+     lneighbors.pop(k,None)
+  return lret
+
+ with DB() as db:
+  db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.mac, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%(aDict['device']))
+  device = db.get_row()
+  info = lldp(device['ip'])
+  for k,v in info['neighbors'].iteritems():
+   db.do("SELECT name, peer_interface, mac, id, description FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s AND multipoint = 0"%(aDict['device'],k))
+   local = db.get_row()
+   if not local:
+    continue
+   v['local_id'] = local['id']
+   args = {}
+   if   v['chassis_type'] == 4:
+    args['id'] = "devices.mac = %s"%mac2int(v['chassis_id'])
+   elif v['chassis_type'] == 5:
+    args['id'] = "ia.ip = %s"%ip2int(v['chassis_id'])
+   if   v['port_type'] == 3:
+    args['port'] = "di.mac = %s"%mac2int(v['port_id'])
+   elif v['port_type'] == 5 or v['port_type'] == 7:
+    args['port'] = "di.name = '%s'"%v['port_id']
+   if len(v['port_desc']) > 0:
+    args['desc'] = "di.description COLLATE UTF8_GENERAL_CI LIKE '%%%s%%'"%v['port_desc']
+   else:
+    args['desc'] = "FALSE"
+   db.do("SELECT di.multipoint, di.name, di.peer_interface, di.mac, di.id, di.description, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN devices ON devices.id = di.device LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s AND (%s OR %s)"%(args['id'],args['port'],args['desc']))
+   remote = db.get_row()
+   if remote:
+    if remote['peer_interface']:
+     if local['peer_interface'] == remote['id']:
+      v['result'] = 'existing_connection'
+     else:
+      v['result'] = 'other_mapping'
+    else:
+     v['peer_id'] = remote['id']
+     v['result'] = 'new_connection'
+   else:
+    v['result'] = ['mapping_impossible']
+
+ return {'connections':info['neighbors']}
