@@ -18,15 +18,14 @@ class Device(object):
  def get_functions(cls):
   return []
 
- def __init__(self, aURL = None, aID = None, aToken = None):
+ def __init__(self, aURL = None, aToken = None):
   self._url   = aURL
-  self._id    = aID
   self._token = aToken
   self._expire = None
   self._services = None
 
  def __str__(self):
-  return "Controller[%s,%s,%s,%s]"%(self._id, self._url, self._token, self._expire)
+  return "Controller[%s,%s,%s]"%(self._url, self._token, self._expire)
 
  #
  # Keystone v3 authentication - using v2.0 compatible domain (default), project = admin unless specified

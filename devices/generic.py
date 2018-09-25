@@ -14,14 +14,13 @@ class Device(object):
 
  @classmethod
  def get_functions(cls):
-  return ['info']
+  return []
 
- def __init__(self, aIP, aID = None):
-  self._id = aID
+ def __init__(self, aIP):
   self._ip = aIP
 
  def __str__(self):
-  return "IP:%s ID:%s"%(self._ip, self._id)
+  return "IP:%s"%(self._ip)
 
  def __enter__(self):
   return self
@@ -42,16 +41,17 @@ class Device(object):
    thread = None
   return thread
 
+ #
+ #
  def ping_device(self):
   from os import system
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
 
+ #
+ #
  def log_msg(self, aMsg):
   from zdcp.core.common import log
   log(aMsg)
-
- def info(self):
-  return [{'version':'N/A','model':'generic'}]
 
  #
  #
@@ -89,9 +89,70 @@ class Device(object):
     if entry.tag == '.1.3.6.1.2.1.31.1.1.1.18':
      intf['description'] = entry.val if entry.val != "" else "None"
     interfaces[int(entry.iid)] = intf
-  except Exception as exception_error:
-   self.log_msg("Generic : error traversing interfaces: " + str(exception_error))
+  except: pass
   return interfaces
+
+ #
+ #
+ def interface(self,aIndex):
+  from zdcp.Settings import Settings
+  from netsnmp import VarList, Varbind, Session
+  try:
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   ifoid   = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex),Varbind('.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex))
+   session.get(ifoid)
+   name,desc = ifoid[0].val,ifoid[1].val if ifoid[1].val != "" else "None"
+  except: pass
+  return {'name':name,'description':desc}
+
+ #
+ #
+ def lldp(self):
+  from zdcp.Settings import Settings
+  from netsnmp import VarList, Varbind, Session
+  from binascii import b2a_hex
+
+  neighbors = {}
+  try:
+   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   locoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.7.1.3'))
+   # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
+   # Types defined in 802.1AB-2005
+   remoid = VarList(Varbind('.1.0.8802.1.1.2.1.4.1.1'))
+   session.walk(locoid)
+   session.walk(remoid)
+   for x in locoid:
+    neighbors[x.iid] = {'snmp_name':x.val,'snmp_index':x.iid}
+   for entry in remoid:
+    parts = entry.tag.split('.')
+    n = neighbors.get(parts[-1],{})
+    t = parts[11]
+    if   t == '4':
+     n['chassis_type'] = int(entry.val)
+    elif t == '5':
+     if n['chassis_type'] == 4:
+      n['chassis_id'] = ":".join(list(b2a_hex(x) for x in list(entry.val)))
+     elif n['chassis_type'] == 5:
+      n['chassis_id'] = ".".join(list(str(int(b2a_hex(x),16)) for x in list(entry.val)[1:]))
+     else:
+      n['chassis_id'] = entry.val
+    elif t == '6':
+     n['port_type'] = int(entry.val)
+    elif t == '7':
+     if n['port_type'] == 3:
+      n['port_id'] = ":".join(list(b2a_hex(x) for x in list(entry.val)))
+     else:
+      n['port_id'] = entry.val
+    elif t == '8':
+      n['port_desc'] = entry.val
+    elif t == '9':
+     n['sys_name'] = entry.val
+  except: pass
+  else:
+   for k in neighbors.keys():
+    if not neighbors[k].get('chassis_type'):
+     neighbors.pop(k,None)
+  return neighbors
 
  #
  #
@@ -180,3 +241,4 @@ class Device(object):
   else:
    ret['error'] = 'Timeout'
   return ret
+

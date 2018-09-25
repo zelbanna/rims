@@ -96,15 +96,6 @@ class Junos(GenericDevice):
     ret.append(entry)
   return ret
 
- def lldp(self):
-  neighbors = self._router.rpc.get_lldp_neighbors_information()
-  ret = []
-  for neigh in neighbors:
-   # Remote system always last, remote port second to last, local is always first and pos 3 (2) determines if there is a mac or not
-   fields = len(neigh)-1
-   ret.append({ 'Neighbor':neigh[fields].text, 'MAC':neigh[3].text if neigh[2].text == "Mac address" else '-','Local_port':neigh[0].text,'Destination_port':neigh[fields-1].text })
-  return ret
-
  def info(self):
   return [{'version':self._version,'model':self._model}]
 

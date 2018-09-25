@@ -37,9 +37,9 @@ def application(aDict):
  node = aDict['node']
  try:
   if aDict.get('token'):
-   controller = Device(gSettings['nodes'][node],None,aDict['token'])
+   controller = Device(gSettings['nodes'][node],aDict['token'])
   else:
-   controller = Device(gSettings['nodes'][node],None,None)
+   controller = Device(gSettings['nodes'][node])
    res = controller.auth({'project':gSettings[node]['project'], 'username':gSettings[node]['username'],'password':gSettings[node]['password']})
   ret['choices'] = [{'display':'Customer', 'id':'project', 'data':controller.projects()}]
   for proj in ret['choices'][0]['data']:

@@ -798,76 +798,16 @@ def interface_sync(aDict):
 
  Output:
  """
- from netsnmp import VarList, Varbind, Session
  from struct import unpack
  from socket import inet_aton
- from binascii import b2a_hex
- from __builtin__ import list
-
- def hex2ascii(aOctet):
-  return ":".join(list(b2a_hex(x) for x in list(aOctet)))
-
- def hex2ascii2(aOctet):
-  return ".".join(list(str(int(b2a_hex(x),16)) for x in list(aOctet)))
-
+ from zdcp.devices.generic import Device
+ 
  def mac2int(aMAC):
   try:    return int(aMAC.replace(":",""),16)
   except: return 0
 
  def ip2int(addr):
   return unpack("!I", inet_aton(addr))[0]
-
- def interface(aIP,aIndex):
-  try:
-   session = Session(Version = 2, DestHost = aIP, Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   ifoid   = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex),Varbind('.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex))
-   session.get(ifoid)
-   name,desc = ifoid[0].val,ifoid[1].val if ifoid[1].val != "" else "None"
-  except: pass
-  return {'name':name,'description':desc}
-
- def lldp(aIP):
-  lneighbors = {}
-  try:
-   session = Session(Version = 2, DestHost = aIP, Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   locoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.7.1.3'))
-   # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
-   # Types defined in 802.1AB-2005
-   remoid = VarList(Varbind('.1.0.8802.1.1.2.1.4.1.1'))
-   session.walk(locoid)
-   session.walk(remoid)
-   for x in locoid:
-    lneighbors[x.iid] = {'snmp_name':x.val,'snmp_index':x.iid}
-   for entry in remoid:
-    parts = entry.tag.split('.')
-    n = lneighbors.get(parts[-1],{})
-    t = parts[11]
-    if   t == '4':
-     n['chassis_type'] = int(entry.val)
-    elif t == '5':
-     if n['chassis_type'] == 4:
-      n['chassis_id'] = hex2ascii(entry.val)
-     elif n['chassis_type'] == 5:
-      n['chassis_id'] = hex2ascii2(entry.val).partition('.')[2]
-     else:
-      n['chassis_id'] = entry.val
-    elif t == '6':
-     n['port_type'] = int(entry.val)
-    elif t == '7':
-     if n['port_type'] == 3:
-      n['port_id'] = hex2ascii(entry.val)
-     else:
-      n['port_id'] = entry.val
-    elif t == '8':
-      n['port_desc'] = entry.val
-    elif t == '9':
-     n['sys_name'] = entry.val
-  except: pass
-  else:
-   for k in lneighbors.keys():
-    if not lneighbors[k].get('chassis_type'):
-     lneighbors.pop(k,None)
-  return lneighbors
 
  with DB() as db:
   sql_dev = "SELECT INET_NTOA(ia.ip) AS ip, devices.mac, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"
@@ -876,14 +816,15 @@ def interface_sync(aDict):
   sql_rem = "SELECT di.multipoint, di.name, di.peer_interface, di.mac, di.id, di.description, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN devices ON devices.id = di.device LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s AND (%s OR %s)"
   sql_set = "UPDATE device_interfaces SET peer_interface = %s WHERE id = %s AND multipoint = 0"
   db.do(sql_dev%aDict['id'])
-  device = db.get_row()
-  info = lldp(device['ip'])
+  data = db.get_row()
+  device = Device(data['ip'])
+  info = device.lldp()
   for k,v in info.iteritems():
    db.do(sql_lcl%(aDict['id'],k))
    local = db.get_row()
    if not local:
     # Find a local interface
-    intf = interface(device['ip'],k)
+    intf = device.interface(k)
     db.do(sql_ins%(aDict['id'],k,intf['name'],intf['description']))
     local = {'id':db.get_last_id(),'multipoint':0,'peer_interface':None}
     v['local_id'] = local['id']
