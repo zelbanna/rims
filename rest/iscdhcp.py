@@ -18,7 +18,7 @@ def status(aDict):
  """Function docstring for leases TBD
 
  Args:
-  - type (required)
+  - binding (optional). default "active"
 
  Output:
  """
@@ -37,6 +37,7 @@ def status(aDict):
    if   parts[0] == 'lease' and parts[2] == '{':
     lease['ip'] = parts[1]
    elif parts[0] == '}':
+    if aDict.get('binding','active') == lease['binding']:
      result.append(lease)
     lease = {}
    elif parts[0] == 'hardware' and parts[1] == 'ethernet':
@@ -46,7 +47,7 @@ def status(aDict):
    elif parts[0] == 'starts' or parts[0] == 'ends':
     lease[parts[0]] = " ".join(parts[2:])[:-1]
    elif parts[0] == 'client-hostname':
-    lease['hostname'] = parts[1][:-1]
+    lease['hostname'] = parts[1][1:-2]
   result.sort(key=lambda d: GL_ip2int(d['ip']))
   return {'data':result }
 
@@ -126,5 +127,3 @@ def update(aDict):
   ret['result'] = 'OK'
   ret['devices'] = devices
  return ret
-
-
