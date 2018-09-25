@@ -15,8 +15,8 @@ from generic import Device as GenericDevice
 
 class Device(GenericDevice):
 
- def __init__(self, aIP):
-  GenericDevice.__init__(self,aIP)
+ def __init__(self, aIP, aSettings):
+  GenericDevice.__init__(self,aIP, aSettings)
 
  def __str__(self):
   return "NetGear - {}".format(GenericDevice.__str__(self))

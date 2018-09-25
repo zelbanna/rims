@@ -14,7 +14,7 @@ class Device(object):
  def get_functions(cls):
   return []
 
- def __init__(self, aIP):
+ def __init__(self, aIP, aSettings):
   pass
 
  def __str__(self):

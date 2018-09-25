@@ -39,8 +39,7 @@ def info(aDict):
 
   if op == 'lookup' and ret['ip']:
    from zdcp.devices.generic import Device
-   dev = Device(ret['ip'])
-   dev.settings(gSettings)
+   dev = Device(ret['ip'],gSettings)
    lookup = dev.detect()
    ret['result'] = lookup
    if lookup['result'] == 'OK':
@@ -415,8 +414,7 @@ def discover(aDict):
  from zdcp.devices.generic import Device
 
  def __detect_thread(aIP,aDB,aSema):
-  __dev = Device(aIP)
-  __dev.settings(gSettings)
+  __dev = Device(aIP,gSettings)
   aDB[aIP['ip']] = __dev.detect()['info']
   aSema.release()
   return True
@@ -556,8 +554,7 @@ def function(aDict):
  ret = {}
  try:
   module = import_module("zdcp.devices.%s"%(aDict['type']))
-  dev = getattr(module,'Device',lambda x: None)(aDict['ip'])
-  dev.settings(gSettings)
+  dev = getattr(module,'Device',lambda x: None)(aDict['ip'],gSettings)
   with dev:
    ret['data'] = getattr(dev,aDict['op'],None)()
   ret['result'] = 'OK'
@@ -583,8 +580,7 @@ def configuration_template(aDict):
  ip = data.pop('ip',None)
  try:
   module = import_module("zdcp.devices.%s"%data['type'])
-  dev = getattr(module,'Device',lambda x: None)(ip)
-  dev.settings(gSettings)
+  dev = getattr(module,'Device',lambda x: None)(ip,gSettings)
   ret['data'] = dev.configuration(data)
  except Exception as err:
   ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%str(err)
@@ -775,7 +771,7 @@ def interface_discover(aDict):
   existing = db.get_rows()
   try:
    module  = import_module("zdcp.devices.%s"%(info['type']))
-   dev = getattr(module,'Device',lambda x: None)(info['ip'])
+   dev = getattr(module,'Device',lambda x: None)(info['ip'],gSettings)
    interfaces = dev.interfaces()
   except Exception as err:
    ret['error'] = str(err)
@@ -823,8 +819,7 @@ def interface_sync(aDict):
   db.do(sql_dev%aDict['id'])
   data = db.get_row()
   # TODO: Run this one off the correct node
-  device = Device(data['ip'])
-  device.settings(gSettings)
+  device = Device(data['ip'],gSettings)
   info = device.lldp()
   for k,v in info.iteritems():
    db.do(sql_lcl%(aDict['id'],k))

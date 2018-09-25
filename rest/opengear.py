@@ -15,6 +15,5 @@ def inventory(aDict):
  Output:
  """
  from zdcp.devices.opengear import Device
- ret = {}
- console = Device(aDict['ip'])
+ console = Device(aDict['ip'],gSettings)
  return console.get_inventory()

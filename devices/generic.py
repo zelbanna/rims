@@ -16,9 +16,9 @@ class Device(object):
  def get_functions(cls):
   return []
 
- def __init__(self, aIP):
+ def __init__(self, aIP, aSettings):
   self._ip = aIP
-  self._settings = None
+  self._settings = aSettings
 
  def __str__(self):
   return "IP:%s"%(self._ip)
@@ -28,11 +28,6 @@ class Device(object):
 
  def __exit__(self, *ctx_info):
   pass
-
- #
- #
- def settings(self,aSettings):
-  self._settings = aSettings
 
  #
  #

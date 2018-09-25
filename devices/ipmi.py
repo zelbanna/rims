@@ -11,20 +11,19 @@ __author__ = "Zacharias El Banna"
 __version__ = "4.0GA"
 __status__ = "Production"
 
-from zdcp.Settings import Settings
 from generic import Device as GenericDevice
 
 ################################### IPMI #######################################
 
 class Device(GenericDevice):
 
- def __init__(self,aIP):
-  GenericDevice.__init__(self,aIP)
+ def __init__(self,aIP, aSettings):
+  GenericDevice.__init__(self,aIP, aSettings)
 
  def get_info(self, agrep):
   from subprocess import check_output
   result = []
-  readout = check_output("ipmitool -H " + self._ip + " -U " + Settings['ipmi']['username'] + " -P " + Settings['ipmi']['password'] + " sdr | grep -E '" + agrep + "'",shell=True)
+  readout = check_output("ipmitool -H " + self._ip + " -U " + self._settings['ipmi']['username'] + " -P " + self._settings['ipmi']['password'] + " sdr | grep -E '" + agrep + "'",shell=True)
   for fanline in readout.split('\n'):
    if fanline is not "":
     fan = fanline.split()
@@ -39,5 +38,5 @@ class Device(GenericDevice):
   FNULL = open(devnull, 'w')
   rear  = str2hex(arear)
   front = str2hex(afront)
-  ipmistring = "ipmitool -H " + self._ip + " -U " + Settings['ipmi']['username'] + " -P " + Settings['ipmi']['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
+  ipmistring = "ipmitool -H " + self._ip + " -U " + self._settings['ipmi']['username'] + " -P " + self._settings['ipmi']['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
   return check_call(ipmistring,stdout=FNULL,stderr=FNULL,shell=True)

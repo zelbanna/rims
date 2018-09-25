@@ -22,8 +22,8 @@ class Device(GenericDevice):
  def get_functions(cls):
   return ['switch_table']
 
- def __init__(self,aIP):
-  GenericDevice.__init__(self, aIP)
+ def __init__(self,aIP, aSettings):
+  GenericDevice.__init__(self, aIP, aSettings)
   
  def __str__(self):
   return "WLC - {}".format(GenericDevice.__str__(self))

@@ -20,12 +20,11 @@ class Junos(GenericDevice):
  def get_functions(cls):
   return ['up_interfaces','info' ]
 
- def __init__(self,aIP):
-  GenericDevice.__init__(self,aIP)
+ def __init__(self,aIP, aSettings):
+  GenericDevice.__init__(self,aIP, aSettings)
   from jnpr.junos import Device as JunosDevice
   from jnpr.junos.utils.config import Config
-  from zdcp.Settings import Settings
-  self._router = JunosDevice(self._ip, user=Settings['netconf']['username'], password=Settings['netconf']['password'], normalize=True)
+  self._router = JunosDevice(self._ip, user=aSettings['netconf']['username'], password=aSettings['netconf']['password'], normalize=True)
   self._config = Config(self._router)
   self._model = ""
   self._version = ""

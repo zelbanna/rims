@@ -9,7 +9,6 @@ __status__  = "Production"
 __type__    = "hypervisor"
 __icon__    = "../images/viz-server.png"
 
-from zdcp.Settings import Settings
 from generic import Device as GenericDevice
 
 ########################################### ESXi ############################################
@@ -27,8 +26,8 @@ class Device(GenericDevice):
  def get_functions(cls):
   return ['manage']
 
- def __init__(self,aIP):
-  GenericDevice.__init__(self,aIP)
+ def __init__(self,aIP, aSettings):
+  GenericDevice.__init__(self,aIP, aSettings)
   # Override log file
   def GL_get_host_name(aIP):
    from socket import gethostbyaddr
@@ -37,11 +36,11 @@ class Device(GenericDevice):
 
   self._sshclient = None
   self._hostname = GL_get_host_name(aIP)
-  self._logfile = Settings['esxi']['logformat'].format(self._hostname)
+  self._logfile = self._settings['esxi']['logformat'].format(self._hostname)
 
  def set_name(self, aHostname):
   self._hostname = aHostname
-  self._logfile = Settings['esxi']['logformat'].format(aHostname)
+  self._logfile = self._settings['esxi']['logformat'].format(aHostname)
 
  def __enter__(self):
   if self.ssh_connect():
@@ -70,7 +69,7 @@ class Device(GenericDevice):
    try:
     self._sshclient = SSHClient()
     self._sshclient.set_missing_host_key_policy(AutoAddPolicy())
-    self._sshclient.connect(self._ip, username=Settings['esxi']['username'], password=Settings['esxi']['password'] )
+    self._sshclient.connect(self._ip, username=self._settings['esxi']['username'], password=self._settings['esxi']['password'] )
    except AuthenticationException:
     self.log_msg("DEBUG: Authentication failed when connecting to %s" % self._ip)
     self._sshclient = None
@@ -108,7 +107,7 @@ class Device(GenericDevice):
   from netsnmp import VarList, Varbind, Session
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    for result in vmnameobjs:
     if result.val == aname:
@@ -121,7 +120,7 @@ class Device(GenericDevice):
   from netsnmp import VarList, Varbind, Session
   try:
    vmstateobj = VarList(Varbind(".1.3.6.1.4.1.6876.2.1.1.6." + str(aid)))
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(vmstateobj)
    return vmstateobj[0].val
   except:
@@ -135,7 +134,7 @@ class Device(GenericDevice):
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
    vmstateobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.6'))
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for indx,result in enumerate(vmnameobjs):
