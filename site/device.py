@@ -18,6 +18,7 @@ def main(aWeb):
  aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_list?{0}'>List</A>".format(aWeb.get_args()))
  aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_search'>Search</A>")
  aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_types_list'>Types</A>")
+ aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_tasks'>Tasks</A>")
  aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content_left URL='visualize_list'>Maps</A></LI>")
  if aWeb['rack']:
@@ -71,6 +72,13 @@ def list(aWeb):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'><A CLASS=z-op DIV=div_content_right URL='device_info?id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%(row['ip'],row['id'],row['id'], row['hostname'], {0:'grey',1:'green',2:'red',3:'orange'}.get(row['state'],'orange')))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
+#
+#
+def tasks(aWeb):
+ aWeb.wr("<ARTICLE><P>Device Tasks</P>")
+ aWeb.wr("To be defined")
+ aWeb.wr("</ARTICLE>")
+ 
 #
 #
 def report(aWeb):

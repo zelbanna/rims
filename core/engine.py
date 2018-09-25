@@ -155,123 +155,132 @@ class SessionHandler(BaseHTTPRequestHandler):
   """ Route request to the right function """
   path,_,query = (self.path.lstrip('/')).partition('/')
   if path == 'site':
-   api,_,get = query.partition('?')
-   (mod,_,fun)    = api.partition('_')
-   stream = Stream(self,get)
-   self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200,'X-Proc':'site'})
-   # if True:
-   try:
-    module = import_module("zdcp.site." + mod)
-    getattr(module,fun,None)(stream)
-   # else:
-   except Exception as e:
-    stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
-    try:
-     stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
-     try:
-      for key,value in e[0]['info'].iteritems():
-       stream.wr("%s: %s<BR>"%(key,value))
-     except: stream.wr(e[0]['info'])
-     stream.wr("</DETAILS>")
-    except:
-     stream.wr("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS>"%(type(e).__name__,str(e)))
-    stream.wr("<DETAILS><SUMMARY>Cookie</SUMMARY><CODE>%s</CODE></DETAILS>"%(stream._cookies))
-    stream.wr("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(",".join(stream._form.keys())))
-   self._body = stream.output()
-
+   self.site(query)
   elif path == 'api':
-   # REST API  CALL
-   extras = {}
-   (api,_,get) = query.partition('&')
-   (mod,_,fun) = api.partition('_')
-   if get:
-    for part in get.split("&"):
-     (k,_,v) = part.partition('=')
-     extras[k] = v
-   self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Proc':'API'})
-   self._headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
-   try:
-    length = int(self.headers.getheader('content-length'))
-    args = loads(self.rfile.read(length)) if length > 0 else {}
-   except: args = {}
-   try:
-    with open(self.server._settings['logs']['rest'], 'a') as f:
-     f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api <> "system_task_worker" else "N/A", self.server._node, get.strip())))
-   except: pass
-   try:
-    if self._headers['X-Node'] == self.server._node:
-     module = import_module("zdcp.rest.%s"%mod)
-     module.__add_globals__({'gWorkers':self.server._workers,'gSettings':self.server._settings})
-     self._body = dumps(getattr(module,fun,None)(args))
-    else:
-     req  = Request("%s/api/%s"%(self.server._settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
-     try: sock = urlopen(req, timeout = 300)
-     except HTTPError as h:
-      raw = h.read()
-      try:    data = loads(raw)
-      except: data = raw
-      self._headers.update({ 'X-Exception':'HTTPError', 'X-Code':h.code, 'X-Info':dumps(dict(h.info())), 'X-Data':data })
-     except URLError  as e: self._headers.update({ 'X-Exception':'URLError', 'X-Code':590, 'X-Info':str(e)})
-     except Exception as e: self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':591, 'X-Info':str(e)})
-     else:
-      try: self._body = sock.read()
-      except: pass
-      sock.close()
-   except Exception as e:
-    self._headers.update({'X-Args':args,'X-Info':str(e),'X-Exception':type(e).__name__,'X-Code':500})
-
+   self.api(query)
   elif path == 'infra' or path == 'images' or path == 'files':
-   query = unquote(query)
-   # Infra call
-   self._headers['X-Proc'] = 'infra'
-   if query.endswith(".js"):
-    self._headers['Content-type']='application/javascript; charset=utf-8'
-   elif query.endswith(".css"):
-    self._headers['Content-type']='text/css; charset=utf-8'
-   try:
-    if path == 'files':
-     param,_,file = query.partition('/')
-     fullpath = ospath.join(self.server._settings['files'][param],file)
-    else:
-     fullpath = ospath.join(self.server._path,path,query)
-    if fullpath.endswith("/"):
-     self._headers['Content-type']='text/html; charset=utf-8'
-     _, _, filelist = next(walk(fullpath), (None, None, []))
-     self._body = "<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])
-    else:
-     with open(fullpath, 'rb') as file:
-      self._body = file.read()
-   except Exception as e:
-    self._headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
-
+   self.files(path,query)
   elif path == 'auth':
-   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Proc':'auth'})
-   try:
-    length = int(self.headers.getheader('content-length'))
-    args = loads(self.rfile.read(length)) if length > 0 else {}
-    # Replace with module load and provide correct headers from system_login
-    # There has to be a format for return function of application/authenticate
-    self._body = '"OK"'
-    self._headers['X-Auth-Token']  = random_string(16)
-    self._headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
-   except:
-    self._body = '"NOT_OK"'
-
+   self.auth()
   elif path == 'register':
    self.register()
   else:
    # Redirect to login
    self._headers.update({'Location':'site/system_login?application=%s'%self.server._settings['system'].get('application','system'),'X-Code':301})
 
- def api(self):
-  pass
+ #
+ #
+ def api(self,query):
+  extras = {}
+  (api,_,get) = query.partition('&')
+  (mod,_,fun) = api.partition('_')
+  if get:
+   for part in get.split("&"):
+    (k,_,v) = part.partition('=')
+    extras[k] = v
+  self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Proc':'API'})
+  self._headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
+  try:
+   length = int(self.headers.getheader('content-length'))
+   args = loads(self.rfile.read(length)) if length > 0 else {}
+  except: args = {}
+  try:
+   with open(self.server._settings['logs']['rest'], 'a') as f:
+    f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api <> "system_task_worker" else "N/A", self.server._node, get.strip())))
+  except: pass
+  try:
+   if self._headers['X-Node'] == self.server._node:
+    module = import_module("zdcp.rest.%s"%mod)
+    module.__add_globals__({'gWorkers':self.server._workers,'gSettings':self.server._settings})
+    self._body = dumps(getattr(module,fun,None)(args))
+   else:
+    req  = Request("%s/api/%s"%(self.server._settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
+    try: sock = urlopen(req, timeout = 300)
+    except HTTPError as h:
+     raw = h.read()
+     try:    data = loads(raw)
+     except: data = raw
+     self._headers.update({ 'X-Exception':'HTTPError', 'X-Code':h.code, 'X-Info':dumps(dict(h.info())), 'X-Data':data })
+    except URLError  as e: self._headers.update({ 'X-Exception':'URLError', 'X-Code':590, 'X-Info':str(e)})
+    except Exception as e: self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':591, 'X-Info':str(e)})
+    else:
+     try: self._body = sock.read()
+     except: pass
+     sock.close()
+  except Exception as e:
+   self._headers.update({'X-Args':args,'X-Info':str(e),'X-Exception':type(e).__name__,'X-Code':500})
 
- def site(self):
-  pass
 
+ #
+ #
+ def site(self,query):
+  api,_,get = query.partition('?')
+  (mod,_,fun)    = api.partition('_')
+  stream = Stream(self,get)
+  self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200,'X-Proc':'site'})
+  # if True:
+  try:
+   module = import_module("zdcp.site." + mod)
+   getattr(module,fun,None)(stream)
+  # else:
+  except Exception as e:
+   stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
+   try:
+    stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
+    try:
+     for key,value in e[0]['info'].iteritems():
+      stream.wr("%s: %s<BR>"%(key,value))
+    except: stream.wr(e[0]['info'])
+    stream.wr("</DETAILS>")
+   except:
+    stream.wr("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS>"%(type(e).__name__,str(e)))
+   stream.wr("<DETAILS><SUMMARY>Cookie</SUMMARY><CODE>%s</CODE></DETAILS>"%(stream._cookies))
+   stream.wr("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(",".join(stream._form.keys())))
+  self._body = stream.output()
+
+ #
+ #
  def files(self,path,query):
-  pass
+  query = unquote(query)
+  # Infra call
+  self._headers['X-Proc'] = 'infra'
+  if query.endswith(".js"):
+   self._headers['Content-type']='application/javascript; charset=utf-8'
+  elif query.endswith(".css"):
+   self._headers['Content-type']='text/css; charset=utf-8'
+  try:
+   if path == 'files':
+    param,_,file = query.partition('/')
+    fullpath = ospath.join(self.server._settings['files'][param],file)
+   else:
+    fullpath = ospath.join(self.server._path,path,query)
+   if fullpath.endswith("/"):
+    self._headers['Content-type']='text/html; charset=utf-8'
+    _, _, filelist = next(walk(fullpath), (None, None, []))
+    self._body = "<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])
+   else:
+    with open(fullpath, 'rb') as file:
+     self._body = file.read()
+  except Exception as e:
+   self._headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
 
+ #
+ #
+ def auth(self):
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Proc':'auth'})
+  try:
+   length = int(self.headers.getheader('content-length'))
+   args = loads(self.rfile.read(length)) if length > 0 else {}
+   # Replace with module load and provide correct headers from system_login
+   # There has to be a format for return function of application/authenticate
+   self._body = '"OK"'
+   self._headers['X-Auth-Token']  = random_string(16)
+   self._headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+  except:
+   self._body = '"NOT_OK"'
+
+ #
+ #
  def register(self):
   """ Register a new node, using node(name), port and system, assume for now that system nodes runs http and not https(!) """
   from zdcp.core.common import DB

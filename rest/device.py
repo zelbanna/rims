@@ -829,6 +829,37 @@ def interface_discover(aDict):
 
 #
 #
+def interface_lldp(aDict):
+ """Node independent funtion to find out lldp information
+
+ Args:
+  - ip (required)
+
+ Output:
+  - LLDP info
+ """
+ from zdcp.devices.generic import Device
+ device = Device(aDict['ip'],gSettings)
+ return device.lldp()
+
+#
+#
+def interface_snmp(aDict):
+ """Node independent funtion to find out interface information
+
+ Args:
+  - ip (required)
+  - interface (required)
+
+ Output:
+  - SNMP info
+ """
+ from zdcp.devices.generic import Device
+ device = Device(aDict['ip'],gSettings)
+ return device.interface(aDict['interface'])
+
+#
+#
 def interface_sync(aDict):
  """Function discovers connections using lldp info
 
