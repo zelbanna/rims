@@ -22,8 +22,8 @@ class Device(GenericDevice):
  def get_functions(cls):
   return ['switch_table']
 
- def __init__(self,aIP, aID = None):
-  GenericDevice.__init__(self, aIP, aID)
+ def __init__(self,aIP):
+  GenericDevice.__init__(self, aIP)
   
  def __str__(self):
   return "WLC - {}".format(GenericDevice.__str__(self))
@@ -35,8 +35,7 @@ class Device(GenericDevice):
    cssidobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.15"))
    cipobjs = VarList(Varbind(".1.3.6.1.4.1.14525.4.4.1.1.1.1.4"))
 
-   from zdcp.Settings import Settings
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(cssidobjs)
    session.walk(cipobjs)
   except:

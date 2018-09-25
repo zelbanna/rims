@@ -1,4 +1,4 @@
-"""ZDCP generic REST module. Provides system and DB interaction for appication, settings and resources"""
+"""ZDCP generic REST module. Provides system and DB interaction for application, settings and resources"""
 __author__ = "Zacharias El Banna"
 __version__ = "4.0GA"
 __status__ = "Production"

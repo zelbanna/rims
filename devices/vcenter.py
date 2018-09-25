@@ -16,6 +16,6 @@ from generic import Device as GenericDevice
 #
 class Device(GenericDevice):
 
- def __init__(self,aIP,aID=None):
-  GenericDevice.__init__(self,aIP,aID)
+ def __init__(self,aIP):
+  GenericDevice.__init__(self,aIP)
 

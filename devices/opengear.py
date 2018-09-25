@@ -20,8 +20,8 @@ class Device(GenericDevice):
  def get_functions(cls):
   return ['manage']
 
- def __init__(self, aIP, aID = None):
-  GenericDevice.__init__(self,aIP, aID)
+ def __init__(self, aIP):
+  GenericDevice.__init__(self,aIP)
 
  def __str__(self):
   return "OpenGear - {}".format(GenericDevice.__str__(self))

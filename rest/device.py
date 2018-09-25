@@ -40,6 +40,7 @@ def info(aDict):
   if op == 'lookup' and ret['ip']:
    from zdcp.devices.generic import Device
    dev = Device(ret['ip'])
+   dev.settings(gSettings)
    lookup = dev.detect()
    ret['result'] = lookup
    if lookup['result'] == 'OK':
@@ -227,6 +228,7 @@ def extended(aDict):
      args_pem = {'ip':pdu_info['ip'],'unit':pem['pdu_unit'],'slot':ret['infra']['pdu_info'][pem['pdu_id']]['%s_slot_id'%pem['pdu_slot']],'text':"%s-%s"%(ret['info']['hostname'],pem['name'])}
      try:
       module = import_module("zdcp.rest.%s"%pdu_info['name'])
+      module.__add_globals__({'gSettings':gSettings,'gWorkers':gWorkers})
       pdu_update = getattr(module,'update',None)
       ret['result']["PDU_%s"%pem['id']] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem))
      except Exception as err:
@@ -414,6 +416,7 @@ def discover(aDict):
 
  def __detect_thread(aIP,aDB,aSema):
   __dev = Device(aIP)
+  __dev.settings(gSettings)
   aDB[aIP['ip']] = __dev.detect()['info']
   aSema.release()
   return True
@@ -554,6 +557,7 @@ def function(aDict):
  try:
   module = import_module("zdcp.devices.%s"%(aDict['type']))
   dev = getattr(module,'Device',lambda x: None)(aDict['ip'])
+  dev.settings(gSettings)
   with dev:
    ret['data'] = getattr(dev,aDict['op'],None)()
   ret['result'] = 'OK'
@@ -580,6 +584,7 @@ def configuration_template(aDict):
  try:
   module = import_module("zdcp.devices.%s"%data['type'])
   dev = getattr(module,'Device',lambda x: None)(ip)
+  dev.settings(gSettings)
   ret['data'] = dev.configuration(data)
  except Exception as err:
   ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%str(err)
@@ -818,6 +823,7 @@ def interface_sync(aDict):
   db.do(sql_dev%aDict['id'])
   data = db.get_row()
   device = Device(data['ip'])
+  device.settings(gSettings)
   info = device.lldp()
   for k,v in info.iteritems():
    db.do(sql_lcl%(aDict['id'],k))

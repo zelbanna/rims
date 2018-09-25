@@ -18,10 +18,10 @@ class Junos(GenericDevice):
 
  @classmethod
  def get_functions(cls):
-  return ['up_interfaces','lldp','info' ]
+  return ['up_interfaces','info' ]
 
- def __init__(self,aIP,aID = None):
-  GenericDevice.__init__(self,aIP,aID)
+ def __init__(self,aIP):
+  GenericDevice.__init__(self,aIP)
   from jnpr.junos import Device as JunosDevice
   from jnpr.junos.utils.config import Config
   from zdcp.Settings import Settings
@@ -100,17 +100,16 @@ class Junos(GenericDevice):
   return [{'version':self._version,'model':self._model}]
 
  def configuration(self,argdict):
-  from zdcp.Settings import Settings
   base  = "set groups default_system"
   ret = ["set system host-name %s"%(argdict['hostname'])]
-  if Settings['netconf']['username'] == 'root':
-   ret.append("set system root-authentication encrypted-password \"%s\""%(Settings['netconf']['encrypted']))
+  if self._settings['netconf']['username'] == 'root':
+   ret.append("set system root-authentication encrypted-password \"%s\""%(self._settings['netconf']['encrypted']))
   else:
-   ret.append('set system login user %s class super-user'%(Settings['netconf']['username']))
-   ret.append('set system login user %s authentication encrypted-password "%s"'%(Settings['netconf']['username'],Settings['netconf']['encrypted']))
+   ret.append('set system login user %s class super-user'%(self._settings['netconf']['username']))
+   ret.append('set system login user %s authentication encrypted-password "%s"'%(self._settings['netconf']['username'],self._settings['netconf']['encrypted']))
   ret.extend(['%s system domain-name %s'%(base,argdict['domain']),
               '%s system domain-search %s'%(base,argdict['domain']),
-              '%s system name-server %s'%(base,Settings['netconf']['dnssrv']),
+              '%s system name-server %s'%(base,self._settings['netconf']['dnssrv']),
               '%s system services ssh root-login allow'%base,
               '%s system services netconf ssh'%base,
               '%s system syslog user * any emergency'%base,
@@ -118,12 +117,12 @@ class Junos(GenericDevice):
               '%s system syslog file messages authorization info'%base,
               '%s system syslog file interactive-commands interactive-commands any'%base,
               '%s system archival configuration transfer-on-commit'%base,
-              '%s system archival configuration archive-sites ftp://%s'%(base,Settings['netconf']['anonftp']),
+              '%s system archival configuration archive-sites ftp://%s'%(base,self._settings['netconf']['anonftp']),
               '%s system commit persist-groups-inheritance'%base,
-              '%s system ntp server %s'%(base,Settings['netconf']['ntpsrv']),
+              '%s system ntp server %s'%(base,self._settings['netconf']['ntpsrv']),
               '%s routing-options static route 0.0.0.0/0 next-hop %s'%(base,argdict['gateway']),
               '%s routing-options static route 0.0.0.0/0 no-readvertise'%base,
-              '%s snmp community %s clients %s/%s'%(base,Settings['snmp']['read_community'],argdict['network'],argdict['mask']),
+              '%s snmp community %s clients %s/%s'%(base,self._settings['snmp']['read_community'],argdict['network'],argdict['mask']),
               '%s protocols lldp port-description-type interface-description'%base,
               '%s protocols lldp port-id-subtype interface-name'%base,
               '%s protocols lldp interface all'%base,

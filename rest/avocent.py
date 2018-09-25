@@ -21,6 +21,7 @@ def update(aDict):
  """
  if not (int(aDict['slot']) == 0 and int(aDict['unit']) == 0):
   avocent = Device(aDict['ip'])
+  avocent.settings(gSettings)
   ret = avocent.set_name(int(aDict['slot']),int(aDict['unit']),aDict['text'])
  else:
   ret = 'not updating 0.0'
@@ -42,7 +43,8 @@ def info(aDict):
  ret = {}
  with DB() as db:
   if aDict.get('op') == 'lookup':
-   pdu   = Device(aDict['ip'])
+   pdu = Device(aDict['ip'])
+   pdu.settings(gSettings)
    slotl = pdu.get_slot_names()
    slotn = len(slotl)
    args = {'slots':slotn,'0_slot_id':slotl[0][0],'0_slot_name':slotl[0][1]}
@@ -69,6 +71,7 @@ def inventory(aDict):
  Output:
  """
  avocent = Device(aDict['ip'])
+ avocent.settings(gSettings)
  return avocent.get_inventory()
 
 #
@@ -86,6 +89,7 @@ def op(aDict):
  """
  ret = {}
  avocent = Device(aDict['ip'])
+ avocent.settings(gSettings)
  ret['op'] = avocent.set_state(aDict['slot'],aDict['unit'],aDict['state'])['res']
  from time import sleep
  sleep(10 if aDict['state'] == 'reboot' else 5)

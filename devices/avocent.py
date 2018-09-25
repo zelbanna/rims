@@ -9,7 +9,6 @@ __status__  = "Production"
 __type__    = "pdu"
 
 from generic import Device as GenericDevice
-from zdcp.Settings import Settings
 
 ######################################## PDU ########################################
 
@@ -30,8 +29,8 @@ class Device(GenericDevice):
  def set_outlet_state(cls,state):
   return cls._setstatemap.get(state,'1')
 
- def __init__(self, aIP, aID = None):
-  GenericDevice.__init__(self,aIP, aID)
+ def __init__(self, aIP):
+  GenericDevice.__init__(self,aIP)
 
  def __str__(self):
   return "Avocent[%s]: %s"%(__type__,GenericDevice.__str__(self))
@@ -39,7 +38,7 @@ class Device(GenericDevice):
  def set_state(self,slot,unit,state):
   from netsnmp import VarList, Varbind, Session
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.6.1.{}.{}".format(slot,unit) , Device.set_outlet_state(state) ,"INTEGER"))
    session.set(setobj)
    self.log_msg("Avocent : {0} set state to {1} on {2}.{3}".format(self._ip,state,slot,unit))
@@ -52,7 +51,7 @@ class Device(GenericDevice):
   from netsnmp import VarList, Varbind, Session
   try:
    name = name[:16]
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.4.1.{}.{}".format(slot,unit) , name, "OPAQUE"))
    session.set(setobj)
    return "{0}.{1}:'{2}'".format(slot,unit,name)
@@ -64,7 +63,7 @@ class Device(GenericDevice):
   from netsnmp import VarList, Varbind, Session
   try:
    stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.{}.{}".format(slot,unit)))
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(stateobj)
    return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
   except Exception as e:
@@ -78,7 +77,7 @@ class Device(GenericDevice):
   slots = []
   try:
    slotobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(slotobjs)
    for slot in slotobjs:
     slots.append([slot.iid, slot.val])
@@ -95,7 +94,7 @@ class Device(GenericDevice):
    outletobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.4'))
    stateobjs  = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.5'))
    slotobjs   = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(outletobjs)
    session.walk(stateobjs)
    session.walk(slotobjs)

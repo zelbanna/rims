@@ -1,6 +1,6 @@
 """Module docstring.
 
-HTML5 Ajax SDCP generic module
+HTML5 Ajax ZDCP generic module
 
 """
 __author__= "Zacharias El Banna"

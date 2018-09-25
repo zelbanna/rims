@@ -18,6 +18,7 @@ class Device(object):
 
  def __init__(self, aIP):
   self._ip = aIP
+  self._settings = None
 
  def __str__(self):
   return "IP:%s"%(self._ip)
@@ -28,6 +29,13 @@ class Device(object):
  def __exit__(self, *ctx_info):
   pass
 
+ #
+ #
+ def settings(self,aSettings):
+  self._settings = aSettings
+
+ #
+ #
  def threading(self, aOperation, aArgs = None):
   try:
    from threading import Thread
@@ -56,29 +64,27 @@ class Device(object):
  #
  #
  def configuration(self,argdict):
-  from zdcp.Settings import Settings
   output = ["No config template for this device type.","",
    "Please set the following manually:",
-   "- Username: %s"%Settings['netconf']['username'],
-   "- Password: %s"%Settings['netconf']['password'],
+   "- Username: %s"%self._settings['netconf']['username'],
+   "- Password: %s"%self._settings['netconf']['password'],
    "- Domain:   %s"%argdict['domain'],
-   "- Nameserver: %s"%Settings['netconf']['dnssrv'],
-   "- NTP: %s"%Settings['netconf']['ntpsrv'],
+   "- Nameserver: %s"%self._settings['netconf']['dnssrv'],
+   "- NTP: %s"%self._settings['netconf']['ntpsrv'],
    "- Gateway: %s"%argdict['gateway'],
    "- Network/Mask: %s/%s"%(argdict['network'],argdict['mask']),
-   "- SNMP read community: %s"%Settings['snmp']['read_community'],
-   "- SNMP write community: %s"%Settings['snmp']['write_community']]
+   "- SNMP read community: %s"%self._settings['snmp']['read_community'],
+   "- SNMP write community: %s"%self._settings['snmp']['write_community']]
   return output
 
  #
  #
  def interfaces(self):
-  from zdcp.Settings import Settings
   from netsnmp import VarList, Varbind, Session
   interfaces = {}
   try:
    objs = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2'),Varbind('.1.3.6.1.2.1.31.1.1.1.18'),Varbind('.1.3.6.1.2.1.2.2.1.8'))
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(objs)
    for entry in objs:
     intf = interfaces.get(int(entry.iid),{'name':"None",'description':"None"})
@@ -95,10 +101,9 @@ class Device(object):
  #
  #
  def interface(self,aIndex):
-  from zdcp.Settings import Settings
   from netsnmp import VarList, Varbind, Session
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    ifoid   = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex),Varbind('.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex))
    session.get(ifoid)
    name,desc = ifoid[0].val,ifoid[1].val if ifoid[1].val != "" else "None"
@@ -108,13 +113,12 @@ class Device(object):
  #
  #
  def lldp(self):
-  from zdcp.Settings import Settings
   from netsnmp import VarList, Varbind, Session
   from binascii import b2a_hex
 
   neighbors = {}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    locoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.7.1.3'))
    # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
    # Types defined in 802.1AB-2005
@@ -157,7 +161,6 @@ class Device(object):
  #
  #
  def detect(self):
-  from zdcp.Settings import Settings
   from netsnmp import VarList, Varbind, Session
   from binascii import b2a_hex
   def hex2ascii(aOctet):
@@ -165,7 +168,7 @@ class Device(object):
 
   ret = {'info':{'model':'unknown', 'snmp':'unknown','version':None,'serial':None,'mac':'00:00:00:00:00:00'}}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = Settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    # Device info, Device name, Enterprise OID
    devoid = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))

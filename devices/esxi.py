@@ -27,8 +27,8 @@ class Device(GenericDevice):
  def get_functions(cls):
   return ['manage']
 
- def __init__(self,aIP,aID=None):
-  GenericDevice.__init__(self,aIP,aID)
+ def __init__(self,aIP):
+  GenericDevice.__init__(self,aIP)
   # Override log file
   def GL_get_host_name(aIP):
    from socket import gethostbyaddr
@@ -77,11 +77,11 @@ class Device(GenericDevice):
     return False
   return True
 
- def ssh_send(self, aMessage, aID=None):
+ def ssh_send(self, aMessage):
   from select import select
   if self._sshclient:
    output = ""
-   self.log_msg("ssh_send ({}): [{}]".format(aID,aMessage))
+   self.log_msg("ssh_send: [{}]".format(aMessage))
    stdin, stdout, stderr = self._sshclient.exec_command(aMessage)
    while not stdout.channel.exit_status_ready():
     if stdout.channel.recv_ready():
