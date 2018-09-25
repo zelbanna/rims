@@ -161,7 +161,7 @@ class Device(object):
   def hex2ascii(aOctet):
    return ":".join(list(b2a_hex(x) for x in list(aOctet)))
 
-  ret = {'info':{'model':'unknown', 'snmp':'unknown','version':None,'serial':None,'mac':'00:00:00:00:00:00'}}
+  ret = {'info':{'model':'unknown', 'snmp':'unknown','version':None,'serial':None,'mac':'00:00:00:00:00:00','oid':0}}
   try:
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    # Device info, Device name, Enterprise OID
@@ -183,7 +183,7 @@ class Device(object):
     try:    enterprise = devoid[2].val.split('.')[7]
     except: enterprise = 0
     infolist = devoid[0].val.split()
-    ret['enterprise_oid'] = enterprise
+    ret['info']['oid'] = enterprise
     if enterprise == '2636':
      # Juniper
      try:

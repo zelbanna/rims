@@ -441,7 +441,7 @@ def discover(aDict):
 
  # We can now do inserts only (no update) as we skip existing :-)
  with DB() as db:
-  sql = "INSERT INTO devices (a_dom_id, ipam_id, snmp, model, mac, type_id, hostname) VALUES ("+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}')"
+  sql = "INSERT INTO devices (a_dom_id, ipam_id, snmp, model, mac, oid, type_id, hostname) VALUES ("+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}','{}')"
   count = 0
   for ip,entry in dev_list.iteritems():
    count += 1
@@ -449,15 +449,15 @@ def discover(aDict):
    if alloc['success']:
     try:   entry['mac'] = int(entry['mac'].replace(":",""),16)
     except:entry['mac'] = 0
-    db.do(sql.format(alloc['id'],entry['snmp'],entry['model'],entry['mac'],devtypes[entry.get('type','generic')]['id'],"unknown_%i"%count))
+    db.do(sql.format(alloc['id'],entry['snmp'],entry['model'],entry['mac'],entry['oid'],devtypes[entry.get('type','generic')]['id'],"unknown_%i"%count))
  ret['time'] = int(time()) - start_time
  ret['found']= len(dev_list)
  return ret
 
 #
 #
-def system_mac_discover(aDict):
- """Function discovers system macs (on a network segment)
+def system_info_discover(aDict):
+ """Function discovers system macs and enterprise oid for devices (on a network segment)
 
  Args:
   - network_id (optional)
@@ -474,17 +474,20 @@ def system_mac_discover(aDict):
  def __detect_thread(aDev,aSema):
   try:
    session = Session(Version = 2, DestHost = aDev['ip'], Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
+   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    session.get(sysoid)
    if sysoid[0].val:
     aDev['mac'] = int("".join(list(b2a_hex(x) for x in list(sysoid[0].val))),16)
+   if sysoid[1].val:
+    try:    aDev['oid'] = sysoid[1].val.split('.')[7]
+    except: pass
   except: pass
   aSema.release()
   return True
 
  with DB() as db:
   network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id'] 
-  count   = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND devices.mac = 0"%network)
+  count   = db.do("SELECT devices.mac, devices.oid, devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND (devices.mac = 0 OR devices.oid = 0)"%network)
   devices = db.get_rows()
   if count > 0:
    try:
@@ -498,8 +501,8 @@ def system_mac_discover(aDict):
    except Exception as err:
     ret['error']   = "Error: %s"%str(err)
    for dev in devices:
-    if dev.get('mac'):
-     ret['count'] += db.do("UPDATE devices SET mac = %(mac)s WHERE id = %(id)s"%dev)
+    if dev.get('mac',0) > 0 or dev.get('oid',0) > 0:
+     ret['count'] += db.do("UPDATE devices SET mac = %(mac)s, oid = %(oid)s WHERE id = %(id)s"%dev)
  return ret
 
 #
@@ -858,6 +861,7 @@ def interface_sync(aDict):
    if remote:
     if remote['peer_interface']:
      if local['peer_interface'] == remote['id']:
+      v['peer_id'] = remote['id']
       v['result'] = 'existing_connection'
      else:
       v['result'] = 'other_mapping_type(%s:%s)'%(local['peer_interface'],remote['id'])
