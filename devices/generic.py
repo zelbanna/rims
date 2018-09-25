@@ -224,13 +224,15 @@ class Device(object):
      except: pass
     elif enterprise == '6876':
      # VMware
-     ret['info']['type']  = "esxi"
+     ret['info']['type'] = "esxi"
      try:
       extobj = VarList(Varbind('.1.3.6.1.4.1.6876.1.1.0'),Varbind('.1.3.6.1.4.1.6876.1.2.0'),Varbind('.1.3.6.1.4.1.6876.1.4.0'))
       session.get(extobj)
       ret['info']['model']  = extobj[0].val
       ret['info']['version'] = "%s-%s"%(extobj[1].val,extobj[2].val)
      except: pass
+    elif enterprise == '24681':
+     ret['info']['type'] = "qnap"
     # Linux
     elif infolist[0] == "Linux":
      ret['info']['model'] = 'debian' if "Debian" in devoid[0].val else 'generic'
