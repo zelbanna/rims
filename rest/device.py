@@ -70,7 +70,7 @@ def info(aDict):
 
   # Basic or complete info?
   if op == 'basics':
-   sql = "SELECT devices.id, devices.url, devices.hostname, domains.name AS domain, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
+   sql = "SELECT devices.id, devices.url, devices.hostname, domains.name AS domain, ia.state, INET_NTOA(ia.ip) as ip, ia.network_id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
   else:
    sql = "SELECT devices.*, dt.base AS type_base, dt.name as type_name, functions, a.name as domain, ia.mac AS ip_mac, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
   ret['found'] = (db.do(sql%srch) == 1)
@@ -185,7 +185,7 @@ def extended(aDict):
     ret['result']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
 
   # Now fetch info
-  ret['found'] = (db.do("SELECT vm, devices.mac, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT vm, devices.mac, oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['ip'] = ret['info'].pop('ip',None)
@@ -363,6 +363,41 @@ def new(aDict):
  if alloc['success'] and not ret['fqdn']:
   from zdcp.rest.ipam import address_delete
   ret['info'] = "deallocating ip (%s)"%address_delete({'id':alloc['id']})['result']
+ return ret
+
+#
+#
+def update_ip(aDict):
+ """Function docstring for update_ip TBD
+
+ Args:
+  - id (required)
+  - network_id (required)
+  - ip (required)
+  - mac (optional)
+
+ Output:
+ """
+ if not (aDict.get('network_id') and aDict.get('ip')):
+  return {'info':'not_enough_info'}
+
+ from zdcp.rest.ipam import address_allocate
+ from zdcp.rest.dns import record_device_update
+
+ alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['network_id'],'mac':aDict.get('mac',0)})
+ if   not alloc['valid']:
+  return {'info':'IP not in network range'}
+ elif not alloc['success']:
+  return {'info':'IP not available'}
+ ret = {'info':'IP available'}
+ with DB() as db:
+  db.do("SELECT hostname, a_dom_id AS a_domain_id_new, a_dom_id AS a_domain_id_old, a_id, ptr_id, INET_NTOA(ia.ip) AS ip_old, ipam_id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id = %s"%aDict['id'])
+  dev_info = db.get_row()
+  ipam_id = dev_info.pop('ipam_id',None)
+  ret['update_dev'] = (db.do("UPDATE devices SET ipam_id = %s WHERE id = %s"%(alloc['id'],aDict['id'])) == 1)
+  ret['remove_old'] = (db.do("DELETE FROM ipam_addresses WHERE id = %s"%ipam_id) == 1) if ipam_id else False
+ dev_info.update({'id':aDict['id'],'ip_new':aDict['ip']})
+ ret['dns'] = record_device_update(dev_info)
  return ret
 
 #

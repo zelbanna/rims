@@ -287,14 +287,14 @@ def record_device_update(aDict):
   - ptr_id (required) - id/0/new
   - hostname (required)
 
-  - ip_old (optional required)
   - ip_new (required)
+  - ip_old (optional required)
   - a_domain_id_old (optional required)
   - a_domain_id_new (required)
 
  Output:
  """
- ret  = {'A':{'found':False,'record_id':0,'domain_id':aDict['a_domain_id_new']},'PTR':{'found':False,'record_id':0},'device':{'found':False},'server':{}}
+ ret  = {'A':{'found':False,'record_id':0,'domain_id':aDict['a_domain_id_new']},'PTR':{'found':False,'record_id':0},'server':{}}
  data = {}
 
  def GL_ip2ptr(addr):
@@ -340,7 +340,7 @@ def record_device_update(aDict):
   if infra and fqdn:
    if ptr_id != 'new':
     old_ptr  = GL_ip2ptr(aDict['ip_old'])
-    old_arpa = ptr.partition('.')[2]
+    old_arpa = old_ptr.partition('.')[2]
     old = domains['name'].get(old_arpa,None)
     if old['server_id'] != infra['server_id']:
      ret['server']['PTR'] = node_call(old['node'],old['server'],'record_delete',{'id':ptr_id})
@@ -361,8 +361,8 @@ def record_device_update(aDict):
     ret[type]['found']     = True
     ret[type]['record_id'] = res['data']['id']
     ret[type]['domain_id'] = domains['foreign_id'].get(res['data']['domain_id'],{'domain_id':0})['domain_id']
-    ret[type]['update']    = res.get('update',False)
-    ret[type]['insert']    = res.get('insert',False)
+    ret[type]['update']    = (res.get('update',0) == 1)
+    ret[type]['insert']    = (res.get('insert',0) == 1)
  return ret
 
 #

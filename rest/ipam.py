@@ -330,7 +330,7 @@ def address_allocate(aDict):
 
 #
 #
-def address_realloc(aDict):
+def address_reallocate(aDict):
  """ Function re allocate address ID to a new IP within the same or a new network.
 
  Args:
@@ -346,7 +346,6 @@ def address_realloc(aDict):
  ret = {'success':False,'valid':False,'available':False}
  with DB() as db:
   ret['valid'] = (db.do("SELECT network FROM ipam_networks WHERE id = '%(network_id)s AND INET_ATON('%(ip)s') > network AND INET_ATON('%(ip)s') < (network + POW(2,(32-mask))-1)"%aDict) == 1)
-
   if ret['valid']:
    ret['available'] = (db.do("SELECT id FROM ipam_addresses WHERE ip = INET_ATON('%(ip)s') AND network_id = %(network_id)s"%aDict) == 0)
    if ret['available']:

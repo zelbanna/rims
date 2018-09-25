@@ -158,12 +158,12 @@ class SessionHandler(BaseHTTPRequestHandler):
    api,_,get = query.partition('?')
    (mod,_,fun)    = api.partition('_')
    stream = Stream(self,get)
-   self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200})
+   self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200,'X-Proc':'site'})
    # if True:
    try:
     module = import_module("zdcp.site." + mod)
     getattr(module,fun,None)(stream)
-   #else:
+   # else:
    except Exception as e:
     stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
     try:
@@ -188,7 +188,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     for part in get.split("&"):
      (k,_,v) = part.partition('=')
      extras[k] = v
-   self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*"})
+   self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Proc':'API'})
    self._headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
    try:
     length = int(self.headers.getheader('content-length'))
@@ -223,6 +223,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif path == 'infra' or path == 'images' or path == 'files':
    query = unquote(query)
    # Infra call
+   self._headers['X-Proc'] = 'infra'
    if query.endswith(".js"):
     self._headers['Content-type']='application/javascript; charset=utf-8'
    elif query.endswith(".css"):
@@ -244,7 +245,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
 
   elif path == 'auth':
-   self._headers['Content-type']='application/json; charset=utf-8'
+   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Proc':'auth'})
    try:
     length = int(self.headers.getheader('content-length'))
     args = loads(self.rfile.read(length)) if length > 0 else {}
@@ -274,7 +275,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  def register(self):
   """ Register a new node, using node(name), port and system, assume for now that system nodes runs http and not https(!) """
   from zdcp.core.common import DB
-  self._headers['Content-type']='application/json; charset=utf-8'
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Proc':'register'})
   try:
    length = int(self.headers.getheader('content-length'))
    args = loads(self.rfile.read(length)) if length > 0 else {}

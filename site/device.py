@@ -271,7 +271,6 @@ def extended(aWeb):
        aWeb.wr("<OPTION VALUE=%s.%s %s>%s</OPTION>"%(pdu['id'],slotid, extra, pdu['hostname']+":"+pdu_slot_name))
     aWeb.wr("</SELECT></DIV></DIV>")
     aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Unit:</DIV><DIV CLASS=td><INPUT NAME=pems_%s_pdu_unit TYPE=TEXT VALUE='%s'></DIV></DIV>"%(pem['id'],pem['pdu_unit']))
-
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
  aWeb.wr("</DIV></DIV></FORM>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='device_extended?id=%s'%dev['id']))
@@ -284,9 +283,32 @@ def extended(aWeb):
 #
 #
 def update_ip(aWeb):
- aWeb.wr("<ARTICLE>")
- aWeb.wr("To Be Done")
- aWeb.wr("</ARTICLE>")
+ args = aWeb.args()
+ op = args.pop('op',None)
+ if   op == 'update':
+  aWeb.wr(str(aWeb.rest_call("device_update_ip", args)))
+ elif op == 'find':
+  aWeb.wr(aWeb.rest_call("ipam_address_find",args)['ip'])
+ else:
+  ipam = aWeb.rest_call("ipam_network_list")
+  info = aWeb.rest_call("device_info",{'id':args['id'],'op':'basics'})
+  aWeb.wr("<ARTICLE CLASS=info><P>Change IP</P>")
+  aWeb.wr("<FORM ID=device_new_form>")
+  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%args['id'])
+  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Original IP:</DIV><DIV CLASS=td>%s</DIV></DIV>"%info['ip'])
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><SELECT NAME=network_id>")
+  for s in ipam['networks']:
+   aWeb.wr("<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if s['id'] == info['info']['network_id'] else "", s['netasc'],s['description']))
+  aWeb.wr("</SELECT></DIV></DIV>")
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>New IP:</DIV><DIV CLASS=td><INPUT NAME=ip ID=device_ip TYPE=TEXT VALUE='%s'></DIV></DIV>"%info['ip'])
+  aWeb.wr("</DIV></DIV>")
+  aWeb.wr("</FORM>")
+  aWeb.wr(aWeb.button('back',    DIV='div_content_right', URL='device_extended?id=%s'%args['id']))
+  aWeb.wr(aWeb.button('search',  DIV='device_ip',         URL='device_update_ip?op=find',   FRM='device_new_form', TITLE='Find IP',INPUT='True'))
+  aWeb.wr(aWeb.button('forward', DIV='update_results',    URL='device_update_ip?op=update', FRM='device_new_form', TITLE='Update IP'))
+  aWeb.wr("<SPAN CLASS='results' ID=update_results></SPAN>")
+  aWeb.wr("</ARTICLE>")
 
 #
 #
@@ -298,7 +320,7 @@ def delete(aWeb):
 #
 #
 def to_console(aWeb):
- res = aWeb.rest_call("device_info&op=basics",{'id':aWeb['id']})
+ res = aWeb.rest_call("device_info",{'id':aWeb['id'],'op':'basics'})
  aWeb.wr("<SCRIPT> window.location.replace('%s&title=%s'); </SCRIPT>"%(res['url'],aWeb['name']))
 
 #
@@ -384,10 +406,6 @@ def new(aWeb):
    aWeb.wr("<INPUT TYPE=HIDDEN NAME=rack VALUE={}>".format(aWeb['rack']))
   else:
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>VM:</DIV><DIV  CLASS=td><INPUT NAME=vm  TYPE=CHECKBOX VALUE=1  {0} ></DIV></DIV>".format("checked" if aWeb['target'] == 'vm' else ''))
-  # print "<DIV CLASS=tr><DIV CLASS=td>Count:</DIV><DIV CLASS=td><SELECT NAME=consecutive>"
-  # for n in range(1,11):
-  #  print "<OPTION ID=%i>%i</OPTION>"%(n,n)
-  # print "</SELECT></DIV></DIV>"
   aWeb.wr("</DIV></DIV>")
   aWeb.wr("</FORM>")
   aWeb.wr(aWeb.button('start', DIV='device_span', URL='device_new?op=new',  FRM='device_new_form', TITLE='Create'))
