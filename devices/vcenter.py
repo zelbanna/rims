@@ -7,6 +7,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "4.0GA"
 __status__ = "Production"
 __type__   = "hypervisor"
+__oid__     = 6876
 
 from generic import Device as GenericDevice
 

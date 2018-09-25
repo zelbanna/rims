@@ -7,6 +7,7 @@ __author__  = "Zacharias El Banna"
 __version__ = "4.0GA"
 __status__  = "Production"
 __type__    = "network"
+__oid__     = 14525
 
 from generic import Device as GenericDevice
 from netsnmp import VarList, Varbind, Session

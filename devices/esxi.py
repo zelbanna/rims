@@ -8,6 +8,7 @@ __version__ = "4.0GA"
 __status__  = "Production"
 __type__    = "hypervisor"
 __icon__    = "../images/viz-server.png"
+__oid__     = 6876
 
 from generic import Device as GenericDevice
 
