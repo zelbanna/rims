@@ -190,6 +190,7 @@ def server_list(aWeb):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(srv['id'],srv['node'],srv['server'],srv['type']))
   aWeb.wr(aWeb.button('info',DIV='div_content_right',URL='system_server_info?id=%s'%(srv['id'])))
   aWeb.wr(aWeb.button('sync',DIV='div_content_right',URL='system_server_sync?id=%s'%(srv['id']), SPIN='true', TITLE='Sync server'))
+  aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='system_server_status?id=%s'%(srv['id']), SPIN='true', TITLE='Server status'))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
@@ -224,9 +225,16 @@ def server_info(aWeb):
 
 #
 #
+def server_status(aWeb):
+ res = aWeb.rest_call("system_server_status",{'id':aWeb['id']})
+ aWeb.wr("<ARTICLE>%s</ARTICLE>"%str(res))
+
+#
+#
 def server_sync(aWeb):
  res = aWeb.rest_call("system_server_sync",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>%s</ARTICLE>"%str(res))
+
 
 #
 #

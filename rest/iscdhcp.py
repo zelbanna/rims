@@ -14,7 +14,7 @@ __type__ = "DHCP"
 #
 #
 #
-def leases(aDict):
+def status(aDict):
  """Function docstring for leases TBD
 
  Args:
@@ -37,7 +37,6 @@ def leases(aDict):
    if   parts[0] == 'lease' and parts[2] == '{':
     lease['ip'] = parts[1]
    elif parts[0] == '}':
-    if lease.pop('binding') == aDict['type']:
      result.append(lease)
     lease = {}
    elif parts[0] == 'hardware' and parts[1] == 'ethernet':

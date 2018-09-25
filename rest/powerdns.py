@@ -209,7 +209,7 @@ def sync(aDict):
 
 #
 #
-def top(aDict):
+def status(aDict):
  """Function docstring for top TBD
 
  Args:
