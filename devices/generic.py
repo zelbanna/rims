@@ -110,7 +110,6 @@ class Device(object):
  def lldp(self):
   from netsnmp import VarList, Varbind, Session
   from binascii import b2a_hex
-
   neighbors = {}
   try:
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
@@ -143,11 +142,11 @@ class Device(object):
      else:
       n['port_id'] = entry.val
     elif t == '8':
-      n['port_desc'] = entry.val
+      n['port_desc'] = "".join(i for i in entry.val if ord(i)<128)
     elif t == '9':
      n['sys_name'] = entry.val
   except: pass
-  else:
+  finally:
    for k in neighbors.keys():
     if not neighbors[k].get('chassis_type'):
      neighbors.pop(k,None)
