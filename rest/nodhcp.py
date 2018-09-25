@@ -10,7 +10,7 @@ __type__ = "DHCP"
 #
 #
 #
-def leases(aDict):
+def status(aDict):
  """Function docstring for leases. No OP
 
  Args:

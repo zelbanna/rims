@@ -137,7 +137,7 @@ def sync(aDict):
 
 #
 #
-def top(aDict):
+def status(aDict):
  """ NO OP
 
  Args:
@@ -146,4 +146,5 @@ def top(aDict):
  Output:
  """
  return {'top':[],'who':[] }
+
 

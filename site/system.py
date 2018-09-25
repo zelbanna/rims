@@ -226,8 +226,9 @@ def server_info(aWeb):
 #
 #
 def server_status(aWeb):
+ from json import dumps
  res = aWeb.rest_call("system_server_status",{'id':aWeb['id']})
- aWeb.wr("<ARTICLE>%s</ARTICLE>"%str(res))
+ aWeb.wr("<ARTICLE><PRE>%s<PRE></ARTICLE>"%dumps(res,indent=2,sort_keys=True))
 
 #
 #
