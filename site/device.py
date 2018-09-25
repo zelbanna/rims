@@ -230,6 +230,7 @@ def extended(aWeb):
  aWeb.wr(aWeb.button('sync',DIV='div_content_right', FRM='info_form', URL='device_update_ip?id=%s'%dev['id'], TITLE='Modify IP'))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>LLDP MAC:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['mac'])
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Priv OID:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['oid'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>A ID:   </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['a_id'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>PTR ID: </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['ptr_id'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>IPAM ID:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['ipam_id'])
