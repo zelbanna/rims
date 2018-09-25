@@ -822,6 +822,7 @@ def interface_sync(aDict):
   sql_set = "UPDATE device_interfaces SET peer_interface = %s WHERE id = %s AND multipoint = 0"
   db.do(sql_dev%aDict['id'])
   data = db.get_row()
+  # TODO: Run this one off the correct node
   device = Device(data['ip'])
   device.settings(gSettings)
   info = device.lldp()
