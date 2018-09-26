@@ -39,7 +39,7 @@ class Junos(GenericDevice):
    return self
   else:
    raise RuntimeError("Error connecting to host")
- 
+
  def __exit__(self, *ctx_info):
   self.close()
 
@@ -59,6 +59,12 @@ class Junos(GenericDevice):
   except Exception as err:
    self.log_msg("System Error - Unable to properly close router connection: " + str(err))
 
+ def interfaces(self):
+  return {k:v for k,v in super(Junos,self).interfaces().iteritems() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb']}
+
+ #
+ # Netconf shit
+ #
  def get_rpc(self):
   return self._router.rpc
 
@@ -68,9 +74,6 @@ class Junos(GenericDevice):
  def get_interface_name(self, aifl):
   return self._interfacesname.get(aifl.split('.')[0])
 
- #
- # Netconf shit
- #
  def ping_rpc(self,ip):
   result = self._router.rpc.ping(host=ip, count='1')
   return len(result.xpath("ping-success"))
