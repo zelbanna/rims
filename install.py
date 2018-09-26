@@ -82,7 +82,7 @@ try: import pyvmomi
 except ImportError:
  res['pyvmomi'] = 'install'
  pipmain(["install","-q","pyvmomi"])
-try: import netsnmp-python
+try: import netsnmp
 except ImportError:
  res['netsnmp-python'] = 'install'
  pipmain(["install","-q","netsnmp-python"])
