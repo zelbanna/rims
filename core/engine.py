@@ -86,13 +86,15 @@ class WorkerThread(Thread):
    if not self.args.get('periodic'):
     self.result = fun(self.args['args'])
    else:
+    freq = int(self.args.get('frequency',300))
     from time import sleep, time
     while not self.exit:
+     sleep(freq)
      with self.lock:
       self.result = fun(self.args['args'])
      if self.args.get('output'):
       log("WorkerThread(%s): %s_%s PERIODIC => %s"%(self.name,self.args['module'],self.args['func'],dumps(self.result)))
-     sleep(int(self.args.get('frequency',300)))
+     sleep(freq)
   self.workers.pop(self.name,None)
   if self.args.get('output'):
    log("WorkerThread(%s): %s_%s COMPLETE => %s"%(self.name,self.args['module'],self.args['func'],dumps(self.result)))
