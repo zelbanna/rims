@@ -1018,15 +1018,17 @@ def interface_status_check(aDict):
  from os import system
  from importlib import import_module
 
+ states = {'unseen':0,'up':1,'down':2}
  def __interfaces(aDev, aSema):
   try:
    module = import_module("zdcp.devices.%s"%aDev['type'])
    device = getattr(module,'Device',None)(aDev['ip'],gSettings)
    interfaces = device.interfaces()
    for intf in aDev['interfaces']:
-    intf.update(interfaces[intf['snmp_index']])
-    intf['state'] = {'up':1,'down':2}.get(intf['state'],0)
-  except:
+    intf.update( interfaces.pop(intf.get('snmp_index','NULL'),{}) )
+    intf['state'] = states.get(intf.get('state','unseen'))
+  except Exception as e:
+   print "Exception: %s"%str(e)
    aDev['interfaces'] = {}
   finally:
    aSema.release()
@@ -1061,11 +1063,11 @@ def interface_status_report(aDict):
  ret = {'update':0,'insert':0}
  def mac2int(aMAC):     
   try:    return int(aMAC.replace(":",""),16)
-  except: return 0              
+  except: return 0
 
  with DB() as db:
   for intf in aDict['interfaces']:
-   mac = mac2int(intf['mac'])
+   mac = mac2int(intf.get('mac',0))
    if intf.get('id'):
     ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', mac = %s, state = %s, description = '%s' WHERE id = %s"%(intf['name'],mac,intf['state'],intf['description'],intf['id']))
    else:

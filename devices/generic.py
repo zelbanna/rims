@@ -93,7 +93,9 @@ class Device(object):
     if entry.tag == '.1.3.6.1.2.1.31.1.1.1.18':
      intf['description'] = entry.val if entry.val != "" else "None"
     interfaces[int(entry.iid)] = intf
-  except: pass
+  except Exception as e:
+   print str(e)
+   pass
   return interfaces
 
  #

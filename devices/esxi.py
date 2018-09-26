@@ -53,7 +53,7 @@ class Device(GenericDevice):
   self.ssh_close()
 
  def __str__(self):
-  return self._hostname + " SSHConnected:" + str(self._sshclient != None)  + " statefile:" + self.statefile
+  return self._hostname + " SSHConnected:" + str(self._sshclient != None)
 
  def log_msg(self, aMsg):
   from time import localtime, strftime
