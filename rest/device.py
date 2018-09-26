@@ -285,7 +285,7 @@ def list(aDict):
   if 'mac' in extras:
    fields.append('ia.mac')
   if 'system' in extras:
-   fields.extend(['devices.serial','devices.version','ia.state'])
+   fields.extend(['devices.serial','devices.version','ia.state','devices.oid'])
 
  with DB() as db:
   sql = "SELECT %s FROM devices LEFT JOIN %s WHERE %s %s"%(", ".join(fields)," LEFT JOIN ".join(tune)," AND ".join(filter),sort)
