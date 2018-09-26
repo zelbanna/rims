@@ -118,9 +118,9 @@ def portal(aWeb):
 def report(aWeb):
  info = aWeb.rest_call("system_report")
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>System</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Info</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Information</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>")
  for i in info:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(i['type'],i['info']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(i['info'],i['value']))
  aWeb.wr("</DIV></DIV></ARTICLE>")
  
 

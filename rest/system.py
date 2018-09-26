@@ -149,16 +149,16 @@ def report(aDict):
  from os import path as ospath
  from sys import modules
  from gc import get_objects
+ node = gSettings['nodes'][gSettings['system']['id']]
  ret = []
- ret.append({'type':'Version','info':__version__})
- ret.append({'type':'Memory objects','info':len(get_objects())})
- ret.append({'type':'Package path','info':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
- ret.extend(list({'type':'Extra files','info':"%s => %s"%(k,v)} for k,v in gSettings.get('files',{}).iteritems()))
- for t,x in task_status({'node':gSettings['system']['id'],'extended':True}).iteritems():
-  ret.append({'type':'Thread %s'%t,'info':"State: %s, Info:%s"%(x['state'],x['args'])})
-
- ret.extend(list({'type':'System settings','info':"%s => %s"%(k,v)} for k,v in gSettings.get('system',{}).iteritems()))
- ret.extend(list({'type':'Imported modules','info':x} for x in modules.keys() if x.startswith('zdcp')))
+ ret.append({'info':'Version','value':__version__})
+ ret.append({'info':'Memory objects','value':len(get_objects())})
+ ret.append({'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
+ ret.append({'info':'Node URL','value':node})
+ ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node,k)} for k,v in gSettings.get('files',{}).iteritems()))
+ ret.extend(list({'info':'Thread: %s'%t,'value':"State: %s, Info:%s"%(x['state'],x['args'])} for t,x in task_status({'node':gSettings['system']['id'],'extended':True}).iteritems()))
+ ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in gSettings.get('system',{}).iteritems()))
+ ret.extend(list({'info':'Imported module','value':x} for x in modules.keys() if x.startswith('zdcp')))
  return ret
 
 ############################################ SETTINGS ########################################
