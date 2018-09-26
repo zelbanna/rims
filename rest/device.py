@@ -822,7 +822,7 @@ def interface_discover(aDict):
     elif aDict.get('cleanup',True) == True:
      ret['delete'] += db.do("DELETE FROM device_interfaces WHERE id = %s AND manual = 0"%(con['id']))
    for key, entry in interfaces.iteritems():
-    if entry['state'] == 'up' or aDict.get('state') == 'all':
+    if entry['state'] == 'up':
      args = {'device':int(aDict['device']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key}
      ret['insert'] += db.insert_dict('device_interfaces',args)
  return ret
