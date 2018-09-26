@@ -89,10 +89,11 @@ class WorkerThread(Thread):
    if not self.args.get('periodic'):
     self.result = fun(self.args['args'])
    else:
-    freq = int(self.args.get('frequency',300))
     from time import sleep, time
+    freq = int(self.args.get('frequency',300))
+    if freq < 86400:
+     sleep(freq - int(time())%86400%freq)
     while not self.exit:
-     sleep(freq)
      with self.lock:
       self.result = fun(self.args['args'])
      if self.args.get('output'):
