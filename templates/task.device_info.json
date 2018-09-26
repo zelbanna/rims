@@ -1,0 +1,9 @@
+{
+ "node":"master",
+ "module":"device",
+ "func":"system_info_discover",
+ "args":{},
+ "periodic":true,
+ "output":true,
+ "frequency":1800
+}

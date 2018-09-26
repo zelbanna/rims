@@ -502,10 +502,10 @@ def system_info_discover(aDict):
  from threading import Thread, BoundedSemaphore
  from netsnmp import VarList, Varbind, Session
  from binascii import b2a_hex
- from __builtin__ import list 
+ from __builtin__ import list
 
  ret = {'count':0}
- 
+
  def __detect_thread(aDev,aSema):
   try:
    session = Session(Version = 2, DestHost = aDev['ip'], Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
