@@ -1069,7 +1069,7 @@ def interface_status_report(aDict):
   for intf in aDict['interfaces']:
    mac = mac2int(intf.get('mac',0))
    if intf.get('id'):
-    ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', mac = %s, state = %s, description = '%s' WHERE id = %s"%(intf['name'],mac,intf['state'],intf['description'],intf['id']))
+    ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', mac = %s, state = %s, description = '%s' WHERE id = %s"%(intf.get('name','NA'),mac,intf['state'],intf.get('description','NA'),intf['id']))
    else:
-    ret['insert'] += db.do("INSERT INTO device_interfaces SET device = %s, snmp_index = %s, name = '%s', mac = %s, state = %s description = '%s' ON DUPLICATE KEY UPDATE mac = %s, state = %s"%(aDict['device_id'],index,intf['name'],mac,intf['state'],intf['description'],mac,intf['state']))
+    ret['insert'] += db.do("INSERT INTO device_interfaces SET device = %s, snmp_index = %s, name = '%s', mac = %s, state = %s description = '%s' ON DUPLICATE KEY UPDATE mac = %s, state = %s"%(aDict['device_id'],index,intf.get('name','NA'),mac,intf['state'],intf.get('description','NA'),mac,intf['state']))
  return ret
