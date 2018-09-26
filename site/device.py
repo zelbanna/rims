@@ -474,10 +474,10 @@ def interface_list(aWeb):
  aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device=%(id)s&op=delete&device_id=%(id)s' TITLE='Clean up empty interfaces' SPIN=true>Cleanup</A>"%res)
  aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=interface_list>"%(opres))
  aWeb.wr("<DIV CLASS=table>")
- aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Peer interface</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th TITLE='Peer ID of connecting interface'>Peer interface</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  for row in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_interface'] if not row['multipoint'] else 'multipoint'))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['mac'],row['peer_interface'] if not row['multipoint'] else 'multipoint'))
   aWeb.wr("<INPUT TYPE=CHECKBOX VALUE=%(id)s ID='interface_%(id)s' NAME='interface_%(id)s'>"%row)
   aWeb.wr(aWeb.button('info',  DIV='div_dev_data',URL='device_interface_info?device=%s&id=%s'%(aWeb['device'],row['id'])))
   aWeb.wr(aWeb.button('sync',  DIV='div_dev_data',URL='device_interface_link_device?device=%s&id=%s&name=%s'%(aWeb['device'],row['id'],row['name']), TITLE='Connect'))

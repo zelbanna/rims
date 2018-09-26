@@ -652,8 +652,10 @@ def interface_list(aDict):
   ret = db.get_row()
   if ret:
    sort = aDict.get('sort','snmp_index')
-   ret['count'] = db.do("SELECT id,name,description,snmp_index,peer_interface,multipoint FROM device_interfaces WHERE device = %s ORDER BY %s"%(ret['id'],sort))
+   ret['count'] = db.do("SELECT id,name,description,snmp_index,mac, peer_interface,multipoint FROM device_interfaces WHERE device = %s ORDER BY %s"%(ret['id'],sort))
    ret['data'] = db.get_rows()
+   for row in ret['data']:
+    row['mac'] = ':'.join(s.encode('hex') for s in str(hex(row['mac']))[2:].zfill(12).decode('hex')).lower()
   else:
    ret = {'id':None,'hostname':None,'data':[],'count':0}
  return ret
@@ -966,3 +968,101 @@ def interface_sync(aDict):
     v['result'] = 'chassis_mapping_impossible'
 
  return {'id':aDict['id'], 'connections':info}
+
+
+#
+#
+def interface_status(aDict):
+ """ Initiate a status check for all or a subset of devices' interfaces
+
+ Args:
+  - subnets (optional). List of subnet_ids to check
+
+ """
+ from zdcp.core.engine import WorkerThread
+ from zdcp.core.common import rest_call
+ ret = {'local':[],'remote':[]}
+ with DB() as db:
+  trim = "" if not aDict.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join([str(x) for x in aDict['subnets']]))
+  db.do("SELECT ipam_networks.id, servers.node, servers.server FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
+  subnets = db.get_rows()
+  for sub in subnets:
+   count = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%sub['id'])
+   if count > 0:
+    args = {'module':'device','func':'interface_status_check','args':{'device_list':db.get_rows()},'output':False}
+    if not sub['node'] or sub['node'] == 'master':
+     t = WorkerThread(args,gSettings,gWorkers)
+     ret['local'].append((t.name,sub['id']))
+    else:
+     res = rest_call("%s/api/system_task_worker&node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
+     ret['remote'].append((res['id'],sub['id']))
+ return ret
+
+#
+#
+def interface_status_check(aDict):
+ """ Process a list of Device IDs and IP addresses (id, ip, type) and perform an SNMP interface lookup. return state values are: 0 (not seen), 1(up), 2(down).
+  Always return interface information. This function is node independent.
+
+ Args:
+  - device_list (required)
+
+ Output:
+ """
+ from threading import Thread, BoundedSemaphore
+ from os import system
+ from importlib import import_module
+
+ def __interfaces(aDev, aSema):
+  try:
+   module = import_module("zdcp.devices.%s"%aDev['type'])
+   module.__add_globals__({'gSettings':gSettings,'gWorkers':gWorkers})
+   device = getattr(module,'Device',None)(aDev['ip'],gSettings)
+   aDev['interfaces'] = device.interfaces()
+  except:
+   aDev['interfaces'] = []  
+  finally:aSema.release()
+
+ sema = BoundedSemaphore(20)
+ for dev in aDict['device_list']:
+  sema.acquire()         
+  t = Thread(target = __interfaces, args=[dev, sema])
+  t.start()
+ for i in range(20):
+  sema.acquire()
+
+ for dev in aDict['device_list']:
+  if len(dev['interfaces']) > 0:
+   args = {'device_id':dev['id'], 'interfaces':dev['interfaces']}
+   if gSettings['system']['id'] == 'master':
+    interface_status_report(args)
+   else:
+    from zdcp.core.common import rest_call
+    rest_call("%s/api/device_interface_status_report"%gSettings['system']['master'],args)
+ return {'result':'GATHERING_DATA_COMPLETED'}
+
+
+#
+#
+def interface_status_report(aDict):
+ """Function updates interface status for a particular device
+
+ Args:
+  - device_id (required)
+  - interfaces (required). Dictionary of interface objects snmp_index#{name,state,mac,description,<id>}. id is DB entry ID
+
+ Output:
+ """
+ ret = {'update':0}
+ def mac2int(aMAC):     
+  try:    return int(aMAC.replace(":",""),16)
+  except: return 0              
+
+ with DB() as db:
+  for index,info in aDict['interfaces'].iteritems:
+   mac = mac2int(info['mac'])
+   if info['id']:
+    ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', mac = %s, state = %s WHERE id = %s"%(info['name'],mac,info['state'],info['id']))
+   else:
+    ret['update'] += db.do("INSERT INTO device_interfaces SET device = %s, snmp_index = %s, name = '%s', mac = %s, state = %s ON DUPLICATE KEY UPDATE mac = %s, state = %s"%(aDict['device_id'],info['snmp_index'],info['name'],mac,info['state'],mac,info['state']))
+ return ret
