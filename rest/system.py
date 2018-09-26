@@ -147,14 +147,15 @@ def report(aDict):
  Output:
  """
  from os import path as ospath
- from sys import modules
+ from sys import modules,version
  from gc import get_objects
  node = gSettings['nodes'][gSettings['system']['id']]
  ret = []
  ret.append({'info':'Version','value':__version__})
- ret.append({'info':'Memory objects','value':len(get_objects())})
  ret.append({'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
  ret.append({'info':'Node URL','value':node})
+ ret.append({'info':'Memory objects','value':len(get_objects())})
+ ret.append({'info':'Python version','value':version})
  ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node,k)} for k,v in gSettings.get('files',{}).iteritems()))
  ret.extend(list({'info':'Thread: %s'%t,'value':"State: %s, Info:%s"%(x['state'],x['args'])} for t,x in task_status({'node':gSettings['system']['id'],'extended':True}).iteritems()))
  ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in gSettings.get('system',{}).iteritems()))
