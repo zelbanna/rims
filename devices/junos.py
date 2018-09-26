@@ -23,13 +23,11 @@ class Junos(GenericDevice):
 
  def __init__(self,aIP, aSettings):
   GenericDevice.__init__(self,aIP, aSettings)
-  from jnpr.junos import Device as JunosDevice
-  from jnpr.junos.utils.config import Config
-  self._router = JunosDevice(self._ip, user=aSettings['netconf']['username'], password=aSettings['netconf']['password'], normalize=True)
-  self._config = Config(self._router)
-  self._model = ""
-  self._version = ""
   self._interfacesname = {}
+  self._router  = None
+  self._config  = None
+  self._model   = None
+  self._version = None
  
  def __str__(self):
   return "{} Model:{} Version:{}".format(str(self._router), self._model, self._version)
@@ -44,6 +42,12 @@ class Junos(GenericDevice):
   self.close()
 
  def connect(self):
+  from jnpr.junos import Device as JunosDevice
+  from jnpr.junos.utils.config import Config
+  if not self._router:
+   self._router = JunosDevice(self._ip, user=self._settings['netconf']['username'], password=self._settings['netconf']['password'], normalize=True)
+  if not self._config and self._router:
+   self._config = Config(self._router)
   try:
    self._router.open()
    self._model = self._router.facts['model']

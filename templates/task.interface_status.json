@@ -1,0 +1,8 @@
+{
+ "node":"master",
+ "module":"device",
+ "func":"interface_status",
+ "args":{},
+ "periodic":true,
+ "frequency":600
+}
