@@ -48,19 +48,19 @@ class Device(GenericDevice):
    return self
   else:
    raise RuntimeError("Error connecting to host")
-  
+
  def __exit__(self, *ctx_info):
   self.ssh_close()
-  
+
  def __str__(self):
   return self._hostname + " SSHConnected:" + str(self._sshclient != None)  + " statefile:" + self.statefile
 
- def log_msg(self, aMsg):                
+ def log_msg(self, aMsg):
   from time import localtime, strftime
   output = unicode("{} : {}".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg))
   with open(self._logfile, 'a') as f:
    f.write(output + "\n")
- 
+
  #
  # ESXi ssh interaction - Connect() send, send,.. Close()
  #
@@ -103,7 +103,7 @@ class Device(GenericDevice):
 
  #
  # SNMP interaction
- # 
+ #
  def get_vm_id(self, aname):
   from netsnmp import VarList, Varbind, Session
   try:
@@ -116,7 +116,7 @@ class Device(GenericDevice):
   except:
    pass
   return -1
- 
+
  def get_vm_state(self, aid):
   from netsnmp import VarList, Varbind, Session
   try:

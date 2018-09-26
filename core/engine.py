@@ -191,7 +191,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   except: args = {}
   try:
    with open(self.server._settings['logs']['rest'], 'a') as f:
-    f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api <> "system_task_worker" else "N/A", self.server._node, get.strip())))
+    f.write(unicode("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api <> "system_task_worker" else "N/A", self.server._node, get.strip())))
   except: pass
   try:
    if self._headers['X-Node'] == self.server._node:
