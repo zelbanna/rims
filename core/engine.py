@@ -74,6 +74,9 @@ class WorkerThread(Thread):
  def result(self):
   return self.result
 
+ def args(self):
+  return self.args
+
  def run(self):
   from zdcp.core.common import log
   try:

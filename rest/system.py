@@ -154,6 +154,9 @@ def report(aDict):
  ret.append({'type':'Memory objects','info':len(get_objects())})
  ret.append({'type':'Package path','info':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
  ret.extend(list({'type':'Extra files','info':"%s => %s"%(k,v)} for k,v in gSettings.get('files',{}).iteritems()))
+ for t,x in task_status({'node':gSettings['system']['id'],'extended':True}).iteritems():
+  ret.append({'type':'Thread %s'%t,'info':"State: %s, Info:%s"%(x['state'],x['args'])})
+
  ret.extend(list({'type':'System settings','info':"%s => %s"%(k,v)} for k,v in gSettings.get('system',{}).iteritems()))
  ret.extend(list({'type':'Imported modules','info':x} for x in modules.keys() if x.startswith('zdcp')))
  return ret
@@ -965,15 +968,19 @@ def task_status(aDict):
 
  Args:
   - node (required)
+  - extended (optional). Boolean, defaults 'false'
 
  Output:
  """
  ret = {}
  if aDict['node'] == gSettings['system']['id']:
-  ret = {t.name:'EXITING' if t.exit else 'RUNNING' for t in gWorkers.values()}
+  if aDict.get('extended'):
+   ret = {t.name:{'state':'EXITING' if t.exit else 'RUNNING','args':t.args} for t in gWorkers.values()}
+  else:
+   ret = {t.name:'EXITING' if t.exit else 'RUNNING' for t in gWorkers.values()}
  else:
   from zdcp.core.common import rest_call
-  ret = rest_call("%s/api/task_status"%gSettings['nodes'][aDict['node']])['data']
+  ret = rest_call("%s/api/task_status"%gSettings['nodes'][aDict['node']],aDict)['data']
  return ret
 
 #
