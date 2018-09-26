@@ -17,7 +17,7 @@ def domain_list(aWeb):
  aWeb.wr(aWeb.button('sync',   DIV='div_content_left', URL='dns_domain_list?sync=true',TITLE='Resync cache'))
  aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='dns_domain_info?id=new',TITLE='Add domain'))
  aWeb.wr(aWeb.button('search', DIV='div_content_right',URL='dns_consistency',TITLE='Check Backend Consistency',SPIN='true'))
- aWeb.wr(aWeb.button('document',DIV='div_content_right',URL='dns_top', SPIN='true'))
+ aWeb.wr(aWeb.button('document',DIV='div_content_right',URL='dns_status', SPIN='true'))
  if domains.get('sync'):
   aWeb.wr("<SPAN CLASS='results'>%s</SPAN>"%(domains['sync']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
@@ -158,11 +158,8 @@ def dedup(aWeb):
  aWeb.wr("</ARTICLE>")
 
 
-#
-# DNS top
-#
-def top(aWeb):
- dns = aWeb.rest_call("dns_top")
+def status(aWeb):
+ dns = aWeb.rest_call("dns_status")
  aWeb.wr("<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>")
  for node_server,res in dns['top'].iteritems():
