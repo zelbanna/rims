@@ -139,6 +139,25 @@ def log(aDict):
  log(aDict['msg'])
  return ret
 
+def report(aDict):
+ """Function reports generic system info
+
+ Args:
+
+ Output:
+ """
+ from os import path as ospath
+ from sys import modules
+ from gc import get_objects
+ ret = []
+ ret.append({'type':'Version','info':__version__})
+ ret.append({'type':'Memory objects','info':len(get_objects())})
+ ret.append({'type':'Package path','info':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
+ ret.extend(list({'type':'Extra files','info':"%s => %s"%(k,v)} for k,v in gSettings.get('files',{}).iteritems()))
+ ret.extend(list({'type':'System settings','info':"%s => %s"%(k,v)} for k,v in gSettings.get('system',{}).iteritems()))
+ ret.extend(list({'type':'Imported modules','info':x} for x in modules.keys() if x.startswith('zdcp')))
+ return ret
+
 ############################################ SETTINGS ########################################
 #
 #

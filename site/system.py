@@ -12,7 +12,7 @@ __type__ = 'menuitem'
 #
 #
 def main(aWeb):
- cookie = aWeb.cookie('system') 
+ cookie = aWeb.cookie('system')
  data = aWeb.rest_call("system_inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('logs'):
@@ -26,6 +26,7 @@ def main(aWeb):
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='reservations_report?node=master'>Reservations</A>")
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='device_report?node=master'>Devices</A>")
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_task_report'>Jobs</A>")
+  aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_report'>System</A>")
   aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI><A CLASS=z-op TARGET=_blank            HREF='../infra/zdcp.pdf'>ERD</A></LI>")
  aWeb.wr("<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>")
@@ -73,10 +74,10 @@ def login(aWeb):
   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='../images/icon-start.png' /></BUTTON>")
   aWeb.wr("</ARTICLE></DIV>")
 
-############################################## SDCP ###############################################
+############################################## ZDCP ###############################################
 #
 #
-# Base SDCP Portal, creates DIVs for layout
+# Base portal, creates DIVs for layout
 #
 def portal(aWeb):
  aWeb.put_html(aWeb.get('title','Portal'))
@@ -111,6 +112,17 @@ def portal(aWeb):
  aWeb.wr("<MAIN ID=main></MAIN>")
  if menu['start']:
   aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['href'] if menu['menu'][0]['view'] == 0 else "resources_framed?id=%s"%menu['menu'][0]['id']))
+
+#
+#
+def report(aWeb):
+ info = aWeb.rest_call("system_report")
+ aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>System</P>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Info</DIV></DIV><DIV CLASS=tbody>")
+ for i in info:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(i['type'],i['info']))
+ aWeb.wr("</DIV></DIV></ARTICLE>")
+ 
 
 ############################# NODE ###########################
 #
@@ -254,7 +266,7 @@ def server_help(aWeb):
   - there are multiple DNS servers serving different zones
   - there are multiple DHCP servers serving different subnets
 
- </PRE></ARTICLE""")           
+ </PRE></ARTICLE""")
 
 ######################################### Tasks ######################################
 #
