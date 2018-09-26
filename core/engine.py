@@ -91,8 +91,7 @@ class WorkerThread(Thread):
    else:
     from time import sleep, time
     freq = int(self.args.get('frequency',300))
-    if freq < 86400:
-     sleep(freq - int(time())%86400%freq)
+    sleep(freq - int(time())%freq)
     while not self.exit:
      with self.lock:
       self.result = fun(self.args['args'])
