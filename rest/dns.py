@@ -419,13 +419,12 @@ def status(aDict):
  ret = {'top':{},'who':{}}
  args = {'count':aDict.get('count',20)}
  with DB() as db:
-  db.do("SELECT server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id")
+  db.do("SELECT server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE servers.type = 'DNS'")
   servers = db.get_rows()
  for infra in servers:
   res = node_call(infra['node'],infra['server'],'status',args)
-  print res
-  ret['top']["%(node)s_%(server)s"%infra] = res['data']
-  ret['who']["%(node)s_%(server)s"%infra] = res['data']
+  ret['top']["%(node)s_%(server)s"%infra] = res['top']
+  ret['who']["%(node)s_%(server)s"%infra] = res['who']
  return ret
 
 #

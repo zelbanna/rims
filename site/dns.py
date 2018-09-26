@@ -190,7 +190,7 @@ def consistency(aWeb):
   aWeb.wr("<DIV CLASS=td>")
   aWeb.wr(aWeb.button('delete',DIV='span_dns',MSG='Delete record?',URL='dns_record_delete?domain_id=%s&id=%s'%(rec['domain_id'],rec['id'])))
   if rec['device_id']:
-   aWeb.wr(aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='dns_record_transfer?&domain_id=%s&record_id=%s&device_id=%s&type=%s'%(rec['domain_id'],rec['id'],rec['device_id'],rec['type'])))
+   aWeb.wr(aWeb.button('reload',DIV='span_dns',MSG='Update device info?',URL='dns_record_correct?&domain_id=%s&record_id=%s&device_id=%s&type=%s'%(rec['domain_id'],rec['id'],rec['device_id'],rec['type'])))
   aWeb.wr("</DIV></DIV>")
  for dev in data['devices']:
   aWeb.wr("<DIV CLASS=tr>")
