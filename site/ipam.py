@@ -88,7 +88,7 @@ def network_delete(aWeb):
 #
 #
 def network_entries(aWeb):
- data = aWeb.rest_call("ipam_network_inventory",{'id':aWeb['id'],'extra':['type','mac']})
+ data = aWeb.rest_call("ipam_network_inventory",{'id':aWeb['id'],'extra':['mac']})
  aWeb.wr("<ARTICLE><P>Allocated IP Addresses</P><SPAN CLASS=results ID=ipam_address_operation></SPAN><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV></DIV><DIV CLASS=tbody>")
  for row in data['entries']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)i</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(mac)s</DIV><DIV CLASS=td>"%row)
