@@ -720,12 +720,13 @@ def interface_delete(aDict):
  op  = aDict.pop('op',None)
  with DB() as db:
   if aDict.get('device_id'):
-   ret['deleted'] = db.do("DELETE FROM device_interfaces WHERE device = %s AND peer_interface IS NULL AND multipoint = 0 AND manual = 0"%aDict['device_id'])
+   ret['deleted'] = db.do("DELETE FROM device_interfaces WHERE device = %s AND peer_interface IS NULL AND multipoint = 0 AND manual = 0 and state != 1"%aDict['device_id'])
   else:
    for intf,value in aDict.iteritems():
     if intf[0:10] == 'interface_' or intf == 'id':
      id = int(value)
-    else: continue
+    else:
+     continue
     ret['cleared'] += db.do("UPDATE device_interfaces SET peer_interface = NULL WHERE peer_interface = %s"%id)
     ret['deleted'] += db.do("DELETE FROM device_interfaces WHERE id = %s"%id)
     ret['interfaces'].append(id)
@@ -987,9 +988,13 @@ def interface_status(aDict):
   db.do("SELECT ipam_networks.id, servers.node, servers.server FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   subnets = db.get_rows()
   for sub in subnets:
-   count = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%sub['id'])
+   count = db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%sub['id'])
    if count > 0:
-    args = {'module':'device','func':'interface_status_check','args':{'device_list':db.get_rows()},'output':False}
+    devices = db.get_rows()
+    args = {'module':'device','func':'interface_status_check','args':{'device_list':devices},'output':False}
+    for dev in devices:
+     db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s"%dev['device_id'])
+     dev['interfaces'] = db.get_rows()
     if not sub['node'] or sub['node'] == 'master':
      t = WorkerThread(args,gSettings,gWorkers)
      ret['local'].append((t.name,sub['id']))
@@ -1016,12 +1021,15 @@ def interface_status_check(aDict):
  def __interfaces(aDev, aSema):
   try:
    module = import_module("zdcp.devices.%s"%aDev['type'])
-   module.__add_globals__({'gSettings':gSettings,'gWorkers':gWorkers})
    device = getattr(module,'Device',None)(aDev['ip'],gSettings)
-   aDev['interfaces'] = device.interfaces()
+   interfaces = device.interfaces()
+   for intf in aDev['interfaces']:
+    intf.update(interfaces[intf['snmp_index']])
+    intf['state'] = {'up':1,'down':2}.get(intf['state'],0)
   except:
-   aDev['interfaces'] = []  
-  finally:aSema.release()
+   aDev['interfaces'] = {}
+  finally:
+   aSema.release()
 
  sema = BoundedSemaphore(20)
  for dev in aDict['device_list']:
@@ -1030,17 +1038,14 @@ def interface_status_check(aDict):
   t.start()
  for i in range(20):
   sema.acquire()
-
  for dev in aDict['device_list']:
   if len(dev['interfaces']) > 0:
-   args = {'device_id':dev['id'], 'interfaces':dev['interfaces']}
    if gSettings['system']['id'] == 'master':
-    interface_status_report(args)
+    interface_status_report(dev)
    else:
     from zdcp.core.common import rest_call
-    rest_call("%s/api/device_interface_status_report"%gSettings['system']['master'],args)
+    rest_call("%s/api/device_interface_status_report"%gSettings['system']['master'],dev)
  return {'result':'GATHERING_DATA_COMPLETED'}
-
 
 #
 #
@@ -1048,21 +1053,21 @@ def interface_status_report(aDict):
  """Function updates interface status for a particular device
 
  Args:
-  - device_id (required)
+  - device_id (required). Device id
   - interfaces (required). Dictionary of interface objects snmp_index#{name,state,mac,description,<id>}. id is DB entry ID
 
  Output:
  """
- ret = {'update':0}
+ ret = {'update':0,'insert':0}
  def mac2int(aMAC):     
   try:    return int(aMAC.replace(":",""),16)
   except: return 0              
 
  with DB() as db:
-  for index,info in aDict['interfaces'].iteritems:
-   mac = mac2int(info['mac'])
-   if info['id']:
-    ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', mac = %s, state = %s WHERE id = %s"%(info['name'],mac,info['state'],info['id']))
+  for intf in aDict['interfaces']:
+   mac = mac2int(intf['mac'])
+   if intf.get('id'):
+    ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', mac = %s, state = %s, description = '%s' WHERE id = %s"%(intf['name'],mac,intf['state'],intf['description'],intf['id']))
    else:
-    ret['update'] += db.do("INSERT INTO device_interfaces SET device = %s, snmp_index = %s, name = '%s', mac = %s, state = %s ON DUPLICATE KEY UPDATE mac = %s, state = %s"%(aDict['device_id'],info['snmp_index'],info['name'],mac,info['state'],mac,info['state']))
+    ret['insert'] += db.do("INSERT INTO device_interfaces SET device = %s, snmp_index = %s, name = '%s', mac = %s, state = %s description = '%s' ON DUPLICATE KEY UPDATE mac = %s, state = %s"%(aDict['device_id'],index,intf['name'],mac,intf['state'],intf['description'],mac,intf['state']))
  return ret
