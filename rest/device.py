@@ -691,8 +691,9 @@ def interface_info(aDict):
     id = db.get_last_id() if ret['insert'] > 0 else 'new'
 
   if not id == 'new':
-   ret['found'] = (db.do("SELECT dc.*, peer.device AS peer_device FROM device_interfaces AS dc LEFT JOIN device_interfaces AS peer ON dc.peer_interface = peer.id WHERE dc.id = '%s'"%id) > 0)
+   ret['found'] = (db.do("SELECT di.*, peer.device AS peer_device FROM device_interfaces AS di LEFT JOIN device_interfaces AS peer ON di.peer_interface = peer.id WHERE di.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
+   ret['data']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['data']['mac']))[2:].zfill(12).decode('hex')).lower()
    ret['data'].pop('manual',None)
   else:
    ret['data'] = {'id':'new','device':int(aDict['device']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_interface':None,'peer_device':None,'multipoint':0}
@@ -751,6 +752,24 @@ def interface_link(aDict):
 
 #
 #
+def interface_unlink(aDict):
+ """Function docstring for interface_unlink. UnLink two device interfaces
+
+ Args:
+  - a_id (required)
+  - b_id (required)
+
+ Output:
+ """
+ ret = {'a':{},'b':{}}
+ with DB() as db:
+  sql_clear = "UPDATE device_interfaces SET peer_interface = NULL WHERE peer_interface = %s AND multipoint = 0"
+  ret['a']['clear'] = db.do(sql_clear%(aDict['a_id']))
+  ret['b']['clear'] = db.do(sql_clear%(aDict['b_id']))
+ return ret
+
+#
+#
 def interface_link_advanced(aDict):
  """Function docstring for interface_link_advanced. Link two IP and SNMP index:s (i.e. physical or logical interfaces) to each other simultaneously
 
@@ -801,11 +820,16 @@ def interface_discover(aDict):
  Output:
  """
  from importlib import import_module
+
+ def mac2int(aMAC):
+  try:    return int(aMAC.replace(":",""),16)
+  except: return 0
+
  ret = {'insert':0,'update':0,'delete':0}
  with DB() as db:
   db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, device_types.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aDict['device'])
   info = db.get_row()
-  db.do("SELECT id, snmp_index, name, description FROM device_interfaces WHERE device = %s"%aDict['device'])
+  db.do("SELECT id, snmp_index, name, description, mac FROM device_interfaces WHERE device = %s"%aDict['device'])
   existing = db.get_rows()
   try:
    module  = import_module("zdcp.devices.%s"%(info['type']))
@@ -817,13 +841,14 @@ def interface_discover(aDict):
    for con in existing:
     entry = interfaces.pop(con['snmp_index'],None)
     if entry:
-     if not ((entry['name'] == con['name']) and (entry['description'] == con['description'])):
-      ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', description = '%s' WHERE id = %s"%(entry['name'][0:24],entry['description'],con['id']))
+     mac = mac2int(entry['mac'])
+     if not ((entry['name'] == con['name']) and (entry['description'] == con['description']) and (mac == con['mac'])):
+      ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', description = '%s', mac = %s WHERE id = %s"%(entry['name'][0:24],entry['description'],mac,con['id']))
     elif aDict.get('cleanup',True) == True:
      ret['delete'] += db.do("DELETE FROM device_interfaces WHERE id = %s AND manual = 0"%(con['id']))
    for key, entry in interfaces.iteritems():
     if entry['state'] == 'up':
-     args = {'device':int(aDict['device']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key}
+     args = {'device':int(aDict['device']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key,'mac':mac2int(entry['mac'])}
      ret['insert'] += db.insert_dict('device_interfaces',args)
  return ret
 
@@ -930,7 +955,8 @@ def interface_sync(aDict):
       v['peer_id'] = remote['id']
       v['result'] = 'existing_connection'
      else:
-      v['result'] = 'other_mapping_type(%s:%s)'%(local['peer_interface'],remote['id'])
+      v['peer_id'] = local['peer_interface']
+      v['result'] = 'other_mapping(%s<=>%s)'%(local['peer_interface'],remote['id'])
     else:
      v['peer_id'] = remote['id']
      db.do(sql_set%(v['local_id'],remote['id']))
