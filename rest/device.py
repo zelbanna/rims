@@ -1027,9 +1027,7 @@ def interface_status_check(aDict):
    for intf in aDev['interfaces']:
     intf.update( interfaces.pop(intf.get('snmp_index','NULL'),{}) )
     intf['state'] = states.get(intf.get('state','unseen'))
-  except Exception as e:
-   print "Exception: %s"%str(e)
-   aDev['interfaces'] = {}
+  except: pass
   finally:
    aSema.release()
 
