@@ -40,7 +40,7 @@ CREATE TABLE `device_interfaces` (
   `name` varchar(25) NOT NULL,
   `description` varchar(25) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `device_index` (`device`,`snmp_index`),
+  UNIQUE KEY `device_index` (`device`,`snmp_index`),
   KEY `peer_interface` (`peer_interface`),
   CONSTRAINT `device_interfaces_ibfk_1` FOREIGN KEY (`device`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `device_interfaces_ibfk_2` FOREIGN KEY (`peer_interface`) REFERENCES `device_interfaces` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
