@@ -30,7 +30,7 @@ def status(aDict):
      t = WorkerThread(args,gSettings,gWorkers)
      ret['local'].append((t.name,sub['id']))
     else:
-     res = rest_call("%s/api/system_task_worker&node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
+     res = rest_call("%s/api/system_task_worker?node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
      ret['remote'].append((res['id'],sub['id']))
  return ret
 

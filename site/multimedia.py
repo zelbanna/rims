@@ -104,7 +104,7 @@ def lookup(aWeb):
 def request(aWeb):
  args = aWeb.args()
  request = args.pop('request',None)
- data = aWeb.rest_call("system_task_worker&node=%s"%aWeb.node(),{'module':'multimedia','func':request,'output':True,'args':args})
+ data = aWeb.rest_call("system_task_worker?node=%s"%aWeb.node(),{'module':'multimedia','func':request,'output':True,'args':args})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Res:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data)
