@@ -827,7 +827,7 @@ def interface_link_advanced(aDict):
 
 #
 #
-def interface_discover(aDict):
+def interface_discover_snmp(aDict):
  """ Discovery function for detecting interfaces. Will try SNMP to detect all interfaces (in state up) first.
 
  Args:
@@ -903,7 +903,7 @@ def interface_snmp(aDict):
 
 #
 #
-def interface_sync(aDict):
+def interface_discover_lldp(aDict):
  """Function discovers connections using lldp info
 
  Args:
