@@ -113,19 +113,11 @@ class QueueWorker(Thread):
 
  def run(self):
   while not self._abort.is_set():
+   self._idle.set()
+   context = self._queue.get(True)
+   self._idle.clear()
    try:
-    context = self._queue.get(True)
-    self._idle.clear()
-   except:
-    self._idle.set()
-    continue
-   try:
-    if context.get('id'):
-     self._current = context['id']
-    else:
-     from random import randint
-     self._current = 'T%s'%randint(0,10000)
-
+    self._current = context.get('id','T')
     if not context.get('periodic'):
      self._result = context['function'](context['args'])
     else:

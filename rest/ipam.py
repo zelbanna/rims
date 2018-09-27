@@ -24,7 +24,7 @@ def status(aDict):
   for sub in subnets:
    count = db.do("SELECT id,INET_NTOA(ip) AS ip, state FROM ipam_addresses WHERE network_id = %s ORDER BY ip"%sub['id'])
    if count > 0:
-    args = {'module':'ipam','func':'address_status_check','args':{'address_list':db.get_rows(),'subnet_id':sub['id']},'output':False}
+    args = {'module':'ipam','func':'address_status_check','args':{'address_list':db.get_rows(),'subnet_id':sub['id']},'output':True}
     if not sub['node'] or sub['node'] == 'master':
      gWorkers.enqueue_task(args)
      ret['local'].append(sub['id'])
