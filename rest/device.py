@@ -645,6 +645,43 @@ def network_info_discover(aDict):
 
 #
 #
+def network_lldp_discover(aDict):
+ """Function discovers lldp connections devices (on a network segment)
+
+ Args:
+  - network_id (optional)
+
+ Output:
+ """
+ from threading import Thread, BoundedSemaphore
+ from netsnmp import VarList, Varbind, Session
+ from binascii import b2a_hex
+ from __builtin__ import list
+
+ new_connections = []
+
+ def __detect_thread(aID,aSema):
+  new_connections.extend(list(con for con in interface_discover_lldp({'device':aID}).values() if con['result'] == 'new_connection'))
+  aSema.release()
+
+ with DB() as db:
+  network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id'] 
+  count   = db.do("SELECT devices.id AS id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1"%network)
+ devices = db.get_rows()
+ if count > 0:
+  try:
+   sema = BoundedSemaphore(20)
+   for dev in devices:
+    sema.acquire()
+    t = Thread(target = __detect_thread, args=[dev['id'], sema])
+    t.start()
+   for i in range(20):
+    sema.acquire()
+  except: pass
+ return {'result':'DISCOVERY_COMPLETED','new_connections':new_connections}
+
+#
+#
 def network_interface_status(aDict):
  """ Initiate a status check for all or a subset of devices' interfaces
 
@@ -947,7 +984,7 @@ def interface_discover_lldp(aDict):
  from struct import unpack
  from socket import inet_aton
  from zdcp.devices.generic import Device
- 
+
  def mac2int(aMAC):
   try:    return int(aMAC.replace(":",""),16)
   except: return 0
@@ -956,14 +993,14 @@ def interface_discover_lldp(aDict):
   return unpack("!I", inet_aton(addr))[0]
 
  with DB() as db:
-  sql_dev = "SELECT INET_NTOA(ia.ip) AS ip, devices.mac, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"
+  sql_dev = "SELECT INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"
   sql_lcl = "SELECT id,multipoint,peer_interface FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s"
   sql_ins = "INSERT INTO device_interfaces(device, snmp_index, name, description) VALUES(%s,%s,'%s','%s')"
   sql_rem = "SELECT di.multipoint, di.name, di.peer_interface, di.mac, di.id, di.description, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN devices ON devices.id = di.device LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s AND (%s OR %s)"
   sql_set = "UPDATE device_interfaces SET peer_interface = %s WHERE id = %s AND multipoint = 0"
   db.do(sql_dev%aDict['device'])
   data = db.get_row()
-  # TODO: Run this one off the correct node
+  # TODO Run this off the right node
   device = Device(data['ip'],gSettings)
   info = device.lldp()
   for k,v in info.iteritems():
