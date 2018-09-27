@@ -252,7 +252,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   (mod,_,fun)    = api.partition('_')
   stream = Stream(self,get)
   self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200,'X-Proc':'site'})
-  # if True:
+  #if True:
   try:
    module = import_module("zdcp.site." + mod)
    getattr(module,fun,None)(stream)
@@ -398,6 +398,7 @@ class Stream(object):
 
  # Generic REST call with full output
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
+  from common import rest_call
   return rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
  def put_html(self, aTitle = None, aIcon = 'zdcp.png'):

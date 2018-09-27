@@ -729,6 +729,9 @@ def interface_list(aDict):
   except: return False
   else:   return True
 
+ def state(val):
+  return {0:'grey',1:'green',2:'red'}.get(val,'orange')
+
  with DB() as db:
   if is_int(aDict.get('device')):
    db.do("SELECT devices.id, hostname FROM devices WHERE id = %s"%aDict['device'])
@@ -737,9 +740,10 @@ def interface_list(aDict):
   ret = db.get_row()
   if ret:
    sort = aDict.get('sort','snmp_index')
-   ret['count'] = db.do("SELECT id,name,description,snmp_index,mac, peer_interface,multipoint FROM device_interfaces WHERE device = %s ORDER BY %s"%(ret['id'],sort))
+   ret['count'] = db.do("SELECT id,name,state,description,snmp_index,mac, peer_interface,multipoint FROM device_interfaces WHERE device = %s ORDER BY %s"%(ret['id'],sort))
    ret['data'] = db.get_rows()
    for row in ret['data']:
+    row['state_ascii'] = state(row['state'])
     row['mac'] = ':'.join(s.encode('hex') for s in str(hex(row['mac']))[2:].zfill(12).decode('hex')).lower()
   else:
    ret = {'id':None,'hostname':None,'data':[],'count':0}
