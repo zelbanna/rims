@@ -487,7 +487,7 @@ def interface_list(aWeb):
  else:
   res = aWeb.rest_call("device_interface_list",{'device':device})
   aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=interface_list>"%(opres))
-  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th TITLE='Peer ID of connecting interface'>Peer interface</DIV><DIV CLASS=th TITLE='State as per last invoked check'>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS='th title' TITLE='Peer ID of connecting interface'>Peer interface</DIV><DIV CLASS='th title' TITLE='State as per last invoked check'>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
   for row in res['data']:
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td><DIV CLASS='state %s' /></DIV><DIV CLASS=td>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['mac'],row['peer_interface'] if not row['multipoint'] else 'multipoint',row['state_ascii']))
    aWeb.wr("<INPUT TYPE=CHECKBOX VALUE=%(id)s ID='interface_%(id)s' NAME='interface_%(id)s'>"%row)

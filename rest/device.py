@@ -659,26 +659,32 @@ def network_lldp_discover(aDict):
  from __builtin__ import list
 
  new_connections = []
+ ins_interfaces = []
 
- def __detect_thread(aID,aSema):
-  new_connections.extend(list(con for con in interface_discover_lldp({'device':aID}).values() if con['result'] == 'new_connection'))
+ def __detect_thread(aDev,aSema):
+  try:
+   new = list(con for con in interface_discover_lldp({'device':aDev['id']}).values() if con['result'] == 'new_connection')
+   new_connections.extend(new)
+   ins = list(con for con in interface_discover_lldp({'device':aDev['id']}).values() if con['extra'] == 'created_local_if')
+   ins_interfaces.extend(ins)
+  except: pass
   aSema.release()
 
  with DB() as db:
-  network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id'] 
-  count   = db.do("SELECT devices.id AS id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1"%network)
+  network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id']
+  count   = db.do("SELECT hostname,devices.id AS id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1"%network)
  devices = db.get_rows()
  if count > 0:
   try:
-   sema = BoundedSemaphore(20)
+   sema = BoundedSemaphore(10)
    for dev in devices:
     sema.acquire()
-    t = Thread(target = __detect_thread, args=[dev['id'], sema])
+    t = Thread(target = __detect_thread, args=[dev, sema])
     t.start()
-   for i in range(20):
+   for i in range(10):
     sema.acquire()
   except: pass
- return {'result':'DISCOVERY_COMPLETED','new_connections':new_connections}
+ return {'result':'DISCOVERY_COMPLETED','new_connections':new_connections,'ins_interfaces':ins_interfaces}
 
 #
 #
@@ -999,7 +1005,7 @@ def interface_discover_lldp(aDict):
  with DB() as db:
   sql_dev = "SELECT INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"
   sql_lcl = "SELECT id,multipoint,peer_interface FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s"
-  sql_ins = "INSERT INTO device_interfaces(device, snmp_index, name, description) VALUES(%s,%s,'%s','%s')"
+  sql_ins = "INSERT INTO device_interfaces(device, snmp_index, name, description) VALUES(%s,%s,'%s','%s') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"
   sql_rem = "SELECT di.multipoint, di.name, di.peer_interface, di.mac, di.id, di.description, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN devices ON devices.id = di.device LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s AND (%s OR %s)"
   sql_set = "UPDATE device_interfaces SET peer_interface = %s WHERE id = %s AND multipoint = 0"
   db.do(sql_dev%aDict['device'])
@@ -1028,6 +1034,9 @@ def interface_discover_lldp(aDict):
     args['id'] = "devices.mac = %s"%mac2int(v['chassis_id'])
    elif v['chassis_type'] == 5:
     args['id'] = "ia.ip = %s"%ip2int(v['chassis_id'])
+   else:
+    v['result'] = "chassis_mapping_impossible_no_id"
+    continue
    if   v['port_type'] == 3:
     args['port'] = "di.mac = %s"%mac2int(v['port_id'])
    elif v['port_type'] == 5:
@@ -1035,6 +1044,9 @@ def interface_discover_lldp(aDict):
    elif v['port_type'] == 7:
     # Locally defined... should really look into remote device and see what it configures.. complex, so simplify and guess
     args['port'] = "di.name = '%s' OR di.name = '%s'"%(v['port_id'],v['port_desc'])
+   else:
+    v['result'] = "chassis_mapping_impossible_no_port"
+    continue
    if len(v['port_desc']) > 0:
     args['desc'] = "di.description COLLATE UTF8_GENERAL_CI LIKE '%s'"%v['port_desc']
    else:

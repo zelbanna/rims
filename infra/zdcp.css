@@ -87,6 +87,7 @@ article.mobile .controls img    {  width:88px; height:88px; }
 
 /*#############################################################################*/
 
+.title {       text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed; }
 .warning {     background-color:red!important; font-weight:bold; color:#FFFFFF!important; }
 .maxed {       width:99%; }
 .right   {     float:right!important; }
