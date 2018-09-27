@@ -1,7 +1,7 @@
 {
  "node":"master",
  "module":"device",
- "func":"interface_status",
+ "func":"network_interface_status",
  "args":{},
  "periodic":true,
  "frequency":3600

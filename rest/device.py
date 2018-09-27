@@ -491,57 +491,6 @@ def discover(aDict):
 
 #
 #
-def system_info_discover(aDict):
- """Function discovers system macs and enterprise oid for devices (on a network segment)
-
- Args:
-  - network_id (optional)
-
- Output:
- """
- from threading import Thread, BoundedSemaphore
- from netsnmp import VarList, Varbind, Session
- from binascii import b2a_hex
- from __builtin__ import list
-
- ret = {'count':0}
-
- def __detect_thread(aDev,aSema):
-  try:
-   session = Session(Version = 2, DestHost = aDev['ip'], Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
-   session.get(sysoid)
-   if sysoid[0].val:
-    aDev['mac'] = int("".join(list(b2a_hex(x) for x in list(sysoid[0].val))),16)
-   if sysoid[1].val:
-    try:    aDev['oid'] = sysoid[1].val.split('.')[7]
-    except: pass
-  except: pass
-  aSema.release()
-  return True
-
- with DB() as db:
-  network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id'] 
-  count   = db.do("SELECT devices.mac, devices.oid, devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND (devices.mac = 0 OR devices.oid = 0)"%network)
-  devices = db.get_rows()
-  if count > 0:
-   try:
-    sema = BoundedSemaphore(20)
-    for dev in devices:
-     sema.acquire()
-     t = Thread(target = __detect_thread, args=[dev, sema])
-     t.start()
-    for i in range(20):
-     sema.acquire()
-   except Exception as err:
-    ret['error']   = "Error: %s"%str(err)
-   for dev in devices:
-    if dev.get('mac',0) > 0 or dev.get('oid',0) > 0:
-     ret['count'] += db.do("UPDATE devices SET mac = %(mac)s, oid = %(oid)s WHERE id = %(id)s"%dev)
- return ret
-
-#
-#
 def system_oids(aDict):
  """ Function returns unique oids found
 
@@ -642,6 +591,90 @@ def configuration_template(aDict):
   ret['result'] = 'OK'
 
  return ret 
+
+#
+#
+def network_info_discover(aDict):
+ """Function discovers system macs and enterprise oid for devices (on a network segment)
+
+ Args:
+  - network_id (optional)
+
+ Output:
+ """
+ from threading import Thread, BoundedSemaphore
+ from netsnmp import VarList, Varbind, Session
+ from binascii import b2a_hex
+ from __builtin__ import list
+
+ ret = {'count':0}
+
+ def __detect_thread(aDev,aSema):
+  try:
+   session = Session(Version = 2, DestHost = aDev['ip'], Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
+   session.get(sysoid)
+   if sysoid[0].val:
+    aDev['mac'] = int("".join(list(b2a_hex(x) for x in list(sysoid[0].val))),16)
+   if sysoid[1].val:
+    try:    aDev['oid'] = sysoid[1].val.split('.')[7]
+    except: pass
+  except: pass
+  aSema.release()
+  return True
+
+ with DB() as db:
+  network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id'] 
+  count   = db.do("SELECT devices.mac, devices.oid, devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND (devices.mac = 0 OR devices.oid = 0)"%network)
+  devices = db.get_rows()
+  if count > 0:
+   try:
+    sema = BoundedSemaphore(20)
+    for dev in devices:
+     sema.acquire()
+     t = Thread(target = __detect_thread, args=[dev, sema])
+     t.start()
+    for i in range(20):
+     sema.acquire()
+   except Exception as err:
+    ret['error']   = "Error: %s"%str(err)
+   for dev in devices:
+    if dev.get('mac',0) > 0 or dev.get('oid',0) > 0:
+     ret['count'] += db.do("UPDATE devices SET mac = %(mac)s, oid = %(oid)s WHERE id = %(id)s"%dev)
+ return ret
+
+#
+#
+def network_interface_status(aDict):
+ """ Initiate a status check for all or a subset of devices' interfaces
+
+ Args:
+  - subnets (optional). List of subnet_ids to check
+  - discover(optional). False/None/"up"/"all", defaults to false
+
+ """
+ from zdcp.core.engine import WorkerThread
+ from zdcp.core.common import rest_call
+ ret = {'local':[],'remote':[]}
+ with DB() as db:
+  trim = "" if not aDict.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join([str(x) for x in aDict['subnets']]))
+  db.do("SELECT ipam_networks.id, servers.node, servers.server FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
+  subnets = db.get_rows()
+  for sub in subnets:
+   count = db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%sub['id'])
+   if count > 0:
+    devices = db.get_rows()
+    args = {'module':'device','func':'interface_status_check','args':{'device_list':devices,'discover':aDict.get('discover',False)},'output':False}
+    for dev in devices:
+     db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id'])
+     dev['interfaces'] = db.get_rows()
+    if not sub['node'] or sub['node'] == 'master':
+     t = WorkerThread(args,gSettings,gWorkers)
+     ret['local'].append((t.name,sub['id']))
+    else:
+     res = rest_call("%s/api/system_task_worker&node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
+     ret['remote'].append((res['id'],sub['id']))
+ return ret
 
 ############################################### INTERFACES ################################################
 #
@@ -907,7 +940,7 @@ def interface_discover_lldp(aDict):
  """Function discovers connections using lldp info
 
  Args:
-  - id (required)
+  - device (required)
 
  Output:
  """
@@ -928,18 +961,18 @@ def interface_discover_lldp(aDict):
   sql_ins = "INSERT INTO device_interfaces(device, snmp_index, name, description) VALUES(%s,%s,'%s','%s')"
   sql_rem = "SELECT di.multipoint, di.name, di.peer_interface, di.mac, di.id, di.description, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN devices ON devices.id = di.device LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s AND (%s OR %s)"
   sql_set = "UPDATE device_interfaces SET peer_interface = %s WHERE id = %s AND multipoint = 0"
-  db.do(sql_dev%aDict['id'])
+  db.do(sql_dev%aDict['device'])
   data = db.get_row()
   # TODO: Run this one off the correct node
   device = Device(data['ip'],gSettings)
   info = device.lldp()
   for k,v in info.iteritems():
-   db.do(sql_lcl%(aDict['id'],k))
+   db.do(sql_lcl%(aDict['device'],k))
    local = db.get_row()
    if not local:
     # Find a local interface
     intf = device.interface(k)
-    db.do(sql_ins%(aDict['id'],k,intf['name'],intf['description']))
+    db.do(sql_ins%(aDict['device'],k,intf['name'],intf['description']))
     local = {'id':db.get_last_id(),'multipoint':0,'peer_interface':None}
     v['local_id'] = local['id']
     v['extra'] = 'created_local_if'
@@ -983,41 +1016,7 @@ def interface_discover_lldp(aDict):
    else:
     v['result'] = 'chassis_mapping_impossible'
 
- return {'id':aDict['id'], 'connections':info}
-
-
-#
-#
-def interface_status(aDict):
- """ Initiate a status check for all or a subset of devices' interfaces
-
- Args:
-  - subnets (optional). List of subnet_ids to check
-  - discover(optional). False/None/"up"/"all", defaults to false
-
- """
- from zdcp.core.engine import WorkerThread
- from zdcp.core.common import rest_call
- ret = {'local':[],'remote':[]}
- with DB() as db:
-  trim = "" if not aDict.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join([str(x) for x in aDict['subnets']]))
-  db.do("SELECT ipam_networks.id, servers.node, servers.server FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
-  subnets = db.get_rows()
-  for sub in subnets:
-   count = db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%sub['id'])
-   if count > 0:
-    devices = db.get_rows()
-    args = {'module':'device','func':'interface_status_check','args':{'device_list':devices,'discover':aDict.get('discover',False)},'output':False}
-    for dev in devices:
-     db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id'])
-     dev['interfaces'] = db.get_rows()
-    if not sub['node'] or sub['node'] == 'master':
-     t = WorkerThread(args,gSettings,gWorkers)
-     ret['local'].append((t.name,sub['id']))
-    else:
-     res = rest_call("%s/api/system_task_worker&node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
-     ret['remote'].append((res['id'],sub['id']))
- return ret
+ return info
 
 #
 #
