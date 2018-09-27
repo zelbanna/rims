@@ -85,7 +85,7 @@ class Device(object):
    for entry in objs:
     intf = interfaces.get(int(entry.iid),{'name':"None",'description':"None"})
     if entry.tag == '.1.3.6.1.2.1.2.2.1.6':
-     intf['mac'] = ":".join(list(b2a_hex(x) for x in list(entry.val)))
+     intf['mac'] = ":".join(list(b2a_hex(x) for x in list(entry.val))) if entry.val else "00:00:00:00:00:00"
     if entry.tag == '.1.3.6.1.2.1.2.2.1.8':
      intf['state'] = 'up' if entry.val == '1' else 'down'
     if entry.tag == '.1.3.6.1.2.1.2.2.1.2':

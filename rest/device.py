@@ -994,7 +994,7 @@ def interface_status(aDict):
     devices = db.get_rows()
     args = {'module':'device','func':'interface_status_check','args':{'device_list':devices,'discover':aDict.get('discover',False)},'output':False}
     for dev in devices:
-     db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s"%dev['device_id'])
+     db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id'])
      dev['interfaces'] = db.get_rows()
     if not sub['node'] or sub['node'] == 'master':
      t = WorkerThread(args,gSettings,gWorkers)
@@ -1021,18 +1021,21 @@ def interface_status_check(aDict):
  from importlib import import_module
  states = {'unseen':0,'up':1,'down':2}
  discover = aDict.get('discover')
+
  def __interfaces(aDev, aSema):
   try:
    module = import_module("zdcp.devices.%s"%aDev['type'])
    device = getattr(module,'Device',None)(aDev['ip'],gSettings)
-   interfaces = device.interfaces()
-   for intf in aDev['interfaces']:
-    intf.update( interfaces.pop(intf.get('snmp_index','NULL'),{}) )
+   probe  = device.interfaces()
+   exist  = aDev['interfaces']
+   for intf in exist:
+    intf.update( probe.pop(intf.get('snmp_index','NULL'),{}) )
     intf['state'] = states.get(intf.get('state','unseen'))
    if discover:
-    for index, intf in interfaces.iteritems():
+    for index, intf in probe.iteritems():
      if discover == 'all' or (discover == 'up' and intf['state'] == 'up'):
-      print "%s => %s"%(index,intf)
+      intf.update({'snmp_index':index,'state':states.get(intf.get('state','unseen'))})
+      exist.append(intf)
   except: pass
   finally:
    aSema.release()
@@ -1060,7 +1063,7 @@ def interface_status_report(aDict):
 
  Args:
   - device_id (required). Device id
-  - interfaces (required). Dictionary of interface objects snmp_index#{name,state,mac,description,<id>}. id is DB entry ID
+  - interfaces (required). list of interface objects {snmp_index,name,state,mac,description,<id>}. id is DB entry ID
 
  Output:
  """
@@ -1071,9 +1074,9 @@ def interface_status_report(aDict):
 
  with DB() as db:
   for intf in aDict['interfaces']:
-   mac = mac2int(intf.get('mac',0))
-   if intf.get('id'):
-    ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', mac = %s, state = %s, description = '%s' WHERE id = %s"%(intf.get('name','NA'),mac,intf['state'],intf.get('description','NA'),intf['id']))
+   args = {'device':aDict['device_id'],'snmp_index':intf['snmp_index'],'id':intf.get('id'), 'mac':mac2int(intf.get('mac',0)), 'name':intf.get('name','NA'),'state':intf.get('state',0),'description':intf.get('description','NA')}
+   if args['id']:
+    ret['update'] += db.do("UPDATE device_interfaces SET name = '%(name)s', mac = %(mac)s, state = %(state)s, description = '%(description)s' WHERE id = %(id)s"%args)
    else:
-    ret['insert'] += db.do("INSERT INTO device_interfaces SET device = %s, snmp_index = %s, name = '%s', mac = %s, state = %s description = '%s' ON DUPLICATE KEY UPDATE mac = %s, state = %s"%(aDict['device_id'],index,intf.get('name','NA'),mac,intf['state'],intf.get('description','NA'),mac,intf['state']))
+    ret['insert'] += db.do("INSERT INTO device_interfaces SET device = %(device)s, snmp_index = %(snmp_index)s, name = '%(name)s', mac = %(mac)s, state = %(state)s, description = '%(description)s' ON DUPLICATE KEY UPDATE mac = %(mac)s, state = %(state)s"%args)
  return ret
