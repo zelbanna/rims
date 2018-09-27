@@ -31,7 +31,7 @@ class Device(GenericDevice):
   GenericDevice.__init__(self,aIP, aSettings)
   self._sshclient = None
   self._hostname  =  aHostname if aHostname else self._ip
-  self._logfile   = self._settings['esxi'].get('logformat',self._settings['system']['system']).format(self._hostname)
+  self._logfile   = self._settings['esxi'].get('logformat',self._settings['logs']['system']).format(self._hostname)
 
  def __enter__(self):
   if self.ssh_connect():
