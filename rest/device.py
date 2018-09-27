@@ -978,6 +978,7 @@ def interface_status(aDict):
 
  Args:
   - subnets (optional). List of subnet_ids to check
+  - discover(optional). Boolean, defaults to false
 
  """
  from zdcp.core.engine import WorkerThread
@@ -991,7 +992,7 @@ def interface_status(aDict):
    count = db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%sub['id'])
    if count > 0:
     devices = db.get_rows()
-    args = {'module':'device','func':'interface_status_check','args':{'device_list':devices},'output':False}
+    args = {'module':'device','func':'interface_status_check','args':{'device_list':devices,'discover':aDict.get('discover',False)},'output':False}
     for dev in devices:
      db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s"%dev['device_id'])
      dev['interfaces'] = db.get_rows()
@@ -1011,6 +1012,7 @@ def interface_status_check(aDict):
 
  Args:
   - device_list (required)
+  - discover (optional). Boolean, defaults to false
 
  Output:
  """
@@ -1027,6 +1029,10 @@ def interface_status_check(aDict):
    for intf in aDev['interfaces']:
     intf.update( interfaces.pop(intf.get('snmp_index','NULL'),{}) )
     intf['state'] = states.get(intf.get('state','unseen'))
+   if aDict.get('discover'):
+    for index, intf in interfaces.iteritems():
+     print "%s => %s"%(index,intf)
+
   except: pass
   finally:
    aSema.release()
