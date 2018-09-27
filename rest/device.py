@@ -542,6 +542,21 @@ def system_info_discover(aDict):
 
 #
 #
+def system_oids(aDict):
+ """ Function returns unique oids found
+
+  Args:
+
+  Output:
+   oids. List of unique enterprise oids
+ """
+ with DB() as db:
+  db.do("SELECT DISTINCT oid FROM devices")
+  oids = db.get_rows()
+ return [x['oid'] for x in oids] 
+
+#
+#
 def types_list(aDict):
  """Function lists currenct device types
 

@@ -4,5 +4,5 @@
  "func":"interface_status",
  "args":{},
  "periodic":true,
- "frequency":600
+ "frequency":3600
 }
