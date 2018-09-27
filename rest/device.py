@@ -1019,7 +1019,6 @@ def interface_status_check(aDict):
  from threading import Thread, BoundedSemaphore
  from os import system
  from importlib import import_module
-
  states = {'unseen':0,'up':1,'down':2}
  def __interfaces(aDev, aSema):
   try:
@@ -1032,7 +1031,6 @@ def interface_status_check(aDict):
    if aDict.get('discover'):
     for index, intf in interfaces.iteritems():
      print "%s => %s"%(index,intf)
-
   except: pass
   finally:
    aSema.release()
