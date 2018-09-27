@@ -978,7 +978,7 @@ def interface_status(aDict):
 
  Args:
   - subnets (optional). List of subnet_ids to check
-  - discover(optional). Boolean, defaults to false
+  - discover(optional). False/None/"up"/"all", defaults to false
 
  """
  from zdcp.core.engine import WorkerThread
@@ -1012,7 +1012,7 @@ def interface_status_check(aDict):
 
  Args:
   - device_list (required)
-  - discover (optional). Boolean, defaults to false
+  - discover(optional). False/None/"up"/"all", defaults to false
 
  Output:
  """
@@ -1020,6 +1020,7 @@ def interface_status_check(aDict):
  from os import system
  from importlib import import_module
  states = {'unseen':0,'up':1,'down':2}
+ discover = aDict.get('discover')
  def __interfaces(aDev, aSema):
   try:
    module = import_module("zdcp.devices.%s"%aDev['type'])
@@ -1028,9 +1029,10 @@ def interface_status_check(aDict):
    for intf in aDev['interfaces']:
     intf.update( interfaces.pop(intf.get('snmp_index','NULL'),{}) )
     intf['state'] = states.get(intf.get('state','unseen'))
-   if aDict.get('discover'):
+   if discover:
     for index, intf in interfaces.iteritems():
-     print "%s => %s"%(index,intf)
+     if discover == 'all' or (discover == 'up' and intf['state'] == 'up'):
+      print "%s => %s"%(index,intf)
   except: pass
   finally:
    aSema.release()
