@@ -139,6 +139,8 @@ def log(aDict):
  log(aDict['msg'])
  return ret
 
+#
+#
 def report(aDict):
  """Function reports generic system info
 
@@ -154,10 +156,12 @@ def report(aDict):
  ret.append({'info':'Version','value':__version__})
  ret.append({'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
  ret.append({'info':'Node URL','value':node})
+ ret.append({'info':'ThreadPool','value':str(gWorkers)})
+ ret.extend(list({'info':'Thread','value':x} for x in gWorkers.activities()))
+ ret.append({'info':'Tasks','value':gWorkers.size()})
  ret.append({'info':'Memory objects','value':len(get_objects())})
  ret.append({'info':'Python version','value':version})
  ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node,k)} for k,v in gSettings.get('files',{}).iteritems()))
- ret.extend(list({'info':'Thread: %s'%t,'value':"State: %s, Info:%s"%(x['state'],x['args'])} for t,x in task_status({'node':gSettings['system']['id'],'extended':True}).iteritems()))
  ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in gSettings.get('system',{}).iteritems()))
  ret.extend(list({'info':'Imported module','value':x} for x in modules.keys() if x.startswith('zdcp')))
  return ret
@@ -924,8 +928,7 @@ def task_worker(aDict):
  Output:
   - result
  """
- from zdcp.core.engine import WorkerThread
- t = WorkerThread(aDict, gSettings, gWorkers)
+ gWorkers.enqueue_task(aDict)
  return {'id':t.name,'res':'THREAD_STARTED'}
 
 #
@@ -954,12 +957,11 @@ def task_add(aDict):
    db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency,output) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i,%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300),0 if not aDict.get('output') else 1))
    aDict['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
-  from zdcp.core.engine import WorkerThread
-  t = WorkerThread(aDict, gSettings, gWorkers)
-  ret['id'] = t.name
+  qWorkers.enqueue(aDict)
+  ret['result'] = 'ADDED'
  else:
   from zdcp.core.common import rest_call
-  ret.update(rest_call("%s/api/task_worker"%gSettings['nodes'][node],aDict)['data'])
+  ret.update(rest_call("%s/api/system_task_worker"%gSettings['nodes'][node],aDict)['data'])
  return ret
 
 #
@@ -969,38 +971,15 @@ def task_status(aDict):
 
  Args:
   - node (required)
-  - extended (optional). Boolean, defaults 'false'
 
  Output:
  """
  ret = {}
  if aDict['node'] == gSettings['system']['id']:
-  if aDict.get('extended'):
-   ret = {t.name:{'state':'EXITING' if t.exit else 'RUNNING','args':t.args} for t in gWorkers.values()}
-  else:
-   ret = {t.name:'EXITING' if t.exit else 'RUNNING' for t in gWorkers.values()}
+  ret = gWorkers.activities()
  else:
   from zdcp.core.common import rest_call
-  ret = rest_call("%s/api/task_status"%gSettings['nodes'][aDict['node']],aDict)['data']
- return ret
-
-#
-#
-def task_delete(aDict):
- """ Stop and remove worker..
-
- Args:
-  - node (required)
-  - id   (required)
-
- Output:
- """
- ret = {}
- if aDict['node'] == gSettings['system']['id']:
-  ret = gWorkers['P%s'%aDict['id']].stop()
- else:
-  from zdcp.core.common import rest_call
-  ret = rest_call("%s/api/task_delete"%gSettings['nodes'][aDict['node']])['data']
+  ret = rest_call("%s/api/system_task_status"%gSettings['nodes'][aDict['node']],aDict)['data']
  return ret
 
 #
@@ -1010,7 +989,6 @@ def task_list(aDict):
 
  Args:
   - node (required)
-  - sync (optional)
 
  Output:
  """
@@ -1025,21 +1003,4 @@ def task_list(aDict):
    for task in ret['tasks']:
     task['state'] = threads.pop("P%s"%task['id'],'EXITED')
    ret['orphan'] = [t for t in threads.items()]
- return ret
-
-#
-#
-def task_state(aDict):
- """ Alter tasks state
-
- Args:
-  - id (required)
-  - active (required). Boolean
-
- Output:
-  - state (boolean)
- """
- ret = {}
- t = gWorkers[aDict['id']]
- ret['result'] = t.release() if aDict['active'] else t.pause(False) 
  return ret

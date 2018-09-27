@@ -696,7 +696,6 @@ def network_interface_status(aDict):
   - discover(optional). False/None/"up"/"all", defaults to false
 
  """
- from zdcp.core.engine import WorkerThread
  from zdcp.core.common import rest_call
  ret = {'local':[],'remote':[]}
  with DB() as db:
@@ -712,11 +711,11 @@ def network_interface_status(aDict):
      db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id'])
      dev['interfaces'] = db.get_rows()
     if not sub['node'] or sub['node'] == 'master':
-     t = WorkerThread(args,gSettings,gWorkers)
-     ret['local'].append((t.name,sub['id']))
+     gWorkers.enqueue_task(args)
+     ret['local'].append(sub['id'])
     else:
-     res = rest_call("%s/api/system_task_worker?node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
-     ret['remote'].append((res['id'],sub['id']))
+     rest_call("%s/api/system_task_worker?node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
+     ret['remote'].append(sub['id'])
  return ret
 
 ############################################### INTERFACES ################################################

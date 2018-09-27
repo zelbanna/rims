@@ -10,97 +10,140 @@ __status__ = "Production"
 from os import walk, path as ospath
 from json import loads, dumps
 from importlib import import_module
-from threading import Thread, Lock, local as TLS
-from time import localtime, strftime
+from threading import Thread, Lock, Event
+from time import localtime, strftime, sleep, time
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from httplib import responses as http_codes
 from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 
 ########################################## Threads ########################################
 #
-# Threads
 #
+class ThreadPool(object):
 
+ def __init__(self, aThreadCount, aSettings):
+  from Queue import Queue
+  self._queue = Queue(0)
+  self._thread_count = aThreadCount
+  self._aborts  = []
+  self._idles   = [] 
+  self._threads = []
+  self._settings = aSettings
+  self.run()
 
-class WorkerThread(Thread):
-
- def __init__(self, aArgs, aSettings, aWorkers):
-  """
-
-  Args:
-   - id (optional required). ID of task to execute, if none assigned a transient ID will be assigned
-   - module (required)
-   - func (required)
-   - args (required)
-   - type (required)
-   - frequency (optional required)
-   - output (optional) True/False (default)
-
-  Workers:
-   - workers dictionary to register oneself upon
-
-  """
-  Thread.__init__(self)
-  if aArgs.get('id'):
-   self.name = aArgs['id']
-  else:
-   from random import randint
-   self.name = 'T%s'%randint(0,10000)
-  self.lock = Lock()
-  self.exit = False
-  self.args = aArgs
-  self.workers = aWorkers
-  self.settings= aSettings
-  self.workers[self.name] = self
-  self.result = None
-  self.daemon   = True
-  self.start()
+ def __del__(self):
+  self.abort()
 
  def __str__(self):
-  return "WorkerThread(%s:%s):%s_%s(%s)"%(self.name,self.args.get('periodic'),self.args['module'],self.args['func'],self.args['args'])
+  return "ThreadPool(%s)"%(self._thread_count)
 
- def pause(self, aBlock = True):
-  return self.lock.acquire(aBlock)
+ def run(self, aBlock = False):
+  if aBlock:
+   while self.alive():
+    sleep(1)
+  elif self.alive():
+   return False
+  else:
+   self._aborts = []
+   self._idles = []
+   self._threads = []
+   for n in range(self._thread_count):
+    abort = Event()
+    idle  = Event()
+    self._aborts.append(abort)
+    self._idles.append(idle)
+    self._threads.append(QueueWorker(n, self._queue, abort, idle, self._settings))
+   return True
 
- def release(self):
-  try:    self.lock.release()
-  except: return False
-  else:   return True
+ def enqueue_function(self, aFunction, **kwargs):
+  args = {'function':aFunction}
+  args.update(kwargs)
+  self._queue.put(args)
 
- def stop(self):
-  self.exit = True
-  return self.name
+ def enqueue_task(self, args):
+  try:
+   mod = import_module("zdcp.rest.%s"%args['module'])
+   mod.__add_globals__({'gSettings':self._settings})
+   args['function'] = getattr(mod,args['func'],lambda x: {'THREAD_NOT_OK'})
+   self._queue.put(args)
+  except: pass
 
- def result(self):
-  return self.result
+ def join(self):
+  self._queue.join()
 
- def args(self):
-  return self.args
+ def abort(self, aBlock = False):
+  for a in self._aborts:
+   a.set()
+   while aBlock and self.alive():
+    sleep(1)
+
+ def alive(self):
+  return True in [t.is_alive() for t in self._threads]
+
+ def idle(self):
+  return False not in [i.is_set() for i in self._idles]
+
+ def done(self):
+  return self._queue.empty()
+
+ def activities(self):
+  return [(t.name,t.is_alive(),t._current) for t in self._threads]
+
+ def size(self):
+  return self._queue.qsize()
+
+#
+#
+class QueueWorker(Thread):
+ def __init__(self, aNumber, aQueue, aAbort, aIdle, aSettings):
+  from zdcp.core.common import log
+  Thread.__init__(self)
+  self._n      = aNumber
+  self.name    = "QueueWorker(%s)"%aNumber  
+  self._queue  = aQueue
+  self._abort  = aAbort
+  self._idle   = aIdle
+  self._idle.set()
+  self._settings= aSettings
+  self._result = None
+  self._current= None
+  self._log    = log
+  self.daemon  = True
+  self.start()
 
  def run(self):
-  from zdcp.core.common import log
-  try:
-   mod = import_module("zdcp.rest.%s"%self.args['module'])
-   mod.__add_globals__({'gSettings':self.settings,'gWorkers':self.workers})
-   fun = getattr(mod,self.args['func'],lambda x: {'THREAD_NOT_OK'})
-  except Exception as e:
-   log("WorkerThread(%s) ERROR => %s"%(self.name,str(e)))
-  else:
-   if not self.args.get('periodic'):
-    self.result = fun(self.args['args'])
-   else:
-    from time import sleep, time
-    freq = int(self.args.get('frequency',300))
-    sleep(freq - int(time())%freq)
-    while not self.exit:
-     with self.lock:
-      self.result = fun(self.args['args'])
-     if self.args.get('output'):
-      log("WorkerThread(%s): %s_%s PERIODIC => %s"%(self.name,self.args['module'],self.args['func'],dumps(self.result)))
-     sleep(freq)
-  self.workers.pop(self.name,None)
-  if self.args.get('output'):
-   log("WorkerThread(%s): %s_%s COMPLETE => %s"%(self.name,self.args['module'],self.args['func'],dumps(self.result)))
+  while not self._abort.is_set():
+   try:
+    context = self._queue.get(True)
+    self._idle.clear()
+   except:
+    self._idle.set()
+    continue
+   try:
+    if context.get('id'):
+     self._current = context['id']
+    else:
+     from random import randint
+     self._current = 'T%s'%randint(0,10000)
+
+    if not context.get('periodic'):
+     self._result = context['function'](context['args'])
+    else:
+     freq = int(context.get('frequency',300))
+     sleep(freq - int(time())%freq)
+     while not self._abort.is_set():
+      self._result = context['function'](context['args'])
+      if context.get('output'):
+       self._log("%s - %s - %s_%s PERIODIC => %s"%(self.name,self._current,context['module'],context['func'],dumps(self._result)))
+      sleep(freq)
+    if context.get('output'):
+     self._log("%s - %s - %s_%s COMPLETE => %s"%(self.name,self._current,context['module'],context['func'],dumps(self._result)))
+   except Exception as e:
+    self._log("%s - ERROR => %s"%(self.name,str(e)))
+   finally:
+    self._queue.task_done()
+    self._current = None
+
 #
 #
 class ApiThread(Thread):
@@ -115,6 +158,7 @@ class ApiThread(Thread):
   return "ApiThread(%s)"%(self.name)
 
  def run(self):
+  from zdcp.core.common import DB
   BaseHTTPRequestHandler.timeout  = 60
   httpd = HTTPServer(self._context['address'], SessionHandler, False)
   httpd._path     = self._context['path']
@@ -122,10 +166,12 @@ class ApiThread(Thread):
   httpd._settings = self._context['gSettings']
   httpd._workers  = self._context['gWorkers']
   httpd.socket    = self._context['socket']
+  httpd._db       = DB()
   httpd._t_id     = self.name
   httpd.server_bind = self.server_close = lambda self: None
   try: httpd.serve_forever()
   except: pass
+  return False
 
 ###################################### Call Handler ######################################
 #
@@ -134,6 +180,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  def __init__(self, *args, **kwargs):
   self._headers = {}
   self._body = 'null'
+  self.db = args[2]._db
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
 
  def header(self):
@@ -317,13 +364,12 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  def register(self):
   """ Register a new node, using node(name), port and system, assume for now that system nodes runs http and not https(!) """
-  from zdcp.core.common import DB
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Proc':'register'})
   try:
    length = int(self.headers.getheader('content-length'))
    args = loads(self.rfile.read(length)) if length > 0 else {}
    params = {'node':args['node'],'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
-   with DB() as db:
+   with self.db:
     update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
    self._body = '{"update":%s,"success":true}'%update
   except Exception as e:
@@ -331,8 +377,6 @@ class SessionHandler(BaseHTTPRequestHandler):
 
 ########################################### Web stream ########################################
 #
-
-from urlparse import parse_qs
 
 class Stream(object):
 

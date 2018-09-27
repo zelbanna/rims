@@ -15,7 +15,6 @@ def status(aDict):
   - subnets (optional). List of subnet_ids to check
 
  """
- from zdcp.core.engine import WorkerThread
  from zdcp.core.common import rest_call
  ret = {'local':[],'remote':[]}
  with DB() as db:
@@ -27,11 +26,11 @@ def status(aDict):
    if count > 0:
     args = {'module':'ipam','func':'address_status_check','args':{'address_list':db.get_rows(),'subnet_id':sub['id']},'output':False}
     if not sub['node'] or sub['node'] == 'master':
-     t = WorkerThread(args,gSettings,gWorkers)
-     ret['local'].append((t.name,sub['id']))
+     gWorkers.enqueue_task(args)
+     ret['local'].append(sub['id'])
     else:
-     res = rest_call("%s/api/system_task_worker?node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
-     ret['remote'].append((res['id'],sub['id']))
+     rest_call("%s/api/system_task_worker?node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
+     ret['remote'].append(sub['id'])
  return ret
 
 ##################################### Networks ####################################

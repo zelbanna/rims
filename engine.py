@@ -18,7 +18,7 @@ basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
 syspath.insert(1, basepath)
 from zdcp.Settings import Settings
 from zdcp.core.common import DB
-from zdcp.core.engine import ApiThread, WorkerThread, TLS
+from zdcp.core.engine import ApiThread, ThreadPool
 import socket
 
 # Socket
@@ -31,7 +31,7 @@ sock.bind(addr)
 sock.listen(5)
 
 # Context vars
-context = {'node':Settings['system']['id'],'socket':sock,'address':addr,'path':ospath.join(basepath,'zdcp'),'gSettings':Settings,'gWorkers':{}}
+context = {'node':Settings['system']['id'],'socket':sock,'address':addr,'path':ospath.join(basepath,'zdcp'),'gSettings':Settings,'gWorkers':ThreadPool(20,Settings)}
 
 # Workers and API threads
 #
@@ -46,9 +46,8 @@ else:
  tasks = rest_call("%s/api/system_task_list"%Settings['system']['master'],{'node':Settings['system']['id']})['data']['tasks']
 for task in tasks:
  args = {'id':"P%s"%task['id'],'periodic':True,'frequency':task['frequency'],'module':task['module'],'func':task['func'],'args':loads(task['args']),'output':task['output']}
- WorkerThread(args,context['gSettings'],context['gWorkers'])
+ context['gWorkers'].enqueue_task(args)
 api_threads = [ApiThread(n,context) for n in range(threadcount)]
-
 while len(api_threads) > 0:
  # Check if threads are still alive...
  api_threads = [a for a in api_threads if a.is_alive()]
