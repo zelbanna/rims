@@ -23,13 +23,11 @@ class Junos(GenericDevice):
 
  def __init__(self,aIP, aSettings):
   GenericDevice.__init__(self,aIP, aSettings)
-  from jnpr.junos import Device as JunosDevice
-  from jnpr.junos.utils.config import Config
-  self._router = JunosDevice(self._ip, user=aSettings['netconf']['username'], password=aSettings['netconf']['password'], normalize=True)
-  self._config = Config(self._router)
-  self._model = ""
-  self._version = ""
   self._interfacesname = {}
+  self._router  = None
+  self._config  = None
+  self._model   = None
+  self._version = None
  
  def __str__(self):
   return "{} Model:{} Version:{}".format(str(self._router), self._model, self._version)
@@ -39,11 +37,17 @@ class Junos(GenericDevice):
    return self
   else:
    raise RuntimeError("Error connecting to host")
- 
+
  def __exit__(self, *ctx_info):
   self.close()
 
  def connect(self):
+  from jnpr.junos import Device as JunosDevice
+  from jnpr.junos.utils.config import Config
+  if not self._router:
+   self._router = JunosDevice(self._ip, user=self._settings['netconf']['username'], password=self._settings['netconf']['password'], normalize=True)
+  if not self._config and self._router:
+   self._config = Config(self._router)
   try:
    self._router.open()
    self._model = self._router.facts['model']
@@ -59,6 +63,12 @@ class Junos(GenericDevice):
   except Exception as err:
    self.log_msg("System Error - Unable to properly close router connection: " + str(err))
 
+ def interfaces(self):
+  return {k:v for k,v in super(Junos,self).interfaces().iteritems() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb']}
+
+ #
+ # Netconf shit
+ #
  def get_rpc(self):
   return self._router.rpc
 
@@ -68,9 +78,6 @@ class Junos(GenericDevice):
  def get_interface_name(self, aifl):
   return self._interfacesname.get(aifl.split('.')[0])
 
- #
- # Netconf shit
- #
  def ping_rpc(self,ip):
   result = self._router.rpc.ping(host=ip, count='1')
   return len(result.xpath("ping-success"))

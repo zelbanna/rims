@@ -75,14 +75,17 @@ class Device(object):
  #
  #
  def interfaces(self):
+  from binascii import b2a_hex
   from netsnmp import VarList, Varbind, Session
   interfaces = {}
   try:
-   objs = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2'),Varbind('.1.3.6.1.2.1.31.1.1.1.18'),Varbind('.1.3.6.1.2.1.2.2.1.8'))
+   objs = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2'),Varbind('.1.3.6.1.2.1.31.1.1.1.18'),Varbind('.1.3.6.1.2.1.2.2.1.8'),Varbind('.1.3.6.1.2.1.2.2.1.6'))
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(objs)
    for entry in objs:
     intf = interfaces.get(int(entry.iid),{'name':"None",'description':"None"})
+    if entry.tag == '.1.3.6.1.2.1.2.2.1.6':
+     intf['mac'] = ":".join(list(b2a_hex(x) for x in list(entry.val))) if entry.val else "00:00:00:00:00:00"
     if entry.tag == '.1.3.6.1.2.1.2.2.1.8':
      intf['state'] = 'up' if entry.val == '1' else 'down'
     if entry.tag == '.1.3.6.1.2.1.2.2.1.2':
@@ -96,14 +99,16 @@ class Device(object):
  #
  #
  def interface(self,aIndex):
+  from binascii import b2a_hex
   from netsnmp import VarList, Varbind, Session
   try:
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   ifoid   = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex),Varbind('.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex))
+   ifoid   = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex),Varbind('.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex),Varbind('.1.3.6.1.2.1.2.2.1.6.%s'%aIndex))
    session.get(ifoid)
    name,desc = ifoid[0].val,ifoid[1].val if ifoid[1].val != "" else "None"
+   mac = ":".join(list(b2a_hex(x) for x in list(ifoid[2].val)))
   except: pass
-  return {'name':name,'description':desc}
+  return {'name':name,'description':desc, 'mac':mac}
 
  #
  #

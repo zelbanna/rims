@@ -163,6 +163,8 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.site(query)
   elif path == 'api':
    self.api(query)
+  elif path == 'debug':
+   self.debug(query)
   elif path == 'infra' or path == 'images' or path == 'files':
    self.files(path,query)
   elif path == 'auth':
@@ -170,7 +172,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif path == 'register':
    self.register()
   else:
-   # Redirect to login
+   # Redirect to login... OR show a list of options 'api/site/...'
    self._headers.update({'Location':'site/system_login?application=%s'%self.server._settings['system'].get('application','system'),'X-Code':301})
 
  #
@@ -191,7 +193,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   except: args = {}
   try:
    with open(self.server._settings['logs']['rest'], 'a') as f:
-    f.write(unicode("%s: %s '%s' @ %s (%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api <> "system_task_worker" else "N/A", self.server._node, get.strip())))
+    f.write(unicode("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api <> "system_task_worker" else "N/A", self.server._node, get.strip())))
   except: pass
   try:
    if self._headers['X-Node'] == self.server._node:
@@ -215,6 +217,32 @@ class SessionHandler(BaseHTTPRequestHandler):
   except Exception as e:
    self._headers.update({'X-Args':args,'X-Info':str(e),'X-Exception':type(e).__name__,'X-Code':500})
 
+ #
+ #
+ def debug(self,query):
+  extras = {}
+  (api,_,get) = query.partition('&')
+  (mod,_,fun) = api.partition('_')
+  if get:
+   for part in get.split("&"):
+    (k,_,v) = part.partition('=')
+    extras[k] = v
+  self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Proc':'API'})
+  self._headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
+  try:
+   length = int(self.headers.getheader('content-length'))
+   args = loads(self.rfile.read(length)) if length > 0 else {}
+  except: args = {}
+  if self._headers['X-Node'] == self.server._node:
+   module = import_module("zdcp.rest.%s"%mod)
+   module.__add_globals__({'gWorkers':self.server._workers,'gSettings':self.server._settings})
+   self._body = dumps(getattr(module,fun,None)(args))
+  else:
+   req  = Request("%s/api/%s"%(self.server._settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
+   sock = urlopen(req, timeout = 300)
+   try: self._body = sock.read()
+   except: pass
+   sock.close()
 
  #
  #

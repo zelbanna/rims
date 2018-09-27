@@ -22,22 +22,7 @@ class Device(GenericDevice):
   return "NetGear - {}".format(GenericDevice.__str__(self))
 
  def interfaces(self):
-  from netsnmp import VarList, Varbind, Session
-  interfaces = {}
-  try:
-   objs = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2'),Varbind('.1.3.6.1.2.1.31.1.1.1.18'),Varbind('.1.3.6.1.2.1.2.2.1.8'))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   session.walk(objs)
-   for entry in objs:
-    intf = interfaces.get(int(entry.iid),{'name':"None",'description':"None"})
-    if entry.tag == '.1.3.6.1.2.1.2.2.1.8':
-     intf['state'] = 'up' if entry.val == '1' else 'down'
-    if entry.tag == '.1.3.6.1.2.1.2.2.1.2':
-     intf['name'] = "g%s"%entry.iid
-    if entry.tag == '.1.3.6.1.2.1.31.1.1.1.18':
-     intf['description'] = entry.val if entry.val != "" else "None"
-    interfaces[int(entry.iid)] = intf
-  except Exception as exception_error:
-   self.log_msg("Generic : error traversing interfaces: " + str(exception_error))
+  interfaces = super(Device,self).interfaces()
+  for k,v in interfaces.iteritems():
+   v['name'] = "g%s"%k
   return interfaces
-

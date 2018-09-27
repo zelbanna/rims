@@ -78,6 +78,14 @@ try: import git
 except ImportError:
  res['gitpython'] = 'install'
  pipmain(["install","-q","gitpython"])
+try: import pyvmomi
+except ImportError:
+ res['pyvmomi'] = 'install'
+ pipmain(["install","-q","pyvmomi"])
+try: import netsnmp
+except ImportError:
+ res['netsnmp-python'] = 'install'
+ pipmain(["install","-q","netsnmp-python"])
 
 ############################################ MASTER ###########################################
 #

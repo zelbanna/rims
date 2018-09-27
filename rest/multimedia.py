@@ -350,8 +350,8 @@ def process(aDict):
 ################################################ TBD ################################################
 #
 #
-def mkv_delay_set(aDict):
- """Function docstring for mkv_delay_set. Sets offset in ms for file xyz
+def delay_set(aDict):
+ """Function docstring for delay_set. Sets offset in ms for file 'original' (MKV)
 
  Args:
   - original (required)

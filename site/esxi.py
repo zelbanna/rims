@@ -71,9 +71,7 @@ def list(aWeb,aIP = None):
 #
 #
 def op(aWeb):
- cookie = aWeb.cookie('system')
  args = aWeb.args()
- args['user_id'] = cookie['id']
  res = aWeb.rest_call("esxi_op",args)
  if aWeb['output'] == 'div':
   aWeb.wr("<ARTICLE>Carried out '{}' on '{}@{}'</ARTICLE>".format(aWeb['next-state'],aWeb['id'],aWeb['ip']))
@@ -114,8 +112,7 @@ def logs(aWeb):
 #
 #
 def snapshot(aWeb):
- cookie = aWeb.cookie('system')
- res = aWeb.rest_call("esxi_snapshots",{'ip':aWeb['ip'],'id':aWeb['id'],'user_id':cookie['id']}) 
+ res = aWeb.rest_call("esxi_snapshots",{'ip':aWeb['ip'],'id':aWeb['id']})
  aWeb.wr("<ARTICLE><P>Snapshots (%s) Highest ID:%s</P>"%(aWeb['id'],res['highest']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")

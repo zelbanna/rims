@@ -22,7 +22,7 @@ def list(aDict):
  except Exception as err:
   ret['error'] = str(err)
   ret['data'] = []
- return ret 
+ return ret
 
 #
 #
@@ -44,22 +44,22 @@ def op(aDict):
   try:
    if aDict['next-state'] == 'vmsvc-snapshot.create':
     from time import strftime
-    esxi.ssh_send("vim-cmd vmsvc/snapshot.create %s 'Portal Snapshot' '%s'"%(aDict['id'],strftime("%Y%m%d")),aDict['user_id'])
+    esxi.ssh_send("vim-cmd vmsvc/snapshot.create %s 'Portal Snapshot' '%s'"%(aDict['id'],strftime("%Y%m%d")))
     ret['state'] = esxi.get_vm_state(aDict['id'])
     ret['state_id'] = esxi.get_state_str(ret['state'])
    elif aDict['next-state'] == 'vmsvc-snapshot.revert':
-    esxi.ssh_send("vim-cmd vmsvc/snapshot.revert %s %s suppressPowerOff"%(aDict['id'],aDict.get('snapshot')),aDict['user_id'])
+    esxi.ssh_send("vim-cmd vmsvc/snapshot.revert %s %s suppressPowerOff"%(aDict['id'],aDict.get('snapshot')))
    elif aDict['next-state'] == 'vmsvc-snapshot.remove':
-    esxi.ssh_send("vim-cmd vmsvc/snapshot.remove %s %s"%(aDict['id'],aDict.get('snapshot')),aDict['user_id'])
+    esxi.ssh_send("vim-cmd vmsvc/snapshot.remove %s %s"%(aDict['id'],aDict.get('snapshot')))
    elif "vmsvc-" in aDict['next-state']:
     from time import sleep
     vmop = aDict['next-state'].partition('-')[2]
-    esxi.ssh_send("vim-cmd vmsvc/%s %s"%(vmop,aDict['id']),aDict['user_id'])
+    esxi.ssh_send("vim-cmd vmsvc/%s %s"%(vmop,aDict['id']))
     sleep(2)
     ret['state'] = esxi.get_vm_state(aDict['id'])
     ret['state_id'] = esxi.get_state_str(ret['state'])
    elif aDict['next-state'] == 'poweroff':
-    esxi.ssh_send("poweroff",aDict['user_id'])
+    esxi.ssh_send("poweroff")
   except Exception as err:
    ret['res'] = 'NOT_OK'
    ret['error'] = str(err)
@@ -102,13 +102,13 @@ def snapshots(aDict):
  from zdcp.devices.esxi import Device
  ret = {'res':'OK', 'data':[],'highest':0}
  with Device(aDict['ip'],gSettings) as esxi:
-  data = {}                  
-  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get %s"%aDict['id'],aDict['user_id'])
+  data = {}
+  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get %s"%aDict['id'])
   for field in snapshots.splitlines():
-   if "Snapshot" in field:      
+   if "Snapshot" in field:
     parts = field.partition(':')
     key = parts[0].strip()
-    val = parts[2].strip()      
+    val = parts[2].strip()
     if key[-4:] == 'Name':
      data['name'] = val
     elif key[-10:] == 'Desciption':

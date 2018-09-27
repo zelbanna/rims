@@ -27,40 +27,48 @@ class Device(GenericDevice):
  def get_functions(cls):
   return ['manage']
 
- def __init__(self,aIP, aSettings):
+ def __init__(self,aIP, aSettings, aHostname = None):
   GenericDevice.__init__(self,aIP, aSettings)
-  # Override log file
-  def GL_get_host_name(aIP):
-   from socket import gethostbyaddr
-   try:    return gethostbyaddr(aIP)[0].partition('.')[0]
-   except: return None
-
   self._sshclient = None
-  self._hostname = GL_get_host_name(aIP)
-  self._logfile = self._settings['esxi']['logformat'].format(self._hostname)
-
- def set_name(self, aHostname):
-  self._hostname = aHostname
-  self._logfile = self._settings['esxi']['logformat'].format(aHostname)
+  self._hostname  =  aHostname if aHostname else self._ip
+  self._logfile   = self._settings['esxi'].get('logformat',self._settings['logs']['system']).format(self._hostname)
 
  def __enter__(self):
   if self.ssh_connect():
    return self
   else:
-   raise RuntimeError("Error connecting to host")
-  
+   raise RuntimeError("ESXi_Error connecting to host")
+
  def __exit__(self, *ctx_info):
   self.ssh_close()
-  
- def __str__(self):
-  return self._hostname + " SSHConnected:" + str(self._sshclient != None)  + " statefile:" + self.statefile
 
- def log_msg(self, aMsg):                
+ def __str__(self):
+  return self._hostname + " SSHConnected:" + str(self._sshclient != None)
+
+ def log_msg(self, aMsg):
   from time import localtime, strftime
   output = unicode("{} : {}".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg))
   with open(self._logfile, 'a') as f:
    f.write(output + "\n")
- 
+
+ def interfaces(self):
+  interfaces = super(Device,self).interfaces()
+  for k,v in interfaces.iteritems():
+   parts = v['name'].split()
+   if parts[0] == 'Device':
+    v['name'] = parts[1]
+   elif parts[0] == 'Link':
+    v['name'] = parts[2]
+   elif parts[0] == 'Virtual':
+    v['name'] = parts[2]
+   elif parts[0] == 'Traditional':
+    v['name'] = parts[4]
+   else:
+    v['name']= v['name'][0:25]
+   v['description'] = v['description'][0:25]
+  return interfaces
+
+
  #
  # ESXi ssh interaction - Connect() send, send,.. Close()
  #
@@ -72,7 +80,7 @@ class Device(GenericDevice):
     self._sshclient.set_missing_host_key_policy(AutoAddPolicy())
     self._sshclient.connect(self._ip, username=self._settings['esxi']['username'], password=self._settings['esxi']['password'] )
    except AuthenticationException:
-    self.log_msg("DEBUG: Authentication failed when connecting to %s" % self._ip)
+    self.log_msg("ESXi_DEBUG: Authentication failed when connecting")
     self._sshclient = None
     return False
   return True
@@ -81,7 +89,7 @@ class Device(GenericDevice):
   from select import select
   if self._sshclient:
    output = ""
-   self.log_msg("ssh_send: [{}]".format(aMessage))
+   self.log_msg("ESXi_ssh_send: [{}]".format(aMessage))
    stdin, stdout, stderr = self._sshclient.exec_command(aMessage)
    while not stdout.channel.exit_status_ready():
     if stdout.channel.recv_ready():
@@ -90,7 +98,7 @@ class Device(GenericDevice):
       output = output + stdout.channel.recv(4096)
    return output.rstrip('\n')
   else:
-   self.log_msg("Error: trying to send to closed channel")
+   self.log_msg("ESXi_Error: trying to send to closed channel")
    self._sshclient = None
 
  def ssh_close(self):
@@ -103,7 +111,7 @@ class Device(GenericDevice):
 
  #
  # SNMP interaction
- # 
+ #
  def get_vm_id(self, aname):
   from netsnmp import VarList, Varbind, Session
   try:
@@ -116,7 +124,7 @@ class Device(GenericDevice):
   except:
    pass
   return -1
- 
+
  def get_vm_state(self, aid):
   from netsnmp import VarList, Varbind, Session
   try:

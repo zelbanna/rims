@@ -453,52 +453,49 @@ def discover(aWeb):
 #
 #
 def interface_list(aWeb):
- if   aWeb['op'] == 'delete':
-  args = aWeb.args()
+ args = aWeb.args()
+ device = args['device']
+ op = args.get('op')
+ if   op == 'delete':
   opres = aWeb.rest_call("device_interface_delete",args)
- elif aWeb['op'] == 'discover':
-  opres = aWeb.rest_call("device_interface_discover",{'device':aWeb['device'],'cleanup':False})
- elif aWeb['op'] == 'link':
+ elif op == 'discover':
+  opres = aWeb.rest_call("device_interface_discover_snmp",{'device':device,'cleanup':False})
+ elif op == 'link':
   opres = aWeb.rest_call("device_interface_link",{'a_id':aWeb['id'],'b_id':aWeb['peer_interface']})
+ elif op == 'unlink':
+  opres = aWeb.rest_call("device_interface_unlink",{'a_id':device,'b_id':aWeb['peer_interface']})
+ elif op == 'lldp':
+  connections = aWeb.rest_call("device_interface_discover_lldp",{'device':device})
  else:
   opres = ""
- res = aWeb.rest_call("device_interface_list",{'device':aWeb['device']})
- aWeb.wr("<ARTICLE><P>Interfaces (%s)</P>"%(res['hostname']))
- aWeb.wr(aWeb.button('reload', DIV='div_dev_data',URL='device_interface_list?device=%s'%res['id']))
- aWeb.wr(aWeb.button('add',    DIV='div_dev_data',URL='device_interface_info?device=%s&id=new'%res['id']))
- aWeb.wr(aWeb.button('trash',  DIV='div_dev_data',URL='device_interface_list?device=%s&op=delete'%res['id'], MSG='Delete interfaces?', FRM='interface_list', TITLE='Delete selected interfaces'))
- aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device=%(id)s&op=discover' SPIN='true' MSG='Rediscover interfaces?' TITLE='Discover interfaces'>Discover</A>"%res)
- aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_sync?id=%(id)s' TITLE='LLDP Sync' SPIN=true>LLDP</A>"%res)
- aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device=%(id)s&op=delete&device_id=%(id)s' TITLE='Clean up empty interfaces' SPIN=true>Cleanup</A>"%res)
- aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=interface_list>"%(opres))
- aWeb.wr("<DIV CLASS=table>")
- aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Peer interface</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tbody>")
- for row in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['peer_interface'] if not row['multipoint'] else 'multipoint'))
-  aWeb.wr("<INPUT TYPE=CHECKBOX VALUE=%(id)s ID='interface_%(id)s' NAME='interface_%(id)s'>"%row)
-  aWeb.wr(aWeb.button('info',  DIV='div_dev_data',URL='device_interface_info?device=%s&id=%s'%(aWeb['device'],row['id'])))
-  aWeb.wr(aWeb.button('sync',  DIV='div_dev_data',URL='device_interface_link_device?device=%s&id=%s&name=%s'%(aWeb['device'],row['id'],row['name']), TITLE='Connect'))
-  aWeb.wr("</DIV></DIV>")
+ aWeb.wr("<ARTICLE><P>Interfaces</P>")
+ aWeb.wr(aWeb.button('reload', DIV='div_dev_data',URL='device_interface_list?device=%s'%device))
+ aWeb.wr(aWeb.button('add',    DIV='div_dev_data',URL='device_interface_info?device=%s&id=new'%device))
+ aWeb.wr(aWeb.button('trash',  DIV='div_dev_data',URL='device_interface_list?device=%s&op=delete'%device, MSG='Delete interfaces?', FRM='interface_list', TITLE='Delete selected interfaces'))
+ aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device=%s&op=discover' SPIN='true' MSG='Rediscover interfaces?' TITLE='Discover interfaces'>Discover</A>"%device)
+ aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device=%s&op=lldp' TITLE='LLDP Sync' SPIN=true>LLDP</A>"%device)
+ aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device=%s&op=delete&device_id=%s' TITLE='Clean up empty interfaces' SPIN=true>Cleanup</A>"%(device,device))
+ if op == 'lldp':
+  tmpl = "<DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"
+  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>SNMP Name</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Chassis Type</DIV><DIV CLASS=th>Chassis ID</DIV><DIV CLASS=th>Port Type</DIV><DIV CLASS=th>Port ID</DIV><DIV CLASS=th>Port Desc</DIV><DIV CLASS=th>Sys Name</DIV><DIV CLASS=th>Local ID</DIV><DIV CLASS=th>Peer ID</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+  for i in connections.values():
+   aWeb.wr("<DIV CLASS=tr>")
+   aWeb.wr(tmpl%(i['result'], i['snmp_name'],i['snmp_index'],i['chassis_type'],i['chassis_id'],i['port_type'],i['port_id'],i['port_desc'],i['sys_name'],i['local_id'],i.get('peer_id','-')))
+   if i.get('peer_id'):
+    aWeb.wr(aWeb.button('trash', DIV='div_dev_data', URL='device_interface_list?device=%s&op=unlink&id=%s&peer_interface=%s'%(device,i['local_id'],i['peer_id'])))
+   aWeb.wr("</DIV></DIV>")
+ else:
+  res = aWeb.rest_call("device_interface_list",{'device':device})
+  aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=interface_list>"%(opres))
+  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th TITLE='Peer ID of connecting interface'>Peer interface</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+  for row in res['data']:
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(row['id'],row['name'],row['description'],row['snmp_index'],row['mac'],row['peer_interface'] if not row['multipoint'] else 'multipoint'))
+   aWeb.wr("<INPUT TYPE=CHECKBOX VALUE=%(id)s ID='interface_%(id)s' NAME='interface_%(id)s'>"%row)
+   aWeb.wr(aWeb.button('info',  DIV='div_dev_data',URL='device_interface_info?device=%s&id=%s'%(device,row['id'])))
+   aWeb.wr(aWeb.button('sync',  DIV='div_dev_data',URL='device_interface_link_device?device=%s&id=%s&name=%s'%(device,row['id'],row['name']), TITLE='Connect'))
+   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</FORM></ARTICLE>")
-
-#
-#
-def interface_sync(aWeb):
- res = aWeb.rest_call("device_interface_sync",{'id':aWeb['id']})
- tmpl = "<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"
- aWeb.wr("<ARTICLE><P>LLDP sync operation</P>")
- aWeb.wr(aWeb.button('items', DIV='div_dev_data',URL='device_interface_list?device=%s'%res['id']))
- aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device=%(id)s&op=discover' SPIN='true' MSG='Rediscover interfaces?' TITLE='Discover interfaces'>Discover</A>"%res)
- aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_sync?id=%(id)s' TITLE='LLDP Sync' SPIN=true>LLDP</A>"%res)
- aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device=%(id)s&op=delete&device_id=%(id)s' TITLE='Clean up empty interfaces' SPIN=true>Cleanup</A>"%res)
- aWeb.wr("<DIV CLASS=table>")
- aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>SNMP Name</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Chassis Type</DIV><DIV CLASS=th>Chassis ID</DIV><DIV CLASS=th>Port Type</DIV><DIV CLASS=th>Port ID</DIV><DIV CLASS=th>Port Desc</DIV><DIV CLASS=th>Sys Name</DIV><DIV CLASS=th>Local ID</DIV><DIV CLASS=th>Peer ID</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tbody>")
- for i in res['connections'].values():
-  aWeb.wr(tmpl%(i['result'], i['snmp_name'],i['snmp_index'],i['chassis_type'],i['chassis_id'],i['port_type'],i['port_id'],i['port_desc'],i['sys_name'],i['local_id'],i.get('peer_id','-')))
- aWeb.wr("</ARTICLE>")
 
 #
 #
@@ -513,6 +510,7 @@ def interface_info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT        NAME=name        VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['name']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['description']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>SNMP Index:</DIV><DIV CLASS=td><INPUT  NAME=snmp_index  VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV></DIV>"%(data['snmp_index']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%(data['mac']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Multipoint:</DIV><DIV CLASS=td><INPUT  NAME=multipoint  VALUE=1    TYPE=CHECKBOX %s></DIV></DIV>"%("checked" if data['multipoint'] else ""))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Peer interface:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['peer_interface'])
  if data['peer_device']:

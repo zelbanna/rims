@@ -1,9 +1,8 @@
 {
  "node":"master",
  "module":"device",
- "func":"network_info_discover",
+ "func":"network_interface_status",
  "args":{},
  "periodic":true,
- "output":true,
- "frequency":1800
+ "frequency":3600
 }
