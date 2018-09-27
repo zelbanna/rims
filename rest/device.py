@@ -1093,7 +1093,7 @@ def interface_status_check(aDict):
 
  sema = BoundedSemaphore(20)
  for dev in aDict['device_list']:
-  sema.acquire()         
+  sema.acquire()
   t = Thread(target = __interfaces, args=[dev, sema])
   t.start()
  for i in range(20):
@@ -1104,7 +1104,7 @@ def interface_status_check(aDict):
     interface_status_report(dev)
    else:
     from zdcp.core.common import rest_call
-    rest_call("%s/api/device_interface_status_report"%gSettings['system']['master'],dev)
+    rest_call("%s/api/device_interface_status_report?log=false"%gSettings['system']['master'],dev)
  return {'result':'GATHERING_DATA_COMPLETED'}
 
 #

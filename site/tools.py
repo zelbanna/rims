@@ -43,7 +43,7 @@ def main(aWeb):
 #
 #
 def install(aWeb):
- res = aWeb.rest_call("tools_install&node=%s"%aWeb['node'])
+ res = aWeb.rest_call("tools_install?node=%s"%aWeb['node'])
  aWeb.wr("<ARTICLE CLASS='info'><P>Install results</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  for key,value in res.items():
@@ -131,7 +131,7 @@ def rest_information(aWeb):
 def logs_clear(aWeb):
  args = aWeb.get_args2dict(['node'])
  args['count'] = 18
- res = aWeb.rest_call('tools_logs_clear&node=%s'%aWeb['node'],args)
+ res = aWeb.rest_call('tools_logs_clear?node=%s'%aWeb['node'],args)
  aWeb.wr("<ARTICLE><P>%s</P>"%res['node'])
  for k,v in res['file'].items():
   aWeb.wr("%s: %s<BR>"%(k,v))
@@ -139,11 +139,11 @@ def logs_clear(aWeb):
 
 #
 #
-def logs_show(aWeb):           
+def logs_show(aWeb):
  args = aWeb.get_args2dict(['node'])
  args['count'] = 18
- res = aWeb.rest_call('tools_logs_get&node=%s'%aWeb['node'],args)
- aWeb.wr("<ARTICLE>")   
+ res = aWeb.rest_call('tools_logs_get?node=%s'%aWeb['node'],args)
+ aWeb.wr("<ARTICLE>")
  for file,logs in res.items():
   aWeb.wr("<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs)))
  aWeb.wr("</ARTICLE>")
@@ -153,7 +153,7 @@ def logs_show(aWeb):
 #
 def services_info(aWeb):
  args = aWeb.get_args2dict(['node'])
- data  = aWeb.rest_call('tools_service_info&node=%s'%aWeb['node'],args)
+ data  = aWeb.rest_call('tools_service_info?node=%s'%aWeb['node'],args)
  state = 'start' if data['state'] == 'inactive' else 'stop'
  aWeb.wr("<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)"%(aWeb['service'],data['state'],data['info']))
  aWeb.wr(aWeb.button(state, DIV='div_content', SPIN='true', URL='tools_services_info?service=%s&node=%s&op=%s'%(args['service'],aWeb['node'],state)))

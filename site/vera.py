@@ -17,7 +17,7 @@ __status__ = "Production"
 #
 def portal(aWeb):
  aWeb.put_html('Vera','lights')
- res = aWeb.rest_call("vera_infra&node=master",{'node':'vera'})
+ res = aWeb.rest_call("vera_infra?node=master",{'node':'vera'})
  aWeb.wr("<MAIN STYLE='top:0px;' ID=main>")
  aWeb.wr("<ARTICLE CLASS='mobile'>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
@@ -56,7 +56,7 @@ def manage(aWeb):
 #
 #
 def status(aWeb):
- res = aWeb.rest_call("vera_status&node=master",{'node':aWeb['node']})
+ res = aWeb.rest_call("vera_status?node=master",{'node':aWeb['node']})
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
@@ -68,7 +68,7 @@ def status(aWeb):
 #
 def devices(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("vera_devices&node=master",args)
+ res = aWeb.rest_call("vera_devices?node=master",args)
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table>")
@@ -87,7 +87,7 @@ def devices(aWeb):
 #
 def device_info(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("vera_device_info&node=master",args)
+ res = aWeb.rest_call("vera_device_info?node=master",args)
  aWeb.wr("<ARTICLE><DIV CLASS=title>Device %s</DIV>"%aWeb['id'])
  if aWeb['category'] == '2':
   load  = res['urn:upnp-org:serviceId:Dimming1']['LoadLevelStatus']
@@ -119,7 +119,7 @@ def device_info(aWeb):
 #
 #
 def rooms(aWeb):
- res = aWeb.rest_call("vera_infra&node=master",{'node':aWeb['node']})
+ res = aWeb.rest_call("vera_infra?node=master",{'node':aWeb['node']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left><ARTICLE>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Section</DIV></DIV><DIV CLASS=tbody>")
  for room in list(res['rooms'].values()):
@@ -132,7 +132,7 @@ def rooms(aWeb):
 #
 #
 def scenes(aWeb):
- res = aWeb.rest_call("vera_infra&node=master",{'node':aWeb['node']})
+ res = aWeb.rest_call("vera_infra?node=master",{'node':aWeb['node']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
@@ -149,7 +149,7 @@ def scenes(aWeb):
 #
 #
 def scene_state(aWeb):
- res = aWeb.rest_call("vera_scene&node=master",{'node':aWeb['node'],'scene':aWeb['scene'],'op':aWeb['op']})
+ res = aWeb.rest_call("vera_scene?node=master",{'node':aWeb['node'],'scene':aWeb['scene'],'op':aWeb['op']})
  aWeb.wr(aWeb.button('stop' if aWeb['op'] == "run" else 'start',URL='vera_scene_state?node=%s&scene=%s&op=%s'%(aWeb['node'],aWeb['scene'],"run" if aWeb['op'] == "off" else "off"),DIV='div_scene_%s'%aWeb['id']))
 
 #

@@ -425,7 +425,7 @@ def address_status_check(aDict):
    address_status_report(args)
   else:
    from zdcp.core.common import rest_call
-   rest_call("%s/api/ipam_address_status_report"%gSettings['system']['master'],args)
+   rest_call("%s/api/ipam_address_status_report?log=false"%gSettings['system']['master'],args)
   return {'result':'CHECK_COMPLETED'}
 
 #
