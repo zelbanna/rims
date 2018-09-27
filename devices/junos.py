@@ -109,7 +109,7 @@ class Junos(GenericDevice):
    ret.append('set system login user %s authentication encrypted-password "%s"'%(self._settings['netconf']['username'],self._settings['netconf']['encrypted']))
   ret.extend(['%s system domain-name %s'%(base,argdict['domain']),
               '%s system domain-search %s'%(base,argdict['domain']),
-              '%s system login message \"Login to device %s\"'%(base,argdict['hostname']),
+              '%s system login message \"this is device %s\"'%(base,argdict['hostname']),
               '%s system name-server %s'%(base,self._settings['netconf']['dnssrv']),
               '%s system services ssh root-login allow'%base,
               '%s system services rest http'%base,
