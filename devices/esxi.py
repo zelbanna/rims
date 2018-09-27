@@ -54,9 +54,18 @@ class Device(GenericDevice):
  def interfaces(self):
   interfaces = super(Device,self).interfaces()
   for k,v in interfaces.iteritems():
-   desc = v['name'][0:25]
-   v['name'] = v['description'][0:25]
-   v['description'] = desc
+   parts = v['name'].split()
+   if parts[0] == 'Device':
+    v['name'] = parts[1]
+   elif parts[0] == 'Link':
+    v['name'] = parts[2]
+   elif parts[0] == 'Virtual':
+    v['name'] = parts[2]
+   elif parts[0] == 'Traditional':
+    v['name'] = parts[4]
+   else:
+    v['name']= v['name'][0:25]
+   v['description'] = v['description'][0:25]
   return interfaces
 
 
