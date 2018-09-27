@@ -72,7 +72,7 @@ def delete(aWeb):
 #
 #
 def save(aWeb):
- aWeb.wr("<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("system_settings_save&node=%s"%aWeb['node'])))
+ aWeb.wr("<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("system_settings_save?node=%s"%aWeb['node'])))
 
 #
 #
