@@ -176,7 +176,7 @@ class ApiThread(Thread):
   httpd._settings = self._context['gSettings']
   httpd._workers  = self._context['gWorkers']
   httpd.socket    = self._context['socket']
-  httpd._db       = DB()
+  httpd._db       = DB() if self._context['gSettings']['system']['id'] == 'master' else None
   httpd._t_id     = self.name
   httpd.server_bind = self.server_close = lambda self: None
   try: httpd.serve_forever()
