@@ -93,7 +93,7 @@ class WorkerPool(object):
   return self._queue.empty()
 
  def activities(self):
-  return [(t.name,t.is_alive(),t._current) for t in self._threads]
+  return [(t.name,t.is_alive(),t._current) for t in self._threads if not t._idle.is_set()]
 
  def size(self):
   return self._queue.qsize()
