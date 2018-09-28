@@ -491,10 +491,14 @@ def system_oids(aDict):
   Output:
    oids. List of unique enterprise oids
  """
+ ret = {}
  with DB() as db:
-  db.do("SELECT DISTINCT oid FROM devices")
-  oids = db.get_rows()
- return [x['oid'] for x in oids] 
+  for type in ['devices','device_types']:
+   db.do("SELECT DISTINCT oid FROM %s"%type)
+   oids = db.get_rows()
+   ret[type] = [x['oid'] for x in oids] 
+ ret['unhandled'] = [x for x in ret['devices'] if x not in ret['device_types']] 
+ return ret
 
 #
 #

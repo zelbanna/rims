@@ -21,14 +21,15 @@ def main(aWeb):
    aWeb.wr("<A CLASS=z-op DIV=div_content URL=tools_logs_show?node=%s>%s</A>"%(node,node))
   aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI CLASS='dropdown'><A>Reports</A><DIV CLASS='dropdown-content'>")
- if data.get('users'):
+ if aWeb.node() == 'master':
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='activities_report'>Activities</A>")
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='reservations_report?node=master'>Reservations</A>")
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='device_report?node=master'>Devices</A>")
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_task_report'>Jobs</A>")
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_report'>System</A>")
  aWeb.wr("</DIV></LI>")
- aWeb.wr("<LI><A CLASS=z-op TARGET=_blank            HREF='../infra/zdcp.pdf'>ERD</A></LI>")
+ if aWeb.node() == 'master':
+  aWeb.wr("<LI><A CLASS=z-op TARGET=_blank            HREF='../infra/zdcp.pdf'>ERD</A></LI>")
  aWeb.wr("<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>")
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_rest_main?node=%s'>Debug</A>"%aWeb.node())
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_logs_show?name=rest&node=%s'>Logs</A>"%aWeb.node())

@@ -151,17 +151,21 @@ def report(aDict):
  from os import path as ospath
  from sys import modules,version
  from gc import get_objects
- node = gSettings['nodes'][gSettings['system']['id']]
+ node = gSettings['system']['id']
+ node_url = gSettings['nodes'][node]
  ret = []
  ret.append({'info':'Version','value':__version__})
  ret.append({'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
- ret.append({'info':'Node URL','value':node})
+ ret.append({'info':'Node URL','value':node_url})
  ret.append({'info':'Worker pool','value':gWorkers.pool_size()})
  ret.append({'info':'Queued tasks','value':gWorkers.queue_size()})
  ret.append({'info':'Memory objects','value':len(get_objects())})
  ret.append({'info':'Python version','value':version})
- ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node,k)} for k,v in gSettings.get('files',{}).iteritems()))
- ret.extend(list({'info':'Active Worker','value':x} for x in gWorkers.activities()))
+ if node == 'master':
+  from zdcp.rest.device import system_oids
+  ret.append({'info':'Unhandled detected OIDs','value':",".join(list(str(x) for x in system_oids(None)['unhandled']))})
+ ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in gSettings.get('files',{}).iteritems()))
+ ret.extend(list({'info':'Active Worker','value':"%s => %s"%(x[0],x[2])} for x in gWorkers.activities()))
  ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in gSettings.get('system',{}).iteritems()))
  ret.extend(list({'info':'Imported module','value':x} for x in modules.keys() if x.startswith('zdcp')))
  return ret
