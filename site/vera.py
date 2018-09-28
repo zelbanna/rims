@@ -26,7 +26,7 @@ def portal(aWeb):
   name = scen['name'].replace('_',' ')
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=vera_scene_info?node=vera&scene=%s>%s</A></DIV>"%(id,name))
   aWeb.wr("<DIV CLASS=td><DIV ID=scene_%s>"%id)
-  aWeb.wr("<A CLASS='z-op btn mobile' DIV='scene_{0}' URL='vera_scene_state?node=vera&scene={0}&op={1}'><IMG SRC='images/btn-{2}.png' /></A>".format(id,"run" if scen['active'] == 0 else "off",'start' if scen['active'] == 0 else 'stop'))
+  aWeb.wr("<A CLASS='z-op btn mobile' DIV='scene_{0}' URL='vera_scene_state?node=vera&scene={0}&op={1}'><IMG SRC='../images/btn-{2}.png' /></A>".format(id,"run" if scen['active'] == 0 else "off",'start' if scen['active'] == 0 else 'stop'))
   aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
  aWeb.wr("</MAIN>")
