@@ -30,33 +30,15 @@ class Device(object):
   pass
 
  #
- #
- def threading(self, aOperation, aArgs = None):
-  try:
-   from threading import Thread
-   op = getattr(self, aOperation, None)
-   thread = Thread(target = op, args=aArgs)
-   thread.name = aOperation
-   thread.start()
-   self.log_msg("threading started: {}({})".format(aOperation,aArgs))
-  except:
-   self.log_msg("threading error: Illegal operation passed ({})".format(aOperation))
-   thread = None
-  return thread
-
- #
- #
  def ping_device(self):
   from os import system
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
 
  #
- #
  def log_msg(self, aMsg):
   from zdcp.core.common import log
   log(aMsg)
 
- #
  #
  def configuration(self,argdict):
   output = ["No config template for this device type.","",
@@ -72,7 +54,6 @@ class Device(object):
    "- SNMP write community: %s"%self._settings['snmp']['write_community']]
   return output
 
- #
  #
  def interfaces(self):
   from binascii import b2a_hex
@@ -97,7 +78,6 @@ class Device(object):
   return interfaces
 
  #
- #
  def interface(self,aIndex):
   from binascii import b2a_hex
   from netsnmp import VarList, Varbind, Session
@@ -110,7 +90,6 @@ class Device(object):
   except: pass
   return {'name':name,'description':desc, 'mac':mac}
 
- #
  #
  def lldp(self):
   from netsnmp import VarList, Varbind, Session
@@ -157,7 +136,6 @@ class Device(object):
      neighbors.pop(k,None)
   return neighbors
 
- #
  #
  def detect(self):
   from netsnmp import VarList, Varbind, Session
@@ -245,4 +223,3 @@ class Device(object):
   else:
    ret['error'] = 'Timeout'
   return ret
-

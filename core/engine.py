@@ -138,11 +138,14 @@ class WorkerPool(object):
  def done(self):
   return self._queue.empty()
 
+ def queue_size(self):
+  return self._queue.qsize()
+
+ def pool_size(self):
+  return self._thread_count
+
  def activities(self):
   return [(t.name,t.is_alive(),t._current) for t in self._threads if not t._idle.is_set()]
-
- def size(self):
-  return self._queue.qsize()
 
  def semaphore(self,aSize):
   return BoundedSemaphore(aSize)  
