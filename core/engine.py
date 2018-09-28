@@ -19,7 +19,7 @@ from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 ########################################## Threads ########################################
 #
 #
-class ThreadPool(object):
+class WorkerPool(object):
 
  def __init__(self, aThreadCount, aSettings):
   from Queue import Queue
@@ -35,7 +35,7 @@ class ThreadPool(object):
   self.abort()
 
  def __str__(self):
-  return "ThreadPool(%s)"%(self._thread_count)
+  return "WorkerPool(%s)"%(self._thread_count)
 
  def run(self, aBlock = False):
   if aBlock:
@@ -55,16 +55,24 @@ class ThreadPool(object):
     self._threads.append(QueueWorker(n, self._queue, abort, idle, self._settings))
    return True
 
- def add_func(self, aFunction, *args, **kwargs):
-  self._queue.put((aFunction,'FUNCTION',args,kwargs))
+ def add_sema(self, aFunction, aSema, *args, **kwargs):
+  aSema.acquire()
+  self._queue.put((aFunction,'FUNCTION',aSema,args,kwargs))
 
- def add_task(self, aTask):
+ def add_func(self, aFunction, *args, **kwargs):
+  self._queue.put((aFunction,'FUNCTION',None,args,kwargs))
+
+ def add_task(self, aTask, aSema = None):
   try:
    mod = import_module("zdcp.rest.%s"%aTask['module'])
    mod.__add_globals__({'gSettings':self._settings,'gWorkers':self})
    func = getattr(mod,aTask['func'],lambda x: {'THREAD_NOT_OK'})
-   self._queue.put((func,'TASK',aTask.pop('args',None),aTask))
   except: pass
+  else:
+   if aSema:
+    aSema.acquire()
+  finally:
+   self._queue.put((func,'TASK',aSema,aTask.pop('args',None),aTask))
 
  def join(self):
   self._queue.join()
@@ -93,7 +101,11 @@ class ThreadPool(object):
  def semaphore(self,aSize):
   return BoundedSemaphore(aSize)  
 
-#
+ def block(self,aSema,aSize):
+  for i in range(aSize):
+   aSema.acquire()
+ 
+###################################### Threads ########################################
 #
 class QueueWorker(Thread):
  def __init__(self, aNumber, aQueue, aAbort, aIdle, aSettings):
@@ -115,7 +127,7 @@ class QueueWorker(Thread):
  def run(self):
   while not self._abort.is_set():
    self._idle.set()
-   func, mode, args, kwargs = self._queue.get(True)
+   func, mode, sema, args, kwargs = self._queue.get(True)
    self._idle.clear()
    try:
     self._current = kwargs.pop('id','TASK') if mode == 'TASK' else 'FUNC'
@@ -134,9 +146,11 @@ class QueueWorker(Thread):
     if kwargs.get('output'):
      self._log("%s - %s - %s_%s COMPLETE => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(self._result)))
    except Exception as e:
-    print "%s - ERROR => %s"%(self.name,str(e))
     self._log("%s - ERROR => %s"%(self.name,str(e)))
    finally:
+    """ Clear everything and release semaphore """
+    if sema:
+     sema.release()
     self._queue.task_done()
     self._current = None
 

@@ -403,15 +403,12 @@ def address_status_check(aDict):
  def __pinger(aArgs):
   try:    aArgs['dev']['new'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aArgs['dev']['ip'])) == 0) else 2
   except: aArgs['dev']['new'] = None
-  finally:aArgs['sema'].release()
   return True
 
  sema = gWorkers.semaphore(20)  
  for dev in aDict['address_list']:
-  sema.acquire()
-  gWorkers.add_func(__pinger, {'dev':dev,'sema':sema})
- for i in range(20):
-  sema.acquire()
+  gWorkers.add_sema(__pinger,sema, {'dev':dev})
+ gWorkers.block(sema,20)
 
  args = {}
  for n in [1,2]:

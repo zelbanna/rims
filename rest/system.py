@@ -156,7 +156,7 @@ def report(aDict):
  ret.append({'info':'Version','value':__version__})
  ret.append({'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
  ret.append({'info':'Node URL','value':node})
- ret.append({'info':'ThreadPool','value':str(gWorkers)})
+ ret.append({'info':'WorkerPool','value':str(gWorkers)})
  ret.extend(list({'info':'Thread','value':x} for x in gWorkers.activities()))
  ret.append({'info':'Tasks','value':gWorkers.size()})
  ret.append({'info':'Memory objects','value':len(get_objects())})

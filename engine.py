@@ -18,7 +18,7 @@ basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
 syspath.insert(1, basepath)
 from zdcp.Settings import Settings
 from zdcp.core.common import DB
-from zdcp.core.engine import ApiThread, ThreadPool
+from zdcp.core.engine import ApiThread, WorkerPool
 import socket
 
 # Socket
@@ -31,7 +31,7 @@ sock.bind(addr)
 sock.listen(5)
 
 # Context vars
-context = {'node':Settings['system']['id'],'socket':sock,'address':addr,'path':ospath.join(basepath,'zdcp'),'gSettings':Settings,'gWorkers':ThreadPool(20,Settings)}
+context = {'node':Settings['system']['id'],'socket':sock,'address':addr,'path':ospath.join(basepath,'zdcp'),'gSettings':Settings,'gWorkers':WorkerPool(20,Settings)}
 
 # Workers and API threads
 #
