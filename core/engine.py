@@ -10,7 +10,7 @@ __status__ = "Production"
 from os import walk, path as ospath
 from json import loads, dumps
 from importlib import import_module
-from threading import Thread, Lock, Event
+from threading import Thread, Lock, Event, BoundedSemaphore
 from time import localtime, strftime, sleep, time
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from httplib import responses as http_codes
@@ -55,17 +55,15 @@ class ThreadPool(object):
     self._threads.append(QueueWorker(n, self._queue, abort, idle, self._settings))
    return True
 
- def enqueue_function(self, aFunction, **kwargs):
-  args = {'function':aFunction}
-  args.update(kwargs)
-  self._queue.put(args)
+ def add_func(self, aFunction, *args, **kwargs):
+  self._queue.put((aFunction,'FUNCTION',args,kwargs))
 
- def enqueue_task(self, args):
+ def add_task(self, aTask):
   try:
-   mod = import_module("zdcp.rest.%s"%args['module'])
-   mod.__add_globals__({'gSettings':self._settings})
-   args['function'] = getattr(mod,args['func'],lambda x: {'THREAD_NOT_OK'})
-   self._queue.put(args)
+   mod = import_module("zdcp.rest.%s"%aTask['module'])
+   mod.__add_globals__({'gSettings':self._settings,'gWorkers':self})
+   func = getattr(mod,aTask['func'],lambda x: {'THREAD_NOT_OK'})
+   self._queue.put((func,'TASK',aTask.pop('args',None),aTask))
   except: pass
 
  def join(self):
@@ -92,6 +90,9 @@ class ThreadPool(object):
  def size(self):
   return self._queue.qsize()
 
+ def semaphore(self,aSize):
+  return BoundedSemaphore(aSize)  
+
 #
 #
 class QueueWorker(Thread):
@@ -114,23 +115,26 @@ class QueueWorker(Thread):
  def run(self):
   while not self._abort.is_set():
    self._idle.set()
-   context = self._queue.get(True)
+   func, mode, args, kwargs = self._queue.get(True)
    self._idle.clear()
    try:
-    self._current = context.get('id','T')
-    if not context.get('periodic'):
-     self._result = context['function'](context['args'])
+    self._current = kwargs.pop('id','TASK') if mode == 'TASK' else 'FUNC'
+    if mode == 'FUNCTION':
+     self._result = func(*args,**kwargs)
+    elif not kwargs.get('periodic'):
+     self._result = func(args)
     else:
-     freq = int(context.get('frequency',300))
+     freq = int(kwargs.get('frequency',300))
      sleep(freq - int(time())%freq)
      while not self._abort.is_set():
-      self._result = context['function'](context['args'])
-      if context.get('output'):
-       self._log("%s - %s - %s_%s PERIODIC => %s"%(self.name,self._current,context['module'],context['func'],dumps(self._result)))
+      self._result = func(args)
+      if kwargs.get('output'):
+       self._log("%s - %s - %s_%s PERIODIC => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(self._result)))
       sleep(freq)
-    if context.get('output'):
-     self._log("%s - %s - %s_%s COMPLETE => %s"%(self.name,self._current,context['module'],context['func'],dumps(self._result)))
+    if kwargs.get('output'):
+     self._log("%s - %s - %s_%s COMPLETE => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(self._result)))
    except Exception as e:
+    print "%s - ERROR => %s"%(self.name,str(e))
     self._log("%s - ERROR => %s"%(self.name,str(e)))
    finally:
     self._queue.task_done()

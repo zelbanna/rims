@@ -11,18 +11,18 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def debug_timeout(aDict):
+def debug(aDict):
  """Function tests timeout of client
 
  Args:
-  - sleep (optional)
 
  Output:
  """
- from time import sleep
- from random import randint
- id = randint(0,10000)
- sleep(aDict.get('sleep',10))
+ def tester(aA,aB):
+  print "%s => %s"%(aA,aB)
+
+ gWorkers.add_func(tester,'HEJ','HOPP')
+ print aDict
  return None
 
 ################################## System #################################

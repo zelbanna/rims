@@ -26,7 +26,7 @@ def status(aDict):
    if count > 0:
     args = {'module':'ipam','func':'address_status_check','args':{'address_list':db.get_rows(),'subnet_id':sub['id']},'output':True}
     if not sub['node'] or sub['node'] == 'master':
-     gWorkers.enqueue_task(args)
+     gWorkers.add_task(args)
      ret['local'].append(sub['id'])
     else:
      rest_call("%s/api/system_task_worker?node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
@@ -398,23 +398,22 @@ def address_status_check(aDict):
 
  Output:
  """
- from threading import Thread, BoundedSemaphore
  from os import system
 
- def __pinger(aDev, aSema):
-  try:    aDev['new'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip'])) == 0) else 2
-  except: aDev['new'] = None
-  finally:aSema.release()
+ def __pinger(aArgs):
+  try:    aArgs['dev']['new'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aArgs['dev']['ip'])) == 0) else 2
+  except: aArgs['dev']['new'] = None
+  finally:aArgs['sema'].release()
+  return True
 
- args = {}
- sema = BoundedSemaphore(20)
+ sema = gWorkers.semaphore(20)  
  for dev in aDict['address_list']:
   sema.acquire()
-  t = Thread(target = __pinger, args=[dev, sema])
-  t.start()
+  gWorkers.add_func(__pinger, {'dev':dev,'sema':sema})
  for i in range(20):
   sema.acquire()
 
+ args = {}
  for n in [1,2]:
   changed = list(dev['id'] for dev in aDict['address_list'] if (dev['new'] != dev['state'] and dev['new'] == n))
   if len(changed) > 0:

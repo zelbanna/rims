@@ -711,7 +711,7 @@ def network_interface_status(aDict):
      db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id'])
      dev['interfaces'] = db.get_rows()
     if not sub['node'] or sub['node'] == 'master':
-     gWorkers.enqueue_task(args)
+     gWorkers.add_task(args)
      ret['local'].append(sub['id'])
     else:
      rest_call("%s/api/system_task_worker?node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']

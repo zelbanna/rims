@@ -31,7 +31,7 @@ else:
 
 started = "Executing:system_task_%s(%s)"%(func,args)
 try:
- output = rest_call("%s/api/system_task_%s"%(Settings['system']['master'],func),args, aTimeout = 300)['data']
+ output = rest_call("%s/debug/system_task_%s"%(Settings['system']['master'],func),args, aTimeout = 300)['data']
 except Exception as e:
  output = e[0]
 print started

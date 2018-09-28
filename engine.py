@@ -46,7 +46,7 @@ else:
  tasks = rest_call("%s/api/system_task_list"%Settings['system']['master'],{'node':Settings['system']['id']})['data']['tasks']
 for task in tasks:
  args = {'id':"P%s"%task['id'],'periodic':True,'frequency':task['frequency'],'module':task['module'],'func':task['func'],'args':loads(task['args']),'output':task['output']}
- context['gWorkers'].enqueue_task(args)
+ context['gWorkers'].add_task(args)
 api_threads = [ApiThread(n,context) for n in range(threadcount)]
 while len(api_threads) > 0:
  # Check if threads are still alive...

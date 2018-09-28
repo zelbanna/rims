@@ -928,8 +928,8 @@ def task_worker(aDict):
  Output:
   - result
  """
- gWorkers.enqueue_task(aDict)
- return {'id':t.name,'res':'THREAD_STARTED'}
+ gWorkers.add_task(aDict)
+ return {'res':'TASK_ADDED'}
 
 #
 #
@@ -957,7 +957,7 @@ def task_add(aDict):
    db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency,output) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i,%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300),0 if not aDict.get('output') else 1))
    aDict['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
-  qWorkers.enqueue(aDict)
+  gWorkers.add_task(aDict)
   ret['result'] = 'ADDED'
  else:
   from zdcp.core.common import rest_call
