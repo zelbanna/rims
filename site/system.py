@@ -20,14 +20,14 @@ def main(aWeb):
   for node in data['logs']:
    aWeb.wr("<A CLASS=z-op DIV=div_content URL=tools_logs_show?node=%s>%s</A>"%(node,node))
   aWeb.wr("</DIV></LI>")
+ aWeb.wr("<LI CLASS='dropdown'><A>Reports</A><DIV CLASS='dropdown-content'>")
  if data.get('users'):
-  aWeb.wr("<LI CLASS='dropdown'><A>Reports</A><DIV CLASS='dropdown-content'>")
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='activities_report'>Activities</A>")
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='reservations_report?node=master'>Reservations</A>")
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='device_report?node=master'>Devices</A>")
-  aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_task_report'>Jobs</A>")
-  aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_report'>System</A>")
-  aWeb.wr("</DIV></LI>")
+ aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_task_report'>Jobs</A>")
+ aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_report'>System</A>")
+ aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI><A CLASS=z-op TARGET=_blank            HREF='../infra/zdcp.pdf'>ERD</A></LI>")
  aWeb.wr("<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>")
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_rest_main?node=%s'>Debug</A>"%aWeb.node())
@@ -116,7 +116,7 @@ def portal(aWeb):
 #
 #
 def report(aWeb):
- info = aWeb.rest_call("system_report")
+ info = aWeb.rest_call("system_report?node=%s"%aWeb.node())
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>System</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Information</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>")
  for i in info:
@@ -272,7 +272,7 @@ def server_help(aWeb):
 #
 #
 def task_report(aWeb):
- res = aWeb.rest_call("system_task_list")
+ res = aWeb.rest_call("system_task_list",{'node':aWeb.node()})
  aWeb.wr("<ARTICLE><P>Jobs</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Frequency</DIV><DIV CLASS=th>Module</DIV><DIV CLASS=th>Function</DIV><DIV CLASS=th>Args</DIV></DIV><DIV CLASS=tbody>")
  for task in res['tasks']:

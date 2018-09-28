@@ -142,7 +142,7 @@ def log(aDict):
 #
 #
 def report(aDict):
- """Function reports generic system info
+ """Function reports generic system info. Node independent
 
  Args:
 
