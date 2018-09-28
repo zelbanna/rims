@@ -174,18 +174,14 @@ def network_discover(aDict):
  Output:
   - addresses. list of ip:s and ip_int pairs that answer to ping
  """
- from threading import Thread, BoundedSemaphore
  from struct import pack
  from socket import inet_ntoa
  from os import system
- def GL_int2ip(addr):
-  return inet_ntoa(pack("!I", addr))
 
- def __detect_thread(aIPint,aIPs,aSema):
-  __ip = GL_int2ip(aIPint)
-  if system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(__ip)) == 0:
-   aIPs.append(__ip)
-  aSema.release()
+ def __detect_thread(aIPint,aIPs):
+  ip = inet_ntoa(pack("!I", aIPint))
+  if system("ping -c 1 -w 1 %s > /dev/null 2>&1"%ip) == 0:
+   aIPs.append(ip)
   return True
 
  addresses = []
@@ -202,15 +198,11 @@ def network_discover(aDict):
   ip_list = db.get_dict('ip')
 
  try:
-  sema = BoundedSemaphore(simultaneous)
+  sema = gWorkers.semaphore(simultaneous)
   for ip in range(ip_start,ip_end):
    if not ip_list.get(ip):
-    sema.acquire()
-    t = Thread(target = __detect_thread, args=[ip, addresses, sema])
-    t.name = "Detect %s"%ip
-    t.start()
-  for i in range(simultaneous):
-   sema.acquire()
+    gWorkers.add_sema(__detect_thread,sema,ip,addresses)
+  gWorkers.block(sema,simultaneous)
  except Exception as err:
   ret['error']   = str(err)
 

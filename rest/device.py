@@ -444,14 +444,12 @@ def discover(aDict):
  Output:
  """
  from time import time
- from threading import Thread, BoundedSemaphore
  from zdcp.rest.ipam import network_discover as ipam_discover, address_allocate
  from zdcp.devices.generic import Device
 
- def __detect_thread(aIP,aDB,aSema):
+ def __detect_thread(aIP,aDB):
   __dev = Device(aIP,gSettings)
   aDB[aIP['ip']] = __dev.detect()['info']
-  aSema.release()
   return True
 
  start_time = int(time())
@@ -462,17 +460,11 @@ def discover(aDict):
   db.do("SELECT id,name FROM device_types")
   devtypes = db.get_dict('name')
  dev_list = {}
- try:
-  sema = BoundedSemaphore(20)
-  for ip in ipam['addresses']:
-   sema.acquire()
-   t = Thread(target = __detect_thread, args=[ip, dev_list, sema])
-   t.name = "Detect %s"%ip
-   t.start()
-  for i in range(20):
-   sema.acquire()
- except Exception as err:
-  ret['error']   = "Error:{}".format(str(err))
+
+ sema = gWorkers.semaphore(20)
+ for ip in ipam['addresses']:
+  gWorkers.add_sema(__detect_thread, sema, ip, dev_list)
+ gWorkers.block(sema,20)
 
  # We can now do inserts only (no update) as we skip existing :-)
  with DB() as db:
@@ -602,14 +594,13 @@ def network_info_discover(aDict):
 
  Output:
  """
- from threading import Thread, BoundedSemaphore
  from netsnmp import VarList, Varbind, Session
  from binascii import b2a_hex
  from __builtin__ import list
 
  ret = {'count':0}
 
- def __detect_thread(aDev,aSema):
+ def __detect_thread(aDev):
   try:
    session = Session(Version = 2, DestHost = aDev['ip'], Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
@@ -620,7 +611,6 @@ def network_info_discover(aDict):
     try:    aDev['oid'] = sysoid[1].val.split('.')[7]
     except: pass
   except: pass
-  aSema.release()
   return True
 
  with DB() as db:
@@ -628,16 +618,10 @@ def network_info_discover(aDict):
   count   = db.do("SELECT devices.mac, devices.oid, devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND (devices.mac = 0 OR devices.oid = 0)"%network)
   devices = db.get_rows()
   if count > 0:
-   try:
-    sema = BoundedSemaphore(20)
-    for dev in devices:
-     sema.acquire()
-     t = Thread(target = __detect_thread, args=[dev, sema])
-     t.start()
-    for i in range(20):
-     sema.acquire()
-   except Exception as err:
-    ret['error']   = "Error: %s"%str(err)
+   sema = gWorkers.semaphore(20)
+   for dev in devices:
+    gWorkers.add_sema(__detect_thread, sema, dev)
+   gWorkers.block(sema,20)
    for dev in devices:
     if dev.get('mac',0) > 0 or dev.get('oid',0) > 0:
      ret['count'] += db.do("UPDATE devices SET mac = %(mac)s, oid = %(oid)s WHERE id = %(id)s"%dev)
@@ -653,7 +637,6 @@ def network_lldp_discover(aDict):
 
  Output:
  """
- from threading import Thread, BoundedSemaphore
  from netsnmp import VarList, Varbind, Session
  from binascii import b2a_hex
  from __builtin__ import list
@@ -661,29 +644,24 @@ def network_lldp_discover(aDict):
  new_connections = []
  ins_interfaces = []
 
- def __detect_thread(aDev,aSema):
+ def __detect_thread(aDev):
   try:
    new = list(con for con in interface_discover_lldp({'device':aDev['id']}).values() if con['result'] == 'new_connection')
    new_connections.extend(new)
    ins = list(con for con in interface_discover_lldp({'device':aDev['id']}).values() if con['extra'] == 'created_local_if')
    ins_interfaces.extend(ins)
   except: pass
-  aSema.release()
+  return True
 
  with DB() as db:
   network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id']
   count   = db.do("SELECT hostname,devices.id AS id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1"%network)
  devices = db.get_rows()
  if count > 0:
-  try:
-   sema = BoundedSemaphore(10)
-   for dev in devices:
-    sema.acquire()
-    t = Thread(target = __detect_thread, args=[dev, sema])
-    t.start()
-   for i in range(10):
-    sema.acquire()
-  except: pass
+  sema = gWorkers.semaphore(10)
+  for dev in devices:
+   gWorkers.add_sema( __detect_thread, sema, dev)
+  gWorkers.block(sema,10)
  return {'result':'DISCOVERY_COMPLETED','new_connections':new_connections,'ins_interfaces':ins_interfaces}
 
 #
@@ -1082,13 +1060,12 @@ def interface_status_check(aDict):
 
  Output:
  """
- from threading import Thread, BoundedSemaphore
  from os import system
  from importlib import import_module
  states = {'unseen':0,'up':1,'down':2}
  discover = aDict.get('discover')
 
- def __interfaces(aDev, aSema):
+ def __interfaces(aDev):
   try:
    module = import_module("zdcp.devices.%s"%aDev['type'])
    device = getattr(module,'Device',None)(aDev['ip'],gSettings)
@@ -1103,16 +1080,12 @@ def interface_status_check(aDict):
       intf.update({'snmp_index':index,'state':states.get(intf.get('state','unseen'))})
       exist.append(intf)
   except: pass
-  finally:
-   aSema.release()
+  return True
 
- sema = BoundedSemaphore(20)
+ sema = gWorkers.semaphore(20)
  for dev in aDict['device_list']:
-  sema.acquire()
-  t = Thread(target = __interfaces, args=[dev, sema])
-  t.start()
- for i in range(20):
-  sema.acquire()
+  gWorkers.add_sema( __interfaces, sema, dev)
+ gWorkers.block(sema,20)
  for dev in aDict['device_list']:
   if len(dev['interfaces']) > 0:
    if gSettings['system']['id'] == 'master':
