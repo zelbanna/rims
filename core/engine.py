@@ -112,13 +112,12 @@ class QueueWorker(Thread):
   from zdcp.core.common import log
   Thread.__init__(self)
   self._n      = aNumber
-  self.name    = "QueueWorker(%s)"%aNumber  
+  self.name    = "QueueWorker(%s)"%str(aNumber).zfill(2)
   self._queue  = aQueue
   self._abort  = aAbort
   self._idle   = aIdle
   self._idle.set()
   self._settings= aSettings
-  self._result = None
   self._current= None
   self._log    = log
   self.daemon  = True
@@ -132,19 +131,19 @@ class QueueWorker(Thread):
    try:
     self._current = kwargs.pop('id','TASK') if mode == 'TASK' else 'FUNC'
     if mode == 'FUNCTION':
-     self._result = func(*args,**kwargs)
+     result = func(*args,**kwargs)
     elif not kwargs.get('periodic'):
-     self._result = func(args)
+     result = func(args)
     else:
      freq = int(kwargs.get('frequency',300))
      sleep(freq - int(time())%freq)
      while not self._abort.is_set():
-      self._result = func(args)
+      result = func(args)
       if kwargs.get('output'):
-       self._log("%s - %s - %s_%s PERIODIC => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(self._result)))
+       self._log("%s - %s - %s_%s PERIODIC => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(result)))
       sleep(freq)
     if kwargs.get('output'):
-     self._log("%s - %s - %s_%s COMPLETE => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(self._result)))
+     self._log("%s - %s - %s_%s COMPLETE => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(result)))
    except Exception as e:
     self._log("%s - ERROR => %s"%(self.name,str(e)))
    finally:
