@@ -10,13 +10,62 @@ __status__ = "Production"
 from os import walk, path as ospath
 from json import loads, dumps
 from importlib import import_module
-from threading import Thread, Lock, Event, BoundedSemaphore
+from threading import Thread, Event, BoundedSemaphore
 from time import localtime, strftime, sleep, time
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from BaseHTTPServer import BaseHTTPRequestHandler
 from httplib import responses as http_codes
 from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 
-########################################## Threads ########################################
+######################################### Startup ########################################
+
+def start(aThreads):
+ from zdcp.Settings import Settings
+ from zdcp.core.common import rest_call,DB
+ import socket
+
+ def server(node,address,socket,path,settings,workers):
+  from BaseHTTPServer import HTTPServer
+  httpd = HTTPServer(address, SessionHandler, False)
+  httpd._path     = path
+  httpd._node     = node
+  httpd._settings = settings
+  httpd._workers  = workers
+  httpd.socket    = socket
+  httpd._db       = DB() if node == 'master' else None
+  httpd.server_bind = httpd.server_close = lambda self: None
+  try: httpd.serve_forever()
+  except: pass
+
+ try:
+  node = Settings['system']['id']
+  addr = ('', int(Settings['system']['port']))
+  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+  sock.bind(addr)
+  sock.listen(5)
+
+  workers = WorkerPool(aThreads,Settings)
+  for n in range(max(5,int(aThreads/10))):
+   workers.add_func(server,node,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),Settings,workers)
+
+  if node == 'master':
+   with DB() as db:
+    db.do("SELECT * FROM task_jobs LEFT JOIN nodes ON task_jobs.node_id = nodes.id WHERE node = 'master'")
+    tasks = db.get_rows()
+    for task in tasks:
+     task.update({'id':"P%s"%task['id'],'periodic':True,'args':loads(task['args']),'output':(task['output'] == 1)})
+     workers.add_task(task)
+  else:
+   tasks = rest_call("%s/api/system_task_list"%Settings['system']['master'],{'node':node})['data']['tasks']
+   for task in tasks:
+    task.update({'id':"P%s"%task['id'],'periodic':True,'args':loads(task['args'])})
+    workers.add_task(task)
+  while True:
+   sleep(86400)
+ except: sock.close()
+ return False
+
+########################################## WorkerPool ########################################
 #
 #
 class WorkerPool(object):
@@ -37,11 +86,14 @@ class WorkerPool(object):
  def __str__(self):
   return "WorkerPool(%s)"%(self._thread_count)
 
+ def __alive(self):
+  return True in [t.is_alive() for t in self._threads]
+
  def run(self, aBlock = False):
   if aBlock:
-   while self.alive():
+   while self.__alive():
     sleep(1)
-  elif self.alive():
+  elif self.__alive():
    return False
   else:
    self._aborts = []
@@ -80,14 +132,8 @@ class WorkerPool(object):
  def abort(self, aBlock = False):
   for a in self._aborts:
    a.set()
-   while aBlock and self.alive():
+   while aBlock and self.__alive():
     sleep(1)
-
- def alive(self):
-  return True in [t.is_alive() for t in self._threads]
-
- def idle(self):
-  return False not in [i.is_set() for i in self._idles]
 
  def done(self):
   return self._queue.empty()
@@ -153,35 +199,6 @@ class QueueWorker(Thread):
     self._queue.task_done()
     self._current = None
 
-#
-#
-class ApiThread(Thread):
- def __init__(self, aID, aContext):
-  Thread.__init__(self)
-  self._context = aContext
-  self.name     = aID
-  self.daemon   = True
-  self.start()
-
- def __str__(self):
-  return "ApiThread(%s)"%(self.name)
-
- def run(self):
-  from zdcp.core.common import DB
-  BaseHTTPRequestHandler.timeout  = 60
-  httpd = HTTPServer(self._context['address'], SessionHandler, False)
-  httpd._path     = self._context['path']
-  httpd._node     = self._context['node']
-  httpd._settings = self._context['gSettings']
-  httpd._workers  = self._context['gWorkers']
-  httpd.socket    = self._context['socket']
-  httpd._db       = DB() if self._context['gSettings']['system']['id'] == 'master' else None
-  httpd._t_id     = self.name
-  httpd.server_bind = self.server_close = lambda self: None
-  try: httpd.serve_forever()
-  except: pass
-  return False
-
 ###################################### Call Handler ######################################
 #
 class SessionHandler(BaseHTTPRequestHandler):
@@ -194,7 +211,7 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def header(self):
   # Sends X-Code as response
-  self._headers.update({'X-Thread':self.server._t_id,'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()})
+  self._headers.update({'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()})
   code = self._headers.pop('X-Code',200)
   self.wfile.write("HTTP/1.1 %s %s\r\n"%(code,http_codes[code]))
   self._headers.update({'Content-Length':len(self._body),'Connection':'close'})
