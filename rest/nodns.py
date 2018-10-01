@@ -147,4 +147,17 @@ def status(aDict):
  """
  return {'top':[],'who':[] }
 
+#
+#
+def restart(aDict):
+ """Function provides restart capabilities of service
+
+ Args:
+
+ Output:
+  - code
+  - output
+  - result 'OK'/'NOT_OK'
+ """
+ return {'result':'OK','code':0,'output':""}
 

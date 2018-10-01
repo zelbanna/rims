@@ -34,3 +34,22 @@ def sync(aDict):
   - result. (operation result)
  """
  return {'output':'No OP','result':'OK'}
+
+#
+#
+def restart(aDict):
+ """Function provides restart capabilities of service
+
+ Args:
+
+ Output:
+  - code
+  - output
+  - result 'OK'/'NOT_OK'
+ """
+ return {'result':'OK','code':0,'output':""}
+
+
+
+
+

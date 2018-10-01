@@ -127,3 +127,25 @@ def update(aDict):
   ret['result'] = 'OK'
   ret['devices'] = devices
  return ret
+
+#
+#
+def restart(aDict):
+ """Function provides restart capabilities of service
+
+ Args:
+
+ Output:
+  - code
+  - output
+  - result 'OK'/'NOT_OK'
+ """
+ from subprocess import check_output, CalledProcessError
+ ret = {}
+ try:
+  ret['output'] = check_output(gSettings['iscdhcp']['reload'].split())
+ except CalledProcessError as c:
+  ret['code'] = c.returncode
+  ret['output'] = c.output
+ ret['result'] = 'NOT_OK' if ret['output'] else 'OK'
+ return ret

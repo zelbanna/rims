@@ -20,22 +20,22 @@ PIDFILE=/var/run/zdcp.pid
 
 start() {
  if [ -f $PIDFILE ]; then
-  echo "ZDCP already running @ `cat $PIDFILE`"
+  echo "System already running @ `cat $PIDFILE`"
  else
   # $PKGDIR/engine.py &
   $PKGDIR/engine.py > /dev/null 2>&1 &
   echo $! > $PIDFILE
-  echo "Starting ZDCP service handler @`cat $PIDFILE`"
+  echo "Starting service handler @`cat $PIDFILE`"
  fi
 }
 
 stop() {
  if [ -f $PIDFILE ]; then
-  echo "Stopping ZDCP service handler @`cat $PIDFILE`"
+  echo "Stopping service handler @`cat $PIDFILE`"
   kill -9 `cat $PIDFILE`
   rm $PIDFILE
  else
-  echo "ZDCP not running"
+  echo "System not running"
  fi
 }
 
@@ -75,11 +75,11 @@ case "$1" in
   clear;
   ;;
  install)
-  echo "Installing ZDCP server startup file"
+  echo "Installing server startup file"
   mv $0 /etc/init.d/zdcp
   ;;
  *)
-  echo "Usage: /etc/init.d/zdcp <start|stop|restart|upgrade|clear|install>"
+  echo "Usage: $0 <start|stop|restart|upgrade|clear|install>"
   exit 1
   ;;
 esac
