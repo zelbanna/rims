@@ -88,7 +88,7 @@ def info(aDict):
     except: ret['info']['mac'] = "00:00:00:00:00:00"
     if not ret['info']['functions']:
      ret['info']['functions'] = ""
-    ret['reserved'] = (db.do("SELECT users.alias, reservations.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM reservations LEFT JOIN users ON reservations.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1)
+    ret['reserved'] = (db.do("SELECT users.alias, reservations.user_id, NOW() < ADDTIME(time_start, '14 0:0:0.0') AS valid FROM reservations LEFT JOIN users ON reservations.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1)
     if ret['reserved']:
      ret['reservation'] = db.get_row()
     # Rack infrastructure ?
@@ -185,7 +185,7 @@ def extended(aDict):
     ret['result']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
 
   # Now fetch info
-  ret['found'] = (db.do("SELECT vm, devices.mac, oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT vm, devices.mac, devices.oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['ip'] = ret['info'].pop('ip',None)
@@ -491,10 +491,14 @@ def system_oids(aDict):
   Output:
    oids. List of unique enterprise oids
  """
+ ret = {}
  with DB() as db:
-  db.do("SELECT DISTINCT oid FROM devices")
-  oids = db.get_rows()
- return [x['oid'] for x in oids] 
+  for type in ['devices','device_types']:
+   db.do("SELECT DISTINCT oid FROM %s"%type)
+   oids = db.get_rows()
+   ret[type] = [x['oid'] for x in oids] 
+ ret['unhandled'] = [x for x in ret['devices'] if x not in ret['device_types']] 
+ return ret
 
 #
 #
@@ -745,6 +749,7 @@ def interface_info(aDict):
   - snmp_index
   - peer_interface
   - multipoint (0/1)
+ - mac
 
  Output:
  """
@@ -770,7 +775,7 @@ def interface_info(aDict):
    ret['data']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['data']['mac']))[2:].zfill(12).decode('hex')).lower()
    ret['data'].pop('manual',None)
   else:
-   ret['data'] = {'id':'new','device':int(aDict['device']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_interface':None,'peer_device':None,'multipoint':0}
+   ret['data'] = {'id':'new','mac':'00:00:00:00:00:00','device':int(aDict['device']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_interface':None,'peer_device':None,'multipoint':0}
  return ret
 
 #

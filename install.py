@@ -115,9 +115,10 @@ if settings['system']['id'] == 'master':
     mod = import_module("zdcp.devices.%s"%(pyfile))
     type = getattr(mod,'__type__',None)
     icon = getattr(mod,'__icon__','../images/viz-generic.png')
+    oid = getattr(mod,'__oid__',0)
     dev = getattr(mod,'Device',None)
     if type:
-     device_types.append({'name':pyfile, 'base':type, 'functions':dev.get_functions(),'icon':icon })
+     device_types.append({'name':pyfile, 'base':type, 'functions':",".join(dev.get_functions()),'icon':icon,'oid':oid })
    except: pass
  res['device_found'] = len(device_types)
  res['device_new'] = 0
@@ -172,9 +173,9 @@ if settings['system']['id'] == 'master':
   res['dns_server_id']  = db.get_last_id()
   res['dns_domain_add'] = (db.do("INSERT domains (id,foreign_id,name,server_id,type ) VALUES (0,0,'local',{},'forward') ON DUPLICATE KEY UPDATE id = 0".format(res['dns_server_id'])) > 0)
   res['generic_device'] = (db.do("INSERT device_types (id,name,base) VALUES (0,'generic','generic') ON DUPLICATE KEY UPDATE id = 0") > 0)
-  sql ="INSERT device_types (name,base,icon,functions) VALUES ('{0}','{1}','{2}','{3}') ON DUPLICATE KEY UPDATE icon = '{2}', functions = '{3}'"
+  sql ="INSERT device_types (name,base,icon,functions,oid) VALUES ('%(name)s','%(base)s','%(icon)s','%(functions)s','%(oid)s') ON DUPLICATE KEY UPDATE oid = %(oid)s, icon = '%(icon)s', functions = '%(functions)s'"
   for type in device_types:
-   try:    res['device_new'] += db.do(sql.format(type['name'],type['base'],type['icon'],",".join(type['functions'])))
+   try:    res['device_new'] += db.do(sql%type)
    except Exception as err: res['device_errors'] = str(err)
 
   sql = "INSERT resources (node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
@@ -213,6 +214,8 @@ if settings['system']['id'] == 'master':
   stdout.write("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';\n"%(settings['system']['db_user'],settings['system']['db_pass']))
   stdout.write("GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';\n"%(settings['system']['db_name'],settings['system']['db_user']))
   stdout.write("FLUSH PRIVILEGES;\n\n")
+  #from traceback import print_exc
+  #print_exc(5)
   stdout.flush()
   raise Exception("DB past error (%s)"%str(e))
 

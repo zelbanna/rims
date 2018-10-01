@@ -16,7 +16,7 @@ def main(aWeb):
  info = aWeb.rest_call("system_users_info",{'id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='bookings_list'>Bookings</A></LI>")
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='reservations_list'>Reservations</A></LI>")
  aWeb.wr("<LI CLASS='right navinfo'><A>%s</A></LI>"%info['data']['name'])
  aWeb.wr("</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content       ID=div_content></SECTION>")

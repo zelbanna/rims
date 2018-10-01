@@ -66,6 +66,7 @@ CREATE TABLE `device_pems` (
 DROP TABLE IF EXISTS `device_types`;
 CREATE TABLE `device_types` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `oid` int(10) unsigned DEFAULT '0',
   `name` varchar(20) DEFAULT NULL,
   `base` varchar(40) DEFAULT NULL,
   `functions` varchar(255) DEFAULT '',
