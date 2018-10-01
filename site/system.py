@@ -204,6 +204,7 @@ def server_list(aWeb):
   aWeb.wr(aWeb.button('info',DIV='div_content_right',URL='system_server_info?id=%s'%(srv['id'])))
   aWeb.wr(aWeb.button('sync',DIV='div_content_right',URL='system_server_sync?id=%s'%(srv['id']), SPIN='true', TITLE='Sync server'))
   aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='system_server_status?id=%s'%(srv['id']), SPIN='true', TITLE='Server status'))
+  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='system_server_restart?id=%s'%(srv['id']), SPIN='true', TITLE='Server restart'))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
@@ -241,6 +242,13 @@ def server_info(aWeb):
 def server_status(aWeb):
  from json import dumps
  res = aWeb.rest_call("system_server_status",{'id':aWeb['id']})
+ aWeb.wr("<ARTICLE><PRE>%s<PRE></ARTICLE>"%dumps(res,indent=2,sort_keys=True))
+
+#
+#
+def server_restart(aWeb):
+ from json import dumps
+ res = aWeb.rest_call("system_server_restart",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE><PRE>%s<PRE></ARTICLE>"%dumps(res,indent=2,sort_keys=True))
 
 #
