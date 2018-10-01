@@ -1,0 +1,9 @@
+{
+ "node":"services",
+ "module":"powerdns",
+ "func":"restart",
+ "args":{"id":3},
+ "periodic":true,
+ "frequency":86400,
+ "output":false
+}
