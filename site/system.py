@@ -281,7 +281,7 @@ def server_help(aWeb):
 #
 #
 def task_report(aWeb):
- res = aWeb.rest_call("system_task_list",{'node':aWeb.node()})
+ res = aWeb.rest_call("system_task_list")
  aWeb.wr("<ARTICLE><P>Jobs</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Frequency</DIV><DIV CLASS=th>Module</DIV><DIV CLASS=th>Function</DIV><DIV CLASS=th>Args</DIV></DIV><DIV CLASS=tbody>")
  for task in res['tasks']:
