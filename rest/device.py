@@ -88,7 +88,7 @@ def info(aDict):
     except: ret['info']['mac'] = "00:00:00:00:00:00"
     if not ret['info']['functions']:
      ret['info']['functions'] = ""
-    ret['reserved'] = (db.do("SELECT users.alias, reservations.user_id, NOW() < ADDTIME(time_start, '30 0:0:0.0') AS valid FROM reservations LEFT JOIN users ON reservations.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1)
+    ret['reserved'] = (db.do("SELECT users.alias, reservations.user_id, NOW() < ADDTIME(time_start, '14 0:0:0.0') AS valid FROM reservations LEFT JOIN users ON reservations.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1)
     if ret['reserved']:
      ret['reservation'] = db.get_row()
     # Rack infrastructure ?
@@ -749,6 +749,7 @@ def interface_info(aDict):
   - snmp_index
   - peer_interface
   - multipoint (0/1)
+ - mac
 
  Output:
  """
@@ -774,7 +775,7 @@ def interface_info(aDict):
    ret['data']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['data']['mac']))[2:].zfill(12).decode('hex')).lower()
    ret['data'].pop('manual',None)
   else:
-   ret['data'] = {'id':'new','device':int(aDict['device']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_interface':None,'peer_device':None,'multipoint':0}
+   ret['data'] = {'id':'new','mac':'00:00:00:00:00:00','device':int(aDict['device']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_interface':None,'peer_device':None,'multipoint':0}
  return ret
 
 #
