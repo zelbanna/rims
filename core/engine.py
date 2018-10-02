@@ -13,7 +13,6 @@ from importlib import import_module
 from threading import Thread, Event, BoundedSemaphore
 from time import localtime, strftime, sleep, time
 from BaseHTTPServer import BaseHTTPRequestHandler
-from httplib import responses as http_codes
 from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 
 ######################################### Startup ########################################
@@ -223,7 +222,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   # Sends X-Code as response
   self._headers.update({'X-Method':self.command,'X-Version':__version__,'Server':'ZDCP','Date':self.date_time_string()})
   code = self._headers.pop('X-Code',200)
-  self.wfile.write("HTTP/1.1 %s %s\r\n"%(code,http_codes[code]))
+  self.wfile.write("HTTP/1.1 %s %s\r\n"%(code,self.responses.get(code,('Other','Server specialized return code'))[0]))
   self._headers.update({'Content-Length':len(self._body),'Connection':'close'})
   for k,v in self._headers.iteritems():
    self.send_header(k,v)
