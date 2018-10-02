@@ -326,7 +326,6 @@ def settings_save(aDict, aCTX):
 
  Output:
  """
- from zdcp.core.common import rest_call
  from json import loads,dumps
  from os import path as ospath
  ret = {'config_file':aCTX.settings['system']['config_file']}
@@ -353,7 +352,7 @@ def settings_save(aDict, aCTX):
      aCTX.settings[section] = {}
     aCTX.settings[section][setting['parameter']] = setting['value']
   else:
-   try: master = rest_call("%s/api/system_settings_fetch"%aCTX.settings['system']['master'],{'node':aCTX.settings['system']['id']})['data']
+   try: master = aCTX.rest_call("%s/api/system_settings_fetch"%aCTX.settings['system']['master'],{'node':aCTX.settings['system']['id']})['data']
    except: pass
    else:
     for section,content in master.iteritems():
@@ -465,7 +464,6 @@ def node_module_reload(aDict, aCTX):
   - result.
  """
  ret = {}
- from zdcp.core.common import rest_call
  if aDict.get('node'):
   ret['node'] = aDict['node']
  else:
@@ -475,7 +473,7 @@ def node_module_reload(aDict, aCTX):
  if ret['node'] == aCTX.settings['system']['id']:
   ret['result'] = 'module reloaded'
  else:
-  ret['result'] = rest_call("%s/api/system_node_module_reload"%(aCTX.settings['nodes'][ret['node']]),{'module':aDict['module']})['data']['result']
+  ret['result'] = aCTX.rest_call("%s/api/system_node_module_reload"%(aCTX.settings['nodes'][ret['node']]),{'module':aDict['module']})['data']['result']
  return ret
 
 #
@@ -972,8 +970,7 @@ def task_add(aDict, aCTX):
   aCTX.workers.add_task(aDict)
   ret['result'] = 'ADDED'
  else:
-  from zdcp.core.common import rest_call
-  ret.update(rest_call("%s/api/system_task_worker"%aCTX.settings['nodes'][node],aDict)['data'])
+  ret.update(aCTX.rest_call("%s/api/system_task_worker"%aCTX.settings['nodes'][node],aDict)['data'])
  return ret
 
 #
@@ -990,8 +987,7 @@ def task_status(aDict, aCTX):
  if aDict['node'] == aCTX.settings['system']['id']:
   ret = aCTX.workers.activities()
  else:
-  from zdcp.core.common import rest_call
-  ret = rest_call("%s/api/system_task_status"%aCTX.settings['nodes'][aDict['node']],aDict)['data']
+  ret = aCTX.rest_call("%s/api/system_task_status"%aCTX.settings['nodes'][aDict['node']],aDict)['data']
  return ret
 
 #

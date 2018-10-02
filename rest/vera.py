@@ -9,7 +9,6 @@ __version__ = "4.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from zdcp.core.common import rest_call
 
 #
 #
@@ -23,7 +22,7 @@ def status(aDict, aCTX):
  """
  try:
   node = aCTX.settings['nodes'][aDict['node']]
-  ret = rest_call("%sid=sdata"%node)['data']
+  ret  = aCTX.rest_call("%sid=sdata"%node)['data']
  except Exception as e:
   ret = e[0] 
  return ret
@@ -41,7 +40,7 @@ def infra(aDict, aCTX):
  try:
   ret = {}
   node = aCTX.settings['nodes'][aDict['node']]
-  info = rest_call("%sid=sdata"%node)['data']
+  info = aCTX.rest_call("%sid=sdata"%node)['data']
   ret['sections'] = { d['id']: d['name'] for d in info['sections'] }
   ret['rooms']    = { d['id']: d for d in info['rooms'] }
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
@@ -68,16 +67,16 @@ def scene(aDict, aCTX):
   node = aCTX.settings['nodes'][aDict['node']]
   if aDict.get('op'):
    ret['op'] = "RunScene" if aDict.get('op')== "run" else "SceneOff"
-   res = rest_call("%sid=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(node,ret['op'],aDict['scene']))
+   res = aCTX.rest_call("%sid=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(node,ret['op'],aDict['scene']))
    ret['info'] = "OK" if (res['code'] == 200) else "FAILED"
   elif aDict.get('status'):
-   scenes = rest_call("%sid=sdata"%node)['data']['scenes']
+   scenes = aCTX.rest_call("%sid=sdata"%node)['data']['scenes']
    for scene in scenes:
     if scene['id'] == aDict['scene']:
      ret['info']= scene
      break
   else:
-   ret = rest_call("%sid=scene&action=list&scene=%s"%(node,aDict['scene']))['data']
+   ret = aCTX.rest_call("%sid=scene&action=list&scene=%s"%(node,aDict['scene']))['data']
  except Exception as e:
   ret = e[0]
  return ret
@@ -96,7 +95,7 @@ def devices(aDict, aCTX):
  try:
   ret = {}
   node = aCTX.settings['nodes'][aDict['node']]
-  info = rest_call("%sid=sdata"%node)['data']
+  info = aCTX.rest_call("%sid=sdata"%node)['data']
   ret['devices'] = info['devices'] if not aDict.get('room') else [ x for x in info['devices'] if x['room'] == int(aDict.get('room')) ]
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
   ret['rooms']   = { d['id']:d['name'] for d in info['rooms'] }
@@ -127,15 +126,15 @@ def device_info(aDict, aCTX):
   if op == 'update':
    ret['op'] = {}
    if aDict['category'] == '2' and aDict['service'] == 'urn:upnp-org:serviceId:Dimming1' and aDict['variable'] == 'LoadLevelTarget':
-    ret['op']['response'] = rest_call("%sid=action&output_format=json&DeviceNum=%s&serviceId=urn:upnp-org:serviceId:Dimming1&action=SetLoadLevelTarget&newLoadlevelTarget=%s"%(node,aDict['id'],aDict['value']))['data']
+    ret['op']['response'] = aCTX.rest_call("%sid=action&output_format=json&DeviceNum=%s&serviceId=urn:upnp-org:serviceId:Dimming1&action=SetLoadLevelTarget&newLoadlevelTarget=%s"%(node,aDict['id'],aDict['value']))['data']
     response = ret['op']['response'].get('u:SetLoadLevelTargetResponse')
     if response:
      from time import sleep
      sleep(1)
      ret['op']['job'] = response.get('JobID')
-     ret['op']['result'] = rest_call("%sid=jobstatus&job=%s&plugin=zwave"%(node,response.get('JobID')))['data']
+     ret['op']['result'] = aCTX.rest_call("%sid=jobstatus&job=%s&plugin=zwave"%(node,response.get('JobID')))['data']
  
-  res  = rest_call("%sid=status&DeviceNum=%s"%(node,aDict['id']))['data']
+  res  = aCTX.rest_call("%sid=status&DeviceNum=%s"%(node,aDict['id']))['data']
   info = res['Device_Num_%s'%aDict['id']]['states']
   for x in info:
    try:

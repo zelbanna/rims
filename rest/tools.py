@@ -264,8 +264,7 @@ def database_backup(aDict, aCTX):
   from mysql import dump
   data = dump({'mode':'database'})['output']
  else:
-  from zdcp.core.common import rest_call
-  res = rest_call("%s/api/mysql_dump"%aCTX.settings['system']['master'],{'mode':'database'})
+  res = aCTX.rest_call("%s/api/mysql_dump"%aCTX.settings['system']['master'],{'mode':'database'})
   if res['code'] == 200:
    data = res['data']['output']
   else:

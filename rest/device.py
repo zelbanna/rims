@@ -675,7 +675,6 @@ def network_interface_status(aDict, aCTX):
   - discover(optional). False/None/"up"/"all", defaults to false
 
  """
- from zdcp.core.common import rest_call
  ret = {'local':[],'remote':[]}
  with aCTX.db as db:
   trim = "" if not aDict.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join([str(x) for x in aDict['subnets']]))
@@ -693,7 +692,7 @@ def network_interface_status(aDict, aCTX):
      aCTX.workers.add_task(args)
      ret['local'].append(sub['id'])
     else:
-     rest_call("%s/api/system_task_worker?node=%s"%(aCTX.settings['nodes'][sub['node']],sub['node']),args)['data']
+     aCTX.rest_call("%s/api/system_task_worker?node=%s"%(aCTX.settings['nodes'][sub['node']],sub['node']),args)['data']
      ret['remote'].append(sub['id'])
  return ret
 
@@ -1093,8 +1092,7 @@ def interface_status_check(aDict, aCTX):
    if aCTX.settings['system']['id'] == 'master':
     interface_status_report(dev, aCTX)
    else:
-    from zdcp.core.common import rest_call
-    rest_call("%s/api/device_interface_status_report?log=false"%aCTX.settings['system']['master'],dev)
+    aCTX.rest_call("%s/api/device_interface_status_report?log=false"%aCTX.settings['system']['master'],dev)
  return {'result':'GATHERING_DATA_COMPLETED'}
 
 #

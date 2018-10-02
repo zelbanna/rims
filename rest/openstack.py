@@ -18,7 +18,6 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from zdcp.devices.openstack import Device
-from zdcp.core.common import rest_call
 
 #
 #
@@ -130,7 +129,7 @@ def rest(aDict, aCTX):
    with aCTX.db as db:
     db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%s' AND service = '%s'"%(aDict['token'],aDict.get('service')))
     url = db.get_val('service_url')
-  ret = rest_call(url, aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
+  ret = aCTX.rest_call(url, aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
   ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
@@ -138,7 +137,7 @@ def rest(aDict, aCTX):
 #
 #
 def call(aDict, aCTX):
- """Function docstring for call. Basically creates a controller instance and send a (nested) rest_call.
+ """Function docstring for call. Basically creates a controller instance and send a (nested) rest call.
 
  Args:
   - node (required)
@@ -154,13 +153,13 @@ def call(aDict, aCTX):
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = '%(service)s'"%aDict)
   data = db.get_row()
  try:
-  ret = rest_call("%s/%s"%(data['service_url'],aDict.get('call',"")), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
+  ret = aCTX.rest_call("%s/%s"%(data['service_url'],aDict.get('call',"")), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
   ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
 
 def href(aDict, aCTX):
- """Sends a (nested) rest_call
+ """Sends a (nested) aCTX.rest_call
 
  Args:
   - href (required)
@@ -170,7 +169,7 @@ def href(aDict, aCTX):
 
  Output:
  """
- try: ret = rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
+ try: ret = aCTX.rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
  except Exception as e: ret = e[0]
  return ret
 
