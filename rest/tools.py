@@ -9,21 +9,27 @@ __version__ = "4.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
+
 #
 #
-def debug(aDict, aCTX):
- """Function tests timeout of client
+def module_info(aDict, aCTX):
+ """Function retrives info of module
 
  Args:
+  -module
 
  Output:
  """
- def tester(aA,aB):
-  print "%s => %s"%(aA,aB)
+ ret = {}
+ from sys import modules, getrefcount
+ from types import ModuleType
+ mod = modules[aDict['module']]
+ ret['all'] = [x for x in modules.keys() if isinstance(modules[x],ModuleType)]
+ ret['all'].sort()
+ ret['content'] = dir(mod)
+ ret['module'] = isinstance(mod, ModuleType) 
+ return ret
 
- aCTX.workers.add_func(tester,'HEJ','HOPP')
- print aDict
- return None
 
 ################################## System #################################
 #

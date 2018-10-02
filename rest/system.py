@@ -148,7 +148,8 @@ def report(aDict, aCTX):
  Output:
  """
  from os import path as ospath
- from sys import modules,version
+ from sys import modules,version, getrefcount
+ from types import ModuleType 
  from gc import get_objects
  from threading import enumerate
  db_counter = {}
@@ -175,7 +176,7 @@ def report(aDict, aCTX):
  ret.extend(list({'info':'Active Worker','value':"%s => %s"%(x[0],x[2])} for x in aCTX.workers.activities()))
  # ret.extend(list({'info':'Active Threads','value':"%s => %s"%(t.name,t.is_alive())} for t in enumerate()))
  ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in aCTX.settings.get('system',{}).iteritems()))
- ret.extend(list({'info':'Imported module','value':x} for x in modules.keys() if x.startswith('zdcp')))
+ ret.extend(list({'info':'Imported module','value':x} for x in modules.keys() if isinstance(modules[x],ModuleType) and x.startswith('zdcp')))
  return ret
 
 ############################################ SETTINGS ########################################
