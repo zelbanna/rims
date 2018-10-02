@@ -30,7 +30,7 @@ class DB(object):
   from pymysql.cursors import DictCursor
   self._mods = (connect,DictCursor)
   self._conn,self._curs,self._dirty = None, None, False
-  self.count = {'do':0,'commit':0,'connect':0,'close':0}
+  self.count = {'SELECT':0,'INSERT':0,'DELETE':0,'UPDATE':0,'commit':0,'connect':0,'close':0}
   if not aDB:
    from zdcp.Settings import Settings
    self._db, self._host, self._user, self._pass = Settings['system']['db_name'],Settings['system']['db_host'],Settings['system']['db_user'],Settings['system']['db_pass']
@@ -60,8 +60,8 @@ class DB(object):
   self._conn.close()
 
  def do(self,aQuery):
-  self.count['do'] += 1
   op = aQuery[0:6].upper()
+  self.count[op] += 1
   self._dirty = (self._dirty or op in ['UPDATE','INSERT','DELETE'])
   return self._curs.execute(aQuery)
 

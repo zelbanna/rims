@@ -195,7 +195,7 @@ class QueueWorker(Thread):
      freq = int(kwargs.get('frequency',300))
      sleep(freq - int(time())%freq)
      while not self._abort.is_set():
-      result = func(args,self,_ctx)
+      result = func(args,self._ctx)
       if kwargs.get('output'):
        log("%s - %s - %s_%s PERIODIC => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(result)))
       sleep(freq)

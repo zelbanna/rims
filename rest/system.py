@@ -151,11 +151,11 @@ def report(aDict, aCTX):
  from sys import modules,version
  from gc import get_objects
  from threading import enumerate
- db_counter = {'do':0,'commit':0,'connect':0,'close':0}
+ db_counter = {}
  for t in enumerate():
-  try:   
-   for tp in ['do','commit','connect','close']:
-    db_counter[tp] += t._ctx.db.count[tp]
+  try:
+   for k,v in t._ctx.db.count.iteritems():
+    db_counter[k] = db_counter.get(k,0) + v
   except:pass
  node = gSettings['system']['id']
  node_url = gSettings['nodes'][node]
@@ -166,7 +166,7 @@ def report(aDict, aCTX):
  ret.append({'info':'Worker pool','value':gWorkers.pool_size()})
  ret.append({'info':'Queued tasks','value':gWorkers.queue_size()})
  ret.append({'info':'Memory objects','value':len(get_objects())})
- ret.append({'info':'DB operations','value':", ".join(["%s:%s"%(k,v) for k,v in db_counter.iteritems()])})
+ ret.append({'info':'DB operations','value':", ".join(["%s:%s"%(k.upper(),v) for k,v in db_counter.iteritems()])})
  ret.append({'info':'Python version','value':version})
  if node == 'master':
   from zdcp.rest.device import system_oids
