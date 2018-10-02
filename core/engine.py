@@ -17,7 +17,11 @@ from httplib import responses as http_codes
 from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 
 ######################################### Startup ########################################
-
+#
+# Single process server, multiple threads to avoid blocking
+#
+# TODO: make multicore instead
+#
 def start(aThreads):
  from zdcp.Settings import Settings
  from zdcp.core.common import rest_call,DB
@@ -35,6 +39,9 @@ def start(aThreads):
   httpd.server_bind = httpd.server_close = lambda self: None
   try: httpd.serve_forever()
   except: pass
+
+ def process(node,address,socket,path,settings):
+  pass
 
  try:
   node = Settings['system']['id']
