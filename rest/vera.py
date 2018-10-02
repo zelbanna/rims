@@ -22,7 +22,7 @@ def status(aDict, aCTX):
  Output:
  """
  try:
-  node = gSettings['nodes'][aDict['node']]
+  node = aCTX.settings['nodes'][aDict['node']]
   ret = rest_call("%sid=sdata"%node)['data']
  except Exception as e:
   ret = e[0] 
@@ -40,7 +40,7 @@ def infra(aDict, aCTX):
  """
  try:
   ret = {}
-  node = gSettings['nodes'][aDict['node']]
+  node = aCTX.settings['nodes'][aDict['node']]
   info = rest_call("%sid=sdata"%node)['data']
   ret['sections'] = { d['id']: d['name'] for d in info['sections'] }
   ret['rooms']    = { d['id']: d for d in info['rooms'] }
@@ -65,7 +65,7 @@ def scene(aDict, aCTX):
  """                
  try:      
   ret = {}
-  node = gSettings['nodes'][aDict['node']]
+  node = aCTX.settings['nodes'][aDict['node']]
   if aDict.get('op'):
    ret['op'] = "RunScene" if aDict.get('op')== "run" else "SceneOff"
    res = rest_call("%sid=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(node,ret['op'],aDict['scene']))
@@ -95,7 +95,7 @@ def devices(aDict, aCTX):
  """
  try:
   ret = {}
-  node = gSettings['nodes'][aDict['node']]
+  node = aCTX.settings['nodes'][aDict['node']]
   info = rest_call("%sid=sdata"%node)['data']
   ret['devices'] = info['devices'] if not aDict.get('room') else [ x for x in info['devices'] if x['room'] == int(aDict.get('room')) ]
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
@@ -123,7 +123,7 @@ def device_info(aDict, aCTX):
  ret = {'op':None}
  op = aDict.pop("op",None)
  try:
-  node = gSettings['nodes'][aDict['node']]
+  node = aCTX.settings['nodes'][aDict['node']]
   if op == 'update':
    ret['op'] = {}
    if aDict['category'] == '2' and aDict['service'] == 'urn:upnp-org:serviceId:Dimming1' and aDict['variable'] == 'LoadLevelTarget':

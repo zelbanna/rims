@@ -24,10 +24,10 @@ def status(aDict, aCTX):
    if count > 0:
     args = {'module':'ipam','func':'address_status_check','args':{'address_list':db.get_rows(),'subnet_id':sub['id']},'output':False}
     if not sub['node'] or sub['node'] == 'master':
-     gWorkers.add_task(args)
+     aCTX.workers.add_task(args)
      ret['local'].append(sub['id'])
     else:
-     rest_call("%s/api/system_task_worker?node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
+     rest_call("%s/api/system_task_worker?node=%s"%(aCTX.settings['nodes'][sub['node']],sub['node']),args)['data']
      ret['remote'].append(sub['id'])
  return ret
 
@@ -196,11 +196,11 @@ def network_discover(aDict, aCTX):
   ip_list = db.get_dict('ip')
 
  try:
-  sema = gWorkers.semaphore(simultaneous)
+  sema = aCTX.workers.semaphore(simultaneous)
   for ip in range(ip_start,ip_end):
    if not ip_list.get(ip):
-    gWorkers.add_sema(__detect_thread,sema,ip,addresses)
-  gWorkers.block(sema,simultaneous)
+    aCTX.workers.add_sema(__detect_thread,sema,ip,addresses)
+  aCTX.workers.block(sema,simultaneous)
  except Exception as err:
   ret['error']   = str(err)
 
@@ -395,10 +395,10 @@ def address_status_check(aDict, aCTX):
   except: aArgs['dev']['new'] = None
   return True
 
- sema = gWorkers.semaphore(20)  
+ sema = aCTX.workers.semaphore(20)  
  for dev in aDict['address_list']:
-  gWorkers.add_sema(__pinger,sema, {'dev':dev})
- gWorkers.block(sema,20)
+  aCTX.workers.add_sema(__pinger,sema, {'dev':dev})
+ aCTX.workers.block(sema,20)
 
  args = {}
  for n in [1,2]:
@@ -406,11 +406,11 @@ def address_status_check(aDict, aCTX):
   if len(changed) > 0:
    args['up' if n == 1 else 'down'] = changed
  if len(args.keys()) > 0:
-  if gSettings['system']['id'] == 'master':
+  if aCTX.settings['system']['id'] == 'master':
    address_status_report(args, aCTX)
   else:
    from zdcp.core.common import rest_call
-   rest_call("%s/api/ipam_address_status_report?log=false"%gSettings['system']['master'],args)
+   rest_call("%s/api/ipam_address_status_report?log=false"%aCTX.settings['system']['master'],args)
   return {'result':'CHECK_COMPLETED'}
 
 #

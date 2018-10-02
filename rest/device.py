@@ -37,7 +37,7 @@ def info(aDict, aCTX):
 
   if op == 'lookup' and ret['ip']:
    from zdcp.devices.generic import Device
-   dev = Device(ret['ip'],gSettings)
+   dev = Device(ret['ip'],aCTX.settings)
    lookup = dev.detect()
    ret['result'] = lookup
    if lookup['result'] == 'OK':
@@ -225,9 +225,8 @@ def extended(aDict, aCTX):
      args_pem = {'ip':pdu_info['ip'],'unit':pem['pdu_unit'],'slot':ret['infra']['pdu_info'][pem['pdu_id']]['%s_slot_id'%pem['pdu_slot']],'text':"%s-%s"%(ret['info']['hostname'],pem['name'])}
      try:
       module = import_module("zdcp.rest.%s"%pdu_info['name'])
-      module.__add_globals__({'gSettings':gSettings,'gWorkers':gWorkers})
       pdu_update = getattr(module,'update',None)
-      ret['result']["PDU_%s"%pem['id']] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem))
+      ret['result']["PDU_%s"%pem['id']] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem,aCTX))
      except Exception as err:
       ret['result']["PDU_%s"%pem['id']] = "Error: %s"%str(err)
  return ret
@@ -446,7 +445,7 @@ def discover(aDict, aCTX):
  from zdcp.devices.generic import Device
 
  def __detect_thread(aIP,aDB):
-  __dev = Device(aIP,gSettings)
+  __dev = Device(aIP,aCTX.settings)
   aDB[aIP['ip']] = __dev.detect()['info']
   return True
 
@@ -459,10 +458,10 @@ def discover(aDict, aCTX):
   devtypes = db.get_dict('name')
  dev_list = {}
 
- sema = gWorkers.semaphore(20)
+ sema = aCTX.workers.semaphore(20)
  for ip in ipam['addresses']:
-  gWorkers.add_sema(__detect_thread, sema, ip, dev_list)
- gWorkers.block(sema,20)
+  aCTX.workers.add_sema(__detect_thread, sema, ip, dev_list)
+ aCTX.workers.block(sema,20)
 
  # We can now do inserts only (no update) as we skip existing :-)
  with aCTX.db as db:
@@ -550,7 +549,7 @@ def function(aDict, aCTX):
  ret = {}
  try:
   module = import_module("zdcp.devices.%s"%(aDict['type']))
-  dev = getattr(module,'Device',lambda x: None)(aDict['ip'],gSettings)
+  dev = getattr(module,'Device',lambda x: None)(aDict['ip'],aCTX.settings)
   with dev:
    ret['data'] = getattr(dev,aDict['op'],None)()
   ret['result'] = 'OK'
@@ -576,7 +575,7 @@ def configuration_template(aDict, aCTX):
  ip = data.pop('ip',None)
  try:
   module = import_module("zdcp.devices.%s"%data['type'])
-  dev = getattr(module,'Device',lambda x: None)(ip,gSettings)
+  dev = getattr(module,'Device',lambda x: None)(ip,aCTX.settings)
   ret['data'] = dev.configuration(data)
  except Exception as err:
   ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%str(err)
@@ -604,7 +603,7 @@ def network_info_discover(aDict, aCTX):
 
  def __detect_thread(aDev):
   try:
-   session = Session(Version = 2, DestHost = aDev['ip'], Community = gSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = aDev['ip'], Community = aCTX.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    session.get(sysoid)
    if sysoid[0].val:
@@ -620,10 +619,10 @@ def network_info_discover(aDict, aCTX):
   count   = db.do("SELECT devices.mac, devices.oid, devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND (devices.mac = 0 OR devices.oid = 0)"%network)
   devices = db.get_rows()
   if count > 0:
-   sema = gWorkers.semaphore(20)
+   sema = aCTX.workers.semaphore(20)
    for dev in devices:
-    gWorkers.add_sema(__detect_thread, sema, dev)
-   gWorkers.block(sema,20)
+    aCTX.workers.add_sema(__detect_thread, sema, dev)
+   aCTX.workers.block(sema,20)
    for dev in devices:
     if dev.get('mac',0) > 0 or dev.get('oid',0) > 0:
      ret['count'] += db.do("UPDATE devices SET mac = %(mac)s, oid = %(oid)s WHERE id = %(id)s"%dev)
@@ -660,10 +659,10 @@ def network_lldp_discover(aDict, aCTX):
   count   = db.do("SELECT hostname,devices.id AS id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1"%network)
  devices = db.get_rows()
  if count > 0:
-  sema = gWorkers.semaphore(10)
+  sema = aCTX.workers.semaphore(10)
   for dev in devices:
-   gWorkers.add_sema( __detect_thread, sema, dev)
-  gWorkers.block(sema,10)
+   aCTX.workers.add_sema( __detect_thread, sema, dev)
+  aCTX.workers.block(sema,10)
  return {'result':'DISCOVERY_COMPLETED','new_connections':new_connections,'ins_interfaces':ins_interfaces}
 
 #
@@ -691,10 +690,10 @@ def network_interface_status(aDict, aCTX):
      db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id'])
      dev['interfaces'] = db.get_rows()
     if not sub['node'] or sub['node'] == 'master':
-     gWorkers.add_task(args)
+     aCTX.workers.add_task(args)
      ret['local'].append(sub['id'])
     else:
-     rest_call("%s/api/system_task_worker?node=%s"%(gSettings['nodes'][sub['node']],sub['node']),args)['data']
+     rest_call("%s/api/system_task_worker?node=%s"%(aCTX.settings['nodes'][sub['node']],sub['node']),args)['data']
      ret['remote'].append(sub['id'])
  return ret
 
@@ -911,7 +910,7 @@ def interface_discover_snmp(aDict, aCTX):
   existing = db.get_rows()
   try:
    module  = import_module("zdcp.devices.%s"%(info['type']))
-   dev = getattr(module,'Device',lambda x: None)(info['ip'],gSettings)
+   dev = getattr(module,'Device',lambda x: None)(info['ip'],aCTX.settings)
    interfaces = dev.interfaces()
   except Exception as err:
    ret['error'] = str(err)
@@ -942,7 +941,7 @@ def interface_lldp(aDict, aCTX):
   - LLDP info
  """
  from zdcp.devices.generic import Device
- device = Device(aDict['ip'],gSettings)
+ device = Device(aDict['ip'],aCTX.settings)
  return device.lldp()
 
 #
@@ -958,7 +957,7 @@ def interface_snmp(aDict, aCTX):
   - SNMP info
  """
  from zdcp.devices.generic import Device
- device = Device(aDict['ip'],gSettings)
+ device = Device(aDict['ip'],aCTX.settings)
  return device.interface(aDict['interface'])
 
 #
@@ -991,7 +990,7 @@ def interface_discover_lldp(aDict, aCTX):
   db.do(sql_dev%aDict['device'])
   data = db.get_row()
   # TODO Run this off the right node
-  device = Device(data['ip'],gSettings)
+  device = Device(data['ip'],aCTX.settings)
   info = device.lldp()
   for k,v in info.iteritems():
    db.do(sql_lcl%(aDict['device'],k))
@@ -1071,7 +1070,7 @@ def interface_status_check(aDict, aCTX):
  def __interfaces(aDev):
   try:
    module = import_module("zdcp.devices.%s"%aDev['type'])
-   device = getattr(module,'Device',None)(aDev['ip'],gSettings)
+   device = getattr(module,'Device',None)(aDev['ip'],aCTX.settings)
    probe  = device.interfaces()
    exist  = aDev['interfaces']
    for intf in exist:
@@ -1085,17 +1084,17 @@ def interface_status_check(aDict, aCTX):
   except: pass
   return True
 
- sema = gWorkers.semaphore(20)
+ sema = aCTX.workers.semaphore(20)
  for dev in aDict['device_list']:
-  gWorkers.add_sema( __interfaces, sema, dev)
- gWorkers.block(sema,20)
+  aCTX.workers.add_sema( __interfaces, sema, dev)
+ aCTX.workers.block(sema,20)
  for dev in aDict['device_list']:
   if len(dev['interfaces']) > 0:
-   if gSettings['system']['id'] == 'master':
+   if aCTX.settings['system']['id'] == 'master':
     interface_status_report(dev, aCTX)
    else:
     from zdcp.core.common import rest_call
-    rest_call("%s/api/device_interface_status_report?log=false"%gSettings['system']['master'],dev)
+    rest_call("%s/api/device_interface_status_report?log=false"%aCTX.settings['system']['master'],dev)
  return {'result':'GATHERING_DATA_COMPLETED'}
 
 #

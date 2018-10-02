@@ -18,7 +18,6 @@ if __name__ == "__main__":
  from zdcp.Settings import Settings
  from zdcp.core.engine import Context
  ctx = Context(Settings,None)
- mysql.__add_globals__({'gSettings':Settings})
  file = ospath.abspath(ospath.join(getcwd(),argv[2])) if len(argv) > 2 else None
 
  if   argv[1] == '-d':

@@ -17,7 +17,6 @@ if __name__ == "__main__":
  from zdcp.rest import mysql
  from zdcp.Settings import Settings
  from zdcp.core.engine import Context
- mysql.__add_globals__({'gSettings':Settings})
  file = ospath.abspath(ospath.join(getcwd(),argv[1]))
  diffs= mysql.diff({'schema_file':file}, Context(Settings,None))
  print diffs['diffs']

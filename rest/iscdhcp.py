@@ -29,7 +29,7 @@ def status(aDict, aCTX):
 
  result = []
  lease  = {}
- with open(gSettings['iscdhcp']['active'],'r') as leasefile:
+ with open(aCTX.settings['iscdhcp']['active'],'r') as leasefile:
   for line in leasefile:
    if line == '\n':
     continue
@@ -65,7 +65,7 @@ def sync(aDict, aCTX):
  from time import localtime, strftime
  entries = node_call('master','device','server_macs',{'id':aDict['id']})
  # Create file
- with open(gSettings['iscdhcp']['static'],'w') as config_file:
+ with open(aCTX.settings['iscdhcp']['static'],'w') as config_file:
   config_file.write("# Created: %s\n"%( strftime('%Y-%m-%d %H:%M:%S', localtime()) ))
   for entry in entries['data']:
    config_file.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}, Network: {4}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id'],entry['network']))
@@ -74,7 +74,7 @@ def sync(aDict, aCTX):
  from subprocess import check_output, CalledProcessError
  ret = {}
  try:
-  ret['output'] = check_output(gSettings['iscdhcp']['reload'].split())
+  ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split())
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output
@@ -100,7 +100,7 @@ def update(aDict, aCTX):
  devices = {}
  ret = {}
 
- with open(gSettings['iscdhcp']['static'],'r') as config_file:
+ with open(aCTX.settings['iscdhcp']['static'],'r') as config_file:
   for line in config_file:
    if line[0] == '#':
     continue
@@ -110,14 +110,14 @@ def update(aDict, aCTX):
  if aDict.get('id'):
   devices[aDict['id']] = {'id':aDict['id'],'fqdn':"%(hostname)s.%(domain)s"%aDict,'mac':aDict['mac'],'ip':aDict['ip'],'network':aDict['network']}
   # Create file
-  with open(gSettings['iscdhcp']['static'],'w') as config_file:
+  with open(aCTX.settings['iscdhcp']['static'],'w') as config_file:
    for entry in devices:
     config_file.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}, Network: {4}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id'],entry['network']))
   # Reload
   from subprocess import check_output, CalledProcessError
   ret = {}
   try:
-   ret['output'] = check_output(gSettings['iscdhcp']['reload'].split())
+   ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split())
   except CalledProcessError as c:
    ret['code'] = c.returncode
    ret['output'] = c.output
@@ -143,7 +143,7 @@ def restart(aDict, aCTX):
  from subprocess import check_output, CalledProcessError
  ret = {}
  try:
-  ret['output'] = check_output(gSettings['iscdhcp']['reload'].split())
+  ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split())
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output

@@ -21,7 +21,7 @@ def debug(aDict, aCTX):
  def tester(aA,aB):
   print "%s => %s"%(aA,aB)
 
- gWorkers.add_func(tester,'HEJ','HOPP')
+ aCTX.workers.add_func(tester,'HEJ','HOPP')
  print aDict
  return None
 
@@ -123,8 +123,8 @@ def logs_clear(aDict, aCTX):
  Output:
  """
  from zdcp.core.common import log
- ret = {'node':gSettings['system']['id'],'file':{}}
- for name,file in gSettings['logs'].iteritems():
+ ret = {'node':aCTX.settings['system']['id'],'file':{}}
+ for name,file in aCTX.settings['logs'].iteritems():
   try:
    open(file,'w').close()
    ret['file'][name] = 'CLEARED'
@@ -146,7 +146,7 @@ def logs_get(aDict, aCTX):
  """
  ret = {}
  count = int(aDict.get('count',15))
- for name,file in gSettings['logs'].iteritems():
+ for name,file in aCTX.settings['logs'].iteritems():
   if aDict.get('name',name) == name:
    lines = ["\r" for i in range(count)]
    pos = 0
@@ -182,7 +182,7 @@ def file_list(aDict, aCTX):
    directory = aDict['fullpath']
   elif aDict.get('directory'):
    ret['path'] = '../files/%s'%aDict['directory']
-   directory = gSettings['files'][aDict['directory']]
+   directory = aCTX.settings['files'][aDict['directory']]
   else:
    ret['path'] = '../images'
    directory = 'images'
@@ -206,7 +206,7 @@ def service_list(aDict, aCTX):
 
  Output:          
  """
- return {'services':[{'name':x,'service':gSettings['services'][x]} for x in gSettings['services'].keys()]}
+ return {'services':[{'name':x,'service':aCTX.settings['services'][x]} for x in aCTX.settings['services'].keys()]}
 
 
 #
@@ -260,12 +260,12 @@ def database_backup(aDict, aCTX):
  Output:
  """
  ret = {'filename':aDict['filename']}
- if gSettings['system']['id'] == 'master':
+ if aCTX.settings['system']['id'] == 'master':
   from mysql import dump
   data = dump({'mode':'database'})['output']
  else:
   from zdcp.core.common import rest_call
-  res = rest_call("%s/api/mysql_dump"%gSettings['system']['master'],{'mode':'database'})
+  res = rest_call("%s/api/mysql_dump"%aCTX.settings['system']['master'],{'mode':'database'})
   if res['code'] == 200:
    data = res['data']['output']
   else:

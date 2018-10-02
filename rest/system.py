@@ -157,24 +157,24 @@ def report(aDict, aCTX):
    for k,v in t._ctx.db.count.iteritems():
     db_counter[k] = db_counter.get(k,0) + v
   except:pass
- node = gSettings['system']['id']
- node_url = gSettings['nodes'][node]
+ node = aCTX.settings['system']['id']
+ node_url = aCTX.settings['nodes'][node]
  ret = []
  ret.append({'info':'Version','value':__version__})
  ret.append({'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
  ret.append({'info':'Node URL','value':node_url})
- ret.append({'info':'Worker pool','value':gWorkers.pool_size()})
- ret.append({'info':'Queued tasks','value':gWorkers.queue_size()})
+ ret.append({'info':'Worker pool','value':aCTX.workers.pool_size()})
+ ret.append({'info':'Queued tasks','value':aCTX.workers.queue_size()})
  ret.append({'info':'Memory objects','value':len(get_objects())})
  ret.append({'info':'DB operations','value':", ".join(["%s:%s"%(k.upper(),v) for k,v in db_counter.iteritems()])})
  ret.append({'info':'Python version','value':version})
  if node == 'master':
   from zdcp.rest.device import system_oids
   ret.append({'info':'Unhandled detected OIDs','value':",".join(list(str(x) for x in system_oids(None,aCTX)['unhandled']))})
- ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in gSettings.get('files',{}).iteritems()))
- ret.extend(list({'info':'Active Worker','value':"%s => %s"%(x[0],x[2])} for x in gWorkers.activities()))
+ ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in aCTX.settings.get('files',{}).iteritems()))
+ ret.extend(list({'info':'Active Worker','value':"%s => %s"%(x[0],x[2])} for x in aCTX.workers.activities()))
  # ret.extend(list({'info':'Active Threads','value':"%s => %s"%(t.name,t.is_alive())} for t in enumerate()))
- ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in gSettings.get('system',{}).iteritems()))
+ ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in aCTX.settings.get('system',{}).iteritems()))
  ret.extend(list({'info':'Imported module','value':x} for x in modules.keys() if x.startswith('zdcp')))
  return ret
 
@@ -192,7 +192,7 @@ def settings_list(aDict, aCTX):
 
  Output:
  """
- ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',gSettings['system']['id']) }
+ ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',aCTX.settings['system']['id']) }
  if aDict.get('section'):
   filter = "AND section = '%s'"%aDict.get('section')
   ret['section'] = aDict.get('section')
@@ -249,7 +249,7 @@ def settings_parameter(aDict, aCTX):
 
  Output:
  """
- try: ret = {'value':gSettings[aDict['section']][aDict['parameter']]}
+ try: ret = {'value':aCTX.settings[aDict['section']][aDict['parameter']]}
  except: ret = {'value':None }
  return ret
 
@@ -329,19 +329,19 @@ def settings_save(aDict, aCTX):
  from zdcp.core.common import rest_call
  from json import loads,dumps
  from os import path as ospath
- ret = {'config_file':gSettings['system']['config_file']}
+ ret = {'config_file':aCTX.settings['system']['config_file']}
  try:
-  gSettings.clear()
+  aCTX.settings.clear()
   with open(ret['config_file']) as sfile:
    temp = loads(sfile.read())
   for section,content in temp.iteritems():
    for key,parameters in content.iteritems():
-    if not gSettings.get(section):
-     gSettings[section] = {}
-    gSettings[section][key] = parameters['value']
-  gSettings['system']['config_file'] = ret['config_file']
+    if not aCTX.settings.get(section):
+     aCTX.settings[section] = {}
+    aCTX.settings[section][key] = parameters['value']
+  aCTX.settings['system']['config_file'] = ret['config_file']
 
-  if gSettings['system']['id'] == 'master':
+  if aCTX.settings['system']['id'] == 'master':
    with aCTX.db as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
@@ -349,22 +349,22 @@ def settings_save(aDict, aCTX):
     data.extend(db.get_rows())
    for setting in data:
     section = setting.pop('section')
-    if not gSettings.get(section):
-     gSettings[section] = {}
-    gSettings[section][setting['parameter']] = setting['value']
+    if not aCTX.settings.get(section):
+     aCTX.settings[section] = {}
+    aCTX.settings[section][setting['parameter']] = setting['value']
   else:
-   try: master = rest_call("%s/api/system_settings_fetch"%gSettings['system']['master'],{'node':gSettings['system']['id']})['data']
+   try: master = rest_call("%s/api/system_settings_fetch"%aCTX.settings['system']['master'],{'node':aCTX.settings['system']['id']})['data']
    except: pass
    else:
     for section,content in master.iteritems():
-     if gSettings.get(section):
-      gSettings[section].update(content)
+     if aCTX.settings.get(section):
+      aCTX.settings[section].update(content)
      else:
-      gSettings[section] = content
+      aCTX.settings[section] = content
 
   container = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','Settings.py'))
   with open(container,'w') as f:
-   f.write("Settings=%s\n"%dumps(gSettings))
+   f.write("Settings=%s\n"%dumps(aCTX.settings))
   ret['result'] = 'OK'
  except Exception as e:
   ret['result'] = 'NOT_OK'
@@ -380,7 +380,7 @@ def settings_container(aDict, aCTX):
 
  Output:
  """
- return gSettings
+ return aCTX.settings
 
 ################################################# NODE ##############################################
 #
@@ -424,7 +424,7 @@ def node_info(aDict, aCTX):
    else:
     ret['update'] = db.insert_dict('nodes',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-   gSettings['nodes'][aDict['node']] = aDict['url']
+   aCTX.settings['nodes'][aDict['node']] = aDict['url']
   if not id == 'new':
    ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
@@ -445,7 +445,7 @@ def node_delete(aDict, aCTX):
  ret = {}
  with aCTX.db as db:
   if db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aDict['id']) > 0:
-   gSettings['nodes'].pop(db.get_val('node'),None)
+   aCTX.settings['nodes'].pop(db.get_val('node'),None)
    ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s'"%aDict['id']) == 1)
   else:
    ret['delete'] = False 
@@ -472,10 +472,10 @@ def node_module_reload(aDict, aCTX):
   with aCTX.db as db:
    db.do("SELECT node FROM nodes WHERE id = %s"%aDict['id'])
    ret['node'] = db.get_val('node')
- if ret['node'] == gSettings['system']['id']:
+ if ret['node'] == aCTX.settings['system']['id']:
   ret['result'] = 'module reloaded'
  else:
-  ret['result'] = rest_call("%s/api/system_node_module_reload"%(gSettings['nodes'][ret['node']]),{'module':aDict['module']})['data']['result']
+  ret['result'] = rest_call("%s/api/system_node_module_reload"%(aCTX.settings['nodes'][ret['node']]),{'module':aDict['module']})['data']['result']
  return ret
 
 #
@@ -940,7 +940,7 @@ def task_worker(aDict, aCTX):
  Output:
   - result
  """
- gWorkers.add_task(aDict)
+ aCTX.workers.add_task(aDict)
  return {'res':'TASK_ADDED'}
 
 #
@@ -969,11 +969,11 @@ def task_add(aDict, aCTX):
    db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency,output) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i,%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300),0 if not aDict.get('output') else 1))
    aDict['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
-  gWorkers.add_task(aDict)
+  aCTX.workers.add_task(aDict)
   ret['result'] = 'ADDED'
  else:
   from zdcp.core.common import rest_call
-  ret.update(rest_call("%s/api/system_task_worker"%gSettings['nodes'][node],aDict)['data'])
+  ret.update(rest_call("%s/api/system_task_worker"%aCTX.settings['nodes'][node],aDict)['data'])
  return ret
 
 #
@@ -987,11 +987,11 @@ def task_status(aDict, aCTX):
  Output:
  """
  ret = {}
- if aDict['node'] == gSettings['system']['id']:
-  ret = gWorkers.activities()
+ if aDict['node'] == aCTX.settings['system']['id']:
+  ret = aCTX.workers.activities()
  else:
   from zdcp.core.common import rest_call
-  ret = rest_call("%s/api/system_task_status"%gSettings['nodes'][aDict['node']],aDict)['data']
+  ret = rest_call("%s/api/system_task_status"%aCTX.settings['nodes'][aDict['node']],aDict)['data']
  return ret
 
 #

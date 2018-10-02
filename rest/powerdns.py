@@ -30,7 +30,7 @@ def domain_list(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
+ with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
   if aDict.get('filter'):
    ret['count'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
   else:
@@ -56,7 +56,7 @@ def domain_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
+ with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
   if op == 'update':
    if id == 'new':
     # Create and insert a lot of records
@@ -94,7 +94,7 @@ def domain_delete(aDict, aCTX):
   - domain. boolean
  """
  ret = {}
- with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
+ with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
   id = int(aDict['id'])
   ret['records'] = db.do("DELETE FROM records WHERE domain_id = %i"%id)
   ret['domain']  = (db.do("DELETE FROM domains WHERE id = %i"%(id)) == 1)
@@ -131,7 +131,7 @@ def record_list(aDict, aCTX):
  if aDict.get('type'):
   select.append("type = '%s'"%aDict.get('type').upper())
  tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
- with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
+ with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
   ret['count'] = db.do("SELECT id, domain_id, name, type, content,ttl,change_date FROM records %s ORDER BY type, name ASC"%tune)
   ret['records'] = db.get_rows()
  return ret
@@ -154,7 +154,7 @@ def record_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
+ with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
   if op == 'update':
    if str(id) in ['new','0']:
     from time import strftime
@@ -179,7 +179,7 @@ def record_delete(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
+ with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
   ret['deleted'] = (db.do("DELETE FROM records WHERE id = '%s'"%(aDict['id'])) > 0)
  return ret
 
@@ -193,7 +193,7 @@ def sync(aDict, aCTX):
 
  Output:
  """
- with DB(gSettings['powerdns']['database'],'localhost',gSettings['powerdns']['username'],gSettings['powerdns']['password']) as db:
+ with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
   rows = db.get_rows();
   remove = []
@@ -225,7 +225,7 @@ def status(aDict, aCTX):
  count = int(aDict.get('count',10))
  fqdn_top = {}
  fqdn_who = {}
- with open(gSettings['powerdns']['logfile'],'r') as logfile:
+ with open(aCTX.settings['powerdns']['logfile'],'r') as logfile:
   for line in logfile:
    parts = line.split()
    if not parts[5] == 'Remote':
@@ -256,7 +256,7 @@ def restart(aDict, aCTX):
  from subprocess import check_output, CalledProcessError
  ret = {}
  try:
-  ret['output'] = check_output(gSettings['powerdns'].get('reload','service pdns restart').split())
+  ret['output'] = check_output(aCTX.settings['powerdns'].get('reload','service pdns restart').split())
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output

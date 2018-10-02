@@ -17,7 +17,7 @@ def list(aDict, aCTX):
  ret = {}
  from zdcp.devices.esxi import Device
  try:
-  esxi = Device(aDict['ip'],gSettings)
+  esxi = Device(aDict['ip'],aCTX.settings)
   ret['data'] = esxi.get_vm_list(aDict.get('sort','name'))
  except Exception as err:
   ret['error'] = str(err)
@@ -40,7 +40,7 @@ def op(aDict, aCTX):
  """
  from zdcp.devices.esxi import Device
  ret = {'id':aDict['id'],'res':'OK'}
- with Device(aDict['ip'],gSettings) as esxi:
+ with Device(aDict['ip'],aCTX.settings) as esxi:
   try:
    if aDict['next-state'] == 'vmsvc-snapshot.create':
     from time import strftime
@@ -81,7 +81,7 @@ def logs(aDict, aCTX):
  hostname = aDict['hostname']
  count = aDict.get('count','30')
  try:
-  ret['data'] = check_output("tail -n %s %s | tac"%(count,gSettings['esxi']['logformat'].format(hostname)), shell=True).split('\n')
+  ret['data'] = check_output("tail -n %s %s | tac"%(count,aCTX.settings['esxi']['logformat'].format(hostname)), shell=True).split('\n')
  except Exception as e:
   ret['res'] = 'NOT_OK'
   ret['error'] = str(e)
@@ -101,7 +101,7 @@ def snapshots(aDict, aCTX):
  """
  from zdcp.devices.esxi import Device
  ret = {'res':'OK', 'data':[],'highest':0}
- with Device(aDict['ip'],gSettings) as esxi:
+ with Device(aDict['ip'],aCTX.settings) as esxi:
   data = {}
   snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get %s"%aDict['id'])
   for field in snapshots.splitlines():

@@ -40,7 +40,6 @@ if __name__ == "__main__":
    started = "Executing:%s_%s(%s)"%(mod,fun,args)
    print started
    module = import_module("zdcp.rest.%s"%mod)
-   module.__add_globals__({'gSettings':Settings})
    function = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })
    output = function(args,ctx)
   timespent = int(time()) - timestamp

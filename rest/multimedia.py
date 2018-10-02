@@ -16,7 +16,7 @@ def list(aDict, aCTX):
  """
  ret = {'files':[]}
  try:
-  ret['root'] = gSettings['multimedia']['torrent_directory']
+  ret['root'] = aCTX.settings['multimedia']['torrent_directory']
   for path,_,files in walk(ret['root']):
    for file in files:
     if file[-3:] in ['mp4','mkv']:
@@ -34,7 +34,7 @@ def cleanup(aDict, aCTX):
   
  Output:
  """
- ret = {'root':gSettings['multimedia']['torrent_directory'],'items':[]}
+ ret = {'root':aCTX.settings['multimedia']['torrent_directory'],'items':[]}
  for path,dirs,files in walk(ret['root']):
   for item in files:
    try: remove(ospath.join(path,item))
@@ -60,7 +60,7 @@ def transfer(aDict, aCTX):
  Output:
  """
  from shutil import move
- try: move( ospath.join(aDict['path'],aDict['file']), ospath.join(gSettings['multimedia']['media_directory'],aDict['file']) )
+ try: move( ospath.join(aDict['path'],aDict['file']), ospath.join(aCTX.settings['multimedia']['media_directory'],aDict['file']) )
  except Exception as err:
   result = str(err)
  else: 
@@ -93,7 +93,7 @@ def services(aDict, aCTX):
  
  Output:
  """
- return {'services':[{'name':x,'service':gSettings['services'][x]} for x in gSettings['services'].keys()]}
+ return {'services':[{'name':x,'service':aCTX.settings['services'][x]} for x in aCTX.settings['services'].keys()]}
 
 ################################################# Media Functions ################################################
 #
@@ -303,7 +303,7 @@ def process(aDict, aCTX):
      ret['aac_probe'] = probe['audio']['add_aac']
      tmpfile = filename + ".process"
      rename(dest,tmpfile)
-     tempd   = gSettings['multimedia']['temp_directory'] 
+     tempd   = aCTX.settings['multimedia']['temp_directory']
      tempdir = mkdtemp(suffix = "",prefix = 'aac.',dir = tempd)
 
      if probe['audio']['add_aac']:

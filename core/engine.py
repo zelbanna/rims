@@ -125,7 +125,6 @@ class WorkerPool(object):
  def add_task(self, aTask, aSema = None):
   try:
    mod = import_module("zdcp.rest.%s"%aTask['module'])
-   mod.__add_globals__({'gSettings':self._settings,'gWorkers':self})
    func = getattr(mod,aTask['func'],lambda x: {'THREAD_NOT_OK'})
   except: pass
   else:
@@ -311,7 +310,6 @@ class SessionHandler(BaseHTTPRequestHandler):
   try:
    if self._headers['X-Node'] == self.server._node:
     module = import_module("zdcp.rest.%s"%mod)
-    module.__add_globals__({'gWorkers':self.server._ctx.workers,'gSettings':self.server._ctx.settings})
     self._body = dumps(getattr(module,fun,None)(args,self.server._ctx))
    else:
     req  = Request("%s/api/%s"%(self.server._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
@@ -348,7 +346,6 @@ class SessionHandler(BaseHTTPRequestHandler):
   except: args = {}
   if self._headers['X-Node'] == self.server._node:
    module = import_module("zdcp.rest.%s"%mod)
-   module.__add_globals__({'gWorkers':self.server._ctx.workers,'gSettings':self.server._ctx.settings})
    self._body = dumps(getattr(module,fun,None)(args,self.server._ctx))
   else:
    req  = Request("%s/api/%s"%(self.server._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))

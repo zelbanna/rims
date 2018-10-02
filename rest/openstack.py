@@ -37,10 +37,10 @@ def application(aDict, aCTX):
  node = aDict['node']
  try:
   if aDict.get('token'):
-   controller = Device(gSettings['nodes'][node],aDict['token'])
+   controller = Device(aCTX.settings['nodes'][node],aDict['token'])
   else:
-   controller = Device(gSettings['nodes'][node])
-   res = controller.auth({'project':gSettings[node]['project'], 'username':gSettings[node]['username'],'password':gSettings[node]['password']})
+   controller = Device(aCTX.settings['nodes'][node])
+   res = controller.auth({'project':aCTX.settings[node]['project'], 'username':aCTX.settings[node]['username'],'password':aCTX.settings[node]['password']})
   ret['choices'] = [{'display':'Customer', 'id':'project', 'data':controller.projects()}]
   for proj in ret['choices'][0]['data']:
    proj['id'] = "%(id)s_%(name)s"%proj
@@ -72,18 +72,18 @@ def authenticate(aDict, aCTX):
  from zdcp.core.common import log
  ret = {}
  node = aDict['node']
- controller = Device(gSettings['nodes'][node])
+ controller = Device(aCTX.settings['nodes'][node])
  res = controller.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
  ret = {'authenticated':res['auth']}
  if res['auth'] == 'OK':
   with aCTX.db as db:
    ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'token':controller.get_token(),'expires':controller.get_cookie_expire()})
-   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node_name,node_url) VALUES('%s','%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],node,gSettings['nodes'][node]))
+   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node_name,node_url) VALUES('%s','%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],node,aCTX.settings['nodes'][node]))
    token_id = db.get_last_id()
    for service in ['heat','nova','neutron','glance']:
     svc = controller.get_service(service,aDict.get('interface','internal'))
     db.do("INSERT INTO openstack_services(id,service,service_url,service_id) VALUES('%s','%s','%s','%s')"%(token_id,service,svc['url'],svc['id']))
-   db.do("INSERT INTO openstack_services(id,service,service_url,service_id) VALUES('%s','%s','%s','%s')"%(token_id,'contrail',gSettings[node]['contrail'],''))
+   db.do("INSERT INTO openstack_services(id,service,service_url,service_id) VALUES('%s','%s','%s','%s')"%(token_id,'contrail',aCTX.settings[node]['contrail'],''))
   log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],node))
  else:
   log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl))
@@ -225,7 +225,7 @@ def heat_templates(aDict, aCTX):
   db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
   node = db.get_val('node_name')
  try:
-  for file in listdir(ospath.abspath(gSettings[node]['heat_directory'])):
+  for file in listdir(ospath.abspath(aCTX.settings[node]['heat_directory'])):
    name,_,suffix = file.partition('.')
    if suffix == 'tmpl.json':
     ret['templates'].append(name)
@@ -252,7 +252,7 @@ def heat_content(aDict, aCTX):
   db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
   node = db.get_val('node_name')
  try:
-  with open(ospath.abspath(ospath.join(gSettings[node]['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
+  with open(ospath.abspath(ospath.join(aCTX.settings[node]['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
    ret['template'] = loads(f.read())
  except Exception as e:
   ret['info'] = str(e)
@@ -286,7 +286,7 @@ def heat_instantiate(aDict, aCTX):
    db.do("SELECT service_url, node_name FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'heat'"%aDict)
    data = db.get_row()
    node = data['node_name']
-  with open(ospath.abspath(ospath.join(gSettings[node]['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
+  with open(ospath.abspath(ospath.join(aCTX.settings[node]['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
    args = loads(f.read())
   args['stack_name'] = aDict['name']
   for key,value in aDict['parameters'].iteritems():
