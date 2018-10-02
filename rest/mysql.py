@@ -6,7 +6,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def dump(aDict):
+def dump(aDict, aCTX):
  """ Function dumps database schema or values or full database info
 
  Args:
@@ -57,7 +57,7 @@ def dump(aDict):
 
 #
 #
-def restore(aDict):
+def restore(aDict, aCTX):
  """ Function restores database schema or values or full database info, Caution (!) if restoring a schema there will be no/0 rows in any table in the database
 
  Args:
@@ -82,7 +82,7 @@ def restore(aDict):
 
 #
 #
-def diff(aDict):
+def diff(aDict, aCTX):
  """ Function makes a diff between current database schema and the supplied schema file.
 
  Args:
@@ -101,7 +101,7 @@ def diff(aDict):
   data = f.read()
  ret = {}
  aDict.update({'mode':'structure'})
- db = dump(aDict)
+ db = dump(aDict, aCTX)
  ret['source'] = db['result']
  ret['output'] = [line for line in unified_diff(db['output'],data.split('\n'),fromfile='dbase',tofile=aDict['schema_file'])]
  ret['diffs'] = 0
@@ -112,7 +112,7 @@ def diff(aDict):
 
 #
 #
-def patch(aDict):
+def patch(aDict, aCTX):
  """ Function patches current database schema with the supplied schema file. If not successful it will try to restore entire old database. Intermediate files are mysql.backup (entire DB) and mysql.values (INSERTs only - used for restoring) 
 
  Args:
@@ -129,31 +129,31 @@ def patch(aDict):
  ret = {'result':'NOT_OK'}
  with open('mysql.backup','w') as f:
   args['full'] = True
-  res = dump(args)
+  res = dump(args, aCTX)
   ret['database_backup_result'] = res['result']
   f.write("\n".join(res['output']))
 
  with open('mysql.values','w') as f:
   args['full'] = False
-  res = dump(args)
+  res = dump(args, aCTX)
   ret['data_backup_result'] = res['result']
   f.write("\n".join(res['output']))
 
  if ret['database_backup_result'] == 'OK' and ret['data_backup_result'] == 'OK':
   args['file'] = aDict['schema_file']
-  res = restore(args)
+  res = restore(args, aCTX)
   ret['struct_install_result']= res['result']
   if not res['result'] == 'OK':
    ret['struct_install_error']= res['output']
   else:
    args['file'] = 'mysql.values'
-   res = restore(args)
+   res = restore(args, aCTX)
    ret['data_restore_result'] = res['result']
    if not res['result'] == 'OK':
     ret['data_restore_error'] = res['output']
     ret['data_restore_extra'] = "Warning - patch failed, trying to restore old data"
     args['file'] = 'mysql.backup'
-    res = restore(args)
+    res = restore(args, aCTX)
     ret['database_restore_result'] = res['result']
     ret['database_restore_output'] = res['output']
    else:

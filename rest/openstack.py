@@ -22,7 +22,7 @@ from zdcp.core.common import DB,rest_call
 
 #
 #
-def application(aDict):
+def application(aDict, aCTX):
  """Function docstring for application. Delivers the information for SDCP login to redirect to the openstack App.
 
  Args:
@@ -56,7 +56,7 @@ def application(aDict):
 
 #
 #
-def authenticate(aDict):
+def authenticate(aDict, aCTX):
  """Function docstring for authenticate TBD
 
  Args:
@@ -91,7 +91,7 @@ def authenticate(aDict):
 
 #
 #
-def services(aDict):
+def services(aDict, aCTX):
  """Function docstring for services. Produces a list of services attached to token, services can be filtered on project names as a string list
 
  Args:
@@ -110,7 +110,7 @@ def services(aDict):
 
 #
 #
-def rest(aDict):
+def rest(aDict, aCTX):
  """Function docstring for rest TBD
 
  Args:
@@ -137,7 +137,7 @@ def rest(aDict):
 
 #
 #
-def call(aDict):
+def call(aDict, aCTX):
  """Function docstring for call. Basically creates a controller instance and send a (nested) rest_call.
 
  Args:
@@ -159,7 +159,7 @@ def call(aDict):
  except Exception as e: ret = e[0]
  return ret
 
-def href(aDict):
+def href(aDict, aCTX):
  """Sends a (nested) rest_call
 
  Args:
@@ -176,7 +176,7 @@ def href(aDict):
 
 #
 #
-def token_list(aDict):
+def token_list(aDict, aCTX):
  """Function docstring for info. Returns a list of Internal to Openstack tokens for user X
 
  Args:
@@ -193,7 +193,7 @@ def token_list(aDict):
 
 #
 #
-def token_info(aDict):
+def token_info(aDict, aCTX):
  """Function docstring for info. Returns detailed list of Openstack token given token
 
  Args:
@@ -211,7 +211,7 @@ def token_info(aDict):
 ################################################# HEAT ###########################################
 #
 #
-def heat_templates(aDict):
+def heat_templates(aDict, aCTX):
  """Function docstring for heat_templates TBD. PAssing the entire cookie would be simpler but require React.JS.
 
  Args:
@@ -236,7 +236,7 @@ def heat_templates(aDict):
 
 #
 #
-def heat_content(aDict):
+def heat_content(aDict, aCTX):
  """Function docstring for heat_content TBD
 
  Args:
@@ -261,12 +261,12 @@ def heat_content(aDict):
 
 #
 #
-def heat_create_template(aDict):
+def heat_create_template(aDict, aCTX):
  return aDict
 
 #
 #
-def heat_instantiate(aDict):
+def heat_instantiate(aDict, aCTX):
  """Function docstring for heat_instantiate TBD
 
  Args:
@@ -305,7 +305,7 @@ def heat_instantiate(aDict):
 ################################################# NOVA ###########################################
 #
 #
-def vm_networks(aDict):
+def vm_networks(aDict, aCTX):
  """Function docstring for vm_networks TBD
 
  Args:
@@ -335,7 +335,7 @@ def vm_networks(aDict):
 
 #
 #
-def vm_console(aDict):
+def vm_console(aDict, aCTX):
  """Function docstring for vm_console TBD
 
  Args:
@@ -363,7 +363,7 @@ def vm_console(aDict):
 
 #
 #
-def vm_resources(aDict):
+def vm_resources(aDict, aCTX):
  """Function docstring for vm_resources TBD
 
  Args:
@@ -384,7 +384,7 @@ def vm_resources(aDict):
 ################################################# CONTRAIL ###########################################
 #
 #
-def contrail_fqname(aDict):
+def contrail_fqname(aDict, aCTX):
  """Function docstring for fqname TBD
 
  Args:
@@ -405,7 +405,7 @@ def contrail_fqname(aDict):
 
 #
 #
-def contrail_uuid(aDict):
+def contrail_uuid(aDict, aCTX):
  """Function docstring for uuid_info TBD
 
  Args:
@@ -427,7 +427,7 @@ def contrail_uuid(aDict):
 
 #
 #
-def contrail_interfaces(aDict):
+def contrail_interfaces(aDict, aCTX):
  """Function docstring for contrail_interfaces TBD
 
  Args:
@@ -470,7 +470,7 @@ def contrail_interfaces(aDict):
 
 #
 #
-def contrail_floating_ips(aDict):
+def contrail_floating_ips(aDict, aCTX):
  """Function docstring for contrail_floating_ips TBD
 
  Args:
@@ -499,7 +499,7 @@ def contrail_floating_ips(aDict):
 
 #
 #
-def contrail_vm_interfaces(aDict):
+def contrail_vm_interfaces(aDict, aCTX):
  """Function docstring for contrail_vm_interfaces TBD
 
  Args:
@@ -522,7 +522,7 @@ def contrail_vm_interfaces(aDict):
 
 #
 #
-def contrail_vm_associate_fip(aDict):
+def contrail_vm_associate_fip(aDict, aCTX):
  """Function docstring for contrail_vm_interfaces TBD
 
  Args:

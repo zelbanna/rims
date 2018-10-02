@@ -7,7 +7,7 @@ __add_globals__ = lambda x: globals().update(x)
 from os import remove, rmdir, walk, path as ospath, devnull, chmod, rename
 #
 #
-def list(aDict):
+def list(aDict, aCTX):
  """Function docstring for list TBD
 
  Args:
@@ -27,8 +27,8 @@ def list(aDict):
 
 #
 #
-def cleanup(aDict):
- """Function docstring for list TBD
+def cleanup(aDict, aCTX):
+ """Function docstring for cleanup TBD
 
  Args:
   
@@ -50,7 +50,7 @@ def cleanup(aDict):
 
 #
 #
-def transfer(aDict):
+def transfer(aDict, aCTX):
  """Function docstring for transfer TBD
 
  Args:
@@ -69,8 +69,8 @@ def transfer(aDict):
 
 #
 #
-def delete(aDict):    
- """Function docstring for transfer TBD
+def delete(aDict, aCTX):    
+ """Function docstring for delete TBD
 
  Args:
   - path (required)   
@@ -86,7 +86,7 @@ def delete(aDict):
 
 #
 #
-def services(aDict):
+def services(aDict, aCTX):
  """Function docstring for services TBD
 
  Args:
@@ -98,8 +98,8 @@ def services(aDict):
 ################################################# Media Functions ################################################
 #
 #
-def check_srt(aDict):
- """Function docstring for check_srt. Find the 'first' SRT file in a directory, 
+def check_srt(aDict, aCTX):
+ """Function find the 'first' SRT file in a directory, 
 
  Args:
   - filepath (cond optional)
@@ -122,8 +122,8 @@ def check_srt(aDict):
 
 #
 #
-def check_title(aDict):
- """Function docstring for check_title. Function tries to determine if this is a series or movie and then how to rename the file such that it would be easy to catalog
+def check_title(aDict, aCTX):
+ """Function tries to determine if this is a series or movie and then how to rename the file such that it would be easy to catalog
 
  Args:
   - filepath (cond optional)
@@ -183,7 +183,7 @@ def check_title(aDict):
 
 #
 #
-def check_content(aDict):
+def check_content(aDict, aCTX):
  """Function docstring for check_content. Checks file using avprobe to determine content and how to optimize file
 
  Args:
@@ -245,8 +245,8 @@ def check_content(aDict):
 
 #
 #
-def process(aDict):
- """Function docstring for process. Process a media file
+def process(aDict, aCTX):
+ """Process a media file
 
  Args:
   - filepath (cond optional)
@@ -260,8 +260,8 @@ def process(aDict):
  from zdcp.core.common import log
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'res':'NOT_OK','error':None}
- srt  = check_srt({'filepath':filename})
- info = aDict if aDict.get('name') and aDict.get('info') else check_title({'filepath':filename})
+ srt  = check_srt({'filepath':filename}, aCTX)
+ info = aDict if aDict.get('name') and aDict.get('info') else check_title({'filepath':filename}, aCTX)
  dest = ospath.abspath(ospath.join(info['path'],info['name']))
  ret.update({'info':info,'srt':srt,'changes':{'subtitle':"",'audio':"",'srt':""},'dest':dest})
 
@@ -278,7 +278,7 @@ def process(aDict):
     ret['changes']['srt']="--language 0:{0} --track-name 0:{0} -s 0 -D -A {1}".format(srt['code'], repr(ospath.abspath(srtfile)))
     rename(srt['file'],srtfile)
 
-   probe = check_content({'filepath':dest,'srt':srt.get('code')})
+   probe = check_content({'filepath':dest,'srt':srt.get('code')}, aCTX)
    ret['probe'] = probe
 
    # if forced download or if there are subs to remove but no subs to add left 
@@ -350,8 +350,8 @@ def process(aDict):
 ################################################ TBD ################################################
 #
 #
-def delay_set(aDict):
- """Function docstring for delay_set. Sets offset in ms for file 'original' (MKV)
+def delay_set(aDict, aCTX):
+ """Sets offset in ms for file 'original' (MKV)
 
  Args:
   - original (required)

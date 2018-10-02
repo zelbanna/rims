@@ -9,7 +9,7 @@ __add_globals__ = lambda x: globals().update(x)
 #
 from zdcp.core.common import DB
 
-def update(aDict):
+def update(aDict, aCTX):
  """Function docstring for update TBD
 
  Args:
@@ -34,7 +34,7 @@ def update(aDict):
 
 #
 #
-def list(aDict):
+def list(aDict, aCTX):
  """Function docstring for list TBD
 
  Args:

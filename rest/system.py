@@ -10,7 +10,7 @@ from zdcp.core.common import DB
 ######################################### APPLICATION ############################################
 #
 #
-def application(aDict):
+def application(aDict, aCTX):
  """Function docstring for application. Using 'portal' settings ('title', 'message' and resource 'id' of start page)
 
  Args:
@@ -36,7 +36,7 @@ def application(aDict):
 
 #
 #
-def authenticate(aDict):
+def authenticate(aDict, aCTX):
  """Function docstring for authenticate. Provide cookie with lifetime.
 
  Args:
@@ -57,7 +57,7 @@ def authenticate(aDict):
 
 #
 #
-def inventory(aDict):
+def inventory(aDict, aCTX):
  """Function docstring for inventory. Provides inventory info for paticular nodes
 
  Args:
@@ -89,7 +89,7 @@ def inventory(aDict):
 
 #
 #
-def menu(aDict):
+def menu(aDict, aCTX):
  """Function docstring for menu TBD
 
  Args:
@@ -126,7 +126,7 @@ def menu(aDict):
 
 #
 #
-def log(aDict):
+def log(aDict, aCTX):
  """ Function 'log' logs to default system log whatever is in parameter 'msg'
 
  Args:
@@ -141,7 +141,7 @@ def log(aDict):
 
 #
 #
-def report(aDict):
+def report(aDict, aCTX):
  """Function reports generic system info. Node independent
 
  Args:
@@ -164,7 +164,7 @@ def report(aDict):
  ret.append({'info':'Python version','value':version})
  if node == 'master':
   from zdcp.rest.device import system_oids
-  ret.append({'info':'Unhandled detected OIDs','value':",".join(list(str(x) for x in system_oids(None)['unhandled']))})
+  ret.append({'info':'Unhandled detected OIDs','value':",".join(list(str(x) for x in system_oids(None,aCTX)['unhandled']))})
  ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in gSettings.get('files',{}).iteritems()))
  ret.extend(list({'info':'Active Worker','value':"%s => %s"%(x[0],x[2])} for x in gWorkers.activities()))
  # ret.extend(list({'info':'Active Threads','value':"%s => %s"%(t.name,t.is_alive())} for t in enumerate()))
@@ -175,7 +175,7 @@ def report(aDict):
 ############################################ SETTINGS ########################################
 #
 #
-def settings_list(aDict):
+def settings_list(aDict, aCTX):
  """Function docstring for settings_list TBD
 
  Args:
@@ -200,7 +200,7 @@ def settings_list(aDict):
 
 #
 #
-def settings_info(aDict):
+def settings_info(aDict, aCTX):
  """Function docstring for settings_info TBD
 
  Args:
@@ -234,7 +234,7 @@ def settings_info(aDict):
 
 #
 #
-def settings_parameter(aDict):
+def settings_parameter(aDict, aCTX):
  """Function docstring for settings_parameter TBD
 
  Args:
@@ -249,7 +249,7 @@ def settings_parameter(aDict):
 
 #
 #
-def settings_comprehensive(aDict):
+def settings_comprehensive(aDict, aCTX):
  """Function docstring for settings_comprehensive TBD
 
  Args:
@@ -274,7 +274,7 @@ def settings_comprehensive(aDict):
 
 #
 #
-def settings_delete(aDict):
+def settings_delete(aDict, aCTX):
  """Function docstring for settings_delete TBD
 
  Args:
@@ -290,7 +290,7 @@ def settings_delete(aDict):
 
 #
 #
-def settings_fetch(aDict):
+def settings_fetch(aDict, aCTX):
  """Function docstring for settings_fetch TBD
 
  Args:
@@ -313,7 +313,7 @@ def settings_fetch(aDict):
 
 #
 #
-def settings_save(aDict):
+def settings_save(aDict, aCTX):
  """Function docstring for settings_save TBD
 
  Args:
@@ -367,7 +367,7 @@ def settings_save(aDict):
 
 #
 #
-def settings_container(aDict):
+def settings_container(aDict, aCTX):
  """Function returns the settings container
 
  Args:
@@ -379,7 +379,7 @@ def settings_container(aDict):
 ################################################# NODE ##############################################
 #
 #
-def node_list(aDict):
+def node_list(aDict, aCTX):
  """Function docstring for node_list TBD
 
  Args:
@@ -394,7 +394,7 @@ def node_list(aDict):
 
 #
 #
-def node_info(aDict):
+def node_info(aDict, aCTX):
  """Function docstring for node_info TBD
 
  Args:
@@ -428,7 +428,7 @@ def node_info(aDict):
 
 #
 #
-def node_delete(aDict):
+def node_delete(aDict, aCTX):
  """Function docstring for node_delete TBD
 
  Args:
@@ -447,7 +447,7 @@ def node_delete(aDict):
 
 #
 #
-def node_module_reload(aDict):
+def node_module_reload(aDict, aCTX):
  """Function attempts to reload a module @ a system node identified by id or node name
 
  Args:
@@ -474,7 +474,7 @@ def node_module_reload(aDict):
 
 #
 #
-def node_device_mapping(aDict):
+def node_device_mapping(aDict, aCTX):
  """Node/Device mapping translates between nodes and devices and provide the same info, it depends on the device existing or node having mapped a device (else 'found' is false)
 
  Args:
@@ -510,7 +510,7 @@ def node_device_mapping(aDict):
 
 #
 #
-def resources_list(aDict):
+def resources_list(aDict, aCTX):
  """Function docstring for resources_list TBD
 
  Args:
@@ -540,7 +540,7 @@ def resources_list(aDict):
 
 #
 #
-def resources_info(aDict):
+def resources_info(aDict, aCTX):
  """Function docstring for resources_info TBD
 
  Args:
@@ -577,7 +577,7 @@ def resources_info(aDict):
 
 #
 #
-def resources_delete(aDict):
+def resources_delete(aDict, aCTX):
  """Function docstring for resources_delete TBD
 
  Args:
@@ -593,7 +593,7 @@ def resources_delete(aDict):
 ########################################### USERS ############################################
 #
 #
-def users_list(aDict):
+def users_list(aDict, aCTX):
  """Function docstring for users_list TBD
 
  Args:
@@ -608,7 +608,7 @@ def users_list(aDict):
 
 #
 #
-def users_info(aDict):
+def users_info(aDict, aCTX):
  """Function docstring for users_info TBD
 
  Args:
@@ -642,7 +642,7 @@ def users_info(aDict):
 
 #
 #
-def users_delete(aDict):
+def users_delete(aDict, aCTX):
  """Function docstring for users_delete TBD
 
  Args:
@@ -658,7 +658,7 @@ def users_delete(aDict):
 ################################ SERVERS ##################################
 #
 #
-def server_list(aDict):
+def server_list(aDict, aCTX):
  """Function docstring for server_list TBD
 
  Args:
@@ -675,7 +675,7 @@ def server_list(aDict):
 
 #
 #
-def server_info(aDict):
+def server_info(aDict, aCTX):
  """Function docstring for server_info TBD
 
  Args:
@@ -709,7 +709,7 @@ def server_info(aDict):
 
 #
 #
-def server_delete(aDict):
+def server_delete(aDict, aCTX):
  """Function docstring for server_delete TBD
 
  Args:
@@ -724,7 +724,7 @@ def server_delete(aDict):
 
 #
 #
-def server_sync(aDict):
+def server_sync(aDict, aCTX):
  """Server sync sends sync message to server @ node and convey result. What sync means is server dependent
 
  Args:
@@ -743,7 +743,7 @@ def server_sync(aDict):
 
 #
 #
-def server_status(aDict):
+def server_status(aDict, aCTX):
  """Server status sends status message to server @ node and convey result. What status means is server dependent
 
  Args:
@@ -762,7 +762,7 @@ def server_status(aDict):
 
 #
 #
-def server_restart(aDict):
+def server_restart(aDict, aCTX):
  """Server restart attempt to restart a server @ node.
 
  Args:
@@ -783,7 +783,7 @@ def server_restart(aDict):
 ######################################### ACTIVITIES ###########################################
 #
 #
-def activities_list(aDict):
+def activities_list(aDict, aCTX):
  """ Function docstring for activities_list. TBD
 
  Args:
@@ -806,7 +806,7 @@ def activities_list(aDict):
 
 #
 #
-def activities_info(aDict):
+def activities_info(aDict, aCTX):
  """ Function docstring for activities_info. TBD
 
  Args:
@@ -845,7 +845,7 @@ def activities_info(aDict):
 
 #
 #
-def activities_delete(aDict):
+def activities_delete(aDict, aCTX):
  """ Function docstring for activities_delete. TBD
 
  Args:
@@ -860,7 +860,7 @@ def activities_delete(aDict):
 
 #
 #
-def activities_type_list(aDict):
+def activities_type_list(aDict, aCTX):
  """ Function docstring for activities_type_list. TBD
 
  Args:
@@ -875,7 +875,7 @@ def activities_type_list(aDict):
 
 #
 #
-def activities_type_info(aDict):
+def activities_type_info(aDict, aCTX):
  """ Function docstring for activities_type_info. TBD
 
  Args:
@@ -902,7 +902,7 @@ def activities_type_info(aDict):
 
 #
 #
-def activities_type_delete(aDict):
+def activities_type_delete(aDict, aCTX):
  """ Function docstring for activity_type_delete. TBD
 
  Args:
@@ -919,7 +919,7 @@ def activities_type_delete(aDict):
 #
 # The worker task can be carried out anywhere
 #
-def task_worker(aDict):
+def task_worker(aDict, aCTX):
  """Function instantiate a worker thread with arguments and bind to global worker dictionary
 
  Args:
@@ -939,7 +939,7 @@ def task_worker(aDict):
 
 #
 #
-def task_add(aDict):
+def task_add(aDict, aCTX):
  """ Adds a task
 
  Args:
@@ -972,7 +972,7 @@ def task_add(aDict):
 
 #
 #
-def task_status(aDict):
+def task_status(aDict, aCTX):
  """ List workers status
 
  Args:
@@ -990,7 +990,7 @@ def task_status(aDict):
 
 #
 #
-def task_list(aDict):
+def task_list(aDict, aCTX):
  """ List tasks
 
  Args:

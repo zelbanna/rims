@@ -8,7 +8,7 @@ from zdcp.devices.avocent import Device
 
 #
 #
-def update(aDict):
+def update(aDict, aCTX):
  """Function docstring for update TBD
 
  Args:
@@ -28,7 +28,7 @@ def update(aDict):
 
 #
 #
-def info(aDict):
+def info(aDict, aCTX):
  """Function docstring for info TBD
 
  Args:
@@ -60,7 +60,7 @@ def info(aDict):
 
 #
 #
-def inventory(aDict):
+def inventory(aDict, aCTX):
  """Function docstring for inventory TBD
 
  Args:
@@ -73,7 +73,7 @@ def inventory(aDict):
 
 #
 #
-def op(aDict):
+def op(aDict, aCTX):
  """Function docstring for op TBD
 
  Args:

@@ -8,7 +8,7 @@ from zdcp.core.common import DB
 
 #
 #
-def list(aDict):
+def list(aDict, aCTX):
  """ Function produces a list of available maps/networks
 
  Args:
@@ -24,7 +24,7 @@ def list(aDict):
 
 #
 #
-def delete(aDict):
+def delete(aDict, aCTX):
  """ Deletes a map
 
  Args:
@@ -40,7 +40,7 @@ def delete(aDict):
 
 #
 #
-def show(aDict):
+def show(aDict, aCTX):
  """ Get map data from name or id
 
  Args:
@@ -68,7 +68,7 @@ def show(aDict):
 
 #
 #
-def network(aDict):
+def network(aDict, aCTX):
  """ Function to view or update information for specific network map id or generate a network map for device id/ip
 
  Args:

@@ -9,7 +9,7 @@ __add_globals__ = lambda x: globals().update(x)
 #################################### Domains #######################################
 #
 #
-def domain_list(aDict):
+def domain_list(aDict, aCTX):
  """NO OP
 
  Args:
@@ -23,7 +23,7 @@ def domain_list(aDict):
 
 #
 #
-def domain_info(aDict):
+def domain_info(aDict, aCTX):
  """NO OP
 
  Args:
@@ -40,7 +40,7 @@ def domain_info(aDict):
 
 #
 #
-def domain_delete(aDict):
+def domain_delete(aDict, aCTX):
  """NO OP
 
  Args:
@@ -54,7 +54,7 @@ def domain_delete(aDict):
 
 #
 #
-def domain_save(aDict):
+def domain_save(aDict, aCTX):
  """NO OP
 
  Args:
@@ -67,7 +67,7 @@ def domain_save(aDict):
 #################################### Records #######################################
 #
 #
-def record_list(aDict):
+def record_list(aDict, aCTX):
  """NO OP
 
  Args:
@@ -85,7 +85,7 @@ def record_list(aDict):
 
 #
 #
-def record_info(aDict):
+def record_info(aDict, aCTX):
  """NO OP if new, else show device id info
 
  Args:
@@ -110,7 +110,7 @@ def record_info(aDict):
 
 #
 #
-def record_delete(aDict):
+def record_delete(aDict, aCTX):
  """ NO OP
 
  Args:
@@ -123,7 +123,7 @@ def record_delete(aDict):
 ############################### Tools #################################
 #
 #
-def dedup(aDict):
+def dedup(aDict, aCTX):
  """ NO OP
 
  Args:
@@ -134,7 +134,7 @@ def dedup(aDict):
 
 #
 #
-def top(aDict):
+def top(aDict, aCTX):
  """ NO OP
 
  Args:

@@ -15,7 +15,8 @@ if __name__ == "__main__":
   from os import getcwd, path as ospath
   syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
   from zdcp.rest import mysql 
+  from zdcp.core.engine import Context
   from zdcp.Settings import Settings
   mysql.__add_globals__({'gSettings':Settings})
-  res = mysql.patch({"schema_file":ospath.abspath(ospath.join(getcwd(),argv[1]))})
+  res = mysql.patch({"schema_file":ospath.abspath(ospath.join(getcwd(),argv[1]))},Context(Settings,None))
   stdout.write("%s\n"%(res))

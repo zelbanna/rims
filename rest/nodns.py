@@ -12,7 +12,7 @@ __type__ = "DNS"
 #################################### Domains #######################################
 #
 #
-def domain_list(aDict):
+def domain_list(aDict, aCTX):
  """NO OP
 
  Args:
@@ -26,7 +26,7 @@ def domain_list(aDict):
 
 #
 #
-def domain_info(aDict):
+def domain_info(aDict, aCTX):
  """NO OP
 
  Args:
@@ -43,7 +43,7 @@ def domain_info(aDict):
 
 #
 #
-def domain_delete(aDict):
+def domain_delete(aDict, aCTX):
  """NO OP
 
  Args:
@@ -57,7 +57,7 @@ def domain_delete(aDict):
 
 #
 #
-def domain_save(aDict):
+def domain_save(aDict, aCTX):
  """NO OP
 
  Args:
@@ -70,7 +70,7 @@ def domain_save(aDict):
 #################################### Records #######################################
 #
 #
-def record_list(aDict):
+def record_list(aDict, aCTX):
  """NO OP
 
  Args:
@@ -88,7 +88,7 @@ def record_list(aDict):
 
 #
 #
-def record_info(aDict):
+def record_info(aDict, aCTX):
  """NO OP if new, else show device id info
 
  Args:
@@ -113,7 +113,7 @@ def record_info(aDict):
 
 #
 #
-def record_delete(aDict):
+def record_delete(aDict, aCTX):
  """ NO OP
 
  Args:
@@ -126,7 +126,7 @@ def record_delete(aDict):
 ############################### Tools #################################
 #
 #
-def sync(aDict):
+def sync(aDict, aCTX):
  """ NO OP
 
  Args:
@@ -137,7 +137,7 @@ def sync(aDict):
 
 #
 #
-def status(aDict):
+def status(aDict, aCTX):
  """ NO OP
 
  Args:
@@ -149,7 +149,7 @@ def status(aDict):
 
 #
 #
-def restart(aDict):
+def restart(aDict, aCTX):
  """Function provides restart capabilities of service
 
  Args:

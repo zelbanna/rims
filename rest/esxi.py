@@ -5,7 +5,7 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 #
-def list(aDict):
+def list(aDict, aCTX):
  """Function docstring for list TBD
 
  Args:
@@ -26,7 +26,7 @@ def list(aDict):
 
 #
 #
-def op(aDict):
+def op(aDict, aCTX):
  """Function docstring for op TBD
 
  Args:
@@ -67,7 +67,7 @@ def op(aDict):
 
 #
 #
-def logs(aDict):
+def logs(aDict, aCTX):
  """Function docstring for logs TBD
 
  Args:
@@ -89,7 +89,7 @@ def logs(aDict):
 
 #
 #
-def snapshots(aDict):
+def snapshots(aDict, aCTX):
  """Function docstring for snapshots TBD
 
  Args:

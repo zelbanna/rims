@@ -7,7 +7,7 @@ __add_globals__ = lambda x: globals().update(x)
 from zdcp.devices.appformix import Device
 
 #
-def alarm(aDict):
+def alarm(aDict, aCTX):
  """Function docstring for alarm TBD
 
  Args:
@@ -20,7 +20,7 @@ def alarm(aDict):
 
 #
 #
-def authenticate(aDict):
+def authenticate(aDict, aCTX):
  """Function docstring for authenticate TBD
 
  Args:
@@ -40,7 +40,7 @@ def authenticate(aDict):
 
 #
 #
-def report_projects(aDict):
+def report_projects(aDict, aCTX):
  """Function docstring for report_projects TBD
 
  Args:
@@ -58,7 +58,7 @@ def report_projects(aDict):
 
 #
 #
-def project_reports(aDict):
+def project_reports(aDict, aCTX):
  """Function docstring for project_reports TBD
 
  Args:

@@ -8,7 +8,7 @@ from zdcp.devices.awx import Device
 
 #
 #
-def inventory_list(aDict):
+def inventory_list(aDict, aCTX):
  """Function main produces an inventory list for a device id
 
  Args:
@@ -19,7 +19,7 @@ def inventory_list(aDict):
   - inventories
  """
  from zdcp.rest.system import node_device_mapping
- ret = node_device_mapping(aDict)
+ ret = node_device_mapping(aDict, aCTX)
  controller = Device(gSettings['nodes'][ret['node']])
  controller.auth({'username':gSettings['awx']['username'],'password':gSettings['awx']['password'],'mode':'basic'})
  ret['inventories'] = controller.fetch_list("inventories/",('id','name','url'))
@@ -27,7 +27,7 @@ def inventory_list(aDict):
 
 #
 #
-def inventory_delete(aDict):
+def inventory_delete(aDict, aCTX):
  """Function deletes inventory with id x
 
  Args:
@@ -44,7 +44,7 @@ def inventory_delete(aDict):
 
 #
 #
-def inventory_info(aDict):
+def inventory_info(aDict, aCTX):
  """Function produces inventory info for a specific inventory id
 
  Args:
@@ -74,7 +74,7 @@ def inventory_info(aDict):
 
 #
 #
-def inventory_sync(aDict):
+def inventory_sync(aDict, aCTX):
  """Function retrieves and matches AWX hosts with devices - and add/updates missing info and groups. Either a list of device_xy id are supplied
 
  Args:
@@ -97,7 +97,7 @@ def inventory_sync(aDict):
   search = ",".join([v for k,v in aDict.iteritems() if k[0:7] == 'device_'])
   field  = 'id'
  from zdcp.rest.device import list as device_list
- devices = device_list({'search':search,'field':field,'extra':'type'})['data']
+ devices = device_list({'search':search,'field':field,'extra':'type'}, aCTX)['data']
  ret = {'devices':devices,'result':'OK','groups':{}}
  if len(devices) == 0:
   return ret
@@ -166,7 +166,7 @@ def inventory_sync(aDict):
 
 #
 #
-def inventory_delete_hosts(aDict):
+def inventory_delete_hosts(aDict, aCTX):
  """Deletes a list of hosts, represented as host_<xy>
 
  Args:
@@ -190,7 +190,7 @@ def inventory_delete_hosts(aDict):
 ########################################## Hosts ##########################################
 #
 #
-def host_list(aDict):
+def host_list(aDict, aCTX):
  """Function retrieves all hosts from AWX node
 
  Args:

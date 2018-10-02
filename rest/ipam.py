@@ -8,7 +8,7 @@ from zdcp.core.common import DB
 
 #
 #
-def status(aDict):
+def status(aDict, aCTX):
  """ Initiate a status check for all or a subset of IP:s
 
  Args:
@@ -36,7 +36,7 @@ def status(aDict):
 ##################################### Networks ####################################
 #
 #
-def network_list(aDict):
+def network_list(aDict, aCTX):
  """Lists networks
 
  Args:
@@ -58,7 +58,7 @@ def network_list(aDict):
 
 #
 #
-def network_info(aDict):
+def network_info(aDict, aCTX):
  """Function docstring for info TBD
 
  Args:
@@ -108,13 +108,13 @@ def network_info(aDict):
   else:
    ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New','reverse_zone_id':None,'server_id':None }
  from zdcp.rest.dns import domain_ptr_list
- ret['domains'] = domain_ptr_list({'prefix':ret['data']['network']})
+ ret['domains'] = domain_ptr_list({'prefix':ret['data']['network']}, aCTX)
  ret['domains'].append({'id':'NULL','name':None,'server':None})
  return ret
 
 #
 #
-def network_inventory(aDict):
+def network_inventory(aDict, aCTX):
  """Allocation of IP addresses within a network.
 
  Args:
@@ -148,7 +148,7 @@ def network_inventory(aDict):
 
 #
 #
-def network_delete(aDict):
+def network_delete(aDict, aCTX):
  """Function docstring for network_delete TBD.
 
  Args:
@@ -164,7 +164,7 @@ def network_delete(aDict):
 
 #
 #
-def network_discover(aDict):
+def network_discover(aDict, aCTX):
  """ Function discovers _new_ IP:s that answer to ping within a certain network. A list of such IP:s are returned
 
  Args:
@@ -210,7 +210,7 @@ def network_discover(aDict):
 
 #
 #
-def network_discrepancy(aDict):
+def network_discrepancy(aDict, aCTX):
  """Function retrieves orphan entries with no matching device or other use
 
  Args:
@@ -227,7 +227,7 @@ def network_discrepancy(aDict):
 #################################### DHCP ###############################
 #
 #
-def server_leases(aDict):
+def server_leases(aDict, aCTX):
  """Server_leases returns free or active server leases for DHCP servers
 
  Args:
@@ -250,7 +250,7 @@ def server_leases(aDict):
 ################################## Addresses #############################
 #
 #
-def address_find(aDict):
+def address_find(aDict, aCTX):
  """Function docstring for address_find TBD
 
  Args:
@@ -294,7 +294,7 @@ def address_find(aDict):
  
 #
 #
-def address_allocate(aDict):
+def address_allocate(aDict, aCTX):
  """ Function allocate IP relative a specific network.
 
  Args:
@@ -321,7 +321,7 @@ def address_allocate(aDict):
 
 #
 #
-def address_reallocate(aDict):
+def address_reallocate(aDict, aCTX):
  """ Function re allocate address ID to a new IP within the same or a new network.
 
  Args:
@@ -346,7 +346,7 @@ def address_reallocate(aDict):
 
 #
 #
-def address_delete(aDict):
+def address_delete(aDict, aCTX):
  """Function deletes an IP id
 
  Args:
@@ -362,7 +362,7 @@ def address_delete(aDict):
 
 #
 #
-def address_from_id(aDict):
+def address_from_id(aDict, aCTX):
  """ Funtion returns mapping between IPAM id and ip,network_id
 
  Args:
@@ -380,7 +380,7 @@ def address_from_id(aDict):
 
 #
 #
-def address_status_check(aDict):
+def address_status_check(aDict, aCTX):
  """ Process a list of IDs, IP addresses and states {id,'ip',state} and perform a ping. State values are: 0 (not seen), 1(up), 2(down).
   If state has changed this will be reported back. This function is node independent.
 
@@ -409,7 +409,7 @@ def address_status_check(aDict):
    args['up' if n == 1 else 'down'] = changed
  if len(args.keys()) > 0:
   if gSettings['system']['id'] == 'master':
-   address_status_report(args)
+   address_status_report(args, aCTX)
   else:
    from zdcp.core.common import rest_call
    rest_call("%s/api/ipam_address_status_report?log=false"%gSettings['system']['master'],args)
@@ -417,7 +417,7 @@ def address_status_check(aDict):
 
 #
 #
-def address_status_report(aDict):
+def address_status_report(aDict, aCTX):
  """ Updates IP addresses' status
 
  Args:

@@ -19,8 +19,8 @@ from zdcp.core.common import DB
 #################################### Domains #######################################
 #
 #
-def domain_list(aDict):
- """Function docstring for domain_list TBD
+def domain_list(aDict, aCTX):
+ """Function docstring TBD
 
  Args:
   - filter (optional)
@@ -42,8 +42,8 @@ def domain_list(aDict):
 
 #
 #
-def domain_info(aDict):
- """Function docstring for domain_info TBD
+def domain_info(aDict, aCTX):
+ """Function docstring TBD
 
  Args:
   - type (required)
@@ -83,7 +83,7 @@ def domain_info(aDict):
 
 #
 #
-def domain_delete(aDict):
+def domain_delete(aDict, aCTX):
  """Function docstring for domain_delete TBD
 
  Args:
@@ -102,7 +102,7 @@ def domain_delete(aDict):
 
 #
 #
-def domain_save(aDict):
+def domain_save(aDict, aCTX):
  """NO OP
 
  Args:
@@ -115,7 +115,7 @@ def domain_save(aDict):
 #################################### Records #######################################
 #
 #
-def record_list(aDict):
+def record_list(aDict, aCTX):
  """Function docstring for records TBD
 
  Args:
@@ -138,7 +138,7 @@ def record_list(aDict):
 
 #
 #
-def record_info(aDict):
+def record_info(aDict, aCTX):
  """Function docstring for record_info TBD
 
  Args:
@@ -170,7 +170,7 @@ def record_info(aDict):
 
 #
 #
-def record_delete(aDict):
+def record_delete(aDict, aCTX):
  """Function docstring for record_delete TBD
 
  Args:
@@ -186,7 +186,7 @@ def record_delete(aDict):
 ############################### Tools #################################
 #
 #
-def sync(aDict):
+def sync(aDict, aCTX):
  """Function docstring for sync. Removes name duplicates.. (assume order by name => duplicate names :-))
 
  Args:
@@ -209,7 +209,7 @@ def sync(aDict):
 
 #
 #
-def status(aDict):
+def status(aDict, aCTX):
  """Function docstring for top TBD
 
  Args:
@@ -243,7 +243,7 @@ def status(aDict):
 
 #
 #
-def restart(aDict):
+def restart(aDict, aCTX):
  """Function provides restart capabilities of service
 
  Args:

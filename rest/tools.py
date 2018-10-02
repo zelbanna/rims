@@ -11,7 +11,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def debug(aDict):
+def debug(aDict, aCTX):
  """Function tests timeout of client
 
  Args:
@@ -28,7 +28,7 @@ def debug(aDict):
 ################################## System #################################
 #
 #
-def memory_usage(aDict):
+def memory_usage(aDict, aCTX):
  """Function memory usage retrieves currently used memory
 
  Args:
@@ -40,7 +40,7 @@ def memory_usage(aDict):
 
 #
 #
-def memory_objects(aDict):
+def memory_objects(aDict, aCTX):
  """Function memory objects retrieves number of allocated memory objects
 
  Args:
@@ -53,7 +53,7 @@ def memory_objects(aDict):
 
 #
 #
-def garbage_collect(aDict):
+def garbage_collect(aDict, aCTX):
  """Function garbage_collect performs a garbage collection
 
  Args:
@@ -66,7 +66,7 @@ def garbage_collect(aDict):
 ################################ REST tools ###############################
 #
 #
-def rest_explore(aDict):
+def rest_explore(aDict, aCTX):
  """Function docstring for rest_explore TBD
 
  Args:
@@ -97,7 +97,7 @@ def rest_explore(aDict):
 
 #
 #
-def rest_information(aDict):
+def rest_information(aDict, aCTX):
  """Function docstring for rest_explore TBD
 
  Args:
@@ -115,7 +115,7 @@ def rest_information(aDict):
 
 #
 #
-def logs_clear(aDict):
+def logs_clear(aDict, aCTX):
  """Function docstring for logs_clear TBD
 
  Args:
@@ -135,7 +135,7 @@ def logs_clear(aDict):
 
 #
 #
-def logs_get(aDict):
+def logs_get(aDict, aCTX):
  """Function docstring for logs_get TBD
 
  Args:
@@ -163,7 +163,7 @@ def logs_get(aDict):
 
 ########################################### FILE ############################################
 
-def file_list(aDict):
+def file_list(aDict, aCTX):
  """Function list files in directory pinpointed by directory (in settings for the node) or by fullpath
 
  Args:
@@ -199,7 +199,7 @@ def file_list(aDict):
 ######################################### Controls ########################################
 #
 #
-def service_list(aDict):
+def service_list(aDict, aCTX):
  """Function docstring for service_list TBD
 
  Args:
@@ -211,7 +211,7 @@ def service_list(aDict):
 
 #
 #
-def service_info(aDict):
+def service_info(aDict, aCTX):
  """Function docstring for service_info. TBD
 
  Args:
@@ -251,7 +251,7 @@ def service_info(aDict):
 ################################### Database ##################################
 #
 #
-def database_backup(aDict):
+def database_backup(aDict, aCTX):
  """Function docstring for database_backup. Does Database Backup to file
 
  Args:

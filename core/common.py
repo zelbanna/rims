@@ -28,7 +28,8 @@ class DB(object):
  def __init__(self, aDB = None, aHost = None, aUser = None, aPass = None):
   from pymysql import connect
   from pymysql.cursors import DictCursor
-  self._mods,self._conn,self._curs.self._dirty = (connect,DictCursor), None, None, False
+  self._mods = (connect,DictCursor)
+  self._conn,self._curs,self._dirty = None, None, False
   self.count = {'do':0,'commit':0,'connect':0,'close':0}
   if not aDB:
    from zdcp.Settings import Settings
@@ -114,7 +115,7 @@ class DB(object):
 ######################################### NODE ########################################
 #
 #
-def node_call(aNode, aModule, aFunction, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20):
+def node_call(aNode, aModule, aFunction, aCTX, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20):
  """ Node call function, automatically translates node call to rest call with shortcut for local node. Typical usage is REST call from within REST...
 
   Args:
@@ -135,7 +136,7 @@ def node_call(aNode, aModule, aFunction, aArgs = None, aMethod = None, aHeader =
   from importlib import import_module
   module = import_module("zdcp.rest.%s"%aModule)
   fun = getattr(module,aFunction,None)
-  ret = fun(aArgs if aArgs else {})
+  ret = fun(aArgs if aArgs else {},aCTX)
  return ret
 
 ######################################### REST ########################################

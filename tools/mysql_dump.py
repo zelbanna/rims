@@ -16,15 +16,17 @@ if __name__ == "__main__":
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
  from zdcp.rest import mysql
  from zdcp.Settings import Settings
+ from zdcp.core.engine import Context
+ ctx = Context(Settings,None)
  mysql.__add_globals__({'gSettings':Settings})
  file = ospath.abspath(ospath.join(getcwd(),argv[2])) if len(argv) > 2 else None
 
  if   argv[1] == '-d':
-  res = mysql.dump({'mode':'database','full':True})
+  res = mysql.dump({'mode':'database','full':True}, ctx)
  elif argv[1] == '-v':
-  res = mysql.dump({'mode':'database','full':False})
+  res = mysql.dump({'mode':'database','full':False}, ctx)
  elif argv[1] == '-s':
-  res = mysql.dump({'mode':'structure'})
+  res = mysql.dump({'mode':'structure'}, ctx)
  elif argv[1] == '-r' and len(argv) == 3:
-  res = mysql.restore({'file':file})
+  res = mysql.restore({'file':file}, ctx)
  stdout.write("\n".join(res['output']))

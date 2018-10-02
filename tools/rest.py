@@ -9,6 +9,7 @@ from sys  import path as syspath
 from json import loads, dumps
 from time import time
 syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
+from zdcp.core.engine import Context
 
 if __name__ == "__main__":
  from json import dumps
@@ -31,6 +32,7 @@ if __name__ == "__main__":
     output = e[0]
   else:
    from zdcp.Settings import Settings
+   ctx = Context(Settings,None)
    from importlib import import_module
    (mod,_,fun) = argv[1].partition('_')
    try: args = loads(argv[2])
@@ -40,9 +42,8 @@ if __name__ == "__main__":
    module = import_module("zdcp.rest.%s"%mod)
    module.__add_globals__({'gSettings':Settings})
    function = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })
-   output = function(args)
+   output = function(args,ctx)
   timespent = int(time()) - timestamp
   print "Time spent: %i"%(timespent)
   print "_" * len(started)
   print dumps(output,indent=4, sort_keys=True)
-

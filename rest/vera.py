@@ -13,7 +13,7 @@ from zdcp.core.common import rest_call
 
 #
 #
-def status(aDict):
+def status(aDict, aCTX):
  """Function docstring for status TBD
 
  Args:
@@ -30,8 +30,8 @@ def status(aDict):
 
 #
 #
-def infra(aDict):
- """Function docstring for infra TBD
+def infra(aDict, aCTX):
+ """Function docstring TBD
 
  Args:
   - node (required)
@@ -52,7 +52,7 @@ def infra(aDict):
 
 #
 #
-def scene(aDict):
+def scene(aDict, aCTX):
  """Function docstring for scene TBD
 
  Args:
@@ -79,13 +79,13 @@ def scene(aDict):
   else:
    ret = rest_call("%sid=scene&action=list&scene=%s"%(node,aDict['scene']))['data']
  except Exception as e:
-  ret = e[0]         
- return ret     
+  ret = e[0]
+ return ret
 
 #
 #
-def devices(aDict):
- """Function docstring for devices TBD
+def devices(aDict, aCTX):
+ """Function docstring TBD
 
  Args:
   - node (required)
@@ -106,8 +106,8 @@ def devices(aDict):
 
 #
 #
-def device_info(aDict):      
- """Function docstring for device_info TBD
+def device_info(aDict, aCTX):
+ """Function docstring TBD
 
  Args:
   - node (required)

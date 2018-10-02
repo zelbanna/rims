@@ -14,7 +14,7 @@ from zdcp.core.common import DB,node_call
 ################################ Domains ##################################
 #
 #
-def domain_list(aDict):
+def domain_list(aDict, aCTX):
  """Function docstring for domain_list.
 
  Args:
@@ -65,7 +65,7 @@ def domain_list(aDict):
 
 #
 #
-def domain_info(aDict):
+def domain_info(aDict, aCTX):
  """Function docstring for domain_info TBD
 
  Args:
@@ -98,7 +98,7 @@ def domain_info(aDict):
 
 #
 #
-def domain_delete(aDict):
+def domain_delete(aDict, aCTX):
  """Function domain_delete deletes a domain from local cache and remote DNS server. All records will be transferred to default (0) domain.
 
  Args:
@@ -118,7 +118,7 @@ def domain_delete(aDict):
 
 #
 #
-def domain_ptr_list(aDict):
+def domain_ptr_list(aDict, aCTX):
  """ Function returns matching PTR domain id's and extra server info for a prefix
 
  Args:
@@ -139,7 +139,7 @@ def domain_ptr_list(aDict):
 
 #
 #
-def domain_save(aDict):
+def domain_save(aDict, aCTX):
  """Function saves state and records for a domain, for dynamic DNS servers this is a No OP
 
  Args:
@@ -160,7 +160,7 @@ def domain_save(aDict):
 
 #
 #
-def record_list(aDict):
+def record_list(aDict, aCTX):
  """Function docstring for record_list TBD
 
  Args:
@@ -185,7 +185,7 @@ def record_list(aDict):
 
 #
 #
-def record_info(aDict):
+def record_info(aDict, aCTX):
  """Function docstring for record_info TBD
 
  Args:
@@ -214,7 +214,7 @@ def record_info(aDict):
 
 #
 #
-def record_delete(aDict):
+def record_delete(aDict, aCTX):
  """Function docstring for record_delete TBD
 
  Args:
@@ -233,7 +233,7 @@ def record_delete(aDict):
 ################################## DEVICE FUNCTIONS ##################################
 #
 #
-def record_device_correct(aDict):
+def record_device_correct(aDict, aCTX):
  """Function docstring for record_device_correct. Update IPAM with correct A/PTR records
 
  Args:
@@ -252,7 +252,7 @@ def record_device_correct(aDict):
 
 #
 #
-def record_device_delete(aDict):
+def record_device_delete(aDict, aCTX):
  """Function docstring for record_device_delete TBD
 
  Args:
@@ -277,7 +277,7 @@ def record_device_delete(aDict):
 
 #
 #
-def record_device_update(aDict):
+def record_device_update(aDict, aCTX):
  """Function docstring for record_device_update. Tries to update DNS server with new info and fetch A and PTR id if they exist... (None, A, A + PTR)
   "Tricky" part is when device MOVED from one domain to another AND this means server change, then we need to do delete first on old server. If IP address changed PTR might have moved.
 
@@ -367,7 +367,7 @@ def record_device_update(aDict):
 
 #
 #
-def record_device_create(aDict):
+def record_device_create(aDict, aCTX):
  """Function docstring for record_device_create. The function actually only creates records for an existing device, and update the device..
  It does not expect 'overlapping' reverse or forwarding zones - hence bypassing IPAM's PTR registration and does lookup for first available reverse record
 
@@ -408,7 +408,7 @@ def record_device_create(aDict):
 ###################################### Tools ####################################
 #
 #
-def status(aDict):
+def status(aDict, aCTX):
  """Function docstring for top TBD
 
  Args:
@@ -429,7 +429,7 @@ def status(aDict):
 
 #
 #
-def consistency_check(aDict):
+def consistency_check(aDict, aCTX):
  """Function docstring for consistency_check. Pulls all A and PTR records from domain servers, expects domain cache to be up-to-date
 
  Args:
@@ -486,7 +486,7 @@ def consistency_check(aDict):
 
 #
 #
-def external_ip(aDict):
+def external_ip(aDict, aCTX):
  """Function docstring for external_ip. TBD
 
  Args:

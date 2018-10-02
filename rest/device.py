@@ -8,7 +8,7 @@ from zdcp.core.common import DB
 
 #
 #
-def info(aDict):
+def info(aDict, aCTX):
  """Function docstring for info. Retrieves and updates device info (excluding rack info which is only fetched)
 
  Args:
@@ -120,7 +120,7 @@ def info(aDict):
 
 #
 #
-def extended(aDict):
+def extended(aDict, aCTX):
  """Function extended updates 'extended' device info (DNS, PTR, RACK info etc)
 
  Args:
@@ -172,7 +172,7 @@ def extended(aDict):
      if not (old_info['hostname'] == aDict['hostname']) or not (str(old_info['a_dom_id']) == str(aDict['a_dom_id'])):
       dns_args = {'a_id':old_info['a_id'],'ptr_id':old_info['ptr_id'],'a_domain_id_new':aDict['a_dom_id'],'a_domain_id_old':old_info['a_dom_id'],'hostname':aDict['hostname'],'ip_new':ret['ip'],'ip_old':old_info['ip'],'id':ret['id']}
       from zdcp.rest.dns import record_device_update
-      dns_res = record_device_update(dns_args)
+      dns_res = record_device_update(dns_args,aCTX)
       new_info = {'hostname':aDict['hostname'],'a_dom_id':dns_res['A']['domain_id']}
       for type in ['a','ptr']:
        if dns_res[type.upper()]['found']:
@@ -236,7 +236,7 @@ def extended(aDict):
 
 #
 #
-def list(aDict):
+def list(aDict, aCTX):
  """Function docstring for list TBD
 
  Args:
@@ -300,7 +300,7 @@ def list(aDict):
 
 #
 #
-def search(aDict):
+def search(aDict, aCTX):
  """ Functions returns device id for device matching conditions
 
  Args:
@@ -316,7 +316,7 @@ def search(aDict):
 
 #
 #
-def new(aDict):
+def new(aDict, aCTX):
  """Function docstring for new TBD
 
  Args:
@@ -337,7 +337,7 @@ def new(aDict):
   return {'info':'Hostname unknown not allowed'}
  elif aDict.get('ipam_network_id') and aDict.get('ip'):
   from zdcp.rest.ipam import address_allocate
-  alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['ipam_network_id'],'mac':aDict.get('mac',0)})
+  alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['ipam_network_id'],'mac':aDict.get('mac',0)}, aCTX)
   if   not alloc['valid']:
    return {'info':'IP not in network range'}
   elif not alloc['success']:
@@ -349,7 +349,7 @@ def new(aDict):
   if ret['fqdn']:
    if alloc:
     from zdcp.rest.dns import record_device_update
-    dns = record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']})
+    dns = record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']}, aCTX)
     ret['insert'] = db.do("INSERT INTO devices(vm,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
    else:
     ret['insert'] = db.do("INSERT INTO devices(vm,hostname,snmp,model) VALUES(%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['hostname']))
@@ -362,12 +362,12 @@ def new(aDict):
  # also remove allocation if fqdn busy..
  if alloc['success'] and not ret['fqdn']:
   from zdcp.rest.ipam import address_delete
-  ret['info'] = "deallocating ip (%s)"%address_delete({'id':alloc['id']})['result']
+  ret['info'] = "deallocating ip (%s)"%address_delete({'id':alloc['id']}, aCTX)['result']
  return ret
 
 #
 #
-def update_ip(aDict):
+def update_ip(aDict, aCTX):
  """Function docstring for update_ip TBD
 
  Args:
@@ -384,7 +384,7 @@ def update_ip(aDict):
  from zdcp.rest.ipam import address_allocate
  from zdcp.rest.dns import record_device_update
 
- alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['network_id'],'mac':aDict.get('mac',0)})
+ alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['network_id'],'mac':aDict.get('mac',0)}, aCTX)
  if   not alloc['valid']:
   return {'info':'IP not in network range'}
  elif not alloc['success']:
@@ -397,12 +397,12 @@ def update_ip(aDict):
   ret['update_dev'] = (db.do("UPDATE devices SET ipam_id = %s WHERE id = %s"%(alloc['id'],aDict['id'])) == 1)
   ret['remove_old'] = (db.do("DELETE FROM ipam_addresses WHERE id = %s"%ipam_id) == 1) if ipam_id else False
  dev_info.update({'id':aDict['id'],'ip_new':aDict['ip']})
- ret['dns'] = record_device_update(dev_info)
+ ret['dns'] = record_device_update(dev_info, aCTX)
  return ret
 
 #
 #
-def delete(aDict):
+def delete(aDict, aCTX):
  """Function docstring for delete TBD
 
  Args:
@@ -421,7 +421,7 @@ def delete(aDict):
    if data['ptr_id'] != 0 and data['reverse_zone_id']:
     args['ptr_id']= data['ptr_id']
     args['ptr_domain_id'] = data['reverse_zone_id']
-   ret = record_device_delete(args)
+   ret = record_device_delete(args, aCTX)
    if data['base'] == 'pdu':
     ret['pem0'] = db.update_dict('rack_info',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
     ret['pem1'] = db.update_dict('rack_info',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem1_pdu_id = %s'%(aDict['id']))
@@ -429,12 +429,12 @@ def delete(aDict):
  # Avoid race condition on DB, do this when DB is closed...
  if found and data['ipam_id']:
   from zdcp.rest.ipam import address_delete
-  ret.update(address_delete({'id':data['ipam_id']}))
+  ret.update(address_delete({'id':data['ipam_id']}, aCTX))
  return ret
 
 #
 #
-def discover(aDict):
+def discover(aDict, aCTX):
  """Function docstring for discover TBD
 
  Args:
@@ -453,7 +453,7 @@ def discover(aDict):
   return True
 
  start_time = int(time())
- ipam = ipam_discover({'id':aDict['network_id']})
+ ipam = ipam_discover({'id':aDict['network_id']}, aCTX)
  ret = {'errors':0, 'start':ipam['start'],'end':ipam['end'] }
 
  with DB() as db:
@@ -472,7 +472,7 @@ def discover(aDict):
   count = 0
   for ip,entry in dev_list.iteritems():
    count += 1
-   alloc = address_allocate({'ip':ip,'network_id':aDict['network_id']})
+   alloc = address_allocate({'ip':ip,'network_id':aDict['network_id']}, aCTX)
    if alloc['success']:
     try:   entry['mac'] = int(entry['mac'].replace(":",""),16)
     except:entry['mac'] = 0
@@ -483,7 +483,7 @@ def discover(aDict):
 
 #
 #
-def system_oids(aDict):
+def system_oids(aDict, aCTX):
  """ Function returns unique oids found
 
   Args:
@@ -502,7 +502,7 @@ def system_oids(aDict):
 
 #
 #
-def types_list(aDict):
+def types_list(aDict, aCTX):
  """Function lists currenct device types
 
  Args:
@@ -519,7 +519,7 @@ def types_list(aDict):
 
 #
 #
-def server_macs(aDict):
+def server_macs(aDict, aCTX):
  """Function returns all MACs for devices belonging to networks belonging to particular server
 
  Args:
@@ -538,7 +538,7 @@ def server_macs(aDict):
 ############################################## Specials ###############################################
 #
 #
-def function(aDict):
+def function(aDict, aCTX):
  """Function docstring for function TBD
 
  Args:
@@ -562,7 +562,7 @@ def function(aDict):
 
 #
 #
-def configuration_template(aDict):
+def configuration_template(aDict, aCTX):
  """Function docstring for configuration_template TBD
 
  Args:
@@ -590,7 +590,7 @@ def configuration_template(aDict):
 
 #
 #
-def network_info_discover(aDict):
+def network_info_discover(aDict, aCTX):
  """Function discovers system macs and enterprise oid for devices (on a network segment)
 
  Args:
@@ -633,7 +633,7 @@ def network_info_discover(aDict):
 
 #
 #
-def network_lldp_discover(aDict):
+def network_lldp_discover(aDict, aCTX):
  """Function discovers lldp connections devices (on a network segment)
 
  Args:
@@ -670,7 +670,7 @@ def network_lldp_discover(aDict):
 
 #
 #
-def network_interface_status(aDict):
+def network_interface_status(aDict, aCTX):
  """ Initiate a status check for all or a subset of devices' interfaces
 
  Args:
@@ -703,7 +703,7 @@ def network_interface_status(aDict):
 ############################################### INTERFACES ################################################
 #
 #
-def interface_list(aDict):
+def interface_list(aDict, aCTX):
  """List interfaces for a specific device
 
  Args:
@@ -738,7 +738,7 @@ def interface_list(aDict):
 
 #
 #
-def interface_info(aDict):
+def interface_info(aDict, aCTX):
  """Show or update a specific interface for a device
 
  Args:
@@ -780,7 +780,7 @@ def interface_info(aDict):
 
 #
 #
-def interface_delete(aDict):
+def interface_delete(aDict, aCTX):
  """Delete device interfaces using either id of interface, a list of interfaces or all free interfaces
 
  Args:
@@ -811,7 +811,7 @@ def interface_delete(aDict):
 
 #
 #
-def interface_link(aDict):
+def interface_link(aDict, aCTX):
  """Function docstring for interface_link. Link two device interfaces simultaneously to each other, remove old interfaces before (unless multipoint)
 
  Args:
@@ -832,7 +832,7 @@ def interface_link(aDict):
 
 #
 #
-def interface_unlink(aDict):
+def interface_unlink(aDict, aCTX):
  """Function docstring for interface_unlink. UnLink two device interfaces
 
  Args:
@@ -850,7 +850,7 @@ def interface_unlink(aDict):
 
 #
 #
-def interface_link_advanced(aDict):
+def interface_link_advanced(aDict, aCTX):
  """Function docstring for interface_link_advanced. Link two IP and SNMP index:s (i.e. physical or logical interfaces) to each other simultaneously
 
  Args:
@@ -889,7 +889,7 @@ def interface_link_advanced(aDict):
 
 #
 #
-def interface_discover_snmp(aDict):
+def interface_discover_snmp(aDict, aCTX):
  """ Discovery function for detecting interfaces. Will try SNMP to detect all interfaces (in state up) first.
 
  Args:
@@ -934,7 +934,7 @@ def interface_discover_snmp(aDict):
 
 #
 #
-def interface_lldp(aDict):
+def interface_lldp(aDict, aCTX):
  """Node independent funtion to find out lldp information
 
  Args:
@@ -949,7 +949,7 @@ def interface_lldp(aDict):
 
 #
 #
-def interface_snmp(aDict):
+def interface_snmp(aDict, aCTX):
  """Node independent funtion to find out interface information
 
  Args:
@@ -965,7 +965,7 @@ def interface_snmp(aDict):
 
 #
 #
-def interface_discover_lldp(aDict):
+def interface_discover_lldp(aDict, aCTX):
  """Function discovers connections using lldp info
 
  Args:
@@ -1055,7 +1055,7 @@ def interface_discover_lldp(aDict):
 
 #
 #
-def interface_status_check(aDict):
+def interface_status_check(aDict, aCTX):
  """ Process a list of Device IDs and IP addresses (id, ip, type) and perform an SNMP interface lookup. return state values are: 0 (not seen), 1(up), 2(down).
   Always return interface information. This function is node independent.
 
@@ -1094,7 +1094,7 @@ def interface_status_check(aDict):
  for dev in aDict['device_list']:
   if len(dev['interfaces']) > 0:
    if gSettings['system']['id'] == 'master':
-    interface_status_report(dev)
+    interface_status_report(dev, aCTX)
    else:
     from zdcp.core.common import rest_call
     rest_call("%s/api/device_interface_status_report?log=false"%gSettings['system']['master'],dev)
@@ -1102,7 +1102,7 @@ def interface_status_check(aDict):
 
 #
 #
-def interface_status_report(aDict):
+def interface_status_report(aDict, aCTX):
  """Function updates interface status for a particular device
 
  Args:

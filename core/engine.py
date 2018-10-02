@@ -69,11 +69,9 @@ class Context(object):
   self.db        = DB() if self.node == 'master' else None
   self.rest_call = rest_call
   self.handler   = None
-  self.params    = None
 
- def set_handler(self,aHandler, aParams):
+ def set_handler(self,aHandler):
   self.handler = aHandler
-  self.params  = aParams
 
 ########################################## WorkerPool ########################################
 #
@@ -85,7 +83,7 @@ class WorkerPool(object):
   self._queue = Queue(0)
   self._thread_count = aThreadCount
   self._aborts  = []
-  self._idles   = [] 
+  self._idles   = []
   self._threads = []
   self._settings = aSettings
   self.run()
@@ -314,7 +312,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    if self._headers['X-Node'] == self.server._node:
     module = import_module("zdcp.rest.%s"%mod)
     module.__add_globals__({'gWorkers':self.server._ctx.workers,'gSettings':self.server._ctx.settings})
-    self._body = dumps(getattr(module,fun,None)(args))
+    self._body = dumps(getattr(module,fun,None)(args,self.server._ctx))
    else:
     req  = Request("%s/api/%s"%(self.server._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
     try: sock = urlopen(req, timeout = 300)
@@ -351,7 +349,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   if self._headers['X-Node'] == self.server._node:
    module = import_module("zdcp.rest.%s"%mod)
    module.__add_globals__({'gWorkers':self.server._ctx.workers,'gSettings':self.server._ctx.settings})
-   self._body = dumps(getattr(module,fun,None)(args))
+   self._body = dumps(getattr(module,fun,None)(args,self.server._ctx))
   else:
    req  = Request("%s/api/%s"%(self.server._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
    sock = urlopen(req, timeout = 300)

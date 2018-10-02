@@ -8,7 +8,7 @@ from zdcp.core.common import DB
 
 #
 #
-def list(aDict):
+def list(aDict, aCTX):
  """Function docstring for list TBD
 
  Args:
@@ -25,7 +25,7 @@ def list(aDict):
 
 #
 #
-def info(aDict):
+def info(aDict, aCTX):
  """Function docstring for info TBD
 
  Args:
@@ -61,7 +61,7 @@ def info(aDict):
 
 #
 #
-def inventory(aDict):
+def inventory(aDict, aCTX):
  """Function docstring for inventory TBD
 
  Args:
@@ -91,7 +91,7 @@ def inventory(aDict):
 
 #
 #
-def devices(aDict):
+def devices(aDict, aCTX):
  """Devices finds device information for rack such that we can build a rack "layout"
 
  Args:
@@ -111,7 +111,7 @@ def devices(aDict):
 
 #
 #
-def delete(aDict):
+def delete(aDict, aCTX):
  """Function docstring for delete TBD
 
  Args:
