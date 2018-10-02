@@ -7,7 +7,6 @@ __add_globals__ = lambda x: globals().update(x)
 #
 # reservation(op, device_id, user_id)
 #
-from zdcp.core.common import DB
 
 def update(aDict, aCTX):
  """Function docstring for update TBD
@@ -26,7 +25,7 @@ def update(aDict, aCTX):
   sql = "DELETE FROM reservations WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"
  elif aDict['op'] == 'extend':
   sql = "UPDATE reservations SET time_start = NOW() WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"
- with DB() as db:
+ with aCTX.db as db:
   ret['update'] = db.do(sql%aDict)
   db.do("SELECT alias FROM users WHERE id = '%(user_id)s'"%aDict)
   ret['alias'] = db.get_val('alias')
@@ -43,7 +42,7 @@ def list(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['count'] = db.do("SELECT user_id, device_id, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') as start, NOW() < ADDTIME(time_start, '14 0:0:0.0') AS valid, DATE_FORMAT(ADDTIME(time_start, '14 0:0:0.0'),'%Y-%m-%d %H:%i') as end, devices.hostname, users.alias {} FROM reservations INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id".format('' if not aDict.get('extended') else ", loan, address"))
   ret['data'] = db.get_rows()
   if aDict.get('extended'):

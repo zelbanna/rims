@@ -5,7 +5,6 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'master'
 
-from zdcp.core.common import DB
 
 ######################################### APPLICATION ############################################
 #
@@ -21,7 +20,7 @@ def application(aDict, aCTX):
  """ Default login information """
  ret  = {'message':"Welcome to the Management Portal",'parameters':[],'title':'Portal'}
  aDict['node'] = aDict.get('node','master')
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT parameter,value FROM settings WHERE section = 'portal' AND node = '%s'"%aDict['node'])
   for row in db.get_rows():
    ret[row['parameter']] = row['value']
@@ -67,7 +66,7 @@ def inventory(aDict, aCTX):
  Output:
  """
  ret = {'navinfo':[]}
- with DB() as db:
+ with aCTX.db as db:
   if aDict['node'] == 'master':
    ret.update({'node':True,'users':True})
    db.do("SELECT node FROM nodes WHERE system = 1")
@@ -104,7 +103,7 @@ def menu(aDict, aCTX):
   ret = {'authenticated':'NOT_OK'}
  else:
   ret = {}
-  with DB() as db:
+  with aCTX.db as db:
    start = db.do("SELECT id,view,href FROM resources WHERE id = (SELECT CAST(value AS UNSIGNED) FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start')"%aDict['node'])
    if start > 0:
     info = db.get_row()
@@ -151,7 +150,13 @@ def report(aDict, aCTX):
  from os import path as ospath
  from sys import modules,version
  from gc import get_objects
- # from threading import enumerate
+ from threading import enumerate
+ db_counter = {'do':0,'commit':0,'connect':0,'close':0}
+ for t in enumerate():
+  try:   
+   for tp in ['do','commit','connect','close']:
+    db_counter[tp] += t._ctx.db.count[tp]
+  except:pass
  node = gSettings['system']['id']
  node_url = gSettings['nodes'][node]
  ret = []
@@ -161,6 +166,7 @@ def report(aDict, aCTX):
  ret.append({'info':'Worker pool','value':gWorkers.pool_size()})
  ret.append({'info':'Queued tasks','value':gWorkers.queue_size()})
  ret.append({'info':'Memory objects','value':len(get_objects())})
+ ret.append({'info':'DB operations','value':", ".join(["%s:%s"%(k,v) for k,v in db_counter.iteritems()])})
  ret.append({'info':'Python version','value':version})
  if node == 'master':
   from zdcp.rest.device import system_oids
@@ -193,7 +199,7 @@ def settings_list(aDict, aCTX):
  else:
   filter = ""
   ret['section'] = 'all'
- with DB() as db:
+ with aCTX.db as db:
   ret['count'] = db.do("SELECT * FROM settings WHERE node = '%s' %s ORDER BY section,parameter"%(ret['node'],filter))
   ret['data']  = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
  return ret
@@ -217,7 +223,7 @@ def settings_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB() as db:
+ with aCTX.db as db:
   if op == 'update' and not (aDict['section'] == 'system' or aDict['section'] =='nodes'):
    if not id == 'new':
     ret['update'] = db.update_dict('settings',aDict,"id=%s"%id) 
@@ -260,7 +266,7 @@ def settings_comprehensive(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   if not aDict.get('section'):
    db.do("SELECT DISTINCT section FROM settings WHERE node='%s'"%aDict['node'])
    rows = db.get_rows()
@@ -284,7 +290,7 @@ def settings_delete(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['deleted'] = db.do("DELETE FROM settings WHERE id = %(id)s AND node = '%(node)s'"%aDict)
  return ret
 
@@ -299,7 +305,7 @@ def settings_fetch(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aDict['node'])
   data = db.get_rows()
   db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
@@ -336,7 +342,7 @@ def settings_save(aDict, aCTX):
   gSettings['system']['config_file'] = ret['config_file']
 
   if gSettings['system']['id'] == 'master':
-   with DB() as db:
+   with aCTX.db as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
     db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
@@ -387,7 +393,7 @@ def node_list(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['count'] = db.do("SELECT * FROM nodes")
   ret['data']  = db.get_rows()
  return ret
@@ -411,7 +417,7 @@ def node_info(aDict, aCTX):
   aDict['device_id'] = int(aDict.get('device_id'))
  except:
   aDict['device_id'] = 'NULL'
- with DB() as db:
+ with aCTX.db as db:
   if op == 'update':
    if not id == 'new':
     ret['update'] = db.update_dict('nodes',aDict,'id=%s'%id)
@@ -437,7 +443,7 @@ def node_delete(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   if db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aDict['id']) > 0:
    gSettings['nodes'].pop(db.get_val('node'),None)
    ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s'"%aDict['id']) == 1)
@@ -463,7 +469,7 @@ def node_module_reload(aDict, aCTX):
  if aDict.get('node'):
   ret['node'] = aDict['node']
  else:
-  with DB() as db:
+  with aCTX.db as db:
    db.do("SELECT node FROM nodes WHERE id = %s"%aDict['id'])
    ret['node'] = db.get_val('node')
  if ret['node'] == gSettings['system']['id']:
@@ -490,7 +496,7 @@ def node_device_mapping(aDict, aCTX):
   - domain. Device domain name
   - url
  """
- with DB() as db:
+ with aCTX.db as db:
   if aDict.get('id'):
    found = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain, url FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%aDict['id']) > 0)
    ret = db.get_row() if found else {}
@@ -524,7 +530,7 @@ def resources_list(aDict, aCTX):
  Output:
  """
  ret = {'user_id':aDict.get('user_id',"1"),'type':aDict.get('type','all')}
- with DB() as db:
+ with aCTX.db as db:
   if aDict.get('view_public') is None:
    db.do("SELECT view_public FROM users WHERE id = %s"%ret['user_id'])
    ret['view_public'] = (db.get_val('view_public') == 1)
@@ -560,7 +566,7 @@ def resources_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB() as db:
+ with aCTX.db as db:
   if op == 'update':
    if not id == 'new':
     ret['update'] = db.update_dict('resources',aDict,'id=%s'%id)
@@ -585,7 +591,7 @@ def resources_delete(aDict, aCTX):
 
  Output:
  """
- with DB() as db:
+ with aCTX.db as db:
   deleted = db.do("DELETE FROM resources WHERE id = '%s'"%aDict['id'])
  return { 'deleted':deleted }
 
@@ -601,7 +607,7 @@ def users_list(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['count'] = db.do("SELECT id, alias, name, email FROM users ORDER by name")
   ret['data']  = db.get_rows()
  return ret
@@ -625,7 +631,7 @@ def users_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB() as db:
+ with aCTX.db as db:
   if op == 'update':
    if not id == 'new':
     ret['update'] = db.update_dict('users',aDict,"id=%s"%id)
@@ -650,7 +656,7 @@ def users_delete(aDict, aCTX):
 
  Output:
  """
- with DB() as db:
+ with aCTX.db as db:
   res = db.do("DELETE FROM users WHERE id = '%s'"%aDict['id'])
  return { 'deleted':res }
 
@@ -668,7 +674,7 @@ def server_list(aDict, aCTX):
  """
  ret = {}
  
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT id, server, node, type FROM servers %s"%("WHERE type = '%s'"%aDict['type'] if aDict.get('type') else ""))
   ret['servers']= db.get_rows()
  return ret
@@ -685,7 +691,7 @@ def server_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT node FROM nodes")
   ret['nodes'] = db.get_rows()
   if op == 'update':
@@ -718,7 +724,7 @@ def server_delete(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['deleted'] = db.do("DELETE FROM servers WHERE id = %s"%aDict['id'])
  return ret
 
@@ -733,7 +739,7 @@ def server_sync(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
   if ret['found']:
    from zdcp.core.common import node_call
@@ -752,7 +758,7 @@ def server_status(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
   if ret['found']:
    from zdcp.core.common import node_call
@@ -772,7 +778,7 @@ def server_restart(aDict, aCTX):
   - result.
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
   if ret['found']:
    from zdcp.core.common import node_call
@@ -799,7 +805,7 @@ def activities_list(aDict, aCTX):
   select = "activities.id, activities.event"
  else:
   select = "activities.id"
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT %s, activity_types.type AS type, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, alias AS user FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id LEFT JOIN users ON users.id = activities.user_id ORDER BY date_time DESC LIMIT %s, %s"%(select,ret['start'],ret['end']))
   ret['data'] = db.get_rows()
  return ret
@@ -818,7 +824,7 @@ def activities_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT * FROM activity_types")
   ret['types'] = db.get_rows()
   db.do("SELECT id,alias FROM users ORDER BY alias")
@@ -854,7 +860,7 @@ def activities_delete(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['delete'] = db.do("DELETE FROM activities WHERE id = '%s'"%aDict['id'])
  return ret
 
@@ -868,7 +874,7 @@ def activities_type_list(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT * FROM activity_types")
   ret['data'] = db.get_rows()
  return ret
@@ -885,7 +891,7 @@ def activities_type_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB() as db:
+ with aCTX.db as db:
   if op == 'update':
    if not id == 'new':
     ret['update'] = db.update_dict('activity_types',aDict,"id=%s"%id)
@@ -911,7 +917,7 @@ def activities_type_delete(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['delete'] = db.do("DELETE FROM activity_types WHERE id = '%s'"%aDict['id'])
  return ret
 
@@ -959,7 +965,7 @@ def task_add(aDict, aCTX):
  node = aDict.pop('node',None)
  aDict = aDict
  if aDict.get('periodic'):
-  with DB() as db:
+  with aCTX.db as db:
    db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency,output) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i,%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300),0 if not aDict.get('output') else 1))
    aDict['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
@@ -999,7 +1005,7 @@ def task_list(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['count'] = db.do("SELECT task_jobs.*, nodes.node FROM task_jobs LEFT JOIN nodes ON nodes.id = task_jobs.node_id WHERE node_id IN (SELECT id FROM nodes WHERE node LIKE '%%%s%%')"%aDict.get('node',''))
   ret['tasks'] = db.get_rows()
   for task in ret['tasks']:

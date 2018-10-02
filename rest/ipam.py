@@ -4,8 +4,6 @@ __version__ = "4.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from zdcp.core.common import DB
-
 #
 #
 def status(aDict, aCTX):
@@ -17,7 +15,7 @@ def status(aDict, aCTX):
  """
  from zdcp.core.common import rest_call
  ret = {'local':[],'remote':[]}
- with DB() as db:
+ with aCTX.db as db:
   trim = "" if not aDict.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join([str(x) for x in aDict['subnets']]))
   db.do("SELECT ipam_networks.id, servers.node, servers.server FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   subnets = db.get_rows()
@@ -51,7 +49,7 @@ def network_list(aDict, aCTX):
   -- mask
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['count']    = db.do("SELECT ipam_networks.id, CONCAT(INET_NTOA(network),'/',mask) AS netasc, INET_NTOA(gateway) AS gateway, description, mask, network, server FROM ipam_networks LEFT JOIN servers ON ipam_networks.server_id = servers.id ORDER by network")
   ret['networks'] = db.get_rows()
  return ret
@@ -76,7 +74,7 @@ def network_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT id, server, node FROM servers WHERE type = 'DHCP'")
   ret['servers'] = db.get_rows()
   ret['servers'].append({'id':'NULL','server':None,'node':None})
@@ -125,7 +123,7 @@ def network_inventory(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT mask, network, INET_NTOA(network) as netasc, gateway, INET_NTOA(gateway) as gwasc FROM ipam_networks WHERE id = %(id)s"%aDict)
   network = db.get_row()
   ret['start']   = network['network']
@@ -157,7 +155,7 @@ def network_delete(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['addresses'] = db.do("DELETE FROM ipam_addresses WHERE network_id = %s"%aDict['id']) 
   ret['deleted'] = db.do("DELETE FROM ipam_networks WHERE id = " + aDict['id'])
  return ret
@@ -188,7 +186,7 @@ def network_discover(aDict, aCTX):
  simultaneous = int(aDict.get('simultaneous',20))
  ret = {'addresses':addresses}
 
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT network,mask FROM ipam_networks WHERE id = %s"%aDict['id'])
   net = db.get_row()
   ip_start = net['network'] + 1
@@ -219,7 +217,7 @@ def network_discrepancy(aDict, aCTX):
   entries. list of ID and IP which are orphan
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT id, ip AS ip_integer, INET_NTOA(ip) AS ip FROM ipam_addresses WHERE id NOT IN (SELECT ipam_id FROM devices) ORDER BY ip_integer")
   ret['entries'] = db.get_rows()
  return ret
@@ -237,7 +235,7 @@ def server_leases(aDict, aCTX):
  """
  from zdcp.core.common import node_call
  ret = {'data':[]}
- with DB() as db:
+ with aCTX.db as db:
   ret['servers'] = db.do("SELECT server,node FROM servers WHERE type = 'DHCP'")
   servers = db.get_rows()
  for srv in servers:
@@ -265,7 +263,7 @@ def address_find(aDict, aCTX):
   return inet_ntoa(pack("!I", addr))
 
  consecutive = int(aDict.get('consecutive',1))
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT network, INET_NTOA(network) as netasc, mask FROM ipam_networks WHERE id = %(network_id)s"%aDict)
   net = db.get_row()
   db.do("SELECT ip FROM ipam_addresses WHERE network_id = %(network_id)s"%aDict)
@@ -310,7 +308,7 @@ def address_allocate(aDict, aCTX):
  ret = {'success':False}
  try:    mac = int(str(aDict.get('mac','0')).replace(":",""),16)
  except: mac = 0
- with DB() as db:
+ with aCTX.db as db:
   ret['valid'] = (db.do("SELECT network FROM ipam_networks WHERE id = %(network_id)s AND INET_ATON('%(ip)s') > network AND INET_ATON('%(ip)s') < (network + POW(2,(32-mask))-1)"%aDict) == 1)
   if ret['valid']:
    try:
@@ -335,7 +333,7 @@ def address_reallocate(aDict, aCTX):
   - success (boolean)
  """
  ret = {'success':False,'valid':False,'available':False}
- with DB() as db:
+ with aCTX.db as db:
   ret['valid'] = (db.do("SELECT network FROM ipam_networks WHERE id = '%(network_id)s AND INET_ATON('%(ip)s') > network AND INET_ATON('%(ip)s') < (network + POW(2,(32-mask))-1)"%aDict) == 1)
   if ret['valid']:
    ret['available'] = (db.do("SELECT id FROM ipam_addresses WHERE ip = INET_ATON('%(ip)s') AND network_id = %(network_id)s"%aDict) == 0)
@@ -356,7 +354,7 @@ def address_delete(aDict, aCTX):
   - result (always) boolean
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['result'] = (db.do("DELETE FROM ipam_addresses WHERE id = %(id)s"%aDict) > 0)
  return ret
 
@@ -373,7 +371,7 @@ def address_from_id(aDict, aCTX):
   - network
   - network_id
  """
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT INET_NTOA(ip) AS ip, network_id, INET_NTOA(network) AS network, mask FROM ipam_addresses LEFT JOIN ipam_networks ON ipam_networks.id = ipam_addresses.network_id WHERE ipam_addresses.id = %(id)s"%aDict)
   ret = db.get_row()
  return ret
@@ -428,7 +426,7 @@ def address_status_report(aDict, aCTX):
   - result
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   for chg in [('up',1),('down',2)]:
    change = aDict.get(chg[0])
    if change:

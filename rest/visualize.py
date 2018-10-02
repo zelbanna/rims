@@ -4,7 +4,6 @@ __version__ = "4.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from zdcp.core.common import DB
 
 #
 #
@@ -17,7 +16,7 @@ def list(aDict, aCTX):
   - maps: list of (id,name)
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['count'] = db.do("SELECT id,name FROM visualize")
   ret['maps']  = db.get_rows()
  return ret
@@ -34,7 +33,7 @@ def delete(aDict, aCTX):
   - deleted
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['deleted'] = db.do("DELETE FROM visualize WHERE id = %(id)s"%aDict)
  return ret
 
@@ -55,7 +54,7 @@ def show(aDict, aCTX):
  """
  from json import loads
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   search = "id = %(id)s"%aDict if aDict.get('id') else "name = '%(name)s'"%aDict
   ret['found'] = (db.do("SELECT * FROM visualize WHERE %s"%search) > 0)
   if ret['found']:
@@ -95,7 +94,7 @@ def network(aDict, aCTX):
  args = dict(aDict)
  op   = args.pop('op',None)
  ret = {'id':args.get('id',0),'type':args.pop('type','map')}
- with DB() as db:
+ with aCTX.db as db:
   if op == 'update':
    for type in ['options','nodes','edges']:
     args[type] = dumps(loads(args[type]))

@@ -38,9 +38,8 @@ def info(aDict, aCTX):
 
  Output:
  """
- from zdcp.core.common import DB
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   if aDict.get('op') == 'lookup':
    pdu = Device(aDict['ip'],gSettings)
    slotl = pdu.get_slot_names()

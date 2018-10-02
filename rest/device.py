@@ -4,8 +4,6 @@ __version__ = "4.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from zdcp.core.common import DB
-
 #
 #
 def info(aDict, aCTX):
@@ -31,7 +29,7 @@ def info(aDict, aCTX):
  ret = {'id':aDict.pop('id',None),'ip':aDict.pop('ip',None)}
 
  op = aDict.pop('op',None)
- with DB() as db:
+ with aCTX.db as db:
   extra = aDict.pop('extra',[])
   if 'types' in extra or op == 'lookup':
    db.do("SELECT id, name FROM device_types ORDER BY name")
@@ -140,7 +138,7 @@ def extended(aDict, aCTX):
  """
  ret = {'id':aDict.pop('id',None), 'ip':aDict.pop('ip',None)}
 
- with DB() as db:
+ with aCTX.db as db:
   operation = aDict.pop('op',None)
   if operation:
    ret['result'] = {}
@@ -287,7 +285,7 @@ def list(aDict, aCTX):
   if 'system' in extras:
    fields.extend(['devices.serial','devices.version','ia.state','devices.oid'])
 
- with DB() as db:
+ with aCTX.db as db:
   sql = "SELECT %s FROM devices LEFT JOIN %s WHERE %s %s"%(", ".join(fields)," LEFT JOIN ".join(tune)," AND ".join(filter),sort)
   ret['count'] = db.do(sql)
   data = db.get_rows()
@@ -309,7 +307,7 @@ def search(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['found'] = db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE hostname LIKE '%%%(device)s%%' OR CONCAT(hostname,'.',domains.name) LIKE '%%%(device)s%%'"%aDict)
   ret['device']= db.get_row()
  return ret
@@ -344,7 +342,7 @@ def new(aDict, aCTX):
    return {'info':'IP not available'}
 
  ret = {'info':None}
- with DB() as db:
+ with aCTX.db as db:
   ret['fqdn'] = (db.do("SELECT id AS existing_device_id, hostname, a_dom_id FROM devices WHERE hostname = '%(hostname)s' AND a_dom_id = %(a_dom_id)s"%aDict) == 0)
   if ret['fqdn']:
    if alloc:
@@ -390,7 +388,7 @@ def update_ip(aDict, aCTX):
  elif not alloc['success']:
   return {'info':'IP not available'}
  ret = {'info':'IP available'}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT hostname, a_dom_id AS a_domain_id_new, a_dom_id AS a_domain_id_old, a_id, ptr_id, INET_NTOA(ia.ip) AS ip_old, ipam_id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id = %s"%aDict['id'])
   dev_info = db.get_row()
   ipam_id = dev_info.pop('ipam_id',None)
@@ -410,7 +408,7 @@ def delete(aDict, aCTX):
 
  Output:
  """
- with DB() as db:
+ with aCTX.db as db:
   found = (db.do("SELECT hostname, ine.reverse_zone_id, ipam_id, a_id, ptr_id, a_dom_id, device_types.* FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %s"%aDict['id']) > 0)
   if not found:
    ret = { 'deleted':0, 'dns':{'a':0, 'ptr':0}}
@@ -456,7 +454,7 @@ def discover(aDict, aCTX):
  ipam = ipam_discover({'id':aDict['network_id']}, aCTX)
  ret = {'errors':0, 'start':ipam['start'],'end':ipam['end'] }
 
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT id,name FROM device_types")
   devtypes = db.get_dict('name')
  dev_list = {}
@@ -467,7 +465,7 @@ def discover(aDict, aCTX):
  gWorkers.block(sema,20)
 
  # We can now do inserts only (no update) as we skip existing :-)
- with DB() as db:
+ with aCTX.db as db:
   sql = "INSERT INTO devices (a_dom_id, ipam_id, snmp, model, mac, oid, type_id, hostname) VALUES ("+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}','{}')"
   count = 0
   for ip,entry in dev_list.iteritems():
@@ -492,7 +490,7 @@ def system_oids(aDict, aCTX):
    oids. List of unique enterprise oids
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   for type in ['devices','device_types']:
    db.do("SELECT DISTINCT oid FROM %s"%type)
    oids = db.get_rows()
@@ -512,7 +510,7 @@ def types_list(aDict, aCTX):
  """
  ret = {}
  sort = 'name' if aDict.get('sort','name') == 'name' else 'base'
- with DB() as db:
+ with aCTX.db as db:
   ret['count'] = db.do("SELECT * FROM device_types ORDER BY %s"%sort)
   ret['types'] = db.get_rows()
  return ret
@@ -528,7 +526,7 @@ def server_macs(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['count'] = db.do("SELECT devices.id, hostname, ia.mac, name AS domain, INET_NTOA(ia.ip) AS ip, ia.network_id AS network FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks ON ipam_networks.id = ia.network_id WHERE ia.mac > 0 AND ipam_networks.server_id = %s"%aDict['id'])
   ret['data']  = db.get_rows()
   for row in ret['data']:
@@ -572,7 +570,7 @@ def configuration_template(aDict, aCTX):
  """
  from importlib import import_module
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT ine.mask,INET_NTOA(ine.gateway) AS gateway,INET_NTOA(ine.network) AS network, INET_NTOA(ia.ip) AS ip, hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aDict['id'])
   data = db.get_row()
  ip = data.pop('ip',None)
@@ -617,7 +615,7 @@ def network_info_discover(aDict, aCTX):
   except: pass
   return True
 
- with DB() as db:
+ with aCTX.db as db:
   network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id'] 
   count   = db.do("SELECT devices.mac, devices.oid, devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND (devices.mac = 0 OR devices.oid = 0)"%network)
   devices = db.get_rows()
@@ -657,7 +655,7 @@ def network_lldp_discover(aDict, aCTX):
   except: pass
   return True
 
- with DB() as db:
+ with aCTX.db as db:
   network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id']
   count   = db.do("SELECT hostname,devices.id AS id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1"%network)
  devices = db.get_rows()
@@ -680,7 +678,7 @@ def network_interface_status(aDict, aCTX):
  """
  from zdcp.core.common import rest_call
  ret = {'local':[],'remote':[]}
- with DB() as db:
+ with aCTX.db as db:
   trim = "" if not aDict.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join([str(x) for x in aDict['subnets']]))
   db.do("SELECT ipam_networks.id, servers.node, servers.server FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   subnets = db.get_rows()
@@ -719,7 +717,7 @@ def interface_list(aDict, aCTX):
  def state(val):
   return {0:'grey',1:'green',2:'red'}.get(val,'orange')
 
- with DB() as db:
+ with aCTX.db as db:
   if is_int(aDict.get('device')):
    db.do("SELECT devices.id, hostname FROM devices WHERE id = %s"%aDict['device'])
   else:
@@ -756,7 +754,7 @@ def interface_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB() as db:
+ with aCTX.db as db:
   if op == 'update':
    # If multipoint there should not be any single peer interface
    aDict['multipoint'] = aDict.get('multipoint',0)
@@ -795,7 +793,7 @@ def interface_delete(aDict, aCTX):
  """
  ret = {'interfaces':[],'cleared':0,'deleted':0}
  op  = aDict.pop('op',None)
- with DB() as db:
+ with aCTX.db as db:
   if aDict.get('device_id'):
    ret['deleted'] = db.do("DELETE FROM device_interfaces WHERE device = %s AND peer_interface IS NULL AND multipoint = 0 AND manual = 0 and state != 1"%aDict['device_id'])
   else:
@@ -821,7 +819,7 @@ def interface_link(aDict, aCTX):
  Output:
  """
  ret = {'a':{},'b':{}}
- with DB() as db:
+ with aCTX.db as db:
   sql_clear = "UPDATE device_interfaces SET peer_interface = NULL WHERE peer_interface = %s AND multipoint = 0"
   sql_set   = "UPDATE device_interfaces SET peer_interface = %s WHERE id = %s AND multipoint = 0"
   ret['a']['clear'] = db.do(sql_clear%(aDict['a_id']))
@@ -842,7 +840,7 @@ def interface_unlink(aDict, aCTX):
  Output:
  """
  ret = {'a':{},'b':{}}
- with DB() as db:
+ with aCTX.db as db:
   sql_clear = "UPDATE device_interfaces SET peer_interface = NULL WHERE peer_interface = %s AND multipoint = 0"
   ret['a']['clear'] = db.do(sql_clear%(aDict['a_id']))
   ret['b']['clear'] = db.do(sql_clear%(aDict['b_id']))
@@ -862,7 +860,7 @@ def interface_link_advanced(aDict, aCTX):
  Output:
  """
  ret = {'error':None,'a':{},'b':{}}
- with DB() as db:
+ with aCTX.db as db:
   sql_dev  ="SELECT devices.id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.ip = INET_ATON('%s')"
   sql_indx = "SELECT id FROM device_interfaces WHERE device = '%s' AND snmp_index = '%s'"
   for peer in ['a','b']:
@@ -906,7 +904,7 @@ def interface_discover_snmp(aDict, aCTX):
   except: return 0
 
  ret = {'insert':0,'update':0,'delete':0}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, device_types.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aDict['device'])
   info = db.get_row()
   db.do("SELECT id, snmp_index, name, description, mac FROM device_interfaces WHERE device = %s"%aDict['device'])
@@ -984,7 +982,7 @@ def interface_discover_lldp(aDict, aCTX):
  def ip2int(addr):
   return unpack("!I", inet_aton(addr))[0]
 
- with DB() as db:
+ with aCTX.db as db:
   sql_dev = "SELECT INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"
   sql_lcl = "SELECT id,multipoint,peer_interface FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s"
   sql_ins = "INSERT INTO device_interfaces(device, snmp_index, name, description) VALUES(%s,%s,'%s','%s') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"
@@ -1116,7 +1114,7 @@ def interface_status_report(aDict, aCTX):
   try:    return int(aMAC.replace(":",""),16)
   except: return 0
 
- with DB() as db:
+ with aCTX.db as db:
   for intf in aDict['interfaces']:
    args = {'device':aDict['device_id'],'snmp_index':intf['snmp_index'],'id':intf.get('id'), 'mac':mac2int(intf.get('mac',0)), 'name':intf.get('name','NA'),'state':intf.get('state',0),'description':intf.get('description','NA')}
    if args['id']:

@@ -18,7 +18,7 @@ __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from zdcp.devices.openstack import Device
-from zdcp.core.common import DB,rest_call
+from zdcp.core.common import rest_call
 
 #
 #
@@ -76,7 +76,7 @@ def authenticate(aDict, aCTX):
  res = controller.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
  ret = {'authenticated':res['auth']}
  if res['auth'] == 'OK':
-  with DB() as db:
+  with aCTX.db as db:
    ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'token':controller.get_token(),'expires':controller.get_cookie_expire()})
    db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node_name,node_url) VALUES('%s','%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],node,gSettings['nodes'][node]))
    token_id = db.get_last_id()
@@ -101,7 +101,7 @@ def services(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT id FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
   id = db.get_val('id')
   ret['count']    = db.do("SELECT %s FROM openstack_services WHERE id = '%s'"%("*" if not aDict.get('filter') else aDict.get('filter'), id))
@@ -127,7 +127,7 @@ def rest(aDict, aCTX):
   if aDict.get('href'):
    url = aDict['href']
   else:
-   with DB() as db:
+   with aCTX.db as db:
     db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%s' AND service = '%s'"%(aDict['token'],aDict.get('service')))
     url = db.get_val('service_url')
   ret = rest_call(url, aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
@@ -150,7 +150,7 @@ def call(aDict, aCTX):
 
  Output:
  """
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = '%(service)s'"%aDict)
   data = db.get_row()
  try:
@@ -186,7 +186,7 @@ def token_list(aDict, aCTX):
  """
  from datetime import datetime
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['found'] = (db.do("SELECT id, token, node_name, node_url, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires, (UNIX_TIMESTAMP() < expires) AS valid FROM openstack_tokens WHERE username = '%s'"%aDict['username']) > 0)
   ret['data'] = db.get_rows()
  return ret
@@ -203,7 +203,7 @@ def token_info(aDict, aCTX):
  """
  from datetime import datetime
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   ret['found'] = (db.do("SELECT node_url, SELECT CAST(NOW() AS CHAR(50)) AS time, INET_NTOA(controller) AS controller, id, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires FROM openstack_tokens WHERE token = '%s'"%aDict['token']) > 0)
   ret['data'] = db.get_row()
  return ret
@@ -221,7 +221,7 @@ def heat_templates(aDict, aCTX):
  """
  from os import listdir, path as ospath
  ret = {'result':'OK','templates':[]}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
   node = db.get_val('node_name')
  try:
@@ -248,7 +248,7 @@ def heat_content(aDict, aCTX):
  from os import path as ospath
  from json import loads
  ret = {'result':'OK','template':None}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
   node = db.get_val('node_name')
  try:
@@ -282,7 +282,7 @@ def heat_instantiate(aDict, aCTX):
  ret = {}
  args = {}
  try:
-  with DB() as db:
+  with aCTX.db as db:
    db.do("SELECT service_url, node_name FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'heat'"%aDict)
    data = db.get_row()
    node = data['node_name']
@@ -315,7 +315,7 @@ def vm_networks(aDict, aCTX):
  Output:
  """
  ret = {'result':'OK','vm':None,'interfaces':[]}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
   svc_url = db.get_val('service_url')
  controller = Device(aToken = aDict['token'])
@@ -345,7 +345,7 @@ def vm_console(aDict, aCTX):
  Output:
  """
  ret = {'result':'NOT_OK','vm':aDict['vm']}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'nova'"%aDict)
   svc_url = db.get_val('service_url')
  controller = Device(aToken = aDict['token'])
@@ -372,7 +372,7 @@ def vm_resources(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT service,service_url FROM openstack_services LEFT JOIN openstack_tokens AS ot ON ot.id = openstack_services.id WHERE ot.token = '%s'"%aDict['token'])
   services = db.get_dict('service')
  controller = Device(aToken = aDict['token'])
@@ -393,7 +393,7 @@ def contrail_fqname(aDict, aCTX):
 
  Output:
  """
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
   svc_url = db.get_val('service_url')
  controller = Device(aToken = aDict['token'])
@@ -414,7 +414,7 @@ def contrail_uuid(aDict, aCTX):
 
  Output:
  """
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
   svc_url = db.get_val('service_url')
  controller = Device(aToken = aDict['token'])
@@ -437,7 +437,7 @@ def contrail_interfaces(aDict, aCTX):
  Output:
  """
  ret = {'virtual-network':aDict['virtual_network'],'ip_addresses':[]}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
   svc_url = db.get_val('service_url')
  controller = Device(aToken = aDict['token'])
@@ -480,7 +480,7 @@ def contrail_floating_ips(aDict, aCTX):
  Output:
  """
  ret = {'virtual-network':aDict['virtual_network'],'ip_addresses':[]}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
   svc_url = db.get_val('service_url')
  controller = Device(aToken = aDict['token'])
@@ -509,7 +509,7 @@ def contrail_vm_interfaces(aDict, aCTX):
  Output:
  """
  ret = {'vm':aDict['vm'],'interfaces':[]}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
   svc_url = db.get_val('service_url')
  controller = Device(aToken = aDict['token'])
@@ -533,7 +533,7 @@ def contrail_vm_associate_fip(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
   svc_url = db.get_val('service_url')
  controller = Device(aToken = aDict['token'])

@@ -9,7 +9,7 @@ __version__ = "4.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from zdcp.core.common import DB,node_call
+from zdcp.core.common import node_call
 
 ################################ Domains ##################################
 #
@@ -27,7 +27,7 @@ def domain_list(aDict, aCTX):
   - filter:forward/reverse
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   if aDict.get('sync'):
    org = {}
    db.do("SELECT id, server, node FROM servers WHERE type = 'DNS'")
@@ -78,7 +78,7 @@ def domain_info(aDict, aCTX):
  Output:
  """
  ret = {'id':aDict['id']}
- with DB() as db:
+ with aCTX.db as db:
   if aDict['id'] == 'new' and not (aDict.get('op') == 'update'):
    db.do("SELECT id, server, node FROM servers WHERE type = 'DNS'")
    ret['servers'] = db.get_rows()
@@ -108,7 +108,7 @@ def domain_delete(aDict, aCTX):
  """
  ret = {}
  id = int(aDict['id'])
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %i"%id)
   infra = db.get_row()
   ret = node_call(infra['node'],infra['server'],'domain_delete',{'id':infra['foreign_id']})
@@ -132,7 +132,7 @@ def domain_ptr_list(aDict, aCTX):
   octets.reverse()
   octets.append("in-addr.arpa")
   return ".".join(octets)
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT domains.id, name, CONCAT(server,'@',node) AS server FROM domains LEFT JOIN servers ON domains.server_id = servers.id WHERE domains.name = '%s'"%(GL_ip2arpa(aDict['prefix'])))
   domains = db.get_rows()
  return domains
@@ -150,7 +150,7 @@ def domain_save(aDict, aCTX):
  """
  ret = {}
  id = aDict['id']
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%id)
   infra = db.get_row()
   ret = node_call(infra['node'],infra['server'],'domain_save',{'id':infra['foreign_id']})
@@ -169,7 +169,7 @@ def record_list(aDict, aCTX):
 
  Output:
  """
- with DB() as db:
+ with aCTX.db as db:
   if aDict.get('domain_id'):
    db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aDict['domain_id'])
    infra = db.get_row()
@@ -201,7 +201,7 @@ def record_info(aDict, aCTX):
  ret = {}
  domain_id = aDict['domain_id']
 
- with DB() as db:
+ with aCTX.db as db:
   if aDict['id'] == 'new' and not (aDict.get('op') == 'update'):
    ret['data'] = {'id':'new','domain_id':domain_id,'name':'key','content':'value','type':'type-of-record','ttl':'3600','foreign_id':'NA'}
   else:
@@ -223,7 +223,7 @@ def record_delete(aDict, aCTX):
 
  Output:
  """
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aDict['domain_id'])
   infra = db.get_row()
  aDict['domain_id'] = infra['foreign_id']
@@ -245,7 +245,7 @@ def record_device_correct(aDict, aCTX):
  Output:
  """
  ret = {}
- with DB() as db:
+ with aCTX.db as db:
   update = "a_id = '%(record_id)s', a_dom_id = %(domain_id)s"%aDict if aDict['type'].lower() == 'a' else "ptr_id = '%(record_id)s'"%aDict
   ret['update'] = db.do("UPDATE devices SET %s WHERE id = '%s'"%(update,aDict['device_id']))
  return ret
@@ -264,7 +264,7 @@ def record_device_delete(aDict, aCTX):
  Output:
  """
  ret = {'A':0,'PTR':0}
- with DB() as db:
+ with aCTX.db as db:
   for tp in ['a','ptr']:
    domain_id = aDict.get('%s_domain_id'%tp)
    id = str(aDict.get('%s_id'%tp,'0'))
@@ -303,7 +303,7 @@ def record_device_update(aDict, aCTX):
   octets.append("in-addr.arpa")
   return ".".join(octets)
 
- with DB() as db:
+ with aCTX.db as db:
   domains = {'name':{},'foreign_id':{}}
   db.do("SELECT domains.id AS domain_id, server_id, foreign_id, name, server, node FROM domains LEFT JOIN servers ON domains.server_id = servers.id")
   domains['id']   = db.get_dict('domain_id')
@@ -394,7 +394,7 @@ def record_device_create(aDict, aCTX):
   args['name'] = GL_ip2ptr(aDict['ip'])
   args['content'] = aDict['fqdn']
 
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aDict['domain_id'])
   infra = db.get_row()
   args['domain_id'] = infra['foreign_id']
@@ -418,7 +418,7 @@ def status(aDict, aCTX):
  """
  ret = {'top':{},'who':{}}
  args = {'count':aDict.get('count',20)}
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE servers.type = 'DNS'")
   servers = db.get_rows()
  for infra in servers:
@@ -443,7 +443,7 @@ def consistency_check(aDict, aCTX):
   return ".".join(octets)
 
  ret = {'records':[],'devices':[]}
- with DB() as db:
+ with aCTX.db as db:
   # Collect DNS severs
   db.do("SELECT id, server, node FROM servers WHERE type = 'DNS'")
   servers = db.get_dict('id')

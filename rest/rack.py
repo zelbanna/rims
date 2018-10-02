@@ -4,8 +4,6 @@ __version__ = "4.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-from zdcp.core.common import DB
-
 #
 #
 def list(aDict, aCTX):
@@ -18,7 +16,7 @@ def list(aDict, aCTX):
  """
  ret = []
  sort = aDict.get('sort','id')
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT racks.* FROM racks ORDER BY %s"%sort)
   ret = db.get_rows()
  return ret
@@ -37,7 +35,7 @@ def info(aDict, aCTX):
  ret =  {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- with DB() as db:
+ with aCTX.db as db:
   if op == 'update':
    if not id == 'new':
     ret['update'] = db.update_dict('racks',aDict,'id=%s'%id)
@@ -72,7 +70,7 @@ def inventory(aDict, aCTX):
  ret = {'name': None, 'console':[], 'pdu':[] }
  sqlbase = "SELECT devices.id, devices.hostname, INET_NTOA(ia.ip) AS ip, device_types.name AS type, device_types.base AS base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id INNER JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY devices.hostname"
 
- with DB() as db:
+ with aCTX.db as db:
   if aDict.get('id'):
    res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aDict.get('id'))
    select = db.get_row()
@@ -102,7 +100,7 @@ def devices(aDict, aCTX):
  """
  ret = {'sort':aDict.get('sort','devices.id')}
  id = aDict['id']
- with DB() as db:
+ with aCTX.db as db:
   db.do("SELECT name, size FROM racks where id = %s"%id)
   ret.update(db.get_row())
   ret['count']   = db.do("SELECT devices.id, hostname, rack_info.rack_unit, rack_info.rack_size, reservations.user_id FROM devices LEFT JOIN reservations ON devices.id = reservations.device_id INNER JOIN rack_info ON devices.id = rack_info.device_id WHERE rack_info.rack_id = %s ORDER BY %s"%(id,ret['sort']))
@@ -119,6 +117,6 @@ def delete(aDict, aCTX):
 
  Output:
  """
- with DB() as db:
+ with aCTX.db as db:
   deleted = db.do("DELETE FROM racks WHERE id = %s"%aDict['id'])
  return {'deleted':deleted}
