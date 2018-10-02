@@ -21,7 +21,7 @@ from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 #
 # TODO: make multicore instead
 #
-def start(aProcesses, aThreads):
+def start(aThreads):
  from zdcp.Settings import Settings
  from zdcp.core.common import rest_call, DB
  import socket
