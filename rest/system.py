@@ -151,6 +151,7 @@ def report(aDict):
  from os import path as ospath
  from sys import modules,version
  from gc import get_objects
+ # from threading import enumerate
  node = gSettings['system']['id']
  node_url = gSettings['nodes'][node]
  ret = []
@@ -166,6 +167,7 @@ def report(aDict):
   ret.append({'info':'Unhandled detected OIDs','value':",".join(list(str(x) for x in system_oids(None)['unhandled']))})
  ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in gSettings.get('files',{}).iteritems()))
  ret.extend(list({'info':'Active Worker','value':"%s => %s"%(x[0],x[2])} for x in gWorkers.activities()))
+ # ret.extend(list({'info':'Active Threads','value':"%s => %s"%(t.name,t.is_alive())} for t in enumerate()))
  ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in gSettings.get('system',{}).iteritems()))
  ret.extend(list({'info':'Imported module','value':x} for x in modules.keys() if x.startswith('zdcp')))
  return ret
@@ -327,10 +329,10 @@ def settings_save(aDict):
   with open(ret['config_file']) as sfile:
    temp = loads(sfile.read())
   for section,content in temp.iteritems():
-   for key,params in content.iteritems():
+   for key,parameters in content.iteritems():
     if not gSettings.get(section):
      gSettings[section] = {}
-    gSettings[section][key] = params['value']
+    gSettings[section][key] = parameters['value']
   gSettings['system']['config_file'] = ret['config_file']
 
   if gSettings['system']['id'] == 'master':

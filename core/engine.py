@@ -35,7 +35,7 @@ def start(aThreads):
   sock.listen(5)
 
   workers = WorkerPool(aThreads,Settings)
-  servers = [ServerWorker(node,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),n,Settings,workers) for n in range(5)]
+  servers = [ServerWorker(n,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),Settings,workers) for n in range(5)]
 
   if node == 'master':
    with DB() as db:
@@ -55,6 +55,25 @@ def start(aThreads):
   print str(e)
   sock.close()
  return False
+
+########################################### Context ########################################
+#
+
+class Context(object):
+
+ def __init__(self,aSettings, aWorkers):
+  from zdcp.core.common import DB, rest_call
+  self.node      = aSettings['system']['id']
+  self.settings  = aSettings
+  self.workers   = aWorkers
+  self.db        = DB() if self.node == 'master' else None
+  self.rest_call = rest_call
+  self.handler   = None
+  self.params    = None
+
+ def set_handler(self,aHandler, aParams):
+  self.handler = aHandler
+  self.params  = aParams
 
 ########################################## WorkerPool ########################################
 #
@@ -95,7 +114,7 @@ class WorkerPool(object):
     idle  = Event()
     self._aborts.append(abort)
     self._idles.append(idle)
-    self._threads.append(QueueWorker(n, self._queue, abort, idle, self._settings))
+    self._threads.append(QueueWorker(n, self._settings, self, abort, idle))
    return True
 
  def add_sema(self, aFunction, aSema, *args, **kwargs):
@@ -149,22 +168,21 @@ class WorkerPool(object):
 #
 class QueueWorker(Thread):
 
- def __init__(self, aNumber, aQueue, aAbort, aIdle, aSettings):
-  from zdcp.core.common import log
+ def __init__(self, aNumber, aSettings, aWorkers, aAbort, aIdle):
   Thread.__init__(self)
   self._n      = aNumber
   self.name    = "QueueWorker(%s)"%str(aNumber).zfill(2)
-  self._queue  = aQueue
+  self._queue  = aWorkers._queue
   self._abort  = aAbort
   self._idle   = aIdle
   self._idle.set()
-  self._settings= aSettings
   self._current= None
-  self._log    = log
+  self._ctx    = Context(aSettings,aWorkers)
   self.daemon  = True
   self.start()
 
  def run(self):
+  from zdcp.core.common import log
   while not self._abort.is_set():
    self._idle.set()
    func, mode, sema, args, kwargs = self._queue.get(True)
@@ -174,19 +192,19 @@ class QueueWorker(Thread):
     if mode == 'FUNCTION':
      result = func(*args,**kwargs)
     elif not kwargs.get('periodic'):
-     result = func(args)
+     result = func(args,self._ctx)
     else:
      freq = int(kwargs.get('frequency',300))
      sleep(freq - int(time())%freq)
      while not self._abort.is_set():
-      result = func(args)
+      result = func(args,self,_ctx)
       if kwargs.get('output'):
-       self._log("%s - %s - %s_%s PERIODIC => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(result)))
+       log("%s - %s - %s_%s PERIODIC => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(result)))
       sleep(freq)
     if kwargs.get('output'):
-     self._log("%s - %s - %s_%s COMPLETE => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(result)))
+     log("%s - %s - %s_%s COMPLETE => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(result)))
    except Exception as e:
-    self._log("%s - ERROR => %s"%(self.name,str(e)))
+    log("%s - ERROR => %s"%(self.name,str(e)))
    finally:
     """ Clear everything and release semaphore """
     if sema:
@@ -198,31 +216,28 @@ class QueueWorker(Thread):
 #
 class ServerWorker(Thread):
 
- def __init__(self,aNode,aAddress,aSocket,aPath, aNumber, aSettings, aWorkers):
+ def __init__(self, aNumber, aAddress, aSocket, aPath, aSettings, aWorkers):
   Thread.__init__(self)
-  self._node     = aNode
-  self._address  = aAddress
-  self._socket   = aSocket
-  self._path     = aPath
-  self._settings = aSettings
-  self._workers  = aWorkers
-  self.name      = "ServerWorker(%s)"%str(aNumber).zfill(2)
-  self.daemon    = True
+  self._node    = aSettings['system']['id']
+  self._address = aAddress
+  self._socket  = aSocket
+  self._path    = aPath
+  self._ctx     = Context(aSettings,aWorkers)
+  self.name     = "ServerWorker(%s)"%str(aNumber).zfill(2)
+  self.daemon   = True
   self.start()
   
  def run(self):
   from BaseHTTPServer import HTTPServer
-  from zdcp.core.common import DB
   httpd = HTTPServer(self._address, SessionHandler, False)
+  httpd.socket    = self._socket
   httpd._path     = self._path
   httpd._node     = self._node
-  httpd._settings = self._settings
-  httpd._workers  = self._workers
-  httpd.socket    = self._socket
-  httpd._db       = DB() if self._node == 'master' else None
+  httpd._ctx      = self._ctx
   httpd.server_bind = httpd.server_close = lambda self: None
   try: httpd.serve_forever()
   except: pass
+
 
 
 ###################################### Call Handler ######################################
@@ -231,8 +246,8 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def __init__(self, *args, **kwargs):
   self._headers = {}
-  self._body = 'null'
-  self.db = args[2]._db
+  self._body    = 'null'
+  self._ctx     = args[2]._ctx
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
 
  def header(self):
@@ -272,7 +287,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.register()
   else:
    # Redirect to login... OR show a list of options 'api/site/...'
-   self._headers.update({'Location':'site/system_login?application=%s'%self.server._settings['system'].get('application','system'),'X-Code':301})
+   self._headers.update({'Location':'site/system_login?application=%s'%self.server._ctx.settings['system'].get('application','system'),'X-Code':301})
 
  #
  #
@@ -292,16 +307,16 @@ class SessionHandler(BaseHTTPRequestHandler):
   except: args = {}
   if extras.get('log','true') == 'true':
    try:
-    with open(self.server._settings['logs']['rest'], 'a') as f:
+    with open(self.server._ctx.settings['logs']['rest'], 'a') as f:
      f.write(unicode("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api <> "system_task_worker" else "N/A", self.server._node, get.strip())))
    except: pass
   try:
    if self._headers['X-Node'] == self.server._node:
     module = import_module("zdcp.rest.%s"%mod)
-    module.__add_globals__({'gWorkers':self.server._workers,'gSettings':self.server._settings})
+    module.__add_globals__({'gWorkers':self.server._ctx.workers,'gSettings':self.server._ctx.settings})
     self._body = dumps(getattr(module,fun,None)(args))
    else:
-    req  = Request("%s/api/%s"%(self.server._settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
+    req  = Request("%s/api/%s"%(self.server._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
     try: sock = urlopen(req, timeout = 300)
     except HTTPError as h:
      raw = h.read()
@@ -335,10 +350,10 @@ class SessionHandler(BaseHTTPRequestHandler):
   except: args = {}
   if self._headers['X-Node'] == self.server._node:
    module = import_module("zdcp.rest.%s"%mod)
-   module.__add_globals__({'gWorkers':self.server._workers,'gSettings':self.server._settings})
+   module.__add_globals__({'gWorkers':self.server._ctx.workers,'gSettings':self.server._ctx.settings})
    self._body = dumps(getattr(module,fun,None)(args))
   else:
-   req  = Request("%s/api/%s"%(self.server._settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
+   req  = Request("%s/api/%s"%(self.server._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
    sock = urlopen(req, timeout = 300)
    try: self._body = sock.read()
    except: pass
@@ -384,7 +399,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   try:
    if path == 'files':
     param,_,file = query.partition('/')
-    fullpath = ospath.join(self.server._settings['files'][param],file)
+    fullpath = ospath.join(self.server._ctx.settings['files'][param],file)
    else:
     fullpath = ospath.join(self.server._path,path,query)
    if fullpath.endswith("/"):
@@ -433,11 +448,12 @@ class SessionHandler(BaseHTTPRequestHandler):
 class Stream(object):
 
  def __init__(self,aHandler, aGet):
-  self._cookies = {}
-  self._form    = {}
-  self._node    = aHandler.server._node
-  self._api     = aHandler.server._settings['nodes'][self._node]
-  self._body    = []
+  self._form = {}
+  self._node = aHandler.server._node
+  self._api  = aHandler.server._ctx.settings['nodes'][self._node]
+  self._body = []
+  self._cookies   = {}
+  self._rest_call = aHandler.server._ctx.rest_call
   try: cookie_str = aHandler.headers.get('Cookie').split('; ')
   except: pass
   else:
@@ -489,13 +505,11 @@ class Stream(object):
 
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
-  from common import rest_call
-  return rest_call("%s/api/%s"%(self._api,aAPI), aArgs, aTimeout = 60)['data']
+  return self._rest_call("%s/api/%s"%(self._api,aAPI), aArgs, aTimeout = 60)['data']
 
  # Generic REST call with full output
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
-  from common import rest_call
-  return rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
+  return self._rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
  def put_html(self, aTitle = None, aIcon = 'zdcp.png'):
   self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/zdcp.css'>")
