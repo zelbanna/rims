@@ -19,7 +19,6 @@ def log(aMsg,aID='None'):
    f.write(unicode("%s (%s): %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))
  except: pass
 
-
 ############################################ Database ######################################
 #
 # Database Class
@@ -27,9 +26,10 @@ def log(aMsg,aID='None'):
 class DB(object):
 
  def __init__(self, aDB = None, aHost = None, aUser = None, aPass = None):
-  self._conn = None
-  self._curs = None
-  self._dirty = False
+  from pymysql import connect
+  from pymysql.cursors import DictCursor
+  self._mods,self._conn,self._curs.self._dirty = (connect,DictCursor), None, None, False
+  self.count = {'do':0,'commit':0,'connect':0,'close':0}
   if not aDB:
    from zdcp.Settings import Settings
    self._db, self._host, self._user, self._pass = Settings['system']['db_name'],Settings['system']['db_host'],Settings['system']['db_user'],Settings['system']['db_pass']
@@ -47,23 +47,25 @@ class DB(object):
   return "DB:{} Host:{} Uncommited:{}".format(self._db,self._host,self._dirty)
 
  def connect(self):
-  from pymysql import connect
-  from pymysql.cursors import DictCursor
-  self._conn = connect(host=self._host, port=3306, user=self._user, passwd=self._pass, db=self._db, cursorclass=DictCursor, charset='utf8')
+  self.count['connect'] += 1
+  self._conn = self._mods[0](host=self._host, port=3306, user=self._user, passwd=self._pass, db=self._db, cursorclass=self._mods[1], charset='utf8')
   self._curs = self._conn.cursor()
 
  def close(self):
+  self.count['close'] += 1
   if self._dirty:
    self.commit()
   self._curs.close()
   self._conn.close()
 
  def do(self,aQuery):
+  self.count['do'] += 1
   op = aQuery[0:6].upper()
   self._dirty = (self._dirty or op in ['UPDATE','INSERT','DELETE'])
   return self._curs.execute(aQuery)
 
  def commit(self):
+  self.count['commit'] += 1
   self._conn.commit()
   self._dirty = False
 
@@ -94,15 +96,18 @@ class DB(object):
  # Assume dict keys are prefixed by aTable and separated by a single character (e.g. _)
 
  def update_dict_prefixed(self, aTable, aDict, aCondition = "TRUE"):
+  self.count['do'] += 1
   self._dirty = True
   key_len = len(aTable) + 1
   return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k[key_len:],"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.iteritems() if k.startswith(aTable)]),aCondition))
 
  def update_dict(self, aTable, aDict, aCondition = "TRUE"):
+  self.count['do'] += 1
   self._dirty = True
   return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k,"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.iteritems()]),aCondition))
 
  def insert_dict(self, aTable, aDict, aException = ""):
+  self.count['do'] += 1
   self._dirty = True
   return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(aDict.keys()),",".join(["'%s'"%v if v != 'NULL' else 'NULL' for v in aDict.values()]),aException))
 
@@ -182,9 +187,3 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
  if output.get('exception'):
   raise Exception(output)
  return output
-
-#
-# Basic Auth header generator for base64 authentication
-#
-def basic_auth(aUsername,aPassword):
- return {'Authorization':'Basic ' + (("%s:%s"%(aUsername,aPassword)).encode('base64')).replace('\n','') }

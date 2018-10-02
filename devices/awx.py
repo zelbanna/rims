@@ -30,7 +30,8 @@ class Device(object):
  # mode: 'basic'/'full' auth process
  #
  def auth(self, aAuth):
-  from zdcp.core.common import rest_call,basic_auth
+  from zdcp.core.common import rest_call
+  from zdcp.core.genlib import basic_auth
   self._token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']
   try:
    if aAuth.get('mode','full') == 'full':

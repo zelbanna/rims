@@ -9,6 +9,12 @@ __status__ = "Production"
 
 ################################# Generics ####################################
 
+#
+# Basic Auth header generator for base64 authentication
+#
+def basic_auth(aUsername,aPassword):
+ return {'Authorization':'Basic ' + (("%s:%s"%(aUsername,aPassword)).encode('base64')).replace('\n','') }
+
 def random_string(aLength):
  import string
  import random
