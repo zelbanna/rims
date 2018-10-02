@@ -97,18 +97,18 @@ class DB(object):
  # Assume dict keys are prefixed by aTable and separated by a single character (e.g. _)
 
  def update_dict_prefixed(self, aTable, aDict, aCondition = "TRUE"):
-  self.count['do'] += 1
+  self.count['UPDATE'] += 1
   self._dirty = True
   key_len = len(aTable) + 1
   return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k[key_len:],"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.iteritems() if k.startswith(aTable)]),aCondition))
 
  def update_dict(self, aTable, aDict, aCondition = "TRUE"):
-  self.count['do'] += 1
+  self.count['UPDATE'] += 1
   self._dirty = True
   return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k,"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.iteritems()]),aCondition))
 
  def insert_dict(self, aTable, aDict, aException = ""):
-  self.count['do'] += 1
+  self.count['INSERT'] += 1
   self._dirty = True
   return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(aDict.keys()),",".join(["'%s'"%v if v != 'NULL' else 'NULL' for v in aDict.values()]),aException))
 
