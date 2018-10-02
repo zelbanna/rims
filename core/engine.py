@@ -21,26 +21,10 @@ from urllib2 import urlopen, Request, URLError, HTTPError, unquote
 #
 # TODO: make multicore instead
 #
-def start(aThreads):
+def start(aProcesses, aThreads):
  from zdcp.Settings import Settings
- from zdcp.core.common import rest_call,DB
+ from zdcp.core.common import rest_call, DB
  import socket
-
- def server(node,address,socket,path,settings,workers):
-  from BaseHTTPServer import HTTPServer
-  httpd = HTTPServer(address, SessionHandler, False)
-  httpd._path     = path
-  httpd._node     = node
-  httpd._settings = settings
-  httpd._workers  = workers
-  httpd.socket    = socket
-  httpd._db       = DB() if node == 'master' else None
-  httpd.server_bind = httpd.server_close = lambda self: None
-  try: httpd.serve_forever()
-  except: pass
-
- def process(node,address,socket,path,settings):
-  pass
 
  try:
   node = Settings['system']['id']
@@ -51,8 +35,7 @@ def start(aThreads):
   sock.listen(5)
 
   workers = WorkerPool(aThreads,Settings)
-  for n in range(max(5,int(aThreads/10))):
-   workers.add_func(server,node,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),Settings,workers)
+  servers = [ServerWorker(node,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),n,Settings,workers) for n in range(5)]
 
   if node == 'master':
    with DB() as db:
@@ -68,7 +51,9 @@ def start(aThreads):
     workers.add_task(task)
   while True:
    sleep(86400)
- except: sock.close()
+ except Exception as e:
+  print str(e)
+  sock.close()
  return False
 
 ########################################## WorkerPool ########################################
@@ -163,6 +148,7 @@ class WorkerPool(object):
 ###################################### Threads ########################################
 #
 class QueueWorker(Thread):
+
  def __init__(self, aNumber, aQueue, aAbort, aIdle, aSettings):
   from zdcp.core.common import log
   Thread.__init__(self)
@@ -207,6 +193,37 @@ class QueueWorker(Thread):
      sema.release()
     self._queue.task_done()
     self._current = None
+
+#
+#
+class ServerWorker(Thread):
+
+ def __init__(self,aNode,aAddress,aSocket,aPath, aNumber, aSettings, aWorkers):
+  Thread.__init__(self)
+  self._node     = aNode
+  self._address  = aAddress
+  self._socket   = aSocket
+  self._path     = aPath
+  self._settings = aSettings
+  self._workers  = aWorkers
+  self.name      = "ServerWorker(%s)"%str(aNumber).zfill(2)
+  self.daemon    = True
+  self.start()
+  
+ def run(self):
+  from BaseHTTPServer import HTTPServer
+  from zdcp.core.common import DB
+  httpd = HTTPServer(self._address, SessionHandler, False)
+  httpd._path     = self._path
+  httpd._node     = self._node
+  httpd._settings = self._settings
+  httpd._workers  = self._workers
+  httpd.socket    = self._socket
+  httpd._db       = DB() if self._node == 'master' else None
+  httpd.server_bind = httpd.server_close = lambda self: None
+  try: httpd.serve_forever()
+  except: pass
+
 
 ###################################### Call Handler ######################################
 #
