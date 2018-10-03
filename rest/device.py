@@ -444,7 +444,7 @@ def discover(aDict, aCTX):
  from zdcp.rest.ipam import network_discover as ipam_discover, address_allocate
  from zdcp.devices.generic import Device
 
- def __detect_thread(aIP,aDB):
+ def __detect_thread(aIP, aDB, aSettings):
   __dev = Device(aIP,aCTX.settings)
   aDB[aIP['ip']] = __dev.detect()['info']
   return True
@@ -460,7 +460,7 @@ def discover(aDict, aCTX):
 
  sema = aCTX.workers.semaphore(20)
  for ip in ipam['addresses']:
-  aCTX.workers.add_sema(__detect_thread, sema, ip, dev_list)
+  aCTX.workers.add_sema(__detect_thread, sema, ip, dev_list, aCTX.settings)
  aCTX.workers.block(sema,20)
 
  # We can now do inserts only (no update) as we skip existing :-)
@@ -601,9 +601,9 @@ def network_info_discover(aDict, aCTX):
 
  ret = {'count':0}
 
- def __detect_thread(aDev):
+ def __detect_thread(aDev, aSettings):
   try:
-   session = Session(Version = 2, DestHost = aDev['ip'], Community = aCTX.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = aDev['ip'], Community = aSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    session.get(sysoid)
    if sysoid[0].val:
@@ -621,7 +621,7 @@ def network_info_discover(aDict, aCTX):
   if count > 0:
    sema = aCTX.workers.semaphore(20)
    for dev in devices:
-    aCTX.workers.add_sema(__detect_thread, sema, dev)
+    aCTX.workers.add_sema(__detect_thread, sema, dev, aCTX.settings)
    aCTX.workers.block(sema,20)
    for dev in devices:
     if dev.get('mac',0) > 0 or dev.get('oid',0) > 0:
@@ -645,23 +645,26 @@ def network_lldp_discover(aDict, aCTX):
  new_connections = []
  ins_interfaces = []
 
- def __detect_thread(aDev):
+ def __detect_thread(aDev, aCTX):
   try:
-   new = list(con for con in interface_discover_lldp({'device':aDev['id']}).values() if con['result'] == 'new_connection')
+   discovered = interface_discover_lldp({'device':aDev['id']},aCTX)
+   print discovered
+   new = list(con for con in discovered.values() if con['result'] == 'new_connection')
    new_connections.extend(new)
-   ins = list(con for con in interface_discover_lldp({'device':aDev['id']}).values() if con['extra'] == 'created_local_if')
+   ins = list(con for con in discovered.values() if con['extra'] == 'created_local_if')
    ins_interfaces.extend(ins)
-  except: pass
+  except Exception as e:
+   print "DETECT ERROR: %s"%str(e)
   return True
 
  with aCTX.db as db:
   network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id']
   count   = db.do("SELECT hostname,devices.id AS id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1"%network)
- devices = db.get_rows()
  if count > 0:
+  devices = db.get_rows()
   sema = aCTX.workers.semaphore(10)
   for dev in devices:
-   aCTX.workers.add_sema( __detect_thread, sema, dev)
+   aCTX.workers.add_sema( __detect_thread, sema, dev, aCTX)
   aCTX.workers.block(sema,10)
  return {'result':'DISCOVERY_COMPLETED','new_connections':new_connections,'ins_interfaces':ins_interfaces}
 
@@ -981,7 +984,7 @@ def interface_discover_lldp(aDict, aCTX):
   return unpack("!I", inet_aton(addr))[0]
 
  with aCTX.db as db:
-  sql_dev = "SELECT INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"
+  sql_dev = "SELECT hostname, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"
   sql_lcl = "SELECT id,multipoint,peer_interface FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s"
   sql_ins = "INSERT INTO device_interfaces(device, snmp_index, name, description) VALUES(%s,%s,'%s','%s') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"
   sql_rem = "SELECT di.multipoint, di.name, di.peer_interface, di.mac, di.id, di.description, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN devices ON devices.id = di.device LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s AND (%s OR %s)"
@@ -1047,6 +1050,7 @@ def interface_discover_lldp(aDict, aCTX):
    else:
     v['result'] = 'chassis_mapping_impossible'
 
+ print "%s => %s"%(data['hostname'],info)
  return info
 
 #
@@ -1066,10 +1070,10 @@ def interface_status_check(aDict, aCTX):
  states = {'unseen':0,'up':1,'down':2}
  discover = aDict.get('discover')
 
- def __interfaces(aDev):
+ def __interfaces(aDev, aSettings):
   try:
    module = import_module("zdcp.devices.%s"%aDev['type'])
-   device = getattr(module,'Device',None)(aDev['ip'],aCTX.settings)
+   device = getattr(module,'Device',None)(aDev['ip'],aSettings)
    probe  = device.interfaces()
    exist  = aDev['interfaces']
    for intf in exist:
@@ -1085,7 +1089,7 @@ def interface_status_check(aDict, aCTX):
 
  sema = aCTX.workers.semaphore(20)
  for dev in aDict['device_list']:
-  aCTX.workers.add_sema( __interfaces, sema, dev)
+  aCTX.workers.add_sema( __interfaces, sema, dev, aCTX.settings)
  aCTX.workers.block(sema,20)
  for dev in aDict['device_list']:
   if len(dev['interfaces']) > 0:
