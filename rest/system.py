@@ -179,6 +179,27 @@ def report(aDict, aCTX):
  ret.extend(list({'info':'Imported module','value':x} for x in modules.keys() if isinstance(modules[x],ModuleType) and x.startswith('zdcp')))
  return ret
 
+#
+#
+def module_info(aDict, aCTX):
+ """Function retrives info of module
+
+ Args:
+  -module
+
+ Output:
+ """
+ ret = {}
+ from sys import modules, getrefcount
+ from types import ModuleType
+ mod = modules[aDict['module']]
+ ret['all'] = [x for x in modules.keys() if isinstance(modules[x],ModuleType)]
+ ret['all'].sort()
+ ret['content'] = dir(mod)
+ ret['module'] = isinstance(mod, ModuleType)
+ return ret
+
+
 ############################################ SETTINGS ########################################
 #
 #

@@ -284,8 +284,6 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.site(query)
   elif path == 'api':
    self.api(query)
-  elif path == 'debug':
-   self.debug(query)
   elif path == 'infra' or path == 'images' or path == 'files':
    self.files(path,query)
   elif path == 'auth':
@@ -337,32 +335,14 @@ class SessionHandler(BaseHTTPRequestHandler):
      sock.close()
   except Exception as e:
    self._headers.update({'X-Args':args,'X-Info':str(e),'X-Exception':type(e).__name__,'X-Code':500})
-
- #
- #
- def debug(self,query):
-  extras = {}
-  (api,_,get) = query.partition('&')
-  (mod,_,fun) = api.partition('_')
-  if get:
-   for part in get.split("&"):
-    (k,_,v) = part.partition('=')
-    extras[k] = v
-  self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Proc':'API'})
-  self._headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
-  try:
-   length = int(self.headers.getheader('content-length'))
-   args = loads(self.rfile.read(length)) if length > 0 else {}
-  except: args = {}
-  if self._headers['X-Node'] == self.server._node:
-   module = import_module("zdcp.rest.%s"%mod)
-   self._body = dumps(getattr(module,fun,None)(args,self.server._ctx))
-  else:
-   req  = Request("%s/api/%s"%(self.server._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args))
-   sock = urlopen(req, timeout = 300)
-   try: self._body = sock.read()
-   except: pass
-   sock.close()
+   if extras.get('debug'):
+    from traceback import format_exc
+    tb = format_exc()
+    if extras['debug'] == 'print':
+     print tb
+    else:
+     for n,v in enumerate(tb.split('\n')):
+      self._headers["X-Debug-%s"%n] = v
 
  #
  #
