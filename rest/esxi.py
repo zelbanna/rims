@@ -68,20 +68,20 @@ def op(aDict, aCTX):
 #
 #
 def logs(aDict, aCTX):
- """Function docstring for logs TBD
+ """Function retrieves ESXi logs
 
  Args:
-  - hostname (required)
+  - ip (required)
   - count (optional)
 
  Output:
  """
  from subprocess import check_output
  ret = {'res':'OK'}
- hostname = aDict['hostname']
+ ip  = aDict['ip']
  count = aDict.get('count','30')
  try:
-  ret['data'] = check_output("tail -n %s %s | tac"%(count,aCTX.settings['esxi']['logformat'].format(hostname)), shell=True).split('\n')
+  ret['data'] = check_output("tail -n %s %s | tac"%(count,aCTX.settings['esxi']['logformat'].format(ip)), shell=True).split('\n')
  except Exception as e:
   ret['res'] = 'NOT_OK'
   ret['error'] = str(e)

@@ -37,7 +37,7 @@ def manage(aWeb):
  data = aWeb.rest_call("device_info",{'id':id,'op':'basics'})
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='esxi_op?ip=%s&next-state=poweroff&id=%s'>Shutdown</A></LI>".format(data['ip'],id))
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content_right  URL='esxi_logs?hostname={0}&domain={1}'>Logs</A></LI>".format(data['info']['hostname'],data['info']['domain']))
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content_right  URL='esxi_logs?ip=%s'>Logs</A></LI>"%data['ip'])
  if data['info']['url']:
   aWeb.wr("<LI><A CLASS=z-op HREF='%s'     target=_blank>UI</A></LI>"%(data['info']['url']))
  aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='esxi_manage?id=%s'></A></LI>"%(id))
@@ -106,8 +106,8 @@ def _vm_options(aWeb,aIP,aVM,aHighlight):
 #
 #
 def logs(aWeb):
- res = aWeb.rest_call("esxi_logs",{'hostname':aWeb['hostname']})
- aWeb.wr("<ARTICLE><P>%s operation logs</P><P CLASS='machine-text'>%s</P></ARTICLE>"%(aWeb['hostname'],"<BR>".join(res['data'])))
+ res = aWeb.rest_call("esxi_logs",{'ip':aWeb['ip']})
+ aWeb.wr("<ARTICLE><P>Operation logs</P><P CLASS='machine-text'>%s</P></ARTICLE>"%("<BR>".join(res['data'])))
 
 #
 #
