@@ -651,7 +651,7 @@ def network_lldp_discover(aDict, aCTX):
    print discovered
    new = list(con for con in discovered.values() if con['result'] == 'new_connection')
    new_connections.extend(new)
-   ins = list(con for con in discovered.values() if con['extra'] == 'created_local_if')
+   ins = list(con for con in discovered.values() if con.get('extra') == 'created_local_if')
    ins_interfaces.extend(ins)
   except Exception as e:
    print "DETECT ERROR: %s"%str(e)
@@ -660,8 +660,8 @@ def network_lldp_discover(aDict, aCTX):
  with aCTX.db as db:
   network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id']
   count   = db.do("SELECT hostname,devices.id AS id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1"%network)
- if count > 0:
   devices = db.get_rows()
+ if count > 0:
   sema = aCTX.workers.semaphore(10)
   for dev in devices:
    aCTX.workers.add_sema( __detect_thread, sema, dev, aCTX)
@@ -1050,7 +1050,6 @@ def interface_discover_lldp(aDict, aCTX):
    else:
     v['result'] = 'chassis_mapping_impossible'
 
- print "%s => %s"%(data['hostname'],info)
  return info
 
 #

@@ -26,10 +26,12 @@ def log(aMsg,aID='None'):
 class DB(object):
 
  def __init__(self, aDB = None, aHost = None, aUser = None, aPass = None):
+  from threading import Lock
   from pymysql import connect
   from pymysql.cursors import DictCursor
   self._mods = (connect,DictCursor)
-  self._conn,self._curs,self._dirty = None, None, False
+  self._conn, self._curs, self._dirty, self._clock, self._wlock = None, None, False, Lock(), Lock()
+  self._waiting = 0
   self.count = {'SELECT':0,'INSERT':0,'DELETE':0,'UPDATE':0,'commit':0,'connect':0,'close':0}
   if not aDB:
    from zdcp.Settings import Settings
@@ -48,16 +50,27 @@ class DB(object):
   return "DB:{} Host:{} Uncommited:{}".format(self._db,self._host,self._dirty)
 
  def connect(self):
+  with self._wlock:
+   self._waiting += 1
+  self._clock.acquire()
   self.count['connect'] += 1
-  self._conn = self._mods[0](host=self._host, port=3306, user=self._user, passwd=self._pass, db=self._db, cursorclass=self._mods[1], charset='utf8')
-  self._curs = self._conn.cursor()
+  if not self._conn:
+   self._conn = self._mods[0](host=self._host, port=3306, user=self._user, passwd=self._pass, db=self._db, cursorclass=self._mods[1], charset='utf8')
+   self._curs = self._conn.cursor()
 
  def close(self):
   self.count['close'] += 1
   if self._dirty:
    self.commit()
-  self._curs.close()
-  self._conn.close()
+  with self._wlock:
+   """ remove oneself and check if someone else is waiting """
+   self._waiting -= 1
+   if self._waiting == 0:
+    self._curs.close()
+    self._conn.close()
+    self._curs = None
+    self._conn = None
+  self._clock.release()
 
  def do(self,aQuery):
   op = aQuery[0:6].upper()
