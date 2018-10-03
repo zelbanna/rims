@@ -112,33 +112,6 @@ class DB(object):
   self._dirty = True
   return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(aDict.keys()),",".join(["'%s'"%v if v != 'NULL' else 'NULL' for v in aDict.values()]),aException))
 
-######################################### NODE ########################################
-#
-#
-def node_call(aNode, aModule, aFunction, aCTX, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20):
- """ Node call function, automatically translates node call to rest call with shortcut for local node. Typical usage is REST call from within REST...
-
-  Args:
-   - aNode (required)
-   - aModule (required)
-   - aFunction (required)
-   - aArgs (optional)
-   - ... (optional)
-
-  Output:
-   - de-json:ed data structure that function returns (hence status codes etc is not available)
-
- """
- from zdcp.Settings import Settings
- if Settings['system']['id'] != aNode:
-  ret = rest_call("%s/api/%s_%s"%(Settings['nodes'][aNode],aModule,aFunction),aArgs)['data']
- else:
-  from importlib import import_module
-  module = import_module("zdcp.rest.%s"%aModule)
-  fun = getattr(module,aFunction,None)
-  ret = fun(aArgs if aArgs else {},aCTX)
- return ret
-
 ######################################### REST ########################################
 #
 #

@@ -741,9 +741,8 @@ def server_sync(aDict, aCTX):
  with aCTX.db as db:
   ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
   if ret['found']:
-   from zdcp.core.common import node_call
    data = db.get_row()
-   ret['result'] = node_call(data['node'],data['server'],'sync',{'id':aDict['id']})
+   ret['result'] = aCTX.node_call(data['node'],data['server'],'sync',{'id':aDict['id']})
  return ret
 
 #
@@ -760,9 +759,8 @@ def server_status(aDict, aCTX):
  with aCTX.db as db:
   ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
   if ret['found']:
-   from zdcp.core.common import node_call
    data = db.get_row()
-   ret['result'] = node_call(data['node'],data['server'],'status',{'id':aDict['id']})
+   ret['result'] = aCTX.node_call(data['node'],data['server'],'status',{'id':aDict['id']})
  return ret
 
 #
@@ -780,9 +778,8 @@ def server_restart(aDict, aCTX):
  with aCTX.db as db:
   ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
   if ret['found']:
-   from zdcp.core.common import node_call
    data = db.get_row()
-   ret['result'] = node_call(data['node'],data['server'],'restart',{'id':aDict['id']})
+   ret['result'] = aCTX.node_call(data['node'],data['server'],'restart',{'id':aDict['id']})
  return ret
 
 ######################################### ACTIVITIES ###########################################

@@ -61,9 +61,8 @@ def sync(aDict, aCTX):
 
  Output:
  """
- from zdcp.core.common import node_call
  from time import localtime, strftime
- entries = node_call('master','device','server_macs',{'id':aDict['id']})
+ entries = aCTX.node_call('master','device','server_macs',{'id':aDict['id']})
  # Create file
  with open(aCTX.settings['iscdhcp']['static'],'w') as config_file:
   config_file.write("# Created: %s\n"%( strftime('%Y-%m-%d %H:%M:%S', localtime()) ))

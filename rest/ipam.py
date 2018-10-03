@@ -232,13 +232,12 @@ def server_leases(aDict, aCTX):
 
  Output:
  """
- from zdcp.core.common import node_call
  ret = {'data':[]}
  with aCTX.db as db:
   ret['servers'] = db.do("SELECT server,node FROM servers WHERE type = 'DHCP'")
   servers = db.get_rows()
  for srv in servers:
-  data = node_call(srv['node'],srv['server'],'leases',{'type':aDict['type']})['data']
+  data = aCTX.node_call(srv['node'],srv['server'],'leases',{'type':aDict['type']})['data']
   if data:
    ret['data'].extend(data)
  return ret

@@ -73,6 +73,16 @@ class Context(object):
  def set_handler(self,aHandler):
   self.handler = aHandler
 
+ def node_call(aNode, aModule, aFunction, aArgs = None):
+  if self.node != aNode:
+   ret = self.rest_call("%s/api/%s_%s"%(self.settings['nodes'][aNode],aModule,aFunction),aArgs)['data']
+  else:
+   from importlib import import_module
+   module = import_module("zdcp.rest.%s"%aModule)
+   fun = getattr(module,aFunction,None)
+   ret = fun(aArgs if aArgs else {},self)
+  return ret
+
 ########################################## WorkerPool ########################################
 #
 #
