@@ -647,19 +647,17 @@ def network_lldp_discover(aDict, aCTX):
 
  def __detect_thread(aDev, aCTX):
   try:
-   discovered = interface_discover_lldp({'device':aDev['id']},aCTX)
-   print discovered
+   discovered = interface_discover_lldp({'device':aDev['id'],'ip':aDev['ip']},aCTX)
    new = list(con for con in discovered.values() if con['result'] == 'new_connection')
    new_connections.extend(new)
    ins = list(con for con in discovered.values() if con.get('extra') == 'created_local_if')
    ins_interfaces.extend(ins)
-  except Exception as e:
-   print "DETECT ERROR: %s"%str(e)
+  except: pass
   return True
 
  with aCTX.db as db:
   network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id']
-  count   = db.do("SELECT hostname,devices.id AS id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1"%network)
+  count   = db.do("SELECT hostname,devices.id AS id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1"%network)
   devices = db.get_rows()
  if count > 0:
   sema = aCTX.workers.semaphore(10)
@@ -969,6 +967,7 @@ def interface_discover_lldp(aDict, aCTX):
 
  Args:
   - device (required)
+  - ip (optional)
 
  Output:
  """
@@ -983,17 +982,23 @@ def interface_discover_lldp(aDict, aCTX):
  def ip2int(addr):
   return unpack("!I", inet_aton(addr))[0]
 
+ sql_dev = "SELECT INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"
+ sql_lcl = "SELECT id,multipoint,peer_interface FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s"
+ sql_ins = "INSERT INTO device_interfaces(device, snmp_index, name, description) VALUES(%s,%s,'%s','%s') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"
+ sql_rem = "SELECT di.multipoint, di.name, di.peer_interface, di.mac, di.id, di.description, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN devices ON devices.id = di.device LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s AND (%s OR %s)"
+ sql_set = "UPDATE device_interfaces SET peer_interface = %s WHERE id = %s AND multipoint = 0"
+
+ if not aDict.get('ip'):
+  with aCTX.db as db:
+   db.do(sql_dev%aDict['device'])
+   data = db.get_row()
+   ip = data['ip']
+ else:
+  ip = aDict['ip']
+ # TODO Run this off the right node
+ device = Device(ip,aCTX.settings)
+ info = device.lldp()
  with aCTX.db as db:
-  sql_dev = "SELECT hostname, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"
-  sql_lcl = "SELECT id,multipoint,peer_interface FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s"
-  sql_ins = "INSERT INTO device_interfaces(device, snmp_index, name, description) VALUES(%s,%s,'%s','%s') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"
-  sql_rem = "SELECT di.multipoint, di.name, di.peer_interface, di.mac, di.id, di.description, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN devices ON devices.id = di.device LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s AND (%s OR %s)"
-  sql_set = "UPDATE device_interfaces SET peer_interface = %s WHERE id = %s AND multipoint = 0"
-  db.do(sql_dev%aDict['device'])
-  data = db.get_row()
-  # TODO Run this off the right node
-  device = Device(data['ip'],aCTX.settings)
-  info = device.lldp()
   for k,v in info.iteritems():
    db.do(sql_lcl%(aDict['device'],k))
    local = db.get_row()
