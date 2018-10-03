@@ -15,6 +15,7 @@ from os import remove, chmod, listdir, path as ospath
 pkgdir = ospath.abspath(ospath.dirname(__file__))
 basedir = ospath.abspath(ospath.join(pkgdir,'..'))
 syspath.insert(1, basedir)
+from zdcp.core.common import DB, rest_call
 res = {}
 
 if len(argv) < 2:
@@ -144,7 +145,6 @@ if settings['system']['id'] == 'master':
  #
  # Common settings and user - for master...
  #
- from zdcp.core.common import DB
  from zdcp.rest import mysql
  try:
   database,host,username,password = settings['system']['db_name'],settings['system']['db_host'],settings['system']['db_user'],settings['system']['db_pass']
@@ -223,7 +223,6 @@ else:
  #
  # Fetch and update settings from central repo
  #
- from zdcp.core.common import rest_call
  try: res['register'] = rest_call("%s/register"%settings['system']['master'],{'node':settings['system']['id'],'port':settings['system']['port'],'system':'1'})['data']
  except Exception as e: res['register'] = str(e)
  try: master   = rest_call("%s/api/system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
@@ -233,7 +232,6 @@ else:
    for section,content in master.iteritems():
     if settings.get(section): settings[section].update(content)
     else: settings[section] = content
-
 
 #
 # Write complete settings containers
