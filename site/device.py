@@ -126,7 +126,7 @@ def info(aWeb):
   aWeb.wr("<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip']))
   return
  ########################## Data Tables ######################
- width = 680 if dev['racked'] and not dev['info']['type_base'] == 'pdu' else 470
+ width = 690 if dev['racked'] and not dev['info']['type_base'] == 'pdu' else 480
  aWeb.wr("<ARTICLE CLASS='info' STYLE='position:relative; height:268px; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id']))
  aWeb.wr("<FORM ID=info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id']))
@@ -167,7 +167,11 @@ def info(aWeb):
  aWeb.wr("</DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Model: </DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=model VALUE='%s'></DIV></DIV>"%(dev['info']['model']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>S/N: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=serial VALUE='%s'></DIV></DIV>"%(dev['info']['serial']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Auto shutdown if not used'>Shutdown:</DIV><DIV CLASS=td><INPUT NAME=shutdown TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['shutdown'] == 1 else ""))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Auto shutdown if not used'>Shutdown:</DIV><DIV CLASS=td>")
+ aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=0 %s>no"%(   "checked=checked" if dev['info']['shutdown'] == 0 else ""))
+ aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=1 %s>yes"%(  "checked=checked" if dev['info']['shutdown'] == 1 else ""))
+ aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=2 %s>reset"%("checked=checked" if dev['info']['shutdown'] == 2 else ""))
+ aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("<!-- Rack Info -->")
  if dev['racked'] and not dev['info']['type_base'] == 'pdu':

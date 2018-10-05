@@ -215,6 +215,12 @@ class Device(object):
      except: pass
     elif enterprise == '24681':
      ret['info']['type'] = "qnap"
+     try:
+      extobj = VarList(Varbind('.1.3.6.1.4.1.24681.1.4.1.1.1.1.1.2.1.3.1'),Varbind('.1.3.6.1.4.1.24681.1.4.1.1.1.1.1.2.1.4.1'))
+      session.get(extobj)
+      ret['info']['model']  = extobj[0].val
+      ret['info']['serial'] = extobj[1].val
+     except: pass
     # Linux
     elif infolist[0] == "Linux":
      ret['info']['model'] = 'debian' if "Debian" in devoid[0].val else 'generic'
