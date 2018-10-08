@@ -55,6 +55,10 @@
         "template": {
             "description": "Engine startup template",
             "value": "engine.init"
+        },
+        "workers": {
+            "description": "Engine threads",
+            "value": 30
         }
     }
 }

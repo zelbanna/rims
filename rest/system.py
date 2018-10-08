@@ -28,7 +28,7 @@ def application(aDict, aCTX):
   rows = db.get_rows()
  ret['choices'] = [{'display':'Username', 'id':'system_login', 'data':rows}]
  cookie = aDict
- ret['cookie'] = ",".join("%s=%s"%(k,v) for k,v in cookie.items())
+ ret['cookie'] = ",".join("%s=%s"%i for i in cookie.items())
  ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 
@@ -167,7 +167,7 @@ def report(aDict, aCTX):
  ret.append({'info':'Worker pool','value':aCTX.workers.pool_size()})
  ret.append({'info':'Queued tasks','value':aCTX.workers.queue_size()})
  ret.append({'info':'Memory objects','value':len(get_objects())})
- ret.append({'info':'DB operations','value':", ".join("%s:%s"%(k.upper(),v) for k,v in db_counter.items())})
+ ret.append({'info':'DB operations','value':", ".join("%s:%s"%i for i in db_counter.items())})
  ret.append({'info':'Python version','value':version})
  if node == 'master':
   from zdcp.rest.device import system_oids
@@ -1030,5 +1030,5 @@ def task_list(aDict, aCTX):
    threads = task_status({'node':aDict['node']})
    for task in ret['tasks']:
     task['state'] = threads.pop("P%s"%task['id'],'EXITED')
-   ret['orphan'] = [(k,v) for k,v in threads.items()]
+   ret['orphan'] = [i for i in threads.items()]
  return ret
