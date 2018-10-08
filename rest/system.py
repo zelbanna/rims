@@ -161,7 +161,7 @@ def report(aDict, aCTX):
  node = aCTX.settings['system']['id']
  node_url = aCTX.settings['nodes'][node]
  ret = []
- ret.append({'info':'Version','value':__version__ = "5.0GA"
+ ret.append({'info':'Version','value':__version__})
  ret.append({'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
  ret.append({'info':'Node URL','value':node_url})
  ret.append({'info':'Worker pool','value':aCTX.workers.pool_size()})
