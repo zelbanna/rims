@@ -484,7 +484,7 @@ def contrail_floating_ips(aDict, aCTX):
  vn = controller.call("%s/virtual-network/%s"%(svc_url,aDict['virtual_network']))['data']['virtual-network']
  for fipool in vn.get('floating_ip_pools',[]):
   pool = controller.call("%s/floating-ip-pool/%s"%(svc_url,fipool['uuid']) )['data']['floating-ip-pool']
-  # print pool
+  # show pool
   for fips in pool.get('floating_ips',[]):
    fip = controller.call("%s/floating-ip/%s"%(svc_url,fips['uuid']))['data']['floating-ip']
    record = {'pool_uuid':pool['uuid'],'pool_name':pool['name'],'ip_address':fip['floating_ip_address'],'uuid':fip['uuid'],'vm_ip_address':fip.get('floating_ip_fixed_ip_address')}

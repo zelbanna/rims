@@ -176,7 +176,7 @@ def report(aDict, aCTX):
  ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in aCTX.settings.get('files',{}).items()))
  ret.extend(list({'info':'Active Worker','value':"%s => %s"%(x[0],x[2])} for x in aCTX.workers.activities()))
  ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in aCTX.settings.get('system',{}).items()))
- ret.extend(list({'info':'Imported module','value':x} for x in modules.keys() if isinstance(modules[x],ModuleType) and x.startswith('zdcp')))
+ ret.extend(list({'info':'Imported module','value':"%s (%s refs)"%(x,getrefcount(x))} for x in modules.keys() if isinstance(modules[x],ModuleType) and x.startswith('zdcp')))
  return ret
 
 #

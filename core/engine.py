@@ -396,16 +396,16 @@ class SessionHandler(BaseHTTPRequestHandler):
    params = {'node':args['node'],'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
    with self._ctx.db as db:
     update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
-   self._body = ('{"update":%s,"success":true}'%update).encode('utf-8')
+   self._body = dumps({'update':update,'success':True}).encode('utf-8')
   except Exception as e:
-   self._body = ('{"update":0,"error":"%s"}'%str(e)).encode('utf-8')
+   self._body = dumps({'update':0,'error':str(e)}).encode('utf-8')
 
  #
  #
  def reload(self,query):
   """ Reload a module defined by query """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'reload'})
-  self._body = ('{"module":%s,"reloaded":true}'%query).encode('utf-8')
+  self._body = dumps({'module':query,'reloaded':True}).encode('utf-8')
 
 ########################################### Web stream ########################################
 #
