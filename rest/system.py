@@ -148,7 +148,7 @@ def report(aDict, aCTX):
  Output:
  """
  from os import path as ospath
- from sys import modules,version, getrefcount
+ from sys import modules, version, getrefcount, path as syspath
  from types import ModuleType 
  from gc import get_objects
  from threading import enumerate
@@ -162,13 +162,14 @@ def report(aDict, aCTX):
  node_url = aCTX.settings['nodes'][node]
  ret = []
  ret.append({'info':'Version','value':__version__})
- ret.append({'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
  ret.append({'info':'Node URL','value':node_url})
  ret.append({'info':'Worker pool','value':aCTX.workers.pool_size()})
  ret.append({'info':'Queued tasks','value':aCTX.workers.queue_size()})
  ret.append({'info':'Memory objects','value':len(get_objects())})
  ret.append({'info':'DB operations','value':", ".join("%s:%s"%i for i in db_counter.items())})
  ret.append({'info':'Python version','value':version})
+ ret.append({'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
+ ret.append({'info':'System path','value':",".join(syspath)})
  if node == 'master':
   from zdcp.rest.device import system_oids
   ret.append({'info':'Unhandled detected OIDs','value':",".join(str(x) for x in system_oids(None,aCTX)['unhandled'])})
