@@ -21,7 +21,7 @@ def portal(aWeb):
  aWeb.wr("<MAIN STYLE='top:0px;' ID=main>")
  aWeb.wr("<ARTICLE CLASS='mobile'>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- for scen in list(res['scenes'].values()):
+ for scen in res['scenes'].values():
   id = scen['id']
   name = scen['name'].replace('_',' ')
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=vera_scene_info?node=vera&scene=%s>%s</A></DIV>"%(id,name))
@@ -60,7 +60,7 @@ def status(aWeb):
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
- for key,value in list(res.items()):
+ for key,value in res.items():
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
@@ -109,9 +109,9 @@ def device_info(aWeb):
  else:
   res.pop('op',None)
   aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Service</DIV><DIV CLASS=th>Variable</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>")
-  for svc,entry in list(res.items()):
+  for svc,entry in res.items():
    aWeb.wr("<!-- %s -->"%svc)
-   for var,val in list(entry.items()):
+   for var,val in entry.items():
     aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(svc.encode("utf-8"),var.encode("utf-8"),val.encode("utf-8")))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
@@ -122,7 +122,7 @@ def rooms(aWeb):
  res = aWeb.rest_call("vera_infra?node=master",{'node':aWeb['node']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left><ARTICLE>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Section</DIV></DIV><DIV CLASS=tbody>")
- for room in list(res['rooms'].values()):
+ for room in res['rooms'].values():
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%room['id'])
   aWeb.wr("<DIV CLASS=td><A CLASS=z-op DIV=div_content URL=vera_devices?node=%s&room=%s>%s</A></DIV>"%(aWeb['node'],room['id'],room['name']))
   aWeb.wr("<DIV CLASS=td>%s</DIV></DIV>"%(res['sections'][str(room['section'])]))
@@ -136,7 +136,7 @@ def scenes(aWeb):
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
- for scen in list(res['scenes'].values()):
+ for scen in res['scenes'].values():
   id = scen['id']
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV>"%id)
   aWeb.wr("<DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=vera_scene_info?node=%s&scene=%s>%s</A></DIV>"%(aWeb['node'],id,scen['name']))
@@ -160,6 +160,6 @@ def scene_info(aWeb):
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
- for key,value in list(res.items()):
+ for key,value in res.items():
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value))
  aWeb.wr("</DIV></DIV></ARTICLE>")

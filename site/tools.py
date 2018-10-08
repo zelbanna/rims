@@ -46,7 +46,7 @@ def install(aWeb):
  res = aWeb.rest_call("tools_install?node=%s"%aWeb['node'])
  aWeb.wr("<ARTICLE CLASS='info'><P>Install results</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- for key,value in list(res.items()):
+ for key,value in res.items():
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
@@ -91,10 +91,10 @@ def rest_execute(aWeb):
  aWeb.wr("<DIV CLASS=table STYLE='table-layout:fixed; width:100%;'><DIV CLASS=tbody>")
  if ret.get('info'):
   aWeb.wr("<DIV CLASS=tr STYLE=><DIV CLASS=td STYLE='width:100px'>INFO</DIV><DIV CLASS=td STYLE='white-space:normal'>")
-  for key,value in list(ret.pop('info',{}).items()):
+  for key,value in ret.pop('info',{}).items():
    aWeb.wr("<DIV CLASS='rest'><DIV>%s</DIV><DIV>%s</DIV></DIV>"%(key,escape(value)))
   aWeb.wr("</DIV></DIV>")
- for key,value in list(ret.items()):
+ for key,value in ret.items():
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>%s</DIV><DIV CLASS=td STYLE='white-space:normal'>%s</DIV></DIV>"%(key.upper(),value))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True))
@@ -133,7 +133,7 @@ def logs_clear(aWeb):
  args['count'] = 18
  res = aWeb.rest_call('tools_logs_clear?node=%s'%aWeb['node'],args)
  aWeb.wr("<ARTICLE><P>%s</P>"%res['node'])
- for k,v in list(res['file'].items()):
+ for k,v in res['file'].items():
   aWeb.wr("%s: %s<BR>"%(k,v))
  aWeb.wr("</ARTICLE>"%(res))
 
@@ -144,7 +144,7 @@ def logs_show(aWeb):
  args['count'] = 18
  res = aWeb.rest_call('tools_logs_get?node=%s'%aWeb['node'],args)
  aWeb.wr("<ARTICLE>")
- for file,logs in list(res.items()):
+ for file,logs in res.items():
   aWeb.wr("<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs)))
  aWeb.wr("</ARTICLE>")
 

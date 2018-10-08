@@ -66,10 +66,10 @@ def info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>   <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV> <DIV CLASS=td><INPUT NAME=email  TYPE=email VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['email']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>View All:</DIV><DIV CLASS=td><INPUT NAME=view_public TYPE=CHECKBOX VALUE=1 {}             {}></DIV></DIV>".format("checked=checked" if str(data['view_public']) == "1" else "","disabled" if cookie['id'] != str(data['id']) else ""))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Cookie:</DIV><DIV CLASS='td small-text'>%s</DIV></DIV>"%",".join(['%s=%s'%(k,v) for k,v in list(cookie.items())]))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Cookie:</DIV><DIV CLASS='td small-text'>%s</DIV></DIV>"%",".join('%s=%s'%(k,v) for k,v in  cookie.items()))
  aWeb.wr("</DIV></DIV><SPAN>Menu list</SPAN>")
  aWeb.wr("<DIV CLASS='border' STYLE='display:flex; flex-wrap:wrap; min-height:100px;'><UL STYLE='width:100%' ID=ul_menu DEST=menulist CLASS='drop'>")
- menulist = data['menulist'].split(',') if not data.get('menulist') == 'default' else [ value['id'] for key,value in list(resources.items()) if value['type'] == 'menuitem']
+ menulist = data['menulist'].split(',') if not data.get('menulist') == 'default' else [ value['id'] for key,value in resources.items() if value['type'] == 'menuitem']
  for key in menulist:
   try: 
    resource = resources.pop(key,None)
@@ -82,7 +82,7 @@ def info(aWeb):
   aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='users_delete?id={0}'.format(data['id']), MSG='Really remove user?'))
  aWeb.wr("<SPAN STYLE='display:block'>Available menu options</SPAN>")
  aWeb.wr("<DIV STYLE='display:flex; flex-wrap:wrap;'><UL STYLE='width:100%' ID=ul_avail CLASS='drop'>")
- for id,resource in list(resources.items()):
+ for id,resource in resources.items():
   aWeb.wr("<LI CLASS='drag' ID={0}><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='{1}'><IMG SRC='{2}' ALT='{1}' /></BUTTON></LI>".format(id,resource['title'],resource['icon']))
  aWeb.wr("</UL></DIV>")
  aWeb.wr("</ARTICLE>")
