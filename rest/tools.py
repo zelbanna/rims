@@ -1,9 +1,4 @@
-"""
-
-Tools module for various tools
-
-
-"""
+"""Tools module for various tools"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.0GA"
 __status__ = "Production"
@@ -246,8 +241,8 @@ def database_backup(aDict, aCTX):
  """
  ret = {'filename':aDict['filename']}
  if aCTX.settings['system']['id'] == 'master':
-  from zdcp.mysql import dump
-  data = dump({'mode':'database'})['output']
+  from zdcp.rest.mysql import dump
+  data = dump({'mode':'database'},aCTX)['output']
  else:
   res = aCTX.rest_call("%s/api/mysql_dump"%aCTX.settings['system']['master'],{'mode':'database'})
   if res['code'] == 200:
@@ -257,7 +252,7 @@ def database_backup(aDict, aCTX):
  try:
   with open(ret['filename'],'w+') as f:
    output = "\n".join(data)
-   f.write(output.encode("utf-8"))
+   f.write(output)
   ret['result'] = 'OK'
  except Exception as err:
   ret['error'] = str(err) 

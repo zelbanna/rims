@@ -110,9 +110,8 @@ def device_info(aWeb):
   res.pop('op',None)
   aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Service</DIV><DIV CLASS=th>Variable</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>")
   for svc,entry in res.items():
-   aWeb.wr("<!-- %s -->"%svc)
    for var,val in entry.items():
-    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(svc.encode("utf-8"),var.encode("utf-8"),val.encode("utf-8")))
+    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(svc,var,val))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 

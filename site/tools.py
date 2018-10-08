@@ -167,9 +167,8 @@ def file_list(aWeb):
  aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Files in %s<P>"%res.get('path','directory'))
  import urllib.request, urllib.parse, urllib.error
  for f in res['files']:
-  info = f.encode('utf-8')
-  url  = urllib.parse.quote(info)
-  aWeb.wr("<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{2}</A></P>".format(res.get('path','#'),url,info))
+  url  = urllib.parse.quote(f)
+  aWeb.wr("<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{2}</A></P>".format(res.get('path','#'),url,f))
  aWeb.wr("</ARTICLE></SECTION>")
 
 #
