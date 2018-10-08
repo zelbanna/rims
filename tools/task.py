@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 from os   import path as ospath
@@ -26,15 +26,15 @@ elif input.get('s'):
  func = "state"
  args = {'id':input['i'],'state':input['s']}
 else:
- print "%s: [-n(ode) <node-name>] -a(dd) <JSON file>| -d(elete) <id>| -l(ist) | -s(status) [true|false to change state] -i <id>"%argv[0]
+ print("%s: [-n(ode) <node-name>] -a(dd) <JSON file>| -d(elete) <id>| -l(ist) | -s(status) [true|false to change state] -i <id>"%argv[0])
  exit(0)
 
 started = "Executing:system_task_%s(%s)"%(func,args)
 try:
- output = rest_call("%s/debug/system_task_%s"%(Settings['system']['master'],func),args, aTimeout = 300)['data']
+ output = rest_call("%s/api/system_task_%s"%(Settings['system']['master'],func),args, aTimeout = 300)['data']
 except Exception as e:
- output = e[0]
-print started
-print "_" * len(started)
-print dumps(output,indent=4, sort_keys=True)
+ output = e.args[0]
+print(started)
+print("_" * len(started))
+print(dumps(output,indent=4, sort_keys=True))
 

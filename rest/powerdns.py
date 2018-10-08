@@ -9,12 +9,13 @@ Settings:
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "DNS"
 
 from zdcp.core.common import DB
+from time import strftime
 
 #################################### Domains #######################################
 #
@@ -63,7 +64,6 @@ def domain_info(aDict, aCTX):
     ret['insert'] = db.insert_dict('domains',aDict,'ON DUPLICATE KEY UPDATE id = id')
     if ret['insert'] > 0:
      id = db.get_last_id()
-     from time import strftime
      serial = strftime("%Y%m%d%H")
      # Find DNS for MASTER to be placed into SOA record
      master = db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%aDict['master'])
@@ -157,7 +157,6 @@ def record_info(aDict, aCTX):
  with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
   if op == 'update':
    if str(id) in ['new','0']:
-    from time import strftime
     aDict.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
     ret['insert'] = db.insert_dict('records',aDict,"ON DUPLICATE KEY UPDATE id = id")
     id = db.get_last_id() if ret['insert'] > 0 else "new"
@@ -234,7 +233,7 @@ def status(aDict, aCTX):
    fqdn_top[fqdn] = fqdn_top.get(fqdn,0)+1
    fqdn_who[fqdn+"#"+parts[6]] = fqdn_who.get(fqdn+"#"+parts[6],0)+1
  from collections import Counter
- top = map(lambda x: {'fqdn':x[0],'count':x[1]}, Counter(fqdn_top).most_common(count))
+ top = [{'fqdn':x[0],'count':x[1]} for x in Counter(fqdn_top).most_common(count)]
  who = []
  for item in  Counter(fqdn_who).most_common(count):
   parts = item[0].split('#')
@@ -256,7 +255,7 @@ def restart(aDict, aCTX):
  from subprocess import check_output, CalledProcessError
  ret = {}
  try:
-  ret['output'] = check_output(aCTX.settings['powerdns'].get('reload','service pdns restart').split())
+  ret['output'] = check_output(aCTX.settings['powerdns'].get('reload','service pdns restart').split()).decode()
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output

@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 
 #
@@ -9,7 +9,7 @@ __status__ = "Production"
 if __name__ == "__main__":
  from sys import path as syspath, argv, exit,stdout
  if len(argv) < 2:
-  print argv[0] + " [struct-file]"
+  print(argv[0] + " [struct-file]")
   exit(0)
  else:
   from os import getcwd, path as ospath

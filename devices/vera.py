@@ -4,11 +4,11 @@ Vera Library
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__  = "Production"
 __type__    = "controller"
 
-from zdcp.devices.generic import Device as GenericDevice
+from .generic import Device as GenericDevice
 
 class Device(GenericDevice):
 

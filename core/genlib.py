@@ -4,7 +4,7 @@ Generic Library. For reference, make them "inline"
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 
 ################################# Generics ####################################
@@ -38,12 +38,12 @@ def int2ip(addr):
 def ips2range(addr1,addr2):
  from struct import pack, unpack
  from socket import inet_ntoa, inet_aton
- return map(lambda addr: inet_ntoa(pack("!I", addr)), range(unpack("!I", inet_aton(addr1))[0], unpack("!I", inet_aton(addr2))[0] + 1))
+ return [inet_ntoa(pack("!I", addr)) for addr in range(unpack("!I", inet_aton(addr1))[0], unpack("!I", inet_aton(addr2))[0] + 1)]
 
 def ipint2range(start,end):
  from struct import pack
  from socket import inet_ntoa
- return map(lambda addr: inet_ntoa(pack("!I", addr)), range(start,end + 1))
+ return [inet_ntoa(pack("!I", addr)) for addr in range(start,end + 1)]
 
 def ip2ptr(addr):
  octets = addr.split('.')
@@ -58,7 +58,7 @@ def ip2arpa(addr):
  return ".".join(octets)
 
 def int2mac(aInt):
- return ':'.join(s.encode('hex') for s in str(hex(aInt))[2:].zfill(12).decode('hex')).lower()
+ return ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(aInt))]*2))
 
 def mac2int(aMAC):
  try:    return int(aMAC.replace(":",""),16)
@@ -80,7 +80,7 @@ def external_ip():
   return None
 
 def get_quote(aString):
- from urllib import quote_plus
+ from urllib.parse import quote_plus
  return quote_plus(aString)
 
 def str2hex(arg):

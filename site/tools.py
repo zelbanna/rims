@@ -4,7 +4,7 @@ HTML5 Ajax Tools module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__= "Production"
 __icon__ = '../images/icon-config.png'
 __type__ = 'menuitem'
@@ -46,7 +46,7 @@ def install(aWeb):
  res = aWeb.rest_call("tools_install?node=%s"%aWeb['node'])
  aWeb.wr("<ARTICLE CLASS='info'><P>Install results</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- for key,value in res.items():
+ for key,value in list(res.items()):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
@@ -84,17 +84,17 @@ def rest_execute(aWeb):
   url = "%s/api/%s"%(node['url'],aWeb['api']) if node['system'] == 1 else "%s%s"%(node['url'],aWeb['api'])
   ret = aWeb.rest_full(url,arguments,aWeb['method'])
  except Exception as e:
-  ret = e[0]
+  ret = e.args[0]
  data = ret.pop('data',None)
  aWeb.wr("<ARTICLE STYLE='width:auto'>")
  aWeb.wr("<DIV CLASS='border'>")
  aWeb.wr("<DIV CLASS=table STYLE='table-layout:fixed; width:100%;'><DIV CLASS=tbody>")
  if ret.get('info'):
   aWeb.wr("<DIV CLASS=tr STYLE=><DIV CLASS=td STYLE='width:100px'>INFO</DIV><DIV CLASS=td STYLE='white-space:normal'>")
-  for key,value in ret.pop('info',{}).items():
+  for key,value in list(ret.pop('info',{}).items()):
    aWeb.wr("<DIV CLASS='rest'><DIV>%s</DIV><DIV>%s</DIV></DIV>"%(key,escape(value)))
   aWeb.wr("</DIV></DIV>")
- for key,value in ret.items():
+ for key,value in list(ret.items()):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>%s</DIV><DIV CLASS=td STYLE='white-space:normal'>%s</DIV></DIV>"%(key.upper(),value))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<PRE CLASS='white'>%s</PRE>"%dumps(data,indent=4, sort_keys=True))
@@ -133,7 +133,7 @@ def logs_clear(aWeb):
  args['count'] = 18
  res = aWeb.rest_call('tools_logs_clear?node=%s'%aWeb['node'],args)
  aWeb.wr("<ARTICLE><P>%s</P>"%res['node'])
- for k,v in res['file'].items():
+ for k,v in list(res['file'].items()):
   aWeb.wr("%s: %s<BR>"%(k,v))
  aWeb.wr("</ARTICLE>"%(res))
 
@@ -144,7 +144,7 @@ def logs_show(aWeb):
  args['count'] = 18
  res = aWeb.rest_call('tools_logs_get?node=%s'%aWeb['node'],args)
  aWeb.wr("<ARTICLE>")
- for file,logs in res.items():
+ for file,logs in list(res.items()):
   aWeb.wr("<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs)))
  aWeb.wr("</ARTICLE>")
 
@@ -165,10 +165,10 @@ def services_info(aWeb):
 def file_list(aWeb):
  res = aWeb.rest_call('tools_file_list',{'directory':aWeb['directory']})
  aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Files in %s<P>"%res.get('path','directory'))
- import urllib
+ import urllib.request, urllib.parse, urllib.error
  for f in res['files']:
   info = f.encode('utf-8')
-  url  = urllib.quote(info)
+  url  = urllib.parse.quote(info)
   aWeb.wr("<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{2}</A></P>".format(res.get('path','#'),url,info))
  aWeb.wr("</ARTICLE></SECTION>")
 

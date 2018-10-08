@@ -4,7 +4,7 @@ HTML5 Ajax resources module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __icon__ = '../images/icon-tools.png'
 __type__ = 'menuitem'
@@ -31,19 +31,15 @@ def main(aWeb):
 def view(aWeb):
  cookie = aWeb.cookie('system')
  res = aWeb.rest_call("system_resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'node':aWeb.get('node',aWeb.node())})
- inline = "<BUTTON CLASS='z-op menu' DIV=main URL='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}' /></BUTTON>"
- framed = "<BUTTON CLASS='z-op menu' DIV=main URL='resources_framed?id={0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}' /></BUTTON>"
- tabbed = "<A CLASS='btn menu' TARGET=_blank HREF='{0}' STYLE='font-size:10px;' TITLE='{1}'><IMG ALT='{2}' SRC='{2}' /></A>"
+ inline = "<BUTTON CLASS='z-op menu' DIV=main URL='%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
+ framed = "<BUTTON CLASS='z-op menu' DIV=main URL='resources_framed?id=%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
+ tabbed = "<A CLASS='btn menu' TARGET=_blank HREF='%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></A>"
+ view_map = {0:inline,1:framed}
  aWeb.wr("<DIV CLASS=centered STYLE='align-items:initial'>")
  for row in res['data']:
   aWeb.wr("<DIV STYLE='float:left; min-width:100px; margin:6px;'>")
-  if row['view'] == 0:
-   aWeb.wr(inline.format(row['href'],row['title'],row['icon']))
-  elif row['view'] == 1:
-   aWeb.wr(framed.format(row['id'],row['title'],row['icon']))
-  else:
-   aWeb.wr(tabbed.format(row['href'],row['title'],row['icon']))
-  aWeb.wr("<BR><SPAN STYLE='width:100px; display:block;'>{}</SPAN>".format(row['title']))
+  aWeb.wr(view_map.get(row['view'],tabbed)%row)
+  aWeb.wr("<BR><SPAN STYLE='width:100px; display:block;'>%(title)s</SPAN>"%row)
   aWeb.wr("</DIV>")
  aWeb.wr("</DIV>")
 

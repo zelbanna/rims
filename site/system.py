@@ -1,10 +1,10 @@
 """Module docstring.
 
-HTML5 Ajax ZDCP generic module
+HTML5 Ajax system function module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__= "Production"
 __icon__ = '../images/icon-examine.png'
 __type__ = 'menuitem'
@@ -75,7 +75,7 @@ def login(aWeb):
   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='../images/icon-start.png' /></BUTTON>")
   aWeb.wr("</ARTICLE></DIV>")
 
-############################################## ZDCP ###############################################
+############################################## Front ###############################################
 #
 #
 # Base portal, creates DIVs for layout
@@ -89,7 +89,7 @@ def portal(aWeb):
   res = aWeb.rest_call("system_authenticate",{'id':id,'username':username})
   if res['authenticated'] == "OK":
    cookie.update({'id':id,'token':res['token']})
-   value = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
+   value = ",".join(["%s=%s"%(k,v) for k,v in cookie.items()])
    aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(value,res['expires']))
   else:
    aWeb.wr("<SCRIPT>erase_cookie('system');</SCRIPT>")

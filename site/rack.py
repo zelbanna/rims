@@ -4,7 +4,7 @@ HTML5 Ajax Racks module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __icon__ = '../images/icon-rack.png'
 __type__ = 'menuitem'

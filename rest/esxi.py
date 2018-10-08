@@ -1,6 +1,6 @@
 """ESXi API module. PRovides interworking with ESXi device module to provide esxi VM interaction"""
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -81,7 +81,7 @@ def logs(aDict, aCTX):
  ip  = aDict['ip']
  count = aDict.get('count','30')
  try:
-  ret['data'] = check_output("tail -n %s %s | tac"%(count,aCTX.settings['esxi']['logformat'].format(ip)), shell=True).split('\n')
+  ret['data'] = check_output("tail -n %s %s | tac"%(count,aCTX.settings['esxi']['logformat'].format(ip)), shell=True).decode().split('\n')
  except Exception as e:
   ret['res'] = 'NOT_OK'
   ret['error'] = str(e)

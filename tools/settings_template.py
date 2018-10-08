@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 
 from os   import path as ospath
@@ -11,7 +11,7 @@ syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
 if __name__ == "__main__":
  from sys import argv, exit
  if len(argv) < 2:
-  print argv[0] + " <output file>"
+  print(argv[0] + " <output file>")
   exit(0)
  else:
   from zdcp.core.common import DB
@@ -34,4 +34,4 @@ if __name__ == "__main__":
    with open(argv[1],'w') as f:
     dump(config,f,indent=4,sort_keys=True)
   except:
-   print "Error saving file"
+   print("Error saving file")

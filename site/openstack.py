@@ -5,7 +5,7 @@ HTML5 Ajax Openstack Generic module
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__= "Production"
 
 ############################################## Openstack ###############################################
@@ -21,7 +21,7 @@ def portal(aWeb):
   res = aWeb.rest_call("openstack_authenticate",{'node':cookie['node'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
    cookie.update({'token':res['token'],'username':aWeb['username'],'project_id':pid})
-   value = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
+   value = ",".join(["%s=%s"%(k,v) for k,v in cookie.items()])
    aWeb.wr("<SCRIPT>set_cookie('openstack','%s','%s');</SCRIPT>"%(aName,value,res['expires']))
   else:
    aWeb.wr("Error logging in - please try login again")
@@ -55,7 +55,7 @@ def dict2html(aData,aTitle=None):
 def data2html(aData):
  if isinstance(aData,dict):
   aWeb.wr("<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>")
-  for k,v in aData.iteritems():
+  for k,v in aData.items():
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='padding:0px;'><I>{}</I>:</DIV><DIV CLASS=td STYLE='white-space:normal; overflow:auto; width:100%'>".format(k))
    if 'href' in k:
     aWeb.wr("<A CLASS=z-op DIV=div_content URL='openstack_result?method=GET&os_href={0}'>{0}</A>".format(v))
@@ -123,7 +123,7 @@ def fqname(aWeb):
     aWeb.wr("</DIV></DIV><BR>")
    else:
     aWeb.wr("<DIV CLASS=table STYLE='width:100%'><DIV CLASS=tbody>")
-    for key,value in res.iteritems():
+    for key,value in res.items():
      aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value))
     aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
@@ -150,7 +150,7 @@ def result(aWeb):
   aWeb.wr("<PRE CLASS='white'>%s</PRE>"%dumps(res['data'],indent=4, sort_keys=True))
  else:
   aWeb.wr("<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>")
-  for key,value in res.iteritems():
+  for key,value in res.items():
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='width:100px'>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(key.upper(),value))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></ARTICLE>")

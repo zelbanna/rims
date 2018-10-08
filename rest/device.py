@@ -1,6 +1,6 @@
 """Device API module. This is the main device interaction module for device info, update, listing,discovery etc"""
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -82,7 +82,7 @@ def info(aDict, aCTX):
    netconf = db.get_dict('parameter')
    ret['username'] = netconf['username']['value']
    if not op == 'basics':
-    try:    ret['info']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['ip_mac']))[2:].zfill(12).decode('hex')).lower() if ret['info']['ip_mac'] != 0 else "00:00:00:00:00:00"
+    try:    ret['info']['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(ret['info']['ip_mac']))]*2)) if ret['info']['ip_mac'] != 0 else "00:00:00:00:00:00"
     except: ret['info']['mac'] = "00:00:00:00:00:00"
     if not ret['info']['functions']:
      ret['info']['functions'] = ""
@@ -155,7 +155,7 @@ def extended(aDict, aCTX):
      elif racked == '0' and aDict.get('rack_info_rack_id') != 'NULL':
       db.do("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(ret['id'],aDict.get('rack_info_rack_id')))
     # PEMs
-    for id in [k.split('_')[1] for k in aDict.keys() if k.startswith('pems_') and 'name' in k]:
+    for id in [k.split('_')[1] for k,_ in aDict.items() if k.startswith('pems_') and 'name' in k]:
      pdu_slot = aDict.pop('pems_%s_pdu_slot'%id,"0.0").split('.')
      pem = {'name':aDict.pop('pems_%s_name'%id,None),'pdu_unit':aDict.pop('pems_%s_pdu_unit'%id,0),'pdu_id':pdu_slot[0],'pdu_slot':pdu_slot[1]}
      ret['result']["PEM_%s"%id] = db.update_dict('device_pems',pem,'id=%s'%id)
@@ -179,7 +179,7 @@ def extended(aDict, aCTX):
        else:
         new_info['%s_id'%type] = 0
       ret['result']['device_info'] = db.update_dict('devices',new_info,"id='%s'"%ret['id'])
-    rack_args = {k[10:]:v for k,v in aDict.iteritems() if k[0:10] == 'rack_info_'}
+    rack_args = {k[10:]:v for k,v in aDict.items() if k[0:10] == 'rack_info_'}
     ret['result']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
 
   # Now fetch info
@@ -188,7 +188,7 @@ def extended(aDict, aCTX):
    ret['info'] = db.get_row()
    ret['ip'] = ret['info'].pop('ip',None)
    vm = ret['info'].pop('vm',None)
-   try:    ret['info']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['info']['mac']))[2:].zfill(12).decode('hex')).upper() if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
+   try:    ret['info']['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(ret['info']['mac']))]*2)) if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
    except: ret['info']['mac'] = "00:00:00:00:00:00"
    # Rack infrastructure
    ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
@@ -290,7 +290,7 @@ def list(aDict, aCTX):
   data = db.get_rows()
   if extras and 'mac' in extras:
    for row in data:
-    try: row['mac'] = ':'.join(s.encode('hex') for s in str(hex(row['mac']))[2:].zfill(12).decode('hex')).lower()
+    try: row['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(row['mac']))]*2))
     except: pass
   ret['data'] = data if not aDict.get('dict') else { row[aDict['dict']]: row for row in data }
  return ret
@@ -467,7 +467,7 @@ def discover(aDict, aCTX):
  with aCTX.db as db:
   sql = "INSERT INTO devices (a_dom_id, ipam_id, snmp, model, mac, oid, type_id, hostname) VALUES ("+aDict['a_dom_id']+",{},'{}','{}','{}','{}','{}','{}')"
   count = 0
-  for ip,entry in dev_list.iteritems():
+  for ip,entry in dev_list.items():
    count += 1
    alloc = address_allocate({'ip':ip,'network_id':aDict['network_id']}, aCTX)
    if alloc['success']:
@@ -529,7 +529,7 @@ def server_macs(aDict, aCTX):
   ret['count'] = db.do("SELECT devices.id, hostname, ia.mac, name AS domain, INET_NTOA(ia.ip) AS ip, ia.network_id AS network FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks ON ipam_networks.id = ia.network_id WHERE ia.mac > 0 AND ipam_networks.server_id = %s"%aDict['id'])
   ret['data']  = db.get_rows()
   for row in ret['data']:
-   row['mac'] = ':'.join(s.encode('hex') for s in str(hex(row['mac']))[2:].zfill(12).decode('hex')).lower()
+   row['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(row['mac']))]*2))
  return ret
 
 ############################################## Specials ###############################################
@@ -595,28 +595,16 @@ def network_info_discover(aDict, aCTX):
 
  Output:
  """
- from netsnmp import VarList, Varbind, Session
- from binascii import b2a_hex
- from __builtin__ import list
+ from zdcp.devices.generic import Device
+ def __detect_thread(aDev, aSettings):
+  __dev = Device(aDev['ip'],aCTX.settings)
+  aDev.update(__dev.system_info())
+  return True     
 
  ret = {'count':0}
-
- def __detect_thread(aDev, aSettings):
-  try:
-   session = Session(Version = 2, DestHost = aDev['ip'], Community = aSettings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
-   session.get(sysoid)
-   if sysoid[0].val:
-    aDev['mac'] = int("".join(list(b2a_hex(x) for x in list(sysoid[0].val))),16)
-   if sysoid[1].val:
-    try:    aDev['oid'] = sysoid[1].val.split('.')[7]
-    except: pass
-  except: pass
-  return True
-
  with aCTX.db as db:
   network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id'] 
-  count   = db.do("SELECT devices.mac, devices.oid, devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND (devices.mac = 0 OR devices.oid = 0)"%network)
+  count   = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND (devices.mac = 0 OR devices.oid = 0)"%network)
   devices = db.get_rows()
   if count > 0:
    sema = aCTX.workers.semaphore(20)
@@ -624,8 +612,12 @@ def network_info_discover(aDict, aCTX):
     aCTX.workers.add_sema(__detect_thread, sema, dev, aCTX.settings)
    aCTX.workers.block(sema,20)
    for dev in devices:
-    if dev.get('mac',0) > 0 or dev.get('oid',0) > 0:
-     ret['count'] += db.do("UPDATE devices SET mac = %(mac)s, oid = %(oid)s WHERE id = %(id)s"%dev)
+    id = dev.pop('id',None)
+    ip = dev.pop('ip',None)
+    if dev.get('mac'):
+     dev['mac'] = int(dev['mac'].replace(":",""),16)
+    if len(dev) > 0:
+     ret['count'] += db.update_dict('devices',dev,'id = %s'%id)
  return ret
 
 #
@@ -638,9 +630,7 @@ def network_lldp_discover(aDict, aCTX):
 
  Output:
  """
- from netsnmp import VarList, Varbind, Session
- from binascii import b2a_hex
- from __builtin__ import list
+ from builtins import list
 
  new_connections = []
  ins_interfaces = []
@@ -728,7 +718,7 @@ def interface_list(aDict, aCTX):
    ret['data'] = db.get_rows()
    for row in ret['data']:
     row['state_ascii'] = state(row['state'])
-    row['mac'] = ':'.join(s.encode('hex') for s in str(hex(row['mac']))[2:].zfill(12).decode('hex')).lower()
+    row['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(row['mac']))]*2))
   else:
    ret = {'id':None,'hostname':None,'data':[],'count':0}
  return ret
@@ -769,7 +759,7 @@ def interface_info(aDict, aCTX):
   if not id == 'new':
    ret['found'] = (db.do("SELECT di.*, peer.device AS peer_device FROM device_interfaces AS di LEFT JOIN device_interfaces AS peer ON di.peer_interface = peer.id WHERE di.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
-   ret['data']['mac'] = ':'.join(s.encode('hex') for s in str(hex(ret['data']['mac']))[2:].zfill(12).decode('hex')).lower()
+   ret['data']['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(ret['data']['mac']))]*2))
    ret['data'].pop('manual',None)
   else:
    ret['data'] = {'id':'new','mac':'00:00:00:00:00:00','device':int(aDict['device']),'name':'Unknown','description':'Unknown','snmp_index':None,'peer_interface':None,'peer_device':None,'multipoint':0}
@@ -796,7 +786,7 @@ def interface_delete(aDict, aCTX):
   if aDict.get('device_id'):
    ret['deleted'] = db.do("DELETE FROM device_interfaces WHERE device = %s AND peer_interface IS NULL AND multipoint = 0 AND manual = 0 and state != 1"%aDict['device_id'])
   else:
-   for intf,value in aDict.iteritems():
+   for intf,value in aDict.items():
     if intf[0:10] == 'interface_' or intf == 'id':
      id = int(value)
     else:
@@ -918,12 +908,12 @@ def interface_discover_snmp(aDict, aCTX):
    for con in existing:
     entry = interfaces.pop(con['snmp_index'],None)
     if entry:
-     mac = mac2int(entry['mac'])
+     mac = mac2int(entry.get('mac','0'))
      if not ((entry['name'] == con['name']) and (entry['description'] == con['description']) and (mac == con['mac'])):
       ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', description = '%s', mac = %s WHERE id = %s"%(entry['name'][0:24],entry['description'],mac,con['id']))
     elif aDict.get('cleanup',True) == True:
      ret['delete'] += db.do("DELETE FROM device_interfaces WHERE id = %s AND manual = 0"%(con['id']))
-   for key, entry in interfaces.iteritems():
+   for key, entry in interfaces.items():
     if entry['state'] == 'up':
      args = {'device':int(aDict['device']),'name':entry['name'][0:24],'description':entry['description'],'snmp_index':key,'mac':mac2int(entry['mac'])}
      ret['insert'] += db.insert_dict('device_interfaces',args)
@@ -999,7 +989,7 @@ def interface_discover_lldp(aDict, aCTX):
  device = Device(ip,aCTX.settings)
  info = device.lldp()
  with aCTX.db as db:
-  for k,v in info.iteritems():
+  for k,v in info.items():
    db.do(sql_lcl%(aDict['device'],k))
    local = db.get_row()
    if not local:
@@ -1084,7 +1074,7 @@ def interface_status_check(aDict, aCTX):
     intf.update( probe.pop(intf.get('snmp_index','NULL'),{}) )
     intf['state'] = states.get(intf.get('state','unseen'))
    if discover:
-    for index, intf in probe.iteritems():
+    for index, intf in probe.items():
      if discover == 'all' or (discover == 'up' and intf['state'] == 'up'):
       intf.update({'snmp_index':index,'state':states.get(intf.get('state','unseen'))})
       exist.append(intf)

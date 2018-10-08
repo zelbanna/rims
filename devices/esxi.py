@@ -4,13 +4,13 @@ The ESXi interworking module
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__  = "Production"
 __type__    = "hypervisor"
 __icon__    = "../images/viz-server.png"
 __oid__     = 6876
 
-from generic import Device as GenericDevice
+from .generic import Device as GenericDevice
 
 ########################################### ESXi ############################################
 #
@@ -47,13 +47,13 @@ class Device(GenericDevice):
 
  def log_msg(self, aMsg):
   from time import localtime, strftime
-  output = unicode("{} : {}".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg))
+  output = str("{} : {}".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg))
   with open(self._logfile, 'a') as f:
    f.write(output + "\n")
 
  def interfaces(self):
   interfaces = super(Device,self).interfaces()
-  for k,v in interfaces.iteritems():
+  for k,v in interfaces.items():
    parts = v['name'].split()
    if parts[0] == 'Device':
     v['name'] = parts[1]
@@ -119,7 +119,7 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    for result in vmnameobjs:
-    if result.val == aname:
+    if result.val.decode() == aname:
      return int(result.iid)
   except:
    pass
@@ -131,7 +131,7 @@ class Device(GenericDevice):
    vmstateobj = VarList(Varbind(".1.3.6.1.4.1.6876.2.1.1.6." + str(aid)))
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(vmstateobj)
-   return vmstateobj[0].val
+   return vmstateobj[0].val.decode()
   except:
    pass
   return "unknown"
@@ -147,7 +147,7 @@ class Device(GenericDevice):
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for indx,result in enumerate(vmnameobjs):
-    statetuple = {'id':result.iid, 'name':result.val, 'state':vmstateobjs[indx].val ,'state_id':Device.get_state_str(vmstateobjs[indx].val)}
+    statetuple = {'id':result.iid, 'name':result.val.decode(), 'state':vmstateobjs[indx].val.decode() ,'state_id':Device.get_state_str(vmstateobjs[indx].val.decode())}
     statelist.append(statetuple)
   except:
    pass

@@ -1,7 +1,5 @@
 #!/bin/sh
 #
-# zdcp
-#
 # chkconfig: - 10 90
 #
 ### BEGIN INIT INFO
@@ -12,7 +10,7 @@
 # Default-Stop:		0 1 6
 # X-Start-Before:
 # X-Stop-After:
-# Short-Description: Start ZDCP request handler service and system installation
+# Short-Description: Start request handler service and system installation
 ### END INIT INFO
 
 PKGDIR=%PKGDIR%
@@ -53,24 +51,21 @@ case "$1" in
   ;;
  upgrade)
   stop
-  echo "Upgrading ZDCP"
+  echo "Upgrading system"
   cd $PKGDIR
   git pull
   tools/mysql_patch.py schema.db
   ./install.py
   start
   ;;
- status)
-  echo "Poking ZDCP service handler"
-  ;;
  clear)
   echo "Clearing old .pyc files"
-  rm $PKGDIR/*.pyc
-  rm $PKGDIR/site/*.pyc
-  rm $PKGDIR/rest/*.pyc
-  rm $PKGDIR/core/*.pyc
-  rm $PKGDIR/devices/*.pyc
-  rm $PKGDIR/tools/*.pyc
+  rm -fR $PKGDIR/__pycache__
+  rm -fR $PKGDIR/site/__pycache__
+  rm -fR $PKGDIR/rest/__pycache__
+  rm -fR $PKGDIR/core/__pycache__
+  rm -fR $PKGDIR/devices/__pycache__
+  rm -fR $PKGDIR/tools/__pycache__
   chown -R www-data:www-data $PKGDIR/*
   clear;
   ;;

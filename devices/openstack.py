@@ -4,7 +4,7 @@ Openstack Device
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__  = "Production"
 __type__    = "controller"
 
@@ -32,7 +32,7 @@ class Device(object):
  # { 'username','password', 'project' }
  #
  def auth(self, aAuth, aURL = None):
-  from zdcp.core.common import rest_call
+  from ..core.common import rest_call
   try:
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
    url  = "%s/v3/auth/tokens"%(aURL if aURL else self._url)
@@ -95,7 +95,7 @@ class Device(object):
  # - header = send additional headers as dictionary
  #
  def call(self, aURL = None, aArgs = None, aMethod = None, aHeader = None):
-  from zdcp.core.common import rest_call
+  from ..core.common import rest_call
   head = { 'X-Auth-Token':self._token }
   try: head.update(aHeader)
   except: pass

@@ -4,7 +4,7 @@ HTML5 Ajax DNS module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__= "Production"
 
 ############################################ Domains ###########################################
@@ -150,7 +150,7 @@ def dedup(aWeb):
  dns = aWeb.rest_call("dns_dedup")
  aWeb.wr("<ARTICLE><P>Duplicate Removal</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV></DIV><DIV CLASS=tbody>")
- for node_server,res in dns.iteritems():
+ for node_server,res in dns.items():
   node,server = node_server.split('_')
   for row in res:
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,server,row['name'],row['content']))
@@ -162,7 +162,7 @@ def status(aWeb):
  dns = aWeb.rest_call("dns_status")
  aWeb.wr("<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>")
- for node_server,res in dns['top'].iteritems():
+ for node_server,res in dns['top'].items():
   node,server = node_server.split('_')
   for row in res:
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,server,row['count'],row['fqdn']))
@@ -170,7 +170,7 @@ def status(aWeb):
  aWeb.wr("</ARTICLE>")
  aWeb.wr("<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN per Client</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>")
- for node_server,res in dns['who'].iteritems():
+ for node_server,res in dns['who'].items():
   node,server = node_server.split('_')
   for row in res:
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td TITLE='%s'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,server,row['count'],row['who'],row['hostname'],row['fqdn']))

@@ -4,7 +4,7 @@ HTML5 Ajax Openstack HEAT module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__= "Production"
 
 ##################################### Heatstack ##################################
@@ -71,7 +71,7 @@ def enter_parameters(aWeb):
  aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Parameter</DIV><DIV CLASS=th STYLE='min-width:300px'>Value</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS='td green'>Unique Name</DIV><DIV CLASS=td><INPUT TYPE=text NAME=name PLACEHOLDER='change-this-name'></DIV></DIV>")
- for key,value in data['parameters'].iteritems():
+ for key,value in data['parameters'].items():
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>{0}</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=param_{0} PLACEHOLDER={1}></DIV></DIV>".format(key,value))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</FORM>")
@@ -153,7 +153,7 @@ def action(aWeb):
    args['template'] = aWeb['template']
    args['parameters'] = {}
    params  = aWeb.get_args2dict(['op','template','name'])
-   for key,value in params.iteritems():
+   for key,value in params.items():
     args['parameters'][key[6:]] = value
    ret = aWeb.rest_call("openstack_heat_instantiate",args)
    if ret['code'] == 201:

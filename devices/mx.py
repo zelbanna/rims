@@ -4,14 +4,14 @@ MX module
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__  = "Production"
 __type__    = "network"
 __icon__    = "../images/viz-mx.png"
 __oid__     = 2636
 
 
-from junos import Junos
+from .junos import Junos
 
 ################################ MX Object #####################################
 

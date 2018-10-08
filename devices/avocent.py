@@ -4,11 +4,11 @@ Avocent PDU module
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__  = "Production"
 __type__    = "pdu"
 
-from generic import Device as GenericDevice
+from .generic import Device as GenericDevice
 
 ######################################## PDU ########################################
 
@@ -65,7 +65,7 @@ class Device(GenericDevice):
    stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.{}.{}".format(slot,unit)))
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(stateobj)
-   return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
+   return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val.decode()) }
   except Exception as e:
    self.log_msg("Avocent : error getting state:" + str(e))
    return {'res':'NOT_OK','info':str(e), 'state':'unknown' }
@@ -80,7 +80,7 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(slotobjs)
    for slot in slotobjs:
-    slots.append([slot.iid, slot.val])
+    slots.append([slot.iid, slot.val.decode()])
   except Exception as exception_error:
    self.log_msg("Avocent : error loading pdu member names " + str(exception_error))
   return slots
@@ -98,9 +98,9 @@ class Device(GenericDevice):
    session.walk(outletobjs)
    session.walk(stateobjs)
    session.walk(slotobjs)
-   slotdict  = dict(map(lambda var: (var.iid, var.val),slotobjs))
+   slotdict  = dict([(var.iid, var.val.decode()) for var in slotobjs])
    for indx,outlet in enumerate(outletobjs,0):
-    result.append({'slot':outlet.tag[34:],'unit':outlet.iid,'name':outlet.val,'state':Device.get_outlet_state(stateobjs[indx].val),'slotname':slotdict.get(outlet.tag[34:],"unknown")})
+    result.append({'slot':outlet.tag[34:],'unit':outlet.iid,'name':outlet.val.decode(),'state':Device.get_outlet_state(stateobjs[indx].val.decode()),'slotname':slotdict.get(outlet.tag[34:],"unknown")})
   except Exception as exception_error:
    self.log_msg("Avocent : error loading conf " + str(exception_error))
   return result

@@ -4,7 +4,7 @@ Appformix Library
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __type__ = "controller"
 
@@ -27,11 +27,11 @@ class Device(object):
   return "Controller[{}] Token[{},{}]".format(self._node, self._token, self._expire)
 
  def auth(self, aAuth):
-  from zdcp.core.common import rest_call
+  from ..core.common import rest_call
   try:
    auth = {'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
    url  = "%s:7000/appformix/controller/v2.0/%s"%(self._node,"auth_credentials")
-   print url
+   print(url)
    res = rest_call(url,auth)
    # If sock code is ok (200) - we can expect to find a token
    if res['code'] == 200:
@@ -66,7 +66,7 @@ class Device(object):
   return self.href("%s:7000/appformix/controller/v2.0/%s"%(self._node,url), aArgs=args, aMethod=method, aHeader = header)
 
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
-  from zdcp.core.common import rest_call
+  from ..core.common import rest_call
   head = { 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' }
   try: head.update(aHeader)
   except: pass

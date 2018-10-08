@@ -4,13 +4,12 @@ Junos Router Base Class
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "4.0.1GA"
+__version__ = "5.0GA"
 __status__  = "Production"
 __type__    = "network"
 __oid__     = 2636
 
-from generic import Device as GenericDevice
-from netsnmp import VarList, Varbind, Session
+from .generic import Device as GenericDevice
 
 ################################ JUNOS Object #####################################
 #
@@ -64,7 +63,7 @@ class Junos(GenericDevice):
    self.log_msg("System Error - Unable to properly close router connection: " + str(err))
 
  def interfaces(self):
-  return {k:v for k,v in super(Junos,self).interfaces().iteritems() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb']}
+  return {k:v for k,v in super(Junos,self).interfaces().items() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb']}
 
  #
  # Netconf shit

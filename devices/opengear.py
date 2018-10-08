@@ -3,11 +3,11 @@
 OpenGear Console module
 """
 __author__  = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__  = "Production"
 __type__    = "console"
 
-from generic import Device as GenericDevice
+from .generic import Device as GenericDevice
 
 ######################################## Console ########################################
 #
@@ -34,7 +34,7 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(portobjs)
    for obj in portobjs:
-    result.append({'interface':obj.iid,'name':obj.val,'port':str(6000+int(obj.iid))})
+    result.append({'interface':obj.iid,'name':obj.val.decode(),'port':str(6000+int(obj.iid))})
   except Exception as exception_error:
    self.log_msg("OpenGear : error loading conf " + str(exception_error))
   return result

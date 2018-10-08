@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """Program docstring.
 
@@ -6,13 +6,13 @@ Redirector
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 
 from sys import argv, path as syspath, exit
 
 if len(argv) < 2:
- print "%s <docroot>"
+ print("%s <docroot>")
  exit(1)
 
 from os import path as ospath,chmod
@@ -23,9 +23,9 @@ syspath.insert(1, basedir)
 from zdcp.Settings import Settings
 
 with open(destfile,'w+') as f:
- f.write('#!/usr/bin/python\n')
+ f.write('#!/usr/bin/python3\n')
  f.write('# -*- coding: utf-8 -*-\n')
- f.write('print "Status: 301 Moved Permanently"\n')
- f.write('print "Location: %s/site/system_login"\n'%Settings['system']['node'])
- f.write('print "\\r\\n"')
-chmod(destfile,0755)
+ f.write('print("Status: 301 Moved Permanently")\n')
+ f.write('print("Location: %s/site/system_login")\n'%Settings['system']['node'])
+ f.write('print("\\r\\n")')
+chmod(destfile,0o755)

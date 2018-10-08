@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
 __version__ = "10.5GA"
@@ -9,10 +9,10 @@ from os import walk,path
 from sys import argv, exit
 
 if len(argv) < 2:
- print argv[0],"<version>"
+ print(argv[0],"<version>")
  exit(0)
 else:
- print "New version [%s]"%(argv[1])
+ print("New version [%s]"%(argv[1]))
 
 for root,dirs,files in walk('.'):
  if ".git" in dirs:
@@ -20,5 +20,5 @@ for root,dirs,files in walk('.'):
  #print "Directory:",root
  for file in files:
   if file[-2:] == 'py':
-   print path.join(root,file)
+   print(path.join(root,file))
    call(["sed","-i","s/__version__.*/__version__ = \"" + argv[1] + "\"/g",path.join(root,file)])

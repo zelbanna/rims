@@ -4,7 +4,7 @@ HTML5 Ajax Vera Z-wave controller module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 
 ##### ToDo #####
@@ -60,7 +60,7 @@ def status(aWeb):
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
- for key,value in res.items():
+ for key,value in list(res.items()):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
@@ -109,9 +109,9 @@ def device_info(aWeb):
  else:
   res.pop('op',None)
   aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Service</DIV><DIV CLASS=th>Variable</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>")
-  for svc,entry in res.items():
+  for svc,entry in list(res.items()):
    aWeb.wr("<!-- %s -->"%svc)
-   for var,val in entry.items():
+   for var,val in list(entry.items()):
     aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(svc.encode("utf-8"),var.encode("utf-8"),val.encode("utf-8")))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
@@ -160,6 +160,6 @@ def scene_info(aWeb):
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table style='width:auto'><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Value</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
- for key,value in res.items():
+ for key,value in list(res.items()):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value))
  aWeb.wr("</DIV></DIV></ARTICLE>")

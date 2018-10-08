@@ -1,6 +1,6 @@
 """Controls API module. Provides generic control functionality"""
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -323,8 +323,8 @@ def process(aDict, aCTX):
    if srt['code']:
     tmpfile = filename + ".process"
     rename(dest,tmpfile)
-    chmod(srt['file'], 0666)
-    chmod(dest, 0666)
+    chmod(srt['file'], 0o666)
+    chmod(dest, 0o666)
     call(['MP4Box -add {0}:hdlr=sbtl:lang={1}:name={2}:group=2:layer=-1:disable {3} -out {4}'.format( repr(srt['file']), srt['code'], srt['name'], repr(tmpfile), repr(dest))], shell=True, stdout=FNULL)
     rename(srt['file'],"%s.processed"%srt['file'])
     remove(tmpfile)
@@ -339,7 +339,7 @@ def process(aDict, aCTX):
  else:
   ret['seconds'] = (int(time()) - ret['timestamp'])
   if ospath.exists(dest):
-   chmod(dest, 0666)
+   chmod(dest, 0o666)
    ret['res'] = 'OK'
   else:
    ret['error'] = 'COMPLETE_NO_FILE'
@@ -383,7 +383,7 @@ def delay_set(aDict, aCTX):
      FNULL = open(devnull, 'w')
      check_call(["mkvmerge -o "+ repr(absfile) + " -y " + offset + " " + repr(tmpfile)], stdout=FNULL, stderr=FNULL, shell=True)
      remove(tmpfile)
-     chmod(absfile,0666)
+     chmod(absfile,0o666)
     except Exception as err:
      ret['error'] = str(err)
     else:

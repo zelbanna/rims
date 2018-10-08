@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 
 from os   import path as ospath
@@ -15,8 +15,8 @@ if __name__ == "__main__":
  from json import dumps
  from sys import argv, exit
  if len(argv) < 2 or (len(argv) > 2 and argv[2] == '-s'):
-  print argv[0] + " [-url] <URL>|<rest-module_function> [<json-arg>]"
-  print "\nOptions:\n -url: Proper socket call, followed by URL\n"
+  print(argv[0] + " [-url] <URL>|<rest-module_function> [<json-arg>]")
+  print("\nOptions:\n -url: Proper socket call, followed by URL\n")
   exit(0)
  else:
   timestamp = int(time())
@@ -24,12 +24,13 @@ if __name__ == "__main__":
    try: args = loads(argv[3])
    except: args = {}
    started = "Executing:%s(%s)"%(argv[2],args)
-   print started
+   print(started)
    from zdcp.core.common import rest_call
    try:
-    output = rest_call(argv[2],args, aTimeout = 300)['data']
+    res = rest_call(argv[2],args, aTimeout = 300)
+    output = res['data']
    except Exception as e:
-    output = e[0]
+    output = e.args[0]
   else:
    from zdcp.Settings import Settings
    ctx = Context(Settings,None)
@@ -38,11 +39,11 @@ if __name__ == "__main__":
    try: args = loads(argv[2])
    except: args = {}
    started = "Executing:%s_%s(%s)"%(mod,fun,args)
-   print started
+   print(started)
    module = import_module("zdcp.rest.%s"%mod)
    function = getattr(module,fun,lambda x: {'res':'ERROR', 'type':'FUNCTION_NOT_FOUND' })
    output = function(args,ctx)
   timespent = int(time()) - timestamp
-  print "Time spent: %i"%(timespent)
-  print "_" * len(started)
-  print dumps(output,indent=4, sort_keys=True)
+  print("Time spent: %i"%(timespent))
+  print("_" * len(started))
+  print(dumps(output,indent=4, sort_keys=True))

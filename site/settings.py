@@ -4,7 +4,7 @@ HTML5 Ajax Settings module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__= "Production"
 
 #
@@ -56,7 +56,7 @@ def info(aWeb):
 def comprehensive(aWeb):
  settings = aWeb.rest_call("system_settings_comprehensive",{'node':aWeb['node'],'section':aWeb['section']})
  aWeb.wr("<ARTICLE><P>Settings</P>")
- for section,parameters in settings.iteritems():
+ for section,parameters in settings.items():
   aWeb.wr("<P>%s</P>"%section)
   aWeb.wr("<DIV CLASS=table STYLE='width:500px;'><DIV CLASS=tbody>")
   for data in parameters:

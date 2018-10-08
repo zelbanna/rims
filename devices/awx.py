@@ -4,7 +4,7 @@ AWX API
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__  = "Production"
 __type__    = "controller"
 
@@ -30,8 +30,8 @@ class Device(object):
  # mode: 'basic'/'full' auth process
  #
  def auth(self, aAuth):
-  from zdcp.core.common import rest_call
-  from zdcp.core.genlib import basic_auth
+  from ..core.common import rest_call
+  from ..core.genlib import basic_auth
   self._token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']
   try:
    if aAuth.get('mode','full') == 'full':
@@ -41,7 +41,7 @@ class Device(object):
    else:
     ret = {}
   except Exception as e:
-   ret = e[0]
+   ret['error'] = e[0]
    ret['auth'] = 'NOT_OK'
   else:
    ret['auth'] = 'OK'
@@ -61,12 +61,12 @@ class Device(object):
   return self.href("%s/%s"%(self._node,query), aArgs=args, aMethod=method, aHeader = header)
 
  def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
-  from zdcp.core.common import rest_call
+  from ..core.common import rest_call
   head = {'Authorization':self._token}
   try: head.update(aHeader)
   except: pass
   try: res = rest_call(aURL, aArgs, aMethod, head)
-  except Exception as e: res = e[0]
+  except Exception as e: res = str(e)
   return res
 
  def fetch_list(self,aBase,aSet):

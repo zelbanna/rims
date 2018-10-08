@@ -1,10 +1,10 @@
 """Visualize API module. This module provides data for vis.js networks"""
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
-
+from json import dumps, loads
 #
 #
 def list(aDict, aCTX):
@@ -52,7 +52,6 @@ def show(aDict, aCTX):
   - edges
   - nodes
  """
- from json import loads
  ret = {}
  with aCTX.db as db:
   search = "id = %(id)s"%aDict if aDict.get('id') else "name = '%(name)s'"%aDict
@@ -90,7 +89,7 @@ def network(aDict, aCTX):
   - nodes
   - edges
  """
- from json import dumps, loads
+ from builtins import list
  args = dict(aDict)
  op   = args.pop('op',None)
  ret = {'id':args.get('id',0),'type':args.pop('type','map')}
@@ -128,7 +127,7 @@ def network(aDict, aCTX):
    sql_multipoint = "SELECT CAST({0} AS UNSIGNED) AS a_device, di.id AS a_interface, di.name AS a_name, di.snmp_index AS a_index FROM device_interfaces AS di WHERE di.multipoint = 1 AND di.device = {0}"
    sql_multi_peer = "SELECT di.id AS b_interface, di.snmp_index AS b_index, di.device AS b_device, di.name AS b_name FROM device_interfaces AS di WHERE di.peer_interface = {0}"
    for lvl in range(0,args.get('diameter',2)):
-    level_ids = nodes.keys()
+    level_ids = list(nodes.keys())
     # We cannot iterate as the current data format required that we add each new device found, for each id - otherwise multihomed get's screwed
     for current_id in level_ids:
      current_node = nodes[current_id]
@@ -167,7 +166,7 @@ def network(aDict, aCTX):
 
       current_node['processed'] = True
       # Check if from <--> to  connection is multihomed, then make dynamic, else straight, local_nodes function as reduction of set of nodes to inspect
-      multihomed = [k for k,v in local_nodes.iteritems() if v['connected'].count(current_id) > 1]
+      multihomed = [k for k,v in local_nodes.items() if v['connected'].count(current_id) > 1]
       for con in local_edges:
        con['type'] = {'type':'dynamic'} if con['b_device'] in multihomed else False
       edges.extend(local_edges)

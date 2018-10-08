@@ -4,7 +4,7 @@ DB module
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 
 ############################################# Logger ######################################
@@ -16,7 +16,7 @@ def log(aMsg,aID='None'):
  try:
   with open(Settings['logs']['system'], 'a') as f:
    from time import localtime, strftime
-   f.write(unicode("%s (%s): %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))
+   f.write(str("%s (%s): %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))
  except: pass
 
 ############################################ Database ######################################
@@ -113,17 +113,17 @@ class DB(object):
   self.count['UPDATE'] += 1
   self._dirty = True
   key_len = len(aTable) + 1
-  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k[key_len:],"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.iteritems() if k.startswith(aTable)]),aCondition))
+  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k[key_len:],"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.items() if k.startswith(aTable)]),aCondition))
 
  def update_dict(self, aTable, aDict, aCondition = "TRUE"):
   self.count['UPDATE'] += 1
   self._dirty = True
-  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k,"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.iteritems()]),aCondition))
+  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k,"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.items()]),aCondition))
 
  def insert_dict(self, aTable, aDict, aException = ""):
   self.count['INSERT'] += 1
   self._dirty = True
-  return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(aDict.keys()),",".join(["'%s'"%v if v != 'NULL' else 'NULL' for v in aDict.values()]),aException))
+  return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(list(aDict.keys())),",".join(["'%s'"%v if v != 'NULL' else 'NULL' for v in aDict.values()]),aException))
 
 ######################################### REST ########################################
 #
@@ -140,12 +140,18 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
 
  """
  from json import loads, dumps
- from urllib2 import urlopen, Request, URLError, HTTPError
+ from urllib.request import urlopen, Request
+ from urllib.error import URLError, HTTPError
  try:
   head = { 'Content-Type': 'application/json','Accept':'application/json' }
   try:    head.update(aHeader)
   except: pass
-  req = Request(aURL, headers = head, data = dumps(aArgs) if aArgs else None)
+  if aArgs:
+   data = dumps(aArgs)
+   data = data.encode('utf-8')
+  else:
+   data = None
+  req = Request(aURL, headers = head, data = data)
   if aMethod:
    req.get_method = lambda: aMethod
   if aVerify is None or aVerify is True:
@@ -155,9 +161,9 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
    sock = urlopen(req,context=_create_unverified_context(), timeout = aTimeout)
   output = {'info':dict(sock.info()), 'code':sock.code }
   output['node'] = output['info'].pop('node','_no_node_')
-  try:    output['data'] = loads(sock.read())
+  try:    output['data'] = loads(sock.read().decode())
   except: output['data'] = None
-  if (output['info'].get('code',200) <> 200):
+  if (output['info'].get('code',200) != 200):
    output['info'].pop('server',None)
    output['info'].pop('connection',None)
    output['info'].pop('transfer-encoding',None)
@@ -166,7 +172,7 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
   sock.close()
  except HTTPError as h:
   raw = h.read()
-  try:    data = loads(raw)
+  try:    data = loads(raw.decode())
   except: data = raw
   output = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
  except URLError as e:  output = { 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}

@@ -5,7 +5,7 @@
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -24,7 +24,7 @@ def status(aDict, aCTX):
   node = aCTX.settings['nodes'][aDict['node']]
   ret  = aCTX.rest_call("%sid=sdata"%node)['data']
  except Exception as e:
-  ret = e[0] 
+  ret = e.args[0] 
  return ret
 
 #
@@ -46,7 +46,7 @@ def infra(aDict, aCTX):
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
   ret['scenes']   = { d['id']: d for d in info['scenes'] }
  except Exception as e:
-  ret = e[0]         
+  ret = e.args[0]         
  return ret        
 
 #
@@ -78,7 +78,7 @@ def scene(aDict, aCTX):
   else:
    ret = aCTX.rest_call("%sid=scene&action=list&scene=%s"%(node,aDict['scene']))['data']
  except Exception as e:
-  ret = e[0]
+  ret = e.args[0]
  return ret
 
 #
@@ -100,7 +100,7 @@ def devices(aDict, aCTX):
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
   ret['rooms']   = { d['id']:d['name'] for d in info['rooms'] }
  except Exception as e:
-  ret = e[0] 
+  ret = e.args[0] 
  return ret
 
 #
@@ -139,11 +139,11 @@ def device_info(aDict, aCTX):
   for x in info:
    try:
     service = x['service'].split(':')
-    if service[1] <> 'micasaverde-com':
+    if service[1] != 'micasaverde-com':
      entry = ret.get(x['service'],{})
      entry[x['variable']] = x['value']
      ret[x['service']] = entry
    except: pass
  except Exception as e:
-  ret = e[0] 
+  ret = e.args[0] 
  return ret

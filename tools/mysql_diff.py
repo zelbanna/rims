@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 
 #
@@ -9,7 +9,7 @@ __status__ = "Production"
 if __name__ == "__main__":
  from sys import path as syspath, argv, exit, stdout
  if len(argv) < 2:
-  print argv[0] + " <db-struct-file-to-compare>"
+  print(argv[0] + " <db-struct-file-to-compare>")
   exit(0)
 
  from os import path as ospath, getcwd
@@ -19,6 +19,6 @@ if __name__ == "__main__":
  from zdcp.core.engine import Context
  file = ospath.abspath(ospath.join(getcwd(),argv[1]))
  diffs= mysql.diff({'schema_file':file}, Context(Settings,None))
- print diffs['diffs']
+ print(diffs['diffs'])
  for line in diffs['output']:
-  print line.rstrip('\n')
+  print(line.rstrip('\n'))

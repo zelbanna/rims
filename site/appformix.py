@@ -4,7 +4,7 @@ HTML5 Ajax Appformix module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__= "Beta"
 
 ##################################### Report ##################################
@@ -21,7 +21,7 @@ def list(aWeb):
   else:
    cookie_appformix['token'] = res['token']
    cookie_appformix['node'] =  cookie_openstack['appformix']
-   value = ",".join(["%s=%s"%(k,v) for k,v in cookie_appformix.iteritems()])
+   value = ",".join(["%s=%s"%(k,v) for k,v in cookie_appformix.items()])
    aWeb.wr("<SCRIPT>set_cookie('appformix','%s','%s');</SCRIPT>"%(value,res['expires']))
 
  from datetime import datetime

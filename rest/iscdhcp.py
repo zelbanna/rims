@@ -6,7 +6,7 @@ Settings under section 'iscdhcp':
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "DHCP"
@@ -61,7 +61,7 @@ def sync(aDict, aCTX):
 
  Output:
  """
- from time import localtime, strftime
+ from time import strftime, localtime
  entries = aCTX.node_call('master','device','server_macs',{'id':aDict['id']})
  # Create file
  with open(aCTX.settings['iscdhcp']['static'],'w') as config_file:
@@ -73,7 +73,7 @@ def sync(aDict, aCTX):
  from subprocess import check_output, CalledProcessError
  ret = {}
  try:
-  ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split())
+  ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split()).decode()
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output
@@ -116,7 +116,7 @@ def update(aDict, aCTX):
   from subprocess import check_output, CalledProcessError
   ret = {}
   try:
-   ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split())
+   ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split()).decode()
   except CalledProcessError as c:
    ret['code'] = c.returncode
    ret['output'] = c.output
@@ -142,7 +142,7 @@ def restart(aDict, aCTX):
  from subprocess import check_output, CalledProcessError
  ret = {}
  try:
-  ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split())
+  ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split()).decode()
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output

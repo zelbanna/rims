@@ -1,6 +1,6 @@
-"""ZDCP generic REST module. Provides system and DB interaction for application, settings and resources"""
+"""Generic REST module. Provides system and DB interaction for application, settings and resources"""
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'master'
@@ -28,7 +28,7 @@ def application(aDict, aCTX):
   rows = db.get_rows()
  ret['choices'] = [{'display':'Username', 'id':'system_login', 'data':rows}]
  cookie = aDict
- ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
+ ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.items()])
  ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 
@@ -155,27 +155,26 @@ def report(aDict, aCTX):
  db_counter = {}
  for t in enumerate():
   try:
-   for k,v in t._ctx.db.count.iteritems():
+   for k,v in t._ctx.db.count.items():
     db_counter[k] = db_counter.get(k,0) + v
   except:pass
  node = aCTX.settings['system']['id']
  node_url = aCTX.settings['nodes'][node]
  ret = []
- ret.append({'info':'Version','value':__version__})
+ ret.append({'info':'Version','value':__version__ = "5.0GA"
  ret.append({'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
  ret.append({'info':'Node URL','value':node_url})
  ret.append({'info':'Worker pool','value':aCTX.workers.pool_size()})
  ret.append({'info':'Queued tasks','value':aCTX.workers.queue_size()})
  ret.append({'info':'Memory objects','value':len(get_objects())})
- ret.append({'info':'DB operations','value':", ".join(["%s:%s"%(k.upper(),v) for k,v in db_counter.iteritems()])})
+ ret.append({'info':'DB operations','value':", ".join(["%s:%s"%(k.upper(),v) for k,v in db_counter.items()])})
  ret.append({'info':'Python version','value':version})
  if node == 'master':
   from zdcp.rest.device import system_oids
-  ret.append({'info':'Unhandled detected OIDs','value':",".join(list(str(x) for x in system_oids(None,aCTX)['unhandled']))})
- ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in aCTX.settings.get('files',{}).iteritems()))
+  ret.append({'info':'Unhandled detected OIDs','value':",".join([str(x) for x in system_oids(None,aCTX)['unhandled']])})
+ ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in aCTX.settings.get('files',{}).items()))
  ret.extend(list({'info':'Active Worker','value':"%s => %s"%(x[0],x[2])} for x in aCTX.workers.activities()))
- # ret.extend(list({'info':'Active Threads','value':"%s => %s"%(t.name,t.is_alive())} for t in enumerate()))
- ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in aCTX.settings.get('system',{}).iteritems()))
+ ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in aCTX.settings.get('system',{}).items()))
  ret.extend(list({'info':'Imported module','value':x} for x in modules.keys() if isinstance(modules[x],ModuleType) and x.startswith('zdcp')))
  return ret
 
@@ -355,8 +354,8 @@ def settings_save(aDict, aCTX):
   aCTX.settings.clear()
   with open(ret['config_file']) as sfile:
    temp = loads(sfile.read())
-  for section,content in temp.iteritems():
-   for key,parameters in content.iteritems():
+  for section,content in temp.items():
+   for key,parameters in content.items():
     if not aCTX.settings.get(section):
      aCTX.settings[section] = {}
     aCTX.settings[section][key] = parameters['value']
@@ -377,7 +376,7 @@ def settings_save(aDict, aCTX):
    try: master = aCTX.rest_call("%s/api/system_settings_fetch"%aCTX.settings['system']['master'],{'node':aCTX.settings['system']['id']})['data']
    except: pass
    else:
-    for section,content in master.iteritems():
+    for section,content in master.items():
      if aCTX.settings.get(section):
       aCTX.settings[section].update(content)
      else:
@@ -588,6 +587,8 @@ def resources_info(aDict, aCTX):
  op = aDict.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
+   if aDict['icon'] == 'None':
+    aDict['icon'] = '../images/icon-na.png'
    if not id == 'new':
     ret['update'] = db.update_dict('resources',aDict,'id=%s'%id)
    else:
@@ -1029,5 +1030,5 @@ def task_list(aDict, aCTX):
    threads = task_status({'node':aDict['node']})
    for task in ret['tasks']:
     task['state'] = threads.pop("P%s"%task['id'],'EXITED')
-   ret['orphan'] = [t for t in threads.items()]
+   ret['orphan'] = [(k,v) for k,v in threads.items()]
  return ret

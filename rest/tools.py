@@ -5,7 +5,7 @@ Tools module for various tools
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -73,7 +73,7 @@ def rest_explore(aDict, aCTX):
  if aDict.get('api'):
   ret['data'].append(__analyze(aDict.get('api')))
  else:
-  from os import listdir, path as ospath
+  from os import path as ospath, listdir
   restdir = ospath.abspath(ospath.join(ospath.dirname(__file__)))
   for restfile in listdir(restdir):
    if restfile[-3:] == '.py':
@@ -109,7 +109,7 @@ def logs_clear(aDict, aCTX):
  """
  from zdcp.core.common import log
  ret = {'node':aCTX.settings['system']['id'],'file':{}}
- for name,file in aCTX.settings['logs'].iteritems():
+ for name,file in aCTX.settings['logs'].items():
   try:
    open(file,'w').close()
    ret['file'][name] = 'CLEARED'
@@ -131,7 +131,7 @@ def logs_get(aDict, aCTX):
  """
  ret = {}
  count = int(aDict.get('count',15))
- for name,file in aCTX.settings['logs'].iteritems():
+ for name,file in aCTX.settings['logs'].items():
   if aDict.get('name',name) == name:
    lines = ["\r" for i in range(count)]
    pos = 0
@@ -140,7 +140,7 @@ def logs_get(aDict, aCTX):
      for line in f:
       lines[pos] = line
       pos = (pos + 1) % count
-     ret[name] = [lines[(pos + n) % count][:-1] for n in reversed(range(count))]
+     ret[name] = [lines[(pos + n) % count][:-1] for n in reversed(list(range(count)))]
    except Exception as err:
     ret[name] = ['ERROR: %s'%(str(err))]
  return ret
@@ -160,7 +160,7 @@ def file_list(aDict, aCTX):
   - 'path' relative the api to access the files
 
  """
- from os import listdir, path as ospath
+ from os import path as ospath, listdir
  ret = {'files':[]}
  try:
   if aDict.get('fullpath'):
@@ -191,7 +191,7 @@ def service_list(aDict, aCTX):
 
  Output:          
  """
- return {'services':[{'name':x,'service':aCTX.settings['services'][x]} for x in aCTX.settings['services'].keys()]}
+ return {'services':[{'name':x,'service':aCTX.settings['services'][x]} for x in list(aCTX.settings['services'].keys())]}
 
 
 #
@@ -211,7 +211,7 @@ def service_info(aDict, aCTX):
   from time import sleep
   try:
    command = "sudo /etc/init.d/%(service)s %(op)s"%aDict
-   ret['op'] = check_output(command.split()).strip()
+   ret['op'] = check_output(command.split()).decode().strip()
   except CalledProcessError as c:
    ret['op'] = c.output.strip()
   else:
@@ -219,7 +219,7 @@ def service_info(aDict, aCTX):
 
  try:
   command = "sudo /etc/init.d/%(service)s status"%aDict
-  output = check_output(command.split())
+  output = check_output(command.split()).decode()
   ret['code'] = 0
  except CalledProcessError as c:
   output = c.output
@@ -246,7 +246,7 @@ def database_backup(aDict, aCTX):
  """
  ret = {'filename':aDict['filename']}
  if aCTX.settings['system']['id'] == 'master':
-  from mysql import dump
+  from zdcp.mysql import dump
   data = dump({'mode':'database'})['output']
  else:
   res = aCTX.rest_call("%s/api/mysql_dump"%aCTX.settings['system']['master'],{'mode':'database'})

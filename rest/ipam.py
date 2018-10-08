@@ -1,6 +1,6 @@
 """IPAM API module. Provides IP network and address management"""
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -136,7 +136,7 @@ def network_inventory(aDict, aCTX):
   entries = db.get_rows()
   if 'mac' in aDict.get('extra',[]):
    for ip in entries:
-    ip['mac'] = ':'.join(s.encode('hex') for s in str(hex(ip['mac']))[2:].zfill(12).decode('hex')).lower()
+    ip['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(ip['mac']))]*2))
   if not aDict.get('dict'):
    ret['entries'] = entries
   else:
@@ -403,7 +403,7 @@ def address_status_check(aDict, aCTX):
   changed = list(dev['id'] for dev in aDict['address_list'] if (dev['new'] != dev['state'] and dev['new'] == n))
   if len(changed) > 0:
    args['up' if n == 1 else 'down'] = changed
- if len(args.keys()) > 0:
+ if len(list(args.keys())) > 0:
   if aCTX.settings['system']['id'] == 'master':
    address_status_report(args, aCTX)
   else:

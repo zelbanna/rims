@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """Program docstring.
 
@@ -6,7 +6,7 @@ Installs System
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 
 from sys import argv, stdout, path as syspath
@@ -37,8 +37,8 @@ settings = {}
 settingsfile = ospath.abspath(settingsfilename)
 with open(settingsfile,'r') as sfile:
  temp = load(sfile)
-for section,content in temp.iteritems():
- for key,params in content.iteritems():
+for section,content in temp.items():
+ for key,params in content.items():
   if not settings.get(section):
    settings[section] = {}
   settings[section][key] = params['value']
@@ -60,7 +60,7 @@ with open(ospath.abspath(ospath.join(pkgdir,'templates',settings['system']['temp
 template = template.replace("%PKGDIR%",pkgdir)
 with open(ospath.abspath(ospath.join(pkgdir,settings['system']['template'])),'w+') as f:
  f.write(template)
-chmod(ospath.abspath(ospath.join(pkgdir,settings['system']['template'])),0755)
+chmod(ospath.abspath(ospath.join(pkgdir,settings['system']['template'])),0o755)
 res['engine']= settings['system']['template']
 
 ############################################### ALL #################################################
@@ -74,19 +74,27 @@ except:
 try: import dns
 except ImportError:
  res['dns'] = 'install'
- pipmain(["install", "-q","dns"])
+ pipmain(["install", "-q","dnspython"])
+try: import paramiko
+except ImportError:
+ res['ssh'] = 'install'
+ pipmain(["install", "-q","paramiko"])
 try: import git
 except ImportError:
- res['gitpython'] = 'install'
+ res['git'] = 'install'
  pipmain(["install","-q","gitpython"])
-try: import pyvmomi
+try: import pyVmomi
 except ImportError:
- res['pyvmomi'] = 'install'
- pipmain(["install","-q","pyvmomi"])
+ res['pyVmomi'] = 'install'
+ pipmain(["install","-q","pyVmomi"])
 try: import netsnmp
 except ImportError:
- res['netsnmp-python'] = 'install'
- pipmain(["install","-q","netsnmp-python"])
+ res['netsnmp'] = 'install'
+ pipmain(["install","-q","python3-netsnmp"])
+try: import jnpr.junos
+except ImportError:
+ res['junos-eznc'] = 'install'
+ pipmain(["install","-q","junos-eznc"])
 
 ############################################ MASTER ###########################################
 #
@@ -229,7 +237,7 @@ else:
  except Exception as e: res['fetch'] = str(e)
  else:
   if master:
-   for section,content in master.iteritems():
+   for section,content in master.items():
     if settings.get(section): settings[section].update(content)
     else: settings[section] = content
 

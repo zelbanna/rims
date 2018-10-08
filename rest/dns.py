@@ -5,7 +5,7 @@ Settings:
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -35,7 +35,7 @@ def domain_list(aDict, aCTX):
    ret.update({'sync':{'added':[],'deleted':[],'type_fix':0}})
    db.do("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
    cache = db.get_dict('srv_id')
-   for srv,domains in org.iteritems():
+   for srv,domains in org.items():
     for dom in domains:
      tmp = cache.pop("%s_%s"%(srv,dom['id']),None)
      if not tmp:
@@ -44,7 +44,7 @@ def domain_list(aDict, aCTX):
       db.insert_dict('domains',{'name':dom['name'],'server_id':srv,'foreign_id':dom['id'],'type':'reverse' if 'arpa' in dom['name'] else 'forward'},"ON DUPLICATE KEY UPDATE name = '%s'"%dom['name'])
      else:
       ret['sync']['type_fix'] += db.do("UPDATE domains SET type = '%s' WHERE id = %s"%('reverse' if 'arpa' in dom['name'] else 'forward',tmp['id']))
-   for id,dom in cache.iteritems():
+   for id,dom in cache.items():
     dom.pop('srv_id',None)
     ret['sync']['deleted'].append(dom)
     db.do("DELETE FROM domains WHERE id = '%s'"%dom['id'])
@@ -347,7 +347,7 @@ def record_device_update(aDict, aCTX):
      ret['server']['PTR'] = 'remain'
    data['PTR']= {'server':infra['server'], 'node':infra['node'], 'domain_id':infra['domain_id'], 'args':{'type':'PTR','id':ptr_id, 'domain_id':infra['foreign_id'], 'content':fqdn, 'name':ptr}}
 
- for type,infra in data.iteritems():
+ for type,infra in data.items():
   if infra['server']:
    infra['args']['op'] = 'update'
    res = aCTX.node_call(infra['node'],infra['server'],'record_info',infra['args'])
@@ -457,14 +457,14 @@ def consistency_check(aDict, aCTX):
   for type in ['a','ptr']:
    records = {}
    # Fetch records from each server
-   for id,data in servers.iteritems():
-    records[id] = record_list({'type':type,'server_id':id})['records']
+   for id,data in servers.items():
+    records[id] = record_list({'type':type,'server_id':id}, aCTX)['records']
    # Get 'type' data for all devices
    db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ia.ip) AS ip, %s_id AS record_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))
    devices = db.get_dict('ip' if type == 'a' else 'fqdn')
 
    # Now check them records for matching devices and translate domain_id into centralized cached one 
-   for srv,recs in records.iteritems():
+   for srv,recs in records.items():
     for rec in recs:
      dev = devices.pop(rec['content'],{'record_id':0,'fqdn':None,'device_id':None,'a_dom_id':None})
      dom = foreign[rec['domain_id']]['id']

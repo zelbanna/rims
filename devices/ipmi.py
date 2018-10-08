@@ -8,10 +8,10 @@ IPMI interworking module
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 
-from generic import Device as GenericDevice
+from .generic import Device as GenericDevice
 
 ################################### IPMI #######################################
 
@@ -23,7 +23,7 @@ class Device(GenericDevice):
  def get_info(self, agrep):
   from subprocess import check_output
   result = []
-  readout = check_output("ipmitool -H " + self._ip + " -U " + self._settings['ipmi']['username'] + " -P " + self._settings['ipmi']['password'] + " sdr | grep -E '" + agrep + "'",shell=True)
+  readout = check_output("ipmitool -H " + self._ip + " -U " + self._settings['ipmi']['username'] + " -P " + self._settings['ipmi']['password'] + " sdr | grep -E '" + agrep + "'",shell=True).decode()
   for fanline in readout.split('\n'):
    if fanline is not "":
     fan = fanline.split()
@@ -34,7 +34,7 @@ class Device(GenericDevice):
   from io import open
   from os import devnull
   from subprocess import check_call
-  from zdcp.core.genlib import str2hex
+  from ..core.genlib import str2hex
   FNULL = open(devnull, 'w')
   rear  = str2hex(arear)
   front = str2hex(afront)

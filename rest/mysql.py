@@ -1,6 +1,6 @@
 """MYSQL API module. This module provides system support for mysql DB operations"""
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -38,7 +38,7 @@ def dump(aDict, aCTX):
   else:
    cmd.extend(['--no-create-info','--skip-triggers'])
   output.append("USE %s;"%db)
-  data = check_output(cmd)
+  data = check_output(cmd).decode()
   for line in data.split('\n'):
    if not line[:2] in [ '/*','--']:
     if "AUTO_INCREMENT=" in line:
@@ -75,7 +75,7 @@ def restore(aDict, aCTX):
 
  try:
   cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '<',aDict['file']]
-  output = check_output(" ".join(cmd), shell=True)
+  output = check_output(" ".join(cmd), shell=True).decode()
   return { 'result':'OK','output':output.split('\n') }
  except Exception as e:
   return {'result':'NOT_OK', 'output':[str(e)] }

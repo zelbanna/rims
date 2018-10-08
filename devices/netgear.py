@@ -4,13 +4,13 @@ Netgear module
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__  = "Production"
 __type__    = "network"
 __icon__    = "../images/viz-ex.png"
 __oid__     = 4526
 
-from generic import Device as GenericDevice
+from .generic import Device as GenericDevice
 
 ######################################## Netgear ########################################
 
@@ -24,6 +24,6 @@ class Device(GenericDevice):
 
  def interfaces(self):
   interfaces = super(Device,self).interfaces()
-  for k,v in interfaces.iteritems():
+  for k,v in interfaces.items():
    v['name'] = "g%s"%k
   return interfaces

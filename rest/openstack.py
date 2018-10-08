@@ -13,11 +13,12 @@ Settings:
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from zdcp.devices.openstack import Device
+from datetime import datetime,timedelta
 
 #
 #
@@ -31,7 +32,6 @@ def application(aDict, aCTX):
   - token (optional)
  Output:
  """
- from datetime import datetime,timedelta
  ret = {'title':"%s 2 Cloud"%(aDict.get('name','iaas')),'choices':[],'message':"Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas')),'portal':'openstack' }
  node = aDict['node']
  try:
@@ -49,7 +49,7 @@ def application(aDict, aCTX):
  cookie = {'name':aDict.get('name','iaas'),'node':node,'portal':'openstack'}
  if aDict.get('appformix'):
   cookie['appformix'] = aDict.get('appformix')
- ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.iteritems()])
+ ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.items()])
  ret['expires'] = (datetime.utcnow() + timedelta(hours=1)).strftime('%a, %d %b %Y %H:%M:%S GMT')
  return ret
 
@@ -183,7 +183,6 @@ def token_list(aDict, aCTX):
 
  Output:
  """
- from datetime import datetime
  ret = {}
  with aCTX.db as db:
   ret['found'] = (db.do("SELECT id, token, node_name, node_url, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires, (UNIX_TIMESTAMP() < expires) AS valid FROM openstack_tokens WHERE username = '%s'"%aDict['username']) > 0)
@@ -200,7 +199,6 @@ def token_info(aDict, aCTX):
 
  Output:
  """
- from datetime import datetime
  ret = {}
  with aCTX.db as db:
   ret['found'] = (db.do("SELECT node_url, SELECT CAST(NOW() AS CHAR(50)) AS time, INET_NTOA(controller) AS controller, id, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires FROM openstack_tokens WHERE token = '%s'"%aDict['token']) > 0)
@@ -218,7 +216,7 @@ def heat_templates(aDict, aCTX):
 
  Output:
  """
- from os import listdir, path as ospath
+ from os import path as ospath, listdir
  ret = {'result':'OK','templates':[]}
  with aCTX.db as db:
   db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
@@ -288,7 +286,7 @@ def heat_instantiate(aDict, aCTX):
   with open(ospath.abspath(ospath.join(aCTX.settings[node]['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
    args = loads(f.read())
   args['stack_name'] = aDict['name']
-  for key,value in aDict['parameters'].iteritems():
+  for key,value in aDict['parameters'].items():
    args['parameters'][key] = value
  except Exception as e:
   ret['info'] = str(e)

@@ -1,14 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """Program docstring.
 
-ZDCP Engine
+System engine
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
-
 
 from os import path as ospath
 from sys import path as syspath, exit, setcheckinterval

@@ -1,6 +1,6 @@
 """AWX REST module."""
 __author__ = "Zacharias El Banna"
-__version__ = "4.0GA"
+__version__ = "5.0GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -94,7 +94,7 @@ def inventory_sync(aDict, aCTX):
   field = aDict['field']
   search= aDict['search']
  else:
-  search = ",".join([v for k,v in aDict.iteritems() if k[0:7] == 'device_'])
+  search = ",".join([v for k,v in aDict.items() if k[0:7] == 'device_'])
   field  = 'id'
  from zdcp.rest.device import list as device_list
  devices = device_list({'search':search,'field':field,'extra':'type'}, aCTX)['data']
@@ -181,7 +181,7 @@ def inventory_delete_hosts(aDict, aCTX):
  id   = aDict.pop('id',None)
  controller = Device(aCTX.settings['nodes'][node])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
- for host,host_id in aDict.iteritems():
+ for host,host_id in aDict.items():
   if host[0:5] == 'host_':
    res = controller.call("hosts/%s/"%host_id,None,"DELETE")
    ret['hosts'][host_id] = "OK" if res['code'] == 204 else res['info']['x-code']
