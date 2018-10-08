@@ -205,7 +205,7 @@ class ServerWorker(Thread):
   httpd.socket = aSocket
   httpd._path  = aPath
   httpd._node  = aSettings['system']['id']
-  httpd._ctx   = Context(aSettings,aWorkers)
+  self._ctx = httpd._ctx = Context(aSettings,aWorkers)
   httpd.server_bind = httpd.server_close = lambda self: None
   self.start()
   
