@@ -150,7 +150,7 @@ class QueueWorker(Thread):
  def __init__(self, aNumber, aSettings, aWorkers, aAbort, aIdle):
   Thread.__init__(self)
   self._n      = aNumber
-  self.name    = "QueueWorker(%s)"%str(aNumber).zfill(2)
+  self.name    = "QueueWorker(%02d)"%aNumber
   self._queue  = aWorkers._queue
   self._abort  = aAbort
   self._idle   = aIdle
@@ -198,7 +198,7 @@ class ServerWorker(Thread):
  def __init__(self, aNumber, aAddress, aSocket, aPath, aSettings, aWorkers):
   Thread.__init__(self)
   from http.server import HTTPServer
-  self.name   = "ServerWorker(%s)"%str(aNumber).zfill(2)
+  self.name   = "ServerWorker(%02d)"%aNumber
   self.daemon = True
   httpd = HTTPServer(aAddress, SessionHandler, False)
   self._httpd = httpd
@@ -311,7 +311,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      print(tb)
     else:
      for n,v in enumerate(tb.split('\n')):
-      self._headers["X-Debug-%s"%str(n).zfill(2)] = v
+      self._headers["X-Debug-%02d"%n] = v
   self._body = self._body.encode('utf-8')
 
  #

@@ -47,7 +47,7 @@ class DB(object):
   self.close()
 
  def __str__(self):
-  return "Database(%s@%s):[Dirty:%s,%s]"%(self._db,self._host,self._dirty,",".join("%s=%s"%i for i in self.count.items()))
+  return "Database(%s@%s):[DIRTY=%s,%s]"%(self._db,self._host,self._dirty,",".join("%s=%03d"%i for i in self.count.items()))
 
  def connect(self):
   with self._wlock:

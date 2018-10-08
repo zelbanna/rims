@@ -155,7 +155,6 @@ def report(aDict, aCTX):
  db_counter = {}
  for t in enumerate():
   try:
-   print(t._ctx.db)
    for k,v in t._ctx.db.count.items():
     db_counter[k] = db_counter.get(k,0) + v
   except:pass
