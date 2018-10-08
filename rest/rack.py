@@ -75,7 +75,7 @@ def inventory(aDict, aCTX):
    res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aDict.get('id'))
    select = db.get_row()
    ret['name'] = select.pop('name',"Noname")
-   ids = ",".join([str(x) for x in [ select['pdu_1'],select['pdu_2'],select['console']] if x])
+   ids = ",".join(str(x) for x in [ select['pdu_1'],select['pdu_2'],select['console']] if x)
    if len(ids) > 0:
     db.do(sqlbase%("devices.id IN(%s)"%ids))
     for item in db.get_rows():

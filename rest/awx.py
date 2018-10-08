@@ -94,7 +94,7 @@ def inventory_sync(aDict, aCTX):
   field = aDict['field']
   search= aDict['search']
  else:
-  search = ",".join([v for k,v in aDict.items() if k[0:7] == 'device_'])
+  search = ",".join(v for k,v in aDict.items() if k[0:7] == 'device_')
   field  = 'id'
  from zdcp.rest.device import list as device_list
  devices = device_list({'search':search,'field':field,'extra':'type'}, aCTX)['data']

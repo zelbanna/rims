@@ -89,7 +89,7 @@ def portal(aWeb):
   res = aWeb.rest_call("system_authenticate",{'id':id,'username':username})
   if res['authenticated'] == "OK":
    cookie.update({'id':id,'token':res['token']})
-   value = ",".join(["%s=%s"%(k,v) for k,v in cookie.items()])
+   value = ",".join("%s=%s"%(k,v) for k,v in cookie.items())
    aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(value,res['expires']))
   else:
    aWeb.wr("<SCRIPT>erase_cookie('system');</SCRIPT>")

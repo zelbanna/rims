@@ -45,7 +45,7 @@ def inventory(aWeb):
  aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Groups</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['hosts']:
   name = "<A CLASS=z-op DIV=div_content_right URL='device_info?id=%s'>%s</A>"%(row['instance_id'],row['name']) if row['instance_id'] != "" else row['name']
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(row['id'],name,row['description'],",".join([k['name'] for k in row['groups']])))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(row['id'],name,row['description'],",".join(k['name'] for k in row['groups'])))
   aWeb.wr("<INPUT TYPE=CHECKBOX VALUE=%(id)s NAME='host_%(id)s'>"%row)
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></DIV>")

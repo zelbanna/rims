@@ -49,7 +49,7 @@ def application(aDict, aCTX):
  cookie = {'name':aDict.get('name','iaas'),'node':node,'portal':'openstack'}
  if aDict.get('appformix'):
   cookie['appformix'] = aDict.get('appformix')
- ret['cookie'] = ",".join(["%s=%s"%(k,v) for k,v in cookie.items()])
+ ret['cookie'] = ",".join("%s=%s"%(k,v) for k,v in cookie.items())
  ret['expires'] = (datetime.utcnow() + timedelta(hours=1)).strftime('%a, %d %b %Y %H:%M:%S GMT')
  return ret
 

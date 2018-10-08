@@ -668,7 +668,7 @@ def network_interface_status(aDict, aCTX):
  """
  ret = {'local':[],'remote':[]}
  with aCTX.db as db:
-  trim = "" if not aDict.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join([str(x) for x in aDict['subnets']]))
+  trim = "" if not aDict.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join(str(x) for x in aDict['subnets']))
   db.do("SELECT ipam_networks.id, servers.node, servers.server FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   subnets = db.get_rows()
   for sub in subnets:

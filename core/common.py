@@ -113,17 +113,17 @@ class DB(object):
   self.count['UPDATE'] += 1
   self._dirty = True
   key_len = len(aTable) + 1
-  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k[key_len:],"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.items() if k.startswith(aTable)]),aCondition))
+  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join("%s=%s"%(k[key_len:],"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.items() if k.startswith(aTable)),aCondition))
 
  def update_dict(self, aTable, aDict, aCondition = "TRUE"):
   self.count['UPDATE'] += 1
   self._dirty = True
-  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join(["%s=%s"%(k,"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.items()]),aCondition))
+  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join("%s=%s"%(k,"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.items()),aCondition))
 
  def insert_dict(self, aTable, aDict, aException = ""):
   self.count['INSERT'] += 1
   self._dirty = True
-  return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(list(aDict.keys())),",".join(["'%s'"%v if v != 'NULL' else 'NULL' for v in aDict.values()]),aException))
+  return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(list(aDict.keys())),",".join("'%s'"%v if v != 'NULL' else 'NULL' for v in aDict.values()),aException))
 
 ######################################### REST ########################################
 #

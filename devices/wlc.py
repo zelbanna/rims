@@ -46,7 +46,7 @@ class Device(GenericDevice):
   for res in cssidobjs:
    macbase=res.tag[34:]
    mac = (macbase+"."+res.iid).split(".")
-   mac = ":".join([hex(int(x))[2:] for x in mac])
+   mac = ":".join(hex(int(x))[2:] for x in mac)
    try:
     clientname = gethostbyaddr(ipdict[macbase])[0]
    except:

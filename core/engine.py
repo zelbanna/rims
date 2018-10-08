@@ -390,7 +390,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    if fullpath.endswith("/"):
     self._headers['Content-type']='text/html; charset=utf-8'
     _, _, filelist = next(walk(fullpath), (None, None, []))
-    self._body = ("<BR>".join(["<A HREF='{0}'>{0}</A>".format(file) for file in filelist])).encode('utf-8')
+    self._body = ("<BR>".join("<A HREF='{0}'>{0}</A>".format(file) for file in filelist)).encode('utf-8')
    else:
     with open(fullpath, 'rb') as file:
      self._body = file.read()
@@ -486,10 +486,10 @@ class Stream(object):
   return { k:v for k,v in self._form.items() if not k in aExcept }
 
  def get_args(self,aExcept = []):
-  return "&".join(["%s=%s"%(k,v) for k,v in self._form.items() if not k in aExcept])
+  return "&".join("%s=%s"%(k,v) for k,v in self._form.items() if not k in aExcept)
 
  def button(self,aImg,**kwargs):
-  return " ".join(["<A CLASS='btn z-op small'"," ".join(["%s='%s'"%(k,v) for k,v in kwargs.items()]),"><IMG SRC='../images/btn-%s.png'></A>"%(aImg)])
+  return "<A CLASS='btn z-op small' " + " ".join("%s='%s'"%(k,v) for k,v in kwargs.items()) + "><IMG SRC='../images/btn-%s.png'></A>"%(aImg)
 
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):

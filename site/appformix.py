@@ -21,7 +21,7 @@ def list(aWeb):
   else:
    cookie_appformix['token'] = res['token']
    cookie_appformix['node'] =  cookie_openstack['appformix']
-   value = ",".join(["%s=%s"%(k,v) for k,v in cookie_appformix.items()])
+   value = ",".join("%s=%s"%(k,v) for k,v in cookie_appformix.items())
    aWeb.wr("<SCRIPT>set_cookie('appformix','%s','%s');</SCRIPT>"%(value,res['expires']))
 
  from datetime import datetime
