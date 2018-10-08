@@ -260,7 +260,7 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def header(self):
   # Sends X-Code as response
-  self._headers.update({'X-Method':self.command,'Server':'Engine %s'%__version__ = "5.0GA"
+  self._headers.update({'X-Method':self.command,'Server':'Engine %s'%__version__,'Date':self.date_time_string()})
   code = self._headers.pop('X-Code',200)
   self.wfile.write(('HTTP/1.1 %s %s\r\n'%(code,self.responses.get(code,('Other','Server specialized return code'))[0])).encode('utf-8'))
   self._headers.update({'Content-Length':len(self._body),'Connection':'close'})
@@ -423,7 +423,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    length = int(self.headers['Content-Length'])
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
    params = {'node':args['node'],'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
-   with self.db:
+   with self._ctx.db as db:
     update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
    self._body = '{"update":%s,"success":true}'%update
   except Exception as e:
