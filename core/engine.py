@@ -10,7 +10,7 @@ from threading import Thread, Event, BoundedSemaphore
 from time import localtime, strftime, sleep, time
 from http.server import BaseHTTPRequestHandler
 from urllib.request import urlopen, Request
-from urllib.error import URLError, HTTPError
+from urllib.error import HTTPError
 from urllib.parse import unquote
 
 ######################################### Startup ########################################
@@ -71,7 +71,7 @@ class Context(object):
  def set_handler(self,aHandler):
   self.handler = aHandler
 
- def node_call(aNode, aModule, aFunction, aArgs = None):
+ def node_call(self, aNode, aModule, aFunction, aArgs = None):
   if self.node != aNode:
    ret = self.rest_call("%s/api/%s_%s"%(self.settings['nodes'][aNode],aModule,aFunction),aArgs)['data']
   else:
@@ -296,8 +296,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      try:    data = loads(raw.decode())
      except: data = raw
      self._headers.update({ 'X-Exception':'HTTPError', 'X-Code':h.code, 'X-Info':dumps(dict(h.info())), 'X-Data':data })
-    except URLError as e: self._headers.update({ 'X-Exception':'URLError', 'X-Code':590, 'X-Info':str(e)})
-    except Exception as e: self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':591, 'X-Info':str(e)})
+    except Exception as e: self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
     else:
      try: self._body = sock.read().decode()
      except: pass
@@ -403,9 +402,17 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def reload(self,query):
-  """ Reload a module defined by query """
+  """ Reload a system module defined by query: /reload/<path>/<module>"""
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'reload'})
-  self._body = dumps({'module':query,'reloaded':True}).encode('utf-8')
+  from sys import modules
+  from types import ModuleType
+  from importlib import reload
+  path,_,mod = query.partition('/')
+  module = modules.get("zdcp.%s.%s"%(path,mod),None)
+  try: reload(module)
+  except: reloaded = False
+  else: reloaded = True
+  self._body = dumps({'path':path, 'module':mod,'reloaded':reloaded}).encode('utf-8')
 
 ########################################### Web stream ########################################
 #

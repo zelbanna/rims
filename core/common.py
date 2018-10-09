@@ -141,7 +141,7 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
  """
  from json import loads, dumps
  from urllib.request import urlopen, Request
- from urllib.error import URLError, HTTPError
+ from urllib.error import HTTPError
  try:
   head = { 'Content-Type': 'application/json','Accept':'application/json' }
   try:    head.update(aHeader)
@@ -175,8 +175,7 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
   try:    data = loads(raw.decode())
   except: data = raw
   output = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
- except URLError as e:  output = { 'exception':'URLError',  'code':590, 'info':{'error':str(e)}}
- except Exception as e: output = { 'exception':type(e).__name__, 'code':591, 'info':{'error':str(e)}}
+ except Exception as e: output = { 'exception':type(e).__name__, 'code':590, 'info':{'error':str(e)}}
  if output.get('exception'):
   raise Exception(output)
  return output
