@@ -5,9 +5,9 @@ __status__ = "Production"
 
 from os import walk, path as ospath
 from json import loads, dumps
-from importlib import import_module
+from importlib import import_module, reload
 from threading import Thread, Event, BoundedSemaphore
-from time import localtime, strftime, sleep, time
+from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError
@@ -19,16 +19,42 @@ from urllib.parse import unquote
 #
 # TODO: make multicore instead
 #
-def start():
+def run():
+ from sys import exit, setcheckinterval
+ from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
+ from signal import signal, SIGINT, SIGUSR1
  from zdcp.Settings import Settings
  from .common import rest_call, DB
- import socket
+ kill = Event()
+
+ def signal_handler(sig,frame):
+  if   sig == SIGINT:
+   """ TODO clean up and close all DB connections and close socket """
+   print(workers)
+   sock.close()
+   kill.set()
+  elif sig == SIGUSR1:
+   """ Catch SIGUSR1 and reload all modules """
+   from sys import modules as sys_modules
+   from types import ModuleType
+   modules = {x:False for x in sys_modules.keys() if x.startswith('zdcp.')}
+   for m in modules.keys():
+    mod = sys_modules.get(m,None)
+    if isinstance(mod,ModuleType):
+     try: reload(mod)
+     except: pass
+     else:   modules[m] = True
+   print(dumps(modules,indent=4,sort_keys=True))
+
+ signal(SIGINT, signal_handler)
+ signal(SIGUSR1,signal_handler)
+ setcheckinterval(200)
 
  try:
   node = Settings['system']['id']
   addr = ('', int(Settings['system']['port']))
-  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+  sock = socket(AF_INET, SOCK_STREAM)
+  sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
   sock.bind(addr)
   sock.listen(5)
 
@@ -47,12 +73,12 @@ def start():
    for task in tasks:
     task.update({'id':"P%s"%task['id'],'periodic':True,'args':loads(task['args'])})
     workers.add_task(task)
-  while True:
-   sleep(86400)
  except Exception as e:
   print(str(e))
+  kill.set()
   sock.close()
- return False
+ kill.wait()
+ exit(0)
 
 ########################################### Context ########################################
 #
@@ -121,6 +147,10 @@ class WorkerPool(object):
     aSema.acquire()
    self._queue.put((func,'TASK',aSema,aTask.pop('args',None),aTask))
 
+ def abort(self):
+  for a in self._aborts:
+   a.set()
+
  def join(self):
   self._queue.join()
 
@@ -145,6 +175,7 @@ class WorkerPool(object):
  
 ###################################### Threads ########################################
 #
+
 class QueueWorker(Thread):
 
  def __init__(self, aNumber, aSettings, aWorkers, aAbort, aIdle):
@@ -163,10 +194,10 @@ class QueueWorker(Thread):
  def run(self):
   from .common import log
   while not self._abort.is_set():
-   self._idle.set()
-   func, mode, sema, args, kwargs = self._queue.get(True)
-   self._idle.clear()
    try:
+    self._idle.set()
+    func, mode, sema, args, kwargs = self._queue.get(True)
+    self._idle.clear()
     self._current = kwargs.pop('id','TASK') if mode == 'TASK' else 'FUNC'
     if mode == 'FUNCTION':
      result = func(*args,**kwargs)
@@ -182,6 +213,8 @@ class QueueWorker(Thread):
       sleep(freq)
     if kwargs.get('output'):
      log("%s - %s - %s_%s COMPLETE => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(result)))
+   except SystemExit as e:
+    pass
    except Exception as e:
     log("%s - ERROR => %s"%(self.name,str(e)))
    finally:
@@ -404,15 +437,17 @@ class SessionHandler(BaseHTTPRequestHandler):
  def reload(self,query):
   """ Reload a system module defined by query: /reload/<path>/<module>"""
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'reload'})
-  from sys import modules
+  from sys import modules as sys_modules
   from types import ModuleType
-  from importlib import reload
-  path,_,mod = query.partition('/')
-  module = modules.get("zdcp.%s.%s"%(path,mod),None)
-  try: reload(module)
-  except: reloaded = False
-  else: reloaded = True
-  self._body = dumps({'path':path, 'module':mod,'reloaded':reloaded}).encode('utf-8')
+  module = 'zdcp.%s'%query.replace('/','.')
+  modules = {x:False for x in sys_modules.keys() if x.startswith(module)}
+  for m in modules.keys():
+   mod = sys_modules.get(m,None)
+   if isinstance(mod,ModuleType):
+    try: reload(mod)
+    except: pass
+    else:   modules[m] = True
+  self._body = dumps({'modules':modules}).encode('utf-8')
 
 ########################################### Web stream ########################################
 #

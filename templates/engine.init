@@ -37,6 +37,15 @@ stop() {
  fi
 }
 
+reload() {
+ if [ -f $PIDFILE ]; then
+  echo "Reloading modules for service handler @`cat $PIDFILE`"
+  kill -10 `cat $PIDFILE`
+ else
+  echo "System not running"
+ fi
+}
+
 case "$1" in
  start)
   start
@@ -45,6 +54,9 @@ case "$1" in
   stop
   ;;
  restart)
+  reload
+  ;;
+ restart_engine)
   clear
   stop
   start
@@ -74,7 +86,7 @@ case "$1" in
   mv $0 /etc/init.d/zdcp
   ;;
  *)
-  echo "Usage: $0 <start|stop|restart|upgrade|clear|install>"
+  echo "Usage: $0 <start|stop|restart|restart_engine|upgrade|clear|install>"
   exit 1
   ;;
 esac

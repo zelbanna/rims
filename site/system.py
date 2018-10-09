@@ -75,10 +75,7 @@ def login(aWeb):
   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='../images/icon-start.png' /></BUTTON>")
   aWeb.wr("</ARTICLE></DIV>")
 
-############################################## Front ###############################################
 #
-#
-# Base portal, creates DIVs for layout
 #
 def portal(aWeb):
  aWeb.put_html(aWeb.get('title','Portal'))
@@ -123,7 +120,12 @@ def report(aWeb):
  for i in info:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(i['info'],i['value']))
  aWeb.wr("</DIV></DIV></ARTICLE>")
- 
+
+#
+#
+def reload(aWeb):
+ """ Map node to URL and call reload """
+ pass
 
 ############################# NODE ###########################
 #
@@ -144,6 +146,7 @@ def node_list(aWeb):
    aWeb.wr(aWeb.button('logs',DIV='div_content_right', URL='tools_logs_show?node=%s'%row['node'], TITLE='Show Logs'))
    aWeb.wr(aWeb.button('trash',DIV='div_content_right', URL='tools_logs_clear?node=%s'%row['node'], TITLE='Clear Logs', MSG='Really clear node logs?'))
    aWeb.wr(aWeb.button('items',DIV='div_content', URL='resources_list?node=%s'%row['node'], TITLE='Node resources'))
+   aWeb.wr(aWeb.button('reload',DIV='div_content', URL='system_reload?node=%s'%row['node'], TITLE='Reload Engine'))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")

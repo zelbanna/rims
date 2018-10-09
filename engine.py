@@ -10,10 +10,8 @@ __version__ = "5.0GA"
 __status__ = "Production"
 
 from os import path as ospath
-from sys import path as syspath, exit, setcheckinterval
+from sys import path as syspath
 basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
 syspath.insert(1, basepath)
-setcheckinterval(200)
-from zdcp.core.engine import start
-start()
-exit(1)
+from zdcp.core.engine import run
+run()
