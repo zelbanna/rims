@@ -23,7 +23,7 @@ def status(aDict, aCTX):
    if count > 0:
     args = {'module':'ipam','func':'address_status_check','args':{'address_list':db.get_rows(),'subnet_id':sub['id']},'output':False}
     if not sub['node'] or sub['node'] == 'master':
-     aCTX.workers.add_task(args)
+     aCTX.workers.add_transient(args)
      ret['local'].append(sub['id'])
     else:
      aCTX.rest_call("%s/api/system_task_worker?node=%s"%(aCTX.settings['nodes'][sub['node']],sub['node']),args)['data']
@@ -198,7 +198,7 @@ def network_discover(aDict, aCTX):
   sema = aCTX.workers.semaphore(simultaneous)
   for ip in range(ip_start,ip_end):
    if not ip_list.get(ip):
-    aCTX.workers.add_sema(__detect_thread,sema,ip,addresses)
+    aCTX.workers.add_semaphore(__detect_thread,sema,ip,addresses)
   aCTX.workers.block(sema,simultaneous)
  except Exception as err:
   ret['error']   = str(err)
@@ -395,7 +395,7 @@ def address_status_check(aDict, aCTX):
 
  sema = aCTX.workers.semaphore(20)  
  for dev in aDict['address_list']:
-  aCTX.workers.add_sema(__pinger,sema, {'dev':dev})
+  aCTX.workers.add_semaphore(__pinger,sema, {'dev':dev})
  aCTX.workers.block(sema,20)
 
  args = {}

@@ -165,6 +165,7 @@ def report(aDict, aCTX):
  ret.append({'info':'Node URL','value':node_url})
  ret.append({'info':'Worker pool','value':aCTX.workers.pool_size()})
  ret.append({'info':'Queued tasks','value':aCTX.workers.queue_size()})
+ ret.append({'info':'Scheduled tasks','value':aCTX.workers.scheduler_size()})
  ret.append({'info':'Memory objects','value':len(get_objects())})
  ret.append({'info':'DB operations','value':", ".join("%s:%s"%i for i in db_counter.items())})
  ret.append({'info':'Python version','value':version})
@@ -174,7 +175,6 @@ def report(aDict, aCTX):
   from zdcp.rest.device import system_oids
   ret.append({'info':'Unhandled detected OIDs','value':",".join(str(x) for x in system_oids(None,aCTX)['unhandled'])})
  ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in aCTX.settings.get('files',{}).items()))
- ret.extend(list({'info':'Active Worker','value':"%s => %s"%(x[0],x[2])} for x in aCTX.workers.activities()))
  ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in aCTX.settings.get('system',{}).items()))
  ret.extend(list({'info':'Imported module','value':"%s (%s refs)"%(x,getrefcount(x))} for x in modules.keys() if isinstance(modules[x],ModuleType) and x.startswith('zdcp')))
  return ret
@@ -945,7 +945,11 @@ def task_worker(aDict, aCTX):
  Output:
   - result
  """
- aCTX.workers.add_task(aDict)
+ frequency = aDict.pop('frequency',None)
+ if frequency:
+  aCTX.workers.add_periodic(frequency,aDict)
+ else:
+  aCTX.workers.add_transient(aDict)
  return {'res':'TASK_ADDED'}
 
 #
@@ -959,7 +963,7 @@ def task_add(aDict, aCTX):
   - func (required)
   - args (required)
   - periodic  (optional) (False: transient, True: periodic, defaults: False)
-  - frequency (optional required, seconds for periodic tasks, defaults: 300 seconds)
+  - frequency (optional required, seconds for periodic tasks)
   - output (optional)
 
  Output:
@@ -971,30 +975,17 @@ def task_add(aDict, aCTX):
  aDict = aDict
  if aDict.get('periodic'):
   with aCTX.db as db:
-   db.do("INSERT INTO task_jobs (node_id, module, func, args, frequency,output) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i,%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300),0 if not aDict.get('output') else 1))
+   db.do("INSERT INTO tasks (node_id, module, func, args, frequency,output) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i,%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300),0 if not aDict.get('output') else 1))
    aDict['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
-  aCTX.workers.add_task(aDict)
+  frequency = aDict.pop('frequency',None)
+  if frequency:
+   aCTX.workers.add_periodic(frequency,aDict)
+  else:
+   aCTX.workers.add_transient(aDict)
   ret['result'] = 'ADDED'
  else:
   ret.update(aCTX.rest_call("%s/api/system_task_worker"%aCTX.settings['nodes'][node],aDict)['data'])
- return ret
-
-#
-#
-def task_status(aDict, aCTX):
- """ List workers status
-
- Args:
-  - node (required)
-
- Output:
- """
- ret = {}
- if aDict['node'] == aCTX.settings['system']['id']:
-  ret = aCTX.workers.activities()
- else:
-  ret = aCTX.rest_call("%s/api/system_task_status"%aCTX.settings['nodes'][aDict['node']],aDict)['data']
  return ret
 
 #
@@ -1009,13 +1000,8 @@ def task_list(aDict, aCTX):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT task_jobs.*, nodes.node FROM task_jobs LEFT JOIN nodes ON nodes.id = task_jobs.node_id WHERE node_id IN (SELECT id FROM nodes WHERE node LIKE '%%%s%%')"%aDict.get('node',''))
+  ret['count'] = db.do("SELECT tasks.*, nodes.node FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node_id IN (SELECT id FROM nodes WHERE node LIKE '%%%s%%')"%aDict.get('node',''))
   ret['tasks'] = db.get_rows()
   for task in ret['tasks']:
    task['output'] = (task['output']== 1)
-  if aDict.get('sync'):
-   threads = task_status({'node':aDict['node']})
-   for task in ret['tasks']:
-    task['state'] = threads.pop("P%s"%task['id'],'EXITED')
-   ret['orphan'] = [i for i in threads.items()]
  return ret

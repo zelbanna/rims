@@ -160,7 +160,6 @@ def extended(aDict, aCTX):
      pem = {'name':aDict.pop('pems_%s_name'%id,None),'pdu_unit':aDict.pop('pems_%s_pdu_unit'%id,0),'pdu_id':pdu_slot[0],'pdu_slot':pdu_slot[1]}
      ret['result']["PEM_%s"%id] = db.update_dict('device_pems',pem,'id=%s'%id)
     # DNS management
-
     if aDict.get('a_dom_id') and aDict.get('hostname') and ret['ip']:
      # Fetch info first
      # .. then check if anything has changed
@@ -179,11 +178,13 @@ def extended(aDict, aCTX):
        else:
         new_info['%s_id'%type] = 0
       ret['result']['device_info'] = db.update_dict('devices',new_info,"id='%s'"%ret['id'])
+
     rack_args = {k[10:]:v for k,v in aDict.items() if k[0:10] == 'rack_info_'}
     ret['result']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
+    ret['result']['shutdown'] = db.do("UPDATE devices SET shutdown = %s WHERE id = %s"%(aDict.get('shutdown',0),ret['id']))
 
   # Now fetch info
-  ret['found'] = (db.do("SELECT vm, devices.mac, devices.oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT vm, devices.shutdown, devices.mac, devices.oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['ip'] = ret['info'].pop('ip',None)
@@ -460,7 +461,7 @@ def discover(aDict, aCTX):
 
  sema = aCTX.workers.semaphore(20)
  for ip in ipam['addresses']:
-  aCTX.workers.add_sema(__detect_thread, sema, ip, dev_list, aCTX.settings)
+  aCTX.workers.add_semaphore(__detect_thread, sema, ip, dev_list, aCTX.settings)
  aCTX.workers.block(sema,20)
 
  # We can now do inserts only (no update) as we skip existing :-)
@@ -609,7 +610,7 @@ def network_info_discover(aDict, aCTX):
   if count > 0:
    sema = aCTX.workers.semaphore(20)
    for dev in devices:
-    aCTX.workers.add_sema(__detect_thread, sema, dev, aCTX.settings)
+    aCTX.workers.add_semaphore(__detect_thread, sema, dev, aCTX.settings)
    aCTX.workers.block(sema,20)
    for dev in devices:
     id = dev.pop('id',None)
@@ -652,7 +653,7 @@ def network_lldp_discover(aDict, aCTX):
  if count > 0:
   sema = aCTX.workers.semaphore(10)
   for dev in devices:
-   aCTX.workers.add_sema( __detect_thread, sema, dev, aCTX)
+   aCTX.workers.add_semaphore( __detect_thread, sema, dev, aCTX)
   aCTX.workers.block(sema,10)
  return {'result':'DISCOVERY_COMPLETED','new_connections':new_connections,'ins_interfaces':ins_interfaces}
 
@@ -680,7 +681,7 @@ def network_interface_status(aDict, aCTX):
      db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id'])
      dev['interfaces'] = db.get_rows()
     if not sub['node'] or sub['node'] == 'master':
-     aCTX.workers.add_task(args)
+     aCTX.workers.add_transient(args)
      ret['local'].append(sub['id'])
     else:
      aCTX.rest_call("%s/api/system_task_worker?node=%s"%(aCTX.settings['nodes'][sub['node']],sub['node']),args)['data']
@@ -1083,7 +1084,7 @@ def interface_status_check(aDict, aCTX):
 
  sema = aCTX.workers.semaphore(20)
  for dev in aDict['device_list']:
-  aCTX.workers.add_sema( __interfaces, sema, dev, aCTX.settings)
+  aCTX.workers.add_semaphore( __interfaces, sema, dev, aCTX.settings)
  aCTX.workers.block(sema,20)
  for dev in aDict['device_list']:
   if len(dev['interfaces']) > 0:

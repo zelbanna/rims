@@ -13,20 +13,21 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError
 from urllib.parse import unquote
 
-######################################### Startup ########################################
+######################################### Run ########################################
 #
 # Single process server, multiple threads to avoid blocking
 #
 # TODO: make multicore instead
 #
 def run():
+ """ run instantiate all engine entities """
  from sys import exit, setcheckinterval
  from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
  from signal import signal, SIGINT, SIGUSR1
  from zdcp.Settings import Settings
  from .common import rest_call, DB
- kill = Event()
 
+ kill = Event()
  def signal_handler(sig,frame):
   if   sig == SIGINT:
    """ TODO clean up and close all DB connections and close socket """
@@ -62,16 +63,18 @@ def run():
 
   if node == 'master':
    with DB() as db:
-    db.do("SELECT * FROM task_jobs LEFT JOIN nodes ON task_jobs.node_id = nodes.id WHERE node = 'master'")
+    db.do("SELECT * FROM tasks LEFT JOIN nodes ON tasks.node_id = nodes.id WHERE node = 'master'")
     tasks = db.get_rows()
     for task in tasks:
-     task.update({'id':"P%s"%task['id'],'periodic':True,'args':loads(task['args']),'output':(task['output'] == 1)})
-     workers.add_task(task)
+     task.update({'args':loads(task['args']),'output':(task['output'] == 1)})
+     frequency = task.pop('frequency',300)
+     workers.add_periodic(task,frequency)
   else:
    tasks = rest_call("%s/api/system_task_list"%Settings['system']['master'],{'node':node})['data']['tasks']
    for task in tasks:
-    task.update({'id':"P%s"%task['id'],'periodic':True,'args':loads(task['args'])})
-    workers.add_task(task)
+    task['args'] = loads(task['args'])
+    frequency = task.pop('frequency',300)
+    workers.add_periodic(task,frequency)
  except Exception as e:
   print(str(e))
   sock.close()
@@ -100,7 +103,6 @@ class Context(object):
   if self.node != aNode:
    ret = self.rest_call("%s/api/%s_%s"%(self.settings['nodes'][aNode],aModule,aFunction),aArgs)['data']
   else:
-   from importlib import import_module
    module = import_module("zdcp.rest.%s"%aModule)
    fun = getattr(module,aFunction,None)
    ret = fun(aArgs if aArgs else {},self)
@@ -115,34 +117,43 @@ class WorkerPool(object):
   from queue import Queue
   self._queue = Queue(0)
   self._thread_count = aThreadCount
-  self._abort   = Event()
-  self._idles   = []
-  self._threads = []
-  self._settings = aSettings
+  self._abort = Event()
+  self._idles = []
+  self._threads   = []
+  self._scheduler = []
+  self._settings  = aSettings
   for n in range(self._thread_count):
    idle  = Event()
    self._idles.append(idle)
    self._threads.append(QueueWorker(n, self._settings, self, self._abort, idle))
 
  def __str__(self):
-  return "WorkerPool(%s)"%(self._thread_count)
+  return "WorkerPool(%s):[%s,%s]"%(self._thread_count,self._queue.qsize(),len(self._scheduler))
 
- def add_sema(self, aFunction, aSema, *args, **kwargs):
+ def add_function(self, aFunction, *args, **kwargs):
+  self._queue.put((aFunction,'FUNCTION',None,args,kwargs))
+
+ def add_semaphore(self, aFunction, aSema, *args, **kwargs):
   aSema.acquire()
   self._queue.put((aFunction,'FUNCTION',aSema,args,kwargs))
 
- def add_func(self, aFunction, *args, **kwargs):
-  self._queue.put((aFunction,'FUNCTION',None,args,kwargs))
-
- def add_task(self, aTask, aSema = None):
+ def add_transient(self, aTask, aSema = None):
   try:
    mod = import_module("zdcp.rest.%s"%aTask['module'])
-   func = getattr(mod,aTask['func'],lambda x: {'THREAD_NOT_OK'})
+   func = getattr(mod,aTask['func'],None)
   except: pass
   else:
    if aSema:
     aSema.acquire()
    self._queue.put((func,'TASK',aSema,aTask.pop('args',None),aTask))
+
+ def add_periodic(self, aTask, aFrequency):
+  try:
+   mod = import_module("zdcp.rest.%s"%aTask['module'])
+   func = getattr(mod,aTask['func'],None)
+  except: pass
+  else:
+   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
 
  def abort(self):
   self._abort.set()
@@ -159,8 +170,8 @@ class WorkerPool(object):
  def pool_size(self):
   return self._thread_count
 
- def activities(self):
-  return [(t.name,t.is_alive(),t._current) for t in self._threads if not t._idle.is_set()]
+ def scheduler_size(self):
+  return len(self._scheduler)
 
  def semaphore(self,aSize):
   return BoundedSemaphore(aSize)  
@@ -172,6 +183,29 @@ class WorkerPool(object):
 ###################################### Threads ########################################
 #
 
+class ScheduleWorker(Thread):
+
+ def __init__(self, aFrequency, aFunc, aTask, aQueue, aAbort):
+  Thread.__init__(self)
+  self._freq  = aFrequency
+  self._queue = aQueue
+  self._abort = aAbort
+  self._func  = aFunc
+  self._args  = aTask.pop('args',None)
+  self._task  = aTask
+  self.daemon = True
+  self.name   = "ScheduleWorker(%s,%s)"%(aTask['id'],self._freq)
+  self.start()
+
+ def run(self):
+  sleep(self._freq - int(time())%self._freq)
+  while not self._abort.is_set():
+   self._queue.put((self._func,'TASK',None,self._args,self._task))
+   sleep(self._freq)
+  return False
+
+#
+#
 class QueueWorker(Thread):
 
  def __init__(self, aNumber, aSettings, aWorkers, aAbort, aIdle):
@@ -181,8 +215,6 @@ class QueueWorker(Thread):
   self._queue  = aWorkers._queue
   self._abort  = aAbort
   self._idle   = aIdle
-  self._idle.set()
-  self._current= None
   self._ctx    = Context(aSettings,aWorkers)
   self.daemon  = True
   self.start()
@@ -194,31 +226,18 @@ class QueueWorker(Thread):
     self._idle.set()
     func, mode, sema, args, kwargs = self._queue.get(True)
     self._idle.clear()
-    self._current = kwargs.pop('id','TASK') if mode == 'TASK' else 'FUNC'
     if mode == 'FUNCTION':
      result = func(*args,**kwargs)
-    elif not kwargs.get('periodic'):
-     result = func(args,self._ctx)
     else:
-     freq = int(kwargs.get('frequency',300))
-     sleep(freq - int(time())%freq)
-     while not self._abort.is_set():
-      result = func(args,self._ctx)
-      if kwargs.get('output'):
-       log("%s - %s - %s_%s PERIODIC => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(result)))
-      sleep(freq)
-    if kwargs.get('output'):
-     log("%s - %s - %s_%s COMPLETE => %s"%(self.name,self._current,kwargs['module'],kwargs['func'],dumps(result)))
-   except SystemExit as e:
-    pass
+     result = func(args,self._ctx)
+     if kwargs.get('output'):
+      log("%s - %s_%s => %s"%(self.name,kwargs['module'],kwargs['func'],dumps(result)))
    except Exception as e:
     log("%s - ERROR => %s"%(self.name,str(e)))
    finally:
-    """ Clear everything and release semaphore """
     if sema:
      sema.release()
     self._queue.task_done()
-    self._current = None
 
 #
 #

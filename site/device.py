@@ -125,7 +125,7 @@ def info(aWeb):
  if not dev['found']:
   aWeb.wr("<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip']))
   return
- ########################## Data Tables ######################
+ """ 3 parallell tables """
  width = 690 if dev['racked'] and not dev['info']['type_base'] == 'pdu' else 480
  aWeb.wr("<ARTICLE CLASS='info' STYLE='position:relative; height:268px; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id']))
  aWeb.wr("<FORM ID=info_form>")
@@ -167,11 +167,6 @@ def info(aWeb):
  aWeb.wr("</DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Model: </DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=model VALUE='%s'></DIV></DIV>"%(dev['info']['model']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>S/N: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=serial VALUE='%s'></DIV></DIV>"%(dev['info']['serial']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Auto shutdown if not used'>Shutdown:</DIV><DIV CLASS=td>")
- aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=0 %s>no"%(   "checked=checked" if dev['info']['shutdown'] == 0 else ""))
- aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=1 %s>yes"%(  "checked=checked" if dev['info']['shutdown'] == 1 else ""))
- aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=2 %s>reset"%("checked=checked" if dev['info']['shutdown'] == 2 else ""))
- aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("<!-- Rack Info -->")
  if dev['racked'] and not dev['info']['type_base'] == 'pdu':
@@ -246,6 +241,11 @@ def extended(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Priv OID:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['oid'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>A ID:   </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['a_id'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>PTR ID: </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev['info']['ptr_id'])
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Indicate auto-shutdown state'>Shutdown:</DIV><DIV CLASS=td>")
+ aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=0 %s>no"%(   "checked=checked" if dev['info']['shutdown'] == 0 else ""))
+ aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=1 %s>yes"%(  "checked=checked" if dev['info']['shutdown'] == 1 else ""))
+ aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=2 %s>reset"%("checked=checked" if dev['info']['shutdown'] == 2 else ""))
+ aWeb.wr("</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
  aWeb.wr("<!-- Rack Info -->")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=rack_info_rack_id>")
