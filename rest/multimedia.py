@@ -65,7 +65,7 @@ def transfer(aDict, aCTX):
   result = str(err)
  else: 
   result = 'OK'
- return {'res':result}
+ return {'result':result}
 
 #
 #
@@ -78,10 +78,10 @@ def delete(aDict, aCTX):
   
  Output:
  """
- ret = {'res':'NOT_OK'}
+ ret = {'result':'NOT_OK'}
  try: remove(ospath.join(aDict['path'],aDict['file']))
  except Exception as err: ret['error'] = str(err)
- else: ret['res'] = 'OK'
+ else: ret['result'] = 'OK'
  return ret
 
 #
@@ -196,7 +196,7 @@ def check_content(aDict, aCTX):
  Output:
  """ 
  from subprocess import Popen, PIPE, STDOUT
- ret = {'res':'NOT_OK'}
+ ret = {'result':'NOT_OK'}
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret['video'] = {'language':'eng', 'set_default':False}
  ret['audio'] = {'add':[], 'remove':[], 'add_aac':True }
@@ -210,7 +210,7 @@ def check_content(aDict, aCTX):
  try:
   p1 = Popen(["avprobe", filename], stdout=PIPE, stderr=PIPE)
   p2 = Popen(["sed","-n","s/.*Stream #[0-9]\\:\\([0-9]*\\)\(.*\\): \\([AVS][a-z]*\\)/\\3#\\1#\\2#/p"], stdin=p1.stderr, stdout=PIPE)
-  entries = p2.communicate()[0]
+  entries = p2.communicate()[0].decode()
  except Exception as e:
   ret['error'] = str(err)
  else:
@@ -240,7 +240,7 @@ def check_content(aDict, aCTX):
      else:
       ret['subtitle']['add'].append(slot)
       ret['subtitle']['languages'].append(lang)
-  ret['res'] = 'OK'
+  ret['result'] = 'OK'
  return ret
 
 #
@@ -259,7 +259,7 @@ def process(aDict, aCTX):
  from subprocess import check_call, call
  from zdcp.core.common import log
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
- ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'res':'NOT_OK','error':None}
+ ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'result':'NOT_OK','error':None}
  srt  = check_srt({'filepath':filename}, aCTX)
  info = aDict if aDict.get('name') and aDict.get('info') else check_title({'filepath':filename}, aCTX)
  dest = ospath.abspath(ospath.join(info['path'],info['name']))
@@ -340,7 +340,7 @@ def process(aDict, aCTX):
   ret['seconds'] = (int(time()) - ret['timestamp'])
   if ospath.exists(dest):
    chmod(dest, 0o666)
-   ret['res'] = 'OK'
+   ret['result'] = 'OK'
   else:
    ret['error'] = 'COMPLETE_NO_FILE'
 
@@ -362,7 +362,7 @@ def delay_set(aDict, aCTX):
  from time import time
  from subprocess import Popen, PIPE, check_call, call, STDOUT
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
- ret = {'res':'NOT_OK','timestamp':int(time())}
+ ret = {'result':'NOT_OK','timestamp':int(time())}
 
  absfile = ospath.abspath(filename)
  tmpfile = absfile + ".delayset"
@@ -370,7 +370,7 @@ def delay_set(aDict, aCTX):
  # Find subtitle position 
  try:
   p1 = Popen(["mkvmerge","--identify", filename], stdout=PIPE, stderr=PIPE)
-  entries = p1.communicate()[0]
+  entries = p1.communicate()[0].decode()
  except Exception as err:
   ret['error']= str(err)
  else:
@@ -387,5 +387,5 @@ def delay_set(aDict, aCTX):
     except Exception as err:
      ret['error'] = str(err)
     else:
-     ret['res'] = 'OK'
+     ret['result'] = 'OK'
  return ret

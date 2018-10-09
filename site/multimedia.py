@@ -91,7 +91,7 @@ def lookup(aWeb):
  data = aWeb.rest_call("multimedia_check_content",{'path':aWeb['path'],'file':aWeb['file'],'subtitle':None})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Result:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"%data['res'])
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Result:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"%data['result'])
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Video:</DIV><DIV CLASS=td>Set default: %s</DIV><DIV CLASS=td>Language: %s</DIV></DIV>"%(data['video']['set_default'],data['video']['language']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Audio:</DIV><DIV CLASS=td>Add/Remove: %s/%s</DIV><DIV CLASS=td>Add AAC: %s</DIV></DIV>"%(",".join(data['audio']['add']),",".join(data['audio']['remove']),data['audio']['add_aac']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Subtitles:</DIV><DIV CLASS=td>Add/Remove: %s/%s</DIV><DIV CLASS=td>Languages: %s</DIV></DIV>"%(",".join(data['subtitle']['add']),",".join(data['subtitle']['remove']),data['subtitle']['languages']))
