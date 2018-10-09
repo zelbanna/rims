@@ -1,8 +1,4 @@
-"""Program docstring.
-
-System engine
-
-"""
+"""System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.0GA"
 __status__ = "Production"
@@ -14,7 +10,7 @@ from threading import Thread, Event, BoundedSemaphore
 from time import localtime, strftime, sleep, time
 from http.server import BaseHTTPRequestHandler
 from urllib.request import urlopen, Request
-from urllib.error import URLError, HTTPError
+from urllib.error import HTTPError
 from urllib.parse import unquote
 
 ######################################### Startup ########################################
@@ -23,7 +19,7 @@ from urllib.parse import unquote
 #
 # TODO: make multicore instead
 #
-def start(aThreads):
+def start():
  from zdcp.Settings import Settings
  from .common import rest_call, DB
  import socket
@@ -36,7 +32,7 @@ def start(aThreads):
   sock.bind(addr)
   sock.listen(5)
 
-  workers = WorkerPool(aThreads,Settings)
+  workers = WorkerPool(Settings['system'].get('workers',20),Settings)
   servers = [ServerWorker(n,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),Settings,workers) for n in range(5)]
 
   if node == 'master':
@@ -75,7 +71,7 @@ class Context(object):
  def set_handler(self,aHandler):
   self.handler = aHandler
 
- def node_call(aNode, aModule, aFunction, aArgs = None):
+ def node_call(self, aNode, aModule, aFunction, aArgs = None):
   if self.node != aNode:
    ret = self.rest_call("%s/api/%s_%s"%(self.settings['nodes'][aNode],aModule,aFunction),aArgs)['data']
   else:
@@ -98,34 +94,15 @@ class WorkerPool(object):
   self._idles   = []
   self._threads = []
   self._settings = aSettings
-  self.run()
-
- def __del__(self):
-  self.abort()
+  for n in range(self._thread_count):
+   abort = Event()
+   idle  = Event()
+   self._aborts.append(abort)
+   self._idles.append(idle)
+   self._threads.append(QueueWorker(n, self._settings, self, abort, idle))
 
  def __str__(self):
   return "WorkerPool(%s)"%(self._thread_count)
-
- def __alive(self):
-  return True in [t.is_alive() for t in self._threads]
-
- def run(self, aBlock = False):
-  if aBlock:
-   while self.__alive():
-    sleep(1)
-  elif self.__alive():
-   return False
-  else:
-   self._aborts = []
-   self._idles = []
-   self._threads = []
-   for n in range(self._thread_count):
-    abort = Event()
-    idle  = Event()
-    self._aborts.append(abort)
-    self._idles.append(idle)
-    self._threads.append(QueueWorker(n, self._settings, self, abort, idle))
-   return True
 
  def add_sema(self, aFunction, aSema, *args, **kwargs):
   aSema.acquire()
@@ -146,12 +123,6 @@ class WorkerPool(object):
 
  def join(self):
   self._queue.join()
-
- def abort(self, aBlock = False):
-  for a in self._aborts:
-   a.set()
-   while aBlock and self.__alive():
-    sleep(1)
 
  def done(self):
   return self._queue.empty()
@@ -179,7 +150,7 @@ class QueueWorker(Thread):
  def __init__(self, aNumber, aSettings, aWorkers, aAbort, aIdle):
   Thread.__init__(self)
   self._n      = aNumber
-  self.name    = "QueueWorker(%s)"%str(aNumber).zfill(2)
+  self.name    = "QueueWorker(%02d)"%aNumber
   self._queue  = aWorkers._queue
   self._abort  = aAbort
   self._idle   = aIdle
@@ -226,27 +197,21 @@ class ServerWorker(Thread):
 
  def __init__(self, aNumber, aAddress, aSocket, aPath, aSettings, aWorkers):
   Thread.__init__(self)
-  self._node    = aSettings['system']['id']
-  self._address = aAddress
-  self._socket  = aSocket
-  self._path    = aPath
-  self._ctx     = Context(aSettings,aWorkers)
-  self.name     = "ServerWorker(%s)"%str(aNumber).zfill(2)
-  self.daemon   = True
+  from http.server import HTTPServer
+  self.name   = "ServerWorker(%02d)"%aNumber
+  self.daemon = True
+  httpd = HTTPServer(aAddress, SessionHandler, False)
+  self._httpd = httpd
+  httpd.socket = aSocket
+  httpd._path  = aPath
+  httpd._node  = aSettings['system']['id']
+  self._ctx = httpd._ctx = Context(aSettings,aWorkers)
+  httpd.server_bind = httpd.server_close = lambda self: None
   self.start()
   
  def run(self):
-  from http.server import HTTPServer
-  httpd = HTTPServer(self._address, SessionHandler, False)
-  httpd.socket    = self._socket
-  httpd._path     = self._path
-  httpd._node     = self._node
-  httpd._ctx      = self._ctx
-  httpd.server_bind = httpd.server_close = lambda self: None
-  try: httpd.serve_forever()
+  try: self._httpd.serve_forever()
   except: pass
-
-
 
 ###################################### Call Handler ######################################
 #
@@ -269,16 +234,16 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
 
  def do_GET(self):
-  self.process()
+  self.route()
   self.header()
   self.wfile.write(self._body)
 
  def do_POST(self):
-  self.process()
+  self.route()
   self.header()
   self.wfile.write(self._body)
 
- def process(self):
+ def route(self):
   """ Route request to the right function """
   path,_,query = (self.path.lstrip('/')).partition('/')
   if path == 'site':
@@ -291,6 +256,8 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.auth()
   elif path == 'register':
    self.register()
+  elif path == 'reload':
+   self.reload(query)
   else:
    # Redirect to login... OR show a list of options 'api/site/...'
    self._headers.update({'Location':'../site/system_login?application=%s'%self.server._ctx.settings['system'].get('application','system'),'X-Code':301})
@@ -298,6 +265,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def api(self,query):
+  """ API serves the REST functions """
   extras = {}
   (api,_,get) = query.partition('?')
   (mod,_,fun) = api.partition('_')
@@ -328,8 +296,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      try:    data = loads(raw.decode())
      except: data = raw
      self._headers.update({ 'X-Exception':'HTTPError', 'X-Code':h.code, 'X-Info':dumps(dict(h.info())), 'X-Data':data })
-    except URLError as e: self._headers.update({ 'X-Exception':'URLError', 'X-Code':590, 'X-Info':str(e)})
-    except Exception as e: self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':591, 'X-Info':str(e)})
+    except Exception as e: self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
     else:
      try: self._body = sock.read().decode()
      except: pass
@@ -343,12 +310,13 @@ class SessionHandler(BaseHTTPRequestHandler):
      print(tb)
     else:
      for n,v in enumerate(tb.split('\n')):
-      self._headers["X-Debug-%s"%str(n).zfill(2)] = v
+      self._headers["X-Debug-%02d"%n] = v
   self._body = self._body.encode('utf-8')
 
  #
  #
  def site(self,query):
+  """ Site - serve AJAX information """
   api,_,get = query.partition('?')
   (mod,_,fun)    = api.partition('_')
   stream = Stream(self,get)
@@ -361,8 +329,8 @@ class SessionHandler(BaseHTTPRequestHandler):
    try:
     stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
     try:
-     for key,value in e[0]['info'].items():
-      stream.wr("%s: %s<BR>"%(key,value))
+     for i in e[0]['info'].items():
+      stream.wr("%s: %s<BR>"%i)
     except: stream.wr(e[0]['info'])
     stream.wr("</DETAILS>")
    except:
@@ -374,6 +342,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def files(self,path,query):
+  """ Serve "common" system files and also route 'files' """
   query = unquote(query)
   # Infra call
   self._headers['X-Process'] = 'infra'
@@ -401,6 +370,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def auth(self):
+  """ Authenticate using node function instead of API - internally wrap this into rest API call bypassing token verification """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'auth'})
   try:
    length = int(self.headers['Content-Length'])
@@ -425,10 +395,24 @@ class SessionHandler(BaseHTTPRequestHandler):
    params = {'node':args['node'],'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
    with self._ctx.db as db:
     update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
-   self._body = '{"update":%s,"success":true}'%update
+   self._body = dumps({'update':update,'success':True}).encode('utf-8')
   except Exception as e:
-   self._body = '{"update":0,"error":"%s"}'%str(e)
-  self._body = self._body.encode('utf-8')
+   self._body = dumps({'update':0,'error':str(e)}).encode('utf-8')
+
+ #
+ #
+ def reload(self,query):
+  """ Reload a system module defined by query: /reload/<path>/<module>"""
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'reload'})
+  from sys import modules
+  from types import ModuleType
+  from importlib import reload
+  path,_,mod = query.partition('/')
+  module = modules.get("zdcp.%s.%s"%(path,mod),None)
+  try: reload(module)
+  except: reloaded = False
+  else: reloaded = True
+  self._body = dumps({'path':path, 'module':mod,'reloaded':reloaded}).encode('utf-8')
 
 ########################################### Web stream ########################################
 #
@@ -489,7 +473,7 @@ class Stream(object):
   return "&".join("%s=%s"%(k,v) for k,v in self._form.items() if not k in aExcept)
 
  def button(self,aImg,**kwargs):
-  return "<A CLASS='btn z-op small' " + " ".join("%s='%s'"%(k,v) for k,v in kwargs.items()) + "><IMG SRC='../images/btn-%s.png'></A>"%(aImg)
+  return "<A CLASS='btn z-op small' " + " ".join("%s='%s'"%i for i in kwargs.items()) + "><IMG SRC='../images/btn-%s.png'></A>"%(aImg)
 
  # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):

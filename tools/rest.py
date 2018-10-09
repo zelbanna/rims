@@ -28,9 +28,12 @@ if __name__ == "__main__":
    from zdcp.core.common import rest_call
    try:
     res = rest_call(argv[2],args, aTimeout = 300)
-    output = res['data']
    except Exception as e:
     output = e.args[0]
+   else:
+    output = res['data']
+    for x in res['info'].items():
+     print("%s: %s"%x)
   else:
    from zdcp.Settings import Settings
    ctx = Context(Settings,None)

@@ -46,8 +46,8 @@ def install(aWeb):
  res = aWeb.rest_call("tools_install?node=%s"%aWeb['node'])
  aWeb.wr("<ARTICLE CLASS='info'><P>Install results</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- for key,value in res.items():
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(key,value))
+ for i in res.items():
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%i)
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 ############################################# REST ###############################################
@@ -133,8 +133,8 @@ def logs_clear(aWeb):
  args['count'] = 18
  res = aWeb.rest_call('tools_logs_clear?node=%s'%aWeb['node'],args)
  aWeb.wr("<ARTICLE><P>%s</P>"%res['node'])
- for k,v in res['file'].items():
-  aWeb.wr("%s: %s<BR>"%(k,v))
+ for i in res['file'].items():
+  aWeb.wr("%s: %s<BR>"%i)
  aWeb.wr("</ARTICLE>"%(res))
 
 #

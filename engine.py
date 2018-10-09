@@ -15,5 +15,5 @@ basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
 syspath.insert(1, basepath)
 setcheckinterval(200)
 from zdcp.core.engine import start
-start(20)
+start()
 exit(1)

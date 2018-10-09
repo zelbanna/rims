@@ -49,7 +49,7 @@ def application(aDict, aCTX):
  cookie = {'name':aDict.get('name','iaas'),'node':node,'portal':'openstack'}
  if aDict.get('appformix'):
   cookie['appformix'] = aDict.get('appformix')
- ret['cookie'] = ",".join("%s=%s"%(k,v) for k,v in cookie.items())
+ ret['cookie'] = ",".join("%s=%s"%i for i in cookie.items())
  ret['expires'] = (datetime.utcnow() + timedelta(hours=1)).strftime('%a, %d %b %Y %H:%M:%S GMT')
  return ret
 
@@ -484,7 +484,7 @@ def contrail_floating_ips(aDict, aCTX):
  vn = controller.call("%s/virtual-network/%s"%(svc_url,aDict['virtual_network']))['data']['virtual-network']
  for fipool in vn.get('floating_ip_pools',[]):
   pool = controller.call("%s/floating-ip-pool/%s"%(svc_url,fipool['uuid']) )['data']['floating-ip-pool']
-  # print pool
+  # show pool
   for fips in pool.get('floating_ips',[]):
    fip = controller.call("%s/floating-ip/%s"%(svc_url,fips['uuid']))['data']['floating-ip']
    record = {'pool_uuid':pool['uuid'],'pool_name':pool['name'],'ip_address':fip['floating_ip_address'],'uuid':fip['uuid'],'vm_ip_address':fip.get('floating_ip_fixed_ip_address')}
