@@ -71,6 +71,10 @@ try:
  from pip import main as pipmain
 except:
  from pip._internal import main as pipmain
+try: import pymysql
+except ImportError:
+ res['pymysql'] = 'install' 
+ pipmain(["install", "-q","pymysql"])
 try: import dns
 except ImportError:
  res['dns'] = 'install'
@@ -103,10 +107,6 @@ except ImportError:
 if settings['system']['id'] == 'master':
  from importlib import import_module
 
- try: import pymysql
- except ImportError:
-  res['pymysql'] = 'install'
-  pipmain(["install", "-q","pymysql"])
  try: import eralchemy
  except ImportError:
   res['gitpython'] = 'install'
