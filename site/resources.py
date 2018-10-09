@@ -4,7 +4,7 @@ HTML5 Ajax resources module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.0GA"
+__version__ = "5.1GA"
 __status__ = "Production"
 __icon__ = '../images/icon-tools.png'
 __type__ = 'menuitem'

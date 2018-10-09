@@ -1,6 +1,6 @@
 """Generic REST module. Provides system and DB interaction for application, settings and resources"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.0GA"
+__version__ = "5.1GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'master'
@@ -474,32 +474,6 @@ def node_delete(aDict, aCTX):
 
 #
 #
-def node_module_reload(aDict, aCTX):
- """Function attempts to reload a module @ a system node identified by id or node name
-
- Args:
-  - id (optionally required)
-  - node (optionally required)
-  - module (required)
-
- Output:
-  - result.
- """
- ret = {}
- if aDict.get('node'):
-  ret['node'] = aDict['node']
- else:
-  with aCTX.db as db:
-   db.do("SELECT node FROM nodes WHERE id = %s"%aDict['id'])
-   ret['node'] = db.get_val('node')
- if ret['node'] == aCTX.settings['system']['id']:
-  ret['result'] = 'module reloaded'
- else:
-  ret['result'] = aCTX.rest_call("%s/api/system_node_module_reload"%(aCTX.settings['nodes'][ret['node']]),{'module':aDict['module']})['data']['result']
- return ret
-
-#
-#
 def node_device_mapping(aDict, aCTX):
  """Node/Device mapping translates between nodes and devices and provide the same info, it depends on the device existing or node having mapped a device (else 'found' is false)
 
@@ -531,6 +505,18 @@ def node_device_mapping(aDict, aCTX):
     ret.update(db.get_row())
  return ret
 
+#
+#
+def node_to_api(aDict, aCTX):
+ """ Function returns api for a specific node name
+
+ Args:
+  - node
+
+ Output:
+  - url
+ """
+ return {'url':aCTX.settings['nodes'][aDict['node']]}
 
 ############################################# RESOURCES #############################################
 

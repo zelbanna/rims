@@ -4,7 +4,7 @@
 
 """
 __author__ = "Zacharias El Banna"                     
-__version__ = "5.0GA"
+__version__ = "5.1GA"
 __status__ = "Production"
 from zdcp.core.common import DB, log
 

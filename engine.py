@@ -6,7 +6,7 @@ System engine
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "5.0GA"
+__version__ = "5.1GA"
 __status__ = "Production"
 
 from os import path as ospath

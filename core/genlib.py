@@ -4,7 +4,7 @@ Generic Library. For reference, make them "inline"
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "5.0GA"
+__version__ = "5.1GA"
 __status__ = "Production"
 
 ################################# Generics ####################################

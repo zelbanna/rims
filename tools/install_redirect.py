@@ -6,7 +6,7 @@ Redirector
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "5.0GA"
+__version__ = "5.1GA"
 __status__ = "Production"
 
 from sys import argv, path as syspath, exit

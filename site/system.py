@@ -4,7 +4,7 @@ HTML5 Ajax system function module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.0GA"
+__version__ = "5.1GA"
 __status__= "Production"
 __icon__ = '../images/icon-examine.png'
 __type__ = 'menuitem'
@@ -125,7 +125,13 @@ def report(aWeb):
 #
 def reload(aWeb):
  """ Map node to URL and call reload """
- pass
+ api = aWeb.rest_call("system_node_to_api",{'node':aWeb['node']})['url']
+ res = aWeb.rest_full("%s/reload"%api)
+ aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>Reload</P>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Module</DIV><DIV CLASS=th>Result</DIV></DIV><DIV CLASS=tbody>")
+ for x in res['data']['modules'].items():
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%x)
+ aWeb.wr("</DIV></DIV></ARTICLE>")
 
 ############################# NODE ###########################
 #
@@ -142,11 +148,11 @@ def node_list(aWeb):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>"%(row['node'],row['url']))
   aWeb.wr(aWeb.button('info',DIV='div_content_right', URL='system_node_info?id=%s'%row['id'], TITLE='Node info'))
   if row['system']:
-   aWeb.wr(aWeb.button('configure',DIV='div_content', URL='settings_list?node=%s'%row['node'], TITLE='Node settings'))
-   aWeb.wr(aWeb.button('logs',DIV='div_content_right', URL='tools_logs_show?node=%s'%row['node'], TITLE='Show Logs'))
-   aWeb.wr(aWeb.button('trash',DIV='div_content_right', URL='tools_logs_clear?node=%s'%row['node'], TITLE='Clear Logs', MSG='Really clear node logs?'))
-   aWeb.wr(aWeb.button('items',DIV='div_content', URL='resources_list?node=%s'%row['node'], TITLE='Node resources'))
-   aWeb.wr(aWeb.button('reload',DIV='div_content', URL='system_reload?node=%s'%row['node'], TITLE='Reload Engine'))
+   aWeb.wr(aWeb.button('configure',DIV='div_content',    URL='settings_list?node=%s'%row['node'],    TITLE='Node settings'))
+   aWeb.wr(aWeb.button('logs',DIV='div_content_right',   URL='tools_logs_show?node=%s'%row['node'],  TITLE='Show Logs'))
+   aWeb.wr(aWeb.button('trash',DIV='div_content_right',  URL='tools_logs_clear?node=%s'%row['node'], TITLE='Clear Logs', MSG='Really clear node logs?'))
+   aWeb.wr(aWeb.button('items',DIV='div_content',        URL='resources_list?node=%s'%row['node'],   TITLE='Node resources'))
+   aWeb.wr(aWeb.button('reload',DIV='div_content_right', URL='system_reload?node=%s'%row['node'],    TITLE='Reload Engine'))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
@@ -183,6 +189,8 @@ def node_device_id(aWeb):
  res = aWeb.rest_call("device_search",{'device':aWeb['hostname']})
  aWeb.wr(res['device']['id'] if res['found'] > 0 else 'NULL')
 
+#
+#
 def node_help(aWeb):
  aWeb.wr("""<ARTICLE CLASS='help' STYLE='overflow:auto'><PRE>
  Nodes offers an interface to add and delete nodes for the system

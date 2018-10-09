@@ -1,6 +1,6 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.0GA"
+__version__ = "5.1GA"
 __status__ = "Production"
 
 from os import walk, path as ospath
@@ -30,7 +30,6 @@ def run():
  def signal_handler(sig,frame):
   if   sig == SIGINT:
    """ TODO clean up and close all DB connections and close socket """
-   print(workers)
    sock.close()
    kill.set()
   elif sig == SIGUSR1:
@@ -75,9 +74,9 @@ def run():
     workers.add_task(task)
  except Exception as e:
   print(str(e))
-  kill.set()
   sock.close()
- kill.wait()
+ else:
+  kill.wait()
  exit(0)
 
 ########################################### Context ########################################
@@ -116,16 +115,14 @@ class WorkerPool(object):
   from queue import Queue
   self._queue = Queue(0)
   self._thread_count = aThreadCount
-  self._aborts  = []
+  self._abort   = Event()
   self._idles   = []
   self._threads = []
   self._settings = aSettings
   for n in range(self._thread_count):
-   abort = Event()
    idle  = Event()
-   self._aborts.append(abort)
    self._idles.append(idle)
-   self._threads.append(QueueWorker(n, self._settings, self, abort, idle))
+   self._threads.append(QueueWorker(n, self._settings, self, self._abort, idle))
 
  def __str__(self):
   return "WorkerPool(%s)"%(self._thread_count)
@@ -148,8 +145,7 @@ class WorkerPool(object):
    self._queue.put((func,'TASK',aSema,aTask.pop('args',None),aTask))
 
  def abort(self):
-  for a in self._aborts:
-   a.set()
+  self._abort.set()
 
  def join(self):
   self._queue.join()

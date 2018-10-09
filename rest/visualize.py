@@ -1,6 +1,6 @@
 """Visualize API module. This module provides data for vis.js networks"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.0GA"
+__version__ = "5.1GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 

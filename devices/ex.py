@@ -4,7 +4,7 @@ EX Module
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "5.0GA"
+__version__ = "5.1GA"
 __status__  = "Production"
 __type__    = "network"
 __icon__    = "../images/viz-ex.png"

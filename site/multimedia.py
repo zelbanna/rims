@@ -4,7 +4,7 @@ HTML5 Ajax Multimedia Controls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.0GA"
+__version__ = "5.1GA"
 __status__= "Production"
 __icon__ = '../images/icon-multimedia.png'
 
