@@ -1,0 +1,8 @@
+{
+ "node":"master",
+ "module":"ipam",
+ "func":"status",
+ "args":{},
+ "output":true,
+ "periodic":false
+}
