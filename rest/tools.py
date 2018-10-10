@@ -214,12 +214,12 @@ def service_info(aDict, aCTX):
 
  try:
   command = "sudo /etc/init.d/%(service)s status"%aDict
-  output = check_output(command.split()).decode()
+  output = check_output(command.split())
   ret['code'] = 0
  except CalledProcessError as c:
   output = c.output
   ret['code'] = c.returncode
- for line in output.split('\n'):
+ for line in output.decode().split('\n'):
   line = line.lstrip()
   if (line.lstrip())[0:7] == 'Active:':
    state = line[7:].split()
