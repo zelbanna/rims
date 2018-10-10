@@ -19,37 +19,25 @@ from zdcp.core.common import DB, rest_call
 res = {}
 
 if len(argv) < 2:
- try:
-  from zdcp.Settings import Settings as Old
- except:
-  stdout.write("Usage: {} </path/json file>\n\n!!! Import DB structure from schema.db before installing !!!\n\n".format(argv[0]))
-  exit(0)
- else:
-  settingsfilename = Old['system']['config_file']
+ stdout.write("Usage: {} </path/json file>\n\n!!! Import DB structure from schema.db before installing !!!\n\n".format(argv[0]))
+ exit(0)
 else:
- settingsfilename = argv[1]
+ settings_filename = argv[1]
  
 ############################################### ALL #################################################
 #
 # load settings
 #
 settings = {}
-settingsfile = ospath.abspath(settingsfilename)
-with open(settingsfile,'r') as sfile:
+settings_file = ospath.abspath(settings_filename)
+with open(settings_file,'r') as sfile:
  temp = load(sfile)
 for section,content in temp.items():
  for key,params in content.items():
   if not settings.get(section):
    settings[section] = {}
   settings[section][key] = params['value']
-settings['system']['config_file'] = settingsfile
-
-try:
- from zdcp import Settings as _
-except:
- with open(ospath.join(pkgdir,'Settings.py'),'w') as f:
-  f.write("Settings=%s\n"%dumps(settings))
- res['bootstrap'] = 'container'
+settings['system']['config_file'] = settings_file
 
 ############################################### ALL #################################################
 #
@@ -169,7 +157,6 @@ if settings['system']['id'] == 'master':
      stdout.write("Restore failed too! Restore manually\n")
      exit(1)
 
-  # Install DB bootstrap settings
   db = DB(database,host,username,password)
   db.connect()
 

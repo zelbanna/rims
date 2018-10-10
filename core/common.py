@@ -11,10 +11,9 @@ __status__ = "Production"
 #
 # Basic logger
 #
-def log(aMsg,aID='None'):
- from zdcp.Settings import Settings
+def log(aMsg, aFile, aID='None'):
  try:
-  with open(Settings['logs']['system'], 'a') as f:
+  with open(aFile, 'a') as f:
    from time import localtime, strftime
    f.write(str("%s (%s): %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))
  except: pass
@@ -25,19 +24,15 @@ def log(aMsg,aID='None'):
 #
 class DB(object):
 
- def __init__(self, aDB = None, aHost = None, aUser = None, aPass = None):
+ def __init__(self, aDB, aHost, aUser, aPass):
   from threading import Lock
   from pymysql import connect
   from pymysql.cursors import DictCursor
   self._mods = (connect,DictCursor)
+  self._db, self._host, self._user, self._pass = aDB, aHost, aUser, aPass
   self._conn, self._curs, self._dirty, self._clock, self._wlock = None, None, False, Lock(), Lock()
   self._waiting = 0
   self.count = {'SELECT':0,'INSERT':0,'DELETE':0,'UPDATE':0,'COMMIT':0,'CONNECT':0,'CLOSE':0}
-  if not aDB:
-   from zdcp.Settings import Settings
-   self._db, self._host, self._user, self._pass = Settings['system']['db_name'],Settings['system']['db_host'],Settings['system']['db_user'],Settings['system']['db_pass']
-  else:
-   self._db, self._host, self._user, self._pass = aDB, aHost, aUser, aPass
 
  def __enter__(self):
   self.connect()

@@ -4,7 +4,7 @@ __version__ = "5.1GA"
 __status__ = "Production"
 
 from os import walk, path as ospath
-from json import loads, dumps
+from json import loads, load, dumps
 from importlib import import_module, reload
 from threading import Thread, Event, BoundedSemaphore
 from time import localtime, strftime, time, sleep
@@ -19,15 +19,15 @@ from urllib.parse import unquote
 #
 # TODO: make multicore instead
 #
-def run():
+def run(aSettingsFile):
  """ run instantiate all engine entities """
  from sys import exit, setcheckinterval
  from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
  from signal import signal, SIGINT, SIGUSR1
- from zdcp.Settings import Settings
  from .common import rest_call, DB
 
  kill = Event()
+
  def signal_handler(sig,frame):
   if   sig == SIGINT:
    """ TODO clean up and close all DB connections and close socket """
@@ -51,33 +51,56 @@ def run():
  setcheckinterval(200)
 
  try:
-  node = Settings['system']['id']
-  addr = ('', int(Settings['system']['port']))
+  settings = {}
+  with open(aSettingsFile,'r') as settings_file:
+   data = load(settings_file)
+  for section,params in data.items():
+   if not settings.get(section):
+    settings[section] = {}
+   for param,info in params.items():
+    settings[section][param] = info['value']
+
+  node = settings['system']['id']
+  addr = ("", int(settings['system']['port']))
   sock = socket(AF_INET, SOCK_STREAM)
   sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
   sock.bind(addr)
   sock.listen(5)
 
-  workers = WorkerPool(Settings['system'].get('workers',20),Settings)
-  servers = [ServerWorker(n,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),Settings,workers) for n in range(5)]
-
   if node == 'master':
    with DB() as db:
+    db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
+    data = db.get_rows()
+    db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
+    data.extend(db.get_rows())
     db.do("SELECT * FROM tasks LEFT JOIN nodes ON tasks.node_id = nodes.id WHERE node = 'master'")
     tasks = db.get_rows()
-    for task in tasks:
-     task.update({'args':loads(task['args']),'output':(task['output'] == 1)})
-     frequency = task.pop('frequency',300)
-     workers.add_periodic(task,frequency)
+   for param in data:
+    section = param.pop('section',None)
+    if not settings.get(section):
+     settings[section] = {}
+    settings[section][param['parameter']] = param['value']
+   settings['system']['config_file'] = aSettingsFile
+
+   workers = WorkerPool(settings['system'].get('workers',20),settings)
+   servers = [ServerWorker(n,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),settings,workers) for n in range(5)]
+
+   for task in tasks:
+    task.update({'args':loads(task['args']),'output':(task['output'] == 1)})
+    frequency = task.pop('frequency',300)
+    workers.add_periodic(task,frequency)
   else:
-   tasks = rest_call("%s/api/system_task_list"%Settings['system']['master'],{'node':node})['data']['tasks']
+   extra = rest_call("%s/settings/fetch/%s"%(settings['system']['master'],node))['data']['settings']
+   settings.update(extra)
+   tasks = rest_call("%s/api/system_task_list"%settings['system']['master'],{'node':node})['data']['tasks']
    for task in tasks:
     task['args'] = loads(task['args'])
     frequency = task.pop('frequency',300)
     workers.add_periodic(task,frequency)
  except Exception as e:
   print(str(e))
-  sock.close()
+  try:   sock.close()
+  except:pass
  else:
   kill.wait()
  exit(0)
@@ -267,7 +290,7 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def __init__(self, *args, **kwargs):
   self._headers = {}
-  self._body    = 'null'
+  self._body    = b'null'
   self._ctx     = args[2]._ctx
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
 
@@ -306,6 +329,8 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.register()
   elif path == 'reload':
    self.reload(query)
+  elif path == 'settings':
+   self.settings(query)
   else:
    # Redirect to login... OR show a list of options 'api/site/...'
    self._headers.update({'Location':'../site/system_login?application=%s'%self.server._ctx.settings['system'].get('application','system'),'X-Code':301})
@@ -463,6 +488,32 @@ class SessionHandler(BaseHTTPRequestHandler):
     except: pass
     else:   modules[m] = True
   self._body = dumps({'modules':modules}).encode('utf-8')
+
+ #
+ #
+ def settings(self,query):
+  """ /settings/<op>/<node> """
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'settings'})  
+  op,_,node = query.partition('/')
+  if op == 'fetch':
+   settings = {}
+   with self._ctx.db as db:
+    db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%node)
+    data = db.get_rows()
+    db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
+    data.extend(db.get_rows())
+   for param in data:
+    section = param.pop('section',None)
+    if not settings.get(section):
+     settings[section] = {}
+    settings[section][param['parameter']] = param['value']
+   self._body = dumps({'settings':settings}).encode('utf-8')
+  elif op == 'update':
+   """ On the right node - use settings """
+   length = int(self.headers['Content-Length'])
+   self._ctx.settings.clear()
+   self._ctx.settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
+   self._body = b'done'
 
 ########################################### Web stream ########################################
 #

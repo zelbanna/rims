@@ -61,15 +61,6 @@ case "$1" in
   stop
   start
   ;;
- upgrade)
-  stop
-  echo "Upgrading system"
-  cd $PKGDIR
-  git pull
-  tools/mysql_patch.py schema.db
-  ./install.py
-  start
-  ;;
  clear)
   echo "Clearing old .pyc files"
   rm -fR $PKGDIR/__pycache__
@@ -86,7 +77,7 @@ case "$1" in
   mv $0 /etc/init.d/zdcp
   ;;
  *)
-  echo "Usage: $0 <start|stop|restart|restart_engine|upgrade|clear|install>"
+  echo "Usage: $0 <start|stop|restart|restart_engine|clear|install>"
   exit 1
   ;;
 esac
