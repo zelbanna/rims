@@ -59,6 +59,7 @@ def run(aSettingsFile):
     settings[section] = {}
    for param,info in params.items():
     settings[section][param] = info['value']
+  settings['system']['config_file'] = aSettingsFile
 
   node = settings['system']['id']
   addr = ("", int(settings['system']['port']))
@@ -80,7 +81,6 @@ def run(aSettingsFile):
     if not settings.get(section):
      settings[section] = {}
     settings[section][param['parameter']] = param['value']
-   settings['system']['config_file'] = aSettingsFile
 
   else:
    extra = rest_call("%s/settings/fetch/%s"%(settings['system']['master'],node))['data']['settings']
@@ -514,9 +514,19 @@ class SessionHandler(BaseHTTPRequestHandler):
     else:
      self._body = dumps({'node':node,'result':'OK'}).encode('utf-8')
   elif op == 'update':
-   length = int(self.headers['Content-Length'])
-   self._ctx.settings.clear()
-   self._ctx.settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
+   length   = int(self.headers['Content-Length'])
+   settings = self._ctx.settings
+   filename = settings['system']['config_file']
+   settings.clear()
+   with open(filename,'r') as settings_file:
+    data = load(settings_file)
+   settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
+   for section,params in data.items():
+    if not settings.get(section):
+     settings[section] = {}
+    for param,info in params.items():
+     settings[section][param] = info['value']
+   settings['system']['config_file'] = filename
    self._body = b'OK'
   elif op == 'show':
    self._body = dumps(self._ctx.settings).encode('utf-8')

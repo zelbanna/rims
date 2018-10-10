@@ -309,7 +309,7 @@ def settings_delete(aDict, aCTX):
   db.do("SELECT section,parameter FROM settings WHERE id = %(id)s AND node = '%(node)s'"%aDict)
   data = db.get_row()
   ret['deleted'] = db.do("DELETE FROM settings WHERE id = %(id)s AND node = '%(node)s'"%aDict)
- if node == 'master':
+ if aDict['node'] == 'master':
   aCTX.settings.get(data['section'],{}).pop(data['parameter'],None)
  else:
   aCTX.workers.add_function(aCTX.rest_call,"%s/settings/sync/%s"%(aCTX.settings['system']['master'],aDict['node']))
