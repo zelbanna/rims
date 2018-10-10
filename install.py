@@ -228,16 +228,6 @@ else:
     if settings.get(section): settings[section].update(content)
     else: settings[section] = content
 
-#
-# Write complete settings containers
-#
-try:
- with open(ospath.join(pkgdir,'Settings.py'),'w') as f:
-  f.write("Settings=%s\n"%dumps(settings))
-  res['container'] = 'OK'
-except Exception as e:
- res['container'] = str(e)
-
 ############################################### ALL #################################################
 #
 # End

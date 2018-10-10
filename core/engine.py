@@ -82,21 +82,19 @@ def run(aSettingsFile):
     settings[section][param['parameter']] = param['value']
    settings['system']['config_file'] = aSettingsFile
 
-   workers = WorkerPool(settings['system'].get('workers',20),settings)
-   servers = [ServerWorker(n,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),settings,workers) for n in range(5)]
-
-   for task in tasks:
-    task.update({'args':loads(task['args']),'output':(task['output'] == 1)})
-    frequency = task.pop('frequency',300)
-    workers.add_periodic(task,frequency)
   else:
    extra = rest_call("%s/settings/fetch/%s"%(settings['system']['master'],node))['data']['settings']
    settings.update(extra)
    tasks = rest_call("%s/api/system_task_list"%settings['system']['master'],{'node':node})['data']['tasks']
-   for task in tasks:
-    task['args'] = loads(task['args'])
-    frequency = task.pop('frequency',300)
-    workers.add_periodic(task,frequency)
+
+  workers = WorkerPool(settings['system'].get('workers',20),settings)
+  servers = [ServerWorker(n,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),settings,workers) for n in range(5)]
+
+  for task in tasks:
+   task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
+   frequency = task.pop('frequency',300)
+   workers.add_periodic(task,frequency)
+
  except Exception as e:
   print(str(e))
   try:   sock.close()
