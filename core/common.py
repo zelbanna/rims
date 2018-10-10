@@ -4,7 +4,7 @@ Common module, i.e. database, log and rest_call function
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "5.1GA"
+__version__ = "5.2GA"
 __status__ = "Production"
 
 ############################################# Logger ######################################

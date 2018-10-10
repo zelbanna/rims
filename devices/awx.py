@@ -4,7 +4,7 @@ AWX API
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "5.1GA"
+__version__ = "5.2GA"
 __status__  = "Production"
 __type__    = "controller"
 

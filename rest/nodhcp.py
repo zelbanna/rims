@@ -2,7 +2,7 @@
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "5.1GA"
+__version__ = "5.2GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "DHCP"

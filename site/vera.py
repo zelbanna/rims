@@ -4,7 +4,7 @@ HTML5 Ajax Vera Z-wave controller module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.1GA"
+__version__ = "5.2GA"
 __status__ = "Production"
 
 ##### ToDo #####

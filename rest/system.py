@@ -1,6 +1,6 @@
 """Generic REST module. Provides system and DB interaction for application, settings and resources"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.1GA"
+__version__ = "5.2GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'master'
@@ -563,7 +563,7 @@ def users_info(aDict, aCTX):
    ret['found'] = (db.do("SELECT users.* FROM users WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','view_public':'0','menulist':'default'}
+   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','view_public':'0','menulist':'default','external_id':None}
  return ret
 
 #

@@ -1,6 +1,6 @@
 """Device API module. This is the main device interaction module for device info, update, listing,discovery etc"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.1GA"
+__version__ = "5.2GA"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
