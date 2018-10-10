@@ -14,7 +14,6 @@ def list(aWeb):
  aWeb.wr(aWeb.button('back',  DIV='div_content', URL='system_node_list'))
  aWeb.wr(aWeb.button('add',   DIV='div_content_right', URL='settings_info?id=new&node=%s'%aWeb['node']))
  aWeb.wr(aWeb.button('info',  DIV='div_content_right', URL='settings_comprehensive?node=%s'%aWeb['node']))
- aWeb.wr(aWeb.button('save',  DIV='div_content_right', URL='settings_save?node=%s'%aWeb['node']))
  aWeb.wr(aWeb.button('help',  DIV='div_content_right', URL='settings_help'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Section</DIV><DIV CLASS=th>Parameter</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
@@ -64,11 +63,6 @@ def comprehensive(aWeb):
 #
 def delete(aWeb):
  aWeb.wr("<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_call("system_settings_delete",{'node':aWeb['node'],'id':aWeb['id']})))
-
-#
-#
-def save(aWeb):
- aWeb.wr("<ARTICLE>Sync: %s</ARTICLE>"%aWeb.rest_full("%s/settings/sync/%s"%(aWeb._api,aWeb['node'])['data']))
 
 #
 #

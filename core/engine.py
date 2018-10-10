@@ -249,7 +249,6 @@ class QueueWorker(Thread):
     self._idle.clear()
     if mode == 'FUNCTION':
      result = func(*args,**kwargs)
-     print("%s => %s"%(str(func),result))
     else:
      result = func(args,self._ctx)
      if kwargs.get('output'):
