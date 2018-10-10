@@ -252,9 +252,9 @@ class QueueWorker(Thread):
     else:
      result = func(args,self._ctx)
      if kwargs.get('output'):
-      log("%s - %s_%s => %s"%(self.name,kwargs['module'],kwargs['func'],dumps(result)))
+      log("%s - %s_%s => %s"%(self.name,kwargs['module'],kwargs['func'],dumps(result)), self._ctx.settings['logs']['system'])
    except Exception as e:
-    log("%s - ERROR => %s"%(self.name,str(e)))
+    log("%s - ERROR => %s"%(self.name,str(e)), self._ctx.settings['logs']['system'])
    finally:
     if sema:
      sema.release()
