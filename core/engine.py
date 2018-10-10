@@ -166,7 +166,7 @@ class WorkerPool(object):
   else:
    if aSema:
     aSema.acquire()
-   self._queue.put((func,'TASK',aSema,aTask.pop('args',None),aTask))
+   self._queue.put((func,'TASK',aSema,aTask['args'],{'output':aTask['output']}))
 
  def add_periodic(self, aTask, aFrequency):
   try:
@@ -212,8 +212,8 @@ class ScheduleWorker(Thread):
   self._queue = aQueue
   self._abort = aAbort
   self._func  = aFunc
-  self._args  = aTask.pop('args',None)
-  self._task  = aTask
+  self._args  = aTask['args']
+  self._output= {'output':aTask['output']}
   self.daemon = True
   self.name   = "ScheduleWorker(%s,%s)"%(aTask['id'],self._freq)
   self.start()
@@ -221,7 +221,7 @@ class ScheduleWorker(Thread):
  def run(self):
   sleep(self._freq - int(time())%self._freq)
   while not self._abort.is_set():
-   self._queue.put((self._func,'TASK',None,self._args,self._task))
+   self._queue.put((self._func,'TASK',None,self._args,self._output))
    sleep(self._freq)
   return False
 
@@ -249,10 +249,11 @@ class QueueWorker(Thread):
     self._idle.clear()
     if mode == 'FUNCTION':
      result = func(*args,**kwargs)
+     print("%s => %s"%(str(func),result))
     else:
      result = func(args,self._ctx)
      if kwargs.get('output'):
-      log("%s - %s_%s => %s"%(self.name,kwargs['module'],kwargs['func'],dumps(result)), self._ctx.settings['logs']['system'])
+      log("%s - %s => %s"%(self.name,str(func),dumps(result)), self._ctx.settings['logs']['system'])
    except Exception as e:
     log("%s - ERROR => %s"%(self.name,str(e)), self._ctx.settings['logs']['system'])
    finally:
