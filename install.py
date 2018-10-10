@@ -208,8 +208,8 @@ if settings['system']['id'] == 'master':
   stdout.write("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';\n"%(settings['system']['db_user'],settings['system']['db_pass']))
   stdout.write("GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';\n"%(settings['system']['db_name'],settings['system']['db_user']))
   stdout.write("FLUSH PRIVILEGES;\n\n")
-  from traceback import print_exc
-  print_exc(5)
+  #from traceback import print_exc
+  # print_exc(5)
   stdout.flush()
   raise Exception("DB past error (%s)"%str(e))
 
