@@ -288,7 +288,7 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def __init__(self, *args, **kwargs):
   self._headers = {}
-  self._body    = b'null'
+  self._body    = 'null'
   self._ctx     = args[2]._ctx
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
 
@@ -331,7 +331,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.settings(query)
   else:
    # Redirect to login... OR show a list of options 'api/site/...'
-   self._headers.update({'Location':'../site/system_login?application=%s'%self.server._ctx.settings['system'].get('application','system'),'X-Code':301})
+   self._headers.update({'Location':'../site/system_login?application=%s'%self._ctx.settings['system'].get('application','system'),'X-Code':301})
    self._body = 'null'.encode('utf-8')
  #
  #
@@ -352,15 +352,15 @@ class SessionHandler(BaseHTTPRequestHandler):
   except: args = {}
   if extras.get('log','true') == 'true':
    try:
-    with open(self.server._ctx.settings['logs']['rest'], 'a') as f:
+    with open(self._ctx.settings['logs']['rest'], 'a') as f:
      f.write(str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system_task_worker" else "N/A", self.server._node, get.strip())))
    except: pass
   try:
    if self._headers['X-Node'] == self.server._node:
     module = import_module("zdcp.rest.%s"%mod)
-    self._body = dumps(getattr(module,fun,None)(args,self.server._ctx))
+    self._body = dumps(getattr(module,fun,None)(args,self._ctx))
    else:
-    req  = Request("%s/api/%s"%(self.server._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
+    req  = Request("%s/api/%s"%(self._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
     try: sock = urlopen(req, timeout = 300)
     except HTTPError as h:
      raw = h.read()
@@ -424,7 +424,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   try:
    if path == 'files':
     param,_,file = query.partition('/')
-    fullpath = ospath.join(self.server._ctx.settings['files'][param],file)
+    fullpath = ospath.join(self._ctx.settings['files'][param],file)
    else:
     fullpath = ospath.join(self.server._path,path,query)
    if fullpath.endswith("/"):
@@ -506,12 +506,22 @@ class SessionHandler(BaseHTTPRequestHandler):
      settings[section] = {}
     settings[section][param['parameter']] = param['value']
    self._body = dumps({'settings':settings}).encode('utf-8')
-  elif op == 'update':
+  elif op == 'sync':
    """ On the right node - use settings """
-   length = int(self.headers['Content-Length'])
-   self._ctx.settings.clear()
-   self._ctx.settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
-   self._body = b'done'
+   req  = Request("%s/settings/fetch/%s"%(self._ctx.settings['system']['master'],self._ctx.node), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = None)
+   try: sock = urlopen(req, timeout = 300)
+   except Exception as e:
+    self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
+    self._body = b'NOT_OK'
+   else:
+    try: settings = loads(sock.read().decode())
+    except: pass
+    self._ctx.settings.clear()
+    self._ctx.settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
+    sock.close()
+    self._body = b'OK'
+  else:
+   self._body = b'NOT_OK'
 
 ########################################### Web stream ########################################
 #
