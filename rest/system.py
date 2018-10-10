@@ -245,6 +245,7 @@ def settings_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
+
  with aCTX.db as db:
   if op == 'update' and not (aDict['section'] == 'system' or aDict['section'] =='nodes'):
    if not id == 'new':
@@ -253,13 +254,18 @@ def settings_info(aDict, aCTX):
     ret['update'] = db.insert_dict('settings',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
    # Insert HERE into CTX, or node_call
-
-
+   if aDict['node'] == 'master':
+    section = aCTX.settings.get(aDict['section'],{})
+    section[aDict['parameter']] = aDict['value'] 
+    aCTX.settings[aDict['section']] = section
+   else:
+    aCTX.workers.add_function(aCTX.rest_call,"%s/settings/sync/%s"%(aCTX.settings['system']['master'],aDict['node']))
   if not id == 'new':
    ret['found'] = (db.do("SELECT * FROM settings WHERE id = '%s'"%id) > 0)
    ret['data']  = db.get_row()
   else:
    ret['data'] = {'id':'new','value':'Unknown','section':aDict.get('section','Unknown'),'parameter':'Unknown','description':'Unknown'}
+
  return ret
 
 #
@@ -300,19 +306,14 @@ def settings_delete(aDict, aCTX):
  """
  ret = {}
  with aCTX.db as db:
+  db.do("SELECT section,parameter FROM settings WHERE id = %(id)s AND node = '%(node)s'"%aDict)
+  data = db.get_row()
   ret['deleted'] = db.do("DELETE FROM settings WHERE id = %(id)s AND node = '%(node)s'"%aDict)
+ if node == 'master':
+  aCTX.settings.get(data['section'],{}).pop(data['parameter'],None)
+ else:
+  aCTX.workers.add_function(aCTX.rest_call,"%s/settings/sync/%s"%(aCTX.settings['system']['master'],aDict['node']))
  return ret
-
-#
-#
-def settings_container(aDict, aCTX):
- """Function returns the settings container/dictionary
-
- Args:
-
- Output:
- """
- return aCTX.settings
 
 ################################################# NODE ##############################################
 #

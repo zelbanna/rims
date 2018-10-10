@@ -288,7 +288,7 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def __init__(self, *args, **kwargs):
   self._headers = {}
-  self._body    = 'null'
+  self._body    = b'null'
   self._ctx     = args[2]._ctx
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
 
@@ -332,7 +332,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   else:
    # Redirect to login... OR show a list of options 'api/site/...'
    self._headers.update({'Location':'../site/system_login?application=%s'%self._ctx.settings['system'].get('application','system'),'X-Code':301})
-   self._body = 'null'.encode('utf-8')
+
  #
  #
  def api(self,query):
@@ -358,7 +358,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   try:
    if self._headers['X-Node'] == self.server._node:
     module = import_module("zdcp.rest.%s"%mod)
-    self._body = dumps(getattr(module,fun,None)(args,self._ctx))
+    self._body = dumps(getattr(module,fun,None)(args,self._ctx)).encode('utf-8')
    else:
     req  = Request("%s/api/%s"%(self._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
     try: sock = urlopen(req, timeout = 300)
@@ -369,7 +369,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      self._headers.update({ 'X-Exception':'HTTPError', 'X-Code':h.code, 'X-Info':dumps(dict(h.info())), 'X-Data':data })
     except Exception as e: self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
     else:
-     try: self._body = sock.read().decode()
+     try: self._body = sock.read()
      except: pass
      sock.close()
   except Exception as e:
@@ -382,7 +382,6 @@ class SessionHandler(BaseHTTPRequestHandler):
     else:
      for n,v in enumerate(tb.split('\n')):
       self._headers["X-Debug-%02d"%n] = v
-  self._body = self._body.encode('utf-8')
 
  #
  #
@@ -448,12 +447,11 @@ class SessionHandler(BaseHTTPRequestHandler):
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
    # Replace with module load and provide correct headers from system_login
    # There has to be a format for return function of application/authenticate
-   self._body = '"OK"'
+   self._body = b'OK'
    self._headers['X-Auth-Token']  = random_string(16)
    self._headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
   except:
-   self._body = '"NOT_OK"'
-  self._body = self._body.encode('utf-8')
+   self._body = b'NOT_OK'
 
  #
  #
@@ -493,7 +491,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   """ /settings/<op>/<node> """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'settings'})  
   op,_,node = query.partition('/')
-  if (op == 'fetch' or op == 'sync') and self._ctx.settings['system']['id'] == 'master':
+  if self._ctx.settings['system']['id'] == 'master' and (op == 'fetch' or (op == 'sync' and node != 'master')):
    settings = {}
    with self._ctx.db as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%node)
@@ -512,13 +510,14 @@ class SessionHandler(BaseHTTPRequestHandler):
     try: sock = urlopen(req, timeout = 300)
     except Exception as e:
      self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
-     self._body = b'NOT_OK'
+     self._body = dumps({'node':node,'result':'NOT_OK'}).encode('utf-8')
     else:
-     self._body = b'OK'
+     self._body = dumps({'node':node,'result':'OK'}).encode('utf-8')
   elif op == 'update':
    length = int(self.headers['Content-Length'])
    self._ctx.settings.clear()
    self._ctx.settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
+   self._body = b'OK'
   elif op == 'show':
    self._body = dumps(self._ctx.settings).encode('utf-8')
   else:

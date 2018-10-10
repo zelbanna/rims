@@ -1,8 +1,4 @@
-"""Module docstring.
-
-HTML5 Ajax Settings module
-
-"""
+"""Settings module"""
 __author__= "Zacharias El Banna"
 __version__ = "5.1GA"
 __status__= "Production"
@@ -72,7 +68,7 @@ def delete(aWeb):
 #
 #
 def save(aWeb):
- aWeb.wr("<ARTICLE>Save: %s</ARTICLE>"%(aWeb.rest_call("system_settings_save?node=%s"%aWeb['node'])))
+ aWeb.wr("<ARTICLE>Sync: %s</ARTICLE>"%aWeb.rest_full("%s/settings/sync/%s"%(aWeb._api,aWeb['node'])['data']))
 
 #
 #
