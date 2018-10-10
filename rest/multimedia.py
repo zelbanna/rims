@@ -257,7 +257,6 @@ def process(aDict, aCTX):
  """
  from time import time
  from subprocess import check_call, call
- from zdcp.core.common import log
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'result':'NOT_OK','error':None}
  srt  = check_srt({'filepath':filename}, aCTX)

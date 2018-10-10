@@ -1,6 +1,6 @@
 """Module docstring.
 
-DB module
+Common module, i.e. database, log and rest_call function
 
 """
 __author__ = "Zacharias El Banna"

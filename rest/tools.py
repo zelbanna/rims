@@ -108,7 +108,7 @@ def logs_clear(aDict, aCTX):
   try:
    open(file,'w').close()
    ret['file'][name] = 'CLEARED'
-   log("Emptied log [{}]".format(name))
+   log("Emptied log [{}]".format(name),aCTX.settings['logs']['system'])
   except Exception as err:
    ret['file'][name] = 'ERROR: %s'%(str(err))
  return ret

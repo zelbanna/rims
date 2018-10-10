@@ -214,19 +214,8 @@ if settings['system']['id'] == 'master':
   raise Exception("DB past error (%s)"%str(e))
 
 else:
- ########################################## NON-MASTER REST ########################################
- #
- # Fetch and update settings from central repo
- #
  try: res['register'] = rest_call("%s/register"%settings['system']['master'],{'node':settings['system']['id'],'port':settings['system']['port'],'system':'1'})['data']
  except Exception as e: res['register'] = str(e)
- try: master   = rest_call("%s/api/system_settings_fetch"%settings['system']['master'],{'node':settings['system']['id']})['data']
- except Exception as e: res['fetch'] = str(e)
- else:
-  if master:
-   for section,content in master.items():
-    if settings.get(section): settings[section].update(content)
-    else: settings[section] = content
 
 ############################################### ALL #################################################
 #

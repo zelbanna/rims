@@ -68,7 +68,7 @@ def run(aSettingsFile):
   sock.listen(5)
 
   if node == 'master':
-   with DB() as db:
+   with DB(settings['system']['db_name'],settings['system']['db_host'],settings['system']['db_user'],settings['system']['db_pass']) as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
     db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
@@ -113,7 +113,7 @@ class Context(object):
   self.node      = aSettings['system']['id']
   self.settings  = aSettings
   self.workers   = aWorkers
-  self.db        = DB() if self.node == 'master' else None
+  self.db        = DB(aSettings['system']['db_name'],aSettings['system']['db_host'],aSettings['system']['db_user'],aSettings['system']['db_pass']) if self.node == 'master' else None
   self.rest_call = rest_call
   self.handler   = None
 

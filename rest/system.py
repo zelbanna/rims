@@ -135,7 +135,7 @@ def log(aDict, aCTX):
  """
  ret = {'result':'OK'}
  from zdcp.core.common import log
- log(aDict['msg'])
+ log(aDict['msg'],aCTX.settings['logs']['system'])
  return ret
 
 #
@@ -252,27 +252,14 @@ def settings_info(aDict, aCTX):
    else:
     ret['update'] = db.insert_dict('settings',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
+   # Insert HERE into CTX, or node_call
+
 
   if not id == 'new':
    ret['found'] = (db.do("SELECT * FROM settings WHERE id = '%s'"%id) > 0)
    ret['data']  = db.get_row()
   else:
    ret['data'] = {'id':'new','value':'Unknown','section':aDict.get('section','Unknown'),'parameter':'Unknown','description':'Unknown'}
- return ret
-
-#
-#
-def settings_parameter(aDict, aCTX):
- """Function docstring for settings_parameter TBD
-
- Args:
-  - section (required)
-  - parameter (required)
-
- Output:
- """
- try: ret = {'value':aCTX.settings[aDict['section']][aDict['parameter']]}
- except: ret = {'value':None }
  return ret
 
 #
@@ -318,84 +305,8 @@ def settings_delete(aDict, aCTX):
 
 #
 #
-def settings_fetch(aDict, aCTX):
- """Function docstring for settings_fetch TBD
-
- Args:
-  - node (required)
-
- Output:
- """
- ret = {}
- with aCTX.db as db:
-  db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aDict['node'])
-  data = db.get_rows()
-  db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
-  data.extend(db.get_rows())
- for setting in data:
-  section = setting.pop('section')
-  if not ret.get(section):
-   ret[section] = {}
-  ret[section][setting['parameter']] = setting['value']
- return ret
-
-#
-#
-def settings_save(aDict, aCTX):
- """Function docstring for settings_save TBD
-
- Args:
-
- Output:
- """
- from json import loads,dumps
- from os import path as ospath
- ret = {'config_file':aCTX.settings['system']['config_file']}
- try:
-  aCTX.settings.clear()
-  with open(ret['config_file']) as sfile:
-   temp = loads(sfile.read())
-  for section,content in temp.items():
-   for key,parameters in content.items():
-    if not aCTX.settings.get(section):
-     aCTX.settings[section] = {}
-    aCTX.settings[section][key] = parameters['value']
-  aCTX.settings['system']['config_file'] = ret['config_file']
-
-  if aCTX.settings['system']['id'] == 'master':
-   with aCTX.db as db:
-    db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
-    data = db.get_rows()
-    db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
-    data.extend(db.get_rows())
-   for setting in data:
-    section = setting.pop('section')
-    if not aCTX.settings.get(section):
-     aCTX.settings[section] = {}
-    aCTX.settings[section][setting['parameter']] = setting['value']
-  else:
-   try: master = aCTX.rest_call("%s/api/system_settings_fetch"%aCTX.settings['system']['master'],{'node':aCTX.settings['system']['id']})['data']
-   except: pass
-   else:
-    for section,content in master.items():
-     if aCTX.settings.get(section):
-      aCTX.settings[section].update(content)
-     else:
-      aCTX.settings[section] = content
-
-  container = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','Settings.py'))
-  with open(container,'w') as f:
-   f.write("Settings=%s\n"%dumps(aCTX.settings))
-  ret['result'] = 'OK'
- except Exception as e:
-  ret['result'] = 'NOT_OK'
-  ret['error'] = str(e)
- return ret
-
-#
-#
 def settings_container(aDict, aCTX):
- """Function returns the settings container
+ """Function returns the settings container/dictionary
 
  Args:
 
