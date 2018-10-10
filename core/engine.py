@@ -494,7 +494,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   """ /settings/<op>/<node> """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'settings'})  
   op,_,node = query.partition('/')
-  if op == 'fetch' and self._ctx.settings['system']['id'] == 'master':
+  if (op == 'fetch' or op == 'sync') and self._ctx.settings['system']['id'] == 'master':
    settings = {}
    with self._ctx.db as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%node)
@@ -506,21 +506,20 @@ class SessionHandler(BaseHTTPRequestHandler):
     if not settings.get(section):
      settings[section] = {}
     settings[section][param['parameter']] = param['value']
-   self._body = dumps({'settings':settings}).encode('utf-8')
-  elif op == 'sync':
-   """ On the right node - use settings """
-   req  = Request("%s/settings/fetch/%s"%(self._ctx.settings['system']['master'],self._ctx.node), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = None)
-   try: sock = urlopen(req, timeout = 300)
-   except Exception as e:
-    self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
-    self._body = b'NOT_OK'
+   if op == 'fetch':
+    self._body = dumps({'settings':settings}).encode('utf-8')
    else:
-    try: settings = loads(sock.read().decode())
-    except: pass
-    self._ctx.settings.clear()
-    self._ctx.settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
-    sock.close()
-    self._body = b'OK'
+    req  = Request("%s/settings/update/%s"%(self._ctx.settings['system']['master'],self._ctx.node), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(settings).encode('utf-8'))
+    try: sock = urlopen(req, timeout = 300)
+    except Exception as e:
+     self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
+     self._body = b'NOT_OK'
+    else:
+     self._body = b'OK'
+  elif op == 'update':
+   length = int(self.headers['Content-Length'])
+   self._ctx.settings.clear()
+   self._ctx.settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
   else:
    self._body = b'NOT_OK'
 
