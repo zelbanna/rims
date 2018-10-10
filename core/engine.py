@@ -95,6 +95,7 @@ def run(aSettingsFile):
    frequency = task.pop('frequency',300)
    workers.add_periodic(task,frequency)
 
+  print(dumps(settings,indent=4,sort_keys=True))
  except Exception as e:
   print(str(e))
   try:   sock.close()
@@ -493,7 +494,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   """ /settings/<op>/<node> """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'settings'})  
   op,_,node = query.partition('/')
-  if op == 'fetch':
+  if op == 'fetch' and self._ctx.settings['system']['id'] == 'master':
    settings = {}
    with self._ctx.db as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%node)
