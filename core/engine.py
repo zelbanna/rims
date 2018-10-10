@@ -511,9 +511,9 @@ class SessionHandler(BaseHTTPRequestHandler):
     try: sock = urlopen(req, timeout = 300)
     except Exception as e:
      self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
-     self._body = dumps({'node':node,'result':'NOT_OK'}).encode('utf-8')
+     self._body = dumps({'node':node,'result':'SYNC_NOT_OK'}).encode('utf-8')
     else:
-     self._body = dumps({'node':node,'result':'OK'}).encode('utf-8')
+     self._body = dumps({'node':node,'result':'SYNC_OK'}).encode('utf-8')
   elif op == 'update':
    length   = int(self.headers['Content-Length'])
    settings = self._ctx.settings
@@ -528,11 +528,11 @@ class SessionHandler(BaseHTTPRequestHandler):
     for param,info in params.items():
      settings[section][param] = info['value']
    settings['system']['config_file'] = filename
-   self._body = b'OK'
+   self._body = b'UPDATE_OK'
   elif op == 'show':
    self._body = dumps(self._ctx.settings).encode('utf-8')
   else:
-   self._body = b'NOT_OK'
+   self._body = b'SETTINGS_NOT_OK'
 
 ########################################### Web stream ########################################
 #
