@@ -95,7 +95,6 @@ def run(aSettingsFile):
    frequency = task.pop('frequency',300)
    workers.add_periodic(task,frequency)
 
-  print(dumps(settings,indent=4,sort_keys=True))
  except Exception as e:
   print(str(e))
   try:   sock.close()
@@ -509,7 +508,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    if op == 'fetch':
     self._body = dumps({'settings':settings}).encode('utf-8')
    else:
-    req  = Request("%s/settings/update/%s"%(self._ctx.settings['system']['master'],self._ctx.node), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(settings).encode('utf-8'))
+    req  = Request("%s/settings/update"%(self._ctx.settings['nodes'][node]), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(settings).encode('utf-8'))
     try: sock = urlopen(req, timeout = 300)
     except Exception as e:
      self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
@@ -520,6 +519,8 @@ class SessionHandler(BaseHTTPRequestHandler):
    length = int(self.headers['Content-Length'])
    self._ctx.settings.clear()
    self._ctx.settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
+  elif op == 'show':
+   self._body = dumps(self._ctx.settings).encode('utf-8')
   else:
    self._body = b'NOT_OK'
 
