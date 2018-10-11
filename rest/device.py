@@ -221,16 +221,16 @@ def extended(aDict, aCTX):
    from importlib import import_module
    for pem in ret['pems']:
     if pem['pdu_id']:
-     db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, name FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id = %i"%(pem['pdu_id']))
+     db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, dt.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE devices.id = %i"%(pem['pdu_id']))
      pdu_info = db.get_row()
-     # Slot id is actually local slot ID, so we need to look up infra -> pdu_info -> pdu and then pdu[x_slot_id] to get the right ID
-     args_pem = {'ip':pdu_info['ip'],'unit':pem['pdu_unit'],'slot':ret['infra']['pdu_info'][pem['pdu_id']]['%s_slot_id'%pem['pdu_slot']],'text':"%s-%s"%(ret['info']['hostname'],pem['name'])}
      try:
-      module = import_module("zdcp.rest.%s"%pdu_info['name'])
-      pdu_update = getattr(module,'update',None)
-      ret['result']["PDU_%s"%pem['id']] = "%s.%s"%(pdu_info['hostname'],pdu_update(args_pem,aCTX))
+      module = import_module("zdcp.devices.%s"%pdu_info['type'])
+      pdu = getattr(module,'Device',None)(pdu_info['ip'],aCTX.settings)
+      # Slot id is actually local slot ID, so we need to look up infra -> pdu_info -> pdu and then pdu[x_slot_id] to get the right ID
+      pdu_res = pdu.set_name( int(ret['infra']['pdu_info'][pem['pdu_id']]['%s_slot_id'%pem['pdu_slot']] ), int(pem['pdu_unit']) , "%s-%s"%(ret['info']['hostname'],pem['name']) )
+      ret['result']["PDU_(%s)"%pem['id']] = "%s.%s"%(pdu_info['hostname'],pdu_res)
      except Exception as err:
-      ret['result']["PDU_%s"%pem['id']] = "Error: %s"%str(err)
+      ret['result']["PDU_(%s)"%pem['id']] = "Error: %s"%str(err)
  return ret
 
 #

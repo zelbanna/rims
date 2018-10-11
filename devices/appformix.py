@@ -31,7 +31,6 @@ class Device(object):
   try:
    auth = {'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
    url  = "%s:7000/appformix/controller/v2.0/%s"%(self._node,"auth_credentials")
-   print(url)
    res = rest_call(url,auth)
    # If sock code is ok (200) - we can expect to find a token
    if res['code'] == 200:
