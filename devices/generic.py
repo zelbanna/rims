@@ -19,6 +19,7 @@ class Device(object):
  def __init__(self, aIP, aSettings):
   self._ip = aIP
   self._settings = aSettings
+  self._logfile  = aSettings['logs']['system']
 
  def __str__(self):
   return "IP:%s"%(self._ip)
@@ -45,7 +46,7 @@ class Device(object):
  #
  def log_msg(self, aMsg):
   from ..core.common import log
-  log(aMsg)
+  log(aMsg,self._logfile)
 
  #
  def configuration(self,argdict):
