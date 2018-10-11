@@ -56,12 +56,30 @@ def shutdown(aDict, aCTX):
  """ Function retrieves devices and VMs and shut them down if it can, add a delay and then shutdown power (type 1)
   - For devices not in state up we will do PEM shutdown only (type 2)
   - For VMs there will not be much done ATM as there is no hypervisor correlation yet (type 3)
+
   Args:
   
   Output:
  """
+ from importlib import import_module
  ret = {}
+ modules = {}
+
+ def shutdown(aInfo,aDevice):
+  print("Device shutdown:%s"%aDevice.shutdown())
+  return True
+
  with aCTX.db as db:
-  db.do("SELECT hostname, vm, dt.name as type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.state != 1")
+  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, vm, dt.name as type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations ON reservations.device_id = devices.id WHERE devices.shutdown > 0 AND reservations.time_end IS NULL OR reservations.time_end < NOW()")
   ret['devices'] = db.get_rows()
+ for info in ret['devices']:
+  try:
+   module = modules.get(info['type'])
+   if not module:
+    module = import_module("zdcp.devices.%s"%info['type'])
+    modules[info['type']] = module
+   device = getattr(module,'Device',lambda x: None)(info['ip'],aCTX.settings)
+   shutdown(info,device)
+  except Exception as e:
+   info['error'] = str(e)
  return ret

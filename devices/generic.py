@@ -30,7 +30,11 @@ class Device(object):
   pass
 
  #
- def rebind(aIP):
+ def shutdown(self):
+  return False
+
+ #
+ def rebind(self,aIP):
   self._ip = aIP
 
  #
