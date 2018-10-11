@@ -117,6 +117,7 @@ class Context(object):
   self.settings  = aSettings
   self.workers   = aWorkers
   self.db        = DB(aSettings['system']['db_name'],aSettings['system']['db_host'],aSettings['system']['db_user'],aSettings['system']['db_pass']) if self.node == 'master' else None
+  self.db_temp   = None
   self.rest_call = rest_call
   self.handler   = None
 
@@ -131,6 +132,11 @@ class Context(object):
    fun = getattr(module,aFunction,None)
    ret = fun(aArgs if aArgs else {},self)
   return ret
+
+ def clone_db(self):
+  """ ugly hack for race conditions """
+  from .common import DB
+  self.db = DB(self.settings['system']['db_name'],self.settings['system']['db_host'],self.settings['system']['db_user'],self.settings['system']['db_pass']) if self.node == 'master' else Noneo
 
 ########################################## WorkerPool ########################################
 #

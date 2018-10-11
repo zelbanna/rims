@@ -146,6 +146,7 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
    data = data.encode('utf-8')
   else:
    data = None
+  print("%s: %s"%(aURL,data))
   req = Request(aURL, headers = head, data = data)
   if aMethod:
    req.get_method = lambda: aMethod

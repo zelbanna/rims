@@ -38,13 +38,19 @@ class Device(GenericDevice):
  def set_state(self,slot,unit,state):
   from netsnmp import VarList, Varbind, Session
   try:
+   from json import dumps
+   oid = ".1.3.6.1.4.1.10418.17.2.5.5.1.6.1.{}.{}".format(slot,unit)
+   op  = Device.set_outlet_state(state)
+   print("snmpset -v2c -c %s %s %s i %s"%(self._settings['snmp']['write_community'], self._ip, oid, op))
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.6.1.{}.{}".format(slot,unit) , Device.set_outlet_state(state) ,"INTEGER"))
-   session.set(setobj)
-   self.log_msg("Avocent : {0} set state to {1} on {2}.{3}".format(self._ip,state,slot,unit))
+   setobj = VarList(Varbind(oid , op ,"INTEGER"))
+   res = session.set(setobj)
+   print("RES:%s"%str(res))
+   self.log_msg("Avocent - {0} set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
    return {'res':'OK'}
   except Exception as exception_error:
-   self.log_msg("Avocent : error setting state " + str(exception_error))
+   self.log_msg("Avocent - error setting state: " + str(exception_error))
+   print(session.__dict__) 
    return {'res':'NOT_OK', 'info':str(exception_error) }
 
  def set_name(self,slot,unit,name):
@@ -54,7 +60,7 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.4.1.{}.{}".format(slot,unit) , name, "OPAQUE"))
    session.set(setobj)
-   return "{0}.{1}:'{2}'".format(slot,unit,name)
+   return "%s.%s:'%s'"%(slot,unit,name)
   except Exception as exception_error:
    self.log_msg("Avocent : error setting name " + str(exception_error))
    return "Error setting name '%s'"%(name)
@@ -65,7 +71,7 @@ class Device(GenericDevice):
    stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.{}.{}".format(slot,unit)))
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(stateobj)
-   return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val.decode()) }
+   return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
   except Exception as e:
    self.log_msg("Avocent : error getting state:" + str(e))
    return {'res':'NOT_OK','info':str(e), 'state':'unknown' }

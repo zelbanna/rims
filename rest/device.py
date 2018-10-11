@@ -169,6 +169,7 @@ def extended(aDict, aCTX):
      if not (old_info['hostname'] == aDict['hostname']) or not (str(old_info['a_dom_id']) == str(aDict['a_dom_id'])):
       dns_args = {'a_id':old_info['a_id'],'ptr_id':old_info['ptr_id'],'a_domain_id_new':aDict['a_dom_id'],'a_domain_id_old':old_info['a_dom_id'],'hostname':aDict['hostname'],'ip_new':ret['ip'],'ip_old':old_info['ip'],'id':ret['id']}
       from zdcp.rest.dns import record_device_update
+      aCTX.clone_db()
       dns_res = record_device_update(dns_args,aCTX)
       new_info = {'hostname':aDict['hostname'],'a_dom_id':dns_res['A']['domain_id']}
       for type in ['a','ptr']:
@@ -347,6 +348,7 @@ def new(aDict, aCTX):
   if ret['fqdn']:
    if alloc:
     from zdcp.rest.dns import record_device_update
+    aCTX.clone_db()
     dns = record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']}, aCTX)
     ret['insert'] = db.do("INSERT INTO devices(vm,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
    else:
@@ -380,8 +382,6 @@ def update_ip(aDict, aCTX):
   return {'info':'not_enough_info'}
 
  from zdcp.rest.ipam import address_allocate
- from zdcp.rest.dns import record_device_update
-
  alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['network_id'],'mac':aDict.get('mac',0)}, aCTX)
  if   not alloc['valid']:
   return {'info':'IP not in network range'}
@@ -395,6 +395,7 @@ def update_ip(aDict, aCTX):
   ret['update_dev'] = (db.do("UPDATE devices SET ipam_id = %s WHERE id = %s"%(alloc['id'],aDict['id'])) == 1)
   ret['remove_old'] = (db.do("DELETE FROM ipam_addresses WHERE id = %s"%ipam_id) == 1) if ipam_id else False
  dev_info.update({'id':aDict['id'],'ip_new':aDict['ip']})
+ from zdcp.rest.dns import record_device_update
  ret['dns'] = record_device_update(dev_info, aCTX)
  return ret
 
@@ -415,10 +416,11 @@ def delete(aDict, aCTX):
   else:
    data = db.get_row()
    args = {'a_id':data['a_id'],'a_domain_id':data['a_dom_id']}
-   from zdcp.rest.dns import record_device_delete
    if data['ptr_id'] != 0 and data['reverse_zone_id']:
     args['ptr_id']= data['ptr_id']
     args['ptr_domain_id'] = data['reverse_zone_id']
+   from zdcp.rest.dns import record_device_delete
+   aCTX.clone_db()
    ret = record_device_delete(args, aCTX)
    if data['base'] == 'pdu':
     ret['pem0'] = db.update_dict('rack_info',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))

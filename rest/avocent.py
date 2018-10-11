@@ -83,10 +83,10 @@ def op(aDict, aCTX):
 
  Output:
  """
+ from time import sleep
  ret = {}
  avocent = Device(aDict['ip'],aCTX.settings)
- ret['op'] = avocent.set_state(aDict['slot'],aDict['unit'],aDict['state'])['res']
- from time import sleep
+ ret['op'] = avocent.set_state(aDict['slot'],aDict['unit'],aDict['state'])
  sleep(10 if aDict['state'] == 'reboot' else 5)
  ret['state'] = avocent.get_state(aDict['slot'],aDict['unit'])['state']
  return ret
