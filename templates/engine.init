@@ -4,8 +4,8 @@
 #
 ### BEGIN INIT INFO
 # Provides:    zdcp
-# Required-Start:
-# Required-Stop:  
+# Required-Start:   $network
+# Required-Stop:    $network
 # Default-Start:	2 3 4 5
 # Default-Stop:		0 1 6
 # X-Start-Before:
@@ -15,13 +15,14 @@
 
 PKGDIR=%PKGDIR%
 PIDFILE=/var/run/zdcp.pid
+CFGFILE=%CFGFILE%
 
 start() {
  if [ -f $PIDFILE ]; then
   echo "System already running @ `cat $PIDFILE`"
  else
   # $PKGDIR/engine.py &
-  $PKGDIR/engine.py > /dev/null 2>&1 &
+  $PKGDIR/engine.py $CFGFILE > /dev/null 2>&1 &
   echo $! > $PIDFILE
   echo "Starting service handler @`cat $PIDFILE`"
  fi

@@ -15,12 +15,15 @@ from urllib.parse import unquote
 
 ######################################### Run ########################################
 #
-# Single process server, multiple threads to avoid blocking
+# TODO: make multiprocessing - preforking - and multithreaded
 #
-# TODO: make multicore instead
+# - http://stupidpythonideas.blogspot.com/2014/09/sockets-and-multiprocessing.html
+# - https://stackoverflow.com/questions/1293652/accept-with-sockets-shared-between-multiple-processes-based-on-apache-prefork
+#
+# - Manager.dict for settings
 #
 def run(aSettingsFile):
- """ run instantiate all engine entities """
+ """ run instantiate all engine entities and starts monitoring of socket """
  from sys import exit, setcheckinterval
  from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
  from signal import signal, SIGINT, SIGUSR1

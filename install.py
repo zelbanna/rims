@@ -46,6 +46,7 @@ settings['system']['config_file'] = settings_file
 with open(ospath.abspath(ospath.join(pkgdir,'templates',settings['system']['template'])),'r') as f:
  template = f.read()
 template = template.replace("%PKGDIR%",pkgdir)
+template = template.replace("%CFGFILE%",settings_file)
 with open(ospath.abspath(ospath.join(pkgdir,settings['system']['template'])),'w+') as f:
  f.write(template)
 chmod(ospath.abspath(ospath.join(pkgdir,settings['system']['template'])),0o755)

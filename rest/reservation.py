@@ -49,3 +49,19 @@ def list(aDict, aCTX):
    for res in ret['data']:
     res['loan'] = False if res['loan'] == 0 else True
  return ret
+
+#
+#
+def shutdown(aDict, aCTX):
+ """ Function retrieves devices and VMs and shut them down if it can, add a delay and then shutdown power (type 1)
+  - For devices not in state up we will do PEM shutdown only (type 2)
+  - For VMs there will not be much done ATM as there is no hypervisor correlation yet (type 3)
+  Args:
+  
+  Output:
+ """
+ ret = {}
+ with aCTX.db as db:
+  db.do("SELECT hostname, vm, dt.name as type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.state != 1")
+  ret['devices'] = db.get_rows()
+ return ret
