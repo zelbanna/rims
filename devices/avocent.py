@@ -15,7 +15,7 @@ from .generic import Device as GenericDevice
 class Device(GenericDevice):
 
  _getstatemap = { '1':'off', '2':'on' }
- _setstatemap = { 'off':'3', 'on':'2', 'reboot':'4' }
+ _setstatemap = { 'off':b'3', 'on':b'2', 'reboot':b'4' }
 
  @classmethod
  def get_functions(cls):
@@ -27,7 +27,7 @@ class Device(GenericDevice):
 
  @classmethod
  def set_outlet_state(cls,state):
-  return cls._setstatemap.get(state,'1')
+  return cls._setstatemap.get(state,b'1')
 
  def __init__(self, aIP, aSettings):
   GenericDevice.__init__(self,aIP, aSettings)
@@ -39,26 +39,27 @@ class Device(GenericDevice):
   from netsnmp import VarList, Varbind, Session
   try:
    from json import dumps
-   oid = ".1.3.6.1.4.1.10418.17.2.5.5.1.6.1.{}.{}".format(slot,unit)
+   tag = ".1.3.6.1.4.1.10418.17.2.5.5.1.6.1"
+   iid = "%s.%s"%(slot,unit)
    op  = Device.set_outlet_state(state)
-   print("snmpset -v2c -c %s %s %s i %s"%(self._settings['snmp']['write_community'], self._ip, oid, op))
+   # snmpset -v2c -c %s %s %s i %s"%(self._settings['snmp']['write_community'], self._ip, oid, op))
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   setobj = VarList(Varbind(oid , op ,"INTEGER"))
+   setobj = VarList(Varbind(tag,iid , op ,"INTEGER"))
    res = session.set(setobj)
-   print("RES:%s"%str(res))
    self.log_msg("Avocent - {0} set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
    return {'res':'OK'}
   except Exception as exception_error:
    self.log_msg("Avocent - error setting state: " + str(exception_error))
-   print(session.__dict__) 
    return {'res':'NOT_OK', 'info':str(exception_error) }
 
  def set_name(self,slot,unit,name):
   from netsnmp import VarList, Varbind, Session
   try:
-   name = name[:16]
+   name = name[:16].encode('utf-8')
+   tag = ".1.3.6.1.4.1.10418.17.2.5.5.1.4.1"
+   iid = "%s.%s"%(slot,unit)
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   setobj = VarList(Varbind("enterprises", "10418.17.2.5.5.1.4.1.{}.{}".format(slot,unit) , name, "OPAQUE"))
+   setobj = VarList(Varbind(tag , iid , name, "OPAQUE"))
    session.set(setobj)
    return "%s.%s:'%s'"%(slot,unit,name)
   except Exception as exception_error:
@@ -68,7 +69,7 @@ class Device(GenericDevice):
  def get_state(self,slot,unit):
   from netsnmp import VarList, Varbind, Session
   try:
-   stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.{}.{}".format(slot,unit)))
+   stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.%s.%s"%(slot,unit)))
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(stateobj)
    return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
