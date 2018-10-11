@@ -147,7 +147,7 @@ def info(aWeb):
  if dev['info']['type_name'] == 'controlplane':
   aWeb.wr("<DIV CLASS=td>N/A</DIV>")
  elif dev['reserved']:
-  aWeb.wr("<DIV CLASS='td %s'>"%("red" if dev['reservation']['valid'] == 1 else "orange"))
+  aWeb.wr("<DIV CLASS='td %s'>"%("red" if dev['reservation']['valid'] else "orange"))
   aWeb.wr(dev['reservation']['alias'] if dev['reservation']['user_id'] != int(cookie['id']) else "<A CLASS=z-op DIV=div_reservation_info URL='reservations_update?op=drop&id=%s'>%s</A>"%(dev['id'],dev['reservation']['alias']))
   aWeb.wr("</DIV>")
  else:

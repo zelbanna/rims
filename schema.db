@@ -247,7 +247,8 @@ DROP TABLE IF EXISTS `reservations`;
 CREATE TABLE `reservations` (
   `device_id` int(10) unsigned NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
-  `time_start` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `time_start` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `time_end` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `loan` tinyint(1) DEFAULT '0',
   `address` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`device_id`,`user_id`),
