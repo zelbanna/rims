@@ -21,16 +21,19 @@ def manage(aWeb):
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in data['inventories']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS='td maxed'>%s</DIV><DIV CLASS=td>"%(row['id'],row['name']))
-  aWeb.wr(aWeb.button('items',DIV='div_content_right', URL='awx_inventory?node=%s&id=%s'%(data['node'],row['id']), SPIN='true', TITLE='Hosts list'))
+  aWeb.wr(aWeb.button('items',DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(data['node'],row['id']), SPIN='true', TITLE='Hosts list'))
   aWeb.wr(aWeb.button('trash',DIV='div_content_right', URL='awx_inventory_delete?node=%s&id=%s'%(data['node'],row['id']), SPIN='true', TITLE='Delete inventory', MSG='Really delete inventory?'))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE></SECTION><SECTION CLASS=content-right ID=div_content_right></SECTION>")
  aWeb.wr("</SECTION>")
 
+
+
+
 #
 #
-def inventory(aWeb):
+def inventory_info(aWeb):
  args = aWeb.args()
  if aWeb['op'] == 'delete_list':
   opres = aWeb.rest_call("awx_inventory_delete_hosts",args)
@@ -38,9 +41,9 @@ def inventory(aWeb):
   opres = ""
  res = aWeb.rest_call("awx_inventory_info",args)
  aWeb.wr("<ARTICLE><P>Hosts</P>")
- aWeb.wr(aWeb.button('reload', DIV='div_content_right', URL='awx_inventory?node=%s&id=%s'%(aWeb['node'],aWeb['id']), SPIN='true'))
+ aWeb.wr(aWeb.button('reload', DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(aWeb['node'],aWeb['id']), SPIN='true'))
  aWeb.wr(aWeb.button('add',    DIV='div_content_right', URL='awx_inventory_device_search?node=%s&id=%s'%(aWeb['node'],aWeb['id']), TITLE='Sync with AWX'))
- aWeb.wr(aWeb.button('trash',  DIV='div_content_right', URL='awx_inventory?node=%s&id=%s&op=delete_list'%(aWeb['node'],aWeb['id']), MSG='Delete hosts?', FRM='host_list', SPIN='true'))
+ aWeb.wr(aWeb.button('trash',  DIV='div_content_right', URL='awx_inventory_info_?node=%s&id=%s&op=delete_list'%(aWeb['node'],aWeb['id']), MSG='Delete hosts?', FRM='host_list', SPIN='true'))
  aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=host_list>"%(opres))
  aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Groups</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['hosts']:
@@ -68,7 +71,7 @@ def inventory_device_search(aWeb):
  aWeb.wr("<SPAN>Sync devices matching field:</SPAN><SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='type'>Type</OPTION><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='id'>ID</OPTION></SELECT>")
  aWeb.wr("<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' REQUIRED>")
  aWeb.wr("</FORM><DIV CLASS='inline'>")
- aWeb.wr(aWeb.button('back',DIV='div_content_right',URL='awx_inventory?id=%s&node=%s'%(aWeb['id'],aWeb['node'])))
+ aWeb.wr(aWeb.button('back',DIV='div_content_right',URL='awx_inventory_info?id=%s&node=%s'%(aWeb['id'],aWeb['node'])))
  aWeb.wr(aWeb.button('forward',DIV='div_content_right',URL='awx_inventory_device_choose',FRM='awx_choose', SPIN='true'))
  aWeb.wr("</DIV></ARTICLE>")
 
@@ -95,7 +98,7 @@ def inventory_device_sync(aWeb):
  args = aWeb.args()
  res = aWeb.rest_call("awx_inventory_sync",args)
  aWeb.wr("<ARTICLE><P>Synced Devices</P>")
- aWeb.wr(aWeb.button('forward', DIV='div_content_right', URL='awx_inventory?node=%s&id=%s'%(aWeb['node'],aWeb['id'])))
+ aWeb.wr(aWeb.button('forward', DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(aWeb['node'],aWeb['id'])))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  for row in res['devices']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s.%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['hostname'],row['domain'],row['ip'],row['awx']))
