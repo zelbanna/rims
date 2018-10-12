@@ -134,7 +134,7 @@ class Junos(GenericDevice):
               '%s protocols lldp interface all'%base,
               '%s class-of-service host-outbound-traffic forwarding-class network-control'%base])
 
-  if self._settings['netconf'].get('tacplus'):
+  if self._settings.get('tacplus'):
    pass
   if self._settings['netconf'].get('dns'):
    ret.append('%s system name-server %s'%(base,self._settings['netconf']['dns']))

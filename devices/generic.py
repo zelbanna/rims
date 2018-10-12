@@ -61,8 +61,8 @@ class Device(object):
    "- SNMP read community: %s"%self._settings['snmp']['read_community'],
    "- SNMP write community: %s"%self._settings['snmp']['write_community']]
 
-  if self._settings['netconf'].get('tacplus'):
-   ret.append("- Tacacs: %s"%self._settings['netconf']['tacplus'])
+  if self._settings.get('tacplus'):
+   ret.append("- Tacacs: %s"%self._settings['tacplus']['ip'])
   if self._settings['netconf'].get('dns'):
    ret.append('- Nameserver: %s'%(self._settings['netconf']['dns']))
   if self._settings['netconf'].get('ntp'):
