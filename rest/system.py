@@ -24,9 +24,11 @@ def application(aDict, aCTX):
   db.do("SELECT parameter,value FROM settings WHERE section = 'portal' AND node = '%s'"%aDict['node'])
   for row in db.get_rows():
    ret[row['parameter']] = row['value']
-  db.do("SELECT CONCAT(id,'_',name) as id, name FROM users ORDER BY name")
+  db.do("SELECT alias as id, name FROM users ORDER BY name")
   rows = db.get_rows()
- ret['choices'] = [{'display':'Username', 'id':'system_login', 'data':rows}]
+ ret['choices'] = [{'display':'Username', 'id':'username', 'data':rows}]
+ ret['parameters'].append({'display':'Password', 'id':'password', 'data':'password','placeholder':'*******'})
+
  cookie = aDict
  ret['cookie'] = ",".join("%s=%s"%i for i in cookie.items())
  ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
@@ -39,19 +41,31 @@ def authenticate(aDict, aCTX):
  """Function docstring for authenticate. Provide cookie with lifetime.
 
  Args:
-  - id (required)
+  - username (required)
+  - password (required)
 
  Output:
  """
  from zdcp.core.genlib import random_string
+ from hashlib import md5
  from datetime import datetime,timedelta
- ret = {}
- try:    tmp = int(aDict['id'])
+ ret = {'authenticated':'NOT_OK'}
+ try:    username,password = aDict['username'], aDict['password']
  except: ret['authenticated'] = 'NOT_OK'
  else:
-  ret['authenticated'] = 'OK'
-  ret['token'] = random_string(16)
- ret['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+  try:
+   hash = md5()
+   hash.update(password.encode('utf-8'))
+   passcode = hash.hexdigest()
+  except Exception as e:
+   passcode = ""
+   print(str(e))
+  with aCTX.db as db:
+   if (db.do("SELECT id FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
+    ret['authenticated'] = 'OK'
+    ret['token'] = random_string(16)
+    ret['id'] = db.get_val('id')
+    ret['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 
 #
@@ -545,6 +559,7 @@ def users_info(aDict, aCTX):
   - menulist (optional)
   - alias (optional)
   - email (optional)
+  - password (optional)
 
  Output:
  """
@@ -553,6 +568,11 @@ def users_info(aDict, aCTX):
  op = aDict.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
+   if aDict.get('password'):
+    from hashlib import md5
+    hash = md5()
+    hash.update(aDict['password'].encode('utf-8'))
+    aDict['password'] = hash.hexdigest()
    if not id == 'new':
     ret['update'] = db.update_dict('users',aDict,"id=%s"%id)
    else:
@@ -562,6 +582,7 @@ def users_info(aDict, aCTX):
   if not id == 'new':
    ret['found'] = (db.do("SELECT users.* FROM users WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
+   ret['data'].pop('password',None)
   else:
    ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','view_public':'0','menulist':'default','external_id':None}
  return ret

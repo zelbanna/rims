@@ -70,7 +70,7 @@ def login(aWeb):
     aWeb.wr("<OPTION VALUE='%s'>%s</OPTION>"%(row['id'],row['name']))
    aWeb.wr("</SELECT></DIV></DIV>")
   for param in data.get('parameters'):
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s'></DIV></DIV>"%(param['display'],param['data'],param['id']))
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s' %s></DIV></DIV>"%(param['display'],param['data'],param['id'],"" if not param.get('placeholder') else "PLACEHOLDER='%s'"%param['placeholder']))
   aWeb.wr("</DIV></DIV>")
   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='../images/icon-start.png' /></BUTTON>")
   aWeb.wr("</ARTICLE></DIV>")
@@ -82,9 +82,9 @@ def portal(aWeb):
  cookie = aWeb.cookie('system')
  id = cookie.get('id','NOID') if cookie else 'NOID'
  if id == 'NOID':
-  id,_,username = aWeb.get('system_login',"NOID_NONAME").partition('_')
-  res = aWeb.rest_call("system_authenticate",{'id':id,'username':username})
+  res = aWeb.rest_call("system_authenticate?log=false",{'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
+   id = res['id']
    cookie.update({'id':id,'token':res['token']})
    value = ",".join("%s=%s"%i for i in cookie.items())
    aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(value,res['expires']))

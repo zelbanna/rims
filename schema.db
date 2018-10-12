@@ -326,9 +326,10 @@ CREATE TABLE `tasks` (
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `alias` varchar(20) DEFAULT NULL,
   `name` varchar(20) NOT NULL DEFAULT 'error',
+  `password` varchar(40) DEFAULT '4cb9c8a8048fd02294477fcb1a41191a',
   `email` varchar(40) DEFAULT NULL,
-  `alias` varchar(10) DEFAULT NULL,
   `view_public` tinyint(1) unsigned DEFAULT '1',
   `menulist` varchar(60) DEFAULT 'default',
   `external_id` varchar(40) DEFAULT NULL,

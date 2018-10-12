@@ -7,7 +7,7 @@ __status__ = "Production"
 #
 #
 if __name__ == "__main__":
- from sys import path as syspath, argv, exit
+ from sys import path as syspath, argv, exit, stdout
  if len(argv) < 3 or not argv[2] in ['-s','-d','-v','-r']:
   print(argv[0] + " <settings.json> -d(atabase)|-s(tructure)|-v(alues|-r(estore) [io-file]")
   exit(0)
@@ -38,5 +38,4 @@ if __name__ == "__main__":
  elif argv[2] == '-r' and len(argv) == 3:
   args.update({'file':ospath.abspath(ospath.join(getcwd(),argv[3]))})
   res = mysql.restore(args, ctx)
- for line in res['output']:
-  print(line)
+ stdout.write("\n".join(res['output']))
