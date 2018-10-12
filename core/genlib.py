@@ -13,7 +13,8 @@ __status__ = "Production"
 # Basic Auth header generator for base64 authentication
 #
 def basic_auth(aUsername,aPassword):
- return {'Authorization':'Basic ' + (("%s:%s"%(aUsername,aPassword)).encode('base64')).replace('\n','') }
+ from base64 import b64encode
+ return {'Authorization':'Basic %s'%(b64encode(("%s:%s"%(aUsername,aPassword)).encode('utf-8')).decode()) }
 
 def random_string(aLength):
  import string
