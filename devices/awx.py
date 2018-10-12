@@ -65,9 +65,7 @@ class Device(object):
   head = {'Authorization':self._token}
   try: head.update(aHeader)
   except: pass
-  try: res = rest_call(aURL, aArgs, aMethod, head)
-  except Exception as e: res = str(e)
-  return res
+  return rest_call(aURL, aArgs, aMethod, head)
 
  def fetch_list(self,aBase,aSet):
   ret  = []

@@ -12,7 +12,7 @@ __type__ = 'menuitem'
 ############################################ Options ##############################################
 #
 def main(aWeb):
- cookie = aWeb.cookie('system') 
+ cookie = aWeb.cookie('system')
  data = aWeb.rest_call("system_inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('node'):
@@ -83,7 +83,7 @@ def rest_execute(aWeb):
  except: arguments = None
  try:
   node = aWeb.rest_call("system_node_info",{'id':aWeb['node']})['data']
-  url = "%s/api/%s"%(node['url'],aWeb['api']) if node['system'] == 1 else "%s%s"%(node['url'],aWeb['api'])
+  url = "%s/api/%s?debug=true"%(node['url'],aWeb['api']) if node['system'] == 1 else "%s%s"%(node['url'],aWeb['api'])
   ret = aWeb.rest_full(url,arguments,aWeb['method'])
  except Exception as e:
   ret = e.args[0]
