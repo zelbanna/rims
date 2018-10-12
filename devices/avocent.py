@@ -48,8 +48,8 @@ class Device(GenericDevice):
    res = session.set(setobj)
    self.log_msg("Avocent - {0} set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
    return {'res':'OK'}
-  except Exception as exception_error:
-   self.log_msg("Avocent - error setting state: " + str(exception_error))
+  except Exception as e:
+   self.log_msg("Avocent(%s) - error setting state: %s"%(self._ip,str(e)))
    return {'res':'NOT_OK', 'info':str(exception_error) }
 
  def set_name(self,slot,unit,name):
@@ -61,8 +61,8 @@ class Device(GenericDevice):
    setobj = VarList(Varbind(tag , iid , name, "OPAQUE"))
    session.set(setobj)
    return "%s.%s:'%s'"%(slot,unit,name)
-  except Exception as exception_error:
-   self.log_msg("Avocent : error setting name " + str(exception_error))
+  except Exception as e:
+   self.log_msg("Avocent(%s) : error setting name: %s"%(self._ip,str(e)))
    return "Error setting name '%s'"%(name)
 
  def get_state(self,slot,unit):
@@ -72,7 +72,7 @@ class Device(GenericDevice):
    session.get(stateobj)
    return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
   except Exception as e:
-   self.log_msg("Avocent : error getting state:" + str(e))
+   self.log_msg("Avocent(%s) : error getting state: %s"%(self._ip,str(e)))
    return {'res':'NOT_OK','info':str(e), 'state':'unknown' }
 
  #
@@ -85,8 +85,8 @@ class Device(GenericDevice):
    session.walk(slotobjs)
    for slot in slotobjs:
     slots.append([slot.iid, slot.val.decode()])
-  except Exception as exception_error:
-   self.log_msg("Avocent : error loading pdu member names " + str(exception_error))
+  except Exception as e:
+   self.log_msg("Avocent(%s) : error loading pdu member names: %s"%(self._ip,str(e)))
   return slots
 
  #
@@ -104,6 +104,6 @@ class Device(GenericDevice):
    slotdict  = dict([(var.iid, var.val.decode()) for var in slotobjs])
    for indx,outlet in enumerate(outletobjs,0):
     result.append({'slot':outlet.tag[34:],'unit':outlet.iid,'name':outlet.val.decode(),'state':Device.get_outlet_state(stateobjs[indx].val.decode()),'slotname':slotdict.get(outlet.tag[34:],"unknown")})
-  except Exception as exception_error:
-   self.log_msg("Avocent : error loading conf " + str(exception_error))
+  except Exception as e:
+   self.log_msg("Avocent(%s) : error loading conf: %s"%(self._ip,str(e)))
   return result

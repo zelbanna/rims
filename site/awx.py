@@ -30,7 +30,7 @@ def manage(aWeb):
 #
 #
 def inventory_list(aWeb):
- data = aWeb.rest_call("awx_inventory_list",{'node':aWeb['node'])
+ data = aWeb.rest_call("awx_inventory_list",{'node':aWeb['node']})
  aWeb.wr("<ARTICLE><P>Inventories</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in data['inventories']:
