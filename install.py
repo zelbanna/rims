@@ -122,6 +122,24 @@ if settings['system']['id'] == 'master':
  res['device_new'] = 0
 
  #
+ # Server types
+ #
+ srvdir = ospath.abspath(ospath.join(pkgdir,'rest'))
+ server_types = []
+ for file in listdir(srvdir):
+  pyfile = file[:-3]
+  if file[-3:] == ".py" and pyfile[:2] != "__":
+   try:
+    mod = import_module("zdcp.rest.%s"%(pyfile))
+    type = getattr(mod,'__type__',None)
+    if type:
+     server_types.append({'name':pyfile, 'base':type})
+   except: pass
+ res['server_found'] = len(server_types)
+ res['server_new'] = 0
+
+
+ #
  # Menu items
  #
  sitedir= ospath.abspath(ospath.join(pkgdir,'site'))
@@ -168,16 +186,22 @@ if settings['system']['id'] == 'master':
   res['dns_server_id']  = db.get_last_id()
   res['dns_domain_add'] = (db.do("INSERT domains (id,foreign_id,name,server_id,type ) VALUES (0,0,'local',{},'forward') ON DUPLICATE KEY UPDATE id = 0".format(res['dns_server_id'])) > 0)
   res['generic_device'] = (db.do("INSERT device_types (id,name,base) VALUES (0,'generic','generic') ON DUPLICATE KEY UPDATE id = 0") > 0)
+
   sql ="INSERT device_types (name,base,icon,functions,oid) VALUES ('%(name)s','%(base)s','%(icon)s','%(functions)s','%(oid)s') ON DUPLICATE KEY UPDATE oid = %(oid)s, icon = '%(icon)s', functions = '%(functions)s'"
   for type in device_types:
    try:    res['device_new'] += db.do(sql%type)
    except Exception as err: res['device_errors'] = str(err)
 
+  sql = "INSERT server_types (name,base) VALUES ('%(name)s','%(base)s') ON DUPLICATE KEY UPDATE id = id"
+  for type in server_types:
+   try:    res['server_new'] += db.do(sql%type)
+   except Exception as err: res['server_errors'] = str(err)
+
   sql = "INSERT resources (node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
   for item in resources:
    try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"%s_main"%item['name'],item['icon'],item['type']))
-   except Exception as err:
-    res['resources_errors'] = str(err)
+   except Exception as err: res['resources_errors'] = str(err)
+
 
   db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
   data = db.get_rows()

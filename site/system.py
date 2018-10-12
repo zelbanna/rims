@@ -204,10 +204,12 @@ def node_help(aWeb):
 ############################################ Servers ###########################################
 
 def server_list(aWeb):
- res = aWeb.rest_call("system_server_list",{'type':aWeb['type']})
+ res = aWeb.rest_call("system_server_list",aWeb.args())
+ type = "type=%s"%aWeb['type'] if aWeb.get('type') else "dummy"
+ aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Servers</P>")
- aWeb.wr(aWeb.button('reload',DIV='div_content_left',URL='system_server_list?type=%s'%aWeb['type']))
- aWeb.wr(aWeb.button('add', DIV='div_content_right',URL='system_server_info?id=new&type=%s'%aWeb['type'],TITLE='Add server'))
+ aWeb.wr(aWeb.button('reload',DIV='div_content',URL='system_server_list?%s'%type))
+ aWeb.wr(aWeb.button('add', DIV='div_content_right',URL='system_server_info?id=new&%s'%type,TITLE='Add server'))
  aWeb.wr(aWeb.button('help',DIV='div_content_right',URL='system_server_help'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for srv in res['servers']:
@@ -217,29 +219,36 @@ def server_list(aWeb):
   aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='system_server_status?id=%s'%(srv['id']), SPIN='true', TITLE='Server status'))
   aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='system_server_restart?id=%s'%(srv['id']), SPIN='true', TITLE='Server restart'))
   aWeb.wr("</DIV></DIV>")
- aWeb.wr("</DIV></DIV>")
- aWeb.wr("</ARTICLE>")
+ aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
+ aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
 
 #
 #
 def server_info(aWeb):
+ aWeb.wr("<ARTICLE CLASS=info><P>Server</P>")
  args = aWeb.args()
  res  = aWeb.rest_call("system_server_info",args)
  data = res['data']
- aWeb.wr("<ARTICLE CLASS=info><P>Server</P>")
  aWeb.wr("<FORM ID=server_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(data['id']))
  aWeb.wr("<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><SELECT NAME=node>")
  for node in res['nodes']:
-  extra = " selected" if (data['node'] == node['node']) else ""
-  aWeb.wr("<OPTION VALUE=%s %s>%s</OPTION>"%(node['node'],extra,node['node']))
+  extra = " selected" if (data['node'] == node) else ""
+  aWeb.wr("<OPTION VALUE=%s %s>%s</OPTION>"%(node,extra,node))
  aWeb.wr("</SELECT></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY NAME=type VALUE='%s'></DIV></DIV>"%data['type'])
+ if data['id'] != 'new':
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT %s NAME=type VALUE='%s'></DIV></DIV>"%("READONLY" if data.get('type') else "",data['type']))
+ else:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT NAME=type>")
+  for type in res['types']:
+   aWeb.wr("<OPTION VALUE='%s'>%s</OPTION>"%(type,type))
+  aWeb.wr("</SELECT></DIV></DIV>")
+
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Server:</DIV><DIV CLASS=td><SELECT NAME=server>")
  for srv in res['servers']:
   extra = " selected" if (data['server'] == srv['server']) else ""
-  aWeb.wr("<OPTION VALUE=%s %s>%s</OPTION>"%(srv['server'],extra,srv['server']))
+  aWeb.wr("<OPTION VALUE=%s %s>%s (%s)</OPTION>"%(srv['server'],extra,srv['server'],srv['type']))
  aWeb.wr("</SELECT></DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</FORM>")

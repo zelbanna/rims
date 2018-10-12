@@ -616,7 +616,7 @@ def server_list(aDict, aCTX):
  ret = {}
  
  with aCTX.db as db:
-  db.do("SELECT id, server, node, type FROM servers %s"%("WHERE type = '%s'"%aDict['type'] if aDict.get('type') else ""))
+  db.do("SELECT id, server, node, type FROM servers WHERE %s"%("type = '%s'"%aDict['type'] if aDict.get('type') else "TRUE"))
   ret['servers']= db.get_rows()
  return ret
 
@@ -634,7 +634,7 @@ def server_info(aDict, aCTX):
  op = aDict.pop('op',None)
  with aCTX.db as db:
   db.do("SELECT node FROM nodes")
-  ret['nodes'] = db.get_rows()
+  ret['nodes'] = [x['node'] for x in db.get_rows()]
   if op == 'update':
    if not id == 'new':
     ret['update'] = db.update_dict('servers',aDict,"id=%s"%id)
@@ -645,12 +645,13 @@ def server_info(aDict, aCTX):
   if not id == 'new':
    ret['found'] = (db.do("SELECT * FROM servers WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
+   db.do("SELECT name AS server, base AS type FROM server_types WHERE base = '%s'"%ret['data']['type'])
   else:
-   ret['data'] = {'id':'new','node':None,'server':'Unknown','type':aDict.get('type')}
-  if   ret['data']['type'] == 'DNS':
-   ret['servers'] = [{'server':'nodns','type':'DNS'},{'server':'powerdns','type':'DNS'},{'server':'infoblox','type':'DNS'}]
-  elif ret['data']['type'] == 'DHCP':
-   ret['servers'] = [{'server':'nodhcp','type':'DHCP'},{'server':'iscdhcp','type':'DHCP'}]
+   ret['data'] = {'id':'new','node':None,'server':'Unknown','type':None}
+   db.do("SELECT DISTINCT base AS type FROM server_types")
+   ret['types'] = [x['type'] for x in db.get_rows()]
+   db.do("SELECT name AS server, base AS type FROM server_types") 
+  ret['servers'] = db.get_rows()
 
  return ret
 
