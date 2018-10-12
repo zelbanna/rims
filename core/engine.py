@@ -87,7 +87,11 @@ def run(aSettingsFile):
 
   else:
    extra = rest_call("%s/settings/fetch/%s"%(settings['system']['master'],node))['data']['settings']
-   settings.update(extra)
+   for section,data in extra.items():
+    if not settings.get(section):
+     settings[section] = {}
+    for param, value in data.items():
+     settings[section][param] = value
    tasks = rest_call("%s/api/system_task_list"%settings['system']['master'],{'node':node})['data']['tasks']
 
   workers = WorkerPool(settings['system'].get('workers',20),settings)
@@ -470,7 +474,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
    self._body = dumps({'update':update,'success':True}).encode('utf-8')
   except Exception as e:
-   self._body = dumps({'update':0,'error':str(e)}).encode('utf-8')
+   self._body = dumps({'update':0,'error':str(e),'info':"Function is called by node to register its URL and port into 'node' repository"}).encode('utf-8')
 
  #
  #
@@ -508,15 +512,15 @@ class SessionHandler(BaseHTTPRequestHandler):
      settings[section] = {}
     settings[section][param['parameter']] = param['value']
    if op == 'fetch':
-    self._body = dumps({'settings':settings}).encode('utf-8')
+    output = {'settings':settings}
    else:
     req  = Request("%s/settings/update"%(self._ctx.settings['nodes'][node]), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(settings).encode('utf-8'))
     try: sock = urlopen(req, timeout = 300)
     except Exception as e:
      self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
-     self._body = dumps({'node':node,'result':'SYNC_NOT_OK'}).encode('utf-8')
+     output = {'node':node,'result':'SYNC_NOT_OK'}
     else:
-     self._body = dumps({'node':node,'result':'SYNC_OK'}).encode('utf-8')
+     output = {'node':node,'result':'SYNC_OK'}
   elif op == 'update':
    length   = int(self.headers['Content-Length'])
    settings = self._ctx.settings
@@ -531,11 +535,12 @@ class SessionHandler(BaseHTTPRequestHandler):
     for param,info in params.items():
      settings[section][param] = info['value']
    settings['system']['config_file'] = filename
-   self._body = b'UPDATE_OK'
+   output = 'UPDATE_OK'
   elif op == 'show':
-   self._body = dumps(self._ctx.settings).encode('utf-8')
+   output = self._ctx.settings
   else:
-   self._body = b'SETTINGS_NOT_OK'
+   output = {'result':'SETTINGS_NOT_OK','info':'settings/<show|fetch|sync>/<node> where fetch and sync runs on master node'}
+  self._body = dumps(output).encode('utf-8')
 
 ########################################### Web stream ########################################
 #
