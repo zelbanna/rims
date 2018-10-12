@@ -10,18 +10,15 @@ from zdcp.devices.awx import Device
 #
 #
 def inventory_list(aDict, aCTX):
- """Function main produces an inventory list for a device id
+ """Function main produces an inventory list for a node
 
  Args:
-  - id (optional required)
-  - node (optional required)
+  - node (required)
 
  Output:
   - inventories
  """
- from zdcp.rest.system import node_device_mapping
- ret = node_device_mapping(aDict, aCTX)
- controller = Device(aCTX.settings['nodes'][ret['node']])
+ controller = Device(aCTX.settings['nodes'][aDict['node']])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  ret['inventories'] = controller.fetch_list("inventories/",('id','name','url'))
  return ret

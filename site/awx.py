@@ -10,26 +10,36 @@ __status__ = "Production"
 #
 #
 def manage(aWeb):
- args = aWeb.args()
- data = aWeb.rest_call("awx_inventory_list",args)
+ if aWeb['node']:
+  args = {'node':aWeb['node']}
+ elif aWeb['id']:
+  args = {'id':aWeb['id']}
+ dev = aWeb.rest_call("system_node_device_mapping",args)
  aWeb.wr("<NAV><UL>")
- aWeb.wr("<LI><A CLASS=z-op HREF=%s     target=_blank>UI</A></LI>"%(data['url']))
- aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='awx_manage?id=%s'></A></LI>"%(data['id']))
- aWeb.wr("<LI CLASS='right navinfo'><A>%s</A></LI>"%(data['hostname']))
+ aWeb.wr("<LI><A CLASS=z-op HREF=%s     target=_blank>UI</A></LI>"%(dev['url']))
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content_left URL='awx_inventory_list?node=%s'>Inventories</A></LI>"%dev['node'])
+ aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='awx_manage?id=%s'></A></LI>"%(dev['id']))
+ aWeb.wr("<LI CLASS='right navinfo'><A>%s</A></LI>"%(dev['hostname']))
  aWeb.wr("</UL></NAV>")
- aWeb.wr("<SECTION CLASS=content ID=div_content><SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Inventories</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
- for row in data['inventories']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS='td maxed'>%s</DIV><DIV CLASS=td>"%(row['id'],row['name']))
-  aWeb.wr(aWeb.button('items',DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(data['node'],row['id']), SPIN='true', TITLE='Hosts list'))
-  aWeb.wr(aWeb.button('trash',DIV='div_content_right', URL='awx_inventory_delete?node=%s&id=%s'%(data['node'],row['id']), SPIN='true', TITLE='Delete inventory', MSG='Really delete inventory?'))
-  aWeb.wr("</DIV></DIV>")
- aWeb.wr("</DIV></DIV>")
- aWeb.wr("</ARTICLE></SECTION><SECTION CLASS=content-right ID=div_content_right></SECTION>")
+ aWeb.wr("<SECTION CLASS=content ID=div_content>")
+ aWeb.wr("<SECTION CLASS=content-left ID=div_content_left></SECTION>")
+ aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
  aWeb.wr("</SECTION>")
 
 
-
+#
+#
+def inventory_list(aWeb):
+ data = aWeb.rest_call("awx_inventory_list",{'node':aWeb['node'])
+ aWeb.wr("<ARTICLE><P>Inventories</P>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ for row in data['inventories']:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS='td maxed'>%s</DIV><DIV CLASS=td>"%(row['id'],row['name']))
+  aWeb.wr(aWeb.button('items',DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(aWeb['node'],row['id']), SPIN='true', TITLE='Hosts list'))
+  aWeb.wr(aWeb.button('trash',DIV='div_content_right', URL='awx_inventory_delete?node=%s&id=%s'%(aWeb['node'],row['id']), SPIN='true', TITLE='Delete inventory', MSG='Really delete inventory?'))
+  aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</ARTICLE>")
 
 #
 #
