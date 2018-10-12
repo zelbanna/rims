@@ -8,6 +8,7 @@ __status__  = "Production"
 __type__    = "console"
 
 from .generic import Device as GenericDevice
+from zdcp.core.common import VarList, Varbind, Session
 
 ######################################## Console ########################################
 #
@@ -27,7 +28,6 @@ class Device(GenericDevice):
   return "OpenGear - {}".format(GenericDevice.__str__(self))
 
  def get_inventory(self):
-  from netsnmp import VarList, Varbind, Session
   result = []
   try:
    portobjs = VarList(Varbind('.1.3.6.1.4.1.25049.17.2.1.2'))

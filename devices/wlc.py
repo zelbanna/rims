@@ -1,8 +1,4 @@
-"""Module docstring.
-
-WLC Base Class
-
-"""
+"""WLC Base Class"""
 __author__  = "Zacharias El Banna"
 __version__ = "5.2GA"
 __status__  = "Production"
@@ -10,7 +6,7 @@ __type__    = "network"
 __oid__     = 14525
 
 from .generic import Device as GenericDevice
-from netsnmp import VarList, Varbind, Session
+from zdcp.core.common import VarList, Varbind, Session
 
 ################################ WLC Object #####################################
 #

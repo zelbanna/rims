@@ -9,6 +9,7 @@ __status__  = "Production"
 __type__    = "pdu"
 
 from .generic import Device as GenericDevice
+from zdcp.core.common import VarList, Varbind, Session
 
 ######################################## PDU ########################################
 
@@ -36,7 +37,6 @@ class Device(GenericDevice):
   return "Avocent[%s]: %s"%(__type__,GenericDevice.__str__(self))
 
  def set_state(self,slot,unit,state):
-  from netsnmp import VarList, Varbind, Session
   try:
    from json import dumps
    tag = ".1.3.6.1.4.1.10418.17.2.5.5.1.6.1"
@@ -53,7 +53,6 @@ class Device(GenericDevice):
    return {'res':'NOT_OK', 'info':str(exception_error) }
 
  def set_name(self,slot,unit,name):
-  from netsnmp import VarList, Varbind, Session
   try:
    name = name[:16].encode('utf-8')
    tag = ".1.3.6.1.4.1.10418.17.2.5.5.1.4.1"
@@ -67,7 +66,6 @@ class Device(GenericDevice):
    return "Error setting name '%s'"%(name)
 
  def get_state(self,slot,unit):
-  from netsnmp import VarList, Varbind, Session
   try:
    stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.%s.%s"%(slot,unit)))
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
@@ -80,7 +78,6 @@ class Device(GenericDevice):
  #
  #
  def get_slot_names(self):
-  from netsnmp import VarList, Varbind, Session
   slots = []
   try:
    slotobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
@@ -95,7 +92,6 @@ class Device(GenericDevice):
  #
  #
  def get_inventory(self):
-  from netsnmp import VarList, Varbind, Session
   result = []
   try:
    outletobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.4'))

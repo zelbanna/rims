@@ -9,6 +9,8 @@ __status__  = "Production"
 __type__    = "generic"
 __icon__    = "../images/viz-generic.png"
 
+from zdcp.core.common import VarList, Varbind, Session, log
+
 ############################################# Device ##########################################
 class Device(object):
 
@@ -45,7 +47,6 @@ class Device(object):
 
  #
  def log_msg(self, aMsg):
-  from ..core.common import log
   log(aMsg,self._logfile)
 
  #
@@ -65,7 +66,6 @@ class Device(object):
 
  #
  def system_info(self):
-  from netsnmp import VarList, Varbind, Session
   ret = {}
   try:
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
@@ -81,7 +81,6 @@ class Device(object):
 
  #
  def interfaces(self):
-  from netsnmp import VarList, Varbind, Session
   interfaces = {}
   try:
    objs = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2'),Varbind('.1.3.6.1.2.1.31.1.1.1.18'),Varbind('.1.3.6.1.2.1.2.2.1.8'),Varbind('.1.3.6.1.2.1.2.2.1.6'))
@@ -103,7 +102,6 @@ class Device(object):
 
  #
  def interface(self,aIndex):
-  from netsnmp import VarList, Varbind, Session
   try:
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    ifoid   = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex),Varbind('.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex),Varbind('.1.3.6.1.2.1.2.2.1.6.%s'%aIndex))
@@ -115,7 +113,6 @@ class Device(object):
 
  #
  def lldp(self):
-  from netsnmp import VarList, Varbind, Session
   def hex2ascii(aHex):
    return ':'.join("%s%s"%x for x in zip(*[iter(aHex.hex())]*2))
 
@@ -166,7 +163,6 @@ class Device(object):
 
  #
  def detect(self):
-  from netsnmp import VarList, Varbind, Session
   def hex2ascii(aHex):
    return ':'.join("%s%s"%x for x in zip(*[iter(aHex.hex())]*2))
 

@@ -11,6 +11,7 @@ __icon__    = "../images/viz-server.png"
 __oid__     = 6876
 
 from .generic import Device as GenericDevice
+from zdcp.core.common import VarList, Varbind, Session
 
 ########################################### ESXi ############################################
 #
@@ -113,7 +114,6 @@ class Device(GenericDevice):
  # SNMP interaction
  #
  def get_vm_id(self, aname):
-  from netsnmp import VarList, Varbind, Session
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
@@ -126,7 +126,6 @@ class Device(GenericDevice):
   return -1
 
  def get_vm_state(self, aid):
-  from netsnmp import VarList, Varbind, Session
   try:
    vmstateobj = VarList(Varbind(".1.3.6.1.4.1.6876.2.1.1.6." + str(aid)))
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
@@ -138,7 +137,6 @@ class Device(GenericDevice):
 
  def get_vm_list(self, aSort = None):
   # aSort = 'id' or 'name'
-  from netsnmp import VarList, Varbind, Session
   statelist=[]
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
