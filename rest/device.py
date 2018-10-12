@@ -572,7 +572,7 @@ def configuration_template(aDict, aCTX):
  with aCTX.db as db:
   db.do("SELECT ine.mask,INET_NTOA(ine.gateway) AS gateway,INET_NTOA(ine.network) AS network, INET_NTOA(ia.ip) AS ip, hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aDict['id'])
   data = db.get_row()
- ip = data.pop('ip',None)
+ ip = data['ip']
  try:
   module = import_module("zdcp.devices.%s"%data['type'])
   dev = getattr(module,'Device',lambda x: None)(ip,aCTX.settings)

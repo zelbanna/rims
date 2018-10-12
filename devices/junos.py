@@ -109,14 +109,13 @@ class Junos(GenericDevice):
   base  = "set groups default_system"
   ret = ["set system host-name %s"%(argdict['hostname'])]
   if self._settings['netconf']['username'] == 'root':
-   ret.append("set system root-authentication encrypted-password \"%s\""%(self._settings['netconf']['encrypted']))
+   ret.append('set system root-authentication encrypted-password "%s"'%(self._settings['netconf']['encrypted']))
   else:
    ret.append('set system login user %s class super-user'%(self._settings['netconf']['username']))
    ret.append('set system login user %s authentication encrypted-password "%s"'%(self._settings['netconf']['username'],self._settings['netconf']['encrypted']))
   ret.extend(['%s system domain-name %s'%(base,argdict['domain']),
               '%s system domain-search %s'%(base,argdict['domain']),
               '%s system login message \"this is device %s\"'%(base,argdict['hostname']),
-              '%s system name-server %s'%(base,self._settings['netconf']['dnssrv']),
               '%s system services ssh root-login allow'%base,
               '%s system services rest http'%base,
               '%s system services netconf ssh'%base,
@@ -125,9 +124,7 @@ class Junos(GenericDevice):
               '%s system syslog file messages authorization info'%base,
               '%s system syslog file interactive-commands interactive-commands any'%base,
               '%s system archival configuration transfer-on-commit'%base,
-              '%s system archival configuration archive-sites ftp://%s'%(base,self._settings['netconf']['anonftp']),
               '%s system commit persist-groups-inheritance'%base,
-              '%s system ntp server %s'%(base,self._settings['netconf']['ntpsrv']),
               '%s routing-options static route 0.0.0.0/0 next-hop %s'%(base,argdict['gateway']),
               '%s routing-options static route 0.0.0.0/0 no-readvertise'%base,
               '%s snmp community %s clients %s/%s'%(base,self._settings['snmp']['read_community'],argdict['network'],argdict['mask']),
@@ -135,6 +132,15 @@ class Junos(GenericDevice):
               '%s protocols lldp port-id-subtype interface-name'%base,
               '%s protocols lldp neighbour-port-info-display port-id'%base,
               '%s protocols lldp interface all'%base,
-              '%s class-of-service host-outbound-traffic forwarding-class network-control'%base,
-              'set apply-groups default_system'])
+              '%s class-of-service host-outbound-traffic forwarding-class network-control'%base])
+
+  if self._settings['netconf'].get('tacplus'):
+   pass
+  if self._settings['netconf'].get('dns'):
+   ret.append('%s system name-server %s'%(base,self._settings['netconf']['dns']))
+  if self._settings['netconf'].get('ntp'):
+   ret.append('%s system ntp server %s'%(base,self._settings['netconf']['ntp']))
+  if self._settings['netconf'].get('anonftp'):
+   ret.append('%s system archival configuration archive-sites ftp://%s'%(base,self._settings['netconf']['anonftp']))
+  ret.append('set apply-groups default_system')
   return ret

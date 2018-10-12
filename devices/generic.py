@@ -51,18 +51,25 @@ class Device(object):
 
  #
  def configuration(self,argdict):
-  output = ["No config template for this device type.","",
+  ret = ["No config template for this device type.","",
    "Please set the following manually:",
    "- Username: %s"%self._settings['netconf']['username'],
    "- Password: %s"%self._settings['netconf']['password'],
    "- Domain:   %s"%argdict['domain'],
-   "- Nameserver: %s"%self._settings['netconf']['dnssrv'],
-   "- NTP: %s"%self._settings['netconf']['ntpsrv'],
    "- Gateway: %s"%argdict['gateway'],
    "- Network/Mask: %s/%s"%(argdict['network'],argdict['mask']),
    "- SNMP read community: %s"%self._settings['snmp']['read_community'],
    "- SNMP write community: %s"%self._settings['snmp']['write_community']]
-  return output
+
+  if self._settings['netconf'].get('tacplus'):
+   ret.append("- Tacacs: %s"%self._settings['netconf']['tacplus'])
+  if self._settings['netconf'].get('dns'):
+   ret.append('- Nameserver: %s'%(self._settings['netconf']['dns']))
+  if self._settings['netconf'].get('ntp'):
+   ret.append('- NTP: %s'%(self._settings['netconf']['ntp']))
+  if self._settings['netconf'].get('anonftp'):
+   ret.append('- AnonFTP: %s'%(self._settings['netconf']['anonftp']))
+  return ret
 
  #
  def system_info(self):
