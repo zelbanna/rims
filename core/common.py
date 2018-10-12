@@ -16,18 +16,22 @@ def log(aMsg, aFile, aID='None'):
 
 ############################################ Database ######################################
 #
-# Database Class
+# Threads safe Database Class
+# - Current Thread can reenter (RLook)
+# - Other Threads will wait for resource
 #
 class DB(object):
 
  def __init__(self, aDB, aHost, aUser, aPass):
-  from threading import Lock
+  from threading import Lock, RLock
   from pymysql import connect
   from pymysql.cursors import DictCursor
   self._mods = (connect,DictCursor)
   self._db, self._host, self._user, self._pass = aDB, aHost, aUser, aPass
-  self._conn, self._curs, self._dirty, self._clock, self._wlock = None, None, False, Lock(), Lock()
-  self._waiting = 0
+  self._conn, self._curs, self._dirty = None, None, False
+  self._conn_lock, self._wait_lock = RLock(), Lock()
+  self._conn_waiting = 0
+  self._conn_in_thread = 0
   self.count = {'SELECT':0,'INSERT':0,'DELETE':0,'UPDATE':0,'COMMIT':0,'CONNECT':0,'CLOSE':0}
 
  def __enter__(self):
@@ -41,27 +45,31 @@ class DB(object):
   return "Database(%s@%s):[DIRTY=%s,%s]"%(self._db,self._host,self._dirty,",".join("%s=%03d"%i for i in self.count.items()))
 
  def connect(self):
-  with self._wlock:
-   self._waiting += 1
-  self._clock.acquire()
+  with self._wait_lock:
+   self._conn_waiting += 1
+  self._conn_lock.acquire()
+  self._conn_in_thread += 1
   self.count['CONNECT'] += 1
   if not self._conn:
    self._conn = self._mods[0](host=self._host, port=3306, user=self._user, passwd=self._pass, db=self._db, cursorclass=self._mods[1], charset='utf8')
    self._curs = self._conn.cursor()
 
  def close(self):
+  """ Close connection, audit, remove waiting threads and also remove current threads ownership in case of nested thread ownership """
   self.count['CLOSE'] += 1
   if self._dirty:
    self.commit()
-  with self._wlock:
+  with self._wait_lock:
    """ remove oneself and check if someone else is waiting """
-   self._waiting -= 1
-   if self._waiting == 0:
+   self._conn_waiting -= 1
+   self._conn_in_thread -= 1
+   if self._conn_waiting == 0:
     self._curs.close()
     self._conn.close()
     self._curs = None
     self._conn = None
-  self._clock.release()
+  if self._conn_in_thread == 0:
+   self._conn_lock.release()
 
  def do(self,aQuery):
   op = aQuery[0:6].upper()

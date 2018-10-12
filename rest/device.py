@@ -169,7 +169,6 @@ def extended(aDict, aCTX):
      if not (old_info['hostname'] == aDict['hostname']) or not (str(old_info['a_dom_id']) == str(aDict['a_dom_id'])):
       dns_args = {'a_id':old_info['a_id'],'ptr_id':old_info['ptr_id'],'a_domain_id_new':aDict['a_dom_id'],'a_domain_id_old':old_info['a_dom_id'],'hostname':aDict['hostname'],'ip_new':ret['ip'],'ip_old':old_info['ip'],'id':ret['id']}
       from zdcp.rest.dns import record_device_update
-      aCTX.clone_db()
       dns_res = record_device_update(dns_args,aCTX)
       new_info = {'hostname':aDict['hostname'],'a_dom_id':dns_res['A']['domain_id']}
       for type in ['a','ptr']:
@@ -348,7 +347,6 @@ def new(aDict, aCTX):
   if ret['fqdn']:
    if alloc:
     from zdcp.rest.dns import record_device_update
-    aCTX.clone_db()
     dns = record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']}, aCTX)
     ret['insert'] = db.do("INSERT INTO devices(vm,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
    else:
@@ -420,7 +418,6 @@ def delete(aDict, aCTX):
     args['ptr_id']= data['ptr_id']
     args['ptr_domain_id'] = data['reverse_zone_id']
    from zdcp.rest.dns import record_device_delete
-   aCTX.clone_db()
    ret = record_device_delete(args, aCTX)
    if data['base'] == 'pdu':
     ret['pem0'] = db.update_dict('rack_info',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))

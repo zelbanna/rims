@@ -133,11 +133,6 @@ class Context(object):
    ret = fun(aArgs if aArgs else {},self)
   return ret
 
- def clone_db(self):
-  """ ugly hack for race conditions """
-  from .common import DB
-  self.db = DB(self.settings['system']['db_name'],self.settings['system']['db_host'],self.settings['system']['db_user'],self.settings['system']['db_pass']) if self.node == 'master' else Noneo
-
 ########################################## WorkerPool ########################################
 #
 #
