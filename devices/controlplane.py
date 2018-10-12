@@ -1,27 +1,31 @@
-"""Module docstring.
-
-Control Plane Device
-
-"""
+"""Control Plane Device"""
 __author__  = "Zacharias El Banna"
 __version__ = "5.2GA"
 __status__  = "Production"
 __type__    = "controlplane"
 
-class Device(object):
+from .generic import Device as GenericDevice
+
+class Device(GenericDevice):
 
  @classmethod
  def get_functions(cls):
   return []
 
  def __init__(self, aIP, aSettings):
-  pass
+  GenericDevice.__init__(self,aIP, aSettings)
 
  def __str__(self):
   return "Control Plane"
 
- def __enter__(self):
-  return self
+ def system_info(self):
+  return {}
 
- def __exit__(self, *ctx_info):
-  pass
+ def interfaces(self):
+  return {}
+
+ def interface(self, aIndex):
+  return {'name':None,'description':None, 'mac':None}
+
+ def lldp(self):
+  return {}
