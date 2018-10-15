@@ -7,7 +7,6 @@ __status__ = "Production"
 from os   import path as ospath
 from sys  import path as syspath, argv, exit
 syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
-from zdcp.core.engine import Context
 
 if __name__ == "__main__":
  if len(argv) < 2:
