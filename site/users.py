@@ -12,7 +12,7 @@ __type__ = 'menuitem'
 
 ############################################ Users ##############################################
 def main(aWeb):
- cookie = aWeb.cookie('system') 
+ cookie = aWeb.cookie('system')
  info = aWeb.rest_call("system_users_info",{'id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
@@ -24,7 +24,7 @@ def main(aWeb):
 #
 #
 def user(aWeb):
- cookie = aWeb.cookie('system') 
+ cookie = aWeb.cookie('system')
  aWeb.wr("<NAV><UL></UL></NAV>")
  aWeb.wr("<SECTION CLASS=content       ID=div_content>")
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left></SECTION>")
@@ -54,7 +54,7 @@ def list(aWeb):
 def info(aWeb):
  cookie = aWeb.cookie('system')
  args = aWeb.args()
- data = aWeb.rest_call("system_users_info",args)['data']
+ data = aWeb.rest_call("system_users_info?log=false",args)['data']
  resources = aWeb.rest_call("system_resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.node()})['data']
  aWeb.wr("<SCRIPT>dragndrop();</SCRIPT>")
  aWeb.wr("<ARTICLE CLASS='info'><P>User Info (%s)</P>"%(data['id']))
@@ -72,7 +72,7 @@ def info(aWeb):
  aWeb.wr("<DIV CLASS='border' STYLE='display:flex; flex-wrap:wrap; min-height:100px;'><UL STYLE='width:100%' ID=ul_menu DEST=menulist CLASS='drop'>")
  menulist = data['menulist'].split(',') if not data.get('menulist') == 'default' else [ value['id'] for key,value in resources.items() if value['type'] == 'menuitem']
  for key in menulist:
-  try: 
+  try:
    resource = resources.pop(key,None)
    aWeb.wr("<LI CLASS='drag' ID={0}><BUTTON CLASS='menu' STYLE='font-size:10px;' TITLE='{1}'><IMG SRC='{2}' ALT='{1}' /></BUTTON></LI>".format(key,resource['title'],resource['icon']))
   except: pass
