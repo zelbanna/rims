@@ -96,7 +96,7 @@ class Device(GenericDevice):
     if stdout.channel.recv_ready():
      rl, wl, xl = select([stdout.channel], [], [], 0.0)
      if len(rl) > 0:
-      output = output + stdout.channel.recv(4096)
+      output = output + stdout.channel.recv(4096).decode()
    return output.rstrip('\n')
   else:
    self.log_msg("ESXi_Error: trying to send to closed channel")
@@ -121,8 +121,7 @@ class Device(GenericDevice):
    for result in vmnameobjs:
     if result.val.decode() == aname:
      return int(result.iid)
-  except:
-   pass
+  except: pass
   return -1
 
  def get_vm_state(self, aid):
@@ -131,8 +130,7 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(vmstateobj)
    return vmstateobj[0].val.decode()
-  except:
-   pass
+  except: pass
   return "unknown"
 
  def get_vm_list(self, aSort = None):
@@ -147,8 +145,7 @@ class Device(GenericDevice):
    for indx,result in enumerate(vmnameobjs):
     statetuple = {'id':result.iid, 'name':result.val.decode(), 'state':vmstateobjs[indx].val.decode() ,'state_id':Device.get_state_str(vmstateobjs[indx].val.decode())}
     statelist.append(statetuple)
-  except:
-   pass
+  except: pass
   if aSort:
    statelist.sort(key = lambda x: x[aSort])
   return statelist

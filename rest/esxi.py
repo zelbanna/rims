@@ -40,8 +40,9 @@ def op(aDict, aCTX):
  """
  from zdcp.devices.esxi import Device
  ret = {'id':aDict['id'],'res':'OK'}
- with Device(aDict['ip'],aCTX.settings) as esxi:
-  try:
+ with Device(aDict['ip'], aCTX.settings) as esxi:
+  if True:
+  #try:
    if aDict['next-state'] == 'vmsvc-snapshot.create':
     from time import strftime
     esxi.ssh_send("vim-cmd vmsvc/snapshot.create %s 'Portal Snapshot' '%s'"%(aDict['id'],strftime("%Y%m%d")))
@@ -60,7 +61,8 @@ def op(aDict, aCTX):
     ret['state_id'] = esxi.get_state_str(ret['state'])
    elif aDict['next-state'] == 'poweroff':
     esxi.ssh_send("poweroff")
-  except Exception as err:
+  # except Exception as err:
+  else:
    ret['res'] = 'NOT_OK'
    ret['error'] = str(err)
  return ret
