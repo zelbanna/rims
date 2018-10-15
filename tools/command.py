@@ -8,6 +8,38 @@ from os   import path as ospath
 from sys  import path as syspath, exit, argv
 syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
 
+class WorkerDummy(object):
+
+ def __init__(self, aSettings):
+  self._settings  = aSettings
+
+ def __str__(self):
+  return "WorkerDummy(0):[0,0]"
+
+ def add_function(self, aFunction, *args, **kwargs): print("WorkerDummy -> add_function(%s,%s,%s)"%(str(aFunction),args,kwargs))
+
+ def add_semaphore(self, aFunction, aSema, *args, **kwargs): print("WorkerDummy -> add_semaphore(%s,%s,%s,%s)"%(str(aFunction),aSema,args,kwargs))
+
+ def add_transient(self, aTask, aSema = None): print("WorkerDummy -> add_semaphore(%s,%s)"%(aTask,aSema))
+
+ def add_periodic(self, aTask, aFrequency): print("WorkerDummy -> add_periodic(%s,%s,%s)"%(aTask,aFrequency))
+
+ def abort(self): pass
+
+ def join(self):  pass
+
+ def done(self):  pass
+
+ def queue_size(self): pass
+
+ def pool_size(self):  pass
+
+ def scheduler_size(self): pass
+
+ def semaphore(self,aSize): return "SEMAPHORE(%s)"%(aSize)
+
+ def block(self,aSema,aSize): pass
+
 if __name__ == "__main__":
  if len(argv) < 3:
   print(argv[0] + " <settings.json> func [<json-arg>]")

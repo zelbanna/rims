@@ -181,29 +181,21 @@ class WorkerPool(object):
    mod = import_module("zdcp.rest.%s"%aTask['module'])
    func = getattr(mod,aTask['func'],None)
   except: pass
-  else:
-   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
+  else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
 
- def abort(self):
-  self._abort.set()
+ def abort(self): self._abort.set()
 
- def join(self):
-  self._queue.join()
+ def join(self): self._queue.join()
 
- def done(self):
-  return self._queue.empty()
+ def done(self): return self._queue.empty()
 
- def queue_size(self):
-  return self._queue.qsize()
+ def queue_size(self):return self._queue.qsize()
 
- def pool_size(self):
-  return self._thread_count
+ def pool_size(self): return self._thread_count
 
- def scheduler_size(self):
-  return len(self._scheduler)
+ def scheduler_size(self): return len(self._scheduler)
 
- def semaphore(self,aSize):
-  return BoundedSemaphore(aSize)  
+ def semaphore(self,aSize): return BoundedSemaphore(aSize)
 
  def block(self,aSema,aSize):
   for i in range(aSize):

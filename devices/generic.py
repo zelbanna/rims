@@ -14,42 +14,30 @@ from zdcp.core.common import VarList, Varbind, Session, log
 ############################################# Device ##########################################
 class Device(object):
 
- @classmethod
- def get_functions(cls):
-  return []
-
  def __init__(self, aIP, aSettings):
   self._ip = aIP
   self._settings = aSettings
   self._logfile  = aSettings['logs']['system']
 
- def __str__(self):
-  return "IP:%s"%(self._ip)
+ @classmethod
+ def get_functions(cls):  return []
 
- def __enter__(self):
-  return self
+ def __str__(self):   return "IP:%s"%(self._ip)
 
- def __exit__(self, *ctx_info):
-  pass
+ def __enter__(self): return self
 
- #
- def shutdown(self):
-  return False
+ def __exit__(self, *ctx_info): pass
 
- #
- def rebind(self,aIP):
-  self._ip = aIP
+ def shutdown(self):  return False
 
- #
+ def rebind(self,aIP): self._ip = aIP
+
  def ping_device(self):
   from os import system
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
 
- #
- def log_msg(self, aMsg):
-  log(aMsg,self._logfile)
+ def log_msg(self, aMsg): log(aMsg,self._logfile)
 
- #
  def configuration(self,argdict):
   ret = ["No config template for this device type.","",
    "Please set the following manually:",
