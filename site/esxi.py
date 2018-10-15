@@ -90,6 +90,7 @@ def _vm_options(aWeb,aIP,aVM,aHighlight):
   aWeb.wr(aWeb.button('reload',  DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.reboot'), TITLE='Soft reboot'))
   aWeb.wr(aWeb.button('suspend', DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.suspend'),TITLE='Suspend'))
   aWeb.wr(aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off'))
+  aWeb.wr(aWeb.button('term',    HREF="https://%s/ui/#/console/%s"%(aIP,aVM['id']),  TARGET='_blank', TITLE='vSphere Console'))
  elif int(aVM['state_id']) == 3:
   aWeb.wr(aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.on'), TITLE='Start'))
   aWeb.wr(aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('vmsvc-power.off'), TITLE='Hard power off'))
