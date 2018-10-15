@@ -32,13 +32,16 @@ def manage(aWeb):
 def inventory_list(aWeb):
  data = aWeb.rest_call("awx_inventory_list",{'node':aWeb['node']})
  aWeb.wr("<ARTICLE><P>Inventories</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
- for row in data['inventories']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS='td maxed'>%s</DIV><DIV CLASS=td>"%(row['id'],row['name']))
-  aWeb.wr(aWeb.button('items',DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(aWeb['node'],row['id']), SPIN='true', TITLE='Hosts list'))
-  aWeb.wr(aWeb.button('trash',DIV='div_content_right', URL='awx_inventory_delete?node=%s&id=%s'%(aWeb['node'],row['id']), SPIN='true', TITLE='Delete inventory', MSG='Really delete inventory?'))
+ if data.get('exception'):
+  aWeb.wr("Error: %s"%(data['exception']))
+ else:
+  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+  for row in data['inventories']:
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS='td maxed'>%s</DIV><DIV CLASS=td>"%(row['id'],row['name']))
+   aWeb.wr(aWeb.button('items',DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(aWeb['node'],row['id']), SPIN='true', TITLE='Hosts list'))
+   aWeb.wr(aWeb.button('trash',DIV='div_content_right', URL='awx_inventory_delete?node=%s&id=%s'%(aWeb['node'],row['id']), SPIN='true', TITLE='Delete inventory', MSG='Really delete inventory?'))
+   aWeb.wr("</DIV></DIV>")
   aWeb.wr("</DIV></DIV>")
- aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
 #

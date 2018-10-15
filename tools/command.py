@@ -31,10 +31,14 @@ if __name__ == "__main__":
  if system['id'] == 'master':
   with DB(system['db_name'], system['db_host'], system['db_user'], system['db_pass']) as db:
    db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
-   for row in db.get_rows():
-    if not settings.get(row['section']):
-     settings[row['section']] = {}
-    settings[row['section']][row['parameter']] = row['value']
+   db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
+   data = db.get_rows()
+   db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
+   data.extend(db.get_rows())
+  for row in data:
+   if not settings.get(row['section']):
+    settings[row['section']] = {}
+   settings[row['section']][row['parameter']] = row['value']
  else:
   ext = rest_call("%s/settings/fetch/%s"%(system['master'],system['id']))['settings']
   for section,data in ext.items():

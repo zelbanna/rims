@@ -18,9 +18,13 @@ def inventory_list(aDict, aCTX):
  Output:
   - inventories
  """
- controller = Device(aCTX.settings['nodes'][aDict['node']])
- controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
- ret['inventories'] = controller.fetch_list("inventories/",('id','name','url'))
+ ret = {}
+ try:
+  controller = Device(aCTX.settings['nodes'][aDict['node']])
+  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
+  ret['inventories'] = controller.fetch_list("inventories/",('id','name','url'))
+ except Exception as e:
+  ret = e.args[0]
  return ret
 
 #
