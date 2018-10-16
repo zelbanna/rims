@@ -96,9 +96,9 @@ def run(aSettingsFile):
      settings[section][param] = value
    tasks = rest_call("%s/api/system_task_list"%settings['system']['master'],{'node':node})['data']['tasks']
 
-  workers = WorkerPool(settings,modules)
-  workers.run()
+  workers = WorkerPool(settings)
   servers = [ServerWorker(n,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),settings,workers,modules) for n in range(5)]
+  workers.run()
 
   for task in tasks:
    task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
@@ -120,16 +120,21 @@ class Context(object):
 
  def __init__(self,aSettings, aWorkers):
   from .common import DB, rest_call
-  self.node      = aSettings['system']['id']
-  self.settings  = aSettings
-  self.workers   = aWorkers
-  self.db        = DB(aSettings['system']['db_name'],aSettings['system']['db_host'],aSettings['system']['db_user'],aSettings['system']['db_pass']) if self.node == 'master' else None
-  self.db_temp   = None
+  self.node     = aSettings['system']['id']
+  self.settings = aSettings
+  self.workers  = aWorkers
+  self.db       = DB(aSettings['system']['db_name'],aSettings['system']['db_host'],aSettings['system']['db_user'],aSettings['system']['db_pass']) if self.node == 'master' else None
   self.rest_call = rest_call
-  self.handler   = None
+  self.handler  = None
 
- def set_handler(self,aHandler):
-  self.handler = aHandler
+ def create_database(self):
+  from .common import DB
+  self.handler = True
+  self.db = DB(self.settings['system']['db_name'],self.settings['system']['db_host'],self.settings['system']['db_user'],self.settings['system']['db_pass']) if self.node == 'master' else None
+
+ def clone(self):
+  from copy import copy
+  return copy(self)
 
  def node_call(self, aNode, aModule, aFunction, aArgs = None):
   if self.node != aNode:
@@ -145,16 +150,19 @@ class Context(object):
 #
 class WorkerPool(object):
 
- def __init__(self, aSettings, aModules):
+ def __init__(self, aSettings):
   from queue import Queue
   self._queue     = Queue(0)
   self._settings  = aSettings
-  self._modules   = aModules
+  self._ctx       = None
   self._thread_count = aSettings['system'].get('workers',20)
   self._abort     = Event()
   self._idles     = []
   self._threads   = []
   self._scheduler = []
+
+ def bind_context(self, aContext):
+  self._ctx = aContext
 
  def run(self):
   for n in range(self._thread_count):
