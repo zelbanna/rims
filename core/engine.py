@@ -60,6 +60,7 @@ def run(aSettingsFile):
  setcheckinterval(200)
 
  try:
+  modules = {}
   settings = {}
   with open(aSettingsFile,'r') as settings_file:
    settings = load(settings_file)
@@ -95,8 +96,9 @@ def run(aSettingsFile):
      settings[section][param] = value
    tasks = rest_call("%s/api/system_task_list"%settings['system']['master'],{'node':node})['data']['tasks']
 
-  workers = WorkerPool(settings['system'].get('workers',20),settings)
-  servers = [ServerWorker(n,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),settings,workers) for n in range(5)]
+  workers = WorkerPool(settings,modules)
+  workers.run()
+  servers = [ServerWorker(n,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),settings,workers,modules) for n in range(5)]
 
   for task in tasks:
    task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
@@ -143,19 +145,22 @@ class Context(object):
 #
 class WorkerPool(object):
 
- def __init__(self, aThreadCount, aSettings):
+ def __init__(self, aSettings, aModules):
   from queue import Queue
-  self._queue = Queue(0)
-  self._thread_count = aThreadCount
-  self._abort = Event()
-  self._idles = []
+  self._queue     = Queue(0)
+  self._settings  = aSettings
+  self._modules   = aModules
+  self._thread_count = aSettings['system'].get('workers',20)
+  self._abort     = Event()
+  self._idles     = []
   self._threads   = []
   self._scheduler = []
-  self._settings  = aSettings
+
+ def run(self):
   for n in range(self._thread_count):
    idle  = Event()
    self._idles.append(idle)
-   self._threads.append(QueueWorker(n, self._settings, self, self._abort, idle))
+   self._threads.append(QueueWorker(n, self._abort, idle, self._settings, self))
 
  def __str__(self):
   return "WorkerPool(%s):[%s,%s]"%(self._thread_count,self._queue.qsize(),len(self._scheduler))
@@ -236,7 +241,7 @@ class ScheduleWorker(Thread):
 #
 class QueueWorker(Thread):
 
- def __init__(self, aNumber, aSettings, aWorkers, aAbort, aIdle):
+ def __init__(self, aNumber, aAbort, aIdle, aSettings, aWorkers):
   Thread.__init__(self)
   self._n      = aNumber
   self.name    = "QueueWorker(%02d)"%aNumber
@@ -271,13 +276,13 @@ class QueueWorker(Thread):
 #
 class ServerWorker(Thread):
 
- def __init__(self, aNumber, aAddress, aSocket, aPath, aSettings, aWorkers):
+ def __init__(self, aNumber, aAddress, aSocket, aPath, aSettings, aWorkers, aModules):
   Thread.__init__(self)
   from http.server import HTTPServer
-  self.name   = "ServerWorker(%02d)"%aNumber
-  self.daemon = True
+  self.name    = "ServerWorker(%02d)"%aNumber
+  self.daemon  = True
   httpd = HTTPServer(aAddress, SessionHandler, False)
-  self._httpd = httpd
+  self._httpd  = httpd
   httpd.socket = aSocket
   httpd._path  = aPath
   httpd._node  = aSettings['system']['id']
