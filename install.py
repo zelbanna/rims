@@ -31,12 +31,7 @@ else:
 settings = {}
 settings_file = ospath.abspath(settings_filename)
 with open(settings_file,'r') as sfile:
- temp = load(sfile)
-for section,content in temp.items():
- for key,params in content.items():
-  if not settings.get(section):
-   settings[section] = {}
-  settings[section][key] = params['value']
+ settings = load(sfile)
 settings['system']['config_file'] = settings_file
 
 ############################################### ALL #################################################
