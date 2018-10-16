@@ -161,7 +161,7 @@ def report(aDict, aCTX):
  Output:
  """
  from os import path as ospath, getpid
- from sys import version, path as syspath
+ from sys import version, modules, path as syspath
  from types import ModuleType
  from gc import get_objects
  from threading import enumerate
@@ -189,7 +189,7 @@ def report(aDict, aCTX):
   ret.append({'info':'Unhandled detected OIDs','value':",".join(str(x) for x in system_oids(None,aCTX)['unhandled'])})
  ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in aCTX.settings.get('files',{}).items()))
  ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in aCTX.settings.get('system',{}).items()))
- ret.extend(list({'info':'Imported module','value':"%s (%s)"%(k,v['file'])} for k,v in aCTX.modules.items()))
+ ret.extend(list({'info':'Imported module','value':"%s"%x} for x in modules.keys() if x.startswith('zdcp')))
  return ret
 
 #

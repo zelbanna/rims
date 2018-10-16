@@ -150,9 +150,11 @@ def action(aWeb):
   aWeb.wr("<ARTICLE>")
   if name and aWeb['template']:
    args['name'] = name
-   args['template'] = aWeb['template']
+   params  = aWeb.args()
+   params.pop('op',None)
+   params.pop('name',None)
+   args['template'] = params.pop('template',None)
    args['parameters'] = {}
-   params  = aWeb.get_args2dict(['op','template','name'])
    for key,value in params.items():
     args['parameters'][key[6:]] = value
    ret = aWeb.rest_call("openstack_heat_instantiate",args)
@@ -182,5 +184,7 @@ def action(aWeb):
   aWeb.wr("<PRE>{}</PRE>".format(dumps(data, indent=4, sort_keys=True)))
 
  elif op == 'add_template':
-  res = aWeb.rest_call("openstack_heat_create_template",aWeb.get_args2dict(['op']))
+  args = aWeb.args()
+  args.pop('op',None)
+  res = aWeb.rest_call("openstack_heat_create_template",args)
   aWeb.wr(res)

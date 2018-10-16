@@ -125,13 +125,14 @@ def rest_information(aWeb):
  aWeb.wr("<H1>Function: %s</H1>"%(aWeb['function']))
  aWeb.wr("<BR>".join(res['information']))
  aWeb.wr("</ARTICLE>")
- 
+
 ############################################### Logs ###############################################
 
 #
 #
 def logs_clear(aWeb):
- args = aWeb.get_args2dict(['node'])
+ args = aWeb.args()
+ node = args.pop('node',None)
  args['count'] = 18
  res = aWeb.rest_call('tools_logs_clear?node=%s'%aWeb['node'],args)
  aWeb.wr("<ARTICLE><P>%s</P>"%res['node'])
@@ -142,7 +143,8 @@ def logs_clear(aWeb):
 #
 #
 def logs_show(aWeb):
- args = aWeb.get_args2dict(['node'])
+ args = aWeb.args()
+ node = args.pop('node',None)
  args['count'] = 18
  res = aWeb.rest_call('tools_logs_get?node=%s'%aWeb['node'],args)
  aWeb.wr("<ARTICLE>")
@@ -154,7 +156,8 @@ def logs_show(aWeb):
 #
 #
 def services_info(aWeb):
- args = aWeb.get_args2dict(['node'])
+ args = aWeb.args()
+ node = args.pop('node',None)
  data  = aWeb.rest_call('tools_service_info?node=%s'%aWeb['node'],args)
  state = 'start' if data['state'] == 'inactive' else 'stop'
  aWeb.wr("<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)"%(aWeb['service'],data['state'],data['info']))

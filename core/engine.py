@@ -5,7 +5,7 @@ __status__ = "Production"
 
 from os import walk, path as ospath
 from json import loads, load, dumps
-from importlib import import_module
+from importlib import import_module, reload as reload_module
 from threading import Thread, Event, BoundedSemaphore
 from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler
@@ -54,7 +54,7 @@ def run(aSettingsFile):
   ctx.database_create()
 
   if settings['system']['id'] == 'master':
-   with DB(settings['system']['db_name'],settings['system']['db_host'],settings['system']['db_user'],settings['system']['db_pass']) as db:
+   with ctx.db as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
     db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
@@ -131,7 +131,7 @@ class Context(object):
   if self.node != aNode:
    ret = self.rest_call("%s/api/%s_%s"%(self.settings['nodes'][aNode],aModule,aFunction),aArgs)['data']
   else:
-   module = self.module_import("zdcp.rest.%s"%aModule)
+   module = import_module("zdcp.rest.%s"%aModule)
    fun = getattr(module,aFunction,None)
    ret = fun(aArgs if aArgs else {},self)
   return ret
@@ -150,33 +150,14 @@ class Context(object):
    settings[section][param['parameter']] = param['value']
   return settings
 
- def module_import(self,aMod):
-  return self.modules.get(aMod, self.module_register(aMod,"zdcp.rest.%s"%aMod))['module']
-
- def module_register(self, aMod, aFile):
-  """ register modules - except existing ones """
-  ret = {'module':None}
-  if not self.modules.get(aMod):
-   try:  ret['module'] = import_module(aFile)
-   except Exception as e:
-    ret['module'] = None
-    ret['error'] = str(e)
-   else: self.modules[aMod] = {'module':ret['module'],'file':aFile,'external':(aFile.startswith('zdcp.rest') == False)}
-  return ret
-
- def module_get(self,aMod):
-  return self.modules[aMod]
-
  def module_reload(self):
-  from importlib import reload
   from sys import modules as sys_modules
   from types import ModuleType
-  modules = {x:{'module':sys_modules[x],'external':False} for x in sys_modules.keys() if (x.startswith('zdcp.') and not x.startswith('zdcp.rest'))}
-  modules.update(self.modules)
+  modules = {x:sys_modules[x] for x in sys_modules.keys() if x.startswith('zdcp.')}
   ret = []
   for k,v in modules.items():
-   if isinstance(v['module'],ModuleType):
-    try: reload(v['module'])
+   if isinstance(v,ModuleType):
+    try: reload_module(v)
     except: pass
     else:   ret.append(k)
   ret.sort()
@@ -215,7 +196,7 @@ class WorkerPool(object):
 
  def add_transient(self, aTask, aSema = None):
   try:
-   mod = self._ctx.module_import(aTask['module'])
+   mod = import_module("zdcp.rest.%s"%aTask['module'])
    func = getattr(mod,aTask['func'],None)
   except: pass
   else:
@@ -225,7 +206,7 @@ class WorkerPool(object):
 
  def add_periodic(self, aTask, aFrequency):
   try:
-   mod = self._ctx.module_import(aTask['module'])
+   mod = import_module("zdcp.rest.%s"%aTask['module'])
    func = getattr(mod,aTask['func'],None)
   except: pass
   else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
@@ -406,7 +387,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    except: pass
   try:
    if self._headers['X-Node'] == self.server._node:
-    module = self._ctx.module_import(mod)
+    module = import_module("zdcp.rest.%s"%mod)
     self._body = dumps(getattr(module,fun,None)(args,self._ctx)).encode('utf-8')
    else:
     req  = Request("%s/api/%s"%(self._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
@@ -621,20 +602,15 @@ class Stream(object):
  def get(self,aKey,aDefault = None):
   return self._form.get(aKey,aDefault)
 
- def get_args2dict(self,aExcept = []):
-  return { k:v for k,v in self._form.items() if not k in aExcept }
-
  def get_args(self,aExcept = []):
   return "&".join("%s=%s"%(k,v) for k,v in self._form.items() if not k in aExcept)
 
  def button(self,aImg,**kwargs):
   return "<A CLASS='btn z-op small' " + " ".join("%s='%s'"%i for i in kwargs.items()) + "><IMG SRC='../images/btn-%s.png'></A>"%(aImg)
 
- # Simplified SDCP REST call
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
   return self._rest_call("%s/api/%s"%(self._api,aAPI), aArgs, aTimeout = 60)['data']
 
- # Generic REST call with full output
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
   return self._rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
