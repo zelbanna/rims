@@ -58,14 +58,14 @@ def shutdown(aDict, aCTX):
   - For VMs there will not be much done ATM as there is no hypervisor correlation yet (type 3)
 
   Args:
-  
+
   Output:
  """
  from importlib import import_module
  ret = {}
  modules = {}
 
- def shutdown(aInfo,aDevice):
+ def __shutdown(aInfo,aDevice):
   print("Device shutdown:%s"%aDevice.shutdown())
   return True
 
@@ -79,7 +79,7 @@ def shutdown(aDict, aCTX):
     module = import_module("zdcp.devices.%s"%info['type'])
     modules[info['type']] = module
    device = getattr(module,'Device',lambda x: None)(info['ip'],aCTX.settings)
-   shutdown(info,device)
+   __shutdown(info,device)
   except Exception as e:
    info['error'] = str(e)
  return ret

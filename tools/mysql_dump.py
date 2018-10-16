@@ -22,9 +22,9 @@ if __name__ == "__main__":
  with open(argv[1],'r') as f:
   settings = load(f)
  args = {}
- args['database'] = settings['system']['db_name']['value']
- args['username'] = settings['system']['db_user']['value']
- args['password'] = settings['system']['db_pass']['value']
+ args['database'] = settings['system']['db_name']
+ args['username'] = settings['system']['db_user']
+ args['password'] = settings['system']['db_pass']
 
  if   argv[2] == '-d':
   args.update({'mode':'database','full':True})

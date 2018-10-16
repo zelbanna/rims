@@ -26,14 +26,16 @@ def run(aSettingsFile):
  """ run instantiate all engine entities and starts monitoring of socket """
  from sys import exit, setcheckinterval
  from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
- from signal import signal, SIGINT, SIGUSR1
+ from signal import signal, SIGINT, SIGUSR1, SIGUSR2
  from .common import rest_call, DB
 
  kill = Event()
+ workers = None
 
  def signal_handler(sig,frame):
   if   sig == SIGINT:
    """ TODO clean up and close all DB connections and close socket """
+   workers.abort()
    sock.close()
    kill.set()
   elif sig == SIGUSR1:
@@ -48,20 +50,19 @@ def run(aSettingsFile):
      except: pass
      else:   modules[m] = True
    print(dumps(modules,indent=4,sort_keys=True))
+  elif sig == SIGUSR2:
+   """ We are alive """
+   from sys import stderr
+   stderr.write("ALIVE\n")
 
- signal(SIGINT, signal_handler)
- signal(SIGUSR1,signal_handler)
+ for sig in [SIGINT, SIGUSR1, SIGUSR2]:
+  signal(sig, signal_handler)
  setcheckinterval(200)
 
  try:
   settings = {}
   with open(aSettingsFile,'r') as settings_file:
-   data = load(settings_file)
-  for section,params in data.items():
-   if not settings.get(section):
-    settings[section] = {}
-   for param,info in params.items():
-    settings[section][param] = info['value']
+   settings = load(settings_file)
   settings['system']['config_file'] = aSettingsFile
 
   node = settings['system']['id']
@@ -104,7 +105,7 @@ def run(aSettingsFile):
 
  except Exception as e:
   print(str(e))
-  try:   sock.close()
+  try: sock.close()
   except:pass
  else:
   kill.wait()
@@ -183,9 +184,15 @@ class WorkerPool(object):
   except: pass
   else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
 
- def abort(self): self._abort.set()
+ def abort(self):
+  print("ABORT")
+  self._abort.set()
 
  def join(self): self._queue.join()
+
+ def gather(self):
+  for t in self._threads:
+   t.join()
 
  def done(self): return self._queue.empty()
 
@@ -200,7 +207,7 @@ class WorkerPool(object):
  def block(self,aSema,aSize):
   for i in range(aSize):
    aSema.acquire()
- 
+
 ###################################### Threads ########################################
 #
 
@@ -277,7 +284,7 @@ class ServerWorker(Thread):
   self._ctx = httpd._ctx = Context(aSettings,aWorkers)
   httpd.server_bind = httpd.server_close = lambda self: None
   self.start()
-  
+
  def run(self):
   try: self._httpd.serve_forever()
   except: pass
@@ -489,7 +496,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  def settings(self,query):
   """ /settings/<op>/<node> """
-  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'settings'})  
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'settings'})
   op,_,node = query.partition('/')
   if self._ctx.settings['system']['id'] == 'master' and (op == 'fetch' or (op == 'sync' and node != 'master')):
    settings = {}
@@ -518,14 +525,9 @@ class SessionHandler(BaseHTTPRequestHandler):
    settings = self._ctx.settings
    filename = settings['system']['config_file']
    settings.clear()
-   with open(filename,'r') as settings_file:
-    data = load(settings_file)
    settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
-   for section,params in data.items():
-    if not settings.get(section):
-     settings[section] = {}
-    for param,info in params.items():
-     settings[section][param] = info['value']
+   with open(filename,'r') as settings_file:
+    settings.update(load(settings_file))
    settings['system']['config_file'] = filename
    output = 'UPDATE_OK'
   elif op == 'show':

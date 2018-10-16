@@ -22,13 +22,14 @@ if __name__ == "__main__":
    for section in sections:
     sect = section['section']
     config[sect] = {}
-    db.do("SELECT parameter,value,description FROM settings WHERE section = '%s' AND node = 'master' ORDER BY parameter"%sect)
+    db.do("SELECT parameter,value FROM settings WHERE section = '%s' AND node = 'master' ORDER BY parameter"%sect)
     params = db.get_rows()
     for param in params:
      key = param.pop('parameter',None)
      if key in ['username', 'password', 'encrypted','url','domain','community','node']:
-      param['value'] = key.upper()
-     config[sect][key] = param
+      config[sect][key] = key.upper()
+     else:
+      config[sect][key] = param['value']
   try:
    from json import dump
    with open(argv[1],'w') as f:

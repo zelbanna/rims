@@ -1,6 +1,7 @@
-"""SLACK API module. Provides and Interface towards SLACK REST API (webhooks)
+"""SLACK API module. Provides a serviceinterface towards SLACK REST API (webhooks), i.e. SaaN (Slack As A Node)
 Settings under section 'slack':
-- 
+- service
+- channel
 
 """
 __author__ = "Zacharias El Banna"
@@ -11,9 +12,8 @@ __type__ = "NOTIFY"
 
 #
 #
-#
 def status(aDict, aCTX):
- """Function docstring for leases TBD
+ """Function returns status of slack connection... somehow (TBD)
 
  Args:
 
@@ -23,7 +23,7 @@ def status(aDict, aCTX):
 #
 #
 def sync(aDict, aCTX):
- """Function docstring for sync:  reload the DHCP server to use updated info
+ """Function synchornizes connection to Slack, TBD as is..
 
  Args:
   - id (required). Server id on master node

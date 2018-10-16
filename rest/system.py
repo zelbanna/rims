@@ -161,9 +161,9 @@ def report(aDict, aCTX):
 
  Output:
  """
- from os import path as ospath
+ from os import path as ospath, getpid
  from sys import modules, version, getrefcount, path as syspath
- from types import ModuleType 
+ from types import ModuleType
  from gc import get_objects
  from threading import enumerate
  db_counter = {}
@@ -174,17 +174,17 @@ def report(aDict, aCTX):
   except:pass
  node = aCTX.settings['system']['id']
  node_url = aCTX.settings['nodes'][node]
- ret = []
- ret.append({'info':'Version','value':__version__})
- ret.append({'info':'Node URL','value':node_url})
- ret.append({'info':'Worker pool','value':aCTX.workers.pool_size()})
- ret.append({'info':'Queued tasks','value':aCTX.workers.queue_size()})
- ret.append({'info':'Scheduled tasks','value':aCTX.workers.scheduler_size()})
- ret.append({'info':'Memory objects','value':len(get_objects())})
- ret.append({'info':'DB operations','value':", ".join("%s:%s"%i for i in db_counter.items())})
- ret.append({'info':'Python version','value':version})
- ret.append({'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))})
- ret.append({'info':'System path','value':",".join(syspath)})
+ ret = [{'info':'Version','value':__version__},
+ {'info':'System PID','value':getpid()},
+ {'info':'Node URL','value':node_url},
+ {'info':'Worker pool','value':aCTX.workers.pool_size()},
+ {'info':'Queued tasks','value':aCTX.workers.queue_size()},
+ {'info':'Scheduled tasks','value':aCTX.workers.scheduler_size()},
+ {'info':'Memory objects','value':len(get_objects())},
+ {'info':'DB operations','value':", ".join("%s:%s"%i for i in db_counter.items())},
+ {'info':'Python version','value':version},
+ {'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))},
+ {'info':'System path','value':",".join(syspath)}]
  if node == 'master':
   from zdcp.rest.device import system_oids
   ret.append({'info':'Unhandled detected OIDs','value':",".join(str(x) for x in system_oids(None,aCTX)['unhandled'])})
@@ -249,7 +249,6 @@ def settings_info(aDict, aCTX):
   - node (required)
   - id (required)
   - op (optional)
-  - description (cond required)
   - section (cond required)
   - value (cond required)
   - parameter (cond required)
@@ -263,14 +262,14 @@ def settings_info(aDict, aCTX):
  with aCTX.db as db:
   if op == 'update' and not (aDict['section'] == 'system' or aDict['section'] =='nodes'):
    if not id == 'new':
-    ret['update'] = db.update_dict('settings',aDict,"id=%s"%id) 
+    ret['update'] = db.update_dict('settings',aDict,"id=%s"%id)
    else:
     ret['update'] = db.insert_dict('settings',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
    # Insert HERE into CTX, or node_call
    if aDict['node'] == 'master':
     section = aCTX.settings.get(aDict['section'],{})
-    section[aDict['parameter']] = aDict['value'] 
+    section[aDict['parameter']] = aDict['value']
     aCTX.settings[aDict['section']] = section
    else:
     aCTX.workers.add_function(aCTX.rest_call,"%s/settings/sync/%s"%(aCTX.settings['system']['master'],aDict['node']))
@@ -278,7 +277,7 @@ def settings_info(aDict, aCTX):
    ret['found'] = (db.do("SELECT * FROM settings WHERE id = '%s'"%id) > 0)
    ret['data']  = db.get_row()
   else:
-   ret['data'] = {'id':'new','value':'Unknown','section':aDict.get('section','Unknown'),'parameter':'Unknown','description':'Unknown'}
+   ret['data'] = {'id':'new','value':'Unknown','section':aDict.get('section','Unknown'),'parameter':'Unknown'}
 
  return ret
 
@@ -303,7 +302,7 @@ def settings_comprehensive(aDict, aCTX):
   else:
    sections = [aDict.get('section')]
   for section in sections:
-   db.do("SELECT parameter,id,value,description FROM settings WHERE node = '%s' AND section = '%s'  ORDER BY parameter"%(aDict['node'],section))
+   db.do("SELECT parameter,id,value FROM settings WHERE node = '%s' AND section = '%s'  ORDER BY parameter"%(aDict['node'],section))
    ret[section] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
  return ret
 

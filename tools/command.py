@@ -51,13 +51,7 @@ if __name__ == "__main__":
  from zdcp.core.engine import Context
  from zdcp.core.common import DB, rest_call
  with open(argv[1]) as f:
-  file = load(f)
- settings = {}
- for section,data in file.items():
-  if not settings.get(section):
-   settings[section] = {}
-  for key,val in data.items():
-   settings[section][key] = val['value']
+  settings = load(f)
  system = settings['system']
  port = system['port']
  if system['id'] == 'master':

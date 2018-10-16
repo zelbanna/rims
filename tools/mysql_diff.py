@@ -20,9 +20,9 @@ if __name__ == "__main__":
  with open(argv[1],'r') as f:
   settings = load(f)
  args = {"schema_file":ospath.abspath(ospath.join(getcwd(),argv[2]))}
- args['database'] = settings['system']['db_name']['value']
- args['username'] = settings['system']['db_user']['value']
- args['password'] = settings['system']['db_pass']['value']
+ args['database'] = settings['system']['db_name']
+ args['username'] = settings['system']['db_user']
+ args['password'] = settings['system']['db_pass']
 
 
  diffs= mysql.diff(args, Context({'system':{'id':None}},None))
