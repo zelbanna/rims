@@ -5,7 +5,7 @@ __status__ = "Production"
 
 from os import walk, path as ospath
 from json import loads, load, dumps
-from importlib import import_module, reload
+from importlib import import_module
 from threading import Thread, Event, BoundedSemaphore
 from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler
@@ -25,55 +25,35 @@ from urllib.parse import unquote
 def run(aSettingsFile):
  """ run instantiate all engine entities and starts monitoring of socket """
  from sys import exit, setcheckinterval
- from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
- from signal import signal, SIGINT, SIGUSR1, SIGUSR2
+ from signal import signal, SIGINT, SIGUSR1
  from .common import rest_call, DB
 
  kill = Event()
- workers = None
+ ctx = None
 
  def signal_handler(sig,frame):
   if   sig == SIGINT:
    """ TODO clean up and close all DB connections and close socket """
-   workers.abort()
-   sock.close()
+   ctx.workers.abort()
+   ctx.sock.close()
    kill.set()
   elif sig == SIGUSR1:
-   """ Catch SIGUSR1 and reload all modules """
-   from sys import modules as sys_modules
-   from types import ModuleType
-   modules = {x:False for x in sys_modules.keys() if x.startswith('zdcp.')}
-   for m in modules.keys():
-    mod = sys_modules.get(m,None)
-    if isinstance(mod,ModuleType):
-     try: reload(mod)
-     except: pass
-     else:   modules[m] = True
-   print(dumps(modules,indent=4,sort_keys=True))
-  elif sig == SIGUSR2:
-   """ We are alive """
-   from sys import stderr
-   stderr.write("ALIVE\n")
+   print("\n".join(ctx.module_reload()))
 
- for sig in [SIGINT, SIGUSR1, SIGUSR2]:
+ for sig in [SIGINT, SIGUSR1]:
   signal(sig, signal_handler)
  setcheckinterval(200)
 
  try:
-  modules = {}
   settings = {}
   with open(aSettingsFile,'r') as settings_file:
    settings = load(settings_file)
   settings['system']['config_file'] = aSettingsFile
 
-  node = settings['system']['id']
-  addr = ("", int(settings['system']['port']))
-  sock = socket(AF_INET, SOCK_STREAM)
-  sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-  sock.bind(addr)
-  sock.listen(5)
+  ctx = Context(settings)
+  ctx.database_create()
 
-  if node == 'master':
+  if settings['system']['id'] == 'master':
    with DB(settings['system']['db_name'],settings['system']['db_host'],settings['system']['db_user'],settings['system']['db_pass']) as db:
     db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
     data = db.get_rows()
@@ -96,14 +76,12 @@ def run(aSettingsFile):
      settings[section][param] = value
    tasks = rest_call("%s/api/system_task_list"%settings['system']['master'],{'node':node})['data']['tasks']
 
-  workers = WorkerPool(settings)
-  servers = [ServerWorker(n,addr,sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),settings,workers,modules) for n in range(5)]
-  workers.run()
-
   for task in tasks:
    task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
    frequency = task.pop('frequency',300)
-   workers.add_periodic(task,frequency)
+   ctx.workers.add_periodic(task,frequency)
+
+  ctx.run()
 
  except Exception as e:
   print(str(e))
@@ -115,34 +93,93 @@ def run(aSettingsFile):
 
 ########################################### Context ########################################
 #
+# Main state object, contains settings, workers, modules and calls
+#
 
 class Context(object):
 
- def __init__(self,aSettings, aWorkers):
-  from .common import DB, rest_call
+ def __init__(self,aSettings):
+  from .common import rest_call
+  self.db       = None
+  self.sock     = None
   self.node     = aSettings['system']['id']
   self.settings = aSettings
-  self.workers  = aWorkers
-  self.db       = DB(aSettings['system']['db_name'],aSettings['system']['db_host'],aSettings['system']['db_user'],aSettings['system']['db_pass']) if self.node == 'master' else None
+  self.workers  = WorkerPool(aSettings['system'].get('workers',20),self)
+  self.modules  = {}
+  self.servers  = None
   self.rest_call = rest_call
-  self.handler  = None
-
- def create_database(self):
-  from .common import DB
-  self.handler = True
-  self.db = DB(self.settings['system']['db_name'],self.settings['system']['db_host'],self.settings['system']['db_user'],self.settings['system']['db_pass']) if self.node == 'master' else None
 
  def clone(self):
   from copy import copy
   return copy(self)
 
+ def database_create(self):
+  from .common import DB
+  self.db = DB(self.settings['system']['db_name'],self.settings['system']['db_host'],self.settings['system']['db_user'],self.settings['system']['db_pass']) if self.node == 'master' else None
+
+ def run(self):
+  from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
+  addr = ("", int(self.settings['system']['port']))
+  self.sock = socket(AF_INET, SOCK_STREAM)
+  self.sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+  self.sock.bind(addr)
+  self.sock.listen(5)
+  servers = [ServerWorker(n,addr,self.sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),self) for n in range(5)]
+  self.workers.run(self)
+
  def node_call(self, aNode, aModule, aFunction, aArgs = None):
   if self.node != aNode:
    ret = self.rest_call("%s/api/%s_%s"%(self.settings['nodes'][aNode],aModule,aFunction),aArgs)['data']
   else:
-   module = import_module("zdcp.rest.%s"%aModule)
+   module = self.module_import("zdcp.rest.%s"%aModule)
    fun = getattr(module,aFunction,None)
    ret = fun(aArgs if aArgs else {},self)
+  return ret
+
+ def settings_get(self,aNode):
+  settings = {}
+  with self.db as db:
+   db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aNode)
+   data = db.get_rows()
+   db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
+   data.extend(db.get_rows())
+  for param in data:
+   section = param.pop('section',None)
+   if not settings.get(section):
+    settings[section] = {}
+   settings[section][param['parameter']] = param['value']
+  return settings
+
+ def module_import(self,aMod):
+  return self.modules.get(aMod, self.module_register(aMod,"zdcp.rest.%s"%aMod))['module']
+
+ def module_register(self, aMod, aFile):
+  """ register modules - except existing ones """
+  ret = {'module':None}
+  if not self.modules.get(aMod):
+   try:  ret['module'] = import_module(aFile)
+   except Exception as e:
+    ret['module'] = None
+    ret['error'] = str(e)
+   else: self.modules[aMod] = {'module':ret['module'],'file':aFile,'external':(aFile.startswith('zdcp.rest') == False)}
+  return ret
+
+ def module_get(self,aMod):
+  return self.modules[aMod]
+
+ def module_reload(self):
+  from importlib import reload
+  from sys import modules as sys_modules
+  from types import ModuleType
+  modules = {x:{'module':sys_modules[x],'external':False} for x in sys_modules.keys() if (x.startswith('zdcp.') and not x.startswith('zdcp.rest'))}
+  modules.update(self.modules)
+  ret = []
+  for k,v in modules.items():
+   if isinstance(v['module'],ModuleType):
+    try: reload(v['module'])
+    except: pass
+    else:   ret.append(k)
+  ret.sort()
   return ret
 
 ########################################## WorkerPool ########################################
@@ -150,25 +187,21 @@ class Context(object):
 #
 class WorkerPool(object):
 
- def __init__(self, aSettings):
+ def __init__(self, aThreads, aContext):
   from queue import Queue
   self._queue     = Queue(0)
-  self._settings  = aSettings
-  self._ctx       = None
-  self._thread_count = aSettings['system'].get('workers',20)
+  self._thread_count = aThreads
+  self._ctx       = aContext
   self._abort     = Event()
   self._idles     = []
   self._threads   = []
   self._scheduler = []
 
- def bind_context(self, aContext):
-  self._ctx = aContext
-
- def run(self):
+ def run(self, aContext):
   for n in range(self._thread_count):
    idle  = Event()
    self._idles.append(idle)
-   self._threads.append(QueueWorker(n, self._abort, idle, self._settings, self))
+   self._threads.append(QueueWorker(n, self._abort, idle, aContext))
 
  def __str__(self):
   return "WorkerPool(%s):[%s,%s]"%(self._thread_count,self._queue.qsize(),len(self._scheduler))
@@ -182,7 +215,7 @@ class WorkerPool(object):
 
  def add_transient(self, aTask, aSema = None):
   try:
-   mod = import_module("zdcp.rest.%s"%aTask['module'])
+   mod = self._ctx.module_import(aTask['module'])
    func = getattr(mod,aTask['func'],None)
   except: pass
   else:
@@ -192,20 +225,14 @@ class WorkerPool(object):
 
  def add_periodic(self, aTask, aFrequency):
   try:
-   mod = import_module("zdcp.rest.%s"%aTask['module'])
+   mod = self._ctx.module_import(aTask['module'])
    func = getattr(mod,aTask['func'],None)
   except: pass
   else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
 
- def abort(self):
-  print("ABORT")
-  self._abort.set()
+ def abort(self): self._abort.set()
 
  def join(self): self._queue.join()
-
- def gather(self):
-  for t in self._threads:
-   t.join()
 
  def done(self): return self._queue.empty()
 
@@ -249,14 +276,15 @@ class ScheduleWorker(Thread):
 #
 class QueueWorker(Thread):
 
- def __init__(self, aNumber, aAbort, aIdle, aSettings, aWorkers):
+ def __init__(self, aNumber, aAbort, aIdle, aContext):
   Thread.__init__(self)
   self._n      = aNumber
   self.name    = "QueueWorker(%02d)"%aNumber
-  self._queue  = aWorkers._queue
   self._abort  = aAbort
   self._idle   = aIdle
-  self._ctx    = Context(aSettings,aWorkers)
+  self._ctx    = aContext.clone()
+  self._ctx.database_create()
+  self._queue  = self._ctx.workers._queue
   self.daemon  = True
   self.start()
 
@@ -284,7 +312,7 @@ class QueueWorker(Thread):
 #
 class ServerWorker(Thread):
 
- def __init__(self, aNumber, aAddress, aSocket, aPath, aSettings, aWorkers, aModules):
+ def __init__(self, aNumber, aAddress, aSocket, aPath, aContext):
   Thread.__init__(self)
   from http.server import HTTPServer
   self.name    = "ServerWorker(%02d)"%aNumber
@@ -293,8 +321,9 @@ class ServerWorker(Thread):
   self._httpd  = httpd
   httpd.socket = aSocket
   httpd._path  = aPath
-  httpd._node  = aSettings['system']['id']
-  self._ctx = httpd._ctx = Context(aSettings,aWorkers)
+  httpd._ctx = self._ctx = aContext.clone()
+  httpd._ctx.database_create()
+  httpd._node  = self._ctx.settings['system']['id']
   httpd.server_bind = httpd.server_close = lambda self: None
   self.start()
 
@@ -377,7 +406,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    except: pass
   try:
    if self._headers['X-Node'] == self.server._node:
-    module = import_module("zdcp.rest.%s"%mod)
+    module = self._ctx.module_import(mod)
     self._body = dumps(getattr(module,fun,None)(args,self._ctx)).encode('utf-8')
    else:
     req  = Request("%s/api/%s"%(self._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
@@ -412,7 +441,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   stream = Stream(self,get)
   self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200,'X-Process':'site'})
   try:
-   module = import_module("zdcp.site." + mod)
+   module = import_module("zdcp.site.%s"%mod)
    getattr(module,fun,None)(stream)
   except Exception as e:
    stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
@@ -491,19 +520,10 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def reload(self,query):
-  """ Reload a system module defined by query: /reload/<path>/<module>"""
+  """ Reload imported (system) modules """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'reload'})
-  from sys import modules as sys_modules
-  from types import ModuleType
-  module = 'zdcp.%s'%query.replace('/','.')
-  modules = {x:False for x in sys_modules.keys() if x.startswith(module)}
-  for m in modules.keys():
-   mod = sys_modules.get(m,None)
-   if isinstance(mod,ModuleType):
-    try: reload(mod)
-    except: pass
-    else:   modules[m] = True
-  self._body = dumps({'modules':modules}).encode('utf-8')
+  res = self._ctx.module_reload()
+  self._body = dumps({'modules':res}).encode('utf-8')
 
  #
  #

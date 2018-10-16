@@ -34,7 +34,6 @@ def application(aDict, aCTX):
  ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 
-
 #
 #
 def authenticate(aDict, aCTX):
@@ -162,7 +161,7 @@ def report(aDict, aCTX):
  Output:
  """
  from os import path as ospath, getpid
- from sys import modules, version, getrefcount, path as syspath
+ from sys import version, path as syspath
  from types import ModuleType
  from gc import get_objects
  from threading import enumerate
@@ -190,29 +189,22 @@ def report(aDict, aCTX):
   ret.append({'info':'Unhandled detected OIDs','value':",".join(str(x) for x in system_oids(None,aCTX)['unhandled'])})
  ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in aCTX.settings.get('files',{}).items()))
  ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in aCTX.settings.get('system',{}).items()))
- ret.extend(list({'info':'Imported module','value':"%s (%s refs)"%(x,getrefcount(x))} for x in modules.keys() if isinstance(modules[x],ModuleType) and x.startswith('zdcp')))
+ ret.extend(list({'info':'Imported module','value':"%s (%s)"%(k,v['file'])} for k,v in aCTX.modules.items()))
  return ret
 
 #
 #
-def module_info(aDict, aCTX):
+def module_import(aDict, aCTX):
  """Function retrives info of module
 
  Args:
-  -module
+  - module
+  - file
 
  Output:
  """
- ret = {}
- from sys import modules, getrefcount
- from types import ModuleType
- mod = modules[aDict['module']]
- ret['all'] = [x for x in modules.keys() if isinstance(modules[x],ModuleType)]
- ret['all'].sort()
- ret['content'] = dir(mod)
- ret['module'] = isinstance(mod, ModuleType)
- return ret
-
+ res = aCTX.module_register(aDict['module'],aDict['file'])
+ return {'import':(res['module'] != None), 'error':res.get('error',None)}
 
 ############################################ SETTINGS ########################################
 #
@@ -559,6 +551,7 @@ def users_info(aDict, aCTX):
   - alias (optional)
   - email (optional)
   - password (optional)
+  - slack (optional)
 
  Output:
  """
@@ -583,7 +576,7 @@ def users_info(aDict, aCTX):
    ret['data'] = db.get_row()
    ret['data'].pop('password',None)
   else:
-   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','view_public':'0','menulist':'default','external_id':None}
+   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','view_public':'0','menulist':'default','external_id':None,'slack':'Unknown'}
  return ret
 
 #

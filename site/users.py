@@ -66,6 +66,7 @@ def info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Password:</DIV><DIV CLASS=td><INPUT NAME=password TYPE=password PLACEHOLDER='*******' STYLE='min-width:400px'></DIV></DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>   <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV> <DIV CLASS=td><INPUT NAME=email  TYPE=email VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['email']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Slack username'>Slack:</DIV>  <DIV CLASS=td><INPUT NAME=slack  TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['slack']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>View All:</DIV><DIV CLASS=td><INPUT NAME=view_public TYPE=CHECKBOX VALUE=1 {}             {}></DIV></DIV>".format("checked=checked" if str(data['view_public']) == "1" else "","disabled" if cookie['id'] != str(data['id']) else ""))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Cookie:</DIV><DIV CLASS='td small-text'>%s</DIV></DIV>"%",".join('%s=%s'%i for i in cookie.items()))
  aWeb.wr("</DIV></DIV><SPAN>Menu list</SPAN>")

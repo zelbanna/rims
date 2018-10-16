@@ -127,10 +127,10 @@ def reload(aWeb):
  """ Map node to URL and call reload """
  api = aWeb.rest_call("system_node_to_api",{'node':aWeb['node']})['url']
  res = aWeb.rest_full("%s/reload"%api)
- aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>Reload</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Module</DIV><DIV CLASS=th>Result</DIV></DIV><DIV CLASS=tbody>")
- for x in res['data']['modules'].items():
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%x)
+ aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>Module</P>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
+ for x in res['data']['modules']:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV></DIV>"%x)
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 ############################# NODE ###########################

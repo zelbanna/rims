@@ -1,10 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-"""Program docstring.
-
-System engine
-
-"""
+""" System engine """
 __author__ = "Zacharias El Banna"
 __version__ = "5.2GA"
 __status__ = "Production"

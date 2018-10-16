@@ -73,7 +73,7 @@ if __name__ == "__main__":
    for key,val in data.items():
     settings[section][key] = val
 
- ctx = Context(settings,WorkerDummy(settings))
+ ctx = Context(settings)
  timestamp = int(time())
  try:    args = loads(argv[3])
  except: args = {}
