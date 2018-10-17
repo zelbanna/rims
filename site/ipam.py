@@ -4,13 +4,13 @@ HTML5 Ajax IPAM module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 
 #
 #
 def network_list(aWeb):
- res = aWeb.rest_call("ipam_network_list")
+ res = aWeb.rest_call("ipam/network_list")
  aWeb.wr("<ARTICLE><P>Networks</P>")
  aWeb.wr(aWeb.button('reload',  DIV='div_content_left',  URL='ipam_network_list', TITLE='Reload list'))
  aWeb.wr(aWeb.button('add',     DIV='div_content_right', URL='ipam_network_info?id=new', TITLE='New network'))
@@ -28,7 +28,7 @@ def network_list(aWeb):
 #
 def network_info(aWeb):
  args = aWeb.args()
- res  = aWeb.rest_call("ipam_network_info",args)
+ res  = aWeb.rest_call("ipam/network_info",args)
  data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  aWeb.wr("<ARTICLE CLASS=info><P>Network Info (%s)</P>"%(data['id']))
@@ -61,7 +61,7 @@ def network_info(aWeb):
 #
 #
 def network_layout(aWeb):
- data = aWeb.rest_call("ipam_network_inventory",{'id':aWeb['id'],'dict':'ip_integer'})
+ data = aWeb.rest_call("ipam/network_inventory",{'id':aWeb['id'],'dict':'ip_integer'})
  startn  = int(data['start'])
  starta  = int(data['network'].split('.')[3])
  addresses = data['entries']
@@ -82,13 +82,13 @@ def network_layout(aWeb):
 #
 #
 def network_delete(aWeb):
- data = aWeb.rest_call("ipam_network_delete",{'id':aWeb['id']})
+ data = aWeb.rest_call("ipam/network_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>%s</ARTICLE"%(data))
 
 #
 #
 def network_entries(aWeb):
- data = aWeb.rest_call("ipam_network_inventory",{'id':aWeb['id'],'extra':['mac']})
+ data = aWeb.rest_call("ipam/network_inventory",{'id':aWeb['id'],'extra':['mac']})
  aWeb.wr("<ARTICLE><P>Allocated IP Addresses</P><SPAN CLASS=results ID=ipam_address_operation></SPAN><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV></DIV><DIV CLASS=tbody>")
  for row in data['entries']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)i</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(mac)s</DIV><DIV CLASS=td>"%row)
@@ -100,7 +100,7 @@ def network_entries(aWeb):
 #
 #
 def server_leases(aWeb):
- leases = aWeb.rest_call("ipam_server_leases",{'type':'active'})
+ leases = aWeb.rest_call("ipam/server_leases",{'type':'active'})
  aWeb.wr("<ARTICLE><P>Leases (%s)</P>"%(aWeb['type']))
  aWeb.wr("<DIV CLASS=table><DIV class=thead><DIV class=th>Ip</DIV><DIV class=th>Mac</DIV><DIV class=th>Hostname</DIV><DIV class=th>Starts</DIV><DIV class=th>Ends</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
@@ -123,6 +123,6 @@ def address_info(aWeb):
 #
 #
 def address_delete(aWeb):
- res = aWeb.rest_call("ipam_address_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("ipam/address_delete",{'id':aWeb['id']})
  aWeb.wr("Deleted: %(result)s"%res)
 

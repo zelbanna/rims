@@ -4,7 +4,7 @@ HTML5 Ajax Visualize module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 __icon__ = '../images/icon-visualize.png'
 __type__ = 'menuitem'
@@ -23,7 +23,7 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- res = aWeb.rest_call("visualize_list")
+ res = aWeb.rest_call("visualize/list")
  aWeb.wr("<ARTICLE><P>Maps</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content_left', URL='visualize_list', TITLE='Reload'))
  aWeb.wr("<DIV CLASS=table>")
@@ -39,7 +39,7 @@ def list(aWeb):
 #
 #
 def delete(aWeb):
- res = aWeb.rest_call("visualize_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("visualize/delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>%s</ARTICLE>"%res)
 
 #
@@ -47,7 +47,7 @@ def delete(aWeb):
 def show(aWeb):
  from json import dumps
  args = {'id':aWeb['id']} if aWeb['id'] else {'name':aWeb['name']}
- res = aWeb.rest_call("visualize_show",args)
+ res = aWeb.rest_call("visualize/show",args)
  aWeb.wr("<ARTICLE><DIV CLASS='network' ID='div_network'></DIV><SCRIPT>")
  aWeb.wr("var nodes = new vis.DataSet(%s);"%dumps(res['nodes']))
  aWeb.wr("var edges = new vis.DataSet(%s);"%dumps(res['edges']))
@@ -78,7 +78,7 @@ def show(aWeb):
 def network(aWeb):
  from json import dumps
  args = aWeb.args()
- res = aWeb.rest_call("visualize_network",args)
+ res = aWeb.rest_call("visualize/network",args)
  aWeb.wr("<ARTICLE><P>Info for %s</P>"%(res['name']))
  aWeb.wr(aWeb.button('reload', DIV='div_content_right', URL='visualize_network?type=%s&id=%s'%(res['type'],res['id'])))
  aWeb.wr(aWeb.button('trash',  DIV='div_content_right', URL='visualize_delete?id=%s'%res['id'], TITLE='Delete map', MSG='Really delete map?'))

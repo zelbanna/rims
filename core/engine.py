@@ -1,9 +1,9 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 
-from os import walk, path as ospath
+from os import walk, getpid, path as ospath
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
 from threading import Thread, Event, BoundedSemaphore
@@ -25,7 +25,7 @@ from urllib.parse import unquote
 def run(aSettingsFile):
  """ run instantiate all engine entities and starts monitoring of socket """
  from sys import exit, setcheckinterval
- from signal import signal, SIGINT, SIGUSR1
+ from signal import signal, SIGINT, SIGUSR1, SIGUSR2
  from .common import rest_call, DB
 
  kill = Event()
@@ -39,8 +39,10 @@ def run(aSettingsFile):
    kill.set()
   elif sig == SIGUSR1:
    print("\n".join(ctx.module_reload()))
+  elif sig == SIGUSR2:
+   print(dumps(ctx.status(),indent=4, sort_keys=True))
 
- for sig in [SIGINT, SIGUSR1]:
+ for sig in [SIGINT, SIGUSR1, SIGUSR2]:
   signal(sig, signal_handler)
  setcheckinterval(200)
 
@@ -54,19 +56,10 @@ def run(aSettingsFile):
   ctx.database_create()
 
   if settings['system']['id'] == 'master':
+   settings.update(ctx.database_settings('master'))
    with ctx.db as db:
-    db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
-    data = db.get_rows()
-    db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
-    data.extend(db.get_rows())
     db.do("SELECT * FROM tasks LEFT JOIN nodes ON tasks.node_id = nodes.id WHERE node = 'master'")
     tasks = db.get_rows()
-   for param in data:
-    section = param.pop('section',None)
-    if not settings.get(section):
-     settings[section] = {}
-    settings[section][param['parameter']] = param['value']
-
   else:
    extra = rest_call("%s/settings/fetch/%s"%(settings['system']['master'],node))['data']['settings']
    for section,data in extra.items():
@@ -88,6 +81,7 @@ def run(aSettingsFile):
   try: sock.close()
   except:pass
  else:
+  print(getpid())
   kill.wait()
  exit(0)
 
@@ -108,6 +102,9 @@ class Context(object):
   self.modules  = {}
   self.servers  = None
   self.rest_call = rest_call
+
+ def __str__(self):
+  return "Context(%s)"%(self.node)
 
  def clone(self):
   from copy import copy
@@ -136,7 +133,7 @@ class Context(object):
    ret = fun(aArgs if aArgs else {},self)
   return ret
 
- def settings_get(self,aNode):
+ def database_settings(self,aNode):
   settings = {}
   with self.db as db:
    db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aNode)
@@ -150,6 +147,15 @@ class Context(object):
    settings[section][param['parameter']] = param['value']
   return settings
 
+ def module_register(self, aName):
+  ret = {'import':'error'}
+  try:   module = import_module(aName)
+  except Exception as e: ret['error'] = str(e)
+  else:
+   self.modules[aName] = module
+   ret['import'] = repr(module)
+  return ret
+
  def module_reload(self):
   from sys import modules as sys_modules
   from types import ModuleType
@@ -162,6 +168,9 @@ class Context(object):
     else:   ret.append(k)
   ret.sort()
   return ret
+
+ def status(self):
+  return self.modules
 
 ########################################## WorkerPool ########################################
 #
@@ -281,7 +290,7 @@ class QueueWorker(Thread):
     else:
      result = func(args,self._ctx)
      if kwargs.get('output'):
-      log("%s - %s => %s"%(self.name,str(func),dumps(result)), self._ctx.settings['logs']['system'])
+      log("%s - %s => %s"%(self.name,repr(func),dumps(result)), self._ctx.settings['logs']['system'])
    except Exception as e:
     log("%s - ERROR => %s"%(self.name,str(e)), self._ctx.settings['logs']['system'])
    finally:
@@ -347,9 +356,9 @@ class SessionHandler(BaseHTTPRequestHandler):
   path,_,query = (self.path.lstrip('/')).partition('/')
   if path == 'site':
    self.site(query)
-  elif path == 'api':
-   self.api(query)
-  elif path == 'infra' or path == 'images' or path == 'files':
+  elif path in ['api','debug','external']:
+   self.api(path,query)
+  elif path in ['infra','images','files']:
    self.files(path,query)
   elif path == 'auth':
    self.auth()
@@ -361,21 +370,21 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.settings(query)
   else:
    # Redirect to login... OR show a list of options 'api/site/...'
-   self._headers.update({'Location':'../site/system_login?application=%s'%self._ctx.settings['system'].get('application','system'),'X-Code':301})
+   self._headers.update({'Location':'../site/system_login?application=%s'%(self._ctx.settings['system'].get('application','system')),'X-Code':301})
 
  #
  #
- def api(self,query):
-  """ API serves the REST functions """
+ def api(self,path,query):
+  """ API serves the REST functions x.y.z.a:<port>/api|debug|external/module/function"""
   extras = {}
   (api,_,get) = query.partition('?')
-  (mod,_,fun) = api.partition('_')
+  (mod,_,fun) = api.partition('/')
   if get:
    for part in get.split("&"):
     (k,_,v) = part.partition('=')
     extras[k] = v
   self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Process':'API'})
-  self._headers['X-Node'] = extras.get('node',self.server._node if not mod == 'system' else 'master')
+  self._headers['X-Node'] = extras.get('node',self._ctx.node if not mod == 'system' else 'master')
   try:
    length = int(self.headers['Content-Length'])
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
@@ -383,14 +392,14 @@ class SessionHandler(BaseHTTPRequestHandler):
   if extras.get('log','true') == 'true':
    try:
     with open(self._ctx.settings['logs']['rest'], 'a') as f:
-     f.write(str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system_task_worker" else "N/A", self.server._node, get.strip())))
+     f.write(str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system_task_worker" else "N/A", self._ctx.node, get.strip())))
    except: pass
   try:
-   if self._headers['X-Node'] == self.server._node:
-    module = import_module("zdcp.rest.%s"%mod)
+   if self._headers['X-Node'] == self._ctx.node:
+    module = import_module("zdcp.rest.%s"%mod if not path == 'external' else mod)
     self._body = dumps(getattr(module,fun,None)(args,self._ctx)).encode('utf-8')
    else:
-    req  = Request("%s/api/%s"%(self._ctx.settings['nodes'][self._headers['X-Node']],query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
+    req  = Request("%s/%s/%s"%(self._ctx.settings['nodes'][self._headers['X-Node']],path,query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
     try: sock = urlopen(req, timeout = 300)
     except HTTPError as h:
      raw = h.read()
@@ -404,10 +413,10 @@ class SessionHandler(BaseHTTPRequestHandler):
      sock.close()
   except Exception as e:
    self._headers.update({'X-Args':args,'X-Info':str(e),'X-Exception':type(e).__name__,'X-Code':500})
-   if extras.get('debug'):
+   if extras.get('debug') or path == 'debug':
     from traceback import format_exc
     tb = format_exc()
-    if extras['debug'] == 'print':
+    if extras.get('debug') == 'print':
      print(tb)
     else:
      for n,v in enumerate(tb.split('\n')):
@@ -513,17 +522,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'settings'})
   op,_,node = query.partition('/')
   if self._ctx.settings['system']['id'] == 'master' and (op == 'fetch' or (op == 'sync' and node != 'master')):
-   settings = {}
-   with self._ctx.db as db:
-    db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%node)
-    data = db.get_rows()
-    db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
-    data.extend(db.get_rows())
-   for param in data:
-    section = param.pop('section',None)
-    if not settings.get(section):
-     settings[section] = {}
-    settings[section][param['parameter']] = param['value']
+   settings = self._ctx.database_settings(node)
    if op == 'fetch':
     output = {'settings':settings}
    else:
@@ -557,11 +556,11 @@ class Stream(object):
 
  def __init__(self,aHandler, aGet):
   self._form = {}
-  self._node = aHandler.server._node
-  self._api  = aHandler.server._ctx.settings['nodes'][self._node]
+  self._node = aHandler._ctx.node
+  self._api  = aHandler._ctx.settings['nodes'][self._node]
   self._body = []
   self._cookies   = {}
-  self._rest_call = aHandler.server._ctx.rest_call
+  self._rest_call = aHandler._ctx.rest_call
   try: cookie_str = aHandler.headers['Cookie'].split('; ')
   except: pass
   else:

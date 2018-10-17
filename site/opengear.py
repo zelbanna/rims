@@ -4,7 +4,7 @@ HTML5 Ajax Console module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 
 
@@ -14,7 +14,7 @@ def manage(aWeb):
   ip = aWeb['ip']
   hostname = aWeb['hostname']
  else:
-  data = aWeb.rest_call("device_info",{'id':id,'op':'basics'})
+  data = aWeb.rest_call("device/info",{'id':id,'op':'basics'})
   ip = data['ip']
   hostname = data['info']['hostname']
 
@@ -32,7 +32,7 @@ def manage(aWeb):
 
 def inventory(aWeb,aIP = None):
  ip = aWeb['ip'] if not aIP else aIP
- res = aWeb.rest_call("opengear_inventory",{'ip':ip})
+ res = aWeb.rest_call("opengear/inventory",{'ip':ip})
  config="https://%s/?form=serialconfig&action=edit&ports={}&start=&end="%ip
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table>")

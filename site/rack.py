@@ -4,7 +4,7 @@ HTML5 Ajax Racks module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 __icon__ = '../images/icon-rack.png'
 __type__ = 'menuitem'
@@ -20,7 +20,7 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- racks = aWeb.rest_call("rack_list",{"sort":"name"})
+ racks = aWeb.rest_call("rack/list",{"sort":"name"})
  aWeb.wr("<ARTICLE><P>Racks</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_left',URL='rack_list'))
  aWeb.wr(aWeb.button('add',DIV='div_content_right',URL='rack_info?id=new'))
@@ -35,7 +35,7 @@ def list(aWeb):
 #
 def list_infra(aWeb):
  type = aWeb['type']
- devices = aWeb.rest_call("device_list",{'field':'base','search':type,'extra':['type']})['data']
+ devices = aWeb.rest_call("device/list",{'field':'base','search':type,'extra':['type']})['data']
  aWeb.wr("<ARTICLE><P>%ss</P>"%type.title())
  aWeb.wr(aWeb.button('reload',DIV='div_content_left', URL='rack_list_infra?type=%s'%type))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
@@ -50,7 +50,7 @@ def list_infra(aWeb):
 #
 #
 def inventory(aWeb):
- data = aWeb.rest_call("rack_devices",{"id":aWeb['rack']})
+ data = aWeb.rest_call("rack/devices",{"id":aWeb['rack']})
  size = data['size']
  aWeb.wr("<DIV STYLE='display:grid; justify-items:stretch; align-items:stretch; margin:10px; grid: repeat({}, 20px)/20px 220px 20px 20px 20px 220px 20px;'>".format(size))
  # Create rack and some text, then place devs
@@ -79,7 +79,7 @@ def inventory(aWeb):
 #
 def info(aWeb):
  args = aWeb.args()
- res  = aWeb.rest_call("rack_info",args)
+ res  = aWeb.rest_call("rack/info",args)
  data = res['data']
  aWeb.wr("<ARTICLE CLASS=info><P>Rack Info (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=rack_info_form>")
@@ -113,5 +113,5 @@ def info(aWeb):
 #
 #
 def delete(aWeb):
- res = aWeb.rest_call("rack_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("rack/delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>Rack %s deleted (%s)</ARTICLE>"%(aWeb['id'],res))

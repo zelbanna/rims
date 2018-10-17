@@ -4,7 +4,7 @@ HTML5 Ajax Multimedia Controls module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 __icon__ = '../images/icon-multimedia.png'
 
@@ -12,8 +12,8 @@ __icon__ = '../images/icon-multimedia.png'
 #
 def main(aWeb):
  cookie = aWeb.cookie('system') 
- ip   = aWeb.rest_call("dns_external_ip")['ip']
- svcs = aWeb.rest_call("multimedia_services")
+ ip   = aWeb.rest_call("dns/external_ip")['ip']
+ svcs = aWeb.rest_call("multimedia/services")
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='multimedia_list'>Media files</A></LI>")
  aWeb.wr("<LI CLASS='dropdown'><A>Services</A><DIV CLASS='dropdown-content'>")
@@ -28,7 +28,7 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- data = aWeb.rest_call("multimedia_list")
+ data = aWeb.rest_call("multimedia/list")
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Files</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content', URL='multimedia_list'))
@@ -47,7 +47,7 @@ def list(aWeb):
 #
 #
 def cleanup(aWeb):
- data = aWeb.rest_call("multimedia_cleanup")
+ data = aWeb.rest_call("multimedia/cleanup")
  aWeb.wr("<ARTICLE CLASS=info><P>Delete</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  for item in data['items']:
@@ -57,7 +57,7 @@ def cleanup(aWeb):
 #
 #
 def title(aWeb):
- data = aWeb.rest_call("multimedia_check_title",{'path':aWeb['path'],'file':aWeb['file']})
+ data = aWeb.rest_call("multimedia/check_title",{'path':aWeb['path'],'file':aWeb['file']})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<FORM ID=multimedia_info_form>")
  aWeb.wr("<INPUT TYPE=hidden VALUE='%s' NAME=file>"%(aWeb['file']))
@@ -77,7 +77,7 @@ def title(aWeb):
 #
 #
 def subtitles(aWeb):
- data = aWeb.rest_call("multimedia_check_srt",{'path':aWeb['path'],'file':aWeb['file']})
+ data = aWeb.rest_call("multimedia/check_srt",{'path':aWeb['path'],'file':aWeb['file']})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['name'])
@@ -88,7 +88,7 @@ def subtitles(aWeb):
 #
 #
 def lookup(aWeb):
- data = aWeb.rest_call("multimedia_check_content",{'path':aWeb['path'],'file':aWeb['file'],'subtitle':None})
+ data = aWeb.rest_call("multimedia/check_content",{'path':aWeb['path'],'file':aWeb['file'],'subtitle':None})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Result:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"%data['result'])
@@ -104,7 +104,7 @@ def lookup(aWeb):
 def request(aWeb):
  args = aWeb.args()
  request = args.pop('request',None)
- data = aWeb.rest_call("system_task_worker?node=%s"%aWeb.node(),{'module':'multimedia','func':request,'output':True,'args':args})
+ data = aWeb.rest_call("system/task_worker?node=%s"%aWeb.node(),{'module':'multimedia','func':request,'output':True,'args':args})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Res:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data)
@@ -113,5 +113,5 @@ def request(aWeb):
 #
 #
 def delete(aWeb):
- data = aWeb.rest_call("multimedia_delete",{'path':aWeb['path'],'file':aWeb['file']})
+ data = aWeb.rest_call("multimedia/delete",{'path':aWeb['path'],'file':aWeb['file']})
  aWeb.wr("<ARTICLE>Delete: %s/%s => %s</ARTICLE>"%(aWeb['path'],aWeb['file'],data))

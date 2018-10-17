@@ -1,6 +1,6 @@
 """Tools module for various tools"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -244,7 +244,7 @@ def database_backup(aDict, aCTX):
   from zdcp.rest.mysql import dump
   data = dump({'mode':'database'},aCTX)['output']
  else:
-  res = aCTX.rest_call("%s/api/mysql_dump"%aCTX.settings['system']['master'],{'mode':'database'})
+  res = aCTX.rest_call("%s/api/mysql/dump"%aCTX.settings['system']['master'],{'mode':'database'})
   if res['code'] == 200:
    data = res['data']['output']
   else:

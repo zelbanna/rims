@@ -1,6 +1,6 @@
 """Generic REST module. Provides system and DB interaction for application, settings and resources"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'master'
@@ -199,12 +199,10 @@ def module_import(aDict, aCTX):
 
  Args:
   - module
-  - file
 
  Output:
  """
- res = aCTX.module_register(aDict['module'],aDict['file'])
- return {'import':(res['module'] != None), 'error':res.get('error',None)}
+ return aCTX.module_register(aDict['module'])
 
 ############################################ SETTINGS ########################################
 #
@@ -911,7 +909,7 @@ def task_add(aDict, aCTX):
    aCTX.workers.add_transient(aDict)
   ret['result'] = 'ADDED'
  else:
-  ret.update(aCTX.rest_call("%s/api/system_task_worker"%aCTX.settings['nodes'][node],aDict)['data'])
+  ret.update(aCTX.rest_call("%s/api/system/task_worker"%aCTX.settings['nodes'][node],aDict)['data'])
  return ret
 
 #

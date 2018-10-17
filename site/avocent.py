@@ -4,7 +4,7 @@ HTML5 Ajax module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 
 def manage(aWeb):
@@ -13,7 +13,7 @@ def manage(aWeb):
   ip = aWeb['ip']
   hostname = aWeb['hostname']
  else:
-  data = aWeb.rest_call("device_info",{'id':id,'op':'basics'})
+  data = aWeb.rest_call("device/info",{'id':id,'op':'basics'})
   ip = data['ip']
   hostname = data['info']['hostname']
 
@@ -32,7 +32,7 @@ def manage(aWeb):
 #
 def inventory(aWeb,aIP = None):
  ip = aWeb['ip'] if not aIP else aIP
- data = aWeb.rest_call("avocent_inventory",{'ip':ip})
+ data = aWeb.rest_call("avocent/inventory",{'ip':ip})
  aWeb.wr("<ARTICLE>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='avocent_inventory?ip=%s'%ip))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>PDU</DIV><DIV CLASS=th>Position</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th STYLE='width:63px;'>State</DIV></DIV>")
@@ -53,7 +53,7 @@ def inventory(aWeb,aIP = None):
 #
 #
 def op(aWeb):
- res = aWeb.rest_call("avocent_op",{'state':aWeb['nstate'],'ip':aWeb['ip'],'slot':aWeb['slot'],'unit':aWeb['unit']})
+ res = aWeb.rest_call("avocent/op",{'state':aWeb['nstate'],'ip':aWeb['ip'],'slot':aWeb['slot'],'unit':aWeb['unit']})
  url = 'avocent_op?ip=%s&slot=%s&unit=%s&id=%s&nstate={}'%(aWeb['ip'],aWeb['slot'],aWeb['unit'],aWeb['id'])
  div = 'div_pdu_%s'%aWeb['id']
  aWeb.wr("&nbsp;")
@@ -66,7 +66,7 @@ def op(aWeb):
 #
 #
 def info(aWeb):
- res = aWeb.rest_call("avocent_info",{'op':aWeb['op'],'id':aWeb['id'],'ip':aWeb['ip']})
+ res = aWeb.rest_call("avocent/info",{'op':aWeb['op'],'id':aWeb['id'],'ip':aWeb['ip']})
  pdudata = res['data']
  aWeb.wr("<ARTICLE CLASS=info><P>PDU Device Info</P>")
  aWeb.wr("<FORM ID=pdu_info_form>")
@@ -86,7 +86,7 @@ def info(aWeb):
 #
 def unit_info(aWeb):
  if aWeb['op'] == 'update':
-  res = aWeb.rest_call("avocent_update",aWeb.args())
+  res = aWeb.rest_call("avocent/update",aWeb.args())
   aWeb.wr("Updated info: {}".format(res))
   return
  aWeb.wr("<ARTICLE CLASS=info><P>PDU Unit Info</P>")

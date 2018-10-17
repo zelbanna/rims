@@ -4,7 +4,7 @@ HTML5 Ajax Openstack HEAT module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 
 ##################################### Heatstack ##################################
@@ -15,7 +15,7 @@ def list(aWeb):
  if not token:
   aWeb.wr("Not logged in")
   return
- res = aWeb.rest_call("openstack_call",{'token':cookie['token'],'service':'heat','call':"stacks"})
+ res = aWeb.rest_call("openstack/call",{'token':cookie['token'],'service':'heat','call':"stacks"})
  if not res['result'] == 'OK':
   aWeb.wr("<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e))
   return
@@ -46,7 +46,7 @@ def list(aWeb):
 def choose_template(aWeb):
  cookie = aWeb.cookie('openstack')
  token  = cookie.get('token')
- templates = aWeb.rest_call("openstack_heat_templates",{'token':token})['templates']
+ templates = aWeb.rest_call("openstack/heat_templates",{'token':token})['templates']
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:auto; display:inline-block; padding:6px'>")
  aWeb.wr("<FORM ID=frm_heat_choose_template>")
  aWeb.wr("Add solution from template:<SELECT NAME=template STYLE='height:22px; width:auto;'>")
@@ -64,7 +64,7 @@ def enter_parameters(aWeb):
  cookie = aWeb.cookie('openstack')
  token  = cookie.get('token')
  template = aWeb['template']
- data = aWeb.rest_call("openstack_heat_content",{'template':template,'token':token})['template']
+ data = aWeb.rest_call("openstack/heat_content",{'template':template,'token':token})['template']
  aWeb.wr("<FORM ID=frm_heat_template_parameters>")
  aWeb.wr("<INPUT TYPE=hidden NAME=template VALUE={}>".format(template))
  aWeb.wr("<DIV CLASS=table>")
@@ -113,18 +113,18 @@ def action(aWeb):
   aWeb.wr("</DIV>")
   aWeb.wr("<ARTICLE STYLE='overflow:auto;' ID=div_os_info>")
   args['call'] = "stacks/{}/{}".format(name,id)
-  data = aWeb.rest_call("openstack_call",args)['data']
+  data = aWeb.rest_call("openstack/call",args)['data']
   dict2html(data['stack'],name)
   aWeb.wr("</ARTICLE>")
 
  elif op == 'details':
   args['call'] = "stacks/{}/{}".format(name,id)
-  data = aWeb.rest_call("openstack_call",args)['data']
+  data = aWeb.rest_call("openstack/call",args)['data']
   dict2html(data['stack'],name)
 
  elif op == 'events':
   args['call'] = "stacks/{}/{}/events".format(name,id)
-  data = aWeb.rest_call("openstack_call",args)['data']
+  data = aWeb.rest_call("openstack/call",args)['data']
   aWeb.wr("<!-- {} -->".format("stacks/{}/{}/events".format(name,id) ))
   aWeb.wr("<DIV CLASS=table>")
   aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>Resource</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Status</DIV><DIV CLASS=th>Reason</DIV></DIV>")
@@ -135,12 +135,12 @@ def action(aWeb):
 
  elif op == 'template':
   args['call'] = "stacks/{}/{}/template".format(name,id)
-  data = aWeb.rest_call("openstack_call",args)['data']
+  data = aWeb.rest_call("openstack/call",args)['data']
   aWeb.wr("<PRE>%s</PREE>"%(dumps(data, indent=4)))
 
  elif op == 'parameters':
   args['call'] = "stacks/{}/{}".format(name,id)
-  data = aWeb.rest_call("openstack_call",args)['data']['stack']['parameters']
+  data = aWeb.rest_call("openstack/call",args)['data']['stack']['parameters']
   data.pop('OS::project_id')
   data.pop('OS::stack_name')
   data.pop('OS::stack_id')
@@ -157,7 +157,7 @@ def action(aWeb):
    args['parameters'] = {}
    for key,value in params.items():
     args['parameters'][key[6:]] = value
-   ret = aWeb.rest_call("openstack_heat_instantiate",args)
+   ret = aWeb.rest_call("openstack/heat_instantiate",args)
    if ret['code'] == 201:
     aWeb.wr("<H2>Starting instantiation of '{}' solution</H2>".format(aWeb['template'].partition('.')[0]))
     aWeb.wr("Name: {}<BR>Id:{}".format(name,ret['data']['stack']['id']))
@@ -170,7 +170,7 @@ def action(aWeb):
  elif op == 'remove':
   args['call'] = "stacks/{}/{}".format(name,id)
   args['method'] = 'DELETE'
-  ret = aWeb.rest_call("openstack_call",args)
+  ret = aWeb.rest_call("openstack/call",args)
   aWeb.wr("<ARTICLE><P>Removing {}</P>".format(name))
   aWeb.wr("Removing stack" if ret['code'] == 204 else "Error code: %s"%ret['code'])
   aWeb.wr("</ARTICLE>")
@@ -179,12 +179,12 @@ def action(aWeb):
   cookie = aWeb.cookie('openstack')
   token  = cookie.get('token')
   template = aWeb['template']
-  data = aWeb.rest_call("openstack_heat_content",{'template':template,'token':token})['template']
+  data = aWeb.rest_call("openstack/heat_content",{'template':template,'token':token})['template']
   data['stack_name'] = name if name else "Need_to_specify_name"
   aWeb.wr("<PRE>{}</PRE>".format(dumps(data, indent=4, sort_keys=True)))
 
  elif op == 'add_template':
   args = aWeb.args()
   args.pop('op',None)
-  res = aWeb.rest_call("openstack_heat_create_template",args)
+  res = aWeb.rest_call("openstack/heat_create_template",args)
   aWeb.wr(res)

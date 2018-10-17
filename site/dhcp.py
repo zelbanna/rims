@@ -4,18 +4,18 @@ HTML5 Ajax DHCP module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 
 #
 #
 def update(aWeb):
- aWeb.wr("<ARTICLE>DHCP Server Update:%s</ARTICLE>"%(aWeb.rest_call("dhcp_update_server")))
+ aWeb.wr("<ARTICLE>DHCP Server Update:%s</ARTICLE>"%(aWeb.rest_call("dhcp/update_server")))
 
 #
 #
 def leases(aWeb):
- leases = aWeb.rest_call("dhcp_leases",{'type':aWeb['lease']})
+ leases = aWeb.rest_call("dhcp/leases",{'type':aWeb['lease']})
  aWeb.wr("<ARTICLE><P>Leases (%s)</P>"%(aWeb['lease']))
  aWeb.wr("<DIV CLASS=table><DIV class=thead><DIV class=th>Ip</DIV><DIV class=th>Mac</DIV><DIV class=th>Hostname</DIV><DIV class=th>Starts</DIV><DIV class=th>Ends</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")

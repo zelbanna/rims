@@ -4,13 +4,13 @@ HTML5 Ajax ESXi module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 __icon__ = '../images/icon-servers.png'
 __type__ = 'menuitem'
 
 def main(aWeb):
- rows = aWeb.rest_call("device_list",{'field':'base','search':'hypervisor','extra':['type','url'],'sort':'hostname'})['data']
+ rows = aWeb.rest_call("device/list",{'field':'base','search':'hypervisor','extra':['type','url'],'sort':'hostname'})['data']
  aWeb.wr("<NAV><UL>&nbsp;</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content ID=div_content>")
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
@@ -34,7 +34,7 @@ def main(aWeb):
 #
 def manage(aWeb):
  id = aWeb['id']
- data = aWeb.rest_call("device_info",{'id':id,'op':'basics'})
+ data = aWeb.rest_call("device/info",{'id':id,'op':'basics'})
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI CLASS=warning><A CLASS=z-op DIV=div_content MSG='Really shut down?' URL='esxi_op?ip=%s&next-state=poweroff&id=%s'>Shutdown</A></LI>".format(data['ip'],id))
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content_right  URL='esxi_logs?ip=%s'>Logs</A></LI>"%data['ip'])
@@ -55,7 +55,7 @@ def manage(aWeb):
 def list(aWeb,aIP = None):
  ip   = aWeb.get('ip',aIP)
  sort = aWeb.get('sort','name')
- res = aWeb.rest_call("esxi_list",{'ip':ip,'sort':sort})
+ res = aWeb.rest_call("esxi/list",{'ip':ip,'sort':sort})
  statelist = res['data']
  aWeb.wr("<ARTICLE>")
  aWeb.wr(aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='esxi_list?ip=%s&sort=%s'%(ip,sort)))
@@ -72,7 +72,7 @@ def list(aWeb,aIP = None):
 #
 def op(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("esxi_op",args)
+ res = aWeb.rest_call("esxi/op",args)
  if aWeb['output'] == 'div':
   aWeb.wr("<ARTICLE>Carried out '{}' on '{}@{}'</ARTICLE>".format(aWeb['next-state'],aWeb['id'],aWeb['ip']))
  else:
@@ -107,13 +107,13 @@ def _vm_options(aWeb,aIP,aVM,aHighlight):
 #
 #
 def logs(aWeb):
- res = aWeb.rest_call("esxi_logs",{'ip':aWeb['ip']})
+ res = aWeb.rest_call("esxi/logs",{'ip':aWeb['ip']})
  aWeb.wr("<ARTICLE><P>Operation logs</P><P CLASS='machine-text'>%s</P></ARTICLE>"%("<BR>".join(res['data'])))
 
 #
 #
 def snapshot(aWeb):
- res = aWeb.rest_call("esxi_snapshots",{'ip':aWeb['ip'],'id':aWeb['id']})
+ res = aWeb.rest_call("esxi/snapshots",{'ip':aWeb['ip'],'id':aWeb['id']})
  aWeb.wr("<ARTICLE><P>Snapshots (%s) Highest ID:%s</P>"%(aWeb['id'],res['highest']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")

@@ -5,7 +5,7 @@ HTML5 Ajax Openstack NOVA module
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 
 ################################# Nova ###############################
@@ -17,7 +17,7 @@ def list(aWeb):
  if not token:
   aWeb.wr("Not logged in")
   return
- data = aWeb.rest_call("openstack_call",{'token':cookie['token'],'service':"nova",'call':"servers/detail"})['data']
+ data = aWeb.rest_call("openstack/call",{'token':cookie['token'],'service':"nova",'call':"servers/detail"})['data']
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left><ARTICLE><P>Nova Servers</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='nova_list'))
  aWeb.wr(aWeb.button('add', DIV='div_content_right', URL='nova_select_parameters'))
@@ -52,7 +52,7 @@ def select_parameters(aWeb):
  if not token:
   aWeb.wr("Not logged in")
   return
- resources = aWeb.rest_call("openstack_vm_resources",{'token':token})
+ resources = aWeb.rest_call("openstack/vm_resources",{'token':token})
  aWeb.wr("<SCRIPT>dragndrop();</SCRIPT>")
  aWeb.wr("<ARTICLE CLASS='info'><P>New VM parameters</P>")
  aWeb.wr("<FORM ID=frm_os_create_vm>")
@@ -94,7 +94,7 @@ def action(aWeb):
  if   op == 'info':
   from zdcp.core.genlib import get_quote
   args['call'] = "servers/%s"%aWeb['id']
-  server = aWeb.rest_call("openstack_call",args)['data']['server']
+  server = aWeb.rest_call("openstack/call",args)['data']['server']
   qserver = get_quote(server['name'])
   tmpl = "<A CLASS='z-op btn small text' TITLE='{}' DIV=div_os_info URL='nova_action?id=%s&op={}' SPIN=true>{}</A>"%aWeb['id']
   aWeb.wr("<DIV>")
@@ -109,13 +109,13 @@ def action(aWeb):
 
  elif op == 'details':
   args['call'] = "servers/%s"%aWeb['id']
-  server = aWeb.rest_call("openstack_call",args)['data']['server']
+  server = aWeb.rest_call("openstack/call",args)['data']['server']
   dict2html(server,server['name'])
 
  elif op == 'stop' or op == 'start' or op == 'reboot':
   args['arguments'] = {"os-"+op:None} if op != 'reboot' else {"reboot":{ "type":"SOFT" }}
   args['call'] = "servers/%s/action"%aWeb['id']
-  res = aWeb.rest_call("openstack_call",args)
+  res = aWeb.rest_call("openstack/call",args)
   aWeb.wr("<ARTICLE>")
   if res['code'] == 202:
    aWeb.wr("Command executed successfully [%s]"%(op))
@@ -125,13 +125,13 @@ def action(aWeb):
 
  elif op == 'diagnostics':
   args['call'] = "servers/%s/diagnostics"%aWeb['id']
-  data = aWeb.rest_call("openstack_call",args)['data']
+  data = aWeb.rest_call("openstack/call",args)['data']
   dict2html(data)
 
  elif op == 'networks':
   from json import dumps
   args['vm']  = aWeb['id']
-  data = aWeb.rest_call("openstack_vm_networks",args)
+  data = aWeb.rest_call("openstack/vm_networks",args)
 
   aWeb.wr("<DIV CLASS=table STYLE='width:auto'>")
   aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Routing Instance</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Floating IP</DIV><DIV CLASS=th>Operation</DIV></DIV><DIV CLASS=tbody>")
@@ -157,7 +157,7 @@ def action(aWeb):
  elif op == 'remove':
   args['call'] = "servers/{}".format(aWeb['id'])
   args['method'] = 'DELETE'
-  res = aWeb.rest_call("openstack_rest",args)
+  res = aWeb.rest_call("openstack/rest",args)
   aWeb.wr("<ARTICLE><P>Removing VM</P>")
   aWeb.wr("VM removed" if res['code'] == 204 else "Error code: %s"%(res['code']))
   aWeb.wr("</ARTICLE>")
@@ -165,7 +165,7 @@ def action(aWeb):
 def console(aWeb):
  cookie = aWeb.cookie('openstack')
  token  = cookie.get('token')
- res = aWeb.rest_call("openstack_vm_console",{'token':cookie['token'],'vm':aWeb['id']})
+ res = aWeb.rest_call("openstack/vm_console",{'token':cookie['token'],'vm':aWeb['id']})
  if aWeb['inline']:
   aWeb.wr("<iframe id='console_embed' src='{}' STYLE='width: 100%; height: 100%;'></iframe>".format(res['url']))
  else:

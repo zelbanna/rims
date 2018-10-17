@@ -4,7 +4,7 @@ HTML5 Ajax Tools module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 __icon__ = '../images/icon-config.png'
 __type__ = 'menuitem'
@@ -13,7 +13,7 @@ __type__ = 'menuitem'
 #
 def main(aWeb):
  cookie = aWeb.cookie('system')
- data = aWeb.rest_call("system_inventory",{'node':aWeb.node(),'user_id':cookie['id']})
+ data = aWeb.rest_call("system/inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('node'):
   aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='system_node_list'>Nodes</A></LI>")
@@ -45,7 +45,7 @@ def main(aWeb):
 #
 #
 def install(aWeb):
- res = aWeb.rest_call("tools_install?node=%s"%aWeb['node'])
+ res = aWeb.rest_call("tools/install?node=%s"%aWeb['node'])
  aWeb.wr("<ARTICLE CLASS='info'><P>Install results</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  for i in res.items():
@@ -56,7 +56,7 @@ def install(aWeb):
 #
 #
 def rest_main(aWeb):
- nodes = aWeb.rest_call("system_node_list")['data']
+ nodes = aWeb.rest_call("system/node_list")['data']
  aWeb.wr("<ARTICLE><P>REST API inspection</P>")
  aWeb.wr("<FORM ID=frm_rest>")
  aWeb.wr("Choose host and enter API:<SELECT CLASS=background STYLE='height:22px;' NAME=node>")
@@ -67,6 +67,8 @@ def rest_main(aWeb):
  for method in ['GET','POST','DELETE','PUT']:
   aWeb.wr("<OPTION VALUE={0}>{0}</OPTION>".format(method))
  aWeb.wr("</SELECT>")
+ aWeb.wr("<INPUT NAME=debug TYPE=RADIO VALUE=0 checked=checked>no")
+ aWeb.wr("<INPUT NAME=debug TYPE=RADIO VALUE=1>yes")
  aWeb.wr("<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:70px;' NAME=arguments></TEXTAREA>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('start',  DIV='div_rest_info', URL='tools_rest_execute', FRM='frm_rest'))
@@ -82,8 +84,8 @@ def rest_execute(aWeb):
  try:    arguments = loads(aWeb['arguments'])
  except: arguments = None
  try:
-  node = aWeb.rest_call("system_node_info",{'id':aWeb['node']})['data']
-  url = "%s/api/%s?debug=true"%(node['url'],aWeb['api']) if node['system'] == 1 else "%s%s"%(node['url'],aWeb['api'])
+  node = aWeb.rest_call("system/node_info",{'id':aWeb['node']})['data']
+  url = "%s/%s/%s"%(node['url'],"debug" if aWeb['debug'] == '1' else "api", aWeb['api']) if node['system'] == 1 else "%s%s"%(node['url'],aWeb['api'])
   ret = aWeb.rest_full(url,arguments,aWeb['method'])
  except Exception as e:
   ret = e.args[0]
@@ -105,7 +107,7 @@ def rest_execute(aWeb):
 #
 #
 def rest_explore(aWeb):
- res = aWeb.rest_call("tools_rest_explore")
+ res = aWeb.rest_call("tools/rest_explore")
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
  aWeb.wr("<ARTICLE><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>API</DIV><DIV CLASS=th>Function</DIV></DIV><DIV CLASS=tbody>")
  for item in res['data']:
@@ -118,7 +120,7 @@ def rest_explore(aWeb):
 #
 #
 def rest_information(aWeb):
- res = aWeb.rest_call("tools_rest_information",{'api':aWeb['api'],'function':aWeb['function']})
+ res = aWeb.rest_call("tools/rest_information",{'api':aWeb['api'],'function':aWeb['function']})
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<H1>API: %s</H1>"%(aWeb['api']))
  aWeb.wr("<BR>".join(res['module']))
@@ -134,7 +136,7 @@ def logs_clear(aWeb):
  args = aWeb.args()
  node = args.pop('node',None)
  args['count'] = 18
- res = aWeb.rest_call('tools_logs_clear?node=%s'%aWeb['node'],args)
+ res = aWeb.rest_call('tools/logs_clear?node=%s'%node,args)
  aWeb.wr("<ARTICLE><P>%s</P>"%res['node'])
  for i in res['file'].items():
   aWeb.wr("%s: %s<BR>"%i)
@@ -146,7 +148,7 @@ def logs_show(aWeb):
  args = aWeb.args()
  node = args.pop('node',None)
  args['count'] = 18
- res = aWeb.rest_call('tools_logs_get?node=%s'%aWeb['node'],args)
+ res = aWeb.rest_call('tools/logs_get?node=%s'%node,args)
  aWeb.wr("<ARTICLE>")
  for file,logs in res.items():
   aWeb.wr("<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs)))
@@ -158,7 +160,7 @@ def logs_show(aWeb):
 def services_info(aWeb):
  args = aWeb.args()
  node = args.pop('node',None)
- data  = aWeb.rest_call('tools_service_info?node=%s'%aWeb['node'],args)
+ data  = aWeb.rest_call('tools/service_info?node=%s'%aWeb['node'],args)
  state = 'start' if data['state'] == 'inactive' else 'stop'
  aWeb.wr("<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)"%(aWeb['service'],data['state'],data['info']))
  aWeb.wr(aWeb.button(state, DIV='div_content', SPIN='true', URL='tools_services_info?service=%s&node=%s&op=%s'%(args['service'],aWeb['node'],state)))
@@ -168,7 +170,7 @@ def services_info(aWeb):
 #
 #
 def file_list(aWeb):
- res = aWeb.rest_call('tools_file_list',{'directory':aWeb['directory']})
+ res = aWeb.rest_call('tools/file_list',{'directory':aWeb['directory']})
  aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Files in %s<P>"%res.get('path','directory'))
  import urllib.request, urllib.parse, urllib.error
  for f in res['files']:
@@ -179,22 +181,10 @@ def file_list(aWeb):
 #
 #
 def images(aWeb):
- res = aWeb.rest_call('tools_file_list')
+ res = aWeb.rest_call('tools/file_list')
  aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Images<P><DIV CLASS=table><DIV CLASS=tbody>")
  for file in res['files']:
   if file[-3:] == 'png':
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:180px'>{0}</DIV><DIV CLASS=td STYLE='width:100%;'><IMG STYLE='max-height:60px;' SRC='{1}/{0}' /></DIV></DIV>".format(file,res['path']))
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
 
-#
-# UPS graphs   
-#
-def ups(aWeb):
- aWeb.wr("<ARTICLE>")
- if aWeb.get('host'):                 
-  from zdcp.tools.munin import widget_cols
-  upshost,void,domain = aWeb['host'].partition('.')
-  widget_cols([ "{1}/{0}.{1}/hw_apc_power".format(upshost,domain), "{1}/{0}.{1}/hw_apc_time".format(upshost,domain), "{1}/{0}.{1}/hw_apc_temp".format(upshost,domain) ])
- else:
-  aWeb.wr("Missing 'host' var") 
- aWeb.wr("</ARTICLE>")

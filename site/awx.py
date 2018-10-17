@@ -4,7 +4,7 @@ HTML5 Ajax AWX module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 
 #
@@ -14,7 +14,7 @@ def manage(aWeb):
   args = {'node':aWeb['node']}
  elif aWeb['id']:
   args = {'id':aWeb['id']}
- dev = aWeb.rest_call("system_node_device_mapping",args)
+ dev = aWeb.rest_call("system/node_device_mapping",args)
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op HREF=%s     target=_blank>UI</A></LI>"%(dev['url']))
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content_left URL='awx_inventory_list?node=%s'>Inventories</A></LI>"%dev['node'])
@@ -30,7 +30,7 @@ def manage(aWeb):
 #
 #
 def inventory_list(aWeb):
- data = aWeb.rest_call("awx_inventory_list",{'node':aWeb['node']})
+ data = aWeb.rest_call("awx/inventory_list",{'node':aWeb['node']})
  aWeb.wr("<ARTICLE><P>Inventories</P>")
  if data.get('exception'):
   aWeb.wr("Error: %s"%(data['exception']))
@@ -49,10 +49,10 @@ def inventory_list(aWeb):
 def inventory_info(aWeb):
  args = aWeb.args()
  if aWeb['op'] == 'delete_list':
-  opres = aWeb.rest_call("awx_inventory_delete_hosts",args)
+  opres = aWeb.rest_call("awx/inventory_delete_hosts",args)
  else:
   opres = ""
- res = aWeb.rest_call("awx_inventory_info",args)
+ res = aWeb.rest_call("awx/inventory_info",args)
  aWeb.wr("<ARTICLE><P>Hosts</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(aWeb['node'],aWeb['id']), SPIN='true'))
  aWeb.wr(aWeb.button('add',    DIV='div_content_right', URL='awx_inventory_device_search?node=%s&id=%s'%(aWeb['node'],aWeb['id']), TITLE='Sync with AWX'))
@@ -71,7 +71,7 @@ def inventory_info(aWeb):
 #
 def inventory_delete(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("awx_inventory_delete",args)
+ res = aWeb.rest_call("awx/inventory_delete",args)
  aWeb.wr("<ARTICLE>Delete result: %s</ARTICLE>"%res)
 
 #
@@ -92,7 +92,7 @@ def inventory_device_search(aWeb):
 #
 def inventory_device_choose(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("device_list",args)
+ res = aWeb.rest_call("device/list",args)
  aWeb.wr("<ARTICLE STYLE='display:inline-block'>")
  aWeb.wr("<FORM ID=awx_choose>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id']))
@@ -109,7 +109,7 @@ def inventory_device_choose(aWeb):
 #
 def inventory_device_sync(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("awx_inventory_sync",args)
+ res = aWeb.rest_call("awx/inventory_sync",args)
  aWeb.wr("<ARTICLE><P>Synced Devices</P>")
  aWeb.wr(aWeb.button('forward', DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(aWeb['node'],aWeb['id'])))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")

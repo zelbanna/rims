@@ -4,7 +4,7 @@ HTML5 Ajax system function module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 __icon__ = '../images/icon-examine.png'
 __type__ = 'menuitem'
@@ -13,7 +13,7 @@ __type__ = 'menuitem'
 #
 def main(aWeb):
  cookie = aWeb.cookie('system')
- data = aWeb.rest_call("system_inventory",{'node':aWeb.node(),'user_id':cookie['id']})
+ data = aWeb.rest_call("system/inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('logs'):
   aWeb.wr("<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>")
@@ -54,7 +54,7 @@ def login(aWeb):
   return
  args = aWeb.args()
  args['node'] = aWeb.node() if not args.get('node') else args['node']
- data = aWeb.rest_call("%s_application"%(application),args)
+ data = aWeb.rest_call("%s/application"%(application),args)
  aWeb.put_html(data['title'])
  aWeb.wr("<SCRIPT>set_cookie('%s','%s','%s');</SCRIPT>"%(application,data['cookie'],data['expires']))
  aWeb.wr("<DIV CLASS='background overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message'])
@@ -82,7 +82,7 @@ def portal(aWeb):
  cookie = aWeb.cookie('system')
  id = cookie.get('id','NOID') if cookie else 'NOID'
  if id == 'NOID':
-  res = aWeb.rest_call("system_authenticate?log=false",{'username':aWeb['username'],'password':aWeb['password']})
+  res = aWeb.rest_call("system/authenticate?log=false",{'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
    id = res['id']
    cookie.update({'id':id,'token':res['token']})
@@ -94,7 +94,7 @@ def portal(aWeb):
    return
 
  # proper id here
- menu = aWeb.rest_call("system_menu",{"id":id,'node':aWeb.node()})
+ menu = aWeb.rest_call("system/menu",{"id":id,'node':aWeb.node()})
  aWeb.wr("<HEADER>")
  for item in menu['menu']:
   if   item['view'] == 0:
@@ -114,7 +114,7 @@ def portal(aWeb):
 #
 #
 def report(aWeb):
- info = aWeb.rest_call("system_report?node=%s"%aWeb.node())
+ info = aWeb.rest_call("system/report?node=%s"%aWeb.node())
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>System</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Information</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>")
  for i in info:
@@ -125,7 +125,7 @@ def report(aWeb):
 #
 def reload(aWeb):
  """ Map node to URL and call reload """
- api = aWeb.rest_call("system_node_to_api",{'node':aWeb['node']})['url']
+ api = aWeb.rest_call("system/node_to_api",{'node':aWeb['node']})['url']
  res = aWeb.rest_full("%s/reload"%api)
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>Module</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
@@ -137,7 +137,7 @@ def reload(aWeb):
 #
 #
 def node_list(aWeb):
- nodes = aWeb.rest_call("system_node_list")['data']
+ nodes = aWeb.rest_call("system/node_list")['data']
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Nodes</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content', URL='system_node_list'))
@@ -161,7 +161,7 @@ def node_list(aWeb):
 #
 def node_info(aWeb):
  args = aWeb.args()
- data = aWeb.rest_call("system_node_info",args)['data']
+ data = aWeb.rest_call("system/node_info",args)['data']
  aWeb.wr("<ARTICLE CLASS='info'><P>Node Info</DIV>")
  aWeb.wr("<FORM ID=system_node_form>")
  aWeb.wr("<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>")
@@ -180,13 +180,13 @@ def node_info(aWeb):
 #
 #
 def node_delete(aWeb):
- res = aWeb.rest_call("system_node_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/node_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>Result: %s</ARTICLE>"%(res))
 
 #
 #
 def node_device_id(aWeb):
- res = aWeb.rest_call("device_search",{'device':aWeb['hostname']})
+ res = aWeb.rest_call("device/search",{'device':aWeb['hostname']})
  aWeb.wr(res['device']['id'] if res['found'] > 0 else 'NULL')
 
 #
@@ -204,7 +204,7 @@ def node_help(aWeb):
 ############################################ Servers ###########################################
 
 def server_list(aWeb):
- res = aWeb.rest_call("system_server_list",aWeb.args())
+ res = aWeb.rest_call("system/server_list",aWeb.args())
  type = "type=%s"%aWeb['type'] if aWeb.get('type') else "dummy"
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Servers</P>")
@@ -227,7 +227,7 @@ def server_list(aWeb):
 def server_info(aWeb):
  aWeb.wr("<ARTICLE CLASS=info><P>Server</P>")
  args = aWeb.args()
- res  = aWeb.rest_call("system_server_info",args)
+ res  = aWeb.rest_call("system/server_info",args)
  data = res['data']
  aWeb.wr("<FORM ID=server_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(data['id']))
@@ -261,27 +261,27 @@ def server_info(aWeb):
 #
 def server_status(aWeb):
  from json import dumps
- res = aWeb.rest_call("system_server_status",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/server_status",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE><PRE>%s<PRE></ARTICLE>"%dumps(res,indent=2,sort_keys=True))
 
 #
 #
 def server_restart(aWeb):
  from json import dumps
- res = aWeb.rest_call("system_server_restart",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/server_restart",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE><PRE>%s<PRE></ARTICLE>"%dumps(res,indent=2,sort_keys=True))
 
 #
 #
 def server_sync(aWeb):
- res = aWeb.rest_call("system_server_sync",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/server_sync",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>%s</ARTICLE>"%str(res))
 
 
 #
 #
 def server_delete(aWeb):
- res = aWeb.rest_call("system_server_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/server_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>%s</ARTICLE>"%str(res))
 
 #
@@ -301,7 +301,7 @@ def server_help(aWeb):
 #
 #
 def task_report(aWeb):
- res = aWeb.rest_call("system_task_list",{'node':aWeb.node()})
+ res = aWeb.rest_call("system/task_list",{'node':aWeb.node()})
  aWeb.wr("<ARTICLE><P>Jobs</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Frequency</DIV><DIV CLASS=th>Module</DIV><DIV CLASS=th>Function</DIV><DIV CLASS=th>Args</DIV></DIV><DIV CLASS=tbody>")
  for task in res['tasks']:

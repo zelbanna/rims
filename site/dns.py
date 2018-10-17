@@ -4,14 +4,14 @@ HTML5 Ajax DNS module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 
 ############################################ Domains ###########################################
 #
 #
 def domain_list(aWeb):
- domains = aWeb.rest_call("dns_domain_list",{'sync':True if aWeb['sync'] == 'true' else False})
+ domains = aWeb.rest_call("dns/domain_list",{'sync':True if aWeb['sync'] == 'true' else False})
  aWeb.wr("<ARTICLE><P>Domains</P>")
  aWeb.wr(aWeb.button('items', DIV='div_content_left', URL='dns_domain_list',TITLE='List domains'))
  aWeb.wr(aWeb.button('sync',   DIV='div_content_left', URL='dns_domain_list?sync=true',TITLE='Resync cache'))
@@ -33,7 +33,7 @@ def domain_list(aWeb):
 # Domain info
 def domain_info(aWeb):
  args = aWeb.args()
- res  = aWeb.rest_call("dns_domain_info",args)
+ res  = aWeb.rest_call("dns/domain_info",args)
  data = res['data']
  aWeb.wr("<ARTICLE CLASS=info><P>Domain Info (%s)</P>"%res['id'])
  aWeb.wr("<FORM ID=dns_info_form>")
@@ -65,14 +65,14 @@ def domain_info(aWeb):
 #
 #
 def domain_delete(aWeb):
- res = aWeb.rest_call("dns_domain_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("dns/domain_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>%s</ARTICLE>"%res)
 
 #
 #
 def domain_save(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("dns_domain_save",args)
+ res = aWeb.rest_call("dns/domain_save",args)
  aWeb.wr("Save result:%s"%str(res))
 
 
@@ -80,7 +80,7 @@ def domain_save(aWeb):
 #
 #
 def record_list(aWeb):
- dns = aWeb.rest_call("dns_record_list",{'domain_id':aWeb['domain_id']})
+ dns = aWeb.rest_call("dns/record_list",{'domain_id':aWeb['domain_id']})
  aWeb.wr("<ARTICLE><P>Records</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='dns_record_list?domain_id=%s'%(aWeb['domain_id'])))
  aWeb.wr(aWeb.button('save',  DIV='div_content_right',URL='dns_domain_save?id=%s'%(aWeb['domain_id'])))
@@ -102,7 +102,7 @@ def record_list(aWeb):
 #
 def record_info(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("dns_record_info",args)
+ res = aWeb.rest_call("dns/record_info",args)
  data = res['data']
  aWeb.wr("<ARTICLE CLASS=info><P>Record Info (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=dns_info_form>")
@@ -125,21 +125,21 @@ def record_info(aWeb):
 #
 #
 def record_delete(aWeb):
- res = aWeb.rest_call("dns_record_delete",{'id': aWeb['id'],'domain_id': aWeb['domain_id']})
+ res = aWeb.rest_call("dns/record_delete",{'id': aWeb['id'],'domain_id': aWeb['domain_id']})
  aWeb.wr("<ARTICLE>Remove {} - Results:{}</ARTICLE>".format(aWeb['id'],res))
 
 #
 #
 def record_correct(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("dns_record_device_correct",args)
+ res = aWeb.rest_call("dns/record_device_correct",args)
  aWeb.wr("Updated device %s - Results:%s"%(aWeb['device_id'],str(res)))
 
 #
 #
 def record_create(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("dns_record_device_create",args)
+ res = aWeb.rest_call("dns/record_device_create",args)
  aWeb.wr("Create result:%s"%str(res))
 
 ############################################ Tools ###########################################
@@ -147,7 +147,7 @@ def record_create(aWeb):
 # Cleanup duplicate entries
 #
 def dedup(aWeb):
- dns = aWeb.rest_call("dns_dedup")
+ dns = aWeb.rest_call("dns/dedup")
  aWeb.wr("<ARTICLE><P>Duplicate Removal</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV></DIV><DIV CLASS=tbody>")
  for node_server,res in dns.items():
@@ -159,7 +159,7 @@ def dedup(aWeb):
 
 
 def status(aWeb):
- dns = aWeb.rest_call("dns_status")
+ dns = aWeb.rest_call("dns/status")
  aWeb.wr("<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>")
  for node_server,res in dns['top'].items():
@@ -180,7 +180,7 @@ def status(aWeb):
 #
 #
 def consistency(aWeb):
- data = aWeb.rest_call("dns_consistency_check")
+ data = aWeb.rest_call("dns/consistency_check")
  aWeb.wr("<ARTICLE><P>DNS Consistency</P><SPAN CLASS='results' ID=span_dns>&nbsp;</SPAN>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Key</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV><DIV CLASS=th>Rec Id</DIV><DIV CLASS=th>Dev Id</DIV><DIV CLASS=th>Dev Record</DIV><DIV CLASS=th>Dev FQDN</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for rec in data['records']:

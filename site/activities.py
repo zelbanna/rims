@@ -5,7 +5,7 @@ HTML5 Ajax Activities module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 __icon__ = '../images/icon-calendar.png'
 __type__ = 'menuitem'
@@ -22,7 +22,7 @@ def main(aWeb):
 #
 #
 def report(aWeb):
- activities = aWeb.rest_call("system_activities_list",{'group':'month','mode':'full'})['data']
+ activities = aWeb.rest_call("system/activities_list",{'group':'month','mode':'full'})['data']
  aWeb.wr("<ARTICLE><P>Activities Report</P><DIV CLASS=table>")
  aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>User</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Event</DIV></DIV><DIV CLASS=tbody>")
  for act in activities:
@@ -32,7 +32,7 @@ def report(aWeb):
 #
 #
 def list(aWeb):
- rows = aWeb.rest_call("system_activities_list")['data']
+ rows = aWeb.rest_call("system/activities_list")['data']
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Activities</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='activities_list'))
@@ -52,7 +52,7 @@ def list(aWeb):
 def info(aWeb):
  cookie = aWeb.cookie('system')
  args = aWeb.args()
- res  = aWeb.rest_call("system_activities_info",args)
+ res  = aWeb.rest_call("system/activities_info",args)
  data = res['data']
  aWeb.wr("<ARTICLE CLASS='info'><P>Activity (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=activity_form>")
@@ -80,13 +80,13 @@ def info(aWeb):
 #
 #
 def delete(aWeb):
- res = aWeb.rest_call("system_activities_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/activities_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>Activity with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res))
 
 #
 #
 def type_list(aWeb):
- rows = aWeb.rest_call("system_activities_type_list")['data']
+ rows = aWeb.rest_call("system/activities_type_list")['data']
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Activity Types</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='activities_type_list'))
@@ -104,7 +104,7 @@ def type_list(aWeb):
 #
 def type_info(aWeb):
  args = aWeb.args()
- res  = aWeb.rest_call("system_activities_type_info",args)
+ res  = aWeb.rest_call("system/activities_type_info",args)
  data = res['data']
  aWeb.wr("<ARTICLE CLASS='info'><P>Activity Type (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=activity_form>")
@@ -121,5 +121,5 @@ def type_info(aWeb):
 #
 #
 def type_delete(aWeb):
- res = aWeb.rest_call("system_activities_type_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/activities_type_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>Activity type with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res))

@@ -1,6 +1,6 @@
 """Device API module. This is the main device interaction module for device info, update, listing,discovery etc"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -683,7 +683,7 @@ def network_interface_status(aDict, aCTX):
      aCTX.workers.add_transient(args)
      ret['local'].append(sub['id'])
     else:
-     aCTX.rest_call("%s/api/system_task_worker?node=%s"%(aCTX.settings['nodes'][sub['node']],sub['node']),args)['data']
+     aCTX.rest_call("%s/api/system/task_worker?node=%s"%(aCTX.settings['nodes'][sub['node']],sub['node']),args)['data']
      ret['remote'].append(sub['id'])
  return ret
 
@@ -1090,7 +1090,7 @@ def interface_status_check(aDict, aCTX):
    if aCTX.settings['system']['id'] == 'master':
     interface_status_report(dev, aCTX)
    else:
-    aCTX.rest_call("%s/api/device_interface_status_report?log=false"%aCTX.settings['system']['master'],dev)
+    aCTX.rest_call("%s/api/device/interface_status_report?log=false"%aCTX.settings['system']['master'],dev)
  return {'result':'GATHERING_DATA_COMPLETED'}
 
 #

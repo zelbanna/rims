@@ -4,7 +4,7 @@ HTML5 Ajax Device module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 __icon__ = '../images/icon-network.png'
 __type__ = 'menuitem'
@@ -22,7 +22,7 @@ def main(aWeb):
  aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content_left URL='visualize_list'>Maps</A></LI>")
  if aWeb['rack']:
-  data = aWeb.rest_call("rack_inventory",{'id':aWeb['rack']})
+  data = aWeb.rest_call("rack/inventory",{'id':aWeb['rack']})
   for type in ['pdu','console']:
    if len(data[type]) > 0:
     aWeb.wr("<LI CLASS='dropdown'><A>%s</A><DIV CLASS='dropdown-content'>"%(type.title()))
@@ -57,7 +57,7 @@ def main(aWeb):
 def list(aWeb):
  args = aWeb.args()
  args['sort'] = aWeb.get('sort','hostname')
- res = aWeb.rest_call("device_list",args)
+ res = aWeb.rest_call("device/list",args)
  aWeb.wr("<ARTICLE><P>Device List</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content_left',  URL='device_list?%s'%aWeb.get_args(), TITLE='Reload'))
  aWeb.wr(aWeb.button('items',  DIV='div_content_left',  URL='device_list?sort=%s'%args['sort'], TITLE='List All'))
@@ -83,7 +83,7 @@ def tasks(aWeb):
 #
 def report(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("device_list",{'extra': ['system', 'type', 'mac']})
+ res = aWeb.rest_call("device/list",{'extra': ['system', 'type', 'mac']})
  aWeb.wr("<ARTICLE><P>Devices</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Model</DIV><DIV CLASS=th>OID</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>State</DIV></DIV><DIV CLASS=tbody>")
  for dev in res['data']:
@@ -108,7 +108,7 @@ def search(aWeb):
 #
 #
 def types_list(aWeb):
- res = aWeb.rest_call("device_types_list")
+ res = aWeb.rest_call("device/types_list")
  aWeb.wr("<ARTICLE><P>Device Types<P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Class</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Icon</DIV></DIV><DIV CLASS=tbody>")
  for tp in res['types']:
@@ -121,7 +121,7 @@ def info(aWeb):
  cookie = aWeb.cookie('system')
  args = aWeb.args()
  args['extra'] = ['types']
- dev = aWeb.rest_call("device_info",args)
+ dev = aWeb.rest_call("device/info",args)
  if not dev['found']:
   aWeb.wr("<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip']))
   return
@@ -217,8 +217,8 @@ def info(aWeb):
 #
 def extended(aWeb):
  args = aWeb.args()
- dev = aWeb.rest_call("device_extended",args)
- domains = aWeb.rest_call("dns_domain_list",{'filter':'forward'})['domains']
+ dev = aWeb.rest_call("device/extended",args)
+ domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['domains']
 
  aWeb.wr("<ARTICLE CLASS='info'><P>Device Extended Info</P>")
  aWeb.wr("<FORM ID=info_form>")
@@ -298,12 +298,12 @@ def update_ip(aWeb):
  args = aWeb.args()
  op = args.pop('op',None)
  if   op == 'update':
-  aWeb.wr(str(aWeb.rest_call("device_update_ip", args)))
+  aWeb.wr(str(aWeb.rest_call("device/update_ip", args)))
  elif op == 'find':
-  aWeb.wr(aWeb.rest_call("ipam_address_find",args)['ip'])
+  aWeb.wr(aWeb.rest_call("ipam/address_find",args)['ip'])
  else:
-  ipam = aWeb.rest_call("ipam_network_list")
-  info = aWeb.rest_call("device_info",{'id':args['id'],'op':'basics'})
+  ipam = aWeb.rest_call("ipam/network_list")
+  info = aWeb.rest_call("device/info",{'id':args['id'],'op':'basics'})
   aWeb.wr("<ARTICLE CLASS=info><P>Change IP</P>")
   aWeb.wr("<FORM ID=device_new_form>")
   aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%args['id'])
@@ -325,21 +325,21 @@ def update_ip(aWeb):
 #
 #
 def delete(aWeb):
- res = aWeb.rest_call("device_delete",{ 'id':aWeb['id'] })
+ res = aWeb.rest_call("device/delete",{ 'id':aWeb['id'] })
  aWeb.wr("<ARTICLE>Unit {} deleted, op:{}</ARTICLE>".format(aWeb['id'],res))
 
 ####################################################### Functions #######################################################
 #
 #
 def to_console(aWeb):
- res = aWeb.rest_call("device_info",{'id':aWeb['id'],'op':'basics'})
+ res = aWeb.rest_call("device/info",{'id':aWeb['id'],'op':'basics'})
  aWeb.wr("<SCRIPT> window.location.replace('%s&title=%s'); </SCRIPT>"%(res['url'],aWeb['name']))
 
 #
 #
 def conf_gen(aWeb):
  aWeb.wr("<ARTICLE>")
- res = aWeb.rest_call("device_configuration_template",{'id':aWeb['id']})
+ res = aWeb.rest_call("device/configuration_template",{'id':aWeb['id']})
  if res['result'] == 'OK':
   aWeb.wr("<BR>".join(res['data']))
  else:
@@ -350,7 +350,7 @@ def conf_gen(aWeb):
 #
 def function(aWeb):
  aWeb.wr("<ARTICLE>")
- res = aWeb.rest_call("device_function",{'ip':aWeb['ip'],'op':aWeb['op'],'type':aWeb['type']})
+ res = aWeb.rest_call("device/function",{'ip':aWeb['ip'],'op':aWeb['op'],'type':aWeb['type']})
  if res['result'] == 'OK':
   if len(res['data']) > 0:
    aWeb.wr("<DIV CLASS=table><DIV CLASS=thead>")
@@ -393,13 +393,13 @@ def new(aWeb):
   else:
    args['rack'] = aWeb['rack']
    args['vm'] = 0
-  res = aWeb.rest_call("device_new",args)
+  res = aWeb.rest_call("device/new",args)
   aWeb.wr("Operation:%s"%str(res))
  elif op == 'find':
-  aWeb.wr(aWeb.rest_call("ipam_address_find",{'network_id':network})['ip'])
+  aWeb.wr(aWeb.rest_call("ipam/address_find",{'network_id':network})['ip'])
  else:
-  networks = aWeb.rest_call("ipam_network_list")['networks']
-  domains  = aWeb.rest_call("dns_domain_list",{'filter':'forward'})['domains']
+  networks = aWeb.rest_call("ipam/network_list")['networks']
+  domains  = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['domains']
   aWeb.wr("<ARTICLE CLASS=info><P>Device Add</P>")
   aWeb.wr("<FORM ID=device_new_form>")
   aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
@@ -429,11 +429,11 @@ def new(aWeb):
 #
 def discover(aWeb):
  if aWeb['op']:
-  res = aWeb.rest_call("device_discover",{ 'network_id':aWeb['network_id'], 'a_dom_id':aWeb['a_dom_id']}, 200)
+  res = aWeb.rest_call("device/discover",{ 'network_id':aWeb['network_id'], 'a_dom_id':aWeb['a_dom_id']}, 200)
   aWeb.wr("<ARTICLE>%s</ARTICLE>"%(res))
  else:
-  networks = aWeb.rest_call("ipam_network_list")['networks']
-  domains = aWeb.rest_call("dns_domain_list",{'filter':'forward'})['domains']
+  networks = aWeb.rest_call("ipam/network_list")['networks']
+  domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['domains']
   dom_name = aWeb['domain']
   aWeb.wr("<ARTICLE CLASS=info><P>Device Discovery</P>")
   aWeb.wr("<FORM ID=device_discover_form>")
@@ -461,15 +461,15 @@ def interface_list(aWeb):
  device = args['device']
  op = args.get('op')
  if   op == 'delete':
-  opres = aWeb.rest_call("device_interface_delete",args)
+  opres = aWeb.rest_call("device/interface_delete",args)
  elif op == 'discover':
-  opres = aWeb.rest_call("device_interface_discover_snmp",{'device':device,'cleanup':False})
+  opres = aWeb.rest_call("device/interface_discover_snmp",{'device':device,'cleanup':False})
  elif op == 'link':
-  opres = aWeb.rest_call("device_interface_link",{'a_id':aWeb['id'],'b_id':aWeb['peer_interface']})
+  opres = aWeb.rest_call("device/interface_link",{'a_id':aWeb['id'],'b_id':aWeb['peer_interface']})
  elif op == 'unlink':
-  opres = aWeb.rest_call("device_interface_unlink",{'a_id':device,'b_id':aWeb['peer_interface']})
+  opres = aWeb.rest_call("device/interface_unlink",{'a_id':device,'b_id':aWeb['peer_interface']})
  elif op == 'lldp':
-  connections = aWeb.rest_call("device_interface_discover_lldp",{'device':device})
+  connections = aWeb.rest_call("device/interface_discover_lldp",{'device':device})
  else:
   opres = ""
  aWeb.wr("<ARTICLE><P>Interfaces</P>")
@@ -489,7 +489,7 @@ def interface_list(aWeb):
     aWeb.wr(aWeb.button('trash', DIV='div_dev_data', URL='device_interface_list?device=%s&op=unlink&id=%s&peer_interface=%s'%(device,i['local_id'],i['peer_id'])))
    aWeb.wr("</DIV></DIV>")
  else:
-  res = aWeb.rest_call("device_interface_list",{'device':device})
+  res = aWeb.rest_call("device/interface_list",{'device':device})
   aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=interface_list>"%(opres))
   aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS='th title' TITLE='Peer ID of connecting interface'>Peer interface</DIV><DIV CLASS='th title' TITLE='State as per last invoked check'>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
   for row in res['data']:
@@ -505,7 +505,7 @@ def interface_list(aWeb):
 #
 def interface_info(aWeb):
  args = aWeb.args()
- data = aWeb.rest_call("device_interface_info",args)['data']
+ data = aWeb.rest_call("device/interface_info",args)['data']
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%;'><P>Interface</P>")
  aWeb.wr("<FORM ID=interface_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(data['id']))
@@ -544,7 +544,7 @@ def interface_link_device(aWeb):
 #
 #
 def interface_link_interface(aWeb):
- res = aWeb.rest_call("device_interface_list",{'device':aWeb['peer'],'sort':'name'})
+ res = aWeb.rest_call("device/interface_list",{'device':aWeb['peer'],'sort':'name'})
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<FORM ID=interface_link>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=device VALUE=%s>"%aWeb['device'])

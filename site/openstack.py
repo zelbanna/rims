@@ -5,7 +5,7 @@ HTML5 Ajax Openstack Generic module
 - left and right divs frames (div_content_left/right) needs to be created by ajax call
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 
 ############################################## Openstack ###############################################
@@ -18,7 +18,7 @@ def portal(aWeb):
  aWeb.put_html("Openstack Portal")
  if not cookie.get('token'):
   (pid,pname) = aWeb.get('project','none_none').split('_')
-  res = aWeb.rest_call("openstack_authenticate",{'node':cookie['node'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
+  res = aWeb.rest_call("openstack/authenticate",{'node':cookie['node'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
   if res['authenticated'] == "OK":
    cookie.update({'token':res['token'],'username':aWeb['username'],'project_id':pid})
    value = ",".join("%s=%s"%i for i in cookie.items())
@@ -82,7 +82,7 @@ def api(aWeb):
  if not cookie.get('token'):
   aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
   return
- services = aWeb.rest_call("openstack_services",{'token':cookie['token']})['services']
+ services = aWeb.rest_call("openstack/services",{'token':cookie['token']})['services']
  aWeb.wr("<ARTICLE><P>OpenStack REST API inspection</P>")
  aWeb.wr("<FORM ID=frm_os_api>")
  aWeb.wr("Choose Service and enter API call: <SELECT STYLE='width:auto; height:22px;' NAME=os_service>")
@@ -115,7 +115,7 @@ def fqname(aWeb):
   if not token:
    aWeb.wr("Not logged in")
   else:
-   res = aWeb.rest_call("openstack_contrail_fqname",{'token':cookie['token'],'uuid':aWeb['os_uuid']})
+   res = aWeb.rest_call("openstack/contrail_fqname",{'token':cookie['token'],'uuid':aWeb['os_uuid']})
    if res['result'] == 'OK':
     aWeb.wr("<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>")
     aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(res['data']['fq_name'])))
@@ -144,7 +144,7 @@ def result(aWeb):
  else:
   args['service'] = aWeb['os_service']
   args['call'] = aWeb['os_api']
- res = aWeb.rest_call("openstack_rest",args)
+ res = aWeb.rest_call("openstack/rest",args)
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>")
  if res['result'] == 'OK':
   aWeb.wr("<PRE CLASS='white'>%s</PRE>"%dumps(res['data'],indent=4, sort_keys=True))
@@ -159,7 +159,7 @@ def result(aWeb):
 #
 def info(aWeb):
  cookie = aWeb.cookie('openstack')
- data = aWeb.rest_call("openstack_info",{'username':cookie['username']})
+ data = aWeb.rest_call("openstack/info",{'username':cookie['username']})
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table STYLE='width:auto'><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Controller</DIV><DIV CLASS=th>Internal ID</DIV><DIV CLASS=th>Token</DIV><DIV CLASS=th>Expires</DIV><DIV CLASS=th>Valid</DIV></DIV><DIV CLASS=tbody>")
  for row in data['data']:

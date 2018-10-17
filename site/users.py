@@ -5,7 +5,7 @@ HTML5 Ajax Users module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 __icon__ = '../images/icon-users.png'
 __type__ = 'menuitem'
@@ -13,7 +13,7 @@ __type__ = 'menuitem'
 ############################################ Users ##############################################
 def main(aWeb):
  cookie = aWeb.cookie('system')
- info = aWeb.rest_call("system_users_info",{'id':cookie['id']})
+ info = aWeb.rest_call("system/users_info",{'id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='reservations_list'>Reservations</A></LI>")
@@ -36,7 +36,7 @@ def user(aWeb):
 #
 #
 def list(aWeb):
- rows = aWeb.rest_call("system_users_list")['data']
+ rows = aWeb.rest_call("system/users_list")['data']
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Users</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='users_list'))
@@ -54,8 +54,8 @@ def list(aWeb):
 def info(aWeb):
  cookie = aWeb.cookie('system')
  args = aWeb.args()
- data = aWeb.rest_call("system_users_info?log=false",args)['data']
- resources = aWeb.rest_call("system_resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.node()})['data']
+ data = aWeb.rest_call("system/users_info?log=false",args)['data']
+ resources = aWeb.rest_call("system/resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.node()})['data']
  aWeb.wr("<SCRIPT>dragndrop();</SCRIPT>")
  aWeb.wr("<ARTICLE CLASS='info'><P>User Info (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=user_info_form>")
@@ -92,5 +92,5 @@ def info(aWeb):
 #
 #
 def delete(aWeb):
- res = aWeb.rest_call("system_users_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/users_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>User with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res))

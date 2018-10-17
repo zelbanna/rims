@@ -5,10 +5,10 @@
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
-
+__type__ = 'ZWAVE'
 
 #
 #
@@ -24,7 +24,7 @@ def status(aDict, aCTX):
   node = aCTX.settings['nodes'][aDict['node']]
   ret  = aCTX.rest_call("%sid=sdata"%node)['data']
  except Exception as e:
-  ret = e.args[0] 
+  ret = e.args[0]
  return ret
 
 #
@@ -46,8 +46,8 @@ def infra(aDict, aCTX):
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
   ret['scenes']   = { d['id']: d for d in info['scenes'] }
  except Exception as e:
-  ret = e.args[0]         
- return ret        
+  ret = e.args[0]
+ return ret
 
 #
 #
@@ -61,8 +61,8 @@ def scene(aDict, aCTX):
   - status (optional)
 
  Output:
- """                
- try:      
+ """
+ try:
   ret = {}
   node = aCTX.settings['nodes'][aDict['node']]
   if aDict.get('op'):
@@ -100,7 +100,7 @@ def devices(aDict, aCTX):
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
   ret['rooms']   = { d['id']:d['name'] for d in info['rooms'] }
  except Exception as e:
-  ret = e.args[0] 
+  ret = e.args[0]
  return ret
 
 #
@@ -145,5 +145,5 @@ def device_info(aDict, aCTX):
      ret[x['service']] = entry
    except: pass
  except Exception as e:
-  ret = e.args[0] 
+  ret = e.args[0]
  return ret

@@ -4,7 +4,7 @@ HTML5 Ajax Reservations module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__= "Production"
 
 ############################################ Reservations ##############################################
@@ -14,8 +14,8 @@ def list(aWeb):
  args = aWeb.args()
  cookie = aWeb.cookie('system')
  if aWeb['op']:
-  aWeb.rest_call("reservation_update",args)
- rows = aWeb.rest_call("reservation_list")['data']
+  aWeb.rest_call("reservation/update",args)
+ rows = aWeb.rest_call("reservation/list")['data']
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Reservations</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='reservations_list'))
@@ -35,7 +35,7 @@ def list(aWeb):
 #
 def update(aWeb):
  cookie = aWeb.cookie('system')
- res = aWeb.rest_call("reservation_update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':aWeb['op'],'days':14})
+ res = aWeb.rest_call("reservation/update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':aWeb['op'],'days':14})
  aWeb.wr("<DIV CLASS=td>Reserve:</DIV>")
  if res['update'] == 1:
   if aWeb['op'] == 'drop':
@@ -55,7 +55,7 @@ def info(aWeb):
 #
 #
 def report(aWeb):
- reservations = aWeb.rest_call("reservation_list",{'extended':True})['data']
+ reservations = aWeb.rest_call("reservation/list",{'extended':True})['data']
  aWeb.wr("<ARTICLE><P>Reservations</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>User</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Start</DIV><DIV CLASS=th>End</DIV><DIV CLASS=th>On Loan</DIV><DIV CLASS=th>Location</DIV></DIV><DIV CLASS=tbody>")
  for res in reservations:

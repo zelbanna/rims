@@ -4,7 +4,7 @@ HTML5 Ajax resources module
 
 """
 __author__= "Zacharias El Banna"
-__version__ = "5.3GA"
+__version__ = "5.4"
 __status__ = "Production"
 __icon__ = '../images/icon-tools.png'
 __type__ = 'menuitem'
@@ -30,7 +30,7 @@ def main(aWeb):
 #
 def view(aWeb):
  cookie = aWeb.cookie('system')
- res = aWeb.rest_call("system_resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'node':aWeb.get('node',aWeb.node())})
+ res = aWeb.rest_call("system/resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'node':aWeb.get('node',aWeb.node())})
  inline = "<BUTTON CLASS='z-op menu' DIV=main URL='%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
  framed = "<BUTTON CLASS='z-op menu' DIV=main URL='resources_framed?id=%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
  tabbed = "<A CLASS='btn menu' TARGET=_blank HREF='%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></A>"
@@ -46,7 +46,7 @@ def view(aWeb):
 #
 #
 def framed(aWeb):
- res = aWeb.rest_call("system_resources_info",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/resources_info",{'id':aWeb['id']})
  aWeb.wr("<IFRAME ID=system_resource_frame NAME=system_resource_frame SRC='%s'></IFRAME>"%res['data']['href'])
 
 #
@@ -57,7 +57,7 @@ def list(aWeb):
   return
  cookie = aWeb.cookie('system')
  node = aWeb.get('node',aWeb.node())
- res = aWeb.rest_call("system_resources_list",{'node':node,'user_id':cookie['id']})
+ res = aWeb.rest_call("system/resources_list",{'node':node,'user_id':cookie['id']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Resources</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content', URL='resources_list?node=%s'%node))
@@ -87,7 +87,7 @@ def list(aWeb):
 def info(aWeb):
  cookie = aWeb.cookie('system')
  args = aWeb.args()
- data = aWeb.rest_call("system_resources_info",args)['data']
+ data = aWeb.rest_call("system/resources_info",args)['data']
  aWeb.wr("<ARTICLE><P>Resource entity ({})</P>".format(data['id']))
  aWeb.wr("<FORM ID=resource_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=node VALUE={}>".format(data['node']))
@@ -123,7 +123,7 @@ def info(aWeb):
 #
 #
 def delete(aWeb):
- res = aWeb.rest_call("system_resources_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/resources_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>Result: %s</ARTICLE>"%(res))
 
 #
