@@ -61,13 +61,13 @@ def run(aSettingsFile):
     db.do("SELECT * FROM tasks LEFT JOIN nodes ON tasks.node_id = nodes.id WHERE node = 'master'")
     tasks = db.get_rows()
   else:
-   extra = rest_call("%s/settings/fetch/%s"%(settings['system']['master'],node))['data']['settings']
+   extra = rest_call("%s/settings/fetch/%s"%(settings['system']['master'],settings['system']['id']))['data']['settings']
    for section,data in extra.items():
     if not settings.get(section):
      settings[section] = {}
     for param, value in data.items():
      settings[section][param] = value
-   tasks = rest_call("%s/api/system_task_list"%settings['system']['master'],{'node':node})['data']['tasks']
+   tasks = rest_call("%s/api/system/task_list"%settings['system']['master'],{'node':settings['system']['id']})['data']['tasks']
 
   for task in tasks:
    task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
@@ -313,7 +313,6 @@ class ServerWorker(Thread):
   httpd._path  = aPath
   httpd._ctx = self._ctx = aContext.clone()
   httpd._ctx.database_create()
-  httpd._node  = self._ctx.settings['system']['id']
   httpd.server_bind = httpd.server_close = lambda self: None
   self.start()
 
