@@ -38,9 +38,11 @@ def run(aSettingsFile):
    ctx.sock.close()
    kill.set()
   elif sig == SIGUSR1:
+   """ Reload modules and print which ones """
    print("\n".join(ctx.module_reload()))
   elif sig == SIGUSR2:
-   print(dumps(ctx.status(),indent=4, sort_keys=True))
+   """ Print imported external modules """
+   print(dumps({k:repr(v) for k,v in ctx.modules.items()},indent=4, sort_keys=True))
 
  for sig in [SIGINT, SIGUSR1, SIGUSR2]:
   signal(sig, signal_handler)
@@ -56,18 +58,19 @@ def run(aSettingsFile):
   ctx.database_create()
 
   if settings['system']['id'] == 'master':
-   settings.update(ctx.database_settings('master'))
+   extra = ctx.database_settings('master')
    with ctx.db as db:
     db.do("SELECT * FROM tasks LEFT JOIN nodes ON tasks.node_id = nodes.id WHERE node = 'master'")
     tasks = db.get_rows()
   else:
    extra = rest_call("%s/settings/fetch/%s"%(settings['system']['master'],node))['data']['settings']
-   for section,data in extra.items():
-    if not settings.get(section):
-     settings[section] = {}
-    for param, value in data.items():
-     settings[section][param] = value
    tasks = rest_call("%s/api/system_task_list"%settings['system']['master'],{'node':node})['data']['tasks']
+
+  for section,data in extra.items():
+   if not settings.get(section):
+    settings[section] = {}
+   for param, value in data.items():
+    settings[section][param] = value
 
   for task in tasks:
    task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
@@ -114,6 +117,20 @@ class Context(object):
   from .common import DB
   self.db = DB(self.settings['system']['db_name'],self.settings['system']['db_host'],self.settings['system']['db_user'],self.settings['system']['db_pass']) if self.node == 'master' else None
 
+ def database_settings(self,aNode):
+  settings = {}
+  with self.db as db:
+   db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aNode)
+   data = db.get_rows()
+   db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
+   data.extend(db.get_rows())
+  for param in data:
+   section = param.pop('section',None)
+   if not settings.get(section):
+    settings[section] = {}
+   settings[section][param['parameter']] = param['value']
+  return settings
+
  def run(self):
   from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
   addr = ("", int(self.settings['system']['port']))
@@ -133,20 +150,6 @@ class Context(object):
    ret = fun(aArgs if aArgs else {},self)
   return ret
 
- def database_settings(self,aNode):
-  settings = {}
-  with self.db as db:
-   db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aNode)
-   data = db.get_rows()
-   db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
-   data.extend(db.get_rows())
-  for param in data:
-   section = param.pop('section',None)
-   if not settings.get(section):
-    settings[section] = {}
-   settings[section][param['parameter']] = param['value']
-  return settings
-
  def module_register(self, aName):
   ret = {'import':'error'}
   try:   module = import_module(aName)
@@ -160,6 +163,7 @@ class Context(object):
   from sys import modules as sys_modules
   from types import ModuleType
   modules = {x:sys_modules[x] for x in sys_modules.keys() if x.startswith('zdcp.')}
+  modules.update(self.modules)
   ret = []
   for k,v in modules.items():
    if isinstance(v,ModuleType):
@@ -168,9 +172,6 @@ class Context(object):
     else:   ret.append(k)
   ret.sort()
   return ret
-
- def status(self):
-  return self.modules
 
 ########################################## WorkerPool ########################################
 #
@@ -396,7 +397,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    except: pass
   try:
    if self._headers['X-Node'] == self._ctx.node:
-    module = import_module("zdcp.rest.%s"%mod if not path == 'external' else mod)
+    module = import_module("zdcp.rest.%s"%mod) if not path == 'external' else self._ctx.modules.get(mod)
     self._body = dumps(getattr(module,fun,None)(args,self._ctx)).encode('utf-8')
    else:
     req  = Request("%s/%s/%s"%(self._ctx.settings['nodes'][self._headers['X-Node']],path,query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
