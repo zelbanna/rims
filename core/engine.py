@@ -63,8 +63,8 @@ def run(aSettingsFile):
     db.do("SELECT * FROM tasks LEFT JOIN nodes ON tasks.node_id = nodes.id WHERE node = 'master'")
     tasks = db.get_rows()
   else:
-   extra = rest_call("%s/settings/fetch/%s"%(settings['system']['master'],node))['data']['settings']
-   tasks = rest_call("%s/api/system_task_list"%settings['system']['master'],{'node':node})['data']['tasks']
+   extra = rest_call("%s/settings/fetch/%s"%(settings['system']['master'],settings['system']['id']))['data']['settings']
+   tasks = rest_call("%s/api/system/task_list"%settings['system']['master'],{'node':settings['system']['id']})['data']['tasks']
 
   for section,data in extra.items():
    if not settings.get(section):
@@ -314,7 +314,6 @@ class ServerWorker(Thread):
   httpd._path  = aPath
   httpd._ctx = self._ctx = aContext.clone()
   httpd._ctx.database_create()
-  httpd._node  = self._ctx.settings['system']['id']
   httpd.server_bind = httpd.server_close = lambda self: None
   self.start()
 
