@@ -4,8 +4,6 @@ Avocent PDU module
 
 """
 __author__  = "Zacharias El Banna"
-__version__ = "5.4"
-__status__  = "Production"
 __type__    = "pdu"
 
 from .generic import Device as GenericDevice

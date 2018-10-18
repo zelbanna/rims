@@ -4,8 +4,6 @@ Appformix Library
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 __type__ = "controller"
 
 ############################################ AppformixRPC ######################################

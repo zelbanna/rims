@@ -1,7 +1,5 @@
 """Generic REST module. Provides system and DB interaction for application, settings and resources"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'master'
 
@@ -173,8 +171,7 @@ def report(aDict, aCTX):
   except:pass
  node = aCTX.settings['system']['id']
  node_url = aCTX.settings['nodes'][node]
- ret = [{'info':'Version','value':__version__},
- {'info':'System PID','value':getpid()},
+ ret = [{'info':'System PID','value':getpid()},
  {'info':'Node URL','value':node_url},
  {'info':'Worker pool','value':aCTX.workers.pool_size()},
  {'info':'Queued tasks','value':aCTX.workers.queue_size()},

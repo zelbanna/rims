@@ -5,8 +5,6 @@ Settings under section 'slack':
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "NOTIFY"
 

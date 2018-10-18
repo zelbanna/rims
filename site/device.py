@@ -1,11 +1,5 @@
-"""Module docstring.
-
-HTML5 Ajax Device module
-
-"""
+"""HTML5 Ajax Device module"""
 __author__= "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 __icon__ = '../images/icon-network.png'
 __type__ = 'menuitem'
 

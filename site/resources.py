@@ -1,11 +1,5 @@
-"""Module docstring.
-
-HTML5 Ajax resources module
-
-"""
+"""HTML5 Ajax Resources module"""
 __author__= "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 __icon__ = '../images/icon-tools.png'
 __type__ = 'menuitem'
 

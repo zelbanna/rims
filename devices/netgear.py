@@ -1,11 +1,5 @@
-"""Module docstring.
-
-Netgear module
-
-"""
+"""Netgear switch"""
 __author__  = "Zacharias El Banna"
-__version__ = "5.4"
-__status__  = "Production"
 __type__    = "network"
 __icon__    = "../images/viz-ex.png"
 __oid__     = 4526

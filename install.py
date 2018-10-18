@@ -1,13 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-"""Program docstring.
-
-Installs System
-
-"""
+"""Installer"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 
 from sys import argv, stdout, path as syspath
 from json import load,dump,dumps
@@ -23,7 +17,7 @@ if len(argv) < 2:
  exit(0)
 else:
  settings_filename = argv[1]
- 
+
 ############################################### ALL #################################################
 #
 # load settings

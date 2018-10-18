@@ -1,12 +1,5 @@
-"""Module docstring.
-
-HTML5 Ajax Openstack Generic module
-
-- left and right divs frames (div_content_left/right) needs to be created by ajax call
-"""
+"""HTML5 Ajax Openstack Generic module"""
 __author__= "Zacharias El Banna"
-__version__ = "5.4"
-__status__= "Production"
 
 ############################################## Openstack ###############################################
 #

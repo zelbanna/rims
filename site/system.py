@@ -1,11 +1,5 @@
-"""Module docstring.
-
-HTML5 Ajax system function module
-
-"""
+"""HTML5 Ajax System function module"""
 __author__= "Zacharias El Banna"
-__version__ = "5.4"
-__status__= "Production"
 __icon__ = '../images/icon-examine.png'
 __type__ = 'menuitem'
 

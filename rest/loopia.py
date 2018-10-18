@@ -1,7 +1,6 @@
 """ Loopia DNS interworking module.. """
-__author__ = "Zacharias El Banna"                     
-__version__ = "5.4"
-__status__ = "Production"
+__author__ = "Zacharias El Banna"
+__add_globals__ = lambda x: globals().update(x)
 
 ################################ LOOPIA DNS ###################################
 #

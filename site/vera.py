@@ -1,11 +1,5 @@
-"""Module docstring.
-
-HTML5 Ajax Vera Z-wave controller module
-
-"""
+"""HTML5 Ajax Vera Z-wave controller module"""
 __author__= "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 
 ##### ToDo #####
 #

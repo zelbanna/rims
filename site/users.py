@@ -1,12 +1,5 @@
-"""Module docstring.
-
-HTML5 Ajax Users module
-
-
-"""
+"""HTML5 Ajax Users module"""
 __author__= "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 __icon__ = '../images/icon-users.png'
 __type__ = 'menuitem'
 

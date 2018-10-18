@@ -1,7 +1,6 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.4"
-__status__ = "Production"
 
 from os import walk, getpid, path as ospath
 from json import loads, load, dumps

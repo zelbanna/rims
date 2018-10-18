@@ -1,10 +1,5 @@
-"""Module docstring.
-
-OpenGear Console module
-"""
+"""OpenGear Console server"""
 __author__  = "Zacharias El Banna"
-__version__ = "5.4"
-__status__  = "Production"
 __type__    = "console"
 
 from .generic import Device as GenericDevice

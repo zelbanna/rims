@@ -1,6 +1,4 @@
-"""Module docstring.
-
-IPMI interworking module
+"""IPMI interworking module
 
 - https://lime-technology.com/forum/index.php?topic=39238.0
 - requires ipmitool to be installed on system and "in path"
@@ -8,8 +6,6 @@ IPMI interworking module
 
 """
 __author__ = "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 
 from .generic import Device as GenericDevice
 

@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """ System engine """
 __author__ = "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 
 from os import path as ospath
 from sys import path as syspath, argv

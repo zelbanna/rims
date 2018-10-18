@@ -1,11 +1,5 @@
-"""Module docstring.
-
-MX module
-
-"""
+"""Juniper MX Router"""
 __author__  = "Zacharias El Banna"
-__version__ = "5.4"
-__status__  = "Production"
 __type__    = "network"
 __icon__    = "../images/viz-mx.png"
 __oid__     = 2636

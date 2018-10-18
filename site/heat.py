@@ -1,11 +1,5 @@
-"""Module docstring.
-
-HTML5 Ajax Openstack HEAT module
-
-"""
+"""HTML5 Ajax Openstack HEAT module"""
 __author__= "Zacharias El Banna"
-__version__ = "5.4"
-__status__= "Production"
 
 ##################################### Heatstack ##################################
 #

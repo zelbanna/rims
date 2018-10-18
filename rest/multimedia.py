@@ -1,7 +1,5 @@
 """Controls API module. Provides generic control functionality"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from os import remove, rmdir, walk, path as ospath, devnull, chmod, rename

@@ -1,11 +1,5 @@
-"""Module docstring.
-
-vCenter Module
-
-"""
+"""vCenter"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 __type__   = "hypervisor"
 __oid__     = 6876
 

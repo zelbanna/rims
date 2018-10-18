@@ -1,7 +1,5 @@
 """Avocent REST module. Provides calls to interact with avocent PDUs"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.4"
-__status__ = "Production"
 __add_globals__ = lambda x: globals().update(x)
 
 from zdcp.devices.avocent import Device

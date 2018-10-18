@@ -1,11 +1,5 @@
-"""Module docstring.
-
-QNAP Device
-
-"""
+"""QNAP Device"""
 __author__  = "Zacharias El Banna"
-__version__ = "5.4"
-__status__  = "Production"
 __type__    = "storage"
 __icon__    = "../images/viz-generic.png"
 __oid__     = 24681

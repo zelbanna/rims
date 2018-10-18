@@ -1,11 +1,5 @@
-"""Module docstring.
-
-Vera Library
-
-"""
+"""Vera ZWave"""
 __author__  = "Zacharias El Banna"
-__version__ = "5.4"
-__status__  = "Production"
 __type__    = "controller"
 
 from .generic import Device as GenericDevice

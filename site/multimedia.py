@@ -1,11 +1,5 @@
-"""Module docstring.
-
-HTML5 Ajax Multimedia Controls module
-
-"""
+"""HTML5 Ajax Multimedia Controls module"""
 __author__= "Zacharias El Banna"
-__version__ = "5.4"
-__status__= "Production"
 __icon__ = '../images/icon-multimedia.png'
 
 #

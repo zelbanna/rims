@@ -1,12 +1,10 @@
 """Settings module"""
 __author__= "Zacharias El Banna"
-__version__ = "5.4"
-__status__= "Production"
 
 #
 #
 def list(aWeb):
- cookie = aWeb.cookie('system') 
+ cookie = aWeb.cookie('system')
  res = aWeb.rest_call("system/settings_list",{'node':aWeb['node'],'user_id':cookie['id']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Settings</P>")

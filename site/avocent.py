@@ -1,11 +1,5 @@
-"""Moduledocstring.
-
-HTML5 Ajax module
-
-"""
+"""HTML5 Ajax module"""
 __author__= "Zacharias El Banna"
-__version__ = "5.4"
-__status__= "Production"
 
 def manage(aWeb):
  id = aWeb['id']
