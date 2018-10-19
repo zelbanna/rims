@@ -54,10 +54,9 @@ def run(aSettingsFile):
   settings['system']['config_file'] = aSettingsFile
 
   ctx = Context(settings)
-  ctx.database_create()
 
   if settings['system']['id'] == 'master':
-   extra = ctx.database_settings('master')
+   extra = ctx.node_settings('master')
    with ctx.db as db:
     db.do("SELECT * FROM tasks LEFT JOIN nodes ON tasks.node_id = nodes.id WHERE node = 'master'")
     tasks = db.get_rows()
@@ -76,12 +75,12 @@ def run(aSettingsFile):
    frequency = task.pop('frequency',300)
    ctx.workers.add_periodic(task,frequency)
 
-  ctx.run()
+  ctx.start()
 
  except Exception as e:
   print(str(e))
-  try: sock.close()
-  except:pass
+  try: ctx.sock.close()
+  except: pass
  else:
   print(getpid())
   kill.wait()
@@ -89,17 +88,17 @@ def run(aSettingsFile):
 
 ########################################### Context ########################################
 #
-# Main state object, contains settings, workers, modules and calls
+# Main state object, contains settings, workers, modules and calls etc..
 #
 
 class Context(object):
 
  def __init__(self,aSettings):
-  from .common import rest_call
-  self.db       = None
+  from .common import DB, rest_call
   self.sock     = None
   self.node     = aSettings['system']['id']
   self.settings = aSettings
+  self.db       = DB(self.settings['system']['db_name'],self.settings['system']['db_host'],self.settings['system']['db_user'],self.settings['system']['db_pass']) if self.node == 'master' else None
   self.workers  = WorkerPool(aSettings['system'].get('workers',20),self)
   self.modules  = {}
   self.servers  = None
@@ -109,14 +108,14 @@ class Context(object):
   return "Context(%s)"%(self.node)
 
  def clone(self):
+  """ Clone itself and non thread-safe components """
   from copy import copy
-  return copy(self)
-
- def database_create(self):
   from .common import DB
-  self.db = DB(self.settings['system']['db_name'],self.settings['system']['db_host'],self.settings['system']['db_user'],self.settings['system']['db_pass']) if self.node == 'master' else None
+  ctx_new = copy(self)
+  ctx_new.db = DB(self.settings['system']['db_name'],self.settings['system']['db_host'],self.settings['system']['db_user'],self.settings['system']['db_pass']) if self.node == 'master' else None
+  return ctx_new
 
- def database_settings(self,aNode):
+ def node_settings(self,aNode):
   settings = {}
   with self.db as db:
    db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aNode)
@@ -130,7 +129,9 @@ class Context(object):
    settings[section][param['parameter']] = param['value']
   return settings
 
- def run(self):
+ #
+ def start(self):
+  """ Start "moving" parts of context """
   from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
   addr = ("", int(self.settings['system']['port']))
   self.sock = socket(AF_INET, SOCK_STREAM)
@@ -150,6 +151,7 @@ class Context(object):
   return ret
 
  def module_register(self, aName):
+  """ Register "external" modules """
   ret = {'import':'error'}
   try:   module = import_module(aName)
   except Exception as e: ret['error'] = str(e)
@@ -273,7 +275,6 @@ class QueueWorker(Thread):
   self._abort  = aAbort
   self._idle   = aIdle
   self._ctx    = aContext.clone()
-  self._ctx.database_create()
   self._queue  = self._ctx.workers._queue
   self.daemon  = True
   self.start()
@@ -312,7 +313,6 @@ class ServerWorker(Thread):
   httpd.socket = aSocket
   httpd._path  = aPath
   httpd._ctx = self._ctx = aContext.clone()
-  httpd._ctx.database_create()
   httpd.server_bind = httpd.server_close = lambda self: None
   self.start()
 
@@ -521,7 +521,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'settings'})
   op,_,node = query.partition('/')
   if self._ctx.settings['system']['id'] == 'master' and (op == 'fetch' or (op == 'sync' and node != 'master')):
-   settings = self._ctx.database_settings(node)
+   settings = self._ctx.node_settings(node)
    if op == 'fetch':
     output = {'settings':settings}
    else:
