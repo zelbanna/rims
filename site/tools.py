@@ -20,7 +20,7 @@ def main(aWeb):
   for tool in data.get('tools',[]):
    aWeb.wr("<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title']))
   for svc in data.get('services',[]):
-   aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_services_info?node=%s&service=%s'>%s</A>"%(aWeb['node'],svc['service'],svc['name']))
+   aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_services_info?node=%s&service=%s'>%s</A>"%(aWeb.node(),svc['service'],svc['name']))
  aWeb.wr("</DIV></LI>")
  if aWeb.node() == 'master':
   aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='system_server_list'>Servers</A></LI>")
