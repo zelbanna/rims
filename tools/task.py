@@ -22,17 +22,16 @@ elif input.get('l'):
  func = "list"
  args = {'node':input.get('n','master')}
 else:
- print("%s: <settings.json> [-n(ode) <node-name>] -a(dd) <JSON file>| -d(elete) <id>| -l(ist)"%argv[0])
+ print("%s: <config.json> [-n(ode) <node-name>] -a(dd) <JSON file>| -d(elete) <id>| -l(ist)"%argv[0])
  exit(0)
 
 with open(argv[1],'r') as f:
- settings = load(f)
+ config = load(f)
 started = "Executing:system_task_%s(%s)"%(func,args)
 try:
- output = rest_call("%s/api/system/task_%s"%(settings['system']['master'],func),args, aTimeout = 300)['data']
+ output = rest_call("%s/api/system/task_%s"%(config['master'],func),args, aTimeout = 300)['data']
 except Exception as e:
  output = e.args[0]
 print(started)
 print("_" * len(started))
 print(dumps(output,indent=4, sort_keys=True))
-

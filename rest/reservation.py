@@ -76,7 +76,7 @@ def shutdown(aDict, aCTX):
    if not module:
     module = import_module("zdcp.devices.%s"%info['type'])
     modules[info['type']] = module
-   device = getattr(module,'Device',lambda x: None)(info['ip'],aCTX.settings)
+   device = getattr(module,'Device',lambda x: None)(info['ip'],aCTX)
    __shutdown(info,device)
   except Exception as e:
    info['error'] = str(e)

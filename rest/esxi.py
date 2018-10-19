@@ -15,7 +15,7 @@ def list(aDict, aCTX):
  ret = {}
  from zdcp.devices.esxi import Device
  try:
-  esxi = Device(aDict['ip'])
+  esxi = Device(aDict['ip'], aCTX)
   ret['data'] = esxi.get_vm_list(aDict.get('sort','name'))
  except Exception as err:
   ret['error'] = str(err)

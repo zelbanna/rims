@@ -8,7 +8,7 @@ from zdcp.core.common import VarList, Varbind, Session, log
 ############################################# Device ##########################################
 class Device(object):
 
- def __init__(self, aIP, aCTX, aLog):
+ def __init__(self, aIP, aCTX, aLog = None):
   self._ip = aIP
   self._ctx = aCTX
   self._logfile  = aLog

@@ -35,7 +35,7 @@ def info(aDict, aCTX):
 
   if op == 'lookup' and ret['ip']:
    from zdcp.devices.generic import Device
-   dev = Device(ret['ip'])
+   dev = Device(ret['ip'], aCTX)
    lookup = dev.detect()
    ret['result'] = lookup
    if lookup['result'] == 'OK':
@@ -222,7 +222,7 @@ def extended(aDict, aCTX):
      pdu_info = db.get_row()
      try:
       module = import_module("zdcp.devices.%s"%pdu_info['type'])
-      pdu = getattr(module,'Device',None)(pdu_info['ip'],aCTX.settings)
+      pdu = getattr(module,'Device',None)(pdu_info['ip'],aCTX)
       # Slot id is actually local slot ID, so we need to look up infra -> pdu_info -> pdu and then pdu[x_slot_id] to get the right ID
       pdu_res = pdu.set_name( int(ret['infra']['pdu_info'][pem['pdu_id']]['%s_slot_id'%pem['pdu_slot']] ), int(pem['pdu_unit']) , "%s-%s"%(ret['info']['hostname'],pem['name']) )
       ret['result']["PDU_(%s)"%pem['id']] = "%s.%s"%(pdu_info['hostname'],pdu_res)
@@ -442,7 +442,7 @@ def discover(aDict, aCTX):
  from zdcp.rest.ipam import network_discover as ipam_discover, address_allocate
  from zdcp.devices.generic import Device
 
- def __detect_thread(aIP, aDB, aSettings):
+ def __detect_thread(aIP, aDB, aCTX):
   __dev = Device(aIP,aCTX)
   aDB[aIP['ip']] = __dev.detect()['info']
   return True
@@ -458,7 +458,7 @@ def discover(aDict, aCTX):
 
  sema = aCTX.workers.semaphore(20)
  for ip in ipam['addresses']:
-  aCTX.workers.add_semaphore(__detect_thread, sema, ip, dev_list, aCTX.settings)
+  aCTX.workers.add_semaphore(__detect_thread, sema, ip, dev_list, aCTX)
  aCTX.workers.block(sema,20)
 
  # We can now do inserts only (no update) as we skip existing :-)
@@ -547,7 +547,7 @@ def function(aDict, aCTX):
  ret = {}
  try:
   module = import_module("zdcp.devices.%s"%(aDict['type']))
-  dev = getattr(module,'Device',lambda x: None)(aDict['ip'],aCTX.settings)
+  dev = getattr(module,'Device',lambda x: None)(aDict['ip'],aCTX)
   with dev:
    ret['data'] = getattr(dev,aDict['op'],None)()
   ret['result'] = 'OK'
@@ -573,7 +573,7 @@ def configuration_template(aDict, aCTX):
  ip = data['ip']
  try:
   module = import_module("zdcp.devices.%s"%data['type'])
-  dev = getattr(module,'Device',lambda x: None)(ip,aCTX.settings)
+  dev = getattr(module,'Device',lambda x: None)(ip,aCTX)
   ret['data'] = dev.configuration(data)
  except Exception as err:
   ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%str(err)
@@ -594,7 +594,7 @@ def network_info_discover(aDict, aCTX):
  Output:
  """
  from zdcp.devices.generic import Device
- def __detect_thread(aDev, aSettings):
+ def __detect_thread(aDev, aCTX):
   __dev = Device(aDev['ip'],aCTX)
   aDev.update(__dev.system_info())
   return True     
@@ -607,7 +607,7 @@ def network_info_discover(aDict, aCTX):
   if count > 0:
    sema = aCTX.workers.semaphore(20)
    for dev in devices:
-    aCTX.workers.add_semaphore(__detect_thread, sema, dev, aCTX.settings)
+    aCTX.workers.add_semaphore(__detect_thread, sema, dev, aCTX)
    aCTX.workers.block(sema,20)
    for dev in devices:
     id = dev.pop('id',None)
@@ -898,7 +898,7 @@ def interface_discover_snmp(aDict, aCTX):
   existing = db.get_rows()
   try:
    module  = import_module("zdcp.devices.%s"%(info['type']))
-   dev = getattr(module,'Device',lambda x: None)(info['ip'],aCTX.settings)
+   dev = getattr(module,'Device',lambda x: None)(info['ip'],aCTX)
    interfaces = dev.interfaces()
   except Exception as err:
    ret['error'] = str(err)
@@ -1062,10 +1062,10 @@ def interface_status_check(aDict, aCTX):
  states = {'unseen':0,'up':1,'down':2}
  discover = aDict.get('discover')
 
- def __interfaces(aDev, aSettings):
+ def __interfaces(aDev, aCTX):
   try:
    module = import_module("zdcp.devices.%s"%aDev['type'])
-   device = getattr(module,'Device',None)(aDev['ip'],aSettings)
+   device = getattr(module,'Device',None)(aDev['ip'],aCTX)
    probe  = device.interfaces()
    exist  = aDev['interfaces']
    for intf in exist:
@@ -1081,7 +1081,7 @@ def interface_status_check(aDict, aCTX):
 
  sema = aCTX.workers.semaphore(20)
  for dev in aDict['device_list']:
-  aCTX.workers.add_semaphore( __interfaces, sema, dev, aCTX.settings)
+  aCTX.workers.add_semaphore( __interfaces, sema, dev, aCTX)
  aCTX.workers.block(sema,20)
  for dev in aDict['device_list']:
   if len(dev['interfaces']) > 0:

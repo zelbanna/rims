@@ -15,14 +15,7 @@ if __name__ == "__main__":
  from zdcp.rest import mysql
  from zdcp.core.engine import Context
 
- ctx = Context({'system':{'id':None}})
- from json import load
- with open(argv[1],'r') as f:
-  settings = load(f)
- args = {}
- args['database'] = settings['system']['db_name']
- args['username'] = settings['system']['db_user']
- args['password'] = settings['system']['db_pass']
+ ctx = Context(aConfigFile = argv[1])
 
  if   argv[2] == '-d':
   args.update({'mode':'database','full':True})

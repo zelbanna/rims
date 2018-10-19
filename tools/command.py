@@ -8,38 +8,23 @@ syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
 
 if __name__ == "__main__":
  if len(argv) < 3:
-  print(argv[0] + " <settings.json> func [<json-arg>]")
+  print(argv[0] + " <config.json> func [<json-arg>]")
   exit(0)
 
- from json import loads, dumps, load
+ from json import dumps,loads
  from time import time
  from importlib import import_module
  from zdcp.core.engine import Context
  from zdcp.core.common import DB, rest_call
- with open(argv[1]) as f:
-  settings = load(f)
- system = settings['system']
- port = system['port']
- if system['id'] == 'master':
-  with DB(system['db_name'], system['db_host'], system['db_user'], system['db_pass']) as db:
-   db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
-   db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
-   data = db.get_rows()
-   db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
-   data.extend(db.get_rows())
-  for row in data:
-   if not settings.get(row['section']):
-    settings[row['section']] = {}
-   settings[row['section']][row['parameter']] = row['value']
- else:
-  ext = rest_call("%s/settings/fetch/%s"%(system['master'],system['id']))['settings']
-  for section,data in ext.items():
-   if not settings.get(section):
-    settings[section] = {}
-   for key,val in data.items():
-    settings[section][key] = val
 
- ctx = Context(settings)
+ ctx = Context(aConfigFile = argv[1])
+
+ if ctx.node == 'master':
+  settings = ctx.node_settings('master')
+ else:
+  settings = rest_call("%s/settings/fetch/%s"%(ctx.config['master'],ctx.node))['data']['settings']
+ ctx.settings.update(settings)
+
  timestamp = int(time())
  try:    args = loads(argv[3])
  except: args = {}
