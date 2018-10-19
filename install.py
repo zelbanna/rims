@@ -16,30 +16,30 @@ if len(argv) < 2:
  stdout.write("Usage: {} </path/json file>\n\n!!! Import DB structure from schema.db before installing !!!\n\n".format(argv[0]))
  exit(0)
 else:
- settings_filename = argv[1]
+ config_filename = argv[1]
 
 ############################################### ALL #################################################
 #
-# load settings
+# load config
 #
-settings = {}
-settings_file = ospath.abspath(settings_filename)
-with open(settings_file,'r') as sfile:
- settings = load(sfile)
-settings['system']['config_file'] = settings_file
+config = {}
+config_file = ospath.abspath(config_filename)
+with open(config_file,'r') as sfile:
+ config = load(sfile)
+config['config_file'] = config_file
 
 ############################################### ALL #################################################
 #
 # Write engine operations files
 #
-with open(ospath.abspath(ospath.join(pkgdir,'templates',settings['system']['template'])),'r') as f:
+with open(ospath.abspath(ospath.join(pkgdir,'templates',config['template'])),'r') as f:
  template = f.read()
 template = template.replace("%PKGDIR%",pkgdir)
-template = template.replace("%CFGFILE%",settings_file)
-with open(ospath.abspath(ospath.join(pkgdir,settings['system']['template'])),'w+') as f:
+template = template.replace("%CFGFILE%",config_file)
+with open(ospath.abspath(ospath.join(pkgdir,config['template'])),'w+') as f:
  f.write(template)
-chmod(ospath.abspath(ospath.join(pkgdir,settings['system']['template'])),0o755)
-res['engine']= settings['system']['template']
+chmod(ospath.abspath(ospath.join(pkgdir,config['template'])),0o755)
+res['engine']= config['template']
 
 ############################################### ALL #################################################
 #
@@ -82,7 +82,7 @@ except ImportError:
 #
 # Install necessary modules
 #
-if settings['system']['id'] == 'master':
+if config['id'] == 'master':
  from importlib import import_module
 
  try: import eralchemy
@@ -147,11 +147,11 @@ if settings['system']['id'] == 'master':
 
 
  #
- # Common settings and user - for master...
+ # Common config and user - for master...
  #
  from zdcp.rest import mysql
  try:
-  database,host,username,password = settings['system']['db_name'],settings['system']['db_host'],settings['system']['db_user'],settings['system']['db_pass']
+  database,host,username,password = config['db_name'],config['db_host'],config['db_user'],config['db_pass']
   database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(pkgdir,'schema.db')}
   res['database']= {}
   res['database']['diff'] = mysql.diff(database_args,None)
@@ -169,7 +169,7 @@ if settings['system']['id'] == 'master':
   db.connect()
 
   res['admin_user'] = (db.do("INSERT users (id,name,alias,password) VALUES(1,'Administrator','admin','4cb9c8a8048fd02294477fcb1a41191a') ON DUPLICATE KEY UPDATE id = id, password = '4cb9c8a8048fd02294477fcb1a41191a'") > 0)
-  res['node_add'] = (db.do("INSERT nodes (node,url,system) VALUES('{0}','{1}',1) ON DUPLICATE KEY UPDATE system = 1, id = LAST_INSERT_ID(id)".format(settings['system']['id'],settings['system']['master'])) > 0)
+  res['node_add'] = (db.do("INSERT nodes (node,url,system) VALUES('{0}','{1}',1) ON DUPLICATE KEY UPDATE system = 1, id = LAST_INSERT_ID(id)".format(config['id'],config['master'])) > 0)
   res['node_id']  = db.get_last_id()
   res['dns_server_add'] = (db.do("INSERT servers (node,server,type) VALUES ('master','nodns','DNS') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
   res['dns_server_id']  = db.get_last_id()
@@ -186,22 +186,10 @@ if settings['system']['id'] == 'master':
    try:    res['server_new'] += db.do(sql%type)
    except Exception as err: res['server_errors'] = str(err)
 
-  sql = "INSERT resources (node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%settings['system']['id']
+  sql = "INSERT resources (node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%config['id']
   for item in resources:
    try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"%s_main"%item['name'],item['icon'],item['type']))
    except Exception as err: res['resources_errors'] = str(err)
-
-
-  db.do("SELECT section,parameter,value FROM settings WHERE node = 'master'")
-  data = db.get_rows()
-  db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
-  data.extend(db.get_rows())
-
-  for setting in data:
-   section = setting.pop('section')
-   if not settings.get(section):
-    settings[section] = {}
-   settings[section][setting['parameter']] = setting['value']
 
   db.close()
 
@@ -219,8 +207,8 @@ if settings['system']['id'] == 'master':
 
  except Exception as e:
   stdout.write("\nError in setting up database, make sure that configured user has access:\n\n")
-  stdout.write("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';\n"%(settings['system']['db_user'],settings['system']['db_pass']))
-  stdout.write("GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';\n"%(settings['system']['db_name'],settings['system']['db_user']))
+  stdout.write("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';\n"%(config['db_user'],config['db_pass']))
+  stdout.write("GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';\n"%(config['db_name'],config['db_user']))
   stdout.write("FLUSH PRIVILEGES;\n\n")
   #from traceback import print_exc
   # print_exc(5)
@@ -228,7 +216,7 @@ if settings['system']['id'] == 'master':
   raise Exception("DB past error (%s)"%str(e))
 
 else:
- try: res['register'] = rest_call("%s/register"%settings['system']['master'],{'node':settings['system']['id'],'port':settings['system']['port'],'system':'1'})['data']
+ try: res['register'] = rest_call("%s/register"%config['master'],{'node':config['id'],'port':config['port'],'system':'1'})['data']
  except Exception as e: res['register'] = str(e)
 
 ############################################### ALL #################################################

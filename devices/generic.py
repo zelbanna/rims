@@ -8,10 +8,10 @@ from zdcp.core.common import VarList, Varbind, Session, log
 ############################################# Device ##########################################
 class Device(object):
 
- def __init__(self, aIP, aSettings):
+ def __init__(self, aIP, aCTX, aLog):
   self._ip = aIP
-  self._settings = aSettings
-  self._logfile  = aSettings['logs']['system']
+  self._ctx = aCTX
+  self._logfile  = aLog
 
  @classmethod
  def get_functions(cls):  return []
@@ -35,29 +35,29 @@ class Device(object):
  def configuration(self,argdict):
   ret = ["No config template for this device type.","",
    "Please set the following manually:",
-   "- Username: %s"%self._settings['netconf']['username'],
-   "- Password: %s"%self._settings['netconf']['password'],
+   "- Username: %s"%self._ctx.settings['netconf']['username'],
+   "- Password: %s"%self._ctx.settings['netconf']['password'],
    "- Domain:   %s"%argdict['domain'],
    "- Gateway: %s"%argdict['gateway'],
    "- Network/Mask: %s/%s"%(argdict['network'],argdict['mask']),
-   "- SNMP read community: %s"%self._settings['snmp']['read_community'],
-   "- SNMP write community: %s"%self._settings['snmp']['write_community']]
+   "- SNMP read community: %s"%self._ctx.settings['snmp']['read_community'],
+   "- SNMP write community: %s"%self._ctx.settings['snmp']['write_community']]
 
-  if self._settings.get('tacplus'):
-   ret.append("- Tacacs: %s"%self._settings['tacplus']['ip'])
-  if self._settings['netconf'].get('dns'):
-   ret.append('- Nameserver: %s'%(self._settings['netconf']['dns']))
-  if self._settings['netconf'].get('ntp'):
-   ret.append('- NTP: %s'%(self._settings['netconf']['ntp']))
-  if self._settings['netconf'].get('anonftp'):
-   ret.append('- AnonFTP: %s'%(self._settings['netconf']['anonftp']))
+  if self._ctx.settings.get('tacplus'):
+   ret.append("- Tacacs: %s"%self._ctx.settings['tacplus']['ip'])
+  if self._ctx.settings['netconf'].get('dns'):
+   ret.append('- Nameserver: %s'%(self._ctx.settings['netconf']['dns']))
+  if self._ctx.settings['netconf'].get('ntp'):
+   ret.append('- NTP: %s'%(self._ctx.settings['netconf']['ntp']))
+  if self._ctx.settings['netconf'].get('anonftp'):
+   ret.append('- AnonFTP: %s'%(self._ctx.settings['netconf']['anonftp']))
   return ret
 
  #
  def system_info(self):
   ret = {}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    session.get(sysoid)
    if sysoid[0].val:
@@ -73,7 +73,7 @@ class Device(object):
   interfaces = {}
   try:
    objs = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2'),Varbind('.1.3.6.1.2.1.31.1.1.1.18'),Varbind('.1.3.6.1.2.1.2.2.1.8'),Varbind('.1.3.6.1.2.1.2.2.1.6'))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(objs)
    for entry in objs:
     intf = interfaces.get(int(entry.iid),{'name':"None",'description':"None"})
@@ -92,7 +92,7 @@ class Device(object):
  #
  def interface(self,aIndex):
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    ifoid   = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex),Varbind('.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex),Varbind('.1.3.6.1.2.1.2.2.1.6.%s'%aIndex))
    session.get(ifoid)
    name,desc = ifoid[0].val.decode(),ifoid[1].val.decode() if ifoid[1].val.decode() != "" else "None"
@@ -110,7 +110,7 @@ class Device(object):
 
   neighbors = {}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    locoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.7.1.3'))
    # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
    # Types defined in 802.1AB-2005
@@ -157,7 +157,7 @@ class Device(object):
 
   ret = {'info':{'model':'unknown', 'snmp':'unknown','version':None,'serial':None,'mac':'00:00:00:00:00:00','oid':0}}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    # Device info, Device name, Enterprise OID
    devoid = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))

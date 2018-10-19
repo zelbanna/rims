@@ -9,7 +9,7 @@ basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
 syspath.insert(1, basepath)
 from zdcp.core.engine import run
 if len(argv) < 2:
- aFile = 'settings.json'
+ aFile = 'config.json'
 else:
  aFile = argv[1]
 run(aFile)

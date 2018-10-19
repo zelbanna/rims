@@ -146,7 +146,7 @@ def log(aDict, aCTX):
  """
  ret = {'result':'OK'}
  from zdcp.core.common import log
- log(aDict['msg'],aCTX.settings['logs']['system'])
+ log(aDict['msg'],aCTX.config['logs']['system'])
  return ret
 
 #
@@ -169,7 +169,7 @@ def report(aDict, aCTX):
    for k,v in t._ctx.db.count.items():
     db_counter[k] = db_counter.get(k,0) + v
   except:pass
- node = aCTX.settings['system']['id']
+ node = aCTX.node
  node_url = aCTX.settings['nodes'][node]
  ret = [{'info':'System PID','value':getpid()},
  {'info':'Node URL','value':node_url},
@@ -215,7 +215,7 @@ def settings_list(aDict, aCTX):
 
  Output:
  """
- ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',aCTX.settings['system']['id']) }
+ ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',aCTX.node) }
  if aDict.get('section'):
   filter = "AND section = '%s'"%aDict.get('section')
   ret['section'] = aDict.get('section')
@@ -259,7 +259,7 @@ def settings_info(aDict, aCTX):
     section[aDict['parameter']] = aDict['value']
     aCTX.settings[aDict['section']] = section
    else:
-    aCTX.workers.add_function(aCTX.rest_call,"%s/settings/sync/%s"%(aCTX.settings['system']['master'],aDict['node']))
+    aCTX.workers.add_function(aCTX.rest_call,"%s/settings/sync/%s"%(aCTX.config['master'],aDict['node']))
   if not id == 'new':
    ret['found'] = (db.do("SELECT * FROM settings WHERE id = '%s'"%id) > 0)
    ret['data']  = db.get_row()
@@ -312,7 +312,7 @@ def settings_delete(aDict, aCTX):
  if aDict['node'] == 'master':
   aCTX.settings.get(data['section'],{}).pop(data['parameter'],None)
  else:
-  aCTX.workers.add_function(aCTX.rest_call,"%s/settings/sync/%s"%(aCTX.settings['system']['master'],aDict['node']))
+  aCTX.workers.add_function(aCTX.rest_call,"%s/settings/sync/%s"%(aCTX.config['master'],aDict['node']))
  return ret
 
 ################################################# NODE ##############################################

@@ -8,8 +8,8 @@ from .generic import Device as GenericDevice
 
 class Device(GenericDevice):
 
- def __init__(self,aIP,aSettings):
-  GenericDevice.__init__(self, aIP, aSettings)
+ def __init__(self,aIP,aCTX):
+  GenericDevice.__init__(self, aIP, aCTX)
 
  def __str__(self):
   return "QNAP[%s]"%(self._ip)

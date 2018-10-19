@@ -101,12 +101,14 @@ def logs_clear(aDict, aCTX):
  Output:
  """
  from zdcp.core.common import log
- ret = {'node':aCTX.settings['system']['id'],'file':{}}
- for name,file in aCTX.settings['logs'].items():
+ ret = {'node':aCTX.node,'file':{}}
+ log_files = aCTX.config['logs']
+ log_files.update(aCTX.settings['logs'])
+ for name,file in log_files.items():
   try:
    open(file,'w').close()
    ret['file'][name] = 'CLEARED'
-   log("Emptied log [{}]".format(name),aCTX.settings['logs']['system'])
+   log("Emptied log [{}]".format(name),aCTX.config['logs']['system'])
   except Exception as err:
    ret['file'][name] = 'ERROR: %s'%(str(err))
  return ret
@@ -124,7 +126,9 @@ def logs_get(aDict, aCTX):
  """
  ret = {}
  count = int(aDict.get('count',15))
- for name,file in aCTX.settings['logs'].items():
+ log_files = aCTX.config['logs']
+ log_files.update(aCTX.settings['logs'])
+ for name,file in log_files.items():
   if aDict.get('name',name) == name:
    lines = ["\r" for i in range(count)]
    pos = 0
@@ -238,11 +242,11 @@ def database_backup(aDict, aCTX):
  Output:
  """
  ret = {'filename':aDict['filename']}
- if aCTX.settings['system']['id'] == 'master':
+ if aCTX.node == 'master':
   from zdcp.rest.mysql import dump
   data = dump({'mode':'database'},aCTX)['output']
  else:
-  res = aCTX.rest_call("%s/api/mysql/dump"%aCTX.settings['system']['master'],{'mode':'database'})
+  res = aCTX.rest_call("%s/api/mysql/dump"%aCTX.config['master'],{'mode':'database'})
   if res['code'] == 200:
    data = res['data']['output']
   else:

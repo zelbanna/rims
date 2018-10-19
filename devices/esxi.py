@@ -22,11 +22,9 @@ class Device(GenericDevice):
  def get_functions(cls):
   return ['manage']
 
- def __init__(self,aIP, aSettings, aHostname = None):
-  GenericDevice.__init__(self,aIP, aSettings)
+ def __init__(self,aIP, aCTX):
+  GenericDevice.__init__(self,aIP, aCTX, aCTX.settings['esxi'].get('logformat',aCTX.config['logs']['system']).format(aIP))
   self._sshclient = None
-  self._hostname  =  aHostname if aHostname else self._ip
-  self._logfile   = self._settings['esxi'].get('logformat',self._settings['logs']['system']).format(self._hostname)
 
  def __enter__(self):
   if self.ssh_connect():
@@ -38,7 +36,7 @@ class Device(GenericDevice):
   self.ssh_close()
 
  def __str__(self):
-  return self._hostname + " SSHConnected:" + str(self._sshclient != None)
+  return self._ip + " SSHConnected:" + str(self._sshclient != None)
 
  def log_msg(self, aMsg):
   from time import localtime, strftime

@@ -3,6 +3,7 @@ __author__ = "Zacharias El Banna"
 __version__ = "5.4"
 
 from os import walk, getpid, path as ospath
+from sys import exit, setcheckinterval, modules as sys_modules
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
 from threading import Thread, Event, BoundedSemaphore
@@ -21,9 +22,8 @@ from urllib.parse import unquote
 #
 # - Manager.dict for settings
 #
-def run(aSettingsFile):
+def run(aConfigFile):
  """ run instantiate all engine entities and starts monitoring of socket """
- from sys import exit, setcheckinterval
  from signal import signal, SIGINT, SIGUSR1, SIGUSR2
  from .common import rest_call, DB
 
@@ -48,27 +48,18 @@ def run(aSettingsFile):
  setcheckinterval(200)
 
  try:
-  settings = {}
-  with open(aSettingsFile,'r') as settings_file:
-   settings = load(settings_file)
-  settings['system']['config_file'] = aSettingsFile
+  ctx = Context(aConfigFile = aConfigFile)
 
-  ctx = Context(settings)
-
-  if settings['system']['id'] == 'master':
-   extra = ctx.node_settings('master')
+  if ctx.node  == 'master':
+   settings = ctx.node_settings('master')
    with ctx.db as db:
     db.do("SELECT * FROM tasks LEFT JOIN nodes ON tasks.node_id = nodes.id WHERE node = 'master'")
     tasks = db.get_rows()
   else:
-   extra = rest_call("%s/settings/fetch/%s"%(settings['system']['master'],settings['system']['id']))['data']['settings']
-   tasks = rest_call("%s/api/system/task_list"%settings['system']['master'],{'node':settings['system']['id']})['data']['tasks']
+   settings = rest_call("%s/settings/fetch/%s"%(ctx.config['master'],ctx.node))['data']['settings']
+   tasks = rest_call("%s/api/system/task_list"%ctx.config['master'],{'node':ctx.node})['data']['tasks']
 
-  for section,data in extra.items():
-   if not settings.get(section):
-    settings[section] = {}
-   for param, value in data.items():
-    settings[section][param] = value
+  ctx.settings.update(settings)
 
   for task in tasks:
    task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
@@ -93,28 +84,36 @@ def run(aSettingsFile):
 
 class Context(object):
 
- def __init__(self,aSettings):
+ def __init__(self,aConfig = None, aConfigFile = None):
   from .common import DB, rest_call
-  self.sock     = None
-  self.node     = aSettings['system']['id']
-  self.settings = aSettings
-  self.db       = DB(self.settings['system']['db_name'],self.settings['system']['db_host'],self.settings['system']['db_user'],self.settings['system']['db_pass']) if self.node == 'master' else None
-  self.workers  = WorkerPool(aSettings['system'].get('workers',20),self)
+  if not aConfig:
+   with open(aConfigFile,'r') as config_file:
+    self.config = load(config_file)
+    self.config['config_file'] = aConfigFile
+  else:
+   self.config  = aConfig
+  self.node     = self.config['id'] 
+  self.settings = {}
+  self.db       = DB(self.config['db_name'],self.config['db_host'],self.config['db_user'],self.config['db_pass']) if self.node == 'master' else None
+  self.workers  = WorkerPool(self.config.get('workers',20),self)
   self.modules  = {}
   self.servers  = None
+  self.sock     = None
   self.rest_call = rest_call
 
  def __str__(self):
   return "Context(%s)"%(self.node)
 
+ #
  def clone(self):
   """ Clone itself and non thread-safe components """
   from copy import copy
   from .common import DB
   ctx_new = copy(self)
-  ctx_new.db = DB(self.settings['system']['db_name'],self.settings['system']['db_host'],self.settings['system']['db_user'],self.settings['system']['db_pass']) if self.node == 'master' else None
+  ctx_new.db = DB(self.config['db_name'],self.config['db_host'],self.config['db_user'],self.config['db_pass']) if self.node == 'master' else None
   return ctx_new
 
+ #
  def node_settings(self,aNode):
   settings = {}
   with self.db as db:
@@ -133,7 +132,7 @@ class Context(object):
  def start(self):
   """ Start "moving" parts of context """
   from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
-  addr = ("", int(self.settings['system']['port']))
+  addr = ("", int(self.config['port']))
   self.sock = socket(AF_INET, SOCK_STREAM)
   self.sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
   self.sock.bind(addr)
@@ -161,7 +160,6 @@ class Context(object):
   return ret
 
  def module_reload(self):
-  from sys import modules as sys_modules
   from types import ModuleType
   modules = {x:sys_modules[x] for x in sys_modules.keys() if x.startswith('zdcp.')}
   modules.update(self.modules)
@@ -291,9 +289,9 @@ class QueueWorker(Thread):
     else:
      result = func(args,self._ctx)
      if kwargs.get('output'):
-      log("%s - %s => %s"%(self.name,repr(func),dumps(result)), self._ctx.settings['logs']['system'])
+      log("%s - %s => %s"%(self.name,repr(func),dumps(result)), self._ctx.config['logs']['system'])
    except Exception as e:
-    log("%s - ERROR => %s"%(self.name,str(e)), self._ctx.settings['logs']['system'])
+    log("%s - ERROR => %s"%(self.name,str(e)), self._ctx.config['logs']['system'])
    finally:
     if sema:
      sema.release()
@@ -369,7 +367,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.settings(query)
   else:
    # Redirect to login... OR show a list of options 'api/site/...'
-   self._headers.update({'Location':'../site/system_login?application=%s'%(self._ctx.settings['system'].get('application','system')),'X-Code':301})
+   self._headers.update({'Location':'../site/system_login?application=%s'%(self._ctx.config.get('application','system')),'X-Code':301})
 
  #
  #
@@ -390,7 +388,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   except: args = {}
   if extras.get('log','true') == 'true':
    try:
-    with open(self._ctx.settings['logs']['rest'], 'a') as f:
+    with open(self._ctx.config['logs']['rest'], 'a') as f:
      f.write(str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system_task_worker" else "N/A", self._ctx.node, get.strip())))
    except: pass
   try:
@@ -520,7 +518,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   """ /settings/<op>/<node> """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'settings'})
   op,_,node = query.partition('/')
-  if self._ctx.settings['system']['id'] == 'master' and (op == 'fetch' or (op == 'sync' and node != 'master')):
+  if self._ctx.node == 'master' and (op == 'fetch' or (op == 'sync' and node != 'master')):
    settings = self._ctx.node_settings(node)
    if op == 'fetch':
     output = {'settings':settings}
@@ -534,16 +532,12 @@ class SessionHandler(BaseHTTPRequestHandler):
      output = {'node':node,'result':'SYNC_OK'}
   elif op == 'update':
    length   = int(self.headers['Content-Length'])
-   settings = self._ctx.settings
-   filename = settings['system']['config_file']
-   settings.clear()
-   settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
-   with open(filename,'r') as settings_file:
-    settings.update(load(settings_file))
-   settings['system']['config_file'] = filename
+   self._ctx.settings.clear()
+   self._ctx.settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
    output = 'UPDATE_OK'
   elif op == 'show':
    output = self._ctx.settings
+   output['config'] = self._ctx.config
   else:
    output = {'result':'SETTINGS_NOT_OK','info':'settings/<show|fetch|sync>/<node> where fetch and sync runs on master node'}
   self._body = dumps(output).encode('utf-8')

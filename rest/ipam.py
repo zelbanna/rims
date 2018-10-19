@@ -402,10 +402,10 @@ def address_status_check(aDict, aCTX):
   if len(changed) > 0:
    args['up' if n == 1 else 'down'] = changed
  if len(list(args.keys())) > 0:
-  if aCTX.settings['system']['id'] == 'master':
+  if aCTX.node == 'master':
    address_status_report(args, aCTX)
   else:
-   aCTX.rest_call("%s/api/ipam/address_status_report?log=false"%aCTX.settings['system']['master'],args)
+   aCTX.rest_call("%s/api/ipam/address_status_report?log=false"%aCTX.config['master'],args)
   return {'result':'CHECK_COMPLETED'}
 
 #

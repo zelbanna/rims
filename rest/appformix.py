@@ -13,7 +13,7 @@ def alarm(aDict, aCTX):
  Output:
  """
  from zdcp.core.common import log
- log("appformix_alarm({})".format(str(aDict)),aCTX.settings['logs']['system'])
+ log("appformix_alarm({})".format(str(aDict)),aCTX.config['logs']['system'])
  return { 'result':'OK', 'info':'got alarm', 'data':'waiting to find out what to do with it :-)'}
 
 #

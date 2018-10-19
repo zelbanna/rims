@@ -35,7 +35,7 @@ def info(aDict, aCTX):
 
   if op == 'lookup' and ret['ip']:
    from zdcp.devices.generic import Device
-   dev = Device(ret['ip'],aCTX.settings)
+   dev = Device(ret['ip'])
    lookup = dev.detect()
    ret['result'] = lookup
    if lookup['result'] == 'OK':
@@ -443,7 +443,7 @@ def discover(aDict, aCTX):
  from zdcp.devices.generic import Device
 
  def __detect_thread(aIP, aDB, aSettings):
-  __dev = Device(aIP,aCTX.settings)
+  __dev = Device(aIP,aCTX)
   aDB[aIP['ip']] = __dev.detect()['info']
   return True
 
@@ -595,7 +595,7 @@ def network_info_discover(aDict, aCTX):
  """
  from zdcp.devices.generic import Device
  def __detect_thread(aDev, aSettings):
-  __dev = Device(aDev['ip'],aCTX.settings)
+  __dev = Device(aDev['ip'],aCTX)
   aDev.update(__dev.system_info())
   return True     
 
@@ -929,7 +929,7 @@ def interface_lldp(aDict, aCTX):
   - LLDP info
  """
  from zdcp.devices.generic import Device
- device = Device(aDict['ip'],aCTX.settings)
+ device = Device(aDict['ip'],aCTX)
  return device.lldp()
 
 #
@@ -945,7 +945,7 @@ def interface_snmp(aDict, aCTX):
   - SNMP info
  """
  from zdcp.devices.generic import Device
- device = Device(aDict['ip'],aCTX.settings)
+ device = Device(aDict['ip'],aCTX)
  return device.interface(aDict['interface'])
 
 #
@@ -984,7 +984,7 @@ def interface_discover_lldp(aDict, aCTX):
  else:
   ip = aDict['ip']
  # TODO Run this off the right node
- device = Device(ip,aCTX.settings)
+ device = Device(ip,aCTX)
  info = device.lldp()
  with aCTX.db as db:
   for k,v in info.items():
@@ -1085,10 +1085,10 @@ def interface_status_check(aDict, aCTX):
  aCTX.workers.block(sema,20)
  for dev in aDict['device_list']:
   if len(dev['interfaces']) > 0:
-   if aCTX.settings['system']['id'] == 'master':
+   if aCTX.node == 'master':
     interface_status_report(dev, aCTX)
    else:
-    aCTX.rest_call("%s/api/device/interface_status_report?log=false"%aCTX.settings['system']['master'],dev)
+    aCTX.rest_call("%s/api/device/interface_status_report?log=false"%aCTX.config['master'],dev)
  return {'result':'GATHERING_DATA_COMPLETED'}
 
 #

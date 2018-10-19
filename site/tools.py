@@ -60,7 +60,7 @@ def rest_main(aWeb):
  aWeb.wr("Call 'Method': <SELECT CLASS=background STYLE='width:70px; height:22px;' NAME=method>")
  for method in ['GET','POST','DELETE','PUT']:
   aWeb.wr("<OPTION VALUE={0}>{0}</OPTION>".format(method))
- aWeb.wr("</SELECT>")
+ aWeb.wr("</SELECT> Debug:")
  aWeb.wr("<INPUT NAME=debug TYPE=RADIO VALUE=0 checked=checked>no")
  aWeb.wr("<INPUT NAME=debug TYPE=RADIO VALUE=1>yes")
  aWeb.wr("<BR>Arguments/Body<BR><TEXTAREA STYLE='width:100%; height:70px;' NAME=arguments></TEXTAREA>")
