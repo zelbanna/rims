@@ -21,5 +21,5 @@ if __name__ == "__main__":
   args['database'] = settings['system']['db_name']aWeb['node']
   args['username'] = settings['system']['db_user']aWeb['node']
   args['password'] = settings['system']['db_pass']aWeb['node']
-  res = mysql.patch(args,Context({'system':{'id':None}},None))
+  res = mysql.patch(args,Context({'system':{'id':None}}))
   stdout.write("%s\n"%(res))

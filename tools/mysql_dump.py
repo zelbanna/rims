@@ -15,7 +15,7 @@ if __name__ == "__main__":
  from zdcp.rest import mysql
  from zdcp.core.engine import Context
 
- ctx = Context({'system':{'id':None}},None)
+ ctx = Context({'system':{'id':None}})
  from json import load
  with open(argv[1],'r') as f:
   settings = load(f)

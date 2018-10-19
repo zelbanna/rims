@@ -23,7 +23,7 @@ if __name__ == "__main__":
  args['password'] = settings['system']['db_pass']
 
 
- diffs= mysql.diff(args, Context({'system':{'id':None}},None))
+ diffs= mysql.diff(args, Context({'system':{'id':None}}))
  print(diffs['diffs'])
  for line in diffs['output']:
   print(line.rstrip('\n'))
