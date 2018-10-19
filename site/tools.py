@@ -154,10 +154,10 @@ def logs_show(aWeb):
 def services_info(aWeb):
  args = aWeb.args()
  node = args.pop('node',None)
- data  = aWeb.rest_call('tools/service_info?node=%s'%aWeb['node'],args)
+ data  = aWeb.rest_call('tools/service_info?node=%s'%node,args)
  state = 'start' if data['state'] == 'inactive' else 'stop'
  aWeb.wr("<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)"%(aWeb['service'],data['state'],data['info']))
- aWeb.wr(aWeb.button(state, DIV='div_content', SPIN='true', URL='tools_services_info?service=%s&node=%s&op=%s'%(args['service'],aWeb['node'],state)))
+ aWeb.wr(aWeb.button(state, DIV='div_content', SPIN='true', URL='tools_services_info?service=%s&node=%s&op=%s'%(args['service'],node,state)))
  aWeb.wr("</ARTICLE>")
 
 ############################################## Files ###############################################
