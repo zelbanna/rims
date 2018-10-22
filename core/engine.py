@@ -9,7 +9,7 @@ from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError
-from urllib.parse import unquote
+from urllib.parse import unquote, parse_qs
 
 ########################################### Context ########################################
 #
@@ -559,7 +559,6 @@ class Stream(object):
   try:    body_len = int(aHandler.headers['Content-Length'])
   except: body_len = 0
   if body_len > 0 or len(aGet) > 0:
-   from urllib.parse import parse_qs
    if body_len > 0:
     self._form.update({ k: l[0] for k,l in parse_qs(aHandler.rfile.read(body_len).decode(), keep_blank_values=1).items() })
    if len(aGet) > 0:
