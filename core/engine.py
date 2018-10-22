@@ -509,7 +509,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     else:
      output = {'node':node,'result':'SYNC_OK'}
   elif op == 'show':
-   output = {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers}
+   output = {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers,'config':self._ctx.config}
   elif op == 'update':
    length = int(self.headers['Content-Length'])
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
