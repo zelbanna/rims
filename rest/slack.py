@@ -1,8 +1,7 @@
 """SLACK API module. Provides a serviceinterface towards SLACK REST API (webhooks), i.e. SaaN (Slack As A Node)
 Settings under section 'slack':
 - api (base API - typically: https://hooks.slack.com/services)
-- channel (Access info - Like T000xxxxx/B000xxxx/abcdy and so on)
-- user    (Access info - same as channel)
+- service (Access info - Like T000xxxxx/B000xxxx/abcdy and so on)
 
 https://api.slack.com/incoming-webhooks
 
@@ -55,19 +54,19 @@ def notify(aDict, aCTX):
 
  Args:
   - message (required)
-  - channel (optional)
   - user (optional)
+  - channel (optional)
 
  Output:
   - result ('OK'/'NOT_OK')
   - info (slack response text/data)
 
  """
- args = {'text':aDict['message']}
- svc = aCTX.settings['slack']['user'] if aDict.get('user') else aCTX.settings['slack']['channel']
- url = "%s/%s"%(aCTX.settings['slack']['api'],svc)
- for tp in ['user','channel']:
-  if aDict.get(tp):
-   args[tp] = aDict[tp]
+ url = "%s/%s"%(aCTX.settings['slack']['api'],aCTX.settings['slack']['service'])
+ args = {'text':aDict['message']} 
+ if aDict.get('user'):
+  args['channel'] = "@%s"%aDict['user']
+ elif aDict.get('channel'):
+  args['channel'] = "#%s"%aDict['channel']
  res = aCTX.rest_call(url,args)
  return {'result':'OK' if res['code']== 200 else 'NOT_OK', 'info':res['data']}

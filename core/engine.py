@@ -24,28 +24,7 @@ from urllib.parse import unquote
 #
 def run(aConfigFile):
  """ run instantiate all engine entities and starts monitoring of socket """
- from signal import signal, SIGINT, SIGUSR1, SIGUSR2
  from .common import rest_call, DB
-
- kill = Event()
- ctx = None
-
- def signal_handler(sig,frame):
-  if   sig == SIGINT:
-   """ TODO clean up and close all DB connections and close socket """
-   ctx.workers.abort()
-   ctx.sock.close()
-   kill.set()
-  elif sig == SIGUSR1:
-   """ Reload modules and print which ones """
-   print("\n".join(ctx.module_reload()))
-  elif sig == SIGUSR2:
-   """ Print imported external modules """
-   print(dumps({k:repr(v) for k,v in ctx.modules.items()},indent=4, sort_keys=True))
-
- for sig in [SIGINT, SIGUSR1, SIGUSR2]:
-  signal(sig, signal_handler)
- setcheckinterval(200)
 
  try:
   ctx = Context(aConfigFile = aConfigFile)
@@ -74,7 +53,7 @@ def run(aConfigFile):
   except: pass
  else:
   print(getpid())
-  kill.wait()
+  ctx.kill.wait()
  exit(0)
 
 ########################################### Context ########################################
@@ -99,6 +78,7 @@ class Context(object):
   self.modules  = {}
   self.servers  = None
   self.sock     = None
+  self.kill     = Event()
   self.rest_call = rest_call
 
  def __str__(self):
@@ -131,6 +111,7 @@ class Context(object):
  #
  def start(self):
   """ Start "moving" parts of context """
+  from signal import signal, SIGINT, SIGUSR1, SIGUSR2
   from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
   addr = ("", int(self.config['port']))
   self.sock = socket(AF_INET, SOCK_STREAM)
@@ -139,6 +120,10 @@ class Context(object):
   self.sock.listen(5)
   servers = [ServerWorker(n,addr,self.sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),self) for n in range(5)]
   self.workers.run(self)
+  for sig in [SIGINT, SIGUSR1, SIGUSR2]:
+   signal(sig, self.signal_handler)
+  setcheckinterval(200)
+
 
  def node_call(self, aNode, aModule, aFunction, aArgs = None):
   if self.node != aNode:
@@ -171,6 +156,21 @@ class Context(object):
     else:   ret.append(k)
   ret.sort()
   return ret
+
+ def signal_handler(self, sig, frame):
+  from signal import SIGINT, SIGUSR1, SIGUSR2
+  if   sig == SIGINT:
+   """ TODO clean up and close all DB connections and close socket """
+   self.workers.abort()
+   self.sock.close()
+   self.kill.set()
+  elif sig == SIGUSR1:
+   """ Reload modules and print which ones """
+   print("\n".join(self.module_reload()))
+  elif sig == SIGUSR2:
+   """ Print imported external modules """
+   print(dumps({k:repr(v) for k,v in self.modules.items()},indent=4, sort_keys=True))
+
 
 ########################################## WorkerPool ########################################
 #
@@ -232,7 +232,8 @@ class WorkerPool(object):
 
  def scheduler_size(self): return len(self._scheduler)
 
- def semaphore(self,aSize): return BoundedSemaphore(aSize)
+ def semaphore(self,aSize):
+  return BoundedSemaphore(aSize)
 
  def block(self,aSema,aSize):
   for i in range(aSize):

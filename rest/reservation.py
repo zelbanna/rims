@@ -50,6 +50,25 @@ def list(aDict, aCTX):
 
 #
 #
+def notify(aDict, aCTX):
+ """ Function notifies users (using notification service@node) about reservation time left. If NOW() - time_end < threashold => service@node.notify('user':user,'message':'Device X reservation will expire in XX seconds')
+  Ideally run as a periodic task.
+
+ Args:
+  - service
+  - node
+  - threashold (in seconds)
+
+ Output:
+  - result
+ """
+ ret = {}
+ with aCTX.db as db:
+  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, dt.name as type")
+ return ret
+
+#
+#
 def shutdown(aDict, aCTX):
  """ Function retrieves devices and VMs and shut them down if it can, add a delay and then shutdown power (type 1)
   - For devices not in state up we will do PEM shutdown only (type 2)
