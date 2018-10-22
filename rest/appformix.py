@@ -27,7 +27,7 @@ def authenticate(aDict, aCTX):
  Output:
  """
  ret = {}
- controller = Device(aCTX.settings['nodes'][aDict['node']])
+ controller = Device(aCTX.nodes[aDict['node']]['url'])
  try:
   res = controller.auth({'username':aCTX.settings['appformix']['username'], 'password':aCTX.settings['appformix']['password'] })
   ret['auth'] = res['auth']
@@ -49,7 +49,7 @@ def report_projects(aDict, aCTX):
  Output:
  """
  ret = {}
- controller = Device(aCTX.settings['nodes'][aDict['node']],aDict['token'])
+ controller = Device(aCTX.nodes[aDict['node']]['url'],aDict['token'])
  reports = controller.call('reports/project/metadata')['data']['Metadata']
  ret['reports'] = [rep for rep in reports if rep['ProjectId'] == aDict['project']]
  return ret
@@ -67,6 +67,6 @@ def project_reports(aDict, aCTX):
  Output:
  """
  ret = {}
- controller = Device(aCTX.settings['nodes'][aDict['node']],aDict['token'])
+ controller = Device(aCTX.nodes[aDict['node']]['url'],aDict['token'])
  ret = controller.call("reports/project/%(report)s"%aDict)['data']['UsageReport']
  return ret

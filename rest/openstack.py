@@ -34,9 +34,9 @@ def application(aDict, aCTX):
  node = aDict['node']
  try:
   if aDict.get('token'):
-   controller = Device(aCTX.settings['nodes'][node],aDict['token'])
+   controller = Device(aCTX.nodes[node]['url'],aDict['token'])
   else:
-   controller = Device(aCTX.settings['nodes'][node])
+   controller = Device(aCTX.nodes[node]['url'])
    res = controller.auth({'project':aCTX.settings[node]['project'], 'username':aCTX.settings[node]['username'],'password':aCTX.settings[node]['password']})
   ret['choices'] = [{'display':'Customer', 'id':'project', 'data':controller.projects()}]
   for proj in ret['choices'][0]['data']:
@@ -69,13 +69,13 @@ def authenticate(aDict, aCTX):
  from rims.core.common import log
  ret = {}
  node = aDict['node']
- controller = Device(aCTX.settings['nodes'][node])
+ controller = Device(aCTX.nodes[node]['url'])
  res = controller.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
  ret = {'authenticated':res['auth']}
  if res['auth'] == 'OK':
   with aCTX.db as db:
    ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'token':controller.get_token(),'expires':controller.get_cookie_expire()})
-   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node_name,node_url) VALUES('%s','%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],node,aCTX.settings['nodes'][node]))
+   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node_name,node_url) VALUES('%s','%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],node,aCTX.nodes[node]['url']))
    token_id = db.get_last_id()
    for service in ['heat','nova','neutron','glance']:
     svc = controller.get_service(service,aDict.get('interface','internal'))

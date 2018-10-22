@@ -120,7 +120,7 @@ def report(aWeb):
 def reload(aWeb):
  """ Map node to URL and call reload """
  api = aWeb.rest_call("system/node_to_api",{'node':aWeb['node']})['url']
- res = aWeb.rest_full("%s/reload"%api)
+ res = aWeb.rest_full("%s/system/reload"%api)
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>Module</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  for x in res['data']['modules']:

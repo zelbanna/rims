@@ -39,7 +39,7 @@ class Context(object):
   self.settings = {}
   self.nodes    = {}
   self.modules  = {}
-  self.servers  = None
+  self.servers  = {}
   self.sock     = None
   self.rest_call = rest_call
 
@@ -61,14 +61,22 @@ class Context(object):
 
  #
  def system_info(self,aNode):
-  settings = {}
+  nodes, services, settings = {}, {}, {}
   with self.db as db:
    db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aNode)
    data = db.get_rows()
-   db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
-   data.extend(db.get_rows())
-   db.do("SELECT * FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node_id = '%s'"%aNode)
+   db.do("SELECT id, node, url FROM nodes")
+   node_list = db.get_rows()
+   db.do("SELECT id, node, server, type FROM servers")
+   services_list = db.get_rows()
+   db.do("SELECT tasks.id, user_id, module, func, args, frequency, output FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node = '%s'"%aNode)
    tasks = db.get_rows()
+  for node in node_list:
+   name = node.pop('node',None)
+   nodes[name] = node
+  for svc in services_list:
+   id = svc.pop('id',None)
+   services[id] = svc
   for task in tasks:
    task['output'] = (task['output']== 1)
   for param in data:
@@ -76,7 +84,7 @@ class Context(object):
    if not settings.get(section):
     settings[section] = {}
    settings[section][param['parameter']] = param['value']
-  return {'settings':settings,'tasks':tasks}
+  return {'settings':settings,'tasks':tasks,'servers':services,'nodes':nodes}
 
  #
  def load_system(self):
@@ -86,6 +94,8 @@ class Context(object):
   else:
    system = self.rest_call("%s/system/info/%s"%(self.config['master'],self.node))['data']
   self.settings.update(system['settings'])
+  self.nodes.update(system['nodes'])
+  self.servers.update(system['servers'])
   for task in system['tasks']:
    task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
    frequency = task.pop('frequency',300)
@@ -120,7 +130,7 @@ class Context(object):
  #
  def node_call(self, aNode, aModule, aFunction, aArgs = None):
   if self.node != aNode:
-   ret = self.rest_call("%s/api/%s_%s"%(self.settings['nodes'][aNode],aModule,aFunction),aArgs)['data']
+   ret = self.rest_call("%s/api/%s_%s"%(self.nodes[aNode]['url'],aModule,aFunction),aArgs)['data']
   else:
    module = import_module("rims.rest.%s"%aModule)
    fun = getattr(module,aFunction,None)
@@ -354,15 +364,10 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.files(path,query)
   elif path == 'auth':
    self.auth()
-  elif path == 'register':
-   self.register()
-  elif path == 'reload':
-   self.reload(query)
-  elif path == 'settings':
-   self.settings(query)
+  elif path == 'system':
+   self.system(query)
   else:
-   # Redirect to login... OR show a list of options 'api/site/...'
-   self._headers.update({'Location':'../site/system_login?application=%s'%(self._ctx.config.get('application','system')),'X-Code':301})
+   self._headers.update({'X-Process':'NO_MATCH'})
 
  #
  #
@@ -391,7 +396,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     module = import_module("rims.rest.%s"%mod) if not path == 'external' else self._ctx.modules.get(mod)
     self._body = dumps(getattr(module,fun,None)(args,self._ctx)).encode('utf-8')
    else:
-    req  = Request("%s/%s/%s"%(self._ctx.settings['nodes'][self._headers['X-Node']],path,query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
+    req  = Request("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Node']]['url'],path,query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
     try: sock = urlopen(req, timeout = 300)
     except HTTPError as h:
      raw = h.read()
@@ -452,13 +457,13 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif query.endswith(".css"):
    self._headers['Content-type']='text/css; charset=utf-8'
   try:
+   from os import walk, path as ospath
    if path == 'files':
     param,_,file = query.partition('/')
     fullpath = ospath.join(self._ctx.settings['files'][param],file)
    else:
     fullpath = ospath.join(self.server._path,path,query)
    if fullpath.endswith("/"):
-    from os import walk
     self._headers['Content-type']='text/html; charset=utf-8'
     _, _, filelist = next(walk(fullpath), (None, None, []))
     self._body = ("<BR>".join("<A HREF='{0}'>{0}</A>".format(file) for file in filelist)).encode('utf-8')
@@ -487,24 +492,16 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  #
  #
- def reload(self,query):
-  """ Reload imported (system) modules """
-  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'reload'})
-  res = self._ctx.module_reload()
-  self._body = dumps({'modules':res}).encode('utf-8')
-
- #
- #
  def system(self,query):
   """ /system/<op>/<node> """
-  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'settings'})
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'system'})
   op,_,node = query.partition('/')
   if self._ctx.node == 'master' and (op == 'info' or (op == 'sync' and node != 'master')):
    settings = self._ctx.system_info(node)
    if op == 'info':
-    output = {'settings':settings}
+    output = settings
    else:
-    req  = Request("%s/system/update"%(self._ctx.settings['nodes'][node]), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(settings).encode('utf-8'))
+    req  = Request("%s/system/update"%(self._ctx.nodes[node]['url']), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(settings).encode('utf-8'))
     try: sock = urlopen(req, timeout = 300)
     except Exception as e:
      self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
@@ -512,14 +509,16 @@ class SessionHandler(BaseHTTPRequestHandler):
     else:
      output = {'node':node,'result':'SYNC_OK'}
   elif op == 'show':
-   output = self._ctx.settings
-   output['config'] = self._ctx.config
+   output = {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers}
   elif op == 'update':
    length = int(self.headers['Content-Length'])
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
    self._ctx.settings.clear()
    self._ctx.settings.update(loads(args.get('settings',{})))
-   output = {'node':self._ctx.node,:'result':'UPDATE_OK'}
+   output = {'node':self._ctx.node,'result':'UPDATE_OK'}
+  elif op == 'reload':
+   res = self._ctx.module_reload()
+   output = {'modules':res}
   elif op == 'register':
    length = int(self.headers['Content-Length'])
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
@@ -528,7 +527,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
    output = {'update':update,'success':True}
   else:
-   output = {'result':'NOT_OK','info':'system/<register|show|info|sync>/<node> where show runs on any node'}
+   output = {'result':'NOT_OK','info':'system/<register|show|info|sync|reload>/<node> where show and reload runs on any node'}
   self._body = dumps(output).encode('utf-8')
 
 ########################################### Web stream ########################################
@@ -539,7 +538,7 @@ class Stream(object):
  def __init__(self,aHandler, aGet):
   self._form = {}
   self._node = aHandler._ctx.node
-  self._api  = aHandler._ctx.settings['nodes'][self._node]
+  self._api  = aHandler._ctx.nodes[self._node]['url']
   self._body = []
   self._cookies   = {}
   self._rest_call = aHandler._ctx.rest_call

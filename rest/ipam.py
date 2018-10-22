@@ -24,7 +24,7 @@ def status(aDict, aCTX):
      aCTX.workers.add_transient(args)
      ret['local'].append(sub['id'])
     else:
-     aCTX.rest_call("%s/api/system/task_worker?node=%s&log=false"%(aCTX.settings['nodes'][sub['node']],sub['node']),args)['data']
+     aCTX.rest_call("%s/api/system/task_worker?node=%s&log=false"%(aCTX.nodes[sub['node']]['url'],sub['node']),args)['data']
      ret['remote'].append(sub['id'])
  return ret
 
@@ -386,9 +386,9 @@ def address_status_check(aDict, aCTX):
  """
  from os import system
 
- def __pinger(aArgs):
-  try:    aArgs['dev']['new'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aArgs['dev']['ip'])) == 0) else 2
-  except: aArgs['dev']['new'] = None
+ def __pinger(aParams):
+  try:    aParams['dev']['new'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aParams['dev']['ip'])) == 0) else 2
+  except: aParams['dev']['new'] = None
   return True
 
  sema = aCTX.workers.semaphore(20)  

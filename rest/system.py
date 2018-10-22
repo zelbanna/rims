@@ -170,7 +170,7 @@ def report(aDict, aCTX):
     db_counter[k] = db_counter.get(k,0) + v
   except:pass
  node = aCTX.node
- node_url = aCTX.settings['nodes'][node]
+ node_url = aCTX.nodes[node]['url']
  ret = [{'info':'System PID','value':getpid()},
  {'info':'Node URL','value':node_url},
  {'info':'Worker pool','value':aCTX.workers.pool_size()},
@@ -354,10 +354,11 @@ def node_info(aDict, aCTX):
   if op == 'update':
    if not id == 'new':
     ret['update'] = db.update_dict('nodes',aDict,'id=%s'%id)
+    aCTX.nodes[aDict['node']].update(aDict)
    else:
     ret['update'] = db.insert_dict('nodes',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-   aCTX.settings['nodes'][aDict['node']] = aDict['url']
+    aCTX.nodes[aDict['node']] = {'id':id,'url':aDict['url']}
   if not id == 'new':
    ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
@@ -378,7 +379,7 @@ def node_delete(aDict, aCTX):
  ret = {}
  with aCTX.db as db:
   if db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aDict['id']) > 0:
-   aCTX.settings['nodes'].pop(db.get_val('node'),None)
+   aCTX.nodes.pop(db.get_val('node'),None)
    ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s"%aDict['id']) == 1)
   else:
    ret['delete'] = False 
@@ -428,7 +429,7 @@ def node_to_api(aDict, aCTX):
  Output:
   - url
  """
- return {'url':aCTX.settings['nodes'][aDict['node']]}
+ return {'url':aCTX.nodes[aDict['node']]['url']}
 
 ############################################# RESOURCES #############################################
 
@@ -625,10 +626,11 @@ def server_info(aDict, aCTX):
   if op == 'update':
    if not id == 'new':
     ret['update'] = db.update_dict('servers',aDict,"id=%s"%id)
+    aCTX.servers[id].update(aDict)
    else:
     ret['update'] = db.insert_dict('servers',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-
+    aCTX.servers[id] = aDict
   if not id == 'new':
    ret['found'] = (db.do("SELECT * FROM servers WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
@@ -906,7 +908,7 @@ def task_add(aDict, aCTX):
    aCTX.workers.add_transient(aDict)
   ret['result'] = 'ADDED'
  else:
-  ret.update(aCTX.rest_call("%s/api/system/task_worker"%aCTX.settings['nodes'][node],aDict)['data'])
+  ret.update(aCTX.rest_call("%s/api/system/task_worker"%aCTX.nodes[node]['url'],aDict)['data'])
  return ret
 
 #

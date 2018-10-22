@@ -18,7 +18,7 @@ def inventory_list(aDict, aCTX):
  """
  ret = {}
  try:
-  controller = Device(aCTX.settings['nodes'][aDict['node']])
+  controller = Device(aCTX.nodes[aDict['node']]['url'])
   controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
   ret['inventories'] = controller.fetch_list("inventories/",('id','name','url'))
  except Exception as e:
@@ -36,7 +36,7 @@ def inventory_delete(aDict, aCTX):
 
  Output:
  """
- controller = Device(aCTX.settings['nodes'][aDict['node']])
+ controller = Device(aCTX.nodes[aDict['node']]['url'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  res = controller.call("inventories/%(id)s/"%aDict,None,"DELETE")
  ret = {'result':"deleted" if res['code'] == 204 else res['info']['x-code']}
@@ -54,7 +54,7 @@ def inventory_info(aDict, aCTX):
  Output:
  """
  ret = {}
- controller = Device(aCTX.settings['nodes'][aDict['node']])
+ controller = Device(aCTX.nodes[aDict['node']]['url'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  ret['groups'] = controller.fetch_dict("inventories/%(id)s/groups/"%aDict,('id','name','description','total_hosts'),'name')
  ret['hosts'] = []
@@ -101,7 +101,7 @@ def inventory_sync(aDict, aCTX):
  ret = {'devices':devices,'result':'OK','groups':{}}
  if len(devices) == 0:
   return ret
- controller = Device(aCTX.settings['nodes'][aDict['node']])
+ controller = Device(aCTX.nodes[aDict['node']]['url'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  ret['groups'] = controller.fetch_dict("inventories/%s/groups/"%aDict['id'],('id','name','description','total_hosts'),'name')
  try:
@@ -179,7 +179,7 @@ def inventory_delete_hosts(aDict, aCTX):
  ret = {'hosts':{}}
  node = aDict.pop('node',None)
  id   = aDict.pop('id',None)
- controller = Device(aCTX.settings['nodes'][node])
+ controller = Device(aCTX.nodes[node]['url'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  for host,host_id in aDict.items():
   if host[0:5] == 'host_':
@@ -198,7 +198,7 @@ def host_list(aDict, aCTX):
 
  Output:
  """
- controller = Device(aCTX.settings['nodes'][aDict['node']])
+ controller = Device(aCTX.nodes[aDict['node']]['url'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  ret = {'hosts':controller.fetch_list("hosts/",('id','name','url','inventory','description','enabled','instance_id'))}
  return ret
