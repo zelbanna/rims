@@ -101,7 +101,7 @@ if config['id'] == 'master':
    try:
     mod = import_module("zdcp.devices.%s"%(pyfile))
     type = getattr(mod,'__type__',None)
-    icon = getattr(mod,'__icon__','../images/viz-generic.png')
+    icon = getattr(mod,'__icon__','viz-generic.png')
     oid = getattr(mod,'__oid__',0)
     dev = getattr(mod,'Device',None)
     if type:
@@ -176,7 +176,7 @@ if config['id'] == 'master':
   res['dns_domain_add'] = (db.do("INSERT domains (id,foreign_id,name,server_id,type ) VALUES (0,0,'local',{},'forward') ON DUPLICATE KEY UPDATE id = 0".format(res['dns_server_id'])) > 0)
   res['generic_device'] = (db.do("INSERT device_types (id,name,base) VALUES (0,'generic','generic') ON DUPLICATE KEY UPDATE id = 0") > 0)
 
-  sql ="INSERT device_types (name,base,icon,functions,oid) VALUES ('%(name)s','%(base)s','%(icon)s','%(functions)s','%(oid)s') ON DUPLICATE KEY UPDATE oid = %(oid)s, icon = '%(icon)s', functions = '%(functions)s'"
+  sql ="INSERT device_types (name,base,icon,functions,oid) VALUES ('%(name)s','%(base)s','../images/%(icon)s','%(functions)s','%(oid)s') ON DUPLICATE KEY UPDATE oid = %(oid)s, icon = '../images/%(icon)s', functions = '%(functions)s'"
   for type in device_types:
    try:    res['device_new'] += db.do(sql%type)
    except Exception as err: res['device_errors'] = str(err)

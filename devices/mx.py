@@ -1,7 +1,7 @@
 """Juniper MX Router"""
 __author__  = "Zacharias El Banna"
 __type__    = "network"
-__icon__    = "../images/viz-mx.png"
+__icon__    = "viz-mx.png"
 __oid__     = 2636
 
 

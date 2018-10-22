@@ -1,7 +1,7 @@
 """Generic Device"""
 __author__  = "Zacharias El Banna"
 __type__    = "generic"
-__icon__    = "../images/viz-generic.png"
+__icon__    = "viz-generic.png"
 
 from zdcp.core.common import VarList, Varbind, Session, log
 

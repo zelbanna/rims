@@ -1,7 +1,7 @@
 """AWX REST module."""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
-__type__ = 'TOOL'
+__type__ = 'PROVISIONING'
 
 from zdcp.devices.awx import Device
 

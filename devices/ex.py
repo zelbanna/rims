@@ -1,7 +1,7 @@
 """Juniper EX switch"""
 __author__  = "Zacharias El Banna"
 __type__    = "network"
-__icon__    = "../images/viz-ex.png"
+__icon__    = "viz-ex.png"
 __oid__     = 2636
 
 from .junos import Junos

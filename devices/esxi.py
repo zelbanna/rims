@@ -1,7 +1,7 @@
 """The ESXi interworking module"""
 __author__  = "Zacharias El Banna"
 __type__    = "hypervisor"
-__icon__    = "../images/viz-server.png"
+__icon__    = "viz-server.png"
 __oid__     = 6876
 
 from .generic import Device as GenericDevice

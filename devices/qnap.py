@@ -1,7 +1,7 @@
 """QNAP Device"""
 __author__  = "Zacharias El Banna"
 __type__    = "storage"
-__icon__    = "../images/viz-generic.png"
+__icon__    = "viz-generic.png"
 __oid__     = 24681
 
 from .generic import Device as GenericDevice

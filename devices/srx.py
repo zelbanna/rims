@@ -1,7 +1,7 @@
 """Juniper SRX Module"""
 __author__  = "Zacharias El Banna"
 __type__    = "network"
-__icon__    = "../images/viz-srx.png"
+__icon__    = "viz-srx.png"
 __oid__     = 2636
 
 from .junos import Junos
