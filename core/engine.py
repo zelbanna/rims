@@ -37,6 +37,7 @@ class Context(object):
   self.workers  = WorkerPool(self.config.get('workers',20),self)
   self.kill     = Event()
   self.settings = {}
+  self.nodes    = {}
   self.modules  = {}
   self.servers  = None
   self.sock     = None
@@ -59,33 +60,33 @@ class Context(object):
   self.kill.wait()
 
  #
- def node_settings(self,aNode):
+ def system_info(self,aNode):
   settings = {}
   with self.db as db:
    db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aNode)
    data = db.get_rows()
    db.do("SELECT 'nodes' AS section, node AS parameter, url AS value FROM nodes")
    data.extend(db.get_rows())
+   db.do("SELECT * FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node_id = '%s'"%aNode)
+   tasks = db.get_rows()
+  for task in tasks:
+   task['output'] = (task['output']== 1)
   for param in data:
    section = param.pop('section',None)
    if not settings.get(section):
     settings[section] = {}
    settings[section][param['parameter']] = param['value']
-  return settings
+  return {'settings':settings,'tasks':tasks}
 
  #
- def load_settings(self):
+ def load_system(self):
   """ Load settings from DB or master node and do same with tasks. Add tasks to queue """
   if self.node  == 'master':
-   settings = self.node_settings('master')
-   with self.db as db:
-    db.do("SELECT * FROM tasks LEFT JOIN nodes ON tasks.node_id = nodes.id WHERE node = 'master'")
-    tasks = db.get_rows()
+   system = self.system_info('master')
   else:
-   settings = self.rest_call("%s/settings/fetch/%s"%(self.config['master'],self.node))['data']['settings']
-   tasks    = self.rest_call("%s/api/system/task_list"%self.config['master'],{'node':self.node})['data']['tasks']
-  self.settings.update(settings)
-  for task in tasks:
+   system = self.rest_call("%s/system/info/%s"%(self.config['master'],self.node))['data']
+  self.settings.update(system['settings'])
+  for task in system['tasks']:
    task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
    frequency = task.pop('frequency',300)
    self.workers.add_periodic(task,frequency)
@@ -486,21 +487,6 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  #
  #
- def register(self):
-  """ Register a new node, using node(name), port and system, assume for now that system nodes runs http and not https(!) """
-  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'register'})
-  try:
-   length = int(self.headers['Content-Length'])
-   args = loads(self.rfile.read(length).decode()) if length > 0 else {}
-   params = {'node':args['node'],'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
-   with self._ctx.db as db:
-    update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
-   self._body = dumps({'update':update,'success':True}).encode('utf-8')
-  except Exception as e:
-   self._body = dumps({'update':0,'error':str(e),'info':"Function is called by node to register its URL and port into 'node' repository"}).encode('utf-8')
-
- #
- #
  def reload(self,query):
   """ Reload imported (system) modules """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'reload'})
@@ -509,32 +495,40 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  #
  #
- def settings(self,query):
-  """ /settings/<op>/<node> """
+ def system(self,query):
+  """ /system/<op>/<node> """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'settings'})
   op,_,node = query.partition('/')
-  if self._ctx.node == 'master' and (op == 'fetch' or (op == 'sync' and node != 'master')):
-   settings = self._ctx.node_settings(node)
-   if op == 'fetch':
+  if self._ctx.node == 'master' and (op == 'info' or (op == 'sync' and node != 'master')):
+   settings = self._ctx.system_info(node)
+   if op == 'info':
     output = {'settings':settings}
    else:
-    req  = Request("%s/settings/update"%(self._ctx.settings['nodes'][node]), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(settings).encode('utf-8'))
+    req  = Request("%s/system/update"%(self._ctx.settings['nodes'][node]), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(settings).encode('utf-8'))
     try: sock = urlopen(req, timeout = 300)
     except Exception as e:
      self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
      output = {'node':node,'result':'SYNC_NOT_OK'}
     else:
      output = {'node':node,'result':'SYNC_OK'}
-  elif op == 'update':
-   length   = int(self.headers['Content-Length'])
-   self._ctx.settings.clear()
-   self._ctx.settings.update(loads(self.rfile.read(length).decode()) if length > 0 else {})
-   output = 'UPDATE_OK'
   elif op == 'show':
    output = self._ctx.settings
    output['config'] = self._ctx.config
+  elif op == 'update':
+   length = int(self.headers['Content-Length'])
+   args = loads(self.rfile.read(length).decode()) if length > 0 else {}
+   self._ctx.settings.clear()
+   self._ctx.settings.update(loads(args.get('settings',{})))
+   output = {'node':self._ctx.node,:'result':'UPDATE_OK'}
+  elif op == 'register':
+   length = int(self.headers['Content-Length'])
+   args = loads(self.rfile.read(length).decode()) if length > 0 else {}
+   params = {'node':node,'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
+   with self._ctx.db as db:
+    update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
+   output = {'update':update,'success':True}
   else:
-   output = {'result':'SETTINGS_NOT_OK','info':'settings/<show|fetch|sync>/<node> where fetch and sync runs on master node'}
+   output = {'result':'NOT_OK','info':'system/<register|show|info|sync>/<node> where show runs on any node'}
   self._body = dumps(output).encode('utf-8')
 
 ########################################### Web stream ########################################

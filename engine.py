@@ -15,7 +15,7 @@ else:
 
 ctx = Context(aConfigFile = aFile)
 try:
- ctx.load_settings()
+ ctx.load_system()
  ctx.start()
 except Exception as e:
  print(str(e))
