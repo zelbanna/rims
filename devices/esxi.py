@@ -71,7 +71,7 @@ class Device(GenericDevice):
    try:
     self._sshclient = SSHClient()
     self._sshclient.set_missing_host_key_policy(AutoAddPolicy())
-    self._sshclient.connect(self._ip, username=self._settings['esxi']['username'], password=self._settings['esxi']['password'] )
+    self._sshclient.connect(self._ip, username=self._ctx.settings['esxi']['username'], password=self._ctx.settings['esxi']['password'] )
    except AuthenticationException:
     self.log_msg("ESXi_DEBUG: Authentication failed when connecting")
     self._sshclient = None
@@ -108,7 +108,7 @@ class Device(GenericDevice):
  def get_vm_id(self, aname):
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    for result in vmnameobjs:
     if result.val.decode() == aname:
@@ -119,7 +119,7 @@ class Device(GenericDevice):
  def get_vm_state(self, aid):
   try:
    vmstateobj = VarList(Varbind(".1.3.6.1.4.1.6876.2.1.1.6." + str(aid)))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(vmstateobj)
    return vmstateobj[0].val.decode()
   except: pass
@@ -131,7 +131,7 @@ class Device(GenericDevice):
   try:
    vmnameobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'))
    vmstateobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.6'))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for indx,result in enumerate(vmnameobjs):

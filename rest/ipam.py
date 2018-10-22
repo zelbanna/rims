@@ -24,7 +24,7 @@ def status(aDict, aCTX):
      aCTX.workers.add_transient(args)
      ret['local'].append(sub['id'])
     else:
-     aCTX.rest_call("%s/api/system/task_worker?node=%s"%(aCTX.settings['nodes'][sub['node']],sub['node']),args)['data']
+     aCTX.rest_call("%s/api/system/task_worker?node=%s&log=false"%(aCTX.settings['nodes'][sub['node']],sub['node']),args)['data']
      ret['remote'].append(sub['id'])
  return ret
 

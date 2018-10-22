@@ -2,8 +2,6 @@
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
 
-from os import walk, getpid, path as ospath
-from sys import exit, setcheckinterval, modules as sys_modules
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
 from threading import Thread, Event, BoundedSemaphore
@@ -13,52 +11,15 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError
 from urllib.parse import unquote
 
-######################################### Run ########################################
+########################################### Context ########################################
+#
+# Main state object, contains settings, workers, modules and calls etc..
 #
 # TODO: make multiprocessing - preforking - and multithreaded
 #
 # - http://stupidpythonideas.blogspot.com/2014/09/sockets-and-multiprocessing.html
 # - https://stackoverflow.com/questions/1293652/accept-with-sockets-shared-between-multiple-processes-based-on-apache-prefork
-#
 # - Manager.dict for settings
-#
-def run(aConfigFile):
- """ run instantiate all engine entities and starts monitoring of socket """
- from .common import rest_call, DB
-
- try:
-  ctx = Context(aConfigFile = aConfigFile)
-
-  if ctx.node  == 'master':
-   settings = ctx.node_settings('master')
-   with ctx.db as db:
-    db.do("SELECT * FROM tasks LEFT JOIN nodes ON tasks.node_id = nodes.id WHERE node = 'master'")
-    tasks = db.get_rows()
-  else:
-   settings = rest_call("%s/settings/fetch/%s"%(ctx.config['master'],ctx.node))['data']['settings']
-   tasks = rest_call("%s/api/system/task_list"%ctx.config['master'],{'node':ctx.node})['data']['tasks']
-
-  ctx.settings.update(settings)
-
-  for task in tasks:
-   task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
-   frequency = task.pop('frequency',300)
-   ctx.workers.add_periodic(task,frequency)
-
-  ctx.start()
-
- except Exception as e:
-  print(str(e))
-  try: ctx.sock.close()
-  except: pass
- else:
-  print(getpid())
-  ctx.kill.wait()
- exit(0)
-
-########################################### Context ########################################
-#
-# Main state object, contains settings, workers, modules and calls etc..
 #
 
 class Context(object):
@@ -72,13 +33,13 @@ class Context(object):
   else:
    self.config  = aConfig
   self.node     = self.config['id'] 
-  self.settings = {}
   self.db       = DB(self.config['db_name'],self.config['db_host'],self.config['db_user'],self.config['db_pass']) if self.node == 'master' else None
   self.workers  = WorkerPool(self.config.get('workers',20),self)
+  self.kill     = Event()
+  self.settings = {}
   self.modules  = {}
   self.servers  = None
   self.sock     = None
-  self.kill     = Event()
   self.rest_call = rest_call
 
  def __str__(self):
@@ -92,6 +53,10 @@ class Context(object):
   ctx_new = copy(self)
   ctx_new.db = DB(self.config['db_name'],self.config['db_host'],self.config['db_user'],self.config['db_pass']) if self.node == 'master' else None
   return ctx_new
+
+ #
+ def wait(self):
+  self.kill.wait()
 
  #
  def node_settings(self,aNode):
@@ -109,8 +74,27 @@ class Context(object):
   return settings
 
  #
+ def load_settings(self):
+  """ Load settings from DB or master node and do same with tasks. Add tasks to queue """
+  if self.node  == 'master':
+   settings = self.node_settings('master')
+   with self.db as db:
+    db.do("SELECT * FROM tasks LEFT JOIN nodes ON tasks.node_id = nodes.id WHERE node = 'master'")
+    tasks = db.get_rows()
+  else:
+   settings = self.rest_call("%s/settings/fetch/%s"%(self.config['master'],self.node))['data']['settings']
+   tasks    = self.rest_call("%s/api/system/task_list"%self.config['master'],{'node':self.node})['data']['tasks']
+  self.settings.update(settings)
+  for task in tasks:
+   task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
+   frequency = task.pop('frequency',300)
+   self.workers.add_periodic(task,frequency)
+
+ #
  def start(self):
   """ Start "moving" parts of context """
+  from sys import setcheckinterval
+  from os import path as ospath
   from signal import signal, SIGINT, SIGUSR1, SIGUSR2
   from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
   addr = ("", int(self.config['port']))
@@ -124,7 +108,15 @@ class Context(object):
    signal(sig, self.signal_handler)
   setcheckinterval(200)
 
+ #
+ def close(self):
+  """ TODO clean up and close all DB connections and close socket """
+  self.workers.abort()
+  try: self.sock.close()
+  except: pass
+  self.kill.set()
 
+ #
  def node_call(self, aNode, aModule, aFunction, aArgs = None):
   if self.node != aNode:
    ret = self.rest_call("%s/api/%s_%s"%(self.settings['nodes'][aNode],aModule,aFunction),aArgs)['data']
@@ -134,6 +126,7 @@ class Context(object):
    ret = fun(aArgs if aArgs else {},self)
   return ret
 
+ #
  def module_register(self, aName):
   """ Register "external" modules """
   ret = {'import':'error'}
@@ -144,7 +137,10 @@ class Context(object):
    ret['import'] = repr(module)
   return ret
 
+ #
  def module_reload(self):
+  """ Reload modules and return which ones were reloaded """
+  from sys import modules as sys_modules
   from types import ModuleType
   modules = {x:sys_modules[x] for x in sys_modules.keys() if x.startswith('rims.')}
   modules.update(self.modules)
@@ -157,15 +153,12 @@ class Context(object):
   ret.sort()
   return ret
 
+ #
  def signal_handler(self, sig, frame):
   from signal import SIGINT, SIGUSR1, SIGUSR2
   if   sig == SIGINT:
-   """ TODO clean up and close all DB connections and close socket """
-   self.workers.abort()
-   self.sock.close()
-   self.kill.set()
+   self.close()
   elif sig == SIGUSR1:
-   """ Reload modules and print which ones """
    print("\n".join(self.module_reload()))
   elif sig == SIGUSR2:
    """ Print imported external modules """
@@ -464,6 +457,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    else:
     fullpath = ospath.join(self.server._path,path,query)
    if fullpath.endswith("/"):
+    from os import walk
     self._headers['Content-type']='text/html; charset=utf-8'
     _, _, filelist = next(walk(fullpath), (None, None, []))
     self._body = ("<BR>".join("<A HREF='{0}'>{0}</A>".format(file) for file in filelist)).encode('utf-8')
