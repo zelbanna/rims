@@ -40,7 +40,7 @@ def info(aWeb):
  cookie_openstack = aWeb.cookie('openstack')
  cookie_appformix = aWeb.cookie('appformix')
  reports = aWeb.rest_call("appformix/project_reports",{'node':cookie_appformix['node'],'token':cookie_appformix['token'],'report':aWeb['report']})
- from zdcp.site.openstack import dict2html
+ from .openstack import dict2html
  for project in reports['Data']:
   if project['Project_Id'] == cookie_openstack['project_id']:
    aWeb.wr("<ARTICLE STYLE='overflow:auto;'>")

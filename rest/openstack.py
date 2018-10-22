@@ -15,7 +15,7 @@ Settings:
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
-from zdcp.devices.openstack import Device
+from rims.devices.openstack import Device
 from datetime import datetime,timedelta
 
 #
@@ -66,7 +66,7 @@ def authenticate(aDict, aCTX):
 
  Output:
  """
- from zdcp.core.common import log
+ from rims.core.common import log
  ret = {}
  node = aDict['node']
  controller = Device(aCTX.settings['nodes'][node])

@@ -36,7 +36,7 @@ def list(aWeb):
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
 
 def action(aWeb):
- from zdcp.site.openstack import dict2html
+ from .openstack import dict2html
  cookie = aWeb.cookie('openstack')
  token  = cookie.get('token')
  if not token:

@@ -2,7 +2,7 @@
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
-from zdcp.devices.avocent import Device
+from rims.devices.avocent import Device
 
 #
 #

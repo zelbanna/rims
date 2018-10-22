@@ -6,7 +6,7 @@ __author__= "Zacharias El Banna"
 ################################# Nova ###############################
 #
 def list(aWeb):
- from zdcp.core.genlib import get_quote
+ from rims.core.genlib import get_quote
  cookie = aWeb.cookie('openstack')
  token  = cookie.get('token')
  if not token:
@@ -77,7 +77,7 @@ def select_parameters(aWeb):
 ######################################## Actions ########################################
 #
 def action(aWeb):
- from zdcp.site.openstack import dict2html
+ from .openstack import dict2html
  cookie = aWeb.cookie('openstack')
  token  = cookie.get('token')
  if not token:
@@ -87,7 +87,7 @@ def action(aWeb):
  op   = aWeb.get('op','info')
 
  if   op == 'info':
-  from zdcp.core.genlib import get_quote
+  from rims.core.genlib import get_quote
   args['call'] = "servers/%s"%aWeb['id']
   server = aWeb.rest_call("openstack/call",args)['data']['server']
   qserver = get_quote(server['name'])

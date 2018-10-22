@@ -85,7 +85,7 @@ def add_template(aWeb):
 # Heat Actions
 #
 def action(aWeb):
- from zdcp.site.openstack import dict2html
+ from .openstack import dict2html
  from json import dumps
  cookie = aWeb.cookie('openstack')
  token  = cookie.get('token')

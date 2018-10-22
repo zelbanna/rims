@@ -489,5 +489,5 @@ def external_ip(aDict, aCTX):
 
  Output:
  """
- from zdcp.core.genlib import external_ip
+ from rims.core.genlib import external_ip
  return {'ip':external_ip() }

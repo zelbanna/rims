@@ -102,7 +102,7 @@ def network_info(aDict, aCTX):
    ret['data'] = db.get_row()
   else:
    ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New','reverse_zone_id':None,'server_id':None }
- from zdcp.rest.dns import domain_ptr_list
+ from rims.rest.dns import domain_ptr_list
  ret['domains'] = domain_ptr_list({'prefix':ret['data']['network']}, aCTX)
  ret['domains'].append({'id':'NULL','name':None,'server':None})
  return ret

@@ -12,11 +12,12 @@ if __name__ == "__main__":
 
  from os import path as ospath, getcwd
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
- from zdcp.rest import mysql
- from zdcp.core.engine import Context
+ from rims.rest import mysql
+ from rims.core.engine import Context
 
  ctx = Context(aConfigFile = argv[1])
-
+ args = {}
+ res = []
  if   argv[2] == '-d':
   args.update({'mode':'database','full':True})
   res = mysql.dump(args, ctx)
@@ -26,7 +27,7 @@ if __name__ == "__main__":
  elif argv[2] == '-s':
   args.update({'mode':'structure'})
   res = mysql.dump(args, ctx)
- elif argv[2] == '-r' and len(argv) == 3:
+ elif argv[2] == '-r' and len(argv) == 4:
   args.update({'file':ospath.abspath(ospath.join(getcwd(),argv[3]))})
   res = mysql.restore(args, ctx)
  stdout.write("\n".join(res['output']))

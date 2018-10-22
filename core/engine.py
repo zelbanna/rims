@@ -144,7 +144,7 @@ class Context(object):
   if self.node != aNode:
    ret = self.rest_call("%s/api/%s_%s"%(self.settings['nodes'][aNode],aModule,aFunction),aArgs)['data']
   else:
-   module = import_module("zdcp.rest.%s"%aModule)
+   module = import_module("rims.rest.%s"%aModule)
    fun = getattr(module,aFunction,None)
    ret = fun(aArgs if aArgs else {},self)
   return ret
@@ -161,7 +161,7 @@ class Context(object):
 
  def module_reload(self):
   from types import ModuleType
-  modules = {x:sys_modules[x] for x in sys_modules.keys() if x.startswith('zdcp.')}
+  modules = {x:sys_modules[x] for x in sys_modules.keys() if x.startswith('rims.')}
   modules.update(self.modules)
   ret = []
   for k,v in modules.items():
@@ -205,7 +205,7 @@ class WorkerPool(object):
 
  def add_transient(self, aTask, aSema = None):
   try:
-   mod = import_module("zdcp.rest.%s"%aTask['module'])
+   mod = import_module("rims.rest.%s"%aTask['module'])
    func = getattr(mod,aTask['func'],None)
   except: pass
   else:
@@ -215,7 +215,7 @@ class WorkerPool(object):
 
  def add_periodic(self, aTask, aFrequency):
   try:
-   mod = import_module("zdcp.rest.%s"%aTask['module'])
+   mod = import_module("rims.rest.%s"%aTask['module'])
    func = getattr(mod,aTask['func'],None)
   except: pass
   else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
@@ -393,7 +393,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    except: pass
   try:
    if self._headers['X-Node'] == self._ctx.node:
-    module = import_module("zdcp.rest.%s"%mod) if not path == 'external' else self._ctx.modules.get(mod)
+    module = import_module("rims.rest.%s"%mod) if not path == 'external' else self._ctx.modules.get(mod)
     self._body = dumps(getattr(module,fun,None)(args,self._ctx)).encode('utf-8')
    else:
     req  = Request("%s/%s/%s"%(self._ctx.settings['nodes'][self._headers['X-Node']],path,query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
@@ -428,10 +428,10 @@ class SessionHandler(BaseHTTPRequestHandler):
   stream = Stream(self,get)
   self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200,'X-Process':'site'})
   try:
-   module = import_module("zdcp.site.%s"%mod)
+   module = import_module("rims.site.%s"%mod)
    getattr(module,fun,None)(stream)
   except Exception as e:
-   stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; zdcp.site.%s_%s<BR>"%(mod,fun))
+   stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; rims.site.%s_%s<BR>"%(mod,fun))
    try:
     stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
     try:
@@ -606,7 +606,7 @@ class Stream(object):
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
   return self._rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
- def put_html(self, aTitle = None, aIcon = 'zdcp.png'):
+ def put_html(self, aTitle = None, aIcon = 'rims.png'):
   self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/system.css'>")
   if aTitle:
    self._body.append("<TITLE>" + aTitle + "</TITLE>")

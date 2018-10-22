@@ -13,7 +13,7 @@ def list(aDict, aCTX):
  Output:
  """
  ret = {}
- from zdcp.devices.esxi import Device
+ from rims.devices.esxi import Device
  try:
   esxi = Device(aDict['ip'], aCTX)
   ret['data'] = esxi.get_vm_list(aDict.get('sort','name'))
@@ -36,7 +36,7 @@ def op(aDict, aCTX):
 
  Output:
  """
- from zdcp.devices.esxi import Device
+ from rims.devices.esxi import Device
  ret = {'id':aDict['id'],'res':'OK'}
  with Device(aDict['ip'], aCTX) as esxi:
   if True:
@@ -99,7 +99,7 @@ def snapshots(aDict, aCTX):
 
  Output:
  """
- from zdcp.devices.esxi import Device
+ from rims.devices.esxi import Device
  ret = {'res':'OK', 'data':[],'highest':0}
  with Device(aDict['ip'],aCTX) as esxi:
   data = {}

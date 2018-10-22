@@ -9,7 +9,7 @@ from os import remove, chmod, listdir, path as ospath
 pkgdir = ospath.abspath(ospath.dirname(__file__))
 basedir = ospath.abspath(ospath.join(pkgdir,'..'))
 syspath.insert(1, basedir)
-from zdcp.core.common import DB, rest_call
+from rims.core.common import DB, rest_call
 res = {}
 
 if len(argv) < 2:
@@ -99,7 +99,7 @@ if config['id'] == 'master':
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
-    mod = import_module("zdcp.devices.%s"%(pyfile))
+    mod = import_module("rims.devices.%s"%(pyfile))
     type = getattr(mod,'__type__',None)
     icon = getattr(mod,'__icon__','viz-generic.png')
     oid = getattr(mod,'__oid__',0)
@@ -119,7 +119,7 @@ if config['id'] == 'master':
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
-    mod = import_module("zdcp.rest.%s"%(pyfile))
+    mod = import_module("rims.rest.%s"%(pyfile))
     type = getattr(mod,'__type__',None)
     if type:
      server_types.append({'name':pyfile, 'base':type})
@@ -137,7 +137,7 @@ if config['id'] == 'master':
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
-    mod  = import_module("zdcp.site.%s"%(pyfile))
+    mod  = import_module("rims.site.%s"%(pyfile))
     type = getattr(mod,'__type__',None)
     icon = getattr(mod,'__icon__',None)
     if type:
@@ -149,7 +149,7 @@ if config['id'] == 'master':
  #
  # Common config and user - for master...
  #
- from zdcp.rest import mysql
+ from rims.rest import mysql
  try:
   database,host,username,password = config['db_name'],config['db_host'],config['db_user'],config['db_pass']
   database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(pkgdir,'schema.db')}

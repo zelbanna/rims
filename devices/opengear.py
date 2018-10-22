@@ -3,7 +3,7 @@ __author__  = "Zacharias El Banna"
 __type__    = "console"
 
 from .generic import Device as GenericDevice
-from zdcp.core.common import VarList, Varbind, Session
+from rims.core.common import VarList, Varbind, Session
 
 ######################################## Console ########################################
 #

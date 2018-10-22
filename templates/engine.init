@@ -3,7 +3,7 @@
 # chkconfig: - 10 90
 #
 ### BEGIN INIT INFO
-# Provides:    zdcp
+# Provides:    rims
 # Required-Start:   $network
 # Required-Stop:    $network
 # Should-Start:     mysql
@@ -16,7 +16,8 @@
 ### END INIT INFO
 
 PKGDIR=%PKGDIR%
-PIDFILE=/var/run/zdcp.pid
+SERVICE=rims
+PIDFILE=/var/run/$SERVICE.pid
 CFGFILE=%CFGFILE%
 
 start() {
@@ -77,7 +78,7 @@ case "$1" in
   ;;
  install)
   echo "Installing server startup file"
-  mv $0 /etc/init.d/zdcp
+  mv $0 /etc/init.d/$SERVICE
   ;;
  *)
   echo "Usage: $0 <start|stop|restart|restart_engine|clear|install>"

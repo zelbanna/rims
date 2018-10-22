@@ -12,8 +12,8 @@ if __name__ == "__main__":
  else:
   from os import getcwd, path as ospath
   syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
-  from zdcp.rest import mysql
-  from zdcp.core.engine import Context
+  from rims.rest import mysql
+  from rims.core.engine import Context
   args = {"schema_file":ospath.abspath(ospath.join(getcwd(),argv[2]))}
   res = mysql.patch(args,Context(aConfigFile = argv[1]))
   stdout.write("%s\n"%(res))

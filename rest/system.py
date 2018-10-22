@@ -29,7 +29,7 @@ def application(aDict, aCTX):
 
  cookie = aDict
  ret['cookie'] = ",".join("%s=%s"%i for i in cookie.items())
- ret['expires'] = (datetime.utcnow() + timedelta(days=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+ ret['expires'] = (datetime.utcnow() + timedelta(days=7)).strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 
 #
@@ -43,7 +43,7 @@ def authenticate(aDict, aCTX):
 
  Output:
  """
- from zdcp.core.genlib import random_string
+ from rims.core.genlib import random_string
  from hashlib import md5
  from datetime import datetime,timedelta
  ret = {'authenticated':'NOT_OK'}
@@ -145,7 +145,7 @@ def log(aDict, aCTX):
  Output:
  """
  ret = {'result':'OK'}
- from zdcp.core.common import log
+ from rims.core.common import log
  log(aDict['msg'],aCTX.config['logs']['system'])
  return ret
 
@@ -182,11 +182,11 @@ def report(aDict, aCTX):
  {'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))},
  {'info':'System path','value':",".join(syspath)}]
  if node == 'master':
-  from zdcp.rest.device import system_oids
+  from rims.rest.device import system_oids
   ret.append({'info':'Unhandled detected OIDs','value':",".join(str(x) for x in system_oids(None,aCTX)['unhandled'])})
  ret.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in aCTX.settings.get('files',{}).items()))
  ret.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in aCTX.settings.get('system',{}).items()))
- ret.extend(list({'info':'Imported module','value':"%s"%x} for x in modules.keys() if x.startswith('zdcp')))
+ ret.extend(list({'info':'Imported module','value':"%s"%x} for x in modules.keys() if x.startswith('rims')))
  return ret
 
 #

@@ -2,7 +2,7 @@
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
-from zdcp.devices.appformix import Device
+from rims.devices.appformix import Device
 
 #
 def alarm(aDict, aCTX):
@@ -12,7 +12,7 @@ def alarm(aDict, aCTX):
 
  Output:
  """
- from zdcp.core.common import log
+ from rims.core.common import log
  log("appformix_alarm({})".format(str(aDict)),aCTX.config['logs']['system'])
  return { 'result':'OK', 'info':'got alarm', 'data':'waiting to find out what to do with it :-)'}
 

@@ -6,8 +6,8 @@ from sys  import path as syspath, argv, exit
 from json import loads,load,dumps
 from time import time
 syspath.insert(1, ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
-from zdcp.core.genlib import simple_arg_parser
-from zdcp.core.common import rest_call
+from rims.core.genlib import simple_arg_parser
+from rims.core.common import rest_call
 
 input = simple_arg_parser(argv)
 if   input.get('a'):

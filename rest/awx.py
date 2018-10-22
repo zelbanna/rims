@@ -3,7 +3,7 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = 'PROVISIONING'
 
-from zdcp.devices.awx import Device
+from rims.devices.awx import Device
 
 #
 #
@@ -96,7 +96,7 @@ def inventory_sync(aDict, aCTX):
  else:
   search = ",".join(v for k,v in aDict.items() if k[0:7] == 'device_')
   field  = 'id'
- from zdcp.rest.device import list as device_list
+ from rims.rest.device import list as device_list
  devices = device_list({'search':search,'field':field,'extra':'type'}, aCTX)['data']
  ret = {'devices':devices,'result':'OK','groups':{}}
  if len(devices) == 0:

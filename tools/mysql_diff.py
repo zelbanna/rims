@@ -12,8 +12,8 @@ if __name__ == "__main__":
 
  from os import path as ospath, getcwd
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
- from zdcp.rest import mysql
- from zdcp.core.engine import Context
+ from rims.rest import mysql
+ from rims.core.engine import Context
  from json import load
 
  diffs= mysql.diff({"schema_file":ospath.abspath(ospath.join(getcwd(),argv[2]))}, Context(aConfigFile = argv[1]))

@@ -12,7 +12,7 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "DNS"
 
-from zdcp.core.common import DB
+from rims.core.common import DB
 from time import strftime
 
 #################################### Domains #######################################

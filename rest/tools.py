@@ -57,7 +57,7 @@ def rest_explore(aDict, aCTX):
  def __analyze(aFile):
   data = {'api':aFile, 'functions':[]}
   try:
-   module = import_module("zdcp.rest.%s"%(aFile))
+   module = import_module("rims.rest.%s"%(aFile))
    data['functions'] = [item for item in dir(module) if item[0:2] != "__" and isinstance(getattr(module,item,None),function)]
   except Exception as e: data['error'] = str(e)
   return data
@@ -85,7 +85,7 @@ def rest_information(aDict, aCTX):
  Output:
  """
  from importlib import import_module
- mod = import_module("zdcp.rest.%s"%(aDict['api']))
+ mod = import_module("rims.rest.%s"%(aDict['api']))
  fun = getattr(mod,aDict['function'],None)
  return {'api':aDict['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}
 
@@ -100,7 +100,7 @@ def logs_clear(aDict, aCTX):
 
  Output:
  """
- from zdcp.core.common import log
+ from rims.core.common import log
  ret = {'node':aCTX.node,'file':{}}
  log_files = aCTX.config['logs']
  log_files.update(aCTX.settings.get('logs',{}))
@@ -243,7 +243,7 @@ def database_backup(aDict, aCTX):
  """
  ret = {'filename':aDict['filename']}
  if aCTX.node == 'master':
-  from zdcp.rest.mysql import dump
+  from rims.rest.mysql import dump
   data = dump({'mode':'database'},aCTX)['output']
  else:
   res = aCTX.rest_call("%s/api/mysql/dump"%aCTX.config['master'],{'mode':'database'})

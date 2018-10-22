@@ -74,7 +74,7 @@ def shutdown(aDict, aCTX):
   try:
    module = modules.get(info['type'])
    if not module:
-    module = import_module("zdcp.devices.%s"%info['type'])
+    module = import_module("rims.devices.%s"%info['type'])
     modules[info['type']] = module
    device = getattr(module,'Device',lambda x: None)(info['ip'],aCTX)
    __shutdown(info,device)

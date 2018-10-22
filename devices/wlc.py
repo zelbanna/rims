@@ -4,7 +4,7 @@ __type__    = "network"
 __oid__     = 14525
 
 from .generic import Device as GenericDevice
-from zdcp.core.common import VarList, Varbind, Session
+from rims.core.common import VarList, Varbind, Session
 
 ################################ WLC Object #####################################
 #

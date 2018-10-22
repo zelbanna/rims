@@ -34,7 +34,7 @@ def info(aDict, aCTX):
    ret['types'] = db.get_rows()
 
   if op == 'lookup' and ret['ip']:
-   from zdcp.devices.generic import Device
+   from rims.devices.generic import Device
    dev = Device(ret['ip'], aCTX)
    lookup = dev.detect()
    ret['result'] = lookup
@@ -166,7 +166,7 @@ def extended(aDict, aCTX):
 
      if not (old_info['hostname'] == aDict['hostname']) or not (str(old_info['a_dom_id']) == str(aDict['a_dom_id'])):
       dns_args = {'a_id':old_info['a_id'],'ptr_id':old_info['ptr_id'],'a_domain_id_new':aDict['a_dom_id'],'a_domain_id_old':old_info['a_dom_id'],'hostname':aDict['hostname'],'ip_new':ret['ip'],'ip_old':old_info['ip'],'id':ret['id']}
-      from zdcp.rest.dns import record_device_update
+      from rims.rest.dns import record_device_update
       dns_res = record_device_update(dns_args,aCTX)
       new_info = {'hostname':aDict['hostname'],'a_dom_id':dns_res['A']['domain_id']}
       for type in ['a','ptr']:
@@ -221,7 +221,7 @@ def extended(aDict, aCTX):
      db.do("SELECT INET_NTOA(ia.ip) AS ip, hostname, dt.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE devices.id = %i"%(pem['pdu_id']))
      pdu_info = db.get_row()
      try:
-      module = import_module("zdcp.devices.%s"%pdu_info['type'])
+      module = import_module("rims.devices.%s"%pdu_info['type'])
       pdu = getattr(module,'Device',None)(pdu_info['ip'],aCTX)
       # Slot id is actually local slot ID, so we need to look up infra -> pdu_info -> pdu and then pdu[x_slot_id] to get the right ID
       pdu_res = pdu.set_name( int(ret['infra']['pdu_info'][pem['pdu_id']]['%s_slot_id'%pem['pdu_slot']] ), int(pem['pdu_unit']) , "%s-%s"%(ret['info']['hostname'],pem['name']) )
@@ -332,7 +332,7 @@ def new(aDict, aCTX):
  if aDict['hostname'] == 'unknown':
   return {'info':'Hostname unknown not allowed'}
  elif aDict.get('ipam_network_id') and aDict.get('ip'):
-  from zdcp.rest.ipam import address_allocate
+  from rims.rest.ipam import address_allocate
   alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['ipam_network_id'],'mac':aDict.get('mac',0)}, aCTX)
   if   not alloc['valid']:
    return {'info':'IP not in network range'}
@@ -344,7 +344,7 @@ def new(aDict, aCTX):
   ret['fqdn'] = (db.do("SELECT id AS existing_device_id, hostname, a_dom_id FROM devices WHERE hostname = '%(hostname)s' AND a_dom_id = %(a_dom_id)s"%aDict) == 0)
   if ret['fqdn']:
    if alloc:
-    from zdcp.rest.dns import record_device_update
+    from rims.rest.dns import record_device_update
     dns = record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']}, aCTX)
     ret['insert'] = db.do("INSERT INTO devices(vm,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
    else:
@@ -357,7 +357,7 @@ def new(aDict, aCTX):
 
  # also remove allocation if fqdn busy..
  if alloc['success'] and not ret['fqdn']:
-  from zdcp.rest.ipam import address_delete
+  from rims.rest.ipam import address_delete
   ret['info'] = "deallocating ip (%s)"%address_delete({'id':alloc['id']}, aCTX)['result']
  return ret
 
@@ -377,7 +377,7 @@ def update_ip(aDict, aCTX):
  if not (aDict.get('network_id') and aDict.get('ip')):
   return {'info':'not_enough_info'}
 
- from zdcp.rest.ipam import address_allocate
+ from rims.rest.ipam import address_allocate
  alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['network_id'],'mac':aDict.get('mac',0)}, aCTX)
  if   not alloc['valid']:
   return {'info':'IP not in network range'}
@@ -391,7 +391,7 @@ def update_ip(aDict, aCTX):
   ret['update_dev'] = (db.do("UPDATE devices SET ipam_id = %s WHERE id = %s"%(alloc['id'],aDict['id'])) == 1)
   ret['remove_old'] = (db.do("DELETE FROM ipam_addresses WHERE id = %s"%ipam_id) == 1) if ipam_id else False
  dev_info.update({'id':aDict['id'],'ip_new':aDict['ip']})
- from zdcp.rest.dns import record_device_update
+ from rims.rest.dns import record_device_update
  ret['dns'] = record_device_update(dev_info, aCTX)
  return ret
 
@@ -415,7 +415,7 @@ def delete(aDict, aCTX):
    if data['ptr_id'] != 0 and data['reverse_zone_id']:
     args['ptr_id']= data['ptr_id']
     args['ptr_domain_id'] = data['reverse_zone_id']
-   from zdcp.rest.dns import record_device_delete
+   from rims.rest.dns import record_device_delete
    ret = record_device_delete(args, aCTX)
    if data['base'] == 'pdu':
     ret['pem0'] = db.update_dict('rack_info',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
@@ -423,7 +423,7 @@ def delete(aDict, aCTX):
    ret.update({'deleted':(db.do("DELETE FROM devices WHERE id = %(id)s"%aDict) > 0)})
  # Avoid race condition on DB, do this when DB is closed...
  if found and data['ipam_id']:
-  from zdcp.rest.ipam import address_delete
+  from rims.rest.ipam import address_delete
   ret.update(address_delete({'id':data['ipam_id']}, aCTX))
  return ret
 
@@ -439,8 +439,8 @@ def discover(aDict, aCTX):
  Output:
  """
  from time import time
- from zdcp.rest.ipam import network_discover as ipam_discover, address_allocate
- from zdcp.devices.generic import Device
+ from rims.rest.ipam import network_discover as ipam_discover, address_allocate
+ from rims.devices.generic import Device
 
  def __detect_thread(aIP, aDB, aCTX):
   __dev = Device(aIP,aCTX)
@@ -546,7 +546,7 @@ def function(aDict, aCTX):
  from importlib import import_module
  ret = {}
  try:
-  module = import_module("zdcp.devices.%s"%(aDict['type']))
+  module = import_module("rims.devices.%s"%(aDict['type']))
   dev = getattr(module,'Device',lambda x: None)(aDict['ip'],aCTX)
   with dev:
    ret['data'] = getattr(dev,aDict['op'],None)()
@@ -572,7 +572,7 @@ def configuration_template(aDict, aCTX):
   data = db.get_row()
  ip = data['ip']
  try:
-  module = import_module("zdcp.devices.%s"%data['type'])
+  module = import_module("rims.devices.%s"%data['type'])
   dev = getattr(module,'Device',lambda x: None)(ip,aCTX)
   ret['data'] = dev.configuration(data)
  except Exception as err:
@@ -593,7 +593,7 @@ def network_info_discover(aDict, aCTX):
 
  Output:
  """
- from zdcp.devices.generic import Device
+ from rims.devices.generic import Device
  def __detect_thread(aDev, aCTX):
   __dev = Device(aDev['ip'],aCTX)
   aDev.update(__dev.system_info())
@@ -897,7 +897,7 @@ def interface_discover_snmp(aDict, aCTX):
   db.do("SELECT id, snmp_index, name, description, mac FROM device_interfaces WHERE device = %s"%aDict['device'])
   existing = db.get_rows()
   try:
-   module  = import_module("zdcp.devices.%s"%(info['type']))
+   module  = import_module("rims.devices.%s"%(info['type']))
    dev = getattr(module,'Device',lambda x: None)(info['ip'],aCTX)
    interfaces = dev.interfaces()
   except Exception as err:
@@ -928,7 +928,7 @@ def interface_lldp(aDict, aCTX):
  Output:
   - LLDP info
  """
- from zdcp.devices.generic import Device
+ from rims.devices.generic import Device
  device = Device(aDict['ip'],aCTX)
  return device.lldp()
 
@@ -944,7 +944,7 @@ def interface_snmp(aDict, aCTX):
  Output:
   - SNMP info
  """
- from zdcp.devices.generic import Device
+ from rims.devices.generic import Device
  device = Device(aDict['ip'],aCTX)
  return device.interface(aDict['interface'])
 
@@ -961,7 +961,7 @@ def interface_discover_lldp(aDict, aCTX):
  """
  from struct import unpack
  from socket import inet_aton
- from zdcp.devices.generic import Device
+ from rims.devices.generic import Device
 
  def mac2int(aMAC):
   try:    return int(aMAC.replace(":",""),16)
@@ -1064,7 +1064,7 @@ def interface_status_check(aDict, aCTX):
 
  def __interfaces(aDev, aCTX):
   try:
-   module = import_module("zdcp.devices.%s"%aDev['type'])
+   module = import_module("rims.devices.%s"%aDev['type'])
    device = getattr(module,'Device',None)(aDev['ip'],aCTX)
    probe  = device.interfaces()
    exist  = aDev['interfaces']

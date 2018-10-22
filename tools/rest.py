@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
  from json import loads, dumps
  from time import time
- from zdcp.core.common import rest_call
+ from rims.core.common import rest_call
  timestamp = int(time())
  try:    args = loads(argv[2])
  except: args = {}

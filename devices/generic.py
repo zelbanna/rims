@@ -3,7 +3,7 @@ __author__  = "Zacharias El Banna"
 __type__    = "generic"
 __icon__    = "viz-generic.png"
 
-from zdcp.core.common import VarList, Varbind, Session, log
+from rims.core.common import VarList, Varbind, Session, log
 
 ############################################# Device ##########################################
 class Device(object):

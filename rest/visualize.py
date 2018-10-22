@@ -175,5 +175,5 @@ def network(aDict, aCTX):
    for node in ret['nodes']:
     nodes[node['id']]['hostname'] = node['label']
    ret['name']  = nodes[ret['id']]['hostname']
-   ret['edges'] = [{'id':"zdcp_%(a_interface)i_%(b_interface)i"%intf,'from':intf['a_device'],'to':intf['b_device'],'smooth':intf['type'],'title':"%s:%s <-> %s:%s"%(nodes[intf['a_device']]['hostname'],intf['a_name'],nodes[intf['b_device']]['hostname'],intf['b_name'])} for intf in edges]
+   ret['edges'] = [{'id':"rims_%(a_interface)i_%(b_interface)i"%intf,'from':intf['a_device'],'to':intf['b_device'],'smooth':intf['type'],'title':"%s:%s <-> %s:%s"%(nodes[intf['a_device']]['hostname'],intf['a_name'],nodes[intf['b_device']]['hostname'],intf['b_name'])} for intf in edges]
  return ret

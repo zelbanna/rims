@@ -5,7 +5,7 @@ __icon__    = "viz-server.png"
 __oid__     = 6876
 
 from .generic import Device as GenericDevice
-from zdcp.core.common import VarList, Varbind, Session
+from rims.core.common import VarList, Varbind, Session
 
 ########################################### ESXi ############################################
 #
