@@ -40,8 +40,8 @@ class Device(object):
    "- Domain:   %s"%argdict['domain'],
    "- Gateway: %s"%argdict['gateway'],
    "- Network/Mask: %s/%s"%(argdict['network'],argdict['mask']),
-   "- SNMP read community: %s"%self._ctx.settings['snmp']['read_community'],
-   "- SNMP write community: %s"%self._ctx.settings['snmp']['write_community']]
+   "- SNMP read community: %s"%self._ctx.settings['snmp']['read'],
+   "- SNMP write community: %s"%self._ctx.settings['snmp']['write']]
 
   if self._ctx.settings.get('tacplus'):
    ret.append("- Tacacs: %s"%self._ctx.settings['tacplus']['ip'])
@@ -57,7 +57,7 @@ class Device(object):
  def system_info(self):
   ret = {}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    session.get(sysoid)
    if sysoid[0].val:
@@ -73,7 +73,7 @@ class Device(object):
   interfaces = {}
   try:
    objs = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2'),Varbind('.1.3.6.1.2.1.31.1.1.1.18'),Varbind('.1.3.6.1.2.1.2.2.1.8'),Varbind('.1.3.6.1.2.1.2.2.1.6'))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(objs)
    for entry in objs:
     intf = interfaces.get(int(entry.iid),{'name':"None",'description':"None"})
@@ -92,7 +92,7 @@ class Device(object):
  #
  def interface(self,aIndex):
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    ifoid   = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex),Varbind('.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex),Varbind('.1.3.6.1.2.1.2.2.1.6.%s'%aIndex))
    session.get(ifoid)
    name,desc = ifoid[0].val.decode(),ifoid[1].val.decode() if ifoid[1].val.decode() != "" else "None"
@@ -110,7 +110,7 @@ class Device(object):
 
   neighbors = {}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    locoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.7.1.3'))
    # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
    # Types defined in 802.1AB-2005
@@ -157,7 +157,7 @@ class Device(object):
 
   ret = {'info':{'model':'unknown', 'snmp':'unknown','version':None,'serial':None,'mac':'00:00:00:00:00:00','oid':0}}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    # Device info, Device name, Enterprise OID
    devoid = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
@@ -166,7 +166,7 @@ class Device(object):
    session.get(sysoid)
   except Exception as err:
    ret['result'] = 'NOT_OK'
-   ret['error'] = "Not able to do SNMP lookup (check snmp -> read_community): %s"%str(err)
+   ret['error'] = "Not able to do SNMP lookup (check snmp -> read): %s"%str(err)
   if ret['result'] == 'OK':
    if sysoid[0].val:
     try: ret['info']['mac'] = hex2ascii(sysoid[0].val)

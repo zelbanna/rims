@@ -40,8 +40,8 @@ class Device(GenericDevice):
    tag = ".1.3.6.1.4.1.10418.17.2.5.5.1.6.1"
    iid = "%s.%s"%(slot,unit)
    op  = Device.set_outlet_state(state)
-   # snmpset -v2c -c %s %s %s i %s"%(self._ctx.settings['snmp']['write_community'], self._ip, oid, op))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   # snmpset -v2c -c %s %s %s i %s"%(self._ctx.settings['snmp']['write'], self._ip, oid, op))
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['write'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind(tag,iid , op ,"INTEGER"))
    res = session.set(setobj)
    self.log_msg("Avocent - {0} set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
@@ -55,7 +55,7 @@ class Device(GenericDevice):
    name = name[:16].encode('utf-8')
    tag = ".1.3.6.1.4.1.10418.17.2.5.5.1.4.1"
    iid = "%s.%s"%(slot,unit)
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['write_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['write'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind(tag , iid , name, "OPAQUE"))
    session.set(setobj)
    return "%s.%s:'%s'"%(slot,unit,name)
@@ -66,7 +66,7 @@ class Device(GenericDevice):
  def get_state(self,slot,unit):
   try:
    stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.%s.%s"%(slot,unit)))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(stateobj)
    return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
   except Exception as e:
@@ -79,7 +79,7 @@ class Device(GenericDevice):
   slots = []
   try:
    slotobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(slotobjs)
    for slot in slotobjs:
     slots.append([slot.iid, slot.val.decode()])
@@ -95,7 +95,7 @@ class Device(GenericDevice):
    outletobjs = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.4'))
    stateobjs  = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.5.1.5'))
    slotobjs   = VarList(Varbind('.1.3.6.1.4.1.10418.17.2.5.3.1.3'))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read_community'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(outletobjs)
    session.walk(stateobjs)
    session.walk(slotobjs)

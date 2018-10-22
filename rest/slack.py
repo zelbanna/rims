@@ -1,7 +1,8 @@
 """SLACK API module. Provides a serviceinterface towards SLACK REST API (webhooks), i.e. SaaN (Slack As A Node)
 Settings under section 'slack':
-- service
-- channel
+- api (base API - typically: https://hooks.slack.com/services)
+- channel (Access info - Like T000xxxxx/B000xxxx/abcdy and so on)
+- user    (Access info - same as channel)
 
 https://api.slack.com/incoming-webhooks
 
@@ -19,7 +20,7 @@ def status(aDict, aCTX):
 
  Output:
  """
- return None
+ return {'settings':aCTX.settings.get('slack',{})}
 
 #
 #
@@ -50,11 +51,23 @@ def restart(aDict, aCTX):
 #
 #
 def notify(aDict, aCTX):
- """Function provides notification service
+ """Function provides notification service, basic at the moment for development purposes
 
  Args:
-  - node
+  - message (required)
+  - channel (optional)
+  - user (optional)
 
  Output:
+  - result ('OK'/'NOT_OK')
+  - info (slack response text/data)
+
  """
- 
+ args = {'text':aDict['message']}
+ svc = aCTX.settings['slack']['user'] if aDict.get('user') else aCTX.settings['slack']['channel']
+ url = "%s/%s"%(aCTX.settings['slack']['api'],svc)
+ for tp in ['user','channel']:
+  if aDict.get(tp):
+   args[tp] = aDict[tp]
+ res = aCTX.rest_call(url,args)
+ return {'result':'OK' if res['code']== 200 else 'NOT_OK', 'info':res['data']}

@@ -379,7 +379,7 @@ def node_delete(aDict, aCTX):
  with aCTX.db as db:
   if db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aDict['id']) > 0:
    aCTX.settings['nodes'].pop(db.get_val('node'),None)
-   ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s'"%aDict['id']) == 1)
+   ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s"%aDict['id']) == 1)
   else:
    ret['delete'] = False 
  return ret

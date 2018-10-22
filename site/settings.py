@@ -52,7 +52,7 @@ def comprehensive(aWeb):
   aWeb.wr("<P>%s</P>"%section)
   aWeb.wr("<DIV CLASS=table STYLE='width:500px;'><DIV CLASS=tbody>")
   for data in parameters:
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:300px; overflow-x:hidden; font-style:italic;'>\"%s\"</DIV></DIV>"%(data['parameter'],data['value']))
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:300px; overflow-x:hidden; font-style:italic;'>\"%s\"</DIV></DIV>"%(data['parameter'],data['value']))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
