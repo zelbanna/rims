@@ -3,6 +3,8 @@ Settings under section 'slack':
 - service
 - channel
 
+https://api.slack.com/incoming-webhooks
+
 """
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
@@ -18,6 +20,7 @@ def status(aDict, aCTX):
  Output:
  """
  return None
+
 #
 #
 def sync(aDict, aCTX):
@@ -29,6 +32,7 @@ def sync(aDict, aCTX):
  Output:
  """
  return None
+
 #
 #
 def restart(aDict, aCTX):
@@ -42,3 +46,15 @@ def restart(aDict, aCTX):
   - result 'OK'/'NOT_OK'
  """
  return {'code':None, 'output':None, 'result':'OK'}
+
+#
+#
+def notify(aDict, aCTX):
+ """Function provides notification service
+
+ Args:
+  - node
+
+ Output:
+ """
+ 

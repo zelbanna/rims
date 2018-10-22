@@ -1,6 +1,6 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.4"
+__version__ = "5.5"
 
 from os import walk, getpid, path as ospath
 from sys import exit, setcheckinterval, modules as sys_modules
@@ -606,7 +606,7 @@ class Stream(object):
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
   return self._rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
- def put_html(self, aTitle = None, aIcon = 'rims.png'):
+ def put_html(self, aTitle = None, aIcon = 'rims.ico'):
   self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/system.css'>")
   if aTitle:
    self._body.append("<TITLE>" + aTitle + "</TITLE>")
