@@ -362,18 +362,18 @@ class SessionHandler(BaseHTTPRequestHandler):
  def route(self):
   """ Route request to the right function """
   path,_,query = (self.path.lstrip('/')).partition('/')
-  if path == 'site':
-   self.site(query)
-  elif path in ['api','debug','external']:
+  if path in ['api','debug','external']:
    self.api(path,query)
   elif path in ['infra','images','files']:
    self.files(path,query)
+  elif path == 'site' and len(query) > 0:
+   self.site(query)
   elif path == 'auth':
    self.auth()
   elif path == 'system':
    self.system(query)
   else:
-   self._headers.update({'X-Process':'no route'})
+   self._headers.update({'X-Process':'no route','Location':'%s/site/system_portal'%(self._ctx.nodes[self._ctx.node]['url']),'X-Code':301})
 
  #
  #
@@ -437,7 +437,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    module = import_module("rims.site.%s"%mod)
    getattr(module,fun,None)(stream)
   except Exception as e:
-   stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; rims.site.%s_%s<BR>"%(mod,fun))
+   stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; rims.site.%s<BR>"%(api))
    try:
     stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
     try:
