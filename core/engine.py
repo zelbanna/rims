@@ -512,12 +512,19 @@ class SessionHandler(BaseHTTPRequestHandler):
    else:
     req  = Request("%s/auth"%(self._ctx.config['master']), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(args).encode('utf-8'))
     try: sock = urlopen(req, timeout = 300)
+    except HTTPError as h:
+     try:
+      data   = h.read()
+      output = {'error':loads(data.decode())['error']}
+     except: output = {'error':{'master':str(h)}}
+     else:   output['code'] = h.code
     except Exception as e:
      output = {'error':{'master':str(e)}}
     else:
-     try: output = sock.read()
-     except: pass
-     sock.close()
+     try:      output = loads(sock.read().decode())
+     except:   output = {'error':{'remote response decode error'}}
+     else:     self._headers['X-Code'] = 200
+     finally:  sock.close()
   output['node'] = self._ctx.node
   self._body = dumps(output).encode('utf-8')
 
