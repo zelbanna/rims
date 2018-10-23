@@ -120,7 +120,8 @@ class Context(object):
   self.sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
   self.sock.bind(addr)
   self.sock.listen(5)
-  servers = [ServerWorker(n,addr,self.sock,ospath.abspath(ospath.join(ospath.dirname(__file__), '..')),self) for n in range(5)]
+  path = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
+  servers = [ServerWorker(n,addr,self.sock,path,self) for n in range(5)]
   self.workers.run(self)
   for sig in [SIGINT, SIGUSR1, SIGUSR2]:
    signal(sig, self.signal_handler)
