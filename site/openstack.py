@@ -8,34 +8,59 @@ __author__= "Zacharias El Banna"
 #
 def portal(aWeb):
  cookie = aWeb.cookie('openstack')
+ auth,data,args = {},{},aWeb.args()
  aWeb.put_html("Openstack Portal")
- if not cookie.get('token'):
+ if not cookie.get('token') and (args.get('username') and args.get('password')):
   (pid,pname) = aWeb.get('project','none_none').split('_')
-  res = aWeb.rest_call("openstack/authenticate",{'node':cookie['node'],'project_name':pname,'project_id':pid, 'username':aWeb['username'],'password':aWeb['password']})
-  if res['authenticated'] == "OK":
-   cookie.update({'token':res['token'],'username':aWeb['username'],'project_id':pid})
-   value = ",".join("%s=%s"%i for i in cookie.items())
-   aWeb.wr("<SCRIPT>set_cookie('openstack','%s','%s');</SCRIPT>"%(aName,value,res['expires']))
+  auth = aWeb.rest_call("openstack/authenticate",{'node':cookie['node'],'project_name':pname,'project_id':pid, 'username':args['username'],'password':args['password']})
+  if auth['authenticated'] == "OK":
+   cookie = {'node':args['node'],'token':auth['token'],'username':args['username'],'project_id':pid})
   else:
    aWeb.wr("Error logging in - please try login again")
    return
 
- aWeb.wr("<MAIN CLASS='background' STYLE='top:0px;' ID=main>")
- aWeb.wr("<NAV><UL>")
- aWeb.wr("<LI><A CLASS=z-op           DIV=div_content URL='heat_list'>Orchestration</A></LI>")
- aWeb.wr("<LI><A CLASS=z-op           DIV=div_content URL='neutron_list'>Virtual Networks</A></LI>")
- aWeb.wr("<LI><A CLASS=z-op           DIV=div_content URL='nova_list'>Virtual Machines</A></LI>")
- aWeb.wr("<LI><A CLASS=z-op SPIN=true DIV=div_content URL='appformix_list'>Usage Report</A></LI>")
- aWeb.wr("<LI><A CLASS='z-op reload' OP=redirect URL='openstack_portal'></A></LI>")
- aWeb.wr("<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='system_login?application=openstack&node={}&name={}&appformix={}'>Log out</A></LI>".format(cookie['node'],cookie.get('name'),cookie.get('appformix')))
- aWeb.wr("<LI CLASS='dropdown right'><A>Debug</A><DIV CLASS=dropdown-content>")
- aWeb.wr("<A CLASS='z-op'  DIV=div_content URL='openstack_info'>Info</A>")
- aWeb.wr("<A CLASS='z-op'  DIV=div_content URL='openstack_api'>REST</A>")
- aWeb.wr("<A CLASS='z-op'  DIV=div_content URL='openstack_fqname'>FQDN</A>")
- aWeb.wr("</DIV></LI>")
- aWeb.wr("</UL></NAV>")
- aWeb.wr("<SECTION CLASS=content ID=div_content></SECTION>")
- aWeb.wr("</MAIN>")
+ if cookie.get('token'):
+  value = ",".join("%s=%s"%i for i in cookie.items())
+  aWeb.wr("<SCRIPT>set_cookie('openstack','%s','%s');</SCRIPT>"%(aName,value,auth['expires']))
+  aWeb.wr("<MAIN CLASS='background' STYLE='top:0px;' ID=main>")
+  aWeb.wr("<NAV><UL>")
+  aWeb.wr("<LI><A CLASS=z-op           DIV=div_content URL='heat_list'>Orchestration</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op           DIV=div_content URL='neutron_list'>Virtual Networks</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op           DIV=div_content URL='nova_list'>Virtual Machines</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op SPIN=true DIV=div_content URL='appformix_list'>Usage Report</A></LI>")
+  aWeb.wr("<LI><A CLASS='z-op reload' OP=redirect URL='openstack_portal'></A></LI>")
+  aWeb.wr("<LI CLASS='right'><A CLASS='z-op warning' OP=logout COOKIE=openstack URL='openstack_portal?node={}&appformix={}'>Log out</A></LI>".format(cookie['node'],cookie.get('appformix')))
+  aWeb.wr("<LI CLASS='dropdown right'><A>Debug</A><DIV CLASS=dropdown-content>")
+  aWeb.wr("<A CLASS='z-op'  DIV=div_content URL='openstack_info'>Info</A>")
+  aWeb.wr("<A CLASS='z-op'  DIV=div_content URL='openstack_api'>REST</A>")
+  aWeb.wr("<A CLASS='z-op'  DIV=div_content URL='openstack_fqname'>FQDN</A>")
+  aWeb.wr("</DIV></LI>")
+  aWeb.wr("</UL></NAV>")
+  aWeb.wr("<SECTION CLASS=content ID=div_content></SECTION>")
+  aWeb.wr("</MAIN>")
+ else:
+  args['node'] = aWeb.node() if not args.get('node') else args['node']
+  data = aWeb.rest_call("openstack/application",args)
+  aWeb.put_html(data['title'])
+  aWeb.wr("<DIV CLASS='background overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message'])
+  if data.get('exception'):
+   aWeb.wr("Error retrieving application info - exception info: %s"%(data['exception']))
+  else:
+   aWeb.wr("<FORM ACTION='openstack_portal' METHOD=POST ID=login_form>")
+   aWeb.wr("<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title'])
+   aWeb.wr("<INPUT TYPE=HIDDEN NAME=node VALUE='%s'>"%args['node'])
+   aWeb.wr("<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>")
+   for choice in data.get('choices'):
+    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s'>"%(choice['display'],choice['id']))
+    for row in choice['data']:
+     aWeb.wr("<OPTION VALUE='%s'>%s</OPTION>"%(row['id'],row['name']))
+    aWeb.wr("</SELECT></DIV></DIV>")
+   for param in data.get('parameters'):
+    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s' %s></DIV></DIV>"%(param['display'],param['data'],param['id'],"" if not param.get('placeholder') else "PLACEHOLDER='%s'"%param['placeholder']))
+   aWeb.wr("</DIV></DIV>")
+   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='../images/icon-start.png' /></BUTTON>")
+  aWeb.wr("<!-- %s -->"%auth.get('error'))
+  aWeb.wr("</ARTICLE></DIV>")
 
 ############################################## Formatting ##############################################
 #
@@ -73,7 +98,7 @@ def data2html(aData):
 def api(aWeb):
  cookie = aWeb.cookie('openstack')
  if not cookie.get('token'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
+  aWeb.wr("<SCRIPT>location.replace('openstack_portal')</SCRIPT>")
   return
  services = aWeb.rest_call("openstack/services",{'token':cookie['token']})['services']
  aWeb.wr("<ARTICLE><P>OpenStack REST API inspection</P>")

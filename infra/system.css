@@ -169,10 +169,3 @@ a.small:active { transform: translateY(1px); box-shadow:0px 1px rgba(0,0,0,0.3);
 a.small > img { height:22px; }
 
 a.ipam { height:22px; width:22px; font-size:9px; color:#000000; margin:2px; padding:2px; float:left; font-family: Verdana,sans-serif; border: 1px solid #9CA6B0; }
-
-/*################################ Inframe munin ####################################*/
-div#header { display:none; }
-div#footer { display:none; }
-div#nav    { display:none; }
-div#content { margin-left: 20px; }
-div#content > h2{ display:none; }

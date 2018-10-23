@@ -36,75 +36,56 @@ def main(aWeb):
  aWeb.wr("</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content ID=div_content></SECTION>")
 
-
-#
-# Generic Login - REST based apps required
-#
-def login(aWeb):
- application = aWeb.get('application','system')
- cookie = aWeb.cookie(application)
- if cookie.get('token'):
-  aWeb.wr("<SCRIPT> window.location.replace('%s_portal'); </SCRIPT>"%application)
-  return
- args = aWeb.args()
- args['node'] = aWeb.node() if not args.get('node') else args['node']
- data = aWeb.rest_call("%s/application"%(application),args)
- aWeb.put_html(data['title'])
- aWeb.wr("<SCRIPT>set_cookie('%s','%s','%s');</SCRIPT>"%(application,data['cookie'],data['expires']))
- aWeb.wr("<DIV CLASS='background overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message'])
- if data.get('exception'):
-  aWeb.wr("Error retrieving application info - exception info: %s"%(data['exception']))
- else:
-  aWeb.wr("<FORM ACTION='%s_portal' METHOD=POST ID=login_form>"%(application))
-  aWeb.wr("<INPUT TYPE=HIDDEN NAME=title VALUE='%s'>"%data['title'])
-  aWeb.wr("<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>")
-  for choice in data.get('choices'):
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME='%s'>"%(choice['display'],choice['id']))
-   for row in choice['data']:
-    aWeb.wr("<OPTION VALUE='%s'>%s</OPTION>"%(row['id'],row['name']))
-   aWeb.wr("</SELECT></DIV></DIV>")
-  for param in data.get('parameters'):
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><INPUT TYPE=%s NAME='%s' %s></DIV></DIV>"%(param['display'],param['data'],param['id'],"" if not param.get('placeholder') else "PLACEHOLDER='%s'"%param['placeholder']))
-  aWeb.wr("</DIV></DIV>")
-  aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='../images/icon-start.png' /></BUTTON>")
-  aWeb.wr("</ARTICLE></DIV>")
-
 #
 #
 def portal(aWeb):
- aWeb.put_html(aWeb.get('title','Portal'))
  cookie = aWeb.cookie('system')
- id = cookie.get('id','NOID') if cookie else 'NOID'
- if id == 'NOID':
-  try:  res = aWeb.rest_full("%s/auth"%aWeb.url(),{'username':aWeb['username'],'password':aWeb['password']})
-  except:
-   aWeb.wr("<SCRIPT>erase_cookie('system');</SCRIPT>")
-   aWeb.wr("<SCRIPT> window.location.replace('system_login'); </SCRIPT>")
-   return
+ auth,data,args = {},{},aWeb.args()
+ if not cookie.get('token') and (args.get('username') and args.get('password')):
+  try:  auth = aWeb.rest_full("%s/auth"%aWeb.url(),args)['data']
+  except Exception as e:
+   auth = e.args[0].get('data',{})
   else:
-   data = res['data']
-   id = data['id']
-   cookie.update({'id':id,'token':data['token']})
-   value = ",".join("%s=%s"%i for i in cookie.items())
-   aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(value,data['expires']))
-
- # proper id here
- menu = aWeb.rest_call("system/menu",{"id":id,'node':aWeb.node()})
- aWeb.wr("<HEADER>")
- for item in menu['menu']:
-  if   item['view'] == 0:
-   aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['href'],item['title'],item['icon']))
-  elif item['view'] == 1:
-   aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='resources_framed?id=%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['id'],item['title'],item['icon']))
+   cookie = {'node':auth['node'],'id':auth['id'],'token':auth['token']}
+ if cookie.get('token'):
+  id = cookie['id']
+  menu = aWeb.rest_call("system/menu",{"id":id,'node':aWeb.node()})
+  aWeb.put_html(menu.get('title','Portal'))
+  aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(",".join("%s=%s"%i for i in cookie.items()),auth['expires']))
+  aWeb.wr("<HEADER>")
+  for item in menu['menu']:
+   if   item['view'] == 0:
+    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['href'],item['title'],item['icon']))
+   elif item['view'] == 1:
+    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='resources_framed?id=%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['id'],item['title'],item['icon']))
+   else:
+    aWeb.wr("<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s' /></A>"%(item['title'],item['href'],item['title'],item['icon']))
+  aWeb.wr("<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=system URL=system_portal>Log out</BUTTON>")
+  aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='Tools' DIV=main URL='tools_main?node=%s'><IMG SRC='../images/icon-config.png' /></BUTTON>"%aWeb.node())
+  aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='User'  DIV=main URL='users_%s'><IMG SRC='../images/icon-users.png' /></BUTTON>"%("main" if id == '1' else "user?id=%s"%id))
+  aWeb.wr("</HEADER>")
+  aWeb.wr("<MAIN ID=main></MAIN>")
+  if menu['start']:
+   aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['href'] if menu['menu'][0]['view'] == 0 else "resources_framed?id=%s"%menu['menu'][0]['id']))
+ else:
+  data = aWeb.rest_call("system/application",{'node':aWeb.node()})
+  aWeb.put_html(data['title'])
+  aWeb.wr("<DIV CLASS='background overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message'])
+  if data.get('exception'):
+   aWeb.wr("Error retrieving application info - exception info: %s"%(data['exception']))
   else:
-   aWeb.wr("<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s' /></A>"%(item['title'],item['href'],item['title'],item['icon']))
- aWeb.wr("<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=system URL=system_login>Log out</BUTTON>")
- aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='Tools' DIV=main URL='tools_main?node=%s'><IMG SRC='../images/icon-config.png' /></BUTTON>"%aWeb.node())
- aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='User'  DIV=main URL='users_%s'><IMG SRC='../images/icon-users.png' /></BUTTON>"%("main" if id == '1' else "user?id=%s"%id))
- aWeb.wr("</HEADER>")
- aWeb.wr("<MAIN ID=main></MAIN>")
- if menu['start']:
-  aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['href'] if menu['menu'][0]['view'] == 0 else "resources_framed?id=%s"%menu['menu'][0]['id']))
+   error = auth.get('error',{})
+   aWeb.wr("<FORM ACTION='system_portal' METHOD=POST ID=login_form>")
+   aWeb.wr("<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>")
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT NAME=username>")
+   for row in data['usernames']:
+    aWeb.wr("<OPTION VALUE='%s' %s>%s</OPTION>"%(row['id'],"selected=selected" if row['id'] == error.get('username','admin') else "",row['name']))
+   aWeb.wr("</SELECT></DIV></DIV>")
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Password:</DIV><DIV CLASS=td><INPUT TYPE=password NAME='password' PLACEHOLDER='******'></DIV></DIV>")
+   aWeb.wr("</DIV></DIV>")
+   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='../images/icon-start.png' /></BUTTON>")
+  aWeb.wr("<!-- %s -->"%auth.get('error'))
+  aWeb.wr("</ARTICLE></DIV>")
 
 #
 #

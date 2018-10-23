@@ -7,9 +7,6 @@ __type__ = 'menuitem'
 #
 # Necessary
 def main(aWeb):
- if not aWeb.cookie('system'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
-  return
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI CLASS='right dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>")
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='resources_view?type=bookmark'>Bookmarks</A>")
@@ -47,7 +44,7 @@ def framed(aWeb):
 #
 def list(aWeb):
  if not aWeb.cookie('system'):
-  aWeb.wr("<SCRIPT>location.replace('system_login')</SCRIPT>")
+  aWeb.wr("<SCRIPT>location.replace('system_portal')</SCRIPT>")
   return
  cookie = aWeb.cookie('system')
  node = aWeb.get('node',aWeb.node())

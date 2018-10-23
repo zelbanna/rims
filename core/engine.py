@@ -482,35 +482,43 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def auth(self):
-  """ Authenticate using node function instead of API
-  TODO: 
-   - Ask master node for authentication using credentials
-  """
-  from rims.core.genlib import random_string
-  from hashlib import md5
-  from datetime import datetime,timedelta
+  """ Authenticate using node function instead of API """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'auth','X-Code':401})
-  output = {}
   try:
    length = int(self.headers['Content-Length'])
    args   = loads(self.rfile.read(length).decode()) if length > 0 else {}
    username, password = args['username'], args['password']
   except Exception as e:  output['error'] = {'argument':str(e)}
   else:
-   try:
-    hash = md5()
-    hash.update(password.encode('utf-8'))
-    passcode = hash.hexdigest()
-   except Exception as e: output['error'] = {'hash':str(e)}
+   if self._ctx.node == 'master':
+    output = {}
+    from rims.core.genlib import random_string
+    from hashlib import md5
+    from datetime import datetime,timedelta
+    try:
+     hash = md5()
+     hash.update(password.encode('utf-8'))
+     passcode = hash.hexdigest()
+    except Exception as e: output['error'] = {'hash':str(e)}
+    else:
+     with self._ctx.db as db:
+      if (db.do("SELECT id FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
+       output['token']   = random_string(16)
+       output['id']      = db.get_val('id')
+       output['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+       self._headers['X-Code'] = 200
+      else:
+       output['error'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
    else:
-    with self._ctx.db as db:
-     if (db.do("SELECT id FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
-      output['token']   = random_string(16)
-      output['id']      = db.get_val('id')
-      output['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
-      self._headers['X-Code'] = 200
-     else:
-      output['error'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
+    req  = Request("%s/auth"%(self._ctx.config['master']), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(args).encode('utf-8'))
+    try: sock = urlopen(req, timeout = 300)
+    except Exception as e:
+     output = {'error':{'master':str(e)}}
+    else:
+     try: output = sock.read()
+     except: pass
+     sock.close()
+  output['node'] = self._ctx.node
   self._body = dumps(output).encode('utf-8')
 
  #

@@ -16,53 +16,14 @@ def application(aDict, aCTX):
  """
  from datetime import datetime,timedelta
  """ Default login information """
- ret  = {'message':"Welcome to the Management Portal",'parameters':[],'title':'Portal'}
+ ret  = {'message':"Welcome to the Management Portal",'title':'Portal'}
  aDict['node'] = aDict.get('node','master')
  with aCTX.db as db:
   db.do("SELECT parameter,value FROM settings WHERE section = 'portal' AND node = '%s'"%aDict['node'])
   for row in db.get_rows():
    ret[row['parameter']] = row['value']
   db.do("SELECT alias as id, name FROM users ORDER BY name")
-  rows = db.get_rows()
- ret['choices'] = [{'display':'Username', 'id':'username', 'data':rows}]
- ret['parameters'].append({'display':'Password', 'id':'password', 'data':'password','placeholder':'*******'})
-
- cookie = aDict
- ret['cookie'] = ",".join("%s=%s"%i for i in cookie.items())
- ret['expires'] = (datetime.utcnow() + timedelta(days=7)).strftime("%a, %d %b %Y %H:%M:%S GMT")
- return ret
-
-#
-#
-def authenticate(aDict, aCTX):
- """Function docstring for authenticate. Provide cookie with lifetime.
-
- Args:
-  - username (required)
-  - password (required)
-
- Output:
- """
- from rims.core.genlib import random_string
- from hashlib import md5
- from datetime import datetime,timedelta
- ret = {'authenticated':'NOT_OK'}
- try:    username,password = aDict['username'], aDict['password']
- except: ret['authenticated'] = 'NOT_OK'
- else:
-  try:
-   hash = md5()
-   hash.update(password.encode('utf-8'))
-   passcode = hash.hexdigest()
-  except Exception as e:
-   passcode = ""
-   print(str(e))
-  with aCTX.db as db:
-   if (db.do("SELECT id FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
-    ret['authenticated'] = 'OK'
-    ret['token'] = random_string(16)
-    ret['id'] = db.get_val('id')
-    ret['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+  ret['usernames'] = db.get_rows()
  return ret
 
 #
