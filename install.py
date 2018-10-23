@@ -6,6 +6,7 @@ __author__ = "Zacharias El Banna"
 from sys import argv, stdout, path as syspath
 from json import load,dump,dumps
 from os import remove, chmod, listdir, path as ospath
+from subprocess import check_call
 pkgdir = ospath.abspath(ospath.dirname(__file__))
 basedir = ospath.abspath(ospath.join(pkgdir,'..'))
 syspath.insert(1, basedir)
@@ -13,7 +14,11 @@ from rims.core.common import DB, rest_call
 res = {}
 
 if len(argv) < 2:
- stdout.write("Usage: {} </path/json file>\n\n!!! Import DB structure from schema.db before installing !!!\n\n".format(argv[0]))
+ print("Usage: %s </path/json file>\n"%argv[0])
+ print("1) Set up config.json first - see example 'templates/config.json'")
+ print("2) Then import database schema.db")
+ print("3a) tools/mysql_dumps </path/json file> -r schema.db  (first time install)")
+ print("3b) tools/mysql_patch </path/json file> schema.db     (subsequent install)")
  exit(0)
 else:
  config_filename = argv[1]
@@ -36,10 +41,11 @@ with open(ospath.abspath(ospath.join(pkgdir,'templates',config['template'])),'r'
  template = f.read()
 template = template.replace("%PKGDIR%",pkgdir)
 template = template.replace("%CFGFILE%",config_file)
-with open(ospath.abspath(ospath.join(pkgdir,config['template'])),'w+') as f:
+engine_run = ospath.abspath(ospath.join(pkgdir,config['template']))
+with open(engine_run,'w+') as f:
  f.write(template)
-chmod(ospath.abspath(ospath.join(pkgdir,config['template'])),0o755)
-res['engine']= config['template']
+chmod(engine_run,0o755)
+res['engine']= {'template':config['template'],'install':check_call([engine_run,"install"])}
 
 ############################################### ALL #################################################
 #
@@ -51,7 +57,7 @@ except:
  from pip._internal import main as pipmain
 try: import pymysql
 except ImportError:
- res['pymysql'] = 'install' 
+ res['pymysql'] = 'install'
  pipmain(["install", "-q","pymysql"])
 try: import dns
 except ImportError:
@@ -158,12 +164,17 @@ if config['id'] == 'master':
   if res['database']['diff']['diffs'] > 0:
    res['database']['patch'] = mysql.patch(database_args,None)
    if res['database']['patch']['result'] == 'NOT_OK':
-    stdout.write("Database patching failed!")
+    print("Database patching failed")
     if res['database']['patch'].get('database_restore_result') == 'OK':
-     stdout.write("Restore should be OK - please check schema.db schema file\n")
+     print("Restore should be OK - please check schema.db schema file")
     else:
-     stdout.write("Restore failed too! Restore manually\n")
-     exit(1)
+     print("Restore failed too!")
+     print("- Restore manually case needed")
+     print("- Make sure that configured user has access to database:")
+     print("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';"%(config['db_user'],config['db_pass']))
+     print("GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';"%(config['db_name'],config['db_user']))
+     print("FLUSH PRIVILEGES;\n\n")
+    exit(1)
 
   db = DB(database,host,username,password)
   db.connect()
@@ -186,7 +197,7 @@ if config['id'] == 'master':
    try:    res['server_new'] += db.do(sql%type)
    except Exception as err: res['server_errors'] = str(err)
 
-  sql = "INSERT resources (node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%config['id']
+  sql = "INSERT resources (node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','../images/{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%config['id']
   for item in resources:
    try:    res['resources_new'] += db.do(sql.format(item['name'].title(),"%s_main"%item['name'],item['icon'],item['type']))
    except Exception as err: res['resources_errors'] = str(err)
@@ -206,14 +217,9 @@ if config['id'] == 'master':
    res['ERD'] = str(e)
 
  except Exception as e:
-  stdout.write("\nError in setting up database, make sure that configured user has access:\n\n")
-  stdout.write("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';\n"%(config['db_user'],config['db_pass']))
-  stdout.write("GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';\n"%(config['db_name'],config['db_user']))
-  stdout.write("FLUSH PRIVILEGES;\n\n")
   #from traceback import print_exc
   # print_exc(5)
-  stdout.flush()
-  raise Exception("DB past error (%s)"%str(e))
+  print("Error: %s"%str(e))
 
 else:
  try: res['register'] = rest_call("%s/system/register/%s"%(config['master'],config['id']),{'port':config['port'],'system':'1'})['data']
@@ -223,6 +229,5 @@ else:
 #
 # End
 #
-stdout.write(dumps(res,indent=4,sort_keys=True))
-stdout.write('\n')
+print(dumps(res,indent=4,sort_keys=True))
 exit(0 if res.get('res') == 'OK' else 1)

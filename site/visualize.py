@@ -1,6 +1,6 @@
 """HTML5 Ajax Visualize module"""
 __author__= "Zacharias El Banna"
-__icon__ = '../images/icon-visualize.png'
+__icon__ = 'icon-visualize.png'
 __type__ = 'menuitem'
 
 #

@@ -1,6 +1,6 @@
 """HTML5 Ajax Device module"""
 __author__= "Zacharias El Banna"
-__icon__ = '../images/icon-network.png'
+__icon__ = 'icon-network.png'
 __type__ = 'menuitem'
 
 ########################################## Device Operations ##########################################

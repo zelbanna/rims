@@ -1,6 +1,6 @@
 """HTML5 Ajax System function module"""
 __author__= "Zacharias El Banna"
-__icon__ = '../images/icon-examine.png'
+__icon__ = 'icon-examine.png'
 __type__ = 'menuitem'
 
 #
@@ -51,7 +51,8 @@ def portal(aWeb):
   id = cookie['id']
   menu = aWeb.rest_call("system/menu",{"id":id,'node':aWeb.node()})
   aWeb.put_html(menu.get('title','Portal'))
-  aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(",".join("%s=%s"%i for i in cookie.items()),auth['expires']))
+  if auth.get('token'):
+   aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(",".join("%s=%s"%i for i in cookie.items()),auth['expires']))
   aWeb.wr("<HEADER>")
   for item in menu['menu']:
    if   item['view'] == 0:

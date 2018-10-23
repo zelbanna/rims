@@ -1,6 +1,6 @@
 """HTML5 Ajax Users module"""
 __author__= "Zacharias El Banna"
-__icon__ = '../images/icon-users.png'
+__icon__ = 'icon-users.png'
 __type__ = 'menuitem'
 
 ############################################ Users ##############################################

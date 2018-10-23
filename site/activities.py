@@ -1,6 +1,6 @@
 """HTML5 Activities module"""
 __author__= "Zacharias El Banna"
-__icon__ = '../images/icon-calendar.png'
+__icon__ = 'icon-calendar.png'
 __type__ = 'menuitem'
 
 ########################################### Activities #############################################

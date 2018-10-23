@@ -1,6 +1,6 @@
 """HTML5 Ajax Racks module"""
 __author__= "Zacharias El Banna"
-__icon__ = '../images/icon-rack.png'
+__icon__ = 'icon-rack.png'
 __type__ = 'menuitem'
 
 ################################################## Basic Rack Info ######################################################

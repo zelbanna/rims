@@ -1,6 +1,6 @@
 """HTML5 Ajax Resources module"""
 __author__= "Zacharias El Banna"
-__icon__ = '../images/icon-tools.png'
+__icon__ = 'icon-tools.png'
 __type__ = 'menuitem'
 
 ############################################ Resources ##############################################

@@ -1,6 +1,6 @@
 """HTML5 Ajax Multimedia Controls module"""
 __author__= "Zacharias El Banna"
-__icon__ = '../images/icon-multimedia.png'
+__icon__ = 'icon-multimedia.png'
 
 #
 #

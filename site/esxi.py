@@ -1,6 +1,6 @@
 """HTML5 Ajax ESXi module"""
 __author__= "Zacharias El Banna"
-__icon__ = '../images/icon-servers.png'
+__icon__ = 'icon-servers.png'
 __type__ = 'menuitem'
 
 def main(aWeb):
