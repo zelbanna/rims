@@ -102,7 +102,7 @@ def logs_clear(aDict, aCTX):
  """
  from rims.core.common import log
  ret = {'node':aCTX.node,'file':{}}
- log_files = aCTX.config['logs']
+ log_files = dict(aCTX.config['logs'])
  log_files.update(aCTX.settings.get('logs',{}))
  for name,file in log_files.items():
   try:
@@ -126,7 +126,7 @@ def logs_get(aDict, aCTX):
  """
  ret = {}
  count = int(aDict.get('count',15))
- log_files = aCTX.config['logs']
+ log_files = dict(aCTX.config['logs'])
  log_files.update(aCTX.settings.get('logs',{}))
  for name,file in log_files.items():
   if aDict.get('name',name) == name:

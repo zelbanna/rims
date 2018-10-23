@@ -39,7 +39,7 @@ class Context(object):
     self.config['config_file'] = aConfigFile
   else:
    self.config  = aConfig
-  self.node     = self.config['id'] 
+  self.node     = self.config['id']
   self.db       = DB(self.config['db_name'],self.config['db_host'],self.config['db_user'],self.config['db_pass']) if self.node == 'master' else None
   self.workers  = WorkerPool(self.config.get('workers',20),self)
   self.kill     = Event()
