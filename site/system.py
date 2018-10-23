@@ -76,16 +76,17 @@ def portal(aWeb):
  cookie = aWeb.cookie('system')
  id = cookie.get('id','NOID') if cookie else 'NOID'
  if id == 'NOID':
-  res = aWeb.rest_call("system/authenticate?log=false",{'username':aWeb['username'],'password':aWeb['password']})
-  if res['authenticated'] == "OK":
-   id = res['id']
-   cookie.update({'id':id,'token':res['token']})
-   value = ",".join("%s=%s"%i for i in cookie.items())
-   aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(value,res['expires']))
-  else:
+  try:  res = aWeb.rest_full("%s/auth"%aWeb.url(),{'username':aWeb['username'],'password':aWeb['password']})
+  except:
    aWeb.wr("<SCRIPT>erase_cookie('system');</SCRIPT>")
    aWeb.wr("<SCRIPT> window.location.replace('system_login'); </SCRIPT>")
    return
+  else:
+   data = res['data']
+   id = data['id']
+   cookie.update({'id':id,'token':data['token']})
+   value = ",".join("%s=%s"%i for i in cookie.items())
+   aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(value,data['expires']))
 
  # proper id here
  menu = aWeb.rest_call("system/menu",{"id":id,'node':aWeb.node()})

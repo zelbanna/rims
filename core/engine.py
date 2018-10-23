@@ -25,6 +25,13 @@ from urllib.parse import unquote, parse_qs
 class Context(object):
 
  def __init__(self,aConfig = None, aConfigFile = None):
+  """ Context init - create the infrastructure but populate later
+  - Set node ID
+  - Prepare database and workers
+  - Load config, i.e. base settings
+  - initiate the 'kill' switch
+  - create datastore (i.e. dict) for settings, nodes, servers and external modules
+  """
   from .common import DB, rest_call
   if not aConfig:
    with open(aConfigFile,'r') as config_file:
@@ -172,7 +179,6 @@ class Context(object):
   elif sig == SIGUSR1:
    print("\n".join(self.module_reload()))
   elif sig == SIGUSR2:
-   """ Print imported external modules """
    print(dumps({k:repr(v) for k,v in self.modules.items()},indent=4, sort_keys=True))
 
 
@@ -367,7 +373,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif path == 'system':
    self.system(query)
   else:
-   self._headers.update({'X-Process':'NO_MATCH'})
+   self._headers.update({'X-Process':'no route'})
 
  #
  #
@@ -450,8 +456,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  def files(self,path,query):
   """ Serve "common" system files and also route 'files' """
   query = unquote(query)
-  # Infra call
-  self._headers['X-Process'] = 'infra'
+  self._headers['X-Process'] = 'files'
   if query.endswith(".js"):
    self._headers['Content-type']='application/javascript; charset=utf-8'
   elif query.endswith(".css"):
@@ -477,18 +482,36 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def auth(self):
-  """ Authenticate using node function instead of API - internally wrap this into rest API call bypassing token verification """
-  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'auth'})
+  """ Authenticate using node function instead of API
+  TODO: 
+   - Ask master node for authentication using credentials
+  """
+  from rims.core.genlib import random_string
+  from hashlib import md5
+  from datetime import datetime,timedelta
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'auth','X-Code':401})
+  output = {}
   try:
    length = int(self.headers['Content-Length'])
-   args = loads(self.rfile.read(length).decode()) if length > 0 else {}
-   # Replace with module load and provide correct headers from system_login
-   # There has to be a format for return function of application/authenticate
-   self._body = b'OK'
-   self._headers['X-Auth-Token']  = random_string(16)
-   self._headers['X-Auth-Expire'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
-  except:
-   self._body = b'NOT_OK'
+   args   = loads(self.rfile.read(length).decode()) if length > 0 else {}
+   username, password = args['username'], args['password']
+  except Exception as e:  output['error'] = {'argument':str(e)}
+  else:
+   try:
+    hash = md5()
+    hash.update(password.encode('utf-8'))
+    passcode = hash.hexdigest()
+   except Exception as e: output['error'] = {'hash':str(e)}
+   else:
+    with self._ctx.db as db:
+     if (db.do("SELECT id FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
+      output['token']   = random_string(16)
+      output['id']      = db.get_val('id')
+      output['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+      self._headers['X-Code'] = 200
+     else:
+      output['error'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
+  self._body = dumps(output).encode('utf-8')
 
  #
  #
@@ -538,9 +561,9 @@ class Stream(object):
  def __init__(self,aHandler, aGet):
   self._form = {}
   self._node = aHandler._ctx.node
-  self._api  = aHandler._ctx.nodes[self._node]['url']
   self._body = []
   self._cookies   = {}
+  self._node_url  = aHandler._ctx.nodes[self._node]['url']
   self._rest_call = aHandler._ctx.rest_call
   try: cookie_str = aHandler.headers['Cookie'].split('; ')
   except: pass
@@ -566,6 +589,9 @@ class Stream(object):
  def wr(self,aHTML):
   self._body.append(aHTML)
 
+ def url(self):
+  return self._node_url
+
  def node(self):
   return self._node
 
@@ -588,7 +614,7 @@ class Stream(object):
   return "<A CLASS='btn z-op small' " + " ".join("%s='%s'"%i for i in kwargs.items()) + "><IMG SRC='../images/btn-%s.png'></A>"%(aImg)
 
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
-  return self._rest_call("%s/api/%s"%(self._api,aAPI), aArgs, aTimeout = 60)['data']
+  return self._rest_call("%s/api/%s"%(self._node_url,aAPI), aArgs, aTimeout = 60)['data']
 
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
   return self._rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
