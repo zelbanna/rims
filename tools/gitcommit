@@ -2,30 +2,28 @@
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
 
-from subprocess import check_output
-from sys import argv, exit, path as syspath
+from subprocess import call
+from sys import argv, exit, path as syspath, stderr, stdout
 from os import path as ospath
 engine_file = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','core','engine.py'))
 
 if __name__ == "__main__":
- if len(argv) < 2:
-  print(argv[0] + " <git args>")
-  exit(0)
+ args = ['git','commit']
+ args.extend(argv[1:])
+ try:
+  res = call(args)
+ except:
+  print(str(e))
+  exit(1)
  else:
-  args = ['git','commit']
-  args.extend(argv[1:])
-  try:
-   check_output(args).decode()
-  except:
-   exit(1)
-  else:
-   with open(engine_file,'r') as f:
-    code = f.read().split('\n')
-   for index,line in enumerate(code):
-    if line.startswith('__minor__'):
-     parts    = line.split()
-     code[index] = "__minor__ = %d"%(int(parts[2]) + 1)
-     break
-   with open(engine_file,'w') as f:
-    f.write("\n".join(code))
-   exit(0)
+  print(res)
+  with open(engine_file,'r') as f:
+   code = f.read().split('\n')
+  for index,line in enumerate(code):
+   if line.startswith('__minor__'):
+    parts    = line.split()
+    code[index] = "__minor__ = %d"%(int(parts[2]) + 1)
+    break
+  with open(engine_file,'w') as f:
+   f.write("\n".join(code))
+  exit(0)
