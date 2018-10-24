@@ -10,13 +10,9 @@ engine_file = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','core','
 if __name__ == "__main__":
  args = ['git','commit']
  args.extend(argv[1:])
- try:
-  res = call(args)
- except:
-  print(str(e))
-  exit(1)
- else:
-  print(res)
+ res = call(args)
+ print(res)
+ if res == 0:
   with open(engine_file,'r') as f:
    code = f.read().split('\n')
   for index,line in enumerate(code):
@@ -26,4 +22,3 @@ if __name__ == "__main__":
     break
   with open(engine_file,'w') as f:
    f.write("\n".join(code))
-  exit(0)
