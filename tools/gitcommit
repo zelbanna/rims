@@ -1,0 +1,25 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+__author__ = "Zacharias El Banna"
+
+from subprocess import check_output
+from sys import argv, exit, path as syspath
+from os import path as ospath
+engine_file = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','core','engine.py'))
+
+if __name__ == "__main__":
+ if len(argv) < 2:
+  print(argv[0] + " <git args>")
+  exit(0)
+ else:
+  args = ['git','commit']
+  args.extend(argv[1:])
+  try:
+   check_output(args).decode()
+  except: pass
+  else:
+   with open(engine_file,'r') as f:
+    code = f.read()
+   print(code)
+   print("update version")
+
