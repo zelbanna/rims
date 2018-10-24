@@ -7,20 +7,22 @@ from sys import argv, exit, path as syspath, stderr, stdout
 from os import path as ospath
 engine_file = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','core','engine.py'))
 
+def patch_engine(change):
+ with open(engine_file,'r') as f:
+  code = f.read().split('\n')
+ for index,line in enumerate(code):
+  if line.startswith('__build__ = '):
+   parts   = line.split()
+   version = int(parts[2]) + change
+   code[index] = "__build__ = %d"%version
+   break
+ with open(engine_file,'w') as f:
+  f.write("\n".join(code))
+ return version
+
 if __name__ == "__main__":
+ version = patch_engine(1)
+ print("New build version: %s"%version)
  args = ['git','commit']
  args.extend(argv[1:])
- res = call(args)
- if res == 0:
-  """ Only bump up version on successful commits """
-  with open(engine_file,'r') as f:
-   code = f.read().split('\n')
-  for index,line in enumerate(code):
-   if line.startswith('__build__ = '):
-    parts   = line.split()
-    version = int(parts[2]) + 1
-    code[index] = "__build__ = %d"%version
-    break
-  with open(engine_file,'w') as f:
-   f.write("\n".join(code))
-  print("New build version: %s"%version)
+ call(args)
