@@ -20,12 +20,10 @@ if __name__ == "__main__":
   else:
    with open(engine_file,'r') as f:
     code = f.read().split('\n')
-   for line in code:
+   for index,line in enumerate(code):
     if line.startswith('__minor__'):
      parts    = line.split()
-     parts[2] = str(int(parts[2]) + 1)
-     line = " ".join(parts)
-     print(parts)
+     code[index] = "__minor__ = %d"%(int(parts[2]) + 1)
      break
    print("\n".join(code))
    print("update version")
