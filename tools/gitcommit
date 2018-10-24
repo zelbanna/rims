@@ -22,7 +22,9 @@ def patch_engine(change):
 
 if __name__ == "__main__":
  version = patch_engine(1)
- print("New build version: %s"%version)
  args = ['git','commit']
  args.extend(argv[1:])
- call(args)
+ res = call(args)
+ if res > 0:
+  version = patch_engine(-1)
+ print("Build version: %s"%version)
