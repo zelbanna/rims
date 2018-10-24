@@ -19,7 +19,11 @@ if __name__ == "__main__":
   except: pass
   else:
    with open(engine_file,'r') as f:
-    code = f.read()
-   print(code)
+    code = f.read().split('\n')
+   for line in code:
+    if line.startswith('__minor__'):
+     parts = line.split()
+     print(parts)
+     break
    print("update version")
 
