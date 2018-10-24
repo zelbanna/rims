@@ -1,4 +1,10 @@
-"""ESXi API module. PRovides interworking with ESXi device module to provide esxi VM interaction"""
+"""ESXi API module. PRovides interworking with ESXi device module to provide esxi VM interaction
+
+Relies on snmp communities settings:
+- read  (read community)
+- write (write community)
+
+"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
