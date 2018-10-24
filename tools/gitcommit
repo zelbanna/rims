@@ -11,14 +11,16 @@ if __name__ == "__main__":
  args = ['git','commit']
  args.extend(argv[1:])
  res = call(args)
- print(res)
  if res == 0:
+  """ Only bump up version on successful commits """
   with open(engine_file,'r') as f:
    code = f.read().split('\n')
   for index,line in enumerate(code):
-   if line.startswith('__minor__'):
-    parts    = line.split()
-    code[index] = "__minor__ = %d"%(int(parts[2]) + 1)
+   if line.startswith('__build__ = '):
+    parts   = line.split()
+    version = int(parts[2]) + 1
+    code[index] = "__build__ = %d"%version
     break
   with open(engine_file,'w') as f:
    f.write("\n".join(code))
+  print("New build version: %s"%version)

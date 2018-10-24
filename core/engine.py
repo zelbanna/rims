@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__minor__ = 11
+__build__ = 100
 
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
@@ -343,7 +343,7 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def header(self):
   # Sends X-Code as response
-  self._headers.update({'X-Method':self.command,'Server':'Engine %s.%s'%(__version__,__minor__),'Date':self.date_time_string()})
+  self._headers.update({'X-Method':self.command,'Server':'Engine %s.%s'%(__version__,__build__),'Date':self.date_time_string()})
   code = self._headers.pop('X-Code',200)
   self.wfile.write(('HTTP/1.1 %s %s\r\n'%(code,self.responses.get(code,('Other','Server specialized return code'))[0])).encode('utf-8'))
   self._headers.update({'Content-Length':len(self._body),'Connection':'close'})
