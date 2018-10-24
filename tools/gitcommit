@@ -16,7 +16,8 @@ if __name__ == "__main__":
   args.extend(argv[1:])
   try:
    check_output(args).decode()
-  except: pass
+  except:
+   exit(1)
   else:
    with open(engine_file,'r') as f:
     code = f.read().split('\n')
@@ -25,5 +26,6 @@ if __name__ == "__main__":
      parts    = line.split()
      code[index] = "__minor__ = %d"%(int(parts[2]) + 1)
      break
-   print("\n".join(code))
-
+   with open(engine_file,'w') as f:
+    f.write("\n".join(code))
+   exit(0)
