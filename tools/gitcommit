@@ -26,5 +26,4 @@ if __name__ == "__main__":
      code[index] = "__minor__ = %d"%(int(parts[2]) + 1)
      break
    print("\n".join(code))
-   print("update version")
 
