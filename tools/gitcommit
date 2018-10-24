@@ -22,8 +22,11 @@ if __name__ == "__main__":
     code = f.read().split('\n')
    for line in code:
     if line.startswith('__minor__'):
-     parts = line.split()
+     parts    = line.split()
+     parts[2] = int(parts[2]) + 1
+     line = " ".join(parts)
      print(parts)
      break
+   print("\n".join(code))
    print("update version")
 
