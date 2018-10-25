@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 105
+__build__ = 106
 
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
@@ -46,8 +46,9 @@ class Context(object):
   self.kill     = Event()
   self.settings = {}
   self.nodes    = {}
-  self.modules  = {}
+  self.external = {}
   self.servers  = {}
+  self.analytics={'files':{},'modules':{}}
   self.sock     = None
   self.rest_call = rest_call
 
@@ -66,6 +67,18 @@ class Context(object):
  #
  def wait(self):
   self.kill.wait()
+
+ #
+ def analytics_modules(aMod, aFun):
+  tmp = self.analytics['modules'].get(aMod,{})
+  tmp[aFun] = tmp.get(aFun,0) + 1
+  self.analytics['modules'][aMod] = tmp
+
+ #
+ def analytics_files(aPath, aQuery):
+  tmp = self.analytics['files'].get(aPath,{})
+  tmp[aQuery] = tmp.get(aQuery,0) + 1
+  self.analytics['files'][aPath] = tmp
 
  #
  def system_info(self,aNode):
@@ -139,7 +152,7 @@ class Context(object):
  #
  def node_call(self, aNode, aModule, aFunction, aArgs = None):
   if self.node != aNode:
-   ret = self.rest_call("%s/api/%s_%s"%(self.nodes[aNode]['url'],aModule,aFunction),aArgs)['data']
+   ret = self.rest_call("%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction),aArgs)['data']
   else:
    module = import_module("rims.rest.%s"%aModule)
    fun = getattr(module,aFunction,None)
@@ -153,7 +166,7 @@ class Context(object):
   try:   module = import_module(aName)
   except Exception as e: ret['error'] = str(e)
   else:
-   self.modules[aName] = module
+   self.external[aName] = module
    ret['import'] = repr(module)
   return ret
 
@@ -163,7 +176,7 @@ class Context(object):
   from sys import modules as sys_modules
   from types import ModuleType
   modules = {x:sys_modules[x] for x in sys_modules.keys() if x.startswith('rims.')}
-  modules.update(self.modules)
+  modules.update(self.external)
   ret = []
   for k,v in modules.items():
    if isinstance(v,ModuleType):
@@ -181,7 +194,7 @@ class Context(object):
   elif sig == SIGUSR1:
    print("\n".join(self.module_reload()))
   elif sig == SIGUSR2:
-   print(dumps({k:repr(v) for k,v in self.modules.items()},indent=4, sort_keys=True))
+   print(dumps({k:repr(v) for k,v in self.external.items()},indent=4, sort_keys=True))
 
 
 ########################################## WorkerPool ########################################
@@ -384,12 +397,13 @@ class SessionHandler(BaseHTTPRequestHandler):
   extras = {}
   (api,_,get) = query.partition('?')
   (mod,_,fun) = api.partition('/')
+  self._ctx.analytics_modules(mod,fun)
   if get:
    for part in get.split("&"):
     (k,_,v) = part.partition('=')
     extras[k] = v
   self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Process':'API'})
-  self._headers['X-Node'] = extras.get('node',self._ctx.node if not mod == 'system' else 'master')
+  self._headers['X-Route'] = extras.get('node',self._ctx.node if not mod == 'system' else 'master')
   try:
    length = int(self.headers['Content-Length'])
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
@@ -400,11 +414,11 @@ class SessionHandler(BaseHTTPRequestHandler):
      f.write(str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system_task_worker" else "N/A", self._ctx.node, get.strip())))
    except: pass
   try:
-   if self._headers['X-Node'] == self._ctx.node:
-    module = import_module("rims.rest.%s"%mod) if not path == 'external' else self._ctx.modules.get(mod)
+   if self._headers['X-Route'] == self._ctx.node:
+    module = import_module("rims.rest.%s"%mod) if not path == 'external' else self._ctx.external.get(mod)
     self._body = dumps(getattr(module,fun,None)(args,self._ctx)).encode('utf-8')
    else:
-    req  = Request("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Node']]['url'],path,query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
+    req  = Request("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
     try: sock = urlopen(req, timeout = 300)
     except HTTPError as h:
      raw = h.read()
@@ -458,6 +472,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  def files(self,path,query):
   """ Serve "common" system files and also route 'files' """
   query = unquote(query)
+  self._ctx.analytics_files(path,query)
   self._headers['X-Process'] = 'files'
   if query.endswith(".js"):
    self._headers['Content-type']='application/javascript; charset=utf-8'
