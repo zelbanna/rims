@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 106
+__build__ = 107
 
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
@@ -69,13 +69,13 @@ class Context(object):
   self.kill.wait()
 
  #
- def analytics_modules(aMod, aFun):
+ def analytics_modules(self, aMod, aFun):
   tmp = self.analytics['modules'].get(aMod,{})
   tmp[aFun] = tmp.get(aFun,0) + 1
   self.analytics['modules'][aMod] = tmp
 
  #
- def analytics_files(aPath, aQuery):
+ def analytics_files(self, aPath, aQuery):
   tmp = self.analytics['files'].get(aPath,{})
   tmp[aQuery] = tmp.get(aQuery,0) + 1
   self.analytics['files'][aPath] = tmp
