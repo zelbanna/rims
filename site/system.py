@@ -91,7 +91,7 @@ def portal(aWeb):
 #
 #
 def report(aWeb):
- info = aWeb.rest_call("system/report?node=%s"%aWeb.node())
+ info = aWeb.rest_full("%s/system/report"%aWeb.url())['data']
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>System</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Information</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>")
  for i in info:

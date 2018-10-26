@@ -5,7 +5,7 @@ __build__ = 108
 
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
-from threading import Thread, Event, BoundedSemaphore
+from threading import Thread, Event, BoundedSemaphore, enumerate
 from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler
 from urllib.request import urlopen, Request
@@ -245,7 +245,7 @@ class WorkerPool(object):
  def abort(self): self._abort.set()
 
  def alive(self):
-  return len(x for x in self._workers if x.is_alive())
+  return len([x for x in self._workers if x.is_alive()])
 
  def join(self): self._queue.join()
 
@@ -571,6 +571,42 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif op == 'reload':
    res = self._ctx.module_reload()
    output = {'modules':res}
+  elif op == 'report':
+   node_url = self._ctx.nodes[self._ctx.node]['url']
+   from os import path as ospath, getpid
+   from sys import version, modules, path as syspath
+   from types import ModuleType
+   from gc import get_objects
+   db_counter = {}
+   for t in enumerate():
+    try:
+     for k,v in t._ctx.db.count.items():
+      db_counter[k] = db_counter.get(k,0) + v
+    except:pass
+   output = [{'info':'System PID','value':getpid()},
+   {'info':'Node URL','value':node_url},
+   {'info':'Worker pool','value':self._ctx.workers.pool_size()},
+   {'info':'Queued tasks','value':self._ctx.workers.queue_size()},
+   {'info':'Scheduled tasks','value':self._ctx.workers.scheduler_size()},
+   {'info':'Active workers','value':self._ctx.workers.alive()},
+   {'info':'Memory objects','value':len(get_objects())},
+   {'info':'DB operations','value':", ".join("%s:%s"%i for i in db_counter.items())},
+   {'info':'Python version','value':version},
+   {'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))},
+   {'info':'System path','value':",".join(syspath)}]
+   if self._ctx.node == 'master':
+    with self._ctx.db as db:
+     oids = {}
+     for type in ['devices','device_types']: 
+      db.do("SELECT DISTINCT oid FROM %s"%type)
+      tmp = db.get_rows() 
+      oids[type] = [x['oid'] for x in tmp] 
+    unhandled = ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
+    output.append({'info':'Unhandled detected OIDs','value':unhandled})
+    output.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in self._ctx.settings.get('files',{}).items()))
+    output.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in self._ctx.settings.get('system',{}).items()))
+    output.extend(list({'info':'Imported module','value':"%s"%x} for x in modules.keys() if x.startswith('rims')))
+
   elif op == 'register':
    length = int(self.headers['Content-Length'])
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}

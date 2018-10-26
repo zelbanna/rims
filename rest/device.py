@@ -478,7 +478,7 @@ def discover(aDict, aCTX):
 
 #
 #
-def system_oids(aDict, aCTX):
+def oids(aDict, aCTX):
  """ Function returns unique oids found
 
   Args:
