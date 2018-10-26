@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 107
+__build__ = 108
 
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
@@ -110,10 +110,7 @@ class Context(object):
  #
  def load_system(self):
   """ Load settings from DB or master node and do same with tasks. Add tasks to queue """
-  if self.node  == 'master':
-   system = self.system_info('master')
-  else:
-   system = self.rest_call("%s/system/info/%s"%(self.config['master'],self.node))['data']
+  system = self.system_info('master') if self.node == 'master' else self.rest_call("%s/system/environment/%s"%(self.config['master'],self.node))['data']
   self.settings.update(system['settings'])
   self.nodes.update(system['nodes'])
   self.servers.update(system['servers'])
@@ -136,7 +133,7 @@ class Context(object):
   self.sock.listen(5)
   path = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   servers = [ServerWorker(n,addr,self.sock,path,self) for n in range(5)]
-  self.workers.run(self)
+  self.workers.run()
   for sig in [SIGINT, SIGUSR1, SIGUSR2]:
    signal(sig, self.signal_handler)
   setcheckinterval(200)
@@ -202,24 +199,24 @@ class Context(object):
 #
 class WorkerPool(object):
 
- def __init__(self, aThreads, aContext):
+ def __init__(self, aWorkers, aContext):
   from queue import Queue
   self._queue     = Queue(0)
-  self._thread_count = aThreads
+  self._count = aWorkers
   self._ctx       = aContext
   self._abort     = Event()
   self._idles     = []
-  self._threads   = []
+  self._workers   = []
   self._scheduler = []
 
- def run(self, aContext):
-  for n in range(self._thread_count):
+ def run(self):
+  for n in range(self._count):
    idle  = Event()
    self._idles.append(idle)
-   self._threads.append(QueueWorker(n, self._abort, idle, aContext))
+   self._workers.append(QueueWorker(n, self._abort, idle, self._ctx))
 
  def __str__(self):
-  return "WorkerPool(%s):[%s,%s]"%(self._thread_count,self._queue.qsize(),len(self._scheduler))
+  return "WorkerPool(%s):[%s,%s,%s]"%(self._count,self._queue.qsize(),len(self._scheduler),self.alive())
 
  def add_function(self, aFunction, *args, **kwargs):
   self._queue.put((aFunction,'FUNCTION',None,args,kwargs))
@@ -247,13 +244,16 @@ class WorkerPool(object):
 
  def abort(self): self._abort.set()
 
+ def alive(self):
+  return len(x for x in self._workers if x.is_alive())
+
  def join(self): self._queue.join()
 
  def done(self): return self._queue.empty()
 
  def queue_size(self):return self._queue.qsize()
 
- def pool_size(self): return self._thread_count
+ def pool_size(self): return self._count
 
  def scheduler_size(self): return len(self._scheduler)
 
@@ -344,7 +344,7 @@ class ServerWorker(Thread):
   try: self._httpd.serve_forever()
   except: pass
 
-###################################### Call Handler ######################################
+###################################### Session Handler ######################################
 #
 class SessionHandler(BaseHTTPRequestHandler):
 
@@ -356,7 +356,7 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def header(self):
   # Sends X-Code as response
-  self._headers.update({'X-Method':self.command,'Server':'Engine %s.%s'%(__version__,__build__),'Date':self.date_time_string()})
+  self._headers.update({'X-Method':self.command,'Server':'RIMS Engine %s.%s'%(__version__,__build__),'Date':self.date_time_string()})
   code = self._headers.pop('X-Code',200)
   self.wfile.write(('HTTP/1.1 %s %s\r\n'%(code,self.responses.get(code,('Other','Server specialized return code'))[0])).encode('utf-8'))
   self._headers.update({'Content-Length':len(self._body),'Connection':'close'})
@@ -551,20 +551,17 @@ class SessionHandler(BaseHTTPRequestHandler):
   """ /system/<op>/<node> """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'system'})
   op,_,node = query.partition('/')
-  if self._ctx.node == 'master' and (op == 'info' or (op == 'sync' and node != 'master')):
+  if op == 'environment' and (len(node) > 0 or self._ctx.node == 'master'):
+   output = self._ctx.system_info(node) if len(node) > 0 else {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers,'config':self._ctx.config}
+  elif op == 'sync' and node != 'master' and node in self._ctx.node.keys():
    settings = self._ctx.system_info(node)
-   if op == 'info':
-    output = settings
+   req  = Request("%s/system/update"%(self._ctx.nodes[node]['url']), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(settings).encode('utf-8'))
+   try: sock = urlopen(req, timeout = 300)
+   except Exception as e:
+    self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
+    output = {'node':node,'result':'SYNC_NOT_OK'}
    else:
-    req  = Request("%s/system/update"%(self._ctx.nodes[node]['url']), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(settings).encode('utf-8'))
-    try: sock = urlopen(req, timeout = 300)
-    except Exception as e:
-     self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
-     output = {'node':node,'result':'SYNC_NOT_OK'}
-    else:
-     output = {'node':node,'result':'SYNC_OK'}
-  elif op == 'show':
-   output = {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers,'config':self._ctx.config}
+    output = {'node':node,'result':'SYNC_OK'}
   elif op == 'update':
    length = int(self.headers['Content-Length'])
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
@@ -582,7 +579,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
    output = {'update':update,'success':True}
   else:
-   output = {'result':'NOT_OK','info':'system/<register|show|info|sync|reload>/<node> where show and reload runs on any node'}
+   output = {'result':'NOT_OK','info':'system/<register|show|environment|sync|reload>/<node> where show and reload runs on any node'}
   self._body = dumps(output).encode('utf-8')
 
 ########################################### Web stream ########################################
