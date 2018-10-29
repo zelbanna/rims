@@ -1,15 +1,13 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 109
+__build__ = 110
 
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
 from threading import Thread, Event, BoundedSemaphore, enumerate
 from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler
-from urllib.request import urlopen, Request
-from urllib.error import HTTPError
 from urllib.parse import unquote, parse_qs
 
 ########################################### Context ########################################
@@ -393,19 +391,20 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def api(self,path,query):
-  """ API serves the REST functions x.y.z.a:<port>/api|debug|external/module/function"""
+  """ API serves the REST functions x.y.z.a:<port>/api|debug|external/module/function
+   - extra arguments can be sent as GET or using headers (using X-prefix in the latter case): log, node
+   - default log is turned on: log=true
+  """
   extras = {}
   (api,_,get) = query.partition('?')
   (mod,_,fun) = api.partition('/')
   self._ctx.analytics_modules(mod,fun)
-  if get:
-   for part in get.split("&"):
-    (k,_,v) = part.partition('=')
-    extras[k] = v
-  self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Process':'API'})
-  self._headers['X-Route'] = extras.get('node',self._ctx.node if not mod == 'system' else 'master')
+  for part in get.split("&"):
+   (k,_,v) = part.partition('=')
+   extras[k] = v
+  self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Process':'API','X-Route':self.headers.get('X-Node',extras.get('node',self._ctx.node if not mod == 'system' else 'master'))})
   try:
-   length = int(self.headers['Content-Length'])
+   length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
   except: args = {}
   if extras.get('log','true') == 'true':
@@ -418,20 +417,13 @@ class SessionHandler(BaseHTTPRequestHandler):
     module = import_module("rims.rest.%s"%mod) if not path == 'external' else self._ctx.external.get(mod)
     self._body = dumps(getattr(module,fun,None)(args,self._ctx)).encode('utf-8')
    else:
-    req  = Request("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), headers = { 'Content-Type': 'application/json','Accept':'application/json' }, data = dumps(args).encode('utf-8'))
-    try: sock = urlopen(req, timeout = 300)
-    except HTTPError as h:
-     raw = h.read()
-     try:    data = loads(raw.decode())
-     except: data = raw
-     self._headers.update({ 'X-Exception':'HTTPError', 'X-Code':h.code, 'X-Info':dumps(dict(h.info())), 'X-Data':data })
-    except Exception as e: self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
-    else:
-     try: self._body = sock.read()
-     except: pass
-     sock.close()
+    self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), args, aDecode = False)['data']
   except Exception as e:
-   self._headers.update({'X-Args':args,'X-Info':str(e),'X-Exception':type(e).__name__,'X-Code':500})
+   if isinstance(e.args[0],dict) and e.args[0].get('code'):
+    error = {'X-Args':args, 'X-Exception':e.args[0].get('exception'), 'X-Code':e.args[0]['code'], 'X-Info':e.args[0].get('info')}
+   else:
+    error = {'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':500, 'X-Info':repr(e)}
+   self._headers.update(error)
    if extras.get('debug') or path == 'debug':
     from traceback import format_exc
     tb = format_exc()
@@ -501,8 +493,9 @@ class SessionHandler(BaseHTTPRequestHandler):
  def auth(self):
   """ Authenticate using node function instead of API """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'auth','X-Code':401})
+  output = {}
   try:
-   length = int(self.headers['Content-Length'])
+   length = int(self.headers.get('Content-Length',0))
    args   = loads(self.rfile.read(length).decode()) if length > 0 else {}
    username, password = args['username'], args['password']
   except Exception as e:  output['error'] = {'argument':str(e)}
@@ -527,21 +520,12 @@ class SessionHandler(BaseHTTPRequestHandler):
       else:
        output['error'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
    else:
-    req  = Request("%s/auth"%(self._ctx.config['master']), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(args).encode('utf-8'))
-    try: sock = urlopen(req, timeout = 300)
-    except HTTPError as h:
-     try:
-      data   = h.read()
-      output = {'error':loads(data.decode())['error']}
-     except: output = {'error':{'master':str(h)}}
-     else:   output['code'] = h.code
+    try:
+     output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), args)['data']
+     self._headers['X-Code'] = 200
     except Exception as e:
-     output = {'error':{'master':str(e)}}
-    else:
-     try:      output = loads(sock.read().decode())
-     except:   output = {'error':{'remote response decode error'}}
-     else:     self._headers['X-Code'] = 200
-     finally:  sock.close()
+     output = {'error':e.args[0]}
+     self._headers['X-Code'] = output['code']
   output['node'] = self._ctx.node
   self._body = dumps(output).encode('utf-8')
 
@@ -554,16 +538,10 @@ class SessionHandler(BaseHTTPRequestHandler):
   if op == 'environment' and (len(node) > 0 or self._ctx.node == 'master'):
    output = self._ctx.system_info(node) if len(node) > 0 else {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers,'config':self._ctx.config}
   elif op == 'sync' and node != 'master' and node in self._ctx.node.keys():
-   settings = self._ctx.system_info(node)
-   req  = Request("%s/system/update"%(self._ctx.nodes[node]['url']), headers = { 'Content-Type': 'application/json','Accept':'application/json'}, data = dumps(settings).encode('utf-8'))
-   try: sock = urlopen(req, timeout = 300)
-   except Exception as e:
-    self._headers.update({ 'X-Exception':type(e).__name__, 'X-Code':590, 'X-Info':str(e)})
-    output = {'node':node,'result':'SYNC_NOT_OK'}
-   else:
-    output = {'node':node,'result':'SYNC_OK'}
+   try:    output = self._ctx.rest_call("%s/system/update"%(self._ctx.nodes[node]['url']), self._ctx.system_info(node))
+   except: output = {'node':node,'result':'SYNC_NOT_OK'}
   elif op == 'update':
-   length = int(self.headers['Content-Length'])
+   length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
    self._ctx.settings.clear()
    self._ctx.settings.update(loads(args.get('settings',{})))
@@ -597,10 +575,10 @@ class SessionHandler(BaseHTTPRequestHandler):
    if self._ctx.node == 'master':
     with self._ctx.db as db:
      oids = {}
-     for type in ['devices','device_types']: 
+     for type in ['devices','device_types']:
       db.do("SELECT DISTINCT oid FROM %s"%type)
-      tmp = db.get_rows() 
-      oids[type] = [x['oid'] for x in tmp] 
+      tmp = db.get_rows()
+      oids[type] = [x['oid'] for x in tmp]
     unhandled = ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
     output.append({'info':'Unhandled detected OIDs','value':unhandled})
     output.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in self._ctx.settings.get('files',{}).items()))
@@ -608,7 +586,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     output.extend(list({'info':'Imported module','value':"%s"%x} for x in modules.keys() if x.startswith('rims')))
 
   elif op == 'register':
-   length = int(self.headers['Content-Length'])
+   length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
    params = {'node':node,'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
    with self._ctx.db as db:
@@ -637,7 +615,7 @@ class Stream(object):
     k,_,v = cookie.partition('=')
     try:    self._cookies[k] = dict(x.split('=') for x in v.split(','))
     except: self._cookies[k] = v
-  try:    body_len = int(aHandler.headers['Content-Length'])
+  try:    body_len = int(aHandler.headers.get('Content-Length',0))
   except: body_len = 0
   if body_len > 0 or len(aGet) > 0:
    if body_len > 0:

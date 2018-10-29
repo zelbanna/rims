@@ -18,7 +18,7 @@ if __name__ == "__main__":
  from rims.core.common import DB, rest_call
 
  ctx = Context(aConfigFile = argv[1])
- settings = ctx.node_settings('master') if ctx.node == 'master' else rest_call("%s/settings/fetch/%s"%(ctx.config['master'],ctx.node))['data']['settings']
+ settings = ctx.node_settings('master') if ctx.node == 'master' else rest_call("%s/system/environment/%s"%(ctx.config['master'],ctx.node))['data']['settings']
  ctx.settings.update(settings)
 
  timestamp = int(time())

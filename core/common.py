@@ -125,7 +125,14 @@ class DB(object):
 ######################################### REST ########################################
 #
 #
-def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20):
+class RestException(Exception):
+ pass
+
+from json import loads, dumps
+from urllib.request import urlopen, Request
+from urllib.error import HTTPError
+
+def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20, aDecode = True):
  """ Rest call function
   Args:
    - aURL (required)
@@ -136,50 +143,42 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
    - de-json:ed data structure that function returns and all status codes
 
  """
- from json import loads, dumps
- from urllib.request import urlopen, Request
- from urllib.error import HTTPError
  try:
   head = { 'Content-Type': 'application/json','Accept':'application/json' }
   try:    head.update(aHeader)
   except: pass
-  if aArgs:
-   data = dumps(aArgs)
-   data = data.encode('utf-8')
-  else:
-   data = None
+  data = dumps(aArgs).encode('utf-8') if aArgs else None
   req = Request(aURL, headers = head, data = data)
   if aMethod:
    req.get_method = lambda: aMethod
   if aVerify is None or aVerify is True:
    sock = urlopen(req, timeout = aTimeout)
   else:
-   from ssl import _create_unverified_context
-   sock = urlopen(req,context=_create_unverified_context(), timeout = aTimeout)
+   from ssl import create_default_context
+   ssl_ctx = ssl.create_default_context()
+   ssl_ctx.check_hostname = False
+   ssl_ctx.verify_mode = ssl.CERT_NONE
+   sock = urlopen(req,context=ssl_ctx, timeout = aTimeout)
   output = {'info':dict(sock.info()), 'code':sock.code }
   output['node'] = output['info'].pop('node','_no_node_')
-  try:    output['data'] = loads(sock.read().decode())
+  try:    output['data'] = loads(sock.read().decode()) if aDecode else sock.read()
   except: output['data'] = None
   if (output['info'].get('code',200) != 200):
-   output['info'].pop('server',None)
-   output['info'].pop('connection',None)
-   output['info'].pop('transfer-encoding',None)
-   output['info'].pop('content-type',None)
+   output['code'] = output['info']['code']
    output['exception'] = 'RESTError'
   sock.close()
  except HTTPError as h:
-  raw = h.read()
-  try:    data = loads(raw.decode())
-  except: data = raw
+  try:    data = loads(h.read().decode())
+  except: data = None
   output = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
- except Exception as e: output = { 'exception':type(e).__name__, 'code':590, 'info':{'error':str(e)}}
+ except Exception as e: output = { 'exception':type(e).__name__, 'code':590, 'info':{'error':repr(e)}}
  if output.get('exception'):
-  raise Exception(output)
+  raise RestException(output)
  return output
 
 ####################################### SNMP #########################################
 #
-class SnmpError(Exception):
+class SnmpException(Exception):
  pass
 
 class Varbind(object):
@@ -315,7 +314,7 @@ class Session(object):
   # and other things. To not have the original exception attached, save
   # only the string value of the exception.
   if err:
-   raise SnmpError(err)
+   raise SnmpException(err)
 
  def oid(self,aOid):
   tmp_var = Varbind(aOid,'')

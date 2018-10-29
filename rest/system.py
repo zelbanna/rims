@@ -220,7 +220,7 @@ def settings_info(aDict, aCTX):
     section[aDict['parameter']] = aDict['value']
     aCTX.settings[aDict['section']] = section
    else:
-    aCTX.workers.add_function(aCTX.rest_call,"%s/settings/sync/%s"%(aCTX.config['master'],aDict['node']))
+    aCTX.workers.add_function(aCTX.rest_call,"%s/system/sync/%s"%(aCTX.config['master'],aDict['node']))
   if not id == 'new':
    ret['found'] = (db.do("SELECT * FROM settings WHERE id = '%s'"%id) > 0)
    ret['data']  = db.get_row()
@@ -273,7 +273,7 @@ def settings_delete(aDict, aCTX):
  if aDict['node'] == 'master':
   aCTX.settings.get(data['section'],{}).pop(data['parameter'],None)
  else:
-  aCTX.workers.add_function(aCTX.rest_call,"%s/settings/sync/%s"%(aCTX.config['master'],aDict['node']))
+  aCTX.workers.add_function(aCTX.rest_call,"%s/system/sync/%s"%(aCTX.config['master'],aDict['node']))
  return ret
 
 ################################################# NODE ##############################################
