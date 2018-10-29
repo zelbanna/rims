@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 112
+__build__ = 113
 
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
@@ -114,6 +114,10 @@ class Context(object):
    output.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in self.settings.get('files',{}).items()))
    output.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in self.settings.get('system',{}).items()))
    output.extend(list({'info':'Imported module','value':"%s"%x} for x in modules.keys() if x.startswith('rims')))
+  for mod,func  in self.analytics['modules'].items():
+   output.extend(list({'info':'Function usage','value':"%s/%s: %s"%(mod,fun,count)} for fun,count in func.items()))
+  for path,files in self.analytics['files'].items():
+   output.extend(list({'info':'File usage','value':"%s/%s: %s"%(path,file,count)} for file,count in files.items()))
   return output
 
  #
