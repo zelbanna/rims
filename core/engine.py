@@ -535,16 +535,16 @@ class SessionHandler(BaseHTTPRequestHandler):
   """ /system/<op>/<node> """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'system'})
   op,_,node = query.partition('/')
-  if op == 'environment' and (len(node) > 0 or self._ctx.node == 'master'):
+  if op == 'environment' and (len(node) == 0 or self._ctx.node == 'master'):
    output = self._ctx.system_info(node) if len(node) > 0 else {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers,'config':self._ctx.config}
-  elif op == 'sync' and node != 'master' and node in self._ctx.node.keys():
+  elif op == 'sync' and node != 'master' and node in self._ctx.nodes.keys():
    try:    output = self._ctx.rest_call("%s/system/update"%(self._ctx.nodes[node]['url']), self._ctx.system_info(node))
    except: output = {'node':node,'result':'SYNC_NOT_OK'}
   elif op == 'update':
    length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
    self._ctx.settings.clear()
-   self._ctx.settings.update(loads(args.get('settings',{})))
+   self._ctx.settings.update(args.get('settings',{}))
    output = {'node':self._ctx.node,'result':'UPDATE_OK'}
   elif op == 'reload':
    res = self._ctx.module_reload()
