@@ -79,6 +79,52 @@ class Context(object):
   self.analytics['files'][aPath] = tmp
 
  #
+ def report(self):
+  node_url = self.nodes[self.node]['url']
+  from os import path as ospath, getpid
+  from sys import version, modules, path as syspath
+  from types import ModuleType
+  from gc import get_objects
+  db_counter = {}
+  for t in enumerate():
+   try:
+    for k,v in t._ctx.db.count.items():
+     db_counter[k] = db_counter.get(k,0) + v
+   except:pass
+  output = [{'info':'System PID','value':getpid()},
+  {'info':'Node URL','value':node_url},
+  {'info':'Worker pool','value':self.workers.pool_size()},
+  {'info':'Queued tasks','value':self.workers.queue_size()},
+  {'info':'Scheduled tasks','value':self.workers.scheduler_size()},
+  {'info':'Active workers','value':self.workers.alive()},
+  {'info':'Memory objects','value':len(get_objects())},
+  {'info':'DB operations','value':", ".join("%s:%s"%i for i in db_counter.items())},
+  {'info':'Python version','value':version.replace('\n','')},
+  {'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))},
+  {'info':'System path','value':",".join(syspath)}]
+  if self.node == 'master':
+   with self.db as db:
+    oids = {}
+    for type in ['devices','device_types']:
+     db.do("SELECT DISTINCT oid FROM %s"%type)
+     tmp = db.get_rows()
+     oids[type] = [x['oid'] for x in tmp]
+   unhandled = ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
+   output.append({'info':'Unhandled detected OIDs','value':unhandled})
+   output.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in self.settings.get('files',{}).items()))
+   output.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in self.settings.get('system',{}).items()))
+   output.extend(list({'info':'Imported module','value':"%s"%x} for x in modules.keys() if x.startswith('rims')))
+  return output
+
+ #
+ def log(aMsg, aID='None'):
+  try:
+   with open(self.config['logs']['system'], 'a') as f:
+    from time import localtime, strftime
+    f.write(str("%s (%s): %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))
+  except: pass
+
+ #
  def system_info(self,aNode):
   nodes, services, settings = {}, {}, {}
   with self.db as db:
@@ -189,7 +235,11 @@ class Context(object):
   elif sig == SIGUSR1:
    print("\n".join(self.module_reload()))
   elif sig == SIGUSR2:
-   print(dumps({k:repr(v) for k,v in self.external.items()},indent=4, sort_keys=True))
+   print("System Info:")
+   print("_____________________________")
+   for data in self.report():
+    print("%(info)s: %(value)s"%data)
+   print("_____________________________")
 
 
 ########################################## WorkerPool ########################################
@@ -302,7 +352,6 @@ class QueueWorker(Thread):
   self.start()
 
  def run(self):
-  from .common import log
   while not self._abort.is_set():
    try:
     self._idle.set()
@@ -313,9 +362,9 @@ class QueueWorker(Thread):
     else:
      result = func(args,self._ctx)
      if kwargs.get('output'):
-      log("%s - %s => %s"%(self.name,repr(func),dumps(result)), self._ctx.config['logs']['system'])
+      self._ctx.log("%s - %s => %s"%(self.name,repr(func),dumps(result)))
    except Exception as e:
-    log("%s - ERROR => %s"%(self.name,str(e)), self._ctx.config['logs']['system'])
+    self._ctx.log("%s - ERROR => %s"%(self.name,str(e)))
    finally:
     if sema:
      sema.release()
@@ -550,41 +599,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    res = self._ctx.module_reload()
    output = {'modules':res}
   elif op == 'report':
-   node_url = self._ctx.nodes[self._ctx.node]['url']
-   from os import path as ospath, getpid
-   from sys import version, modules, path as syspath
-   from types import ModuleType
-   from gc import get_objects
-   db_counter = {}
-   for t in enumerate():
-    try:
-     for k,v in t._ctx.db.count.items():
-      db_counter[k] = db_counter.get(k,0) + v
-    except:pass
-   output = [{'info':'System PID','value':getpid()},
-   {'info':'Node URL','value':node_url},
-   {'info':'Worker pool','value':self._ctx.workers.pool_size()},
-   {'info':'Queued tasks','value':self._ctx.workers.queue_size()},
-   {'info':'Scheduled tasks','value':self._ctx.workers.scheduler_size()},
-   {'info':'Active workers','value':self._ctx.workers.alive()},
-   {'info':'Memory objects','value':len(get_objects())},
-   {'info':'DB operations','value':", ".join("%s:%s"%i for i in db_counter.items())},
-   {'info':'Python version','value':version},
-   {'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))},
-   {'info':'System path','value':",".join(syspath)}]
-   if self._ctx.node == 'master':
-    with self._ctx.db as db:
-     oids = {}
-     for type in ['devices','device_types']:
-      db.do("SELECT DISTINCT oid FROM %s"%type)
-      tmp = db.get_rows()
-      oids[type] = [x['oid'] for x in tmp]
-    unhandled = ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
-    output.append({'info':'Unhandled detected OIDs','value':unhandled})
-    output.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in self._ctx.settings.get('files',{}).items()))
-    output.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in self._ctx.settings.get('system',{}).items()))
-    output.extend(list({'info':'Imported module','value':"%s"%x} for x in modules.keys() if x.startswith('rims')))
-
+   output = self._ctx.report()
   elif op == 'register':
    length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
@@ -593,7 +608,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
    output = {'update':update,'success':True}
   else:
-   output = {'result':'NOT_OK','info':'system/<register|show|environment|sync|reload>/<node> where show and reload runs on any node'}
+   output = {'result':'NOT_OK','info':'system/<register|environment|sync|reload>/<node> where show and reload runs on any node'}
   self._body = dumps(output).encode('utf-8')
 
 ########################################### Web stream ########################################

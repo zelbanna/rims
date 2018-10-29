@@ -100,7 +100,6 @@ def logs_clear(aDict, aCTX):
 
  Output:
  """
- from rims.core.common import log
  ret = {'node':aCTX.node,'file':{}}
  log_files = dict(aCTX.config['logs'])
  log_files.update(aCTX.settings.get('logs',{}))
@@ -108,7 +107,7 @@ def logs_clear(aDict, aCTX):
   try:
    open(file,'w').close()
    ret['file'][name] = 'CLEARED'
-   log("Emptied log [{}]".format(name),aCTX.config['logs']['system'])
+   aCTX.log("Emptied log [{}]".format(name))
   except Exception as err:
    ret['file'][name] = 'ERROR: %s'%(str(err))
  return ret

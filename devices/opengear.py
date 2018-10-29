@@ -31,5 +31,5 @@ class Device(GenericDevice):
    for obj in portobjs:
     result.append({'interface':obj.iid,'name':obj.val.decode(),'port':str(6000+int(obj.iid))})
   except Exception as exception_error:
-   self.log_msg("OpenGear : error loading conf " + str(exception_error))
+   self.log("OpenGear : error loading conf " + str(exception_error))
   return result

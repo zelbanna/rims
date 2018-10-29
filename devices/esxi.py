@@ -23,7 +23,8 @@ class Device(GenericDevice):
   return ['manage']
 
  def __init__(self,aIP, aCTX):
-  GenericDevice.__init__(self,aIP, aCTX, aCTX.settings['esxi'].get('logformat',aCTX.config['logs']['system']).format(aIP))
+  GenericDevice.__init__(self,aIP, aCTX)
+, self._logfile = aCTX.settings['esxi'].get('logformat',aCTX.config['logs']['system']).format(aIP))
   self._sshclient = None
 
  def __enter__(self):
@@ -38,7 +39,7 @@ class Device(GenericDevice):
  def __str__(self):
   return self._ip + " SSHConnected:" + str(self._sshclient != None)
 
- def log_msg(self, aMsg):
+ def log(self, aMsg):
   from time import localtime, strftime
   output = str("{} : {}".format(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg))
   with open(self._logfile, 'a') as f:
@@ -73,7 +74,7 @@ class Device(GenericDevice):
     self._sshclient.set_missing_host_key_policy(AutoAddPolicy())
     self._sshclient.connect(self._ip, username=self._ctx.settings['esxi']['username'], password=self._ctx.settings['esxi']['password'] )
    except AuthenticationException:
-    self.log_msg("ESXi_DEBUG: Authentication failed when connecting")
+    self.log("ESXi_DEBUG: Authentication failed when connecting")
     self._sshclient = None
     return False
   return True
@@ -82,7 +83,7 @@ class Device(GenericDevice):
   from select import select
   if self._sshclient:
    output = ""
-   self.log_msg("ESXi_ssh_send: [{}]".format(aMessage))
+   self.log("ESXi_ssh_send: [{}]".format(aMessage))
    stdin, stdout, stderr = self._sshclient.exec_command(aMessage)
    while not stdout.channel.exit_status_ready():
     if stdout.channel.recv_ready():
@@ -91,7 +92,7 @@ class Device(GenericDevice):
       output = output + stdout.channel.recv(4096).decode()
    return output.rstrip('\n')
   else:
-   self.log_msg("ESXi_Error: trying to send to closed channel")
+   self.log("ESXi_Error: trying to send to closed channel")
    self._sshclient = None
 
  def ssh_close(self):
@@ -100,7 +101,7 @@ class Device(GenericDevice):
     self._sshclient.close()
     self._sshclient = None
    except Exception as err:
-    self.log_msg( "Close error: " + str(err))
+    self.log( "Close error: " + str(err))
 
  #
  # SNMP interaction

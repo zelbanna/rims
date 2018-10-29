@@ -46,7 +46,7 @@ class Junos(GenericDevice):
    self._model = self._router.facts['model']
    self._version = self._router.facts['version']
   except Exception as err:
-   self.log_msg("System Error - Unable to connect to router: " + str(err))
+   self.log("System Error - Unable to connect to router: " + str(err))
    return False
   return True
 
@@ -54,7 +54,7 @@ class Junos(GenericDevice):
   try:
    self._router.close()
   except Exception as err:
-   self.log_msg("System Error - Unable to properly close router connection: " + str(err))
+   self.log("System Error - Unable to properly close router connection: " + str(err))
 
  def interfaces(self):
   return {k:v for k,v in super(Junos,self).interfaces().items() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb']}

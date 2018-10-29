@@ -66,7 +66,6 @@ def authenticate(aDict, aCTX):
 
  Output:
  """
- from rims.core.common import log
  ret = {}
  node = aDict['node']
  controller = Device(aCTX.nodes[node]['url'])
@@ -81,9 +80,9 @@ def authenticate(aDict, aCTX):
     svc = controller.get_service(service,aDict.get('interface','internal'))
     db.do("INSERT INTO openstack_services(id,service,service_url,service_id) VALUES('%s','%s','%s','%s')"%(token_id,service,svc['url'],svc['id']))
    db.do("INSERT INTO openstack_services(id,service,service_url,service_id) VALUES('%s','%s','%s','%s')"%(token_id,'contrail',aCTX.settings[node]['contrail'],''))
-  log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],node),aCTX.config['logs']['system'])
+  aCTX.log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],node))
  else:
-  log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl),aCTX.config['logs']['system'])
+  aCTX.log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl))
  return ret
 
 #

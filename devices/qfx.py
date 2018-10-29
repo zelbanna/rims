@@ -36,5 +36,5 @@ class Device(Junos):
      interface = entry.find("l2ng-l2-mac-logical-interface").text
      fdblist.append({ 'VLAN':vlan, 'MAC':mac, 'Interface':interface })
   except Exception as err:
-   self.log_msg("System Error - fetching FDB: " + str(err))
+   self.log("System Error - fetching FDB: " + str(err))
   return fdblist

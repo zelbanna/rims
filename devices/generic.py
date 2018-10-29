@@ -3,15 +3,14 @@ __author__  = "Zacharias El Banna"
 __type__    = "generic"
 __icon__    = "viz-generic.png"
 
-from rims.core.common import VarList, Varbind, Session, log
+from rims.core.common import VarList, Varbind, Session
 
 ############################################# Device ##########################################
 class Device(object):
 
- def __init__(self, aIP, aCTX, aLog = None):
+ def __init__(self, aIP, aCTX):
   self._ip = aIP
   self._ctx = aCTX
-  self._logfile  = aLog
 
  @classmethod
  def get_functions(cls):  return []
@@ -22,6 +21,8 @@ class Device(object):
 
  def __exit__(self, *ctx_info): pass
 
+ def log(self, aMsg): self._ctx.log(aMsg)
+
  def shutdown(self):  return False
 
  def rebind(self,aIP): self._ip = aIP
@@ -29,8 +30,6 @@ class Device(object):
  def ping_device(self):
   from os import system
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
-
- def log_msg(self, aMsg): log(aMsg,self._logfile)
 
  def configuration(self,argdict):
   ret = ["No config template for this device type.","",

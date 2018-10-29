@@ -44,10 +44,10 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['write'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind(tag,iid , op ,"INTEGER"))
    res = session.set(setobj)
-   self.log_msg("Avocent - {0} set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
+   self.log("Avocent - {0} set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
    return {'res':'OK'}
   except Exception as e:
-   self.log_msg("Avocent(%s) - error setting state: %s"%(self._ip,str(e)))
+   self.log("Avocent(%s) - error setting state: %s"%(self._ip,str(e)))
    return {'res':'NOT_OK', 'info':str(exception_error) }
 
  def set_name(self,slot,unit,name):
@@ -60,7 +60,7 @@ class Device(GenericDevice):
    session.set(setobj)
    return "%s.%s:'%s'"%(slot,unit,name)
   except Exception as e:
-   self.log_msg("Avocent(%s) : error setting name: %s"%(self._ip,str(e)))
+   self.log("Avocent(%s) : error setting name: %s"%(self._ip,str(e)))
    return "Error setting name '%s'"%(name)
 
  def get_state(self,slot,unit):
@@ -70,7 +70,7 @@ class Device(GenericDevice):
    session.get(stateobj)
    return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
   except Exception as e:
-   self.log_msg("Avocent(%s) : error getting state: %s"%(self._ip,str(e)))
+   self.log("Avocent(%s) : error getting state: %s"%(self._ip,str(e)))
    return {'res':'NOT_OK','info':str(e), 'state':'unknown' }
 
  #
@@ -84,7 +84,7 @@ class Device(GenericDevice):
    for slot in slotobjs:
     slots.append([slot.iid, slot.val.decode()])
   except Exception as e:
-   self.log_msg("Avocent(%s) : error loading pdu member names: %s"%(self._ip,str(e)))
+   self.log("Avocent(%s) : error loading pdu member names: %s"%(self._ip,str(e)))
   return slots
 
  #
@@ -103,5 +103,5 @@ class Device(GenericDevice):
    for indx,outlet in enumerate(outletobjs,0):
     result.append({'slot':outlet.tag[34:],'unit':outlet.iid,'name':outlet.val.decode(),'state':Device.get_outlet_state(stateobjs[indx].val.decode()),'slotname':slotdict.get(outlet.tag[34:],"unknown")})
   except Exception as e:
-   self.log_msg("Avocent(%s) : error loading conf: %s"%(self._ip,str(e)))
+   self.log("Avocent(%s) : error loading conf: %s"%(self._ip,str(e)))
   return result

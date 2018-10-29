@@ -1,17 +1,6 @@
 """Common module, i.e. database, log, rest_call and SNMP functions"""
 __author__ = "Zacharias El Banna"
 
-############################################# Logger ######################################
-#
-# Basic logger
-#
-def log(aMsg, aFile, aID='None'):
- try:
-  with open(aFile, 'a') as f:
-   from time import localtime, strftime
-   f.write(str("%s (%s): %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))
- except: pass
-
 ############################################ Database ######################################
 #
 # Threads safe Database Class
@@ -168,9 +157,9 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
    output['exception'] = 'RESTError'
   sock.close()
  except HTTPError as h:
-  try:    data = loads(h.read().decode())
-  except: data = None
-  output = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info()), 'data':data }
+  output = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info())}
+  try:    output['data'] = loads(h.read().decode())
+  except: pass
  except Exception as e: output = { 'exception':type(e).__name__, 'code':590, 'info':{'error':repr(e)}}
  if output.get('exception'):
   raise RestException(output)

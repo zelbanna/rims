@@ -106,8 +106,7 @@ def log(aDict, aCTX):
  Output:
  """
  ret = {'result':'OK'}
- from rims.core.common import log
- log(aDict['msg'],aCTX.config['logs']['system'])
+ aCTX.log(aDict['msg'])
  return ret
 
 #

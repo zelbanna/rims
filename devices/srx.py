@@ -31,7 +31,7 @@ class Device(Junos):
     self.dnslist = result.xpath(".//dhcp-option[dhcp-option-name='name-server']/dhcp-option-value")[0].text.strip('[] ').replace(", "," ").split()
     self.dhcpip = addresslist[0].text
   except Exception as err:
-   self.log_msg("System Error - verifying DHCP assignment: " + str(err))
+   self.log("System Error - verifying DHCP assignment: " + str(err))
    return False
   return True
 
@@ -39,7 +39,7 @@ class Device(Junos):
   try:
    return self._router.rpc.cli("request system services dhcp renew " + interface, format='text')
   except Exception as err:
-   self.log_msg("System Error - cannot renew DHCP lease: " +str(err))
+   self.log("System Error - cannot renew DHCP lease: " +str(err))
   return False
    
  def get_ipsec(self,gwname):
@@ -53,7 +53,7 @@ class Device(Junos):
    address = ike.xpath(".//gateway[name='" + gwname + "']/address")
    return address[0].text, self.tunnels
   except Exception as err:
-   self.log_msg("System Error - getting IPsec data: " + str(err))
+   self.log("System Error - getting IPsec data: " + str(err))
    return None, self.tunnels
 
  def set_ipsec(self,gwname,oldip,newip):
@@ -62,6 +62,6 @@ class Device(Junos):
    self._config.load("delete security ike gateway " + gwname + " address " + oldip, format = 'set')
    self._config.commit("commit by setIPsec ["+gwname+"]")
   except Exception as err:
-   self.log_msg("System Error - modifying IPsec: " + str(err))
+   self.log("System Error - modifying IPsec: " + str(err))
    return False
   return True

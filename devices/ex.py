@@ -49,5 +49,5 @@ class Device(Junos):
      if not mac == "*" and not interface == "Router":
       fdblist.append({'VLAN':vlan, 'MAC':mac, 'Interface':interface, 'Description':self.get_interface_name(interface)}) 
   except Exception as err:
-   self.log_msg("System Error - fetching FDB: " + str(err))
+   self.log("System Error - fetching FDB: " + str(err))
   return fdblist
