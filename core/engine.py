@@ -1,14 +1,16 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 113
+__build__ = 114
 
+__all__ = ['Context','WorkerPool']
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
 from threading import Thread, Event, BoundedSemaphore, enumerate
 from time import localtime, strftime, time, sleep
-from http.server import BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
+
 
 ########################################### Context ########################################
 #
@@ -80,11 +82,11 @@ class Context(object):
 
  #
  def report(self):
-  node_url = self.nodes[self.node]['url']
   from os import path as ospath, getpid
   from sys import version, modules, path as syspath
   from types import ModuleType
   from gc import get_objects
+  node_url = self.nodes[self.node]['url']
   db_counter = {}
   for t in enumerate():
    try:
@@ -124,7 +126,6 @@ class Context(object):
  def log(aMsg, aID='None'):
   try:
    with open(self.config['logs']['system'], 'a') as f:
-    from time import localtime, strftime
     f.write(str("%s (%s): %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))
   except: pass
 
@@ -254,7 +255,7 @@ class WorkerPool(object):
  def __init__(self, aWorkers, aContext):
   from queue import Queue
   self._queue     = Queue(0)
-  self._count = aWorkers
+  self._count     = aWorkers
   self._ctx       = aContext
   self._abort     = Event()
   self._idles     = []
@@ -316,7 +317,7 @@ class WorkerPool(object):
   for i in range(aSize):
    aSema.acquire()
 
-###################################### Threads ########################################
+###################################### Workers ########################################
 #
 
 class ScheduleWorker(Thread):
@@ -380,7 +381,6 @@ class ServerWorker(Thread):
 
  def __init__(self, aNumber, aAddress, aSocket, aPath, aContext):
   Thread.__init__(self)
-  from http.server import HTTPServer
   self.name    = "ServerWorker(%02d)"%aNumber
   self.daemon  = True
   httpd = HTTPServer(aAddress, SessionHandler, False)
@@ -525,18 +525,18 @@ class SessionHandler(BaseHTTPRequestHandler):
    self._headers['Content-type']='text/css; charset=utf-8'
   try:
    from os import walk, path as ospath
-   if path == 'files':
+   if not path == 'files':
+    fullpath = ospath.join(self.server._path,path,query)
+   else:
     param,_,file = query.partition('/')
     fullpath = ospath.join(self._ctx.settings['files'][param],file)
+   if not fullpath.endswith("/"):
+    with open(fullpath, 'rb') as file:
+     self._body = file.read()
    else:
-    fullpath = ospath.join(self.server._path,path,query)
-   if fullpath.endswith("/"):
     self._headers['Content-type']='text/html; charset=utf-8'
     _, _, filelist = next(walk(fullpath), (None, None, []))
     self._body = ("<BR>".join("<A HREF='{0}'>{0}</A>".format(file) for file in filelist)).encode('utf-8')
-   else:
-    with open(fullpath, 'rb') as file:
-     self._body = file.read()
   except Exception as e:
    self._headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
    self._body = b''
