@@ -254,6 +254,7 @@ def restart(aDict, aCTX):
  ret = {}
  try:
   ret['output'] = check_output(aCTX.settings['powerdns'].get('reload','service pdns restart').split()).decode()
+  ret['code'] = 0
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output
