@@ -475,7 +475,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    if isinstance(e.args[0],dict) and e.args[0].get('code'):
     error = {'X-Args':args, 'X-Exception':e.args[0].get('exception'), 'X-Code':e.args[0]['code'], 'X-Info':e.args[0].get('info')}
    else:
-    error = {'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':500, 'X-Info':repr(e)}
+    error = {'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':500, 'X-Info':','.join(map(str,e.args))}
    self._headers.update(error)
    if extras.get('debug') or path == 'debug':
     from traceback import format_exc
