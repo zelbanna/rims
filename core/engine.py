@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 114
+__build__ = 115
 
 __all__ = ['Context','WorkerPool']
 from json import loads, load, dumps
@@ -123,7 +123,7 @@ class Context(object):
   return output
 
  #
- def log(aMsg, aID='None'):
+ def log(self,aMsg, aID='None'):
   try:
    with open(self.config['logs']['system'], 'a') as f:
     f.write(str("%s (%s): %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))
