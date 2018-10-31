@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 115
+__build__ = 116
 
 __all__ = ['Context','WorkerPool']
 from json import loads, load, dumps
@@ -10,6 +10,18 @@ from threading import Thread, Event, BoundedSemaphore, enumerate
 from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
+
+####################################### Debug Decorator ####################################
+#
+
+def debug(func_name):
+ def decorator(func):
+  def decorated(*args,**kwargs):
+   res = func(*args,**kwargs)
+   print("DEBUGGER: %s(%s,%s) => %s"%(func_name, args, kwargs, res))
+   return res
+  return decorated
+ return decorator
 
 
 ########################################### Context ########################################
@@ -123,6 +135,7 @@ class Context(object):
   return output
 
  #
+ # @debug('log')
  def log(self,aMsg, aID='None'):
   try:
    with open(self.config['logs']['system'], 'a') as f:
@@ -266,17 +279,17 @@ class WorkerPool(object):
   for n in range(self._count):
    idle  = Event()
    self._idles.append(idle)
-   self._workers.append(QueueWorker(n, self._abort, idle, self._ctx))
+   self._workers.append(QueueWorker(n, self._abort, idle, self._queue, self._ctx))
 
  def __str__(self):
   return "WorkerPool(%s):[%s,%s,%s]"%(self._count,self._queue.qsize(),len(self._scheduler),self.alive())
 
  def add_function(self, aFunction, *args, **kwargs):
-  self._queue.put((aFunction,'FUNCTION',None,args,kwargs))
+  self._queue.put((aFunction,'FUNCTION',None,False,args,kwargs))
 
  def add_semaphore(self, aFunction, aSema, *args, **kwargs):
   aSema.acquire()
-  self._queue.put((aFunction,'FUNCTION',aSema,args,kwargs))
+  self._queue.put((aFunction,'FUNCTION',aSema,False,args,kwargs))
 
  def add_transient(self, aTask, aSema = None):
   try:
@@ -286,7 +299,7 @@ class WorkerPool(object):
   else:
    if aSema:
     aSema.acquire()
-   self._queue.put((func,'TASK',aSema,aTask['args'],{'output':aTask['output']}))
+   self._queue.put((func,'TASK',aSema,aTask['output'],aTask['args'],None))
 
  def add_periodic(self, aTask, aFrequency):
   try:
@@ -329,7 +342,7 @@ class ScheduleWorker(Thread):
   self._abort = aAbort
   self._func  = aFunc
   self._args  = aTask['args']
-  self._output= {'output':aTask['output']}
+  self._output= aTask['output']
   self.daemon = True
   self.name   = "ScheduleWorker(%s,%s)"%(aTask['id'],self._freq)
   self.start()
@@ -337,7 +350,7 @@ class ScheduleWorker(Thread):
  def run(self):
   sleep(self._freq - int(time())%self._freq)
   while not self._abort.is_set():
-   self._queue.put((self._func,'TASK',None,self._args,self._output))
+   self._queue.put((self._func,'TASK',None,self._output,self._args,None))
    sleep(self._freq)
   return False
 
@@ -345,14 +358,14 @@ class ScheduleWorker(Thread):
 #
 class QueueWorker(Thread):
 
- def __init__(self, aNumber, aAbort, aIdle, aContext):
+ def __init__(self, aNumber, aAbort, aIdle, aQueue, aContext):
   Thread.__init__(self)
   self._n      = aNumber
   self.name    = "QueueWorker(%02d)"%aNumber
   self._abort  = aAbort
   self._idle   = aIdle
   self._ctx    = aContext.clone()
-  self._queue  = self._ctx.workers._queue
+  self._queue  = aQueue
   self.daemon  = True
   self.start()
 
@@ -360,14 +373,14 @@ class QueueWorker(Thread):
   while not self._abort.is_set():
    try:
     self._idle.set()
-    func, mode, sema, args, kwargs = self._queue.get(True)
+    func, mode, sema, output, args, kwargs = self._queue.get(True)
     self._idle.clear()
     if mode == 'FUNCTION':
      result = func(*args,**kwargs)
     else:
      result = func(args,self._ctx)
-     if kwargs.get('output'):
-      self._ctx.log("%s - %s => %s"%(self.name,repr(func),dumps(result)))
+    if output:
+     self._ctx.log("%s - %s => %s"%(self.name,repr(func),dumps(result)))
    except Exception as e:
     self._ctx.log("%s - ERROR => %s"%(self.name,str(e)))
    finally:
