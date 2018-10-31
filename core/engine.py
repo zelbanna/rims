@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 116
+__build__ = 117
 
 __all__ = ['Context','WorkerPool']
 from json import loads, load, dumps
@@ -364,8 +364,8 @@ class QueueWorker(Thread):
   self.name    = "QueueWorker(%02d)"%aNumber
   self._abort  = aAbort
   self._idle   = aIdle
-  self._ctx    = aContext.clone()
   self._queue  = aQueue
+  self._ctx    = aContext.clone()
   self.daemon  = True
   self.start()
 
@@ -387,6 +387,7 @@ class QueueWorker(Thread):
     if sema:
      sema.release()
     self._queue.task_done()
+  return False
 
 #
 #
@@ -598,14 +599,14 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def system(self,query):
-  """ /system/<op>/<node> """
+  """ /system/<op>/<args> """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'system'})
-  op,_,node = query.partition('/')
-  if op == 'environment' and (len(node) == 0 or self._ctx.node == 'master'):
-   output = self._ctx.system_info(node) if len(node) > 0 else {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers,'config':self._ctx.config}
-  elif op == 'sync' and node != 'master' and node in self._ctx.nodes.keys():
-   try:    output = self._ctx.rest_call("%s/system/update"%(self._ctx.nodes[node]['url']), self._ctx.system_info(node))
-   except: output = {'node':node,'result':'SYNC_NOT_OK'}
+  op,_,arg = query.partition('/')
+  if op == 'environment' and (len(arg) == 0 or self._ctx.node == 'master'):
+   output = self._ctx.system_info(arg) if len(arg) > 0 else {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers,'config':self._ctx.config}
+  elif op == 'sync' and args != 'master' and args in self._ctx.nodes.keys():
+   try:    output = self._ctx.rest_call("%s/system/update"%(self._ctx.nodes[args]['url']), self._ctx.system_info(arg))
+   except: output = {'node':args,'result':'SYNC_NOT_OK'}
   elif op == 'update':
    length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
@@ -620,12 +621,14 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif op == 'register':
    length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
-   params = {'node':node,'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
+   params = {'node':arg,'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
    with self._ctx.db as db:
     update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
    output = {'update':update,'success':True}
+  elif op == 'import' :
+   output = self._ctx.module_register(arg)
   else:
-   output = {'result':'NOT_OK','info':'system/<register|environment|sync|reload>/<node> where show and reload runs on any node'}
+   output = {'result':'NOT_OK','info':'system/<import|register|environment|sync|reload>/<args: node|module_to_import> where import, environment without args and reload runs on any node'}
   self._body = dumps(output).encode('utf-8')
 
 ########################################### Web stream ########################################
