@@ -1,12 +1,9 @@
-/*
-Version: 18.03.20GA
+/* Main System CSS 
 
-<HEAD><LINK REL="stylesheet" TYPE="text/css" HREF="rims.css"></HEAD>
+Use a Color together with this one to get proper color end result
 
-SECTION/ARTICLE/DIV ID naming: div_xyz ('_':s)
+SECTION -> ARTICLE -> DIV ID naming: div_xyz ('_':s)
 
-Main:   #3E84F4
-Darker: #2674F2
 Back:   #F1F1F1
 Content:#FFFFFF 
 
@@ -27,20 +24,6 @@ ul {     list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
 li {     display:inline-block; }
 
 /*###################################### Content Model ########################################*/
-header {        position:fixed; height:75px;          width:100%; padding-left:5px; background-color: #3E84F4;}
-main {          position:fixed; top:75px; bottom:0px; width:100%; background-color:#F1F1F1;}
-
-nav {           clear:both; font-size:14px; height:34px; background-color:#2674F2; display:block; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); }
-nav ul {        overflow:hidden; }
-nav li {        height:34px; float:left; }
-nav li a {      padding:8px; outline:none; font-weight:normal; display:inline-block; position:relative; text-align:center; color:#FFFFFF; cursor:pointer; }
-nav li a:hover{ background-color:#3E84F4; }
-nav li a:active{ opacity:0.8; }
-nav li a.reload {   background-image: url(../images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; margin: 0px 10px; height:100%; } 
-nav li.navinfo {  background-color:#00CC66;       font-weight:bold; color:#FFFFFF }
-nav li.dropdown:hover .dropdown-content{ display:block; }
-nav div.dropdown-content { display:none; position: absolute; background-color: #3E84F4; min-width: 60px; overflow:auto; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 200; }
-nav div.dropdown-content > a { display:block; text-align:left; }
 
 section.content {       position:absolute; top:34px; bottom:0px; width:100%;  box-sizing: border-box; overflow: auto; clear:both;}
 section.content-left {  position:absolute; top:0px;  bottom:0px; width:400px; overflow-y:auto; overflow-x:hidden; }
@@ -125,8 +108,6 @@ div.state { border: 1px solid #9CA6B0; border-radius:16px; height:16px; width:16
  
 /*################################ JS tools ####################################*/
 
-.highlight { border: 1px solid #3E84F4; }
-
 div.overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:10000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
 div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; }
  /* Spin properties */
@@ -143,10 +124,6 @@ ul.drop li {     font-size:11px; }
 ul.vertical {    display:block!important; }
 ul.vertical li { display:table!important; }
 
-.slider {                       height: 10px; border-radius: 3px; background:#9CA6B0; outline: none; opacity: 0.7; -webkit-appearance: none;} 
-.slider::-webkit-slider-thumb { height: 15px; border-radius: 50%; background:#3E84F4; width:15px; cursor: pointer; -webkit-appearance: none; appearance: none;}
-.slider::-moz-range-thumb {     height: 15px; border-radius: 50%; background:#3E84F4; width:15px; cursor: pointer; }
-
 /*################################ Common ###################################*/
 
 .z-op {  outline:none; cursor:pointer;}
@@ -154,7 +131,7 @@ ul.vertical li { display:table!important; }
 a{ color:#000000; background-color:transparent;-webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; }
 a:active,a:hover{ outline-width:0; }
 
-button,a.btn { -webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; background-position: center; background-repeat: no-repeat; border:none; border-radius:3px; display: inline-block; font-family: "Courier New", serif; font-size: 14px; vertical-align:top; outline:none; overflow:hidden; text-align:center; text-decoration:none!important; white-space:nowrap; padding:2px; margin:0px; }
+button,a.btn { -webkit-text-decoration-skip:objects; text-decoration:none; font-weight:bold; background-size:contain; background-position: center; background-repeat: no-repeat; border:none; border-radius:3px; display: inline-block; font-family: "Courier New", serif; font-size: 14px; vertical-align:top; outline:none; overflow:hidden; text-align:center; text-decoration:none!important; white-space:nowrap; padding:2px; margin:0px; }
 button:hover, a.btn:hover {  opacity:0.7; }
 button:active,a.btn:active { opacity:0.5; }
 
@@ -163,9 +140,5 @@ button.menu:hover,a.menu:hover { box-shadow:4px 4px 4px 0 rgba(0,0,0,0.3); font-
 button.menu > img,a.menu > img{  max-height:43px; }
 
 a.text {  padding:2px!important; }
-a.small { height: 22px; margin:0px; margin-right:1px; margin-bottom:2px; font-size:14px; color:#FFFFFF; background-color:#3E84F4; padding:0px; border-radius: 3px; border:none!important; box-shadow:0px 2px rgba(0,0,0,0.3);}
-a.small:hover { box-shadow:0px 2px rgba(0,0,0,0.3); }
-a.small:active { transform: translateY(1px); box-shadow:0px 1px rgba(0,0,0,0.3);}
-a.small > img { height:22px; }
 
 a.ipam { height:22px; width:22px; font-size:9px; color:#000000; margin:2px; padding:2px; float:left; font-family: Verdana,sans-serif; border: 1px solid #9CA6B0; }

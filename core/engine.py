@@ -700,7 +700,7 @@ class Stream(object):
   return "&".join("%s=%s"%(k,v) for k,v in self._form.items() if not k in aExcept)
 
  def button(self,aImg,**kwargs):
-  return "<A CLASS='btn z-op small' " + " ".join("%s='%s'"%i for i in kwargs.items()) + "><IMG SRC='../images/btn-%s.png'></A>"%(aImg)
+  return "<A CLASS='btn btn-%s z-op small' %s></A>"%(aImg," ".join("%s='%s'"%i for i in kwargs.items()))
 
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
   return self._rest_call("%s/api/%s"%(self._node_url,aAPI), aArgs, aTimeout = 60)['data']
@@ -709,10 +709,11 @@ class Stream(object):
   return self._rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
  def put_html(self, aTitle = None, aIcon = 'rims.ico'):
-  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/system.css'>")
+  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/system.css'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/blue.css'>")
   if aTitle:
-   self._body.append("<TITLE>" + aTitle + "</TITLE>")
+   self._body.append("<TITLE>%s</TITLE>"%aTitle)
   self._body.append("<LINK REL='shortcut icon' TYPE='image/png' HREF='../images/%s'/>"%(aIcon))
   self._body.append("<SCRIPT SRC='../infra/3.1.1.jquery.min.js'></SCRIPT><SCRIPT SRC='../infra/4.21.0.vis.min.js'></SCRIPT><SCRIPT SRC='../infra/system.js'></SCRIPT>")
   self._body.append("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ) .on('input','.slider',slide_monitor); });</SCRIPT>")
   self._body.append("</HEAD>")
+
