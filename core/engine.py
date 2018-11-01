@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 117
+__build__ = 118
 
 __all__ = ['Context','WorkerPool']
 from json import loads, load, dumps
@@ -204,6 +204,7 @@ class Context(object):
  def close(self):
   """ TODO clean up and close all DB connections and close socket """
   self.workers.abort()
+  self.workers.cleanup()
   try: self.sock.close()
   except: pass
   self.kill.set()
@@ -308,7 +309,14 @@ class WorkerPool(object):
   except: pass
   else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
 
- def abort(self): self._abort.set()
+ def abort(self):
+  self._abort.set()
+
+ def cleanup(self):
+  def dummy():
+   print("DUMMY getting killed")
+  """ Inject dummy tasks to kill off workers """
+  pass
 
  def alive(self):
   return len([x for x in self._workers if x.is_alive()])
@@ -606,13 +614,16 @@ class SessionHandler(BaseHTTPRequestHandler):
    output = self._ctx.system_info(arg) if len(arg) > 0 else {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers,'config':self._ctx.config}
   elif op == 'sync' and args != 'master' and args in self._ctx.nodes.keys():
    try:    output = self._ctx.rest_call("%s/system/update"%(self._ctx.nodes[args]['url']), self._ctx.system_info(arg))
-   except: output = {'node':args,'result':'SYNC_NOT_OK'}
+   except: output = {'node':args,'status':'SYNC_NOT_OK'}
   elif op == 'update':
    length = int(self.headers.get('Content-Length',0))
-   args = loads(self.rfile.read(length).decode()) if length > 0 else {}
-   self._ctx.settings.clear()
-   self._ctx.settings.update(args.get('settings',{}))
-   output = {'node':self._ctx.node,'result':'UPDATE_OK'}
+   if length > 0:
+    args = loads(self.rfile.read(length).decode())
+    self._ctx.settings.clear()
+    self._ctx.settings.update(args.get('settings',{}))
+    output = {'node':self._ctx.node,'status':'UPDATE_OK'}
+   else:
+    output = {'node':self._ctx.node,'status':'UPDATE_NOT_OK'}
   elif op == 'reload':
    res = self._ctx.module_reload()
    output = {'modules':res}
@@ -628,7 +639,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif op == 'import' :
    output = self._ctx.module_register(arg)
   else:
-   output = {'result':'NOT_OK','info':'system/<import|register|environment|sync|reload>/<args: node|module_to_import> where import, environment without args and reload runs on any node'}
+   output = {'status':'NOT_OK','info':'system/<import|register|environment|sync|reload>/<args: node|module_to_import> where import, environment without args and reload runs on any node'}
   self._body = dumps(output).encode('utf-8')
 
 ########################################### Web stream ########################################
