@@ -15,7 +15,7 @@ nav li {        height:34px; float:left; }
 nav li a {      padding:8px; outline:none; font-weight:normal; display:inline-block; position:relative; text-align:center; color:#FFFFFF; cursor:pointer; }
 nav li a:hover{ background-color:#3E84F4; }
 nav li a:active{ opacity:0.8; }
-nav li a.reload {   background-image: url(../images/btn-nav-reload.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; margin: 0px 10px; height:100%; } 
+nav li a.reload {   background-image: url(../images/btn-nav-reload.blue.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; margin: 0px 10px; height:100%; } 
 nav li.navinfo {  background-color:#00CC66;       font-weight:bold; color:#FFFFFF }
 nav li.dropdown:hover .dropdown-content{ display:block; }
 nav div.dropdown-content { display:none; position: absolute; background-color: #3E84F4; min-width: 60px; overflow:auto; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 200; }
