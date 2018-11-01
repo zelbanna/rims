@@ -650,10 +650,9 @@ class Stream(object):
  def __init__(self,aHandler, aGet):
   self._form = {}
   self._node = aHandler._ctx.node
+  self._ctx  = aHandler._ctx
   self._body = []
   self._cookies   = {}
-  self._node_url  = aHandler._ctx.nodes[self._node]['url']
-  self._rest_call = aHandler._ctx.rest_call
   try: cookie_str = aHandler.headers['Cookie'].split('; ')
   except: pass
   else:
@@ -679,7 +678,7 @@ class Stream(object):
   self._body.append(aHTML)
 
  def url(self):
-  return self._node_url
+  return self._ctx.nodes[self._node]['url']
 
  def node(self):
   return self._node
@@ -703,13 +702,13 @@ class Stream(object):
   return "<A CLASS='btn btn-%s z-op small' %s></A>"%(aImg," ".join("%s='%s'"%i for i in kwargs.items()))
 
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
-  return self._rest_call("%s/api/%s"%(self._node_url,aAPI), aArgs, aTimeout = 60)['data']
+  return self._ctx.rest_call("%s/api/%s"%(self._ctx.nodes[self._node]['url'],aAPI), aArgs, aTimeout = 60)['data']
 
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
-  return self._rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
+  return self._ctx.rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
  def put_html(self, aTitle = None, aIcon = 'rims.ico'):
-  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/system.css'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/blue.css'>")
+  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/system.css'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/%s.css'>"%self._ctx.config.get('ui','blue'))
   if aTitle:
    self._body.append("<TITLE>%s</TITLE>"%aTitle)
   self._body.append("<LINK REL='shortcut icon' TYPE='image/png' HREF='../images/%s'/>"%(aIcon))
