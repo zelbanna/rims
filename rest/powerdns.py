@@ -108,7 +108,7 @@ def domain_save(aDict, aCTX):
 
  Output:
  """
- return {'result':'NO_OP'}
+ return {'status':'NO_OP'}
 
 #################################### Records #######################################
 #
@@ -258,5 +258,5 @@ def restart(aDict, aCTX):
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output
- ret['result'] = 'NOT_OK' if ret['output'] else 'OK'
+ ret['status'] = 'NOT_OK' if ret['output'] else 'OK'
  return ret

@@ -99,10 +99,10 @@ def network(aDict, aCTX):
     ret['insert']= db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%(name)s','%(options)s','%(nodes)s','%(edges)s')"%args)
     ret['id']    = db.get_last_id()
     ret['type']  = 'map'
-    ret['result']= 'insert (%s)'%(ret['insert'] > 0)
+    ret['status']= 'insert (%s)'%(ret['insert'] > 0)
    else:
     ret['update']= db.do("UPDATE visualize SET name='%(name)s',options='%(options)s',nodes='%(nodes)s',edges='%(edges)s' WHERE id = %(id)s"%args)
-    ret['result']= 'update (%s)'%(ret['update'] > 0)
+    ret['status']= 'update (%s)'%(ret['update'] > 0)
 
   ret['id'] = int(ret['id'])
   if ret['type'] == 'map':

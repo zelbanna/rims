@@ -98,7 +98,7 @@ def device_info(aWeb):
    aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Response</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res['op']['response']))
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Job</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res['op'].get('job')))
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Result</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res['op'].get('result')))
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Result</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res['op'].get('status')))
    aWeb.wr("</DIV></DIV>")
  else:
   res.pop('op',None)

@@ -133,7 +133,7 @@ def action(aWeb):
   args['method'] = 'PUT'
   args['arguments'] = {'floating-ip':{'virtual_machine_interface_refs':None,'floating_ip_fixed_ip_address':None }}
   res = aWeb.rest_call("openstack/call",args)
-  aWeb.wr("Floating IP association removed" if res.get('result') == 'OK' else "Error: %s"%res)
+  aWeb.wr("Floating IP association removed" if res.get('status') == 'OK' else "Error: %s"%res)
 
  elif op == 'fi_associate_choose_vm':
   args['service'] = 'nova'
@@ -168,4 +168,4 @@ def action(aWeb):
   args['vm_ip_address'] = ip
   args['floating_ip'] = id
   res = aWeb.rest_call("openstack/contrail_vm_associate_fip",args)
-  aWeb.wr("Floating IP asssociation created" if res.get('result','NOT_OK') == "OK" else "Failure: %s"%res)
+  aWeb.wr("Floating IP asssociation created" if res.get('status','NOT_OK') == "OK" else "Failure: %s"%res)

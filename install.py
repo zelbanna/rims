@@ -163,7 +163,7 @@ if config['id'] == 'master':
   res['database']['diff'] = mysql.diff(database_args,None)
   if res['database']['diff']['diffs'] > 0:
    res['database']['patch'] = mysql.patch(database_args,None)
-   if res['database']['patch']['result'] == 'NOT_OK':
+   if res['database']['patch']['status'] == 'NOT_OK':
     print("Database patching failed")
     if res['database']['patch'].get('database_restore_result') == 'OK':
      print("Restore should be OK - please check schema.db schema file")

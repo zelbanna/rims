@@ -45,10 +45,10 @@ class Device(GenericDevice):
    setobj = VarList(Varbind(tag,iid , op ,"INTEGER"))
    res = session.set(setobj)
    self.log("Avocent - {0} set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
-   return {'res':'OK'}
+   return {'status':'OK'}
   except Exception as e:
    self.log("Avocent(%s) - error setting state: %s"%(self._ip,str(e)))
-   return {'res':'NOT_OK', 'info':str(exception_error) }
+   return {'status':'NOT_OK', 'info':str(exception_error) }
 
  def set_name(self,slot,unit,name):
   try:
@@ -68,10 +68,10 @@ class Device(GenericDevice):
    stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.%s.%s"%(slot,unit)))
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(stateobj)
-   return {'res':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
+   return {'status':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
   except Exception as e:
    self.log("Avocent(%s) : error getting state: %s"%(self._ip,str(e)))
-   return {'res':'NOT_OK','info':str(e), 'state':'unknown' }
+   return {'status':'NOT_OK','info':str(e), 'state':'unknown' }
 
  #
  #

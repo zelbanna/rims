@@ -130,7 +130,7 @@ def device_info(aDict, aCTX):
      from time import sleep
      sleep(1)
      ret['op']['job'] = response.get('JobID')
-     ret['op']['result'] = aCTX.rest_call("%sid=jobstatus&job=%s&plugin=zwave"%(node,response.get('JobID')))['data']
+     ret['op']['status'] = aCTX.rest_call("%sid=jobstatus&job=%s&plugin=zwave"%(node,response.get('JobID')))['data']
  
   res  = aCTX.rest_call("%sid=status&DeviceNum=%s"%(node,aDict['id']))['data']
   info = res['Device_Num_%s'%aDict['id']]['states']

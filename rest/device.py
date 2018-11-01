@@ -37,8 +37,8 @@ def info(aDict, aCTX):
    from rims.devices.generic import Device
    dev = Device(ret['ip'], aCTX)
    lookup = dev.detect()
-   ret['result'] = lookup
-   if lookup['result'] == 'OK':
+   ret['status'] = lookup
+   if lookup['status'] == 'OK':
     args = lookup['info']
     try:   args['mac'] = int(args['mac'].replace(":",""),16)
     except:args['mac'] = 0
@@ -139,11 +139,11 @@ def extended(aDict, aCTX):
  with aCTX.db as db:
   operation = aDict.pop('op',None)
   if operation:
-   ret['result'] = {}
+   ret['status'] = {}
    if operation == 'add_pem' and ret['id']:
-    ret['result'] = (db.do("INSERT INTO device_pems(device_id) VALUES(%s)"%ret['id']) > 0)
+    ret['status'] = (db.do("INSERT INTO device_pems(device_id) VALUES(%s)"%ret['id']) > 0)
    if operation == 'remove_pem' and ret['id']:
-    ret['result'] = (db.do("DELETE FROM device_pems WHERE device_id = %s AND id = %s "%(ret['id'],aDict['pem_id'])) > 0)
+    ret['status'] = (db.do("DELETE FROM device_pems WHERE device_id = %s AND id = %s "%(ret['id'],aDict['pem_id'])) > 0)
 
    if operation == 'update' and ret['id']:
     racked = aDict.pop('racked',None)
@@ -156,7 +156,7 @@ def extended(aDict, aCTX):
     for id in [k.split('_')[1] for k,_ in aDict.items() if k.startswith('pems_') and 'name' in k]:
      pdu_slot = aDict.pop('pems_%s_pdu_slot'%id,"0.0").split('.')
      pem = {'name':aDict.pop('pems_%s_name'%id,None),'pdu_unit':aDict.pop('pems_%s_pdu_unit'%id,0),'pdu_id':pdu_slot[0],'pdu_slot':pdu_slot[1]}
-     ret['result']["PEM_%s"%id] = db.update_dict('device_pems',pem,'id=%s'%id)
+     ret['status']["PEM_%s"%id] = db.update_dict('device_pems',pem,'id=%s'%id)
     # DNS management
     if aDict.get('a_dom_id') and aDict.get('hostname') and ret['ip']:
      # Fetch info first
@@ -175,11 +175,11 @@ def extended(aDict, aCTX):
          new_info['%s_id'%type] = dns_res[type.upper()]['record_id']
        else:
         new_info['%s_id'%type] = 0
-      ret['result']['device_info'] = db.update_dict('devices',new_info,"id='%s'"%ret['id'])
+      ret['status']['device_info'] = db.update_dict('devices',new_info,"id='%s'"%ret['id'])
 
     rack_args = {k[10:]:v for k,v in aDict.items() if k[0:10] == 'rack_info_'}
-    ret['result']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
-    ret['result']['shutdown'] = db.do("UPDATE devices SET shutdown = %s WHERE id = %s"%(aDict.get('shutdown',0),ret['id']))
+    ret['status']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
+    ret['status']['shutdown'] = db.do("UPDATE devices SET shutdown = %s WHERE id = %s"%(aDict.get('shutdown',0),ret['id']))
 
   # Now fetch info
   ret['found'] = (db.do("SELECT vm, devices.shutdown, devices.mac, devices.oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
@@ -225,9 +225,9 @@ def extended(aDict, aCTX):
       pdu = getattr(module,'Device',None)(pdu_info['ip'],aCTX)
       # Slot id is actually local slot ID, so we need to look up infra -> pdu_info -> pdu and then pdu[x_slot_id] to get the right ID
       pdu_res = pdu.set_name( int(ret['infra']['pdu_info'][pem['pdu_id']]['%s_slot_id'%pem['pdu_slot']] ), int(pem['pdu_unit']) , "%s-%s"%(ret['info']['hostname'],pem['name']) )
-      ret['result']["PDU_(%s)"%pem['id']] = "%s.%s"%(pdu_info['hostname'],pdu_res)
+      ret['status']["PDU_(%s)"%pem['id']] = "%s.%s"%(pdu_info['hostname'],pdu_res)
      except Exception as err:
-      ret['result']["PDU_(%s)"%pem['id']] = "Error: %s"%str(err)
+      ret['status']["PDU_(%s)"%pem['id']] = "Error: %s"%str(err)
  return ret
 
 #
@@ -236,7 +236,7 @@ def list(aDict, aCTX):
  """Function docstring for list TBD
 
  Args:
-  - field (optional) 'id/ip/mac/hostname/type/base/vm' as search fields 
+  - field (optional) 'id/ip/mac/hostname/type/base/vm' as search fields
   - search (optional) content to match on field, special case for mac where non-correct MAC will match all that are not '00:00:00:00:00:00'
   - extra (optional) list of extra info to add, None/'type'/'url'/'system'
   - rack (optional), id of rack to filter devices from
@@ -358,7 +358,7 @@ def new(aDict, aCTX):
  # also remove allocation if fqdn busy..
  if alloc['success'] and not ret['fqdn']:
   from rims.rest.ipam import address_delete
-  ret['info'] = "deallocating ip (%s)"%address_delete({'id':alloc['id']}, aCTX)['result']
+  ret['info'] = "deallocating ip (%s)"%address_delete({'id':alloc['id']}, aCTX)['status']
  return ret
 
 #
@@ -491,8 +491,8 @@ def oids(aDict, aCTX):
   for type in ['devices','device_types']:
    db.do("SELECT DISTINCT oid FROM %s"%type)
    oids = db.get_rows()
-   ret[type] = [x['oid'] for x in oids] 
- ret['unhandled'] = [x for x in ret['devices'] if x not in ret['device_types']] 
+   ret[type] = [x['oid'] for x in oids]
+ ret['unhandled'] = [x for x in ret['devices'] if x not in ret['device_types']]
  return ret
 
 #
@@ -550,9 +550,9 @@ def function(aDict, aCTX):
   dev = getattr(module,'Device',lambda x: None)(aDict['ip'],aCTX)
   with dev:
    ret['data'] = getattr(dev,aDict['op'],None)()
-  ret['result'] = 'OK'
+  ret['status'] = 'OK'
  except Exception as err:
-  ret = {'result':'ERROR','info':str(err)}
+  ret = {'status':'ERROR','info':str(err)}
  return ret
 
 #
@@ -577,11 +577,10 @@ def configuration_template(aDict, aCTX):
   ret['data'] = dev.configuration(data)
  except Exception as err:
   ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%str(err)
-  ret['result'] = 'NOT_OK'
+  ret['status'] = 'NOT_OK'
  else:
-  ret['result'] = 'OK'
-
- return ret 
+  ret['status'] = 'OK'
+ return ret
 
 #
 #
@@ -597,11 +596,11 @@ def network_info_discover(aDict, aCTX):
  def __detect_thread(aDev, aCTX):
   __dev = Device(aDev['ip'],aCTX)
   aDev.update(__dev.system_info())
-  return True     
+  return True
 
  ret = {'count':0}
  with aCTX.db as db:
-  network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id'] 
+  network = "TRUE" if not aDict.get('network_id') else "ia.network_id = %s"%aDict['network_id']
   count   = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND (devices.mac = 0 OR devices.oid = 0)"%network)
   devices = db.get_rows()
   if count > 0:
@@ -636,7 +635,7 @@ def network_lldp_discover(aDict, aCTX):
  def __detect_thread(aDev, aCTX):
   try:
    discovered = interface_discover_lldp({'device':aDev['id'],'ip':aDev['ip']},aCTX)
-   new = list(con for con in discovered.values() if con['result'] == 'new_connection')
+   new = list(con for con in discovered.values() if con['status'] == 'new_connection')
    new_connections.extend(new)
    ins = list(con for con in discovered.values() if con.get('extra') == 'created_local_if')
    ins_interfaces.extend(ins)
@@ -652,7 +651,7 @@ def network_lldp_discover(aDict, aCTX):
   for dev in devices:
    aCTX.workers.add_semaphore( __detect_thread, sema, dev, aCTX)
   aCTX.workers.block(sema,10)
- return {'result':'DISCOVERY_COMPLETED','new_connections':new_connections,'ins_interfaces':ins_interfaces}
+ return {'status':'DISCOVERY_COMPLETED','new_connections':new_connections,'ins_interfaces':ins_interfaces}
 
 #
 #
@@ -1001,7 +1000,7 @@ def interface_discover_lldp(aDict, aCTX):
     if local['multipoint'] == 0:
      v['local_id'] = local['id']
     else:
-     v['result'] = 'multipoint'
+     v['status'] = 'multipoint'
      continue
    args = {}
    if   v['chassis_type'] == 4:
@@ -1009,7 +1008,7 @@ def interface_discover_lldp(aDict, aCTX):
    elif v['chassis_type'] == 5:
     args['id'] = "ia.ip = %s"%ip2int(v['chassis_id'])
    else:
-    v['result'] = "chassis_mapping_impossible_no_id"
+    v['status'] = "chassis_mapping_impossible_no_id"
     continue
    if   v['port_type'] == 3:
     args['port'] = "di.mac = %s"%mac2int(v['port_id'])
@@ -1019,7 +1018,7 @@ def interface_discover_lldp(aDict, aCTX):
     # Locally defined... should really look into remote device and see what it configures.. complex, so simplify and guess
     args['port'] = "di.name = '%s' OR di.name = '%s'"%(v['port_id'],v['port_desc'])
    else:
-    v['result'] = "chassis_mapping_impossible_no_port"
+    v['status'] = "chassis_mapping_impossible_no_port"
     continue
    if len(v['port_desc']) > 0:
     args['desc'] = "di.description COLLATE UTF8_GENERAL_CI LIKE '%s'"%v['port_desc']
@@ -1031,17 +1030,17 @@ def interface_discover_lldp(aDict, aCTX):
     if remote['peer_interface']:
      if local['peer_interface'] == remote['id']:
       v['peer_id'] = remote['id']
-      v['result'] = 'existing_connection'
+      v['status'] = 'existing_connection'
      else:
       v['peer_id'] = local['peer_interface']
-      v['result'] = 'other_mapping(%s<=>%s)'%(local['peer_interface'],remote['id'])
+      v['status'] = 'other_mapping(%s<=>%s)'%(local['peer_interface'],remote['id'])
     else:
      v['peer_id'] = remote['id']
      db.do(sql_set%(v['local_id'],remote['id']))
      db.do(sql_set%(remote['id'],v['local_id']))
-     v['result'] = 'new_connection'
+     v['status'] = 'new_connection'
    else:
-    v['result'] = 'chassis_mapping_impossible'
+    v['status'] = 'chassis_mapping_impossible'
 
  return info
 
@@ -1089,7 +1088,7 @@ def interface_status_check(aDict, aCTX):
     interface_status_report(dev, aCTX)
    else:
     aCTX.rest_call("%s/api/device/interface_status_report?log=false"%aCTX.config['master'],dev)
- return {'result':'GATHERING_DATA_COMPLETED'}
+ return {'status':'GATHERING_DATA_COMPLETED'}
 
 #
 #
@@ -1103,7 +1102,7 @@ def interface_status_report(aDict, aCTX):
  Output:
  """
  ret = {'update':0,'insert':0}
- def mac2int(aMAC):     
+ def mac2int(aMAC):
   try:    return int(aMAC.replace(":",""),16)
   except: return 0
 

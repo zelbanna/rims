@@ -351,7 +351,7 @@ def address_delete(aDict, aCTX):
  """
  ret = {}
  with aCTX.db as db:
-  ret['result'] = (db.do("DELETE FROM ipam_addresses WHERE id = %(id)s"%aDict) > 0)
+  ret['status'] = (db.do("DELETE FROM ipam_addresses WHERE id = %(id)s"%aDict) > 0)
  return ret
 
 #
@@ -406,7 +406,7 @@ def address_status_check(aDict, aCTX):
    address_status_report(args, aCTX)
   else:
    aCTX.rest_call("%s/api/ipam/address_status_report?log=false"%aCTX.config['master'],args)
-  return {'result':'CHECK_COMPLETED'}
+  return {'status':'CHECK_COMPLETED'}
 
 #
 #

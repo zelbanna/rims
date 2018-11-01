@@ -60,7 +60,7 @@ def domain_save(aDict, aCTX):
 
  Output:
  """
- return {'result':'NO_OP'}
+ return {'status':'NO_OP'}
 
 #################################### Records #######################################
 #

@@ -171,9 +171,9 @@ def file_list(aDict, aCTX):
    ret['files'].append(file)
  except Exception as e:
   ret['info'] = str(e)
-  ret['result'] = 'NOT_OK'
+  ret['status'] = 'NOT_OK'
  else:
-  ret['result'] = 'OK'
+  ret['status'] = 'OK'
  ret['files'].sort()
  return ret
 
@@ -185,7 +185,7 @@ def service_list(aDict, aCTX):
 
  Args:
 
- Output:          
+ Output:
  """
  return {'services':[{'name':x,'service':aCTX.settings['services'][x]} for x in list(aCTX.settings['services'].keys())]}
 
@@ -254,8 +254,8 @@ def database_backup(aDict, aCTX):
   with open(ret['filename'],'w+') as f:
    output = "\n".join(data)
    f.write(output)
-  ret['result'] = 'OK'
+  ret['status'] = 'OK'
  except Exception as err:
-  ret['error'] = str(err) 
-  ret['result'] = 'NOT_OK'
+  ret['error'] = repr(err)
+  ret['status'] = 'NOT_OK'
  return ret

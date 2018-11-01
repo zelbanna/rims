@@ -51,7 +51,7 @@ def dump(aDict, aCTX):
  except Exception as e:
   output = ["DumpError:{}".format(str(e))]
   res = 'NOT_OK'
- return {'result':res, 'output':output,'mode':mode,'full':aDict.get('full',True)}
+ return {'status':res, 'output':output,'mode':mode,'full':aDict.get('full',True)}
 
 #
 #
@@ -74,9 +74,9 @@ def restore(aDict, aCTX):
  try:
   cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '<',aDict['file']]
   output = check_output(" ".join(cmd), shell=True).decode()
-  return { 'result':'OK','output':output.split('\n') }
+  return { 'status':'OK','output':output.split('\n') }
  except Exception as e:
-  return {'result':'NOT_OK', 'output':[str(e)] }
+  return {'status':'NOT_OK', 'output':[str(e)] }
 
 #
 #
@@ -100,7 +100,7 @@ def diff(aDict, aCTX):
  ret = {}
  aDict.update({'mode':'structure'})
  db = dump(aDict, aCTX)
- ret['source'] = db['result']
+ ret['source'] = db['status']
  ret['output'] = [line for line in unified_diff(db['output'],data.split('\n'),fromfile='dbase',tofile=aDict['schema_file'])]
  ret['diffs'] = 0
  for line in ret['output']:
@@ -124,38 +124,38 @@ def patch(aDict, aCTX):
  from os import remove
  args = dict(aDict)
  args['mode'] = 'database'
- ret = {'result':'NOT_OK'}
+ ret = {'status':'NOT_OK'}
  with open('mysql.backup','w') as f:
   args['full'] = True
   res = dump(args, aCTX)
-  ret['database_backup_result'] = res['result']
+  ret['database_backup_result'] = res['status']
   f.write("\n".join(res['output']))
 
  with open('mysql.values','w') as f:
   args['full'] = False
   res = dump(args, aCTX)
-  ret['data_backup_result'] = res['result']
+  ret['data_backup_result'] = res['status']
   f.write("\n".join(res['output']))
 
  if ret['database_backup_result'] == 'OK' and ret['data_backup_result'] == 'OK':
   args['file'] = aDict['schema_file']
   res = restore(args, aCTX)
-  ret['struct_install_result']= res['result']
-  if not res['result'] == 'OK':
+  ret['struct_install_result']= res['status']
+  if not res['status'] == 'OK':
    ret['struct_install_error']= res['output']
   else:
    args['file'] = 'mysql.values'
    res = restore(args, aCTX)
-   ret['data_restore_result'] = res['result']
-   if not res['result'] == 'OK':
+   ret['data_restore_result'] = res['status']
+   if not res['status'] == 'OK':
     ret['data_restore_error'] = res['output']
     ret['data_restore_extra'] = "Warning - patch failed, trying to restore old data"
     args['file'] = 'mysql.backup'
     res = restore(args, aCTX)
-    ret['database_restore_result'] = res['result']
+    ret['database_restore_result'] = res['status']
     ret['database_restore_output'] = res['output']
    else:
     remove('mysql.backup')
     remove('mysql.values')
-    ret['result'] = 'OK'
+    ret['status'] = 'OK'
  return ret

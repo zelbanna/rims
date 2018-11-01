@@ -76,7 +76,7 @@ def sync(aDict, aCTX):
   ret['code'] = c.returncode
   ret['output'] = c.output
 
- ret['result'] = 'NOT_OK' if ret['output'] else 'OK'
+ ret['status'] = 'NOT_OK' if ret['output'] else 'OK'
  return ret
 
 #
@@ -119,9 +119,9 @@ def update(aDict, aCTX):
    ret['code'] = c.returncode
    ret['output'] = c.output
 
-  ret['result'] = 'NOT_OK' if ret['output'] else 'OK'
+  ret['status'] = 'NOT_OK' if ret['output'] else 'OK'
  else:
-  ret['result'] = 'OK'
+  ret['status'] = 'OK'
   ret['devices'] = devices
  return ret
 
@@ -144,5 +144,5 @@ def restart(aDict, aCTX):
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output
- ret['result'] = 'NOT_OK' if ret['output'] else 'OK'
+ ret['status'] = 'NOT_OK' if ret['output'] else 'OK'
  return ret

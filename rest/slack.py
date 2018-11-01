@@ -45,7 +45,7 @@ def restart(aDict, aCTX):
   - output
   - result 'OK'/'NOT_OK'
  """
- return {'code':None, 'output':None, 'result':'OK'}
+ return {'code':None, 'output':None, 'status':'OK'}
 
 #
 #
@@ -69,4 +69,4 @@ def notify(aDict, aCTX):
  elif aDict.get('channel'):
   args['channel'] = "#%s"%aDict['channel']
  res = aCTX.rest_call(url,args)
- return {'result':'OK' if res['code']== 200 else 'NOT_OK', 'info':res['data']}
+ return {'status':'OK' if res['code']== 200 else 'NOT_OK', 'info':res['data']}

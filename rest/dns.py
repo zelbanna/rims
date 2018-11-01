@@ -150,7 +150,7 @@ def domain_save(aDict, aCTX):
   db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%id)
   infra = db.get_row()
   ret = aCTX.node_call(infra['node'],infra['server'],'domain_save',{'id':infra['foreign_id']})
- return {'result':ret['result']}
+ return {'status':ret['status']}
 
 ######################################## Records ####################################
 

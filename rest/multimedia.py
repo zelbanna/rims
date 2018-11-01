@@ -9,7 +9,7 @@ def list(aDict, aCTX):
  """Function docstring for list TBD
 
  Args:
-  
+
  Output:
  """
  ret = {'files':[]}
@@ -29,7 +29,7 @@ def cleanup(aDict, aCTX):
  """Function docstring for cleanup TBD
 
  Args:
-  
+
  Output:
  """
  ret = {'root':aCTX.settings['multimedia']['torrent_directory'],'items':[]}
@@ -54,32 +54,35 @@ def transfer(aDict, aCTX):
  Args:
   - path (required)
   - file (required)
-  
+
  Output:
  """
+ ret = {'status':'NOT_OK'}
  from shutil import move
  try: move( ospath.join(aDict['path'],aDict['file']), ospath.join(aCTX.settings['multimedia']['media_directory'],aDict['file']) )
  except Exception as err:
-  result = str(err)
- else: 
-  result = 'OK'
- return {'result':result}
+  ret['error'] = str(err)
+ else:
+  ret['status'] = 'OK'
+ return ret
 
 #
 #
-def delete(aDict, aCTX):    
+def delete(aDict, aCTX):
  """Function docstring for delete TBD
 
  Args:
-  - path (required)   
-  - file (required)       
-  
+  - path (required)
+  - file (required)
+
  Output:
  """
- ret = {'result':'NOT_OK'}
+ ret = {'status':'NOT_OK'}
  try: remove(ospath.join(aDict['path'],aDict['file']))
- except Exception as err: ret['error'] = str(err)
- else: ret['result'] = 'OK'
+ except Exception as err:
+  ret['error'] = str(err)
+ else:
+  ret['status'] = 'OK'
  return ret
 
 #
@@ -88,7 +91,7 @@ def services(aDict, aCTX):
  """Function docstring for services TBD
 
  Args:
- 
+
  Output:
  """
  return {'services':[{'name':x,'service':aCTX.settings['services'][x]} for x in aCTX.settings['services'].keys()]}
@@ -97,7 +100,7 @@ def services(aDict, aCTX):
 #
 #
 def check_srt(aDict, aCTX):
- """Function find the 'first' SRT file in a directory, 
+ """Function find the 'first' SRT file in a directory
 
  Args:
   - filepath (cond optional)
@@ -125,7 +128,7 @@ def check_title(aDict, aCTX):
 
  Args:
   - filepath (cond optional)
-  - path (cond optional)   
+  - path (cond optional)
   - file (cond optional)
 
  Output:
@@ -136,7 +139,7 @@ def check_title(aDict, aCTX):
  """
  from re import search
  if aDict.get('filepath'):
-  fpath,filename = ospath.split(aDict['filepath']) 
+  fpath,filename = ospath.split(aDict['filepath'])
  else:
   fpath,filename = aDict.get('path'),aDict.get('file')
  ret = {'path':fpath,'name':None,'info':None,'title':None}
@@ -147,7 +150,7 @@ def check_title(aDict, aCTX):
  if is_series:
   ret['type'] = 'series'
   info_start, info_end, title_end = is_series.end(), len(prefix), is_series.start()-1
-  ret['episode'] = prefix[is_series.start():info_start].upper().replace("-","")		
+  ret['episode'] = prefix[is_series.start():info_start].upper().replace("-","")
 
   # Title date is prefix[0] - prefix[where we found season info]
   # ... but maybe there is more, like the idiots who named Modus who added a " - " instead of a "." or just " "
@@ -156,7 +159,7 @@ def check_title(aDict, aCTX):
   clean_search = search(r" (?:720|1080|Swesub).",prefix)
   if clean_search:
    info_end = clean_search.start()
- 
+
   if info_end != info_start:
    ret['episode'] = ret['episode'] + prefix[info_start:info_end]
 
@@ -186,15 +189,15 @@ def check_content(aDict, aCTX):
 
  Args:
   - filepath (cond optional)
-  - path (cond optional)   
+  - path (cond optional)
   - file (cond optional)
 
   - srt (optional), do we already have an SRT?
 
  Output:
- """ 
+ """
  from subprocess import Popen, PIPE, STDOUT
- ret = {'result':'NOT_OK'}
+ ret = {'status':'NOT_OK'}
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret['video'] = {'language':'eng', 'set_default':False}
  ret['audio'] = {'add':[], 'remove':[], 'add_aac':True }
@@ -216,7 +219,7 @@ def check_content(aDict, aCTX):
   for line in entries.split('\n'):
    if line:
     type,slot,lang,info = line.split('#')
-    lang = sub('[()]','',lang)   
+    lang = sub('[()]','',lang)
     # Special case for Video, we are not interested in something without fps..
     if   type == 'Video' and "fps" in info:
      if lang:
@@ -238,7 +241,7 @@ def check_content(aDict, aCTX):
      else:
       ret['subtitle']['add'].append(slot)
       ret['subtitle']['languages'].append(lang)
-  ret['result'] = 'OK'
+  ret['status'] = 'OK'
  return ret
 
 #
@@ -248,7 +251,7 @@ def process(aDict, aCTX):
 
  Args:
   - filepath (cond optional)
-  - path (cond optional)                 
+  - path (cond optional)
   - file (cond optional)
 
  Output:
@@ -256,7 +259,7 @@ def process(aDict, aCTX):
  from time import time
  from subprocess import check_call, call
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
- ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'result':'NOT_OK','error':None}
+ ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'status':'NOT_OK','error':None}
  srt  = check_srt({'filepath':filename}, aCTX)
  info = aDict if aDict.get('name') and aDict.get('info') else check_title({'filepath':filename}, aCTX)
  dest = ospath.abspath(ospath.join(info['path'],info['name']))
@@ -278,13 +281,13 @@ def process(aDict, aCTX):
    probe = check_content({'filepath':dest,'srt':srt.get('code')}, aCTX)
    ret['probe'] = probe
 
-   # if forced download or if there are subs to remove but no subs to add left 
+   # if forced download or if there are subs to remove but no subs to add left
    if len(probe['subtitle']['remove']) > 0:
     ret['changes']['subtitle'] = "--no-subtitles" if len(probe['subtitle']['add']) == 0 else "--stracks " + ",".join(map(str,probe['subtitle']['add']))
 
    if len(probe['audio']['remove']) and len(probe['audio']['add']) > 0:
     ret['changes']['audio'] = "--atracks " + ",".join(map(str,probe['audio']['add']))
- 
+
    if (ret['rename'] or probe['video']['set_default'] or probe['audio']['add_aac'] or len(ret['changes']['subtitle']) or len(ret['changes']['audio']) or srt['code']):
     FNULL = open(devnull, 'w')
 
@@ -337,7 +340,7 @@ def process(aDict, aCTX):
   ret['seconds'] = (int(time()) - ret['timestamp'])
   if ospath.exists(dest):
    chmod(dest, 0o666)
-   ret['result'] = 'OK'
+   ret['status'] = 'OK'
   else:
    ret['error'] = 'COMPLETE_NO_FILE'
 
@@ -359,12 +362,12 @@ def delay_set(aDict, aCTX):
  from time import time
  from subprocess import Popen, PIPE, check_call, call, STDOUT
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
- ret = {'result':'NOT_OK','timestamp':int(time())}
+ ret = {'status':'NOT_OK','timestamp':int(time())}
 
  absfile = ospath.abspath(filename)
  tmpfile = absfile + ".delayset"
 
- # Find subtitle position 
+ # Find subtitle position
  try:
   p1 = Popen(["mkvmerge","--identify", filename], stdout=PIPE, stderr=PIPE)
   entries = p1.communicate()[0].decode()
@@ -384,5 +387,5 @@ def delay_set(aDict, aCTX):
     except Exception as err:
      ret['error'] = str(err)
     else:
-     ret['result'] = 'OK'
+     ret['status'] = 'OK'
  return ret

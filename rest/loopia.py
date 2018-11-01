@@ -21,9 +21,9 @@ def set_ip(aDict, aCTX);
   ret['status'] = client.updateZoneRecord(settings['username'], settings['password'], settings['domain'], aDict['subdomain'], data)[0]
  except Exception as exmlrpc:
   ret['error']  = str(exmlrpc)
-  ret['result'] = 'NOT_OK'
+  ret['status'] = 'NOT_OK'
  else:
-  ret['result'] = 'OK' 
+  ret['status'] = 'OK'
  return ret
 
 #
@@ -40,10 +40,10 @@ def get_ip(aDict, aCTX):
   data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aDict['subdomain'])[0]
  except Exception as exmlrpc:
   ret['error'] = str(exmlrpc)
-  ret['result'] = 'NOT_OK'
+  ret['status'] = 'NOT_OK'
  else:
   ret['info'] =  data['rdata']
-  ret['result'] = 'OK' 
+  ret['status'] = 'OK'
  return ret
 
 def get_loopia_suffix(aDict, aCTX):
@@ -65,8 +65,8 @@ def opendns_my_ip(aDict, aCTX):
   myiplookup = opendns.query("myip.opendns.com",'A').response.answer[0]
  except Exception as exresolve:
   ret['error'] = str(exresolve)
-  ret['result'] = 'NOT_OK'
+  ret['status'] = 'NOT_OK'
  else:
   ret['address'] = str(myiplookup).split()[4]
-  ret['result'] = 'OK' 
+  ret['status'] = 'OK'
  return ret

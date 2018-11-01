@@ -127,7 +127,7 @@ def rest(aDict, aCTX):
     db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%s' AND service = '%s'"%(aDict['token'],aDict.get('service')))
     url = db.get_val('service_url')
   ret = aCTX.rest_call(url, aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
-  ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
+  ret['status'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
 
@@ -151,7 +151,7 @@ def call(aDict, aCTX):
   data = db.get_row()
  try:
   ret = aCTX.rest_call("%s/%s"%(data['service_url'],aDict.get('call',"")), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
-  ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
+  ret['status'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
 
@@ -214,7 +214,7 @@ def heat_templates(aDict, aCTX):
  Output:
  """
  from os import path as ospath, listdir
- ret = {'result':'OK','templates':[]}
+ ret = {'status':'OK','templates':[]}
  with aCTX.db as db:
   db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
   node = db.get_val('node_name')
@@ -225,7 +225,7 @@ def heat_templates(aDict, aCTX):
     ret['templates'].append(name)
  except Exception as e:
   ret['info'] = str(e)
-  ret['result'] = 'NOT_OK'
+  ret['status'] = 'NOT_OK'
  return ret
 
 #
@@ -241,7 +241,7 @@ def heat_content(aDict, aCTX):
  """
  from os import path as ospath
  from json import loads
- ret = {'result':'OK','template':None}
+ ret = {'status':'OK','template':None}
  with aCTX.db as db:
   db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
   node = db.get_val('node_name')
@@ -250,7 +250,7 @@ def heat_content(aDict, aCTX):
    ret['template'] = loads(f.read())
  except Exception as e:
   ret['info'] = str(e)
-  ret['result'] = 'NOT_OK'
+  ret['status'] = 'NOT_OK'
  return ret
 
 #
@@ -287,12 +287,12 @@ def heat_instantiate(aDict, aCTX):
    args['parameters'][key] = value
  except Exception as e:
   ret['info'] = str(e)
-  ret['result'] = 'NOT_OK'
+  ret['status'] = 'NOT_OK'
  else:
   try:
    controller = Device(aToken = aDict['token'])
    ret = controller.call("%s/stacks"%data['service_url'],args, 'POST')
-   ret['result'] = 'OK'
+   ret['status'] = 'OK'
   except Exception as e: ret = e[0]
  return ret
 
@@ -308,7 +308,7 @@ def vm_networks(aDict, aCTX):
 
  Output:
  """
- ret = {'result':'OK','vm':None,'interfaces':[]}
+ ret = {'status':'OK','vm':None,'interfaces':[]}
  with aCTX.db as db:
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
   svc_url = db.get_val('service_url')
@@ -338,7 +338,7 @@ def vm_console(aDict, aCTX):
 
  Output:
  """
- ret = {'result':'NOT_OK','vm':aDict['vm']}
+ ret = {'status':'NOT_OK','vm':aDict['vm']}
  with aCTX.db as db:
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'nova'"%aDict)
   svc_url = db.get_val('service_url')
@@ -349,7 +349,7 @@ def vm_console(aDict, aCTX):
    url = res['data']['remote_console']['url']
    # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
    ret['url'] = "%s:%s"%(data['node_url'],url[7:].partition(':')[2])
-   ret['result'] = 'OK'
+   ret['status'] = 'OK'
   elif res['code'] == 401 and res['data'] == 'Authentication required':
    ret.update({'info':'Authentication required'})
  except Exception as e: ret = e[0]
@@ -393,7 +393,7 @@ def contrail_fqname(aDict, aCTX):
  controller = Device(aToken = aDict['token'])
  try:
   ret = controller.call("%s/id-to-fqname"%svc_url,aArgs={'uuid':aDict['uuid']},aMethod='POST')
-  ret['result'] = 'OK' if not ret.get('result') else ret.get('result')
+  ret['status'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
 
@@ -535,8 +535,8 @@ def contrail_vm_associate_fip(aDict, aCTX):
   vmi = controller.call("%s/virtual-machine-interface/%s"%(svc_url,aDict['vm_interface']))['data']['virtual-machine-interface']
   fip = { 'floating-ip':{ 'floating_ip_fixed_ip_address':aDict['vm_ip_address'], 'virtual_machine_interface_refs':[ {'href':vmi['href'],'attr':None,'uuid':vmi['uuid'],'to':vmi['fq_name'] } ] } }
   res = controller.call("%s/floating-ip/%s"%(svc_url,aDict['floating_ip']),aArgs=fip,aMethod='PUT')
-  ret['result'] = "OK" if res['code'] == 200 else "NOT_OK"
+  ret['status'] = "OK" if res['code'] == 200 else "NOT_OK"
  except Exception as e:
-  ret['result'] ='ERROR'
+  ret['status'] ='ERROR'
   ret['info'] = str(e)
  return ret

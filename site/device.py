@@ -283,7 +283,7 @@ def extended(aWeb):
  aWeb.wr(aWeb.button('back',  DIV='div_content_right',URL='device_info?id=%s'%dev['id']))
  aWeb.wr(aWeb.button('trash', DIV='div_content_right',URL='device_delete?id=%s'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true'))
  aWeb.wr(aWeb.button('save',  DIV='div_content_right',URL='device_extended?op=update', FRM='info_form', TITLE='Save Device Information'))
- aWeb.wr("<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result','')))
+ aWeb.wr("<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('status','')))
  aWeb.wr("</ARTICLE>")
 
 #
@@ -334,7 +334,7 @@ def to_console(aWeb):
 def conf_gen(aWeb):
  aWeb.wr("<ARTICLE>")
  res = aWeb.rest_call("device/configuration_template",{'id':aWeb['id']})
- if res['result'] == 'OK':
+ if res['status'] == 'OK':
   aWeb.wr("<BR>".join(res['data']))
  else:
   aWeb.wr("<B>%s</B>"%res['info'])
@@ -345,7 +345,7 @@ def conf_gen(aWeb):
 def function(aWeb):
  aWeb.wr("<ARTICLE>")
  res = aWeb.rest_call("device/function",{'ip':aWeb['ip'],'op':aWeb['op'],'type':aWeb['type']})
- if res['result'] == 'OK':
+ if res['status'] == 'OK':
   if len(res['data']) > 0:
    aWeb.wr("<DIV CLASS=table><DIV CLASS=thead>")
    head = res['data'][0].keys()
@@ -478,7 +478,7 @@ def interface_list(aWeb):
   aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>SNMP Name</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>Chassis Type</DIV><DIV CLASS=th>Chassis ID</DIV><DIV CLASS=th>Port Type</DIV><DIV CLASS=th>Port ID</DIV><DIV CLASS=th>Port Desc</DIV><DIV CLASS=th>Sys Name</DIV><DIV CLASS=th>Local ID</DIV><DIV CLASS=th>Peer ID</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
   for i in connections.values():
    aWeb.wr("<DIV CLASS=tr>")
-   aWeb.wr(tmpl%(i['result'], i['snmp_name'],i['snmp_index'],i['chassis_type'],i['chassis_id'],i['port_type'],i['port_id'],i['port_desc'],i['sys_name'],i['local_id'],i.get('peer_id','-')))
+   aWeb.wr(tmpl%(i['status'], i['snmp_name'],i['snmp_index'],i['chassis_type'],i['chassis_id'],i['port_type'],i['port_id'],i['port_desc'],i['sys_name'],i['local_id'],i.get('peer_id','-')))
    if i.get('peer_id'):
     aWeb.wr(aWeb.button('trash', DIV='div_dev_data', URL='device_interface_list?device=%s&op=unlink&id=%s&peer_interface=%s'%(device,i['local_id'],i['peer_id'])))
    aWeb.wr("</DIV></DIV>")

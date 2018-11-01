@@ -13,7 +13,7 @@ def alarm(aDict, aCTX):
  Output:
  """
  aCTX.log("appformix_alarm({})".format(str(aDict)))
- return { 'result':'OK', 'info':'got alarm', 'data':'waiting to find out what to do with it :-)'}
+ return { 'status':'OK', 'info':'got alarm', 'data':'waiting to find out what to do with it :-)'}
 
 #
 #

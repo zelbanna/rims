@@ -134,7 +134,7 @@ def fqname(aWeb):
    aWeb.wr("Not logged in")
   else:
    res = aWeb.rest_call("openstack/contrail_fqname",{'token':cookie['token'],'uuid':aWeb['os_uuid']})
-   if res['result'] == 'OK':
+   if res['status'] == 'OK':
     aWeb.wr("<DIV CLASS=table STYLE='width:100%;'><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>")
     aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>FQDN</DIV><DIV CLASS=td>{}</DIV></DIV>".format(".".join(res['data']['fq_name'])))
     aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type</DIV><DIV CLASS=td><A CLASS='z-op' DIV=div_os_info URL='openstack_result?os_service=contrail&os_api={0}/{1}'>{0}</A></DIV></DIV>".format(res['data']['type'],aWeb['os_uuid']))
@@ -164,7 +164,7 @@ def result(aWeb):
   args['call'] = aWeb['os_api']
  res = aWeb.rest_call("openstack/rest",args)
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:auto; overflow:auto'><DIV CLASS='border'>")
- if res['result'] == 'OK':
+ if res['status'] == 'OK':
   aWeb.wr("<PRE CLASS='white'>%s</PRE>"%dumps(res['data'],indent=4, sort_keys=True))
  else:
   aWeb.wr("<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>")

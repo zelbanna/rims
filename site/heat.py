@@ -10,7 +10,7 @@ def list(aWeb):
   aWeb.wr("Not logged in")
   return
  res = aWeb.rest_call("openstack/call",{'token':cookie['token'],'service':'heat','call':"stacks"})
- if not res['result'] == 'OK':
+ if not res['status'] == 'OK':
   aWeb.wr("<ARTICLE>Error retrieving heat stacks: %s</ARTICLE>"%str(e))
   return
  data = res['data']

@@ -161,12 +161,12 @@ class Device(object):
    devoid = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
    session.get(devoid)
-   ret['result'] = "OK" if (session.ErrorInd == 0) else "NOT_OK"
+   ret['status'] = "OK" if (session.ErrorInd == 0) else "NOT_OK"
    session.get(sysoid)
   except Exception as err:
-   ret['result'] = 'NOT_OK'
+   ret['status'] = 'NOT_OK'
    ret['error'] = "Not able to do SNMP lookup (check snmp -> read): %s"%str(err)
-  if ret['result'] == 'OK':
+  if ret['status'] == 'OK':
    if sysoid[0].val:
     try: ret['info']['mac'] = hex2ascii(sysoid[0].val)
     except: pass

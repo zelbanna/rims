@@ -43,7 +43,7 @@ def op(aDict, aCTX):
  Output:
  """
  from rims.devices.esxi import Device
- ret = {'id':aDict['id'],'res':'OK'}
+ ret = {'id':aDict['id'],'status':'OK'}
  with Device(aDict['ip'], aCTX) as esxi:
   if True:
   #try:
@@ -67,7 +67,7 @@ def op(aDict, aCTX):
     esxi.ssh_send("poweroff")
   # except Exception as err:
   else:
-   ret['res'] = 'NOT_OK'
+   ret['status'] = 'NOT_OK'
    ret['error'] = str(err)
  return ret
 
@@ -83,13 +83,13 @@ def logs(aDict, aCTX):
  Output:
  """
  from subprocess import check_output
- ret = {'res':'OK'}
+ ret = {'status':'OK'}
  ip  = aDict['ip']
  count = aDict.get('count','30')
  try:
   ret['data'] = check_output("tail -n %s %s | tac"%(count,aCTX.settings['esxi']['logformat'].format(ip)), shell=True).decode().split('\n')
  except Exception as e:
-  ret['res'] = 'NOT_OK'
+  ret['status'] = 'NOT_OK'
   ret['error'] = str(e)
  return ret
 
@@ -106,7 +106,7 @@ def snapshots(aDict, aCTX):
  Output:
  """
  from rims.devices.esxi import Device
- ret = {'res':'OK', 'data':[],'highest':0}
+ ret = {'status':'OK', 'data':[],'highest':0}
  with Device(aDict['ip'],aCTX) as esxi:
   data = {}
   snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get %s"%aDict['id'])

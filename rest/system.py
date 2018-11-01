@@ -568,7 +568,7 @@ def server_sync(aDict, aCTX):
   ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
   if ret['found']:
    data = db.get_row()
-   ret['result'] = aCTX.node_call(data['node'],data['server'],'sync',{'id':aDict['id']})
+   ret['status'] = aCTX.node_call(data['node'],data['server'],'sync',{'id':aDict['id']})
  return ret
 
 #
@@ -586,7 +586,7 @@ def server_status(aDict, aCTX):
   ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
   if ret['found']:
    data = db.get_row()
-   ret['result'] = aCTX.node_call(data['node'],data['server'],'status',{'id':aDict['id']})
+   ret['status'] = aCTX.node_call(data['node'],data['server'],'status',{'id':aDict['id']})
  return ret
 
 #
@@ -605,7 +605,7 @@ def server_restart(aDict, aCTX):
   ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
   if ret['found']:
    data = db.get_row()
-   ret['result'] = aCTX.node_call(data['node'],data['server'],'restart',{'id':aDict['id']})
+   ret['status'] = aCTX.node_call(data['node'],data['server'],'restart',{'id':aDict['id']})
  return ret
 
 ######################################### ACTIVITIES ###########################################
@@ -800,7 +800,7 @@ def task_add(aDict, aCTX):
    aCTX.workers.add_periodic(frequency,aDict)
   else:
    aCTX.workers.add_transient(aDict)
-  ret['result'] = 'ADDED'
+  ret['status'] = 'ADDED'
  else:
   ret.update(aCTX.rest_call("%s/api/system/task_worker"%aCTX.nodes[node]['url'],aDict)['data'])
  return ret

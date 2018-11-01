@@ -39,7 +39,7 @@ def inventory_delete(aDict, aCTX):
  controller = Device(aCTX.nodes[aDict['node']]['url'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  res = controller.call("inventories/%(id)s/"%aDict,None,"DELETE")
- ret = {'result':"deleted" if res['code'] == 204 else res['info']['x-code']}
+ ret = {'status':"deleted" if res['code'] == 204 else res['info']['x-code']}
  return ret
 
 #
@@ -98,7 +98,7 @@ def inventory_sync(aDict, aCTX):
   field  = 'id'
  from rims.rest.device import list as device_list
  devices = device_list({'search':search,'field':field,'extra':'type'}, aCTX)['data']
- ret = {'devices':devices,'result':'OK','groups':{}}
+ ret = {'devices':devices,'status':'OK','groups':{}}
  if len(devices) == 0:
   return ret
  controller = Device(aCTX.nodes[aDict['node']]['url'])
@@ -161,7 +161,7 @@ def inventory_sync(aDict, aCTX):
     dev['awx'] = {'code':600,'group':'NO_GROUP_ID'}
  except Exception as e:
   ret['info'] = str(e)
-  ret['result'] = 'NOT_OK'
+  ret['status'] = 'NOT_OK'
  return ret
 
 #
