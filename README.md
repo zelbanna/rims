@@ -36,6 +36,7 @@ The structure is the following. Everything centers around the 'engine', it uses 
     "port": 8080,           # Local port to register the engine on
     "template": "engine.init", # From templates, which engine startup file to use, .init is for old schoole /etc/init.d/ service
     "workers": 30,          # Number of worker nodes to manage tasks and threaded functions
+    "theme":"blue",         # The default skin theme to be used - available in infra library, only applicable on UI nodes
     "logs": {
         "system": "/var/log/system/system.log",  # Where to output system logging
         "rest": "/var/log/system/rest.log"       # Where to output REST api logs
