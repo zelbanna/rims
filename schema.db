@@ -343,6 +343,7 @@ CREATE TABLE `users` (
   `menulist` varchar(60) DEFAULT 'default',
   `external_id` varchar(40) DEFAULT NULL,
   `slack` varchar(20) DEFAULT NULL,
+  `theme` varchar(16) DEFAULT 'blue',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
