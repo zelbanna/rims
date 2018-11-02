@@ -469,7 +469,7 @@ def users_info(aDict, aCTX):
     hash.update(aDict['password'].encode('utf-8'))
     aDict['password'] = hash.hexdigest()
    else:
-    aDict.pop('password',None)
+    ret['password_check_failed'] = (aDict.pop('password',None) is None)
    if not id == 'new':
     ret['update'] = db.update_dict('users',aDict,"id=%s"%id)
    else:
