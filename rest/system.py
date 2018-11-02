@@ -69,30 +69,27 @@ def menu(aDict, aCTX):
 
  Output:
  """
- try:
-  id = int(aDict['id'])
- except:
-  ret = {'authenticated':'NOT_OK'}
- else:
-  ret = {}
-  with aCTX.db as db:
-   start = db.do("SELECT id,view,href FROM resources WHERE id = (SELECT CAST(value AS UNSIGNED) FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start')"%aDict['node'])
-   if start > 0:
-    info = db.get_row()
-    ret['start'] = True
-    ret['menu'] = [{'id':info['id'],'icon':'../images/icon-start.png', 'title':'Start', 'href':info['href'], 'view':info['view'] }]
-   else:
-    ret['start'] = False
-    ret['menu'] = []
-   if aDict['node'] == 'master':
-    db.do("SELECT menulist FROM users WHERE id = '%s'"%aDict['id'])
-    menulist = db.get_val('menulist')
-    select = "type = 'menuitem'" if menulist == 'default' else "id IN (%s) ORDER BY FIELD(id,%s)"%(menulist,menulist)
-   else:
-    select = "type = 'menuitem'"
-   db.do("SELECT id, icon, title, href, view FROM resources WHERE node = '%s' AND %s"%(aDict['node'],select))
-   ret['menu'].extend(db.get_rows())
-
+ id = int(aDict['id'])
+ ret = {}
+ with aCTX.db as db:
+  start = db.do("SELECT id,view,href FROM resources WHERE id = (SELECT CAST(value AS UNSIGNED) FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start')"%aDict['node'])
+  if start > 0:
+   info = db.get_row()
+   ret['start'] = True
+   ret['menu'] = [{'id':info['id'],'icon':'../images/icon-start.png', 'title':'Start', 'href':info['href'], 'view':info['view'] }]
+  else:
+   ret['start'] = False
+   ret['menu'] = []
+  if aDict['node'] == 'master':
+   db.do("SELECT menulist FROM users WHERE id = '%s'"%aDict['id'])
+   menulist = db.get_val('menulist')
+   select = "type = 'menuitem'" if menulist == 'default' else "id IN (%s) ORDER BY FIELD(id,%s)"%(menulist,menulist)
+  else:
+   select = "type = 'menuitem'"
+  db.do("SELECT id, icon, title, href, view FROM resources WHERE node = '%s' AND %s"%(aDict['node'],select))
+  ret['menu'].extend(db.get_rows())
+  title_exist = (db.do("SELECT value FROM settings WHERE section = 'portal' AND parameter = 'title' and node = '%s'"%aDict['node']) == 1)
+  ret['title']= db.get_val('value') if title_exist else "Portal"
  return ret
 
 ############################################ SETTINGS ########################################
@@ -410,6 +407,20 @@ def resources_delete(aDict, aCTX):
   deleted = db.do("DELETE FROM resources WHERE id = '%s'"%aDict['id'])
  return { 'deleted':deleted }
 
+########################################## THEMES ############################################
+#
+def themes_list(aDict, aCTX):
+ """ Function returns a list of available thems
+ 
+ Args:
+
+ Output:
+  - list of theme names
+ """
+ from os import walk, path as ospath
+ path = ospath.join(aCTX.path,'infra')
+ _, _, filelist = next(walk(path), (None, None, []))
+ return [x.split('.')[1] for x in filelist if x.startswith('theme.')]
 
 ########################################### USERS ############################################
 #
@@ -442,6 +453,7 @@ def users_info(aDict, aCTX):
   - email (optional)
   - password (optional)
   - slack (optional)
+  - theme (optional)
 
  Output:
  """
@@ -450,11 +462,14 @@ def users_info(aDict, aCTX):
  op = aDict.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   if aDict.get('password'):
+   """ Password at least 6 characters """
+   if len(aDict.get('password','')) > 5:
     from hashlib import md5
     hash = md5()
     hash.update(aDict['password'].encode('utf-8'))
     aDict['password'] = hash.hexdigest()
+   else:
+    aDict.pop('password',None)
    if not id == 'new':
     ret['update'] = db.update_dict('users',aDict,"id=%s"%id)
    else:
@@ -466,7 +481,7 @@ def users_info(aDict, aCTX):
    ret['data'] = db.get_row()
    ret['data'].pop('password',None)
   else:
-   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','view_public':'0','menulist':'default','external_id':None,'slack':'Unknown'}
+   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','view_public':'0','menulist':'default','external_id':None,'slack':'Unknown','theme':'blue'}
  return ret
 
 #

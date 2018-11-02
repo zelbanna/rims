@@ -46,11 +46,12 @@ def portal(aWeb):
   except Exception as e:
    auth = e.args[0].get('data',{})
   else:
-   cookie = {'node':auth['node'],'id':auth['id'],'token':auth['token']}
+   cookie = {'node':auth['node'],'id':auth['id'],'token':auth['token'],'theme':auth['theme']}
  if cookie.get('token'):
   id = cookie['id']
   menu = aWeb.rest_call("system/menu",{"id":id,'node':aWeb.node()})
-  aWeb.put_html(menu.get('title','Portal'))
+  aWeb.put_html(aTitle = menu.get('title','Portal'), aTheme = cookie['theme'])
+  """ If just auth:ed """
   if auth.get('token'):
    aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(",".join("%s=%s"%i for i in cookie.items()),auth['expires']))
   aWeb.wr("<HEADER>")
@@ -70,7 +71,7 @@ def portal(aWeb):
    aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['href'] if menu['menu'][0]['view'] == 0 else "resources_framed?id=%s"%menu['menu'][0]['id']))
  else:
   data = aWeb.rest_call("system/application",{'node':aWeb.node()})
-  aWeb.put_html(data['title'])
+  aWeb.put_html(aTitle = data['title'])
   aWeb.wr("<DIV CLASS='background overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message'])
   if data.get('exception'):
    aWeb.wr("Error retrieving application info - exception info: %s"%(data['exception']))

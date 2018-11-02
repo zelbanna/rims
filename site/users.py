@@ -49,6 +49,13 @@ def info(aWeb):
  args = aWeb.args()
  data = aWeb.rest_call("system/users_info?log=false",args)['data']
  resources = aWeb.rest_call("system/resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.node()})['data']
+ themes = aWeb.rest_call("system/themes_list")
+ if args.get('op') == 'update':
+  from time import strftime, time
+  from datetime import datetime,timedelta
+  expires = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+  cookie['theme'] = data['theme']
+  aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(",".join("%s=%s"%i for i in cookie.items()),expires))
  aWeb.wr("<SCRIPT>dragndrop();</SCRIPT>")
  aWeb.wr("<ARTICLE CLASS='info'><P>User Info (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=user_info_form>")
@@ -60,6 +67,10 @@ def info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>   <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV> <DIV CLASS=td><INPUT NAME=email  TYPE=email VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['email']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Slack username'>Slack:</DIV>  <DIV CLASS=td><INPUT NAME=slack  TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['slack']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='UI Theme'>Theme:</DIV><DIV CLASS=td><SELECT NAME=theme>")
+ for theme in themes:
+  aWeb.wr("<OPTION %s VALUE='%s'>%s</OPTION>"%("selected='selected'" if theme == data['theme'] else "",theme,theme))
+ aWeb.wr("</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>View All:</DIV><DIV CLASS=td><INPUT NAME=view_public TYPE=CHECKBOX VALUE=1 {}             {}></DIV></DIV>".format("checked=checked" if str(data['view_public']) == "1" else "","disabled" if cookie['id'] != str(data['id']) else ""))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Cookie:</DIV><DIV CLASS='td small-text'>%s</DIV></DIV>"%",".join('%s=%s'%i for i in cookie.items()))
  aWeb.wr("</DIV></DIV><SPAN>Menu list</SPAN>")
@@ -87,3 +98,4 @@ def info(aWeb):
 def delete(aWeb):
  res = aWeb.rest_call("system/users_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>User with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res))
+

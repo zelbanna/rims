@@ -1,9 +1,10 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 123
+__build__ = 124
 
 __all__ = ['Context','WorkerPool']
+from os import path as ospath, getpid, walk
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
 from threading import Thread, Event, BoundedSemaphore, enumerate
@@ -56,6 +57,7 @@ class Context(object):
   self.db       = DB(self.config['db_name'],self.config['db_host'],self.config['db_user'],self.config['db_pass']) if self.node == 'master' else None
   self.workers  = WorkerPool(self.config.get('workers',20),self)
   self.kill     = Event()
+  self.path     = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   self.settings = {}
   self.nodes    = {}
   self.external = {}
@@ -94,7 +96,6 @@ class Context(object):
 
  #
  def report(self):
-  from os import path as ospath, getpid
   from sys import version, modules, path as syspath
   from types import ModuleType
   from gc import get_objects
@@ -114,7 +115,7 @@ class Context(object):
   {'info':'Memory objects','value':len(get_objects())},
   {'info':'DB operations','value':", ".join("%s:%s"%i for i in db_counter.items())},
   {'info':'Python version','value':version.replace('\n','')},
-  {'info':'Package path','value':ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))},
+  {'info':'Package path','value':self.path},
   {'info':'System path','value':",".join(syspath)}]
   if self.node == 'master':
    with self.db as db:
@@ -185,7 +186,6 @@ class Context(object):
  def start(self):
   """ Start "moving" parts of context """
   from sys import setcheckinterval
-  from os import path as ospath
   from signal import signal, SIGINT, SIGUSR1, SIGUSR2
   from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
   addr = ("", int(self.config['port']))
@@ -194,7 +194,7 @@ class Context(object):
   self.sock.bind(addr)
   self.sock.listen(5)
   path = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
-  servers = [ServerWorker(n,addr,self.sock,path,self) for n in range(5)]
+  servers = [ServerWorker(n,addr,self.sock,self) for n in range(5)]
   self.workers.run()
   for sig in [SIGINT, SIGUSR1, SIGUSR2]:
    signal(sig, self.signal_handler)
@@ -401,14 +401,13 @@ class QueueWorker(Thread):
 #
 class ServerWorker(Thread):
 
- def __init__(self, aNumber, aAddress, aSocket, aPath, aContext):
+ def __init__(self, aNumber, aAddress, aSocket, aContext):
   Thread.__init__(self)
   self.name    = "ServerWorker(%02d)"%aNumber
   self.daemon  = True
   httpd = HTTPServer(aAddress, SessionHandler, False)
   self._httpd  = httpd
   httpd.socket = aSocket
-  httpd._path  = aPath
   httpd._ctx = self._ctx = aContext.clone()
   httpd.server_bind = httpd.server_close = lambda self: None
   self.start()
@@ -546,9 +545,8 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif query.endswith(".css"):
    self._headers['Content-type']='text/css; charset=utf-8'
   try:
-   from os import walk, path as ospath
    if not path == 'files':
-    fullpath = ospath.join(self.server._path,path,query)
+    fullpath = ospath.join(self._ctx.path,path,query)
    else:
     param,_,file = query.partition('/')
     fullpath = ospath.join(self._ctx.settings['files'][param],file)
@@ -576,7 +574,6 @@ class SessionHandler(BaseHTTPRequestHandler):
   except Exception as e:  output['error'] = {'argument':str(e)}
   else:
    if self._ctx.node == 'master':
-    output = {}
     from rims.core.genlib import random_string
     from hashlib import md5
     from datetime import datetime,timedelta
@@ -587,9 +584,9 @@ class SessionHandler(BaseHTTPRequestHandler):
     except Exception as e: output['error'] = {'hash':str(e)}
     else:
      with self._ctx.db as db:
-      if (db.do("SELECT id FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
+      if (db.do("SELECT id, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
+       output.update(db.get_row())
        output['token']   = random_string(16)
-       output['id']      = db.get_val('id')
        output['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
        self._headers['X-Code'] = 200
       else:
@@ -707,8 +704,9 @@ class Stream(object):
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
   return self._ctx.rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
 
- def put_html(self, aTitle = None, aIcon = 'rims.ico'):
-  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/system.css'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/%s.css'>"%self._ctx.config.get('ui','blue'))
+ def put_html(self, aTitle = None, aIcon = 'rims.ico', aTheme = None):
+  theme = self._ctx.config.get('theme','blue') if not aTheme else aTheme
+  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/system.css'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/theme.%s.css'>"%theme)
   if aTitle:
    self._body.append("<TITLE>%s</TITLE>"%aTitle)
   self._body.append("<LINK REL='shortcut icon' TYPE='image/png' HREF='../images/%s'/>"%(aIcon))

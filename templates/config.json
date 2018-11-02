@@ -8,7 +8,7 @@
     "port": 8080,
     "template": "engine.init",
     "workers": 30,
-    "ui":"blue",
+    "theme":"blue",
     "logs": {
         "system": "/var/log/system/system.log",
         "rest": "/var/log/system/rest.log"

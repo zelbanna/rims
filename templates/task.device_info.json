@@ -5,5 +5,5 @@
  "args":{},
  "periodic":true,
  "output":true,
- "frequency":1800
+ "frequency":7200
 }

@@ -10,7 +10,8 @@ __author__= "Zacharias El Banna"
 #
 #
 def portal(aWeb):
- aWeb.put_html('Vera','lights')
+ cookie = aWeb.cookie('system')
+ aWeb.put_html(aTitle = 'Vera', aIcon = 'lights', aTheme = cookie.get('theme'))
  res = aWeb.rest_call("vera/infra?node=master",{'node':'vera'})
  aWeb.wr("<MAIN STYLE='top:0px;' ID=main>")
  aWeb.wr("<ARTICLE CLASS='mobile'>")
