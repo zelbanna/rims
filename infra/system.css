@@ -1,6 +1,8 @@
 /* Main System CSS 
 
-Use a Color together with this one to get proper color end result
+Use a theme together with this one to get proper color end result
+
+Hint: https://htmlcolorcodes.com/color-picker
 
 SECTION -> ARTICLE -> DIV ID naming: div_xyz ('_':s)
 
@@ -15,8 +17,8 @@ iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 div {    z-index:100; }
 br {     clear:left; }
 form {   display:inline; }
-select { border:none; overflow:visible; background-color: transparent; color: black; font-size:11px; }
-input {  border:none; overflow:visible; background-color: transparent; color: black; font-size:11px; }
+select { border:none; overflow:visible; background-color: transparent; color: #000000; font-size:11px; }
+input {  border:none; overflow:visible; background-color: transparent; color: #000000; font-size:11px; }
 pre {    margin:0px; }
 details{ display:inline; }
 span {   font-size:11px; }
@@ -71,7 +73,6 @@ article.mobile .controls img    {  width:88px; height:88px; }
 /*#############################################################################*/
 
 .title {       text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed; }
-.warning {     background-color:red!important; font-weight:bold; color:#FFFFFF!important; }
 .maxed {       width:99%; }
 .right   {     float:right!important; }
 .border {      border:solid 1px black; }
@@ -80,16 +81,6 @@ article.mobile .controls img    {  width:88px; height:88px; }
 .inline {      display:inline; }
 .centered {    align-items:center; justify-content:center; display:flex; flex-wrap:wrap }
 .machine-text { font-family:Courier New, serif; font-size: 12px; margin: 0px; }
-.background {  background-color:#F1F1F1; }
-.blue {        background-color:#33CAFF!important; }
-.red {         background-color:#DF3620!important; }
-.green {       background-color:#00CC66!important; }
-.orange {      background-color:orange!important;  }
-.white {       background-color:#FFFFFF!important; }
-.grey {        background-color:#9CA6B0!important; }
-
-.even {        background-color:#FFFFFF!important; }
-.odd  {        background-color:#F1F1F1!important; }
 
 div.rack-indx { font-weight:bold; font-size:8px; color:grey; padding:2px; }
 div.rack-data { border: solid 2px grey; font-size:12px; text-align:center;}

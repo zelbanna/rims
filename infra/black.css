@@ -3,11 +3,14 @@
 Main:   #1A1A1A
 Darker: #000000
 Highlight: #CB2026
+Back:  #F1F1F1
+
 */
 
 /*###################################### Content Model ########################################*/
 header {        position:fixed; height:75px;          width:100%; padding-left:5px; background-color: #1A1A1A;}
 main {          position:fixed; top:75px; bottom:0px; width:100%; background-color:#F1F1F1;}
+
 
 nav {           clear:both; font-size:14px; height:34px; background-color:#000000; display:block; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); }
 nav ul {        overflow:hidden; }
@@ -26,7 +29,18 @@ nav div.dropdown-content > a { display:block; text-align:left; }
 
 /*#############################################################################*/
 
-.highlight { border: 1px solid #CB2026; }
+.background {  background-color:#F1F1F1; }
+.even {        background-color:#FFFFFF!important; }
+.odd  {        background-color:#F1F1F1!important; }
+.highlight {   border: 1px solid #CB2026; }
+
+.warning {     background-color:#CB2026!important; font-weight:bold; color:#FFFFFF!important; }
+.red {         background-color:#CB2026!important; }
+.green {       background-color:#26CB20!important; }
+.blue {        background-color:#2026CB!important; }
+.orange {      background-color:orange!important;  }
+.white {       background-color:#FFFFFF!important; }
+.grey {        background-color:#9CA6B0!important; }
 
 .slider {                       height: 10px; border-radius: 3px; background:#9CA6B0; outline: none; opacity: 0.7; -webkit-appearance: none;} 
 .slider::-webkit-slider-thumb { height: 15px; border-radius: 50%; background:#CB2026; width:15px; cursor: pointer; -webkit-appearance: none; appearance: none;}

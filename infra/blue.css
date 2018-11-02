@@ -2,6 +2,7 @@
 
 Main:   #3E84F4
 Darker: #2674F2
+Back:   #F1F1F1
 
 */
 
@@ -23,7 +24,18 @@ nav div.dropdown-content > a { display:block; text-align:left; }
 
 /*#############################################################################*/
 
-.highlight { border: 1px solid #3E84F4; }
+.background {  background-color:#F1F1F1; }
+.even {        background-color:#FFFFFF!important; }
+.odd  {        background-color:#F1F1F1!important; }
+.highlight {   border: 1px solid #3E84F4; }
+
+.warning {     background-color:#DF3620!important; font-weight:bold; color:#FFFFFF!important; }
+.blue {        background-color:#33CAFF!important; }
+.red {         background-color:#DF3620!important; }
+.green {       background-color:#00CC66!important; }
+.orange {      background-color:orange!important;  }
+.white {       background-color:#FFFFFF!important; }
+.grey {        background-color:#9CA6B0!important; }
 
 .slider {                       height: 10px; border-radius: 3px; background:#9CA6B0; outline: none; opacity: 0.7; -webkit-appearance: none;} 
 .slider::-webkit-slider-thumb { height: 15px; border-radius: 50%; background:#3E84F4; width:15px; cursor: pointer; -webkit-appearance: none; appearance: none;}
