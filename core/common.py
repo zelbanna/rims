@@ -19,7 +19,7 @@ class DB(object):
   self._conn_lock, self._wait_lock = RLock(), Lock()
   self._conn_waiting = 0
   self._conn_in_thread = 0
-  self.count = {'SELECT':0,'INSERT':0,'DELETE':0,'UPDATE':0,'COMMIT':0,'CONNECT':0,'CLOSE':0}
+  self.count = {'SELECT':0,'INSERT':0,'DELETE':0,'UPDATE':0,'COMMIT':0,'CONNECT':0,'CLOSE':0,'TRUNCA':0}
 
  def __enter__(self):
   self.connect()
