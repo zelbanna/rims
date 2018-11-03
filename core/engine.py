@@ -1,13 +1,13 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 125
+__build__ = 126
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
-from threading import Thread, Event, BoundedSemaphore, enumerate
+from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
 from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
@@ -101,7 +101,7 @@ class Context(object):
   from gc import get_objects
   node_url = self.nodes[self.node]['url']
   db_counter = {}
-  for t in enumerate():
+  for t in thread_enumerate():
    try:
     for k,v in t._ctx.db.count.items():
      db_counter[k] = db_counter.get(k,0) + v
@@ -111,7 +111,7 @@ class Context(object):
   {'info':'Worker pool','value':self.workers.pool_size()},
   {'info':'Queued tasks','value':self.workers.queue_size()},
   {'info':'Scheduled tasks','value':self.workers.scheduler_size()},
-  {'info':'Active workers','value':self.workers.alive()},
+  {'info':'Idle workers','value':self.workers.idles()},
   {'info':'Memory objects','value':len(get_objects())},
   {'info':'DB operations','value':", ".join("%s:%s"%i for i in db_counter.items())},
   {'info':'Python version','value':version.replace('\n','')},
@@ -320,6 +320,9 @@ class WorkerPool(object):
 
  def alive(self):
   return len([x for x in self._workers if x.is_alive()])
+
+ def idles(self):
+  return len([x for x in self._idles if x.is_set()])
 
  def join(self): self._queue.join()
 

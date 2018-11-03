@@ -193,6 +193,14 @@ CREATE TABLE `openstack_tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `oui`;
+CREATE TABLE `oui` (
+  `oui` varchar(8) NOT NULL,
+  `company` varchar(60) NOT NULL,
+  PRIMARY KEY (`oui`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `pdu_info`;
 CREATE TABLE `pdu_info` (
   `device_id` int(10) unsigned NOT NULL,

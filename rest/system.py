@@ -92,6 +92,43 @@ def menu(aDict, aCTX):
   ret['title']= db.get_val('value') if title_exist else "Portal"
  return ret
 
+
+def oui_fetch(aDict, aCTX):
+ """ Function fetch and populate OUI table
+
+ Args:
+  - clear (optional). Clear database before populating if true. Defaults to false
+ 
+ Output:
+ """
+ from urllib.request import urlopen, Request
+ from urllib.error import HTTPError
+ ret = {'count':0}
+ try:
+  req = Request(aCTX.settings['oui']['location'])
+  sock = urlopen(req, timeout = 120)
+  data = sock.read().decode()
+  sock.close()
+ except HTTPError as h:
+  ret.update({'status':'HTTPError', 'code':h.code, 'info':dict(h.info())})
+ except Exception as e:
+  ret.update({ 'status':type(e).__name__, 'code':590, 'error':repr(e)})
+ else:
+  with aCTX.db as db:
+   if aDict.get('clear') is True:
+    db.do("TRUNCATE oui")
+   for line in data.split('\n'):
+    if len(line) > 0:
+     parts = line.split()
+     if len(parts) > 2 and parts[1] == '(hex)':
+      oui = parts[0].replace('-',':')
+      company = (" ".join(parts[2:]).replace("'",''))[0:60]
+      ret['count'] += db.do("INSERT INTO oui(oui,company) VALUES('%s','%s') ON DUPLICATE KEY UPDATE company = '%s'"%(oui,company,company))
+   else:
+    ret['status'] = 'OK'
+ return ret
+
+
 ############################################ SETTINGS ########################################
 #
 #
@@ -469,7 +506,7 @@ def users_info(aDict, aCTX):
     hash.update(aDict['password'].encode('utf-8'))
     aDict['password'] = hash.hexdigest()
    else:
-    ret['password_check_failed'] = (aDict.pop('password',None) is None)
+    ret['password_check_failed'] = (not (aDict.pop('password',None) is None))
    if not id == 'new':
     ret['update'] = db.update_dict('users',aDict,"id=%s"%id)
    else:
