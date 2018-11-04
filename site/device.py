@@ -77,11 +77,11 @@ def tasks(aWeb):
 #
 def report(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("device/list",{'extra': ['system', 'type', 'mac']})
+ res = aWeb.rest_call("device/list",{'extra': ['system', 'type', 'mac','oui']})
  aWeb.wr("<ARTICLE><P>Devices</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>Model</DIV><DIV CLASS=th>OID</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>State</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>OUI</DIV><DIV CLASS=th>Model</DIV><DIV CLASS=th>OID</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>State</DIV></DIV><DIV CLASS=tbody>")
  for dev in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(domain)s</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(mac)s</DIV><DIV CLASS=td>%(model)s</DIV><DIV CLASS=td>%(oid)s</DIV><DIV CLASS=td>%(serial)s</DIV>"%dev)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(domain)s</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(mac)s</DIV><DIV CLASS=td>%(oui)s</DIV><DIV CLASS=td>%(model)s</DIV><DIV CLASS=td>%(oid)s</DIV><DIV CLASS=td>%(serial)s</DIV>"%dev)
   aWeb.wr("<DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%{0:'grey',1:'green',2:'red'}.get(dev['state'],0))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 

@@ -141,7 +141,7 @@ def oui_info(aDict, aCTX):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT * FROM oui WHERE oui = '%s'"%aDict['oui'])
+  db.do("SELECT company FROM oui WHERE oui = %s"%aDict['oui'])
   ret['oui'] = db.get_row()
  return ret
 
@@ -636,7 +636,7 @@ def server_sync(aDict, aCTX):
   ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
   if ret['found']:
    data = db.get_row()
-   ret['status'] = aCTX.node_call(data['node'],data['server'],'sync',{'id':aDict['id']})
+   ret.update(aCTX.node_call(data['node'],data['server'],'sync',{'id':aDict['id']}))
  return ret
 
 #
@@ -654,7 +654,7 @@ def server_status(aDict, aCTX):
   ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
   if ret['found']:
    data = db.get_row()
-   ret['status'] = aCTX.node_call(data['node'],data['server'],'status',{'id':aDict['id']})
+   ret.update(aCTX.node_call(data['node'],data['server'],'status',{'id':aDict['id']}))
  return ret
 
 #

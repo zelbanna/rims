@@ -278,8 +278,11 @@ def list(aDict, aCTX):
     tune.append("device_types AS dt ON dt.id = devices.type_id")
   if 'url' in extras:
    fields.append('devices.url')
-  if 'mac' in extras:
+  if 'mac' in extras or 'oui' in extras:
    fields.append('LPAD(hex(ia.mac),12,0) AS mac')
+   if 'oui' in extras: 
+    fields.append('oui.company AS oui')
+    tune.append("oui ON oui.oui = (ia.mac >> 24) and ia.mac != 0")
   if 'system' in extras:
    fields.extend(['devices.serial','devices.version','ia.state','devices.oid'])
 
