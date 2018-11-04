@@ -135,14 +135,15 @@ def oui_info(aDict, aCTX):
  """ Function retrieves OUI info from database
 
  Args:
-  - oui (required). string, e.g. "AA-BB-00"
+  - oui (required). string, e.g. "AABB00"
 
  Output:
  """
  ret = {}
+ oui = aDict['oui'].translate(str.maketrans({':':'','-':''}))
  with aCTX.db as db:
-  db.do("SELECT company FROM oui WHERE oui = %s"%aDict['oui'])
-  ret['oui'] = db.get_row()
+  db.do("SELECT company FROM oui WHERE oui = %s"%oui)
+  ret['oui'] = db.get_val('company')
  return ret
 
 ############################################ SETTINGS ########################################
