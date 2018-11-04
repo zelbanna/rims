@@ -92,7 +92,8 @@ def menu(aDict, aCTX):
   ret['title']= db.get_val('value') if title_exist else "Portal"
  return ret
 
-
+#
+#
 def oui_fetch(aDict, aCTX):
  """ Function fetch and populate OUI table
 
@@ -128,6 +129,21 @@ def oui_fetch(aDict, aCTX):
     ret['status'] = 'OK'
  return ret
 
+#
+#
+def oui_info(aDict, aCTX):
+ """ Function retrieves OUI info from database
+
+ Args:
+  - oui (required). string, e.g. "AA-BB-00"
+
+ Output:
+ """
+ ret = {}
+ with aCTX.db as db:
+  db.do("SELECT * FROM oui WHERE oui = '%s'"%aDict['oui'])
+  ret['oui'] = db.get_row()
+ return ret
 
 ############################################ SETTINGS ########################################
 #

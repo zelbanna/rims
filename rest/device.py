@@ -40,7 +40,7 @@ def info(aDict, aCTX):
    ret['status'] = lookup
    if lookup['status'] == 'OK':
     args = lookup['info']
-    try:   args['mac'] = int(args['mac'].replace(":",""),16)
+    try:   args['mac'] = int(args['mac'].replace(':',""),16)
     except:args['mac'] = 0
     type_name = args.pop('type',None)
     for type in ret['types']:
@@ -59,7 +59,7 @@ def info(aDict, aCTX):
     aDict['url'] = 'NULL'
    if aDict.get('mac'):
     # This is the IP mac and not the device MAC...
-    try:   mac = int(aDict.pop('mac','0').replace(":",""),16)
+    try:   mac = int(aDict.pop('mac','0').replace(':',""),16)
     except:mac = 0
     db.do("UPDATE ipam_addresses SET mac = '%s' WHERE id = (SELECT ipam_id FROM devices WHERE id = %s)"%(mac,ret['id']))
    ret['update'] = (db.update_dict('devices',aDict,"id=%s"%ret['id']) == 1)
@@ -68,7 +68,7 @@ def info(aDict, aCTX):
   if op == 'basics':
    sql = "SELECT devices.id, devices.url, devices.hostname, domains.name AS domain, ia.state, INET_NTOA(ia.ip) as ip, ia.network_id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id WHERE %s"
   else:
-   sql = "SELECT devices.*, dt.base AS type_base, dt.name as type_name, functions, a.name as domain, ia.mac AS ip_mac, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
+   sql = "SELECT devices.*, dt.base AS type_base, dt.name as type_name, functions, a.name as domain, LPAD(hex(ia.mac),12,0) AS ip_mac, ia.state, INET_NTOA(ia.ip) as ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
   ret['found'] = (db.do(sql%srch) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
@@ -80,8 +80,7 @@ def info(aDict, aCTX):
    netconf = db.get_dict('parameter')
    ret['username'] = netconf['username']['value']
    if not op == 'basics':
-    try:    ret['info']['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(ret['info']['ip_mac']))]*2)) if ret['info']['ip_mac'] != 0 else "00:00:00:00:00:00"
-    except: ret['info']['mac'] = "00:00:00:00:00:00"
+    ret['info']['mac'] = ':'.join(ret['info']['ip_mac'][i:i+2] for i in [0,2,4,6,8,10])
     if not ret['info']['functions']:
      ret['info']['functions'] = ""
     ret['reserved'] = (db.do("SELECT users.alias, reservations.user_id, NOW() < time_end AS valid FROM reservations LEFT JOIN users ON reservations.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1)
@@ -182,13 +181,12 @@ def extended(aDict, aCTX):
     ret['status']['shutdown'] = db.do("UPDATE devices SET shutdown = %s WHERE id = %s"%(aDict.get('shutdown',0),ret['id']))
 
   # Now fetch info
-  ret['found'] = (db.do("SELECT vm, devices.shutdown, devices.mac, devices.oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT vm, devices.shutdown, LPAD(hex(devices.mac),12,0) AS mac, devices.oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['ip'] = ret['info'].pop('ip',None)
    vm = ret['info'].pop('vm',None)
-   try:    ret['info']['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(ret['info']['mac']))]*2)) if ret['info']['mac'] != 0 else "00:00:00:00:00:00"
-   except: ret['info']['mac'] = "00:00:00:00:00:00"
+   ret['info']['mac'] = ':'.join(ret['info']['mac'][i:i+2] for i in [0,2,4,6,8,10])
    # Rack infrastructure
    ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
    if vm == 1:
@@ -265,7 +263,7 @@ def list(aDict, aCTX):
    tune.append("device_types AS dt ON dt.id = devices.type_id")
    filter.append("dt.base = '%(search)s'"%aDict)
   elif aDict['field'] == 'mac':
-   try:    filter.append("ia.mac = %i"%int(aDict['search'].replace(":",""),16))
+   try:    filter.append("ia.mac = %i"%int(aDict['search'].replace(':',""),16))
    except: filter.append("ia.mac <> 0")
   else:
    filter.append("devices.%(field)s IN (%(search)s)"%aDict)
@@ -279,7 +277,7 @@ def list(aDict, aCTX):
   if 'url' in extras:
    fields.append('devices.url')
   if 'mac' in extras:
-   fields.append('ia.mac')
+   fields.append('LPAD(hex(ia.mac),12,0) AS mac')
   if 'system' in extras:
    fields.extend(['devices.serial','devices.version','ia.state','devices.oid'])
 
@@ -289,8 +287,7 @@ def list(aDict, aCTX):
   data = db.get_rows()
   if extras and 'mac' in extras:
    for row in data:
-    try: row['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(row['mac']))]*2))
-    except: pass
+    row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
   ret['data'] = data if not aDict.get('dict') else { row[aDict['dict']]: row for row in data }
  return ret
 
@@ -469,7 +466,7 @@ def discover(aDict, aCTX):
    count += 1
    alloc = address_allocate({'ip':ip,'network_id':aDict['network_id']}, aCTX)
    if alloc['success']:
-    try:   entry['mac'] = int(entry['mac'].replace(":",""),16)
+    try:   entry['mac'] = int(entry['mac'].replace(':',""),16)
     except:entry['mac'] = 0
     db.do(sql.format(alloc['id'],entry['snmp'],entry['model'],entry['mac'],entry['oid'],devtypes[entry.get('type','generic')]['id'],"unknown_%i"%count))
  ret['time'] = int(time()) - start_time
@@ -524,10 +521,10 @@ def server_macs(aDict, aCTX):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT devices.id, hostname, ia.mac, name AS domain, INET_NTOA(ia.ip) AS ip, ia.network_id AS network FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks ON ipam_networks.id = ia.network_id WHERE ia.mac > 0 AND ipam_networks.server_id = %s"%aDict['id'])
+  ret['count'] = db.do("SELECT devices.id, hostname, LPAD(hex(ia.mac),12,0) AS mac, name AS domain, INET_NTOA(ia.ip) AS ip, ia.network_id AS network FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN ipam_networks ON ipam_networks.id = ia.network_id WHERE ia.mac > 0 AND ipam_networks.server_id = %s"%aDict['id'])
   ret['data']  = db.get_rows()
   for row in ret['data']:
-   row['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(row['mac']))]*2))
+   row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
  return ret
 
 ############################################## Specials ###############################################
@@ -612,7 +609,7 @@ def network_info_discover(aDict, aCTX):
     id = dev.pop('id',None)
     ip = dev.pop('ip',None)
     if dev.get('mac'):
-     dev['mac'] = int(dev['mac'].replace(":",""),16)
+     dev['mac'] = int(dev['mac'].replace(':',""),16)
     if len(dev) > 0:
      ret['count'] += db.update_dict('devices',dev,'id = %s'%id)
  return ret
@@ -711,11 +708,11 @@ def interface_list(aDict, aCTX):
   ret = db.get_row()
   if ret:
    sort = aDict.get('sort','snmp_index')
-   ret['count'] = db.do("SELECT id,name,state,description,snmp_index,mac, peer_interface,multipoint FROM device_interfaces WHERE device = %s ORDER BY %s"%(ret['id'],sort))
+   ret['count'] = db.do("SELECT id,name,state,description,snmp_index, LPAD(hex(mac),12,0) AS mac, peer_interface,multipoint FROM device_interfaces WHERE device = %s ORDER BY %s"%(ret['id'],sort))
    ret['data'] = db.get_rows()
    for row in ret['data']:
     row['state_ascii'] = state(row['state'])
-    row['mac'] = ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(row['mac']))]*2))
+    row['mac'] = ‘:’.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
   else:
    ret = {'id':None,'hostname':None,'data':[],'count':0}
  return ret
@@ -886,7 +883,7 @@ def interface_discover_snmp(aDict, aCTX):
  from importlib import import_module
 
  def mac2int(aMAC):
-  try:    return int(aMAC.replace(":",""),16)
+  try:    return int(aMAC.replace(':',""),16)
   except: return 0
 
  ret = {'insert':0,'update':0,'delete':0}
@@ -963,7 +960,7 @@ def interface_discover_lldp(aDict, aCTX):
  from rims.devices.generic import Device
 
  def mac2int(aMAC):
-  try:    return int(aMAC.replace(":",""),16)
+  try:    return int(aMAC.replace(':',""),16)
   except: return 0
 
  def ip2int(addr):
@@ -1103,7 +1100,7 @@ def interface_status_report(aDict, aCTX):
  """
  ret = {'update':0,'insert':0}
  def mac2int(aMAC):
-  try:    return int(aMAC.replace(":",""),16)
+  try:    return int(aMAC.replace(':',""),16)
   except: return 0
 
  with aCTX.db as db:
