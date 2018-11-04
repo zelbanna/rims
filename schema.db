@@ -195,7 +195,7 @@ CREATE TABLE `openstack_tokens` (
 
 DROP TABLE IF EXISTS `oui`;
 CREATE TABLE `oui` (
-  `oui` varchar(8) NOT NULL,
+  `oui` bigint(10) NOT NULL,
   `company` varchar(60) NOT NULL,
   PRIMARY KEY (`oui`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
