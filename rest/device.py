@@ -145,6 +145,8 @@ def extended(aDict, aCTX):
     ret['status'] = (db.do("DELETE FROM device_pems WHERE device_id = %s AND id = %s "%(ret['id'],aDict['pem_id'])) > 0)
 
    if operation == 'update' and ret['id']:
+    """ In case company gets slipped in """ 
+    aDict.pop('company',None)
     racked = aDict.pop('racked',None)
     if racked:
      if   racked == '1' and aDict.get('rack_info_rack_id') == 'NULL':
@@ -181,7 +183,7 @@ def extended(aDict, aCTX):
     ret['status']['shutdown'] = db.do("UPDATE devices SET shutdown = %s WHERE id = %s"%(aDict.get('shutdown',0),ret['id']))
 
   # Now fetch info
-  ret['found'] = (db.do("SELECT vm, devices.shutdown, LPAD(hex(devices.mac),12,0) AS mac, devices.oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT vm, devices.shutdown, LPAD(hex(devices.mac),12,0) AS mac, devices.oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base, oui.company AS oui FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN oui ON oui.oui = (ia.mac >> 24) AND ia.mac != 0 LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['ip'] = ret['info'].pop('ip',None)
@@ -225,7 +227,7 @@ def extended(aDict, aCTX):
       pdu_res = pdu.set_name( int(ret['infra']['pdu_info'][pem['pdu_id']]['%s_slot_id'%pem['pdu_slot']] ), int(pem['pdu_unit']) , "%s-%s"%(ret['info']['hostname'],pem['name']) )
       ret['status']["PDU_(%s)"%pem['id']] = "%s.%s"%(pdu_info['hostname'],pdu_res)
      except Exception as err:
-      ret['status']["PDU_(%s)"%pem['id']] = "Error: %s"%str(err)
+      ret['status']["PDU_(%s)"%pem['id']] = "Error: %s"%repr(err)
  return ret
 
 #
@@ -549,7 +551,7 @@ def function(aDict, aCTX):
    ret['data'] = getattr(dev,aDict['op'],None)()
   ret['status'] = 'OK'
  except Exception as err:
-  ret = {'status':'ERROR','info':str(err)}
+  ret = {'status':'ERROR','info':repr(err)}
  return ret
 
 #
@@ -573,7 +575,7 @@ def configuration_template(aDict, aCTX):
   dev = getattr(module,'Device',lambda x: None)(ip,aCTX)
   ret['data'] = dev.configuration(data)
  except Exception as err:
-  ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%str(err)
+  ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%repr(err)
   ret['status'] = 'NOT_OK'
  else:
   ret['status'] = 'OK'
@@ -712,7 +714,7 @@ def interface_list(aDict, aCTX):
    ret['data'] = db.get_rows()
    for row in ret['data']:
     row['state_ascii'] = state(row['state'])
-    row['mac'] = ‘:’.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
+    row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
   else:
    ret = {'id':None,'hostname':None,'data':[],'count':0}
  return ret
@@ -897,7 +899,7 @@ def interface_discover_snmp(aDict, aCTX):
    dev = getattr(module,'Device',lambda x: None)(info['ip'],aCTX)
    interfaces = dev.interfaces()
   except Exception as err:
-   ret['error'] = str(err)
+   ret['error'] = repr(err)
   else:
    for con in existing:
     entry = interfaces.pop(con['snmp_index'],None)

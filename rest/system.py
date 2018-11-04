@@ -121,10 +121,10 @@ def oui_fetch(aDict, aCTX):
    for line in data.split('\n'):
     if len(line) > 0:
      parts = line.split()
-     if len(parts) > 2 and parts[1] == '(hex)':
-      oui = parts[0].replace('-',':').lower()
-      company = (" ".join(parts[2:]).replace("'",''))[0:60]
-      ret['count'] += db.do("INSERT INTO oui(oui,company) VALUES('%s','%s') ON DUPLICATE KEY UPDATE company = '%s'"%(oui,company,company))
+     if len(parts) > 3 and parts[1] == '(base' and parts[2] == '16)':
+      oui = int(parts[0].upper(),16)
+      company = (" ".join(parts[3:]).replace("'",''))[0:60]
+      ret['count'] += db.do("INSERT INTO oui(oui,ascii,company) VALUES(%d,'%s') ON DUPLICATE KEY UPDATE company = '%s'"%(oui,company,company))
    else:
     ret['status'] = 'OK'
  return ret

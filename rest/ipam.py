@@ -199,7 +199,7 @@ def network_discover(aDict, aCTX):
     aCTX.workers.add_semaphore(__detect_thread,sema,ip,addresses)
   aCTX.workers.block(sema,simultaneous)
  except Exception as err:
-  ret['error']   = str(err)
+  ret['error']   = repr(err)
 
  return ret
 

@@ -20,7 +20,7 @@ def set_ip(aDict, aCTX);
   data['rdata'] = aDict['newip']
   ret['status'] = client.updateZoneRecord(settings['username'], settings['password'], settings['domain'], aDict['subdomain'], data)[0]
  except Exception as exmlrpc:
-  ret['error']  = str(exmlrpc)
+  ret['error']  = repr(exmlrpc)
   ret['status'] = 'NOT_OK'
  else:
   ret['status'] = 'OK'
@@ -39,7 +39,7 @@ def get_ip(aDict, aCTX):
   client = xmlrpc.client.ServerProxy(uri = settings['rpc_server'], encoding = 'utf-8')
   data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aDict['subdomain'])[0]
  except Exception as exmlrpc:
-  ret['error'] = str(exmlrpc)
+  ret['error']  = repr(exmlrpc)
   ret['status'] = 'NOT_OK'
  else:
   ret['info'] =  data['rdata']

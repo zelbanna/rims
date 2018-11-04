@@ -24,7 +24,7 @@ def list(aDict, aCTX):
   esxi = Device(aDict['ip'], aCTX)
   ret['data'] = esxi.get_vm_list(aDict.get('sort','name'))
  except Exception as err:
-  ret['error'] = str(err)
+  ret['error'] = repr(err)
   ret['data'] = []
  return ret
 
@@ -68,7 +68,7 @@ def op(aDict, aCTX):
   # except Exception as err:
   else:
    ret['status'] = 'NOT_OK'
-   ret['error'] = str(err)
+   ret['error'] = repr(err)
  return ret
 
 #
@@ -90,7 +90,7 @@ def logs(aDict, aCTX):
   ret['data'] = check_output("tail -n %s %s | tac"%(count,aCTX.settings['esxi']['logformat'].format(ip)), shell=True).decode().split('\n')
  except Exception as e:
   ret['status'] = 'NOT_OK'
-  ret['error'] = str(e)
+  ret['error'] = repr(e)
  return ret
 
 #

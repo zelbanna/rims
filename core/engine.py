@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 126
+__build__ = 127
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
@@ -652,7 +652,7 @@ class Stream(object):
   self._node = aHandler._ctx.node
   self._ctx  = aHandler._ctx
   self._body = []
-  self._cookies   = {}
+  self._cookies = {}
   try: cookie_str = aHandler.headers['Cookie'].split('; ')
   except: pass
   else:

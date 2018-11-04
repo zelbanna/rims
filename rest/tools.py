@@ -59,7 +59,7 @@ def rest_explore(aDict, aCTX):
   try:
    module = import_module("rims.rest.%s"%(aFile))
    data['functions'] = [item for item in dir(module) if item[0:2] != "__" and isinstance(getattr(module,item,None),function)]
-  except Exception as e: data['error'] = str(e)
+  except Exception as e: data['error'] = repr(e)
   return data
 
  ret = {'data':[]}
@@ -109,7 +109,7 @@ def logs_clear(aDict, aCTX):
    ret['file'][name] = 'CLEARED'
    aCTX.log("Emptied log [{}]".format(name))
   except Exception as err:
-   ret['file'][name] = 'ERROR: %s'%(str(err))
+   ret['file'][name] = 'ERROR: %s'%(repr(err))
  return ret
 
 #
@@ -138,7 +138,7 @@ def logs_get(aDict, aCTX):
       pos = (pos + 1) % count
      ret[name] = [lines[(pos + n) % count][:-1] for n in reversed(list(range(count)))]
    except Exception as err:
-    ret[name] = ['ERROR: %s'%(str(err))]
+    ret[name] = ['ERROR: %s'%(repr(err))]
  return ret
 
 
@@ -170,7 +170,7 @@ def file_list(aDict, aCTX):
   for file in listdir(ospath.abspath(directory)):
    ret['files'].append(file)
  except Exception as e:
-  ret['info'] = str(e)
+  ret['info'] = repr(e)
   ret['status'] = 'NOT_OK'
  else:
   ret['status'] = 'OK'

@@ -49,7 +49,7 @@ def dump(aDict, aCTX):
     output.append(line)
   res = 'OK'
  except Exception as e:
-  output = ["DumpError:{}".format(str(e))]
+  output = ["DumpError:%s"%repr(e)]
   res = 'NOT_OK'
  return {'status':res, 'output':output,'mode':mode,'full':aDict.get('full',True)}
 
@@ -76,7 +76,7 @@ def restore(aDict, aCTX):
   output = check_output(" ".join(cmd), shell=True).decode()
   return { 'status':'OK','output':output.split('\n') }
  except Exception as e:
-  return {'status':'NOT_OK', 'output':[str(e)] }
+  return {'status':'NOT_OK', 'output':[repr(e)] }
 
 #
 #
