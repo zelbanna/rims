@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 130
+__build__ = 131
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
@@ -304,17 +304,18 @@ class WorkerPool(object):
    mod = import_module("rims.rest.%s"%aTask['module'])
    func = getattr(mod,aTask['func'],None)
   except: pass
-  else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue))
+  else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
 
  def abort(self):
   """ Abort set abort state and inject dummy tasks to kill off workers. There might be running tasks so don't add more than enough """
   def dummy(): pass
   self._abort.set()
+  self._abort = Event()
   active = self.alive()
   while active > 0:
-   for x in range(0,active - self.queue_size()):
+   for x in range(0,active - self._queue.qsize()):
     self._queue.put((dummy,'FUNCTION',None,False,[],{}))
-   while not self.done() and self.alive() > 0:
+   while not self._queue.empty() and self.alive() > 0:
     sleep(0.1)
     self._workers = [x for x in self._workers if x.is_alive()]
    active = self.alive()
@@ -324,12 +325,6 @@ class WorkerPool(object):
 
  def idles(self):
   return len([x for x in self._idles if x.is_set()])
-
- def join(self):
-  self._queue.join()
-
- def done(self):
-  return self._queue.empty()
 
  def queue_size(self):
   return self._queue.qsize()
@@ -352,19 +347,20 @@ class WorkerPool(object):
 
 class ScheduleWorker(Thread):
 
- def __init__(self, aFrequency, aFunc, aTask, aQueue):
+ def __init__(self, aFrequency, aFunc, aTask, aQueue, aAbort):
   Thread.__init__(self)
   self._freq  = aFrequency
   self._queue = aQueue
   self._func  = aFunc
   self._task  = aTask
+  self._abort = aAbort
   self.daemon = True
   self.name   = "ScheduleWorker(%s,%s)"%(aTask['id'],self._freq)
   self.start()
 
  def run(self):
   sleep(self._freq - int(time())%self._freq)
-  while True:
+  while not self._abort.is_set():
    self._queue.put((self._func,'TASK',None,self._task['output'],self._task['args'],None))
    sleep(self._freq)
   return False
