@@ -19,7 +19,7 @@ def main(aWeb):
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='activities_report'>Activities</A>")
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='reservations_report?node=master'>Reservations</A>")
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='device_report?node=master'>Devices</A>")
- aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_task_report'>Jobs</A>")
+ aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_task_report'>Tasks</A>")
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_report'>System</A>")
  aWeb.wr("</DIV></LI>")
  if aWeb.node() == 'master':
@@ -280,7 +280,7 @@ def server_help(aWeb):
 #
 def task_report(aWeb):
  res = aWeb.rest_call("system/task_list",{'node':aWeb.node()})
- aWeb.wr("<ARTICLE><P>Jobs</P>")
+ aWeb.wr("<ARTICLE><P>Tasks</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Frequency</DIV><DIV CLASS=th>Module</DIV><DIV CLASS=th>Function</DIV><DIV CLASS=th>Args</DIV></DIV><DIV CLASS=tbody>")
  for task in res['tasks']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(node)s</DIV><DIV CLASS=td>%(frequency)s</DIV><DIV CLASS=td>%(module)s</DIV><DIV CLASS=td>%(func)s</DIV><DIV CLASS=td>%(args)s</DIV></DIV>"%task)

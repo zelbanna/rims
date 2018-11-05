@@ -4,7 +4,7 @@
 __author__ = "Zacharias El Banna"
 
 from os import path as ospath, getpid
-from sys import path as syspath, argv
+from sys import path as syspath, argv, exit
 basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
 syspath.insert(1, basepath)
 from core.engine import Context
@@ -20,6 +20,8 @@ try:
 except Exception as e:
  print(str(e))
  ctx.close()
+ exit(1)
 else:
  print(getpid())
  ctx.wait()
+ exit(0)

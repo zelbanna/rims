@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 129
+__build__ = 130
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
@@ -108,7 +108,7 @@ class Context(object):
    except:pass
   output = [{'info':'System PID','value':getpid()},
   {'info':'Node URL','value':node_url},
-  {'info':'Worker pool','value':self.workers.pool_size()},
+  {'info':'Worker pool','value':self.workers.alive()},
   {'info':'Queued tasks','value':self.workers.queue_size()},
   {'info':'Scheduled tasks','value':self.workers.scheduler_size()},
   {'info':'Idle workers','value':self.workers.idles()},
@@ -184,7 +184,7 @@ class Context(object):
 
  #
  def start(self):
-  """ Start "moving" parts of context """
+  """ Start "moving" parts of context, set up socket and start processing incoming requests and scheduled tasks """
   from sys import setcheckinterval
   from signal import signal, SIGINT, SIGUSR1, SIGUSR2
   from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
@@ -195,7 +195,7 @@ class Context(object):
   self.sock.listen(5)
   path = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   servers = [ServerWorker(n,addr,self.sock,self) for n in range(5)]
-  self.workers.run()
+  self.workers.process()
   for sig in [SIGINT, SIGUSR1, SIGUSR2]:
    signal(sig, self.signal_handler)
   setcheckinterval(200)
@@ -204,7 +204,6 @@ class Context(object):
  def close(self):
   """ TODO clean up and close all DB connections and close socket """
   self.workers.abort()
-  self.workers.cleanup()
   try: self.sock.close()
   except: pass
   self.kill.set()
@@ -276,11 +275,9 @@ class WorkerPool(object):
   self._workers   = []
   self._scheduler = []
 
- def run(self):
-  for n in range(self._count):
-   idle  = Event()
-   self._idles.append(idle)
-   self._workers.append(QueueWorker(n, self._abort, idle, self._queue, self._ctx))
+ def process(self):
+  self._workers = [QueueWorker(n, self._abort, self._queue, self._ctx) for n in range(self._count)]
+  self._idles   = [w._idle for w in self._workers]
 
  def __str__(self):
   return "WorkerPool(%s):[%s,%s,%s]"%(self._count,self._queue.qsize(),len(self._scheduler),self.alive())
@@ -307,16 +304,20 @@ class WorkerPool(object):
    mod = import_module("rims.rest.%s"%aTask['module'])
    func = getattr(mod,aTask['func'],None)
   except: pass
-  else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
+  else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue))
 
  def abort(self):
+  """ Abort set abort state and inject dummy tasks to kill off workers. There might be running tasks so don't add more than enough """
+  def dummy(): pass
   self._abort.set()
-
- def cleanup(self):
-  def dummy():
-   print("DUMMY getting killed")
-  """ Inject dummy tasks to kill off workers """
-  pass
+  active = self.alive()
+  while active > 0:
+   for x in range(0,active - self.queue_size()):
+    self._queue.put((dummy,'FUNCTION',None,False,[],{}))
+   while not self.done() and self.alive() > 0:
+    sleep(0.1)
+    self._workers = [x for x in self._workers if x.is_alive()]
+   active = self.alive()
 
  def alive(self):
   return len([x for x in self._workers if x.is_alive()])
@@ -324,15 +325,20 @@ class WorkerPool(object):
  def idles(self):
   return len([x for x in self._idles if x.is_set()])
 
- def join(self): self._queue.join()
+ def join(self):
+  self._queue.join()
 
- def done(self): return self._queue.empty()
+ def done(self):
+  return self._queue.empty()
 
- def queue_size(self):return self._queue.qsize()
+ def queue_size(self):
+  return self._queue.qsize()
 
- def pool_size(self): return self._count
+ def scheduler_size(self):
+  return len([x for x in self._scheduler if x.is_alive()])
 
- def scheduler_size(self): return len(self._scheduler)
+ def scheduled_tasks(self):
+  return [(x._task,x._freq) for x in self._scheduler]
 
  def semaphore(self,aSize):
   return BoundedSemaphore(aSize)
@@ -346,22 +352,20 @@ class WorkerPool(object):
 
 class ScheduleWorker(Thread):
 
- def __init__(self, aFrequency, aFunc, aTask, aQueue, aAbort):
+ def __init__(self, aFrequency, aFunc, aTask, aQueue):
   Thread.__init__(self)
   self._freq  = aFrequency
   self._queue = aQueue
-  self._abort = aAbort
   self._func  = aFunc
-  self._args  = aTask['args']
-  self._output= aTask['output']
+  self._task  = aTask
   self.daemon = True
   self.name   = "ScheduleWorker(%s,%s)"%(aTask['id'],self._freq)
   self.start()
 
  def run(self):
   sleep(self._freq - int(time())%self._freq)
-  while not self._abort.is_set():
-   self._queue.put((self._func,'TASK',None,self._output,self._args,None))
+  while True:
+   self._queue.put((self._func,'TASK',None,self._task['output'],self._task['args'],None))
    sleep(self._freq)
   return False
 
@@ -369,12 +373,12 @@ class ScheduleWorker(Thread):
 #
 class QueueWorker(Thread):
 
- def __init__(self, aNumber, aAbort, aIdle, aQueue, aContext):
+ def __init__(self, aNumber, aAbort, aQueue, aContext):
   Thread.__init__(self)
   self._n      = aNumber
   self.name    = "QueueWorker(%02d)"%aNumber
   self._abort  = aAbort
-  self._idle   = aIdle
+  self._idle   = Event()
   self._queue  = aQueue
   self._ctx    = aContext.clone()
   self.daemon  = True
@@ -636,8 +640,11 @@ class SessionHandler(BaseHTTPRequestHandler):
    with self._ctx.db as db:
     update = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
    output = {'update':update,'success':True}
-  elif op == 'import' :
+  elif op == 'import':
    output = self._ctx.module_register(arg)
+  elif op == 'shutdown':
+   self._ctx.close()
+   output = {'status':'OK','info':'shutdown in progress'}
   else:
    output = {'status':'NOT_OK','info':'system/<import|register|environment|sync|reload>/<args: node|module_to_import> where import, environment without args and reload runs on any node'}
   self._body = dumps(output).encode('utf-8')

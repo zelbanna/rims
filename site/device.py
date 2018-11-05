@@ -25,7 +25,10 @@ def main(aWeb):
     aWeb.wr("</DIV></LI>")
   if data.get('name'):
    aWeb.wr("<LI><A CLASS='z-op' DIV=div_content_right  URL='rack_inventory?rack=%s'>'%s'</A></LI>"%(aWeb['rack'],data['name']))
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='device_oui'>OUI</A></LI>")
+ aWeb.wr("<LI CLASS='dropdown'><A>OUI</A><DIV CLASS='dropdown-content'>")
+ aWeb.wr("<A CLASS=z-op DIV=div_content URL='device_oui_search'>Search</A>")
+ aWeb.wr("<A CLASS=z-op DIV=div_content URL='device_oui_list' SPIN=true>List</A>")
+ aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='device_main?{}'></A></LI>".format(aWeb.get_args()))
  aWeb.wr("<LI CLASS='right'><A CLASS=z-op DIV=div_content URL='reservations_list'>Reservations</A></LI>")
  aWeb.wr("<LI CLASS='right dropdown'><A>IPAM</A><DIV CLASS='dropdown-content'>")
@@ -49,22 +52,6 @@ def main(aWeb):
 
 #
 #
-def oui(aWeb):
- args = aWeb.args()
- aWeb.wr("<ARTICLE><P>OUI</P>")
- aWeb.wr("<FORM ID=oui_form>")
- aWeb.wr("Type OUI to find company name: <INPUT CLASS='background' TYPE=TEXT REQUIRED TYPE=TEXT NAME='oui' STYLE='width:100px' VALUE='%s'>"%args.get('oui','00:00:00'))
- if args.get('op') == 'find':
-  res = aWeb.rest_call("system/oui_info",{'oui':args['oui']})
-  aWeb.wr("%s"%res)
- aWeb.wr("</FORM>")
- aWeb.wr(aWeb.button('search',  DIV='div_content', URL='device_oui?op=find',   FRM='oui_form', TITLE='Find OUI'))
- aWeb.wr("</ARTICLE>")
-
-
-
-#
-#
 def list(aWeb):
  args = aWeb.args()
  args['sort'] = aWeb.get('sort','hostname')
@@ -81,6 +68,29 @@ def list(aWeb):
  aWeb.wr("<DIV CLASS=th STYLE='width:30px;'>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['data']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'><A CLASS=z-op DIV=div_content_right URL='device_info?id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%(row['ip'],row['id'],row['id'], row['hostname'], {0:'grey',1:'green',2:'red',3:'orange'}.get(row['state'],'orange')))
+ aWeb.wr("</DIV></DIV></ARTICLE>")
+
+#
+#
+def oui_search(aWeb):
+ args = aWeb.args()
+ aWeb.wr("<ARTICLE><P>OUI</P>")
+ aWeb.wr("<FORM ID=oui_form>Type OUI or MAC address to find OUI/company name: <INPUT CLASS='background' TYPE=TEXT REQUIRED TYPE=TEXT NAME='oui' STYLE='width:100px' VALUE='%s'></FORM>"%args.get('oui','00:00:00'))
+ aWeb.wr(aWeb.button('search',  DIV='div_content', URL='device_oui_search?op=find',   FRM='oui_form', TITLE='Find OUI'))
+ if args.get('op') == 'find':
+  res = aWeb.rest_call("system/oui_info",{'oui':args['oui']})
+  aWeb.wr("<BR>OUI:%s<BR>Company:%s"%(res['oui'],res['company']))
+ aWeb.wr("</ARTICLE>")
+
+#
+#
+def oui_list(aWeb):
+ args = aWeb.args()
+ res = aWeb.rest_call("system/oui_list",args)
+ aWeb.wr("<ARTICLE><P>OUI</P>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Company</DIV></DIV><DIV CLASS=tbody>")
+ for oui in res['data']:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(":".join(oui['oui'][i:i+2] for i in [0,2,4]),oui['company']))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #

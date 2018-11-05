@@ -139,11 +139,29 @@ def oui_info(aDict, aCTX):
 
  Output:
  """
+ try:
+  oui = int(aDict['oui'].translate(str.maketrans({':':'','-':''}))[:6],16)
+  with aCTX.db as db:
+   found = (db.do("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui = %s"%oui) == 1)
+   ret = db.get_row() if found else {'oui':'NOT_FOUND','company':'NOT_FOUND'}
+   ret['status'] = 'OK' if ret['oui'] != 'NOT_FOUND' else 'NOT_FOUND'
+ except Exception as e:
+  ret = {'status':'NOT_OK','error':repr(e),'oui':None,'company':''}
+ return ret
+
+#
+#
+def oui_list(aDict, aCTX):
+ """ Function retrieves OUI list
+
+ Args:
+
+ Output:
+ """
  ret = {}
- oui = aDict['oui'].translate(str.maketrans({':':'','-':''}))
  with aCTX.db as db:
-  db.do("SELECT company FROM oui WHERE oui = %s"%oui)
-  ret['oui'] = db.get_val('company')
+  db.do("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui")
+  ret['data'] = db.get_rows()
  return ret
 
 ############################################ SETTINGS ########################################
