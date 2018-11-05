@@ -1,0 +1,9 @@
+{
+ "node":"master",
+ "module":"esxi",
+ "func":"op",
+ "args":{"ip":"127.0.0.1","next-state":"reload","id":1},
+ "periodic":true,
+ "frequency":172800,
+ "output":true
+}
