@@ -45,8 +45,7 @@ def op(aDict, aCTX):
  from rims.devices.esxi import Device
  ret = {'id':aDict['id'],'status':'OK'}
  with Device(aDict['ip'], aCTX) as esxi:
-  if True:
-  #try:
+  try:
    if aDict['next-state'] == 'vmsvc-snapshot.create':
     from time import strftime
     esxi.ssh_send("vim-cmd vmsvc/snapshot.create %s 'Portal Snapshot' '%s'"%(aDict['id'],strftime("%Y%m%d")))
@@ -65,8 +64,7 @@ def op(aDict, aCTX):
     ret['state_id'] = esxi.get_state_str(ret['state'])
    elif aDict['next-state'] == 'poweroff':
     esxi.ssh_send("poweroff")
-  # except Exception as err:
-  else:
+  except Exception as err:
    ret['status'] = 'NOT_OK'
    ret['error'] = repr(err)
  return ret
