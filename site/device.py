@@ -26,8 +26,8 @@ def main(aWeb):
   if data.get('name'):
    aWeb.wr("<LI><A CLASS='z-op' DIV=div_content_right  URL='rack_inventory?rack=%s'>'%s'</A></LI>"%(aWeb['rack'],data['name']))
  aWeb.wr("<LI CLASS='dropdown'><A>OUI</A><DIV CLASS='dropdown-content'>")
- aWeb.wr("<A CLASS=z-op DIV=div_content URL='device_oui_search'>Search</A>")
- aWeb.wr("<A CLASS=z-op DIV=div_content URL='device_oui_list' SPIN=true>List</A>")
+ aWeb.wr("<A CLASS=z-op DIV=div_content_right URL='device_oui_search'>Search</A>")
+ aWeb.wr("<A CLASS=z-op DIV=div_content_right URL='device_oui_list' SPIN=true>List</A>")
  aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='device_main?{}'></A></LI>".format(aWeb.get_args()))
  aWeb.wr("<LI CLASS='right'><A CLASS=z-op DIV=div_content URL='reservations_list'>Reservations</A></LI>")
@@ -74,9 +74,9 @@ def list(aWeb):
 #
 def oui_search(aWeb):
  args = aWeb.args()
- aWeb.wr("<ARTICLE><P>OUI</P>")
+ aWeb.wr("<ARTICLE>")
  aWeb.wr("<FORM ID=oui_form>Type OUI or MAC address to find OUI/company name: <INPUT CLASS='background' TYPE=TEXT REQUIRED TYPE=TEXT NAME='oui' STYLE='width:100px' VALUE='%s'></FORM>"%args.get('oui','00:00:00'))
- aWeb.wr(aWeb.button('search',  DIV='div_content', URL='device_oui_search?op=find',   FRM='oui_form', TITLE='Find OUI'))
+ aWeb.wr(aWeb.button('search',  DIV='div_content_right', URL='device_oui_search?op=find',   FRM='oui_form', TITLE='Find OUI'))
  if args.get('op') == 'find':
   res = aWeb.rest_call("system/oui_info",{'oui':args['oui']})
   aWeb.wr("<BR>OUI:%s<BR>Company:%s"%(res['oui'],res['company']))
@@ -209,7 +209,7 @@ def info(aWeb):
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',     DIV='div_content_right',URL='device_info?id=%i'%dev['id']))
  aWeb.wr(aWeb.button('trash',      DIV='div_content_right',URL='device_delete?id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true'))
- aWeb.wr(aWeb.button('edit',       DIV='div_content_right',URL='device_extended?id=%i'%dev['id'], TITLE='Configure Extended Device Information'))
+ aWeb.wr(aWeb.button('edit',       DIV='div_content_right',URL='device_extended?id=%i'%dev['id'], TITLE='Extended Device Information'))
  aWeb.wr(aWeb.button('save',       DIV='div_content_right',URL='device_info?op=update', FRM='info_form', TITLE='Save Basic Device Information'))
  aWeb.wr(aWeb.button('search',     DIV='div_content_right',URL='device_info?op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information', SPIN='true'))
  aWeb.wr(aWeb.button('document',   DIV='div_dev_data',     URL='device_conf_gen?id=%i'%(dev['id']),TITLE='Generate System Conf'))
@@ -241,7 +241,7 @@ def extended(aWeb):
  dev = aWeb.rest_call("device/extended",args)
  domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['domains']
 
- aWeb.wr("<ARTICLE CLASS='info'><P>Device Extended Info</P>")
+ aWeb.wr("<ARTICLE CLASS='info'><P>Extended Info</P>")
  aWeb.wr("<FORM ID=info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id']))
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=ip VALUE={}>".format(dev['ip']))
