@@ -54,7 +54,7 @@ def show(aWeb):
   console.log('DoubleClick',params.nodes);
   if (params.nodes[0]){
    var args = {op:'basics',id:params.nodes[0]};
-   $.ajax({ type:"POST", url: '../api/device_info', data: JSON.stringify(args), dataType:'json',success: function(data){
+   $.ajax({ type:"POST", url: '../api/device/info', data: JSON.stringify(args), dataType:'json',success: function(data){
     if (data && data.found){
      if(data.info.url)
       window.open(data.info.url);
