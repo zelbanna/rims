@@ -131,5 +131,3 @@ button.menu:hover,a.menu:hover { box-shadow:4px 4px 4px 0 rgba(0,0,0,0.3); font-
 button.menu > img,a.menu > img{  max-height:43px; }
 
 a.text {  padding:2px!important; }
-
-a.ipam { height:22px; width:22px; font-size:9px; color:#000000; margin:2px; padding:2px; float:left; font-family: Verdana,sans-serif; border: 1px solid #9CA6B0; }
