@@ -47,8 +47,8 @@ nav div.dropdown-content > a { display:block; text-align:left; }
 .slider::-moz-range-thumb {     height: 15px; border-radius: 50%; background:#CB2026; width:15px; cursor: pointer; }
 
 a.small { height: 22px; margin:0px; margin-right:1px; margin-bottom:2px; font-size:14px; color:#FFFFFF; background-color:#1A1A1A; padding:0px; border-radius: 3px; border:none!important; box-shadow:0px 2px rgba(0,0,0,0.3); }
-a.small:hover { box-shadow:0px 2px rgba(0,0,0,0.3); }
-a.small:active { transform: translateY(1px); box-shadow:0px 1px rgba(0,0,0,0.3); opacity:0.8;}
+a.small:hover { box-shadow:0px 2px rgba(0,0,0,0.3); opacity: 1.0 }
+a.small:active { transform: translateY(1px); box-shadow:0px 1px rgba(0,0,0,0.3); opacity:0.7;}
 
 a.btn-add {       width:22px; background-image: url(../images/btn-add.black.png); }
 a.btn-analyze {   width:22px; background-image: url(../images/btn-analyze.black.png); }
@@ -68,7 +68,7 @@ a.btn-load {      width:22px; background-image: url(../images/btn-load.black.png
 a.btn-logs {      width:22px; background-image: url(../images/btn-logs.black.png); }
 a.btn-network {   width:22px; background-image: url(../images/btn-network.black.png); }
 a.btn-off {       width:22px; background-image: url(../images/btn-off.black.png); }
-a.btn-reload {    width:22px; background-image: url(../images/btn-reload.black.png); } 
+a.btn-reload {    width:22px; background-image: url(../images/btn-reload.black.png); }
 a.btn-revert {    width:22px; background-image: url(../images/btn-revert.black.png); }
 a.btn-save {      width:22px; background-image: url(../images/btn-save.black.png); }
 a.btn-search {    width:22px; background-image: url(../images/btn-search.black.png); }
@@ -82,3 +82,35 @@ a.btn-term-frame {width:22px; background-image: url(../images/btn-term-frame.bla
 a.btn-term {      width:22px; background-image: url(../images/btn-term.black.png); }
 a.btn-trash {     width:22px; background-image: url(../images/btn-trash.black.png); }
 a.btn-ui {        width:22px; background-image: url(../images/btn-ui.black.png); }
+
+a.btn-add:hover {       background-image: url(../images/btn-add.black.hover.png); }
+a.btn-analyze:hover {   background-image: url(../images/btn-analyze.black.hover.png); }
+a.btn-back:hover {      background-image: url(../images/btn-back.black.hover.png); }
+a.btn-configure:hover { background-image: url(../images/btn-configure.black.hover.png); }
+a.btn-connections:hover { background-image: url(../images/btn-connections.black.hover.png); }
+a.btn-delete:hover {    background-image: url(../images/btn-delete.black.hover.png); }
+a.btn-devices:hover {   background-image: url(../images/btn-devices.black.hover.png); }
+a.btn-document:hover {  background-image: url(../images/btn-document.black.hover.png); }
+a.btn-edit:hover {      background-image: url(../images/btn-edit.black.hover.png); }
+a.btn-fix:hover {       background-image: url(../images/btn-fix.black.hover.png); }
+a.btn-forward:hover {   background-image: url(../images/btn-forward.black.hover.png); }
+a.btn-help:hover {      background-image: url(../images/btn-help.black.hover.png); }
+a.btn-info:hover {      background-image: url(../images/btn-info.black.hover.png); }
+a.btn-items:hover {     background-image: url(../images/btn-items.black.hover.png); }
+a.btn-load:hover {      background-image: url(../images/btn-load.black.hover.png); }
+a.btn-logs:hover {      background-image: url(../images/btn-logs.black.hover.png); }
+a.btn-network:hover {   background-image: url(../images/btn-network.black.hover.png); }
+a.btn-off:hover {       background-image: url(../images/btn-off.black.hover.png); }
+a.btn-reload:hover{     background-image: url(../images/btn-reload.black.hover.png); }
+a.btn-save:hover {      background-image: url(../images/btn-save.black.hover.png); }
+a.btn-search:hover {    background-image: url(../images/btn-search.black.hover.png); }
+a.btn-show:hover {      background-image: url(../images/btn-show.black.hover.png); }
+a.btn-snapshot:hover {  background-image: url(../images/btn-snapshot.black.hover.png); }
+a.btn-start:hover {     opacity:0.7; }
+a.btn-stop:hover {      opacity:0.7; }
+a.btn-suspend:hover {   background-image: url(../images/btn-suspend.black.hover.png); }
+a.btn-sync:hover {      background-image: url(../images/btn-sync.black.hover.png); }
+a.btn-term-frame:hover {background-image: url(../images/btn-term-frame.black.hover.png); }
+a.btn-term:hover {      background-image: url(../images/btn-term.black.hover.png); }
+a.btn-trash:hover {     background-image: url(../images/btn-trash.black.hover.png); }
+a.btn-ui:hover {        background-image: url(../images/btn-ui.black.hover.png); }
