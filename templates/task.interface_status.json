@@ -4,5 +4,6 @@
  "func":"network_interface_status",
  "args":{},
  "periodic":true,
- "frequency":3600
+ "frequency":3600,
+ "output":false
 }
