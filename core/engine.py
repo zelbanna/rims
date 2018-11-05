@@ -436,7 +436,8 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.wfile.write(('HTTP/1.1 %s %s\r\n'%(code,self.responses.get(code,('Other','Server specialized return code'))[0])).encode('utf-8'))
   self._headers.update({'Content-Length':len(self._body),'Connection':'close'})
   for k,v in self._headers.items():
-   self.send_header(k,v)
+   try: self.send_header(k,v)
+   except: self.send_header('X-Header-Error',k)
   self.end_headers()
 
  def do_GET(self):
