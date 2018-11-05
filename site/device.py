@@ -77,10 +77,10 @@ def oui_search(aWeb):
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<FORM ID=oui_form>Type OUI or MAC address to find OUI/company name: <INPUT CLASS='background' TYPE=TEXT REQUIRED TYPE=TEXT NAME='oui' STYLE='width:100px' VALUE='%s'></FORM>"%args.get('oui','00:00:00'))
  aWeb.wr(aWeb.button('search',  DIV='div_content_right', URL='device_oui_search?op=find',   FRM='oui_form', TITLE='Find OUI'))
+ aWeb.wr("</ARTICLE>")
  if args.get('op') == 'find':
   res = aWeb.rest_call("system/oui_info",{'oui':args['oui']})
-  aWeb.wr("<BR>OUI:%s<BR>Company:%s"%(res['oui'],res['company']))
- aWeb.wr("</ARTICLE>")
+  aWeb.wr("<ARTICLE CLASS='info'><DIV CLASS=table><DIV CLASS=tbody><DIV CLASS=tr><DIV CLASS=td>OUI:</DIV><DIV CLASS=td>%s</DIV></DIV><DIV CLASS=tr><DIV CLASS=td>Company:</DIV><DIV CLASS=td>%s</DIV></DIV></DIV></DIV></ARTICLE>"%(res['oui'],res['company']))
 
 #
 #
