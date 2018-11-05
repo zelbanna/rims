@@ -230,16 +230,22 @@ def server_leases(aDict, aCTX):
 
  Output:
  """
- ret = {'data':[]}
+ ret = {'data':[],'type':aDict.get('type','active')}
  with aCTX.db as db:
   ret['servers'] = db.do("SELECT server,node FROM servers WHERE type = 'DHCP'")
   servers = db.get_rows()
  for srv in servers:
-  data = aCTX.node_call(srv['node'],srv['server'],'leases',{'type':aDict['type']})['data']
+  data = aCTX.node_call(srv['node'],srv['server'],'status',{'binding':ret['type']})['data']
   if data:
    ret['data'].extend(data)
+ oui_s = ",".join(set([str(int(x.get('mac')[0:8].replace(':',''),16)) for x in ret['data']]))
+ if len(oui_s) > 0:
+  with aCTX.db as db:
+   db.do("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui in (%s)"%oui_s)
+   oui_d = {x['oui']:x['company'] for x in db.get_rows()}
+  for lease in ret['data']:
+   lease['oui'] = oui_d.get(lease['mac'][0:8].replace(':','').upper())
  return ret
-
 
 ################################## Addresses #############################
 #
