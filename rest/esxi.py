@@ -35,7 +35,6 @@ def op(aDict, aCTX):
 
  Args:
   - ip (required)
-  - user_id (required)
   - id (required)
   - next-state (required)
   - snapshot (optional)
@@ -98,7 +97,6 @@ def snapshots(aDict, aCTX):
 
  Args:
   - ip (required)
-  - user_id (required)
   - id (required)
 
  Output:
