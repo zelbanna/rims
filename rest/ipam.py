@@ -59,11 +59,12 @@ def network_info(aDict, aCTX):
  Args:
   - id (required)
   - op (optional)
-  - network (optional)
+  - network (optional required)
+  - mask (optional required)
+  - gateway (optional required)
   - description (optional)
-  - mask (optional)
-  - gateway (optional)
   - reverse_zone_id (optional)
+  - type (optional)
 
  Output:
   - Same as above
@@ -71,6 +72,7 @@ def network_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
+ type = aDict.pop('type','v4')
  with aCTX.db as db:
   db.do("SELECT id, server, node FROM servers WHERE type = 'DHCP'")
   ret['servers'] = db.get_rows()
@@ -92,10 +94,10 @@ def network_info(aDict, aCTX):
    aDict['gateway'] = str(gwint)
    aDict['network']  = str(low)
    if id == 'new':
-    ret['update'] = db.insert_dict('ipam_networks',aDict,'ON DUPLICATE KEY UPDATE id = id')
+    ret['update'] = (db.insert_dict('ipam_networks',aDict,'ON DUPLICATE KEY UPDATE id = id') == 1)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
    else:
-    ret['update'] = db.update_dict('ipam_networks',aDict,'id=%s'%id)
+    ret['update'] = (db.update_dict('ipam_networks',aDict,'id=%s'%id) == 1)
 
   if not id == 'new':
    ret['found'] = (db.do("SELECT id, mask, description, INET_NTOA(network) AS network, INET_NTOA(gateway) AS gateway, reverse_zone_id, server_id FROM ipam_networks WHERE id = %s"%id) > 0)

@@ -329,11 +329,17 @@ def new(aDict, aCTX):
 
  Output:
  """
+ def GL_test_ip(aIP):
+  from ipaddress import ip_address
+  try: ip_address(aIP)
+  except: return False
+  else: return True
+
  alloc = None
  # Test if hostname ok or if IP supplied and then if ok and available
  if aDict['hostname'] == 'unknown':
   return {'info':'Hostname unknown not allowed'}
- elif aDict.get('ipam_network_id') and aDict.get('ip'):
+ elif aDict.get('ipam_network_id') and test_ip(aDict.get('ip')):
   from rims.rest.ipam import address_allocate
   alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['ipam_network_id'],'mac':aDict.get('mac',0)}, aCTX)
   if   not alloc['valid']:

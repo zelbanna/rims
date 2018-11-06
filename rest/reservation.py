@@ -1,4 +1,9 @@
-"""reservation REST module. Provides basic reservation functionality for devices"""
+"""reservation REST module. Provides basic reservation functionality for devices
+
+Module uses notifier setting to deduce where to 'notify':
+-  notifier{node,server} => node_call for server to send data
+
+"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -50,7 +55,7 @@ def list(aDict, aCTX):
 
 #
 #
-def notify(aDict, aCTX):
+def expiration_check(aDict, aCTX):
  """ Function notifies users (using notification service@node) about reservation time left. If NOW() - time_end < threashold => service@node.notify('user':user,'message':'Device X reservation will expire in XX seconds')
   Ideally run as a periodic task.
 
