@@ -53,6 +53,7 @@ class Context(object):
     self.config['config_file'] = aConfigFile
   else:
    self.config  = aConfig
+  self.config['mode'] = 'api'
   self.node     = self.config['id']
   self.db       = DB(self.config['db_name'],self.config['db_host'],self.config['db_user'],self.config['db_pass']) if self.node == 'master' else None
   self.workers  = WorkerPool(self.config.get('workers',20),self)
@@ -209,13 +210,13 @@ class Context(object):
   self.kill.set()
 
  #
- def node_call(self, aNode, aModule, aFunction, aArgs = None):
+ def node_call(self, aNode, aModule, aFunction, **kwargs):
   if self.node != aNode:
-   ret = self.rest_call("%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction),aArgs)['data']
+   ret = self.rest_call("%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction),**kwargs)['data']
   else:
    module = import_module("rims.rest.%s"%aModule)
    fun = getattr(module,aFunction,None)
-   ret = fun(aArgs if aArgs else {},self)
+   ret = fun(kwargs.get('aArgs',{}),self)
   return ret
 
  #
@@ -485,7 +486,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
   except: args = {}
-  if extras.get('log','true') == 'true':
+  if self.headers.get('X-Log',extras.get('log','true')) == 'true':
    try:
     with open(self._ctx.config['logs']['rest'], 'a') as f:
      f.write(str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system_task_worker" else "N/A", self._ctx.node, get.strip())))
@@ -495,17 +496,18 @@ class SessionHandler(BaseHTTPRequestHandler):
     module = import_module("rims.rest.%s"%mod) if not path == 'external' else self._ctx.external.get(mod)
     self._body = dumps(getattr(module,fun,None)(args,self._ctx)).encode('utf-8')
    else:
-    self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), args, aDecode = False)['data']
+    self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), aArgs = args, aDecode = False)['data']
   except Exception as e:
    if isinstance(e.args[0],dict) and e.args[0].get('code'):
     error = {'X-Args':args, 'X-Exception':e.args[0].get('exception'), 'X-Code':e.args[0]['code'], 'X-Info':e.args[0].get('info')}
    else:
     error = {'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':500, 'X-Info':','.join(map(str,e.args))}
    self._headers.update(error)
-   if extras.get('debug') or path == 'debug':
+   mode = self.headers.get('X-Debug',extras.get('debug'))
+   if mode  or path == 'debug':
     from traceback import format_exc
     tb = format_exc()
-    if extras.get('debug') == 'print':
+    if mode == 'print':
      print(tb)
     else:
      for n,v in enumerate(tb.split('\n')):
@@ -532,7 +534,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     except: stream.wr(e[0]['info'])
     stream.wr("</DETAILS>")
    except:
-    stream.wr("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><CODE>%s</CODE></DETAILS>"%(type(e).__name__,str(e)))
+    stream.wr("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><PRE>%s</PRE></DETAILS>"%(type(e).__name__,str(e)))
    stream.wr("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS>"%(",".join(stream._form.keys())))
    stream.wr("<DETAILS><SUMMARY>Cookie</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(stream._cookies))
   self._body = stream.output().encode('utf-8')
@@ -597,7 +599,7 @@ class SessionHandler(BaseHTTPRequestHandler):
        output['error'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
    else:
     try:
-     output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), args)['data']
+     output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args)['data']
      self._headers['X-Code'] = 200
     except Exception as e:
      output = {'error':e.args[0]}
@@ -614,7 +616,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   if op == 'environment' and (len(arg) == 0 or self._ctx.node == 'master'):
    output = self._ctx.system_info(arg) if len(arg) > 0 else {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers,'config':self._ctx.config}
   elif op == 'sync' and args != 'master' and args in self._ctx.nodes.keys():
-   try:    output = self._ctx.rest_call("%s/system/update"%(self._ctx.nodes[args]['url']), self._ctx.system_info(arg))
+   try:    output = self._ctx.rest_call("%s/system/update"%(self._ctx.nodes[args]['url']), aArgs = self._ctx.system_info(arg))
    except: output = {'node':args,'status':'SYNC_NOT_OK'}
   elif op == 'update':
    length = int(self.headers.get('Content-Length',0))
@@ -642,6 +644,9 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif op == 'shutdown':
    self._ctx.close()
    output = {'status':'OK','info':'shutdown in progress'}
+  elif op == 'mode':
+   self._ctx.config['mode'] = arg
+   output = {'status':'OK'}
   else:
    output = {'status':'NOT_OK','info':'system/<import|register|environment|sync|reload>/<args: node|module_to_import> where import, environment without args and reload runs on any node'}
   self._body = dumps(output).encode('utf-8')
@@ -706,10 +711,10 @@ class Stream(object):
   return "<A CLASS='btn btn-%s z-op small' %s></A>"%(aImg," ".join("%s='%s'"%i for i in kwargs.items()))
 
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
-  return self._ctx.rest_call("%s/api/%s"%(self._ctx.nodes[self._node]['url'],aAPI), aArgs, aTimeout = 60)['data']
+  return self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._node]['url'],self._ctx.config['mode'],aAPI), aArgs = aArgs, aTimeout = 60)['data']
 
  def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
-  return self._ctx.rest_call(aURL, aArgs, aMethod, aHeader, True, aTimeout)
+  return self._ctx.rest_call(aURL, aArgs = aArgs, aMethod = aMethod, aHeader = aHeader, aVerify = True, aTimeout = aTimeout)
 
  def put_html(self, aTitle = None, aIcon = 'rims.ico', aTheme = None):
   theme = self._ctx.config.get('theme','blue') if not aTheme else aTheme

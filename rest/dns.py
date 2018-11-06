@@ -86,7 +86,7 @@ def domain_info(aDict, aCTX):
     db.do("SELECT servers.id, foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aDict['id'])
    ret['infra'] = db.get_row()
    aDict['id']   = ret['infra'].pop('foreign_id',None)
-   ret.update(aCTX.node_call(ret['infra']['node'],ret['infra']['server'],'domain_info',aDict))
+   ret.update(aCTX.node_call(ret['infra']['node'],ret['infra']['server'],'domain_info',aArgs = aDict))
    if str(ret.get('insert',0)) == '1':
     ret['cache'] = db.insert_dict('domains',{'name':aDict['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id']})
     ret['id'] = db.get_last_id() 
@@ -107,7 +107,7 @@ def domain_delete(aDict, aCTX):
  with aCTX.db as db:
   db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %i"%id)
   infra = db.get_row()
-  ret = aCTX.node_call(infra['node'],infra['server'],'domain_delete',{'id':infra['foreign_id']})
+  ret = aCTX.node_call(infra['node'],infra['server'],'domain_delete', aArgs = {'id':infra['foreign_id']})
   ret['local'] = db.do("UPDATE devices SET a_dom_id = 0 WHERE a_dom_id = %i"%id)
   ret['cache'] = db.do("DELETE FROM domains WHERE id = %i"%id) if ret['domain'] else 0
  return ret
@@ -149,7 +149,7 @@ def domain_save(aDict, aCTX):
  with aCTX.db as db:
   db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%id)
   infra = db.get_row()
-  ret = aCTX.node_call(infra['node'],infra['server'],'domain_save',{'id':infra['foreign_id']})
+  ret = aCTX.node_call(infra['node'],infra['server'],'domain_save', aArgs = {'id':infra['foreign_id']})
  return {'status':ret['status']}
 
 ######################################## Records ####################################
@@ -175,7 +175,7 @@ def record_list(aDict, aCTX):
    id = aDict.pop('server_id','0')
    db.do("SELECT server, node FROM servers WHERE id = %s"%id)
    infra = db.get_row()
- ret = aCTX.node_call(infra['node'],infra['server'],'record_list',aDict)
+ ret = aCTX.node_call(infra['node'],infra['server'],'record_list',aArgs = aDict)
  ret['domain_id'] = aDict.get('domain_id',0)
  return ret
 
@@ -204,7 +204,7 @@ def record_info(aDict, aCTX):
    db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%domain_id)
    infra = db.get_row()
    aDict['domain_id'] = infra['foreign_id']
-   ret = aCTX.node_call(infra['node'],infra['server'],'record_info',aDict)
+   ret = aCTX.node_call(infra['node'],infra['server'],'record_info',aArgs = aDict)
    ret['data']['domain_id']  = domain_id
  return ret
 
@@ -223,7 +223,7 @@ def record_delete(aDict, aCTX):
   db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aDict['domain_id'])
   infra = db.get_row()
  aDict['domain_id'] = infra['foreign_id']
- ret = aCTX.node_call(infra['node'],infra['server'],'record_delete',aDict)
+ ret = aCTX.node_call(infra['node'],infra['server'],'record_delete',aArgs = aDict)
  return ret
 
 ################################## DEVICE FUNCTIONS ##################################
@@ -268,7 +268,7 @@ def record_device_delete(aDict, aCTX):
     db.do("SELECT foreign_id, server, node FROM domains LEFT JOIN servers ON domains.server_id = servers.id WHERE domains.id = '%s'"%(domain_id))
     infra = db.get_row()
     args = {'id':id,'domain_id':infra['foreign_id']}
-    ret[tp.upper()] = aCTX.node_call(infra['node'],infra['server'],'record_delete',args)['deleted']
+    ret[tp.upper()] = aCTX.node_call(infra['node'],infra['server'],'record_delete',aArgs = args)['deleted']
  return ret
 
 #
@@ -319,7 +319,7 @@ def record_device_update(aDict, aCTX):
   if a_id != 'new':
    old = domains['id'].get(int(aDict.get('a_domain_id_old',0)),None)
    if old['server_id'] != infra['server_id']:
-    ret['server']['A'] = aCTX.node_call(old['node'],old['server'],'record_delete',{'id':a_id})
+    ret['server']['A'] = aCTX.node_call(old['node'],old['server'],'record_delete',aArgs = {'id':a_id})
     a_id = 'new'
    else:
     ret['server']['A'] = 'remain'
@@ -339,7 +339,7 @@ def record_device_update(aDict, aCTX):
     old_arpa = old_ptr.partition('.')[2]
     old = domains['name'].get(old_arpa,None)
     if old['server_id'] != infra['server_id']:
-     ret['server']['PTR'] = aCTX.node_call(old['node'],old['server'],'record_delete',{'id':ptr_id})
+     ret['server']['PTR'] = aCTX.node_call(old['node'],old['server'],'record_delete',aArgs = {'id':ptr_id})
      ptr_id = 'new'
     else:
      ret['server']['PTR'] = 'remain'
@@ -348,11 +348,11 @@ def record_device_update(aDict, aCTX):
  for type,infra in data.items():
   if infra['server']:
    infra['args']['op'] = 'update'
-   res = aCTX.node_call(infra['node'],infra['server'],'record_info',infra['args'])
+   res = aCTX.node_call(infra['node'],infra['server'],'record_info',aArgs = infra['args'])
    if not res['found']:
     # real 'op' should be insert as we now reset the record id to create new one
     infra['args']['id'] = 'new'
-    res = aCTX.node_call(infra['node'],infra['server'],'record_info',infra['args'])
+    res = aCTX.node_call(infra['node'],infra['server'],'record_info',aArgs = infra['args'])
    if res['found']:
     ret[type]['found']     = True
     ret[type]['record_id'] = res['data']['id']
@@ -394,7 +394,7 @@ def record_device_create(aDict, aCTX):
   db.do("SELECT foreign_id, server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aDict['domain_id'])
   infra = db.get_row()
   args['domain_id'] = infra['foreign_id']
-  ret['record'] = aCTX.node_call(infra['node'],infra['server'],'record_info',args)
+  ret['record'] = aCTX.node_call(infra['node'],infra['server'],'record_info', aArgs = args)
   opres = str(ret['record'].get('update')) == "1" or str(ret['record'].get('insert')) == "1"
   if opres and (args['type'] in ['A','PTR']):
    ret['device'] = {'id':aDict['device_id']}
@@ -418,7 +418,7 @@ def status(aDict, aCTX):
   db.do("SELECT server, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE servers.type = 'DNS'")
   servers = db.get_rows()
  for infra in servers:
-  res = aCTX.node_call(infra['node'],infra['server'],'status',args)
+  res = aCTX.node_call(infra['node'],infra['server'],'status', aArgs = args)
   ret['top']["%(node)s_%(server)s"%infra] = res['top']
   ret['who']["%(node)s_%(server)s"%infra] = res['who']
  return ret

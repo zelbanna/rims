@@ -62,11 +62,13 @@ def notify(aDict, aCTX):
   - info (slack response text/data)
 
  """
- url = "%s/%s"%(aCTX.settings['slack']['api'],aCTX.settings['slack']['service'])
+ url = "%s/%s"%(aCTX.nodes[aCTX.settings['slack']['node']]['url'],aCTX.settings['slack']['service'])
  args = {'text':aDict['message']} 
  if aDict.get('user'):
   args['channel'] = "@%s"%aDict['user']
  elif aDict.get('channel'):
   args['channel'] = "#%s"%aDict['channel']
+ elif aCTX.settings['slack'].get('channel'):
+  args['channel'] = aCTX.settings['slack'].get('channel')
  res = aCTX.rest_call(url,args)
  return {'status':'OK' if res['code']== 200 else 'NOT_OK', 'info':res['data']}

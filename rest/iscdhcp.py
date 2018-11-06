@@ -55,12 +55,12 @@ def sync(aDict, aCTX):
  """Function docstring for sync:  reload the DHCP server to use updated info
 
  Args:
-  - id (required). Server id on master node
+  - id (required). Server id on master node (to match entries belonging to this instance)
 
  Output:
  """
  from time import strftime, localtime
- entries = aCTX.node_call('master','device','server_macs',{'id':aDict['id']})
+ entries = aCTX.node_call('master','device','server_macs', aArgs = {'id':aDict['id']})
  # Create file
  with open(aCTX.settings['iscdhcp']['static'],'w') as config_file:
   config_file.write("# Created: %s\n"%( strftime('%Y-%m-%d %H:%M:%S', localtime()) ))

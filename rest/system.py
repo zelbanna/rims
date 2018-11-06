@@ -216,7 +216,7 @@ def settings_info(aDict, aCTX):
    else:
     ret['update'] = db.insert_dict('settings',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-   # Insert HERE into CTX, or node_call
+   # Insert HERE into CTX, or rest_call
    if aDict['node'] == 'master':
     section = aCTX.settings.get(aDict['section'],{})
     section[aDict['parameter']] = aDict['value']
@@ -638,6 +638,7 @@ def server_delete(aDict, aCTX):
  ret = {}
  with aCTX.db as db:
   ret['deleted'] = db.do("DELETE FROM servers WHERE id = %s"%aDict['id'])
+  aCTX.servers.pop(int(aDict['id']),None)
  return ret
 
 #
@@ -650,13 +651,8 @@ def server_sync(aDict, aCTX):
 
  Output:
  """
- ret = {}
- with aCTX.db as db:
-  ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
-  if ret['found']:
-   data = db.get_row()
-   ret.update(aCTX.node_call(data['node'],data['server'],'sync',{'id':aDict['id']}))
- return ret
+ server = aCTX.servers[int(aDict['id'])]
+ return aCTX.node_call(server['node'],server['server'],'sync', aArgs = {'id':aDict['id']})
 
 #
 #
@@ -668,13 +664,8 @@ def server_status(aDict, aCTX):
 
  Output:
  """
- ret = {}
- with aCTX.db as db:
-  ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
-  if ret['found']:
-   data = db.get_row()
-   ret.update(aCTX.node_call(data['node'],data['server'],'status',{'id':aDict['id']}))
- return ret
+ server = aCTX.servers[int(aDict['id'])]
+ return aCTX.node_call(server['node'],server['server'],'status', aArgs = {'id':aDict['id']})
 
 #
 #
@@ -687,13 +678,8 @@ def server_restart(aDict, aCTX):
  Output:
   - result.
  """
- ret = {}
- with aCTX.db as db:
-  ret['found'] = (db.do("SELECT node,server FROM servers WHERE id = %s"%aDict['id']) == 1)
-  if ret['found']:
-   data = db.get_row()
-   ret['status'] = aCTX.node_call(data['node'],data['server'],'restart',{'id':aDict['id']})
- return ret
+ server = aCTX.servers[int(aDict['id'])]
+ return {'status':aCTX.node_call(server['node'],server['server'],'restart', aArgs = {'id':aDict['id']})}
 
 ######################################### ACTIVITIES ###########################################
 #

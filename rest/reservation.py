@@ -62,14 +62,20 @@ def expiration_check(aDict, aCTX):
  Args:
   - service
   - node
-  - threashold (in seconds)
+  - threshold (in seconds)
 
  Output:
   - result
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, dt.name as type")
+  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, NOW() - res.time_end AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id WHERE NOW() - res.time_end < %s"%aDict['threshold'])
+  ret['hosts'] = db.get_rows()
+ notifier = aCTX.settings.get('notifier')
+ if notifier:
+  for res in ret['hosts']:
+   res = aCTX.node_call(notifier['node'],notifier['server'],"notify", aArgs = {'message':'Host %s expiration'%res['hostname']}, aHeader = {'X-Log':'true'})
+   print(res)
  return ret
 
 #
