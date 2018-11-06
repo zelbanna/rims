@@ -64,7 +64,6 @@ def network_info(aDict, aCTX):
   - gateway (optional required)
   - description (optional)
   - reverse_zone_id (optional)
-  - type (optional)
 
  Output:
   - Same as above
@@ -72,7 +71,6 @@ def network_info(aDict, aCTX):
  ret = {}
  id = aDict.pop('id','new')
  op = aDict.pop('op',None)
- type = aDict.pop('type','v4')
  with aCTX.db as db:
   db.do("SELECT id, server, node FROM servers WHERE type = 'DHCP'")
   ret['servers'] = db.get_rows()
