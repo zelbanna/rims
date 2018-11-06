@@ -29,7 +29,7 @@ class Device(object):
   self._token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']
   try:
    if aAuth.get('mode','full') == 'full':
-    ret = rest_call("%s/me"%self._node,None,None,{'Authorization':self._token})
+    ret = rest_call("%s/me"%self._node, aHeader = {'Authorization':self._token})
     ret.pop('data',None)
     ret.pop('node',None)
    else:
@@ -51,15 +51,15 @@ class Device(object):
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  # - header = send additional headers as dictionary
  #
- def call(self,query,args = None, method = None, header = None):
-  return self.href("%s/%s"%(self._node,query), aArgs=args, aMethod=method, aHeader = header)
+ def call(self, query, **kwargs):
+  return self.href("%s/%s"%(self._node,query), **kwargs)
 
- def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
+ def href(self,aURL, **kwargs):
   from ..core.common import rest_call
   head = {'Authorization':self._token}
-  try: head.update(aHeader)
+  try: head.update(kwargs.get('aHeader',{}))
   except: pass
-  return rest_call(aURL, aArgs, aMethod, head)
+  return rest_call(aURL, aArgs = kwargs.get('aArgs'), aMethod = kwargs.get('aMethod'), aHeader = head)
 
  def fetch_list(self,aBase,aSet):
   ret  = []

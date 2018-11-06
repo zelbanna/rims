@@ -252,7 +252,7 @@ def database_backup(aDict, aCTX):
   from rims.rest.mysql import dump
   data = dump({'mode':'database'},aCTX)['output']
  else:
-  res = aCTX.rest_call("%s/api/mysql/dump"%aCTX.config['master'],{'mode':'database'})
+  res = aCTX.rest_call("%s/api/mysql/dump"%aCTX.config['master'], aArgs = {'mode':'database'})
   if res['code'] == 200:
    data = res['data']['output']
   else:

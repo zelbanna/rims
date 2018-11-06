@@ -875,7 +875,7 @@ def task_add(aDict, aCTX):
    aCTX.workers.add_transient(aDict)
   ret['status'] = 'ADDED'
  else:
-  ret.update(aCTX.rest_call("%s/api/system/task_worker"%aCTX.nodes[node]['url'],aDict)['data'])
+  ret.update(aCTX.rest_call("%s/api/system/task_worker"%aCTX.nodes[node]['url'], aArgs = aDict)['data'])
  return ret
 
 #

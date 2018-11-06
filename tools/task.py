@@ -29,7 +29,7 @@ with open(argv[1],'r') as f:
  config = load(f)
 started = "Executing:system_task_%s(%s)"%(func,args)
 try:
- output = rest_call("%s/api/system/task_%s"%(config['master'],func),args, aTimeout = 300)['data']
+ output = rest_call("%s/api/system/task_%s"%(config['master'],func),aArgs = args, aTimeout = 300)['data']
 except Exception as e:
  output = e.args[0]
 print(started)

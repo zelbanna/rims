@@ -70,5 +70,5 @@ def notify(aDict, aCTX):
   args['channel'] = "#%s"%aDict['channel']
  elif aCTX.settings['slack'].get('channel'):
   args['channel'] = aCTX.settings['slack'].get('channel')
- res = aCTX.rest_call(url,args)
+ res = aCTX.rest_call(url,aArgs = args)
  return {'status':'OK' if res['code']== 200 else 'NOT_OK', 'info':res['data']}

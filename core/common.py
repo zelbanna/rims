@@ -121,7 +121,7 @@ from json import loads, dumps
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError
 
-def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None, aTimeout = 20, aDecode = True):
+def rest_call(aURL, **kwargs):
  """ Rest call function
   Args:
    - aURL (required)
@@ -134,14 +134,14 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
  """
  try:
   head = { 'Content-Type': 'application/json','Accept':'application/json' }
-  try:    head.update(aHeader)
+  try:    head.update(kwargs.get('aHeader',{}))
   except: pass
-  data = dumps(aArgs).encode('utf-8') if aArgs else None
+  data = dumps(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
   req = Request(aURL, headers = head, data = data)
-  if aMethod:
-   req.get_method = lambda: aMethod
-  if aVerify is None or aVerify is True:
-   sock = urlopen(req, timeout = aTimeout)
+  if kwargs.get('aMethod'):
+   req.get_method = lambda: kwargs['aMethod']
+  if kwargs.get('aVerify',True):
+   sock = urlopen(req, timeout = kwargs.get('aTimeout',20))
   else:
    from ssl import create_default_context
    ssl_ctx = ssl.create_default_context()
@@ -150,7 +150,7 @@ def rest_call(aURL, aArgs = None, aMethod = None, aHeader = None, aVerify = None
    sock = urlopen(req,context=ssl_ctx, timeout = aTimeout)
   output = {'info':dict(sock.info()), 'code':sock.code }
   output['node'] = output['info'].pop('node','_no_node_')
-  try:    output['data'] = loads(sock.read().decode()) if aDecode else sock.read()
+  try:    output['data'] = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
   except: output['data'] = None
   if (output['info'].get('code',200) != 200):
    output['code'] = output['info']['code']

@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 134
+__build__ = 135
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
@@ -668,7 +668,8 @@ class Stream(object):
    for cookie in cookie_str:
     k,_,v = cookie.partition('=')
     try:    self._cookies[k] = dict(x.split('=') for x in v.split(','))
-    except: self._cookies[k] = v
+    except Exception as e:
+     self._cookies[k] = v
   try:    body_len = int(aHandler.headers.get('Content-Length',0))
   except: body_len = 0
   if body_len > 0 or len(aGet) > 0:
@@ -713,8 +714,8 @@ class Stream(object):
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
   return self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._node]['url'],self._ctx.config['mode'],aAPI), aArgs = aArgs, aTimeout = 60)['data']
 
- def rest_full(self, aURL, aArgs = None, aMethod = None, aHeader = None, aTimeout = 20):
-  return self._ctx.rest_call(aURL, aArgs = aArgs, aMethod = aMethod, aHeader = aHeader, aVerify = True, aTimeout = aTimeout)
+ def rest_full(self, aURL, **kwargs):
+  return self._ctx.rest_call(aURL, **kwargs)
 
  def put_html(self, aTitle = None, aIcon = 'rims.ico', aTheme = None):
   theme = self._ctx.config.get('theme','blue') if not aTheme else aTheme

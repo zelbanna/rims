@@ -80,7 +80,7 @@ def rest_execute(aWeb):
  try:
   node = aWeb.rest_call("system/node_info",{'id':aWeb['node']})['data']
   url = "%s/%s/%s"%(node['url'],"debug" if aWeb['debug'] == '1' else "api", aWeb['api']) if node['system'] == 1 else "%s%s"%(node['url'],aWeb['api'])
-  ret = aWeb.rest_full(url,arguments,aWeb['method'])
+  ret = aWeb.rest_full(url, aArgs = arguments, aMethod = aWeb['method'])
  except Exception as e:
   ret = e.args[0]
  data = ret.pop('data',None)

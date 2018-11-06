@@ -42,7 +42,7 @@ def portal(aWeb):
  cookie = aWeb.cookie('system')
  auth,data,args = {},{},aWeb.args()
  if not cookie.get('token') and (args.get('username') and args.get('password')):
-  try:  auth = aWeb.rest_full("%s/auth"%aWeb.url(),args)['data']
+  try:  auth = aWeb.rest_full("%s/auth"%aWeb.url(), aArgs = args)['data']
   except Exception as e:
    auth = e.args[0].get('data',{})
   else:

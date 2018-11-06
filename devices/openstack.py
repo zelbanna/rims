@@ -30,7 +30,7 @@ class Device(object):
   try:
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
    url  = "%s/v3/auth/tokens"%(aURL if aURL else self._url)
-   res  = rest_call(url,auth)
+   res  = rest_call(url,aArgs = auth)
    # If sock code is created (201), not ok (200) - we can expect to find a token
    if res['code'] == 201:
     token = res.pop('data',{})['token']
@@ -93,6 +93,6 @@ class Device(object):
   head = { 'X-Auth-Token':self._token }
   try: head.update(aHeader)
   except: pass
-  try: res = rest_call(aURL if aURL else self._url, aArgs, aMethod, head)
+  try: res = rest_call(aURL if aURL else self._url, aArgs = aArgs, aMethod = aMethod, aHeader = head)
   except Exception as e: res = e[0]
   return res

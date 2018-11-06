@@ -126,7 +126,7 @@ def rest(aDict, aCTX):
    with aCTX.db as db:
     db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%s' AND service = '%s'"%(aDict['token'],aDict.get('service')))
     url = db.get_val('service_url')
-  ret = aCTX.rest_call(url, aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
+  ret = aCTX.rest_call(url, aArgs = aDict.get('arguments'), aMethod = aDict.get('method','GET'), aHeader = { 'X-Auth-Token':aDict['token'] })
   ret['status'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
@@ -150,7 +150,7 @@ def call(aDict, aCTX):
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = '%(service)s'"%aDict)
   data = db.get_row()
  try:
-  ret = aCTX.rest_call("%s/%s"%(data['service_url'],aDict.get('call',"")), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
+  ret = aCTX.rest_call("%s/%s"%(data['service_url'],aDict.get('call',"")), aArgs = aDict.get('arguments'), aMethod = aDict.get('method','GET'), aHeader = { 'X-Auth-Token':aDict['token'] })
   ret['status'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
@@ -166,7 +166,7 @@ def href(aDict, aCTX):
 
  Output:
  """
- try: ret = aCTX.rest_call(aDict.get('href'), aDict.get('arguments'), aDict.get('method','GET'), { 'X-Auth-Token':aDict['token'] })
+ try: ret = aCTX.rest_call(aDict.get('href'), aArgs = aDict.get('arguments'), aMethod = aDict.get('method','GET'), aHeader = { 'X-Auth-Token':aDict['token'] })
  except Exception as e: ret = e[0]
  return ret
 
