@@ -56,10 +56,9 @@ class Device(object):
 
  def href(self,aURL, **kwargs):
   from ..core.common import rest_call
-  head = {'Authorization':self._token}
-  try: head.update(kwargs.get('aHeader',{}))
-  except: pass
-  return rest_call(aURL, aArgs = kwargs.get('aArgs'), aMethod = kwargs.get('aMethod'), aHeader = head)
+  try:    kwargs['aHeader'].update({'Authorization':self._token})
+  except: kwargs['aHeader'] = {'Authorization':self._token}
+  return rest_call(aURL, **kwargs)
 
  def fetch_list(self,aBase,aSet):
   ret  = []

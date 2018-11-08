@@ -62,9 +62,8 @@ class Device(object):
  def call(self,url,args = None, method = None, header = None):
   return self.href("%s:7000/appformix/controller/v2.0/%s"%(self._node,url), aArgs=args, aMethod=method, aHeader = header)
 
- def href(self,aURL, aArgs = None, aMethod = None, aHeader = None):
+ def href(self,aURL, **kwargs):
   from ..core.common import rest_call
-  head = { 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' }
-  try: head.update(aHeader)
-  except: pass
-  return rest_call(aURL,aArgs = aArgs, aMethod = aMethod, aHeader = head)
+  try:    kwargs['aHeader'].update({ 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' })
+  except: kwargs['aHeader'] = { 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' }
+  return rest_call(aURL,**kwargs))

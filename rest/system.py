@@ -321,7 +321,7 @@ def node_info(aDict, aCTX):
    else:
     ret['update'] = db.insert_dict('nodes',aDict)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-    aCTX.nodes[aDict['node']] = {'id':id,'url':aDict['url']}
+    aCTX.nodes[aDict['node']] = {'id':id,'url':aDict['url'],'system':0}
   if not id == 'new':
    ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()

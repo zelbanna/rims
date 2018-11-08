@@ -150,7 +150,7 @@ class Context(object):
   with self.db as db:
    db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aNode)
    data = db.get_rows()
-   db.do("SELECT id, node, url FROM nodes")
+   db.do("SELECT id, node, url,system FROM nodes")
    node_list = db.get_rows()
    db.do("SELECT id, node, server, type FROM servers")
    services_list = db.get_rows()
