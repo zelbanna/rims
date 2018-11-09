@@ -615,9 +615,9 @@ class SessionHandler(BaseHTTPRequestHandler):
   op,_,arg = query.partition('/')
   if op == 'environment' and (len(arg) == 0 or self._ctx.node == 'master'):
    output = self._ctx.system_info(arg) if len(arg) > 0 else {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers,'config':self._ctx.config}
-  elif op == 'sync' and args != 'master' and args in self._ctx.nodes.keys():
-   try:    output = self._ctx.rest_call("%s/system/update"%(self._ctx.nodes[args]['url']), aArgs = self._ctx.system_info(arg))
-   except: output = {'node':args,'status':'SYNC_NOT_OK'}
+  elif op == 'sync' and arg != 'master' and arg in self._ctx.nodes.keys():
+   try:    output = self._ctx.rest_call("%s/system/update"%(self._ctx.nodes[arg]['url']), aArgs = self._ctx.system_info(arg))
+   except: output = {'node':arg,'status':'SYNC_NOT_OK'}
   elif op == 'update':
    length = int(self.headers.get('Content-Length',0))
    if length > 0:
