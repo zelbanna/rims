@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 from rims.devices.appformix import Device
 
 #
-def alarm(aDict, aCTX):
+def alarm(aCTX, aDict):
  """Function docstring for alarm TBD
 
  Args:
@@ -17,7 +17,7 @@ def alarm(aDict, aCTX):
 
 #
 #
-def authenticate(aDict, aCTX):
+def authenticate(aCTX, aDict):
  """Function docstring for authenticate TBD
 
  Args:
@@ -37,7 +37,7 @@ def authenticate(aDict, aCTX):
 
 #
 #
-def report_projects(aDict, aCTX):
+def report_projects(aCTX, aDict):
  """Function docstring for report_projects TBD
 
  Args:
@@ -55,7 +55,7 @@ def report_projects(aDict, aCTX):
 
 #
 #
-def project_reports(aDict, aCTX):
+def project_reports(aCTX, aDict):
  """Function docstring for project_reports TBD
 
  Args:

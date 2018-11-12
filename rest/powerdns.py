@@ -18,7 +18,7 @@ from time import strftime
 #################################### Domains #######################################
 #
 #
-def domain_list(aDict, aCTX):
+def domain_list(aCTX, aDict):
  """Function docstring TBD
 
  Args:
@@ -41,7 +41,7 @@ def domain_list(aDict, aCTX):
 
 #
 #
-def domain_info(aDict, aCTX):
+def domain_info(aCTX, aDict):
  """Function docstring TBD
 
  Args:
@@ -81,7 +81,7 @@ def domain_info(aDict, aCTX):
 
 #
 #
-def domain_delete(aDict, aCTX):
+def domain_delete(aCTX, aDict):
  """Function docstring for domain_delete TBD
 
  Args:
@@ -100,7 +100,7 @@ def domain_delete(aDict, aCTX):
 
 #
 #
-def domain_save(aDict, aCTX):
+def domain_save(aCTX, aDict):
  """NO OP
 
  Args:
@@ -113,7 +113,7 @@ def domain_save(aDict, aCTX):
 #################################### Records #######################################
 #
 #
-def record_list(aDict, aCTX):
+def record_list(aCTX, aDict):
  """Function docstring for records TBD
 
  Args:
@@ -136,7 +136,7 @@ def record_list(aDict, aCTX):
 
 #
 #
-def record_info(aDict, aCTX):
+def record_info(aCTX, aDict):
  """Function docstring for record_info TBD
 
  Args:
@@ -167,7 +167,7 @@ def record_info(aDict, aCTX):
 
 #
 #
-def record_delete(aDict, aCTX):
+def record_delete(aCTX, aDict):
  """Function docstring for record_delete TBD
 
  Args:
@@ -183,7 +183,7 @@ def record_delete(aDict, aCTX):
 ############################### Tools #################################
 #
 #
-def sync(aDict, aCTX):
+def sync(aCTX, aDict):
  """Function docstring for sync. Removes name duplicates.. (assume order by name => duplicate names :-))
 
  Args:
@@ -206,7 +206,7 @@ def sync(aDict, aCTX):
 
 #
 #
-def status(aDict, aCTX):
+def status(aCTX, aDict):
  """Function docstring for top TBD
 
  Args:
@@ -240,7 +240,7 @@ def status(aDict, aCTX):
 
 #
 #
-def restart(aDict, aCTX):
+def restart(aCTX, aDict):
  """Function provides restart capabilities of service
 
  Args:

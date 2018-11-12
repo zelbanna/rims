@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def status(aDict, aCTX):
+def status(aCTX, aDict):
  """ Initiate a status check for all or a subset of IP:s
 
  Args:
@@ -31,7 +31,7 @@ def status(aDict, aCTX):
 ##################################### Networks ####################################
 #
 #
-def network_list(aDict, aCTX):
+def network_list(aCTX, aDict):
  """Lists networks
 
  Args:
@@ -53,7 +53,7 @@ def network_list(aDict, aCTX):
 
 #
 #
-def network_info(aDict, aCTX):
+def network_info(aCTX, aDict):
  """Function docstring for info TBD
 
  Args:
@@ -109,7 +109,7 @@ def network_info(aDict, aCTX):
 
 #
 #
-def network_inventory(aDict, aCTX):
+def network_inventory(aCTX, aDict):
  """Allocation of IP addresses within a network.
 
  Args:
@@ -143,7 +143,7 @@ def network_inventory(aDict, aCTX):
 
 #
 #
-def network_delete(aDict, aCTX):
+def network_delete(aCTX, aDict):
  """Function docstring for network_delete TBD.
 
  Args:
@@ -159,7 +159,7 @@ def network_delete(aDict, aCTX):
 
 #
 #
-def network_discover(aDict, aCTX):
+def network_discover(aCTX, aDict):
  """ Function discovers _new_ IP:s that answer to ping within a certain network. A list of such IP:s are returned
 
  Args:
@@ -205,7 +205,7 @@ def network_discover(aDict, aCTX):
 
 #
 #
-def network_discrepancy(aDict, aCTX):
+def network_discrepancy(aCTX, aDict):
  """Function retrieves orphan entries with no matching device or other use
 
  Args:
@@ -222,7 +222,7 @@ def network_discrepancy(aDict, aCTX):
 #################################### DHCP ###############################
 #
 #
-def server_leases(aDict, aCTX):
+def server_leases(aCTX, aDict):
  """Server_leases returns free or active server leases for DHCP servers
 
  Args:
@@ -250,7 +250,7 @@ def server_leases(aDict, aCTX):
 ################################## Addresses #############################
 #
 #
-def address_find(aDict, aCTX):
+def address_find(aCTX, aDict):
  """Function docstring for address_find TBD
 
  Args:
@@ -294,7 +294,7 @@ def address_find(aDict, aCTX):
  
 #
 #
-def address_allocate(aDict, aCTX):
+def address_allocate(aCTX, aDict):
  """ Function allocate IP relative a specific network.
 
  Args:
@@ -321,7 +321,7 @@ def address_allocate(aDict, aCTX):
 
 #
 #
-def address_reallocate(aDict, aCTX):
+def address_reallocate(aCTX, aDict):
  """ Function re allocate address ID to a new IP within the same or a new network.
 
  Args:
@@ -346,7 +346,7 @@ def address_reallocate(aDict, aCTX):
 
 #
 #
-def address_delete(aDict, aCTX):
+def address_delete(aCTX, aDict):
  """Function deletes an IP id
 
  Args:
@@ -362,7 +362,7 @@ def address_delete(aDict, aCTX):
 
 #
 #
-def address_from_id(aDict, aCTX):
+def address_from_id(aCTX, aDict):
  """ Funtion returns mapping between IPAM id and ip,network_id
 
  Args:
@@ -380,7 +380,7 @@ def address_from_id(aDict, aCTX):
 
 #
 #
-def address_status_check(aDict, aCTX):
+def address_status_check(aCTX, aDict):
  """ Process a list of IDs, IP addresses and states {id,'ip',state} and perform a ping. State values are: 0 (not seen), 1(up), 2(down).
   If state has changed this will be reported back. This function is node independent.
 
@@ -416,7 +416,7 @@ def address_status_check(aDict, aCTX):
 
 #
 #
-def address_status_report(aDict, aCTX):
+def address_status_report(aCTX, aDict):
  """ Updates IP addresses' status
 
  Args:

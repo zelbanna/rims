@@ -29,6 +29,6 @@ if __name__ == "__main__":
  print(started)
  try:
   module = import_module("rims.rest.%s"%mod)
-  output = getattr(module,fun,None)(args,ctx)
+  output = getattr(module,fun,None)(ctx, args)
  except Exception as e: output = e.args[0]
  print("Time spent: %i\n%s\n%s"%(int(time()) - timestamp,'_'*len(started),dumps(output,indent=4, sort_keys=True)))

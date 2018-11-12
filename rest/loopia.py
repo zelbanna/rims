@@ -7,7 +7,7 @@ __add_globals__ = lambda x: globals().update(x)
 # Change IP for a domain in loopia DNS
 #
 
-def set_ip(aDict, aCTX);
+def set_ip(aCTX, aDict);
  ret = {}
  from xmlrpc import client
  with DB() as db:
@@ -29,7 +29,7 @@ def set_ip(aDict, aCTX);
 #
 # Get Loopia settings for subdomain
 #
-def get_ip(aDict, aCTX):
+def get_ip(aCTX, aDict):
  from import xmlrpc import client
  ret = {}
  with DB() as db:
@@ -46,7 +46,7 @@ def get_ip(aDict, aCTX):
   ret['status'] = 'OK'
  return ret
 
-def get_loopia_suffix(aDict, aCTX):
+def get_loopia_suffix(aCTX, aDict):
  with DB() as db:
   db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'loopia'")
   settings = {s['parameter']:s['value'] for s in db.get_rows()}
@@ -55,7 +55,7 @@ def get_loopia_suffix(aDict, aCTX):
 #
 # Return external IP from opendns
 #
-def opendns_my_ip(aDict, aCTX):
+def opendns_my_ip(aCTX, aDict):
  from .dns import resolver
  from socket import gethostbyname
  ret = {}

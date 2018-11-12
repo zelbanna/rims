@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def dump(aDict, aCTX):
+def dump(aCTX, aDict):
  """ Function dumps database schema or values or full database info
 
  Args:
@@ -55,7 +55,7 @@ def dump(aDict, aCTX):
 
 #
 #
-def restore(aDict, aCTX):
+def restore(aCTX, aDict):
  """ Function restores database schema or values or full database info, Caution (!) if restoring a schema there will be no/0 rows in any table in the database
 
  Args:
@@ -80,7 +80,7 @@ def restore(aDict, aCTX):
 
 #
 #
-def diff(aDict, aCTX):
+def diff(aCTX, aDict):
  """ Function makes a diff between current database schema and the supplied schema file.
 
  Args:
@@ -99,7 +99,7 @@ def diff(aDict, aCTX):
   data = f.read()
  ret = {}
  aDict.update({'mode':'structure'})
- db = dump(aDict, aCTX)
+ db = dump(aCTX, aDict)
  ret['source'] = db['status']
  ret['output'] = [line for line in unified_diff(db['output'],data.split('\n'),fromfile='dbase',tofile=aDict['schema_file'])]
  ret['diffs'] = 0
@@ -110,7 +110,7 @@ def diff(aDict, aCTX):
 
 #
 #
-def patch(aDict, aCTX):
+def patch(aCTX, aDict):
  """ Function patches current database schema with the supplied schema file. If not successful it will try to restore entire old database. Intermediate files are mysql.backup (entire DB) and mysql.values (INSERTs only - used for restoring) 
 
  Args:

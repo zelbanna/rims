@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 from os import remove, rmdir, walk, path as ospath, devnull, chmod, rename
 #
 #
-def list(aDict, aCTX):
+def list(aCTX, aDict):
  """Function docstring for list TBD
 
  Args:
@@ -25,7 +25,7 @@ def list(aDict, aCTX):
 
 #
 #
-def cleanup(aDict, aCTX):
+def cleanup(aCTX, aDict):
  """Function docstring for cleanup TBD
 
  Args:
@@ -48,7 +48,7 @@ def cleanup(aDict, aCTX):
 
 #
 #
-def transfer(aDict, aCTX):
+def transfer(aCTX, aDict):
  """Function docstring for transfer TBD
 
  Args:
@@ -68,7 +68,7 @@ def transfer(aDict, aCTX):
 
 #
 #
-def delete(aDict, aCTX):
+def delete(aCTX, aDict):
  """Function docstring for delete TBD
 
  Args:
@@ -87,7 +87,7 @@ def delete(aDict, aCTX):
 
 #
 #
-def services(aDict, aCTX):
+def services(aCTX, aDict):
  """Function docstring for services TBD
 
  Args:
@@ -99,7 +99,7 @@ def services(aDict, aCTX):
 ################################################# Media Functions ################################################
 #
 #
-def check_srt(aDict, aCTX):
+def check_srt(aCTX, aDict):
  """Function find the 'first' SRT file in a directory
 
  Args:
@@ -123,7 +123,7 @@ def check_srt(aDict, aCTX):
 
 #
 #
-def check_title(aDict, aCTX):
+def check_title(aCTX, aDict):
  """Function tries to determine if this is a series or movie and then how to rename the file such that it would be easy to catalog
 
  Args:
@@ -184,7 +184,7 @@ def check_title(aDict, aCTX):
 
 #
 #
-def check_content(aDict, aCTX):
+def check_content(aCTX, aDict):
  """Function docstring for check_content. Checks file using avprobe to determine content and how to optimize file
 
  Args:
@@ -246,7 +246,7 @@ def check_content(aDict, aCTX):
 
 #
 #
-def process(aDict, aCTX):
+def process(aCTX, aDict):
  """Process a media file
 
  Args:
@@ -350,7 +350,7 @@ def process(aDict, aCTX):
 ################################################ TBD ################################################
 #
 #
-def delay_set(aDict, aCTX):
+def delay_set(aCTX, aDict):
  """Sets offset in ms for file 'original' (MKV)
 
  Args:

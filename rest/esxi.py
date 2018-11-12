@@ -9,7 +9,7 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
 #
-def list(aDict, aCTX):
+def list(aCTX, aDict):
  """Function docstring for list TBD
 
  Args:
@@ -30,7 +30,7 @@ def list(aDict, aCTX):
 
 #
 #
-def op(aDict, aCTX):
+def op(aCTX, aDict):
  """Function docstring for op TBD
 
  Args:
@@ -70,7 +70,7 @@ def op(aDict, aCTX):
 
 #
 #
-def logs(aDict, aCTX):
+def logs(aCTX, aDict):
  """Function retrieves ESXi logs
 
  Args:
@@ -92,7 +92,7 @@ def logs(aDict, aCTX):
 
 #
 #
-def snapshots(aDict, aCTX):
+def snapshots(aCTX, aDict):
  """Function docstring for snapshots TBD
 
  Args:

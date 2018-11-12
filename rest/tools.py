@@ -6,7 +6,7 @@ __add_globals__ = lambda x: globals().update(x)
 ################################## System #################################
 #
 #
-def memory_usage(aDict, aCTX):
+def memory_usage(aCTX, aDict):
  """Function memory usage retrieves currently used memory
 
  Args:
@@ -18,7 +18,7 @@ def memory_usage(aDict, aCTX):
 
 #
 #
-def memory_objects(aDict, aCTX):
+def memory_objects(aCTX, aDict):
  """Function memory objects retrieves number of allocated memory objects
 
  Args:
@@ -31,7 +31,7 @@ def memory_objects(aDict, aCTX):
 
 #
 #
-def garbage_collect(aDict, aCTX):
+def garbage_collect(aCTX, aDict):
  """Function garbage_collect performs a garbage collection
 
  Args:
@@ -43,7 +43,7 @@ def garbage_collect(aDict, aCTX):
 
 #
 #
-def debug(aDict, aCTX):
+def debug(aCTX, aDict):
  from time import sleep
  sleep(10)
  return {'status':'OK'}
@@ -51,7 +51,7 @@ def debug(aDict, aCTX):
 ################################ REST tools ###############################
 #
 #
-def rest_explore(aDict, aCTX):
+def rest_explore(aCTX, aDict):
  """Function docstring for rest_explore TBD
 
  Args:
@@ -82,7 +82,7 @@ def rest_explore(aDict, aCTX):
 
 #
 #
-def rest_information(aDict, aCTX):
+def rest_information(aCTX, aDict):
  """Function docstring for rest_explore TBD
 
  Args:
@@ -100,7 +100,7 @@ def rest_information(aDict, aCTX):
 
 #
 #
-def logs_clear(aDict, aCTX):
+def logs_clear(aCTX, aDict):
  """Function docstring for logs_clear TBD
 
  Args:
@@ -121,7 +121,7 @@ def logs_clear(aDict, aCTX):
 
 #
 #
-def logs_get(aDict, aCTX):
+def logs_get(aCTX, aDict):
  """Function docstring for logs_get TBD
 
  Args:
@@ -151,7 +151,7 @@ def logs_get(aDict, aCTX):
 
 ########################################### FILE ############################################
 
-def file_list(aDict, aCTX):
+def file_list(aCTX, aDict):
  """Function list files in directory pinpointed by directory (in settings for the node) or by fullpath
 
  Args:
@@ -187,7 +187,7 @@ def file_list(aDict, aCTX):
 ######################################### Controls ########################################
 #
 #
-def service_list(aDict, aCTX):
+def service_list(aCTX, aDict):
  """Function docstring for service_list TBD
 
  Args:
@@ -199,7 +199,7 @@ def service_list(aDict, aCTX):
 
 #
 #
-def service_info(aDict, aCTX):
+def service_info(aCTX, aDict):
  """Function docstring for service_info. TBD
 
  Args:
@@ -239,7 +239,7 @@ def service_info(aDict, aCTX):
 ################################### Database ##################################
 #
 #
-def database_backup(aDict, aCTX):
+def database_backup(aCTX, aDict):
  """Function docstring for database_backup. Does Database Backup to file
 
  Args:
@@ -250,7 +250,7 @@ def database_backup(aDict, aCTX):
  ret = {'filename':aDict['filename']}
  if aCTX.node == 'master':
   from rims.rest.mysql import dump
-  data = dump({'mode':'database'},aCTX)['output']
+  data = dump(aCTX, {'mode':'database'})['output']
  else:
   res = aCTX.rest_call("%s/api/mysql/dump"%aCTX.config['master'], aArgs = {'mode':'database'})
   if res['code'] == 200:

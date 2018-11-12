@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 136
+__build__ = 137
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
@@ -216,7 +216,7 @@ class Context(object):
   else:
    module = import_module("rims.rest.%s"%aModule)
    fun = getattr(module,aFunction,None)
-   ret = fun(kwargs.get('aArgs',{}),self)
+   ret = fun(self, kwargs.get('aArgs',{}))
   return ret
 
  #
@@ -390,7 +390,7 @@ class QueueWorker(Thread):
     if mode == 'FUNCTION':
      result = func(*args,**kwargs)
     else:
-     result = func(args,self._ctx)
+     result = func(self._ctx, args)
     if output:
      self._ctx.log("%s - %s => %s"%(self.name,repr(func),dumps(result)))
    except Exception as e:
@@ -494,7 +494,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   try:
    if self._headers['X-Route'] == self._ctx.node:
     module = import_module("rims.rest.%s"%mod) if not path == 'external' else self._ctx.external.get(mod)
-    self._body = dumps(getattr(module,fun,None)(args,self._ctx)).encode('utf-8')
+    self._body = dumps(getattr(module,fun,None)(self._ctx, args)).encode('utf-8')
    else:
     self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), aArgs = args, aDecode = False)['data']
   except Exception as e:

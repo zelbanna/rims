@@ -12,7 +12,7 @@ __type__ = "NOTIFY"
 
 #
 #
-def status(aDict, aCTX):
+def status(aCTX, aDict):
  """Function returns status of slack connection... somehow (TBD)
 
  Args:
@@ -23,7 +23,7 @@ def status(aDict, aCTX):
 
 #
 #
-def sync(aDict, aCTX):
+def sync(aCTX, aDict):
  """Function synchornizes connection to Slack, TBD as is..
 
  Args:
@@ -35,7 +35,7 @@ def sync(aDict, aCTX):
 
 #
 #
-def restart(aDict, aCTX):
+def restart(aCTX, aDict):
  """Function provides restart capabilities of service
 
  Args:
@@ -49,7 +49,7 @@ def restart(aDict, aCTX):
 
 #
 #
-def notify(aDict, aCTX):
+def notify(aCTX, aDict):
  """Function provides notification service, basic at the moment for development purposes
 
  Args:

@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 from json import dumps, loads
 #
 #
-def list(aDict, aCTX):
+def list(aCTX, aDict):
  """ Function produces a list of available maps/networks
 
  Args:
@@ -21,7 +21,7 @@ def list(aDict, aCTX):
 
 #
 #
-def delete(aDict, aCTX):
+def delete(aCTX, aDict):
  """ Deletes a map
 
  Args:
@@ -37,7 +37,7 @@ def delete(aDict, aCTX):
 
 #
 #
-def show(aDict, aCTX):
+def show(aCTX, aDict):
  """ Get map data from name or id
 
  Args:
@@ -64,7 +64,7 @@ def show(aDict, aCTX):
 
 #
 #
-def network(aDict, aCTX):
+def network(aCTX, aDict):
  """ Function to view or update information for specific network map id or generate a network map for device id/ip
 
  Args:

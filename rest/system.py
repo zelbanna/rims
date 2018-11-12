@@ -7,7 +7,7 @@ __node__ = 'master'
 ######################################### APPLICATION ############################################
 #
 #
-def application(aDict, aCTX):
+def application(aCTX, aDict):
  """Function docstring for application. Using 'portal' settings ('title', 'message' and resource 'id' of start page)
 
  Args:
@@ -28,7 +28,7 @@ def application(aDict, aCTX):
 
 #
 #
-def inventory(aDict, aCTX):
+def inventory(aCTX, aDict):
  """Function docstring for inventory. Provides inventory info for paticular nodes
 
  Args:
@@ -60,7 +60,7 @@ def inventory(aDict, aCTX):
 
 #
 #
-def menu(aDict, aCTX):
+def menu(aCTX, aDict):
  """Function docstring for menu TBD
 
  Args:
@@ -94,7 +94,7 @@ def menu(aDict, aCTX):
 
 #
 #
-def oui_fetch(aDict, aCTX):
+def oui_fetch(aCTX, aDict):
  """ Function fetch and populate OUI table
 
  Args:
@@ -131,7 +131,7 @@ def oui_fetch(aDict, aCTX):
 
 #
 #
-def oui_info(aDict, aCTX):
+def oui_info(aCTX, aDict):
  """ Function retrieves OUI info from database
 
  Args:
@@ -151,7 +151,7 @@ def oui_info(aDict, aCTX):
 
 #
 #
-def oui_list(aDict, aCTX):
+def oui_list(aCTX, aDict):
  """ Function retrieves OUI list
 
  Args:
@@ -167,7 +167,7 @@ def oui_list(aDict, aCTX):
 ############################################ SETTINGS ########################################
 #
 #
-def settings_list(aDict, aCTX):
+def settings_list(aCTX, aDict):
  """Function docstring for settings_list TBD
 
  Args:
@@ -192,7 +192,7 @@ def settings_list(aDict, aCTX):
 
 #
 #
-def settings_info(aDict, aCTX):
+def settings_info(aCTX, aDict):
  """Function docstring for settings_info TBD
 
  Args:
@@ -233,7 +233,7 @@ def settings_info(aDict, aCTX):
 
 #
 #
-def settings_comprehensive(aDict, aCTX):
+def settings_comprehensive(aCTX, aDict):
  """Function docstring for settings_comprehensive TBD
 
  Args:
@@ -258,7 +258,7 @@ def settings_comprehensive(aDict, aCTX):
 
 #
 #
-def settings_delete(aDict, aCTX):
+def settings_delete(aCTX, aDict):
  """Function docstring for settings_delete TBD
 
  Args:
@@ -281,7 +281,7 @@ def settings_delete(aDict, aCTX):
 ################################################# NODE ##############################################
 #
 #
-def node_list(aDict, aCTX):
+def node_list(aCTX, aDict):
  """Function docstring for node_list TBD
 
  Args:
@@ -296,7 +296,7 @@ def node_list(aDict, aCTX):
 
 #
 #
-def node_info(aDict, aCTX):
+def node_info(aCTX, aDict):
  """Function docstring for node_info TBD
 
  Args:
@@ -331,7 +331,7 @@ def node_info(aDict, aCTX):
 
 #
 #
-def node_delete(aDict, aCTX):
+def node_delete(aCTX, aDict):
  """Function docstring for node_delete TBD
 
  Args:
@@ -350,7 +350,7 @@ def node_delete(aDict, aCTX):
 
 #
 #
-def node_device_mapping(aDict, aCTX):
+def node_device_mapping(aCTX, aDict):
  """Node/Device mapping translates between nodes and devices and provide the same info, it depends on the device existing or node having mapped a device (else 'found' is false)
 
  Args:
@@ -383,7 +383,7 @@ def node_device_mapping(aDict, aCTX):
 
 #
 #
-def node_to_api(aDict, aCTX):
+def node_to_api(aCTX, aDict):
  """ Function returns api for a specific node name
 
  Args:
@@ -398,7 +398,7 @@ def node_to_api(aDict, aCTX):
 
 #
 #
-def resources_list(aDict, aCTX):
+def resources_list(aCTX, aDict):
  """Function docstring for resources_list TBD
 
  Args:
@@ -428,7 +428,7 @@ def resources_list(aDict, aCTX):
 
 #
 #
-def resources_info(aDict, aCTX):
+def resources_info(aCTX, aDict):
  """Function docstring for resources_info TBD
 
  Args:
@@ -467,7 +467,7 @@ def resources_info(aDict, aCTX):
 
 #
 #
-def resources_delete(aDict, aCTX):
+def resources_delete(aCTX, aDict):
  """Function docstring for resources_delete TBD
 
  Args:
@@ -481,7 +481,7 @@ def resources_delete(aDict, aCTX):
 
 ########################################## THEMES ############################################
 #
-def themes_list(aDict, aCTX):
+def themes_list(aCTX, aDict):
  """ Function returns a list of available thems
  
  Args:
@@ -497,7 +497,7 @@ def themes_list(aDict, aCTX):
 ########################################### USERS ############################################
 #
 #
-def users_list(aDict, aCTX):
+def users_list(aCTX, aDict):
  """Function docstring for users_list TBD
 
  Args:
@@ -512,7 +512,7 @@ def users_list(aDict, aCTX):
 
 #
 #
-def users_info(aDict, aCTX):
+def users_info(aCTX, aDict):
  """Function docstring for users_info TBD
 
  Args:
@@ -558,7 +558,7 @@ def users_info(aDict, aCTX):
 
 #
 #
-def users_delete(aDict, aCTX):
+def users_delete(aCTX, aDict):
  """Function docstring for users_delete TBD
 
  Args:
@@ -574,7 +574,7 @@ def users_delete(aDict, aCTX):
 ################################ SERVERS ##################################
 #
 #
-def server_list(aDict, aCTX):
+def server_list(aCTX, aDict):
  """Function docstring for server_list TBD
 
  Args:
@@ -591,7 +591,7 @@ def server_list(aDict, aCTX):
 
 #
 #
-def server_info(aDict, aCTX):
+def server_info(aCTX, aDict):
  """Function docstring for server_info TBD
 
  Args:
@@ -627,7 +627,7 @@ def server_info(aDict, aCTX):
 
 #
 #
-def server_delete(aDict, aCTX):
+def server_delete(aCTX, aDict):
  """Function docstring for server_delete TBD
 
  Args:
@@ -643,7 +643,7 @@ def server_delete(aDict, aCTX):
 
 #
 #
-def server_sync(aDict, aCTX):
+def server_sync(aCTX, aDict):
  """Server sync sends sync message to server @ node and convey result. What sync means is server dependent
 
  Args:
@@ -656,7 +656,7 @@ def server_sync(aDict, aCTX):
 
 #
 #
-def server_status(aDict, aCTX):
+def server_status(aCTX, aDict):
  """Server status sends status message to server @ node and convey result. What status means is server dependent
 
  Args:
@@ -669,7 +669,7 @@ def server_status(aDict, aCTX):
 
 #
 #
-def server_restart(aDict, aCTX):
+def server_restart(aCTX, aDict):
  """Server restart attempt to restart a server @ node.
 
  Args:
@@ -684,7 +684,7 @@ def server_restart(aDict, aCTX):
 ######################################### ACTIVITIES ###########################################
 #
 #
-def activities_list(aDict, aCTX):
+def activities_list(aCTX, aDict):
  """ Function docstring for activities_list. TBD
 
  Args:
@@ -707,7 +707,7 @@ def activities_list(aDict, aCTX):
 
 #
 #
-def activities_info(aDict, aCTX):
+def activities_info(aCTX, aDict):
  """ Function docstring for activities_info. TBD
 
  Args:
@@ -746,7 +746,7 @@ def activities_info(aDict, aCTX):
 
 #
 #
-def activities_delete(aDict, aCTX):
+def activities_delete(aCTX, aDict):
  """ Function docstring for activities_delete. TBD
 
  Args:
@@ -761,7 +761,7 @@ def activities_delete(aDict, aCTX):
 
 #
 #
-def activities_type_list(aDict, aCTX):
+def activities_type_list(aCTX, aDict):
  """ Function docstring for activities_type_list. TBD
 
  Args:
@@ -776,7 +776,7 @@ def activities_type_list(aDict, aCTX):
 
 #
 #
-def activities_type_info(aDict, aCTX):
+def activities_type_info(aCTX, aDict):
  """ Function docstring for activities_type_info. TBD
 
  Args:
@@ -803,7 +803,7 @@ def activities_type_info(aDict, aCTX):
 
 #
 #
-def activities_type_delete(aDict, aCTX):
+def activities_type_delete(aCTX, aDict):
  """ Function docstring for activity_type_delete. TBD
 
  Args:
@@ -820,7 +820,7 @@ def activities_type_delete(aDict, aCTX):
 #
 # The worker task can be carried out anywhere
 #
-def task_worker(aDict, aCTX):
+def task_worker(aCTX, aDict):
  """Function instantiate a worker thread with arguments and bind to global worker dictionary
 
  Args:
@@ -844,7 +844,7 @@ def task_worker(aDict, aCTX):
 
 #
 #
-def task_add(aDict, aCTX):
+def task_add(aCTX, aDict):
  """ Adds a task
 
  Args:
@@ -880,7 +880,7 @@ def task_add(aDict, aCTX):
 
 #
 #
-def task_list(aDict, aCTX):
+def task_list(aCTX, aDict):
  """ List tasks
 
  Args:

@@ -10,7 +10,7 @@ __type__ = 'ZWAVE'
 
 #
 #
-def status(aDict, aCTX):
+def status(aCTX, aDict):
  """Function docstring for status TBD
 
  Args:
@@ -27,7 +27,7 @@ def status(aDict, aCTX):
 
 #
 #
-def infra(aDict, aCTX):
+def infra(aCTX, aDict):
  """Function docstring TBD
 
  Args:
@@ -49,7 +49,7 @@ def infra(aDict, aCTX):
 
 #
 #
-def scene(aDict, aCTX):
+def scene(aCTX, aDict):
  """Function docstring for scene TBD
 
  Args:
@@ -81,7 +81,7 @@ def scene(aDict, aCTX):
 
 #
 #
-def devices(aDict, aCTX):
+def devices(aCTX, aDict):
  """Function docstring TBD
 
  Args:
@@ -103,7 +103,7 @@ def devices(aDict, aCTX):
 
 #
 #
-def device_info(aDict, aCTX):
+def device_info(aCTX, aDict):
  """Function docstring TBD
 
  Args:

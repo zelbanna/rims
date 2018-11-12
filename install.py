@@ -160,9 +160,9 @@ if config['id'] == 'master':
   database,host,username,password = config['db_name'],config['db_host'],config['db_user'],config['db_pass']
   database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(pkgdir,'schema.db')}
   res['database']= {}
-  res['database']['diff'] = mysql.diff(database_args,None)
+  res['database']['diff'] = mysql.diff(None, database_args)
   if res['database']['diff']['diffs'] > 0:
-   res['database']['patch'] = mysql.patch(database_args,None)
+   res['database']['patch'] = mysql.patch(None, database_args)
    if res['database']['patch']['status'] == 'NOT_OK':
     print("Database patching failed")
     if res['database']['patch'].get('database_restore_result') == 'OK':
