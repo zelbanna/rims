@@ -21,7 +21,7 @@ def list(aDict, aCTX):
  ret = {}
  from rims.devices.esxi import Device
  try:
-  esxi = Device(aDict['ip'], aCTX)
+  esxi = Device(aCTX, aDict['ip'])
   ret['data'] = esxi.get_vm_list(aDict.get('sort','name'))
  except Exception as err:
   ret['error'] = repr(err)
@@ -43,7 +43,7 @@ def op(aDict, aCTX):
  """
  from rims.devices.esxi import Device
  ret = {'id':aDict['id'],'status':'OK'}
- with Device(aDict['ip'], aCTX) as esxi:
+ with Device(aCTX, aDict['ip']) as esxi:
   try:
    if aDict['next-state'] == 'vmsvc-snapshot.create':
     from time import strftime
@@ -103,7 +103,7 @@ def snapshots(aDict, aCTX):
  """
  from rims.devices.esxi import Device
  ret = {'status':'OK', 'data':[],'highest':0}
- with Device(aDict['ip'],aCTX) as esxi:
+ with Device(aCTX, aDict['ip']) as esxi:
   data = {}
   snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get %s"%aDict['id'])
   for field in snapshots.splitlines():

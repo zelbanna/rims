@@ -18,7 +18,7 @@ def update(aDict, aCTX):
  Output:
  """
  if not (int(aDict['slot']) == 0 and int(aDict['unit']) == 0):
-  avocent = Device(aDict['ip'],aCTX)
+  avocent = Device(aCTX, aDict['ip'])
   ret = avocent.set_name(int(aDict['slot']),int(aDict['unit']),aDict['text'])
  else:
   ret = 'not updating 0.0'
@@ -39,7 +39,7 @@ def info(aDict, aCTX):
  ret = {}
  with aCTX.db as db:
   if aDict.get('op') == 'lookup':
-   pdu = Device(aDict['ip'],aCTX)
+   pdu = Device(aCTX,aDict['ip'])
    slotl = pdu.get_slot_names()
    slotn = len(slotl)
    args = {'slots':slotn,'0_slot_id':slotl[0][0],'0_slot_name':slotl[0][1]}
@@ -65,7 +65,7 @@ def inventory(aDict, aCTX):
 
  Output:
  """
- avocent = Device(aDict['ip'],aCTX)
+ avocent = Device(aCTX,aDict['ip'])
  return avocent.get_inventory()
 
 #
@@ -83,7 +83,7 @@ def op(aDict, aCTX):
  """
  from time import sleep
  ret = {}
- avocent = Device(aDict['ip'],aCTX)
+ avocent = Device(aCTX,aDict['ip'])
  ret['op'] = avocent.set_state(aDict['slot'],aDict['unit'],aDict['state'])
  sleep(10)
  ret['state'] = avocent.get_state(aDict['slot'],aDict['unit'])['state']

@@ -22,8 +22,8 @@ class Device(GenericDevice):
  def get_functions(cls):
   return ['manage']
 
- def __init__(self,aIP, aCTX):
-  GenericDevice.__init__(self,aIP, aCTX)
+ def __init__(self, aCTX, aIP):
+  GenericDevice.__init__(self, aCTX, aIP)
   self._logfile = aCTX.settings['esxi'].get('logformat',aCTX.config['logs']['system']).format(aIP)
   self._sshclient = None
 

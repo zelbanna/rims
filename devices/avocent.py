@@ -28,8 +28,8 @@ class Device(GenericDevice):
  def set_outlet_state(cls,state):
   return cls._setstatemap.get(state,b'1')
 
- def __init__(self, aIP, aCTX):
-  GenericDevice.__init__(self,aIP, aCTX)
+ def __init__(self, aCTX, aIP):
+  GenericDevice.__init__(self, aCTX, aIP)
 
  def __str__(self):
   return "Avocent[%s]: %s"%(__type__,GenericDevice.__str__(self))

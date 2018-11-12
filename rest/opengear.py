@@ -13,5 +13,5 @@ def inventory(aDict, aCTX):
  Output:
  """
  from rims.devices.opengear import Device
- console = Device(aDict['ip'],aCTX)
+ console = Device(aCTX,aDict['ip'])
  return console.get_inventory()

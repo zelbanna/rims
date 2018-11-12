@@ -14,8 +14,8 @@ class Junos(GenericDevice):
  def get_functions(cls):
   return ['up_interfaces','info' ]
 
- def __init__(self,aIP, aCTX):
-  GenericDevice.__init__(self,aIP, aCTX)
+ def __init__(self, aCTX, aIP):
+  GenericDevice.__init__(self, aCTX, aIP)
   self._interfacesname = {}
   self._router  = None
   self._config  = None

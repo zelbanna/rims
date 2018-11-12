@@ -106,7 +106,7 @@ def shutdown(aDict, aCTX):
    if not module:
     module = import_module("rims.devices.%s"%info['type'])
     modules[info['type']] = module
-   device = getattr(module,'Device',lambda x: None)(info['ip'],aCTX)
+   device = getattr(module,'Device',lambda x: None)(aCTX,info['ip'])
    __shutdown(info,device)
   except Exception as e:
    info['error'] = str(e)

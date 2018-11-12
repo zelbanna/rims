@@ -8,7 +8,7 @@ from rims.core.common import VarList, Varbind, Session
 ############################################# Device ##########################################
 class Device(object):
 
- def __init__(self, aIP, aCTX):
+ def __init__(self, aCTX, aIP):
   self._ip = aIP
   self._ctx = aCTX
 

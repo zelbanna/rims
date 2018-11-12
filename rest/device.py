@@ -35,7 +35,7 @@ def info(aDict, aCTX):
 
   if op == 'lookup' and ret['ip']:
    from rims.devices.generic import Device
-   dev = Device(ret['ip'], aCTX)
+   dev = Device(aCTX, ret['ip'])
    lookup = dev.detect()
    ret['status'] = lookup
    if lookup['status'] == 'OK':
@@ -222,7 +222,7 @@ def extended(aDict, aCTX):
      pdu_info = db.get_row()
      try:
       module = import_module("rims.devices.%s"%pdu_info['type'])
-      pdu = getattr(module,'Device',None)(pdu_info['ip'],aCTX)
+      pdu = getattr(module,'Device',None)(aCTX, pdu_info['ip'])
       # Slot id is actually local slot ID, so we need to look up infra -> pdu_info -> pdu and then pdu[x_slot_id] to get the right ID
       pdu_res = pdu.set_name( int(ret['infra']['pdu_info'][pem['pdu_id']]['%s_slot_id'%pem['pdu_slot']] ), int(pem['pdu_unit']) , "%s-%s"%(ret['info']['hostname'],pem['name']) )
       ret['status']["PDU_(%s)"%pem['id']] = "%s.%s"%(pdu_info['hostname'],pdu_res)
@@ -451,7 +451,7 @@ def discover(aDict, aCTX):
  from rims.devices.generic import Device
 
  def __detect_thread(aIP, aDB, aCTX):
-  __dev = Device(aIP,aCTX)
+  __dev = Device(aCTX, aIP)
   aDB[aIP['ip']] = __dev.detect()['info']
   return True
 
@@ -555,7 +555,7 @@ def function(aDict, aCTX):
  ret = {}
  try:
   module = import_module("rims.devices.%s"%(aDict['type']))
-  dev = getattr(module,'Device',lambda x: None)(aDict['ip'],aCTX)
+  dev = getattr(module,'Device',lambda x: None)(aCTX, aDict['ip'])
   with dev:
    ret['data'] = getattr(dev,aDict['op'],None)()
   ret['status'] = 'OK'
@@ -581,7 +581,7 @@ def configuration_template(aDict, aCTX):
  ip = data['ip']
  try:
   module = import_module("rims.devices.%s"%data['type'])
-  dev = getattr(module,'Device',lambda x: None)(ip,aCTX)
+  dev = getattr(module,'Device',lambda x: None)(aCTX, ip)
   ret['data'] = dev.configuration(data)
  except Exception as err:
   ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%repr(err)
@@ -602,7 +602,7 @@ def network_info_discover(aDict, aCTX):
  """
  from rims.devices.generic import Device
  def __detect_thread(aDev, aCTX):
-  __dev = Device(aDev['ip'],aCTX)
+  __dev = Device(aCTX, aDev['ip'])
   aDev.update(__dev.system_info())
   return True
 
@@ -905,7 +905,7 @@ def interface_discover_snmp(aDict, aCTX):
   existing = db.get_rows()
   try:
    module  = import_module("rims.devices.%s"%(info['type']))
-   dev = getattr(module,'Device',lambda x: None)(info['ip'],aCTX)
+   dev = getattr(module,'Device',lambda x: None)(aCTX, info['ip'])
    interfaces = dev.interfaces()
   except Exception as err:
    ret['error'] = repr(err)
@@ -936,7 +936,7 @@ def interface_lldp(aDict, aCTX):
   - LLDP info
  """
  from rims.devices.generic import Device
- device = Device(aDict['ip'],aCTX)
+ device = Device(aCTX, aDict['ip'])
  return device.lldp()
 
 #
@@ -952,7 +952,7 @@ def interface_snmp(aDict, aCTX):
   - SNMP info
  """
  from rims.devices.generic import Device
- device = Device(aDict['ip'],aCTX)
+ device = Device(aCTX, aDict['ip'])
  return device.interface(aDict['interface'])
 
 #
@@ -991,7 +991,7 @@ def interface_discover_lldp(aDict, aCTX):
  else:
   ip = aDict['ip']
  # TODO Run this off the right node
- device = Device(ip,aCTX)
+ device = Device(aCTX, ip)
  info = device.lldp()
  with aCTX.db as db:
   for k,v in info.items():
@@ -1072,7 +1072,7 @@ def interface_status_check(aDict, aCTX):
  def __interfaces(aDev, aCTX):
   try:
    module = import_module("rims.devices.%s"%aDev['type'])
-   device = getattr(module,'Device',None)(aDev['ip'],aCTX)
+   device = getattr(module,'Device',None)(aCTX, aDev['ip'])
    probe  = device.interfaces()
    exist  = aDev['interfaces']
    for intf in exist:

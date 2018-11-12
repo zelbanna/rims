@@ -10,8 +10,8 @@ class Device(GenericDevice):
  def get_functions(cls):
   return []
 
- def __init__(self, aIP, aCTX):
-  GenericDevice.__init__(self,aIP, aCTX)
+ def __init__(self, aCTX, aIP):
+  GenericDevice.__init__(self, aCTX, aIP)
 
  def __str__(self):
   return "Control Plane"
