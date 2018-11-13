@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 140
+__build__ = 141
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
@@ -93,7 +93,6 @@ class Context(object):
  def report(self):
   from sys import version, modules as sys_modules, path as syspath
   from types import ModuleType
-  from gc import get_objects
   node_url = self.nodes[self.node]['url']
   db_counter = {}
   for t in thread_enumerate():
@@ -102,17 +101,16 @@ class Context(object):
      db_counter[k] = db_counter.get(k,0) + v
    except:pass
   output = {
-  'Memory objects':len(get_objects()),
   'Node URL':node_url,
   'Package path':self.path,
   'Python version':version.replace('\n',''),
-  'OS path':',' .join(syspath),
   'Scheduled tasks':self.workers.scheduler_size(),
-  'System workers pool':self.workers.alive(),
-  'System workers idle':self.workers.idles(),
-  'System workers queue':self.workers.queue_size(),
-  'System operations':', '.join("%s:%s"%i for i in db_counter.items()),
-  'System PID':getpid()}
+  'Workers pool':self.workers.alive(),
+  'Workers idle':self.workers.idles(),
+  'Workers queue':self.workers.queue_size(),
+  'Database operations':', '.join("%s:%s"%i for i in db_counter.items()),
+  'OS path':',' .join(syspath),
+  'OS pid':getpid()}
   if self.node == 'master':
    with self.db as db:
     oids = {}
@@ -120,9 +118,9 @@ class Context(object):
      db.do("SELECT DISTINCT oid FROM %s"%type)
      oids[type] = [x['oid'] for x in db.get_rows()]
    output['Unhandled detected OIDs']= ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
-   output.update({'Mounted directories: %s'%k:"%s => %s/files/%s/"%(v,node_url,k) for k,v in self.settings.get('files',{}).items()})
-   output.update({'System settings: %s'%k:v for k,v in self.settings.get('system',{}).items()})
-   output.update({'System modules: %s'%i:x for i,x in enumerate(sys_modules.keys()) if x.startswith('rims')})
+   output.update({'Mounted directory: %s'%k:"%s => %s/files/%s/"%(v,node_url,k) for k,v in self.settings.get('files',{}).items()})
+   output.update({'Config: %s'%k:v for k,v in self.config.items()})
+   output.update({'Modules (%s)'%i:x for i,x in enumerate(sys_modules.keys()) if x.startswith('rims')})
   output['analytics'] = {}
   for type in ['modules','files']:
    for g,i in self._analytics[type].items():
