@@ -4,7 +4,7 @@ __type__    = "network"
 __icon__    = "viz-ex.png"
 __oid__     = 4526
 
-from .generic import Device as GenericDevice
+from rims.devices.generic import Device as GenericDevice
 
 ######################################## Netgear ########################################
 

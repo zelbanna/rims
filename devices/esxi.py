@@ -4,7 +4,7 @@ __type__    = "hypervisor"
 __icon__    = "viz-server.png"
 __oid__     = 6876
 
-from .generic import Device as GenericDevice
+from rims.devices.generic import Device as GenericDevice
 from rims.core.common import VarList, Varbind, Session
 
 ########################################### ESXi ############################################

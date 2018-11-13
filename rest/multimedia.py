@@ -260,8 +260,8 @@ def process(aCTX, aDict):
  from subprocess import check_call, call
  filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
  ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'status':'NOT_OK','error':None}
- srt  = check_srt({'filepath':filename}, aCTX)
- info = aDict if aDict.get('name') and aDict.get('info') else check_title({'filepath':filename}, aCTX)
+ srt  = check_srt(aCTX, {'filepath':filename})
+ info = aDict if aDict.get('name') and aDict.get('info') else check_title(aCTX, {'filepath':filename})
  dest = ospath.abspath(ospath.join(info['path'],info['name']))
  ret.update({'info':info,'srt':srt,'changes':{'subtitle':"",'audio':"",'srt':""},'dest':dest})
 
@@ -278,7 +278,7 @@ def process(aCTX, aDict):
     ret['changes']['srt']="--language 0:{0} --track-name 0:{0} -s 0 -D -A {1}".format(srt['code'], repr(ospath.abspath(srtfile)))
     rename(srt['file'],srtfile)
 
-   probe = check_content({'filepath':dest,'srt':srt.get('code')}, aCTX)
+   probe = check_content(aCTX, {'filepath':dest,'srt':srt.get('code')})
    ret['probe'] = probe
 
    # if forced download or if there are subs to remove but no subs to add left

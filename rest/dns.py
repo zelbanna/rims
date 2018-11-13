@@ -456,7 +456,7 @@ def consistency_check(aCTX, aDict):
    records = {}
    # Fetch records from each server
    for id,data in servers.items():
-    records[id] = record_list({'type':type,'server_id':id}, aCTX)['records']
+    records[id] = record_list(aCTX, {'type':type,'server_id':id})['records']
    # Get 'type' data for all devices
    db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ia.ip) AS ip, %s_id AS record_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))
    devices = db.get_dict('ip' if type == 'a' else 'fqdn')

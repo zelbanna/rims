@@ -127,31 +127,31 @@ def patch(aCTX, aDict):
  ret = {'status':'NOT_OK'}
  with open('mysql.backup','w') as f:
   args['full'] = True
-  res = dump(args, aCTX)
+  res = dump(aCTX, args)
   ret['database_backup_result'] = res['status']
   f.write("\n".join(res['output']))
 
  with open('mysql.values','w') as f:
   args['full'] = False
-  res = dump(args, aCTX)
+  res = dump(aCTX, args)
   ret['data_backup_result'] = res['status']
   f.write("\n".join(res['output']))
 
  if ret['database_backup_result'] == 'OK' and ret['data_backup_result'] == 'OK':
   args['file'] = aDict['schema_file']
-  res = restore(args, aCTX)
+  res = restore(aCTX, args)
   ret['struct_install_result']= res['status']
   if not res['status'] == 'OK':
    ret['struct_install_error']= res['output']
   else:
    args['file'] = 'mysql.values'
-   res = restore(args, aCTX)
+   res = restore(aCTX, args)
    ret['data_restore_result'] = res['status']
    if not res['status'] == 'OK':
     ret['data_restore_error'] = res['output']
     ret['data_restore_extra'] = "Warning - patch failed, trying to restore old data"
     args['file'] = 'mysql.backup'
-    res = restore(args, aCTX)
+    res = restore(aCTX, args)
     ret['database_restore_result'] = res['status']
     ret['database_restore_output'] = res['output']
    else:

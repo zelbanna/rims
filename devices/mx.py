@@ -5,7 +5,7 @@ __icon__    = "viz-mx.png"
 __oid__     = 2636
 
 
-from .junos import Junos
+from rims.devices.junos import Junos
 
 ################################ MX Object #####################################
 

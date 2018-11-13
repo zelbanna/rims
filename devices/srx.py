@@ -4,7 +4,7 @@ __type__    = "network"
 __icon__    = "viz-srx.png"
 __oid__     = 2636
 
-from .junos import Junos
+from rims.devices.junos import Junos
 
 ################################ SRX Object #####################################
 

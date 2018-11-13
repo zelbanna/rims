@@ -4,7 +4,7 @@ __type__    = "storage"
 __icon__    = "viz-generic.png"
 __oid__     = 24681
 
-from .generic import Device as GenericDevice
+from rims.devices.generic import Device as GenericDevice
 
 class Device(GenericDevice):
 

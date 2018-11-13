@@ -26,7 +26,7 @@ class Device(object):
  # { 'username','password', 'project' }
  #
  def auth(self, aAuth, aURL = None):
-  from ..core.common import rest_call
+  from rims.core.common import rest_call
   try:
    auth = {'auth': {'scope':{'project':{ "name":aAuth.get('project',"admin"), "domain":{'name':'Default'}}},'identity':{'methods':['password'], "password":{"user":{"name":aAuth['username'],"domain":{"name":"Default"},"password":aAuth['password']}}}}}
    url  = "%s/v3/auth/tokens"%(aURL if aURL else self._url)
@@ -89,7 +89,7 @@ class Device(object):
  # - header = send additional headers as dictionary
  #
  def call(self, **kwargs):
-  from ..core.common import rest_call
+  from rims.core.common import rest_call
   try:    kwargs['aHeader'] update({ 'X-Auth-Token':self._token })
   except: kwargs['aHeader'] = { 'X-Auth-Token':self._token }
   url = kwargs.pop('aURL',self._url)

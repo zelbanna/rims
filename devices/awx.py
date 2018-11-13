@@ -24,8 +24,8 @@ class Device(object):
  # mode: 'basic'/'full' auth process
  #
  def auth(self, aAuth):
-  from ..core.common import rest_call
-  from ..core.genlib import basic_auth
+  from rims.core.common import rest_call
+  from rims.core.genlib import basic_auth
   self._token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']
   try:
    if aAuth.get('mode','full') == 'full':
@@ -55,7 +55,7 @@ class Device(object):
   return self.href("%s/%s"%(self._node,query), **kwargs)
 
  def href(self,aURL, **kwargs):
-  from ..core.common import rest_call
+  from rims.core.common import rest_call
   try:    kwargs['aHeader'].update({'Authorization':self._token})
   except: kwargs['aHeader'] = {'Authorization':self._token}
   return rest_call(aURL, **kwargs)

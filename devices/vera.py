@@ -2,7 +2,7 @@
 __author__  = "Zacharias El Banna"
 __type__    = "controller"
 
-from .generic import Device as GenericDevice
+from rims.devices.generic import Device as GenericDevice
 
 class Device(GenericDevice):
 

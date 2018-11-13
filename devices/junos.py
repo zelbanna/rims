@@ -3,7 +3,7 @@ __author__  = "Zacharias El Banna"
 __type__    = "network"
 __oid__     = 2636
 
-from .generic import Device as GenericDevice
+from rims.devices.generic import Device as GenericDevice
 
 ################################ JUNOS Object #####################################
 #

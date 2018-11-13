@@ -409,7 +409,7 @@ def address_status_check(aCTX, aDict):
    args['up' if n == 1 else 'down'] = changed
  if len(list(args.keys())) > 0:
   if aCTX.node == 'master':
-   address_status_report(args, aCTX)
+   address_status_report(aCTX, args)
   else:
    aCTX.rest_call("%s/api/ipam/address_status_report?log=false"%aCTX.config['master'],aArgs = args)
   return {'status':'CHECK_COMPLETED'}

@@ -3,7 +3,7 @@ __author__ = "Zacharias El Banna"
 __type__   = "hypervisor"
 __oid__     = 6876
 
-from .generic import Device as GenericDevice
+from rims.devices.generic import Device as GenericDevice
 
 ############################################ AppformixRPC ######################################
 #

@@ -5,7 +5,7 @@ __icon__    = "viz-ex.png"
 __oid__     = 2636
 
 
-from .junos import Junos
+from rims.devices.junos import Junos
 
 ################################ QFX Object #####################################
 

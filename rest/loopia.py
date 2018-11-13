@@ -51,22 +51,3 @@ def get_loopia_suffix(aCTX, aDict):
   db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'loopia'")
   settings = {s['parameter']:s['value'] for s in db.get_rows()}
  return {'suffix':".%s"%settings['domain']}
-
-#
-# Return external IP from opendns
-#
-def opendns_my_ip(aCTX, aDict):
- from .dns import resolver
- from socket import gethostbyname
- ret = {}
- try:
-  opendns = resolver.Resolver()
-  opendns.nameservers = [gethostbyname('resolver1.opendns.com')]
-  myiplookup = opendns.query("myip.opendns.com",'A').response.answer[0]
- except Exception as exresolve:
-  ret['error'] = str(exresolve)
-  ret['status'] = 'NOT_OK'
- else:
-  ret['address'] = str(myiplookup).split()[4]
-  ret['status'] = 'OK'
- return ret

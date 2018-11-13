@@ -25,7 +25,7 @@ class Device(object):
   return "Controller[{}] Token[{},{}]".format(self._node, self._token, self._expire)
 
  def auth(self, aAuth):
-  from ..core.common import rest_call
+  from rims.core.common import rest_call
   try:
    auth = {'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
    url  = "%s:7000/appformix/controller/v2.0/%s"%(self._node,"auth_credentials")
@@ -63,7 +63,7 @@ class Device(object):
   return self.href("%s:7000/appformix/controller/v2.0/%s"%(self._node,url), aArgs=args, aMethod=method, aHeader = header)
 
  def href(self,aURL, **kwargs):
-  from ..core.common import rest_call
+  from rims.core.common import rest_call
   try:    kwargs['aHeader'].update({ 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' })
   except: kwargs['aHeader'] = { 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' }
   return rest_call(aURL,**kwargs))

@@ -7,7 +7,7 @@
 """
 __author__ = "Zacharias El Banna"
 
-from .generic import Device as GenericDevice
+from rims.devices.generic import Device as GenericDevice
 
 ################################### IPMI #######################################
 
@@ -30,7 +30,7 @@ class Device(GenericDevice):
   from io import open
   from os import devnull
   from subprocess import check_call
-  from ..core.genlib import str2hex
+  from rims.core.genlib import str2hex
   FNULL = open(devnull, 'w')
   rear  = str2hex(arear)
   front = str2hex(afront)

@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 142
+__build__ = 143
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
@@ -46,7 +46,7 @@ class Context(object):
   - initiate the 'kill' switch
   - create datastore (i.e. dict) for settings, nodes, servers and external modules
   """
-  from .common import DB, rest_call
+  from rims.core.common import DB, rest_call
   if isinstance(aConfig, dict):
    self.config = aConfig
   else:
@@ -74,7 +74,7 @@ class Context(object):
  def clone(self):
   """ Clone itself and non thread-safe components """
   from copy import copy
-  from .common import DB
+  from rims.core.common import DB
   ctx_new = copy(self)
   ctx_new.db = DB(self.config['db_name'],self.config['db_host'],self.config['db_user'],self.config['db_pass']) if self.node == 'master' else None
   return ctx_new
@@ -129,10 +129,10 @@ class Context(object):
 
  #
  # @debug('log')
- def log(self,aMsg, aID='None'):
+ def log(self,aMsg):
   try:
    with open(self.config['logs']['system'], 'a') as f:
-    f.write(str("%s (%s): %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aID, aMsg)))
+    f.write(str("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg)))
   except: pass
 
  #
@@ -376,12 +376,9 @@ class QueueWorker(Thread):
   while not self._abort.is_set():
    try:
     self._idle.set()
-    func, mode, sema, output, args, kwargs = self._queue.get(True)
+    (func, mode, sema, output, args, kwargs) =  self._queue.get(True)
     self._idle.clear()
-    if mode == 'FUNCTION':
-     result = func(*args,**kwargs)
-    else:
-     result = func(self._ctx, args)
+    result = func(*args,**kwargs) if mode == 'FUNCTION' else func(self._ctx, args)
     if output:
      self._ctx.log("%s - %s => %s"%(self.name,repr(func),dumps(result)))
    except Exception as e:

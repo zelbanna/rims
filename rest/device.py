@@ -168,7 +168,7 @@ def extended(aCTX, aDict):
      if not (old_info['hostname'] == aDict['hostname']) or not (str(old_info['a_dom_id']) == str(aDict['a_dom_id'])):
       dns_args = {'a_id':old_info['a_id'],'ptr_id':old_info['ptr_id'],'a_domain_id_new':aDict['a_dom_id'],'a_domain_id_old':old_info['a_dom_id'],'hostname':aDict['hostname'],'ip_new':ret['ip'],'ip_old':old_info['ip'],'id':ret['id']}
       from rims.rest.dns import record_device_update
-      dns_res = record_device_update(dns_args,aCTX)
+      dns_res = record_device_update(aCTX, dns_args)
       new_info = {'hostname':aDict['hostname'],'a_dom_id':dns_res['A']['domain_id']}
       for type in ['a','ptr']:
        if dns_res[type.upper()]['found']:
@@ -341,7 +341,7 @@ def new(aCTX, aDict):
   return {'info':'Hostname unknown not allowed'}
  elif aDict.get('ipam_network_id') and test_ip(aDict.get('ip')):
   from rims.rest.ipam import address_allocate
-  alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['ipam_network_id'],'mac':aDict.get('mac',0)}, aCTX)
+  alloc = address_allocate(aCTX, {'ip':aDict['ip'],'network_id':aDict['ipam_network_id'],'mac':aDict.get('mac',0)})
   if   not alloc['valid']:
    return {'info':'IP not in network range'}
   elif not alloc['success']:
@@ -353,7 +353,7 @@ def new(aCTX, aDict):
   if ret['fqdn']:
    if alloc:
     from rims.rest.dns import record_device_update
-    dns = record_device_update({'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']}, aCTX)
+    dns = record_device_update(aCTX, {'id':'new','a_id':'new','ptr_id':'new','a_domain_id_new':aDict['a_dom_id'],'hostname':aDict['hostname'],'ip_new':aDict['ip']})
     ret['insert'] = db.do("INSERT INTO devices(vm,a_dom_id,a_id,ptr_id,ipam_id,hostname,snmp,model) VALUES(%s,%s,%s,%s,%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['a_dom_id'],dns['A']['record_id'],dns['PTR']['record_id'],alloc['id'],aDict['hostname']))
    else:
     ret['insert'] = db.do("INSERT INTO devices(vm,hostname,snmp,model) VALUES(%s,'%s','unknown','unknown')"%(aDict.get('vm','0'),aDict['hostname']))
@@ -366,7 +366,7 @@ def new(aCTX, aDict):
  # also remove allocation if fqdn busy..
  if alloc['success'] and not ret['fqdn']:
   from rims.rest.ipam import address_delete
-  ret['info'] = "deallocating ip (%s)"%address_delete({'id':alloc['id']}, aCTX)['status']
+  ret['info'] = "deallocating ip (%s)"%address_delete(aCTX, {'id':alloc['id']})['status']
  return ret
 
 #
@@ -386,7 +386,7 @@ def update_ip(aCTX, aDict):
   return {'info':'not_enough_info'}
 
  from rims.rest.ipam import address_allocate
- alloc = address_allocate({'ip':aDict['ip'],'network_id':aDict['network_id'],'mac':aDict.get('mac',0)}, aCTX)
+ alloc = address_allocate(aCTX, {'ip':aDict['ip'],'network_id':aDict['network_id'],'mac':aDict.get('mac',0)})
  if   not alloc['valid']:
   return {'info':'IP not in network range'}
  elif not alloc['success']:
@@ -400,7 +400,7 @@ def update_ip(aCTX, aDict):
   ret['remove_old'] = (db.do("DELETE FROM ipam_addresses WHERE id = %s"%ipam_id) == 1) if ipam_id else False
  dev_info.update({'id':aDict['id'],'ip_new':aDict['ip']})
  from rims.rest.dns import record_device_update
- ret['dns'] = record_device_update(dev_info, aCTX)
+ ret['dns'] = record_device_update(aCTX, dev_info)
  return ret
 
 #
@@ -424,7 +424,7 @@ def delete(aCTX, aDict):
     args['ptr_id']= data['ptr_id']
     args['ptr_domain_id'] = data['reverse_zone_id']
    from rims.rest.dns import record_device_delete
-   ret = record_device_delete(args, aCTX)
+   ret = record_device_delete(aCTX, args)
    if data['base'] == 'pdu':
     ret['pem0'] = db.update_dict('rack_info',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aDict['id']))
     ret['pem1'] = db.update_dict('rack_info',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem1_pdu_id = %s'%(aDict['id']))
@@ -432,7 +432,7 @@ def delete(aCTX, aDict):
  # Avoid race condition on DB, do this when DB is closed...
  if found and data['ipam_id']:
   from rims.rest.ipam import address_delete
-  ret.update(address_delete({'id':data['ipam_id']}, aCTX))
+  ret.update(address_delete(aCTX, {'id':data['ipam_id']}))
  return ret
 
 #
@@ -456,7 +456,7 @@ def discover(aCTX, aDict):
   return True
 
  start_time = int(time())
- ipam = ipam_discover({'id':aDict['network_id']}, aCTX)
+ ipam = ipam_discover(aCTX, {'id':aDict['network_id']})
  ret = {'errors':0, 'start':ipam['start'],'end':ipam['end'] }
 
  with aCTX.db as db:
@@ -475,7 +475,7 @@ def discover(aCTX, aDict):
   count = 0
   for ip,entry in dev_list.items():
    count += 1
-   alloc = address_allocate({'ip':ip,'network_id':aDict['network_id']}, aCTX)
+   alloc = address_allocate(aCTX, {'ip':ip,'network_id':aDict['network_id']})
    if alloc['success']:
     try:   entry['mac'] = int(entry['mac'].replace(':',""),16)
     except:entry['mac'] = 0
@@ -642,7 +642,7 @@ def network_lldp_discover(aCTX, aDict):
 
  def __detect_thread(aDev, aCTX):
   try:
-   discovered = interface_discover_lldp({'device':aDev['id'],'ip':aDev['ip']},aCTX)
+   discovered = interface_discover_lldp(aCTX, {'device':aDev['id'],'ip':aDev['ip']})
    new = list(con for con in discovered.values() if con['status'] == 'new_connection')
    new_connections.extend(new)
    ins = list(con for con in discovered.values() if con.get('extra') == 'created_local_if')
@@ -1093,7 +1093,7 @@ def interface_status_check(aCTX, aDict):
  for dev in aDict['device_list']:
   if len(dev['interfaces']) > 0:
    if aCTX.node == 'master':
-    interface_status_report(dev, aCTX)
+    interface_status_report(aCTX, dev)
    else:
     aCTX.rest_call("%s/api/device/interface_status_report?log=false"%aCTX.config['master'],dev)
  return {'status':'GATHERING_DATA_COMPLETED'}
