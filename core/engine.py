@@ -1,9 +1,10 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 143
-
+__build__ = 144
 __all__ = ['Context','WorkerPool']
+
+from functools import lru_cache
 from os import path as ospath, getpid, walk
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
@@ -12,10 +13,10 @@ from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
 
-####################################### Debug Decorator ####################################
+#######################################Decorator Tools ####################################
 #
 
-def debug(func_name):
+def debug_decorator(func_name):
  def decorator(func):
   def decorated(*args,**kwargs):
    res = func(*args,**kwargs)
@@ -24,6 +25,10 @@ def debug(func_name):
   return decorated
  return decorator
 
+@lru_cache(maxsize = 256)
+def cached_file_open(aFile):
+ with open(aFile, 'rb') as file:
+  return file.read()
 
 ########################################### Context ########################################
 #
@@ -111,6 +116,8 @@ class Context(object):
   'Database operations':', '.join("%s:%s"%i for i in db_counter.items()),
   'OS path':',' .join(syspath),
   'OS pid':getpid()}
+  try: output['File cache'] = repr(cached_file_open.cache_info())
+  except:pass
   if self.node == 'master':
    with self.db as db:
     oids = {}
@@ -128,7 +135,7 @@ class Context(object):
   return output
 
  #
- # @debug('log')
+ # @debug_decorator('log')
  def log(self,aMsg):
   try:
    with open(self.config['logs']['system'], 'a') as f:
@@ -388,7 +395,7 @@ class QueueWorker(Thread):
      sema.release()
     self._queue.task_done()
   return False
-
+ 
 #
 #
 class ServerWorker(Thread):
@@ -546,8 +553,11 @@ class SessionHandler(BaseHTTPRequestHandler):
     param,_,file = query.partition('/')
     fullpath = ospath.join(self._ctx.settings['files'][param],file)
    if not fullpath.endswith("/"):
-    with open(fullpath, 'rb') as file:
-     self._body = file.read()
+    if not path == 'files':
+     self._body = cached_file_open(fullpath)
+    else:
+     with open(fullpath, 'rb') as file:
+      self._body = file.read()
    else:
     self._headers['Content-type']='text/html; charset=utf-8'
     _, _, filelist = next(walk(fullpath), (None, None, []))
