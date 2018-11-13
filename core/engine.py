@@ -251,6 +251,7 @@ class Context(object):
    self.close()
   elif sig == SIGUSR1:
    print("\n".join(self.module_reload()))
+   cached_file_open.cache_clear()
   elif sig == SIGUSR2:
    print("System Info:")
    print("_____________________________")
@@ -628,6 +629,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     output = {'node':self._ctx.node,'status':'UPDATE_NOT_OK'}
   elif op == 'reload':
    res = self._ctx.module_reload()
+   cached_file_open.cache_clear()
    output = {'modules':res}
   elif op == 'report':
    output = self._ctx.report()
