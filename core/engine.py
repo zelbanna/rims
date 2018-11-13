@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 137
+__build__ = 138
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
@@ -63,8 +63,8 @@ class Context(object):
   self.nodes    = {}
   self.external = {}
   self.servers  = {}
-  self.analytics={'files':{},'modules':{}}
-  self.sock     = None
+  self._analytics={'files':{},'modules':{}}
+  self._sock     = None
   self.rest_call = rest_call
 
  def __str__(self):
@@ -84,16 +84,10 @@ class Context(object):
   self.kill.wait()
 
  #
- def analytics_modules(self, aMod, aFun):
-  tmp = self.analytics['modules'].get(aMod,{})
-  tmp[aFun] = tmp.get(aFun,0) + 1
-  self.analytics['modules'][aMod] = tmp
-
- #
- def analytics_files(self, aPath, aQuery):
-  tmp = self.analytics['files'].get(aPath,{})
-  tmp[aQuery] = tmp.get(aQuery,0) + 1
-  self.analytics['files'][aPath] = tmp
+ def analytics(self, aType, aGroup, aItem):
+  tmp = self._analytics[aType].get(aGroup,{})
+  tmp[aItem] = tmp.get(aItem,0) + 1
+  self._analytics[aType][aGroup] = tmp
 
  #
  def report(self):
@@ -123,16 +117,15 @@ class Context(object):
     oids = {}
     for type in ['devices','device_types']:
      db.do("SELECT DISTINCT oid FROM %s"%type)
-     tmp = db.get_rows()
-     oids[type] = [x['oid'] for x in tmp]
+     oids[type] = [x['oid'] for x in db.get_rows()]
    unhandled = ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
    output.append({'info':'Unhandled detected OIDs','value':unhandled})
    output.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in self.settings.get('files',{}).items()))
    output.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in self.settings.get('system',{}).items()))
-   output.extend(list({'info':'Imported module','value':"%s"%x} for x in modules.keys() if x.startswith('rims')))
-  for mod,func  in self.analytics['modules'].items():
+   output.extend(list({'info':'System module: %s'%i,'value':"%s"%x} for i,x in enumerate(modules.keys()) if x.startswith('rims')))
+  for mod,func  in self._analytics['modules'].items():
    output.extend(list({'info':'Function usage','value':"%s/%s: %s"%(mod,fun,count)} for fun,count in func.items()))
-  for path,files in self.analytics['files'].items():
+  for path,files in self._analytics['files'].items():
    output.extend(list({'info':'File usage','value':"%s/%s: %s"%(path,file,count)} for file,count in files.items()))
   return output
 
@@ -190,12 +183,12 @@ class Context(object):
   from signal import signal, SIGINT, SIGUSR1, SIGUSR2
   from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
   addr = ("", int(self.config['port']))
-  self.sock = socket(AF_INET, SOCK_STREAM)
-  self.sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-  self.sock.bind(addr)
-  self.sock.listen(5)
+  self._sock = socket(AF_INET, SOCK_STREAM)
+  self._sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+  self._sock.bind(addr)
+  self._sock.listen(5)
   path = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
-  servers = [ServerWorker(n,addr,self.sock,self) for n in range(5)]
+  servers = [ServerWorker(n,addr,self._sock,self) for n in range(5)]
   self.workers.process()
   for sig in [SIGINT, SIGUSR1, SIGUSR2]:
    signal(sig, self.signal_handler)
@@ -205,7 +198,7 @@ class Context(object):
  def close(self):
   """ TODO clean up and close all DB connections and close socket """
   self.workers.abort()
-  try: self.sock.close()
+  try: self._sock.close()
   except: pass
   self.kill.set()
 
@@ -477,7 +470,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   extras = {}
   (api,_,get) = query.partition('?')
   (mod,_,fun) = api.partition('/')
-  self._ctx.analytics_modules(mod,fun)
+  self._ctx.analytics('modules',mod,fun)
   for part in get.split("&"):
    (k,_,v) = part.partition('=')
    extras[k] = v
@@ -494,7 +487,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   try:
    if self._headers['X-Route'] == self._ctx.node:
     module = import_module("rims.rest.%s"%mod) if not path == 'external' else self._ctx.external.get(mod)
-    self._body = dumps(getattr(module,fun,None)(self._ctx, args)).encode('utf-8')
+    self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
     self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), aArgs = args, aDecode = False)['data']
   except Exception as e:
@@ -523,7 +516,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200,'X-Process':'site'})
   try:
    module = import_module("rims.site.%s"%mod)
-   getattr(module,fun,None)(stream)
+   getattr(module,fun,lambda x,y:None)(stream)
   except Exception as e:
    stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; rims.site.%s<BR>"%(api))
    try:
@@ -544,7 +537,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  def files(self,path,query):
   """ Serve "common" system files and also route 'files' """
   query = unquote(query)
-  self._ctx.analytics_files(path,query)
+  self._ctx.analytics('files', path, query)
   self._headers['X-Process'] = 'files'
   if query.endswith(".js"):
    self._headers['Content-type']='application/javascript; charset=utf-8'

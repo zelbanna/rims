@@ -555,7 +555,7 @@ def function(aCTX, aDict):
  ret = {}
  try:
   module = import_module("rims.devices.%s"%(aDict['type']))
-  dev = getattr(module,'Device',lambda x: None)(aCTX, aDict['ip'])
+  dev = getattr(module,'Device',lambda x,y: None)(aCTX, aDict['ip'])
   with dev:
    ret['data'] = getattr(dev,aDict['op'],None)()
   ret['status'] = 'OK'
@@ -581,7 +581,7 @@ def configuration_template(aCTX, aDict):
  ip = data['ip']
  try:
   module = import_module("rims.devices.%s"%data['type'])
-  dev = getattr(module,'Device',lambda x: None)(aCTX, ip)
+  dev = getattr(module,'Device',lambda x,y: None)(aCTX, ip)
   ret['data'] = dev.configuration(data)
  except Exception as err:
   ret['info'] = "Error loading configuration template, make sure settings are ok (netconf -> encrypted, ntpsrv, dnssrv, anonftp): %s"%repr(err)
@@ -905,7 +905,7 @@ def interface_discover_snmp(aCTX, aDict):
   existing = db.get_rows()
   try:
    module  = import_module("rims.devices.%s"%(info['type']))
-   dev = getattr(module,'Device',lambda x: None)(aCTX, info['ip'])
+   dev = getattr(module,'Device',lambda x,y: None)(aCTX, info['ip'])
    interfaces = dev.interfaces()
   except Exception as err:
    ret['error'] = repr(err)
