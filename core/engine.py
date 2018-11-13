@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 139
+__build__ = 140
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
@@ -106,13 +106,13 @@ class Context(object):
   'Node URL':node_url,
   'Package path':self.path,
   'Python version':version.replace('\n',''),
-  'OS path':',' .join(syspath)}
+  'OS path':',' .join(syspath),
   'Scheduled tasks':self.workers.scheduler_size(),
   'System workers pool':self.workers.alive(),
   'System workers idle':self.workers.idles(),
   'System workers queue':self.workers.queue_size(),
   'System operations':', '.join("%s:%s"%i for i in db_counter.items()),
-  'System PID':getpid(),
+  'System PID':getpid()}
   if self.node == 'master':
    with self.db as db:
     oids = {}
