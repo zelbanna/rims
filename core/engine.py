@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 141
+__build__ = 142
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
@@ -518,11 +518,12 @@ class SessionHandler(BaseHTTPRequestHandler):
   except Exception as e:
    stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; rims.site.%s<BR>"%(api))
    try:
-    stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e[0]['exception'],e[0]['code']))
+    stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e.args[0]['exception'],e.args[0]['code']))
     try:
-     for i in e[0]['info'].items():
-      stream.wr("%s: %s<BR>"%i)
-    except: stream.wr(e[0]['info'])
+     keys = sorted(e.args[0]['info'].keys())
+     for k in keys:
+      stream.wr("%s: %s<BR>"%(k,e.args[0]['info'][k]))
+    except: stream.wr(e.args[0]['info'])
     stream.wr("</DETAILS>")
    except:
     stream.wr("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><PRE>%s</PRE></DETAILS>"%(type(e).__name__,str(e)))

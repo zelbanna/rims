@@ -101,7 +101,7 @@ def report(aWeb):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(i,info[i]))
  for x in ['modules','files']:
   for k,v in analytics.get(x,{}).items():
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s, %s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(x.title(),k,v))
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s: %s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(x.title(),k,v))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
