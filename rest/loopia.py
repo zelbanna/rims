@@ -7,7 +7,7 @@ __add_globals__ = lambda x: globals().update(x)
 # Change IP for a domain in loopia DNS
 #
 
-def set_ip(aCTX, aDict);
+def set_ip(aCTX, aArgs);
  ret = {}
  from xmlrpc import client
  with DB() as db:
@@ -15,10 +15,10 @@ def set_ip(aCTX, aDict);
   settings = {s['parameter']:s['value'] for s in db.get_rows()}
  try:
   client = xmlrpc.client.ServerProxy(uri = settings['rpc_server'], encoding = 'utf-8')
-  data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aDict['subdomain'])[0]
+  data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aArgs['subdomain'])[0]
   oldip = data['rdata']
-  data['rdata'] = aDict['newip']
-  ret['status'] = client.updateZoneRecord(settings['username'], settings['password'], settings['domain'], aDict['subdomain'], data)[0]
+  data['rdata'] = aArgs['newip']
+  ret['status'] = client.updateZoneRecord(settings['username'], settings['password'], settings['domain'], aArgs['subdomain'], data)[0]
  except Exception as exmlrpc:
   ret['error']  = repr(exmlrpc)
   ret['status'] = 'NOT_OK'
@@ -29,7 +29,7 @@ def set_ip(aCTX, aDict);
 #
 # Get Loopia settings for subdomain
 #
-def get_ip(aCTX, aDict):
+def get_ip(aCTX, aArgs):
  from import xmlrpc import client
  ret = {}
  with DB() as db:
@@ -37,7 +37,7 @@ def get_ip(aCTX, aDict):
   settings = {s['parameter']:s['value'] for s in db.get_rows()}
  try:
   client = xmlrpc.client.ServerProxy(uri = settings['rpc_server'], encoding = 'utf-8')
-  data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aDict['subdomain'])[0]
+  data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aArgs['subdomain'])[0]
  except Exception as exmlrpc:
   ret['error']  = repr(exmlrpc)
   ret['status'] = 'NOT_OK'
@@ -46,7 +46,7 @@ def get_ip(aCTX, aDict):
   ret['status'] = 'OK'
  return ret
 
-def get_loopia_suffix(aCTX, aDict):
+def get_loopia_suffix(aCTX, aArgs):
  with DB() as db:
   db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'loopia'")
   settings = {s['parameter']:s['value'] for s in db.get_rows()}

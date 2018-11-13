@@ -6,7 +6,7 @@ from rims.devices.avocent import Device
 
 #
 #
-def update(aCTX, aDict):
+def update(aCTX, aArgs):
  """Function docstring for update TBD
 
  Args:
@@ -17,16 +17,16 @@ def update(aCTX, aDict):
 
  Output:
  """
- if not (int(aDict['slot']) == 0 and int(aDict['unit']) == 0):
-  avocent = Device(aCTX, aDict['ip'])
-  ret = avocent.set_name(int(aDict['slot']),int(aDict['unit']),aDict['text'])
+ if not (int(aArgs['slot']) == 0 and int(aArgs['unit']) == 0):
+  avocent = Device(aCTX, aArgs['ip'])
+  ret = avocent.set_name(int(aArgs['slot']),int(aArgs['unit']),aArgs['text'])
  else:
   ret = 'not updating 0.0'
  return ret
 
 #
 #
-def info(aCTX, aDict):
+def info(aCTX, aArgs):
  """Function docstring for info TBD
 
  Args:
@@ -38,26 +38,26 @@ def info(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  if aDict.get('op') == 'lookup':
-   pdu = Device(aCTX,aDict['ip'])
+  if aArgs.get('op') == 'lookup':
+   pdu = Device(aCTX,aArgs['ip'])
    slotl = pdu.get_slot_names()
    slotn = len(slotl)
    args = {'slots':slotn,'0_slot_id':slotl[0][0],'0_slot_name':slotl[0][1]}
    if slotn == 2:
     args.update({'1_slot_id':slotl[1][0],'1_slot_name':slotl[1][1]})
-   db.update_dict('pdu_info',args,"device_id = %(id)s"%aDict)
+   db.update_dict('pdu_info',args,"device_id = %(id)s"%aArgs)
 
-  ret['found'] = (db.do("SELECT * FROM pdu_info WHERE device_id = '%(id)s'"%aDict) > 0)
+  ret['found'] = (db.do("SELECT * FROM pdu_info WHERE device_id = '%(id)s'"%aArgs) > 0)
   if ret['found']:
    ret['data'] = db.get_row()
   else:
-   db.do("INSERT INTO pdu_info SET device_id = %(id)s, slots = 1"%aDict)
+   db.do("INSERT INTO pdu_info SET device_id = %(id)s, slots = 1"%aArgs)
    ret['data'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':1, '1_slot_name':'' }
  return ret
 
 #
 #
-def inventory(aCTX, aDict):
+def inventory(aCTX, aArgs):
  """Function docstring for inventory TBD
 
  Args:
@@ -65,12 +65,12 @@ def inventory(aCTX, aDict):
 
  Output:
  """
- avocent = Device(aCTX,aDict['ip'])
+ avocent = Device(aCTX,aArgs['ip'])
  return avocent.get_inventory()
 
 #
 #
-def op(aCTX, aDict):
+def op(aCTX, aArgs):
  """Function docstring for op TBD
 
  Args:
@@ -83,8 +83,8 @@ def op(aCTX, aDict):
  """
  from time import sleep
  ret = {}
- avocent = Device(aCTX,aDict['ip'])
- ret['op'] = avocent.set_state(aDict['slot'],aDict['unit'],aDict['state'])
+ avocent = Device(aCTX,aArgs['ip'])
+ ret['op'] = avocent.set_state(aArgs['slot'],aArgs['unit'],aArgs['state'])
  sleep(10)
- ret['state'] = avocent.get_state(aDict['slot'],aDict['unit'])['state']
+ ret['state'] = avocent.get_state(aArgs['slot'],aArgs['unit'])['state']
  return ret

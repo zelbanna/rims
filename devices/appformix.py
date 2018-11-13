@@ -60,7 +60,7 @@ class Device(object):
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  #
  def call(self,url,args = None, method = None, header = None):
-  return self.href("%s:7000/appformix/controller/v2.0/%s"%(self._node,url), aArgs=args, aMethod=method, aHeader = header)
+  return self.href("%s:7000/appformix/controller/v2.0/%s"%(self._node,url), aArgs = args, aMethod = method, aHeader = header)
 
  def href(self,aURL, **kwargs):
   from rims.core.common import rest_call

@@ -7,7 +7,7 @@ __node__ = 'master'
 ######################################### APPLICATION ############################################
 #
 #
-def application(aCTX, aDict):
+def application(aCTX, aArgs):
  """Function docstring for application. Using 'portal' settings ('title', 'message' and resource 'id' of start page)
 
  Args:
@@ -17,9 +17,9 @@ def application(aCTX, aDict):
  from datetime import datetime,timedelta
  """ Default login information """
  ret  = {'message':"Welcome to the Management Portal",'title':'Portal'}
- aDict['node'] = aDict.get('node','master')
+ aArgs['node'] = aArgs.get('node','master')
  with aCTX.db as db:
-  db.do("SELECT parameter,value FROM settings WHERE section = 'portal' AND node = '%s'"%aDict['node'])
+  db.do("SELECT parameter,value FROM settings WHERE section = 'portal' AND node = '%s'"%aArgs['node'])
   for row in db.get_rows():
    ret[row['parameter']] = row['value']
   db.do("SELECT alias as id, name FROM users ORDER BY name")
@@ -28,7 +28,7 @@ def application(aCTX, aDict):
 
 #
 #
-def inventory(aCTX, aDict):
+def inventory(aCTX, aArgs):
  """Function docstring for inventory. Provides inventory info for paticular nodes
 
  Args:
@@ -39,28 +39,28 @@ def inventory(aCTX, aDict):
  """
  ret = {'navinfo':[]}
  with aCTX.db as db:
-  if aDict['node'] == 'master':
+  if aArgs['node'] == 'master':
    ret.update({'node':True,'users':True})
    db.do("SELECT node FROM nodes WHERE system = 1")
    ret['logs'] = [x['node'] for x in db.get_rows()]
   else:
-   ret['logs']  = [aDict['node']]
+   ret['logs']  = [aArgs['node']]
 
-  if aDict.get('user_id'):
-   db.do("SELECT alias FROM users WHERE id = %s"%aDict.get('user_id'))
+  if aArgs.get('user_id'):
+   db.do("SELECT alias FROM users WHERE id = %s"%aArgs.get('user_id'))
    ret['navinfo'].append(db.get_val('alias'))
 
-  db.do("SELECT parameter AS name, value AS service FROM settings WHERE section = 'services' AND node = '%s'"%aDict['node'])
+  db.do("SELECT parameter AS name, value AS service FROM settings WHERE section = 'services' AND node = '%s'"%aArgs['node'])
   ret['services'] = db.get_rows()
 
-  db.do("SELECT title, href FROM resources WHERE node = '%s' AND type = 'tool' AND view < 2 AND (user_id = %s OR private = 0) ORDER BY type,title"%(aDict['node'],aDict.get('user_id',1)))
+  db.do("SELECT title, href FROM resources WHERE node = '%s' AND type = 'tool' AND view < 2 AND (user_id = %s OR private = 0) ORDER BY type,title"%(aArgs['node'],aArgs.get('user_id',1)))
   ret['tools'] = db.get_rows()
 
  return ret
 
 #
 #
-def menu(aCTX, aDict):
+def menu(aCTX, aArgs):
  """Function docstring for menu TBD
 
  Args:
@@ -69,10 +69,10 @@ def menu(aCTX, aDict):
 
  Output:
  """
- id = int(aDict['id'])
+ id = int(aArgs['id'])
  ret = {}
  with aCTX.db as db:
-  start = db.do("SELECT id,view,href FROM resources WHERE id = (SELECT CAST(value AS UNSIGNED) FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start')"%aDict['node'])
+  start = db.do("SELECT id,view,href FROM resources WHERE id = (SELECT CAST(value AS UNSIGNED) FROM settings WHERE node = '%s' AND section = 'portal' AND parameter = 'start')"%aArgs['node'])
   if start > 0:
    info = db.get_row()
    ret['start'] = True
@@ -80,21 +80,21 @@ def menu(aCTX, aDict):
   else:
    ret['start'] = False
    ret['menu'] = []
-  if aDict['node'] == 'master':
-   db.do("SELECT menulist FROM users WHERE id = '%s'"%aDict['id'])
+  if aArgs['node'] == 'master':
+   db.do("SELECT menulist FROM users WHERE id = '%s'"%aArgs['id'])
    menulist = db.get_val('menulist')
    select = "type = 'menuitem'" if menulist == 'default' else "id IN (%s) ORDER BY FIELD(id,%s)"%(menulist,menulist)
   else:
    select = "type = 'menuitem'"
-  db.do("SELECT id, icon, title, href, view FROM resources WHERE node = '%s' AND %s"%(aDict['node'],select))
+  db.do("SELECT id, icon, title, href, view FROM resources WHERE node = '%s' AND %s"%(aArgs['node'],select))
   ret['menu'].extend(db.get_rows())
-  title_exist = (db.do("SELECT value FROM settings WHERE section = 'portal' AND parameter = 'title' and node = '%s'"%aDict['node']) == 1)
+  title_exist = (db.do("SELECT value FROM settings WHERE section = 'portal' AND parameter = 'title' and node = '%s'"%aArgs['node']) == 1)
   ret['title']= db.get_val('value') if title_exist else "Portal"
  return ret
 
 #
 #
-def oui_fetch(aCTX, aDict):
+def oui_fetch(aCTX, aArgs):
  """ Function fetch and populate OUI table
 
  Args:
@@ -116,7 +116,7 @@ def oui_fetch(aCTX, aDict):
   ret.update({ 'status':type(e).__name__, 'code':590, 'error':repr(e)})
  else:
   with aCTX.db as db:
-   if aDict.get('clear') is True:
+   if aArgs.get('clear') is True:
     db.do("TRUNCATE oui")
    for line in data.split('\n'):
     if len(line) > 0:
@@ -131,7 +131,7 @@ def oui_fetch(aCTX, aDict):
 
 #
 #
-def oui_info(aCTX, aDict):
+def oui_info(aCTX, aArgs):
  """ Function retrieves OUI info from database
 
  Args:
@@ -140,7 +140,7 @@ def oui_info(aCTX, aDict):
  Output:
  """
  try:
-  oui = int(aDict['oui'].translate(str.maketrans({':':'','-':''}))[:6],16)
+  oui = int(aArgs['oui'].translate(str.maketrans({':':'','-':''}))[:6],16)
   with aCTX.db as db:
    found = (db.do("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui = %s"%oui) == 1)
    ret = db.get_row() if found else {'oui':'NOT_FOUND','company':'NOT_FOUND'}
@@ -151,7 +151,7 @@ def oui_info(aCTX, aDict):
 
 #
 #
-def oui_list(aCTX, aDict):
+def oui_list(aCTX, aArgs):
  """ Function retrieves OUI list
 
  Args:
@@ -167,7 +167,7 @@ def oui_list(aCTX, aDict):
 ############################################ SETTINGS ########################################
 #
 #
-def settings_list(aCTX, aDict):
+def settings_list(aCTX, aArgs):
  """Function docstring for settings_list TBD
 
  Args:
@@ -178,21 +178,21 @@ def settings_list(aCTX, aDict):
 
  Output:
  """
- ret = {'user_id':aDict.get('user_id',"1"),'node':aDict.get('node',aCTX.node) }
- if aDict.get('section'):
-  filter = "AND section = '%s'"%aDict.get('section')
-  ret['section'] = aDict.get('section')
+ ret = {'user_id':aArgs.get('user_id',"1"),'node':aArgs.get('node',aCTX.node) }
+ if aArgs.get('section'):
+  filter = "AND section = '%s'"%aArgs.get('section')
+  ret['section'] = aArgs.get('section')
  else:
   filter = ""
   ret['section'] = 'all'
  with aCTX.db as db:
   ret['count'] = db.do("SELECT * FROM settings WHERE node = '%s' %s ORDER BY section,parameter"%(ret['node'],filter))
-  ret['data']  = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
+  ret['data']  = db.get_dict(aArgs.get('dict')) if aArgs.get('dict') else db.get_rows()
  return ret
 
 #
 #
-def settings_info(aCTX, aDict):
+def settings_info(aCTX, aArgs):
  """Function docstring for settings_info TBD
 
  Args:
@@ -206,34 +206,34 @@ def settings_info(aCTX, aDict):
  Output:
  """
  ret = {}
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
+ id = aArgs.pop('id','new')
+ op = aArgs.pop('op',None)
 
  with aCTX.db as db:
-  if op == 'update' and not (aDict['section'] == 'system' or aDict['section'] =='nodes'):
+  if op == 'update' and not (aArgs['section'] == 'system' or aArgs['section'] =='nodes'):
    if not id == 'new':
-    ret['update'] = db.update_dict('settings',aDict,"id=%s"%id)
+    ret['update'] = db.update_dict('settings',aArgs,"id=%s"%id)
    else:
-    ret['update'] = db.insert_dict('settings',aDict)
+    ret['update'] = db.insert_dict('settings',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
    # Insert HERE into CTX, or rest_call
-   if aDict['node'] == 'master':
-    section = aCTX.settings.get(aDict['section'],{})
-    section[aDict['parameter']] = aDict['value']
-    aCTX.settings[aDict['section']] = section
+   if aArgs['node'] == 'master':
+    section = aCTX.settings.get(aArgs['section'],{})
+    section[aArgs['parameter']] = aArgs['value']
+    aCTX.settings[aArgs['section']] = section
    else:
-    aCTX.workers.add_function(aCTX.rest_call,"%s/system/sync/%s"%(aCTX.config['master'],aDict['node']))
+    aCTX.workers.add_function(aCTX.rest_call,"%s/system/sync/%s"%(aCTX.config['master'],aArgs['node']))
   if not id == 'new':
    ret['found'] = (db.do("SELECT * FROM settings WHERE id = '%s'"%id) > 0)
    ret['data']  = db.get_row()
   else:
-   ret['data'] = {'id':'new','value':'Unknown','section':aDict.get('section','Unknown'),'parameter':'Unknown'}
+   ret['data'] = {'id':'new','value':'Unknown','section':aArgs.get('section','Unknown'),'parameter':'Unknown'}
 
  return ret
 
 #
 #
-def settings_comprehensive(aCTX, aDict):
+def settings_comprehensive(aCTX, aArgs):
  """Function docstring for settings_comprehensive TBD
 
  Args:
@@ -245,20 +245,20 @@ def settings_comprehensive(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  if not aDict.get('section'):
-   db.do("SELECT DISTINCT section FROM settings WHERE node='%s'"%aDict['node'])
+  if not aArgs.get('section'):
+   db.do("SELECT DISTINCT section FROM settings WHERE node='%s'"%aArgs['node'])
    rows = db.get_rows()
    sections = [row['section'] for row in rows]
   else:
-   sections = [aDict.get('section')]
+   sections = [aArgs.get('section')]
   for section in sections:
-   db.do("SELECT parameter,id,value FROM settings WHERE node = '%s' AND section = '%s'  ORDER BY parameter"%(aDict['node'],section))
-   ret[section] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
+   db.do("SELECT parameter,id,value FROM settings WHERE node = '%s' AND section = '%s'  ORDER BY parameter"%(aArgs['node'],section))
+   ret[section] = db.get_rows() if not aArgs.get('dict') else db.get_dict(aArgs.get('dict'))
  return ret
 
 #
 #
-def settings_delete(aCTX, aDict):
+def settings_delete(aCTX, aArgs):
  """Function docstring for settings_delete TBD
 
  Args:
@@ -269,19 +269,19 @@ def settings_delete(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT section,parameter FROM settings WHERE id = %(id)s AND node = '%(node)s'"%aDict)
+  db.do("SELECT section,parameter FROM settings WHERE id = %(id)s AND node = '%(node)s'"%aArgs)
   data = db.get_row()
-  ret['deleted'] = db.do("DELETE FROM settings WHERE id = %(id)s AND node = '%(node)s'"%aDict)
- if aDict['node'] == 'master':
+  ret['deleted'] = db.do("DELETE FROM settings WHERE id = %(id)s AND node = '%(node)s'"%aArgs)
+ if aArgs['node'] == 'master':
   aCTX.settings.get(data['section'],{}).pop(data['parameter'],None)
  else:
-  aCTX.workers.add_function(aCTX.rest_call,"%s/system/sync/%s"%(aCTX.config['master'],aDict['node']))
+  aCTX.workers.add_function(aCTX.rest_call,"%s/system/sync/%s"%(aCTX.config['master'],aArgs['node']))
  return ret
 
 ################################################# NODE ##############################################
 #
 #
-def node_list(aCTX, aDict):
+def node_list(aCTX, aArgs):
  """Function docstring for node_list TBD
 
  Args:
@@ -296,7 +296,7 @@ def node_list(aCTX, aDict):
 
 #
 #
-def node_info(aCTX, aDict):
+def node_info(aCTX, aArgs):
  """Function docstring for node_info TBD
 
  Args:
@@ -306,22 +306,22 @@ def node_info(aCTX, aDict):
  Output:
  """
  ret = {}
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
- aDict.pop('hostname',None)
+ id = aArgs.pop('id','new')
+ op = aArgs.pop('op',None)
+ aArgs.pop('hostname',None)
  try:
-  aDict['device_id'] = int(aDict.get('device_id'))
+  aArgs['device_id'] = int(aArgs.get('device_id'))
  except:
-  aDict['device_id'] = 'NULL'
+  aArgs['device_id'] = 'NULL'
  with aCTX.db as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('nodes',aDict,'id=%s'%id)
-    aCTX.nodes[aDict['node']].update(aDict)
+    ret['update'] = db.update_dict('nodes',aArgs,'id=%s'%id)
+    aCTX.nodes[aArgs['node']].update(aArgs)
    else:
-    ret['update'] = db.insert_dict('nodes',aDict)
+    ret['update'] = db.insert_dict('nodes',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-    aCTX.nodes[aDict['node']] = {'id':id,'url':aDict['url'],'system':0}
+    aCTX.nodes[aArgs['node']] = {'id':id,'url':aArgs['url'],'system':0}
   if not id == 'new':
    ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
@@ -331,7 +331,7 @@ def node_info(aCTX, aDict):
 
 #
 #
-def node_delete(aCTX, aDict):
+def node_delete(aCTX, aArgs):
  """Function docstring for node_delete TBD
 
  Args:
@@ -341,16 +341,16 @@ def node_delete(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  if db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aDict['id']) > 0:
+  if db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aArgs['id']) > 0:
    aCTX.nodes.pop(db.get_val('node'),None)
-   ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s"%aDict['id']) == 1)
+   ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s"%aArgs['id']) == 1)
   else:
    ret['delete'] = False 
  return ret
 
 #
 #
-def node_device_mapping(aCTX, aDict):
+def node_device_mapping(aCTX, aArgs):
  """Node/Device mapping translates between nodes and devices and provide the same info, it depends on the device existing or node having mapped a device (else 'found' is false)
 
  Args:
@@ -367,15 +367,15 @@ def node_device_mapping(aCTX, aDict):
   - url
  """
  with aCTX.db as db:
-  if aDict.get('id'):
-   found = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain, url FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%aDict['id']) > 0)
+  if aArgs.get('id'):
+   found = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain, url FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%aArgs['id']) > 0)
    ret = db.get_row() if found else {}
-   ret['found'] = (db.do("SELECT node FROM nodes WHERE device_id = %s"%aDict['id']) > 0)
+   ret['found'] = (db.do("SELECT node FROM nodes WHERE device_id = %s"%aArgs['id']) > 0)
    ret['node']  = db.get_val('node') if ret['found'] else None
-   ret['id']    = int(aDict['id'])
+   ret['id']    = int(aArgs['id'])
   else:
-   found = (db.do("SELECT device_id FROM nodes WHERE node = '%s'"%aDict['node']) > 0)
-   ret = {'id':db.get_val('device_id') if found else None, 'node':aDict['node'], 'found':False}
+   found = (db.do("SELECT device_id FROM nodes WHERE node = '%s'"%aArgs['node']) > 0)
+   ret = {'id':db.get_val('device_id') if found else None, 'node':aArgs['node'], 'found':False}
    if ret['id']:
     ret['found'] = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain, url FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%ret['id']) > 0)
     ret.update(db.get_row())
@@ -383,7 +383,7 @@ def node_device_mapping(aCTX, aDict):
 
 #
 #
-def node_to_api(aCTX, aDict):
+def node_to_api(aCTX, aArgs):
  """ Function returns api for a specific node name
 
  Args:
@@ -392,13 +392,13 @@ def node_to_api(aCTX, aDict):
  Output:
   - url
  """
- return {'url':aCTX.nodes[aDict['node']]['url']}
+ return {'url':aCTX.nodes[aArgs['node']]['url']}
 
 ############################################# RESOURCES #############################################
 
 #
 #
-def resources_list(aCTX, aDict):
+def resources_list(aCTX, aArgs):
  """Function docstring for resources_list TBD
 
  Args:
@@ -411,24 +411,24 @@ def resources_list(aCTX, aDict):
 
  Output:
  """
- ret = {'user_id':aDict.get('user_id',"1"),'type':aDict.get('type','all')}
+ ret = {'user_id':aArgs.get('user_id',"1"),'type':aArgs.get('type','all')}
  with aCTX.db as db:
-  if aDict.get('view_public') is None:
+  if aArgs.get('view_public') is None:
    db.do("SELECT view_public FROM users WHERE id = %s"%ret['user_id'])
    ret['view_public'] = (db.get_val('view_public') == 1)
   else:
-   ret['view_public'] = aDict.get('view_public')
-  node = "node = '%s'"%aDict['node'] if aDict.get('node') else "true"
-  type = "type = '%s'"%aDict['type'] if aDict.get('type') else "true"
+   ret['view_public'] = aArgs.get('view_public')
+  node = "node = '%s'"%aArgs['node'] if aArgs.get('node') else "true"
+  type = "type = '%s'"%aArgs['type'] if aArgs.get('type') else "true"
   user = "(user_id = %s OR %s)"%(ret['user_id'],'false' if not ret['view_public'] else 'private = 0')
   select = "%s AND %s AND %s"%(node,type,user)
   ret['count'] = db.do("SELECT id, node, icon, title, href, type, view, user_id FROM resources WHERE %s ORDER BY type,title"%select)
-  ret['data']  = db.get_dict(aDict.get('dict')) if aDict.get('dict') else db.get_rows()
+  ret['data']  = db.get_dict(aArgs.get('dict')) if aArgs.get('dict') else db.get_rows()
  return ret
 
 #
 #
-def resources_info(aCTX, aDict):
+def resources_info(aCTX, aArgs):
  """Function docstring for resources_info TBD
 
  Args:
@@ -446,28 +446,28 @@ def resources_info(aCTX, aDict):
  Output:
  """
  ret = {}
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
+ id = aArgs.pop('id','new')
+ op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   if aDict['icon'] == 'None':
-    aDict['icon'] = '../images/icon-na.png'
+   if aArgs['icon'] == 'None':
+    aArgs['icon'] = '../images/icon-na.png'
    if not id == 'new':
-    ret['update'] = db.update_dict('resources',aDict,'id=%s'%id)
+    ret['update'] = db.update_dict('resources',aArgs,'id=%s'%id)
    else:
-    ret['update'] = db.insert_dict('resources',aDict)
+    ret['update'] = db.insert_dict('resources',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
    db.do("SELECT * FROM resources WHERE id = '%s'"%id)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = {'id':'new','node':aDict['node'],'user_id':aDict['user_id'],'title':'Unknown','href':'Unknown','type':None,'icon':None,'private':0,'view':0}
+   ret['data'] = {'id':'new','node':aArgs['node'],'user_id':aArgs['user_id'],'title':'Unknown','href':'Unknown','type':None,'icon':None,'private':0,'view':0}
  return ret
 
 #
 #
-def resources_delete(aCTX, aDict):
+def resources_delete(aCTX, aArgs):
  """Function docstring for resources_delete TBD
 
  Args:
@@ -476,12 +476,12 @@ def resources_delete(aCTX, aDict):
  Output:
  """
  with aCTX.db as db:
-  deleted = db.do("DELETE FROM resources WHERE id = '%s'"%aDict['id'])
+  deleted = db.do("DELETE FROM resources WHERE id = '%s'"%aArgs['id'])
  return { 'deleted':deleted }
 
 ########################################## THEMES ############################################
 #
-def themes_list(aCTX, aDict):
+def themes_list(aCTX, aArgs):
  """ Function returns a list of available thems
  
  Args:
@@ -497,7 +497,7 @@ def themes_list(aCTX, aDict):
 ########################################### USERS ############################################
 #
 #
-def users_list(aCTX, aDict):
+def users_list(aCTX, aArgs):
  """Function docstring for users_list TBD
 
  Args:
@@ -512,7 +512,7 @@ def users_list(aCTX, aDict):
 
 #
 #
-def users_info(aCTX, aDict):
+def users_info(aCTX, aArgs):
  """Function docstring for users_info TBD
 
  Args:
@@ -530,22 +530,22 @@ def users_info(aCTX, aDict):
  Output:
  """
  ret = {}
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
+ id = aArgs.pop('id','new')
+ op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
    """ Password at least 6 characters """
-   if len(aDict.get('password','')) > 5:
+   if len(aArgs.get('password','')) > 5:
     from hashlib import md5
     hash = md5()
-    hash.update(aDict['password'].encode('utf-8'))
-    aDict['password'] = hash.hexdigest()
+    hash.update(aArgs['password'].encode('utf-8'))
+    aArgs['password'] = hash.hexdigest()
    else:
-    ret['password_check_failed'] = (not (aDict.pop('password',None) is None))
+    ret['password_check_failed'] = (not (aArgs.pop('password',None) is None))
    if not id == 'new':
-    ret['update'] = db.update_dict('users',aDict,"id=%s"%id)
+    ret['update'] = db.update_dict('users',aArgs,"id=%s"%id)
    else:
-    ret['update'] = db.insert_dict('users',aDict)
+    ret['update'] = db.insert_dict('users',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -558,7 +558,7 @@ def users_info(aCTX, aDict):
 
 #
 #
-def users_delete(aCTX, aDict):
+def users_delete(aCTX, aArgs):
  """Function docstring for users_delete TBD
 
  Args:
@@ -567,14 +567,14 @@ def users_delete(aCTX, aDict):
  Output:
  """
  with aCTX.db as db:
-  res = db.do("DELETE FROM users WHERE id = '%s'"%aDict['id'])
+  res = db.do("DELETE FROM users WHERE id = '%s'"%aArgs['id'])
  return { 'deleted':res }
 
 
 ################################ SERVERS ##################################
 #
 #
-def server_list(aCTX, aDict):
+def server_list(aCTX, aArgs):
  """Function docstring for server_list TBD
 
  Args:
@@ -585,13 +585,13 @@ def server_list(aCTX, aDict):
  ret = {}
  
  with aCTX.db as db:
-  db.do("SELECT id, server, node, type FROM servers WHERE %s"%("type = '%s'"%aDict['type'] if aDict.get('type') else "TRUE"))
+  db.do("SELECT id, server, node, type FROM servers WHERE %s"%("type = '%s'"%aArgs['type'] if aArgs.get('type') else "TRUE"))
   ret['servers']= db.get_rows()
  return ret
 
 #
 #
-def server_info(aCTX, aDict):
+def server_info(aCTX, aArgs):
  """Function docstring for server_info TBD
 
  Args:
@@ -599,19 +599,19 @@ def server_info(aCTX, aDict):
  Output:
  """
  ret = {}
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
+ id = aArgs.pop('id','new')
+ op = aArgs.pop('op',None)
  with aCTX.db as db:
   db.do("SELECT node FROM nodes")
   ret['nodes'] = [x['node'] for x in db.get_rows()]
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('servers',aDict,"id=%s"%id)
-    aCTX.servers[id].update(aDict)
+    ret['update'] = db.update_dict('servers',aArgs,"id=%s"%id)
+    aCTX.servers[id].update(aArgs)
    else:
-    ret['update'] = db.insert_dict('servers',aDict)
+    ret['update'] = db.insert_dict('servers',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-    aCTX.servers[id] = aDict
+    aCTX.servers[id] = aArgs
   if not id == 'new':
    ret['found'] = (db.do("SELECT * FROM servers WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
@@ -627,7 +627,7 @@ def server_info(aCTX, aDict):
 
 #
 #
-def server_delete(aCTX, aDict):
+def server_delete(aCTX, aArgs):
  """Function docstring for server_delete TBD
 
  Args:
@@ -637,13 +637,13 @@ def server_delete(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = db.do("DELETE FROM servers WHERE id = %s"%aDict['id'])
-  aCTX.servers.pop(int(aDict['id']),None)
+  ret['deleted'] = db.do("DELETE FROM servers WHERE id = %s"%aArgs['id'])
+  aCTX.servers.pop(int(aArgs['id']),None)
  return ret
 
 #
 #
-def server_sync(aCTX, aDict):
+def server_sync(aCTX, aArgs):
  """Server sync sends sync message to server @ node and convey result. What sync means is server dependent
 
  Args:
@@ -651,12 +651,12 @@ def server_sync(aCTX, aDict):
 
  Output:
  """
- server = aCTX.servers[int(aDict['id'])]
- return aCTX.node_call(server['node'],server['server'],'sync', aArgs = {'id':aDict['id']})
+ server = aCTX.servers[int(aArgs['id'])]
+ return aCTX.node_call(server['node'],server['server'],'sync', aArgs = {'id':aArgs['id']})
 
 #
 #
-def server_status(aCTX, aDict):
+def server_status(aCTX, aArgs):
  """Server status sends status message to server @ node and convey result. What status means is server dependent
 
  Args:
@@ -664,12 +664,14 @@ def server_status(aCTX, aDict):
 
  Output:
  """
- server = aCTX.servers[int(aDict['id'])]
- return aCTX.node_call(server['node'],server['server'],'status', aArgs = {'id':aDict['id']})
+ server = aCTX.servers[int(aArgs['id'])]
+ # fun = aCTX.node_function(server['node'],server['server'],'status')
+ #return fun(
+ return aCTX.node_call(server['node'],server['server'],'status', aArgs = {'id':aArgs['id']})
 
 #
 #
-def server_restart(aCTX, aDict):
+def server_restart(aCTX, aArgs):
  """Server restart attempt to restart a server @ node.
 
  Args:
@@ -678,13 +680,13 @@ def server_restart(aCTX, aDict):
  Output:
   - result.
  """
- server = aCTX.servers[int(aDict['id'])]
- return {'status':aCTX.node_call(server['node'],server['server'],'restart', aArgs = {'id':aDict['id']})}
+ server = aCTX.servers[int(aArgs['id'])]
+ return {'status':aCTX.node_call(server['node'],server['server'],'restart', aArgs = {'id':aArgs['id']})}
 
 ######################################### ACTIVITIES ###########################################
 #
 #
-def activities_list(aCTX, aDict):
+def activities_list(aCTX, aArgs):
  """ Function docstring for activities_list. TBD
 
  Args:
@@ -693,9 +695,9 @@ def activities_list(aCTX, aDict):
 
  Output:
  """
- ret = {'start':aDict.get('start',0)}
+ ret = {'start':aArgs.get('start',0)}
  ret['end'] = int(ret['start']) + 50
- ret['mode']= aDict.get('mode','basic')
+ ret['mode']= aArgs.get('mode','basic')
  if ret['mode'] == 'full':
   select = "activities.id, activities.event"
  else:
@@ -707,7 +709,7 @@ def activities_list(aCTX, aDict):
 
 #
 #
-def activities_info(aCTX, aDict):
+def activities_info(aCTX, aArgs):
  """ Function docstring for activities_info. TBD
 
  Args:
@@ -717,20 +719,20 @@ def activities_info(aCTX, aDict):
  Output:
  """
  ret = {}
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
+ id = aArgs.pop('id','new')
+ op = aArgs.pop('op',None)
  with aCTX.db as db:
   db.do("SELECT * FROM activity_types")
   ret['types'] = db.get_rows()
   db.do("SELECT id,alias FROM users ORDER BY alias")
   ret['users'] = db.get_rows()
   if op == 'update':
-   aDict['date_time'] ="%s %s:00"%(aDict.pop('date','1970-01-01'),aDict.pop('time','00:01'))
+   aArgs['date_time'] ="%s %s:00"%(aArgs.pop('date','1970-01-01'),aArgs.pop('time','00:01'))
 
    if not id == 'new':
-    ret['update'] = db.update_dict('activities',aDict,'id = %s'%id)
+    ret['update'] = db.update_dict('activities',aArgs,'id = %s'%id)
    else:
-    ret['update'] = db.insert_dict('activities',aDict)
+    ret['update'] = db.insert_dict('activities',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -746,7 +748,7 @@ def activities_info(aCTX, aDict):
 
 #
 #
-def activities_delete(aCTX, aDict):
+def activities_delete(aCTX, aArgs):
  """ Function docstring for activities_delete. TBD
 
  Args:
@@ -756,12 +758,12 @@ def activities_delete(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  ret['delete'] = db.do("DELETE FROM activities WHERE id = '%s'"%aDict['id'])
+  ret['delete'] = db.do("DELETE FROM activities WHERE id = '%s'"%aArgs['id'])
  return ret
 
 #
 #
-def activities_type_list(aCTX, aDict):
+def activities_type_list(aCTX, aArgs):
  """ Function docstring for activities_type_list. TBD
 
  Args:
@@ -776,7 +778,7 @@ def activities_type_list(aCTX, aDict):
 
 #
 #
-def activities_type_info(aCTX, aDict):
+def activities_type_info(aCTX, aArgs):
  """ Function docstring for activities_type_info. TBD
 
  Args:
@@ -784,14 +786,14 @@ def activities_type_info(aCTX, aDict):
  Output:
  """
  ret = {}
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
+ id = aArgs.pop('id','new')
+ op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('activity_types',aDict,"id=%s"%id)
+    ret['update'] = db.update_dict('activity_types',aArgs,"id=%s"%id)
    else:
-    ret['update'] = db.insert_dict('activity_types',aDict)
+    ret['update'] = db.insert_dict('activity_types',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
@@ -803,7 +805,7 @@ def activities_type_info(aCTX, aDict):
 
 #
 #
-def activities_type_delete(aCTX, aDict):
+def activities_type_delete(aCTX, aArgs):
  """ Function docstring for activity_type_delete. TBD
 
  Args:
@@ -813,14 +815,14 @@ def activities_type_delete(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  ret['delete'] = db.do("DELETE FROM activity_types WHERE id = '%s'"%aDict['id'])
+  ret['delete'] = db.do("DELETE FROM activity_types WHERE id = '%s'"%aArgs['id'])
  return ret
 
 ########################################## TASKs ##########################################
 #
 # The worker task can be carried out anywhere
 #
-def task_worker(aCTX, aDict):
+def task_worker(aCTX, aArgs):
  """Function instantiate a worker thread with arguments and bind to global worker dictionary
 
  Args:
@@ -835,16 +837,16 @@ def task_worker(aCTX, aDict):
  Output:
   - result
  """
- frequency = aDict.pop('frequency',None)
+ frequency = aArgs.pop('frequency',None)
  if frequency:
-  aCTX.workers.add_periodic(frequency,aDict)
+  aCTX.workers.add_periodic(frequency,aArgs)
  else:
-  aCTX.workers.add_transient(aDict)
+  aCTX.workers.add_transient(aArgs)
  return {'res':'TASK_ADDED'}
 
 #
 #
-def task_add(aCTX, aDict):
+def task_add(aCTX, aArgs):
  """ Adds a task
 
  Args:
@@ -861,26 +863,26 @@ def task_add(aCTX, aDict):
  """
  from json import dumps
  ret = {}
- node = aDict.pop('node',None)
- aDict = aDict
- if aDict.get('periodic'):
+ node = aArgs.pop('node',None)
+ aArgs = aArgs
+ if aArgs.get('periodic'):
   with aCTX.db as db:
-   db.do("INSERT INTO tasks (node_id, module, func, args, frequency,output) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i,%i)"%(node,aDict['module'],aDict['func'],dumps(aDict['args']),aDict.get('frequency',300),0 if not aDict.get('output') else 1))
-   aDict['id'] = 'P%s'%db.get_last_id()
+   db.do("INSERT INTO tasks (node_id, module, func, args, frequency,output) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i,%i)"%(node,aArgs['module'],aArgs['func'],dumps(aArgs['args']),aArgs.get('frequency',300),0 if not aArgs.get('output') else 1))
+   aArgs['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
-  frequency = aDict.pop('frequency',None)
+  frequency = aArgs.pop('frequency',None)
   if frequency:
-   aCTX.workers.add_periodic(frequency,aDict)
+   aCTX.workers.add_periodic(frequency,aArgs)
   else:
-   aCTX.workers.add_transient(aDict)
+   aCTX.workers.add_transient(aArgs)
   ret['status'] = 'ADDED'
  else:
-  ret.update(aCTX.rest_call("%s/api/system/task_worker"%aCTX.nodes[node]['url'], aArgs = aDict, aDataOnly = True))
+  ret.update(aCTX.rest_call("%s/api/system/task_worker"%aCTX.nodes[node]['url'], aArgs = aArgs, aDataOnly = True))
  return ret
 
 #
 #
-def task_list(aCTX, aDict):
+def task_list(aCTX, aArgs):
  """ List tasks
 
  Args:
@@ -890,7 +892,7 @@ def task_list(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT tasks.*, nodes.node FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node_id IN (SELECT id FROM nodes WHERE node LIKE '%%%s%%')"%aDict.get('node',''))
+  ret['count'] = db.do("SELECT tasks.*, nodes.node FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node_id IN (SELECT id FROM nodes WHERE node LIKE '%%%s%%')"%aArgs.get('node',''))
   ret['tasks'] = db.get_rows()
   for task in ret['tasks']:
    task['output'] = (task['output']== 1)

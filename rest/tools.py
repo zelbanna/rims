@@ -6,7 +6,7 @@ __add_globals__ = lambda x: globals().update(x)
 ################################## System #################################
 #
 #
-def memory_usage(aCTX, aDict):
+def memory_usage(aCTX, aArgs):
  """Function memory usage retrieves currently used memory
 
  Args:
@@ -18,7 +18,7 @@ def memory_usage(aCTX, aDict):
 
 #
 #
-def memory_objects(aCTX, aDict):
+def memory_objects(aCTX, aArgs):
  """Function memory objects retrieves number of allocated memory objects
 
  Args:
@@ -31,7 +31,7 @@ def memory_objects(aCTX, aDict):
 
 #
 #
-def garbage_collect(aCTX, aDict):
+def garbage_collect(aCTX, aArgs):
  """Function garbage_collect performs a garbage collection
 
  Args:
@@ -43,7 +43,7 @@ def garbage_collect(aCTX, aDict):
 
 #
 #
-def debug(aCTX, aDict):
+def debug(aCTX, aArgs):
  from time import sleep
  sleep(2)
  return {'status':'OK'}
@@ -51,7 +51,7 @@ def debug(aCTX, aDict):
 ################################ REST tools ###############################
 #
 #
-def rest_explore(aCTX, aDict):
+def rest_explore(aCTX, aArgs):
  """Function docstring for rest_explore TBD
 
  Args:
@@ -70,8 +70,8 @@ def rest_explore(aCTX, aDict):
   return data
 
  ret = {'data':[]}
- if aDict.get('api'):
-  ret['data'].append(__analyze(aDict.get('api')))
+ if aArgs.get('api'):
+  ret['data'].append(__analyze(aArgs.get('api')))
  else:
   from os import path as ospath, listdir
   restdir = ospath.abspath(ospath.join(ospath.dirname(__file__)))
@@ -82,7 +82,7 @@ def rest_explore(aCTX, aDict):
 
 #
 #
-def rest_information(aCTX, aDict):
+def rest_information(aCTX, aArgs):
  """Function docstring for rest_explore TBD
 
  Args:
@@ -92,15 +92,15 @@ def rest_information(aCTX, aDict):
  Output:
  """
  from importlib import import_module
- mod = import_module("rims.rest.%s"%(aDict['api']))
- fun = getattr(mod,aDict['function'],None)
- return {'api':aDict['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}
+ mod = import_module("rims.rest.%s"%(aArgs['api']))
+ fun = getattr(mod,aArgs['function'],None)
+ return {'api':aArgs['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}
 
 ############################################# Logs ###############################################
 
 #
 #
-def logs_clear(aCTX, aDict):
+def logs_clear(aCTX, aArgs):
  """Function docstring for logs_clear TBD
 
  Args:
@@ -121,7 +121,7 @@ def logs_clear(aCTX, aDict):
 
 #
 #
-def logs_get(aCTX, aDict):
+def logs_get(aCTX, aArgs):
  """Function docstring for logs_get TBD
 
  Args:
@@ -131,11 +131,11 @@ def logs_get(aCTX, aDict):
  Output:
  """
  ret = {}
- count = int(aDict.get('count',15))
+ count = int(aArgs.get('count',15))
  log_files = dict(aCTX.config['logs'])
  log_files.update(aCTX.settings.get('logs',{}))
  for name,file in log_files.items():
-  if aDict.get('name',name) == name:
+  if aArgs.get('name',name) == name:
    lines = ["\r" for i in range(count)]
    pos = 0
    try:
@@ -151,7 +151,7 @@ def logs_get(aCTX, aDict):
 
 ########################################### FILE ############################################
 
-def file_list(aCTX, aDict):
+def file_list(aCTX, aArgs):
  """Function list files in directory pinpointed by directory (in settings for the node) or by fullpath
 
  Args:
@@ -166,11 +166,11 @@ def file_list(aCTX, aDict):
  from os import path as ospath, listdir
  ret = {'files':[]}
  try:
-  if aDict.get('fullpath'):
-   directory = aDict['fullpath']
-  elif aDict.get('directory'):
-   ret['path'] = '../files/%s'%aDict['directory']
-   directory = aCTX.settings['files'][aDict['directory']]
+  if aArgs.get('fullpath'):
+   directory = aArgs['fullpath']
+  elif aArgs.get('directory'):
+   ret['path'] = '../files/%s'%aArgs['directory']
+   directory = aCTX.settings['files'][aArgs['directory']]
   else:
    ret['path'] = '../images'
    directory = 'images'
@@ -187,7 +187,7 @@ def file_list(aCTX, aDict):
 ######################################### Controls ########################################
 #
 #
-def service_list(aCTX, aDict):
+def service_list(aCTX, aArgs):
  """Function docstring for service_list TBD
 
  Args:
@@ -199,7 +199,7 @@ def service_list(aCTX, aDict):
 
 #
 #
-def service_info(aCTX, aDict):
+def service_info(aCTX, aArgs):
  """Function docstring for service_info. TBD
 
  Args:
@@ -210,10 +210,10 @@ def service_info(aCTX, aDict):
  """
  from subprocess import check_output, CalledProcessError
  ret = {'state':None}
- if aDict.get('op'):
+ if aArgs.get('op'):
   from time import sleep
   try:
-   command = "sudo /etc/init.d/%(service)s %(op)s"%aDict
+   command = "sudo /etc/init.d/%(service)s %(op)s"%aArgs
    ret['op'] = check_output(command.split()).decode().strip()
   except CalledProcessError as c:
    ret['op'] = c.output.strip()
@@ -221,7 +221,7 @@ def service_info(aCTX, aDict):
    sleep(2)
 
  try:
-  command = "sudo /etc/init.d/%(service)s status"%aDict
+  command = "sudo /etc/init.d/%(service)s status"%aArgs
   output = check_output(command.split())
   ret['code'] = 0
  except CalledProcessError as c:
@@ -239,7 +239,7 @@ def service_info(aCTX, aDict):
 ################################### Database ##################################
 #
 #
-def database_backup(aCTX, aDict):
+def database_backup(aCTX, aArgs):
  """Function docstring for database_backup. Does Database Backup to file
 
  Args:
@@ -247,7 +247,7 @@ def database_backup(aCTX, aDict):
 
  Output:
  """
- ret = {'filename':aDict['filename']}
+ ret = {'filename':aArgs['filename']}
  if aCTX.node == 'master':
   from rims.rest.mysql import dump
   data = dump(aCTX, {'mode':'database'})['output']

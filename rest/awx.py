@@ -7,7 +7,7 @@ from rims.devices.awx import Device
 
 #
 #
-def inventory_list(aCTX, aDict):
+def inventory_list(aCTX, aArgs):
  """Function main produces an inventory list for a node
 
  Args:
@@ -18,7 +18,7 @@ def inventory_list(aCTX, aDict):
  """
  ret = {}
  try:
-  controller = Device(aCTX.nodes[aDict['node']]['url'])
+  controller = Device(aCTX.nodes[aArgs['node']]['url'])
   controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
   ret['inventories'] = controller.fetch_list("inventories/",('id','name','url'))
  except Exception as e:
@@ -27,7 +27,7 @@ def inventory_list(aCTX, aDict):
 
 #
 #
-def inventory_delete(aCTX, aDict):
+def inventory_delete(aCTX, aArgs):
  """Function deletes inventory with id x
 
  Args:
@@ -36,15 +36,15 @@ def inventory_delete(aCTX, aDict):
 
  Output:
  """
- controller = Device(aCTX.nodes[aDict['node']]['url'])
+ controller = Device(aCTX.nodes[aArgs['node']]['url'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
- res = controller.call("inventories/%(id)s/"%aDict,None,"DELETE")
+ res = controller.call("inventories/%(id)s/"%aArgs,None,"DELETE")
  ret = {'status':"deleted" if res['code'] == 204 else res['info']['x-code']}
  return ret
 
 #
 #
-def inventory_info(aCTX, aDict):
+def inventory_info(aCTX, aArgs):
  """Function produces inventory info for a specific inventory id
 
  Args:
@@ -54,11 +54,11 @@ def inventory_info(aCTX, aDict):
  Output:
  """
  ret = {}
- controller = Device(aCTX.nodes[aDict['node']]['url'])
+ controller = Device(aCTX.nodes[aArgs['node']]['url'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
- ret['groups'] = controller.fetch_dict("inventories/%(id)s/groups/"%aDict,('id','name','description','total_hosts'),'name')
+ ret['groups'] = controller.fetch_dict("inventories/%(id)s/groups/"%aArgs,('id','name','description','total_hosts'),'name')
  ret['hosts'] = []
- next = "inventories/%(id)s/hosts/"%aDict
+ next = "inventories/%(id)s/hosts/"%aArgs
  base = next
  while True:
   data = controller.call(next)['data']
@@ -74,7 +74,7 @@ def inventory_info(aCTX, aDict):
 
 #
 #
-def inventory_sync(aCTX, aDict):
+def inventory_sync(aCTX, aArgs):
  """Function retrieves and matches AWX hosts with devices - and add/updates missing info and groups. Either a list of device_xy id are supplied
 
  Args:
@@ -90,23 +90,23 @@ def inventory_sync(aCTX, aDict):
   - devices (always)
   - groups (always)
  """
- if aDict.get('search'):
-  field = aDict['field']
-  search= aDict['search']
+ if aArgs.get('search'):
+  field = aArgs['field']
+  search= aArgs['search']
  else:
-  search = ",".join(v for k,v in aDict.items() if k[0:7] == 'device_')
+  search = ",".join(v for k,v in aArgs.items() if k[0:7] == 'device_')
   field  = 'id'
  from rims.rest.device import list as device_list
  devices = device_list({'search':search,'field':field,'extra':'type'}, aCTX)['data']
  ret = {'devices':devices,'status':'OK','groups':{}}
  if len(devices) == 0:
   return ret
- controller = Device(aCTX.nodes[aDict['node']]['url'])
+ controller = Device(aCTX.nodes[aArgs['node']]['url'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
- ret['groups'] = controller.fetch_dict("inventories/%s/groups/"%aDict['id'],('id','name','description','total_hosts'),'name')
+ ret['groups'] = controller.fetch_dict("inventories/%s/groups/"%aArgs['id'],('id','name','description','total_hosts'),'name')
  try:
   hosts = {}
-  next = "inventories/%(id)s/hosts/"%aDict
+  next = "inventories/%(id)s/hosts/"%aArgs
   base = next
   while True:
    data = controller.call(next)['data']
@@ -123,7 +123,7 @@ def inventory_sync(aCTX, aDict):
    group = ret['groups'].get(dev['type_name'],{'id':None})
    if not group['id']:
     group = {'name':dev['type_name'], 'description':"%s devices"%dev['type_name']}
-    res = controller.call("inventories/%s/groups/"%(aDict['id']),group,"POST")
+    res = controller.call("inventories/%s/groups/"%(aArgs['id']),group,"POST")
     if res['code'] == 201:
      group.update({'id':res['data']['id'],'info':'CREATED','total_hosts':0})
     else:
@@ -166,7 +166,7 @@ def inventory_sync(aCTX, aDict):
 
 #
 #
-def inventory_delete_hosts(aCTX, aDict):
+def inventory_delete_hosts(aCTX, aArgs):
  """Deletes a list of hosts, represented as host_<xy>
 
  Args:
@@ -177,11 +177,11 @@ def inventory_delete_hosts(aCTX, aDict):
  Output:
  """
  ret = {'hosts':{}}
- node = aDict.pop('node',None)
- id   = aDict.pop('id',None)
+ node = aArgs.pop('node',None)
+ id   = aArgs.pop('id',None)
  controller = Device(aCTX.nodes[node]['url'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
- for host,host_id in aDict.items():
+ for host,host_id in aArgs.items():
   if host[0:5] == 'host_':
    res = controller.call("hosts/%s/"%host_id,None,"DELETE")
    ret['hosts'][host_id] = "OK" if res['code'] == 204 else res['info']['x-code']
@@ -190,7 +190,7 @@ def inventory_delete_hosts(aCTX, aDict):
 ########################################## Hosts ##########################################
 #
 #
-def host_list(aCTX, aDict):
+def host_list(aCTX, aArgs):
  """Function retrieves all hosts from AWX node
 
  Args:
@@ -198,7 +198,7 @@ def host_list(aCTX, aDict):
 
  Output:
  """
- controller = Device(aCTX.nodes[aDict['node']]['url'])
+ controller = Device(aCTX.nodes[aArgs['node']]['url'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  ret = {'hosts':controller.fetch_list("hosts/",('id','name','url','inventory','description','enabled','instance_id'))}
  return ret

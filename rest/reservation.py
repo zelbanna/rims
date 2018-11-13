@@ -9,7 +9,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def update(aCTX, aDict):
+def update(aCTX, aArgs):
  """Function docstring for update TBD
 
  Args:
@@ -20,22 +20,22 @@ def update(aCTX, aDict):
 
  Output:
  """
- ret = {'op':aDict['op']}
- if aDict['op'] == 'reserve':
+ ret = {'op':aArgs['op']}
+ if aArgs['op'] == 'reserve':
   sql = "INSERT INTO reservations (device_id,user_id,time_end) VALUES('%(device_id)s','%(user_id)s',ADDTIME(NOW(), '%(days)s 0:0:0.0'))"
- elif aDict['op'] == 'drop':
+ elif aArgs['op'] == 'drop':
   sql = "DELETE FROM reservations WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"
- elif aDict['op'] == 'extend':
+ elif aArgs['op'] == 'extend':
   sql = "UPDATE reservations SET time_end = ADDTIME(NOW(), '%(days)s 0:0:0.0') WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"
  with aCTX.db as db:
-  ret['update'] = db.do(sql%aDict)
-  db.do("SELECT alias FROM users WHERE id = '%(user_id)s'"%aDict)
+  ret['update'] = db.do(sql%aArgs)
+  db.do("SELECT alias FROM users WHERE id = '%(user_id)s'"%aArgs)
   ret['alias']  = db.get_val('alias')
  return ret
 
 #
 #
-def list(aCTX, aDict):
+def list(aCTX, aArgs):
  """Function docstring for list TBD
 
  Args:
@@ -45,17 +45,17 @@ def list(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT user_id, device_id, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') AS start, DATE_FORMAT(time_end,'%Y-%m-%d %H:%i') AS end, NOW() < time_end AS valid, devices.hostname, users.alias {} FROM reservations INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id".format('' if not aDict.get('extended') else ", loan, address"))
+  ret['count'] = db.do("SELECT user_id, device_id, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') AS start, DATE_FORMAT(time_end,'%Y-%m-%d %H:%i') AS end, NOW() < time_end AS valid, devices.hostname, users.alias {} FROM reservations INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id".format('' if not aArgs.get('extended') else ", loan, address"))
   ret['data'] = db.get_rows()
   for res in ret['data']:
    res['valid'] = (res['valid'] == 1)
-   if aDict.get('extended'):
+   if aArgs.get('extended'):
     res['loan'] = (res['loan'] == 1)
  return ret
 
 #
 #
-def expiration_check(aCTX, aDict):
+def expiration_check(aCTX, aArgs):
  """ Function notifies users (using notification service@node) about reservation time left. If NOW() - time_end < threashold => service@node.notify('user':user,'message':'Device X reservation will expire in XX seconds')
   Ideally run as a periodic task.
 
@@ -69,7 +69,7 @@ def expiration_check(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, NOW() - res.time_end AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id WHERE NOW() - res.time_end < %s"%aDict['threshold'])
+  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, NOW() - res.time_end AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id WHERE NOW() - res.time_end < %s"%aArgs['threshold'])
   ret['hosts'] = db.get_rows()
  notifier = aCTX.settings.get('notifier')
  if notifier:
@@ -80,7 +80,7 @@ def expiration_check(aCTX, aDict):
 
 #
 #
-def shutdown(aCTX, aDict):
+def shutdown(aCTX, aArgs):
  """ Function retrieves devices and VMs and shut them down if it can, add a delay and then shutdown power (type 1)
   - For devices not in state up we will do PEM shutdown only (type 2)
   - For VMs there will not be much done ATM as there is no hypervisor correlation yet (type 3)

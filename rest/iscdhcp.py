@@ -12,7 +12,7 @@ __type__ = "DHCP"
 #
 #
 #
-def status(aCTX, aDict):
+def status(aCTX, aArgs):
  """Function docstring for leases TBD
 
  Args:
@@ -35,7 +35,7 @@ def status(aCTX, aDict):
    if   parts[0] == 'lease' and parts[2] == '{':
     lease['ip'] = parts[1]
    elif parts[0] == '}':
-    if aDict.get('binding','active') == lease['binding']:
+    if aArgs.get('binding','active') == lease['binding']:
      result.append(lease)
     lease = {}
    elif parts[0] == 'hardware' and parts[1] == 'ethernet':
@@ -51,7 +51,7 @@ def status(aCTX, aDict):
 
 #
 #
-def sync(aCTX, aDict):
+def sync(aCTX, aArgs):
  """Function docstring for sync:  reload the DHCP server to use updated info
 
  Args:
@@ -60,7 +60,7 @@ def sync(aCTX, aDict):
  Output:
  """
  from time import strftime, localtime
- entries = aCTX.node_call('master','device','server_macs', aArgs = {'id':aDict['id']})
+ entries = aCTX.node_call('master','device','server_macs', aArgs = {'id':aArgs['id']})
  # Create file
  with open(aCTX.settings['iscdhcp']['static'],'w') as config_file:
   config_file.write("# Created: %s\n"%( strftime('%Y-%m-%d %H:%M:%S', localtime()) ))
@@ -81,7 +81,7 @@ def sync(aCTX, aDict):
 
 #
 #
-def update(aCTX, aDict):
+def update(aCTX, aArgs):
  """Function docstring for check: update specific entry
 
  Args:
@@ -104,8 +104,8 @@ def update(aCTX, aDict):
    parts = line.split()
    id = int(parts[11][:-1])
    devices[id] = {'id':id,'fqdn':parts[1],'mac':parts[5],'ip':parts[7],'network':parts[3]}
- if aDict.get('id'):
-  devices[aDict['id']] = {'id':aDict['id'],'fqdn':"%(hostname)s.%(domain)s"%aDict,'mac':aDict['mac'],'ip':aDict['ip'],'network':aDict['network']}
+ if aArgs.get('id'):
+  devices[aArgs['id']] = {'id':aArgs['id'],'fqdn':"%(hostname)s.%(domain)s"%aArgs,'mac':aArgs['mac'],'ip':aArgs['ip'],'network':aArgs['network']}
   # Create file
   with open(aCTX.settings['iscdhcp']['static'],'w') as config_file:
    for entry in devices:
@@ -127,7 +127,7 @@ def update(aCTX, aDict):
 
 #
 #
-def restart(aCTX, aDict):
+def restart(aCTX, aArgs):
  """Function provides restart capabilities of service
 
  Args:

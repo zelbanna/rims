@@ -18,7 +18,7 @@ from time import strftime
 #################################### Domains #######################################
 #
 #
-def domain_list(aCTX, aDict):
+def domain_list(aCTX, aArgs):
  """Function docstring TBD
 
  Args:
@@ -30,18 +30,18 @@ def domain_list(aCTX, aDict):
  """
  ret = {}
  with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
-  if aDict.get('filter'):
-   ret['count'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aDict.get('filter') == 'reverse' else "NOT"))
+  if aArgs.get('filter'):
+   ret['count'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aArgs.get('filter') == 'reverse' else "NOT"))
   else:
    ret['count'] = db.do("SELECT domains.* FROM domains")
-  ret['domains'] = db.get_rows() if not aDict.get('dict') else db.get_dict(aDict.get('dict'))
-  if aDict.get('dict') and aDict.get('exclude'):
-   ret['domains'].pop(aDict.get('exclude'),None)
+  ret['domains'] = db.get_rows() if not aArgs.get('dict') else db.get_dict(aArgs.get('dict'))
+  if aArgs.get('dict') and aArgs.get('exclude'):
+   ret['domains'].pop(aArgs.get('exclude'),None)
  return ret
 
 #
 #
-def domain_info(aCTX, aDict):
+def domain_info(aCTX, aArgs):
  """Function docstring TBD
 
  Args:
@@ -53,27 +53,27 @@ def domain_info(aCTX, aDict):
  Output:
  """
  ret = {}
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
+ id = aArgs.pop('id','new')
+ op = aArgs.pop('op',None)
  with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
   if op == 'update':
    if id == 'new':
     # Create and insert a lot of records
-    ret['insert'] = db.insert_dict('domains',aDict,'ON DUPLICATE KEY UPDATE id = id')
+    ret['insert'] = db.insert_dict('domains',aArgs,'ON DUPLICATE KEY UPDATE id = id')
     if ret['insert'] > 0:
      id = db.get_last_id()
      serial = strftime("%Y%m%d%H")
      # Find DNS for MASTER to be placed into SOA record
-     master = db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%aDict['master'])
+     master = db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%aArgs['master'])
      soa    = db.get_row() if master > 0 else {'server':'server.local','domain':'local'}
-     sql = "INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ('%s','%s','{}','{}' ,25200,'%s',0)"%(id,aDict['name'],serial)
+     sql = "INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ('%s','%s','{}','{}' ,25200,'%s',0)"%(id,aArgs['name'],serial)
      db.do(sql.format("%s hostmaster.%s 0 21600 300 3600"%(soa['server'],soa['domain']),'SOA'))
      db.do(sql.format(soa['server'],'NS'))
      ret['extra'] = {'serial':serial,'master':master,'soa':soa}
     else:
      id = 'existing'
    else:
-    ret['update'] = db.update_dict('domains',aDict,"id=%s"%id)
+    ret['update'] = db.update_dict('domains',aArgs,"id=%s"%id)
 
   ret['found'] = (db.do("SELECT id,name,master,type,notified_serial FROM domains WHERE id = '%s'"%id) > 0)
   ret['data'] = db.get_row() if ret['found'] else {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
@@ -81,7 +81,7 @@ def domain_info(aCTX, aDict):
 
 #
 #
-def domain_delete(aCTX, aDict):
+def domain_delete(aCTX, aArgs):
  """Function docstring for domain_delete TBD
 
  Args:
@@ -93,14 +93,14 @@ def domain_delete(aCTX, aDict):
  """
  ret = {}
  with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
-  id = int(aDict['id'])
+  id = int(aArgs['id'])
   ret['records'] = db.do("DELETE FROM records WHERE domain_id = %i"%id)
   ret['domain']  = (db.do("DELETE FROM domains WHERE id = %i"%(id)) == 1)
  return ret
 
 #
 #
-def domain_save(aCTX, aDict):
+def domain_save(aCTX, aArgs):
  """NO OP
 
  Args:
@@ -113,7 +113,7 @@ def domain_save(aCTX, aDict):
 #################################### Records #######################################
 #
 #
-def record_list(aCTX, aDict):
+def record_list(aCTX, aArgs):
  """Function docstring for records TBD
 
  Args:
@@ -124,10 +124,10 @@ def record_list(aCTX, aDict):
  """
  ret = {}
  select = []
- if aDict.get('domain_id'):
-  select.append("domain_id = %s"%aDict.get('domain_id'))
- if aDict.get('type'):
-  select.append("type = '%s'"%aDict.get('type').upper())
+ if aArgs.get('domain_id'):
+  select.append("domain_id = %s"%aArgs.get('domain_id'))
+ if aArgs.get('type'):
+  select.append("type = '%s'"%aArgs.get('type').upper())
  tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
  with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
   ret['count'] = db.do("SELECT id, domain_id, name, type, content,ttl,change_date FROM records %s ORDER BY type, name ASC"%tune)
@@ -136,7 +136,7 @@ def record_list(aCTX, aDict):
 
 #
 #
-def record_info(aCTX, aDict):
+def record_info(aCTX, aArgs):
  """Function docstring for record_info TBD
 
  Args:
@@ -150,24 +150,24 @@ def record_info(aCTX, aDict):
  Output:
  """
  ret = {}
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
+ id = aArgs.pop('id','new')
+ op = aArgs.pop('op',None)
  with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
   if op == 'update':
    if str(id) in ['new','0']:
-    aDict.update({'change_date':strftime("%Y%m%d%H"),'ttl':aDict.get('ttl','3600'),'type':aDict['type'].upper(),'prio':'0','domain_id':str(aDict['domain_id'])})
-    ret['insert'] = db.insert_dict('records',aDict,"ON DUPLICATE KEY UPDATE id = id")
+    aArgs.update({'change_date':strftime("%Y%m%d%H"),'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper(),'prio':'0','domain_id':str(aArgs['domain_id'])})
+    ret['insert'] = db.insert_dict('records',aArgs,"ON DUPLICATE KEY UPDATE id = id")
     id = db.get_last_id() if ret['insert'] > 0 else "new"
    else:
-    ret['update'] = db.update_dict('records',aDict,"id='%s'"%id)
+    ret['update'] = db.update_dict('records',aArgs,"id='%s'"%id)
  
-  ret['found'] = (db.do("SELECT records.* FROM records WHERE id = '%s' AND domain_id = '%s'"%(id,aDict['domain_id'])) > 0)
-  ret['data']  = db.get_row() if ret['found'] else {'id':'new','domain_id':aDict['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
+  ret['found'] = (db.do("SELECT records.* FROM records WHERE id = '%s' AND domain_id = '%s'"%(id,aArgs['domain_id'])) > 0)
+  ret['data']  = db.get_row() if ret['found'] else {'id':'new','domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
  return ret
 
 #
 #
-def record_delete(aCTX, aDict):
+def record_delete(aCTX, aArgs):
  """Function docstring for record_delete TBD
 
  Args:
@@ -177,13 +177,13 @@ def record_delete(aCTX, aDict):
  """
  ret = {}
  with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
-  ret['deleted'] = (db.do("DELETE FROM records WHERE id = '%s'"%(aDict['id'])) > 0)
+  ret['deleted'] = (db.do("DELETE FROM records WHERE id = '%s'"%(aArgs['id'])) > 0)
  return ret
 
 ############################### Tools #################################
 #
 #
-def sync(aCTX, aDict):
+def sync(aCTX, aArgs):
  """Function docstring for sync. Removes name duplicates.. (assume order by name => duplicate names :-))
 
  Args:
@@ -206,7 +206,7 @@ def sync(aCTX, aDict):
 
 #
 #
-def status(aCTX, aDict):
+def status(aCTX, aArgs):
  """Function docstring for top TBD
 
  Args:
@@ -219,7 +219,7 @@ def status(aCTX, aDict):
   try:    return gethostbyaddr(aIP)[0].partition('.')[0]
   except: return None
 
- count = int(aDict.get('count',10))
+ count = int(aArgs.get('count',10))
  fqdn_top = {}
  fqdn_who = {}
  with open(aCTX.settings['powerdns']['logfile'],'r') as logfile:
@@ -240,7 +240,7 @@ def status(aCTX, aDict):
 
 #
 #
-def restart(aCTX, aDict):
+def restart(aCTX, aArgs):
  """Function provides restart capabilities of service
 
  Args:

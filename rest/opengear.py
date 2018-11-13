@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def inventory(aCTX, aDict):
+def inventory(aCTX, aArgs):
  """Function docstring for inventory TBD
 
  Args:
@@ -13,5 +13,5 @@ def inventory(aCTX, aDict):
  Output:
  """
  from rims.devices.opengear import Device
- console = Device(aCTX,aDict['ip'])
+ console = Device(aCTX,aArgs['ip'])
  return console.get_inventory()

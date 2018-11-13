@@ -7,7 +7,7 @@ __add_globals__ = lambda x: globals().update(x)
 #################################### Domains #######################################
 #
 #
-def domain_list(aCTX, aDict):
+def domain_list(aCTX, aArgs):
  """NO OP
 
  Args:
@@ -21,7 +21,7 @@ def domain_list(aCTX, aDict):
 
 #
 #
-def domain_info(aCTX, aDict):
+def domain_info(aCTX, aArgs):
  """NO OP
 
  Args:
@@ -38,7 +38,7 @@ def domain_info(aCTX, aDict):
 
 #
 #
-def domain_delete(aCTX, aDict):
+def domain_delete(aCTX, aArgs):
  """NO OP
 
  Args:
@@ -52,7 +52,7 @@ def domain_delete(aCTX, aDict):
 
 #
 #
-def domain_save(aCTX, aDict):
+def domain_save(aCTX, aArgs):
  """NO OP
 
  Args:
@@ -65,7 +65,7 @@ def domain_save(aCTX, aDict):
 #################################### Records #######################################
 #
 #
-def record_list(aCTX, aDict):
+def record_list(aCTX, aArgs):
  """NO OP
 
  Args:
@@ -82,7 +82,7 @@ def record_list(aCTX, aDict):
 
 #
 #
-def record_info(aCTX, aDict):
+def record_info(aCTX, aArgs):
  """NO OP if new, else show device id info
 
  Args:
@@ -96,17 +96,17 @@ def record_info(aCTX, aDict):
  Output:
  """
  ret = {}
- if aDict['id'] == 'new':
-  ret = {'found':False, 'data':{'id':0,'domain_id':0,'name':aDict.get('name','no_record'),'content':aDict.get('content','no_record'),'type':aDict.get('type','A'),'ttl':'3600' }}
+ if aArgs['id'] == 'new':
+  ret = {'found':False, 'data':{'id':0,'domain_id':0,'name':aArgs.get('name','no_record'),'content':aArgs.get('content','no_record'),'type':aArgs.get('type','A'),'ttl':'3600' }}
  else:
   with aCTX.db as db:
-   ret['found'] = (db.do("SELECT devices.id, 0 AS domain_id, CONCAT(hostname,'.local') AS name, INET_NTOA(ia.ip) AS content, 'A' AS type, 3600 AS ttl FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.a_dom_id = 0 AND devices.id = %s"%aDict['id']) > 0)
+   ret['found'] = (db.do("SELECT devices.id, 0 AS domain_id, CONCAT(hostname,'.local') AS name, INET_NTOA(ia.ip) AS content, 'A' AS type, 3600 AS ttl FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.a_dom_id = 0 AND devices.id = %s"%aArgs['id']) > 0)
    ret['data'] = db.get_row()
  return ret
 
 #
 #
-def record_delete(aCTX, aDict):
+def record_delete(aCTX, aArgs):
  """ NO OP
 
  Args:
@@ -119,7 +119,7 @@ def record_delete(aCTX, aDict):
 ############################### Tools #################################
 #
 #
-def dedup(aCTX, aDict):
+def dedup(aCTX, aArgs):
  """ NO OP
 
  Args:
@@ -130,7 +130,7 @@ def dedup(aCTX, aDict):
 
 #
 #
-def top(aCTX, aDict):
+def top(aCTX, aArgs):
  """ NO OP
 
  Args:

@@ -20,7 +20,7 @@ from datetime import datetime,timedelta
 
 #
 #
-def application(aCTX, aDict):
+def application(aCTX, aArgs):
  """Function docstring for application. Delivers the information for SDCP login to redirect to the openstack App.
 
  Args:
@@ -30,11 +30,11 @@ def application(aCTX, aDict):
   - token (optional)
  Output:
  """
- ret = {'title':"%s 2 Cloud"%(aDict.get('name','iaas')),'choices':[],'message':"Welcome to the '%s' Cloud Portal"%(aDict.get('name','iaas')),'portal':'openstack' }
- node = aDict['node']
+ ret = {'title':"%s 2 Cloud"%(aArgs.get('name','iaas')),'choices':[],'message':"Welcome to the '%s' Cloud Portal"%(aArgs.get('name','iaas')),'portal':'openstack' }
+ node = aArgs['node']
  try:
-  if aDict.get('token'):
-   controller = Device(aCTX.nodes[node]['url'],aDict['token'])
+  if aArgs.get('token'):
+   controller = Device(aCTX.nodes[node]['url'],aArgs['token'])
   else:
    controller = Device(aCTX.nodes[node]['url'])
    res = controller.auth({'project':aCTX.settings[node]['project'], 'username':aCTX.settings[node]['username'],'password':aCTX.settings[node]['password']})
@@ -44,16 +44,16 @@ def application(aCTX, aDict):
  except Exception as e:
   ret['exception'] = str(e)
  ret['parameters'] = [{'display':'Username', 'id':'username', 'data':'text'},{'display':'Password', 'id':'password', 'data':'password'}]
- cookie = {'name':aDict.get('name','iaas'),'node':node,'portal':'openstack'}
- if aDict.get('appformix'):
-  cookie['appformix'] = aDict.get('appformix')
+ cookie = {'name':aArgs.get('name','iaas'),'node':node,'portal':'openstack'}
+ if aArgs.get('appformix'):
+  cookie['appformix'] = aArgs.get('appformix')
  ret['cookie'] = ",".join("%s=%s"%i for i in cookie.items())
  ret['expires'] = (datetime.utcnow() + timedelta(hours=1)).strftime('%a, %d %b %Y %H:%M:%S GMT')
  return ret
 
 #
 #
-def authenticate(aCTX, aDict):
+def authenticate(aCTX, aArgs):
  """Function docstring for authenticate TBD
 
  Args:
@@ -67,27 +67,27 @@ def authenticate(aCTX, aDict):
  Output:
  """
  ret = {}
- node = aDict['node']
+ node = aArgs['node']
  controller = Device(aCTX.nodes[node]['url'])
- res = controller.auth({'project':aDict['project_name'], 'username':aDict['username'],'password':aDict['password'] })
+ res = controller.auth({'project':aArgs['project_name'], 'username':aArgs['username'],'password':aArgs['password'] })
  ret = {'authenticated':res['auth']}
  if res['auth'] == 'OK':
   with aCTX.db as db:
-   ret.update({'project_name':aDict['project_name'],'project_id':aDict['project_id'],'username':aDict['username'],'token':controller.get_token(),'expires':controller.get_cookie_expire()})
-   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node_name,node_url) VALUES('%s','%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aDict['project_id'],aDict['username'],node,aCTX.nodes[node]['url']))
+   ret.update({'project_name':aArgs['project_name'],'project_id':aArgs['project_id'],'username':aArgs['username'],'token':controller.get_token(),'expires':controller.get_cookie_expire()})
+   db.do("INSERT INTO openstack_tokens(token,expires,project_id,username,node_name,node_url) VALUES('%s','%s','%s','%s','%s','%s')"%(controller.get_token(),controller.get_token_expire(),aArgs['project_id'],aArgs['username'],node,aCTX.nodes[node]['url']))
    token_id = db.get_last_id()
    for service in ['heat','nova','neutron','glance']:
-    svc = controller.get_service(service,aDict.get('interface','internal'))
+    svc = controller.get_service(service,aArgs.get('interface','internal'))
     db.do("INSERT INTO openstack_services(id,service,service_url,service_id) VALUES('%s','%s','%s','%s')"%(token_id,service,svc['url'],svc['id']))
    db.do("INSERT INTO openstack_services(id,service,service_url,service_id) VALUES('%s','%s','%s','%s')"%(token_id,'contrail',aCTX.settings[node]['contrail'],''))
-  aCTX.log("openstack_authenticate - successful login and catalog init for %s@%s"%(aDict['username'],node))
+  aCTX.log("openstack_authenticate - successful login and catalog init for %s@%s"%(aArgs['username'],node))
  else:
-  aCTX.log("openstack_authenticate - error logging in for  %s@%s"%(aDict['username'],ctrl))
+  aCTX.log("openstack_authenticate - error logging in for  %s@%s"%(aArgs['username'],ctrl))
  return ret
 
 #
 #
-def services(aCTX, aDict):
+def services(aCTX, aArgs):
  """Function docstring for services. Produces a list of services attached to token, services can be filtered on project names as a string list
 
  Args:
@@ -98,15 +98,15 @@ def services(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT id FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
+  db.do("SELECT id FROM openstack_tokens WHERE token = '%s'"%aArgs['token'])
   id = db.get_val('id')
-  ret['count']    = db.do("SELECT %s FROM openstack_services WHERE id = '%s'"%("*" if not aDict.get('filter') else aDict.get('filter'), id))
+  ret['count']    = db.do("SELECT %s FROM openstack_services WHERE id = '%s'"%("*" if not aArgs.get('filter') else aArgs.get('filter'), id))
   ret['services'] = db.get_rows()
  return ret
 
 #
 #
-def rest(aCTX, aDict):
+def rest(aCTX, aArgs):
  """Function docstring for rest TBD
 
  Args:
@@ -120,20 +120,20 @@ def rest(aCTX, aDict):
  Output:
  """
  try:
-  if aDict.get('href'):
-   url = aDict['href']
+  if aArgs.get('href'):
+   url = aArgs['href']
   else:
    with aCTX.db as db:
-    db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%s' AND service = '%s'"%(aDict['token'],aDict.get('service')))
+    db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%s' AND service = '%s'"%(aArgs['token'],aArgs.get('service')))
     url = db.get_val('service_url')
-  ret = aCTX.rest_call(url, aArgs = aDict.get('arguments'), aMethod = aDict.get('method','GET'), aHeader = { 'X-Auth-Token':aDict['token'] })
+  ret = aCTX.rest_call(url, aArgs = aArgs.get('arguments'), aMethod = aArgs.get('method','GET'), aHeader = { 'X-Auth-Token':aArgs['token'] })
   ret['status'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
 
 #
 #
-def call(aCTX, aDict):
+def call(aCTX, aArgs):
  """Function docstring for call. Basically creates a controller instance and send a (nested) rest call.
 
  Args:
@@ -147,15 +147,15 @@ def call(aCTX, aDict):
  Output:
  """
  with aCTX.db as db:
-  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = '%(service)s'"%aDict)
+  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = '%(service)s'"%aArgs)
   data = db.get_row()
  try:
-  ret = aCTX.rest_call("%s/%s"%(data['service_url'],aDict.get('call',"")), aArgs = aDict.get('arguments'), aMethod = aDict.get('method','GET'), aHeader = { 'X-Auth-Token':aDict['token'] })
+  ret = aCTX.rest_call("%s/%s"%(data['service_url'],aArgs.get('call',"")), aArgs = aArgs.get('arguments'), aMethod = aArgs.get('method','GET'), aHeader = { 'X-Auth-Token':aArgs['token'] })
   ret['status'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
 
-def href(aCTX, aDict):
+def href(aCTX, aArgs):
  """Sends a (nested) aCTX.rest_call
 
  Args:
@@ -166,13 +166,13 @@ def href(aCTX, aDict):
 
  Output:
  """
- try: ret = aCTX.rest_call(aDict.get('href'), aArgs = aDict.get('arguments'), aMethod = aDict.get('method','GET'), aHeader = { 'X-Auth-Token':aDict['token'] })
+ try: ret = aCTX.rest_call(aArgs.get('href'), aArgs = aArgs.get('arguments'), aMethod = aArgs.get('method','GET'), aHeader = { 'X-Auth-Token':aArgs['token'] })
  except Exception as e: ret = e[0]
  return ret
 
 #
 #
-def token_list(aCTX, aDict):
+def token_list(aCTX, aArgs):
  """Function docstring for info. Returns a list of Internal to Openstack tokens for user X
 
  Args:
@@ -182,13 +182,13 @@ def token_list(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  ret['found'] = (db.do("SELECT id, token, node_name, node_url, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires, (UNIX_TIMESTAMP() < expires) AS valid FROM openstack_tokens WHERE username = '%s'"%aDict['username']) > 0)
+  ret['found'] = (db.do("SELECT id, token, node_name, node_url, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires, (UNIX_TIMESTAMP() < expires) AS valid FROM openstack_tokens WHERE username = '%s'"%aArgs['username']) > 0)
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
-def token_info(aCTX, aDict):
+def token_info(aCTX, aArgs):
  """Function docstring for info. Returns detailed list of Openstack token given token
 
  Args:
@@ -198,14 +198,14 @@ def token_info(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  ret['found'] = (db.do("SELECT node_url, SELECT CAST(NOW() AS CHAR(50)) AS time, INET_NTOA(controller) AS controller, id, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires FROM openstack_tokens WHERE token = '%s'"%aDict['token']) > 0)
+  ret['found'] = (db.do("SELECT node_url, SELECT CAST(NOW() AS CHAR(50)) AS time, INET_NTOA(controller) AS controller, id, CAST(FROM_UNIXTIME(expires) AS CHAR(50)) AS expires FROM openstack_tokens WHERE token = '%s'"%aArgs['token']) > 0)
   ret['data'] = db.get_row()
  return ret
 
 ################################################# HEAT ###########################################
 #
 #
-def heat_templates(aCTX, aDict):
+def heat_templates(aCTX, aArgs):
  """Function docstring for heat_templates TBD. PAssing the entire cookie would be simpler but require React.JS.
 
  Args:
@@ -216,7 +216,7 @@ def heat_templates(aCTX, aDict):
  from os import path as ospath, listdir
  ret = {'status':'OK','templates':[]}
  with aCTX.db as db:
-  db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
+  db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aArgs['token'])
   node = db.get_val('node_name')
  try:
   for file in listdir(ospath.abspath(aCTX.settings[node]['heat_directory'])):
@@ -230,7 +230,7 @@ def heat_templates(aCTX, aDict):
 
 #
 #
-def heat_content(aCTX, aDict):
+def heat_content(aCTX, aArgs):
  """Function docstring for heat_content TBD
 
  Args:
@@ -243,10 +243,10 @@ def heat_content(aCTX, aDict):
  from json import loads
  ret = {'status':'OK','template':None}
  with aCTX.db as db:
-  db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aDict['token'])
+  db.do("SELECT node_name FROM openstack_tokens WHERE token = '%s'"%aArgs['token'])
   node = db.get_val('node_name')
  try:
-  with open(ospath.abspath(ospath.join(aCTX.settings[node]['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
+  with open(ospath.abspath(ospath.join(aCTX.settings[node]['heat_directory'],"%s.tmpl.json"%aArgs['template']))) as f:
    ret['template'] = loads(f.read())
  except Exception as e:
   ret['info'] = str(e)
@@ -255,12 +255,12 @@ def heat_content(aCTX, aDict):
 
 #
 #
-def heat_create_template(aCTX, aDict):
- return aDict
+def heat_create_template(aCTX, aArgs):
+ return aArgs
 
 #
 #
-def heat_instantiate(aCTX, aDict):
+def heat_instantiate(aCTX, aArgs):
  """Function docstring for heat_instantiate TBD
 
  Args:
@@ -277,20 +277,20 @@ def heat_instantiate(aCTX, aDict):
  args = {}
  try:
   with aCTX.db as db:
-   db.do("SELECT service_url, node_name FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'heat'"%aDict)
+   db.do("SELECT service_url, node_name FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'heat'"%aArgs)
    data = db.get_row()
    node = data['node_name']
-  with open(ospath.abspath(ospath.join(aCTX.settings[node]['heat_directory'],"%s.tmpl.json"%aDict['template']))) as f:
+  with open(ospath.abspath(ospath.join(aCTX.settings[node]['heat_directory'],"%s.tmpl.json"%aArgs['template']))) as f:
    args = loads(f.read())
-  args['stack_name'] = aDict['name']
-  for key,value in aDict['parameters'].items():
+  args['stack_name'] = aArgs['name']
+  for key,value in aArgs['parameters'].items():
    args['parameters'][key] = value
  except Exception as e:
   ret['info'] = str(e)
   ret['status'] = 'NOT_OK'
  else:
   try:
-   controller = Device(aToken = aDict['token'])
+   controller = Device(aToken = aArgs['token'])
    ret = controller.call("%s/stacks"%data['service_url'],args, 'POST')
    ret['status'] = 'OK'
   except Exception as e: ret = e[0]
@@ -299,7 +299,7 @@ def heat_instantiate(aCTX, aDict):
 ################################################# NOVA ###########################################
 #
 #
-def vm_networks(aCTX, aDict):
+def vm_networks(aCTX, aArgs):
  """Function docstring for vm_networks TBD
 
  Args:
@@ -310,10 +310,10 @@ def vm_networks(aCTX, aDict):
  """
  ret = {'status':'OK','vm':None,'interfaces':[]}
  with aCTX.db as db:
-  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
+  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aArgs)
   svc_url = db.get_val('service_url')
- controller = Device(aToken = aDict['token'])
- vm = controller.call("%s/virtual-machine/%s"%(svc_url,aDict['vm']))['data']['virtual-machine']
+ controller = Device(aToken = aArgs['token'])
+ vm = controller.call("%s/virtual-machine/%s"%(svc_url,aArgs['vm']))['data']['virtual-machine']
  ret['vm'] = vm['name']
  for vmir in vm['virtual_machine_interface_back_refs']:
   vmi = controller.call(vmir['href'])['data']['virtual-machine-interface']
@@ -329,7 +329,7 @@ def vm_networks(aCTX, aDict):
 
 #
 #
-def vm_console(aCTX, aDict):
+def vm_console(aCTX, aArgs):
  """Function docstring for vm_console TBD
 
  Args:
@@ -338,13 +338,13 @@ def vm_console(aCTX, aDict):
 
  Output:
  """
- ret = {'status':'NOT_OK','vm':aDict['vm']}
+ ret = {'status':'NOT_OK','vm':aArgs['vm']}
  with aCTX.db as db:
-  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'nova'"%aDict)
+  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'nova'"%aArgs)
   svc_url = db.get_val('service_url')
- controller = Device(aToken = aDict['token'])
+ controller = Device(aToken = aArgs['token'])
  try:
-  res = controller.call("%s/servers/%s/remote-consoles"%(svc_url,aDict['vm']), {'remote_console':{ "protocol": "vnc", "type": "novnc" }}, header={'X-OpenStack-Nova-API-Version':'2.8'})
+  res = controller.call("%s/servers/%s/remote-consoles"%(svc_url,aArgs['vm']), {'remote_console':{ "protocol": "vnc", "type": "novnc" }}, header={'X-OpenStack-Nova-API-Version':'2.8'})
   if res['code'] == 200:
    url = res['data']['remote_console']['url']
    # URL is not always proxy ... so force it through: remove http:// and replace IP (assume there is a port..) with controller IP
@@ -357,7 +357,7 @@ def vm_console(aCTX, aDict):
 
 #
 #
-def vm_resources(aCTX, aDict):
+def vm_resources(aCTX, aArgs):
  """Function docstring for vm_resources TBD
 
  Args:
@@ -367,9 +367,9 @@ def vm_resources(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT service,service_url FROM openstack_services LEFT JOIN openstack_tokens AS ot ON ot.id = openstack_services.id WHERE ot.token = '%s'"%aDict['token'])
+  db.do("SELECT service,service_url FROM openstack_services LEFT JOIN openstack_tokens AS ot ON ot.id = openstack_services.id WHERE ot.token = '%s'"%aArgs['token'])
   services = db.get_dict('service')
- controller = Device(aToken = aDict['token'])
+ controller = Device(aToken = aArgs['token'])
  ret['flavors']  = controller.call(services['nova']['service_url'] + "flavors/detail?sort_key=name")['data']['flavors']
  ret['images']   = controller.call(services['glance']['service_url'] + "v2/images?sort=name:asc")['data']['images']
  ret['networks'] = controller.call(services['neutron']['service_url'] + "v2.0/networks?sort_key=name")['data']['networks']
@@ -378,7 +378,7 @@ def vm_resources(aCTX, aDict):
 ################################################# CONTRAIL ###########################################
 #
 #
-def contrail_fqname(aCTX, aDict):
+def contrail_fqname(aCTX, aArgs):
  """Function docstring for fqname TBD
 
  Args:
@@ -388,18 +388,18 @@ def contrail_fqname(aCTX, aDict):
  Output:
  """
  with aCTX.db as db:
-  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
+  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aArgs)
   svc_url = db.get_val('service_url')
- controller = Device(aToken = aDict['token'])
+ controller = Device(aToken = aArgs['token'])
  try:
-  ret = controller.call("%s/id-to-fqname"%svc_url,aArgs={'uuid':aDict['uuid']},aMethod='POST')
+  ret = controller.call("%s/id-to-fqname"%svc_url,aArgs = {'uuid':aArgs['uuid']},aMethod='POST')
   ret['status'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
 
 #
 #
-def contrail_uuid(aCTX, aDict):
+def contrail_uuid(aCTX, aArgs):
  """Function docstring for uuid_info TBD
 
  Args:
@@ -409,19 +409,19 @@ def contrail_uuid(aCTX, aDict):
  Output:
  """
  with aCTX.db as db:
-  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
+  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aArgs)
   svc_url = db.get_val('service_url')
- controller = Device(aToken = aDict['token'])
+ controller = Device(aToken = aArgs['token'])
  try:
-  res = controller.call("%s/id-to-fqname"%svc_url,aArgs={'uuid':aDict['uuid']},aMethod='POST')
+  res = controller.call("%s/id-to-fqname"%svc_url,aArgs = {'uuid':aArgs['uuid']},aMethod='POST')
   if res.get('result','OK') == 'OK':
-   ret = controller.call("%s/%s/%s"%(svc_url,res['data']['type'],aDict['uuid']))['data']
+   ret = controller.call("%s/%s/%s"%(svc_url,res['data']['type'],aArgs['uuid']))['data']
  except Exception as e: ret = e[0]
  return ret
 
 #
 #
-def contrail_interfaces(aCTX, aDict):
+def contrail_interfaces(aCTX, aArgs):
  """Function docstring for contrail_interfaces TBD
 
  Args:
@@ -430,12 +430,12 @@ def contrail_interfaces(aCTX, aDict):
 
  Output:
  """
- ret = {'virtual-network':aDict['virtual_network'],'ip_addresses':[]}
+ ret = {'virtual-network':aArgs['virtual_network'],'ip_addresses':[]}
  with aCTX.db as db:
-  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
+  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aArgs)
   svc_url = db.get_val('service_url')
- controller = Device(aToken = aDict['token'])
- res = controller.call("%s/virtual-network/%s"%(svc_url,aDict['virtual_network']))
+ controller = Device(aToken = aArgs['token'])
+ res = controller.call("%s/virtual-network/%s"%(svc_url,aArgs['virtual_network']))
  vn = res['data']['virtual-network']
  fqdn = vn['fq_name']
  fqdn.reverse()
@@ -464,7 +464,7 @@ def contrail_interfaces(aCTX, aDict):
 
 #
 #
-def contrail_floating_ips(aCTX, aDict):
+def contrail_floating_ips(aCTX, aArgs):
  """Function docstring for contrail_floating_ips TBD
 
  Args:
@@ -473,12 +473,12 @@ def contrail_floating_ips(aCTX, aDict):
 
  Output:
  """
- ret = {'virtual-network':aDict['virtual_network'],'ip_addresses':[]}
+ ret = {'virtual-network':aArgs['virtual_network'],'ip_addresses':[]}
  with aCTX.db as db:
-  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
+  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aArgs)
   svc_url = db.get_val('service_url')
- controller = Device(aToken = aDict['token'])
- vn = controller.call("%s/virtual-network/%s"%(svc_url,aDict['virtual_network']))['data']['virtual-network']
+ controller = Device(aToken = aArgs['token'])
+ vn = controller.call("%s/virtual-network/%s"%(svc_url,aArgs['virtual_network']))['data']['virtual-network']
  for fipool in vn.get('floating_ip_pools',[]):
   pool = controller.call("%s/floating-ip-pool/%s"%(svc_url,fipool['uuid']) )['data']['floating-ip-pool']
   # show pool
@@ -493,7 +493,7 @@ def contrail_floating_ips(aCTX, aDict):
 
 #
 #
-def contrail_vm_interfaces(aCTX, aDict):
+def contrail_vm_interfaces(aCTX, aArgs):
  """Function docstring for contrail_vm_interfaces TBD
 
  Args:
@@ -502,12 +502,12 @@ def contrail_vm_interfaces(aCTX, aDict):
 
  Output:
  """
- ret = {'vm':aDict['vm'],'interfaces':[]}
+ ret = {'vm':aArgs['vm'],'interfaces':[]}
  with aCTX.db as db:
-  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
+  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aArgs)
   svc_url = db.get_val('service_url')
- controller = Device(aToken = aDict['token'])
- vmis = controller.call("%s/virtual-machine/%s"%(svc_url,aDict['vm']))['data']['virtual-machine']['virtual_machine_interface_back_refs']
+ controller = Device(aToken = aArgs['token'])
+ vmis = controller.call("%s/virtual-machine/%s"%(svc_url,aArgs['vm']))['data']['virtual-machine']['virtual_machine_interface_back_refs']
  for vmi in vmis:
   vmi = controller.call(vmi['href'])['data']['virtual-machine-interface']
   iip = controller.call(vmi['instance_ip_back_refs'][0]['href'])['data']['instance-ip']
@@ -516,7 +516,7 @@ def contrail_vm_interfaces(aCTX, aDict):
 
 #
 #
-def contrail_vm_associate_fip(aCTX, aDict):
+def contrail_vm_associate_fip(aCTX, aArgs):
  """Function docstring for contrail_vm_interfaces TBD
 
  Args:
@@ -528,13 +528,13 @@ def contrail_vm_associate_fip(aCTX, aDict):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aDict)
+  db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = 'contrail'"%aArgs)
   svc_url = db.get_val('service_url')
- controller = Device(aToken = aDict['token'])
+ controller = Device(aToken = aArgs['token'])
  try:
-  vmi = controller.call("%s/virtual-machine-interface/%s"%(svc_url,aDict['vm_interface']))['data']['virtual-machine-interface']
-  fip = { 'floating-ip':{ 'floating_ip_fixed_ip_address':aDict['vm_ip_address'], 'virtual_machine_interface_refs':[ {'href':vmi['href'],'attr':None,'uuid':vmi['uuid'],'to':vmi['fq_name'] } ] } }
-  res = controller.call("%s/floating-ip/%s"%(svc_url,aDict['floating_ip']),aArgs=fip,aMethod='PUT')
+  vmi = controller.call("%s/virtual-machine-interface/%s"%(svc_url,aArgs['vm_interface']))['data']['virtual-machine-interface']
+  fip = { 'floating-ip':{ 'floating_ip_fixed_ip_address':aArgs['vm_ip_address'], 'virtual_machine_interface_refs':[ {'href':vmi['href'],'attr':None,'uuid':vmi['uuid'],'to':vmi['fq_name'] } ] } }
+  res = controller.call("%s/floating-ip/%s"%(svc_url,aArgs['floating_ip']),aArgs = fip,aMethod='PUT')
   ret['status'] = "OK" if res['code'] == 200 else "NOT_OK"
  except Exception as e:
   ret['status'] ='ERROR'

@@ -12,7 +12,7 @@ __type__ = "NOTIFY"
 
 #
 #
-def status(aCTX, aDict):
+def status(aCTX, aArgs):
  """Function returns status of slack connection... somehow (TBD)
 
  Args:
@@ -23,7 +23,7 @@ def status(aCTX, aDict):
 
 #
 #
-def sync(aCTX, aDict):
+def sync(aCTX, aArgs):
  """Function synchornizes connection to Slack, TBD as is..
 
  Args:
@@ -35,7 +35,7 @@ def sync(aCTX, aDict):
 
 #
 #
-def restart(aCTX, aDict):
+def restart(aCTX, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -49,7 +49,7 @@ def restart(aCTX, aDict):
 
 #
 #
-def notify(aCTX, aDict):
+def notify(aCTX, aArgs):
  """Function provides notification service, basic at the moment for development purposes
 
  Args:
@@ -63,11 +63,11 @@ def notify(aCTX, aDict):
 
  """
  url = "%s/%s"%(aCTX.nodes[aCTX.settings['slack']['node']]['url'],aCTX.settings['slack']['service'])
- args = {'text':aDict['message']} 
- if aDict.get('user'):
-  args['channel'] = "@%s"%aDict['user']
- elif aDict.get('channel'):
-  args['channel'] = "#%s"%aDict['channel']
+ args = {'text':aArgs['message']} 
+ if aArgs.get('user'):
+  args['channel'] = "@%s"%aArgs['user']
+ elif aArgs.get('channel'):
+  args['channel'] = "#%s"%aArgs['channel']
  elif aCTX.settings['slack'].get('channel'):
   args['channel'] = aCTX.settings['slack'].get('channel')
  res = aCTX.rest_call(url,aArgs = args)

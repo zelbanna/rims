@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def list(aCTX, aDict):
+def list(aCTX, aArgs):
  """Function docstring for list TBD
 
  Args:
@@ -13,7 +13,7 @@ def list(aCTX, aDict):
  Output:
  """
  ret = []
- sort = aDict.get('sort','id')
+ sort = aArgs.get('sort','id')
  with aCTX.db as db:
   db.do("SELECT racks.* FROM racks ORDER BY %s"%sort)
   ret = db.get_rows()
@@ -21,7 +21,7 @@ def list(aCTX, aDict):
 
 #
 #
-def info(aCTX, aDict):
+def info(aCTX, aArgs):
  """Function docstring for info TBD
 
  Args:
@@ -31,14 +31,14 @@ def info(aCTX, aDict):
  Output:
  """
  ret =  {}
- id = aDict.pop('id','new')
- op = aDict.pop('op',None)
+ id = aArgs.pop('id','new')
+ op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('racks',aDict,'id=%s'%id)
+    ret['update'] = db.update_dict('racks',aArgs,'id=%s'%id)
    else:
-    ret['update'] = db.insert_dict('racks',aDict)
+    ret['update'] = db.insert_dict('racks',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
   if not id == 'new':
    ret['found'] = (db.do("SELECT racks.* FROM racks WHERE id = %s"%id) > 0)
@@ -57,7 +57,7 @@ def info(aCTX, aDict):
 
 #
 #
-def inventory(aCTX, aDict):
+def inventory(aCTX, aArgs):
  """Function docstring for inventory TBD
 
  Args:
@@ -69,8 +69,8 @@ def inventory(aCTX, aDict):
  sqlbase = "SELECT devices.id, devices.hostname, INET_NTOA(ia.ip) AS ip, device_types.name AS type, device_types.base AS base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id INNER JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY devices.hostname"
 
  with aCTX.db as db:
-  if aDict.get('id'):
-   res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aDict.get('id'))
+  if aArgs.get('id'):
+   res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aArgs.get('id'))
    select = db.get_row()
    ret['name'] = select.pop('name',"Noname")
    ids = ",".join(str(x) for x in [ select['pdu_1'],select['pdu_2'],select['console']] if x)
@@ -87,7 +87,7 @@ def inventory(aCTX, aDict):
 
 #
 #
-def devices(aCTX, aDict):
+def devices(aCTX, aArgs):
  """Devices finds device information for rack such that we can build a rack "layout"
 
  Args:
@@ -96,8 +96,8 @@ def devices(aCTX, aDict):
 
  Output:
  """
- ret = {'sort':aDict.get('sort','devices.id')}
- id = aDict['id']
+ ret = {'sort':aArgs.get('sort','devices.id')}
+ id = aArgs['id']
  with aCTX.db as db:
   db.do("SELECT name, size FROM racks where id = %s"%id)
   ret.update(db.get_row())
@@ -107,7 +107,7 @@ def devices(aCTX, aDict):
 
 #
 #
-def delete(aCTX, aDict):
+def delete(aCTX, aArgs):
  """Function docstring for delete TBD
 
  Args:
@@ -116,5 +116,5 @@ def delete(aCTX, aDict):
  Output:
  """
  with aCTX.db as db:
-  deleted = db.do("DELETE FROM racks WHERE id = %s"%aDict['id'])
+  deleted = db.do("DELETE FROM racks WHERE id = %s"%aArgs['id'])
  return {'deleted':deleted}

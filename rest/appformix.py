@@ -5,19 +5,19 @@ __add_globals__ = lambda x: globals().update(x)
 from rims.devices.appformix import Device
 
 #
-def alarm(aCTX, aDict):
+def alarm(aCTX, aArgs):
  """Function docstring for alarm TBD
 
  Args:
 
  Output:
  """
- aCTX.log("appformix_alarm({})".format(str(aDict)))
+ aCTX.log("appformix_alarm({})".format(str(aArgs)))
  return { 'status':'OK', 'info':'got alarm', 'data':'waiting to find out what to do with it :-)'}
 
 #
 #
-def authenticate(aCTX, aDict):
+def authenticate(aCTX, aArgs):
  """Function docstring for authenticate TBD
 
  Args:
@@ -26,7 +26,7 @@ def authenticate(aCTX, aDict):
  Output:
  """
  ret = {}
- controller = Device(aCTX.nodes[aDict['node']]['url'])
+ controller = Device(aCTX.nodes[aArgs['node']]['url'])
  try:
   res = controller.auth({'username':aCTX.settings['appformix']['username'], 'password':aCTX.settings['appformix']['password'] })
   ret['auth'] = res['auth']
@@ -37,7 +37,7 @@ def authenticate(aCTX, aDict):
 
 #
 #
-def report_projects(aCTX, aDict):
+def report_projects(aCTX, aArgs):
  """Function docstring for report_projects TBD
 
  Args:
@@ -48,14 +48,14 @@ def report_projects(aCTX, aDict):
  Output:
  """
  ret = {}
- controller = Device(aCTX.nodes[aDict['node']]['url'],aDict['token'])
+ controller = Device(aCTX.nodes[aArgs['node']]['url'],aArgs['token'])
  reports = controller.call('reports/project/metadata')['data']['Metadata']
- ret['reports'] = [rep for rep in reports if rep['ProjectId'] == aDict['project']]
+ ret['reports'] = [rep for rep in reports if rep['ProjectId'] == aArgs['project']]
  return ret
 
 #
 #
-def project_reports(aCTX, aDict):
+def project_reports(aCTX, aArgs):
  """Function docstring for project_reports TBD
 
  Args:
@@ -66,6 +66,6 @@ def project_reports(aCTX, aDict):
  Output:
  """
  ret = {}
- controller = Device(aCTX.nodes[aDict['node']]['url'],aDict['token'])
- ret = controller.call("reports/project/%(report)s"%aDict)['data']['UsageReport']
+ controller = Device(aCTX.nodes[aArgs['node']]['url'],aArgs['token'])
+ ret = controller.call("reports/project/%(report)s"%aArgs)['data']['UsageReport']
  return ret

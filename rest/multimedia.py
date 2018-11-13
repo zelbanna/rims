@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 from os import remove, rmdir, walk, path as ospath, devnull, chmod, rename
 #
 #
-def list(aCTX, aDict):
+def list(aCTX, aArgs):
  """Function docstring for list TBD
 
  Args:
@@ -25,7 +25,7 @@ def list(aCTX, aDict):
 
 #
 #
-def cleanup(aCTX, aDict):
+def cleanup(aCTX, aArgs):
  """Function docstring for cleanup TBD
 
  Args:
@@ -48,7 +48,7 @@ def cleanup(aCTX, aDict):
 
 #
 #
-def transfer(aCTX, aDict):
+def transfer(aCTX, aArgs):
  """Function docstring for transfer TBD
 
  Args:
@@ -59,7 +59,7 @@ def transfer(aCTX, aDict):
  """
  ret = {'status':'NOT_OK'}
  from shutil import move
- try: move( ospath.join(aDict['path'],aDict['file']), ospath.join(aCTX.settings['multimedia']['media_directory'],aDict['file']) )
+ try: move( ospath.join(aArgs['path'],aArgs['file']), ospath.join(aCTX.settings['multimedia']['media_directory'],aArgs['file']) )
  except Exception as err:
   ret['error'] = str(err)
  else:
@@ -68,7 +68,7 @@ def transfer(aCTX, aDict):
 
 #
 #
-def delete(aCTX, aDict):
+def delete(aCTX, aArgs):
  """Function docstring for delete TBD
 
  Args:
@@ -78,7 +78,7 @@ def delete(aCTX, aDict):
  Output:
  """
  ret = {'status':'NOT_OK'}
- try: remove(ospath.join(aDict['path'],aDict['file']))
+ try: remove(ospath.join(aArgs['path'],aArgs['file']))
  except Exception as err:
   ret['error'] = str(err)
  else:
@@ -87,7 +87,7 @@ def delete(aCTX, aDict):
 
 #
 #
-def services(aCTX, aDict):
+def services(aCTX, aArgs):
  """Function docstring for services TBD
 
  Args:
@@ -99,7 +99,7 @@ def services(aCTX, aDict):
 ################################################# Media Functions ################################################
 #
 #
-def check_srt(aCTX, aDict):
+def check_srt(aCTX, aArgs):
  """Function find the 'first' SRT file in a directory
 
  Args:
@@ -110,7 +110,7 @@ def check_srt(aCTX, aDict):
  Output: Return anguage abbreviation, language name, srtfile if found
  """
  ret = {}
- filename = (aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file')))[:-4]
+ filename = (aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file')))[:-4]
  if   ospath.exists("%s.eng.srt"%filename):
   ret = {'code':'eng','name':"English",'file':"%s.eng.srt"%filename}
  elif ospath.exists("%s.swe.srt"%filename):
@@ -123,7 +123,7 @@ def check_srt(aCTX, aDict):
 
 #
 #
-def check_title(aCTX, aDict):
+def check_title(aCTX, aArgs):
  """Function tries to determine if this is a series or movie and then how to rename the file such that it would be easy to catalog
 
  Args:
@@ -138,10 +138,10 @@ def check_title(aCTX, aDict):
   - episode (in case type == 'series')
  """
  from re import search
- if aDict.get('filepath'):
-  fpath,filename = ospath.split(aDict['filepath'])
+ if aArgs.get('filepath'):
+  fpath,filename = ospath.split(aArgs['filepath'])
  else:
-  fpath,filename = aDict.get('path'),aDict.get('file')
+  fpath,filename = aArgs.get('path'),aArgs.get('file')
  ret = {'path':fpath,'name':None,'info':None,'title':None}
  prefix = filename[:-4].replace("."," ").title()
  # Info start means episode info, like S01E01."whatever".suffix
@@ -184,7 +184,7 @@ def check_title(aCTX, aDict):
 
 #
 #
-def check_content(aCTX, aDict):
+def check_content(aCTX, aArgs):
  """Function docstring for check_content. Checks file using avprobe to determine content and how to optimize file
 
  Args:
@@ -198,13 +198,13 @@ def check_content(aCTX, aDict):
  """
  from subprocess import Popen, PIPE, STDOUT
  ret = {'status':'NOT_OK'}
- filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
+ filename = aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file'))
  ret['video'] = {'language':'eng', 'set_default':False}
  ret['audio'] = {'add':[], 'remove':[], 'add_aac':True }
  ret['subtitle'] = {'add':[], 'remove':[], 'languages':[] }
 
- if aDict.get('srt'):
-  ret['subtitle']['languages'].append(aDict.get('srt'))
+ if aArgs.get('srt'):
+  ret['subtitle']['languages'].append(aArgs.get('srt'))
  if not ospath.exists(filename):
   ret['error'] = 'NO_SUCH_FILE'
   return ret
@@ -246,7 +246,7 @@ def check_content(aCTX, aDict):
 
 #
 #
-def process(aCTX, aDict):
+def process(aCTX, aArgs):
  """Process a media file
 
  Args:
@@ -258,10 +258,10 @@ def process(aCTX, aDict):
  """
  from time import time
  from subprocess import check_call, call
- filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
+ filename = aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file'))
  ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'status':'NOT_OK','error':None}
  srt  = check_srt(aCTX, {'filepath':filename})
- info = aDict if aDict.get('name') and aDict.get('info') else check_title(aCTX, {'filepath':filename})
+ info = aArgs if aArgs.get('name') and aArgs.get('info') else check_title(aCTX, {'filepath':filename})
  dest = ospath.abspath(ospath.join(info['path'],info['name']))
  ret.update({'info':info,'srt':srt,'changes':{'subtitle':"",'audio':"",'srt':""},'dest':dest})
 
@@ -318,7 +318,7 @@ def process(aCTX, aDict):
 
     if srt['code']: rename(srtfile,srtfile + "ed")
 
-  elif ret['suffix'] == 'mp4' and ret['rename'] and (srt['code'] or aDict.get('modify')):
+  elif ret['suffix'] == 'mp4' and ret['rename'] and (srt['code'] or aArgs.get('modify')):
    FNULL = open(devnull, 'w')
    if srt['code']:
     tmpfile = filename + ".process"
@@ -328,7 +328,7 @@ def process(aCTX, aDict):
     call(['MP4Box -add {0}:hdlr=sbtl:lang={1}:name={2}:group=2:layer=-1:disable {3} -out {4}'.format( repr(srt['file']), srt['code'], srt['name'], repr(tmpfile), repr(dest))], shell=True, stdout=FNULL)
     rename(srt['file'],"%s.processed"%srt['file'])
     remove(tmpfile)
-   if aDict.get('modify'):
+   if aArgs.get('modify'):
     if info['episode']:
      call(['mp4tags', '-o', info['episode'], '-n', info['episode'][1:3], '-M', info['episode'][4:6], '-S', info['title'], '-m', info['info'], dest], stdout=FNULL, stderr=FNULL)
     else:
@@ -350,7 +350,7 @@ def process(aCTX, aDict):
 ################################################ TBD ################################################
 #
 #
-def delay_set(aCTX, aDict):
+def delay_set(aCTX, aArgs):
  """Sets offset in ms for file 'original' (MKV)
 
  Args:
@@ -361,7 +361,7 @@ def delay_set(aCTX, aDict):
  """
  from time import time
  from subprocess import Popen, PIPE, check_call, call, STDOUT
- filename = aDict.get('filepath') if aDict.get('filepath') else ospath.join(aDict.get('path'),aDict.get('file'))
+ filename = aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file'))
  ret = {'status':'NOT_OK','timestamp':int(time())}
 
  absfile = ospath.abspath(filename)
@@ -377,7 +377,7 @@ def delay_set(aCTX, aDict):
   for line in entries.split('\n'):
    slots = line.split(' ')
    if slots[0] == "Track" and slots[3] == "subtitles":
-    offset=slots[2][0:-1] + ":" + aDict.get('offset',0)
+    offset=slots[2][0:-1] + ":" + aArgs.get('offset',0)
     try:
      rename(absfile,tmpfile)
      FNULL = open(devnull, 'w')

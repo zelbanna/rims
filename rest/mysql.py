@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def dump(aCTX, aDict):
+def dump(aCTX, aArgs):
  """ Function dumps database schema or values or full database info
 
  Args:
@@ -16,12 +16,12 @@ def dump(aCTX, aDict):
  Output:
  """
  from subprocess import check_output
- if aDict.get('username') and aDict.get('password') and aDict.get('database'):
-  db,username,password = aDict['database'],aDict['username'],aDict['password']
+ if aArgs.get('username') and aArgs.get('password') and aArgs.get('database'):
+  db,username,password = aArgs['database'],aArgs['username'],aArgs['password']
  else:
   db,username,password = aCTX.config['db_name'], aCTX.config['db_user'], aCTX.config['db_pass']
  try:
-  mode = aDict.get('mode','structure')
+  mode = aArgs.get('mode','structure')
   cmd  = ["mysqldump", "-u" + username, "-p" + password, db]
   output = []
 
@@ -31,7 +31,7 @@ def dump(aCTX, aDict):
    output.append("SET sql_mode='NO_AUTO_VALUE_ON_ZERO';")
    cmd.extend(['-c','--skip-extended-insert'])
 
-  if aDict.get('full',True):
+  if aArgs.get('full',True):
    output.extend(["DROP DATABASE IF EXISTS %s;"%db,"CREATE DATABASE %s;"%db])
   else:
    cmd.extend(['--no-create-info','--skip-triggers'])
@@ -51,11 +51,11 @@ def dump(aCTX, aDict):
  except Exception as e:
   output = ["DumpError:%s"%repr(e)]
   res = 'NOT_OK'
- return {'status':res, 'output':output,'mode':mode,'full':aDict.get('full',True)}
+ return {'status':res, 'output':output,'mode':mode,'full':aArgs.get('full',True)}
 
 #
 #
-def restore(aCTX, aDict):
+def restore(aCTX, aArgs):
  """ Function restores database schema or values or full database info, Caution (!) if restoring a schema there will be no/0 rows in any table in the database
 
  Args:
@@ -66,13 +66,13 @@ def restore(aCTX, aDict):
   - result
  """
  from subprocess import check_output
- if aDict.get('username') and aDict.get('password'):
-  username,password = aDict['username'],aDict['password']
+ if aArgs.get('username') and aArgs.get('password'):
+  username,password = aArgs['username'],aArgs['password']
  else:
   username,password = aCTX.config['db_user'], aCTX.config['db_pass']
 
  try:
-  cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '<',aDict['file']]
+  cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '<',aArgs['file']]
   output = check_output(" ".join(cmd), shell=True).decode()
   return { 'status':'OK','output':output.split('\n') }
  except Exception as e:
@@ -80,7 +80,7 @@ def restore(aCTX, aDict):
 
 #
 #
-def diff(aCTX, aDict):
+def diff(aCTX, aArgs):
  """ Function makes a diff between current database schema and the supplied schema file.
 
  Args:
@@ -95,13 +95,13 @@ def diff(aCTX, aDict):
  """
 
  from difflib import unified_diff
- with open(aDict['schema_file']) as f:
+ with open(aArgs['schema_file']) as f:
   data = f.read()
  ret = {}
- aDict.update({'mode':'structure'})
- db = dump(aCTX, aDict)
+ aArgs.update({'mode':'structure'})
+ db = dump(aCTX, aArgs)
  ret['source'] = db['status']
- ret['output'] = [line for line in unified_diff(db['output'],data.split('\n'),fromfile='dbase',tofile=aDict['schema_file'])]
+ ret['output'] = [line for line in unified_diff(db['output'],data.split('\n'),fromfile='dbase',tofile=aArgs['schema_file'])]
  ret['diffs'] = 0
  for line in ret['output']:
   if "@@" in line:
@@ -110,7 +110,7 @@ def diff(aCTX, aDict):
 
 #
 #
-def patch(aCTX, aDict):
+def patch(aCTX, aArgs):
  """ Function patches current database schema with the supplied schema file. If not successful it will try to restore entire old database. Intermediate files are mysql.backup (entire DB) and mysql.values (INSERTs only - used for restoring) 
 
  Args:
@@ -122,7 +122,7 @@ def patch(aCTX, aDict):
  Output:
  """
  from os import remove
- args = dict(aDict)
+ args = dict(aArgs)
  args['mode'] = 'database'
  ret = {'status':'NOT_OK'}
  with open('mysql.backup','w') as f:
@@ -138,7 +138,7 @@ def patch(aCTX, aDict):
   f.write("\n".join(res['output']))
 
  if ret['database_backup_result'] == 'OK' and ret['data_backup_result'] == 'OK':
-  args['file'] = aDict['schema_file']
+  args['file'] = aArgs['schema_file']
   res = restore(aCTX, args)
   ret['struct_install_result']= res['status']
   if not res['status'] == 'OK':

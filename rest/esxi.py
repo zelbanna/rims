@@ -9,7 +9,7 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
 #
-def list(aCTX, aDict):
+def list(aCTX, aArgs):
  """Function docstring for list TBD
 
  Args:
@@ -21,8 +21,8 @@ def list(aCTX, aDict):
  ret = {}
  from rims.devices.esxi import Device
  try:
-  esxi = Device(aCTX, aDict['ip'])
-  ret['data'] = esxi.get_vm_list(aDict.get('sort','name'))
+  esxi = Device(aCTX, aArgs['ip'])
+  ret['data'] = esxi.get_vm_list(aArgs.get('sort','name'))
  except Exception as err:
   ret['error'] = repr(err)
   ret['data'] = []
@@ -30,7 +30,7 @@ def list(aCTX, aDict):
 
 #
 #
-def op(aCTX, aDict):
+def op(aCTX, aArgs):
  """Function docstring for op TBD
 
  Args:
@@ -42,26 +42,26 @@ def op(aCTX, aDict):
  Output:
  """
  from rims.devices.esxi import Device
- ret = {'id':aDict['id'],'status':'OK'}
- with Device(aCTX, aDict['ip']) as esxi:
+ ret = {'id':aArgs['id'],'status':'OK'}
+ with Device(aCTX, aArgs['ip']) as esxi:
   try:
-   if aDict['next-state'] == 'vmsvc-snapshot.create':
+   if aArgs['next-state'] == 'vmsvc-snapshot.create':
     from time import strftime
-    esxi.ssh_send("vim-cmd vmsvc/snapshot.create %s 'Portal Snapshot' '%s'"%(aDict['id'],strftime("%Y%m%d")))
-    ret['state'] = esxi.get_vm_state(aDict['id'])
+    esxi.ssh_send("vim-cmd vmsvc/snapshot.create %s 'Portal Snapshot' '%s'"%(aArgs['id'],strftime("%Y%m%d")))
+    ret['state'] = esxi.get_vm_state(aArgs['id'])
     ret['state_id'] = esxi.get_state_str(ret['state'])
-   elif aDict['next-state'] == 'vmsvc-snapshot.revert':
-    esxi.ssh_send("vim-cmd vmsvc/snapshot.revert %s %s suppressPowerOff"%(aDict['id'],aDict.get('snapshot')))
-   elif aDict['next-state'] == 'vmsvc-snapshot.remove':
-    esxi.ssh_send("vim-cmd vmsvc/snapshot.remove %s %s"%(aDict['id'],aDict.get('snapshot')))
-   elif "vmsvc-" in aDict['next-state']:
+   elif aArgs['next-state'] == 'vmsvc-snapshot.revert':
+    esxi.ssh_send("vim-cmd vmsvc/snapshot.revert %s %s suppressPowerOff"%(aArgs['id'],aArgs.get('snapshot')))
+   elif aArgs['next-state'] == 'vmsvc-snapshot.remove':
+    esxi.ssh_send("vim-cmd vmsvc/snapshot.remove %s %s"%(aArgs['id'],aArgs.get('snapshot')))
+   elif "vmsvc-" in aArgs['next-state']:
     from time import sleep
-    vmop = aDict['next-state'].partition('-')[2]
-    esxi.ssh_send("vim-cmd vmsvc/%s %s"%(vmop,aDict['id']))
+    vmop = aArgs['next-state'].partition('-')[2]
+    esxi.ssh_send("vim-cmd vmsvc/%s %s"%(vmop,aArgs['id']))
     sleep(2)
-    ret['state'] = esxi.get_vm_state(aDict['id'])
+    ret['state'] = esxi.get_vm_state(aArgs['id'])
     ret['state_id'] = esxi.get_state_str(ret['state'])
-   elif aDict['next-state'] == 'poweroff':
+   elif aArgs['next-state'] == 'poweroff':
     esxi.ssh_send("poweroff")
   except Exception as err:
    ret['status'] = 'NOT_OK'
@@ -70,7 +70,7 @@ def op(aCTX, aDict):
 
 #
 #
-def logs(aCTX, aDict):
+def logs(aCTX, aArgs):
  """Function retrieves ESXi logs
 
  Args:
@@ -81,8 +81,8 @@ def logs(aCTX, aDict):
  """
  from subprocess import check_output
  ret = {'status':'OK'}
- ip  = aDict['ip']
- count = aDict.get('count','30')
+ ip  = aArgs['ip']
+ count = aArgs.get('count','30')
  try:
   ret['data'] = check_output("tail -n %s %s | tac"%(count,aCTX.settings['esxi']['logformat'].format(ip)), shell=True).decode().split('\n')
  except Exception as e:
@@ -92,7 +92,7 @@ def logs(aCTX, aDict):
 
 #
 #
-def snapshots(aCTX, aDict):
+def snapshots(aCTX, aArgs):
  """Function docstring for snapshots TBD
 
  Args:
@@ -103,9 +103,9 @@ def snapshots(aCTX, aDict):
  """
  from rims.devices.esxi import Device
  ret = {'status':'OK', 'data':[],'highest':0}
- with Device(aCTX, aDict['ip']) as esxi:
+ with Device(aCTX, aArgs['ip']) as esxi:
   data = {}
-  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get %s"%aDict['id'])
+  snapshots = esxi.ssh_send("vim-cmd vmsvc/snapshot.get %s"%aArgs['id'])
   for field in snapshots.splitlines():
    if "Snapshot" in field:
     parts = field.partition(':')
