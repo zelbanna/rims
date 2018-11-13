@@ -122,20 +122,10 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError
 
 def rest_call(aURL, **kwargs):
- """ Rest call function
-  Args:
-   - aURL (required)
-   - aArgs (optional)
-   - ... (optional)
-
-  Output:
-   - de-json:ed data structure that function returns and all status codes
-
- """
+ """ REST call function, aURL is required, then aArgs, aHeader (dict), aTimeout, aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
  try:
   head = { 'Content-Type': 'application/json','Accept':'application/json' }
-  try:    head.update(kwargs.get('aHeader',{}))
-  except: pass
+  head.update(kwargs.get('aHeader',{}))
   data = dumps(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
   req = Request(aURL, headers = head, data = data)
   if kwargs.get('aMethod'):
@@ -149,12 +139,9 @@ def rest_call(aURL, **kwargs):
    ssl_ctx.verify_mode = ssl.CERT_NONE
    sock = urlopen(req,context=ssl_ctx, timeout = kwargs.get('aTimeout',20))
   output = {'info':dict(sock.info()), 'code':sock.code }
-  output['node'] = output['info'].pop('node','_no_node_')
+  output['node'] = output['info'].pop('X-Route','_no_node_')
   try:    output['data'] = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
   except: output['data'] = None
-  if (output['info'].get('code',200) != 200):
-   output['code'] = output['info']['code']
-   output['exception'] = 'RESTError'
   sock.close()
  except HTTPError as h:
   output = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info())}

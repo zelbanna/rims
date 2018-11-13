@@ -45,7 +45,7 @@ def garbage_collect(aCTX, aDict):
 #
 def debug(aCTX, aDict):
  from time import sleep
- sleep(10)
+ sleep(2)
  return {'status':'OK'}
 
 ################################ REST tools ###############################

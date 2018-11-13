@@ -688,7 +688,7 @@ def network_interface_status(aCTX, aDict):
      aCTX.workers.add_transient(args)
      ret['local'].append(sub['id'])
     else:
-     aCTX.rest_call("%s/api/system/task_worker?node=%s"%(aCTX.nodes[sub['node']]['url'],sub['node']),aArgs = args)['data']
+     aCTX.rest_call("%s/api/system/task_worker?node=%s"%(aCTX.nodes[sub['node']]['url'],sub['node']),aArgs = args, aDataOnly = True)
      ret['remote'].append(sub['id'])
  return ret
 
@@ -1095,7 +1095,7 @@ def interface_status_check(aCTX, aDict):
    if aCTX.node == 'master':
     interface_status_report(aCTX, dev)
    else:
-    aCTX.rest_call("%s/api/device/interface_status_report?log=false"%aCTX.config['master'],dev)
+    aCTX.rest_call("%s/api/device/interface_status_report"%aCTX.config['master'], aArgs = dev, aHeader= {'X-log':'false'})
  return {'status':'GATHERING_DATA_COMPLETED'}
 
 #

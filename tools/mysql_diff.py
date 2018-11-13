@@ -16,7 +16,7 @@ if __name__ == "__main__":
  from rims.core.engine import Context
  from json import load
 
- diffs= mysql.diff({"schema_file":ospath.abspath(ospath.join(getcwd(),argv[2]))}, Context(aConfigFile = argv[1]))
+ diffs= mysql.diff(Context(aConfig = argv[1]), {"schema_file":ospath.abspath(ospath.join(getcwd(),argv[2]))})
  print(diffs['diffs'])
  for line in diffs['output']:
   print(line.rstrip('\n'))

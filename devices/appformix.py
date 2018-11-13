@@ -66,4 +66,4 @@ class Device(object):
   from rims.core.common import rest_call
   try:    kwargs['aHeader'].update({ 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' })
   except: kwargs['aHeader'] = { 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' }
-  return rest_call(aURL,**kwargs))
+  return rest_call(aURL,**kwargs)

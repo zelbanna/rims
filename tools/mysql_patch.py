@@ -15,5 +15,5 @@ if __name__ == "__main__":
   from rims.rest import mysql
   from rims.core.engine import Context
   args = {"schema_file":ospath.abspath(ospath.join(getcwd(),argv[2]))}
-  res = mysql.patch(args,Context(aConfigFile = argv[1]))
+  res = mysql.patch(Context(aConfig = argv[1]), args)
   stdout.write("%s\n"%(res))

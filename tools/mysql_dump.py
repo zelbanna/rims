@@ -15,19 +15,19 @@ if __name__ == "__main__":
  from rims.rest import mysql
  from rims.core.engine import Context
 
- ctx = Context(aConfigFile = argv[1])
+ ctx = Context(aConfig = argv[1])
  args = {}
  res = []
  if   argv[2] == '-d':
   args.update({'mode':'database','full':True})
-  res = mysql.dump(args, ctx)
+  res = mysql.dump(ctx, args)
  elif argv[2] == '-v':
   args.update({'mode':'database','full':False})
-  res = mysql.dump(args, ctx)
+  res = mysql.dump(ctx, args)
  elif argv[2] == '-s':
   args.update({'mode':'structure'})
-  res = mysql.dump(args, ctx)
+  res = mysql.dump(ctx, args)
  elif argv[2] == '-r' and len(argv) == 4:
   args.update({'file':ospath.abspath(ospath.join(getcwd(),argv[3]))})
-  res = mysql.restore(args, ctx)
+  res = mysql.restore(ctx, args)
  stdout.write("\n".join(res['output']))

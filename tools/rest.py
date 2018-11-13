@@ -19,7 +19,7 @@ if __name__ == "__main__":
  except: args = {}
  started = "Executing:%s(%s)"%(argv[1],args)
  print(started)
- try:  res = rest_call(argv[1], aArgs = args, aTimeout = 300)
+ try:  res = rest_call(argv[1], aArgs = args, aTimeout = 300, aDataOnly = False)
  except Exception as e: output = e.args[0]
  else:
   output = res['data']

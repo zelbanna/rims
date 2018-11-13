@@ -24,7 +24,7 @@ def status(aCTX, aDict):
      aCTX.workers.add_transient(args)
      ret['local'].append(sub['id'])
     else:
-     aCTX.rest_call("%s/api/system/task_worker?node=%s&log=false"%(aCTX.nodes[sub['node']]['url'],sub['node']),aArgs = args)['data']
+     aCTX.rest_call("%s/api/system/task_worker?node=%s"%(aCTX.nodes[sub['node']]['url'],sub['node']),aArgs = args, aHeader = {'X-log':'false'}, aDataOnly = True)
      ret['remote'].append(sub['id'])
  return ret
 
@@ -411,7 +411,7 @@ def address_status_check(aCTX, aDict):
   if aCTX.node == 'master':
    address_status_report(aCTX, args)
   else:
-   aCTX.rest_call("%s/api/ipam/address_status_report?log=false"%aCTX.config['master'],aArgs = args)
+   aCTX.rest_call("%s/api/ipam/address_status_report"%aCTX.config['master'],aArgs = args, aHeader = {'X-log':'false'}, aDataOnly = True)
   return {'status':'CHECK_COMPLETED'}
 
 #

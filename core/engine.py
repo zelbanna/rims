@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 145
+__build__ = 146
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -205,7 +205,8 @@ class Context(object):
  #
  def node_call(self, aNode, aModule, aFunction, **kwargs):
   if self.node != aNode:
-   ret = self.rest_call("%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction),**kwargs)['data']
+   kwargs['aDataOnly'] = True
+   ret = self.rest_call("%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction),**kwargs)
   else:
    module = import_module("rims.rest.%s"%aModule)
    fun = getattr(module,aFunction,None)
@@ -295,13 +296,11 @@ class WorkerPool(object):
  def close(self):
   """ Abort set abort state and inject dummy tasks to kill off workers. There might be running tasks so don't add more than enough """
   def dummy(): pass
+  self._abort.set()
+  self._abort = Event()
   try: self._sock.close()
   except: pass
   finally: self._sock = None
-  for x in self._servers:
-   x.shutdown() 
-  self._abort.set()
-  self._abort = Event()
   active = self.alive()
   while active > 0:
    for x in range(0,active - self._queue.qsize()):
@@ -430,7 +429,6 @@ class ServerWorker(Thread):
  def run(self):
   try: self._httpd.serve_forever()
   except: pass
-  return False
 
  def shutdown(self):
   self._httpd.shutdown()
@@ -504,7 +502,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   if self.headers.get('X-Log',extras.get('log','true')) == 'true':
    try:
     with open(self._ctx.config['logs']['rest'], 'a') as f:
-     f.write(str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system_task_worker" else "N/A", self._ctx.node, get.strip())))
+     f.write(str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system/task_worker" else "N/A", self._ctx.node, get.strip())))
    except: pass
   try:
    if self._headers['X-Route'] == self._ctx.node:
@@ -635,7 +633,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   if op == 'environment' and (len(arg) == 0 or self._ctx.node == 'master'):
    output = self._ctx.system_info(arg) if len(arg) > 0 else {'settings':self._ctx.settings,'nodes':self._ctx.nodes,'servers':self._ctx.servers,'config':self._ctx.config}
   elif op == 'sync' and arg != 'master' and arg in self._ctx.nodes.keys():
-   try:    output = self._ctx.rest_call("%s/system/update"%(self._ctx.nodes[arg]['url']), aArgs = self._ctx.system_info(arg))
+   try:    output = self._ctx.rest_call("%s/system/update"%(self._ctx.nodes[arg]['url']), aArgs = self._ctx.system_info(arg), aDataOnly = True)
    except: output = {'node':arg,'status':'SYNC_NOT_OK'}
   elif op == 'update':
    length = int(self.headers.get('Content-Length',0))
