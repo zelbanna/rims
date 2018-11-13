@@ -12,7 +12,6 @@ def main(aWeb):
  aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_list?{0}'>List</A>".format(aWeb.get_args()))
  aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_search'>Search</A>")
  aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_types_list'>Types</A>")
- aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_tasks'>Tasks</A>")
  aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content_left URL='visualize_list'>Maps</A></LI>")
  if aWeb['rack']:
