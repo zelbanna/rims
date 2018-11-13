@@ -93,10 +93,15 @@ def portal(aWeb):
 #
 def report(aWeb):
  info = aWeb.rest_full("%s/system/report"%aWeb.url())['data']
+ analytics = info.pop('analytics',{})
+ keys = sorted(info.keys())
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>System</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Information</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>")
- for i in info:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(i['info'],i['value']))
+ for i in keys:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(i,info[i]))
+ for x in ['modules','files']:
+  for k,v in analytics.get(x,{}).items():
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s, %s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(x.title(),k,v))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #

@@ -13,7 +13,7 @@ if len(argv) < 2:
 else:
  aFile = argv[1]
 
-ctx = Context(aConfigFile = aFile)
+ctx = Context(aFile)
 try:
  ctx.load_system()
  ctx.start()

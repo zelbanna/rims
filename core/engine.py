@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 138
+__build__ = 139
 
 __all__ = ['Context','WorkerPool']
 from os import path as ospath, getpid, walk
@@ -38,7 +38,7 @@ def debug(func_name):
 
 class Context(object):
 
- def __init__(self,aConfig = None, aConfigFile = None):
+ def __init__(self,aConfig):
   """ Context init - create the infrastructure but populate later
   - Set node ID
   - Prepare database and workers
@@ -47,24 +47,24 @@ class Context(object):
   - create datastore (i.e. dict) for settings, nodes, servers and external modules
   """
   from .common import DB, rest_call
-  if not aConfig:
-   with open(aConfigFile,'r') as config_file:
-    self.config = load(config_file)
-    self.config['config_file'] = aConfigFile
+  if isinstance(aConfig, dict):
+   self.config = aConfig
   else:
-   self.config  = aConfig
+   with open(aConfig,'r') as config_file:
+    self.config = load(config_file)
+    self.config['config_file'] = aConfig
   self.config['mode'] = 'api'
   self.node     = self.config['id']
   self.db       = DB(self.config['db_name'],self.config['db_host'],self.config['db_user'],self.config['db_pass']) if self.node == 'master' else None
   self.workers  = WorkerPool(self.config.get('workers',20),self)
-  self.kill     = Event()
   self.path     = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   self.settings = {}
   self.nodes    = {}
   self.external = {}
   self.servers  = {}
-  self._analytics={'files':{},'modules':{}}
-  self._sock     = None
+  self._sock    = None
+  self._kill    = Event()
+  self._analytics= {'files':{},'modules':{}}
   self.rest_call = rest_call
 
  def __str__(self):
@@ -81,7 +81,7 @@ class Context(object):
 
  #
  def wait(self):
-  self.kill.wait()
+  self._kill.wait()
 
  #
  def analytics(self, aType, aGroup, aItem):
@@ -91,7 +91,7 @@ class Context(object):
 
  #
  def report(self):
-  from sys import version, modules, path as syspath
+  from sys import version, modules as sys_modules, path as syspath
   from types import ModuleType
   from gc import get_objects
   node_url = self.nodes[self.node]['url']
@@ -101,32 +101,32 @@ class Context(object):
     for k,v in t._ctx.db.count.items():
      db_counter[k] = db_counter.get(k,0) + v
    except:pass
-  output = [{'info':'System PID','value':getpid()},
-  {'info':'Node URL','value':node_url},
-  {'info':'Worker pool','value':self.workers.alive()},
-  {'info':'Queued tasks','value':self.workers.queue_size()},
-  {'info':'Scheduled tasks','value':self.workers.scheduler_size()},
-  {'info':'Idle workers','value':self.workers.idles()},
-  {'info':'Memory objects','value':len(get_objects())},
-  {'info':'DB operations','value':", ".join("%s:%s"%i for i in db_counter.items())},
-  {'info':'Python version','value':version.replace('\n','')},
-  {'info':'Package path','value':self.path},
-  {'info':'System path','value':",".join(syspath)}]
+  output = {
+  'Memory objects':len(get_objects()),
+  'Node URL':node_url,
+  'Package path':self.path,
+  'Python version':version.replace('\n',''),
+  'OS path':',' .join(syspath)}
+  'Scheduled tasks':self.workers.scheduler_size(),
+  'System workers pool':self.workers.alive(),
+  'System workers idle':self.workers.idles(),
+  'System workers queue':self.workers.queue_size(),
+  'System operations':', '.join("%s:%s"%i for i in db_counter.items()),
+  'System PID':getpid(),
   if self.node == 'master':
    with self.db as db:
     oids = {}
     for type in ['devices','device_types']:
      db.do("SELECT DISTINCT oid FROM %s"%type)
      oids[type] = [x['oid'] for x in db.get_rows()]
-   unhandled = ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
-   output.append({'info':'Unhandled detected OIDs','value':unhandled})
-   output.extend(list({'info':'Extra files: %s'%k,'value':"%s => %s/files/%s/"%(v,node_url,k)} for k,v in self.settings.get('files',{}).items()))
-   output.extend(list({'info':'System setting: %s'%k,'value':v} for k,v in self.settings.get('system',{}).items()))
-   output.extend(list({'info':'System module: %s'%i,'value':"%s"%x} for i,x in enumerate(modules.keys()) if x.startswith('rims')))
-  for mod,func  in self._analytics['modules'].items():
-   output.extend(list({'info':'Function usage','value':"%s/%s: %s"%(mod,fun,count)} for fun,count in func.items()))
-  for path,files in self._analytics['files'].items():
-   output.extend(list({'info':'File usage','value':"%s/%s: %s"%(path,file,count)} for file,count in files.items()))
+   output['Unhandled detected OIDs']= ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
+   output.update({'Mounted directories: %s'%k:"%s => %s/files/%s/"%(v,node_url,k) for k,v in self.settings.get('files',{}).items()})
+   output.update({'System settings: %s'%k:v for k,v in self.settings.get('system',{}).items()})
+   output.update({'System modules: %s'%i:x for i,x in enumerate(sys_modules.keys()) if x.startswith('rims')})
+  output['analytics'] = {}
+  for type in ['modules','files']:
+   for g,i in self._analytics[type].items():
+    output['analytics'][type] = {'%s/%s'%(g,f):c for f,c in i.items()}
   return output
 
  #
@@ -200,7 +200,7 @@ class Context(object):
   self.workers.abort()
   try: self._sock.close()
   except: pass
-  self.kill.set()
+  self._kill.set()
 
  #
  def node_call(self, aNode, aModule, aFunction, **kwargs):
