@@ -147,7 +147,7 @@ def rest_call(aURL, **kwargs):
    ssl_ctx = ssl.create_default_context()
    ssl_ctx.check_hostname = False
    ssl_ctx.verify_mode = ssl.CERT_NONE
-   sock = urlopen(req,context=ssl_ctx, timeout = aTimeout)
+   sock = urlopen(req,context=ssl_ctx, timeout = kwargs.get('aTimeout',20))
   output = {'info':dict(sock.info()), 'code':sock.code }
   output['node'] = output['info'].pop('node','_no_node_')
   try:    output['data'] = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
@@ -163,7 +163,7 @@ def rest_call(aURL, **kwargs):
  except Exception as e: output = { 'exception':type(e).__name__, 'code':590, 'info':{'error':repr(e)}}
  if output.get('exception'):
   raise RestException(output)
- return output
+ return output if not kwargs.get('aDataOnly') else output['data']
 
 ####################################### SNMP #########################################
 #

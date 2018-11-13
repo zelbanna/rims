@@ -1,10 +1,9 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 144
+__build__ = 145
 __all__ = ['Context','WorkerPool']
 
-from functools import lru_cache
 from os import path as ospath, getpid, walk
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
@@ -12,6 +11,7 @@ from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enume
 from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
+from functools import lru_cache, partial
 
 #######################################Decorator Tools ####################################
 #
@@ -67,7 +67,6 @@ class Context(object):
   self.nodes    = {}
   self.external = {}
   self.servers  = {}
-  self._sock    = None
   self._kill    = Event()
   self._analytics= {'files':{},'modules':{}}
   self.rest_call = rest_call
@@ -172,7 +171,7 @@ class Context(object):
  #
  def load_system(self):
   """ Load settings from DB or master node and do same with tasks. Add tasks to queue """
-  system = self.system_info('master') if self.node == 'master' else self.rest_call("%s/system/environment/%s"%(self.config['master'],self.node))['data']
+  system = self.system_info('master') if self.node == 'master' else self.rest_call("%s/system/environment/%s"%(self.config['master'],self.node), aDataOnly = True)
   self.settings.update(system['settings'])
   self.nodes.update(system['nodes'])
   self.servers.update(system['servers'])
@@ -188,13 +187,11 @@ class Context(object):
   from signal import signal, SIGINT, SIGUSR1, SIGUSR2
   from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
   addr = ("", int(self.config['port']))
-  self._sock = socket(AF_INET, SOCK_STREAM)
-  self._sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-  self._sock.bind(addr)
-  self._sock.listen(5)
-  path = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
-  servers = [ServerWorker(n,addr,self._sock,self) for n in range(5)]
-  self.workers.process()
+  sock = socket(AF_INET, SOCK_STREAM)
+  sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+  sock.bind(addr)
+  sock.listen(5)
+  self.workers.start(addr,sock)
   for sig in [SIGINT, SIGUSR1, SIGUSR2]:
    signal(sig, self.signal_handler)
   setcheckinterval(200)
@@ -202,9 +199,7 @@ class Context(object):
  #
  def close(self):
   """ TODO clean up and close all DB connections and close socket """
-  self.workers.abort()
-  try: self._sock.close()
-  except: pass
+  self.workers.close()
   self._kill.set()
 
  #
@@ -216,6 +211,17 @@ class Context(object):
    fun = getattr(module,aFunction,None)
    ret = fun(self, kwargs.get('aArgs',{}))
   return ret
+ 
+ #
+ def node_function(self, aNode, aModule, aFunction):
+  if self.node != aNode:
+   ret = partial(self.rest_call,"%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction), aDataOnly = True)
+  else:
+   module = import_module("rims.rest.%s"%aModule)
+   fun = getattr(module,aFunction,None)
+   ret = partial(fun,self)
+  return ret
+
 
  #
  def module_register(self, aName):
@@ -271,16 +277,39 @@ class WorkerPool(object):
   self._count     = aWorkers
   self._ctx       = aContext
   self._abort     = Event()
+  self._sock      = None
   self._idles     = []
   self._workers   = []
+  self._servers   = []
   self._scheduler = []
 
- def process(self):
+ def __str__(self):
+  return "WorkerPool(count = %s, queue = %s, schedulers = %s, alive = %s)"%(self._count,self._queue.qsize(),len(self._scheduler),self.alive())
+
+ def start(self, aAddr, aSock):
+  self._sock    = aSock
+  self._servers = [ServerWorker(n,aAddr,aSock,self._ctx) for n in range(4)]
   self._workers = [QueueWorker(n, self._abort, self._queue, self._ctx) for n in range(self._count)]
   self._idles   = [w._idle for w in self._workers]
 
- def __str__(self):
-  return "WorkerPool(%s):[%s,%s,%s]"%(self._count,self._queue.qsize(),len(self._scheduler),self.alive())
+ def close(self):
+  """ Abort set abort state and inject dummy tasks to kill off workers. There might be running tasks so don't add more than enough """
+  def dummy(): pass
+  try: self._sock.close()
+  except: pass
+  finally: self._sock = None
+  for x in self._servers:
+   x.shutdown() 
+  self._abort.set()
+  self._abort = Event()
+  active = self.alive()
+  while active > 0:
+   for x in range(0,active - self._queue.qsize()):
+    self._queue.put((dummy,'FUNCTION',None,False,[],{}))
+   while not self._queue.empty() and self.alive() > 0:
+    sleep(0.1)
+    self._workers = [x for x in self._workers if x.is_alive()]
+   active = self.alive()
 
  def add_function(self, aFunction, *args, **kwargs):
   self._queue.put((aFunction,'FUNCTION',None,False,args,kwargs))
@@ -305,20 +334,6 @@ class WorkerPool(object):
    func = getattr(mod,aTask['func'],None)
   except: pass
   else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
-
- def abort(self):
-  """ Abort set abort state and inject dummy tasks to kill off workers. There might be running tasks so don't add more than enough """
-  def dummy(): pass
-  self._abort.set()
-  self._abort = Event()
-  active = self.alive()
-  while active > 0:
-   for x in range(0,active - self._queue.qsize()):
-    self._queue.put((dummy,'FUNCTION',None,False,[],{}))
-   while not self._queue.empty() and self.alive() > 0:
-    sleep(0.1)
-    self._workers = [x for x in self._workers if x.is_alive()]
-   active = self.alive()
 
  def alive(self):
   return len([x for x in self._workers if x.is_alive()])
@@ -405,7 +420,7 @@ class ServerWorker(Thread):
   Thread.__init__(self)
   self.name    = "ServerWorker(%02d)"%aNumber
   self.daemon  = True
-  httpd = HTTPServer(aAddress, SessionHandler, False)
+  httpd        = HTTPServer(aAddress, SessionHandler, False)
   self._httpd  = httpd
   httpd.socket = aSocket
   httpd._ctx = self._ctx = aContext.clone()
@@ -415,6 +430,10 @@ class ServerWorker(Thread):
  def run(self):
   try: self._httpd.serve_forever()
   except: pass
+  return False
+
+ def shutdown(self):
+  self._httpd.shutdown()
 
 ###################################### Session Handler ######################################
 #
@@ -492,7 +511,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     module = import_module("rims.rest.%s"%mod) if not path == 'external' else self._ctx.external.get(mod)
     self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
-    self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), aArgs = args, aDecode = False)['data']
+    self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), aArgs = args, aDecode = False, aDataOnly = True)
   except Exception as e:
    if isinstance(e.args[0],dict) and e.args[0].get('code'):
     error = {'X-Args':args, 'X-Exception':e.args[0].get('exception'), 'X-Code':e.args[0]['code'], 'X-Info':e.args[0].get('info')}
@@ -599,7 +618,7 @@ class SessionHandler(BaseHTTPRequestHandler):
        output['error'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
    else:
     try:
-     output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args)['data']
+     output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True)
      self._headers['X-Code'] = 200
     except Exception as e:
      output = {'error':e.args[0]}
@@ -713,7 +732,7 @@ class Stream(object):
   return "<A CLASS='btn btn-%s z-op small' %s></A>"%(aImg," ".join("%s='%s'"%i for i in kwargs.items()))
 
  def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
-  return self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._node]['url'],self._ctx.config['mode'],aAPI), aArgs = aArgs, aTimeout = 60)['data']
+  return self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._node]['url'],self._ctx.config['mode'],aAPI), aArgs = aArgs, aTimeout = 60, aDataOnly = True)
 
  def rest_full(self, aURL, **kwargs):
   return self._ctx.rest_call(aURL, **kwargs)
