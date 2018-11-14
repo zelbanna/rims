@@ -1,0 +1,9 @@
+{
+ "node":"master",
+ "module":"tools",
+ "func":"database_backup",
+ "args":{"filename":"/var/log/system/rims.backup"},
+ "periodic":true,
+ "output":false,
+ "frequency":87600
+}

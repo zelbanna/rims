@@ -244,7 +244,6 @@ def extended(aWeb):
  aWeb.wr("<FORM ID=info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id']))
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=ip VALUE={}>".format(dev['ip']))
- aWeb.wr("<INPUT TYPE=HIDDEN NAME=racked VALUE={}>".format(dev['racked']))
  aWeb.wr("<!-- Reachability Info -->")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE='%s'></DIV></DIV>"%(dev['info']['hostname']))
@@ -271,10 +270,10 @@ def extended(aWeb):
  aWeb.wr("<!-- Rack Info -->")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=rack_info_rack_id>")
  for rack in dev['infra']['racks']:
-  extra = " selected" if ((dev['racked'] == 0 and rack['id'] == 'NULL') or (dev['racked'] == 1 and dev['rack']['rack_id'] == rack['id'])) else ""
+  extra = " selected" if ((not dev['racked'] and rack['id'] == 'NULL') or (dev['racked'] and dev['rack']['rack_id'] == rack['id'])) else ""
   aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name']))
  aWeb.wr("</SELECT></DIV></DIV>")
- if dev['racked'] == 1 and not dev['info']['type_base'] == 'pdu':
+ if dev['racked'] and not dev['info']['type_base'] == 'pdu':
   if not dev['info']['type_base'] == 'controlplane':
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rack_info_rack_size TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['rack']['rack_size']))
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Top rack unit of device placement'>Rack Unit:</DIV><DIV CLASS=td><INPUT NAME=rack_info_rack_unit TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['rack']['rack_unit']))

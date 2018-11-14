@@ -220,7 +220,7 @@ CREATE TABLE `rack_info` (
   `rack_unit` tinyint(3) DEFAULT '0',
   `rack_size` tinyint(3) DEFAULT '1',
   `console_id` int(10) unsigned DEFAULT NULL,
-  `console_port` int(10) unsigned DEFAULT NULL,
+  `console_port` int(10) unsigned DEFAULT '0',
   `rack_id` int(10) unsigned NOT NULL,
   UNIQUE KEY `device_id` (`device_id`),
   KEY `console_id` (`console_id`),
@@ -286,26 +286,26 @@ CREATE TABLE `resources` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `server_types`;
-CREATE TABLE `server_types` (
+DROP TABLE IF EXISTS `servers`;
+CREATE TABLE `servers` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `node` varchar(40) NOT NULL,
+  `service` varchar(40) NOT NULL,
+  `type` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `node_server` (`node`,`service`),
+  KEY `node` (`node`),
+  CONSTRAINT `servers_ibfk_1` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `service_types`;
+CREATE TABLE `service_types` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `base` varchar(20) DEFAULT 'NONE',
   `name` varchar(40) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `type` (`name`,`base`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `servers`;
-CREATE TABLE `servers` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `node` varchar(40) NOT NULL,
-  `server` varchar(40) NOT NULL,
-  `type` varchar(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `node_server` (`node`,`server`),
-  KEY `node` (`node`),
-  CONSTRAINT `servers_ibfk_1` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

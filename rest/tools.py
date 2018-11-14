@@ -252,11 +252,8 @@ def database_backup(aCTX, aArgs = None):
   from rims.rest.mysql import dump
   data = dump(aCTX, {'mode':'database'})['output']
  else:
-  res = aCTX.rest_call("%s/api/mysql/dump"%aCTX.config['master'], aArgs = {'mode':'database'})
-  if res['code'] == 200:
-   data = res['data']['output']
-  else:
-   data = []
+  res  = aCTX.rest_call("%s/api/mysql/dump"%aCTX.config['master'], aArgs = {'mode':'database'})
+  data = res['data']['output'] if res['code'] == 200 else []
  try:
   with open(ret['filename'],'w+') as f:
    output = "\n".join(data)

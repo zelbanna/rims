@@ -122,7 +122,6 @@ def extended(aCTX, aArgs = None):
   - id (required)
   - ip (required)
   - op (optional), 'update'
-  - racked (optional)
   - a_id
   - ptr_id
   - a_dom_id
@@ -147,12 +146,10 @@ def extended(aCTX, aArgs = None):
    if operation == 'update' and ret['id']:
     """ In case company gets slipped in """ 
     aArgs.pop('company',None)
-    racked = aArgs.pop('racked',None)
-    if racked:
-     if   racked == '1' and aArgs.get('rack_info_rack_id') == 'NULL':
-      db.do("DELETE FROM rack_info WHERE device_id = %s"%ret['id'])
-     elif racked == '0' and aArgs.get('rack_info_rack_id') != 'NULL':
-      db.do("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(ret['id'],aArgs.get('rack_info_rack_id')))
+    if aArgs.get('rack_info_rack_id') == 'NULL':
+     db.do("DELETE FROM rack_info WHERE device_id = %s"%ret['id'])
+    else:
+     db.do("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(ret['id'],aArgs.get('rack_info_rack_id')))
     # PEMs
     for id in [k.split('_')[1] for k,_ in aArgs.items() if k.startswith('pems_') and 'name' in k]:
      pdu_slot = aArgs.pop('pems_%s_pdu_slot'%id,"0.0").split('.')
@@ -192,11 +189,11 @@ def extended(aCTX, aArgs = None):
    # Rack infrastructure
    ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
    if vm == 1:
-    ret['racked'] = 0
+    ret['racked'] = False
    else:
     db.do("SELECT id, name FROM racks")
     ret['infra']['racks'].extend(db.get_rows())
-    ret['racked'] = db.do("SELECT rack_info.* FROM rack_info WHERE rack_info.device_id = %(id)s"%ret)
+    ret['racked'] = (db.do("SELECT rack_info.* FROM rack_info WHERE rack_info.device_id = %(id)s"%ret) == 1)
     if ret['racked'] > 0:
      ret['rack'] = db.get_row()
      ret['rack'].pop('device_id',None)
