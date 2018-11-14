@@ -20,7 +20,7 @@ def status(aCTX, aArgs = None):
  """
  try:
   node = aCTX.nodes[aArgs['node']]['url']
-  ret  = aCTX.rest_call("%sid=sdata"%node)['data']
+  ret  = aCTX.rest_call("%sid=sdata"%node, aDataOnly = True)
  except Exception as e:
   ret = e.args[0]
  return ret
@@ -38,7 +38,7 @@ def infra(aCTX, aArgs = None):
  try:
   ret = {}
   node = aCTX.nodes[aArgs['node']]['url']
-  info = aCTX.rest_call("%sid=sdata"%node)['data']
+  info = aCTX.rest_call("%sid=sdata"%node, aDataOnly = True)
   ret['sections'] = { d['id']: d['name'] for d in info['sections'] }
   ret['rooms']    = { d['id']: d for d in info['rooms'] }
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
@@ -65,16 +65,16 @@ def scene(aCTX, aArgs = None):
   node = aCTX.nodes[aArgs['node']]['url']
   if aArgs.get('op'):
    ret['op'] = "RunScene" if aArgs.get('op')== "run" else "SceneOff"
-   res = aCTX.rest_call("%sid=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(node,ret['op'],aArgs['scene']))
-   ret['info'] = "OK" if (res['code'] == 200) else "FAILED"
+   res = aCTX.rest_call("%sid=action&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=%s&SceneNum=%s"%(node,ret['op'],aArgs['scene']), aDataOnly = False)
+   ret['status'] = "OK" if (res['code'] == 200) else "FAILED"
   elif aArgs.get('status'):
-   scenes = aCTX.rest_call("%sid=sdata"%node)['data']['scenes']
+   scenes = aCTX.rest_call("%sid=sdata"%node, aDataOnly = True)['scenes']
    for scene in scenes:
     if scene['id'] == aArgs['scene']:
-     ret['info']= scene
+     ret['status']= scene
      break
   else:
-   ret = aCTX.rest_call("%sid=scene&action=list&scene=%s"%(node,aArgs['scene']))['data']
+   ret = aCTX.rest_call("%sid=scene&action=list&scene=%s"%(node,aArgs['scene']), aDataOnly = True)
  except Exception as e:
   ret = e.args[0]
  return ret
@@ -93,7 +93,7 @@ def devices(aCTX, aArgs = None):
  try:
   ret = {}
   node = aCTX.nodes[aArgs['node']]['url']
-  info = aCTX.rest_call("%sid=sdata"%node)['data']
+  info = aCTX.rest_call("%sid=sdata"%node, aDataOnly = True)
   ret['devices'] = info['devices'] if not aArgs.get('room') else [ x for x in info['devices'] if x['room'] == int(aArgs.get('room')) ]
   ret['categories'] = { d['id']: d['name'] for d in info['categories'] }
   ret['rooms']   = { d['id']:d['name'] for d in info['rooms'] }
@@ -124,15 +124,15 @@ def device_info(aCTX, aArgs = None):
   if op == 'update':
    ret['op'] = {}
    if aArgs['category'] == '2' and aArgs['service'] == 'urn:upnp-org:serviceId:Dimming1' and aArgs['variable'] == 'LoadLevelTarget':
-    ret['op']['response'] = aCTX.rest_call("%sid=action&output_format=json&DeviceNum=%s&serviceId=urn:upnp-org:serviceId:Dimming1&action=SetLoadLevelTarget&newLoadlevelTarget=%s"%(node,aArgs['id'],aArgs['value']))['data']
+    ret['op']['response'] = aCTX.rest_call("%sid=action&output_format=json&DeviceNum=%s&serviceId=urn:upnp-org:serviceId:Dimming1&action=SetLoadLevelTarget&newLoadlevelTarget=%s"%(node,aArgs['id'],aArgs['value']), aDataOnly = True)
     response = ret['op']['response'].get('u:SetLoadLevelTargetResponse')
     if response:
      from time import sleep
      sleep(1)
      ret['op']['job'] = response.get('JobID')
-     ret['op']['status'] = aCTX.rest_call("%sid=jobstatus&job=%s&plugin=zwave"%(node,response.get('JobID')))['data']
+     ret['op']['status'] = aCTX.rest_call("%sid=jobstatus&job=%s&plugin=zwave"%(node,response.get('JobID')), aDataOnly = True)
  
-  res  = aCTX.rest_call("%sid=status&DeviceNum=%s"%(node,aArgs['id']))['data']
+  res  = aCTX.rest_call("%sid=status&DeviceNum=%s"%(node,aArgs['id']), aDataOnly = True)
   info = res['Device_Num_%s'%aArgs['id']]['states']
   for x in info:
    try:

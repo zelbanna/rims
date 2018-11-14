@@ -29,7 +29,7 @@ class Device(object):
   try:
    auth = {'UserName': aAuth.get('username'), 'Password': aAuth.get('password'), 'AuthType':'openstack' }
    url  = "%s:7000/appformix/controller/v2.0/%s"%(self._node,"auth_credentials")
-   res = rest_call(url, aArgs = auth)
+   res = rest_call(url, aArgs = auth, aDataOnly = False)
    # If sock code is ok (200) - we can expect to find a token
    if res['code'] == 200:
     token = res.pop('data',{})['Token']
@@ -60,10 +60,8 @@ class Device(object):
  # - method = used to send other things than GET and POST (i.e. 'DELETE')
  #
  def call(self,url,args = None, method = None, header = None):
-  return self.href("%s:7000/appformix/controller/v2.0/%s"%(self._node,url), aArgs = args, aMethod = method, aHeader = header)
-
- def href(self,aURL, **kwargs):
   from rims.core.common import rest_call
-  try:    kwargs['aHeader'].update({ 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' })
-  except: kwargs['aHeader'] = { 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' }
-  return rest_call(aURL,**kwargs)
+  try:    header.update({ 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' })
+  except: header = { 'X-Auth-Token':self._token, 'X-Auth-Type':'openstack' }
+  return rest_call("%s:7000/appformix/controller/v2.0/%s"%(self._node,url), aArgs = args, aMethod = method, aHeader = header, aDataOnly = True)
+

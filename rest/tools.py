@@ -247,13 +247,8 @@ def database_backup(aCTX, aArgs = None):
 
  Output:
  """
- ret = {'filename':aArgs['filename']}
- if aCTX.node == 'master':
-  from rims.rest.mysql import dump
-  data = dump(aCTX, {'mode':'database'})['output']
- else:
-  res  = aCTX.rest_call("%s/api/mysql/dump"%aCTX.config['master'], aArgs = {'mode':'database'})
-  data = res['data']['output'] if res['code'] == 200 else []
+ ret  = {'filename':aArgs['filename']}
+ data = aCTX.node_function(aCTX.node,'mysql','dump')(aArgs = {'mode':'database'})['output']
  try:
   with open(ret['filename'],'w+') as f:
    output = "\n".join(data)

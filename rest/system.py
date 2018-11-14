@@ -216,13 +216,12 @@ def settings_info(aCTX, aArgs = None):
    else:
     ret['update'] = db.insert_dict('settings',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-   # Insert HERE into CTX, or rest_call
    if aArgs['node'] == 'master':
     section = aCTX.settings.get(aArgs['section'],{})
     section[aArgs['parameter']] = aArgs['value']
     aCTX.settings[aArgs['section']] = section
    else:
-    aCTX.workers.add_function(aCTX.rest_call,"%s/system/sync/%s"%(aCTX.config['master'],aArgs['node']))
+    aCTX.workers.add_function(aCTX.rest_call,"%s/system/sync/%s"%(aCTX.config['master'],aArgs['node']), aDataOnly = True)
   if not id == 'new':
    ret['found'] = (db.do("SELECT * FROM settings WHERE id = '%s'"%id) > 0)
    ret['data']  = db.get_row()
@@ -275,7 +274,7 @@ def settings_delete(aCTX, aArgs = None):
  if aArgs['node'] == 'master':
   aCTX.settings.get(data['section'],{}).pop(data['parameter'],None)
  else:
-  aCTX.workers.add_function(aCTX.rest_call,"%s/system/sync/%s"%(aCTX.config['master'],aArgs['node']))
+  aCTX.workers.add_function(aCTX.rest_call,"%s/system/sync/%s"%(aCTX.config['master'],aArgs['node']), aDataOnly = True)
  return ret
 
 ################################################# NODE ##############################################

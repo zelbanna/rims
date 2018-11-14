@@ -1,4 +1,4 @@
-"""Common module, i.e. database, log, rest_call and SNMP functions"""
+"""Common functions module """
 __author__ = "Zacharias El Banna"
 
 ############################################ Database ######################################
@@ -122,12 +122,12 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError
 
 def rest_call(aURL, **kwargs):
- """ REST call function, aURL is required, then aArgs, aHeader (dict), aTimeout, aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
+ """ REST call function, aURL is required, then aArgs, aHeader (dict), aTimeout, aDataOnly (default True), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
  try:
   head = { 'Content-Type': 'application/json','Accept':'application/json' }
   head.update(kwargs.get('aHeader',{}))
-  data = dumps(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
-  req = Request(aURL, headers = head, data = data)
+  args = dumps(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
+  req = Request(aURL, headers = head, data = args)
   if kwargs.get('aMethod'):
    req.get_method = lambda: kwargs['aMethod']
   if kwargs.get('aVerify',True):
@@ -138,19 +138,19 @@ def rest_call(aURL, **kwargs):
    ssl_ctx.check_hostname = False
    ssl_ctx.verify_mode = ssl.CERT_NONE
    sock = urlopen(req,context=ssl_ctx, timeout = kwargs.get('aTimeout',20))
-  output = {'info':dict(sock.info()), 'code':sock.code }
-  output['node'] = output['info'].pop('X-Route','_no_node_')
-  try:    output['data'] = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
-  except: output['data'] = None
+  res = {'info':dict(sock.info()), 'code':sock.code }
+  res['node'] = res['info'].pop('X-Route','_no_node_')
+  try:    res['data'] = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
+  except: res['data'] = None
   sock.close()
  except HTTPError as h:
-  output = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info())}
-  try:    output['data'] = loads(h.read().decode())
+  res = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info())}
+  try:    res['data'] = loads(h.read().decode())
   except: pass
- except Exception as e: output = { 'exception':type(e).__name__, 'code':590, 'info':{'error':repr(e)}}
- if output.get('exception'):
-  raise RestException(output)
- return output if not kwargs.get('aDataOnly') else output['data']
+ except Exception as e: res = { 'exception':type(e).__name__, 'code':590, 'info':{'error':repr(e)}}
+ if res.get('exception'):
+  raise RestException(res)
+ return res['data'] if kwargs.get('aDataOnly',True) else res
 
 ####################################### SNMP #########################################
 #

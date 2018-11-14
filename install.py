@@ -222,7 +222,7 @@ if config['id'] == 'master':
   print("Error: %s"%str(e))
 
 else:
- try: res['register'] = rest_call("%s/system/register/%s"%(config['master'],config['id']), aArgs = {'port':config['port'],'system':'1'})['data']
+ try: res['register'] = rest_call("%s/system/register/%s"%(config['master'],config['id']), aArgs = {'port':config['port'],'system':'1'}, aDataOnly = True)
  except Exception as e: res['register'] = str(e)
 
 ############################################### ALL #################################################

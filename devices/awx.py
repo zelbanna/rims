@@ -29,7 +29,7 @@ class Device(object):
   self._token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']
   try:
    if aAuth.get('mode','full') == 'full':
-    ret = rest_call("%s/me"%self._node, aHeader = {'Authorization':self._token})
+    ret = rest_call("%s/me"%self._node, aHeader = {'Authorization':self._token}, aDataOnly = False)
     ret.pop('data',None)
     ret.pop('node',None)
    else:
@@ -52,13 +52,11 @@ class Device(object):
  # - header = send additional headers as dictionary
  #
  def call(self, query, **kwargs):
-  return self.href("%s/%s"%(self._node,query), **kwargs)
-
- def href(self,aURL, **kwargs):
   from rims.core.common import rest_call
   try:    kwargs['aHeader'].update({'Authorization':self._token})
   except: kwargs['aHeader'] = {'Authorization':self._token}
-  return rest_call(aURL, **kwargs)
+  kwargs['aDataOnly'] = False
+  return rest_call("%s/%s"%(self._node,query), **kwargs)
 
  def fetch_list(self,aBase,aSet):
   ret  = []

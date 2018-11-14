@@ -126,7 +126,7 @@ def rest(aCTX, aArgs = None):
    with aCTX.db as db:
     db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%s' AND service = '%s'"%(aArgs['token'],aArgs.get('service')))
     url = db.get_val('service_url')
-  ret = aCTX.rest_call(url, aArgs = aArgs.get('arguments'), aMethod = aArgs.get('method','GET'), aHeader = { 'X-Auth-Token':aArgs['token'] })
+  ret = aCTX.rest_call(url, aArgs = aArgs.get('arguments'), aMethod = aArgs.get('method','GET'), aHeader = { 'X-Auth-Token':aArgs['token'] }, aDataOnly = False)
   ret['status'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
@@ -150,13 +150,15 @@ def call(aCTX, aArgs = None):
   db.do("SELECT service_url FROM openstack_services AS os LEFT JOIN openstack_tokens AS ot ON ot.id = os.id WHERE ot.token = '%(token)s' AND service = '%(service)s'"%aArgs)
   data = db.get_row()
  try:
-  ret = aCTX.rest_call("%s/%s"%(data['service_url'],aArgs.get('call',"")), aArgs = aArgs.get('arguments'), aMethod = aArgs.get('method','GET'), aHeader = { 'X-Auth-Token':aArgs['token'] })
+  ret = aCTX.rest_call("%s/%s"%(data['service_url'],aArgs.get('call',"")), aArgs = aArgs.get('arguments'), aMethod = aArgs.get('method','GET'), aHeader = { 'X-Auth-Token':aArgs['token'] }, aDataOnly = False)
   ret['status'] = 'OK' if not ret.get('result') else ret.get('result')
  except Exception as e: ret = e[0]
  return ret
 
+#
+#
 def href(aCTX, aArgs = None):
- """Sends a (nested) aCTX.rest_call
+ """Sends a (nested) REST call
 
  Args:
   - href (required)
@@ -166,7 +168,7 @@ def href(aCTX, aArgs = None):
 
  Output:
  """
- try: ret = aCTX.rest_call(aArgs.get('href'), aArgs = aArgs.get('arguments'), aMethod = aArgs.get('method','GET'), aHeader = { 'X-Auth-Token':aArgs['token'] })
+ try: ret = aCTX.rest_call(aArgs.get('href'), aArgs = aArgs.get('arguments'), aMethod = aArgs.get('method','GET'), aHeader = { 'X-Auth-Token':aArgs['token'] }, aDataOnly = False)
  except Exception as e: ret = e[0]
  return ret
 

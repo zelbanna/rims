@@ -49,7 +49,7 @@ def report_projects(aCTX, aArgs = None):
  """
  ret = {}
  controller = Device(aCTX.nodes[aArgs['node']]['url'],aArgs['token'])
- reports = controller.call('reports/project/metadata')['data']['Metadata']
+ reports = controller.call('reports/project/metadata')['Metadata']
  ret['reports'] = [rep for rep in reports if rep['ProjectId'] == aArgs['project']]
  return ret
 
@@ -67,5 +67,5 @@ def project_reports(aCTX, aArgs = None):
  """
  ret = {}
  controller = Device(aCTX.nodes[aArgs['node']]['url'],aArgs['token'])
- ret = controller.call("reports/project/%(report)s"%aArgs)['data']['UsageReport']
+ ret = controller.call("reports/project/%(report)s"%aArgs)['UsageReport']
  return ret

@@ -1092,7 +1092,7 @@ def interface_status_check(aCTX, aArgs = None):
    if aCTX.node == 'master':
     interface_status_report(aCTX, dev)
    else:
-    aCTX.rest_call("%s/api/device/interface_status_report"%aCTX.config['master'], aArgs = dev, aHeader= {'X-Log':'false'})
+    aCTX.rest_call("%s/api/device/interface_status_report"%aCTX.config['master'], aArgs = dev, aHeader= {'X-Log':'false'}, aDataOnly = True)
  return {'status':'GATHERING_DATA_COMPLETED'}
 
 #
