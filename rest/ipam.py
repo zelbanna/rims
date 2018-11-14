@@ -235,7 +235,7 @@ def server_leases(aCTX, aArgs = None):
   ret['servers'] = db.do("SELECT server,node FROM servers WHERE type = 'DHCP'")
   servers = db.get_rows()
  for srv in servers:
-  data = aCTX.node_call(srv['node'],srv['server'],'status',aArgs = {'binding':ret['type']})['data']
+  data = aCTX.node_function(srv['node'],srv['server'],'status')(aArgs = {'binding':ret['type']})['data']
   if data:
    ret['data'].extend(data)
  oui_s = ",".join(set([str(int(x.get('mac')[0:8].replace(':',''),16)) for x in ret['data']]))

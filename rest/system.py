@@ -652,7 +652,7 @@ def server_sync(aCTX, aArgs = None):
  Output:
  """
  server = aCTX.servers[int(aArgs['id'])]
- return aCTX.node_call(server['node'],server['server'],'sync', aArgs = {'id':aArgs['id']})
+ return aCTX.node_function(server['node'],server['server'],'sync')(aArgs = {'id':aArgs['id']})
 
 #
 #
@@ -665,9 +665,7 @@ def server_status(aCTX, aArgs = None):
  Output:
  """
  server = aCTX.servers[int(aArgs['id'])]
- # fun = aCTX.node_function(server['node'],server['server'],'status')
- #return fun(
- return aCTX.node_call(server['node'],server['server'],'status', aArgs = {'id':aArgs['id']})
+ return aCTX.node_function(server['node'],server['server'],'status')(aArgs = {'id':aArgs['id']})
 
 #
 #
@@ -681,7 +679,7 @@ def server_restart(aCTX, aArgs = None):
   - result.
  """
  server = aCTX.servers[int(aArgs['id'])]
- return {'status':aCTX.node_call(server['node'],server['server'],'restart', aArgs = {'id':aArgs['id']})}
+ return {'status':aCTX.node_function(server['node'],server['server'],'restart')(aArgs = {'id':aArgs['id']})}
 
 ######################################### ACTIVITIES ###########################################
 #

@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 148
+__build__ = 149
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -121,17 +121,6 @@ class Context(object):
   self.workers.close()
   self._kill.set()
 
- #
- def node_call(self, aNode, aModule, aFunction, **kwargs):
-  if self.node != aNode:
-   kwargs['aDataOnly'] = True
-   ret = self.rest_call("%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction),**kwargs)
-  else:
-   module = import_module("rims.rest.%s"%aModule)
-   fun = getattr(module,aFunction,None)
-   ret = fun(self, kwargs.get('aArgs',{}))
-  return ret
- 
  # 
  def node_function(self, aNode, aModule, aFunction):
   """ Node function freezes the REST call or the function with enough info so that they can be used multiple times AND interchangably """
@@ -215,7 +204,7 @@ class Context(object):
   'Workers pool':self.workers.alive(),
   'Workers idle':self.workers.idles(),
   'Workers queue':self.workers.queue_size(),
-  'Database operations':', '.join("%s:%s"%i for i in db_counter.items()),
+  'Database':', '.join("%s:%s"%(k.lower(),v) for k,v in db_counter.items()),
   'OS path':',' .join(syspath),
   'OS pid':getpid()}
   try: output['File cache'] = repr(cached_file_open.cache_info())

@@ -60,7 +60,7 @@ def sync(aCTX, aArgs = None):
  Output:
  """
  from time import strftime, localtime
- entries = aCTX.node_call('master','device','server_macs', aArgs = {'id':aArgs['id']})
+ entries = aCTX.node_function('master','device','server_macs')(aArgs = {'id':aArgs['id']})
  # Create file
  with open(aCTX.settings['iscdhcp']['static'],'w') as config_file:
   config_file.write("# Created: %s\n"%( strftime('%Y-%m-%d %H:%M:%S', localtime()) ))
