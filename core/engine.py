@@ -75,7 +75,7 @@ class Context(object):
   return "Context(node=%s)"%(self.node)
 
  #
- def clone(self):
+ def __clone__(self):
   """ Clone itself and non thread-safe components """
   from copy import copy
   from rims.core.common import DB
@@ -86,87 +86,6 @@ class Context(object):
  #
  def wait(self):
   self._kill.wait()
-
- #
- def analytics(self, aType, aGroup, aItem):
-  tmp = self._analytics[aType].get(aGroup,{})
-  tmp[aItem] = tmp.get(aItem,0) + 1
-  self._analytics[aType][aGroup] = tmp
-
- #
- def report(self):
-  from sys import version, modules as sys_modules, path as syspath
-  from types import ModuleType
-  node_url = self.nodes[self.node]['url']
-  db_counter = {}
-  for t in thread_enumerate():
-   try:
-    for k,v in t._ctx.db.count.items():
-     db_counter[k] = db_counter.get(k,0) + v
-   except:pass
-  output = {
-  'Node URL':node_url,
-  'Package path':self.path,
-  'Python version':version.replace('\n',''),
-  'Scheduled tasks':self.workers.scheduler_size(),
-  'Workers pool':self.workers.alive(),
-  'Workers idle':self.workers.idles(),
-  'Workers queue':self.workers.queue_size(),
-  'Database operations':', '.join("%s:%s"%i for i in db_counter.items()),
-  'OS path':',' .join(syspath),
-  'OS pid':getpid()}
-  try: output['File cache'] = repr(cached_file_open.cache_info())
-  except:pass
-  if self.node == 'master':
-   with self.db as db:
-    oids = {}
-    for type in ['devices','device_types']:
-     db.do("SELECT DISTINCT oid FROM %s"%type)
-     oids[type] = [x['oid'] for x in db.get_rows()]
-   output['Unhandled detected OIDs']= ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
-   output.update({'Mounted directory: %s'%k:"%s => %s/files/%s/"%(v,node_url,k) for k,v in self.settings.get('files',{}).items()})
-   output.update({'Config: %s'%k:v for k,v in self.config.items()})
-   output.update({'Modules (%s)'%i:x for i,x in enumerate(sys_modules.keys()) if x.startswith('rims')})
-  output['analytics'] = {}
-  for type in ['modules','files']:
-   for g,i in self._analytics[type].items():
-    output['analytics'][type] = {'%s/%s'%(g,f):c for f,c in i.items()}
-  return output
-
- #
- # @debug_decorator('log')
- def log(self,aMsg):
-  try:
-   with open(self.config['logs']['system'], 'a') as f:
-    f.write(str("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg)))
-  except: pass
-
- #
- def system_info(self,aNode):
-  nodes, services, settings = {}, {}, {}
-  with self.db as db:
-   db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aNode)
-   data = db.get_rows()
-   db.do("SELECT id, node, url,system FROM nodes")
-   node_list = db.get_rows()
-   db.do("SELECT id, node, server, type FROM servers")
-   services_list = db.get_rows()
-   db.do("SELECT tasks.id, user_id, module, func, args, frequency, output FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node = '%s'"%aNode)
-   tasks = db.get_rows()
-  for node in node_list:
-   name = node.pop('node',None)
-   nodes[name] = node
-  for svc in services_list:
-   id = svc.pop('id',None)
-   services[id] = svc
-  for task in tasks:
-   task['output'] = (task['output']== 1)
-  for param in data:
-   section = param.pop('section',None)
-   if not settings.get(section):
-    settings[section] = {}
-   settings[section][param['parameter']] = param['value']
-  return {'settings':settings,'tasks':tasks,'servers':services,'nodes':nodes}
 
  #
  def load_system(self):
@@ -213,8 +132,9 @@ class Context(object):
    ret = fun(self, kwargs.get('aArgs',{}))
   return ret
  
- #
+ # 
  def node_function(self, aNode, aModule, aFunction):
+  """ Node function freezes the REST call or the function with enough info so that they can be used multiple times AND interchangably """
   if self.node != aNode:
    ret = partial(self.rest_call,"%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction), aDataOnly = True)
   else:
@@ -222,7 +142,6 @@ class Context(object):
    fun = getattr(module,aFunction,None)
    ret = partial(fun,self)
   return ret
-
 
  #
  def module_register(self, aName):
@@ -260,11 +179,89 @@ class Context(object):
    print("\n".join(self.module_reload()))
    cached_file_open.cache_clear()
   elif sig == SIGUSR2:
-   print("System Info:")
-   print("_____________________________")
-   for data in self.report():
-    print("%(info)s: %(value)s"%data)
-   print("_____________________________")
+   data = self.report()
+   print("System Info:\n_____________________________\n%s\n_____________________________"%(dumps(data,indent=2, sort_keys=True)))
+
+ #
+ def analytics(self, aType, aGroup, aItem):
+  tmp = self._analytics[aType].get(aGroup,{})
+  tmp[aItem] = tmp.get(aItem,0) + 1
+  self._analytics[aType][aGroup] = tmp
+
+ #
+ # @debug_decorator('log')
+ def log(self,aMsg):
+  try:
+   with open(self.config['logs']['system'], 'a') as f:
+    f.write(str("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg)))
+  except: pass
+
+ #
+ def report(self):
+  from sys import version, modules as sys_modules, path as syspath
+  from types import ModuleType
+  node_url = self.nodes[self.node]['url']
+  db_counter = {}
+  for t in thread_enumerate():
+   try:
+    for k,v in t._ctx.db.count.items():
+     db_counter[k] = db_counter.get(k,0) + v
+   except:pass
+  output = {
+  'Node URL':node_url,
+  'Package path':self.path,
+  'Python version':version.replace('\n',''),
+  'Scheduled tasks':self.workers.scheduler_size(),
+  'Workers pool':self.workers.alive(),
+  'Workers idle':self.workers.idles(),
+  'Workers queue':self.workers.queue_size(),
+  'Database operations':', '.join("%s:%s"%i for i in db_counter.items()),
+  'OS path':',' .join(syspath),
+  'OS pid':getpid()}
+  try: output['File cache'] = repr(cached_file_open.cache_info())
+  except:pass
+  if self.node == 'master':
+   with self.db as db:
+    oids = {}
+    for type in ['devices','device_types']:
+     db.do("SELECT DISTINCT oid FROM %s"%type)
+     oids[type] = [x['oid'] for x in db.get_rows()]
+   output['Unhandled detected OIDs']= ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
+   output.update({'Mounted directory: %s'%k:"%s => %s/files/%s/"%(v,node_url,k) for k,v in self.settings.get('files',{}).items()})
+   output.update({'Config: %s'%k:v for k,v in self.config.items()})
+   output.update({'Modules (%s)'%i:x for i,x in enumerate(sys_modules.keys()) if x.startswith('rims')})
+  output['analytics'] = {}
+  for type in ['modules','files']:
+   for g,i in self._analytics[type].items():
+    output['analytics'][type] = {'%s/%s'%(g,f):c for f,c in i.items()}
+  return output
+
+ #
+ def system_info(self,aNode):
+  nodes, services, settings = {}, {}, {}
+  with self.db as db:
+   db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aNode)
+   data = db.get_rows()
+   db.do("SELECT id, node, url,system FROM nodes")
+   node_list = db.get_rows()
+   db.do("SELECT id, node, server, type FROM servers")
+   services_list = db.get_rows()
+   db.do("SELECT tasks.id, user_id, module, func, args, frequency, output FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node = '%s'"%aNode)
+   tasks = db.get_rows()
+  for node in node_list:
+   name = node.pop('node',None)
+   nodes[name] = node
+  for svc in services_list:
+   id = svc.pop('id',None)
+   services[id] = svc
+  for task in tasks:
+   task['output'] = (task['output']== 1)
+  for param in data:
+   section = param.pop('section',None)
+   if not settings.get(section):
+    settings[section] = {}
+   settings[section][param['parameter']] = param['value']
+  return {'settings':settings,'tasks':tasks,'servers':services,'nodes':nodes}
 
 
 ########################################## WorkerPool ########################################
@@ -390,7 +387,7 @@ class QueueWorker(Thread):
   self._abort  = aAbort
   self._idle   = Event()
   self._queue  = aQueue
-  self._ctx    = aContext.clone()
+  self._ctx    = aContext.__clone__()
   self.daemon  = True
   self.start()
 
@@ -422,7 +419,7 @@ class ServerWorker(Thread):
   httpd        = HTTPServer(aAddress, SessionHandler, False)
   self._httpd  = httpd
   httpd.socket = aSocket
-  httpd._ctx = self._ctx = aContext.clone()
+  httpd._ctx = self._ctx = aContext.__clone__()
   httpd.server_bind = httpd.server_close = lambda self: None
   self.start()
 
