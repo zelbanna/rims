@@ -11,7 +11,7 @@ def network_list(aWeb):
  aWeb.wr(aWeb.button('document',DIV='div_content_right', URL='ipam_server_leases', SPIN='true'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Network</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>DHCP</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for net in res['networks']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(netasc)s</DIV><DIV CLASS=td STYLE='max-width:120px; overflow:hidden;'>%(description)s</DIV><DIV CLASS=td>%(server)s</DIV><DIV CLASS=td STYLE='width:80px'>"%net)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(netasc)s</DIV><DIV CLASS=td STYLE='max-width:120px; overflow:hidden;'>%(description)s</DIV><DIV CLASS=td>%(service)s</DIV><DIV CLASS=td STYLE='width:80px'>"%net)
   aWeb.wr(aWeb.button('info',  DIV='div_content_right', URL='ipam_network_layout?id=%i'%net['id']))
   aWeb.wr(aWeb.button('items', DIV='div_content_right', URL='ipam_network_entries?id=%i'%net['id']))
   aWeb.wr(aWeb.button('edit',  DIV='div_content_right', URL='ipam_network_info?id=%i'%net['id']))
@@ -36,7 +36,7 @@ def network_info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Server</DIV><DIV CLASS=td><SELECT NAME=server_id>")
  for srv in res['servers']:
   extra = "selected='selected'" if srv['id'] == data['server_id'] or srv['id'] == 'NULL' and data['server_id'] == None else ""
-  aWeb.wr("<OPTION VALUE='%s' %s>%s@%s</OPTION>"%(srv['id'],extra,srv['server'],srv['node']))
+  aWeb.wr("<OPTION VALUE='%s' %s>%s@%s</OPTION>"%(srv['id'],extra,srv['service'],srv['node']))
  aWeb.wr("</SELECT></DIV></DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Reverse Zone:</DIV><DIV CLASS=td><SELECT NAME=reverse_zone_id>")
  for dom in res['domains']:

@@ -1,7 +1,7 @@
 """reservation REST module. Provides basic reservation functionality for devices
 
 Module uses notifier setting to deduce where to 'notify':
--  notifier{node,server} => node_function for server to send data
+-  notifier{node,service} => node_function for service to send data
 
 """
 __author__ = "Zacharias El Banna"
@@ -73,7 +73,7 @@ def expiration_check(aCTX, aArgs = None):
   ret['hosts'] = db.get_rows()
  notifier = aCTX.settings.get('notifier')
  if notifier:
-  notify = aCTX.node_function(notifier['node'],notifier['server'],"notify",aHeader = {'X-Log':'true'})
+  notify = aCTX.node_function(notifier['node'],notifier['service'],"notify",aHeader = {'X-Log':'true'})
   for res in ret['hosts']:
    res = notify(aArgs = {'message':'Host %s expiration'%res['hostname']})
    print(res)

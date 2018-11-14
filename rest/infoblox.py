@@ -119,7 +119,7 @@ def record_delete(aCTX, aArgs = None):
 ############################### Tools #################################
 #
 #
-def dedup(aCTX, aArgs = None):
+def sync(aCTX, aArgs = None):
  """ NO OP
 
  Args:
@@ -130,7 +130,7 @@ def dedup(aCTX, aArgs = None):
 
 #
 #
-def top(aCTX, aArgs = None):
+def status(aCTX, aArgs = None):
  """ NO OP
 
  Args:

@@ -117,10 +117,10 @@ if config['id'] == 'master':
  res['device_new'] = 0
 
  #
- # Server types
+ # Service types
  #
  srvdir = ospath.abspath(ospath.join(pkgdir,'rest'))
- server_types = []
+ service_types = []
  for file in listdir(srvdir):
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
@@ -128,10 +128,10 @@ if config['id'] == 'master':
     mod = import_module("rims.rest.%s"%(pyfile))
     type = getattr(mod,'__type__',None)
     if type:
-     server_types.append({'name':pyfile, 'base':type})
+     service_types.append({'name':pyfile, 'base':type})
    except: pass
- res['server_found'] = len(server_types)
- res['server_new'] = 0
+ res['service_found'] = len(service_types)
+ res['service_new'] = 0
 
 
  #
@@ -182,7 +182,7 @@ if config['id'] == 'master':
   res['admin_user'] = (db.do("INSERT users (id,name,alias,password) VALUES(1,'Administrator','admin','4cb9c8a8048fd02294477fcb1a41191a') ON DUPLICATE KEY UPDATE id = id, password = '4cb9c8a8048fd02294477fcb1a41191a'") > 0)
   res['node_add'] = (db.do("INSERT nodes (node,url,system) VALUES('{0}','{1}',1) ON DUPLICATE KEY UPDATE system = 1, id = LAST_INSERT_ID(id)".format(config['id'],config['master'])) > 0)
   res['node_id']  = db.get_last_id()
-  res['dns_server_add'] = (db.do("INSERT servers (node,server,type) VALUES ('master','nodns','DNS') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
+  res['dns_server_add'] = (db.do("INSERT servers (node,service,type) VALUES ('master','nodns','DNS') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
   res['dns_server_id']  = db.get_last_id()
   res['dns_domain_add'] = (db.do("INSERT domains (id,foreign_id,name,server_id,type ) VALUES (0,0,'local',{},'forward') ON DUPLICATE KEY UPDATE id = 0".format(res['dns_server_id'])) > 0)
   res['generic_device'] = (db.do("INSERT device_types (id,name,base) VALUES (0,'generic','generic') ON DUPLICATE KEY UPDATE id = 0") > 0)
@@ -192,10 +192,10 @@ if config['id'] == 'master':
    try:    res['device_new'] += db.do(sql%type)
    except Exception as err: res['device_errors'] = str(err)
 
-  sql = "INSERT server_types (name,base) VALUES ('%(name)s','%(base)s') ON DUPLICATE KEY UPDATE id = id"
-  for type in server_types:
-   try:    res['server_new'] += db.do(sql%type)
-   except Exception as err: res['server_errors'] = str(err)
+  sql = "INSERT service_types (name,base) VALUES ('%(name)s','%(base)s') ON DUPLICATE KEY UPDATE id = id"
+  for type in service_types:
+   try:    res['service_new'] += db.do(sql%type)
+   except Exception as err: res['service_errors'] = str(err)
 
   sql = "INSERT resources (node,title,href,icon,type,user_id,view) VALUES ('%s','{}','{}','../images/{}','{}',1,0) ON DUPLICATE KEY UPDATE id = id"%config['id']
   for item in resources:

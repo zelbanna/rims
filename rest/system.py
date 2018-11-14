@@ -585,7 +585,7 @@ def server_list(aCTX, aArgs = None):
  ret = {}
  
  with aCTX.db as db:
-  db.do("SELECT id, server, node, type FROM servers WHERE %s"%("type = '%s'"%aArgs['type'] if aArgs.get('type') else "TRUE"))
+  db.do("SELECT id, service, node, type FROM servers WHERE %s"%("type = '%s'"%aArgs['type'] if aArgs.get('type') else "TRUE"))
   ret['servers']= db.get_rows()
  return ret
 
@@ -615,12 +615,17 @@ def server_info(aCTX, aArgs = None):
   if not id == 'new':
    ret['found'] = (db.do("SELECT * FROM servers WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
-   db.do("SELECT name AS server, base AS type FROM server_types WHERE base = '%s'"%ret['data']['type'])
+   db.do("SELECT name AS service, base AS type FROM service_types WHERE base = '%s'"%ret['data']['type'])
   else:
-   ret['data'] = {'id':'new','node':None,'server':'Unknown','type':None}
-   db.do("SELECT DISTINCT base AS type FROM server_types")
-   ret['types'] = [x['type'] for x in db.get_rows()]
-   db.do("SELECT name AS server, base AS type FROM server_types") 
+   type = aArgs.get('type',None)
+   ret['data'] = {'id':'new','node':None,'service':'Unknown','type':type}
+   if type:
+    ret['types'] = [type]
+    db.do("SELECT name AS service, base AS type FROM service_types WHERE base = '%s'"%type) 
+   else:
+    db.do("SELECT DISTINCT base AS type FROM service_types")
+    ret['types'] = [x['type'] for x in db.get_rows()]
+    db.do("SELECT name AS service, base AS type FROM service_types") 
   ret['servers'] = db.get_rows()
 
  return ret
@@ -652,7 +657,7 @@ def server_sync(aCTX, aArgs = None):
  Output:
  """
  server = aCTX.servers[int(aArgs['id'])]
- return aCTX.node_function(server['node'],server['server'],'sync')(aArgs = {'id':aArgs['id']})
+ return aCTX.node_function(server['node'],server['service'],'sync')(aArgs = {'id':aArgs['id']})
 
 #
 #
@@ -665,7 +670,7 @@ def server_status(aCTX, aArgs = None):
  Output:
  """
  server = aCTX.servers[int(aArgs['id'])]
- return aCTX.node_function(server['node'],server['server'],'status')(aArgs = {'id':aArgs['id']})
+ return aCTX.node_function(server['node'],server['service'],'status')(aArgs = {'id':aArgs['id']})
 
 #
 #
@@ -679,7 +684,7 @@ def server_restart(aCTX, aArgs = None):
   - result.
  """
  server = aCTX.servers[int(aArgs['id'])]
- return {'status':aCTX.node_function(server['node'],server['server'],'restart')(aArgs = {'id':aArgs['id']})}
+ return {'status':aCTX.node_function(server['node'],server['service'],'restart')(aArgs = {'id':aArgs['id']})}
 
 ######################################### ACTIVITIES ###########################################
 #

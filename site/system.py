@@ -187,16 +187,16 @@ def node_help(aWeb):
 ############################################ Servers ###########################################
 
 def server_list(aWeb):
- res = aWeb.rest_call("system/server_list",aWeb.args())
+ res  = aWeb.rest_call("system/server_list",aWeb.args())
  type = "type=%s"%aWeb['type'] if aWeb.get('type') else "dummy"
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Servers</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content',URL='system_server_list?%s'%type))
  aWeb.wr(aWeb.button('add', DIV='div_content_right',URL='system_server_info?id=new&%s'%type,TITLE='Add server'))
  aWeb.wr(aWeb.button('help',DIV='div_content_right',URL='system_server_help'))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Service</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for srv in res['servers']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(srv['id'],srv['node'],srv['server'],srv['type']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(srv['id'],srv['node'],srv['service'],srv['type']))
   aWeb.wr(aWeb.button('info',DIV='div_content_right',URL='system_server_info?id=%s'%(srv['id'])))
   aWeb.wr(aWeb.button('sync',DIV='div_content_right',URL='system_server_sync?id=%s'%(srv['id']), SPIN='true', TITLE='Sync server'))
   aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='system_server_status?id=%s'%(srv['id']), SPIN='true', TITLE='Server status'))
@@ -228,10 +228,10 @@ def server_info(aWeb):
    aWeb.wr("<OPTION VALUE='%s'>%s</OPTION>"%(type,type))
   aWeb.wr("</SELECT></DIV></DIV>")
 
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Server:</DIV><DIV CLASS=td><SELECT NAME=server>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Server:</DIV><DIV CLASS=td><SELECT NAME=service>")
  for srv in res['servers']:
-  extra = " selected" if (data['server'] == srv['server']) else ""
-  aWeb.wr("<OPTION VALUE=%s %s>%s (%s)</OPTION>"%(srv['server'],extra,srv['server'],srv['type']))
+  extra = " selected" if (data['service'] == srv['service']) else ""
+  aWeb.wr("<OPTION VALUE=%s %s>%s (%s)</OPTION>"%(srv['service'],extra,srv['service'],srv['type']))
  aWeb.wr("</SELECT></DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</FORM>")
@@ -271,7 +271,7 @@ def server_delete(aWeb):
 #
 def server_help(aWeb):
  aWeb.wr("""<ARTICLE CLASS='help' STYLE='overflow:auto'><PRE>
- servers manages the location of DNS and DHCP servers, i.e. the system (!) REST nodes where they offer an interface
+ servers manages the location of various services on nodes => servers (e.g. DNS and DHCP servers). That is the system (!) REST nodes where they offer a service interface
 
  This is helpful in case:
   - the server doesn't offer a good REST API - then other tools can be used directly on that server

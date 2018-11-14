@@ -14,7 +14,7 @@ def status(aCTX, aArgs = None):
  ret = {'local':[],'remote':[]}
  with aCTX.db as db:
   trim = "" if not aArgs.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join(str(x) for x in aArgs['subnets']))
-  db.do("SELECT ipam_networks.id, servers.node, servers.server FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
+  db.do("SELECT ipam_networks.id, servers.node, servers.service FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   subnets = db.get_rows()
   for sub in subnets:
    count = db.do("SELECT id,INET_NTOA(ip) AS ip, state FROM ipam_addresses WHERE network_id = %s ORDER BY ip"%sub['id'])
@@ -47,7 +47,7 @@ def network_list(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count']    = db.do("SELECT ipam_networks.id, CONCAT(INET_NTOA(network),'/',mask) AS netasc, INET_NTOA(gateway) AS gateway, description, mask, network, server FROM ipam_networks LEFT JOIN servers ON ipam_networks.server_id = servers.id ORDER by network")
+  ret['count']    = db.do("SELECT ipam_networks.id, CONCAT(INET_NTOA(network),'/',mask) AS netasc, INET_NTOA(gateway) AS gateway, description, mask, network, servers.service FROM ipam_networks LEFT JOIN servers ON ipam_networks.server_id = servers.id ORDER by network")
   ret['networks'] = db.get_rows()
  return ret
 
@@ -72,9 +72,9 @@ def network_info(aCTX, aArgs = None):
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  with aCTX.db as db:
-  db.do("SELECT id, server, node FROM servers WHERE type = 'DHCP'")
+  db.do("SELECT id, service, node FROM servers WHERE type = 'DHCP'")
   ret['servers'] = db.get_rows()
-  ret['servers'].append({'id':'NULL','server':None,'node':None})
+  ret['servers'].append({'id':'NULL','service':None,'node':None})
   if op == 'update':
    from struct import unpack
    from socket import inet_aton
@@ -103,7 +103,7 @@ def network_info(aCTX, aArgs = None):
   else:
    ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New','reverse_zone_id':None,'server_id':None }
  from rims.rest.dns import domain_ptr_list
- ret['domains'] = domain_ptr_list({'prefix':ret['data']['network']}, aCTX)
+ ret['domains'] = domain_ptr_list(aCTX, {'prefix':ret['data']['network']})
  ret['domains'].append({'id':'NULL','name':None,'server':None})
  return ret
 
@@ -232,10 +232,10 @@ def server_leases(aCTX, aArgs = None):
  """
  ret = {'data':[],'type':aArgs.get('type','active')}
  with aCTX.db as db:
-  ret['servers'] = db.do("SELECT server,node FROM servers WHERE type = 'DHCP'")
+  ret['servers'] = db.do("SELECT service,node FROM servers WHERE type = 'DHCP'")
   servers = db.get_rows()
  for srv in servers:
-  data = aCTX.node_function(srv['node'],srv['server'],'status')(aArgs = {'binding':ret['type']})['data']
+  data = aCTX.node_function(srv['node'],srv['service'],'status')(aArgs = {'binding':ret['type']})['data']
   if data:
    ret['data'].extend(data)
  oui_s = ",".join(set([str(int(x.get('mac')[0:8].replace(':',''),16)) for x in ret['data']]))

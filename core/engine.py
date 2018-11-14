@@ -227,22 +227,22 @@ class Context(object):
 
  #
  def system_info(self,aNode):
-  nodes, services, settings = {}, {}, {}
+  nodes, servers, settings = {}, {}, {}
   with self.db as db:
    db.do("SELECT section,parameter,value FROM settings WHERE node = '%s'"%aNode)
    data = db.get_rows()
    db.do("SELECT id, node, url,system FROM nodes")
    node_list = db.get_rows()
-   db.do("SELECT id, node, server, type FROM servers")
-   services_list = db.get_rows()
+   db.do("SELECT id, node, service, type FROM servers")
+   server_list = db.get_rows()
    db.do("SELECT tasks.id, user_id, module, func, args, frequency, output FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node = '%s'"%aNode)
    tasks = db.get_rows()
   for node in node_list:
    name = node.pop('node',None)
    nodes[name] = node
-  for svc in services_list:
+  for svc in server_list:
    id = svc.pop('id',None)
-   services[id] = svc
+   servers[id] = svc
   for task in tasks:
    task['output'] = (task['output']== 1)
   for param in data:
@@ -250,7 +250,7 @@ class Context(object):
    if not settings.get(section):
     settings[section] = {}
    settings[section][param['parameter']] = param['value']
-  return {'settings':settings,'tasks':tasks,'servers':services,'nodes':nodes}
+  return {'settings':settings,'tasks':tasks,'servers':servers,'nodes':nodes}
 
 
 ########################################## WorkerPool ########################################

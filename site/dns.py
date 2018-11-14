@@ -16,7 +16,7 @@ def domain_list(aWeb):
   aWeb.wr("<SPAN CLASS='results'>%s</SPAN>"%(domains['sync']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for dom in domains['domains']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>%(server)s</DIV><DIV CLASS=td>"%dom)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>%(service)s</DIV><DIV CLASS=td>"%dom)
   aWeb.wr(aWeb.button('info', DIV='div_content_right',URL='dns_domain_info?id=%s'%(dom['id'])))
   aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='dns_record_list?domain_id=%s'%(dom['id'])))
   aWeb.wr("</DIV></DIV>")
@@ -35,11 +35,11 @@ def domain_info(aWeb):
  if res['id'] == 'new' and res.get('servers'):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Server</DIV><DIV CLASS=td><SELECT NAME=server_id>")
   for srv in res['servers']:
-   aWeb.wr("<OPTION VALUE=%s>%s on %s</OPTION>"%(srv['id'],srv['server'],srv['node']))
+   aWeb.wr("<OPTION VALUE=%s>%s on %s</OPTION>"%(srv['id'],srv['service'],srv['node']))
   aWeb.wr("</SELECT></DIV></DIV>")
  else:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=node VALUE=%s READONLY></DIV></DIV>"%(res['infra']['node']))
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Server:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=server VALUE=%s READONLY></DIV></DIV>"%(res['infra']['server']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Service:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=service VALUE=%s READONLY></DIV></DIV>"%(res['infra']['service']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=name VALUE=%s></DIV></DIV>"%(data['name']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Master:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=master VALUE=%s></DIV></DIV>"%(data['master']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE=%s></DIV></DIV>"%(data['type']))
@@ -140,14 +140,14 @@ def record_create(aWeb):
 #
 # Cleanup duplicate entries
 #
-def dedup(aWeb):
- dns = aWeb.rest_call("dns/dedup")
+def sync(aWeb):
+ dns = aWeb.rest_call("dns/sync")
  aWeb.wr("<ARTICLE><P>Duplicate Removal</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV></DIV><DIV CLASS=tbody>")
- for node_server,res in dns.items():
-  node,server = node_server.split('_')
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Service</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Content</DIV></DIV><DIV CLASS=tbody>")
+ for node_service,res in dns.items():
+  node,service = node_service.split('_')
   for row in res:
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,server,row['name'],row['content']))
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,service,row['name'],row['content']))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
@@ -155,19 +155,19 @@ def dedup(aWeb):
 def status(aWeb):
  dns = aWeb.rest_call("dns/status")
  aWeb.wr("<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>")
- for node_server,res in dns['top'].items():
-  node,server = node_server.split('_')
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Service</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>")
+ for node_service,res in dns['top'].items():
+  node,service = node_service.split('_')
   for row in res:
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,server,row['count'],row['fqdn']))
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,service,row['count'],row['fqdn']))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
  aWeb.wr("<ARTICLE STYLE='float:left; width:49%;'><P>Top looked up FQDN per Client</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Server</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>")
- for node_server,res in dns['who'].items():
-  node,server = node_server.split('_')
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Service</DIV><DIV CLASS=th>Hit</DIV><DIV CLASS=th>Who</DIV><DIV CLASS=th>FQDN</DIV></DIV><DIV CLASS=tbody>")
+ for node_service,res in dns['who'].items():
+  node,service = node_service.split('_')
   for row in res:
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td TITLE='%s'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,server,row['count'],row['who'],row['hostname'],row['fqdn']))
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td TITLE='%s'>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(node,service,row['count'],row['who'],row['hostname'],row['fqdn']))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
