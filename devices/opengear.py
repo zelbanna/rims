@@ -19,8 +19,8 @@ class Device(GenericDevice):
  def __init__(self, aCTX, aIP):
   GenericDevice.__init__(self, aCTX, aIP)
 
- def __str__(self):
-  return "OpenGear - {}".format(GenericDevice.__str__(self))
+ def __str__(self): 
+  return "OpenGear(ip=%s)"%(self._ip)
 
  def get_inventory(self):
   result = []

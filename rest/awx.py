@@ -7,7 +7,7 @@ from rims.devices.awx import Device
 
 #
 #
-def inventory_list(aCTX, aArgs):
+def inventory_list(aCTX, aArgs = None):
  """Function main produces an inventory list for a node
 
  Args:
@@ -27,7 +27,7 @@ def inventory_list(aCTX, aArgs):
 
 #
 #
-def inventory_delete(aCTX, aArgs):
+def inventory_delete(aCTX, aArgs = None):
  """Function deletes inventory with id x
 
  Args:
@@ -44,7 +44,7 @@ def inventory_delete(aCTX, aArgs):
 
 #
 #
-def inventory_info(aCTX, aArgs):
+def inventory_info(aCTX, aArgs = None):
  """Function produces inventory info for a specific inventory id
 
  Args:
@@ -74,7 +74,7 @@ def inventory_info(aCTX, aArgs):
 
 #
 #
-def inventory_sync(aCTX, aArgs):
+def inventory_sync(aCTX, aArgs = None):
  """Function retrieves and matches AWX hosts with devices - and add/updates missing info and groups. Either a list of device_xy id are supplied
 
  Args:
@@ -166,7 +166,7 @@ def inventory_sync(aCTX, aArgs):
 
 #
 #
-def inventory_delete_hosts(aCTX, aArgs):
+def inventory_delete_hosts(aCTX, aArgs = None):
  """Deletes a list of hosts, represented as host_<xy>
 
  Args:
@@ -190,7 +190,7 @@ def inventory_delete_hosts(aCTX, aArgs):
 ########################################## Hosts ##########################################
 #
 #
-def host_list(aCTX, aArgs):
+def host_list(aCTX, aArgs = None):
  """Function retrieves all hosts from AWX node
 
  Args:

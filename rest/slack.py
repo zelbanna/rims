@@ -12,7 +12,7 @@ __type__ = "NOTIFY"
 
 #
 #
-def status(aCTX, aArgs):
+def status(aCTX, aArgs = None):
  """Function returns status of slack connection... somehow (TBD)
 
  Args:
@@ -23,7 +23,7 @@ def status(aCTX, aArgs):
 
 #
 #
-def sync(aCTX, aArgs):
+def sync(aCTX, aArgs = None):
  """Function synchornizes connection to Slack, TBD as is..
 
  Args:
@@ -35,7 +35,7 @@ def sync(aCTX, aArgs):
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aCTX, aArgs = None):
  """Function provides restart capabilities of service
 
  Args:
@@ -49,7 +49,7 @@ def restart(aCTX, aArgs):
 
 #
 #
-def notify(aCTX, aArgs):
+def notify(aCTX, aArgs = None):
  """Function provides notification service, basic at the moment for development purposes
 
  Args:

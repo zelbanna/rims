@@ -20,7 +20,7 @@ from datetime import datetime,timedelta
 
 #
 #
-def application(aCTX, aArgs):
+def application(aCTX, aArgs = None):
  """Function docstring for application. Delivers the information for SDCP login to redirect to the openstack App.
 
  Args:
@@ -53,7 +53,7 @@ def application(aCTX, aArgs):
 
 #
 #
-def authenticate(aCTX, aArgs):
+def authenticate(aCTX, aArgs = None):
  """Function docstring for authenticate TBD
 
  Args:
@@ -87,7 +87,7 @@ def authenticate(aCTX, aArgs):
 
 #
 #
-def services(aCTX, aArgs):
+def services(aCTX, aArgs = None):
  """Function docstring for services. Produces a list of services attached to token, services can be filtered on project names as a string list
 
  Args:
@@ -106,7 +106,7 @@ def services(aCTX, aArgs):
 
 #
 #
-def rest(aCTX, aArgs):
+def rest(aCTX, aArgs = None):
  """Function docstring for rest TBD
 
  Args:
@@ -133,7 +133,7 @@ def rest(aCTX, aArgs):
 
 #
 #
-def call(aCTX, aArgs):
+def call(aCTX, aArgs = None):
  """Function docstring for call. Basically creates a controller instance and send a (nested) rest call.
 
  Args:
@@ -155,7 +155,7 @@ def call(aCTX, aArgs):
  except Exception as e: ret = e[0]
  return ret
 
-def href(aCTX, aArgs):
+def href(aCTX, aArgs = None):
  """Sends a (nested) aCTX.rest_call
 
  Args:
@@ -172,7 +172,7 @@ def href(aCTX, aArgs):
 
 #
 #
-def token_list(aCTX, aArgs):
+def token_list(aCTX, aArgs = None):
  """Function docstring for info. Returns a list of Internal to Openstack tokens for user X
 
  Args:
@@ -188,7 +188,7 @@ def token_list(aCTX, aArgs):
 
 #
 #
-def token_info(aCTX, aArgs):
+def token_info(aCTX, aArgs = None):
  """Function docstring for info. Returns detailed list of Openstack token given token
 
  Args:
@@ -205,7 +205,7 @@ def token_info(aCTX, aArgs):
 ################################################# HEAT ###########################################
 #
 #
-def heat_templates(aCTX, aArgs):
+def heat_templates(aCTX, aArgs = None):
  """Function docstring for heat_templates TBD. PAssing the entire cookie would be simpler but require React.JS.
 
  Args:
@@ -230,7 +230,7 @@ def heat_templates(aCTX, aArgs):
 
 #
 #
-def heat_content(aCTX, aArgs):
+def heat_content(aCTX, aArgs = None):
  """Function docstring for heat_content TBD
 
  Args:
@@ -255,12 +255,12 @@ def heat_content(aCTX, aArgs):
 
 #
 #
-def heat_create_template(aCTX, aArgs):
+def heat_create_template(aCTX, aArgs = None):
  return aArgs
 
 #
 #
-def heat_instantiate(aCTX, aArgs):
+def heat_instantiate(aCTX, aArgs = None):
  """Function docstring for heat_instantiate TBD
 
  Args:
@@ -299,7 +299,7 @@ def heat_instantiate(aCTX, aArgs):
 ################################################# NOVA ###########################################
 #
 #
-def vm_networks(aCTX, aArgs):
+def vm_networks(aCTX, aArgs = None):
  """Function docstring for vm_networks TBD
 
  Args:
@@ -329,7 +329,7 @@ def vm_networks(aCTX, aArgs):
 
 #
 #
-def vm_console(aCTX, aArgs):
+def vm_console(aCTX, aArgs = None):
  """Function docstring for vm_console TBD
 
  Args:
@@ -357,7 +357,7 @@ def vm_console(aCTX, aArgs):
 
 #
 #
-def vm_resources(aCTX, aArgs):
+def vm_resources(aCTX, aArgs = None):
  """Function docstring for vm_resources TBD
 
  Args:
@@ -378,7 +378,7 @@ def vm_resources(aCTX, aArgs):
 ################################################# CONTRAIL ###########################################
 #
 #
-def contrail_fqname(aCTX, aArgs):
+def contrail_fqname(aCTX, aArgs = None):
  """Function docstring for fqname TBD
 
  Args:
@@ -399,7 +399,7 @@ def contrail_fqname(aCTX, aArgs):
 
 #
 #
-def contrail_uuid(aCTX, aArgs):
+def contrail_uuid(aCTX, aArgs = None):
  """Function docstring for uuid_info TBD
 
  Args:
@@ -421,7 +421,7 @@ def contrail_uuid(aCTX, aArgs):
 
 #
 #
-def contrail_interfaces(aCTX, aArgs):
+def contrail_interfaces(aCTX, aArgs = None):
  """Function docstring for contrail_interfaces TBD
 
  Args:
@@ -464,7 +464,7 @@ def contrail_interfaces(aCTX, aArgs):
 
 #
 #
-def contrail_floating_ips(aCTX, aArgs):
+def contrail_floating_ips(aCTX, aArgs = None):
  """Function docstring for contrail_floating_ips TBD
 
  Args:
@@ -493,7 +493,7 @@ def contrail_floating_ips(aCTX, aArgs):
 
 #
 #
-def contrail_vm_interfaces(aCTX, aArgs):
+def contrail_vm_interfaces(aCTX, aArgs = None):
  """Function docstring for contrail_vm_interfaces TBD
 
  Args:
@@ -516,7 +516,7 @@ def contrail_vm_interfaces(aCTX, aArgs):
 
 #
 #
-def contrail_vm_associate_fip(aCTX, aArgs):
+def contrail_vm_associate_fip(aCTX, aArgs = None):
  """Function docstring for contrail_vm_interfaces TBD
 
  Args:

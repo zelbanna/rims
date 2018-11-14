@@ -9,7 +9,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def update(aCTX, aArgs):
+def update(aCTX, aArgs = None):
  """Function docstring for update TBD
 
  Args:
@@ -35,7 +35,7 @@ def update(aCTX, aArgs):
 
 #
 #
-def list(aCTX, aArgs):
+def list(aCTX, aArgs = None):
  """Function docstring for list TBD
 
  Args:
@@ -55,7 +55,7 @@ def list(aCTX, aArgs):
 
 #
 #
-def expiration_check(aCTX, aArgs):
+def expiration_check(aCTX, aArgs = None):
  """ Function notifies users (using notification service@node) about reservation time left. If NOW() - time_end < threashold => service@node.notify('user':user,'message':'Device X reservation will expire in XX seconds')
   Ideally run as a periodic task.
 
@@ -80,7 +80,7 @@ def expiration_check(aCTX, aArgs):
 
 #
 #
-def shutdown(aCTX, aArgs):
+def shutdown(aCTX, aArgs = None):
  """ Function retrieves devices and VMs and shut them down if it can, add a delay and then shutdown power (type 1)
   - For devices not in state up we will do PEM shutdown only (type 2)
   - For VMs there will not be much done ATM as there is no hypervisor correlation yet (type 3)

@@ -17,7 +17,7 @@ class Device(object):
   self._node = aREST
 
  def __str__(self):
-  return "AWX(%s,%s)".format(self._node, self._token)
+  return "AWX(node=%s, token=%s)".format(self._node, self._token)
 
  #
  # { 'username','password','mode' }

@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def info(aCTX, aArgs):
+def info(aCTX, aArgs = None):
  """Function docstring for info. Retrieves and updates device info (excluding rack info which is only fetched)
 
  Args:
@@ -115,7 +115,7 @@ def info(aCTX, aArgs):
 
 #
 #
-def extended(aCTX, aArgs):
+def extended(aCTX, aArgs = None):
  """Function extended updates 'extended' device info (DNS, PTR, RACK info etc)
 
  Args:
@@ -232,7 +232,7 @@ def extended(aCTX, aArgs):
 
 #
 #
-def list(aCTX, aArgs):
+def list(aCTX, aArgs = None):
  """Function docstring for list TBD
 
  Args:
@@ -298,7 +298,7 @@ def list(aCTX, aArgs):
 
 #
 #
-def search(aCTX, aArgs):
+def search(aCTX, aArgs = None):
  """ Functions returns device id for device matching conditions
 
  Args:
@@ -314,7 +314,7 @@ def search(aCTX, aArgs):
 
 #
 #
-def new(aCTX, aArgs):
+def new(aCTX, aArgs = None):
  """Function docstring for new TBD
 
  Args:
@@ -371,7 +371,7 @@ def new(aCTX, aArgs):
 
 #
 #
-def update_ip(aCTX, aArgs):
+def update_ip(aCTX, aArgs = None):
  """Function docstring for update_ip TBD
 
  Args:
@@ -405,7 +405,7 @@ def update_ip(aCTX, aArgs):
 
 #
 #
-def delete(aCTX, aArgs):
+def delete(aCTX, aArgs = None):
  """Function docstring for delete TBD
 
  Args:
@@ -437,7 +437,7 @@ def delete(aCTX, aArgs):
 
 #
 #
-def discover(aCTX, aArgs):
+def discover(aCTX, aArgs = None):
  """Function docstring for discover TBD
 
  Args:
@@ -486,7 +486,7 @@ def discover(aCTX, aArgs):
 
 #
 #
-def oids(aCTX, aArgs):
+def oids(aCTX, aArgs = None):
  """ Function returns unique oids found
 
   Args:
@@ -505,7 +505,7 @@ def oids(aCTX, aArgs):
 
 #
 #
-def types_list(aCTX, aArgs):
+def types_list(aCTX, aArgs = None):
  """Function lists currenct device types
 
  Args:
@@ -522,7 +522,7 @@ def types_list(aCTX, aArgs):
 
 #
 #
-def server_macs(aCTX, aArgs):
+def server_macs(aCTX, aArgs = None):
  """Function returns all MACs for devices belonging to networks belonging to particular server
 
  Args:
@@ -541,7 +541,7 @@ def server_macs(aCTX, aArgs):
 ############################################## Specials ###############################################
 #
 #
-def function(aCTX, aArgs):
+def function(aCTX, aArgs = None):
  """Function docstring for function TBD
 
  Args:
@@ -565,7 +565,7 @@ def function(aCTX, aArgs):
 
 #
 #
-def configuration_template(aCTX, aArgs):
+def configuration_template(aCTX, aArgs = None):
  """Function docstring for configuration_template TBD
 
  Args:
@@ -592,7 +592,7 @@ def configuration_template(aCTX, aArgs):
 
 #
 #
-def network_info_discover(aCTX, aArgs):
+def network_info_discover(aCTX, aArgs = None):
  """Function discovers system macs and enterprise oid for devices (on a network segment)
 
  Args:
@@ -627,7 +627,7 @@ def network_info_discover(aCTX, aArgs):
 
 #
 #
-def network_lldp_discover(aCTX, aArgs):
+def network_lldp_discover(aCTX, aArgs = None):
  """Function discovers lldp connections devices (on a network segment)
 
  Args:
@@ -663,7 +663,7 @@ def network_lldp_discover(aCTX, aArgs):
 
 #
 #
-def network_interface_status(aCTX, aArgs):
+def network_interface_status(aCTX, aArgs = None):
  """ Initiate a status check for all or a subset of devices' interfaces
 
  Args:
@@ -695,7 +695,7 @@ def network_interface_status(aCTX, aArgs):
 ############################################### INTERFACES ################################################
 #
 #
-def interface_list(aCTX, aArgs):
+def interface_list(aCTX, aArgs = None):
  """List interfaces for a specific device
 
  Args:
@@ -730,7 +730,7 @@ def interface_list(aCTX, aArgs):
 
 #
 #
-def interface_info(aCTX, aArgs):
+def interface_info(aCTX, aArgs = None):
  """Show or update a specific interface for a device
 
  Args:
@@ -772,7 +772,7 @@ def interface_info(aCTX, aArgs):
 
 #
 #
-def interface_delete(aCTX, aArgs):
+def interface_delete(aCTX, aArgs = None):
  """Delete device interfaces using either id of interface, a list of interfaces or all free interfaces
 
  Args:
@@ -803,7 +803,7 @@ def interface_delete(aCTX, aArgs):
 
 #
 #
-def interface_link(aCTX, aArgs):
+def interface_link(aCTX, aArgs = None):
  """Function docstring for interface_link. Link two device interfaces simultaneously to each other, remove old interfaces before (unless multipoint)
 
  Args:
@@ -824,7 +824,7 @@ def interface_link(aCTX, aArgs):
 
 #
 #
-def interface_unlink(aCTX, aArgs):
+def interface_unlink(aCTX, aArgs = None):
  """Function docstring for interface_unlink. UnLink two device interfaces
 
  Args:
@@ -842,7 +842,7 @@ def interface_unlink(aCTX, aArgs):
 
 #
 #
-def interface_link_advanced(aCTX, aArgs):
+def interface_link_advanced(aCTX, aArgs = None):
  """Function docstring for interface_link_advanced. Link two IP and SNMP index:s (i.e. physical or logical interfaces) to each other simultaneously
 
  Args:
@@ -881,7 +881,7 @@ def interface_link_advanced(aCTX, aArgs):
 
 #
 #
-def interface_discover_snmp(aCTX, aArgs):
+def interface_discover_snmp(aCTX, aArgs = None):
  """ Discovery function for detecting interfaces. Will try SNMP to detect all interfaces (in state up) first.
 
  Args:
@@ -926,7 +926,7 @@ def interface_discover_snmp(aCTX, aArgs):
 
 #
 #
-def interface_lldp(aCTX, aArgs):
+def interface_lldp(aCTX, aArgs = None):
  """Node independent funtion to find out lldp information
 
  Args:
@@ -941,7 +941,7 @@ def interface_lldp(aCTX, aArgs):
 
 #
 #
-def interface_snmp(aCTX, aArgs):
+def interface_snmp(aCTX, aArgs = None):
  """Node independent funtion to find out interface information
 
  Args:
@@ -957,7 +957,7 @@ def interface_snmp(aCTX, aArgs):
 
 #
 #
-def interface_discover_lldp(aCTX, aArgs):
+def interface_discover_lldp(aCTX, aArgs = None):
  """Function discovers connections using lldp info
 
  Args:
@@ -1054,7 +1054,7 @@ def interface_discover_lldp(aCTX, aArgs):
 
 #
 #
-def interface_status_check(aCTX, aArgs):
+def interface_status_check(aCTX, aArgs = None):
  """ Process a list of Device IDs and IP addresses (id, ip, type) and perform an SNMP interface lookup. return state values are: 0 (not seen), 1(up), 2(down).
   Always return interface information. This function is node independent.
 
@@ -1100,7 +1100,7 @@ def interface_status_check(aCTX, aArgs):
 
 #
 #
-def interface_status_report(aCTX, aArgs):
+def interface_status_report(aCTX, aArgs = None):
  """Function updates interface status for a particular device
 
  Args:

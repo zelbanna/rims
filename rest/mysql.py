@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def dump(aCTX, aArgs):
+def dump(aCTX, aArgs = None):
  """ Function dumps database schema or values or full database info
 
  Args:
@@ -55,7 +55,7 @@ def dump(aCTX, aArgs):
 
 #
 #
-def restore(aCTX, aArgs):
+def restore(aCTX, aArgs = None):
  """ Function restores database schema or values or full database info, Caution (!) if restoring a schema there will be no/0 rows in any table in the database
 
  Args:
@@ -80,7 +80,7 @@ def restore(aCTX, aArgs):
 
 #
 #
-def diff(aCTX, aArgs):
+def diff(aCTX, aArgs = None):
  """ Function makes a diff between current database schema and the supplied schema file.
 
  Args:
@@ -110,7 +110,7 @@ def diff(aCTX, aArgs):
 
 #
 #
-def patch(aCTX, aArgs):
+def patch(aCTX, aArgs = None):
  """ Function patches current database schema with the supplied schema file. If not successful it will try to restore entire old database. Intermediate files are mysql.backup (entire DB) and mysql.values (INSERTs only - used for restoring) 
 
  Args:

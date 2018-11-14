@@ -31,8 +31,7 @@ class Device(GenericDevice):
  def __init__(self, aCTX, aIP):
   GenericDevice.__init__(self, aCTX, aIP)
 
- def __str__(self):
-  return "Avocent[%s]: %s"%(__type__,GenericDevice.__str__(self))
+ def __str__(self): return "Avocent(ip=%s)"%(self._ip)
 
  def set_state(self,slot,unit,state):
   try:

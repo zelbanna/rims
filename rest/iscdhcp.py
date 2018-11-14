@@ -12,7 +12,7 @@ __type__ = "DHCP"
 #
 #
 #
-def status(aCTX, aArgs):
+def status(aCTX, aArgs = None):
  """Function docstring for leases TBD
 
  Args:
@@ -51,7 +51,7 @@ def status(aCTX, aArgs):
 
 #
 #
-def sync(aCTX, aArgs):
+def sync(aCTX, aArgs = None):
  """Function docstring for sync:  reload the DHCP server to use updated info
 
  Args:
@@ -81,7 +81,7 @@ def sync(aCTX, aArgs):
 
 #
 #
-def update(aCTX, aArgs):
+def update(aCTX, aArgs = None):
  """Function docstring for check: update specific entry
 
  Args:
@@ -127,7 +127,7 @@ def update(aCTX, aArgs):
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aCTX, aArgs = None):
  """Function provides restart capabilities of service
 
  Args:

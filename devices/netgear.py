@@ -14,7 +14,7 @@ class Device(GenericDevice):
   GenericDevice.__init__(self, aCTX, aIP)
 
  def __str__(self):
-  return "NetGear - {}".format(GenericDevice.__str__(self))
+  return "NetGear(ip=%s)"%(self._ip)
 
  def interfaces(self):
   interfaces = super(Device,self).interfaces()

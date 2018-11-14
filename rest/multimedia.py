@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 from os import remove, rmdir, walk, path as ospath, devnull, chmod, rename
 #
 #
-def list(aCTX, aArgs):
+def list(aCTX, aArgs = None):
  """Function docstring for list TBD
 
  Args:
@@ -25,7 +25,7 @@ def list(aCTX, aArgs):
 
 #
 #
-def cleanup(aCTX, aArgs):
+def cleanup(aCTX, aArgs = None):
  """Function docstring for cleanup TBD
 
  Args:
@@ -48,7 +48,7 @@ def cleanup(aCTX, aArgs):
 
 #
 #
-def transfer(aCTX, aArgs):
+def transfer(aCTX, aArgs = None):
  """Function docstring for transfer TBD
 
  Args:
@@ -68,7 +68,7 @@ def transfer(aCTX, aArgs):
 
 #
 #
-def delete(aCTX, aArgs):
+def delete(aCTX, aArgs = None):
  """Function docstring for delete TBD
 
  Args:
@@ -87,7 +87,7 @@ def delete(aCTX, aArgs):
 
 #
 #
-def services(aCTX, aArgs):
+def services(aCTX, aArgs = None):
  """Function docstring for services TBD
 
  Args:
@@ -99,7 +99,7 @@ def services(aCTX, aArgs):
 ################################################# Media Functions ################################################
 #
 #
-def check_srt(aCTX, aArgs):
+def check_srt(aCTX, aArgs = None):
  """Function find the 'first' SRT file in a directory
 
  Args:
@@ -123,7 +123,7 @@ def check_srt(aCTX, aArgs):
 
 #
 #
-def check_title(aCTX, aArgs):
+def check_title(aCTX, aArgs = None):
  """Function tries to determine if this is a series or movie and then how to rename the file such that it would be easy to catalog
 
  Args:
@@ -184,7 +184,7 @@ def check_title(aCTX, aArgs):
 
 #
 #
-def check_content(aCTX, aArgs):
+def check_content(aCTX, aArgs = None):
  """Function docstring for check_content. Checks file using avprobe to determine content and how to optimize file
 
  Args:
@@ -246,7 +246,7 @@ def check_content(aCTX, aArgs):
 
 #
 #
-def process(aCTX, aArgs):
+def process(aCTX, aArgs = None):
  """Process a media file
 
  Args:
@@ -350,7 +350,7 @@ def process(aCTX, aArgs):
 ################################################ TBD ################################################
 #
 #
-def delay_set(aCTX, aArgs):
+def delay_set(aCTX, aArgs = None):
  """Sets offset in ms for file 'original' (MKV)
 
  Args:

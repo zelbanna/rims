@@ -6,7 +6,7 @@ __add_globals__ = lambda x: globals().update(x)
 ################################## System #################################
 #
 #
-def memory_usage(aCTX, aArgs):
+def memory_usage(aCTX, aArgs = None):
  """Function memory usage retrieves currently used memory
 
  Args:
@@ -18,7 +18,7 @@ def memory_usage(aCTX, aArgs):
 
 #
 #
-def memory_objects(aCTX, aArgs):
+def memory_objects(aCTX, aArgs = None):
  """Function memory objects retrieves number of allocated memory objects
 
  Args:
@@ -31,7 +31,7 @@ def memory_objects(aCTX, aArgs):
 
 #
 #
-def garbage_collect(aCTX, aArgs):
+def garbage_collect(aCTX, aArgs = None):
  """Function garbage_collect performs a garbage collection
 
  Args:
@@ -43,7 +43,7 @@ def garbage_collect(aCTX, aArgs):
 
 #
 #
-def debug(aCTX, aArgs):
+def debug(aCTX, aArgs = None):
  from time import sleep
  sleep(2)
  return {'status':'OK'}
@@ -51,7 +51,7 @@ def debug(aCTX, aArgs):
 ################################ REST tools ###############################
 #
 #
-def rest_explore(aCTX, aArgs):
+def rest_explore(aCTX, aArgs = None):
  """Function docstring for rest_explore TBD
 
  Args:
@@ -82,7 +82,7 @@ def rest_explore(aCTX, aArgs):
 
 #
 #
-def rest_information(aCTX, aArgs):
+def rest_information(aCTX, aArgs = None):
  """Function docstring for rest_explore TBD
 
  Args:
@@ -100,7 +100,7 @@ def rest_information(aCTX, aArgs):
 
 #
 #
-def logs_clear(aCTX, aArgs):
+def logs_clear(aCTX, aArgs = None):
  """Function docstring for logs_clear TBD
 
  Args:
@@ -121,7 +121,7 @@ def logs_clear(aCTX, aArgs):
 
 #
 #
-def logs_get(aCTX, aArgs):
+def logs_get(aCTX, aArgs = None):
  """Function docstring for logs_get TBD
 
  Args:
@@ -151,7 +151,7 @@ def logs_get(aCTX, aArgs):
 
 ########################################### FILE ############################################
 
-def file_list(aCTX, aArgs):
+def file_list(aCTX, aArgs = None):
  """Function list files in directory pinpointed by directory (in settings for the node) or by fullpath
 
  Args:
@@ -187,7 +187,7 @@ def file_list(aCTX, aArgs):
 ######################################### Controls ########################################
 #
 #
-def service_list(aCTX, aArgs):
+def service_list(aCTX, aArgs = None):
  """Function docstring for service_list TBD
 
  Args:
@@ -199,7 +199,7 @@ def service_list(aCTX, aArgs):
 
 #
 #
-def service_info(aCTX, aArgs):
+def service_info(aCTX, aArgs = None):
  """Function docstring for service_info. TBD
 
  Args:
@@ -239,7 +239,7 @@ def service_info(aCTX, aArgs):
 ################################### Database ##################################
 #
 #
-def database_backup(aCTX, aArgs):
+def database_backup(aCTX, aArgs = None):
  """Function docstring for database_backup. Does Database Backup to file
 
  Args:

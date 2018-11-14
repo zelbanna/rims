@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 147
+__build__ = 148
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -72,7 +72,7 @@ class Context(object):
   self.rest_call = rest_call
 
  def __str__(self):
-  return "Context(%s)"%(self.node)
+  return "Context(node=%s)"%(self.node)
 
  #
  def clone(self):

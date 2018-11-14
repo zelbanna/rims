@@ -29,7 +29,7 @@ def set_ip(aCTX, aArgs);
 #
 # Get Loopia settings for subdomain
 #
-def get_ip(aCTX, aArgs):
+def get_ip(aCTX, aArgs = None):
  from import xmlrpc import client
  ret = {}
  with DB() as db:
@@ -46,7 +46,7 @@ def get_ip(aCTX, aArgs):
   ret['status'] = 'OK'
  return ret
 
-def get_loopia_suffix(aCTX, aArgs):
+def get_loopia_suffix(aCTX, aArgs = None):
  with DB() as db:
   db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'loopia'")
   settings = {s['parameter']:s['value'] for s in db.get_rows()}

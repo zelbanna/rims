@@ -15,7 +15,7 @@ class Device(object):
  @classmethod
  def get_functions(cls):  return []
 
- def __str__(self):   return "IP:%s"%(self._ip)
+ def __str__(self):   return "GenericDevice(ip=%s)"%(self._ip)
 
  def __enter__(self): return self
 

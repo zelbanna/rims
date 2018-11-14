@@ -29,7 +29,7 @@ class DB(object):
   self.close()
 
  def __str__(self):
-  return "Database(%s@%s):[DIRTY=%s,%s]"%(self._db,self._host,self._dirty,",".join("%s=%03d"%i for i in self.count.items()))
+  return "Database(database=%s, host=%s, dirty=%s, count=%s)"%(self._db,self._host,self._dirty," ,".join("%s:%03d"%i for i in self.count.items()))
 
  def connect(self):
   with self._wait_lock:
@@ -176,7 +176,7 @@ class Varbind(object):
   self.__dict__[name] = val if (name == 'val' or val == None) else str(val)
 
  def __str__(self):
-  return "Varbind(%s,%s,%s,%s)"%(self.tag, self.iid, self.val, self.type)
+  return "Varbind(tag=%s, iid=%s, val=%s, type=%s)"%(self.tag, self.iid, self.val, self.type)
 
 #
 #

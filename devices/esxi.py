@@ -37,7 +37,7 @@ class Device(GenericDevice):
   self.ssh_close()
 
  def __str__(self):
-  return self._ip + " SSHConnected:" + str(self._sshclient != None)
+  return "ESXi(ip = %s, connected=%s)"%(self._ip,(self._sshclient != None))
 
  def log(self, aMsg):
   from time import localtime, strftime

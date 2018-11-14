@@ -8,7 +8,7 @@ The system uses a concept of nodes and servers (i.e. services on nodes).
 - There are system nodes which are registered with the master during install and fetch settings from the master
 - a Service can be DNS server, DHCP server, NOTIFY (e.g. slack), and so on. They run on nodes (using the node REST interface for communication 
 
-The structure is the following. Everything centers around the 'engine', it uses a config to bootstart itself. In addition there is a thread safe context object passed around to REST based functions. The context also provides a thread safe Database object which offers database op serialization)
+The structure is the following. Everything centers around the 'engine', it uses a config to bootstart itself. In addition there is a thread safe context object passed around to REST based functions. The context also provides a thread safe Database object which offers database op serialization
 - The engine is a multithreaded web server serving infrastructure files, REST API and site files (and any other file using settings)
 - There are worker threads waiting for tasks (or periodic functionality like status checks on devices)
 - The engine routes REST calls between nodes using optional HTML GET attributes, which also serves some extra functionality (node = <node>, debug = true, log = true)
@@ -42,6 +42,13 @@ The structure is the following. Everything centers around the 'engine', it uses 
         "rest": "/var/log/system/rest.log"       # Where to output REST api logs
     }
 }
+
+################################### Guidelines ##################################
+
+- REST functions are defined in file <file> and accepts an argument tuple, (Context, Dictionary) => def func(aCTX, aArgs), they must return something that can be JSON serialized (!)
+a request is routed to the function by calling URL/<api|debug|external>/<file>/func with argument as dictionary (before serialization)
+
+- Devices inherit (At least) from Device class in generic and can override various functions. They will get instatiated and added to the system during install phase. an __icon__ provide visualization icon (relative the image/ directory)
 
 ################################## Good to know #################################
 

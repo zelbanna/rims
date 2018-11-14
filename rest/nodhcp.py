@@ -6,7 +6,7 @@ __type__ = "DHCP"
 #
 #
 #
-def status(aCTX, aArgs):
+def status(aCTX, aArgs = None):
  """Function docstring for leases. No OP
 
  Args:
@@ -18,7 +18,7 @@ def status(aCTX, aArgs):
  return {'data':None }
 
 #
-def sync(aCTX, aArgs):
+def sync(aCTX, aArgs = None):
  """No OP
 
  Args:
@@ -33,7 +33,7 @@ def sync(aCTX, aArgs):
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aCTX, aArgs = None):
  """Function provides restart capabilities of service
 
  Args:

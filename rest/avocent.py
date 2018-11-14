@@ -6,7 +6,7 @@ from rims.devices.avocent import Device
 
 #
 #
-def update(aCTX, aArgs):
+def update(aCTX, aArgs = None):
  """Function docstring for update TBD
 
  Args:
@@ -26,7 +26,7 @@ def update(aCTX, aArgs):
 
 #
 #
-def info(aCTX, aArgs):
+def info(aCTX, aArgs = None):
  """Function docstring for info TBD
 
  Args:
@@ -57,7 +57,7 @@ def info(aCTX, aArgs):
 
 #
 #
-def inventory(aCTX, aArgs):
+def inventory(aCTX, aArgs = None):
  """Function docstring for inventory TBD
 
  Args:
@@ -70,7 +70,7 @@ def inventory(aCTX, aArgs):
 
 #
 #
-def op(aCTX, aArgs):
+def op(aCTX, aArgs = None):
  """Function docstring for op TBD
 
  Args:
