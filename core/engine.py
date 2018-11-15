@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 151
+__build__ = 152
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -12,18 +12,9 @@ from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
 from functools import lru_cache, partial
+from rims.core.common import DB, rest_call
 
-#######################################Decorator Tools ####################################
-#
-
-def debug_decorator(func_name):
- def decorator(func):
-  def decorated(*args,**kwargs):
-   res = func(*args,**kwargs)
-   print("DEBUGGER: %s(%s,%s) => %s"%(func_name, args, kwargs, res))
-   return res
-  return decorated
- return decorator
+########################################## Tools ###########################################
 
 @lru_cache(maxsize = 256)
 def cached_file_open(aFile):
@@ -51,7 +42,6 @@ class Context(object):
   - initiate the 'kill' switch
   - create datastore (i.e. dict) for settings, nodes, servers and external modules
   """
-  from rims.core.common import DB, rest_call
   if isinstance(aConfig, dict):
    self.config = aConfig
   else:
@@ -78,7 +68,6 @@ class Context(object):
  def __clone__(self):
   """ Clone itself and non thread-safe components """
   from copy import copy
-  from rims.core.common import DB
   ctx_new = copy(self)
   ctx_new.db = DB(self.config['db_name'],self.config['db_host'],self.config['db_user'],self.config['db_pass']) if self.node == 'master' else None
   return ctx_new
@@ -128,7 +117,7 @@ class Context(object):
    ret = partial(self.rest_call,"%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction), aDataOnly = True)
   else:
    module = import_module("rims.rest.%s"%aModule)
-   fun = getattr(module,aFunction,None)
+   fun = getattr(module,aFunction,lambda x,y: None)
    ret = partial(fun,self)
   return ret
 
@@ -497,10 +486,10 @@ class SessionHandler(BaseHTTPRequestHandler):
    else:
     self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), aArgs = args, aDecode = False, aDataOnly = True)
   except Exception as e:
-   if isinstance(e.args[0],dict) and e.args[0].get('code'):
-    error = {'X-Args':args, 'X-Exception':e.args[0].get('exception'), 'X-Code':e.args[0]['code'], 'X-Info':e.args[0].get('info')}
+   if not (isinstance(e.args[0],dict) and e.args[0].get('code')):
+    error = {'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':600, 'X-Info':','.join(map(str,e.args))}
    else:
-    error = {'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':500, 'X-Info':','.join(map(str,e.args))}
+    error = {'X-Args':args, 'X-Exception':e.args[0].get('exception'), 'X-Code':e.args[0]['code'], 'X-Info':e.args[0].get('info')}
    self._headers.update(error)
    mode = self.headers.get('X-Debug',extras.get('debug'))
    if mode  or path == 'debug':

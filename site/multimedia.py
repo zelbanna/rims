@@ -5,7 +5,7 @@ __icon__ = 'icon-multimedia.png'
 #
 #
 def main(aWeb):
- cookie = aWeb.cookie('system') 
+ cookie = aWeb.cookie('rims') 
  ip   = aWeb.rest_call("dns/external_ip")['ip']
  svcs = aWeb.rest_call("multimedia/services")
  aWeb.wr("<NAV><UL>")

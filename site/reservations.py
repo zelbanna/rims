@@ -6,7 +6,7 @@ __author__= "Zacharias El Banna"
 #
 def list(aWeb):
  args = aWeb.args()
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  if aWeb['op']:
   aWeb.rest_call("reservation/update",args)
  rows = aWeb.rest_call("reservation/list")['data']
@@ -28,7 +28,7 @@ def list(aWeb):
 #
 #
 def update(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  res = aWeb.rest_call("reservation/update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':aWeb['op'],'days':14})
  aWeb.wr("<DIV CLASS=td>Reserve:</DIV>")
  if res['update'] == 1:

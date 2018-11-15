@@ -1,11 +1,20 @@
 """Module docstring.
 
-Generic Library. For reference, make them "inline"
+Generic Library. Many are for reference, make them "inline"
 
 """
 __author__ = "Zacharias El Banna"
 
 ################################# Generics ####################################
+
+def debug_decorator(func_name):
+ def decorator(func):
+  def decorated(*args,**kwargs):
+   res = func(*args,**kwargs)
+   print("DEBUGGER: %s(%s,%s) => %s"%(func_name, args, kwargs, res))
+   return res
+  return decorated
+ return decorator
 
 #
 # Basic Auth header generator for base64 authentication

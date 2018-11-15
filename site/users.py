@@ -5,7 +5,7 @@ __type__ = 'menuitem'
 
 ############################################ Users ##############################################
 def main(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  info = aWeb.rest_call("system/users_info",{'id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
@@ -17,7 +17,7 @@ def main(aWeb):
 #
 #
 def user(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  aWeb.wr("<NAV><UL></UL></NAV>")
  aWeb.wr("<SECTION CLASS=content       ID=div_content>")
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left></SECTION>")
@@ -45,7 +45,7 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  args = aWeb.args()
  data = aWeb.rest_call("system/users_info?log=false",args)['data']
  resources = aWeb.rest_call("system/resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.node()})['data']
@@ -55,7 +55,7 @@ def info(aWeb):
   from datetime import datetime,timedelta
   expires = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
   cookie['theme'] = data['theme']
-  aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(",".join("%s=%s"%i for i in cookie.items()),expires))
+  aWeb.wr("<SCRIPT>set_cookie('rims','%s','%s');</SCRIPT>"%(",".join("%s=%s"%i for i in cookie.items()),expires))
  aWeb.wr("<SCRIPT>dragndrop();</SCRIPT>")
  aWeb.wr("<ARTICLE CLASS='info'><P>User Info (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=user_info_form>")

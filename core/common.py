@@ -1,6 +1,51 @@
 """Common functions module """
 __author__ = "Zacharias El Banna"
 
+########################################### REST ##########################################
+#
+# Rest with exception and variable args handling to make it more robust and streamlined in a "one-liner"
+#
+#
+class RestException(Exception):
+ pass
+
+from json import loads, dumps
+from urllib.request import urlopen, Request
+from urllib.error import HTTPError
+
+def rest_call(aURL, **kwargs):
+ """ REST call function, aURL is required, then aArgs, aHeader (dict), aTimeout, aDataOnly (default True), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
+ try:
+  head = { 'Content-Type': 'application/json','Accept':'application/json' }
+  head.update(kwargs.get('aHeader',{}))
+  args = dumps(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
+  req = Request(aURL, headers = head, data = args)
+  if kwargs.get('aMethod'):
+   req.get_method = lambda: kwargs['aMethod']
+  if kwargs.get('aVerify',True):
+   sock = urlopen(req, timeout = kwargs.get('aTimeout',20))
+  else:
+   from ssl import create_default_context
+   ssl_ctx = ssl.create_default_context()
+   ssl_ctx.check_hostname = False
+   ssl_ctx.verify_mode = ssl.CERT_NONE
+   sock = urlopen(req,context=ssl_ctx, timeout = kwargs.get('aTimeout',20))
+  try:    data = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
+  except: data = None
+  res = data if kwargs.get('aDataOnly',True) else {'info':dict(sock.info()), 'code':sock.code, 'data':data }
+  sock.close()
+ except HTTPError as h:
+  exception = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info())}
+  try:    exception['data'] = loads(h.read().decode())
+  except: exception['data'] = None
+ except Exception as e:
+  exception = { 'exception':type(e).__name__, 'code':600, 'info':{'error':repr(e)}, 'data':None}
+ else:
+  exception = None
+ if exception:
+  raise RestException(exception)
+ return res
+
 ############################################ Database ######################################
 #
 # Threads safe Database Class
@@ -110,47 +155,6 @@ class DB(object):
   self.count['INSERT'] += 1
   self._dirty = True
   return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(list(aDict.keys())),",".join("'%s'"%v if v != 'NULL' else 'NULL' for v in aDict.values()),aException))
-
-######################################### REST ########################################
-#
-#
-class RestException(Exception):
- pass
-
-from json import loads, dumps
-from urllib.request import urlopen, Request
-from urllib.error import HTTPError
-
-def rest_call(aURL, **kwargs):
- """ REST call function, aURL is required, then aArgs, aHeader (dict), aTimeout, aDataOnly (default True), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
- try:
-  head = { 'Content-Type': 'application/json','Accept':'application/json' }
-  head.update(kwargs.get('aHeader',{}))
-  args = dumps(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
-  req = Request(aURL, headers = head, data = args)
-  if kwargs.get('aMethod'):
-   req.get_method = lambda: kwargs['aMethod']
-  if kwargs.get('aVerify',True):
-   sock = urlopen(req, timeout = kwargs.get('aTimeout',20))
-  else:
-   from ssl import create_default_context
-   ssl_ctx = ssl.create_default_context()
-   ssl_ctx.check_hostname = False
-   ssl_ctx.verify_mode = ssl.CERT_NONE
-   sock = urlopen(req,context=ssl_ctx, timeout = kwargs.get('aTimeout',20))
-  res = {'info':dict(sock.info()), 'code':sock.code }
-  res['node'] = res['info'].pop('X-Route','_no_node_')
-  try:    res['data'] = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
-  except: res['data'] = None
-  sock.close()
- except HTTPError as h:
-  res = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info())}
-  try:    res['data'] = loads(h.read().decode())
-  except: pass
- except Exception as e: res = { 'exception':type(e).__name__, 'code':590, 'info':{'error':repr(e)}}
- if res.get('exception'):
-  raise RestException(res)
- return res['data'] if kwargs.get('aDataOnly',True) else res
 
 ####################################### SNMP #########################################
 #

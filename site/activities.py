@@ -5,7 +5,7 @@ __type__ = 'menuitem'
 
 ########################################### Activities #############################################
 def main(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='activities_list'>Activities</A></LI>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='activities_report'>Report</A></LI>")
@@ -43,7 +43,7 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  args = aWeb.args()
  res  = aWeb.rest_call("system/activities_info",args)
  data = res['data']

@@ -138,7 +138,7 @@ def types_list(aWeb):
 #
 #
 def info(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  args = aWeb.args()
  args['extra'] = ['types']
  dev = aWeb.rest_call("device/info",args)
@@ -393,7 +393,7 @@ def function(aWeb):
 #
 #
 def new(aWeb):
- cookie = aWeb.cookie('system') 
+ cookie = aWeb.cookie('rims') 
  ip   = aWeb.get('ip')
  name = aWeb.get('hostname','unknown')
  mac  = aWeb.get('mac',"00:00:00:00:00:00")

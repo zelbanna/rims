@@ -20,7 +20,7 @@ def main(aWeb):
 #
 #
 def view(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  res = aWeb.rest_call("system/resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'node':aWeb.get('node',aWeb.node())})
  inline = "<BUTTON CLASS='z-op menu' DIV=main URL='%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
  framed = "<BUTTON CLASS='z-op menu' DIV=main URL='resources_framed?id=%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
@@ -43,10 +43,10 @@ def framed(aWeb):
 #
 #
 def list(aWeb):
- if not aWeb.cookie('system'):
+ if not aWeb.cookie('rims'):
   aWeb.wr("<SCRIPT>location.replace('system_portal')</SCRIPT>")
   return
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  node = aWeb.get('node',aWeb.node())
  res = aWeb.rest_call("system/resources_list",{'node':node,'user_id':cookie['id']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
@@ -76,7 +76,7 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  args = aWeb.args()
  data = aWeb.rest_call("system/resources_info",args)['data']
  aWeb.wr("<ARTICLE><P>Resource entity ({})</P>".format(data['id']))

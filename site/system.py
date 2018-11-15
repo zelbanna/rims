@@ -6,7 +6,7 @@ __type__ = 'menuitem'
 #
 #
 def main(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  data = aWeb.rest_call("system/inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('logs'):
@@ -39,10 +39,10 @@ def main(aWeb):
 #
 #
 def portal(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  auth,data,args = {},{},aWeb.args()
  if not cookie.get('token') and (args.get('username') and args.get('password')):
-  try:  auth = aWeb.rest_full("%s/auth"%aWeb.url(), aArgs = args)['data']
+  try:  auth = aWeb.rest_full("%s/auth"%aWeb.url(), aArgs = args, aDataOnly = True)
   except Exception as e:
    auth = e.args[0].get('data',{})
   else:
@@ -53,7 +53,7 @@ def portal(aWeb):
   aWeb.put_html(aTitle = menu.get('title','Portal'), aTheme = cookie['theme'])
   """ If just auth:ed """
   if auth.get('token'):
-   aWeb.wr("<SCRIPT>set_cookie('system','%s','%s');</SCRIPT>"%(",".join("%s=%s"%i for i in cookie.items()),auth['expires']))
+   aWeb.wr("<SCRIPT>set_cookie('rims','%s','%s');</SCRIPT>"%(",".join("%s=%s"%i for i in cookie.items()),auth['expires']))
   aWeb.wr("<HEADER>")
   for item in menu['menu']:
    if   item['view'] == 0:
@@ -92,7 +92,7 @@ def portal(aWeb):
 #
 #
 def report(aWeb):
- info = aWeb.rest_full("%s/system/report"%aWeb.url())['data']
+ info = aWeb.rest_full("%s/system/report"%aWeb.url(), aDataOnly = True)
  analytics = info.pop('analytics',{})
  keys = sorted(info.keys())
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>System</P>")
@@ -109,10 +109,10 @@ def report(aWeb):
 def reload(aWeb):
  """ Map node to URL and call reload """
  api = aWeb.rest_call("system/node_to_api",{'node':aWeb['node']})['url']
- res = aWeb.rest_full("%s/system/reload"%api)
+ res = aWeb.rest_full("%s/system/reload"%api, aDataOnly = True)
  aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>Module</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- for x in res['data']['modules']:
+ for x in res['modules']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV></DIV>"%x)
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
@@ -181,102 +181,6 @@ def node_help(aWeb):
  There are two types of nodes, system generated and user inserted:
   - system generated are created during install phase for that node. These can have settings
   - user generated are for nodes that serves a particular funtion (i.e. a mapping between a name 'node' and the REST URL)
-
- </PRE></ARTICLE""")
-
-############################################ Servers ###########################################
-
-def server_list(aWeb):
- res  = aWeb.rest_call("system/server_list",aWeb.args())
- type = "type=%s"%aWeb['type'] if aWeb.get('type') else "dummy"
- aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
- aWeb.wr("<ARTICLE><P>Servers</P>")
- aWeb.wr(aWeb.button('reload',DIV='div_content',URL='system_server_list?%s'%type))
- aWeb.wr(aWeb.button('add', DIV='div_content_right',URL='system_server_info?id=new&%s'%type,TITLE='Add server'))
- aWeb.wr(aWeb.button('help',DIV='div_content_right',URL='system_server_help'))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Service</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
- for srv in res['servers']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(srv['id'],srv['node'],srv['service'],srv['type']))
-  aWeb.wr(aWeb.button('info',DIV='div_content_right',URL='system_server_info?id=%s'%(srv['id'])))
-  aWeb.wr(aWeb.button('sync',DIV='div_content_right',URL='system_server_sync?id=%s'%(srv['id']), SPIN='true', TITLE='Sync server'))
-  aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='system_server_status?id=%s'%(srv['id']), SPIN='true', TITLE='Server status'))
-  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='system_server_restart?id=%s'%(srv['id']), SPIN='true', TITLE='Server restart'))
-  aWeb.wr("</DIV></DIV>")
- aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
- aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
-
-#
-#
-def server_info(aWeb):
- aWeb.wr("<ARTICLE CLASS=info><P>Server</P>")
- args = aWeb.args()
- res  = aWeb.rest_call("system/server_info",args)
- data = res['data']
- aWeb.wr("<FORM ID=server_info_form>")
- aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(data['id']))
- aWeb.wr("<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><SELECT NAME=node>")
- for node in res['nodes']:
-  extra = " selected" if (data['node'] == node) else ""
-  aWeb.wr("<OPTION VALUE=%s %s>%s</OPTION>"%(node,extra,node))
- aWeb.wr("</SELECT></DIV></DIV>")
- if data['id'] != 'new':
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT %s NAME=type VALUE='%s'></DIV></DIV>"%("READONLY" if data.get('type') else "",data['type']))
- else:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT NAME=type>")
-  for type in res['types']:
-   aWeb.wr("<OPTION VALUE='%s'>%s</OPTION>"%(type,type))
-  aWeb.wr("</SELECT></DIV></DIV>")
-
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Server:</DIV><DIV CLASS=td><SELECT NAME=service>")
- for srv in res['servers']:
-  extra = " selected" if (data['service'] == srv['service']) else ""
-  aWeb.wr("<OPTION VALUE=%s %s>%s (%s)</OPTION>"%(srv['service'],extra,srv['service'],srv['type']))
- aWeb.wr("</SELECT></DIV></DIV>")
- aWeb.wr("</DIV></DIV>")
- aWeb.wr("</FORM>")
- aWeb.wr(aWeb.button('save',    DIV='div_content_right', URL='system_server_info?op=update', FRM='server_info_form'))
- if data['id'] != 'new':
-  aWeb.wr(aWeb.button('trash', DIV='div_content_right', URL='system_server_delete?id=%s'%(data['id']), MSG='Delete server?'))
- aWeb.wr("</ARTICLE>")
-
-#
-#
-def server_status(aWeb):
- from json import dumps
- res = aWeb.rest_call("system/server_status",{'id':aWeb['id']})
- aWeb.wr("<ARTICLE><PRE>%s<PRE></ARTICLE>"%dumps(res,indent=2,sort_keys=True))
-
-#
-#
-def server_restart(aWeb):
- from json import dumps
- res = aWeb.rest_call("system/server_restart",{'id':aWeb['id']})
- aWeb.wr("<ARTICLE><PRE>%s<PRE></ARTICLE>"%dumps(res,indent=2,sort_keys=True))
-
-#
-#
-def server_sync(aWeb):
- res = aWeb.rest_call("system/server_sync",{'id':aWeb['id']})
- aWeb.wr("<ARTICLE>%s</ARTICLE>"%str(res))
-
-
-#
-#
-def server_delete(aWeb):
- res = aWeb.rest_call("system/server_delete",{'id':aWeb['id']})
- aWeb.wr("<ARTICLE>%s</ARTICLE>"%str(res))
-
-#
-#
-def server_help(aWeb):
- aWeb.wr("""<ARTICLE CLASS='help' STYLE='overflow:auto'><PRE>
- servers manages the location of various services on nodes => servers (e.g. DNS and DHCP servers). That is the system (!) REST nodes where they offer a service interface
-
- This is helpful in case:
-  - the server doesn't offer a good REST API - then other tools can be used directly on that server
-  - there are multiple DNS servers serving different zones
-  - there are multiple DHCP servers serving different subnets
 
  </PRE></ARTICLE""")
 

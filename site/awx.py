@@ -4,22 +4,14 @@ __author__= "Zacharias El Banna"
 #
 #
 def manage(aWeb):
- if aWeb['node']:
-  args = {'node':aWeb['node']}
- elif aWeb['id']:
-  args = {'id':aWeb['id']}
- dev = aWeb.rest_call("system/node_device_mapping",args)
  aWeb.wr("<NAV><UL>")
- aWeb.wr("<LI><A CLASS=z-op HREF=%s     target=_blank>UI</A></LI>"%(dev['url']))
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content_left URL='awx_inventory_list?node=%s'>Inventories</A></LI>"%dev['node'])
- aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='awx_manage?id=%s'></A></LI>"%(dev['id']))
- aWeb.wr("<LI CLASS='right navinfo'><A>%s</A></LI>"%(dev['hostname']))
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content_left URL='awx_inventory_list?node=%s'>Inventories</A></LI>"%aWeb['node'])
+ aWeb.wr("<LI CLASS='right navinfo'><A>%s</A></LI>"%(aWeb['node']))
  aWeb.wr("</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content ID=div_content>")
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
  aWeb.wr("</SECTION>")
-
 
 #
 #

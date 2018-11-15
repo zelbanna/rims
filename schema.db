@@ -292,6 +292,7 @@ CREATE TABLE `servers` (
   `node` varchar(40) NOT NULL,
   `service` varchar(40) NOT NULL,
   `type` varchar(20) NOT NULL,
+  `ui` varchar(60) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `node_server` (`node`,`service`),
   KEY `node` (`node`),

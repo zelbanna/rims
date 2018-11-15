@@ -4,7 +4,7 @@ __author__= "Zacharias El Banna"
 #
 #
 def list(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  res = aWeb.rest_call("system/settings_list",{'node':aWeb['node'],'user_id':cookie['id']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Settings</P>")
@@ -24,7 +24,7 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  args = aWeb.args()
  data = aWeb.rest_call("system/settings_info",args)['data']
  aWeb.wr("<ARTICLE CLASS=info><P>Settings</P>")

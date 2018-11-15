@@ -10,7 +10,7 @@ __author__= "Zacharias El Banna"
 #
 #
 def portal(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  aWeb.put_html(aTitle = 'Vera', aIcon = 'lights', aTheme = cookie.get('theme'))
  res = aWeb.rest_call("vera/infra?node=master",{'node':'vera'})
  aWeb.wr("<MAIN STYLE='top:0px;' ID=main>")
@@ -30,20 +30,13 @@ def portal(aWeb):
 #
 #
 def manage(aWeb):
- if aWeb['node']:
-  args = {'node':aWeb['node']}
- elif aWeb['id']:
-  args = {'id':aWeb['id']}
- dev = aWeb.rest_call("system/node_device_mapping",args)
- node = dev['node']
- ui = dev['url']
+ node = aWeb['node']
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL=vera_status?node=%s>Status</A></LI>"%node)
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL=vera_devices?node=%s>Devices</A></LI>"%node)
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL=vera_rooms?node=%s>Rooms</A></LI>"%node)
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL=vera_scenes?node=%s>Scenes</A></LI>"%node)
  aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='vera_manage?node=%s'></A></LI>"%node)
- aWeb.wr("<LI CLASS='right navinfo'><A CLASS=z-op TARGET=_blank HREF='%s'>UI</A></LI>"%(ui))
  aWeb.wr("<LI CLASS='right'><A CLASS=z-op DIV=div_content URL=tools_rest_main?node=%s>REST</A></LI>"%node)
  aWeb.wr("</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content ID=div_content></SECTION>")

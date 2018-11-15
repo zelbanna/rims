@@ -349,39 +349,6 @@ def node_delete(aCTX, aArgs = None):
 
 #
 #
-def node_device_mapping(aCTX, aArgs = None):
- """Node/Device mapping translates between nodes and devices and provide the same info, it depends on the device existing or node having mapped a device (else 'found' is false)
-
- Args:
-  - id (optional required)
-  - node (optional required)
-
- Output:
-  - found. boolean
-  - id. device id
-  - node. node name
-  - hostname. device hostname
-  - ip. device ip
-  - domain. Device domain name
-  - url
- """
- with aCTX.db as db:
-  if aArgs.get('id'):
-   found = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain, url FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%aArgs['id']) > 0)
-   ret = db.get_row() if found else {}
-   ret['found'] = (db.do("SELECT node FROM nodes WHERE device_id = %s"%aArgs['id']) > 0)
-   ret['node']  = db.get_val('node') if ret['found'] else None
-   ret['id']    = int(aArgs['id'])
-  else:
-   found = (db.do("SELECT device_id FROM nodes WHERE node = '%s'"%aArgs['node']) > 0)
-   ret = {'id':db.get_val('device_id') if found else None, 'node':aArgs['node'], 'found':False}
-   if ret['id']:
-    ret['found'] = (db.do("SELECT hostname, INET_NTOA(ia.ip) as ip, domains.name AS domain, url FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE devices.id = %s"%ret['id']) > 0)
-    ret.update(db.get_row())
- return ret
-
-#
-#
 def node_to_api(aCTX, aArgs = None):
  """ Function returns api for a specific node name
 
@@ -584,7 +551,7 @@ def server_list(aCTX, aArgs = None):
  ret = {}
  
  with aCTX.db as db:
-  db.do("SELECT id, service, node, type FROM servers WHERE %s"%("type = '%s'"%aArgs['type'] if aArgs.get('type') else "TRUE"))
+  db.do("SELECT servers.id, servers.service, servers.node, servers.type, servers.ui, nodes.system FROM servers LEFT JOIN nodes ON servers.node = nodes.node WHERE %s"%("type = '%s'"%aArgs['type'] if aArgs.get('type') else "TRUE"))
   ret['servers']= db.get_rows()
  return ret
 
@@ -604,20 +571,22 @@ def server_info(aCTX, aArgs = None):
   db.do("SELECT node FROM nodes")
   ret['nodes'] = [x['node'] for x in db.get_rows()]
   if op == 'update':
+   if aArgs.get('ui') == 'None':
+    aArgs['ui'] = 'NULL'
    if not id == 'new':
     ret['update'] = db.update_dict('servers',aArgs,"id=%s"%id)
-    aCTX.servers[id].update(aArgs)
+    aCTX.servers[int(id)].update(aArgs)
    else:
     ret['update'] = db.insert_dict('servers',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-    aCTX.servers[id] = aArgs
+    aCTX.servers[int(id)] = aArgs
   if not id == 'new':
    ret['found'] = (db.do("SELECT * FROM servers WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
    db.do("SELECT name AS service, base AS type FROM service_types WHERE base = '%s'"%ret['data']['type'])
   else:
    type = aArgs.get('type',None)
-   ret['data'] = {'id':'new','node':None,'service':'Unknown','type':type}
+   ret['data'] = {'id':'new','node':None,'service':'Unknown','type':type,'ui':None}
    if type:
     ret['types'] = [type]
     db.do("SELECT name AS service, base AS type FROM service_types WHERE base = '%s'"%type) 

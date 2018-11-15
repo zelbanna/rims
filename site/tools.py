@@ -6,7 +6,7 @@ __type__ = 'menuitem'
 ############################################ Options ##############################################
 #
 def main(aWeb):
- cookie = aWeb.cookie('system')
+ cookie = aWeb.cookie('rims')
  data = aWeb.rest_call("system/inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('node'):
@@ -22,8 +22,6 @@ def main(aWeb):
   for svc in data.get('services',[]):
    aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_services_info?node=%s&service=%s'>%s</A>"%(aWeb.node(),svc['service'],svc['name']))
  aWeb.wr("</DIV></LI>")
- if aWeb.node() == 'master':
-  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='system_server_list'>Servers</A></LI>")
  aWeb.wr("<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>")
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_rest_main?node=%s'>Debug</A>"%aWeb['node'])
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_logs_show?name=rest&node=%s'>Logs</A>"%aWeb['node'])
@@ -80,7 +78,7 @@ def rest_execute(aWeb):
  try:
   node = aWeb.rest_call("system/node_info",{'id':aWeb['node']})['data']
   url = "%s/%s/%s"%(node['url'],"debug" if aWeb['debug'] == '1' else "api", aWeb['api']) if node['system'] == 1 else "%s%s"%(node['url'],aWeb['api'])
-  ret = aWeb.rest_full(url, aArgs = arguments, aMethod = aWeb['method'])
+  ret = aWeb.rest_full(url, aArgs = arguments, aMethod = aWeb['method'], aDataOnly = False)
  except Exception as e:
   ret = e.args[0]
  data = ret.pop('data',None)
