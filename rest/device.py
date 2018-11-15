@@ -336,7 +336,7 @@ def new(aCTX, aArgs = None):
  # Test if hostname ok or if IP supplied and then if ok and available
  if aArgs['hostname'] == 'unknown':
   return {'info':'Hostname unknown not allowed'}
- elif aArgs.get('ipam_network_id') and test_ip(aArgs.get('ip')):
+ elif aArgs.get('ipam_network_id') and GL_test_ip(aArgs.get('ip')):
   from rims.rest.ipam import address_allocate
   alloc = address_allocate(aCTX, {'ip':aArgs['ip'],'network_id':aArgs['ipam_network_id'],'mac':aArgs.get('mac',0)})
   if   not alloc['valid']:
