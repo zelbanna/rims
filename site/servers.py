@@ -94,14 +94,14 @@ def restart(aWeb):
 #
 def sync(aWeb):
  res = aWeb.rest_call("system/server_sync",{'id':aWeb['id']})
- aWeb.wr("<ARTICLE>%s</ARTICLE>"%str(res))
+ aWeb.wr("<ARTICLE><PRE>%s</PRE></ARTICLE>"%str(res))
 
 
 #
 #
 def delete(aWeb):
  res = aWeb.rest_call("system/server_delete",{'id':aWeb['id']})
- aWeb.wr("<ARTICLE>%s</ARTICLE>"%str(res))
+ aWeb.wr("<ARTICLE><PRE>%s</PRE></ARTICLE>"%str(res))
 
 #
 #

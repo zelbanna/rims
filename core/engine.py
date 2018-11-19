@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 152
+__build__ = 153
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -111,10 +111,11 @@ class Context(object):
   self._kill.set()
 
  # 
- def node_function(self, aNode, aModule, aFunction):
+ def node_function(self, aNode, aModule, aFunction, **kwargs):
   """ Node function freezes the REST call or the function with enough info so that they can be used multiple times AND interchangably """
   if self.node != aNode:
-   ret = partial(self.rest_call,"%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction), aDataOnly = True)
+   kwargs['aDataOnly'] = True
+   ret = partial(self.rest_call,"%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction), **kwargs)
   else:
    module = import_module("rims.rest.%s"%aModule)
    fun = getattr(module,aFunction,lambda x,y: None)

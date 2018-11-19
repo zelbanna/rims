@@ -3,7 +3,97 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = 'PROVISIONING'
 
-from rims.devices.awx import Device
+####################################### Device #######################################
+#
+#
+class Device(object):
+
+ def __init__(self, aCTX, aNode, aToken = None):
+  self._ctx = aCTX
+  self._node = aNode
+  self._token = aToken
+
+ def __str__(self):           
+  return "AWX(node=%s, token=%s)".format(self._node, self._token)
+
+ #
+ # { 'username','password','mode' }   
+ # mode: 'basic'/'full' auth process
+ #            
+ def auth(self, aAuth):
+  from rims.core.genlib import basic_auth
+  self._token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']     
+  try: 
+   if aAuth.get('mode','full') == 'full':  
+    ret = self._ctx.rest_call("%s/me"%self.ctx.nodes[self._node]['url'], aHeader = {'Authorization':self._token}, aDataOnly = False)
+    ret.pop('data',None)
+    ret.pop('node',None)
+   else:
+    ret = {}
+  except Exception as e:
+   ret['error'] = e[0]
+   ret['auth'] = 'NOT_OK'
+  else:
+   ret['auth'] = 'OK'
+  return ret
+
+ def get_token(self):
+  return self._token
+
+ # call and href
+ # Input:
+ # - url  = service url
+ # - args = dict with arguments for post operation, empty dict or nothing means no arguments (!)
+ # - method = used to send other things than GET and POST (i.e. 'DELETE')
+ # - header = send additional headers as dictionary
+ #
+ def call(self, query, **kwargs):
+  from rims.core.common import rest_call
+  try:    kwargs['aHeader'].update({'Authorization':self._token})
+  except: kwargs['aHeader'] = {'Authorization':self._token}
+  kwargs['aDataOnly'] = False
+  return self._ctx.rest_call("%s/%s"%(self.ctx.nodes[self._node]['url'],query), **kwargs)
+
+ def fetch_list(self,aBase,aSet):
+  ret  = []  
+  next = aBase          
+  while True:      
+   data = self.call(next)['data']
+   for row in data['results']:            
+    ret.append({k:row.get(k) for k in aSet})
+   try:             
+    _,_,page = data['next'].rpartition('?')
+    next = "%s?%s"%(base,page)
+   except: break
+  return ret
+
+ def fetch_list(self,aBase,aSet):
+  ret  = []
+  next = aBase
+  while True:
+   data = self.call(next)['data']
+   for row in data['results']:           
+    ret.append({k:row.get(k) for k in aSet})
+   try:                 
+    _,_,page = data['next'].rpartition('?')
+    next = "%s?%s"%(base,page)
+   except: break
+  return ret            
+
+ def fetch_dict(self,aBase,aSet,aKey):
+  ret  = {}
+  next = aBase       
+  while True:
+   data = self.call(next)['data']
+   for row in data['results']:
+    ret[row[aKey]] ={k:row.get(k) for k in aSet if row.get(aKey) and row[aKey] != ""}
+   try:
+    _,_,page = data['next'].rpartition('?')
+    next = "%s?%s"%(base,page)
+   except: break       
+  return ret
+
+####################################### AWX #######################################
 
 #
 #
@@ -18,7 +108,7 @@ def inventory_list(aCTX, aArgs = None):
  """
  ret = {}
  try:
-  controller = Device(aCTX.nodes[aArgs['node']]['url'])
+  controller = Device(aCTX,aArgs['node'])
   controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
   ret['inventories'] = controller.fetch_list("inventories/",('id','name','url'))
  except Exception as e:
@@ -36,7 +126,7 @@ def inventory_delete(aCTX, aArgs = None):
 
  Output:
  """
- controller = Device(aCTX.nodes[aArgs['node']]['url'])
+ controller = Device(aCTX,aArgs['node'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  res = controller.call("inventories/%(id)s/"%aArgs,None,"DELETE")
  ret = {'status':"deleted" if res['code'] == 204 else res['info']['x-code']}
@@ -54,7 +144,7 @@ def inventory_info(aCTX, aArgs = None):
  Output:
  """
  ret = {}
- controller = Device(aCTX.nodes[aArgs['node']]['url'])
+ controller = Device(aCTX,aArgs['node'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  ret['groups'] = controller.fetch_dict("inventories/%(id)s/groups/"%aArgs,('id','name','description','total_hosts'),'name')
  ret['hosts'] = []
@@ -97,11 +187,11 @@ def inventory_sync(aCTX, aArgs = None):
   search = ",".join(v for k,v in aArgs.items() if k[0:7] == 'device_')
   field  = 'id'
  from rims.rest.device import list as device_list
- devices = device_list({'search':search,'field':field,'extra':'type'}, aCTX)['data']
+ devices = device_list(aCTX, {'search':search,'field':field,'extra':'type'})['data']
  ret = {'devices':devices,'status':'OK','groups':{}}
  if len(devices) == 0:
   return ret
- controller = Device(aCTX.nodes[aArgs['node']]['url'])
+ controller = Device(aCTX,aArgs['node'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  ret['groups'] = controller.fetch_dict("inventories/%s/groups/"%aArgs['id'],('id','name','description','total_hosts'),'name')
  try:
@@ -198,8 +288,7 @@ def host_list(aCTX, aArgs = None):
 
  Output:
  """
- controller = Device(aCTX.nodes[aArgs['node']]['url'])
+ controller = Device(aCTX,aArgs['node'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  ret = {'hosts':controller.fetch_list("hosts/",('id','name','url','inventory','description','enabled','instance_id'))}
  return ret
-

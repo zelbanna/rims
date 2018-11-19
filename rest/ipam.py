@@ -17,7 +17,7 @@ def status(aCTX, aArgs = None):
   db.do("SELECT ipam_networks.id, servers.node, servers.service FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   subnets = db.get_rows()
   for sub in subnets:
-   count = db.do("SELECT id,INET_NTOA(ip) AS ip, state FROM ipam_addresses WHERE network_id = %s ORDER BY ip"%sub['id'])
+   count = db.do("SELECT devices.notify, ia.id, INET_NTOA(ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id = %s ORDER BY ia.ip"%sub['id'])
    if count > 0:
     args = {'module':'ipam','func':'address_status_check','args':{'address_list':db.get_rows(),'subnet_id':sub['id']},'output':False}
     if not sub['node'] or sub['node'] == 'master':
@@ -404,10 +404,11 @@ def address_status_check(aCTX, aArgs = None):
 
  args = {}
  for n in [1,2]:
-  changed = list(dev['id'] for dev in aArgs['address_list'] if (dev['new'] != dev['state'] and dev['new'] == n))
+  changed = list((dev['id'],dev['notify']) for dev in aArgs['address_list'] if (dev['new'] != dev['state'] and dev['new'] == n))
   if len(changed) > 0:
    args['up' if n == 1 else 'down'] = changed
  if len(list(args.keys())) > 0:
+  args['subnet_id'] = aArgs['subnet_id']
   if aCTX.node == 'master':
    address_status_report(aCTX, args)
   else:
@@ -420,17 +421,36 @@ def address_status_report(aCTX, aArgs = None):
  """ Updates IP addresses' status
 
  Args:
-  - up (optional).   list of id that changed to up
-  - down (optional). list of id that changed to down
+  - subnet_id (required)
+  - up (optional).   List of id,notify tuples that changed to up
+  - down (optional). List of id,notify tuples that changed to down
 
  Output:
-  - result
+  - up (number of updated up state)
+  - down (number of updated down state)
  """
  ret = {}
+ log = {}
+ notify = aCTX.settings.get('notifier')
+ if notify:
+  notifier_func = aCTX.node_function(notify.get('proxy','master'),notify['service'],"notify", aHeader = {'X-Log':'true'})
+  notifier_node = notify['node']
  with aCTX.db as db:
   for chg in [('up',1),('down',2)]:
    change = aArgs.get(chg[0])
    if change:
-    changed = ",".join(map(str,change))
-    ret[chg[0]] = db.do("UPDATE ipam_addresses SET state = %s WHERE ID IN (%s)"%(chg[1],changed))
+    notify= list(x[0] for x in change if x[1] == 1)
+    ret[chg[0]] = db.do("UPDATE ipam_addresses SET state = %s WHERE ID IN (%s)"%(chg[1],",".join(str(x[0]) for x in change)))
+    begin = 0
+    final = len(notify)
+    if final > 0 and notifier_node:
+     db.do("SELECT ipam_id, hostname FROM devices WHERE ipam_id IN (%s)"%(",".join( str(x) for x in notify)))
+     devices = db.get_dict('ipam_id')
+     aCTX.workers.add_function(notifier_func,{'node':notifier_node,'message':"Device status changed to %s:%s"%(chg[0].upper(),", ".join(devices[x]['hostname'] for x in notify))})
+    while begin < final:
+     end = min(final,begin+16)
+     aCTX.log("IPAM Event (%s) %s => %s"%(str(aArgs['subnet_id']).zfill(3), chg[0].ljust(4), ",".join( str(x) for x in notify[begin:end])))
+     begin = end
  return ret
+
+

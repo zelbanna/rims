@@ -8,11 +8,9 @@ __add_globals__ = lambda x: globals().update(x)
 #
 
 def set_ip(aCTX, aArgs);
- ret = {}
  from xmlrpc import client
- with DB() as db:
-  db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'loopia'")
-  settings = {s['parameter']:s['value'] for s in db.get_rows()}
+ ret = {}
+ settings = aCTX.settings.get('loopia',{})
  try:
   client = xmlrpc.client.ServerProxy(uri = settings['rpc_server'], encoding = 'utf-8')
   data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aArgs['subdomain'])[0]
@@ -32,9 +30,7 @@ def set_ip(aCTX, aArgs);
 def get_ip(aCTX, aArgs = None):
  from import xmlrpc import client
  ret = {}
- with DB() as db:
-  db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'loopia'")
-  settings = {s['parameter']:s['value'] for s in db.get_rows()}
+ settings = aCTX.settings.get('loopia',{})
  try:
   client = xmlrpc.client.ServerProxy(uri = settings['rpc_server'], encoding = 'utf-8')
   data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aArgs['subdomain'])[0]
@@ -47,7 +43,4 @@ def get_ip(aCTX, aArgs = None):
  return ret
 
 def get_loopia_suffix(aCTX, aArgs = None):
- with DB() as db:
-  db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'loopia'")
-  settings = {s['parameter']:s['value'] for s in db.get_rows()}
- return {'suffix':".%s"%settings['domain']}
+ return {'suffix':".%s"%aCTX.settings['loopia']['domain']}

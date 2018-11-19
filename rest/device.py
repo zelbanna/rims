@@ -76,9 +76,7 @@ def info(aCTX, aArgs = None):
    ret['ip'] = ret['info'].pop('ip',None)
    ret['state'] = {0:'grey',1:'green',2:'red'}.get(ret['info']['state'],'orange')
    # Pick login name from settings
-   db.do("SELECT parameter,value FROM settings WHERE node = 'master' AND section = 'netconf'")
-   netconf = db.get_dict('parameter')
-   ret['username'] = netconf['username']['value']
+   ret['username'] = aCTX.settings['netconf']['username']
    if not op == 'basics':
     ret['info']['mac'] = ':'.join(ret['info']['ip_mac'][i:i+2] for i in [0,2,4,6,8,10])
     if not ret['info']['functions']:
@@ -146,6 +144,8 @@ def extended(aCTX, aArgs = None):
    if operation == 'update' and ret['id']:
     """ In case company gets slipped in """ 
     aArgs.pop('company',None)
+    ret['status']['device_info'] = db.do("UPDATE devices SET shutdown = %s, notify = %s WHERE id = %s"%(aArgs.get('shutdown',0),aArgs.get('notify',0),ret['id']))
+
     if aArgs.get('rack_info_rack_id') == 'NULL':
      db.do("DELETE FROM rack_info WHERE device_id = %s"%ret['id'])
     else:
@@ -173,14 +173,13 @@ def extended(aCTX, aArgs = None):
          new_info['%s_id'%type] = dns_res[type.upper()]['record_id']
        else:
         new_info['%s_id'%type] = 0
-      ret['status']['device_info'] = db.update_dict('devices',new_info,"id='%s'"%ret['id'])
+      ret['status']['device_info'] += db.update_dict('devices',new_info,"id='%s'"%ret['id'])
 
     rack_args = {k[10:]:v for k,v in aArgs.items() if k[0:10] == 'rack_info_'}
     ret['status']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
-    ret['status']['shutdown'] = db.do("UPDATE devices SET shutdown = %s WHERE id = %s"%(aArgs.get('shutdown',0),ret['id']))
 
   # Now fetch info
-  ret['found'] = (db.do("SELECT vm, devices.shutdown, LPAD(hex(devices.mac),12,0) AS mac, devices.oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base, oui.company AS oui FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN oui ON oui.oui = (ia.mac >> 24) AND ia.mac != 0 LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT devices.vm, devices.notify, devices.shutdown, LPAD(hex(devices.mac),12,0) AS mac, devices.oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base, oui.company AS oui FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN oui ON oui.oui = (ia.mac >> 24) AND ia.mac != 0 LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['info'] = db.get_row()
    ret['ip'] = ret['info'].pop('ip',None)

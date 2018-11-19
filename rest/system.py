@@ -316,14 +316,20 @@ def node_info(aCTX, aArgs = None):
   if op == 'update':
    if not id == 'new':
     ret['update'] = db.update_dict('nodes',aArgs,'id=%s'%id)
-    aCTX.nodes[aArgs['node']].update(aArgs)
    else:
     ret['update'] = db.insert_dict('nodes',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-    aCTX.nodes[aArgs['node']] = {'id':id,'url':aArgs['url'],'system':0}
   if not id == 'new':
    ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
+   if ret['found'] and op == 'update':
+    node = ret['data']
+    keys = aCTX.nodes.keys()
+    for k in list(aCTX.nodes.keys()):
+     if aCTX.nodes[k]['id'] == node['id']:
+      aCTX.nodes.pop(k,None)
+      aCTX.nodes[node['node']] = {'id':node['id'],'url':node['url'],'system':node['system']}
+      break
   else:
    ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':None,'system':0}
  return ret

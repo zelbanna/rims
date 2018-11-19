@@ -128,7 +128,7 @@ def node_list(aWeb):
  aWeb.wr(aWeb.button('help', DIV='div_content_right', URL='system_node_help'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>URL</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in nodes:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>"%(row['node'],row['url']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:55px; overflow-x:hidden'>%s</DIV><DIV CLASS=td STYLE='max-width:190px; overflow-x:hidden'>%s</DIV><DIV CLASS=td>"%(row['node'],row['url']))
   aWeb.wr(aWeb.button('info',DIV='div_content_right', URL='system_node_info?id=%s'%row['id'], TITLE='Node info'))
   if row['system']:
    aWeb.wr(aWeb.button('configure',DIV='div_content',    URL='settings_list?node=%s'%row['node'],    TITLE='Node settings'))

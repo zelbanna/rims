@@ -53,6 +53,7 @@ def notify(aCTX, aArgs = None):
  """Function provides notification service, basic at the moment for development purposes
 
  Args:
+  - node (required). Notify REST node in system
   - message (required)
   - user (optional)
   - channel (optional)
@@ -62,7 +63,6 @@ def notify(aCTX, aArgs = None):
   - info (slack response text/data)
 
  """
- url = "%s/%s"%(aCTX.nodes[aCTX.settings['slack']['node']]['url'],aCTX.settings['slack']['service'])
  args = {'text':aArgs['message']} 
  if aArgs.get('user'):
   args['channel'] = "@%s"%aArgs['user']
@@ -70,5 +70,5 @@ def notify(aCTX, aArgs = None):
   args['channel'] = "#%s"%aArgs['channel']
  elif aCTX.settings['slack'].get('channel'):
   args['channel'] = aCTX.settings['slack'].get('channel')
- res = aCTX.rest_call(url,aArgs = args)
+ res = aCTX.rest_call(aCTX.nodes[aArgs['node']]['url'],aArgs = args, aDataOnly = False)
  return {'status':'OK' if res['code']== 200 else 'NOT_OK', 'info':res['data']}

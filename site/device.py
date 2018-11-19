@@ -266,6 +266,7 @@ def extended(aWeb):
  aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=1 %s>yes"%(  "checked=checked" if dev['info']['shutdown'] == 1 else ""))
  aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=2 %s>reset"%("checked=checked" if dev['info']['shutdown'] == 2 else ""))
  aWeb.wr("</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Notifications:</DIV><DIV CLASS=td><INPUT NAME=notify TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['notify'] == 1 else ""))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
  aWeb.wr("<!-- Rack Info -->")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=rack_info_rack_id>")
