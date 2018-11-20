@@ -250,6 +250,56 @@ def server_leases(aCTX, aArgs = None):
 ################################## Addresses #############################
 #
 #
+def address_info(aCTX, aArgs = None):
+ """ Function manages IPAM address instance info, address can not be changed from here as
+
+ Args:
+  - id (required)
+  - network_id (optional required)
+  - mac (optional)
+  - ip (optional)
+  - state (optional)
+
+ Output:
+
+ """
+ ret ={}
+ id = aArgs.pop('id','new')
+ op = aArgs.pop('op',None)
+ with aCTX.db as db:
+  if op == 'update':
+   network = aArgs.pop('network_id',None)
+   if aArgs.get('mac'):
+    try:    aArgs['mac'] = int(str(aArgs.get('mac','0')).replace(":",""),16)
+    except: aArgs['mac'] = 0
+   if aArgs.get('state'):
+    try:    state = int(aArgs['state'])
+    except: state = 0
+    aArgs['state'] = state if state >= 0 and state <= 2 else 0
+   if aArgs.get('ip'):
+    from struct import unpack
+    from socket import inet_aton
+    def GL_ip2int(addr):
+     return unpack("!I", inet_aton(addr))[0]
+    ip = GL_ip2int(aArgs.pop('ip',None))
+    """ valid in network range AND available => then add back """
+    if (db.do("SELECT network FROM ipam_networks WHERE id = %s AND %s > network AND %s < (network + POW(2,(32-mask))-1)"%(network,ip,ip)) == 1) and (db.do("SELECT id FROM ipam_addresses WHERE ip = %s AND network_id = %s"%(ip,network)) == 0):
+     aArgs['ip'] = ip
+   if not id == 'new':
+    ret['update'] = db.update_dict('ipam_addresses',aArgs,'id=%s'%id)
+   elif aArgs.get('ip'):
+    ret['update'] = db.insert_dict('ipam_addresses',aArgs)
+    id = db.get_last_id() if ret['update'] > 0 else 'new'
+  if not id == 'new':
+   ret['found'] = (db.do("SELECT id, INET_NTOA(ip) AS ip, state, network_id, LPAD(hex(mac),12,0) AS mac FROM ipam_addresses WHERE id = %s"%id) == 1)
+   ret['data'] = db.get_row()
+   ret['data']['mac'] = ':'.join(ret['data']['mac'][i:i+2] for i in [0,2,4,6,8,10]) 
+  else:
+   ret['data'] = {'id':'new','ip':'127.0.0.1','network_id':None,'mac':'00:00:00:00:00:00','state':0}
+ return ret
+
+#
+#
 def address_find(aCTX, aArgs = None):
  """Function docstring for address_find TBD
 
@@ -452,5 +502,3 @@ def address_status_report(aCTX, aArgs = None):
      aCTX.log("IPAM Event (%s) %s => %s"%(str(aArgs['subnet_id']).zfill(3), chg[0].ljust(4), ",".join( str(x) for x in notify[begin:end])))
      begin = end
  return ret
-
-

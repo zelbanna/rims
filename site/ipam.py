@@ -26,7 +26,7 @@ def network_info(aWeb):
  data = res['data']
  lock = "readonly" if not data['id'] == 'new' else ""
  aWeb.wr("<ARTICLE CLASS=info><P>Network Info (%s)</P>"%(data['id']))
- aWeb.wr("<FORM ID=ipam_info_form>")
+ aWeb.wr("<FORM ID='rims_data_form'>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(data['id']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=description VALUE='{}'></DIV></DIV>".format(data['description']))
@@ -46,7 +46,7 @@ def network_info(aWeb):
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='ipam_network_info?id=%s'%data['id']))
- aWeb.wr(aWeb.button('save'  ,DIV='div_content_right',URL='ipam_network_info?op=update', FRM='ipam_info_form'))
+ aWeb.wr(aWeb.button('save'  ,DIV='div_content_right',URL='ipam_network_info?op=update', FRM='rims_data_form'))
  if not data['id'] == 'new':
   aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='ipam_network_delete?id=%s'%data['id'],MSG='Are you really sure'))
  aWeb.wr("<SPAN CLASS='results' ID=update_results></SPAN>")
@@ -82,10 +82,12 @@ def network_delete(aWeb):
 #
 #
 def network_entries(aWeb):
- data = aWeb.rest_call("ipam/network_inventory",{'id':aWeb['id'],'extra':['mac']})
- aWeb.wr("<ARTICLE><P>Allocated IP Addresses</P><SPAN CLASS=results ID=ipam_address_operation></SPAN><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV></DIV><DIV CLASS=tbody>")
+ data = aWeb.rest_call("ipam/network_inventory",{'id':aWeb['id'],'extra':['mac','state']})
+ aWeb.wr("<ARTICLE><P>Allocated IP Addresses</P><SPAN CLASS=results ID=ipam_address_operation></SPAN><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>State</DIV></DIV><DIV CLASS=tbody>")
  for row in data['entries']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)i</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(mac)s</DIV><DIV CLASS=td>"%row)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)i</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(mac)s</DIV>"%row)
+  aWeb.wr("<DIV CLASS=td><DIV CLASS='state %s' /></DIV><DIV CLASS=td>"%{0:'grey',1:'green',2:'red'}.get(row['state'],0))
+  aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='ipam_address_info?id=%(id)i'%row))
   aWeb.wr(aWeb.button('delete', DIV='ipam_address_operation', URL='ipam_address_delete?id=%(id)i&ip=%(ip)s'%row))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
@@ -112,11 +114,24 @@ def address_new(aWeb):
 #
 #
 def address_info(aWeb):
- pass
+ args = aWeb.args()
+ data = aWeb.rest_call("ipam/address_info",args)['data']
+ aWeb.wr("<ARTICLE CLASS='info'><P>Address Info</DIV>")
+ aWeb.wr("<FORM ID=ipam_address_form>")
+ aWeb.wr("<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>")
+ aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=network_id STYLE='min-width:200px;' VALUE='%s' READONLY></DIV></DIV>"%(data['network_id']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT      TYPE=URL  NAME=ip         STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['ip']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT     TYPE=TEXT NAME=mac        STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['mac']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>State:</DIV><DIV CLASS=td><INPUT   TYPE=TEXT NAME=state      STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['state']))
+ aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</FORM>")
+ aWeb.wr(aWeb.button('save',   DIV='div_content_right',       URL='ipam_address_info?op=update', FRM='ipam_address_form'))
+ aWeb.wr(aWeb.button('trash',  DIV='div_content_right',       URL='ipam_address_delete',         FRM='ipam_address_form', MSG='Are you really sure you want to delete address?'))
+ aWeb.wr("</ARTICLE>")
 
 #
 #
 def address_delete(aWeb):
  res = aWeb.rest_call("ipam/address_delete",{'id':aWeb['id']})
  aWeb.wr("Deleted: %(result)s"%res)
-

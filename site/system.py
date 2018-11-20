@@ -77,7 +77,7 @@ def portal(aWeb):
    aWeb.wr("Error retrieving application info - exception info: %s"%(data['exception']))
   else:
    error = auth.get('error',{})
-   aWeb.wr("<FORM ACTION='system_portal' METHOD=POST ID=login_form>")
+   aWeb.wr("<FORM ACTION='system_portal' METHOD=POST ID='login_form'>")
    aWeb.wr("<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>")
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT NAME=username>")
    for row in data['usernames']:
@@ -85,7 +85,7 @@ def portal(aWeb):
    aWeb.wr("</SELECT></DIV></DIV>")
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Password:</DIV><DIV CLASS=td><INPUT TYPE=password NAME='password' PLACEHOLDER='******'></DIV></DIV>")
    aWeb.wr("</DIV></DIV>")
-   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM=login_form><IMG SRC='../images/icon-start.png' /></BUTTON>")
+   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM='login_form'><IMG SRC='../images/icon-start.png' /></BUTTON>")
   aWeb.wr("<!-- %s -->"%auth.get('error'))
   aWeb.wr("</ARTICLE></DIV>")
 
