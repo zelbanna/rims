@@ -72,8 +72,7 @@ def network_info(aCTX, aArgs = None):
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  with aCTX.db as db:
-  db.do("SELECT id, service, node FROM servers WHERE type = 'DHCP'")
-  ret['servers'] = db.get_rows()
+  ret['servers'] = [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.servers.items() if v['type'] == 'DHCP']
   ret['servers'].append({'id':'NULL','service':None,'node':None})
   if op == 'update':
    from struct import unpack
@@ -231,9 +230,8 @@ def server_leases(aCTX, aArgs = None):
  Output:
  """
  ret = {'data':[],'type':aArgs.get('type','active')}
- with aCTX.db as db:
-  ret['servers'] = db.do("SELECT service,node FROM servers WHERE type = 'DHCP'")
-  servers = db.get_rows()
+ servers = [{'service':v['service'],'node':v['node']} for v in aCTX.servers.values() if v['type'] == 'DHCP']
+ ret['servers'] = len(servers)
  for srv in servers:
   data = aCTX.node_function(srv['node'],srv['service'],'status')(aArgs = {'binding':ret['type']})['data']
   if data:
