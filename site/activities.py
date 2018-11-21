@@ -48,7 +48,7 @@ def info(aWeb):
  res  = aWeb.rest_call("system/activities_info",args)
  data = res['data']
  aWeb.wr("<ARTICLE CLASS='info'><P>Activity (%s)</P>"%(data['id']))
- aWeb.wr("<FORM ID=activity_form>")
+ aWeb.wr("<FORM ID=activities_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>User:</DIV><DIV CLASS=td><SELECT NAME=user_id>")
@@ -67,7 +67,7 @@ def info(aWeb):
  aWeb.wr("</FORM>")
  if data['id'] != 'new':
   aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='activities_delete?id={0}'.format(data['id']), MSG='Really remove activity?'))
- aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='activities_info?op=update', FRM='activity_form'))
+ aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='activities_info?op=update', FRM='activities_info_form'))
  aWeb.wr("</ARTICLE>")
 
 #
@@ -100,7 +100,7 @@ def type_info(aWeb):
  res  = aWeb.rest_call("system/activities_type_info",args)
  data = res['data']
  aWeb.wr("<ARTICLE CLASS='info'><P>Activity Type (%s)</P>"%(data['id']))
- aWeb.wr("<FORM ID=activity_form>")
+ aWeb.wr("<FORM ID=activities_type_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE='%s'></DIV></DIV>"%data['type'])
@@ -108,7 +108,7 @@ def type_info(aWeb):
  aWeb.wr("</FORM>")
  if data['id'] != 'new':
   aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='activities_type_delete?id={0}'.format(data['id']), MSG='Really remove activity?'))
- aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='activities_type_info?op=update', FRM='activity_form'))
+ aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='activities_type_info?op=update', FRM='activities_type_info_form'))
  aWeb.wr("</ARTICLE>")
 
 #

@@ -30,7 +30,7 @@ def domain_info(aWeb):
  res  = aWeb.rest_call("dns/domain_info",args)
  data = res['data']
  aWeb.wr("<ARTICLE CLASS=info><P>Domain Info (%s)</P>"%res['id'])
- aWeb.wr("<FORM ID=dns_info_form>")
+ aWeb.wr("<FORM ID=dns_domain_info_form>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  if res['id'] == 'new' and res.get('servers'):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Server</DIV><DIV CLASS=td><SELECT NAME=server_id>")
@@ -50,7 +50,7 @@ def domain_info(aWeb):
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(res['id']))
  aWeb.wr("</FORM>")
  if res['id'] == 'new':
-  aWeb.wr(aWeb.button('save',DIV='div_content_right',URL='dns_domain_info?op=update',FRM='dns_info_form'))
+  aWeb.wr(aWeb.button('save',DIV='div_content_right',URL='dns_domain_info?op=update',FRM='dns_domain_info_form'))
  else:
   aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='dns_domain_info?id=%s'%(res['id'])))
   aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='dns_domain_delete?id=%s'%res['id']))
@@ -99,7 +99,7 @@ def record_info(aWeb):
  res = aWeb.rest_call("dns/record_info",args)
  data = res['data']
  aWeb.wr("<ARTICLE CLASS=info><P>Record Info (%s)</P>"%(data['id']))
- aWeb.wr("<FORM ID=dns_info_form>")
+ aWeb.wr("<FORM ID=dns_record_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id        VALUE={}>".format(data['id']))
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=domain_id VALUE={}>".format(data['domain_id']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
@@ -111,7 +111,7 @@ def record_info(aWeb):
  aWeb.wr("<SPAN CLASS='results' ID=update_results></SPAN>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='dns_record_info?id=%s&domain_id=%s'%(data['id'],data['domain_id'])))
- aWeb.wr(aWeb.button('save',DIV='div_content_right',URL='dns_record_info?op=update',FRM='dns_info_form'))
+ aWeb.wr(aWeb.button('save',DIV='div_content_right',URL='dns_record_info?op=update',FRM='dns_record_info_form'))
  if not data['id'] == 'new':
   aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='dns_record_delete?id=%s&domain_id=%s'%(data['id'],data['domain_id'])))
  aWeb.wr("</ARTICLE>")

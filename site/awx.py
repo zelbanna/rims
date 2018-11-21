@@ -42,8 +42,8 @@ def inventory_info(aWeb):
  aWeb.wr("<ARTICLE><P>Hosts</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(aWeb['node'],aWeb['id']), SPIN='true'))
  aWeb.wr(aWeb.button('add',    DIV='div_content_right', URL='awx_inventory_device_search?node=%s&id=%s'%(aWeb['node'],aWeb['id']), TITLE='Sync with AWX'))
- aWeb.wr(aWeb.button('trash',  DIV='div_content_right', URL='awx_inventory_info_?node=%s&id=%s&op=delete_list'%(aWeb['node'],aWeb['id']), MSG='Delete hosts?', FRM='host_list', SPIN='true'))
- aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=host_list>"%(opres))
+ aWeb.wr(aWeb.button('trash',  DIV='div_content_right', URL='awx_inventory_info_?node=%s&id=%s&op=delete_list'%(aWeb['node'],aWeb['id']), MSG='Delete hosts?', FRM='dns_inventory_info_form', SPIN='true'))
+ aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=awx_inventory_info_form>"%(opres))
  aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Groups</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['hosts']:
   name = "<A CLASS=z-op DIV=div_content_right URL='device_info?id=%s'>%s</A>"%(row['instance_id'],row['name']) if row['instance_id'] != "" else row['name']
@@ -64,14 +64,14 @@ def inventory_delete(aWeb):
 #
 def inventory_device_search(aWeb):
  aWeb.wr("<ARTICLE STYLE='display:inline-block'>")
- aWeb.wr("<FORM ID=awx_choose>")
+ aWeb.wr("<FORM ID=awx_inventory_device_search_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id']))
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=node VALUE=%s>"%(aWeb['node']))
  aWeb.wr("<SPAN>Sync devices matching field:</SPAN><SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='type'>Type</OPTION><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='id'>ID</OPTION></SELECT>")
  aWeb.wr("<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' REQUIRED>")
  aWeb.wr("</FORM><DIV CLASS='inline'>")
  aWeb.wr(aWeb.button('back',DIV='div_content_right',URL='awx_inventory_info?id=%s&node=%s'%(aWeb['id'],aWeb['node'])))
- aWeb.wr(aWeb.button('forward',DIV='div_content_right',URL='awx_inventory_device_choose',FRM='awx_choose', SPIN='true'))
+ aWeb.wr(aWeb.button('forward',DIV='div_content_right',URL='awx_inventory_device_choose',FRM='awx_inventory_device_search_form', SPIN='true'))
  aWeb.wr("</DIV></ARTICLE>")
 
 #
@@ -80,7 +80,7 @@ def inventory_device_choose(aWeb):
  args = aWeb.args()
  res = aWeb.rest_call("device/list",args)
  aWeb.wr("<ARTICLE STYLE='display:inline-block'>")
- aWeb.wr("<FORM ID=awx_choose>")
+ aWeb.wr("<FORM ID=awx_inventory_device_choose_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id']))
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=node VALUE=%s>"%(aWeb['node']))
  aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
@@ -88,7 +88,7 @@ def inventory_device_choose(aWeb):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(hostname)s.%(domain)s</DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX VALUE=%(id)s NAME=device_%(id)s></DIV></DIV>"%row)
  aWeb.wr("</DIV></DIV></FORM>")
  aWeb.wr(aWeb.button('back',DIV='div_content_right',URL='awx_inventory_device_search?id=%s&node=%s'%(aWeb['id'],aWeb['node'])))
- aWeb.wr(aWeb.button('forward',DIV='div_content_right',URL='awx_inventory_device_sync',FRM='awx_choose', SPIN='true'))
+ aWeb.wr(aWeb.button('forward',DIV='div_content_right',URL='awx_inventory_device_sync',FRM='awx_inventory_device_choose_form', SPIN='true'))
  aWeb.wr("</ARTICLE>")
 
 #

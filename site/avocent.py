@@ -63,14 +63,13 @@ def info(aWeb):
  res = aWeb.rest_call("avocent/info",{'op':aWeb['op'],'id':aWeb['id'],'ip':aWeb['ip']})
  pdudata = res['data']
  aWeb.wr("<ARTICLE CLASS=info><P>PDU Device Info</P>")
- aWeb.wr("<FORM ID=pdu_info_form>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(aWeb['hostname']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Right/Left slots:</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=slots VALUE=1 %s></DIV></DIV>"%("checked=checked" if pdudata['slots'] == 2 else ""))
  for slot in range(0,pdudata['slots']):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Slot %s Name:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(slot,pdudata['%s_slot_name'%slot]))
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Slot %s ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(slot,pdudata['%s_slot_id'%slot]))
- aWeb.wr("</DIV></DIV></FORM>")
+ aWeb.wr("</DIV></DIV>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right', URL='avocent_info?id=%s&ip=%s&hostname=%s'%(aWeb['id'],aWeb['ip'],aWeb['hostname'])))
  aWeb.wr(aWeb.button('search',DIV='div_content_right', URL='avocent_info?id=%s&ip=%s&hostname=%s&op=lookup'%(aWeb['id'],aWeb['ip'],aWeb['hostname']), TITLE='Fetch information'))
  aWeb.wr("</ARTICLE>")
@@ -84,7 +83,7 @@ def unit_info(aWeb):
   aWeb.wr("Updated info: {}".format(res))
   return
  aWeb.wr("<ARTICLE CLASS=info><P>PDU Unit Info</P>")
- aWeb.wr("<FORM ID=pdu_form>")
+ aWeb.wr("<FORM ID=avocent_unit_info_form>")
  aWeb.wr("<INPUT NAME=slot VALUE={} TYPE=HIDDEN>".format(aWeb['slot']))
  aWeb.wr("<INPUT NAME=unit VALUE={} TYPE=HIDDEN>".format(aWeb['unit']))
  aWeb.wr("<INPUT NAME=ip   VALUE={} TYPE=HIDDEN>".format(aWeb['ip']))
@@ -95,5 +94,5 @@ def unit_info(aWeb):
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<SPAN CLASS='results' ID=update_results></SPAN>")
  aWeb.wr("</FORM>")
- aWeb.wr(aWeb.button('save',DIV='update_results', URL='avocent_unit_info?op=update', FRM='pdu_form'))
+ aWeb.wr(aWeb.button('save',DIV='update_results', URL='avocent_unit_info?op=update', FRM='avocent_unit_info_form'))
  aWeb.wr("</ARTICLE>")
