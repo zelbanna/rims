@@ -10,7 +10,7 @@ def main(aWeb):
  data = aWeb.rest_call("system/inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('node'):
-  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='system_node_list'>Nodes</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='node_list'>Nodes</A></LI>")
  if data.get('users'):
   aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
  tools = data.get('tools',[])

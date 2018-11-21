@@ -9,7 +9,7 @@ def list(aWeb):
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Settings</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content', URL='settings_list?node=%s'%aWeb['node']))
- aWeb.wr(aWeb.button('back',  DIV='div_content', URL='system_node_list'))
+ aWeb.wr(aWeb.button('back',  DIV='div_content', URL='node_list'))
  aWeb.wr(aWeb.button('add',   DIV='div_content_right', URL='settings_info?id=new&node=%s'%aWeb['node']))
  aWeb.wr(aWeb.button('info',  DIV='div_content_right', URL='settings_comprehensive?node=%s'%aWeb['node']))
  aWeb.wr(aWeb.button('help',  DIV='div_content_right', URL='settings_help'))

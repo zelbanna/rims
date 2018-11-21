@@ -52,7 +52,7 @@ def list(aWeb):
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Resources</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content', URL='resources_list?node=%s'%node))
- aWeb.wr(aWeb.button('back',DIV='div_content', URL='system_node_list'))
+ aWeb.wr(aWeb.button('back',DIV='div_content', URL='node_list'))
  aWeb.wr(aWeb.button('add', DIV='div_content_right', URL='resources_info?node=%s&id=new&user_id=%s'%(node,cookie['id'])))
  aWeb.wr(aWeb.button('help',DIV='div_content_right', URL='resources_help', TITLE='Help information'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
