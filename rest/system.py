@@ -41,8 +41,7 @@ def inventory(aCTX, aArgs = None):
  with aCTX.db as db:
   if aArgs['node'] == 'master':
    ret.update({'node':True,'users':True})
-   db.do("SELECT node FROM nodes WHERE system = 1")
-   ret['logs'] = [x['node'] for x in db.get_rows()]
+   ret['logs'] = [k for k,v in aCTX.nodes.items() if v['system'] == 1]
   else:
    ret['logs']  = [aArgs['node']]
 
@@ -324,7 +323,6 @@ def node_info(aCTX, aArgs = None):
    ret['data'] = db.get_row()
    if ret['found'] and op == 'update':
     node = ret['data']
-    keys = aCTX.nodes.keys()
     for k in list(aCTX.nodes.keys()):
      if aCTX.nodes[k]['id'] == node['id']:
       aCTX.nodes.pop(k,None)
@@ -574,8 +572,7 @@ def server_info(aCTX, aArgs = None):
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  with aCTX.db as db:
-  db.do("SELECT node FROM nodes")
-  ret['nodes'] = [x['node'] for x in db.get_rows()]
+  ret['nodes'] = list(aCTX.nodes.keys())
   if op == 'update':
    if aArgs.get('ui') == 'None':
     aArgs['ui'] = 'NULL'
@@ -844,7 +841,7 @@ def task_add(aCTX, aArgs = None):
  aArgs = aArgs
  if aArgs.get('periodic'):
   with aCTX.db as db:
-   db.do("INSERT INTO tasks (node_id, module, func, args, frequency,output) VALUES((SELECT id FROM nodes WHERE node = '%s'),'%s','%s','%s',%i,%i)"%(node,aArgs['module'],aArgs['func'],dumps(aArgs['args']),aArgs.get('frequency',300),0 if not aArgs.get('output') else 1))
+   db.do("INSERT INTO tasks (node_id, module, func, args, frequency,output) VALUES(%s,'%s','%s','%s',%i,%i)"%(aCTX.nodes[node]['id'],aArgs['module'],aArgs['func'],dumps(aArgs['args']),aArgs.get('frequency',300),0 if not aArgs.get('output') else 1))
    aArgs['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
   frequency = aArgs.pop('frequency',None)
