@@ -26,9 +26,7 @@ def domain_list(aCTX, aArgs = None):
  with aCTX.db as db:
   if aArgs.get('sync'):
    org = {}
-   db.do("SELECT id, service, node FROM servers WHERE type = 'DNS'")
-   servers = db.get_rows()
-   for server in servers:
+   for server in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.servers.items() if v['type'] == 'DNS']:
     org[server['id']] = aCTX.node_function(server['node'],server['service'],'domain_list')()['domains']
    ret.update({'sync':{'added':[],'deleted':[],'type_fix':0}})
    db.do("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
@@ -74,16 +72,15 @@ def domain_info(aCTX, aArgs = None):
  Output:
  """
  ret = {'id':aArgs['id']}
- with aCTX.db as db:
-  if aArgs['id'] == 'new' and not (aArgs.get('op') == 'update'):
-   db.do("SELECT id, service, node FROM servers WHERE type = 'DNS'")
-   ret['servers'] = db.get_rows()
-   ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
-  else:
+ if aArgs['id'] == 'new' and not (aArgs.get('op') == 'update'):
+  ret['servers'] = [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.servers.items() if v['type'] == 'DNS']
+  ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 } 
+ else:
+  with aCTX.db as db:
    if aArgs['id'] == 'new':
     db.do("SELECT id, 'new' AS foreign_id, service, node FROM servers WHERE id = %s"%aArgs.pop('server_id','0'))
    else:
-    db.do("SELECT servers.id, foreign_id, service, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aArgs['id'])
+    db.do("SELECT foreign_id, service, node, servers.id FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aArgs['id'])
    ret['infra'] = db.get_row()
    aArgs['id']   = ret['infra'].pop('foreign_id',None)
    ret.update(aCTX.node_function(ret['infra']['node'],ret['infra']['service'],'domain_info')(aArgs = aArgs))
@@ -165,16 +162,14 @@ def record_list(aCTX, aArgs = None):
 
  Output:
  """
- with aCTX.db as db:
-  if aArgs.get('domain_id'):
+ if aArgs.get('domain_id'):
+  with aCTX.db as db:  
    db.do("SELECT foreign_id, service, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aArgs['domain_id'])
    infra = db.get_row()
    aArgs['domain_id'] = infra['foreign_id']
-  else:
-   # Strictly internal use - this one fetch all records for consistency check
-   id = aArgs.pop('server_id','0')
-   db.do("SELECT service, node FROM servers WHERE id = %s"%id)
-   infra = db.get_row()
+ else:
+  # Strictly internal use - this one fetch all records for consistency check
+  infra = aCTX.servers.get(aArgs.pop('server_id','0'))
  ret = aCTX.node_function(infra['node'],infra['service'],'record_list')(aArgs = aArgs)
  ret['domain_id'] = aArgs.get('domain_id',0)
  return ret
@@ -197,10 +192,10 @@ def record_info(aCTX, aArgs = None):
  ret = {}
  domain_id = aArgs['domain_id']
 
- with aCTX.db as db:
-  if aArgs['id'] == 'new' and not (aArgs.get('op') == 'update'):
-   ret['data'] = {'id':'new','domain_id':domain_id,'name':'key','content':'value','type':'type-of-record','ttl':'3600','foreign_id':'NA'}
-  else:
+ if aArgs['id'] == 'new' and not (aArgs.get('op') == 'update'):
+  ret['data'] = {'id':'new','domain_id':domain_id,'name':'key','content':'value','type':'type-of-record','ttl':'3600','foreign_id':'NA'}
+ else:
+  with aCTX.db as db:
    db.do("SELECT foreign_id, service, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%domain_id)
    infra = db.get_row()
    aArgs['domain_id'] = infra['foreign_id']
@@ -415,10 +410,7 @@ def status(aCTX, aArgs = None):
  """
  ret = {'top':{},'who':{}}
  args = {'count':aArgs.get('count',20)}
- with aCTX.db as db:
-  db.do("SELECT service, node FROM servers LEFT JOIN domains ON domains.server_id = servers.id WHERE servers.type = 'DNS'")
-  servers = db.get_rows()
- for infra in servers:
+ for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.servers.values() if v['type'] == 'DNS']:
   res = aCTX.node_function(infra['node'],infra['service'],'status')(aArgs = args)
   ret['top']["%(node)s_%(service)s"%infra] = res['top']
   ret['who']["%(node)s_%(service)s"%infra] = res['who']
@@ -442,8 +434,7 @@ def consistency_check(aCTX, aArgs = None):
  ret = {'records':[],'devices':[]}
  with aCTX.db as db:
   # Collect DNS severs
-  db.do("SELECT id, service, node FROM servers WHERE type = 'DNS'")
-  servers = db.get_dict('id')
+  servers = [k for k,v in aCTX.servers.items() if v['type'] == 'DNS']
   # Fetch domains
   db.do("SELECT id,foreign_id,name FROM domains")
   domains = db.get_dict('name')
@@ -456,7 +447,7 @@ def consistency_check(aCTX, aArgs = None):
   for type in ['a','ptr']:
    records = {}
    # Fetch records from each server, thanks reentrant DB :-)
-   for id,data in servers.items():
+   for id in servers:
     records[id] = record_list(aCTX, {'type':type,'server_id':id})['records']
    # Get 'type' data for all devices
    db.do("SELECT devices.id as device_id, a_dom_id, INET_NTOA(ia.ip) AS ip, %s_id AS record_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN domains ON devices.a_dom_id = domains.id"%(type))

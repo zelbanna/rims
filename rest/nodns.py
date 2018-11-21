@@ -69,7 +69,7 @@ def domain_save(aCTX, aArgs = None):
 #
 #
 def record_list(aCTX, aArgs = None):
- """NO OP
+ """ List device information where we have something -> i.e. on .local devices
 
  Args:
   - type (optional)
@@ -78,9 +78,13 @@ def record_list(aCTX, aArgs = None):
  Output:
  """
  ret = {}
- with aCTX.db as db:
-  ret['count'] = db.do("SELECT devices.id, 0 AS domain_id, CONCAT(hostname,'.local') AS name, INET_NTOA(ia.ip) AS content, 'A' AS type, 3600 AS ttl FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.a_dom_id = 0")
-  ret['records']= db.get_rows()
+ if aArgs.get('type','a') == 'a':
+  with aCTX.db as db:
+   ret['count'] = db.do("SELECT devices.id, 0 AS domain_id, CONCAT(hostname,'.local') AS name, INET_NTOA(ia.ip) AS content, 'A' AS type, 3600 AS ttl FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.a_dom_id = 0")
+   ret['records']= db.get_rows()
+ else:
+  ret['count'] = 0
+  ret['records'] = []
  return ret
 
 #
