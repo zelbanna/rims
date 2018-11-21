@@ -9,12 +9,11 @@ if __name__ == "__main__":
  if len(argv) < 3 or not argv[2] in ['-s','-d','-v','-r']:
   print(argv[0] + " <settings.json> -d(atabase)|-s(tructure)|-v(alues|-r(estore) [io-file]")
   exit(0)
-
  from os import path as ospath, getcwd
  syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
+
  from rims.rest import mysql
  from rims.core.engine import Context
-
  ctx = Context(aConfig = argv[1])
  args = {}
  res = []
@@ -30,4 +29,6 @@ if __name__ == "__main__":
  elif argv[2] == '-r' and len(argv) == 4:
   args.update({'file':ospath.abspath(ospath.join(getcwd(),argv[3]))})
   res = mysql.restore(ctx, args)
- stdout.write("\n".join(res['output']))
+ for line in res['output']:
+  print(line)
+  # except: print(line.encode('utf-8')) , needs to be fixed somehow

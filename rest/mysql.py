@@ -21,6 +21,7 @@ def dump(aCTX, aArgs = None):
  else:
   db,username,password = aCTX.config['db_name'], aCTX.config['db_user'], aCTX.config['db_pass']
  try:
+  line_number = 0
   mode = aArgs.get('mode','structure')
   cmd  = ["mysqldump", "-u" + username, "-p" + password, db]
   output = []
@@ -36,8 +37,10 @@ def dump(aCTX, aArgs = None):
   else:
    cmd.extend(['--no-create-info','--skip-triggers'])
   output.append("USE %s;"%db)
+  # print(" ".join(cmd))
   data = check_output(cmd).decode()
   for line in data.split('\n'):
+   line_number+=1
    if not line[:2] in [ '/*','--']:
     if "AUTO_INCREMENT=" in line:
      parts = line.split();
@@ -46,10 +49,11 @@ def dump(aCTX, aArgs = None):
        parts.remove(part)
        break
      line = " ".join(parts)
+    # print("%05d: %s"%(line_number,line))
     output.append(line)
   res = 'OK'
  except Exception as e:
-  output = ["DumpError:%s"%repr(e)]
+  output = ["DumpError(%s)@%s"%(repr(e),line_number)]
   res = 'NOT_OK'
  return {'status':res, 'output':output,'mode':mode,'full':aArgs.get('full',True)}
 
@@ -122,20 +126,20 @@ def patch(aCTX, aArgs = None):
  Output:
  """
  from os import remove
- args = dict(aArgs)
- args['mode'] = 'database'
  ret = {'status':'NOT_OK'}
- with open('mysql.backup','w') as f:
-  args['full'] = True
-  res = dump(aCTX, args)
-  ret['database_backup_result'] = res['status']
-  f.write("\n".join(res['output']))
+ args = dict(aArgs)
+ args.update({'mode':'database','full':True})
 
- with open('mysql.values','w') as f:
-  args['full'] = False
-  res = dump(aCTX, args)
-  ret['data_backup_result'] = res['status']
-  f.write("\n".join(res['output']))
+ res = dump(aCTX, args)
+ ret['database_backup_result'] = res['status']
+ with open('mysql.backup','w', encoding='utf-8') as f:
+  f.write(u'\n'.join(res['output']))
+
+ args['full'] = False
+ res = dump(aCTX, args)
+ ret['data_backup_result'] = res['status']
+ with open('mysql.values','w', encoding='utf-8') as f:
+  f.write(u'\n'.join(res['output']))
 
  if ret['database_backup_result'] == 'OK' and ret['data_backup_result'] == 'OK':
   args['file'] = aArgs['schema_file']

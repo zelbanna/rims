@@ -298,13 +298,13 @@ def search(aCTX, aArgs = None):
  """ Functions returns device id for device matching conditions
 
  Args:
-  - device
+  - hostname
 
  Output:
  """
  ret = {}
  with aCTX.db as db:
-  ret['found'] = db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE hostname LIKE '%%%(device)s%%' OR CONCAT(hostname,'.',domains.name) LIKE '%%%(device)s%%'"%aArgs)
+  ret['found'] = db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE hostname LIKE '%%%(hostname)s%%' OR CONCAT(hostname,'.',domains.name) LIKE '%%%(hostname)s%%'"%aArgs)
   ret['device']= db.get_row()
  return ret
 

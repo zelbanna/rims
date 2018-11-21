@@ -13,18 +13,18 @@ class Device(object):
   self._node = aNode
   self._token = aToken
 
- def __str__(self):           
+ def __str__(self):
   return "AWX(node=%s, token=%s)".format(self._node, self._token)
 
  #
- # { 'username','password','mode' }   
+ # { 'username','password','mode' }
  # mode: 'basic'/'full' auth process
- #            
+ #
  def auth(self, aAuth):
   from rims.core.genlib import basic_auth
-  self._token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']     
-  try: 
-   if aAuth.get('mode','full') == 'full':  
+  self._token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']
+  try:
+   if aAuth.get('mode','full') == 'full':
     ret = self._ctx.rest_call("%s/me"%self.ctx.nodes[self._node]['url'], aHeader = {'Authorization':self._token}, aDataOnly = False)
     ret.pop('data',None)
     ret.pop('node',None)
@@ -55,13 +55,13 @@ class Device(object):
   return self._ctx.rest_call("%s/%s"%(self.ctx.nodes[self._node]['url'],query), **kwargs)
 
  def fetch_list(self,aBase,aSet):
-  ret  = []  
-  next = aBase          
-  while True:      
+  ret  = []
+  next = aBase
+  while True:
    data = self.call(next)['data']
-   for row in data['results']:            
+   for row in data['results']:
     ret.append({k:row.get(k) for k in aSet})
-   try:             
+   try:
     _,_,page = data['next'].rpartition('?')
     next = "%s?%s"%(base,page)
    except: break
@@ -72,17 +72,17 @@ class Device(object):
   next = aBase
   while True:
    data = self.call(next)['data']
-   for row in data['results']:           
+   for row in data['results']:
     ret.append({k:row.get(k) for k in aSet})
-   try:                 
+   try:
     _,_,page = data['next'].rpartition('?')
     next = "%s?%s"%(base,page)
    except: break
-  return ret            
+  return ret
 
  def fetch_dict(self,aBase,aSet,aKey):
   ret  = {}
-  next = aBase       
+  next = aBase
   while True:
    data = self.call(next)['data']
    for row in data['results']:
@@ -90,7 +90,7 @@ class Device(object):
    try:
     _,_,page = data['next'].rpartition('?')
     next = "%s?%s"%(base,page)
-   except: break       
+   except: break
   return ret
 
 ####################################### AWX #######################################
