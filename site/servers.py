@@ -50,7 +50,7 @@ def info(aWeb):
  args = aWeb.args()
  res  = aWeb.rest_call("system/server_info",args)
  data = res['data']
- aWeb.wr("<FORM ID=server_info_form>")
+ aWeb.wr("<FORM ID=servers_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(data['id']))
  aWeb.wr("<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><SELECT NAME=node>")
@@ -73,7 +73,7 @@ def info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>UI:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=ui VALUE='%s'></DIV></DIV>"%(data['ui']))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</FORM>")
- aWeb.wr(aWeb.button('save',    DIV='div_content_right', URL='servers_info?op=update', FRM='server_info_form'))
+ aWeb.wr(aWeb.button('save',    DIV='div_content_right', URL='servers_info?op=update', FRM='servers_info_form'))
  if data['id'] != 'new':
   aWeb.wr(aWeb.button('trash', DIV='div_content_right', URL='servers_delete?id=%s'%(data['id']), MSG='Delete server?'))
  aWeb.wr("</ARTICLE>")

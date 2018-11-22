@@ -25,7 +25,7 @@ class Device(object):
   self._token = basic_auth(aAuth['username'],aAuth['password'])['Authorization']
   try:
    if aAuth.get('mode','full') == 'full':
-    ret = self._ctx.rest_call("%s/me"%self.ctx.nodes[self._node]['url'], aHeader = {'Authorization':self._token}, aDataOnly = False)
+    ret = self._ctx.rest_call("%s/me"%self._ctx.nodes[self._node]['url'], aHeader = {'Authorization':self._token}, aDataOnly = False)
     ret.pop('data',None)
     ret.pop('node',None)
    else:
@@ -52,7 +52,7 @@ class Device(object):
   try:    kwargs['aHeader'].update({'Authorization':self._token})
   except: kwargs['aHeader'] = {'Authorization':self._token}
   kwargs['aDataOnly'] = False
-  return self._ctx.rest_call("%s/%s"%(self.ctx.nodes[self._node]['url'],query), **kwargs)
+  return self._ctx.rest_call("%s/%s"%(self._ctx.nodes[self._node]['url'], query), **kwargs)
 
  def fetch_list(self,aBase,aSet):
   ret  = []
@@ -128,7 +128,7 @@ def inventory_delete(aCTX, aArgs = None):
  """
  controller = Device(aCTX,aArgs['node'])
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
- res = controller.call("inventories/%(id)s/"%aArgs,None,"DELETE")
+ res = controller.call("inventories/%(id)s/"%aArgs,aMethod = "DELETE")
  ret = {'status':"deleted" if res['code'] == 204 else res['info']['x-code']}
  return ret
 
@@ -213,7 +213,7 @@ def inventory_sync(aCTX, aArgs = None):
    group = ret['groups'].get(dev['type_name'],{'id':None})
    if not group['id']:
     group = {'name':dev['type_name'], 'description':"%s devices"%dev['type_name']}
-    res = controller.call("inventories/%s/groups/"%(aArgs['id']),group,"POST")
+    res = controller.call("inventories/%s/groups/"%(aArgs['id']), aArgs = group, aMethod = "POST")
     if res['code'] == 201:
      group.update({'id':res['data']['id'],'info':'CREATED','total_hosts':0})
     else:
@@ -226,7 +226,7 @@ def inventory_sync(aCTX, aArgs = None):
     host  = hosts.get(str(dev['id']))
     args = {"name": "%s.%s"%(dev['hostname'],dev['domain']),"description": "%(model)s (%(ip)s)"%dev,"enabled": True,"instance_id": str(dev['id']), "variables": "" }
     if host:
-     res  = controller.call("hosts/%s/"%(host['id']),args,"PATCH")
+     res  = controller.call("hosts/%s/"%(host['id']), aArgs = args, aMethod = "PATCH")
      dev['awx'] = {'code':res['code'],'id':res['data']['id']}
      # Check if already in group otherwise add to group
      for hgrp in host['groups']:
@@ -234,7 +234,7 @@ def inventory_sync(aCTX, aArgs = None):
        dev['awx']['group'] = 'REMAIN_IN_GROUP'
        break
      else:
-      res  = controller.call("groups/%s/hosts/"%(group['id']),{'id':host['id']},"POST")
+      res  = controller.call("groups/%s/hosts/"%(group['id']), aArgs = {'id':host['id']}, aMethod = "POST")
       if res['code'] == 204:
        dev['awx']['group'] = 'ADDED_TO_GROUP'
        group['total_hosts'] += 1
@@ -242,7 +242,7 @@ def inventory_sync(aCTX, aArgs = None):
        dev['awx']['group'] = 'ERROR:%i'%res['code']
     else:
      # No host, create directly to group (belonging to inventory) x :-)
-     res  = controller.call("groups/%s/hosts/"%(group['id']),args,"POST")
+     res  = controller.call("groups/%s/hosts/"%(group['id']),aArgs = args,aMethod = "POST")
      dev['awx'] = {'code':res['code'],'id':res['data']['id'],'group':'CREATED_TO_GROUP'}
      args['id'] = res['data']['id']
      hosts[str(dev['id'])] = args
@@ -269,11 +269,11 @@ def inventory_delete_hosts(aCTX, aArgs = None):
  ret = {'hosts':{}}
  node = aArgs.pop('node',None)
  id   = aArgs.pop('id',None)
- controller = Device(aCTX.nodes[node]['url'])
+ controller = Device(aCTX,node)
  controller.auth({'username':aCTX.settings['awx']['username'],'password':aCTX.settings['awx']['password'],'mode':'basic'})
  for host,host_id in aArgs.items():
   if host[0:5] == 'host_':
-   res = controller.call("hosts/%s/"%host_id,None,"DELETE")
+   res = controller.call("hosts/%s/"%host_id, aMethod = "DELETE")
    ret['hosts'][host_id] = "OK" if res['code'] == 204 else res['info']['x-code']
  return ret
 

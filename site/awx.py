@@ -42,7 +42,7 @@ def inventory_info(aWeb):
  aWeb.wr("<ARTICLE><P>Hosts</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(aWeb['node'],aWeb['id']), SPIN='true'))
  aWeb.wr(aWeb.button('add',    DIV='div_content_right', URL='awx_inventory_device_search?node=%s&id=%s'%(aWeb['node'],aWeb['id']), TITLE='Sync with AWX'))
- aWeb.wr(aWeb.button('trash',  DIV='div_content_right', URL='awx_inventory_info_?node=%s&id=%s&op=delete_list'%(aWeb['node'],aWeb['id']), MSG='Delete hosts?', FRM='dns_inventory_info_form', SPIN='true'))
+ aWeb.wr(aWeb.button('trash',  DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s&op=delete_list'%(aWeb['node'],aWeb['id']), MSG='Delete hosts?', FRM='awx_inventory_info_form', SPIN='true'))
  aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=awx_inventory_info_form>"%(opres))
  aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Groups</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['hosts']:
