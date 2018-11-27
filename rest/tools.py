@@ -114,7 +114,7 @@ def logs_clear(aCTX, aArgs = None):
   try:
    open(file,'w').close()
    ret['file'][name] = 'CLEARED'
-   aCTX.log("Emptied log [{}]".format(name))
+   aCTX.log("Emptied log [%s]"%name)
   except Exception as err:
    ret['file'][name] = 'ERROR: %s'%(repr(err))
  return ret
