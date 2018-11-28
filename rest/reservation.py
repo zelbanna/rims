@@ -55,7 +55,33 @@ def list(aCTX, aArgs = None):
 
 #
 #
-def expiration_check(aCTX, aArgs = None):
+def info(aCTX, aArgs = None):
+ """ Function provides reservation info and operation 
+
+ Args:
+  - device_id (required)
+  - op (optional)
+  - address (optional)
+  - loan (optional) 
+
+ Output:
+
+ """
+ ret = {}
+ op = aArgs.pop('op',None)
+ id = aArgs.pop('device_id',None)
+ with aCTX.db as db:
+  if op == 'update':
+   aArgs['loan'] = 0 if not aArgs.get('loan') else 1
+   db.update_dict('reservations',aArgs,"device_id=%s"%id)
+  db.do("SELECT device_id, user_id, loan, address, alias, DATE_FORMAT(time_end,'%Y-%m-%d %H:%i') AS end, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') AS start FROM reservations LEFT JOIN users ON users.id = reservations.user_id WHERE device_id = {0}".format(id))
+  ret['data'] = db.get_row()
+  ret['data']['loan'] = (ret['data']['loan'] == 1)
+ return ret
+
+#
+#
+def expiration_status(aCTX, aArgs = None):
  """ Function notifies users (using notification service@node) about reservation time left. If NOW() - time_end < threashold => service@node.notify('user':user,'message':'Device X reservation will expire in XX seconds')
   Ideally run as a periodic task.
 
@@ -74,9 +100,8 @@ def expiration_check(aCTX, aArgs = None):
  notifier = aCTX.settings.get('notifier')
  if notifier:
   notify = aCTX.node_function(notifier['node'],notifier['service'],"notify",aHeader = {'X-Log':'true'})
-  for res in ret['hosts']:
-   res = notify(aArgs = {'message':'Host %s expiration'%res['hostname']})
-   print(res)
+  for host in ret['hosts']:
+   notify(aArgs = {'message':'Host %s reservation expired (remove or extend) - remaining time: %s'%(host['hostname'],host['remaining'])})
  return ret
 
 #

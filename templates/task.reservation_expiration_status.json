@@ -1,7 +1,7 @@
 {
  "node":"master",
- "module":"device",
- "func":"network_info_discover",
+ "module":"reservation",
+ "func":"expiration_status",
  "args":{},
  "periodic":true,
  "output":true,

@@ -42,9 +42,21 @@ def update(aWeb):
 #
 #
 def info(aWeb):
- aWeb.wr("<ARTICLE CLASS=info><P>Device</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("</DIV></DIV></ARTICLE>")
+ args = aWeb.args()
+ data = aWeb.rest_call("reservation/info",args)['data']
+ aWeb.wr("<ARTICLE CLASS=info><P>Reservation</P>")
+ aWeb.wr("<FORM ID=reservations_info_form>")
+ aWeb.wr("<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>")
+ aWeb.wr("<INPUT TYPE=HIDDEN NAME=device_id ID=device_id VALUE='%s'>"%(data['device_id']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>User:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%(data['alias']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Start:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%(data['start']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>End:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%(data['end']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>On Loan:</DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX NAME=loan VALUE=1 %s></DIV></DIV>"%("checked=checked" if data['loan'] else ""))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Address:</DIV><DIV CLASS=td><INPUT TYPE=TEXT     NAME=address  STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['address']))
+ aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</FORM>")
+ aWeb.wr(aWeb.button('save', DIV='div_content_right', URL='reservations_info?op=update', FRM='reservations_info_form'))
+ aWeb.wr("</ARTICLE>")
 
 #
 #

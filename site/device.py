@@ -213,8 +213,9 @@ def info(aWeb):
  aWeb.wr(aWeb.button('search',     DIV='div_content_right',URL='device_info?op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information', SPIN='true'))
  aWeb.wr(aWeb.button('document',   DIV='div_dev_data',     URL='device_conf_gen?id=%i'%(dev['id']),TITLE='Generate System Conf'))
  aWeb.wr(aWeb.button('connections',DIV='div_dev_data',     URL='device_interface_list?device=%i'%(dev['id']),TITLE='Device interfaces'))
- aWeb.wr(aWeb.button('network',  DIV='div_content_right',URL='visualize_network?type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map'))
+ aWeb.wr(aWeb.button('network',    DIV='div_content_right',URL='visualize_network?type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map'))
  aWeb.wr(aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip'])))
+ aWeb.wr(aWeb.button('start',      DIV='div_content_right',URL='device_control?id=%s'%dev['id'], TITLE='Device Control'))
  if dev['racked'] and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
   # Hardcoded port to 60xx
   aWeb.wr(aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port'])))
@@ -312,6 +313,14 @@ def extended(aWeb):
  aWeb.wr(aWeb.button('save',  DIV='div_content_right',URL='device_extended?op=update', FRM='info_form', TITLE='Save Device Information'))
  aWeb.wr("<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('status','')))
  aWeb.wr("</ARTICLE>")
+
+#
+#
+def control(aWeb):
+ aWeb.wr("control")
+ #args = aWeb.args()
+ #res = aWeb.rest_call("device/control",args)
+ #aWeb.wr(res)
 
 #
 #

@@ -81,11 +81,14 @@ def notify(aCTX, aArgs = None):
   - result ('OK'/'NOT_OK')
   - info (possible notify output)
  """
- from time import localtime
+ from time import localtime, strftime
  ret = {}
  try:
   with open(aCTX.settings['logs'][aCTX.settings['logger']['log']], 'a') as f:
    f.write(str("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aArgs['message'])))
- except: ret['result'] = 'NOT_OK'
- else: ret['result'] = 'OK'
- return 
+ except Exception as err:
+  ret['result'] = 'NOT_OK'
+  ret['info'] = 'ERROR: %s'%(repr(err)) 
+ else:
+  ret['result'] = 'OK'
+ return ret

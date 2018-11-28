@@ -1,0 +1,8 @@
+{
+ "node":"master",
+ "module":"tools",
+ "func":"debug",
+ "args":{},
+ "output":false,
+ "periodic":false
+}

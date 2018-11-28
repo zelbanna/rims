@@ -294,11 +294,24 @@ def list(aCTX, aArgs = None):
 
 #
 #
+def control(aCTX, aArgs = None):
+ """ Function provides an operational interface towards device
+
+ Args:
+  - id (required)
+
+ Output:
+ """
+ return None
+
+
+#
+#
 def search(aCTX, aArgs = None):
  """ Functions returns device id for device matching conditions
 
  Args:
-  - hostname
+  - hostname (required)
 
  Output:
  """
