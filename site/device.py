@@ -321,21 +321,22 @@ def control(aWeb):
  res = aWeb.rest_call("device/control",args)
  aWeb.wr("<ARTICLE CLASS='info'><P>Device Controls</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Reset:</DIV><DIV CLASS=td>[]</DIV><DIV CLASS=td>&nbsp;")
- aWeb.wr(aWeb.button('revert', DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&op=reset'%res['id']))
- aWeb.wr("</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Reset:</DIV><DIV CLASS=td>&nbsp;")
+ aWeb.wr(aWeb.button('revert', DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&dev_op=reset'%res['id'], MSG='Really reset device?', TITLE='Reset device'))
+ aWeb.wr("</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res.get('dev_op') if args.get('dev_op') == 'reset' else '&nbsp;'))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Shutdown:</DIV><DIV CLASS=td>&nbsp;")
+ aWeb.wr(aWeb.button('off', DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&dev_op=shutdown'%res['id'], MSG='Really shutdown device?', TITLE='Shutdown device'))
+ aWeb.wr("</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res.get('dev_op') if args.get('dev_op') == 'shutdown' else '&nbsp;'))
  for pem in res['pems']:
   aWeb.wr("<!-- %(pdu_type)s@%(pdu_ip)s:%(pdu_slot)s/%(pdu_unit)s -->"%pem)
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>PEM:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;"%pem['name'])
-  url = 'device_control?id=%s&op=pdu&pdu=%s&slot=%s&unit=%s&state={}'%(res['id'],pem['pdu_id'],pem['pdu_slot'],pem['pdu_unit'])
-  if   pem['status'] == 'off':
-   aWeb.wr(aWeb.button('start', DIV='div_dev_data', SPIN='true', URL=url.format('on')))
-  elif pem['status'] == 'on':
-   aWeb.wr(aWeb.button('stop',  DIV='div_dev_data', SPIN='true', URL=url.format('off')))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>PEM: %s</DIV><DIV CLASS=td>&nbsp;"%pem['name'])
+  if   pem['state'] == 'off':
+   aWeb.wr(aWeb.button('start', DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&pem_id=%s&pem_op=on'%(res['id'],pem['id'])))
+  elif pem['state'] == 'on':
+   aWeb.wr(aWeb.button('stop',  DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&pem_id=%s&pem_op=off'%(res['id'],pem['id'])))
   else:
-   aWeb.wr(aWeb.button('help'))
- aWeb.wr("</DIV></DIV>")
+   aWeb.wr(aWeb.button('help', TITLE='Unknown state'))
+ aWeb.wr("</DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.get('op',{'status':'&nbsp;'})['status']))
  aWeb.wr("</ARTICLE>")
 
 #

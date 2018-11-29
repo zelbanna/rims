@@ -300,22 +300,31 @@ def control(aCTX, aArgs = None):
  Args:
   - id (required)
   - user_id (required)
-  - op (optional)
+  - pem_op (optional required). Apply op (on|off|reboot) to pdu connected to pem
+  - pem_id (optional required). Select which pem (or 'all') to apply op to
+  - dev_op (optional required). Apply op (shutdown|reset) to device
 
  Output:
  """
+ from importlib import import_module
  ret = {'id':aArgs['id']}
- op = aArgs.pop('op',None)
- aCTX.log("Device_Control:%s => %s"%(ret['id'],op))
  with aCTX.db as db:
+  db.do("SELECT INET_NTOA(ia.ip) AS dev_ip,dt.name AS dev_type FROM devices LEFT JOIN device_types AS dt ON dt.id = devices.type_id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%ret['id'])
+  ret['device'] = db.get_row()
   ret['pem_count'] = db.do("SELECT dp.id,dp.name,dp.pdu_id,dp.pdu_slot,dp.pdu_unit,dt.name AS pdu_type,INET_NTOA(ia.ip) AS pdu_ip FROM device_pems AS dp LEFT JOIN devices ON devices.id = dp.pdu_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE dp.device_id = %(id)s"%ret)
   ret['pems'] = db.get_rows()
+ if aArgs.get('dev_op'):
+  module = import_module("rims.devices.%s"%ret['device']['dev_type'])
+  dev = getattr(module,'Device',None)(aCTX, ret['device']['dev_ip'])
+  ret['dev_op'] = dev.operation(aArgs['dev_op'])
  if ret['pem_count'] > 0:
-  from importlib import import_module
   for pem in ret['pems']:
+   op_id = str(aArgs.get('pem_id','NULL'))
    module = import_module("rims.devices.%s"%pem['pdu_type'])
    pdu = getattr(module,'Device',None)(aCTX, pem['pdu_ip'])
    pem.update(pdu.get_state(pem['pdu_slot'],pem['pdu_unit']))
+   if op_id == 'all' or op_id == str(pem['id']):
+    pem['op'] = pdu.set_state(pem['pdu_slot'],pem['pdu_unit'],aArgs['pem_op'])
  return ret
 
 

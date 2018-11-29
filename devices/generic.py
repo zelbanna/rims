@@ -23,9 +23,9 @@ class Device(object):
 
  def log(self, aMsg): self._ctx.log(aMsg)
 
- def shutdown(self):  return False
+ def rebind(self, aIP): self._ip = aIP
 
- def rebind(self,aIP): self._ip = aIP
+ def operation(self, aType):  return 'NOT_IMPLEMENTED'
 
  def ping_device(self):
   from os import system
