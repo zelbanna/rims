@@ -326,8 +326,8 @@ def node_info(aCTX, aArgs = None):
     for k in list(aCTX.nodes.keys()):
      if aCTX.nodes[k]['id'] == node['id']:
       aCTX.nodes.pop(k,None)
-      aCTX.nodes[node['node']] = {'id':node['id'],'url':node['url'],'system':node['system']}
       break
+    aCTX.nodes[node['node']] = {'id':node['id'],'url':node['url'],'system':node['system']}
   else:
    ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':None,'system':0}
  return ret
@@ -344,7 +344,7 @@ def node_delete(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  if db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aArgs['id']) > 0:
+  if (aArgs['id'] != 'new') and db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aArgs['id']) > 0:
    aCTX.nodes.pop(db.get_val('node'),None)
    ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s"%aArgs['id']) == 1)
   else:

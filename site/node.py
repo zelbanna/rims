@@ -32,7 +32,7 @@ def info(aWeb):
  aWeb.wr("<ARTICLE CLASS='info'><P>Node Info</DIV>")
  aWeb.wr("<FORM ID=node_form>")
  aWeb.wr("<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>")
- aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id']))
+ aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(data['id']))
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=device_id ID=device_id VALUE='%s'>"%(data['device_id']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><INPUT   TYPE=TEXT NAME=node STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['node']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>URL:</DIV><DIV CLASS=td><INPUT    TYPE=URL  NAME=url  STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['url']))
@@ -41,7 +41,8 @@ def info(aWeb):
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('search', DIV='device_id', INPUT='true', URL='node_device_id',      FRM='node_form', TITLE='Find matching device id using hostname'))
  aWeb.wr(aWeb.button('save',   DIV='div_content_right',       URL='node_info?op=update', FRM='node_form'))
- aWeb.wr(aWeb.button('trash',  DIV='div_content_right',       URL='node_delete',         FRM='node_form', MSG='Are you really sure you want to delete node?'))
+ if data['id'] != 'new':
+  aWeb.wr(aWeb.button('trash',  DIV='div_content_right',       URL='node_delete',         FRM='node_form', MSG='Are you really sure you want to delete node?'))
  aWeb.wr("</ARTICLE>")
 
 #
