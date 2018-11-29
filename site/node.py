@@ -54,7 +54,7 @@ def delete(aWeb):
 #
 #
 def device_id(aWeb):
- res = aWeb.rest_call("device/search",{'hostname':aWeb['node']})
+ res = aWeb.rest_call("device/search",{'node':aWeb['node']})
  aWeb.wr(str(res['device']['id']) if res['found'] > 0 else "NULL")
 
 #

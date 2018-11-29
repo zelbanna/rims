@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.5"
-__build__ = 163
+__build__ = 164
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -493,7 +493,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     error = {'X-Args':args, 'X-Exception':e.args[0].get('exception'), 'X-Code':e.args[0]['code'], 'X-Info':e.args[0].get('info')}
    self._headers.update(error)
    mode = self.headers.get('X-Debug',extras.get('debug'))
-   if mode  or path == 'debug':
+   if mode or path == 'debug':
     from traceback import format_exc
     tb = format_exc()
     if mode == 'print':

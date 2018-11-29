@@ -311,13 +311,31 @@ def search(aCTX, aArgs = None):
  """ Functions returns device id for device matching conditions
 
  Args:
-  - hostname (required)
+  - hostname (optional required)
+  - node (optional required)
 
  Output:
+  - found (boolean)
+  - device (object with id,hostname and domain of device or None)
  """
+ def GL_test_ip(aIP):
+  from ipaddress import ip_address
+  try: ip_address(aIP)
+  except: return False
+  else: return True
+
  ret = {}
  with aCTX.db as db:
-  ret['found'] = db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id WHERE hostname LIKE '%%%(hostname)s%%' OR CONCAT(hostname,'.',domains.name) LIKE '%%%(hostname)s%%'"%aArgs)
+  if aArgs.get('node'):
+   url = aCTX.nodes[aArgs['node']]['url']
+   arg = url.split(':')[1][2:].split('/')[0]
+   if GL_test_ip(arg):
+    search = "LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.ip = INET_ATON('%s')"%arg
+   else:
+    search = "WHERE hostname LIKE '%{0}%' OR CONCAT(hostname,'.',domains.name) LIKE '%{0}%'".format(arg)
+  else:
+   search = "WHERE hostname LIKE '%{0}%' OR CONCAT(hostname,'.',domains.name) LIKE '%{0}%'".format(aArgs['hostname'])
+  ret['found'] = db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_dom_id %s"%search)
   ret['device']= db.get_row()
  return ret
 
