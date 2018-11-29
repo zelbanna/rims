@@ -299,14 +299,23 @@ def control(aCTX, aArgs = None):
 
  Args:
   - id (required)
+  - user_id (required)
   - op (optional)
 
  Output:
  """
  ret = {'id':aArgs['id']}
+ op = aArgs.pop('op',None)
+ aCTX.log("Device_Control:%s => %s"%(ret['id'],op))
  with aCTX.db as db:
-  ret['pem_count'] = db.do("SELECT dp.id,dp.name,dp.pdu_id,dp.pdu_slot,dp.pdu_unit, devices.type_id FROM device_pems AS dp LEFT JOIN devices ON devices.id = dp.pdu_id WHERE device_id = %(id)s"%ret)
+  ret['pem_count'] = db.do("SELECT dp.id,dp.name,dp.pdu_id,dp.pdu_slot,dp.pdu_unit,dt.name AS pdu_type,INET_NTOA(ia.ip) AS pdu_ip FROM device_pems AS dp LEFT JOIN devices ON devices.id = dp.pdu_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE dp.device_id = %(id)s"%ret)
   ret['pems'] = db.get_rows()
+ if ret['pem_count'] > 0:
+  from importlib import import_module
+  for pem in ret['pems']:
+   module = import_module("rims.devices.%s"%pem['pdu_type'])
+   pdu = getattr(module,'Device',None)(aCTX, pem['pdu_ip'])
+   pem.update(pdu.get_state(pem['pdu_slot'],pem['pdu_unit']))
  return ret
 
 

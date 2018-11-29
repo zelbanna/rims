@@ -99,7 +99,8 @@ def expiration_status(aCTX, aArgs = None):
  if ret['notifier']:
   notify = aCTX.node_function(ret['notifier'].get('proxy','master'),ret['notifier']['service'],"notify",aHeader = {'X-Log':'true'})
   for hostname, data in ret['hosts'].items():
-   ret['hosts'][hostname]['notify'] = notify(aArgs = {'message':'Host %s reservation expired (remove or extend) - remaining time: %s'%(hostname,data['remaining']),'node':ret['notifier']['node']})
+   message = 'Host %s reservation expired'%hostname if data['remaining'] > 0 else 'Host %s reservation expired (remove or extend) - remaining time: %s'%(hostname,data['remaining'])
+   ret['hosts'][hostname]['notify'] = notify(aArgs = {'message':message,'node':ret['notifier']['node']})
  return ret
 
 #

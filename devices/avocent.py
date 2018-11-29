@@ -33,9 +33,10 @@ class Device(GenericDevice):
 
  def __str__(self): return "Avocent(ip=%s)"%(self._ip)
 
+ #
  def set_state(self,slot,unit,state):
   try:
-   from json import dumps
+   ret = {}
    tag = ".1.3.6.1.4.1.10418.17.2.5.5.1.6.1"
    iid = "%s.%s"%(slot,unit)
    op  = Device.set_outlet_state(state)
@@ -43,12 +44,30 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['write'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind(tag,iid , op ,"INTEGER"))
    res = session.set(setobj)
-   self.log("Avocent - {0} set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
-   return {'status':'OK'}
+   if (session.ErrorInd == 0):
+    self.log("Avocent - {0} set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
+    ret['status'] = 'OK'
+   else: 
+    self.log("Avocent - {0} failed set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
+    ret['status'] = 'NOT_OK'
   except Exception as e:
    self.log("Avocent(%s) - error setting state: %s"%(self._ip,str(e)))
-   return {'status':'NOT_OK', 'info':str(exception_error) }
+   ret['info'] = repr(exception_error)
+   ret['status'] = 'NOT_OK'
+  return ret
 
+ #
+ def get_state(self,slot,unit):
+  try:
+   stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.%s.%s"%(slot,unit)))
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session.get(stateobj)
+   return {'status':"OK" if (session.ErrorInd == 0) else "NOT_OK", 'state':Device.get_outlet_state(stateobj[0].val) }
+  except Exception as e:
+   self.log("Avocent(%s) : error getting state: %s"%(self._ip,str(e)))
+   return {'status':'NOT_OK','info':str(e), 'state':'unknown' }
+
+ #
  def set_name(self,slot,unit,name):
   try:
    name = name[:16].encode('utf-8')
@@ -62,17 +81,6 @@ class Device(GenericDevice):
    self.log("Avocent(%s) : error setting name: %s"%(self._ip,str(e)))
    return "Error setting name '%s'"%(name)
 
- def get_state(self,slot,unit):
-  try:
-   stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.%s.%s"%(slot,unit)))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   session.get(stateobj)
-   return {'status':'OK', 'state':Device.get_outlet_state(stateobj[0].val) }
-  except Exception as e:
-   self.log("Avocent(%s) : error getting state: %s"%(self._ip,str(e)))
-   return {'status':'NOT_OK','info':str(e), 'state':'unknown' }
-
- #
  #
  def get_slot_names(self):
   slots = []
@@ -86,7 +94,6 @@ class Device(GenericDevice):
    self.log("Avocent(%s) : error loading pdu member names: %s"%(self._ip,str(e)))
   return slots
 
- #
  #
  def get_inventory(self):
   result = []

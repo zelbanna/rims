@@ -207,15 +207,15 @@ def info(aWeb):
  aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',     DIV='div_content_right',URL='device_info?id=%i'%dev['id']))
+ aWeb.wr(aWeb.button('save',       DIV='div_content_right',URL='device_info?op=update', FRM='info_form', TITLE='Save Basic Device Information'))
  aWeb.wr(aWeb.button('trash',      DIV='div_content_right',URL='device_delete?id=%i'%dev['id'], MSG='Are you sure you want to delete device?', TITLE='Delete device',SPIN='true'))
  aWeb.wr(aWeb.button('edit',       DIV='div_content_right',URL='device_extended?id=%i'%dev['id'], TITLE='Extended Device Information'))
- aWeb.wr(aWeb.button('save',       DIV='div_content_right',URL='device_info?op=update', FRM='info_form', TITLE='Save Basic Device Information'))
+ aWeb.wr(aWeb.button('start',      DIV='div_dev_data',     URL='device_control?id=%s'%dev['id'], TITLE='Device Control'))
  aWeb.wr(aWeb.button('search',     DIV='div_content_right',URL='device_info?op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information', SPIN='true'))
  aWeb.wr(aWeb.button('document',   DIV='div_dev_data',     URL='device_conf_gen?id=%i'%(dev['id']),TITLE='Generate System Conf'))
  aWeb.wr(aWeb.button('connections',DIV='div_dev_data',     URL='device_interface_list?device=%i'%(dev['id']),TITLE='Device interfaces'))
  aWeb.wr(aWeb.button('network',    DIV='div_content_right',URL='visualize_network?type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map'))
  aWeb.wr(aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip'])))
- aWeb.wr(aWeb.button('start',      DIV='div_content_right',URL='device_control?id=%s'%dev['id'], TITLE='Device Control'))
  if dev['racked'] and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
   # Hardcoded port to 60xx
   aWeb.wr(aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port'])))
@@ -320,16 +320,22 @@ def control(aWeb):
  args = aWeb.args()
  res = aWeb.rest_call("device/control",args)
  aWeb.wr("<ARTICLE CLASS='info'><P>Device Controls</P>")
- aWeb.wr("<FORM ID=info_form>")
- aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(res['id']))
- aWeb.wr("<!-- Reachability Info -->")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td>[]</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Reset:</DIV><DIV CLASS=td>[]</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Power off device PEM</DIV><DIV CLASS=td>[]</DIV></DIV>")
- aWeb.wr("</DIV></DIV></FORM>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Reset:</DIV><DIV CLASS=td>[]</DIV><DIV CLASS=td>&nbsp;")
+ aWeb.wr(aWeb.button('revert', DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&op=reset'%res['id']))
+ aWeb.wr("</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
+ for pem in res['pems']:
+  aWeb.wr("<!-- %(pdu_type)s@%(pdu_ip)s:%(pdu_slot)s/%(pdu_unit)s -->"%pem)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>PEM:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;"%pem['name'])
+  url = 'device_control?id=%s&op=pdu&pdu=%s&slot=%s&unit=%s&state={}'%(res['id'],pem['pdu_id'],pem['pdu_slot'],pem['pdu_unit'])
+  if   pem['status'] == 'off':
+   aWeb.wr(aWeb.button('start', DIV='div_dev_data', SPIN='true', URL=url.format('on')))
+  elif pem['status'] == 'on':
+   aWeb.wr(aWeb.button('stop',  DIV='div_dev_data', SPIN='true', URL=url.format('off')))
+  else:
+   aWeb.wr(aWeb.button('help'))
+ aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
 #
