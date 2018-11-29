@@ -72,7 +72,7 @@ def notify(aCTX, aArgs = None):
  """Function provides notification service, basic at the moment for development purposes
 
  Args:
-  - node (required). Notify REST node in system
+  - node (optional required). Notify REST node in system, defaults to settings => notifier => node
   - message (required)
   - user (optional)
   - channel (optional)
@@ -82,6 +82,7 @@ def notify(aCTX, aArgs = None):
   - info (possible notify output)
  """
  from time import localtime, strftime
+ node = aArgs.get('node',aCTX.settings.get('notifier',{'node':None})['node']) 
  ret = {}
  try:
   with open(aCTX.settings['logs'][aCTX.settings['logger']['log']], 'a') as f:
