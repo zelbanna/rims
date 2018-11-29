@@ -93,13 +93,13 @@ def expiration_status(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, NOW() - res.time_end AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id WHERE NOW() - res.time_end < %s"%aArgs.get('threshold',3600))
+  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, (res.time_end - NOW()) AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id WHERE (res.time_end - NOW()) < %s"%aArgs.get('threshold',3600))
   ret['hosts'] = db.get_dict('hostname')
  ret['notifier'] = aCTX.settings.get('notifier')
  if ret['notifier']:
   notify = aCTX.node_function(ret['notifier'].get('proxy','master'),ret['notifier']['service'],"notify",aHeader = {'X-Log':'true'})
   for hostname, data in ret['hosts'].items():
-   message = 'Host %s reservation expired'%hostname if data['remaining'] > 0 else 'Host %s reservation expired (remove or extend) - remaining time: %s'%(hostname,data['remaining'])
+   message = 'Host %s reservation expired'%hostname if data['remaining'] < 0 else 'Host %s reservation about to expire - remaining time: %s'%(hostname,data['remaining'])
    ret['hosts'][hostname]['notify'] = notify(aArgs = {'message':message,'node':ret['notifier']['node']})
  return ret
 
