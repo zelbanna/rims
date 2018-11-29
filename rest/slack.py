@@ -63,8 +63,8 @@ def notify(aCTX, aArgs = None):
   - info (slack response text/data)
 
  """
- args = {'text':aArgs['message']} 
- node = aArgs.get('node',aCTX.settings.get('slack',{'node':None})['node'])
+ args = {'text':aArgs['message']}
+ node = aArgs.get('node',aCTX.settings.get('slack',{}).get('node'))
  if aArgs.get('user'):
   args['channel'] = "@%s"%aArgs['user']
  elif aArgs.get('channel'):
