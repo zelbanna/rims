@@ -194,6 +194,7 @@ class Context(object):
   'Workers pool':self.workers.alive(),
   'Workers idle':self.workers.idles(),
   'Workers queue':self.workers.queue_size(),
+  'Servers':self.workers.servers(),
   'Database':', '.join("%s:%s"%(k.lower(),v) for k,v in db_counter.items()),
   'OS path':',' .join(syspath),
   'OS pid':getpid()}
@@ -315,6 +316,9 @@ class WorkerPool(object):
 
  def idles(self):
   return len([x for x in self._idles if x.is_set()])
+
+ def servers(self):
+  return len([x for x in self._servers if x.is_alive()])
 
  def queue_size(self):
   return self._queue.qsize()
