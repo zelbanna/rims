@@ -325,6 +325,7 @@ def control(aCTX, aArgs = None):
    pem.update(pdu.get_state(pem['pdu_slot'],pem['pdu_unit']))
    if op_id == 'all' or op_id == str(pem['id']):
     pem['op'] = pdu.set_state(pem['pdu_slot'],pem['pdu_unit'],aArgs['pem_op'])
+ aCTX.log("Device Control: %s"%ret)
  return ret
 
 

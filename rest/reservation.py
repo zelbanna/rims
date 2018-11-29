@@ -114,25 +114,13 @@ def shutdown(aCTX, aArgs = None):
 
   Output:
  """
- from importlib import import_module
+ from rims.rest.device import control as device_control
  ret = {}
- modules = {}
-
- def __shutdown(aInfo,aDevice):
-  print("Device shutdown:%s"%aDevice.shutdown())
-  return True
 
  with aCTX.db as db:
-  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, vm, dt.name as type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations ON reservations.device_id = devices.id WHERE devices.shutdown > 0 AND reservations.time_end IS NULL OR reservations.time_end < NOW()")
+  db.do("SELECT id, hostname, vm FROM devices LEFT JOIN reservations ON reservations.device_id = devices.id WHERE devices.shutdown > 0 AND reservations.time_end IS NULL OR reservations.time_end < NOW()")
   ret['devices'] = db.get_rows()
- for info in ret['devices']:
-  try:
-   module = modules.get(info['type'])
-   if not module:
-    module = import_module("rims.devices.%s"%info['type'])
-    modules[info['type']] = module
-   device = getattr(module,'Device',lambda x: None)(aCTX,info['ip'])
-   __shutdown(info,device)
-  except Exception as e:
-   info['error'] = str(e)
+ for dev in ret['devices']:
+  """ Check VM and do special correlation """
+  aCTX.workers.add_function(device_control, aCTX, {'id':dev['id'], 'pem_op':'off','pem_id':'all','dev_op':'shutdown'})
  return ret
