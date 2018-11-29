@@ -555,7 +555,7 @@ def server_list(aCTX, aArgs = None):
  ret = {}
  
  with aCTX.db as db:
-  db.do("SELECT servers.id, servers.service, servers.node, servers.type, servers.ui, nodes.system FROM servers LEFT JOIN nodes ON servers.node = nodes.node WHERE %s"%("type = '%s'"%aArgs['type'] if aArgs.get('type') else "TRUE"))
+  db.do("SELECT servers.id, servers.service, servers.node, servers.type, servers.ui, nodes.system FROM servers LEFT JOIN nodes ON servers.node = nodes.node WHERE %s ORDER BY servers.node"%("type = '%s'"%aArgs['type'] if aArgs.get('type') else "TRUE"))
   ret['servers']= db.get_rows()
  return ret
 

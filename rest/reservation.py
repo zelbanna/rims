@@ -86,22 +86,20 @@ def expiration_status(aCTX, aArgs = None):
   Ideally run as a periodic task.
 
  Args:
-  - service
-  - node
-  - threshold (in seconds)
+  - threshold (optional) defaults to 3600 (seconds)
 
  Output:
   - result
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, NOW() - res.time_end AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id WHERE NOW() - res.time_end < %s"%aArgs['threshold'])
-  ret['hosts'] = db.get_rows()
- notifier = aCTX.settings.get('notifier')
- if notifier:
-  notify = aCTX.node_function(notifier['node'],notifier['service'],"notify",aHeader = {'X-Log':'true'})
-  for host in ret['hosts']:
-   notify(aArgs = {'message':'Host %s reservation expired (remove or extend) - remaining time: %s'%(host['hostname'],host['remaining'])})
+  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, NOW() - res.time_end AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id WHERE NOW() - res.time_end < %s"%aArgs.get('threshold',3600))
+  ret['hosts'] = db.get_dict('hostname')
+ ret['notifier'] = aCTX.settings.get('notifier')
+ if ret['notifier']:
+  notify = aCTX.node_function(ret['notifier'].get('proxy','master'),ret['notifier']['service'],"notify",aHeader = {'X-Log':'true'})
+  for hostname, data in ret['hosts'].items():
+   ret['hosts'][hostname]['notify'] = notify(aArgs = {'message':'Host %s reservation expired (remove or extend) - remaining time: %s'%(hostname,data['remaining']),'node':ret['notifier']['node']})
  return ret
 
 #

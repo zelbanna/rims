@@ -6,14 +6,18 @@ The system uses a concept of nodes and servers (i.e. services on nodes).
 - A node is any REST base interface to a system (e.g. openstack etc), all nodes have an ID and a URL
 - There is a 'master' node that keeps a centralized database and settings for all other (system) nodes.
 - There are system nodes which are registered with the master during install and fetch settings from the master
-- a Service can be DNS server, DHCP server, NOTIFY (e.g. slack), and so on. They run on nodes (using the node REST interface for communication 
+- a Service can be DNS server, DHCP server, NOTIFY server, and so on. They run on nodes (using the node REST interface for communication) or are proxied by system nodes to another, non-system, node. e.g. AWX, Slack. The latter method serves as means to harmonize functions vs service's native REST APIs.
+-- PowerDNS runs on linux node which is a system node
+-- AWX can run on linux node (system node) OR can run externally via a proxy
+-- SLACK runs in the cloud and needs a proxy (or default to master) to reach it's interface
 
-The structure is the following. Everything centers around the 'engine', it uses a config to bootstart itself. In addition there is a thread safe context object passed around to REST based functions. The context also provides a thread safe Database object which offers database op serialization
+
+The structure is as follows: Everything centers around the 'engine', it uses a config to bootstart itself. In addition there is a thread safe context object passed around to REST based functions. The context also provides a thread safe Database object which offers database op serialization
 - The engine is a multithreaded web server serving infrastructure files, REST API and site files (and any other file using settings)
 - There are worker threads waiting for tasks (or periodic functionality like status checks on devices)
-- The engine routes REST calls between nodes using optional HTML GET attributes, which also serves some extra functionality (node = <node>, debug = true, log = true)
-- When a call is made the engine looks up the appropriate module and function and feeds a de-JSON:ed argument and the context (with access to the database for instance). The return object is JSON serialized and output
-- The engine can register external functions to provide REST service for any module (in the path) that accepts an argument list with 2 items according to function(json_args_dictionary, context).
+- The engine routes REST calls between nodes using XHR (X-Route) or optional HTML GET attributes, which also serves some extra functionality (node = <node>, debug = true, log = true)
+- When a call is made the engine looks up the appropriate module and function and feeds a de-JSON:ed argument and the context (with access to the database for instance). The return object is JSON serialized
+- The engine can register external functions to provide REST service for any module (in the path) that accepts an argument list with 2 items according to function(context, json_args_dictionary).
 
 
 ############################## Package content ##################################
