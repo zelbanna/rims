@@ -317,10 +317,20 @@ def extended(aWeb):
 #
 #
 def control(aWeb):
- aWeb.wr("control")
- #args = aWeb.args()
- #res = aWeb.rest_call("device/control",args)
- #aWeb.wr(res)
+ args = aWeb.args()
+ res = aWeb.rest_call("device/control",args)
+ aWeb.wr("<ARTICLE CLASS='info'><P>Device Controls</P>")
+ aWeb.wr("<FORM ID=info_form>")
+ aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(res['id']))
+ aWeb.wr("<!-- Reachability Info -->")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td>[]</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Reset:</DIV><DIV CLASS=td>[]</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Power off device PEM</DIV><DIV CLASS=td>[]</DIV></DIV>")
+ aWeb.wr("</DIV></DIV></FORM>")
+ aWeb.wr("</ARTICLE>")
 
 #
 #

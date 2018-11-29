@@ -299,10 +299,15 @@ def control(aCTX, aArgs = None):
 
  Args:
   - id (required)
+  - op (optional)
 
  Output:
  """
- return None
+ ret = {'id':aArgs['id']}
+ with aCTX.db as db:
+  ret['pem_count'] = db.do("SELECT dp.id,dp.name,dp.pdu_id,dp.pdu_slot,dp.pdu_unit, devices.type_id FROM device_pems AS dp LEFT JOIN devices ON devices.id = dp.pdu_id WHERE device_id = %(id)s"%ret)
+  ret['pems'] = db.get_rows()
+ return ret
 
 
 #

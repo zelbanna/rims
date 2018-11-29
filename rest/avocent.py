@@ -40,19 +40,20 @@ def info(aCTX, aArgs = None):
  with aCTX.db as db:
   if aArgs.get('op') == 'lookup':
    pdu = Device(aCTX,aArgs['ip'])
-   slotl = pdu.get_slot_names()
-   slotn = len(slotl)
-   args = {'slots':slotn,'0_slot_id':slotl[0][0],'0_slot_name':slotl[0][1]}
-   if slotn == 2:
-    args.update({'1_slot_id':slotl[1][0],'1_slot_name':slotl[1][1]})
-   db.update_dict('pdu_info',args,"device_id = %(id)s"%aArgs)
+   slots = pdu.get_slot_names()
+   args = {'slots':len(slots)}
+   if args['slots'] > 0:
+    for i,slot in enumerate( slots ):
+     args['%d_slot_id'%i]   = slot[0]
+     args['%d_slot_name'%i] = slot[1]
+    db.update_dict('pdu_info',args,"device_id = %s"%aArgs['id'])
 
   ret['found'] = (db.do("SELECT * FROM pdu_info WHERE device_id = '%(id)s'"%aArgs) > 0)
   if ret['found']:
    ret['data'] = db.get_row()
   else:
    db.do("INSERT INTO pdu_info SET device_id = %(id)s, slots = 1"%aArgs)
-   ret['data'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':1, '1_slot_name':'' }
+   ret['data'] = {'slots':1, '0_slot_id':0, '0_slot_name':"", '1_slot_id':1, '1_slot_name':"" }
  return ret
 
 #

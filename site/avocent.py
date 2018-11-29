@@ -65,7 +65,7 @@ def info(aWeb):
  aWeb.wr("<ARTICLE CLASS=info><P>PDU Device Info</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(aWeb['hostname']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Right/Left slots:</DIV><DIV CLASS=td><INPUT TYPE=checkbox NAME=slots VALUE=1 %s></DIV></DIV>"%("checked=checked" if pdudata['slots'] == 2 else ""))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Right/Left slots:</DIV><DIV CLASS=td>%s</DIV></DIV>"%("True" if pdudata['slots'] == 2 else "False"))
  for slot in range(0,pdudata['slots']):
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Slot %s Name:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(slot,pdudata['%s_slot_name'%slot]))
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Slot %s ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(slot,pdudata['%s_slot_id'%slot]))
