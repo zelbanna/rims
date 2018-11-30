@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.6"
-__build__ = 173
+__build__ = 174
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -578,22 +578,17 @@ class SessionHandler(BaseHTTPRequestHandler):
   else:
    if self._ctx.node == 'master':
     from rims.core.genlib import random_string
-    from hashlib import md5
     from datetime import datetime,timedelta
-    try:
-     hash = md5()
-     hash.update(password.encode('utf-8'))
-     passcode = hash.hexdigest()
-    except Exception as e: output['error'] = {'hash':str(e)}
-    else:
-     with self._ctx.db as db:
-      if (db.do("SELECT id, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
-       output.update(db.get_row())
-       output['token']   = random_string(16)
-       output['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
-       self._headers['X-Code'] = 200
-      else:
-       output['error'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
+    from crypt import crypt
+    passcode = crypt(password,"$1$WBEUAHfO$")
+    with self._ctx.db as db:
+     if (db.do("SELECT id, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
+      output.update(db.get_row())
+      output['token']   = random_string(16)
+      output['expires'] = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+      self._headers['X-Code'] = 200
+     else:
+      output['error'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
    else:
     try:
      output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True)

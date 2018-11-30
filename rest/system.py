@@ -506,10 +506,8 @@ def user_info(aCTX, aArgs = None):
   if op == 'update':
    """ Password at least 6 characters """
    if len(aArgs.get('password','')) > 5:
-    from hashlib import md5
-    hash = md5()
-    hash.update(aArgs['password'].encode('utf-8'))
-    aArgs['password'] = hash.hexdigest()
+    from crypt import crypt
+    aArgs['password'] = crypt(aArgs['password'],"$1$WBEUAHfO$")
    else:
     ret['password_check_failed'] = (not (aArgs.pop('password',None) is None))
    if aArgs.get('slack') == 'None':
