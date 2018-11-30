@@ -477,13 +477,11 @@ def delete(aCTX, aArgs = None):
    from rims.rest.dns import record_device_delete
    ret = record_device_delete(aCTX, args)
    if data['base'] == 'pdu':
-    ret['pem0'] = db.update_dict('rack_info',{'pem0_pdu_unit':0,'pem0_pdu_slot':0},'pem0_pdu_id = %s'%(aArgs['id']))
-    ret['pem1'] = db.update_dict('rack_info',{'pem1_pdu_unit':0,'pem1_pdu_slot':0},'pem1_pdu_id = %s'%(aArgs['id']))
+    ret['pems'] = db.do("UPDATE device_pems SET pdu_id = NULL WHERE pdu_id = %s"%aArgs['id'])
    ret.update({'deleted':(db.do("DELETE FROM devices WHERE id = %(id)s"%aArgs) > 0)})
- # Avoid race condition on DB, do this when DB is closed...
- if found and data['ipam_id']:
-  from rims.rest.ipam import address_delete
-  ret.update(address_delete(aCTX, {'id':data['ipam_id']}))
+   if data['ipam_id']:
+    from rims.rest.ipam import address_delete
+    ret.update(address_delete(aCTX, {'id':data['ipam_id']}))
  return ret
 
 #
