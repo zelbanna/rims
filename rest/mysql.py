@@ -105,7 +105,8 @@ def diff(aCTX, aArgs = None):
  aArgs.update({'mode':'structure'})
  db = dump(aCTX, aArgs)
  ret['source'] = db['status']
- ret['output'] = [line for line in unified_diff(db['output'],data.split('\n'),fromfile='dbase',tofile=aArgs['schema_file'])]
+ """ somehow now there is a now an extra line break... => [:-1] """
+ ret['output'] = [line for line in unified_diff(db['output'],data.split('\n')[:-1],fromfile='database',tofile=aArgs['schema_file'])]
  ret['diffs'] = 0
  for line in ret['output']:
   if "@@" in line:

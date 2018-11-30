@@ -17,6 +17,6 @@ if __name__ == "__main__":
  from json import load
 
  diffs= mysql.diff(Context(aConfig = argv[1]), {"schema_file":ospath.abspath(ospath.join(getcwd(),argv[2]))})
- print(diffs['diffs'])
+ print("Number of diffs: %s\n___________________________________"%diffs['diffs'])
  for line in diffs['output']:
   print(line.rstrip('\n'))

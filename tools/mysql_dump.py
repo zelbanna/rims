@@ -29,6 +29,6 @@ if __name__ == "__main__":
  elif argv[2] == '-r' and len(argv) == 4:
   args.update({'file':ospath.abspath(ospath.join(getcwd(),argv[3]))})
   res = mysql.restore(ctx, args)
- for line in res['output']:
-  print(line)
-  # except: print(line.encode('utf-8')) , needs to be fixed somehow
+ #for line in res['output']:
+ # print(line)
+ print("\n".join(res['output']))
