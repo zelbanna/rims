@@ -331,7 +331,8 @@ def control(aWeb):
    aWeb.wr(aWeb.button('stop',  DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&pem_id=%s&pem_op=off'%(res['id'],pem['id'])))
   else:
    aWeb.wr(aWeb.button('help', TITLE='Unknown state'))
- aWeb.wr("</DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.get('op',{'status':'&nbsp;'})['status']))
+  aWeb.wr("</DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.get('op',{'status':'&nbsp;'})['status']))
+ aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
 #
