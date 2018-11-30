@@ -8,8 +8,8 @@ def list(aWeb):
  args = aWeb.args()
  cookie = aWeb.cookie('rims')
  if aWeb['op']:
-  aWeb.rest_call("reservations/update",args)
- rows = aWeb.rest_call("reservations/list")['data']
+  aWeb.rest_call("reservation/update",args)
+ rows = aWeb.rest_call("reservation/list")['data']
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Reservations</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='reservations_list'))
@@ -29,7 +29,7 @@ def list(aWeb):
 #
 def update(aWeb):
  cookie = aWeb.cookie('rims')
- res = aWeb.rest_call("reservations/update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':aWeb['op'],'days':14})
+ res = aWeb.rest_call("reservation/update",{'device_id':aWeb['id'],'user_id':cookie['id'],'op':aWeb['op'],'days':14})
  aWeb.wr("<DIV CLASS=td>Reserve:</DIV>")
  if res['update'] == 1:
   if aWeb['op'] == 'drop':
@@ -43,7 +43,7 @@ def update(aWeb):
 #
 def info(aWeb):
  args = aWeb.args()
- data = aWeb.rest_call("reservations/info",args)['data']
+ data = aWeb.rest_call("reservation/info",args)['data']
  aWeb.wr("<ARTICLE CLASS=info><P>Reservation</P>")
  aWeb.wr("<FORM ID=reservations_info_form>")
  aWeb.wr("<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>")
@@ -66,7 +66,7 @@ def info(aWeb):
 #
 #
 def report(aWeb):
- reservations = aWeb.rest_call("reservations/list",{'extended':True})['data']
+ reservations = aWeb.rest_call("reservation/list",{'extended':True})['data']
  aWeb.wr("<ARTICLE><P>Reservations</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>User</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Start</DIV><DIV CLASS=th>End</DIV><DIV CLASS=th>On Loan</DIV><DIV CLASS=th>Location</DIV></DIV><DIV CLASS=tbody>")
  for res in reservations:

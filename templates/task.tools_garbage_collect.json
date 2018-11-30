@@ -1,9 +1,0 @@
-{
- "node":"master",
- "module":"tools",
- "func":"garbage_collect",
- "args":{},
- "periodic":true,
- "frequency":28800,
- "output":true
-}
