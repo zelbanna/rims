@@ -512,6 +512,8 @@ def user_info(aCTX, aArgs = None):
     aArgs['password'] = hash.hexdigest()
    else:
     ret['password_check_failed'] = (not (aArgs.pop('password',None) is None))
+   if aArgs.get('slack') == 'None':
+    aArgs['slack'] = 'NULL'
    if not id == 'new':
     ret['update'] = db.update_dict('users',aArgs,"id=%s"%id)
    else:

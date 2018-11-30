@@ -56,6 +56,7 @@ def notify(aCTX, aArgs = None):
   - message (required)
   - node (optional required). Notify REST node in system, defaults to settings => notifier => node
   - user (optional)
+  - user_id (optional). System user id
   - channel (optional)
 
  Output:
@@ -69,7 +70,15 @@ def notify(aCTX, aArgs = None):
   args['channel'] = "@%s"%aArgs['user']
  elif aArgs.get('channel'):
   args['channel'] = "#%s"%aArgs['channel']
- elif aCTX.settings['slack'].get('channel'):
-  args['channel'] = aCTX.settings['slack'].get('channel')
+ else:
+  if aArgs.get('user_id'):
+   with aCTX.db as db:
+    db.do("SELECT slack FROM users WHERE id = %s"%aArgs['user_id'])
+    slack = db.get_val('slack')
+  if slack:
+   args['channel'] = "@%s"%slack
+  elif aCTX.settings['slack'].get('channel'):
+   args['channel'] = aCTX.settings['slack']['channel']
+
  res = aCTX.rest_call(aCTX.nodes[node]['url'],aArgs = args, aDataOnly = False)
  return {'status':'OK' if res['code']== 200 else 'NOT_OK', 'info':res['data']}

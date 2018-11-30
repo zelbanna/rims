@@ -56,13 +56,13 @@ def list(aCTX, aArgs = None):
 #
 #
 def info(aCTX, aArgs = None):
- """ Function provides reservation info and operation 
+ """ Function provides reservation info and operation
 
  Args:
   - device_id (required)
   - op (optional)
   - address (optional)
-  - loan (optional) 
+  - loan (optional)
 
  Output:
 
@@ -95,7 +95,7 @@ def expiration_status(aCTX, aArgs = None):
  from rims.rest.device import control as device_control
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT devices.id, vm, res.shutdown, notify, hostname, INET_NTOA(ia.ip) AS ip, (res.time_end - NOW()) AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id WHERE (res.time_end - NOW()) < %s"%aArgs.get('threshold',3600))
+  db.do("SELECT devices.id, vm, res.shutdown, notify, hostname, res.user_id, users.alias, INET_NTOA(ia.ip) AS ip, (res.time_end - NOW()) AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id LEFT JOIN users ON res.user_id = users.id WHERE (res.time_end - NOW()) < %s"%aArgs.get('threshold',3600))
   ret['hosts'] = db.get_rows()
 
  notifications = aCTX.settings.get('notifier')
@@ -107,9 +107,9 @@ def expiration_status(aCTX, aArgs = None):
   if host['remaining'] < 0:
    if host['shutdown'] > 0:
     aCTX.workers.add_function(device_control, aCTX, {'id':host['id'], 'pem_op':'off','pem_id':'all','dev_op':'shutdown' if host['shutdown'] == 1 else 'reset'})
-   message = 'Host %(hostname)s reservation expired'
+   message = 'Host %(hostname)s reservation expired (reserved by %(alias)s)'
   else:
-   message = 'Host %(hostname)s reservation about to expire - remaining time: %(remaining)s'
+   message = 'Host %(hostname)s reservation about to expire - remaining time: %(remaining)s (reserved by %(alias)s)'
   if notifications:
-   host['notify'] = notify_fun(aArgs = {'message':message%host,'node':notify_node})
+   host['notify'] = notify_fun(aArgs = {'message':message%host,'node':notify_node,'user_id':host['user_id']})
  return ret

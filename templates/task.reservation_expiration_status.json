@@ -2,8 +2,10 @@
  "node":"master",
  "module":"reservation",
  "func":"expiration_status",
- "args":{},
+ "args":{
+  "threshold":14400
+ },
  "periodic":true,
  "output":true,
- "frequency":14400
+ "frequency":3600
 }

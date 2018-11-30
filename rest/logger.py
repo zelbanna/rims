@@ -74,7 +74,7 @@ def notify(aCTX, aArgs = None):
  Args:
   - node (optional required). Notify REST node in system, defaults to settings => notifier => node
   - message (required)
-  - user (optional)
+  - user_id (optional)
   - channel (optional)
 
  Output:
@@ -82,14 +82,14 @@ def notify(aCTX, aArgs = None):
   - info (possible notify output)
  """
  from time import localtime, strftime
- node = aArgs.get('node',aCTX.settings.get('notifier',{'node':None})['node']) 
+ node = aArgs.get('node',aCTX.settings.get('notifier',{'node':None})['node'])
  ret = {}
  try:
   with open(aCTX.settings['logs'][aCTX.settings['logger']['log']], 'a') as f:
    f.write(str("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aArgs['message'])))
  except Exception as err:
   ret['result'] = 'NOT_OK'
-  ret['info'] = 'ERROR: %s'%(repr(err)) 
+  ret['info'] = 'ERROR: %s'%(repr(err))
  else:
   ret['result'] = 'OK'
  return ret
