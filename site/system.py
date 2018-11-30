@@ -53,7 +53,7 @@ def portal(aWeb):
   aWeb.put_html(aTitle = menu.get('title','Portal'), aTheme = cookie['theme'])
   """ If just auth:ed """
   if auth.get('token'):
-   aWeb.wr("<SCRIPT>set_cookie('rims','%s','%s');</SCRIPT>"%(",".join("%s=%s"%i for i in cookie.items()),auth['expires']))
+   aWeb.wr("<SCRIPT>set_cookie('rims','%s','%s');</SCRIPT>"%(aWeb.cookie_encode(cookie),auth['expires']))
   aWeb.wr("<HEADER>")
   for item in menu['menu']:
    if   item['view'] == 0:

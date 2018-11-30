@@ -20,8 +20,7 @@ def portal(aWeb):
    return
 
  if cookie.get('token'):
-  value = ",".join("%s=%s"%i for i in cookie.items())
-  aWeb.wr("<SCRIPT>set_cookie('openstack','%s','%s');</SCRIPT>"%(aName,value,auth['expires']))
+  aWeb.wr("<SCRIPT>set_cookie('openstack','%s','%s');</SCRIPT>"%(aWeb.cookie_encode(cookie),auth['expires']))
   aWeb.wr("<MAIN CLASS='background' STYLE='top:0px;' ID=main>")
   aWeb.wr("<NAV><UL>")
   aWeb.wr("<LI><A CLASS=z-op           DIV=div_content URL='heat_list'>Orchestration</A></LI>")

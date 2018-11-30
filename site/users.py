@@ -55,7 +55,7 @@ def info(aWeb):
   from datetime import datetime,timedelta
   expires = (datetime.utcnow() + timedelta(days=30)).strftime("%a, %d %b %Y %H:%M:%S GMT")
   cookie['theme'] = data['theme']
-  aWeb.wr("<SCRIPT>set_cookie('rims','%s','%s');</SCRIPT>"%(",".join("%s=%s"%i for i in cookie.items()),expires))
+  aWeb.wr("<SCRIPT>set_cookie('rims','%s','%s');</SCRIPT>"%(aWeb.cookie_encode(cookie),expires))
  aWeb.wr("<SCRIPT>dragndrop();</SCRIPT>")
  aWeb.wr("<ARTICLE CLASS='info'><P>User Info (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=user_info_form>")

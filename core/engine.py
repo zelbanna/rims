@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.6"
-__build__ = 175
+__build__ = 176
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -12,6 +12,7 @@ from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
 from functools import lru_cache, partial
+from base64 import b64encode, b64decode
 from rims.core.common import DB, rest_call
 
 ########################################## Tools ###########################################
@@ -660,9 +661,8 @@ class Stream(object):
   else:
    for cookie in cookie_str:
     k,_,v = cookie.partition('=')
-    try:    self._cookies[k] = dict(x.split('=') for x in v.split(','))
-    except Exception as e:
-     self._cookies[k] = v
+    try:    self._cookies[k] = self.cookie_decode(v)
+    except: self._cookies[k] = v
   try:    body_len = int(aHandler.headers.get('Content-Length',0))
   except: body_len = 0
   if body_len > 0 or len(aGet) > 0:
@@ -688,6 +688,12 @@ class Stream(object):
 
  def cookie(self,aName):
   return self._cookies.get(aName,{})
+
+ def cookie_encode(self,aCookie):
+  return b64encode(dumps(aCookie).encode('utf-8')).decode()
+
+ def cookie_decode(self,aCookie):
+  return loads(b64decode(aCookie).decode())
 
  def args(self):
   return self._form
@@ -719,4 +725,3 @@ class Stream(object):
   self._body.append("<SCRIPT SRC='../infra/3.1.1.jquery.min.js'></SCRIPT><SCRIPT SRC='../infra/4.21.0.vis.min.js'></SCRIPT><SCRIPT SRC='../infra/system.js'></SCRIPT>")
   self._body.append("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ) .on('input','.slider',slide_monitor); });</SCRIPT>")
   self._body.append("</HEAD>")
-
