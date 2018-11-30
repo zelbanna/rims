@@ -166,7 +166,7 @@ def oui_list(aCTX, aArgs = None):
 ############################################ SETTINGS ########################################
 #
 #
-def settings_list(aCTX, aArgs = None):
+def setting_list(aCTX, aArgs = None):
  """Function docstring for settings_list TBD
 
  Args:
@@ -191,8 +191,8 @@ def settings_list(aCTX, aArgs = None):
 
 #
 #
-def settings_info(aCTX, aArgs = None):
- """Function docstring for settings_info TBD
+def setting_info(aCTX, aArgs = None):
+ """Function docstring for setting_info TBD
 
  Args:
   - node (required)
@@ -231,8 +231,8 @@ def settings_info(aCTX, aArgs = None):
 
 #
 #
-def settings_comprehensive(aCTX, aArgs = None):
- """Function docstring for settings_comprehensive TBD
+def setting_comprehensive(aCTX, aArgs = None):
+ """Function docstring for setting_comprehensive TBD
 
  Args:
   - node (required)
@@ -256,8 +256,8 @@ def settings_comprehensive(aCTX, aArgs = None):
 
 #
 #
-def settings_delete(aCTX, aArgs = None):
- """Function docstring for settings_delete TBD
+def setting_delete(aCTX, aArgs = None):
+ """Function docstring for setting_delete TBD
 
  Args:
   - node (required)
@@ -368,8 +368,8 @@ def node_to_api(aCTX, aArgs = None):
 
 #
 #
-def resources_list(aCTX, aArgs = None):
- """Function docstring for resources_list TBD
+def resource_list(aCTX, aArgs = None):
+ """Function docstring for resource_list TBD
 
  Args:
   - node (required)
@@ -398,8 +398,8 @@ def resources_list(aCTX, aArgs = None):
 
 #
 #
-def resources_info(aCTX, aArgs = None):
- """Function docstring for resources_info TBD
+def resource_info(aCTX, aArgs = None):
+ """Function docstring for resource_info TBD
 
  Args:
   - id (required)
@@ -437,8 +437,8 @@ def resources_info(aCTX, aArgs = None):
 
 #
 #
-def resources_delete(aCTX, aArgs = None):
- """Function docstring for resources_delete TBD
+def resource_delete(aCTX, aArgs = None):
+ """Function docstring for resource_delete TBD
 
  Args:
   - id (required)
@@ -451,7 +451,7 @@ def resources_delete(aCTX, aArgs = None):
 
 ########################################## THEMES ############################################
 #
-def themes_list(aCTX, aArgs = None):
+def theme_list(aCTX, aArgs = None):
  """ Function returns a list of available thems
  
  Args:
@@ -467,8 +467,8 @@ def themes_list(aCTX, aArgs = None):
 ########################################### USERS ############################################
 #
 #
-def users_list(aCTX, aArgs = None):
- """Function docstring for users_list TBD
+def user_list(aCTX, aArgs = None):
+ """Function docstring for user_list TBD
 
  Args:
 
@@ -482,8 +482,8 @@ def users_list(aCTX, aArgs = None):
 
 #
 #
-def users_info(aCTX, aArgs = None):
- """Function docstring for users_info TBD
+def user_info(aCTX, aArgs = None):
+ """Function docstring for user_info TBD
 
  Args:
   - id (required)
@@ -528,8 +528,8 @@ def users_info(aCTX, aArgs = None):
 
 #
 #
-def users_delete(aCTX, aArgs = None):
- """Function docstring for users_delete TBD
+def user_delete(aCTX, aArgs = None):
+ """Function docstring for user_delete TBD
 
  Args:
   - id (required)
@@ -657,11 +657,11 @@ def server_restart(aCTX, aArgs = None):
  server = aCTX.servers[int(aArgs['id'])]
  return {'status':aCTX.node_function(server['node'],server['service'],'restart')(aArgs = {'id':aArgs['id']})}
 
-######################################### ACTIVITIES ###########################################
+######################################### ACTIVITYS ###########################################
 #
 #
-def activities_list(aCTX, aArgs = None):
- """ Function docstring for activities_list. TBD
+def activity_list(aCTX, aArgs = None):
+ """ Function docstring for activity_list. TBD
 
  Args:
   - start (optional)
@@ -683,8 +683,8 @@ def activities_list(aCTX, aArgs = None):
 
 #
 #
-def activities_info(aCTX, aArgs = None):
- """ Function docstring for activities_info. TBD
+def activity_info(aCTX, aArgs = None):
+ """ Function docstring for activity_info. TBD
 
  Args:
   - id (required)
@@ -722,8 +722,8 @@ def activities_info(aCTX, aArgs = None):
 
 #
 #
-def activities_delete(aCTX, aArgs = None):
- """ Function docstring for activities_delete. TBD
+def activity_delete(aCTX, aArgs = None):
+ """ Function docstring for activity_delete. TBD
 
  Args:
   - id (required)
@@ -737,8 +737,8 @@ def activities_delete(aCTX, aArgs = None):
 
 #
 #
-def activities_type_list(aCTX, aArgs = None):
- """ Function docstring for activities_type_list. TBD
+def activity_type_list(aCTX, aArgs = None):
+ """ Function docstring for activity_type_list. TBD
 
  Args:
 
@@ -752,8 +752,8 @@ def activities_type_list(aCTX, aArgs = None):
 
 #
 #
-def activities_type_info(aCTX, aArgs = None):
- """ Function docstring for activities_type_info. TBD
+def activity_type_info(aCTX, aArgs = None):
+ """ Function docstring for activity_type_info. TBD
 
  Args:
 
@@ -779,7 +779,7 @@ def activities_type_info(aCTX, aArgs = None):
 
 #
 #
-def activities_type_delete(aCTX, aArgs = None):
+def activity_type_delete(aCTX, aArgs = None):
  """ Function docstring for activity_type_delete. TBD
 
  Args:

@@ -6,7 +6,7 @@ __type__ = 'menuitem'
 ############################################ Users ##############################################
 def main(aWeb):
  cookie = aWeb.cookie('rims')
- info = aWeb.rest_call("system/users_info",{'id':cookie['id']})
+ info = aWeb.rest_call("system/user_info",{'id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='reservations_list'>Reservations</A></LI>")
@@ -29,7 +29,7 @@ def user(aWeb):
 #
 #
 def list(aWeb):
- rows = aWeb.rest_call("system/users_list")['data']
+ rows = aWeb.rest_call("system/user_list")['data']
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Users</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='users_list'))
@@ -47,9 +47,9 @@ def list(aWeb):
 def info(aWeb):
  cookie = aWeb.cookie('rims')
  args = aWeb.args()
- data = aWeb.rest_call("system/users_info?log=false",args)['data']
- resources = aWeb.rest_call("system/resources_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.node()})['data']
- themes = aWeb.rest_call("system/themes_list")
+ data = aWeb.rest_call("system/user_info?log=false",args)['data']
+ resources = aWeb.rest_call("system/resource_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.node()})['data']
+ themes = aWeb.rest_call("system/theme_list")
  if args.get('op') == 'update':
   from time import strftime, time
   from datetime import datetime,timedelta
@@ -96,6 +96,6 @@ def info(aWeb):
 #
 #
 def delete(aWeb):
- res = aWeb.rest_call("system/users_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/user_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>User with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res))
 

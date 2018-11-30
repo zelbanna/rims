@@ -21,7 +21,7 @@ def main(aWeb):
 #
 def view(aWeb):
  cookie = aWeb.cookie('rims')
- res = aWeb.rest_call("system/resources_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'node':aWeb.get('node',aWeb.node())})
+ res = aWeb.rest_call("system/resource_list",{'type':aWeb.get('type','tool'),'user_id':cookie['id'],'node':aWeb.get('node',aWeb.node())})
  inline = "<BUTTON CLASS='z-op menu' DIV=main URL='%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
  framed = "<BUTTON CLASS='z-op menu' DIV=main URL='resources_framed?id=%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
  tabbed = "<A CLASS='btn menu' TARGET=_blank HREF='%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></A>"
@@ -37,7 +37,7 @@ def view(aWeb):
 #
 #
 def framed(aWeb):
- res = aWeb.rest_call("system/resources_info",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/resource_info",{'id':aWeb['id']})
  aWeb.wr("<IFRAME ID=system_resource_frame NAME=system_resource_frame SRC='%s'></IFRAME>"%res['data']['href'])
 
 #
@@ -48,11 +48,11 @@ def list(aWeb):
   return
  cookie = aWeb.cookie('rims')
  node = aWeb.get('node',aWeb.node())
- res = aWeb.rest_call("system/resources_list",{'node':node,'user_id':cookie['id']})
+ res = aWeb.rest_call("system/resource_list",{'node':node,'user_id':cookie['id']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Resources</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content', URL='resources_list?node=%s'%node))
- aWeb.wr(aWeb.button('back',DIV='div_content', URL='node_list'))
+ aWeb.wr(aWeb.button('back',DIV='div_content', URL='nodes_list'))
  aWeb.wr(aWeb.button('add', DIV='div_content_right', URL='resources_info?node=%s&id=new&user_id=%s'%(node,cookie['id'])))
  aWeb.wr(aWeb.button('help',DIV='div_content_right', URL='resources_help', TITLE='Help information'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Type</DIV><DIV CLASS=th>Title</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
@@ -78,7 +78,7 @@ def list(aWeb):
 def info(aWeb):
  cookie = aWeb.cookie('rims')
  args = aWeb.args()
- data = aWeb.rest_call("system/resources_info",args)['data']
+ data = aWeb.rest_call("system/resource_info",args)['data']
  aWeb.wr("<ARTICLE><P>Resource entity ({})</P>".format(data['id']))
  aWeb.wr("<FORM ID=resource_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=node VALUE={}>".format(data['node']))
@@ -114,7 +114,7 @@ def info(aWeb):
 #
 #
 def delete(aWeb):
- res = aWeb.rest_call("system/resources_delete",{'id':aWeb['id']})
+ res = aWeb.rest_call("system/resource_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>Result: %s</ARTICLE>"%(res))
 
 #

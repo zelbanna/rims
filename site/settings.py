@@ -5,11 +5,11 @@ __author__= "Zacharias El Banna"
 #
 def list(aWeb):
  cookie = aWeb.cookie('rims')
- res = aWeb.rest_call("system/settings_list",{'node':aWeb['node'],'user_id':cookie['id']})
+ res = aWeb.rest_call("system/setting_list",{'node':aWeb['node'],'user_id':cookie['id']})
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Settings</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content', URL='settings_list?node=%s'%aWeb['node']))
- aWeb.wr(aWeb.button('back',  DIV='div_content', URL='node_list'))
+ aWeb.wr(aWeb.button('back',  DIV='div_content', URL='nodes_list'))
  aWeb.wr(aWeb.button('add',   DIV='div_content_right', URL='settings_info?id=new&node=%s'%aWeb['node']))
  aWeb.wr(aWeb.button('info',  DIV='div_content_right', URL='settings_comprehensive?node=%s'%aWeb['node']))
  aWeb.wr(aWeb.button('help',  DIV='div_content_right', URL='settings_help'))
@@ -26,7 +26,7 @@ def list(aWeb):
 def info(aWeb):
  cookie = aWeb.cookie('rims')
  args = aWeb.args()
- data = aWeb.rest_call("system/settings_info",args)['data']
+ data = aWeb.rest_call("system/setting_info",args)['data']
  aWeb.wr("<ARTICLE CLASS=info><P>Settings</P>")
  aWeb.wr("<FORM ID=settings_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))
@@ -46,7 +46,7 @@ def info(aWeb):
 #
 #
 def comprehensive(aWeb):
- settings = aWeb.rest_call("system/settings_comprehensive",{'node':aWeb['node'],'section':aWeb['section']})
+ settings = aWeb.rest_call("system/setting_comprehensive",{'node':aWeb['node'],'section':aWeb['section']})
  aWeb.wr("<ARTICLE><P>Settings</P>")
  for section,parameters in settings.items():
   aWeb.wr("<P>%s</P>"%section)
@@ -59,7 +59,7 @@ def comprehensive(aWeb):
 #
 #
 def delete(aWeb):
- aWeb.wr("<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_call("system/settings_delete",{'node':aWeb['node'],'id':aWeb['id']})))
+ aWeb.wr("<ARTICLE>Delete %s (%s)</ARTICLE>"%(aWeb['id'],aWeb.rest_call("system/setting_delete",{'node':aWeb['node'],'id':aWeb['id']})))
 
 #
 #

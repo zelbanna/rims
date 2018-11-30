@@ -45,7 +45,7 @@ def list(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT user_id, device_id, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') AS start, DATE_FORMAT(time_end,'%Y-%m-%d %H:%i') AS end, NOW() < time_end AS valid, devices.hostname, users.alias {} FROM reservations INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id".format('' if not aArgs.get('extended') else ", loan, address"))
+  ret['count'] = db.do("SELECT user_id, shutdown, device_id, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') AS start, DATE_FORMAT(time_end,'%Y-%m-%d %H:%i') AS end, NOW() < time_end AS valid, devices.hostname, users.alias {} FROM reservations INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id".format('' if not aArgs.get('extended') else ", loan, address"))
   ret['data'] = db.get_rows()
   for res in ret['data']:
    res['valid'] = (res['valid'] == 1)
@@ -73,8 +73,9 @@ def info(aCTX, aArgs = None):
  with aCTX.db as db:
   if op == 'update':
    aArgs['loan'] = 0 if not aArgs.get('loan') else 1
+   aArgs['shutdown'] = aArgs.get('shutdown',1)
    db.update_dict('reservations',aArgs,"device_id=%s"%id)
-  db.do("SELECT device_id, user_id, loan, address, alias, DATE_FORMAT(time_end,'%Y-%m-%d %H:%i') AS end, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') AS start FROM reservations LEFT JOIN users ON users.id = reservations.user_id WHERE device_id = {0}".format(id))
+  db.do("SELECT device_id, user_id, loan, shutdown, address, alias, DATE_FORMAT(time_end,'%Y-%m-%d %H:%i') AS end, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') AS start FROM reservations LEFT JOIN users ON users.id = reservations.user_id WHERE device_id = {0}".format(id))
   ret['data'] = db.get_row()
   ret['data']['loan'] = (ret['data']['loan'] == 1)
  return ret
@@ -91,36 +92,24 @@ def expiration_status(aCTX, aArgs = None):
  Output:
   - result
  """
- ret = {}
- with aCTX.db as db:
-  db.do("SELECT hostname, INET_NTOA(ia.ip) AS ip, (res.time_end - NOW()) AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id WHERE (res.time_end - NOW()) < %s"%aArgs.get('threshold',3600))
-  ret['hosts'] = db.get_dict('hostname')
- ret['notifier'] = aCTX.settings.get('notifier')
- if ret['notifier']:
-  notify = aCTX.node_function(ret['notifier'].get('proxy','master'),ret['notifier']['service'],"notify",aHeader = {'X-Log':'true'})
-  for hostname, data in ret['hosts'].items():
-   message = 'Host %s reservation expired'%hostname if data['remaining'] < 0 else 'Host %s reservation about to expire - remaining time: %s'%(hostname,data['remaining'])
-   ret['hosts'][hostname]['notify'] = notify(aArgs = {'message':message,'node':ret['notifier']['node']})
- return ret
-
-#
-#
-def shutdown(aCTX, aArgs = None):
- """ Function retrieves devices and VMs and shut them down if it can, add a delay and then shutdown power (type 1)
-  - For devices not in state up we will do PEM shutdown only (type 2)
-  - For VMs there will not be much done ATM as there is no hypervisor correlation yet (type 3)
-
-  Args:
-
-  Output:
- """
  from rims.rest.device import control as device_control
  ret = {}
-
  with aCTX.db as db:
-  db.do("SELECT id, hostname, vm FROM devices LEFT JOIN reservations ON reservations.device_id = devices.id WHERE devices.shutdown > 0 AND reservations.time_end IS NULL OR reservations.time_end < NOW()")
-  ret['devices'] = db.get_rows()
- for dev in ret['devices']:
-  """ Check VM and do special correlation """
-  aCTX.workers.add_function(device_control, aCTX, {'id':dev['id'], 'pem_op':'off','pem_id':'all','dev_op':'shutdown'})
+  db.do("SELECT devices.id, vm, res.shutdown, notify, hostname, INET_NTOA(ia.ip) AS ip, (res.time_end - NOW()) AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id WHERE (res.time_end - NOW()) < %s"%aArgs.get('threshold',3600))
+  ret['hosts'] = db.get_rows()
+
+ notifications = aCTX.settings.get('notifier')
+ if notifications:
+  notify_node = notifications['node']
+  notify_fun  = aCTX.node_function(notifications.get('proxy','master'),notifications['service'],"notify",aHeader = {'X-Log':'true'})
+
+ for host in ret['hosts']:
+  if host['remaining'] < 0:
+   if host['shutdown'] > 0:
+    aCTX.workers.add_function(device_control, aCTX, {'id':host['id'], 'pem_op':'off','pem_id':'all','dev_op':'shutdown' if host['shutdown'] == 1 else 'reset'})
+   message = 'Host %(hostname)s reservation expired'
+  else:
+   message = 'Host %(hostname)s reservation about to expire - remaining time: %(remaining)s'
+  if notifications:
+   host['notify'] = notify_fun(aArgs = {'message':message%host,'node':notify_node})
  return ret

@@ -10,7 +10,8 @@ def main(aWeb):
  data = aWeb.rest_call("system/inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('node'):
-  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='node_list'>Nodes</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='servers_list'>Servers</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='nodes_list'>Nodes</A></LI>")
  if data.get('users'):
   aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
  tools = data.get('tools',[])
@@ -37,7 +38,7 @@ def main(aWeb):
 #
 #
 def install(aWeb):
- res = aWeb.rest_call("tools/install?node=%s"%aWeb['node'])
+ res = aWeb.rest_call("tool/install?node=%s"%aWeb['node'])
  aWeb.wr("<ARTICLE CLASS='info'><P>Install results</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  for i in res.items():
@@ -99,7 +100,7 @@ def rest_execute(aWeb):
 #
 #
 def rest_explore(aWeb):
- res = aWeb.rest_call("tools/rest_explore")
+ res = aWeb.rest_call("tool/rest_explore")
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
  aWeb.wr("<ARTICLE><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>API</DIV><DIV CLASS=th>Function</DIV></DIV><DIV CLASS=tbody>")
  for item in res['data']:
@@ -112,7 +113,7 @@ def rest_explore(aWeb):
 #
 #
 def rest_information(aWeb):
- res = aWeb.rest_call("tools/rest_information",{'api':aWeb['api'],'function':aWeb['function']})
+ res = aWeb.rest_call("tool/rest_information",{'api':aWeb['api'],'function':aWeb['function']})
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<H1>API: %s</H1>"%(aWeb['api']))
  aWeb.wr("<BR>".join(res['module']))
@@ -128,7 +129,7 @@ def logs_clear(aWeb):
  args = aWeb.args()
  node = args.pop('node',None)
  args['count'] = 18
- res = aWeb.rest_call('tools/logs_clear?node=%s'%node,args)
+ res = aWeb.rest_call('tool/logs_clear?node=%s'%node,args)
  aWeb.wr("<ARTICLE><P>%s</P>"%res['node'])
  for i in res['file'].items():
   aWeb.wr("%s: %s<BR>"%i)
@@ -140,7 +141,7 @@ def logs_show(aWeb):
  args = aWeb.args()
  node = args.pop('node',None)
  args['count'] = 18
- res = aWeb.rest_call('tools/logs_get?node=%s'%node,args)
+ res = aWeb.rest_call('tool/logs_get?node=%s'%node,args)
  aWeb.wr("<ARTICLE>")
  for file,logs in res.items():
   aWeb.wr("<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs)))
@@ -152,7 +153,7 @@ def logs_show(aWeb):
 def services_info(aWeb):
  args = aWeb.args()
  node = args.pop('node',None)
- data  = aWeb.rest_call('tools/service_info?node=%s'%node,args)
+ data  = aWeb.rest_call('tool/service_info?node=%s'%node,args)
  state = 'start' if data['state'] == 'inactive' else 'stop'
  aWeb.wr("<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)"%(aWeb['service'],data['state'],data['info']))
  aWeb.wr(aWeb.button(state, DIV='div_content', SPIN='true', URL='tools_services_info?service=%s&node=%s&op=%s'%(args['service'],node,state)))
@@ -162,7 +163,7 @@ def services_info(aWeb):
 #
 #
 def file_list(aWeb):
- res = aWeb.rest_call('tools/file_list',{'directory':aWeb['directory']})
+ res = aWeb.rest_call('tool/file_list',{'directory':aWeb['directory']})
  aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Files in %s<P>"%res.get('path','directory'))
  import urllib.request, urllib.parse, urllib.error
  for f in res['files']:
@@ -173,7 +174,7 @@ def file_list(aWeb):
 #
 #
 def images(aWeb):
- res = aWeb.rest_call('tools/file_list')
+ res = aWeb.rest_call('tool/file_list')
  aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Images<P><DIV CLASS=table><DIV CLASS=tbody>")
  for file in res['files']:
   if file[-3:] == 'png':

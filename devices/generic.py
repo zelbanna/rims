@@ -25,7 +25,7 @@ class Device(object):
 
  def rebind(self, aIP): self._ip = aIP
 
- def operation(self, aType):  return 'NOT_IMPLEMENTED'
+ def operation(self, aType):  return 'NOT_IMPLEMENTED_%s'%aType.upper()
 
  def ping_device(self):
   from os import system
