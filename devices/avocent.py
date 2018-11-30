@@ -35,6 +35,7 @@ class Device(GenericDevice):
 
  #
  def set_state(self,slot,unit,state):
+  from time import sleep
   try:
    ret = {}
    tag = ".1.3.6.1.4.1.10418.17.2.5.5.1.6.1"
@@ -44,12 +45,13 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['write'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    setobj = VarList(Varbind(tag,iid , op ,"INTEGER"))
    res = session.set(setobj)
+   sleep(0.5)
    if (session.ErrorInd == 0):
     self.log("Avocent - {0} set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
     ret['status'] = 'OK'
-   else: 
+   else:
     self.log("Avocent - {0} failed set state: {1} on {2}.{3}".format(self._ip,state,slot,unit))
-    ret['status'] = 'NOT_OK'
+    ret['status'] = 'NOT_OK_%s'%session.ErrorInd
   except Exception as e:
    self.log("Avocent(%s) - error setting state: %s"%(self._ip,str(e)))
    ret['info'] = repr(exception_error)
@@ -62,7 +64,7 @@ class Device(GenericDevice):
    stateobj = VarList(Varbind(".1.3.6.1.4.1.10418.17.2.5.5.1.5.1.%s.%s"%(slot,unit)))
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.get(stateobj)
-   return {'status':"OK" if (session.ErrorInd == 0) else "NOT_OK", 'state':Device.get_outlet_state(stateobj[0].val) }
+   return {'status':"OK" if (session.ErrorInd == 0) else "NOT_OK", 'state':Device.get_outlet_state(stateobj[0].val.decode()) }
   except Exception as e:
    self.log("Avocent(%s) : error getting state: %s"%(self._ip,str(e)))
    return {'status':'NOT_OK','info':str(e), 'state':'unknown' }

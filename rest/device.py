@@ -308,22 +308,23 @@ def control(aCTX, aArgs = None):
  from importlib import import_module
  ret = {'id':aArgs['id']}
  with aCTX.db as db:
-  db.do("SELECT INET_NTOA(ia.ip) AS dev_ip,dt.name AS dev_type FROM devices LEFT JOIN device_types AS dt ON dt.id = devices.type_id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%ret['id'])
+  db.do("SELECT INET_NTOA(ia.ip) AS dev_ip, dt.name AS dev_type FROM devices LEFT JOIN device_types AS dt ON dt.id = devices.type_id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%ret['id'])
   ret['device'] = db.get_row()
-  ret['pem_count'] = db.do("SELECT dp.id,dp.name,dp.pdu_id,dp.pdu_slot,dp.pdu_unit,dt.name AS pdu_type,INET_NTOA(ia.ip) AS pdu_ip FROM device_pems AS dp LEFT JOIN devices ON devices.id = dp.pdu_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE dp.device_id = %(id)s"%ret)
+  ret['pem_count'] = db.do("SELECT dp.id, dp.name, dp.pdu_id, dp.pdu_slot, dp.pdu_unit, pi.0_slot_id, pi.1_slot_id, dt.name AS pdu_type,INET_NTOA(ia.ip) AS pdu_ip FROM device_pems AS dp LEFT JOIN pdu_info AS pi ON pi.device_id = dp.pdu_id LEFT JOIN devices ON devices.id = dp.pdu_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE dp.device_id = %(id)s"%ret)
   ret['pems'] = db.get_rows()
  if aArgs.get('dev_op'):
   module = import_module("rims.devices.%s"%ret['device']['dev_type'])
   dev = getattr(module,'Device',None)(aCTX, ret['device']['dev_ip'])
   ret['dev_op'] = dev.operation(aArgs['dev_op'])
+  """ TODO: Should we wait here or within the device itself until shutdown complete? """
  if ret['pem_count'] > 0:
   for pem in ret['pems']:
    op_id = str(aArgs.get('pem_id','NULL'))
    module = import_module("rims.devices.%s"%pem['pdu_type'])
    pdu = getattr(module,'Device',None)(aCTX, pem['pdu_ip'])
-   pem.update(pdu.get_state(pem['pdu_slot'],pem['pdu_unit']))
    if op_id == 'all' or op_id == str(pem['id']):
-    pem['op'] = pdu.set_state(pem['pdu_slot'],pem['pdu_unit'],aArgs['pem_op'])
+    pem['op'] = pdu.set_state(pem['%s_slot_id'%pem['pdu_slot']],pem['pdu_unit'],aArgs['pem_op'])
+   pem.update(pdu.get_state(pem['%s_slot_id'%pem['pdu_slot']],pem['pdu_unit']))
  aCTX.log("Device Control: %s"%ret)
  return ret
 

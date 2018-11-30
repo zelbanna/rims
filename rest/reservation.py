@@ -83,11 +83,10 @@ def info(aCTX, aArgs = None):
 #
 #
 def expiration_status(aCTX, aArgs = None):
- """ Function notifies users (using notification service@node) about reservation time left. If NOW() - time_end < threashold => service@node.notify('user':user,'message':'Device X reservation will expire in XX seconds')
-  Ideally run as a periodic task.
+ """ Function notifies users (using notification service@node) about reservation time left (from threshold seconds left) and then runs shutdown and kills power when no time left.
 
  Args:
-  - threshold (optional) defaults to 3600 (seconds)
+  - threshold (optional) When to start nagging about defaults to 3600 (seconds)
 
  Output:
   - result

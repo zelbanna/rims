@@ -21,9 +21,9 @@ class Junos(GenericDevice):
   self._config  = None
   self._model   = None
   self._version = None
- 
+
  def __str__(self):
-  return "{} Model:{} Version:{}".format(str(self._router), self._model, self._version)
+  return "Junos(router=%s, model=%s, version=%s)"%(str(self._router), self._model, self._version)
 
  def __enter__(self):
   if self.connect():

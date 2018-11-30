@@ -8,7 +8,7 @@ from rims.devices.generic import Device as GenericDevice
 
 class Device(GenericDevice):
 
- def __init__(self,aIP,aCTX):
+ def __init__(self, aCTX, aIP):
   GenericDevice.__init__(self, aCTX, aIP)
 
  def __str__(self):
