@@ -482,6 +482,22 @@ def user_list(aCTX, aArgs = None):
 
 #
 #
+def user_encrypt(aCTX, aArgs = None):
+ """Function encrypts 'data' with password encryption techniques, providing entire encryption string (method,salt,code)
+
+ Args:
+  - data
+
+ Output:
+  - encrypted
+ """
+ from crypt import crypt
+ ret = {}
+ ret['encrypted'] = crypt(aArgs['data'],"$1$%s$"%aCTX.config['salt'])
+ return ret
+
+#
+#
 def user_info(aCTX, aArgs = None):
  """Function docstring for user_info TBD
 
@@ -504,10 +520,10 @@ def user_info(aCTX, aArgs = None):
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
+   from crypt import crypt
    """ Password at least 6 characters """
    if len(aArgs.get('password','')) > 5:
-    from crypt import crypt
-    aArgs['password'] = crypt(aArgs['password'],"$1$WBEUAHfO$")
+    aArgs['password'] = crypt(aArgs['password'],'$1$%s$'%aCTX.config['salt']).split('$')[3]
    else:
     ret['password_check_failed'] = (not (aArgs.pop('password',None) is None))
    if aArgs.get('slack') == 'None':
@@ -515,6 +531,8 @@ def user_info(aCTX, aArgs = None):
    if not id == 'new':
     ret['update'] = db.update_dict('users',aArgs,"id=%s"%id)
    else:
+    if not aArgs.get('password'):
+     aArgs['password'] = crypt('changeme','$1$%s$'%aCTX.config['salt']).split('$')[3]
     ret['update'] = db.insert_dict('users',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 

@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.6"
-__build__ = 176
+__build__ = 177
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -49,6 +49,7 @@ class Context(object):
    with open(aConfig,'r') as config_file:
     self.config = load(config_file)
     self.config['config_file'] = aConfig
+  self.config['salt'] = self.config.get('salt','WBEUAHfO')
   self.config['mode'] = 'api'
   self.node     = self.config['id']
   self.db       = DB(self.config['db_name'],self.config['db_host'],self.config['db_user'],self.config['db_pass']) if self.node == 'master' else None
@@ -210,7 +211,7 @@ class Context(object):
    output['Unhandled detected OIDs']= ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
    output.update({'Mounted directory: %s'%k:"%s => %s/files/%s/"%(v,node_url,k) for k,v in self.settings.get('files',{}).items()})
    output.update({'Config: %s'%k:v for k,v in self.config.items()})
-   output.update({'Modules (%s)'%i:x for i,x in enumerate(sys_modules.keys()) if x.startswith('rims')})
+   output.update({'Modules (%03d)'%i:x for i,x in enumerate(sys_modules.keys()) if x.startswith('rims')})
   output['analytics'] = {}
   for type in ['modules','files']:
    for g,i in self._analytics[type].items():
@@ -581,7 +582,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     from rims.core.genlib import random_string
     from datetime import datetime,timedelta
     from crypt import crypt
-    passcode = crypt(password,"$1$WBEUAHfO$")
+    passcode = crypt(password, "$1$%s$"%self._ctx.config['salt']).split('$')[3]
     with self._ctx.db as db:
      if (db.do("SELECT id, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
       output.update(db.get_row())

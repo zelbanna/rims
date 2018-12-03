@@ -32,6 +32,7 @@ config_file = ospath.abspath(config_filename)
 with open(config_file,'r') as sfile:
  config = load(sfile)
 config['config_file'] = config_file
+config['salt'] = config.get('salt','WBEUAHfO')
 
 ############################################### ALL #################################################
 #
@@ -156,6 +157,7 @@ if config['id'] == 'master':
  # Common config and user - for master...
  #
  from rims.rest import mysql
+ from crypt import crypt
  try:
   database,host,username,password = config['db_name'],config['db_host'],config['db_user'],config['db_pass']
   database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(pkgdir,'schema.db')}
@@ -178,8 +180,8 @@ if config['id'] == 'master':
 
   db = DB(database,host,username,password)
   db.connect()
-
-  res['admin_user'] = (db.do("INSERT users (id,name,alias,password) VALUES(1,'Administrator','admin','4cb9c8a8048fd02294477fcb1a41191a') ON DUPLICATE KEY UPDATE id = id, password = '4cb9c8a8048fd02294477fcb1a41191a'") > 0)
+  passcode = crypt('changeme', '$1$%s$'%config.get('salt','WBEUAHfO')).split('$')[3]
+  res['admin_user'] = (db.do("INSERT users (id,name,alias,password) VALUES(1,'Administrator','admin','%s') ON DUPLICATE KEY UPDATE id = id, password = '%s'"%(passcode,passcode)) > 0)
   res['node_add'] = (db.do("INSERT nodes (node,url,system) VALUES('{0}','{1}',1) ON DUPLICATE KEY UPDATE system = 1, id = LAST_INSERT_ID(id)".format(config['id'],config['master'])) > 0)
   res['node_id']  = db.get_last_id()
   res['dns_server_add'] = (db.do("INSERT servers (node,service,type) VALUES ('master','nodns','DNS') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)

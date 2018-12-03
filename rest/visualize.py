@@ -2,7 +2,6 @@
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
-from json import dumps, loads
 #
 #
 def list(aCTX, aArgs = None):
@@ -88,6 +87,7 @@ def network(aCTX, aArgs = None):
   - edges
  """
  from builtins import list
+ from json import dumps, loads
  args = dict(aArgs)
  op   = args.pop('op',None)
  ret = {'id':args.get('id',0),'type':args.pop('type','map')}
