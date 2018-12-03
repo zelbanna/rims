@@ -104,6 +104,7 @@ a.btn-logs:hover {      background-image: url(../images/btn-logs.black.hover.png
 a.btn-network:hover {   background-image: url(../images/btn-network.black.hover.png); }
 a.btn-off:hover {       background-image: url(../images/btn-off.black.hover.png); }
 a.btn-reload:hover{     background-image: url(../images/btn-reload.black.hover.png); }
+a.btn-revert:hover{     background-image: url(../images/btn-revert.black.hover.png); }
 a.btn-save:hover {      background-image: url(../images/btn-save.black.hover.png); }
 a.btn-search:hover {    background-image: url(../images/btn-search.black.hover.png); }
 a.btn-show:hover {      background-image: url(../images/btn-show.black.hover.png); }
