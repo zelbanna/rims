@@ -14,7 +14,7 @@ def portal(aWeb):
   (pid,pname) = aWeb.get('project','none_none').split('_')
   auth = aWeb.rest_call("openstack/authenticate",{'node':cookie['node'],'project_name':pname,'project_id':pid, 'username':args['username'],'password':args['password']})
   if auth['authenticated'] == "OK":
-   cookie = {'node':args['node'],'token':auth['token'],'username':args['username'],'project_id':pid})
+   cookie = {'node':args['node'],'token':auth['token'],'username':args['username'],'project_id':pid}
   else:
    aWeb.wr("Error logging in - please try login again")
    return
