@@ -53,21 +53,6 @@ class Device(object):
   return ret
 
  #
- def system_info(self):
-  ret = {}
-  try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
-   session.get(sysoid)
-   if sysoid[0].val:
-    ret['mac'] = ':'.join("%s%s"%x for x in zip(*[iter(sysoid[0].val.hex())]*2))
-   if sysoid[1].val:
-    try:    ret['oid'] = int(sysoid[1].val.decode().split('.')[7])
-    except: pass
-  except: pass
-  return ret
-
- #
  def interfaces(self):
   interfaces = {}
   try:
@@ -150,6 +135,21 @@ class Device(object):
   return neighbors
 
  #
+ def system_info(self):
+  ret = {}
+  try:
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
+   session.get(sysoid)
+   if sysoid[0].val:
+    ret['mac'] = ':'.join("%s%s"%x for x in zip(*[iter(sysoid[0].val.hex())]*2))
+   if sysoid[1].val:
+    try:    ret['oid'] = int(sysoid[1].val.decode().split('.')[7])
+    except: pass
+  except: pass
+  return ret
+
+ #
  def detect(self):
   def hex2ascii(aHex):
    return ':'.join("%s%s"%x for x in zip(*[iter(aHex.hex())]*2))
@@ -159,7 +159,7 @@ class Device(object):
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    # Device info, Device name, Enterprise OID
    devoid = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
-   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'))
+   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    session.get(devoid)
    ret['status'] = "OK" if (session.ErrorInd == 0) else "NOT_OK"
    session.get(sysoid)
@@ -169,6 +169,9 @@ class Device(object):
   if ret['status'] == 'OK':
    if sysoid[0].val:
     try: ret['info']['mac'] = hex2ascii(sysoid[0].val)
+    except: pass
+   if sysoid[1].val:
+    try:    ret['info']['oid'] = int(sysoid[1].val.decode().split('.')[7])
     except: pass
    if devoid[1].val.decode():
     ret['info']['snmp'] = devoid[1].val.decode().lower()

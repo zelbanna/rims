@@ -654,11 +654,19 @@ def network_info_discover(aCTX, aArgs = None):
 
  Args:
   - network_id (optional)
+  - lookup (optional). Bool, default False
 
  Output:
  """
  from rims.devices.generic import Device
- def __detect_thread(aDev, aCTX):
+ def __lookup_thread(aCTX, aDev):
+  __dev = Device(aCTX, aDev['ip'])
+  info = __dev.detect()
+  if info['status'] == 'OK':
+   aDev.update(info['info'])
+  return True
+
+ def __detect_thread(aCTX, aDev):
   __dev = Device(aCTX, aDev['ip'])
   aDev.update(__dev.system_info())
   return True
@@ -666,16 +674,27 @@ def network_info_discover(aCTX, aArgs = None):
  ret = {'count':0}
  with aCTX.db as db:
   network = "TRUE" if not aArgs.get('network_id') else "ia.network_id = %s"%aArgs['network_id']
-  count   = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE %s AND ia.state = 1 AND (devices.mac = 0 OR devices.oid = 0)"%network)
+  if aArgs.get('lookup'):
+   thread = __lookup_thread
+   lookup = "TRUE"
+   db.do("SELECT id, name FROM device_types")
+   types = {x['name']:x['id'] for x in db.get_rows()}
+  else:
+   thread = __detect_thread
+   lookup = "(devices.mac = 0 OR devices.oid = 0)"
+  count   = db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.state = 1 AND %s AND %s"%(network,lookup))
   devices = db.get_rows()
+
   if count > 0:
    sema = aCTX.workers.semaphore(20)
    for dev in devices:
-    aCTX.workers.add_semaphore(__detect_thread, sema, dev, aCTX)
+    aCTX.workers.add_semaphore(thread, sema, aCTX, dev)
    aCTX.workers.block(sema,20)
    for dev in devices:
     id = dev.pop('id',None)
     ip = dev.pop('ip',None)
+    if dev.get('type'):
+     dev['type_id'] = types[dev.pop('type',None)]
     if dev.get('mac'):
      dev['mac'] = int(dev['mac'].replace(':',""),16)
     if len(dev) > 0:

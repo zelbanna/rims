@@ -2,7 +2,7 @@
  "node":"master",
  "module":"device",
  "func":"network_info_discover",
- "args":{},
+ "args":{"lookup":true},
  "periodic":true,
  "output":true,
  "frequency":7200
