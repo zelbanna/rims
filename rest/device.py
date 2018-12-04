@@ -141,7 +141,7 @@ def extended(aCTX, aArgs = None):
     ret['status'] = (db.do("DELETE FROM device_pems WHERE device_id = %s AND id = %s "%(ret['id'],aArgs['pem_id'])) > 0)
 
    if operation == 'update' and ret['id']:
-    """ In case company gets slipped in """ 
+    """ In case company gets slipped in """
     aArgs.pop('company',None)
     ret['status']['device_info'] = db.do("UPDATE devices SET notify = %s WHERE id = %s"%(aArgs.get('notify',0),ret['id']))
 
@@ -275,7 +275,7 @@ def list(aCTX, aArgs = None):
    fields.append('devices.url')
   if 'mac' in extras or 'oui' in extras:
    fields.append('LPAD(hex(ia.mac),12,0) AS mac')
-   if 'oui' in extras: 
+   if 'oui' in extras:
     fields.append('oui.company AS oui')
     tune.append("oui ON oui.oui = (ia.mac >> 24) and ia.mac != 0")
   if 'system' in extras:
@@ -294,10 +294,11 @@ def list(aCTX, aArgs = None):
 #
 #
 def control(aCTX, aArgs = None):
- """ Function provides an operational interface towards device
+ """ Function provides an operational interface towards device, either using ID or IP
 
  Args:
-  - id (required)
+  - id (optional required)
+  - ip (optional required)
   - user_id (required)
   - pem_op (optional required). Apply op (on|off|reboot) to pdu connected to pem
   - pem_id (optional required). Select which pem (or 'all') to apply op to
@@ -306,18 +307,25 @@ def control(aCTX, aArgs = None):
  Output:
  """
  from importlib import import_module
- ret = {'id':aArgs['id']}
+ ret = {}
+ if   aArgs.get('id'):
+  srch = "devices.id = %s"%aArgs['id']
+ elif aArgs.get('ip'):
+  srch = "ia.ip = INET_ATON('%s')"%aArgs['ip']
+ else:
+  return {'help':'requires device id or ip'}
  with aCTX.db as db:
-  db.do("SELECT INET_NTOA(ia.ip) AS dev_ip, dt.name AS dev_type FROM devices LEFT JOIN device_types AS dt ON dt.id = devices.type_id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%ret['id'])
-  ret['device'] = db.get_row()
-  ret['pem_count'] = db.do("SELECT dp.id, dp.name, dp.pdu_id, dp.pdu_slot, dp.pdu_unit, pi.0_slot_id, pi.1_slot_id, dt.name AS pdu_type,INET_NTOA(ia.ip) AS pdu_ip FROM device_pems AS dp LEFT JOIN pdu_info AS pi ON pi.device_id = dp.pdu_id LEFT JOIN devices ON devices.id = dp.pdu_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE dp.device_id = %(id)s"%ret)
-  ret['pems'] = db.get_rows()
+  ret['found'] = (db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON dt.id = devices.type_id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s"%srch) == 1)
+  if ret['found']:
+   ret.update(db.get_row())
+   ret['pem_count'] = db.do("SELECT dp.id, dp.name, dp.pdu_id, dp.pdu_slot, dp.pdu_unit, pi.0_slot_id, pi.1_slot_id, dt.name AS pdu_type,INET_NTOA(ia.ip) AS pdu_ip FROM device_pems AS dp LEFT JOIN pdu_info AS pi ON pi.device_id = dp.pdu_id LEFT JOIN devices ON devices.id = dp.pdu_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE dp.device_id = %s"%ret['id'])
+   ret['pems'] = db.get_rows()
  if aArgs.get('dev_op'):
-  module = import_module("rims.devices.%s"%ret['device']['dev_type'])
-  dev = getattr(module,'Device',None)(aCTX, ret['device']['dev_ip'])
+  module = import_module("rims.devices.%s"%ret['type'])
+  dev = getattr(module,'Device',None)(aCTX, ret['ip'])
   ret['dev_op'] = dev.operation(aArgs['dev_op'])
   """ TODO: Should we wait here or within the device itself until shutdown complete? """
- if ret['pem_count'] > 0:
+ if ret.get('pem_count') > 0:
   for pem in ret['pems']:
    op_id = str(aArgs.get('pem_id','NULL'))
    module = import_module("rims.devices.%s"%pem['pdu_type'])
