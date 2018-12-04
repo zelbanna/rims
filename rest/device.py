@@ -33,7 +33,6 @@ def info(aCTX, aArgs = None):
    db.do("SELECT id, name FROM device_types ORDER BY name")
    ret['types'] = db.get_rows()
 
-  """ add this to "update" belov => then skip ret['id'] """
   if op == 'lookup' and ret['ip']:
    from rims.devices.generic import Device
    dev = Device(aCTX, ret['ip'])
@@ -48,6 +47,8 @@ def info(aCTX, aArgs = None):
      if type['name'] == type_name:
       args['type_id'] = type['id']
       break
+    if not 'types' in extra:
+     ret.pop('types',None)
     if ret['id']:
      ret['update'] = (db.update_dict('devices',args,"id=%s"%ret['id']) == 1)
 
