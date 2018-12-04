@@ -146,7 +146,7 @@ def info(aWeb):
   aWeb.wr("<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip']))
   return
  """ 3 parallell tables """
- width = 690 if dev['racked'] and not dev['info']['type_base'] == 'pdu' else 480
+ width = 690 if dev.get('rack',None) and not dev['info']['type_base'] == 'pdu' else 480
  aWeb.wr("<ARTICLE CLASS='info' STYLE='position:relative; height:268px; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id']))
  aWeb.wr("<FORM ID=info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id']))
@@ -166,7 +166,7 @@ def info(aWeb):
  aWeb.wr("<DIV CLASS=tr ID=div_reservation_info><DIV CLASS=td>Reserve:</DIV>")
  if dev['info']['type_name'] == 'controlplane':
   aWeb.wr("<DIV CLASS=td>N/A</DIV>")
- elif dev['reserved']:
+ elif dev.get('reservation'):
   aWeb.wr("<DIV CLASS='td %s'>"%("red" if dev['reservation']['valid'] else "orange"))
   aWeb.wr(dev['reservation']['alias'] if dev['reservation']['user_id'] != int(cookie['id']) else "<A CLASS=z-op DIV=div_reservation_info URL='reservations_update?op=drop&id=%s'>%s</A>"%(dev['id'],dev['reservation']['alias']))
   aWeb.wr("</DIV>")
@@ -174,7 +174,7 @@ def info(aWeb):
   aWeb.wr("<DIV CLASS='td green'><A CLASS=z-op DIV=div_reservation_info URL='reservations_update?op=reserve&id=%s'>Available</A></DIV>"%dev['id'])
  aWeb.wr("</DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>MAC:   </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=mac VALUE='%s'></DIV></DIV>"%dev['info']['mac'].upper())
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>VM:    </DIV><DIV CLASS=td><INPUT NAME=vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] == 1 else ""))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>VM:    </DIV><DIV CLASS=td><INPUT NAME=vm TYPE=checkbox VALUE=1 {0}></DIV></DIV>".format("checked=checked" if dev['info']['vm'] else ""))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV>")
  if dev.get('types'):
   aWeb.wr("<DIV CLASS=td><SELECT NAME=type_id>")
@@ -189,7 +189,7 @@ def info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>S/N: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=serial VALUE='%s'></DIV></DIV>"%(dev['info']['serial']))
  aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("<!-- Rack Info -->")
- if dev['racked'] and not dev['info']['type_base'] == 'pdu':
+ if dev.get('rack',None) and not dev['info']['type_base'] == 'pdu':
   aWeb.wr("<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>")
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Rack/Pos: </DIV><DIV CLASS=td>%s (%s)</DIV></DIV>"%(dev['rack']['rack_name'],dev['rack']['rack_unit']))
   if not dev['info']['type_base'] == 'controlplane':
@@ -216,7 +216,7 @@ def info(aWeb):
  aWeb.wr(aWeb.button('connections',DIV='div_dev_data',     URL='device_interface_list?device=%i'%(dev['id']),TITLE='Device interfaces'))
  aWeb.wr(aWeb.button('network',    DIV='div_content_right',URL='visualize_network?type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map'))
  aWeb.wr(aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip'])))
- if dev['racked'] and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
+ if dev.get('racked',None) and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
   # Hardcoded port to 60xx
   aWeb.wr(aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port'])))
  if dev['info'].get('url'):

@@ -33,6 +33,7 @@ def info(aCTX, aArgs = None):
    db.do("SELECT id, name FROM device_types ORDER BY name")
    ret['types'] = db.get_rows()
 
+  """ add this to "update" belov => then skip ret['id'] """
   if op == 'lookup' and ret['ip']:
    from rims.devices.generic import Device
    dev = Device(aCTX, ret['ip'])
@@ -47,11 +48,13 @@ def info(aCTX, aArgs = None):
      if type['name'] == type_name:
       args['type_id'] = type['id']
       break
-    ret['update'] = (db.update_dict('devices',args,"id=%s"%ret['id']) == 1)
+    if ret['id']:
+     ret['update'] = (db.update_dict('devices',args,"id=%s"%ret['id']) == 1)
 
   elif op == 'update' and ret['id']:
    aArgs.pop('state',None)
-   aArgs['vm'] = aArgs.get('vm',0)
+   vm = aArgs.get('vm',0)
+   aArgs['vm'] = 1 if (vm == True or vm == '1' or vm == 1) else 0
    if not aArgs.get('comment'):
     aArgs['comment'] = 'NULL'
    if not aArgs.get('url'):
@@ -73,41 +76,37 @@ def info(aCTX, aArgs = None):
    ret['info'] = db.get_row()
    ret['id'] = ret['info'].pop('id',None)
    ret['ip'] = ret['info'].pop('ip',None)
-   ret['state'] = {0:'grey',1:'green',2:'red'}.get(ret['info']['state'],'orange')
+   ret['state'] = {0:'grey',1:'green',2:'red'}.get(ret['info'].pop('state',None),'orange')
    # Pick login name from settings
    ret['username'] = aCTX.settings['netconf']['username']
    if not op == 'basics':
     ret['info']['mac'] = ':'.join(ret['info']['ip_mac'][i:i+2] for i in [0,2,4,6,8,10])
+    ret['info']['vm'] = (ret['info']['vm'] == 1)
     if not ret['info']['functions']:
      ret['info']['functions'] = ""
-    ret['reserved'] = (db.do("SELECT users.alias, reservations.user_id, NOW() < time_end AS valid FROM reservations LEFT JOIN users ON reservations.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1)
-    if ret['reserved']:
+    if (db.do("SELECT users.alias, reservations.user_id, NOW() < time_end AS valid FROM reservations LEFT JOIN users ON reservations.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1):
      ret['reservation'] = db.get_row()
     # Rack infrastructure ?
-    if ret['info']['vm'] == 1:
-     ret['racked'] = False
-    else:
-     ret['racked'] = (db.do("SELECT rack_unit,rack_size, console_id, console_port, rack_id, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%ret['id']) == 1)
-     if ret['racked']:
-      rack = db.get_row()
-      ret['rack'] = rack
-      infra_ids = [str(rack['console_id'])] if rack['console_id'] else []
-      db.do("SELECT id,name,pdu_id,pdu_slot,pdu_unit FROM device_pems WHERE device_id = %(id)s"%ret)
-      ret['pems'] = db.get_rows()
-      pdu_ids = [str(x['pdu_id']) for x in ret['pems'] if x['pdu_id']]
-      infra_ids.extend(pdu_ids)
-      if len(infra_ids) > 0:
-       db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, hostname FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id IN (%s)"%','.join(infra_ids))
-      devices = db.get_dict('id') if len(infra_ids) > 0 else {}
-      if len(pdu_ids) > 0:
-       db.do("SELECT * FROM pdu_info WHERE device_id IN (%s)"%','.join(pdu_ids))
-      pdus = db.get_dict('device_id') if len(pdu_ids) > 0 else {}
-      console = devices.get(rack['console_id'],{'hostname':None,'ip':None})
-      rack.update({'console_name':console['hostname'],'console_ip':console['ip']})
-      for pem in ret['pems']:
-       pdu = pdus.get(pem['pdu_id'])
-       pem['pdu_name'] = "%s:%s"%(devices[pem['pdu_id']]['hostname'],pdu['%s_slot_name'%pem['pdu_slot']]) if pdu else None
-       pem['pdu_ip'] = devices[pem['pdu_id']]['ip'] if pdu else None
+    if not ret['info']['vm'] and (db.do("SELECT rack_unit,rack_size, console_id, console_port, rack_id, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%ret['id']) == 1):
+     rack = db.get_row()
+     ret['rack'] = rack
+     infra_ids = [str(rack['console_id'])] if rack['console_id'] else []
+     db.do("SELECT id,name,pdu_id,pdu_slot,pdu_unit FROM device_pems WHERE device_id = %(id)s"%ret)
+     ret['pems'] = db.get_rows()
+     pdu_ids = [str(x['pdu_id']) for x in ret['pems'] if x['pdu_id']]
+     infra_ids.extend(pdu_ids)
+     if len(infra_ids) > 0:
+      db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, hostname FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id IN (%s)"%','.join(infra_ids))
+     devices = db.get_dict('id') if len(infra_ids) > 0 else {}
+     if len(pdu_ids) > 0:
+      db.do("SELECT * FROM pdu_info WHERE device_id IN (%s)"%','.join(pdu_ids))
+     pdus = db.get_dict('device_id') if len(pdu_ids) > 0 else {}
+     console = devices.get(rack['console_id'],{'hostname':None,'ip':None})
+     rack.update({'console_name':console['hostname'],'console_ip':console['ip']})
+     for pem in ret['pems']:
+      pdu = pdus.get(pem['pdu_id'])
+      pem['pdu_name'] = "%s:%s"%(devices[pem['pdu_id']]['hostname'],pdu['%s_slot_name'%pem['pdu_slot']]) if pdu else None
+      pem['pdu_ip'] = devices[pem['pdu_id']]['ip'] if pdu else None
  return ret
 
 #
