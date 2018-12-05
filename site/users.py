@@ -48,7 +48,7 @@ def info(aWeb):
  cookie = aWeb.cookie('rims')
  args = aWeb.args()
  data = aWeb.rest_call("system/user_info?log=false",args)['data']
- resources = aWeb.rest_call("system/resource_list",{'user_id':cookie['id'], 'dict':'id','view_public':True,'node':aWeb.node()})['data']
+ resources = aWeb.rest_call("system/resource_list",{'user_id':data['id'], 'dict':'id','view_public':True,'node':aWeb.node()})['data']
  themes = aWeb.rest_call("system/theme_list")
  if args.get('op') == 'update':
   from time import strftime, time
@@ -72,7 +72,10 @@ def info(aWeb):
   aWeb.wr("<OPTION %s VALUE='%s'>%s</OPTION>"%("selected='selected'" if theme == data['theme'] else "",theme,theme))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>View All:</DIV><DIV CLASS=td><INPUT NAME=view_public TYPE=CHECKBOX VALUE=1 {}             {}></DIV></DIV>".format("checked=checked" if str(data['view_public']) == "1" else "","disabled" if cookie['id'] != str(data['id']) else ""))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Cookie:</DIV><DIV CLASS='td small-text'>%s</DIV></DIV>"%",".join('%s=%s'%i for i in cookie.items()))
+ if cookie['id'] == data['id']:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Cookie:</DIV><DIV CLASS='td small-text'>%s</DIV></DIV>"%",".join('%s=%s'%i for i in cookie.items()))
+ else:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
  aWeb.wr("</DIV></DIV><SPAN>Menu list</SPAN>")
  aWeb.wr("<DIV CLASS='border' STYLE='display:flex; flex-wrap:wrap; min-height:100px;'><UL STYLE='width:100%' ID=ul_menu DEST=menulist CLASS='drop'>")
  menulist = data['menulist'].split(',') if not data.get('menulist') == 'default' else [ value['id'] for key,value in resources.items() if value['type'] == 'menuitem']

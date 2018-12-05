@@ -10,7 +10,6 @@ def main(aWeb):
  data = aWeb.rest_call("system/server_inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='servers_list'>Servers</A></LI>")
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='nodes_list'>Nodes</A></LI>")
  aWeb.wr("<LI CLASS='right navinfo'><A>Servers</A></LI>")
  aWeb.wr("</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content ID=div_content>")
@@ -27,9 +26,9 @@ def list(aWeb):
  aWeb.wr(aWeb.button('reload',DIV='div_content',URL='servers_list?%s'%type))
  aWeb.wr(aWeb.button('add', DIV='div_content_right',URL='servers_info?id=new&%s'%type,TITLE='Add server'))
  aWeb.wr(aWeb.button('help',DIV='div_content_right',URL='servers_help'))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Service</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Service</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for srv in res['servers']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(srv['id'],srv['node'],srv['service'],srv['type']))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(srv['node'],srv['service'],srv['type']))
   aWeb.wr(aWeb.button('info',DIV='div_content_right',URL='servers_info?id=%s'%(srv['id'])))
   if srv['system']:
    aWeb.wr(aWeb.button('sync',DIV='div_content_right',URL='servers_sync?id=%s'%(srv['id']), SPIN='true', TITLE='Sync server'))
