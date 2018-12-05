@@ -117,6 +117,11 @@ class DB(object):
  def is_dirty(self):
   return self._dirty
 
+ def ignore_warnings(self,aState):
+  old = self._curs._defer_warnings
+  self._curs._defer_warnings = aState
+  return old
+
  ################# Fetch info ##################
 
  def get_row(self):

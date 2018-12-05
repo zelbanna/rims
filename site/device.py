@@ -11,7 +11,8 @@ def main(aWeb):
  aWeb.wr("<LI CLASS='dropdown'><A>Devices</A><DIV CLASS='dropdown-content'>")
  aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_list?{0}'>List</A>".format(aWeb.get_args()))
  aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_search'>Search</A>")
- aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_types_list'>Types</A>")
+ aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_type_list'>Types</A>")
+ aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='device_model_list'>Models</A>")
  aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content_left URL='visualize_list'>Maps</A></LI>")
  if aWeb['rack']:
@@ -125,16 +126,6 @@ def search(aWeb):
  aWeb.wr("</DIV>")
  aWeb.wr("</ARTICLE>")
 
-#
-#
-def types_list(aWeb):
- res = aWeb.rest_call("device/types_list")
- aWeb.wr("<ARTICLE><P>Device Types<P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Class</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Icon</DIV></DIV><DIV CLASS=tbody>")
- for tp in res['types']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='device_list?field=type&search=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV></DIV>"%(tp['base'],tp['name'],tp['name'],tp['icon'].rpartition('/')[2]))
- aWeb.wr("</DIV></DIV>")
- aWeb.wr("</ARTICLE>")
 #
 #
 def info(aWeb):
@@ -370,6 +361,53 @@ def update_ip(aWeb):
 def delete(aWeb):
  res = aWeb.rest_call("device/delete",{ 'id':aWeb['id'] })
  aWeb.wr("<ARTICLE>Unit {} deleted, op:{}</ARTICLE>".format(aWeb['id'],res))
+
+#
+#
+def type_list(aWeb):
+ res = aWeb.rest_call("device/type_list")
+ aWeb.wr("<ARTICLE><P>Device Types<P>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Class</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Icon</DIV></DIV><DIV CLASS=tbody>")
+ for tp in res['types']:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='device_list?field=type&search=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV></DIV>"%(tp['base'],tp['name'],tp['name'],tp['icon'].rpartition('/')[2]))
+ aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</ARTICLE>")
+
+#
+#
+def model_list(aWeb):
+ args = aWeb.args()
+ res = aWeb.rest_call("device/model_list",args)
+ aWeb.wr("<ARTICLE><P>Device Models<P>")
+ aWeb.wr(aWeb.button('reload',DIV='div_content_left',  URL='device_model_list'))
+ aWeb.wr(aWeb.button('sync',  DIV='div_content_left',  URL='device_model_list?op=sync', TITLE='ReSync models'))
+ aWeb.wr("<SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'>%s</SPAN>"%res.get('status',""))
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Model</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ for row in res['models']:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>%(type)s</DIV><DIV CLASS=td>"%row)
+  aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='device_model_info?id=%s'%row['id']))
+  aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</ARTICLE>")
+
+#
+#
+def model_info(aWeb):
+ args = aWeb.args()
+ res = aWeb.rest_call("device/model_info",args)
+ aWeb.wr("<ARTICLE CLASS='info'><P>Device Model<P>")
+ aWeb.wr("<FORM ID='device_model_info_form'>")
+ aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%res['id'])
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%res['info']['name'])
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%res['info']['type'])
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Defaults File:</DIV><DIV CLASS=td><INPUT NAME=defaults_file TYPE=TEXT VALUE='%s' STYLE='min-width:400px'></DIV></DIV>"%res['info']['defaults_file'])
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Image File:</DIV><DIV CLASS=td><INPUT NAME=image_file    TYPE=TEXT VALUE='%s'></DIV></DIV>"%res['info']['image_file'])
+ aWeb.wr("</DIV></DIV>")
+ aWeb.wr("<LABEL FOR=parameters>Parameters:</LABEL><TEXTAREA CLASS='maxed' ID=parameters NAME=parameters STYLE='height:400px'>%s</TEXTAREA>"%res['info']['parameters'])
+ aWeb.wr("</FORM>")
+ aWeb.wr(aWeb.button('save',    DIV='div_content_right', URL='device_model_info?op=update', FRM='device_model_info_form', TITLE='Save'))
+ aWeb.wr("</ARTICLE>")
 
 ####################################################### Functions #######################################################
 #

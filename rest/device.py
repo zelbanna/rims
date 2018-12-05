@@ -562,23 +562,6 @@ def oids(aCTX, aArgs = None):
 
 #
 #
-def types_list(aCTX, aArgs = None):
- """Function lists currenct device types
-
- Args:
-  - sort (optional), class/name
-
- Output:
- """
- ret = {}
- sort = 'name' if aArgs.get('sort','name') == 'name' else 'base'
- with aCTX.db as db:
-  ret['count'] = db.do("SELECT * FROM device_types ORDER BY %s"%sort)
-  ret['types'] = db.get_rows()
- return ret
-
-#
-#
 def server_macs(aCTX, aArgs = None):
  """Function returns all MACs for devices belonging to networks belonging to particular server
 
@@ -766,6 +749,80 @@ def network_interface_status(aCTX, aArgs = None):
     else:
      aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[sub['node']]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':sub['node']}, aDataOnly = True)
      ret['remote'].append(sub['id'])
+ return ret
+
+################################################## TYPES ##################################################
+#
+#
+def type_list(aCTX, aArgs = None):
+ """Function lists currenct device types
+
+ Args:
+  - sort (optional), class/name
+
+ Output:
+ """
+ ret = {}
+ sort = 'name' if aArgs.get('sort','name') == 'name' else 'base'
+ with aCTX.db as db:
+  ret['count'] = db.do("SELECT * FROM device_types ORDER BY %s"%sort)
+  ret['types'] = db.get_rows()
+ return ret
+
+#
+#
+def model_list(aCTX, aArgs = None):
+ """ Function returns the current models inventory.
+  Models are cumulative, whenever synced newly found ones are added to the system
+
+ Args:
+  - op (optional). 'sync' triggers a resync before listing 
+
+ Output:
+  - list of models
+ """
+ ret = {}
+ op = aArgs.pop('op',None)
+ with aCTX.db as db:
+  if op == 'sync':
+   old = db.ignore_warnings(True)
+   ret['status'] = "OK" if (db.do("INSERT IGNORE INTO device_models (name, type_id) SELECT DISTINCT model AS name ,type_id FROM devices") > 0) else "NO_NEW_MODELS"
+   db.ignore_warnings(old)
+  db.do("SELECT dm.id, dm.name, dt.name AS type FROM device_models AS dm LEFT JOIN device_types AS dt ON dt.id = dm.type_id ORDER BY dm.name, dt.name")
+  ret['models'] = db.get_rows()
+ return ret
+
+#
+#
+def model_info(aCTX, aArgs = None):
+ """ Function provides model info. Note that name and id can only be sync:ed to the system (there is no 'new' id as new models should be detected instead ATM)
+
+ Args:
+  - id (required)
+  - op (optional). 'update' updates entries for model with id
+  - defaults_file
+  - image_file
+  - parameters
+
+ Output:
+  - found
+  - data
+ """
+
+ ret = {}
+ id = aArgs.pop('id',None)
+ op = aArgs.pop('op',None)
+ with aCTX.db as db:
+  if op == 'update':
+   if aArgs.get('defaults_file') == 'None' :
+    aArgs['defaults_file'] = 'NULL'
+   if aArgs.get('image_file') == 'None' :
+    aArgs['image_file'] = 'NULL'
+   db.update_dict('device_models',aArgs,'id=%s'%id)
+
+  ret['found'] = db.do("SELECT dm.*, dt.name AS type FROM device_models AS dm LEFT JOIN device_types AS dt ON dt.id = dm.type_id WHERE dm.id = %s"%id)
+  ret['info'] = db.get_row()
+  ret['id'] = ret['info'].pop('id',None)
  return ret
 
 ############################################### INTERFACES ################################################
