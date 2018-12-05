@@ -49,6 +49,7 @@ def show(aCTX, aArgs = None):
   - edges
   - nodes
  """
+ from json import loads
  ret = {}
  with aCTX.db as db:
   search = "id = %(id)s"%aArgs if aArgs.get('id') else "name = '%(name)s'"%aArgs

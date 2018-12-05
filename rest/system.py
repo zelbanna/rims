@@ -52,7 +52,7 @@ def inventory(aCTX, aArgs = None):
   db.do("SELECT parameter AS name, value AS service FROM settings WHERE section = 'services' AND node = '%s'"%aArgs['node'])
   ret['services'] = db.get_rows()
 
-  db.do("SELECT title, href FROM resources WHERE node = '%s' AND type = 'tool' AND view < 2 AND (user_id = %s OR private = 0) ORDER BY type,title"%(aArgs['node'],aArgs.get('user_id',1)))
+  db.do("SELECT title, href FROM resources WHERE node = '%s' AND type = 'tool' AND view = 0 AND (user_id = %s OR private = 0) ORDER BY type,title"%(aArgs['node'],aArgs.get('user_id',1)))
   ret['tools'] = db.get_rows()
 
  return ret

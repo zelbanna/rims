@@ -1,20 +1,5 @@
 """HTML5 Ajax Server module"""
 __author__= "Zacharias El Banna"
-__icon__ = 'icon-services.png'
-__type__ = 'menuitem'
-
-#
-#
-def main(aWeb):
- cookie = aWeb.cookie('rims')
- data = aWeb.rest_call("system/server_inventory",{'node':aWeb.node(),'user_id':cookie['id']})
- aWeb.wr("<NAV><UL>")
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='servers_list'>Servers</A></LI>")
- aWeb.wr("<LI CLASS='right navinfo'><A>Servers</A></LI>")
- aWeb.wr("</UL></NAV>")
- aWeb.wr("<SECTION CLASS=content ID=div_content>")
- list(aWeb)
- aWeb.wr("</SECTION>")
 
 #
 #

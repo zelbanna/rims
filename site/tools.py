@@ -10,12 +10,13 @@ def main(aWeb):
  data = aWeb.rest_call("system/inventory",{'node':aWeb.node(),'user_id':cookie['id']})
  aWeb.wr("<NAV><UL>")
  if data.get('node'):
+  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='servers_list'>Servers</A></LI>")
   aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='nodes_list'>Nodes</A></LI>")
  if data.get('users'):
   aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
  tools = data.get('tools',[])
  svcs  = data.get('services',[])
- if len(tools) > 0 and len(svcs) > 0:
+ if len(tools) > 0 or len(svcs) > 0:
   aWeb.wr("<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>")
   for tool in data.get('tools',[]):
    aWeb.wr("<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title']))
@@ -158,20 +159,19 @@ def services_info(aWeb):
 #
 def file_list(aWeb):
  res = aWeb.rest_call('tool/file_list',{'directory':aWeb['directory']})
- aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Files in %s<P>"%res.get('path','directory'))
+ aWeb.wr("<ARTICLE><P>Files in %s<P>"%res.get('path','directory'))
  import urllib.request, urllib.parse, urllib.error
  for f in res['files']:
   url  = urllib.parse.quote(f)
   aWeb.wr("<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{2}</A></P>".format(res.get('path','#'),url,f))
- aWeb.wr("</ARTICLE></SECTION>")
+ aWeb.wr("</ARTICLE>")
 
 #
 #
 def images(aWeb):
  res = aWeb.rest_call('tool/file_list')
- aWeb.wr("<NAV></NAV><SECTION CLASS=content ID=div_content><ARTICLE><P>Images<P><DIV CLASS=table><DIV CLASS=tbody>")
+ aWeb.wr("<ARTICLE><P>Images<P><DIV CLASS=table><DIV CLASS=tbody>")
  for file in res['files']:
   if file[-3:] == 'png':
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:180px'>{0}</DIV><DIV CLASS=td STYLE='width:100%;'><IMG STYLE='max-height:60px;' SRC='{1}/{0}' /></DIV></DIV>".format(file,res['path']))
- aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
-
+ aWeb.wr("</DIV></DIV></ARTICLE>")
