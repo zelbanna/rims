@@ -73,11 +73,9 @@ def notify(aCTX, aArgs = None):
  else:
   if aArgs.get('user_id'):
    with aCTX.db as db:
-    db.do("SELECT slack FROM users WHERE id = %s"%aArgs['user_id'])
-    slack = db.get_val('slack')
-  if slack:
-   args['channel'] = "@%s"%slack
-  elif aCTX.settings['slack'].get('channel'):
+    if (db.do("SELECT slack FROM users WHERE id = %s and slack IS NOT NULL"%aArgs['user_id']) > 0):
+     args['channel'] = "@%s"%db.get_val('slack')
+  if not args.get('channel') and aCTX.settings['slack'].get('channel'):
    args['channel'] = aCTX.settings['slack']['channel']
 
  res = aCTX.rest_call(aCTX.nodes[node]['url'],aArgs = args, aDataOnly = False)
