@@ -137,7 +137,7 @@ def info(aWeb):
   aWeb.wr("<ARTICLE>Warning - device with either id:[{}]/ip[{}]: does not exist</ARTICLE>".format(aWeb['id'],aWeb['ip']))
   return
  """ 3 parallell tables """
- width = 690 if dev.get('rack',None) and not dev['info']['type_base'] == 'pdu' else 480
+ width = 700 if (dev.get('rack') and not dev['info']['type_base'] == 'pdu') or dev.get('vm') else 480
  aWeb.wr("<ARTICLE CLASS='info' STYLE='position:relative; height:268px; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev['id']))
  aWeb.wr("<FORM ID=info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id']))
@@ -179,9 +179,9 @@ def info(aWeb):
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Model: </DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=model VALUE='%s'></DIV></DIV>"%(dev['info']['model']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>S/N: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=serial VALUE='%s'></DIV></DIV>"%(dev['info']['serial']))
  aWeb.wr("</DIV></DIV></DIV>")
- aWeb.wr("<!-- Rack Info -->")
- if dev.get('rack',None) and not dev['info']['type_base'] == 'pdu':
-  aWeb.wr("<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>")
+ if dev.get('rack') and not dev['info']['type_base'] == 'pdu':
+  aWeb.wr("<!-- Rack Info -->")
+  aWeb.wr("<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:230px;'><DIV CLASS=tbody>")
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Rack/Pos: </DIV><DIV CLASS=td>%s (%s)</DIV></DIV>"%(dev['rack']['rack_name'],dev['rack']['rack_unit']))
   if not dev['info']['type_base'] == 'controlplane':
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Size:    </DIV><DIV CLASS=td>%s U</DIV></DIV>"%(dev['rack']['rack_size']))
@@ -190,6 +190,15 @@ def info(aWeb):
   for count,pem in enumerate(dev['pems'],0):
    if count < 4:
     aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s PDU: </DIV><DIV CLASS=td>%s (%s)</DIV></DIV>"%(pem['name'],pem['pdu_name'], pem['pdu_unit']))
+  aWeb.wr("</DIV></DIV></DIV>")
+ elif dev.get('vm'):
+  aWeb.wr("<!-- VM Info -->")
+  aWeb.wr("<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='max-width:230px;'><DIV CLASS=tbody>")
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>VM Name:</DIV><DIV CLASS='td readonly small-text' STYLE='max-width:170px;'>%s</DIV></DIV>"%dev['vm']['name'])
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>VM Host:</DIV><DIV CLASS='td readonly small-text' STYLE='max-width:170px;'>%s</DIV></DIV>"%dev['vm']['host'])
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Device UUID'>UUID:</DIV><DIV CLASS='td readonly small-text' STYLE='max-width:170px;'>%s</DIV></DIV>"%dev['vm']['device_uuid'])
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Management UUID'>MGMT:</DIV><DIV CLASS='td readonly small-text' STYLE='max-width:170px;'>%s</DIV></DIV>"%dev['vm']['server_uuid'])
+  aWeb.wr("<!-- Config: %s -->"%dev['vm']['config'])
   aWeb.wr("</DIV></DIV></DIV>")
  aWeb.wr("<!-- Text fields -->")
  aWeb.wr("<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%;'><DIV CLASS=table><DIV CLASS=tbody>")
@@ -207,7 +216,7 @@ def info(aWeb):
  aWeb.wr(aWeb.button('connections',DIV='div_dev_data',     URL='device_interface_list?device=%i'%(dev['id']),TITLE='Device interfaces'))
  aWeb.wr(aWeb.button('network',    DIV='div_content_right',URL='visualize_network?type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map'))
  aWeb.wr(aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip'])))
- if dev.get('racked',None) and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
+ if dev.get('rack') and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
   # Hardcoded port to 60xx
   aWeb.wr(aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port'])))
  if dev['info'].get('url'):
@@ -258,10 +267,10 @@ def extended(aWeb):
  aWeb.wr("<!-- Rack Info -->")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=rack_info_rack_id>")
  for rack in dev['infra']['racks']:
-  extra = " selected" if ((not dev['racked'] and rack['id'] == 'NULL') or (dev['racked'] and dev['rack']['rack_id'] == rack['id'])) else ""
+  extra = " selected" if ((not dev.get('rack') and rack['id'] == 'NULL') or (dev.get('rack') and dev['rack']['rack_id'] == rack['id'])) else ""
   aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name']))
  aWeb.wr("</SELECT></DIV></DIV>")
- if dev['racked'] and not dev['info']['type_base'] == 'pdu':
+ if dev.get('rack') and not dev['info']['type_base'] == 'pdu':
   if not dev['info']['type_base'] == 'controlplane':
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rack_info_rack_size TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['rack']['rack_size']))
    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Top rack unit of device placement'>Rack Unit:</DIV><DIV CLASS=td><INPUT NAME=rack_info_rack_unit TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['rack']['rack_unit']))

@@ -88,7 +88,9 @@ def info(aCTX, aArgs = None):
     if (db.do("SELECT users.alias, reservations.user_id, NOW() < time_end AS valid FROM reservations LEFT JOIN users ON reservations.user_id = users.id WHERE device_id ='{}'".format(ret['id'])) == 1):
      ret['reservation'] = db.get_row()
     # Rack infrastructure ?
-    if not ret['info']['vm'] and (db.do("SELECT rack_unit,rack_size, console_id, console_port, rack_id, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%ret['id']) == 1):
+    if ret['info']['vm'] and (db.do("SELECT dvu.vm AS name, dvu.device_uuid, dvu.server_uuid, dvu.config, devices.hostname AS host FROM device_vm_uuid AS dvu LEFT JOIN devices ON devices.id = dvu.host_id WHERE dvu.device_id = %(id)s"%ret) == 1):
+     ret['vm'] = db.get_row()
+    elif (db.do("SELECT rack_unit,rack_size, console_id, console_port, rack_id, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%ret['id']) == 1):
      rack = db.get_row()
      ret['rack'] = rack
      infra_ids = [str(rack['console_id'])] if rack['console_id'] else []
@@ -186,13 +188,10 @@ def extended(aCTX, aArgs = None):
    ret['info']['mac'] = ':'.join(ret['info']['mac'][i:i+2] for i in [0,2,4,6,8,10])
    # Rack infrastructure
    ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
-   if vm == 1:
-    ret['racked'] = False
-   else:
+   if vm != 1:
     db.do("SELECT id, name FROM racks")
     ret['infra']['racks'].extend(db.get_rows())
-    ret['racked'] = (db.do("SELECT rack_info.* FROM rack_info WHERE rack_info.device_id = %(id)s"%ret) == 1)
-    if ret['racked'] > 0:
+    if (db.do("SELECT rack_info.* FROM rack_info WHERE rack_info.device_id = %(id)s"%ret) == 1):
      ret['rack'] = db.get_row()
      ret['rack'].pop('device_id',None)
      sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
@@ -769,6 +768,7 @@ def type_list(aCTX, aArgs = None):
   ret['types'] = db.get_rows()
  return ret
 
+################################################## MODELS #################################################
 #
 #
 def model_list(aCTX, aArgs = None):
@@ -1254,4 +1254,47 @@ def interface_status_report(aCTX, aArgs = None):
     ret['update'] += db.do("UPDATE device_interfaces SET name = '%(name)s', mac = %(mac)s, state = %(state)s, description = '%(description)s' WHERE id = %(id)s"%args)
    else:
     ret['insert'] += db.do("INSERT INTO device_interfaces SET device = %(device)s, snmp_index = %(snmp_index)s, name = '%(name)s', mac = %(mac)s, state = %(state)s, description = '%(description)s' ON DUPLICATE KEY UPDATE mac = %(mac)s, state = %(state)s"%args)
+ return ret
+
+################################################### VM ###################################################
+
+def vm_mapping(aCTX, aArgs = None):
+ """ Function maps VMs on existing hypervisors 
+
+ Args:
+
+ Output:
+ """
+ from importlib import import_module
+ ret = {'inventory':[],'database':None,'mapped':[]}
+ vms = {}
+ with aCTX.db as db:
+  sql = "SELECT devices.id, hostname, INET_NTOA(ia.ip) AS ip, LPAD(hex(ia.mac),12,0) AS mac, dt.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
+  db.do(sql%("devices.vm = 1 and ia.mac > 0"))
+  for row in db.get_rows():
+   mac = row.pop('mac',None)
+   vms[mac] = row
+  db.do(sql%("dt.base = 'hypervisor' AND ia.state = 1"))
+  for row in db.get_rows():
+   try:
+    module    = import_module("rims.devices.%s"%row['type'])
+    inventory = getattr(module,'Device',None)(aCTX,row['ip']).get_inventory()
+   except: pass
+   else:
+    for vm in inventory.values():
+     vm['vm_host'] = row['id']
+     for intf in  vm.pop('interfaces',{}).values():
+      db_vm = vms.pop(intf['mac'],None)
+      if db_vm:
+       db_vm.update(vm)
+       db_vm['vm_port'] = intf['port']
+       ret['mapped'].append(db_vm)
+       break
+     else:
+      ret['inventory'].append(vm)
+ if len(ret['mapped']) > 0:
+  with aCTX.db as db:
+   for vm in ret['mapped']:
+    db.do("INSERT IGNORE INTO device_vm_uuid (device_id,host_id,device_uuid,config,vm) VALUES(%(id)s,%(vm_host)s,'%(uuid)s','%(config)s','%(vm)s') ON DUPLICATE KEY UPDATE host_id = %(vm_host)s, config = '%(config)s', vm = '%(vm)s'"%vm)
+ ret['database'] = [x for x in vms.values()]
  return ret

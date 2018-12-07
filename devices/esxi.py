@@ -136,9 +136,36 @@ class Device(GenericDevice):
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for indx,result in enumerate(vmnameobjs):
-    statetuple = {'id':result.iid, 'name':result.val.decode(), 'state':vmstateobjs[indx].val.decode() ,'state_id':Device.get_state_str(vmstateobjs[indx].val.decode())}
-    statelist.append(statetuple)
+    statelist.append({'id':result.iid, 'name':result.val.decode(), 'state':vmstateobjs[indx].val.decode() ,'state_id':Device.get_state_str(vmstateobjs[indx].val.decode())})
   except: pass
   if aSort:
    statelist.sort(key = lambda x: x[aSort])
   return statelist
+
+ def get_inventory(self):
+  vms = {}
+  try:
+   # Name, config_file, UUID (ISO 11578)
+   vmobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'),Varbind('.1.3.6.1.4.1.6876.2.1.1.3'),Varbind('.1.3.6.1.4.1.6876.2.1.1.10'))
+   # Name, portgroup, MAC (not ':'-expanded)
+   vminterfaces = VarList(Varbind('.1.3.6.1.4.1.6876.2.4.1.3'),Varbind('.1.3.6.1.4.1.6876.2.4.1.4'),Varbind('.1.3.6.1.4.1.6876.2.4.1.7'))
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   session.walk(vmobjs)
+   session.walk(vminterfaces)
+   for obj in vmobjs:
+    if   obj.tag == '.1.3.6.1.4.1.6876.2.1.1.2':
+     vms[obj.iid] = {'interfaces':{},'vm':obj.val.decode()}
+    elif obj.tag == '.1.3.6.1.4.1.6876.2.1.1.3':
+     vms[obj.iid]['config'] = obj.val.decode()
+    elif obj.tag == '.1.3.6.1.4.1.6876.2.1.1.10':
+     vms[obj.iid]['uuid'] = obj.val.decode()
+   for obj in vminterfaces:
+    tag,_,iid = obj.tag.rpartition('.')
+    if   tag == '.1.3.6.1.4.1.6876.2.4.1.3':
+     vms[iid]['interfaces'][obj.iid] = {'name':obj.val.decode()}
+    elif tag == '.1.3.6.1.4.1.6876.2.4.1.4':
+     vms[iid]['interfaces'][obj.iid]['port'] = obj.val.decode()
+    elif tag == '.1.3.6.1.4.1.6876.2.4.1.7':
+     vms[iid]['interfaces'][obj.iid]['mac'] = ("%s"%obj.val.hex()).upper()
+  except: pass
+  return vms

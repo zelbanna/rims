@@ -56,20 +56,18 @@ class Device(object):
  def interfaces(self):
   interfaces = {}
   try:
-   objs = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2'),Varbind('.1.3.6.1.2.1.31.1.1.1.18'),Varbind('.1.3.6.1.2.1.2.2.1.8'),Varbind('.1.3.6.1.2.1.2.2.1.6'))
+   objs = VarList(Varbind('.1.3.6.1.2.1.2.2.1.6'),Varbind('.1.3.6.1.2.1.2.2.1.2'),Varbind('.1.3.6.1.2.1.2.2.1.8'),Varbind('.1.3.6.1.2.1.31.1.1.1.18'))
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
    session.walk(objs)
    for entry in objs:
-    intf = interfaces.get(int(entry.iid),{'name':"None",'description':"None"})
-    if entry.tag == '.1.3.6.1.2.1.2.2.1.6':
-     intf['mac'] = ':'.join("%s%s"%x for x in zip(*[iter(entry.val.hex())]*2)) if entry.val else "00:00:00:00:00:00"
-    if entry.tag == '.1.3.6.1.2.1.2.2.1.8':
-     intf['state'] = 'up' if entry.val.decode() == '1' else 'down'
-    if entry.tag == '.1.3.6.1.2.1.2.2.1.2':
-     intf['name'] = entry.val.decode()
-    if entry.tag == '.1.3.6.1.2.1.31.1.1.1.18':
-     intf['description'] = entry.val.decode() if entry.val.decode() != "" else "None"
-    interfaces[int(entry.iid)] = intf
+    if   entry.tag == '.1.3.6.1.2.1.2.2.1.6':
+     interfaces[int(entry.iid)] = {'mac':':'.join("%s%s"%x for x in zip(*[iter(entry.val.hex())]*2)) if entry.val else "00:00:00:00:00:00", 'name':"None",'description':"None"}
+    elif entry.tag == '.1.3.6.1.2.1.2.2.1.2':
+     interfaces[int(entry.iid)]['name'] = entry.val.decode()
+    elif entry.tag == '.1.3.6.1.2.1.2.2.1.8':
+     interfaces[int(entry.iid)]['state'] = 'up' if entry.val.decode() == '1' else 'down'
+    elif entry.tag == '.1.3.6.1.2.1.31.1.1.1.18':
+     interfaces[int(entry.iid)]['description'] = entry.val.decode() if entry.val.decode() != "" else "None"
   except: pass
   return interfaces
 
