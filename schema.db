@@ -47,6 +47,20 @@ CREATE TABLE `device_interfaces` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `device_models`;
+CREATE TABLE `device_models` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type_id` int(10) unsigned NOT NULL,
+  `name` varchar(30) NOT NULL,
+  `defaults_file` varchar(60) DEFAULT NULL,
+  `image_file` varchar(60) DEFAULT NULL,
+  `parameters` text,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `model` (`type_id`,`name`),
+  CONSTRAINT `device_models_type_ibfk_1` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `device_pems`;
 CREATE TABLE `device_pems` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -73,6 +87,21 @@ CREATE TABLE `device_types` (
   `icon` varchar(60) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `device_vm_uuid`;
+CREATE TABLE `device_vm_uuid` (
+  `device_id` int(10) unsigned NOT NULL,
+  `host_id` int(10) unsigned DEFAULT NULL,
+  `device_uuid` varchar(36) DEFAULT NULL,
+  `server_uuid` varchar(36) DEFAULT NULL,
+  `config` varchar(80) DEFAULT NULL,
+  `vm` varchar(30) DEFAULT NULL,
+  UNIQUE KEY `device_id` (`device_id`),
+  KEY `device_vm_uuid_ibfk_2` (`host_id`),
+  CONSTRAINT `device_vm_uuid_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `device_vm_uuid_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
