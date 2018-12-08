@@ -649,4 +649,3 @@ def interface_link_interface(aWeb):
  aWeb.wr(aWeb.button('back',    DIV='div_dev_data', URL='device_interface_link_device', FRM='interface_link'))
  aWeb.wr(aWeb.button('forward', DIV='div_dev_data', URL='device_interface_list?op=link', FRM='interface_link'))
  aWeb.wr("</ARTICLE>")
-

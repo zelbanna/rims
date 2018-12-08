@@ -1266,35 +1266,41 @@ def vm_mapping(aCTX, aArgs = None):
  Output:
  """
  from importlib import import_module
- ret = {'inventory':[],'database':None,'mapped':[]}
+ ret = {'inventory':[],'database':None,'discovered':[],'existing':[]}
  vms = {}
  with aCTX.db as db:
-  sql = "SELECT devices.id, hostname, INET_NTOA(ia.ip) AS ip, LPAD(hex(ia.mac),12,0) AS mac, dt.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE %s"
-  db.do(sql%("devices.vm = 1 and ia.mac > 0"))
-  for row in db.get_rows():
-   mac = row.pop('mac',None)
-   vms[mac] = row
-  db.do(sql%("dt.base = 'hypervisor' AND ia.state = 1"))
+  db.do("SELECT device_id, device_uuid FROM device_vm_uuid")
+  existing = {x['device_uuid']:x['device_id'] for x in db.get_rows()}
+  db.do("SELECT devices.id, LPAD(hex(ia.mac),12,0) AS mac FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.vm = 1 and ia.mac > 0")
+  vms = {row.pop('mac',None):row for row in db.get_rows()}
+  db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dt.base = 'hypervisor' AND ia.state = 1")
   for row in db.get_rows():
    try:
     module    = import_module("rims.devices.%s"%row['type'])
     inventory = getattr(module,'Device',None)(aCTX,row['ip']).get_inventory()
    except: pass
    else:
-    for vm in inventory.values():
-     vm['vm_host'] = row['id']
-     for intf in  vm.pop('interfaces',{}).values():
+    for id,vm in inventory.items():
+     vm.update({'host_id':row['id'],'snmp_id':id})
+     """ match on interface mac! """
+     for intf in vm.pop('interfaces',{}).values():
       db_vm = vms.pop(intf['mac'],None)
       if db_vm:
-       db_vm.update(vm)
-       db_vm['vm_port'] = intf['port']
-       ret['mapped'].append(db_vm)
+       vm['device_id'] = db_vm['id']
+       if existing.get(vm['device_uuid']):
+        ret['existing'].append(vm)
+       else:
+        ret['discovered'].append(vm)
        break
      else:
       ret['inventory'].append(vm)
- if len(ret['mapped']) > 0:
-  with aCTX.db as db:
-   for vm in ret['mapped']:
-    db.do("INSERT IGNORE INTO device_vm_uuid (device_id,host_id,device_uuid,config,vm) VALUES(%(id)s,%(vm_host)s,'%(uuid)s','%(config)s','%(vm)s') ON DUPLICATE KEY UPDATE host_id = %(vm_host)s, config = '%(config)s', vm = '%(vm)s'"%vm)
+
+ with aCTX.db as db:
+  for vm in ret['discovered']:
+   db.do("INSERT INTO device_vm_uuid (device_id,host_id,snmp_id,device_uuid,config,vm) VALUES(%(device_id)s,%(host_id)s,%(snmp_id)s,'%(device_uuid)s','%(config)s','%(vm)s') ON DUPLICATE KEY UPDATE host_id = %(host_id)s, snmp_id = %(snmp_id)s, config = '%(config)s', vm = '%(vm)s'"%vm)
+  for vm in ret['existing']:
+   db.do("UPDATE device_vm_uuid SET device_id = %(device_id)s, host_id = %(host_id)s, snmp_id = %(snmp_id)s, config = '%(config)s', vm = '%(vm)s' WHERE device_uuid = '%(device_uuid)s'"%vm)
+  for vm in ret['inventory']:
+   db.do("INSERT INTO device_vm_uuid (device_id,host_id,snmp_id,device_uuid,config,vm) VALUES(NULL,%(host_id)s,%(snmp_id)s,'%(device_uuid)s','%(config)s','%(vm)s') ON DUPLICATE KEY UPDATE device_id = NULL, host_id = %(host_id)s, snmp_id = %(snmp_id)s, config = '%(config)s', vm = '%(vm)s'"%vm)
  ret['database'] = [x for x in vms.values()]
  return ret

@@ -145,7 +145,7 @@ class Device(GenericDevice):
  def get_inventory(self):
   vms = {}
   try:
-   # Name, config_file, UUID (ISO 11578)
+   # Name, Config file, Device UUID (ISO 11578)
    vmobjs = VarList(Varbind('.1.3.6.1.4.1.6876.2.1.1.2'),Varbind('.1.3.6.1.4.1.6876.2.1.1.3'),Varbind('.1.3.6.1.4.1.6876.2.1.1.10'))
    # Name, portgroup, MAC (not ':'-expanded)
    vminterfaces = VarList(Varbind('.1.3.6.1.4.1.6876.2.4.1.3'),Varbind('.1.3.6.1.4.1.6876.2.4.1.4'),Varbind('.1.3.6.1.4.1.6876.2.4.1.7'))
@@ -158,7 +158,7 @@ class Device(GenericDevice):
     elif obj.tag == '.1.3.6.1.4.1.6876.2.1.1.3':
      vms[obj.iid]['config'] = obj.val.decode()
     elif obj.tag == '.1.3.6.1.4.1.6876.2.1.1.10':
-     vms[obj.iid]['uuid'] = obj.val.decode()
+     vms[obj.iid]['device_uuid'] = obj.val.decode()
    for obj in vminterfaces:
     tag,_,iid = obj.tag.rpartition('.')
     if   tag == '.1.3.6.1.4.1.6876.2.4.1.3':
