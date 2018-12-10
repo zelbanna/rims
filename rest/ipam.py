@@ -32,7 +32,8 @@ def status(aCTX, aArgs = None):
    aCTX.workers.add_transient(args)
   else:
    try: aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[node]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':node}, aDataOnly = True)
-   except: aCTX.log("ipam_status REST failure (%s)"%node)
+   except Exception as e:
+     aCTX.log("ipam_status REST failure (%s => %s)"%(node,repr(e)))
  return ret
 
 ##################################### Networks ####################################

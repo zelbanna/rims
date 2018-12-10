@@ -829,7 +829,7 @@ def task_worker(aCTX, aArgs = None):
  Output:
   - result
  """
- frequency = aArgs.pop('frequency')
+ frequency = int(aArgs.pop('frequency',0))
  if frequency > 0:
   aCTX.workers.add_periodic(frequency,aArgs)
  else:
