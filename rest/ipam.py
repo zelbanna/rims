@@ -447,7 +447,7 @@ def address_status_check(aCTX, aArgs = None):
  """
  if aArgs.get('repeat'):
   freq = aArgs.pop('repeat')
-  aCTX.add_periodic({'module':'ipam','func':'address_status_check','output':False,'args':aArgs},freq)
+  aCTX.workers.add_periodic({'module':'ipam','func':'address_status_check','output':False,'args':aArgs},freq)
   aCTX.log("IPAM adding continous status checks, frequency: %s"%freq)
   return {'status':'CONTINOUS_INITIATED'}
 
