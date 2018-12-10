@@ -13,26 +13,25 @@ def status(aCTX, aArgs = None):
 
  """
  ret = {}
- nodes = {}
+ ipam_nodes = {}
  with aCTX.db as db:
   trim = "" if not aArgs.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['subnets']))
   db.do("SELECT ipam_networks.id, servers.node, servers.service FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   for sub in db.get_rows():
-   node = sub.get('node','master')
-   node_addresses = nodes.get(node,[])
+   node = 'master' if not sub['node'] else sub['node']
+   node_addresses = ipam_nodes.get(node,[])
    count = db.do("SELECT devices.notify, ia.id, INET_NTOA(ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id = %s ORDER BY ia.ip"%sub['id'])
    if count > 0:
     node_addresses.extend(db.get_rows())
-    print("%s => %s"%(sub['node'],len(node_addresses)))
-    nodes[node] = node_addresses
+    ipam_nodes[node] = node_addresses
 
- for node,data in nodes.items():
+ for node,data in ipam_nodes.items():
   args = {'module':'ipam','func':'address_status_check','args':{'address_list':data},'output':False,'repeat':aArgs.get('repeat')}
   ret[node] = len(data)
   if node == 'master':
    aCTX.workers.add_transient(args)
   else:
-   aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[sub['node']]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':sub['node']}, aDataOnly = True)
+   aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[node]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':node}, aDataOnly = True)
  return ret
 
 ##################################### Networks ####################################
