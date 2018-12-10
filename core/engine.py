@@ -289,30 +289,6 @@ class WorkerPool(object):
     self._workers = [x for x in self._workers if x.is_alive()]
    active = self.alive()
 
- def add_function(self, aFunction, *args, **kwargs):
-  self._queue.put((aFunction,'FUNCTION',None,False,args,kwargs))
-
- def add_semaphore(self, aFunction, aSema, *args, **kwargs):
-  aSema.acquire()
-  self._queue.put((aFunction,'FUNCTION',aSema,False,args,kwargs))
-
- def add_transient(self, aTask, aSema = None):
-  try:
-   mod = import_module("rims.rest.%s"%aTask['module'])
-   func = getattr(mod,aTask['func'],None)
-  except: pass
-  else:
-   if aSema:
-    aSema.acquire()
-   self._queue.put((func,'TASK',aSema,aTask['output'],aTask['args'],None))
-
- def add_periodic(self, aTask, aFrequency):
-  try:
-   mod = import_module("rims.rest.%s"%aTask['module'])
-   func = getattr(mod,aTask['func'],None)
-  except: pass
-  else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
-
  def alive(self):
   return len([x for x in self._workers if x.is_alive()])
 
@@ -337,6 +313,34 @@ class WorkerPool(object):
  def block(self,aSema,aSize):
   for i in range(aSize):
    aSema.acquire()
+
+ ##################### FUNCTIONs ########################
+ #
+ def add_function(self, aFunction, *args, **kwargs):
+  self._queue.put((aFunction,'FUNCTION',None,False,args,kwargs))
+
+ def add_semaphore(self, aFunction, aSema, *args, **kwargs):
+  aSema.acquire()
+  self._queue.put((aFunction,'FUNCTION',aSema,False,args,kwargs))
+
+ ####################### TASKs ###########################
+ #
+ def add_transient(self, aTask, aSema = None):
+  try:
+   mod = import_module("rims.rest.%s"%aTask['module'])
+   func = getattr(mod,aTask['func'],None)
+  except: pass
+  else:
+   if aSema:
+    aSema.acquire()
+   self._queue.put((func,'TASK',aSema,aTask['output'],aTask['args'],None))
+
+ def add_periodic(self, aTask, aFrequency):
+  try:
+   mod = import_module("rims.rest.%s"%aTask['module'])
+   func = getattr(mod,aTask['func'],None)
+  except: pass
+  else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
 
 ###################################### Workers ########################################
 #

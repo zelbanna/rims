@@ -31,7 +31,8 @@ def status(aCTX, aArgs = None):
   if node == 'master':
    aCTX.workers.add_transient(args)
   else:
-   aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[node]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':node}, aDataOnly = True)
+   try: aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[node]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':node}, aDataOnly = True)
+   except: aCTX.log("ipam_status REST failure (%s)"%node)
  return ret
 
 ##################################### Networks ####################################
@@ -440,26 +441,30 @@ def address_status_check(aCTX, aArgs = None):
 
  Args:
   - address_list (required)
+  - repeat (optional). Describes frequency for repeated checks' interval
 
  Output:
  """
- from os import system
+ if aArgs.get('repeat'):
+  freq = aArgs.pop('repeat')
+  aCTX.add_periodic({'module':'ipam','func':'address_status_check','output':False,'args':aArgs},freq)
+  return {'status':'CONTINOUS_INITIATED'}
 
- def __pinger(aParams):
-  try:    aParams['dev']['new'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aParams['dev']['ip'])) == 0) else 2
-  except: aParams['dev']['new'] = None
+ from os import system
+ def __liveness_check(aDev):
+  aDev['old'] = aDev['state']
+  try:    aDev['state'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip'])) == 0) else 2
+  except: pass
   return True
 
  sema = aCTX.workers.semaphore(20)  
  for dev in aArgs['address_list']:
-  aCTX.workers.add_semaphore(__pinger,sema, {'dev':dev})
+  aCTX.workers.add_semaphore(__liveness_check, sema, dev)
  aCTX.workers.block(sema,20)
-
- print("address_status_check => %s"%len(aArgs['address_list']))
 
  args = {}
  for n in [1,2]:
-  changed = list((dev['id'],dev['notify']) for dev in aArgs['address_list'] if (dev['new'] != dev['state'] and dev['new'] == n))
+  changed = list((dev['id'],dev['notify']) for dev in aArgs['address_list'] if (dev['state'] != dev['old'] and dev['state'] == n))
   if len(changed) > 0:
    args['up' if n == 1 else 'down'] = changed
  if len(list(args.keys())) > 0:
@@ -467,7 +472,8 @@ def address_status_check(aCTX, aArgs = None):
    address_status_report(aCTX, args)
   else:
    aCTX.rest_call("%s/api/ipam/address_status_report"%aCTX.config['master'],aArgs = args, aHeader = {'X-Log':'false'}, aDataOnly = True)
-  return {'status':'CHECK_COMPLETED'}
+ print(args)
+ return {'status':'CHECK_COMPLETED'}
 
 #
 #
