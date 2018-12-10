@@ -448,6 +448,7 @@ def address_status_check(aCTX, aArgs = None):
  if aArgs.get('repeat'):
   freq = aArgs.pop('repeat')
   aCTX.add_periodic({'module':'ipam','func':'address_status_check','output':False,'args':aArgs},freq)
+  aCTX.log("IPAM adding continous status checks, frequency: %s"%freq)
   return {'status':'CONTINOUS_INITIATED'}
 
  from os import system
@@ -472,7 +473,6 @@ def address_status_check(aCTX, aArgs = None):
    address_status_report(aCTX, args)
   else:
    aCTX.rest_call("%s/api/ipam/address_status_report"%aCTX.config['master'],aArgs = args, aHeader = {'X-Log':'false'}, aDataOnly = True)
- print(args)
  return {'status':'CHECK_COMPLETED'}
 
 #
