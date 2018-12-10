@@ -476,7 +476,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   for part in get.split("&"):
    (k,_,v) = part.partition('=')
    extras[k] = v
-  self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Process':'API','X-Route':self.headers.get('X-Node',extras.get('node',self._ctx.node if not mod == 'system' else 'master'))})
+  self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Process':'API','X-Route':self.headers.get('X-Route',extras.get('node',self._ctx.node if not mod == 'system' else 'master'))})
   try:
    length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
