@@ -87,8 +87,12 @@ class Context(object):
   self.servers.update(system['servers'])
   for task in system['tasks']:
    task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
-   frequency = task.pop('frequency',300)
-   self.workers.add_periodic(task,frequency)
+   try:    frequency = int(task.pop('frequency'))
+   except: frequency = 0
+   if frequency > 0:
+    self.workers.add_periodic(task,frequency)
+   else:
+    self.workers.add_transient(task)
 
  #
  def start(self):

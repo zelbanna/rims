@@ -823,14 +823,14 @@ def task_worker(aCTX, aArgs = None):
   - func (required)
   - args (required)
   - periodic (optional)
-  - frequency (optional required)
+  - frequency (optional required, 0 for transients)
   - output (optional)
 
  Output:
   - result
  """
- frequency = aArgs.pop('frequency',None)
- if frequency:
+ frequency = aArgs.pop('frequency')
+ if frequency > 0:
   aCTX.workers.add_periodic(frequency,aArgs)
  else:
   aCTX.workers.add_transient(aArgs)
@@ -847,8 +847,9 @@ def task_add(aCTX, aArgs = None):
   - func (required)
   - args (required)
   - periodic  (optional) (False: transient, True: periodic, defaults: False)
-  - frequency (optional required, seconds for periodic tasks)
+  - frequency (optional required, > 0 seconds for periodic tasks)
   - output (optional)
+  - on_boot (optional). For transients, indicate if this should be run every boot
 
  Output:
   - result. Boolean
@@ -857,13 +858,13 @@ def task_add(aCTX, aArgs = None):
  ret = {}
  node = aArgs.pop('node',None)
  aArgs = aArgs
- if aArgs.get('periodic'):
+ if aArgs.get('periodic') or aArgs.get('on_boot'):
   with aCTX.db as db:
-   db.do("INSERT INTO tasks (node_id, module, func, args, frequency,output) VALUES(%s,'%s','%s','%s',%i,%i)"%(aCTX.nodes[node]['id'],aArgs['module'],aArgs['func'],dumps(aArgs['args']),aArgs.get('frequency',300),0 if not aArgs.get('output') else 1))
+   db.do("INSERT INTO tasks (node_id, module, func, args, frequency,output) VALUES(%s,'%s','%s','%s',%i,%i)"%(aCTX.nodes[node]['id'],aArgs['module'],aArgs['func'],dumps(aArgs['args']),aArgs.get('frequency',0),0 if not aArgs.get('output') else 1))
    aArgs['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
-  frequency = aArgs.pop('frequency',None)
-  if frequency:
+  frequency = aArgs.pop('frequency',0)
+  if int(frequency) > 0:
    aCTX.workers.add_periodic(frequency,aArgs)
   else:
    aCTX.workers.add_transient(aArgs)

@@ -445,12 +445,10 @@ def address_status_check(aCTX, aArgs = None):
 
  Output:
  """
- print("address_status_check => %s"%aArgs)
  if aArgs.get('repeat'):
   freq = aArgs.pop('repeat')
   aCTX.workers.add_periodic({'id':'address_status_check', 'module':'ipam','func':'address_status_check','output':False,'args':aArgs},freq)
-  aCTX.log("IPAM adding continous status checks, frequency: %s"%freq)
-  return {'status':'CONTINOUS_INITIATED'}
+  return {'status':'CONTINOUS_INITIATED_%s'%freq}
 
  from os import system
  def __liveness_check(aDev):
@@ -459,10 +457,11 @@ def address_status_check(aCTX, aArgs = None):
   except: pass
   return True
 
- sema = aCTX.workers.semaphore(20)  
+ nworkers = max(20,int(aCTX.config['workers']) - 5)
+ sema = aCTX.workers.semaphore(nworkers)
  for dev in aArgs['address_list']:
   aCTX.workers.add_semaphore(__liveness_check, sema, dev)
- aCTX.workers.block(sema,20)
+ aCTX.workers.block(sema,nworkers)
 
  args = {}
  for n in [1,2]:
