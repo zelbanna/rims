@@ -78,5 +78,9 @@ def notify(aCTX, aArgs = None):
   if not args.get('channel') and aCTX.settings['slack'].get('channel'):
    args['channel'] = aCTX.settings['slack']['channel']
 
- res = aCTX.rest_call(aCTX.nodes[node]['url'],aArgs = args, aDataOnly = False)
+ try:
+  res = aCTX.rest_call(aCTX.nodes[node]['url'],aArgs = args, aDataOnly = False)
+ except Exception as e:
+  res = e.args[0]
+  res['data'] = res.get('info') 
  return {'status':'OK' if res['code']== 200 else 'NOT_OK', 'info':res['data']}
