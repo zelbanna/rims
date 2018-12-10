@@ -26,7 +26,7 @@ def status(aCTX, aArgs = None):
     ipam_nodes[node] = node_addresses
 
  for node,data in ipam_nodes.items():
-  args = {'module':'ipam','func':'address_status_check','args':{'address_list':data},'output':False,'repeat':aArgs.get('repeat')}
+  args = {'module':'ipam','func':'address_status_check','args':{'address_list':data,'repeat':aArgs.get('repeat')},'output':False}
   ret[node] = len(data)
   if node == 'master':
    aCTX.workers.add_transient(args)
