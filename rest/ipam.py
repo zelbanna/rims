@@ -489,7 +489,6 @@ def address_status_report(aCTX, aArgs = None):
   - up (number of updated up state)
   - down (number of updated down state)
  """
- print("address_status_report => %s"%aArgs)
  ret = {}
  log = {}
  notify = aCTX.settings.get('notifier')
