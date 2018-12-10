@@ -456,8 +456,6 @@ def address_status_check(aCTX, aArgs = None):
   aDev['old'] = aDev['state']
   try:    aDev['state'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip'])) == 0) else 2
   except: pass
-  if aDev['old'] != aDev['state']:
-   print("State change %s"%aDev)
   return True
 
  nworkers = max(20,int(aCTX.config['workers']) - 5)
