@@ -452,6 +452,7 @@ def address_status_check(aCTX, aArgs = None):
   return {'status':'CONTINOUS_INITIATED_%s'%freq}
 
  from os import system
+
  def __liveness_check(aDev):
   aDev['old'] = aDev['state']
   try:    aDev['state'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip'])) == 0) else 2
@@ -464,17 +465,16 @@ def address_status_check(aCTX, aArgs = None):
   aCTX.workers.add_semaphore(__liveness_check, sema, dev)
  aCTX.workers.block(sema,nworkers)
 
- args = {}
- for n in [1,2]:
-  changed = list((dev['id'],dev['notify']) for dev in aArgs['address_list'] if (dev['state'] != dev['old'] and dev['state'] == n))
-  if len(changed) > 0:
-   args['up' if n == 1 else 'down'] = changed
- if len(list(args.keys())) > 0:
+ changed = [dev for dev in aArgs['address_list'] if (dev['state'] != dev['old'])]
+ args = {'up':[(dev['id'],dev['notify']) for dev in changed if dev['state'] == 1], 'down':[(dev['id'],dev['notify']) for dev in changed if dev['state'] == 2]}
+ up   = len(args['up'])
+ down = len(args['down'])
+ if up > 0 or down > 0:
   if aCTX.node == 'master':
    address_status_report(aCTX, args)
   else:
    aCTX.rest_call("%s/api/ipam/address_status_report"%aCTX.config['master'],aArgs = args, aHeader = {'X-Log':'false'}, aDataOnly = True)
- return {'status':'CHECK_COMPLETED'}
+ return {'status':'CHECK_COMPLETED_%s_%s'%(up,down)}
 
 #
 #
@@ -489,8 +489,8 @@ def address_status_report(aCTX, aArgs = None):
   - up (number of updated up state)
   - down (number of updated down state)
  """
+ print("address_status_report: %s"%aArgs)
  ret = {}
- log = {}
  notify = aCTX.settings.get('notifier')
  if notify:
   notifier_func = aCTX.node_function(notify.get('proxy','master'),notify['service'],"notify", aHeader = {'X-Log':'true'})
@@ -498,17 +498,17 @@ def address_status_report(aCTX, aArgs = None):
  with aCTX.db as db:
   for chg in [('up',1),('down',2)]:
    change = aArgs.get(chg[0])
-   if change:
+   if change and len(change) > 0:
     notify= list(x[0] for x in change if x[1] == 1)
     ret[chg[0]] = db.do("UPDATE ipam_addresses SET state = %s WHERE ID IN (%s)"%(chg[1],",".join(str(x[0]) for x in change)))
     begin = 0
     final = len(notify)
+    while begin < final:
+     end = min(final,begin+16)
+     aCTX.log("IPAM Event %s => %s"%(chg[0].ljust(4), ",".join( str(x[0]) for x in change[begin:end])))
+     begin = end
     if final > 0 and notifier_node:
      db.do("SELECT ipam_id, hostname FROM devices WHERE ipam_id IN (%s)"%(",".join( str(x) for x in notify)))
      devices = db.get_dict('ipam_id')
      aCTX.workers.add_function(notifier_func,{'node':notifier_node,'message':"Device status changed to %s:%s"%(chg[0].upper(),", ".join(devices[x]['hostname'] for x in notify))})
-    while begin < final:
-     end = min(final,begin+16)
-     aCTX.log("IPAM Event %s => %s"%(chg[0].ljust(4), ",".join( str(x) for x in notify[begin:end])))
-     begin = end
  return ret
