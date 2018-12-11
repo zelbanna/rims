@@ -37,6 +37,36 @@ def status(aCTX, aArgs = None):
     aCTX.log("ipam_status REST failure (%s => %s)"%(node,repr(e)))
  return ret
 
+#
+#
+def events(aCTX, aArgs = None):
+ """ Function operates on events
+
+ Args:
+  - id (optional). find events for id
+  - op (optional). 'clear'. clears events (all or for 'id')
+ 
+ Output:
+  - status
+  - count (optional)
+  - events (optional) list of {'time','state'} entries
+ """
+ ret = {'status':'OK'}
+ with aCTX.db as db:
+  if aArgs.get('op') == 'clear':
+   if aArgs.get('id'):
+    ret['count'] = db.do("DELETE FROM ipam_events WHERE ipam_id = %s"%aArgs['id'])
+   else:
+    db.do("TRUNCATE ipam_events")
+  elif aArgs.get('id'):
+   ret['count'] = db.do("SELECT DATE_FORMAT(time,'%%Y-%%m-%%d %%H:%%i') AS time,state FROM ipam_events WHERE ipam_id = %s ORDER BY time DESC"%aArgs['id'])
+   ret['events']= db.get_rows()
+  else:
+   ret['status'] = 'NOT_OK'
+ return ret
+
+#
+
 ##################################### Networks ####################################
 #
 #
@@ -419,23 +449,6 @@ def address_delete(aCTX, aArgs = None):
 
 #
 #
-def address_from_id(aCTX, aArgs = None):
- """ Funtion returns mapping between IPAM id and ip,network_id
-
- Args:
-  - id (required)
-
- Output:
-  - ip
-  - network
-  - network_id
- """
- with aCTX.db as db:
-  db.do("SELECT INET_NTOA(ip) AS ip, network_id, INET_NTOA(network) AS network, mask FROM ipam_addresses LEFT JOIN ipam_networks ON ipam_networks.id = ipam_addresses.network_id WHERE ipam_addresses.id = %(id)s"%aArgs)
-  ret = db.get_row()
- return ret
-
-
 def address_status_fetch(aCTX, aArgs = None):
  """ Function fetch a list of addresses and states {id,'ip',state} for a list of networks
 
