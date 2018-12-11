@@ -22,12 +22,13 @@ def status(aCTX, aArgs = None):
    node_addresses = ipam_nodes.get(node,[])
    count = db.do("SELECT devices.notify, ia.id, INET_NTOA(ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id = %s ORDER BY ia.ip"%sub['id'])
    if count > 0:
+    ret[node] = ret.get(node,[])
+    ret[node].append(sub['id'])
     node_addresses.extend(db.get_rows())
     ipam_nodes[node] = node_addresses
 
  for node,data in ipam_nodes.items():
   args = {'module':'ipam','func':'address_status_check','args':{'addresses':data,'repeat':aArgs.get('repeat')},'output':False}
-  ret[node] = len(data)
   if node == 'master':
    aCTX.workers.add_transient(args)
   else:
@@ -527,6 +528,8 @@ def address_status_report(aCTX, aArgs = None):
     final  = len(change)
     while begin < final:
      end = min(final,begin+16)
+     if aCTX.config.get('events'):
+      db.do("INSERT INTO ipam_events (ipam_id, state) VALUES %s"%(",".join("(%s,%s)"%(x[0],chg[1]) for x in change[begin:end])))
      aCTX.log("IPAM Event %s => %s"%(chg[0].ljust(4), ",".join( str(x[0]) for x in change[begin:end])))
      begin = end
     if notifier:

@@ -9,6 +9,7 @@
     "template": "engine.init",
     "workers": 30,
     "theme":"blue",
+    "events":true,
     "salt": "WBEUAHfO",
     "logs": {
         "system": "/var/log/system/system.log",
