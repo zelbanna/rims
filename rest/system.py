@@ -830,10 +830,7 @@ def task_worker(aCTX, aArgs = None):
   - result
  """
  frequency = int(aArgs.pop('frequency',0))
- if frequency > 0:
-  aCTX.workers.add_periodic(frequency,aArgs)
- else:
-  aCTX.workers.add_transient(aArgs)
+ aCTX.workers.add_task(aArgs,frequency)
  return {'res':'TASK_ADDED'}
 
 #
@@ -864,10 +861,7 @@ def task_add(aCTX, aArgs = None):
    aArgs['id'] = 'P%s'%db.get_last_id()
  if node == 'master':
   frequency = aArgs.pop('frequency',0)
-  if int(frequency) > 0:
-   aCTX.workers.add_periodic(frequency,aArgs)
-  else:
-   aCTX.workers.add_transient(aArgs)
+  aCTX.workers.add_task(aArgs,frequency)
   ret['status'] = 'ADDED'
  else:
   ret.update(aCTX.rest_call("%s/api/system/task_worker"%aCTX.nodes[node]['url'], aArgs = aArgs, aDataOnly = True))

@@ -20,7 +20,7 @@ def status(aCTX, aArgs = None):
   for sub in db.get_rows():
    node = 'master' if not sub['node'] else sub['node']
    node_addresses = ipam_nodes.get(node,[])
-   count = db.do("SELECT devices.notify, ia.id, INET_NTOA(ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id = %s ORDER BY ia.ip"%sub['id'])
+   count = db.do("SELECT ia.id, ia.id, INET_NTOA(ip) AS ip, ia.state, devices.notify FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id = %s ORDER BY ia.ip"%sub['id'])
    if count > 0:
     ret[node] = ret.get(node,[])
     ret[node].append(sub['id'])
@@ -30,7 +30,7 @@ def status(aCTX, aArgs = None):
  for node,data in ipam_nodes.items():
   args = {'module':'ipam','func':'address_status_check','args':{'addresses':data,'repeat':aArgs.get('repeat')},'output':False}
   if node == 'master':
-   aCTX.workers.add_transient(args)
+   aCTX.workers.add_task(args)
   else:
    try: aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[node]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':node}, aDataOnly = True)
    except Exception as e:
@@ -447,7 +447,7 @@ def address_status_fetch(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT ia.id, INET_NTOA(ip) AS ip, devices.notify FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id IN (%s) ORDER BY ia.ip"%(','.join(str(x) for x in aArgs['networks'])))
+  ret['count'] = db.do("SELECT ia.id, INET_NTOA(ip) AS ip, devices.notify, ia.state FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id IN (%s) ORDER BY ia.ip"%(','.join(str(x) for x in aArgs['networks'])))
   if ret['count'] > 0:
    ret['addresses'] = db.get_rows()
  return ret
@@ -470,13 +470,13 @@ def address_status_check(aCTX, aArgs = None):
  if aArgs.get('addresses'):
   addresses = aArgs['addresses']
  elif aCTX.node == 'master':
-  addresses = address_status_fetch(aCTX,{'networks':aArgs['networks']})
+  addresses = address_status_fetch(aCTX,{'networks':aArgs['networks']})['addresses']
  else:
-  addresses = aCTX.rest_call("%s/api/ipam/address_status_fetch"%aCTX.config['master'],aArgs = {'networks':aArgs['networks']}, aHeader = {'X-Log':'false'}, aDataOnly = True)
+  addresses = aCTX.rest_call("%s/api/ipam/address_status_fetch"%aCTX.config['master'],aArgs = {'networks':aArgs['networks']}, aHeader = {'X-Log':'false'}, aDataOnly = True)['addresses']
 
  if aArgs.get('repeat'):
   freq = aArgs.pop('repeat')
-  aCTX.workers.add_periodic({'id':'address_status_check', 'module':'ipam','func':'address_status_check','output':False,'args':{'addresses':addresses}},freq)
+  aCTX.workers.add_task({'id':'address_status_check', 'module':'ipam','func':'address_status_check','output':False,'args':{'addresses':addresses}},freq)
   return {'status':'CONTINUOUS_INITIATED_%s'%freq}
 
  from os import system

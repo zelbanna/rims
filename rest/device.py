@@ -761,7 +761,7 @@ def network_interface_status(aCTX, aArgs = None):
      db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id'])
      dev['interfaces'] = db.get_rows()
     if not sub['node'] or sub['node'] == 'master':
-     aCTX.workers.add_transient(args)
+     aCTX.workers.add_task(args)
      ret['local'].append(sub['id'])
     else:
      aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[sub['node']]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':sub['node']}, aDataOnly = True)

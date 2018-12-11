@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.6"
-__build__ = 188
+__build__ = 189
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -90,10 +90,7 @@ class Context(object):
    task.update({'args':loads(task['args']),'output':(task['output'] == 1 or task['output'] == True)})
    try:    frequency = int(task.pop('frequency'))
    except: frequency = 0
-   if frequency > 0:
-    self.workers.add_periodic(task,frequency)
-   else:
-    self.workers.add_transient(task)
+   self.workers.add_task(task,frequency)
 
  #
  def start(self):
@@ -197,7 +194,6 @@ class Context(object):
   'Node URL':node_url,
   'Package path':self.path,
   'Python version':version.replace('\n',''),
-  'Scheduled tasks':self.workers.scheduler_size(),
   'Workers pool':self.workers.alive(),
   'Workers idle':self.workers.idles(),
   'Workers queue':self.workers.queue_size(),
@@ -205,6 +201,7 @@ class Context(object):
   'Database':', '.join("%s:%s"%(k.lower(),v) for k,v in db_counter.items()),
   'OS path':',' .join(syspath),
   'OS pid':getpid()}
+  output.update({x[0]:x[1] for x in self.workers.scheduler_tasks()})
   try: output['File cache'] = repr(cached_file_open.cache_info())
   except:pass
   if self.node == 'master':
@@ -309,8 +306,8 @@ class WorkerPool(object):
  def scheduler_size(self):
   return len([x for x in self._scheduler if x.is_alive()])
 
- def scheduled_tasks(self):
-  return [(x._task,x._freq) for x in self._scheduler]
+ def scheduler_tasks(self):
+  return [("Scheduler(%s)"%x._task['id'],"Task:%s/%s, Frequency:%s"%(x._task['module'],x._task['func'],x._freq)) for x in self._scheduler]
 
  def semaphore(self,aSize):
   return BoundedSemaphore(aSize)
@@ -330,22 +327,17 @@ class WorkerPool(object):
 
  ####################### TASKs ###########################
  #
- def add_transient(self, aTask, aSema = None):
+ def add_task(self, aTask, aFrequency = 0):
   try:
    mod = import_module("rims.rest.%s"%aTask['module'])
    func = getattr(mod,aTask['func'],None)
-  except: pass
+  except: self._ctx.log("WorkerPool ERROR: adding task failed (%s_%s)"%(aTask['module'],aTask['func']))
   else:
-   if aSema:
-    aSema.acquire()
-   self._queue.put((func,'TASK',aSema,aTask['output'],aTask['args'],None))
+   if aFrequency > 0:
+    self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
+   else:
+    self._queue.put((func,'TASK',None,aTask['output'],aTask['args'],None))
 
- def add_periodic(self, aTask, aFrequency):
-  try:
-   mod = import_module("rims.rest.%s"%aTask['module'])
-   func = getattr(mod,aTask['func'],None)
-  except: pass
-  else:   self._scheduler.append(ScheduleWorker(aFrequency, func, aTask, self._queue, self._abort))
 
 ###################################### Workers ########################################
 #
@@ -360,8 +352,11 @@ class ScheduleWorker(Thread):
   self._task  = aTask
   self._abort = aAbort
   self.daemon = True
-  self.name   = "ScheduleWorker(%s,%s)"%(aTask['id'],self._freq)
+  self.name   = "ScheduleWorker(id=%s, frequency=%s)"%(aTask.get('id','unknown'),self._freq)
   self.start()
+
+ def __str__(self):
+  return self.name
 
  def run(self):
   sleep(self._freq - int(time())%self._freq)
