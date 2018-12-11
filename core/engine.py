@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.6"
-__build__ = 185
+__build__ = 186
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -395,7 +395,7 @@ class QueueWorker(Thread):
     if output:
      self._ctx.log("%s - %s => %s"%(self.name,repr(func),dumps(result)))
    except Exception as e:
-    self._ctx.log("%s - ERROR => %s"%(self.name,str(e)))
+    self._ctx.log("%s - ERROR: %s => %s"%(self.name,repr(func),str(e)))
    finally:
     if sema:
      sema.release()

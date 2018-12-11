@@ -482,33 +482,35 @@ def address_status_report(aCTX, aArgs = None):
  """ Updates IP addresses' status
 
  Args:
-  - up (optional).   List of id,notify tuples that changed to up
+  - up (optional).   List of id,notify tuples (x,[0,1]) that changed to up
   - down (optional). List of id,notify tuples that changed to down
 
  Output:
   - up (number of updated up state)
   - down (number of updated down state)
  """
- print("address_status_report: %s"%aArgs)
  ret = {}
- notify = aCTX.settings.get('notifier')
- if notify:
-  notifier_func = aCTX.node_function(notify.get('proxy','master'),notify['service'],"notify", aHeader = {'X-Log':'true'})
-  notifier_node = notify['node']
+ notifications = []
+ notifier = aCTX.settings.get('notifier')
  with aCTX.db as db:
   for chg in [('up',1),('down',2)]:
    change = aArgs.get(chg[0])
    if change and len(change) > 0:
-    notify= list(x[0] for x in change if x[1] == 1)
     ret[chg[0]] = db.do("UPDATE ipam_addresses SET state = %s WHERE ID IN (%s)"%(chg[1],",".join(str(x[0]) for x in change)))
     begin = 0
-    final = len(notify)
+    final  = len(change)
     while begin < final:
      end = min(final,begin+16)
      aCTX.log("IPAM Event %s => %s"%(chg[0].ljust(4), ",".join( str(x[0]) for x in change[begin:end])))
      begin = end
-    if final > 0 and notifier_node:
-     db.do("SELECT ipam_id, hostname FROM devices WHERE ipam_id IN (%s)"%(",".join( str(x) for x in notify)))
-     devices = db.get_dict('ipam_id')
-     aCTX.workers.add_function(notifier_func,{'node':notifier_node,'message':"Device status changed to %s:%s"%(chg[0].upper(),", ".join(devices[x]['hostname'] for x in notify))})
+    if notifier:
+     notify = ",".join([str(x[0]) for x in change if x[1] == chg[1]])
+     if len(notify) > 0:
+      db.do("SELECT hostname FROM devices WHERE ipam_id IN (%s)"%notify)
+      notifications.append((chg[0].upper(),", ".join(dev['hostname'] for dev in db.get_rows()) ))
+
+ if len(notifications) > 0:
+  func = aCTX.node_function(notifier.get('proxy','master'),notifier['service'],"notify", aHeader = {'X-Log':'true'})
+  for notification in notifications:
+   aCTX.workers.add_function(func,{'node':notifier['node'],'message':"Device status changed to %s:%s"%notification})
  return ret
