@@ -429,6 +429,24 @@ def new(aCTX, aArgs = None):
 
 #
 #
+def events(aCTX, aArgs = None):
+ """ Function returns a list of events for a device_id
+
+ Args:
+  - id (required)
+
+
+ Output:
+  - events. list of {'time','state'} entries
+ """
+ ret = {}
+ with aCTX.db as db:
+  ret['count'] = db.do("SELECT DATE_FORMAT(time,'%%Y-%%m-%%d %%H:%%i') AS time,state FROM ipam_events WHERE ipam_id IN (SELECT ipam_id FROM devices WHERE id = %s) ORDER BY time DESC"%aArgs['id'])
+  ret['events']= db.get_rows()
+ return ret
+
+#
+#
 def update_ip(aCTX, aArgs = None):
  """Function docstring for update_ip TBD
 
@@ -848,7 +866,7 @@ def interface_list(aCTX, aArgs = None):
   if is_int(aArgs.get('device')):
    db.do("SELECT devices.id, hostname FROM devices WHERE id = %s"%aArgs['device'])
   else:
-   db.do("SELECT devices.id, hostname FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.ip = INET_ATON('%s')"%aArgs['device'])
+   db.do("SELECT devices.id, hostname FROM devices WHERE ipam_id IN (SELECT id FROM ipam_addresses WHERE ip = INET_ATON('%s'))"%aArgs['device'])
   ret = db.get_row()
   if ret:
    sort = aArgs.get('sort','snmp_index')
@@ -1110,7 +1128,7 @@ def interface_discover_lldp(aCTX, aArgs = None):
  def ip2int(addr):
   return unpack("!I", inet_aton(addr))[0]
 
- sql_dev = "SELECT INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"
+ sql_dev = "SELECT INET_NTOA(ip) AS ip FROM ipam_addresses WHERE id IN (SELECT ipam_id FROM devices WHERE id = %s)"
  sql_lcl = "SELECT id,multipoint,peer_interface FROM device_interfaces AS di WHERE device = %s AND snmp_index = %s"
  sql_ins = "INSERT INTO device_interfaces(device, snmp_index, name, description) VALUES(%s,%s,'%s','%s') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"
  sql_rem = "SELECT di.multipoint, di.name, di.peer_interface, di.mac, di.id, di.description, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN devices ON devices.id = di.device LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE %s AND (%s OR %s)"

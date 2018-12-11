@@ -213,6 +213,7 @@ def info(aWeb):
  aWeb.wr(aWeb.button('start',      DIV='div_dev_data',     URL='device_control?id=%s'%dev['id'], TITLE='Device Control'))
  aWeb.wr(aWeb.button('search',     DIV='div_content_right',URL='device_info?op=lookup', FRM='info_form', TITLE='Lookup and Detect Device information', SPIN='true'))
  aWeb.wr(aWeb.button('document',   DIV='div_dev_data',     URL='device_conf_gen?id=%i'%(dev['id']),TITLE='Generate System Conf'))
+ aWeb.wr(aWeb.button('logs',       DIV='div_dev_data',     URL='device_events?id=%i'%(dev['id']),TITLE='Device events'))
  aWeb.wr(aWeb.button('connections',DIV='div_dev_data',     URL='device_interface_list?device=%i'%(dev['id']),TITLE='Device interfaces'))
  aWeb.wr(aWeb.button('network',    DIV='div_content_right',URL='visualize_network?type=device&id=%s'%(dev['id']), SPIN='true', TITLE='Network map'))
  aWeb.wr(aWeb.button('term',TITLE='SSH',HREF='ssh://%s@%s'%(dev['username'],dev['ip'])))
@@ -417,6 +418,17 @@ def model_info(aWeb):
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('save',    DIV='div_content_right', URL='device_model_info?op=update', FRM='device_model_info_form', TITLE='Save'))
  aWeb.wr("</ARTICLE>")
+
+
+#
+#
+def events(aWeb):
+ res = aWeb.rest_call("device/events",{'id':aWeb['id']})
+ translate = {1:"up",2:"down",0:"unknown"}
+ aWeb.wr("<ARTICLE><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>Event</DIV></DIV><DIV CLASS=tbody>")
+ for event in res['events']:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS='td maxed'>%s</DIV></DIV>"%(event['time'],translate[event['state']]))
+ aWeb.wr("</DIV></DIV></ARTICLE>")
 
 ####################################################### Functions #######################################################
 #

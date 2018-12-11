@@ -21,7 +21,7 @@ class Device(Junos):
   self.tunnels = 0
 
  def __str__(self):
-  return "SRX(ip=%s, resolvers=%s, dhcp_ip=%s, ipsec_tunnels=%s)"%(self._ip,",".join(self.dnslist),self.dhcpip,self.tunnels))
+  return "SRX(ip=%s, resolvers=%s, dhcp_ip=%s, ipsec_tunnels=%s)"%(self._ip,",".join(self.dnslist),self.dhcpip,self.tunnels)
 
  def load_dhcp(self):
   try:
