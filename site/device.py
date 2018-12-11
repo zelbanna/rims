@@ -118,7 +118,7 @@ def search(aWeb):
  aWeb.wr("<ARTICLE><P>Device Search</P>")
  aWeb.wr("<FORM ID='device_search'>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=sort VALUE='hostname'>")
- aWeb.wr("<SPAN>Field:</SPAN><SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='type'>Type</OPTION><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='id'>ID</OPTION></SELECT>")
+ aWeb.wr("<SPAN>Field:</SPAN><SELECT CLASS='background' ID='field' NAME='field'><OPTION VALUE='hostname'>Hostname</OPTION><OPTION VALUE='type'>Type</OPTION><OPTION VALUE='ip'>IP</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='id'>ID</OPTION><OPTION VALUE='mac'>MAC</OPTION><OPTION VALUE='ipam_id'>IPAM ID</OPTION></SELECT>")
  aWeb.wr("<INPUT CLASS='background' TYPE=TEXT ID='search' NAME='search' STYLE='width:200px' REQUIRED>")
  aWeb.wr("</FORM><DIV CLASS=inline>")
  aWeb.wr(aWeb.button('search', DIV='div_content_left', URL='device_list', FRM='device_search'))

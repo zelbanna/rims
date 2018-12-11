@@ -230,7 +230,7 @@ def list(aCTX, aArgs = None):
  """Function docstring for list TBD
 
  Args:
-  - field (optional) 'id/ip/mac/hostname/type/base/vm' as search fields
+  - field (optional) 'id/ip/mac/hostname/type/base/vm/ipam_id' as search fields
   - search (optional) content to match on field, special case for mac where non-correct MAC will match all that are not '00:00:00:00:00:00'
   - extra (optional) list of extra info to add, None/'type'/'url'/'system'
   - rack (optional), id of rack to filter devices from
@@ -248,7 +248,7 @@ def list(aCTX, aArgs = None):
   tune.append("rack_info AS ri ON ri.device_id = devices.id")
   filter.append("ri.rack_id = %(rack)s"%aArgs)
  if aArgs.get('search'):
-  if aArgs['field'] == 'hostname':
+  if   aArgs['field'] == 'hostname':
    filter.append("devices.hostname LIKE '%%%(search)s%%'"%aArgs)
   elif aArgs['field'] == 'ip':
    filter.append("ia.ip = INET_ATON('%(search)s')"%aArgs)

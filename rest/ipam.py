@@ -8,14 +8,14 @@ def status(aCTX, aArgs = None):
  """ Initiate a status check for all or a subset of IP:s
 
  Args:
-  - subnets (optional). List of subnet_ids to check
+  - networks (optional). List of network ids to check
   - repeat (optional). If declared, it's an integer with frequency.. This is the way to keep address status checks 'in-memory'
 
  """
  ret = {}
  ipam_nodes = {}
  with aCTX.db as db:
-  trim = "" if not aArgs.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['subnets']))
+  trim = "" if not aArgs.get('networks') else "WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks']))
   db.do("SELECT ipam_networks.id, servers.node, servers.service FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   for sub in db.get_rows():
    node = 'master' if not sub['node'] else sub['node']
@@ -26,7 +26,7 @@ def status(aCTX, aArgs = None):
     ipam_nodes[node] = node_addresses
 
  for node,data in ipam_nodes.items():
-  args = {'module':'ipam','func':'address_status_check','args':{'address_list':data,'repeat':aArgs.get('repeat')},'output':False}
+  args = {'module':'ipam','func':'address_status_check','args':{'addresses':data,'repeat':aArgs.get('repeat')},'output':False}
   ret[node] = len(data)
   if node == 'master':
    aCTX.workers.add_transient(args)
@@ -434,25 +434,51 @@ def address_from_id(aCTX, aArgs = None):
   ret = db.get_row()
  return ret
 
+
+def address_status_fetch(aCTX, aArgs = None):
+ """ Function fetch a list of addresses and states {id,'ip',state} for a list of networks
+
+ Args:
+  - networks
+
+ Output:
+  - addresses
+ """
+ ret = {}
+ with aCTX.db as db:
+  ret['count'] = db.do("SELECT ia.id, INET_NTOA(ip) AS ip, devices.notify FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id IN (%s) ORDER BY ia.ip"%(','.join(str(x) for x in aArgs['networks'])))
+  if ret['count'] > 0:
+   ret['addresses'] = db.get_rows()
+ return ret
+
 #
 #
 def address_status_check(aCTX, aArgs = None):
- """ Process a list of IDs, IP addresses and states {id,'ip',state} and perform a ping. State values are: 0 (not seen), 1(up), 2(down).
-  If state has changed this will be reported back. This function is node independent.
+ """ Function processes a list of IDs, IP addresses and states {id,'ip',state} and perform a ping. State values are: 0 (not seen), 1(up), 2(down).
+  If state has changed this will be reported back.
+  This function is node independent.
 
  Args:
-  - address_list (required)
+  - addresses (optional required). If supplied the list is processed
+  - networks  (optional required). If not (!) address list is supplied addresses will be fetched for the network id:s in this list
   - repeat (optional). Describes frequency for repeated checks' interval
 
  Output:
  """
+
+ if aArgs.get('addresses'):
+  addresses = aArgs['addresses']
+ elif aCTX.node == 'master':
+  addresses = address_status_fetch(aCTX,{'networks':aArgs['networks']})
+ else:
+  addresses = aCTX.rest_call("%s/api/ipam/address_status_fetch"%aCTX.config['master'],aArgs = {'networks':aArgs['networks']}, aHeader = {'X-Log':'false'}, aDataOnly = True)
+
  if aArgs.get('repeat'):
   freq = aArgs.pop('repeat')
-  aCTX.workers.add_periodic({'id':'address_status_check', 'module':'ipam','func':'address_status_check','output':False,'args':aArgs},freq)
-  return {'status':'CONTINOUS_INITIATED_%s'%freq}
+  aCTX.workers.add_periodic({'id':'address_status_check', 'module':'ipam','func':'address_status_check','output':False,'args':{'addresses':addresses}},freq)
+  return {'status':'CONTINUOUS_INITIATED_%s'%freq}
 
  from os import system
-
  def __liveness_check(aDev):
   aDev['old'] = aDev['state']
   try:    aDev['state'] = 1 if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip'])) == 0) else 2
@@ -461,11 +487,11 @@ def address_status_check(aCTX, aArgs = None):
 
  nworkers = max(20,int(aCTX.config['workers']) - 5)
  sema = aCTX.workers.semaphore(nworkers)
- for dev in aArgs['address_list']:
+ for dev in addresses:
   aCTX.workers.add_semaphore(__liveness_check, sema, dev)
  aCTX.workers.block(sema,nworkers)
 
- changed = [dev for dev in aArgs['address_list'] if (dev['state'] != dev['old'])]
+ changed = [dev for dev in addresses if (dev['state'] != dev['old'])]
  args = {'up':[(dev['id'],dev['notify']) for dev in changed if dev['state'] == 1], 'down':[(dev['id'],dev['notify']) for dev in changed if dev['state'] == 2]}
  up   = len(args['up'])
  down = len(args['down'])
