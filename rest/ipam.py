@@ -478,8 +478,12 @@ def address_status_check(aCTX, aArgs = None):
 
  Output:
  """
-
- addresses = aArgs['addresses'] if aArgs.get('addresses') else aCTX.node_function('master','ipam','address_status_fetch', aHeader = {'X-Log':'false'})(aArgs = {'networks':aArgs['networks']})['addresses']
+ if aArgs.get('addresses'):
+  addresses = aArgs['addresses']
+ elif aArgs.get('networks'):
+  addresses = aCTX.node_function('master','ipam','address_status_fetch', aHeader = {'X-Log':'false'})(aArgs = {'networks':aArgs['networks']})['addresses']
+ else:
+  return {'status':'NO_ADDRESSES_TO_CHECK'}
 
  if aArgs.get('repeat'):
   freq = aArgs.pop('repeat')
@@ -526,7 +530,7 @@ def address_status_report(aCTX, aArgs = None):
  with aCTX.db as db:
   for chg in [('up',1),('down',2)]:
    change = aArgs.get(chg[0])
-   if change and len(change) > 0:
+   if change:
     ret[chg[0]] = db.do("UPDATE ipam_addresses SET state = %s WHERE ID IN (%s)"%(chg[1],",".join(str(x[0]) for x in change)))
     begin = 0
     final  = len(change)
@@ -543,7 +547,7 @@ def address_status_report(aCTX, aArgs = None):
       db.do("SELECT hostname FROM devices WHERE ipam_id IN (%s)"%notify)
       notifications.append((chg[0].upper(),", ".join(dev['hostname'] for dev in db.get_rows()) ))
 
- if len(notifications) > 0:
+ if notifications:
   func = aCTX.node_function(notifier.get('proxy','master'),notifier['service'],"notify", aHeader = {'X-Log':'true'})
   for notification in notifications:
    aCTX.workers.add_function(func,aArgs = {'node':notifier['node'],'message':"Device status changed to %s:%s"%notification})

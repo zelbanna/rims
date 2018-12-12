@@ -98,12 +98,16 @@ def info(aCTX, aArgs = None):
      ret['pems'] = db.get_rows()
      pdu_ids = [str(x['pdu_id']) for x in ret['pems'] if x['pdu_id']]
      infra_ids.extend(pdu_ids)
-     if len(infra_ids) > 0:
+     if infra_ids:
       db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, hostname FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE devices.id IN (%s)"%','.join(infra_ids))
-     devices = db.get_dict('id') if len(infra_ids) > 0 else {}
-     if len(pdu_ids) > 0:
+      devices = db.get_dict('id')
+     else:
+      devices = {}
+     if pdu_ids:
       db.do("SELECT * FROM pdu_info WHERE device_id IN (%s)"%','.join(pdu_ids))
-     pdus = db.get_dict('device_id') if len(pdu_ids) > 0 else {}
+      pdus = db.get_dict('device_id')
+     else:
+      pdus = {}
      console = devices.get(rack['console_id'],{'hostname':None,'ip':None})
      rack.update({'console_name':console['hostname'],'console_ip':console['ip']})
      for pem in ret['pems']:
@@ -177,7 +181,7 @@ def extended(aCTX, aArgs = None):
       ret['status']['device_info'] += db.update_dict('devices',new_info,"id='%s'"%ret['id'])
 
     rack_args = {k[10:]:v for k,v in aArgs.items() if k[0:10] == 'rack_info_'}
-    ret['status']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if len(rack_args) > 0 else "NO_RACK_INFO"
+    ret['status']['rack_info'] = db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) if rack_args else "NO_RACK_INFO"
 
   # Now fetch info
   ret['found'] = (db.do("SELECT devices.vm, devices.notify, LPAD(hex(devices.mac),12,0) AS mac, devices.oid, hostname, a_id, ptr_id, a_dom_id, ipam_id, a.name AS domain, INET_NTOA(ia.ip) AS ip, dt.base AS type_base, oui.company AS oui FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id LEFT JOIN oui ON oui.oui = (ia.mac >> 24) AND ia.mac != 0 LEFT JOIN domains AS a ON devices.a_dom_id = a.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
@@ -208,7 +212,7 @@ def extended(aCTX, aArgs = None):
      ret['pems'] = db.get_rows()
 
   # Update PDU with hostname and PEM info on the right pdu slot and unit
-  if operation == 'update' and ret['racked']:
+  if operation == 'update' and ret.get('rack'):
    from importlib import import_module
    for pem in ret['pems']:
     if pem['pdu_id']:
@@ -417,7 +421,7 @@ def new(aCTX, aArgs = None):
     ret['insert'] = db.do("INSERT INTO devices(vm,hostname,snmp,model) VALUES(%s,'%s','unknown','unknown')"%(aArgs.get('vm','0'),aArgs['hostname']))
    ret['id']   = db.get_last_id()
    if aArgs.get('rack'):
-    ret['racked'] = (db.do("INSERT INTO rack_info SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aArgs['rack'])) == 1)
+    db.do("INSERT INTO rack_info SET device_id = %s, rack_id = %s ON DUPLICATE KEY UPDATE rack_unit = 0, rack_size = 1"%(ret['id'],aArgs['rack']))
   else:
    ret.update(db.get_row())
 
@@ -771,13 +775,14 @@ def network_interface_status(aCTX, aArgs = None):
       node_devices.append(dev)
 
  for node,data in local_nodes.items():
-  args = {'module':'device','func':'interface_status_check','args':{'devices':data,'discover':aArgs.get('discover',False), 'repeat':aArgs.get('repeat')},'output':False}
-  if node == 'master':
-   aCTX.workers.add_task(args)
-  else:
-   try: aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[node]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':node}, aDataOnly = True)
-   except Exception as e:
-    aCTX.log("network_interface_status REST failure (%s => %s)"%(node,repr(e)))
+  if data:
+   args = {'module':'device','func':'interface_status_check','args':{'devices':data,'discover':aArgs.get('discover',False), 'repeat':aArgs.get('repeat')},'output':False}
+   if node == 'master':
+    aCTX.workers.add_task(args)
+   else:
+    try: aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[node]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':node}, aDataOnly = True)
+    except Exception as e:
+     aCTX.log("network_interface_status REST failure (%s => %s)"%(node,repr(e)))
 
  return ret
 
@@ -1253,18 +1258,21 @@ def interface_status_check(aCTX, aArgs = None):
 
  Output:
  """
-
- devices = aArgs['devices'] if aArgs.get('devices') else aCTX.node_function('master','device','interface_status_fetch', aHeader = {'X-Log':'false'})(aArgs = {'networks':aArgs['networks']})['devices']
+ if aArgs.get('devices'):
+  devices = aArgs['devices']
+ elif aArgs.get('networks'):
+  devices = aCTX.node_function('master','device','interface_status_fetch', aHeader = {'X-Log':'false'})(aArgs = {'networks':aArgs['networks']})['devices']
+ else:
+  return {'status':'NO_DEVICES_TO_CHECK'}
 
  if aArgs.get('repeat'):
   freq = aArgs.pop('repeat')
-  aCTX.workers.add_task({'id':'interface_status_check', 'module':'device','func':'interface_status_check','output':False,'args':{'devices':devices}},freq)
+  aCTX.workers.add_task({'id':'interface_status_check', 'module':'device','func':'interface_status_check','output':False,'args':{'devices':devices,'discover':discover}},freq)
   return {'status':'CONTINUOUS_INITIATED_%s'%freq}
 
  from os import system
  from importlib import import_module
  states = {'unseen':0,'up':1,'down':2}
- discover = aArgs.get('discover')
 
  def __interfaces(aCTX, aDev):
   try:

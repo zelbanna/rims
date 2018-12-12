@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.6"
-__build__ = 192
+__build__ = 193
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -391,6 +391,10 @@ class QueueWorker(Thread):
      self._ctx.log("%s - %s => %s"%(self.name,repr(func),dumps(result)))
    except Exception as e:
     self._ctx.log("%s - ERROR: %s => %s"%(self.name,repr(func),str(e)))
+    if self._ctx.config['mode'] == 'debug':
+     from traceback import format_exc
+     for n,v in enumerate(format_exc().split('\n')):
+      self._ctx.log("%s - DEBUG-%02d => %s"%(self.name,n,v))
    finally:
     if sema:
      sema.release()
