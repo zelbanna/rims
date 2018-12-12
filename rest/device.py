@@ -699,6 +699,10 @@ def network_info_discover(aCTX, aArgs = None):
      dev['mac'] = int(dev['mac'].replace(':',""),16)
     if len(dev) > 0:
      ret['count'] += db.update_dict('devices',dev,'id = %s'%id)
+  if aArgs.get('lookup'):
+   old = db.ignore_warnings(True)
+   ret['sync'] = "OK" if (db.do("INSERT IGNORE INTO device_models (name, type_id) SELECT DISTINCT model AS name ,type_id FROM devices") > 0) else "NO_NEW_MODELS"
+   db.ignore_warnings(old)
  return ret
 
 #

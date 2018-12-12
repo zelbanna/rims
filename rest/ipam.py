@@ -543,7 +543,8 @@ def address_status_report(aCTX, aArgs = None):
      end = min(final,begin+16)
      if aCTX.config.get('events'):
       db.do("INSERT INTO ipam_events (ipam_id, state) VALUES %s"%(",".join("(%s,%s)"%(x[0],chg[1]) for x in change[begin:end])))
-     aCTX.log("IPAM Event %s => %s"%(chg[0].ljust(4), ",".join( str(x[0]) for x in change[begin:end])))
+     else:
+      aCTX.log("IPAM Event %s => %s"%(chg[0].ljust(4), ",".join( str(x[0]) for x in change[begin:end])))
      begin = end
     if notifier:
      notify = ",".join([str(x[0]) for x in change if x[1] == chg[1]])
