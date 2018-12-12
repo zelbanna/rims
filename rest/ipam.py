@@ -480,7 +480,7 @@ def address_status_check(aCTX, aArgs = None):
  Output:
  """
 
- addresses = aArgs['addresses'] if aArgs.get('addresses') else aCTX.node_function('master','ipam','address_status_fetch', aHeader = {'X-Log':'false'})({'networks':aArgs['networks']})['addresses']
+ addresses = aArgs['addresses'] if aArgs.get('addresses') else aCTX.node_function('master','ipam','address_status_fetch', aHeader = {'X-Log':'false'})(aArgs = {'networks':aArgs['networks']})['addresses']
 
  if aArgs.get('repeat'):
   freq = aArgs.pop('repeat')
@@ -505,7 +505,7 @@ def address_status_check(aCTX, aArgs = None):
  up   = len(args['up'])
  down = len(args['down'])
  if up > 0 or down > 0:
-  aCTX.node_function('master','ipam','address_status_report', aHeader = {'X-Log':'false'})(args)
+  aCTX.node_function('master','ipam','address_status_report', aHeader = {'X-Log':'false'})(aArgs = args)
  return {'status':'CHECK_COMPLETED_%s_%s'%(up,down)}
 
 #
@@ -547,5 +547,5 @@ def address_status_report(aCTX, aArgs = None):
  if len(notifications) > 0:
   func = aCTX.node_function(notifier.get('proxy','master'),notifier['service'],"notify", aHeader = {'X-Log':'true'})
   for notification in notifications:
-   aCTX.workers.add_function(func,{'node':notifier['node'],'message':"Device status changed to %s:%s"%notification})
+   aCTX.workers.add_function(func,aArgs = {'node':notifier['node'],'message':"Device status changed to %s:%s"%notification})
  return ret

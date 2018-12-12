@@ -1249,7 +1249,7 @@ def interface_status_check(aCTX, aArgs = None):
  func = aCTX.node_function('master','device','interface_status_report', aHeader= {'X-Log':'false'})
  for dev in aArgs['device_list']:
   if len(dev['interfaces']) > 0:
-   func(dev)
+   func(aArgs = dev)
  return {'status':'GATHERING_DATA_COMPLETED'}
 
 #
