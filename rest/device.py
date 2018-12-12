@@ -755,7 +755,7 @@ def network_interface_status(aCTX, aArgs = None):
  ret = {}
  local_nodes = {}
  with aCTX.db as db:
-  trim = "" if not aArgs.get('networks') else "WHERE ipam_networks.id IN (%s)"%(",".join(str(x) for x in aArgs['networks']))
+  trim = "" if not aArgs.get('networks') else "WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks']))
   db.do("SELECT ipam_networks.id, servers.node, servers.service FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   for net in db.get_rows():
    node = 'master' if not net['node'] else net['node']
@@ -1230,7 +1230,7 @@ def inteface_status_fetch(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT ipam_networks.id, servers.node, servers.service FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id WHERE ipam_networks.id IN (%s)"%(",".join(str(x) for x in aArgs['networks']))
+  db.do("SELECT ipam_networks.id, servers.node, servers.service FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id WHERE ipam_networks.id IN (%s)"%(",".join(str(x) for x in aArgs['networks'])))
   for net in db.get_rows():
    count = db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%net['id'])
    if count > 0:
@@ -1290,8 +1290,6 @@ def interface_status_check(aCTX, aArgs = None):
   aCTX.workers.add_semaphore(__interfaces, sema, aCTX, dev)
  aCTX.workers.block(sema,nworkers)
 
- from json import dumps
- print(dumps(devices,indent=2))
  func = aCTX.node_function('master','device','interface_status_report', aHeader= {'X-Log':'false'})
  for dev in devices:
   if len(dev['interfaces']) > 0:
