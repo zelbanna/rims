@@ -61,7 +61,7 @@ class Device(object):
    session.walk(objs)
    for entry in objs:
     if   entry.tag == '.1.3.6.1.2.1.2.2.1.6':
-     interfaces[int(entry.iid)] = {'mac':':'.join("%s%s"%x for x in zip(*[iter(entry.val.hex())]*2)) if entry.val else "00:00:00:00:00:00", 'name':"None",'description':"None"}
+     interfaces[int(entry.iid)] = {'mac':':'.join("%s%s"%x for x in zip(*[iter(entry.val.hex())]*2)).upper() if entry.val else "00:00:00:00:00:00", 'name':"None",'description':"None"}
     elif entry.tag == '.1.3.6.1.2.1.2.2.1.2':
      interfaces[int(entry.iid)]['name'] = entry.val.decode()
     elif entry.tag == '.1.3.6.1.2.1.2.2.1.8':
@@ -78,7 +78,7 @@ class Device(object):
    ifoid   = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex),Varbind('.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex),Varbind('.1.3.6.1.2.1.2.2.1.6.%s'%aIndex))
    session.get(ifoid)
    name,desc = ifoid[0].val.decode(),ifoid[1].val.decode() if ifoid[1].val.decode() != "" else "None"
-   mac = ':'.join("%s%s"%x for x in zip(*[iter(ifoid[2].val.hex())]*2))
+   mac = ':'.join("%s%s"%x for x in zip(*[iter(ifoid[2].val.hex())]*2)).upper()
   except: pass
   return {'name':name,'description':desc, 'mac':mac}
 
@@ -140,7 +140,7 @@ class Device(object):
    sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
    session.get(sysoid)
    if sysoid[0].val:
-    ret['mac'] = ':'.join("%s%s"%x for x in zip(*[iter(sysoid[0].val.hex())]*2))
+    ret['mac'] = ':'.join("%s%s"%x for x in zip(*[iter(sysoid[0].val.hex())]*2)).upper()
    if sysoid[1].val:
     try:    ret['oid'] = int(sysoid[1].val.decode().split('.')[7])
     except: pass
@@ -166,7 +166,7 @@ class Device(object):
    ret['error'] = "Not able to do SNMP lookup (check snmp -> read): %s"%str(err)
   if ret['status'] == 'OK':
    if sysoid[0].val:
-    try: ret['info']['mac'] = hex2ascii(sysoid[0].val)
+    try: ret['info']['mac'] = hex2ascii(sysoid[0].val).upper()
     except: pass
    if sysoid[1].val:
     try:    ret['info']['oid'] = int(sysoid[1].val.decode().split('.')[7])
