@@ -480,12 +480,7 @@ def address_status_check(aCTX, aArgs = None):
  Output:
  """
 
- if aArgs.get('addresses'):
-  addresses = aArgs['addresses']
- elif aCTX.node == 'master':
-  addresses = address_status_fetch(aCTX,{'networks':aArgs['networks']})['addresses']
- else:
-  addresses = aCTX.rest_call("%s/api/ipam/address_status_fetch"%aCTX.config['master'],aArgs = {'networks':aArgs['networks']}, aHeader = {'X-Log':'false'}, aDataOnly = True)['addresses']
+ addresses = aArgs['addresses'] if aArgs.get('addresses') else aCTX.node_function('master','ipam','address_status_fetch', aHeader = {'X-Log':'false'})({'networks':aArgs['networks']})['addresses']
 
  if aArgs.get('repeat'):
   freq = aArgs.pop('repeat')
@@ -510,10 +505,7 @@ def address_status_check(aCTX, aArgs = None):
  up   = len(args['up'])
  down = len(args['down'])
  if up > 0 or down > 0:
-  if aCTX.node == 'master':
-   address_status_report(aCTX, args)
-  else:
-   aCTX.rest_call("%s/api/ipam/address_status_report"%aCTX.config['master'],aArgs = args, aHeader = {'X-Log':'false'}, aDataOnly = True)
+  aCTX.node_function('master','ipam','address_status_report', aHeader = {'X-Log':'false'})(args)
  return {'status':'CHECK_COMPLETED_%s_%s'%(up,down)}
 
 #

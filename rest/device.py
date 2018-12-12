@@ -1245,12 +1245,11 @@ def interface_status_check(aCTX, aArgs = None):
  for dev in aArgs['device_list']:
   aCTX.workers.add_semaphore( __interfaces, sema, dev, aCTX)
  aCTX.workers.block(sema,20)
+
+ func = aCTX.node_function('master','device','interface_status_report', aHeader= {'X-Log':'false'})
  for dev in aArgs['device_list']:
   if len(dev['interfaces']) > 0:
-   if aCTX.node == 'master':
-    interface_status_report(aCTX, dev)
-   else:
-    aCTX.rest_call("%s/api/device/interface_status_report"%aCTX.config['master'], aArgs = dev, aHeader= {'X-Log':'false'}, aDataOnly = True)
+   func(dev)
  return {'status':'GATHERING_DATA_COMPLETED'}
 
 #
