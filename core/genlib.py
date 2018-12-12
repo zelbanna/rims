@@ -142,7 +142,7 @@ def pidfile_release(pidfname):
   from os import remove
   remove(pidfname)
 
-def pidfile_lock(pidfname, sleeptime):
+def pidfile_lock(pidfname, sleeptime = 1):
  from time import sleep
  from os import path as ospath
  while ospath.isfile(pidfname):

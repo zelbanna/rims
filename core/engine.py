@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "5.6"
-__build__ = 191
+__build__ = 192
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -269,6 +269,7 @@ class WorkerPool(object):
   return "WorkerPool(count = %s, queue = %s, schedulers = %s, alive = %s)"%(self._count,self._queue.qsize(),len(self._scheduler),self.alive())
 
  def start(self, aAddr, aSock):
+  self._abort.clear()
   self._sock    = aSock
   self._servers = [ServerWorker(n,aAddr,aSock,self._ctx) for n in range(4)]
   self._workers = [QueueWorker(n, self._abort, self._queue, self._ctx) for n in range(self._count)]
@@ -278,7 +279,6 @@ class WorkerPool(object):
   """ Abort set abort state and inject dummy tasks to kill off workers. There might be running tasks so don't add more than enough """
   def dummy(): pass
   self._abort.set()
-  self._abort = Event()
   try: self._sock.close()
   except: pass
   finally: self._sock = None
@@ -359,10 +359,10 @@ class ScheduleWorker(Thread):
   return self.name
 
  def run(self):
-  sleep(self._freq - int(time())%self._freq)
+  self._abort.wait(self._freq - int(time())%self._freq)
   while not self._abort.is_set():
    self._queue.put((self._func,'TASK',None,self._task['output'],self._task['args'],None))
-   sleep(self._freq)
+   self._abort.wait(self._freq)
   return False
 
 #
