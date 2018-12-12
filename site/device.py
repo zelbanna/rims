@@ -55,6 +55,7 @@ def main(aWeb):
 def list(aWeb):
  args = aWeb.args()
  args['sort'] = aWeb.get('sort','hostname')
+ translate = {0:'grey',1:'green',2:'red',3:'orange'}
  res = aWeb.rest_call("device/list",args)
  aWeb.wr("<ARTICLE><P>Device List</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content_left',  URL='device_list?%s'%aWeb.get_args(), TITLE='Reload'))
@@ -67,7 +68,7 @@ def list(aWeb):
   aWeb.wr("<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='device_list?sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red"))
  aWeb.wr("<DIV CLASS=th STYLE='width:30px;'>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'><A CLASS=z-op DIV=div_content_right URL='device_info?id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%(row['ip'],row['id'],row['id'], row['hostname'], {0:'grey',1:'green',2:'red',3:'orange'}.get(row['state'],'orange')))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'><A CLASS=z-op DIV=div_content_right URL='device_info?id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%(row['ip'],row['id'],row['id'], row['hostname'], translate.get(row['state'],'orange')))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -424,10 +425,10 @@ def model_info(aWeb):
 #
 def events(aWeb):
  res = aWeb.rest_call("device/events",{'id':aWeb['id']})
- translate = {1:"up",2:"down",0:"unknown"}
+ translate = {0:'grey',1:'green',2:'red',3:'orange'}
  aWeb.wr("<ARTICLE><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>Event</DIV></DIV><DIV CLASS=tbody>")
  for event in res['events']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS='td maxed'>%s</DIV></DIV>"%(event['time'],translate[event['state']]))
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS='td maxed'><DIV CLASS='state %s' /></DIV></DIV>"%(event['time'],translate[event['state']]))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 ####################################################### Functions #######################################################
