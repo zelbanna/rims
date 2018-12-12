@@ -9,25 +9,25 @@ def status(aCTX, aArgs = None):
 
  Args:
   - networks (optional). List of network ids to check
-  - repeat (optional). If declared, it's an integer with frequency.. This is the way to keep address status checks 'in-memory'
+  - repeat (optional). If declared, it's an integer with frequency.. This is the way to keep status checks 'in-memory'
 
  """
  ret = {}
- ipam_nodes = {}
+ local_nodes = {}
  with aCTX.db as db:
   trim = "" if not aArgs.get('networks') else "WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks']))
   db.do("SELECT ipam_networks.id, servers.node, servers.service FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
-  for sub in db.get_rows():
-   node = 'master' if not sub['node'] else sub['node']
-   node_addresses = ipam_nodes.get(node,[])
-   count = db.do("SELECT ia.id, ia.id, INET_NTOA(ip) AS ip, ia.state, devices.notify FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id = %s ORDER BY ia.ip"%sub['id'])
+  for net in db.get_rows():
+   node = 'master' if not net['node'] else net['node']
+   node_addresses = local_nodes.get(node,[])
+   count = db.do("SELECT ia.id, ia.id, INET_NTOA(ip) AS ip, ia.state, devices.notify FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id = %s ORDER BY ia.ip"%net['id'])
    if count > 0:
     ret[node] = ret.get(node,[])
-    ret[node].append(sub['id'])
+    ret[node].append(net['id'])
     node_addresses.extend(db.get_rows())
-    ipam_nodes[node] = node_addresses
+    local_nodes[node] = node_addresses
 
- for node,data in ipam_nodes.items():
+ for node,data in local_nodes.items():
   args = {'module':'ipam','func':'address_status_check','args':{'addresses':data,'repeat':aArgs.get('repeat')},'output':False}
   if node == 'master':
    aCTX.workers.add_task(args)
@@ -506,7 +506,7 @@ def address_status_check(aCTX, aArgs = None):
  down = len(args['down'])
  if up > 0 or down > 0:
   aCTX.node_function('master','ipam','address_status_report', aHeader = {'X-Log':'false'})(aArgs = args)
- return {'status':'CHECK_COMPLETED_%s_%s'%(up,down)}
+ return {'status':'IPAM_STATUS_CHECK_COMPLETED_%s_%s'%(up,down)}
 
 #
 #

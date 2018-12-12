@@ -747,29 +747,39 @@ def network_interface_status(aCTX, aArgs = None):
  """ Initiate a status check for all or a subset of devices' interfaces
 
  Args:
-  - subnets (optional). List of subnet_ids to check
-  - discover(optional). False/None/"up"/"all", defaults to false
+  - networks (optional). List of subnet_ids to check
+  - discover (optional). False/None/"up"/"all", defaults to false
+  - repeat (optional). If declared, it's an integer with frequency.. This is the way to keep status checks 'in-memory'
 
  """
- ret = {'local':[],'remote':[]}
+ ret = {}
+ local_nodes = {}
  with aCTX.db as db:
-  trim = "" if not aArgs.get('subnets') else "WHERE ipam_networks.id IN (%s)"%(",".join(str(x) for x in aArgs['subnets']))
+  trim = "" if not aArgs.get('networks') else "WHERE ipam_networks.id IN (%s)"%(",".join(str(x) for x in aArgs['networks']))
   db.do("SELECT ipam_networks.id, servers.node, servers.service FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
-  subnets = db.get_rows()
-  for sub in subnets:
-   count = db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%sub['id'])
+  for net in db.get_rows():
+   node = 'master' if not net['node'] else net['node']
+   node_addresses = local_nodes.get(node,[])
+   count = db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%net['id'])
    if count > 0:
+    ret[node] = ret.get(node,[])
+    ret[node].append(net['id'])
     devices = db.get_rows()
-    args = {'module':'device','func':'interface_status_check','args':{'device_list':devices,'discover':aArgs.get('discover',False)},'output':False}
+    local_nodes[node] = node_addresses
+    node_addresses.extend(devices)
     for dev in devices:
      db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id'])
      dev['interfaces'] = db.get_rows()
-    if not sub['node'] or sub['node'] == 'master':
-     aCTX.workers.add_task(args)
-     ret['local'].append(sub['id'])
-    else:
-     aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[sub['node']]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':sub['node']}, aDataOnly = True)
-     ret['remote'].append(sub['id'])
+
+ for node,data in local_nodes.items():
+  args = {'module':'device','func':'interface_status_check','args':{'devices':data,'discover':aArgs.get('discover',False), 'repeat':aArgs.get('repeat')},'output':False}
+  if node == 'master':
+   aCTX.workers.add_task(args)
+  else:
+   try: aCTX.rest_call("%s/api/system/task_worker"%(aCTX.nodes[node]['url']),aArgs = args, aHeader = {'X-Log':'false','X-Route':node}, aDataOnly = True)
+   except Exception as e:
+    aCTX.log("network_interface_status REST failure (%s => %s)"%(node,repr(e)))
+
  return ret
 
 ################################################## TYPES ##################################################
@@ -1209,22 +1219,55 @@ def interface_discover_lldp(aCTX, aArgs = None):
 
 #
 #
+def inteface_status_fetch(aCTX, aArgs = None):
+ """ Function fetch a list of devices and device_interfaces for a list of networks
+
+ Args:
+  - networks
+
+ Output:
+  - devices
+ """
+ ret = {}
+ with aCTX.db as db:
+  db.do("SELECT ipam_networks.id, servers.node, servers.service FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id WHERE ipam_networks.id IN (%s)"%(",".join(str(x) for x in aArgs['networks']))
+  for net in db.get_rows():
+   count = db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%net['id'])
+   if count > 0:
+    ret['devices'] = db.get_rows()
+    for dev in ret['devices']:
+     db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id'])
+     dev['interfaces'] = db.get_rows()
+ return ret
+
+#
+#
 def interface_status_check(aCTX, aArgs = None):
  """ Process a list of Device IDs and IP addresses (id, ip, type) and perform an SNMP interface lookup. return state values are: 0 (not seen), 1(up), 2(down).
   Always return interface information. This function is node independent.
 
  Args:
-  - device_list (required)
+  - devices (optional required). If supplied the list is processed
+  - networks  (optional required). If not (!) address list is supplied addresses will be fetched for the network id:s in this list
+  - repeat (optional). Describes frequency for repeated checks' interval
   - discover(optional). False/None/"up"/"all", defaults to false
 
  Output:
  """
+
+ devices = aArgs['devices'] if aArgs.get('devices') else aCTX.node_function('master','device','interface_status_fetch', aHeader = {'X-Log':'false'})(aArgs = {'networks':aArgs['networks']})['devices']
+
+ if aArgs.get('repeat'):
+  freq = aArgs.pop('repeat')
+  aCTX.workers.add_task({'id':'interface_status_check', 'module':'device','func':'interface_status_check','output':False,'args':{'devices':devices}},freq)
+  return {'status':'CONTINUOUS_INITIATED_%s'%freq}
+
  from os import system
  from importlib import import_module
  states = {'unseen':0,'up':1,'down':2}
  discover = aArgs.get('discover')
 
- def __interfaces(aDev, aCTX):
+ def __interfaces(aCTX, aDev):
   try:
    module = import_module("rims.devices.%s"%aDev['type'])
    device = getattr(module,'Device',None)(aCTX, aDev['ip'])
@@ -1241,16 +1284,19 @@ def interface_status_check(aCTX, aArgs = None):
   except: pass
   return True
 
- sema = aCTX.workers.semaphore(20)
- for dev in aArgs['device_list']:
-  aCTX.workers.add_semaphore( __interfaces, sema, dev, aCTX)
- aCTX.workers.block(sema,20)
+ nworkers = max(20,int(aCTX.config['workers']) - 5)
+ sema = aCTX.workers.semaphore(nworkers)
+ for dev in devices:
+  aCTX.workers.add_semaphore(__interfaces, sema, aCTX, dev)
+ aCTX.workers.block(sema,nworkers)
 
+ from json import dumps
+ print(dumps(devices,indent=2))
  func = aCTX.node_function('master','device','interface_status_report', aHeader= {'X-Log':'false'})
- for dev in aArgs['device_list']:
+ for dev in devices:
   if len(dev['interfaces']) > 0:
    func(aArgs = dev)
- return {'status':'GATHERING_DATA_COMPLETED'}
+ return {'status':'INTERFACE_STATUS_CHECK_COMPLETED'}
 
 #
 #
