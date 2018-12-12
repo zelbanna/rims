@@ -754,22 +754,21 @@ def network_interface_status(aCTX, aArgs = None):
  """
  ret = {}
  local_nodes = {}
+ discover = (aArgs.get('discover') in ['up','all'])
  with aCTX.db as db:
   trim = "" if not aArgs.get('networks') else "WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks']))
   db.do("SELECT ipam_networks.id, servers.node, servers.service FROM ipam_networks LEFT JOIN servers ON servers.id = ipam_networks.server_id %s"%trim)
   for net in db.get_rows():
    node = 'master' if not net['node'] else net['node']
-   node_addresses = local_nodes.get(node,[])
-   count = db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%net['id'])
-   if count > 0:
+   node_devices = local_nodes.get(node,[])
+   if db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id = %s AND ia.state = 1 ORDER BY ip"%net['id']) > 0:
     ret[node] = ret.get(node,[])
     ret[node].append(net['id'])
-    devices = db.get_rows()
-    local_nodes[node] = node_addresses
-    node_addresses.extend(devices)
-    for dev in devices:
-     db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id'])
-     dev['interfaces'] = db.get_rows()
+    local_nodes[node] = node_devices
+    for dev in db.get_rows():
+     if db.do("SELECT snmp_index,id FROM device_interfaces WHERE device = %s AND snmp_index > 0"%dev['device_id']) > 0 or discover:
+      dev['interfaces'] = db.get_rows()
+      node_devices.append(dev)
 
  for node,data in local_nodes.items():
   args = {'module':'device','func':'interface_status_check','args':{'devices':data,'discover':aArgs.get('discover',False), 'repeat':aArgs.get('repeat')},'output':False}

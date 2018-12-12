@@ -20,8 +20,7 @@ def status(aCTX, aArgs = None):
   for net in db.get_rows():
    node = 'master' if not net['node'] else net['node']
    node_addresses = local_nodes.get(node,[])
-   count = db.do("SELECT ia.id, ia.id, INET_NTOA(ip) AS ip, ia.state, devices.notify FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id = %s ORDER BY ia.ip"%net['id'])
-   if count > 0:
+   if db.do("SELECT ia.id, ia.id, INET_NTOA(ip) AS ip, ia.state, devices.notify FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE network_id = %s ORDER BY ia.ip"%net['id']) > 0:
     ret[node] = ret.get(node,[])
     ret[node].append(net['id'])
     node_addresses.extend(db.get_rows())
