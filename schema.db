@@ -9,13 +9,13 @@ CREATE TABLE `activities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `type_id` int(10) unsigned NOT NULL,
-  `event` text,
-  `date_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `event` text DEFAULT NULL,
+  `date_time` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `fk_user` (`user_id`),
   KEY `fk_type` (`type_id`),
-  CONSTRAINT `activities_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `activities_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `activity_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `activities_ibkf_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `activities_ibkf_2` FOREIGN KEY (`type_id`) REFERENCES `activity_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -27,24 +27,72 @@ CREATE TABLE `activity_types` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `device_connections`;
+CREATE TABLE `device_connections` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `map` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `device_data_points`;
+CREATE TABLE `device_data_points` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `device_id` int(10) unsigned NOT NULL,
+  `measurement` varchar(20) DEFAULT NULL,
+  `tags` varchar(40) DEFAULT NULL,
+  `name` varchar(16) DEFAULT NULL,
+  `oid` varchar(40) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `device_id` (`device_id`),
+  CONSTRAINT `device_data_points_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `device_interfaces`;
 CREATE TABLE `device_interfaces` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `device` int(10) unsigned DEFAULT NULL,
-  `peer_interface` int(10) unsigned DEFAULT NULL,
-  `manual` tinyint(1) unsigned DEFAULT '0',
-  `multipoint` tinyint(1) unsigned DEFAULT '0',
-  `mac` bigint(20) DEFAULT '0',
-  `state` tinyint(1) DEFAULT '0',
+  `interface_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `device_id` int(10) unsigned NOT NULL,
+  `ipam_id` int(10) unsigned DEFAULT NULL,
+  `manual` tinyint(1) unsigned DEFAULT 0,
+  `mac` bigint(20) DEFAULT 0,
   `snmp_index` int(10) unsigned DEFAULT NULL,
   `name` varchar(25) NOT NULL,
   `description` varchar(25) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `device_index` (`device`,`snmp_index`),
-  KEY `peer_interface` (`peer_interface`),
-  CONSTRAINT `device_interfaces_ibfk_1` FOREIGN KEY (`device`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `device_interfaces_ibfk_2` FOREIGN KEY (`peer_interface`) REFERENCES `device_interfaces` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  `state` enum('unknown','up','down') NOT NULL,
+  `class` enum('wired','optical','virtual','logical','wifi','bluetooth') NOT NULL,
+  `connection_id` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`interface_id`),
+  UNIQUE KEY `device_index` (`device_id`,`snmp_index`),
+  UNIQUE KEY `ipam_id` (`ipam_id`),
+  KEY `connection_id` (`connection_id`),
+  CONSTRAINT `device_interfaces_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `device_interfaces_ibfk_2` FOREIGN KEY (`connection_id`) REFERENCES `device_connections` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `device_interfaces_ibfk_3` FOREIGN KEY (`ipam_id`) REFERENCES `ipam_addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `device_inventory`;
+CREATE TABLE `device_inventory` (
+  `device_id` int(10) unsigned NOT NULL,
+  `inventory_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`device_id`,`inventory_id`),
+  UNIQUE KEY `inventory_id` (`inventory_id`),
+  CONSTRAINT `device_inventory_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `device_inventory_ibfk_2` FOREIGN KEY (`inventory_id`) REFERENCES `inventory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `device_logs`;
+CREATE TABLE `device_logs` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `device_id` int(10) unsigned NOT NULL,
+  `time` timestamp NOT NULL DEFAULT current_timestamp(),
+  `message` varchar(64) DEFAULT 'empty',
+  PRIMARY KEY (`id`),
+  KEY `device_id` (`device_id`),
+  CONSTRAINT `device_logs_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 DROP TABLE IF EXISTS `device_models`;
@@ -54,7 +102,7 @@ CREATE TABLE `device_models` (
   `name` varchar(30) NOT NULL,
   `defaults_file` varchar(60) DEFAULT NULL,
   `image_file` varchar(60) DEFAULT NULL,
-  `parameters` text,
+  `parameters` text DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `model` (`type_id`,`name`),
   CONSTRAINT `device_models_type_ibfk_1` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -66,8 +114,8 @@ CREATE TABLE `device_pems` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `device_id` int(10) unsigned NOT NULL,
   `pdu_id` int(10) unsigned DEFAULT NULL,
-  `pdu_unit` tinyint(3) unsigned DEFAULT '0',
-  `pdu_slot` tinyint(3) unsigned DEFAULT '0',
+  `pdu_unit` tinyint(3) unsigned DEFAULT 0,
+  `pdu_slot` tinyint(3) unsigned DEFAULT 0,
   `name` varchar(10) DEFAULT 'PEM',
   PRIMARY KEY (`id`),
   KEY `device_id` (`device_id`),
@@ -80,7 +128,7 @@ CREATE TABLE `device_pems` (
 DROP TABLE IF EXISTS `device_types`;
 CREATE TABLE `device_types` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `oid` int(10) unsigned DEFAULT '0',
+  `oid` int(10) unsigned DEFAULT 0,
   `name` varchar(20) DEFAULT NULL,
   `base` varchar(40) DEFAULT NULL,
   `functions` varchar(255) DEFAULT '',
@@ -110,30 +158,39 @@ CREATE TABLE `device_vm_uuid` (
 DROP TABLE IF EXISTS `devices`;
 CREATE TABLE `devices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `ipam_id` int(10) unsigned DEFAULT NULL,
-  `a_id` int(10) unsigned DEFAULT '0',
-  `a_dom_id` int(10) unsigned DEFAULT NULL,
-  `ptr_id` int(10) unsigned DEFAULT '0',
-  `type_id` int(10) unsigned DEFAULT '0',
-  `vm` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `mac` bigint(20) DEFAULT '0',
+  `type_id` int(10) unsigned DEFAULT 0,
+  `mac` bigint(20) DEFAULT 0,
   `hostname` varchar(40) DEFAULT 'unknown',
   `version` varchar(20) DEFAULT NULL,
   `model` varchar(30) DEFAULT NULL,
   `snmp` varchar(20) DEFAULT NULL,
   `url` varchar(60) DEFAULT NULL,
   `serial` varchar(20) DEFAULT NULL,
-  `comment` text,
-  `oid` int(10) DEFAULT '0',
-  `notify` tinyint(1) DEFAULT '0',
+  `comment` text DEFAULT NULL,
+  `oid` int(10) DEFAULT 0,
+  `management_id` int(10) unsigned DEFAULT NULL,
+  `class` enum('device','infrastructure','out-of-band','vm','mobile') NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `hostname` (`hostname`,`a_dom_id`),
-  UNIQUE KEY `ipam_id` (`ipam_id`),
-  KEY `a_dom_id` (`a_dom_id`),
+  UNIQUE KEY `management_interface` (`management_id`),
   KEY `type_id` (`type_id`),
-  CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`a_dom_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`ipam_id`) REFERENCES `ipam_addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`management_id`) REFERENCES `device_interfaces` (`interface_id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `domain_records`;
+CREATE TABLE `domain_records` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `domain_id` int(10) unsigned NOT NULL,
+  `name` varchar(96) NOT NULL,
+  `content` varchar(96) NOT NULL,
+  `type` enum('A','PTR','CNAME') NOT NULL,
+  `ttl` int(10) unsigned DEFAULT 3600,
+  `change_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`,`type`),
+  KEY `domain_id` (`domain_id`),
+  CONSTRAINT `domain_records_ibfk_1` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`foreign_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -143,11 +200,36 @@ CREATE TABLE `domains` (
   `foreign_id` int(10) unsigned NOT NULL,
   `name` varchar(255) DEFAULT NULL,
   `server_id` int(10) unsigned NOT NULL,
-  `type` varchar(7) NOT NULL DEFAULT 'forward',
+  `type` enum('forward','reverse') NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `server_name` (`server_id`,`name`),
   KEY `server_id` (`server_id`),
+  KEY `foreign_id` (`foreign_id`),
   CONSTRAINT `domains_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `inventory`;
+CREATE TABLE `inventory` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `location_id` int(10) unsigned DEFAULT NULL,
+  `external_id` varchar(40) DEFAULT '',
+  `description` varchar(50) DEFAULT NULL,
+  `vendor` varchar(30) DEFAULT NULL,
+  `serial` varchar(20) DEFAULT NULL,
+  `product` varchar(30) DEFAULT NULL,
+  `model` varchar(30) DEFAULT NULL,
+  `license` tinyint(1) unsigned DEFAULT 0,
+  `license_key` varchar(50) DEFAULT NULL,
+  `purchase_order` varchar(50) DEFAULT '',
+  `receive_date` date DEFAULT NULL,
+  `support_contract` tinyint(1) DEFAULT 0,
+  `support_end_date` date DEFAULT NULL,
+  `comments` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `serial` (`serial`),
+  KEY `location_id` (`location_id`),
+  CONSTRAINT `inventory_ibfk_1` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -156,20 +238,27 @@ CREATE TABLE `ipam_addresses` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ip` int(10) unsigned NOT NULL,
   `network_id` int(10) unsigned NOT NULL,
-  `state` tinyint(1) DEFAULT '0',
-  `mac` bigint(20) unsigned DEFAULT '0',
+  `a_id` int(10) unsigned DEFAULT 0,
+  `a_domain_id` int(10) unsigned DEFAULT NULL,
+  `ptr_id` int(10) unsigned DEFAULT 0,
+  `type` tinyint(1) DEFAULT 0,
+  `hostname` varchar(40) DEFAULT 'unknown',
+  `state` enum('unknown','up','down') NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ip_network` (`ip`,`network_id`),
+  UNIQUE KEY `hostname` (`hostname`,`a_domain_id`),
   KEY `network_id` (`network_id`),
-  CONSTRAINT `ipam_addresses_ibfk_1` FOREIGN KEY (`network_id`) REFERENCES `ipam_networks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `a_dom_id` (`a_domain_id`),
+  CONSTRAINT `ipam_addresses_ibfk_1` FOREIGN KEY (`network_id`) REFERENCES `ipam_networks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `ipam_addresses_ibfk_2` FOREIGN KEY (`a_domain_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `ipam_events`;
 CREATE TABLE `ipam_events` (
   `ipam_id` int(10) unsigned NOT NULL,
-  `state` tinyint(1) DEFAULT '0',
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `state` enum('unknown','up','down') NOT NULL,
+  `time` timestamp NOT NULL DEFAULT current_timestamp(),
   KEY `ipam_id` (`ipam_id`),
   CONSTRAINT `ipam_events_ibfk_1` FOREIGN KEY (`ipam_id`) REFERENCES `ipam_addresses` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -179,9 +268,9 @@ DROP TABLE IF EXISTS `ipam_networks`;
 CREATE TABLE `ipam_networks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `network` int(10) unsigned NOT NULL,
-  `mask` tinyint(3) unsigned NOT NULL DEFAULT '24',
+  `mask` tinyint(3) unsigned NOT NULL DEFAULT 24,
   `gateway` int(10) unsigned DEFAULT NULL,
-  `description` text,
+  `description` text DEFAULT NULL,
   `vrf` varchar(40) DEFAULT 'default',
   `reverse_zone_id` int(10) unsigned DEFAULT NULL,
   `server_id` int(10) unsigned DEFAULT NULL,
@@ -190,7 +279,15 @@ CREATE TABLE `ipam_networks` (
   KEY `reverse_zone` (`reverse_zone_id`),
   KEY `server_id` (`server_id`),
   CONSTRAINT `ipam_networks_ibfk_1` FOREIGN KEY (`reverse_zone_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `ipam_networks_ibfk_2` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `ipam_networks_ibfk_2` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `locations`;
+CREATE TABLE `locations` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(40) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -199,38 +296,12 @@ CREATE TABLE `nodes` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `node` varchar(40) NOT NULL,
   `url` varchar(80) NOT NULL,
-  `system` tinyint(1) DEFAULT '0',
+  `system` tinyint(1) DEFAULT 0,
   `device_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `node` (`node`),
   KEY `device_id` (`device_id`),
   CONSTRAINT `nodes_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `openstack_services`;
-CREATE TABLE `openstack_services` (
-  `id` int(10) unsigned NOT NULL,
-  `service` varchar(20) NOT NULL,
-  `service_url` varchar(200) NOT NULL,
-  `service_id` varchar(50) DEFAULT NULL,
-  UNIQUE KEY `id_service` (`id`,`service`),
-  CONSTRAINT `openstack_services_ibfk_1` FOREIGN KEY (`id`) REFERENCES `openstack_tokens` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `openstack_tokens`;
-CREATE TABLE `openstack_tokens` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `expires` int(10) unsigned NOT NULL,
-  `token` varchar(50) NOT NULL,
-  `project_id` varchar(50) NOT NULL,
-  `username` varchar(50) NOT NULL,
-  `node_url` varchar(40) NOT NULL,
-  `node_name` varchar(40) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `token` (`token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -247,9 +318,9 @@ CREATE TABLE `pdu_info` (
   `device_id` int(10) unsigned NOT NULL,
   `0_slot_name` varchar(10) NOT NULL DEFAULT 'default',
   `1_slot_name` varchar(10) NOT NULL DEFAULT 'default',
-  `0_slot_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `1_slot_id` tinyint(3) unsigned NOT NULL DEFAULT '1',
-  `slots` tinyint(1) NOT NULL DEFAULT '1',
+  `0_slot_id` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `1_slot_id` tinyint(3) unsigned NOT NULL DEFAULT 1,
+  `slots` tinyint(1) NOT NULL DEFAULT 1,
   UNIQUE KEY `device_id` (`device_id`),
   CONSTRAINT `pdu_info_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -258,10 +329,10 @@ CREATE TABLE `pdu_info` (
 DROP TABLE IF EXISTS `rack_info`;
 CREATE TABLE `rack_info` (
   `device_id` int(10) unsigned NOT NULL,
-  `rack_unit` tinyint(3) DEFAULT '0',
-  `rack_size` tinyint(3) DEFAULT '1',
+  `rack_unit` tinyint(3) DEFAULT 0,
+  `rack_size` tinyint(3) DEFAULT 1,
   `console_id` int(10) unsigned DEFAULT NULL,
-  `console_port` int(10) unsigned DEFAULT '0',
+  `console_port` int(10) unsigned DEFAULT 0,
   `rack_id` int(10) unsigned NOT NULL,
   UNIQUE KEY `device_id` (`device_id`),
   KEY `console_id` (`console_id`),
@@ -280,15 +351,17 @@ CREATE TABLE `racks` (
   `console` int(10) unsigned DEFAULT NULL,
   `pdu_1` int(10) unsigned DEFAULT NULL,
   `pdu_2` int(10) unsigned DEFAULT NULL,
-  `location` varchar(40) DEFAULT NULL,
+  `location_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `console` (`console`),
   KEY `pdu_1` (`pdu_1`),
   KEY `pdu_2` (`pdu_2`),
+  KEY `location_id` (`location_id`),
   CONSTRAINT `racks_ibfk_1` FOREIGN KEY (`console`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `racks_ibfk_2` FOREIGN KEY (`pdu_1`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `racks_ibfk_3` FOREIGN KEY (`pdu_2`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `racks_ibfk_3` FOREIGN KEY (`pdu_2`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `racks_ibfk_4` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -296,11 +369,10 @@ DROP TABLE IF EXISTS `reservations`;
 CREATE TABLE `reservations` (
   `device_id` int(10) unsigned NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
-  `time_start` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `time_end` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `loan` tinyint(1) DEFAULT '0',
-  `address` varchar(200) DEFAULT NULL,
-  `shutdown` tinyint(1) DEFAULT '1',
+  `time_start` timestamp NOT NULL DEFAULT current_timestamp(),
+  `time_end` timestamp NOT NULL DEFAULT current_timestamp(),
+  `info` varchar(200) DEFAULT NULL,
+  `shutdown` tinyint(1) DEFAULT 1,
   PRIMARY KEY (`device_id`,`user_id`),
   KEY `fk_user` (`user_id`),
   CONSTRAINT `reservations_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -308,60 +380,29 @@ CREATE TABLE `reservations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `resources`;
-CREATE TABLE `resources` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `private` tinyint(1) unsigned DEFAULT '0',
-  `view` tinyint(3) DEFAULT '0',
-  `user_id` int(10) unsigned DEFAULT NULL,
-  `type` varchar(10) DEFAULT 'bookmark',
-  `node` varchar(40) NOT NULL,
-  `title` varchar(25) NOT NULL,
-  `href` varchar(200) NOT NULL,
-  `icon` varchar(200) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `node_user_title_type` (`node`,`user_id`,`title`,`type`),
-  KEY `user_id` (`user_id`),
-  KEY `node` (`node`),
-  CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `resources_ibfk_2` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
 DROP TABLE IF EXISTS `servers`;
 CREATE TABLE `servers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `node` varchar(40) NOT NULL,
-  `service` varchar(40) NOT NULL,
-  `type` varchar(20) NOT NULL,
   `ui` varchar(60) DEFAULT NULL,
+  `type_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `node_server` (`node`,`service`),
+  UNIQUE KEY `node_service` (`node`,`type_id`),
   KEY `node` (`node`),
-  CONSTRAINT `servers_ibfk_1` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `type_id` (`type_id`),
+  CONSTRAINT `servers_ibfk_1` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `servers_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `service_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `service_types`;
 CREATE TABLE `service_types` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `base` varchar(20) DEFAULT 'NONE',
-  `name` varchar(40) NOT NULL,
+  `type` varchar(20) DEFAULT 'NONE',
+  `service` varchar(40) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `type` (`name`,`base`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `settings`;
-CREATE TABLE `settings` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `node` varchar(40) NOT NULL,
-  `section` varchar(20) DEFAULT 'generic',
-  `parameter` varchar(40) DEFAULT NULL,
-  `value` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `parameter` (`node`,`section`,`parameter`),
-  CONSTRAINT `settings_ibfk_1` FOREIGN KEY (`node`) REFERENCES `nodes` (`node`) ON DELETE CASCADE ON UPDATE CASCADE
+  UNIQUE KEY `service_type` (`service`,`type`),
+  KEY `name` (`service`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -369,17 +410,28 @@ DROP TABLE IF EXISTS `tasks`;
 CREATE TABLE `tasks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `node_id` int(10) unsigned NOT NULL,
-  `user_id` int(10) unsigned DEFAULT NULL,
   `module` varchar(30) NOT NULL,
-  `func` varchar(60) NOT NULL,
+  `function` varchar(60) DEFAULT NULL,
   `args` varchar(300) NOT NULL,
-  `frequency` int(10) unsigned DEFAULT '300',
-  `output` tinyint(1) DEFAULT '0',
+  `frequency` int(10) unsigned DEFAULT 300,
+  `output` enum('false','true') NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_user` (`user_id`),
-  KEY `fk_node` (`node_id`),
-  CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `tasks_ibfk_2` FOREIGN KEY (`node_id`) REFERENCES `nodes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `node_id` (`node_id`),
+  CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`node_id`) REFERENCES `nodes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `user_tokens`;
+CREATE TABLE `user_tokens` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `source_ip` int(10) unsigned NOT NULL,
+  `source_port` int(10) unsigned DEFAULT NULL,
+  `token` varchar(16) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `user_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -390,10 +442,7 @@ CREATE TABLE `users` (
   `name` varchar(20) NOT NULL DEFAULT 'error',
   `password` varchar(30) DEFAULT NULL,
   `email` varchar(40) DEFAULT NULL,
-  `view_public` tinyint(1) unsigned DEFAULT '1',
-  `menulist` varchar(60) DEFAULT 'default',
   `external_id` varchar(40) DEFAULT NULL,
-  `slack` varchar(20) DEFAULT NULL,
   `theme` varchar(16) DEFAULT 'blue',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -403,9 +452,9 @@ DROP TABLE IF EXISTS `visualize`;
 CREATE TABLE `visualize` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(40) NOT NULL,
-  `options` text,
-  `nodes` text,
-  `edges` text,
+  `options` text DEFAULT NULL,
+  `nodes` text DEFAULT NULL,
+  `edges` text DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

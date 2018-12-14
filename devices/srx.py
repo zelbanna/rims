@@ -14,8 +14,8 @@ class Device(Junos):
  def get_functions(cls):
   return Junos.get_functions()
 
- def __init__(self, aCTX, aIP):
-  Junos.__init__(self, aCTX, aIP)
+ def __init__(self, aCTX, aID, aIP = None):
+  Junos.__init__(self, aCTX, aID, aIP)
   self.dnslist = []
   self.dhcpip = ""
   self.tunnels = 0

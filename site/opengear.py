@@ -2,22 +2,14 @@
 __author__= "Zacharias El Banna"
 
 def manage(aWeb):
- id = aWeb['id']
- if aWeb['ip']:
-  ip = aWeb['ip']
-  hostname = aWeb['hostname']
- else:
-  data = aWeb.rest_call("device/info",{'id':id,'op':'basics'})
-  ip = data['ip']
-  hostname = data['info']['hostname']
-
+ data = aWeb.rest_call("device/management",{'id':aWeb['id']})['data']
  aWeb.wr("<NAV><UL>")
- aWeb.wr("<LI CLASS='navinfo'><A>%s</A></LI>"%(hostname))
- aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='opengear_main?id=%s&ip=%s&hostname=%s'></A></LI>"%(id,ip,hostname))
+ aWeb.wr("<LI CLASS='navinfo'><A>%s</A></LI>"%(data['hostname']))
+ aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='opengear_manage?id=%s'></A></LI>"%aWeb['id'])
  aWeb.wr("</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content ID=div_content>")
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
- inventory(aWeb,ip)
+ inventory(aWeb,data['ip'])
  aWeb.wr("</SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
  aWeb.wr("</SECTION>")
@@ -25,13 +17,13 @@ def manage(aWeb):
 
 def inventory(aWeb,aIP = None):
  ip = aWeb['ip'] if not aIP else aIP
- res = aWeb.rest_call("opengear/inventory",{'ip':ip})
+ res = aWeb.rest_call("opengear/inventory",{'id':aWeb['id']})
  config="https://%s/?form=serialconfig&action=edit&ports={}&start=&end="%ip
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table>")
  aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Server</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>Device</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
- for con in res:
+ for con in res['inventory']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A HREF='https://{0}/'>{0}</A></DIV><DIV CLASS=td><A TITLE='Edit port info' HREF={4}>{1}</A></DIV><DIV CLASS=td><A HREF='telnet://{0}:{2}'>{3}</A></DIV></DIV>".format(ip,con['interface'],con['port'],con['name'], config.format(con['interface'])))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 

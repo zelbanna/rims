@@ -1,9 +1,8 @@
 {
  "node":"master",
- "module":"system",
- "func":"oui_fetch",
+ "module":"master",
+ "function":"oui_fetch",
  "args":{"clear":true},
- "periodic":true,
  "output":false,
  "frequency":876000
 }

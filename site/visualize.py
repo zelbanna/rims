@@ -1,7 +1,5 @@
 """HTML5 Ajax Visualize module"""
 __author__= "Zacharias El Banna"
-__icon__ = 'icon-visualize.png'
-__type__ = 'menuitem'
 
 #
 #
@@ -53,13 +51,13 @@ def show(aWeb):
  network.on('doubleClick', function(params){
   console.log('DoubleClick',params.nodes);
   if (params.nodes[0]){
-   var args = {op:'basics',id:params.nodes[0]};
-   $.ajax({ type:"POST", url: '../api/device/info', data: JSON.stringify(args), dataType:'json',success: function(data){
-    if (data && data.found){
-     if(data.info.url)
-      window.open(data.info.url);
+   var args = {id:params.nodes[0]};
+   $.ajax({ type:"POST", url: '../api/device/management', data: JSON.stringify(args), dataType:'json',success: function(data){
+    if (data && data.status == 'OK'){
+     if(data.data.url)
+      window.open(data.data.url);
      else
-      window.open("ssh://" + data.username + "@" + data.ip,"_self");
+      window.open("ssh://" + data.data.username + "@" + data.data.ip,"_self");
     }
    }});
   }

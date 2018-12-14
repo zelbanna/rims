@@ -1,9 +1,8 @@
 {
  "node":"master",
  "module":"device",
- "func":"vm_mapping",
+ "function":"vm_mapping",
  "args":{},
- "periodic":true,
  "output":false,
  "frequency":43200
 }

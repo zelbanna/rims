@@ -1,0 +1,8 @@
+{
+ "node":"master",
+ "module":"system",
+ "function":"garbage_collect",
+ "args":{},
+ "frequency":28800,
+ "output":true
+}

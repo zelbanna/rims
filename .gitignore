@@ -5,8 +5,7 @@
 *.bck
 
 # Server files
-server.*
-*.new
+*.log
 
 # Setuptools distribution folder.
 /dist/
@@ -16,5 +15,3 @@ server.*
 
 # Settings should never be pushed to central repo
 *.json
-Settings.py
-engine.*

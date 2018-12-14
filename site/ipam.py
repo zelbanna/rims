@@ -13,7 +13,7 @@ def network_list(aWeb):
  for net in res['networks']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(netasc)s</DIV><DIV CLASS=td STYLE='max-width:120px; overflow:hidden;'>%(description)s</DIV><DIV CLASS=td>%(service)s</DIV><DIV CLASS=td STYLE='width:80px'>"%net)
   aWeb.wr(aWeb.button('info',  DIV='div_content_right', URL='ipam_network_layout?id=%i'%net['id']))
-  aWeb.wr(aWeb.button('items', DIV='div_content_right', URL='ipam_network_entries?id=%i'%net['id']))
+  aWeb.wr(aWeb.button('items', DIV='div_content_right', URL='ipam_address_list?network_id=%i'%net['id']))
   aWeb.wr(aWeb.button('edit',  DIV='div_content_right', URL='ipam_network_info?id=%i'%net['id']))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
@@ -54,43 +54,30 @@ def network_info(aWeb):
 
 #
 #
-def network_layout(aWeb):
- data = aWeb.rest_call("ipam/network_inventory",{'id':aWeb['id'],'dict':'ip_integer'})
- startn  = int(data['start'])
- starta  = int(data['network'].split('.')[3])
- addresses = data['entries']
- green = "<A CLASS='z-op btn small ipam green' TITLE='New' DIV=div_content_right URL='device_new?ipam_network_id="+ aWeb['id'] +"&ipint={}'>{}</A>"
- red   = "<A CLASS='z-op btn small ipam red'   TITLE='Used' DIV=div_content_right URL='device_info?ipam_id={}'>{}</A>"
- blue  = "<A CLASS='z-op btn small ipam blue'  TITLE='{}'>{}</A>"
- aWeb.wr("<ARTICLE><P>%s/%s</P>"%(data['network'],data['mask']))
- aWeb.wr(blue.format('network',starta % 256))
- for cnt in range(1,int(data['size'])-1):
-  ip = addresses.get(str(cnt + startn))
-  if ip:
-   aWeb.wr(red.format(ip['id'],(cnt + starta) % 256))
-  else:
-   aWeb.wr(green.format(cnt + startn,(cnt + starta) % 256))
- aWeb.wr(blue.format('broadcast',(starta + int(data['size'])-1)% 256))
- aWeb.wr("</ARTICLE>")
-
-#
-#
 def network_delete(aWeb):
  data = aWeb.rest_call("ipam/network_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>%s</ARTICLE"%(data))
 
 #
 #
-def network_entries(aWeb):
- data = aWeb.rest_call("ipam/network_inventory",{'id':aWeb['id'],'extra':['mac','state']})
- aWeb.wr("<ARTICLE><P>Allocated IP Addresses</P><SPAN CLASS=results ID=ipam_address_operation></SPAN><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>State</DIV></DIV><DIV CLASS=tbody>")
- for row in data['entries']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)i</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(mac)s</DIV>"%row)
-  aWeb.wr("<DIV CLASS=td><DIV CLASS='state %s' /></DIV><DIV CLASS=td>"%{0:'grey',1:'green',2:'red'}.get(row['state'],0))
-  aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='ipam_address_info?id=%(id)i'%row))
-  aWeb.wr(aWeb.button('delete', DIV='ipam_address_operation', URL='ipam_address_delete?id=%(id)i&ip=%(ip)s'%row))
-  aWeb.wr("</DIV></DIV>")
- aWeb.wr("</DIV></DIV></ARTICLE>")
+def network_layout(aWeb):
+ data = aWeb.rest_call("ipam/address_list",{'network_id':aWeb['id'],'dict':'ip_integer','extra':['device_id']})
+ startn  = int(data['start'])
+ starta  = int(data['network'].split('.')[3])
+ addresses = data['entries']
+ green = "<A CLASS='z-op btn small ipam green' TITLE='New' DIV=div_content_right URL='device_new?ipam_network_id="+ aWeb['id'] +"&ipint={}'>{}</A>"
+ red   = "<A CLASS='z-op btn small ipam red'   TITLE='Used' DIV=div_content_right URL='device_info?id={}'>{}</A>"
+ blue  = "<A CLASS='z-op btn small ipam blue'  TITLE='{}'>{}</A>"
+ aWeb.wr("<ARTICLE><P>%s/%s</P>"%(data['network'],data['mask']))
+ aWeb.wr(blue.format('network',starta % 256))
+ for cnt in range(1,int(data['size'])-1):
+  ip = addresses.get(str(cnt + startn))
+  if ip:
+   aWeb.wr(red.format(ip['device_id'],(cnt + starta) % 256))
+  else:
+   aWeb.wr(green.format(cnt + startn,(cnt + starta) % 256))
+ aWeb.wr(blue.format('broadcast',(starta + int(data['size'])-1)% 256))
+ aWeb.wr("</ARTICLE>")
 
 ########################################## Server #########################################
 #
@@ -108,30 +95,57 @@ def server_leases(aWeb):
 ######################################### Addresses #######################################
 #
 #
-def address_new(aWeb):
- pass
+def address_list(aWeb):
+ data = aWeb.rest_call("ipam/address_list",{'network_id':aWeb['network_id'],'extra':['a_id','ptr_id','hostname','a_domain_id','device_id']})
+ aWeb.wr("<ARTICLE><P>Allocated IP Addresses</P>")
+ aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='ipam_address_list?network_id=%s'%(aWeb['network_id'])))
+ aWeb.wr(aWeb.button('add',   DIV='div_content_right',URL='ipam_address_info?id=new&network_id=%s'%(aWeb['network_id'])))
+ aWeb.wr("<SPAN CLASS=results ID=ipam_address_operation>&nbsp;</SPAN><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Domain</DIV><DIV CLASS=th>A_id</DIV><DIV CLASS=th>PTR_id</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ for row in data['entries']:
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)i</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(domain)s</DIV><DIV CLASS=td>%(a_id)s</DIV><DIV CLASS=td>%(ptr_id)s</DIV>"%row)
+  aWeb.wr("<DIV CLASS=td><DIV CLASS='state %s' /></DIV><DIV CLASS=td>"%aWeb.state_ascii(row['state']))
+  aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='ipam_address_info?id=%(id)i'%row))
+  aWeb.wr(aWeb.button('delete', DIV='ipam_address_operation', URL='ipam_address_delete?id=%(id)i&ip=%(ip)s'%row))
+  aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
 #
 def address_info(aWeb):
  args = aWeb.args()
- data = aWeb.rest_call("ipam/address_info",args)['data']
- aWeb.wr("<ARTICLE CLASS='info'><P>Address Info</DIV>")
+ div = args.pop('vpl','div_content_right')
+ data = aWeb.rest_call("ipam/address_info",args)
+ domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['domains']
+ aWeb.wr("<ARTICLE CLASS='info'><P>Address Info (%s)</P>"%data['data']['id'])
+ aWeb.wr("<SPAN CLASS=results ID=ipam_address_operation>%(status)s %(info)s&nbsp;</SPAN>"%(data))
  aWeb.wr("<FORM ID=ipam_address_form>")
  aWeb.wr("<DIV CLASS=table STYLE='width:auto'><DIV CLASS=tbody>")
- aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%(aWeb['id']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=network_id STYLE='min-width:200px;' VALUE='%s' READONLY></DIV></DIV>"%(data['network_id']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT      TYPE=URL  NAME=ip         STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['ip']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT     TYPE=TEXT NAME=mac        STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['mac']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>State:</DIV><DIV CLASS=td><INPUT   TYPE=TEXT NAME=state      STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['state']))
+ aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%data['data']['id'])
+ aWeb.wr("<INPUT TYPE=HIDDEN NAME=network_id VALUE='%s'>"%(data['data']['network_id']))
+ aWeb.wr("<INPUT TYPE=HIDDEN NAME=vpl VALUE='%s'>"%(div))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>State:</DIV><DIV CLASS='td readonly'><DIV CLASS='state %s' /></DIV></DIV>"%(aWeb.state_ascii(data['data']['state'])))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%(data['extra']['network']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT       TYPE=TEXT NAME=ip       STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['data']['ip']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>A_id:</DIV><DIV CLASS=td><INPUT     TYPE=TEXT NAME=a_id     STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['data']['a_id']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>PTR_id:</DIV><DIV CLASS=td><INPUT   TYPE=TEXT NAME=ptr_id   STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['data']['ptr_id']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=hostname STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['data']['hostname']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_domain_id>")
+ for dom in domains:
+  extra = " selected" if data['data']['a_domain_id'] == dom['id'] or data['data']['a_domain_id'] is None and dom['id'] == 0 else ""
+  aWeb.wr("<OPTION VALUE='%s' %s>%s</OPTION>"%(dom['id'],extra,dom['name']))
+ aWeb.wr("</SELECT></DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</FORM>")
- aWeb.wr(aWeb.button('save',   DIV='div_content_right',       URL='ipam_address_info?op=update', FRM='ipam_address_form'))
- aWeb.wr(aWeb.button('trash',  DIV='div_content_right',       URL='ipam_address_delete',         FRM='ipam_address_form', MSG='Are you really sure you want to delete address?'))
+ aWeb.wr(aWeb.button('reload', DIV=div, URL='ipam_address_info', FRM='ipam_address_form'))
+ if data['data']['id'] != 'new':
+  aWeb.wr(aWeb.button('save',  DIV=div, URL='ipam_address_info?op=update', FRM='ipam_address_form'))
+  aWeb.wr(aWeb.button('trash', DIV=div, URL='ipam_address_delete', FRM='ipam_address_form', MSG='Are you really sure you want to delete address?'))
+ else:
+  aWeb.wr(aWeb.button('save',  DIV=div, URL='ipam_address_info?op=insert', FRM='ipam_address_form'))
  aWeb.wr("</ARTICLE>")
 
 #
 #
 def address_delete(aWeb):
  res = aWeb.rest_call("ipam/address_delete",{'id':aWeb['id']})
- aWeb.wr("Deleted: %(result)s"%res)
+ aWeb.wr("Deleted: %(status)s"%res)

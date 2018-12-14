@@ -92,34 +92,8 @@ def get_quote(aString):
  return quote_plus(aString)
 
 def str2hex(arg):
- try:
-  return '0x{0:02x}'.format(int(arg))
- except:
-  return '0x00'    
-
-def get_results(test):
- return "success" if test else "failure"
-
-#
-# Lightweight argument parser, returns a dictionary with found arguments - { arg : value }
-# Requires - or -- before any argument
-#
-def simple_arg_parser(args):
- # args should really be the argv
- argdict = {}
- currkey = None
- for arg in args:
-  if arg.startswith('-'):
-   if currkey:
-    argdict[currkey] = True
-   currkey = arg.lstrip('-')
-  else:
-   if currkey:
-    argdict[currkey] = arg
-    currkey = None
- if currkey:
-  argdict[currkey] = True
- return argdict
+ try:    return '0x{0:02x}'.format(int(arg))
+ except: return '0x00'    
 
 def pidfile_write(pidfname):
  from os import getpid

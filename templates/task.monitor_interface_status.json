@@ -1,0 +1,6 @@
+{
+ "node":"master",
+ "module":"monitor",
+ "function":"interface_status",
+ "output":false
+}

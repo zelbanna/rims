@@ -25,7 +25,7 @@ start() {
   echo "System already running @ `cat $PIDFILE`"
  else
   # $PKGDIR/engine.py &
-  $PKGDIR/engine.py $CFGFILE > /dev/null 2>&1 &
+  $PKGDIR/engine.py -c $CFGFILE > /dev/null 2>&1 &
   echo $! > $PIDFILE
   echo "Starting service handler @`cat $PIDFILE`"
  fi
@@ -44,7 +44,7 @@ stop() {
 reload() {
  if [ -f $PIDFILE ]; then
   echo "Reloading modules for service handler @`cat $PIDFILE`"
-  kill -10 `cat $PIDFILE`
+  kill -s SIGUSR1 `cat $PIDFILE`
  else
   echo "System not running"
  fi
@@ -57,7 +57,7 @@ case "$1" in
  stop)
   stop
   ;;
- restart)
+ reload)
   reload
   ;;
  restart_engine)
@@ -81,7 +81,7 @@ case "$1" in
   mv $0 /etc/init.d/$SERVICE
   ;;
  *)
-  echo "Usage: $0 <start|stop|restart|restart_engine|clear|install>"
+  echo "Usage: $0 <start|stop|reload|restart_engine|clear|install>"
   exit 1
   ;;
 esac

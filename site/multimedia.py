@@ -5,14 +5,14 @@ __icon__ = 'icon-multimedia.png'
 #
 #
 def main(aWeb):
- cookie = aWeb.cookie('rims') 
+ cookie = aWeb.cookie('rims')
  ip   = aWeb.rest_call("dns/external_ip")['ip']
- svcs = aWeb.rest_call("multimedia/services")
+ svcs = aWeb.rest_call("system/service_list")['services']
  aWeb.wr("<NAV><UL>")
  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='multimedia_list'>Media files</A></LI>")
  aWeb.wr("<LI CLASS='dropdown'><A>Services</A><DIV CLASS='dropdown-content'>")
- for svc in svcs.get('services',[]):
-  aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_services_info?node=%s&service=%s'>%s</A>"%(aWeb.node(),svc['service'],svc['name']))
+ for svc in svcs:
+  aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_services_info?node=%s&service=%s'>%s</A>"%(aWeb.node(),svc['service'],svc['name']))
  aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='multimedia_main'></A></LI>")
  aWeb.wr("<LI CLASS='right navinfo'><A>%s</A></LI>"%(ip))
@@ -98,7 +98,7 @@ def lookup(aWeb):
 def request(aWeb):
  args = aWeb.args()
  request = args.pop('request',None)
- data = aWeb.rest_call("system/task_worker?node=%s"%aWeb.node(),{'module':'multimedia','func':request,'output':True,'args':args})
+ data = aWeb.rest_call("system/worker",{'module':'multimedia','function':request,'output':True,'args':args})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Res:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data)

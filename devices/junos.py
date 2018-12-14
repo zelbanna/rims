@@ -14,8 +14,8 @@ class Junos(GenericDevice):
  def get_functions(cls):
   return ['up_interfaces','info' ]
 
- def __init__(self, aCTX, aIP):
-  GenericDevice.__init__(self, aCTX, aIP)
+ def __init__(self, aCTX, aID, aIP):
+  GenericDevice.__init__(self, aCTX, aID, aIP)
   self._interfacesname = {}
   self._router  = None
   self._config  = None
@@ -38,7 +38,7 @@ class Junos(GenericDevice):
   from jnpr.junos import Device as JunosDevice
   from jnpr.junos.utils.config import Config
   if not self._router:
-   self._router = JunosDevice(self._ip, user=self._ctx.settings['netconf']['username'], password=self._ctx.settings['netconf']['password'], normalize=True)
+   self._router = JunosDevice(self._ip, user=self._ctx.config['netconf']['username'], password=self._ctx.config['netconf']['password'], normalize=True)
   if not self._config and self._router:
    self._config = Config(self._router)
   try:
@@ -57,7 +57,7 @@ class Junos(GenericDevice):
    self.log("System Error - Unable to properly close router connection: " + str(err))
 
  def interfaces(self):
-  return {k:v for k,v in super(Junos,self).interfaces().items() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb']}
+  return {k:v for k,v in super(Junos,self).interfaces().items() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb','vla']}
 
  #
  # Netconf shit
@@ -102,11 +102,11 @@ class Junos(GenericDevice):
  def configuration(self,argdict):
   base  = "set groups default_system"
   ret = ["set system host-name %s"%(argdict['hostname'])]
-  if self._ctx.settings['netconf']['username'] == 'root':
-   ret.append('set system root-authentication encrypted-password "%s"'%(self._ctx.settings['netconf']['encrypted']))
+  if self._ctx.config['netconf']['username'] == 'root':
+   ret.append('set system root-authentication encrypted-password "%s"'%(self._ctx.config['netconf']['encrypted']))
   else:
-   ret.append('set system login user %s class super-user'%(self._ctx.settings['netconf']['username']))
-   ret.append('set system login user %s authentication encrypted-password "%s"'%(self._ctx.settings['netconf']['username'],self._ctx.settings['netconf']['encrypted']))
+   ret.append('set system login user %s class super-user'%(self._ctx.config['netconf']['username']))
+   ret.append('set system login user %s authentication encrypted-password "%s"'%(self._ctx.config['netconf']['username'],self._ctx.config['netconf']['encrypted']))
   ret.extend(['%s system domain-name %s'%(base,argdict['domain']),
               '%s system domain-search %s'%(base,argdict['domain']),
               '%s system login message \"this is device %s\"'%(base,argdict['hostname']),
@@ -121,20 +121,20 @@ class Junos(GenericDevice):
               '%s system commit persist-groups-inheritance'%base,
               '%s routing-options static route 0.0.0.0/0 next-hop %s'%(base,argdict['gateway']),
               '%s routing-options static route 0.0.0.0/0 no-readvertise'%base,
-              '%s snmp community %s clients %s/%s'%(base,self._ctx.settings['snmp']['read'],argdict['network'],argdict['mask']),
+              '%s snmp community %s clients %s/%s'%(base,self._ctx.config['snmp']['read'],argdict['network'],argdict['mask']),
               '%s protocols lldp port-description-type interface-description'%base,
               '%s protocols lldp port-id-subtype interface-name'%base,
               '%s protocols lldp neighbour-port-info-display port-id'%base,
               '%s protocols lldp interface all'%base,
               '%s class-of-service host-outbound-traffic forwarding-class network-control'%base])
 
-  if self._ctx.settings.get('tacplus'):
+  if self._ctx.config.get('tacplus'):
    pass
-  if self._ctx.settings['netconf'].get('dns'):
-   ret.append('%s system name-server %s'%(base,self._ctx.settings['netconf']['dns']))
-  if self._ctx.settings['netconf'].get('ntp'):
-   ret.append('%s system ntp server %s'%(base,self._ctx.settings['netconf']['ntp']))
-  if self._ctx.settings['netconf'].get('anonftp'):
-   ret.append('%s system archival configuration archive-sites ftp://%s'%(base,self._ctx.settings['netconf']['anonftp']))
+  if self._ctx.config['netconf'].get('dns'):
+   ret.append('%s system name-server %s'%(base,self._ctx.config['netconf']['dns']))
+  if self._ctx.config['netconf'].get('ntp'):
+   ret.append('%s system ntp server %s'%(base,self._ctx.config['netconf']['ntp']))
+  if self._ctx.config['netconf'].get('anonftp'):
+   ret.append('%s system archival configuration archive-sites ftp://%s'%(base,self._ctx.config['netconf']['anonftp']))
   ret.append('set apply-groups default_system')
   return ret

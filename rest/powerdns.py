@@ -29,14 +29,14 @@ def domain_list(aCTX, aArgs = None):
  Output:
  """
  ret = {}
- with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
+ with DB(aCTX.config['powerdns']['database'],'localhost',aCTX.config['powerdns']['username'],aCTX.config['powerdns']['password']) as db:
   if aArgs.get('filter'):
    ret['count'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aArgs.get('filter') == 'reverse' else "NOT"))
   else:
    ret['count'] = db.do("SELECT domains.* FROM domains")
-  ret['domains'] = db.get_rows() if not aArgs.get('dict') else db.get_dict(aArgs.get('dict'))
-  if aArgs.get('dict') and aArgs.get('exclude'):
-   ret['domains'].pop(aArgs.get('exclude'),None)
+  ret['domains'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
+  if 'dict' in aArgs and 'exclude' in aArgs:
+   ret['domains'].pop(aArgs['exclude'],None)
  return ret
 
 #
@@ -55,12 +55,12 @@ def domain_info(aCTX, aArgs = None):
  ret = {}
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
+ with DB(aCTX.config['powerdns']['database'],'localhost',aCTX.config['powerdns']['username'],aCTX.config['powerdns']['password']) as db:
   if op == 'update':
    if id == 'new':
     # Create and insert a lot of records
-    ret['insert'] = db.insert_dict('domains',aArgs,'ON DUPLICATE KEY UPDATE id = id')
-    if ret['insert'] > 0:
+    ret['insert'] = (db.insert_dict('domains',aArgs,'ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)') == 1)
+    if ret['insert']:
      id = db.get_last_id()
      serial = strftime("%Y%m%d%H")
      # Find DNS for MASTER to be placed into SOA record
@@ -73,7 +73,7 @@ def domain_info(aCTX, aArgs = None):
     else:
      id = 'existing'
    else:
-    ret['update'] = db.update_dict('domains',aArgs,"id=%s"%id)
+    ret['update'] = (db.update_dict('domains',aArgs,"id=%s"%id) == 1)
 
   ret['found'] = (db.do("SELECT id,name,master,type,notified_serial FROM domains WHERE id = '%s'"%id) > 0)
   ret['data'] = db.get_row() if ret['found'] else {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
@@ -92,7 +92,7 @@ def domain_delete(aCTX, aArgs = None):
   - domain. boolean
  """
  ret = {}
- with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
+ with DB(aCTX.config['powerdns']['database'],'localhost',aCTX.config['powerdns']['username'],aCTX.config['powerdns']['password']) as db:
   id = int(aArgs['id'])
   ret['records'] = db.do("DELETE FROM records WHERE domain_id = %i"%id)
   ret['domain']  = (db.do("DELETE FROM domains WHERE id = %i"%(id)) == 1)
@@ -124,12 +124,12 @@ def record_list(aCTX, aArgs = None):
  """
  ret = {}
  select = []
- if aArgs.get('domain_id'):
-  select.append("domain_id = %s"%aArgs.get('domain_id'))
- if aArgs.get('type'):
-  select.append("type = '%s'"%aArgs.get('type').upper())
+ if 'domain_id' in aArgs:
+  select.append("domain_id = %s"%aArgs['domain_id'])
+ if 'type' in aArgs:
+  select.append("type = '%s'"%aArgs['type'].upper())
  tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
- with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
+ with DB(aCTX.config['powerdns']['database'],'localhost',aCTX.config['powerdns']['username'],aCTX.config['powerdns']['password']) as db:
   ret['count'] = db.do("SELECT id, domain_id, name, type, content,ttl,change_date FROM records %s ORDER BY type, name ASC"%tune)
   ret['records'] = db.get_rows()
  return ret
@@ -140,9 +140,9 @@ def record_info(aCTX, aArgs = None):
  """Function docstring for record_info TBD
 
  Args:
-  - op (optional)
-  - id (required)
+  - id (optional required)
   - domain_id (required)
+  - op (optional) 'update'/'insert'
   - name (optional)
   - content (optional)
   - type (optional)
@@ -152,15 +152,16 @@ def record_info(aCTX, aArgs = None):
  ret = {}
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
-  if op == 'update':
-   if str(id) in ['new','0']:
+ with DB(aCTX.config['powerdns']['database'],'localhost',aCTX.config['powerdns']['username'],aCTX.config['powerdns']['password']) as db:
+  if op:
+   if str(id) in ['new','0'] and op == 'insert':
     aArgs.update({'change_date':strftime("%Y%m%d%H"),'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper(),'prio':'0','domain_id':str(aArgs['domain_id'])})
-    ret['insert'] = db.insert_dict('records',aArgs,"ON DUPLICATE KEY UPDATE id = id")
+    ret['insert'] = (db.insert_dict('records',aArgs,"ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") == 1)
     id = db.get_last_id() if ret['insert'] > 0 else "new"
-   else:
-    ret['update'] = db.update_dict('records',aArgs,"id='%s'"%id)
- 
+   elif op == 'update':
+    ret['update'] = (db.update_dict('records',aArgs,"id='%s'"%id) == 1)
+
+  ret['status'] = 'OK' if (op is None) or ret.get('insert') or ret.get('update') else 'NOT_OK'
   ret['found'] = (db.do("SELECT records.* FROM records WHERE id = '%s' AND domain_id = '%s'"%(id,aArgs['domain_id'])) > 0)
   ret['data']  = db.get_row() if ret['found'] else {'id':'new','domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
  return ret
@@ -176,8 +177,8 @@ def record_delete(aCTX, aArgs = None):
  Output:
  """
  ret = {}
- with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
-  ret['deleted'] = (db.do("DELETE FROM records WHERE id = '%s'"%(aArgs['id'])) > 0)
+ with DB(aCTX.config['powerdns']['database'],'localhost',aCTX.config['powerdns']['username'],aCTX.config['powerdns']['password']) as db:
+  ret['status'] = 'OK' if (db.do("DELETE FROM records WHERE id = '%s'"%(aArgs['id'])) > 0) else 'NOT_OK'
  return ret
 
 ############################### Tools #################################
@@ -190,7 +191,7 @@ def sync(aCTX, aArgs = None):
 
  Output:
  """
- with DB(aCTX.settings['powerdns']['database'],'localhost',aCTX.settings['powerdns']['username'],aCTX.settings['powerdns']['password']) as db:
+ with DB(aCTX.config['powerdns']['database'],'localhost',aCTX.config['powerdns']['username'],aCTX.config['powerdns']['password']) as db:
   db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")   
   rows = db.get_rows();
   remove = []
@@ -222,7 +223,7 @@ def status(aCTX, aArgs = None):
  count = int(aArgs.get('count',10))
  fqdn_top = {}
  fqdn_who = {}
- with open(aCTX.settings['powerdns']['logfile'],'r') as logfile:
+ with open(aCTX.config['powerdns']['logfile'],'r') as logfile:
   for line in logfile:
    parts = line.split()
    if not parts[5] == 'Remote':
@@ -253,7 +254,7 @@ def restart(aCTX, aArgs = None):
  from subprocess import check_output, CalledProcessError
  ret = {}
  try:
-  ret['output'] = check_output(aCTX.settings['powerdns'].get('reload','service pdns restart').split()).decode()
+  ret['output'] = check_output(aCTX.config['powerdns'].get('reload','service pdns restart').split()).decode()
   ret['code'] = 0
  except CalledProcessError as c:
   ret['code'] = c.returncode

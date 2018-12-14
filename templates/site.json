@@ -1,0 +1,51 @@
+{
+ "portal": {
+  "message": "RIMS development portal",
+  "start": "device",
+  "theme": "black",
+  "title": "RIMS"
+ },
+ "menuitem": {
+  "activities": {
+   "href": "activities_main",
+   "icon": "../images/icon-calendar.png"
+  },
+  "device": {
+   "href": "device_main",
+   "icon": "../images/icon-network.png"
+  },
+  "hypervisors": {
+   "href": "hypervisors_main",
+   "icon": "../images/icon-servers.png"
+  },
+  "inventory": {
+   "href": "inventory_main",
+   "icon": "../images/icon-inventory.png"
+  },
+  "racks": {
+   "href": "racks_main",
+   "icon": "../images/icon-rack.png"
+  },
+  "resources": {
+   "href": "portal_resources",
+   "icon": "../images/icon-tools.png"
+  },
+  "system": {
+   "href": "system_main",
+   "icon": "../images/icon-config.png"
+  },
+  "users": {
+   "href": "users_main",
+   "icon": "../images/icon-users.png"
+  },
+  "visualize": {
+   "href": "visualize_main",
+   "icon": "../images/icon-visualize.png"
+  }
+ },
+  "images": {
+   "href": "tools_images?navigation=true",
+   "icon": "../images/None"
+  }
+ }
+}

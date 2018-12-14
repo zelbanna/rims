@@ -1,93 +1,49 @@
 """HTML5 Ajax System function module"""
 __author__= "Zacharias El Banna"
-__icon__ = 'icon-examine.png'
-__type__ = 'menuitem'
 
 #
 #
 def main(aWeb):
  cookie = aWeb.cookie('rims')
- data = aWeb.rest_call("system/inventory",{'node':aWeb.node(),'user_id':cookie['id']})
+ data = aWeb.rest_call("master/inventory",{'node':aWeb.node(),'user_id':cookie['id']})
+ svcs = aWeb.rest_call("system/service_list")['services']
+ tools = data.get('tools',[])
  aWeb.wr("<NAV><UL>")
+ if aWeb.node() == 'master':
+  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='nodes_list'>Nodes</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='servers_list'>Servers</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op TARGET=_blank   HREF='../infra/erd.pdf'>ERD</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
  if data.get('logs'):
   aWeb.wr("<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>")
   for node in data['logs']:
-   aWeb.wr("<A CLASS=z-op DIV=div_content URL=tools_logs_show?node=%s>%s</A>"%(node,node))
+   aWeb.wr("<A CLASS=z-op DIV=div_content URL=system_logs_show?node=%s>%s</A>"%(node,node))
   aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI CLASS='dropdown'><A>Reports</A><DIV CLASS='dropdown-content'>")
  if aWeb.node() == 'master':
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='activities_report'>Activities</A>")
-  aWeb.wr("<A CLASS=z-op DIV=div_content URL='reservations_report?node=master'>Reservations</A>")
-  aWeb.wr("<A CLASS=z-op DIV=div_content URL='device_report?node=master'>Devices</A>")
+  aWeb.wr("<A CLASS=z-op DIV=div_content URL='reservations_report'>Reservations</A>")
+  aWeb.wr("<A CLASS=z-op DIV=div_content URL='device_report'>Devices</A>")
+  aWeb.wr("<A CLASS=z-op DIV=div_content URL='inventory_report'>Inventory</A>")
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_task_report'>Tasks</A>")
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_report'>System</A>")
  aWeb.wr("</DIV></LI>")
- if aWeb.node() == 'master':
-  aWeb.wr("<LI><A CLASS=z-op TARGET=_blank            HREF='../infra/erd.pdf'>ERD</A></LI>")
- aWeb.wr("<LI CLASS=dropdown><A>REST</A><DIV CLASS='dropdown-content'>")
- aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_rest_main?node=%s'>Debug</A>"%aWeb.node())
- aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_logs_show?name=rest&node=%s'>Logs</A>"%aWeb.node())
- aWeb.wr("<A CLASS=z-op DIV=div_content URL='tools_rest_explore'>Explore</A>")
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='system_rest_explore'>REST</A></LI>")
+ if len(tools) > 0 or len(svcs) > 0:
+  aWeb.wr("<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>")
+  for tool in tools:
+   aWeb.wr("<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title']))
+  for svc in svcs:
+   aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_services_info?service=%s'>%s</A>"%(svc['service'],svc['name']))
  aWeb.wr("</DIV></LI>")
- aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='system_main?node=%s'></A></LI>"%aWeb['node'])
+ if aWeb.node() == 'master':
+  aWeb.wr("<LI><A CLASS='z-op' DIV=div_content URL='system_controls'>Controls</A></LI>")
+ aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='system_main'></A></LI>")
  if data.get('navinfo'):
   for info in data['navinfo']:
    aWeb.wr("<LI CLASS='right navinfo'><A>%s</A></LI>"%info)
  aWeb.wr("</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content ID=div_content></SECTION>")
-
-#
-#
-def portal(aWeb):
- cookie = aWeb.cookie('rims')
- auth,data,args = {},{},aWeb.args()
- if not cookie.get('token') and (args.get('username') and args.get('password')):
-  try:  auth = aWeb.rest_full("%s/auth"%aWeb.url(), aArgs = args, aDataOnly = True)
-  except Exception as e:
-   auth = e.args[0].get('data',{})
-  else:
-   cookie = {'node':auth['node'],'id':auth['id'],'token':auth['token'],'theme':auth['theme']}
- if cookie.get('token'):
-  id = cookie['id']
-  menu = aWeb.rest_call("system/menu",{"id":id,'node':aWeb.node()})
-  aWeb.put_html(aTitle = menu.get('title','Portal'), aTheme = cookie['theme'])
-  """ If just auth:ed """
-  if auth.get('token'):
-   aWeb.wr("<SCRIPT>set_cookie('rims','%s','%s');</SCRIPT>"%(aWeb.cookie_encode(cookie),auth['expires']))
-  aWeb.wr("<HEADER>")
-  for item in menu['menu']:
-   if   item['view'] == 0:
-    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['href'],item['title'],item['icon']))
-   elif item['view'] == 1:
-    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='resources_framed?id=%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['id'],item['title'],item['icon']))
-   else:
-    aWeb.wr("<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s' /></A>"%(item['title'],item['href'],item['title'],item['icon']))
-  aWeb.wr("<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=rims URL=system_portal>Log out</BUTTON>")
-  aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='Tools' DIV=main URL='tools_main?node=%s'><IMG SRC='../images/icon-config.png' /></BUTTON>"%aWeb.node())
-  aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='User'  DIV=main URL='users_%s'><IMG SRC='../images/icon-users.png' /></BUTTON>"%("main" if id == '1' else "user?id=%s"%id))
-  aWeb.wr("</HEADER>")
-  aWeb.wr("<MAIN ID=main></MAIN>")
-  if menu['start']:
-   aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['href'] if menu['menu'][0]['view'] == 0 else "resources_framed?id=%s"%menu['menu'][0]['id']))
- else:
-  data = aWeb.rest_call("system/application",{'node':aWeb.node()})
-  aWeb.put_html(aTitle = data['title'])
-  aWeb.wr("<DIV CLASS='background overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message'])
-  if data.get('exception'):
-   aWeb.wr("Error retrieving application info - exception info: %s"%(data['exception']))
-  else:
-   error = auth.get('error',{})
-   aWeb.wr("<FORM ACTION='system_portal' METHOD=POST ID='login_form'>")
-   aWeb.wr("<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>")
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><SELECT NAME=username>")
-   for row in data['usernames']:
-    aWeb.wr("<OPTION VALUE='%s' %s>%s</OPTION>"%(row['id'],"selected=selected" if row['id'] == error.get('username','admin') else "",row['name']))
-   aWeb.wr("</SELECT></DIV></DIV>")
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Password:</DIV><DIV CLASS=td><INPUT TYPE=password NAME='password' PLACEHOLDER='******'></DIV></DIV>")
-   aWeb.wr("</DIV></DIV>")
-   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM='login_form'><IMG SRC='../images/icon-start.png' /></BUTTON>")
-  aWeb.wr("<!-- %s -->"%auth.get('error'))
-  aWeb.wr("</ARTICLE></DIV>")
 
 #
 #
@@ -120,9 +76,132 @@ def reload(aWeb):
 #
 #
 def task_report(aWeb):
- res = aWeb.rest_call("system/task_list",{'node':aWeb.node()})
+ res = aWeb.rest_call("master/task_list",{'node':aWeb.node()})
  aWeb.wr("<ARTICLE><P>Tasks</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Node</DIV><DIV CLASS=th>Frequency</DIV><DIV CLASS=th>Module</DIV><DIV CLASS=th>Function</DIV><DIV CLASS=th>Args</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Frequency</DIV><DIV CLASS=th>Module</DIV><DIV CLASS=th>Function</DIV><DIV CLASS=th>Args</DIV></DIV><DIV CLASS=tbody>")
  for task in res['tasks']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(node)s</DIV><DIV CLASS=td>%(frequency)s</DIV><DIV CLASS=td>%(module)s</DIV><DIV CLASS=td>%(func)s</DIV><DIV CLASS=td>%(args)s</DIV></DIV>"%task)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(node)s</DIV><DIV CLASS=td>%(frequency)s</DIV><DIV CLASS=td>%(module)s</DIV><DIV CLASS=td>%(function)s</DIV><DIV CLASS=td>%(args)s</DIV></DIV>"%task)
  aWeb.wr("</DIV></DIV></ARTICLE>")
+
+############################################ Options ##############################################
+#
+#
+#
+def rest_explore(aWeb):
+ res = aWeb.rest_call("system/rest_explore")
+ aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
+ aWeb.wr("<ARTICLE><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>API</DIV><DIV CLASS=th>Function</DIV></DIV><DIV CLASS=tbody>")
+ for item in res['data']:
+  for fun in item['functions']:
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=system_rest_information?api=%s&function=%s>%s</A></DIV></DIV>"%(item['api'],item['api'],fun,fun))
+ aWeb.wr("</DIV></DIV></ARTICLE>")
+ aWeb.wr("</SECTION>")
+ aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
+
+#
+#
+def rest_information(aWeb):
+ res = aWeb.rest_call("system/rest_information",{'api':aWeb['api'],'function':aWeb['function']})
+ aWeb.wr("<ARTICLE>")
+ aWeb.wr("<H1>API: %s</H1>"%(aWeb['api']))
+ aWeb.wr("<BR>".join(res['module']))
+ aWeb.wr("<H1>Function: %s</H1>"%(aWeb['function']))
+ aWeb.wr("<BR>".join(res['information']))
+ aWeb.wr("</ARTICLE>")
+
+#
+#
+def rest_execute(aWeb):
+ from json import dumps, loads
+ args = loads(aWeb['arguments']) if 'arguments' in aWeb.args() else None
+ data = aWeb.rest_full("%s/api/%s"%(aWeb.url(),aWeb['api']), aArgs = args, aTimeOut=300, aDataOnly = True)
+ aWeb.wr("<ARTICLE><PRE CLASS='white'>%s</PRE></ARTICLE>"%dumps(data,indent=4, sort_keys=True))
+
+
+############################################### Logs ###############################################
+
+#
+#
+def logs_clear(aWeb):
+ args = aWeb.args()
+ node = args.pop('node',None)
+ args['count'] = 18
+ res = aWeb.rest_call('system/logs_clear%s'%('?node=%s'%node if node else ''),args)
+ aWeb.wr("<ARTICLE><P>%s</P>"%res['node'])
+ for i in res['file'].items():
+  aWeb.wr("%s: %s<BR>"%i)
+ aWeb.wr("</ARTICLE>"%(res))
+
+#
+#
+def logs_show(aWeb):
+ args = aWeb.args()
+ node = args.pop('node',None)
+ args['count'] = 18
+ res = aWeb.rest_call('system/logs_get%s'%('?node=%s'%node if node else ''),args)
+ aWeb.wr("<ARTICLE>")
+ for file,logs in res.items():
+  aWeb.wr("<P STYLE='font-weight:bold; text-align:center;'>%s</P><P CLASS='machine-text'>%s</P>"%(file,"<BR>".join(logs)))
+ aWeb.wr("</ARTICLE>")
+
+############################################# Services ##############################################
+#
+#
+def services_info(aWeb):
+ args = aWeb.args()
+ data  = aWeb.rest_call('system/service_info',args)
+ state = 'start' if data['state'] == 'inactive' else 'stop'
+ aWeb.wr("<ARTICLE STYLE='display:inline-block;'><B>%s</B>: %s (%s)"%(aWeb['service'],data['state'],data['extra']))
+ aWeb.wr(aWeb.button(state, DIV='div_content', SPIN='true', URL='system_services_info?service=%s&op=%s'%(args['service'],state)))
+ aWeb.wr("</ARTICLE>")
+
+############################################## Files ###############################################
+#
+#
+def file_list(aWeb):
+ res = aWeb.rest_call('system/file_list',{'directory':aWeb['directory']})
+ if aWeb.get('navigation'):
+  aWeb.wr("<NAV><UL>&nbsp;</UL></NAV>")
+  aWeb.wr("<SECTION CLASS=content ID=div_content>")
+ aWeb.wr("<ARTICLE><P>Files in %s<P>"%res.get('path','directory'))
+ import urllib.request, urllib.parse, urllib.error
+ for f in res['files']:
+  url  = urllib.parse.quote(f)
+  aWeb.wr("<P CLASS=machine-text>{0}/<A HREF='{0}/{1}' TARGET=_blank>{2}</A></P>".format(res.get('path','#'),url,f))
+ aWeb.wr("</ARTICLE>")
+ if aWeb.get('navigation'):
+  aWeb.wr("</SECTION>")
+
+#
+#
+def images(aWeb):
+ res = aWeb.rest_call('system/file_list')
+ if aWeb.get('navigation'):
+  aWeb.wr("<NAV><UL>&nbsp;</UL></NAV>")
+  aWeb.wr("<SECTION CLASS=content ID=div_content>")
+ aWeb.wr("<ARTICLE><P>Images<P><DIV CLASS=table><DIV CLASS=tbody>")
+ for file in res['files']:
+  if file[-3:] == 'png':
+   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:180px'>{0}</DIV><DIV CLASS=td STYLE='width:100%;'><IMG STYLE='max-height:60px;' SRC='{1}/{0}' /></DIV></DIV>".format(file,res['path']))
+ aWeb.wr("</DIV></DIV></ARTICLE>")
+ if aWeb.get('navigation'):
+  aWeb.wr("</SECTION>")
+
+############################################ Controls ##############################################
+#
+#
+def controls(aWeb):
+ aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
+ aWeb.wr("<ARTICLE><DIV CLASS=table><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/ipam_status'>IPAM status check</A></DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/ipam_events&arguments={\"op\":\"clear\"}'>IPAM clear status logs</A></DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/interface_status'>Interface status check</A></DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/network_info_discover'>Discover system info</A></DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/model_sync'>Sync models</A></DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/vm_mapping'>VM UUID mapping</A></DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=reservation/expiration_status'>Reservation checks</A></DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=master/oui_fetch'>OUI Database sync</A></DIV></DIV>")
+ aWeb.wr("</DIV></DIV></ARTICLE>")
+ aWeb.wr("</SECTION>")
+ aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
+

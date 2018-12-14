@@ -8,9 +8,8 @@ from rims.devices.generic import Device as GenericDevice
 
 class Device(GenericDevice):
 
- def __init__(self, aCTX, aIP):
-  GenericDevice.__init__(self, aCTX, aIP)
+ def __init__(self, aCTX, aID, aIP = None):
+  GenericDevice.__init__(self, aCTX, aID, aIP)
 
  def __str__(self):
-  return "QNAP[%s]"%(self._ip)
-
+  return "QNAP[%s,%s]"%(self._id,self._ip)

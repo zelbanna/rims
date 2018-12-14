@@ -1,18 +1,53 @@
 {
-    "db_host": "127.0.0.1",
-    "db_name": "DATABASE",
-    "db_pass": "PASSWORD",
-    "db_user": "USERNAME",
-    "id": "master",
-    "master": "http://192.168.0.1:8080",
-    "port": 8080,
-    "template": "engine.init",
-    "workers": 30,
-    "theme":"blue",
-    "events":true,
-    "salt": "WBEUAHfO",
-    "logs": {
-        "system": "/var/log/system/system.log",
-        "rest": "/var/log/system/rest.log"
-    }
+ "mode": "debug",
+ "database": {
+  "host": "127.0.0.1",
+  "name": "DATABASE",
+  "password": "PASSWORD",
+  "username": "USERNAME"
+ },
+ "id": "master",
+ "master": "http://127.0.0.1:8080",
+ "port": 8080,
+ "template": "engine.init",
+ "workers": 30,
+ "logging": {
+  "rest": {
+   "enabled":true,
+   "file": "/var/log/system/rest.log"
+  },
+  "system": {
+   "enabled": true,
+   "file": "/var/log/system/system.log"
+  }
+ },
+ "influxdb": {
+  "database":"DATABASE",
+  "username":"USERNAME",
+  "password":"PASSWORD",
+  "url":"http://127.0.0.1:8086"
+ },
+ "salt":"WBEUAHfO",
+ "esxi": {
+  "password": "PASSWORD",
+  "username": "USERNAME"
+ },
+ "netconf": {
+  "password": "PASSWORD",
+  "username": "USERNAME"
+  "anonftp": "127.0.0.1",
+  "dns": "127.0.0.1",
+  "encrypted": "<encrypted password>",
+  "ntp": "127.0.0.1",
+  "tacplus": "127.0.0.1",
+ },
+ "oui": {
+  "location": "http://standards-oui.ieee.org/oui.txt"
+ },
+ "snmp": {
+  "read": "public",
+  "write": "private",
+  "timeout": "500000"
+ },
+ "site_file": "<full-path-to-site>/<file name>.json"
 }

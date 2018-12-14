@@ -1,8 +1,0 @@
-{
- "node":"master",
- "module":"device",
- "func":"network_lldp_discover",
- "args":{},
- "periodic":true,
- "frequency":21600
-}

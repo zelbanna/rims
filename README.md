@@ -3,16 +3,14 @@
 RIMS is an API first based system to manage infrastructure: racks, pdus, consoles, devices, services etc.
 
 The system uses a concept of nodes and servers (i.e. services on nodes).
-- A node is any REST base interface to a system (e.g. openstack etc), all nodes have an ID and a URL
+- A node is any REST base interface to a system, all nodes have an ID and a URL
 - There is a 'master' node that keeps a centralized database and settings for all other (system) nodes.
 - There are system nodes which are registered with the master during install and fetch settings from the master
-- a Service can be DNS server, DHCP server, NOTIFY server, and so on. They run on nodes (using the node REST interface for communication) or are proxied by system nodes to another, non-system, node. e.g. AWX, Slack. The latter method serves as means to harmonize functions vs service's native REST APIs.
+- a Service can be DNS server, DHCP server and so on. They run on nodes (using the node REST interface for communication) or are proxied by system nodes to another, non-system, node. e.g. AWX. The latter method serves as means to harmonize functions vs service's native REST APIs.
 -- PowerDNS runs on linux node which is a system node
 -- AWX can run on linux node (system node) OR can run externally via a proxy
--- SLACK runs in the cloud and needs a proxy (or default to master) to reach it's interface
 
-
-The structure is as follows: Everything centers around the 'engine', it uses a config to bootstart itself. In addition there is a thread safe context object passed around to REST based functions. The context also provides a thread safe Database object which offers database op serialization
+Everything centers around the 'engine', it uses a config to bootstart itself. In addition there is a thread safe context object passed around to REST based functions. The context also provides a thread safe Database object which offers database op serialization
 - The engine is a multithreaded web server serving infrastructure files, REST API and site files (and any other file using settings)
 - There are worker threads waiting for tasks (or periodic functionality like status checks on devices)
 - The engine routes REST calls between nodes using XHR (X-Route) or optional HTML GET attributes, which also serves some extra functionality (node = <node>, debug = true, log = true)
@@ -31,10 +29,12 @@ The structure is as follows: Everything centers around the 'engine', it uses a c
 ############################## Configuration File ###############################
 
 {
-    "db_host": "127.0.0.1", # IP address of database host - only on 'master' node
-    "db_name": "rims",      # Database name - i.e. rims   - only on 'master' node
-    "db_pass": "rims",      # Username for 'rims' user    - only on 'master' node
-    "db_user": "rims",      # Password for 'rims' user    - only on 'master' node
+    "database": {
+         "host": "127.0.0.1", # IP address of database host - only on 'master' node
+         "name": "rims",      # Database name - i.e. rims   - only on 'master' node
+         "password": "rims",  # Username for 'rims' user    - only on 'master' node
+         "username": "rims",  # Password for 'rims' user    - only on 'master' node
+    },
     "id": "master",         # ID of node
     "master": "http://192.168.0.1:8080",   # REST interface of master node, globally reachable
     "port": 8080,           # Local port to register the engine on
@@ -63,7 +63,10 @@ Run install.py with config.json (using appropriate values)
 To be able to reload different services, please add something similar to /etc/sudoers (actually limit for pdns and isc-dhcp-server) unless running engine as root
 
 - Debian
-apt-get install libsnmp-dev python3-pip graphviz libgraphviz-dev
+(basic)
+apt-get install libsnmp-dev python3-pip
+(extended)
+apt-get install graphviz libgraphviz-dev libglib2.0-dev libbluetooth-dev libboost-dev libboost-thread-dev libboost-python-dev
 
 - DataStructure through ERAlchemy:
 pip install pygraphviz --install-option="--include-path=/usr/include/graphviz" --install-option="--library-path=/usr/lib/graphviz/"

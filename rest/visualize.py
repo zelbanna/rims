@@ -52,7 +52,7 @@ def show(aCTX, aArgs = None):
  from json import loads
  ret = {}
  with aCTX.db as db:
-  search = "id = %(id)s"%aArgs if aArgs.get('id') else "name = '%(name)s'"%aArgs
+  search = "id = %(id)s"%aArgs if 'id' in aArgs else "name = '%(name)s'"%aArgs
   ret['found'] = (db.do("SELECT * FROM visualize WHERE %s"%search) > 0)
   if ret['found']:
    data = db.get_row() 
@@ -113,48 +113,28 @@ def network(aCTX, aArgs = None):
    for var in ['nodes','edges','options']:
     ret[var] = loads(data.get(var,'null'))
   else:
-   if args.get('ip'):
-    db.do("SELECT devices.id FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id WHERE ia.ip = INET_ATON('%(ip)s')"%args)
+   if 'ip' in args:
+    db.do("SELECT devices.id FROM devices LEFT JOIN device_interfaces AS di ON devices.id = di.device_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE ia.ip = INET_ATON('%(ip)s')"%args)
     ret['id'] = db.get_val('id')
 
-   nodes = {ret['id']:{'processed':False,'edges':0,'multipoint':0,'distance':0,'connected':0}}
+   nodes = {ret['id']:{'processed':False,'distance':0,'connected':0}}
    edges = []
    ret['options'] = {'layout':{'randomSeed':2}, 'physics':{'enabled':True }, 'edges':{'length':180}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'../images/viz-generic.png' }}
 
-   # Connected and Multipoint
-   sql_connected  = "SELECT CAST({0} AS UNSIGNED) AS a_device, di.id AS a_interface, di.name AS a_name, di.snmp_index AS a_index, di.peer_interface AS b_interface, peer.snmp_index AS b_index, peer.name AS b_name, peer.device AS b_device FROM device_interfaces AS di LEFT JOIN device_interfaces AS peer ON di.peer_interface = peer.id WHERE di.peer_interface IS NOT NULL AND di.device = {0}"
-   sql_multipoint = "SELECT CAST({0} AS UNSIGNED) AS a_device, di.id AS a_interface, di.name AS a_name, di.snmp_index AS a_index FROM device_interfaces AS di WHERE di.multipoint = 1 AND di.device = {0}"
-   sql_multi_peer = "SELECT di.id AS b_interface, di.snmp_index AS b_index, di.device AS b_device, di.name AS b_name FROM device_interfaces AS di WHERE di.peer_interface = {0}"
+   sql_connected = "SELECT di.device_id AS a_device, di.interface_id AS a_if, di.name AS a_name, di.snmp_index AS a_index, peer.device_id AS b_device, peer.interface_id AS b_if, peer.snmp_index AS b_index, peer.name AS b_name FROM device_interfaces AS di RIGHT JOIN device_interfaces AS peer ON di.connection_id = peer.connection_id AND peer.device_id <> {0} LEFT JOIN device_connections AS dc ON di.connection_id = dc.id WHERE dc.map = 1 AND di.device_id = {0}"
    for lvl in range(0,args.get('diameter',2)):
     level_ids = list(nodes.keys())
-    # We cannot iterate as the current data format required that we add each new device found, for each id - otherwise multihomed get's screwed
     for current_id in level_ids:
      current_node = nodes[current_id]
      if not current_node['processed']:
       local_nodes = {}
       local_edges = []
-      # Find straight edges
-      current_node['edges'] += db.do(sql_connected.format(current_id))
-      cons = db.get_rows()
-      # Find local multipoint
-      current_node['multipoint'] += db.do(sql_multipoint.format(current_id))
-      multipoints = db.get_rows()
-      # Check 'other side' and find peer interfaces, add local interface info to new 'peer' interfaces and insert into local's list
-      for edge in multipoints:
-       db.do(sql_multi_peer.format(edge['a_interface']))
-       peers = db.get_rows()
-       for peer in peers:
-        peer.update(edge)
-       cons.extend(peers)
-
+      current_node['edges'] = db.do(sql_connected.format(current_id))
       # Deduce if interface is registered (the hard way, as no double dictionaries) by checking 'recursively' if node has been processed else process the connection
-      for con in cons:
+      for con in db.get_rows():
        to_id   = con['b_device']
-       to_node = nodes.get(to_id,{'processed':False,'edges':0,'multipoint':0,'distance':lvl + 1,'connected':[]})
-       # If not processed before add device to locally connected nodes and save interface, even if some other node seen this we append our id to make sure we understand if node is multihomed
-       # 1) For straight interface we cover 'back' since the dev is/will be processed
-       # 2) For multipoint the other side will (through SQL) see the same interface so also covered by processed
-       # 3) There is no multipoint to multipoint (!)
+       to_node = nodes.get(to_id,{'processed':False,'distance':lvl + 1,'connected':[]})
+       # If not processed before add device to locally connected nodes and save interface
        if not to_node['processed']:
         # If first time seen, i.e. no connections. it's root connection is the current id and it should be added to nodes
         if len(to_node['connected']) == 0:
@@ -176,5 +156,5 @@ def network(aCTX, aArgs = None):
    for node in ret['nodes']:
     nodes[node['id']]['hostname'] = node['label']
    ret['name']  = nodes[ret['id']]['hostname']
-   ret['edges'] = [{'id':"rims_%(a_interface)i_%(b_interface)i"%intf,'from':intf['a_device'],'to':intf['b_device'],'smooth':intf['type'],'title':"%s:%s <-> %s:%s"%(nodes[intf['a_device']]['hostname'],intf['a_name'],nodes[intf['b_device']]['hostname'],intf['b_name'])} for intf in edges]
+   ret['edges'] = [{'id':"rims_%(a_if)i_%(b_if)i"%intf,'from':intf['a_device'],'to':intf['b_device'],'smooth':intf['type'],'title':"%s:%s <-> %s:%s"%(nodes[intf['a_device']]['hostname'],intf['a_name'],nodes[intf['b_device']]['hostname'],intf['b_name'])} for intf in edges]
  return ret

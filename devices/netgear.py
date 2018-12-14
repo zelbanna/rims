@@ -10,11 +10,11 @@ from rims.devices.generic import Device as GenericDevice
 
 class Device(GenericDevice):
 
- def __init__(self, aCTX, aIP):
-  GenericDevice.__init__(self, aCTX, aIP)
+ def __init__(self, aCTX, aID, aIP = None):
+  GenericDevice.__init__(self, aCTX, aID, aIP)
 
  def __str__(self):
-  return "NetGear(ip=%s)"%(self._ip)
+  return "NetGear[%s,%s]"%(self._id,self._ip)
 
  def interfaces(self):
   interfaces = super(Device,self).interfaces()

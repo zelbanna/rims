@@ -56,8 +56,7 @@ def info(aWeb):
  aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=1 %s>yes"%(  "checked=checked" if data['shutdown'] == 1 else ""))
  aWeb.wr("<INPUT NAME=shutdown TYPE=RADIO VALUE=2 %s>reset"%("checked=checked" if data['shutdown'] == 2 else ""))
  aWeb.wr("</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>On Loan:</DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX NAME=loan VALUE=1 %s></DIV></DIV>"%("checked=checked" if data['loan'] else ""))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Address:</DIV><DIV CLASS=td><INPUT TYPE=TEXT     NAME=address  STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['address']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Info:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=info  STYLE='min-width:200px;' VALUE='%s'></DIV></DIV>"%(data['info']))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('save', DIV='div_content_right', URL='reservations_info?op=update', FRM='reservations_info_form'))
@@ -68,7 +67,7 @@ def info(aWeb):
 def report(aWeb):
  reservations = aWeb.rest_call("reservation/list",{'extended':True})['data']
  aWeb.wr("<ARTICLE><P>Reservations</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>User</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Start</DIV><DIV CLASS=th>End</DIV><DIV CLASS=th>On Loan</DIV><DIV CLASS=th>Location</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>User</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Start</DIV><DIV CLASS=th>End</DIV><DIV CLASS=th>Info</DIV></DIV><DIV CLASS=tbody>")
  for res in reservations:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(alias)s</DIV><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(start)s</DIV><DIV CLASS=td>%(end)s</DIV><DIV CLASS=td>%(loan)s</DIV><DIV CLASS=td>%(address)s</DIV></DIV>"%res)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(alias)s</DIV><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(start)s</DIV><DIV CLASS=td>%(end)s</DIV><DIV CLASS=td>%(info)s</DIV></DIV>"%res)
  aWeb.wr("</DIV></DIV></ARTICLE>")

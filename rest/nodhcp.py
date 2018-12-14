@@ -15,7 +15,7 @@ def status(aCTX, aArgs = None):
  Output:
   - data
  """
- return {'data':None }
+ return {'data':None, 'status':'OK' }
 
 #
 def sync(aCTX, aArgs = None):

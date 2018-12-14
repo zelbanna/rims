@@ -1,9 +1,8 @@
 {
  "node":"services",
  "module":"powerdns",
- "func":"restart",
+ "function":"restart",
  "args":{},
- "periodic":true,
  "frequency":86400,
  "output":true
 }

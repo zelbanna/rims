@@ -1,7 +1,5 @@
 """HTML5 Ajax Racks module"""
 __author__= "Zacharias El Banna"
-__icon__ = 'icon-rack.png'
-__type__ = 'menuitem'
 
 ################################################## Basic Rack Info ######################################################
 
@@ -18,9 +16,9 @@ def list(aWeb):
  aWeb.wr("<ARTICLE><P>Racks</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_left',URL='racks_list'))
  aWeb.wr(aWeb.button('add',DIV='div_content_right',URL='racks_info?id=new'))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Location</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for unit in racks:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS='td maxed'>%(name)s</DIV><DIV CLASS=td>%(size)s</DIV><DIV CLASS=td>"%unit)
+  aWeb.wr("<DIV CLASS=tr><DIV CLASS='td'>%(location)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>%(size)s</DIV><DIV CLASS=td>"%unit)
   aWeb.wr(aWeb.button('edit', DIV='div_content_right', URL='racks_info?id=%s'%unit['id']))
   aWeb.wr(aWeb.button('show', DIV='main',              URL='device_main?rack=%s'%unit['id'],TITLE='Rack inventory'))
   aWeb.wr("</DIV></DIV>")
@@ -50,7 +48,6 @@ def inventory(aWeb):
  # Create rack and some text, then place devs
  aWeb.wr("<DIV STYLE='grid-column:1/4; grid-row:1; justify-self:center; font-weight:bold; font-size:14px;'>Front</DIV>")
  aWeb.wr("<DIV STYLE='grid-column:5/8; grid-row:1; justify-self:center; font-weight:bold; font-size:14px;'>Back</DIV>")
- aWeb.wr("<DIV STYLE='grid-column:2;   grid-row:2; text-align:center; background:yellow; border: solid 2px grey; font-size:12px;'>Panel</DIV>")
  for idx in range(2,size+2):
   ru = size-idx+2
   aWeb.wr("<DIV CLASS=rack-indx STYLE='grid-column:1; grid-row:%i; border-right:1px solid grey'>%i</DIV>"%(idx,ru))
@@ -64,7 +61,7 @@ def inventory(aWeb):
   rowstart = size-abs(dev['rack_unit'])+2
   rowend   = rowstart + dev['rack_size']
   col = "2" if dev['rack_unit'] > 0 else "6"
-  aWeb.wr("<DIV CLASS='rack-data centered' STYLE='grid-column:{0}; grid-row:{1}/{2}; background:{3};'>".format(col,rowstart,rowend,"#00cc66" if not dev.get('user_id') else "#df3620"))
+  aWeb.wr("<DIV CLASS='rack-data centered green' STYLE='grid-column:{0}; grid-row:{1}/{2};'>".format(col,rowstart,rowend))
   aWeb.wr("<A CLASS='z-op' TITLE='Show device info for {0}' DIV='div_content_right' URL='device_info?id={1}'>{0}</A></CENTER>".format(dev['hostname'],dev['id']))
   aWeb.wr("</DIV>")
  aWeb.wr("</DIV>")
@@ -74,34 +71,38 @@ def inventory(aWeb):
 def info(aWeb):
  args = aWeb.args()
  res  = aWeb.rest_call("rack/info",args)
- data = res['data']
- aWeb.wr("<ARTICLE CLASS=info><P>Rack Info (%s)</P>"%(data['id']))
+ info = res['data']
+ aWeb.wr("<ARTICLE CLASS=info><P>Rack Info (%s)</P>"%(info['id']))
  aWeb.wr("<FORM ID=rack_info_form>")
- aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))
+ aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(info['id']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='%s'></DIV></DIV>"%(data['name']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Location:</DIV><DIV CLASS=td><INPUT NAME=location TYPE=TEXT VALUE='%s'></DIV></DIV>"%(data['location']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT VALUE='%s'></DIV></DIV>"%(data['size']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='%s'></DIV></DIV>"%(info['name']))
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT VALUE='%s'></DIV></DIV>"%(info['size']))
  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Console:</DIV><DIV CLASS=td><SELECT NAME=console>")
  for unit in res['consoles']:
-  extra = " selected" if (data['console'] == unit['id']) or (not data['console'] and unit['id'] == 'NULL') else ""
+  extra = " selected" if (info['console'] == unit['id']) or (not info['console'] and unit['id'] == 'NULL') else ""
   aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname']))
+ aWeb.wr("</SELECT></DIV></DIV>")
+ aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Location:</DIV><DIV CLASS=td><SELECT NAME=location_id>")
+ for unit in res['locations']:
+  extra = " selected" if (info['location_id'] == unit['id']) or (not info['location_id'] and unit['id'] == 'NULL') else ""
+  aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name']))
  aWeb.wr("</SELECT></DIV></DIV>")
 
  for key in ['pdu_1','pdu_2']:
   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME=%s>"%(key.capitalize(),key))
   for unit in res['pdus']:
-   extra = " selected" if (data[key] == unit['id']) or (not data[key] and unit['id'] == 'NULL') else ""
+   extra = " selected" if (info[key] == unit['id']) or (not info[key] and unit['id'] == 'NULL') else ""
    aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname']))
   aWeb.wr("</SELECT></DIV></DIV>")
 
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<SPAN CLASS='right small-text' ID=update_results></SPAN>")
  aWeb.wr("</FORM>")
- aWeb.wr(aWeb.button('reload',DIV='div_content_right', URL='racks_info?id={0}'.format(data['id'])))
+ aWeb.wr(aWeb.button('reload',DIV='div_content_right', URL='racks_info?id={0}'.format(info['id'])))
  aWeb.wr(aWeb.button('save', DIV='div_content_right', URL='racks_info?op=update', FRM='rack_info_form'))
  if not id == 'new':
-  aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='racks_delete?id=%s'%(data['id'])))
+  aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='racks_delete?id=%s'%(info['id'])))
  aWeb.wr("</ARTICLE>")
 
 #

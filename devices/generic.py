@@ -1,31 +1,51 @@
-"""Generic Device"""
+"""Generic Device
+
+Relies on SNMP configuration:
+ - snmp/read: read community
+ - snmp/write: write community
+ - snmp/timeout: timeout in microseconds, default to 100000 micro seconds
+
+"""
 __author__  = "Zacharias El Banna"
 __type__    = "generic"
 __icon__    = "viz-generic.png"
+__oid__     = 8072
 
-from rims.core.common import VarList, Varbind, Session
+from rims.core.common import VarList, Session
 
 ############################################# Device ##########################################
 class Device(object):
 
- def __init__(self, aCTX, aIP):
-  self._ip = aIP
+ def __init__(self, aCTX, aID, aIP = None):
+  self._id = aID
   self._ctx = aCTX
+  if aIP:
+   self._ip = aIP
+  else:
+   try: self._ip = aCTX.node_function('master','device','management')({'id':aID})['data']['ip']
+   except Exception as e:
+    raise Exception('No IP could be found (%s)'%aID)
 
  @classmethod
  def get_functions(cls):  return []
 
- def __str__(self):   return "GenericDevice(ip=%s)"%(self._ip)
+ def __str__(self):   return "GenericDevice(id=%s,ip=%s)"%(self._id,self._ip)
 
  def __enter__(self): return self
 
  def __exit__(self, *ctx_info): pass
 
- def log(self, aMsg): self._ctx.log(aMsg)
+ def log(self, aMsg): self._ctx.node_function('master','device','log')(aArgs = {'message':aMsg, 'id':self._id})
 
- def rebind(self, aIP): self._ip = aIP
+ def get_ip(self): return self._ip
 
- def operation(self, aType):  return 'NOT_IMPLEMENTED_%s'%aType.upper()
+ def rebind(self, aID, aIP):
+  self._ip = aIP
+  self._id = aID
+
+ def operation(self, aType):
+  self.log("Operation not implemented: %s"%aType)
+  return 'NOT_IMPLEMENTED_%s'%aType.upper()
 
  def ping_device(self):
   from os import system
@@ -34,53 +54,74 @@ class Device(object):
  def configuration(self,argdict):
   ret = ["No config template for this device type.","",
    "Please set the following manually:",
-   "- Username: %s"%self._ctx.settings['netconf']['username'],
-   "- Password: %s"%self._ctx.settings['netconf']['password'],
+   "- Username: %s"%self._ctx.config['netconf']['username'],
+   "- Password: %s"%self._ctx.config['netconf']['password'],
    "- Domain:   %s"%argdict['domain'],
    "- Gateway: %s"%argdict['gateway'],
    "- Network/Mask: %s/%s"%(argdict['network'],argdict['mask']),
-   "- SNMP read community: %s"%self._ctx.settings['snmp']['read'],
-   "- SNMP write community: %s"%self._ctx.settings['snmp']['write']]
+   "- SNMP read community: %s"%self._ctx.config['snmp']['read'],
+   "- SNMP write community: %s"%self._ctx.config['snmp']['write']]
 
-  if self._ctx.settings.get('tacplus'):
-   ret.append("- Tacacs: %s"%self._ctx.settings['tacplus']['ip'])
-  if self._ctx.settings['netconf'].get('dns'):
-   ret.append('- Nameserver: %s'%(self._ctx.settings['netconf']['dns']))
-  if self._ctx.settings['netconf'].get('ntp'):
-   ret.append('- NTP: %s'%(self._ctx.settings['netconf']['ntp']))
-  if self._ctx.settings['netconf'].get('anonftp'):
-   ret.append('- AnonFTP: %s'%(self._ctx.settings['netconf']['anonftp']))
+  if self._ctx.config.get('tacplus'):
+   ret.append("- Tacacs: %s"%self._ctx.config['tacplus']['ip'])
+  if self._ctx.config['netconf'].get('dns'):
+   ret.append('- Nameserver: %s'%(self._ctx.config['netconf']['dns']))
+  if self._ctx.config['netconf'].get('ntp'):
+   ret.append('- NTP: %s'%(self._ctx.config['netconf']['ntp']))
+  if self._ctx.config['netconf'].get('anonftp'):
+   ret.append('- AnonFTP: %s'%(self._ctx.config['netconf']['anonftp']))
   return ret
 
  #
  def interfaces(self):
   interfaces = {}
   try:
-   objs = VarList(Varbind('.1.3.6.1.2.1.2.2.1.6'),Varbind('.1.3.6.1.2.1.2.2.1.2'),Varbind('.1.3.6.1.2.1.2.2.1.8'),Varbind('.1.3.6.1.2.1.31.1.1.1.18'))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
+   objs = VarList('.1.3.6.1.2.1.2.2.1.6','.1.3.6.1.2.1.2.2.1.2','.1.3.6.1.2.1.2.2.1.8','.1.3.6.1.2.1.31.1.1.1.18')
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(objs)
    for entry in objs:
     if   entry.tag == '.1.3.6.1.2.1.2.2.1.6':
-     interfaces[int(entry.iid)] = {'mac':':'.join("%s%s"%x for x in zip(*[iter(entry.val.hex())]*2)).upper() if entry.val else "00:00:00:00:00:00", 'name':"None",'description':"None"}
+     interfaces[int(entry.iid)] = {'mac':':'.join("%s%s"%x for x in zip(*[iter(entry.val.hex())]*2)).upper() if entry.val else "00:00:00:00:00:00", 'name':"None",'description':"None",'state':'unknown'}
     elif entry.tag == '.1.3.6.1.2.1.2.2.1.2':
      interfaces[int(entry.iid)]['name'] = entry.val.decode()
     elif entry.tag == '.1.3.6.1.2.1.2.2.1.8':
      interfaces[int(entry.iid)]['state'] = 'up' if entry.val.decode() == '1' else 'down'
     elif entry.tag == '.1.3.6.1.2.1.31.1.1.1.18':
-     interfaces[int(entry.iid)]['description'] = entry.val.decode() if entry.val.decode() != "" else "None"
+     interfaces[int(entry.iid)]['description'] = entry.val.decode() if entry.val.decode() != '' else 'None'
   except: pass
   return interfaces
 
  #
  def interface(self,aIndex):
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   ifoid   = VarList(Varbind('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex),Varbind('.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex),Varbind('.1.3.6.1.2.1.2.2.1.6.%s'%aIndex))
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   ifoid   = VarList('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex,'.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex,'.1.3.6.1.2.1.2.2.1.6.%s'%aIndex)
    session.get(ifoid)
-   name,desc = ifoid[0].val.decode(),ifoid[1].val.decode() if ifoid[1].val.decode() != "" else "None"
-   mac = ':'.join("%s%s"%x for x in zip(*[iter(ifoid[2].val.hex())]*2)).upper()
-  except: pass
-  return {'name':name,'description':desc, 'mac':mac}
+  except:
+   return {'name':None,'description':None, 'mac':None}
+  else:
+   return {'name':ifoid[0].val.decode(),'description':ifoid[1].val.decode() if ifoid[1].val.decode() != "" else "None", 'mac':':'.join("%s%s"%x for x in zip(*[iter(ifoid[2].val.hex())]*2)).upper()}
+
+ #
+ def interface_stats(self,aInterfaces):
+  # Processes a list of {'snmp_index','interface_id'} dicts
+  ret = {}
+  try:
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   for iif in aInterfaces:
+    ifentry = VarList('.1.3.6.1.2.1.2.2.1.10.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.11.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.16.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.17.%i'%iif['snmp_index'])
+    session.get(ifentry)
+    if (session.ErrorInd != 0):
+     raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
+    else:
+     iif.update({'in8s':int(ifentry[0].val),'inUPs':int(ifentry[1].val),'out8s':int(ifentry[2].val),'outUPs':int(ifentry[3].val)})
+  except Exception as e:
+   ret['status'] = 'NOT_OK'
+   ret['info'] = str(e)
+  else:
+   ret['status'] = 'OK'
+   ret['interfaces'] = aInterfaces
+  return ret
 
  #
  def lldp(self):
@@ -92,24 +133,28 @@ class Device(object):
 
   neighbors = {}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   locoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.7.1.3'))
-   # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
-   # Types defined in 802.1AB-2005
-   remoid = VarList(Varbind('.1.0.8802.1.1.2.1.4.1.1'))
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   locoid = VarList('.1.0.8802.1.1.2.1.3.7.1.3')
+   remoid = VarList('.1.0.8802.1.1.2.1.4.1.1')
    session.walk(locoid)
    session.walk(remoid)
    for x in locoid:
     neighbors[x.iid] = {'snmp_name':x.val.decode(),'snmp_index':x.iid}
    for entry in remoid:
+    # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
+    # Types defined in 802.1AB-2005
     parts = entry.tag.split('.')
     n = neighbors.get(parts[-1],{})
     t = parts[11]
     if   t == '4':
      n['chassis_type'] = int(entry.val.decode())
     elif t == '5':
+     # Check length - ascii encoded hex?
      if n['chassis_type'] == 4:
-      n['chassis_id'] = hex2ascii(entry.val)
+      if len(entry.val) == 6:
+       n['chassis_id'] = hex2ascii(entry.val)
+      else:
+       n['chassis_id'] = entry.val.decode().lower().replace('-',':')
      elif n['chassis_type'] == 5:
       n['chassis_id'] = hex2ip(entry.val[1:])
      else:
@@ -125,119 +170,11 @@ class Device(object):
       n['port_desc'] = "".join(i for i in entry.val.decode() if ord(i)<128)
     elif t == '9':
      n['sys_name'] = entry.val.decode()
-  except: pass
+  except:
+   pass
   finally:
    for k in list(neighbors.keys()):
     if not neighbors[k].get('chassis_type'):
      neighbors.pop(k,None)
+
   return neighbors
-
- #
- def system_info(self):
-  ret = {}
-  try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
-   session.get(sysoid)
-   if sysoid[0].val:
-    ret['mac'] = ':'.join("%s%s"%x for x in zip(*[iter(sysoid[0].val.hex())]*2)).upper()
-   if sysoid[1].val:
-    try:    ret['oid'] = int(sysoid[1].val.decode().split('.')[7])
-    except: pass
-  except: pass
-  return ret
-
- #
- def detect(self):
-  def hex2ascii(aHex):
-   return ':'.join("%s%s"%x for x in zip(*[iter(aHex.hex())]*2))
-
-  ret = {'info':{'model':'unknown', 'snmp':'unknown','version':None,'serial':None,'mac':'00:00:00:00:00:00','oid':0}}
-  try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.settings['snmp']['read'], UseNumeric = 1, Timeout = 100000, Retries = 2)
-   # Device info, Device name, Enterprise OID
-   devoid = VarList(Varbind('.1.3.6.1.2.1.1.1.0'), Varbind('.1.3.6.1.2.1.1.5.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
-   sysoid = VarList(Varbind('.1.0.8802.1.1.2.1.3.2.0'),Varbind('.1.3.6.1.2.1.1.2.0'))
-   session.get(devoid)
-   ret['status'] = "OK" if (session.ErrorInd == 0) else "NOT_OK"
-   session.get(sysoid)
-  except Exception as err:
-   ret['status'] = 'NOT_OK'
-   ret['error'] = "Not able to do SNMP lookup (check snmp -> read): %s"%str(err)
-  if ret['status'] == 'OK':
-   if sysoid[0].val:
-    try: ret['info']['mac'] = hex2ascii(sysoid[0].val).upper()
-    except: pass
-   if sysoid[1].val:
-    try:    ret['info']['oid'] = int(sysoid[1].val.decode().split('.')[7])
-    except: pass
-   if devoid[1].val.decode():
-    ret['info']['snmp'] = devoid[1].val.decode().lower()
-   if devoid[2].val.decode():
-    try:    enterprise = devoid[2].val.decode().split('.')[7]
-    except: enterprise = 0
-    infolist = devoid[0].val.decode().split()
-    ret['info']['oid'] = enterprise
-    if enterprise == '2636':
-     # Juniper
-     try:
-      extobj = VarList(Varbind('.1.3.6.1.4.1.2636.3.1.2.0'),Varbind('.1.3.6.1.4.1.2636.3.1.3.0'))
-      session.get(extobj)
-      ret['info']['serial'] = extobj[1].val.decode()
-      model_list = extobj[0].val.decode().lower().split()
-      try: ret['info']['model'] = model_list[model_list.index('juniper') + 1]
-      except: ret['info']['model'] = 'unknown'
-      if (ret['info']['model']) in ['switch','internet','unknown','virtual']:
-       ret['info']['model'] = ("%s" if not ret['info']['model'] == 'virtual' else "%s (VC)")%infolist[3].lower()
-     except: pass
-     else:
-      for tp in [ 'ex', 'srx', 'qfx', 'mx', 'wlc' ]:
-       if tp in ret['info']['model']:
-        ret['info']['type'] = tp
-        break
-     try:    ret['info']['version'] = infolist[infolist.index('JUNOS') + 1][:-1].lower()
-     except: pass
-    elif enterprise == '14525':
-     ret['info']['type'] = 'wlc'
-     try:
-      extobj = VarList(Varbind('.1.3.6.1.4.1.14525.4.2.1.1.0'),Varbind('.1.3.6.1.4.1.14525.4.2.1.4.0'))
-      session.get(extobj)
-      ret['info']['serial'] = extobj[0].val.decode()
-      ret['info']['version'] = extobj[1].val.decode()
-     except: pass
-     ret['info']['model'] = " ".join(infolist[0:4])
-    elif enterprise == '4526':
-     # Netgear
-     ret['info']['type'] = 'netgear'
-     try:
-      extobj = VarList(Varbind('.1.3.6.1.4.1.4526.11.1.1.1.3.0'),Varbind('.1.3.6.1.4.1.4526.11.1.1.1.4.0'),Varbind('.1.3.6.1.4.1.4526.11.1.1.1.13.0'))
-      session.get(extobj)
-      ret['info']['model']  = extobj[0].val.decode()
-      ret['info']['serial'] = extobj[1].val.decode()
-      ret['info']['version'] = extobj[2].val.decode()
-     except: pass
-    elif enterprise == '6876':
-     # VMware
-     ret['info']['type'] = "esxi"
-     try:
-      extobj = VarList(Varbind('.1.3.6.1.4.1.6876.1.1.0'),Varbind('.1.3.6.1.4.1.6876.1.2.0'),Varbind('.1.3.6.1.4.1.6876.1.4.0'))
-      session.get(extobj)
-      ret['info']['model']  = extobj[0].val.decode()
-      ret['info']['version'] = "%s-%s"%(extobj[1].val.decode(),extobj[2].val.decode())
-     except: pass
-    elif enterprise == '24681':
-     ret['info']['type'] = "qnap"
-     try:
-      extobj = VarList(Varbind('.1.3.6.1.4.1.24681.1.4.1.1.1.1.1.2.1.3.1'),Varbind('.1.3.6.1.4.1.24681.1.4.1.1.1.1.1.2.1.4.1'))
-      session.get(extobj)
-      ret['info']['model']  = extobj[0].val.decode()
-      ret['info']['serial'] = extobj[1].val.decode()
-     except: pass
-    # Linux
-    elif infolist[0] == "Linux":
-     ret['info']['model'] = 'debian' if "Debian" in devoid[0].val.decode() else 'generic'
-    else:
-     ret['info']['model'] = " ".join(infolist[0:4])
-  else:
-   ret['error'] = 'Timeout'
-  return ret

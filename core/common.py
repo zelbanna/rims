@@ -11,24 +11,32 @@ class RestException(Exception):
 
 from json import loads, dumps
 from urllib.request import urlopen, Request
+from urllib.parse import urlencode
 from urllib.error import HTTPError
 
 def rest_call(aURL, **kwargs):
- """ REST call function, aURL is required, then aArgs, aHeader (dict), aTimeout, aDataOnly (default True), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
+ """ REST call function, aURL is required, then aApplication (default:'json' or 'x-www-form-urlencoded'), aArgs, aHeader (dict), aTimeout, aDataOnly (default True), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
  try:
-  head = { 'Content-Type': 'application/json','Accept':'application/json' }
+  head = { 'Content-Type': 'application/%s'%kwargs.get('aApplication','json'),'Accept':'application/json' }
   head.update(kwargs.get('aHeader',{}))
-  args = dumps(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
+  if   head['Content-Type'] == 'application/json':
+   args = dumps(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
+  elif head['Content-Type'] == 'application/octet-stream':
+   args = kwargs['aArgs'] if kwargs.get('aArgs') else None
+  elif head['Content-Type'] == 'application/x-www-form-urlencoded':
+   args = urlencode(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
+  else:
+   raise RestException("No recognized application type (%s)"%head['Content-Type'])
   req = Request(aURL, headers = head, data = args)
   if kwargs.get('aMethod'):
    req.get_method = lambda: kwargs['aMethod']
   if kwargs.get('aVerify',True):
    sock = urlopen(req, timeout = kwargs.get('aTimeout',20))
   else:
-   from ssl import create_default_context
-   ssl_ctx = ssl.create_default_context()
+   from ssl import create_default_context, CERT_NONE
+   ssl_ctx = create_default_context()
    ssl_ctx.check_hostname = False
-   ssl_ctx.verify_mode = ssl.CERT_NONE
+   ssl_ctx.verify_mode = CERT_NONE
    sock = urlopen(req,context=ssl_ctx, timeout = kwargs.get('aTimeout',20))
   try:    data = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
   except: data = None
@@ -64,7 +72,7 @@ class DB(object):
   self._conn_lock, self._wait_lock = RLock(), Lock()
   self._conn_waiting = 0
   self._conn_in_thread = 0
-  self.count = {'SELECT':0,'INSERT':0,'DELETE':0,'UPDATE':0,'COMMIT':0,'CONNECT':0,'CLOSE':0,'TRUNCA':0}
+  self.count = {'DO':0,'COMMIT':0,'CONNECT':0,'CLOSE':0}
 
  def __enter__(self):
   self.connect()
@@ -103,10 +111,12 @@ class DB(object):
   if self._conn_in_thread == 0:
    self._conn_lock.release()
 
- def do(self,aQuery):
+ def do(self,aQuery, aLog = False):
   op = aQuery[0:6].upper()
-  self.count[op] += 1
+  self.count['DO'] += 1
   self._dirty = (self._dirty or op in ['UPDATE','INSERT','DELETE'])
+  if aLog:
+   print("SQL: %s"%aQuery)
   return self._curs.execute(aQuery)
 
  def commit(self):
@@ -146,20 +156,20 @@ class DB(object):
  # Assume dict keys are prefixed by aTable and separated by a single character (e.g. _)
 
  def update_dict_prefixed(self, aTable, aDict, aCondition = "TRUE"):
-  self.count['UPDATE'] += 1
+  self.count['DO'] += 1
   self._dirty = True
   key_len = len(aTable) + 1
-  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join("%s=%s"%(k[key_len:],"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.items() if k.startswith(aTable)),aCondition))
+  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join("%s=%s"%(k[key_len:],"'%s'"%v if not (v == 'NULL' or v is None) else 'NULL') for k,v in aDict.items() if k.startswith(aTable)),aCondition))
 
  def update_dict(self, aTable, aDict, aCondition = "TRUE"):
-  self.count['UPDATE'] += 1
+  self.count['DO'] += 1
   self._dirty = True
-  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join("%s=%s"%(k,"'%s'"%v if v != 'NULL' else 'NULL') for k,v in aDict.items()),aCondition))
+  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join("%s=%s"%(k,"'%s'"%v if not (v == 'NULL' or v is None) else 'NULL') for k,v in aDict.items()),aCondition))
 
  def insert_dict(self, aTable, aDict, aException = ""):
-  self.count['INSERT'] += 1
+  self.count['DO'] += 1
   self._dirty = True
-  return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(list(aDict.keys())),",".join("'%s'"%v if v != 'NULL' else 'NULL' for v in aDict.values()),aException))
+  return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(list(aDict.keys())),",".join("'%s'"%v if not (v == 'NULL' or v is None) else 'NULL' for v in aDict.values()),aException))
 
 ####################################### SNMP #########################################
 #
@@ -192,6 +202,7 @@ class Varbind(object):
 class VarList(object):
 
  def __init__(self, *vs):
+  """ If regular vars - i.e. strings are passed, wrap into a Varbind. This is the most common usage for Varlists """
   self.varbinds = list(var if isinstance(var, Varbind) else Varbind(var) for var in vs)
 
  def __len__(self):
@@ -322,4 +333,7 @@ class Session(object):
   return self._libmod.walk(self, varlist)
 
  def __del__(self):
-  return self._libmod.delete_session(self)
+  try: return self._libmod.delete_session(self)
+  except SystemError as e:
+   print("RIMS_SNMP_ERROR: %s"%repr(e))
+   return None

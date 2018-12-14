@@ -17,8 +17,8 @@ class Device(Junos):
   widgets.extend(Junos.get_functions())
   return widgets
 
- def __init__(self, aCTX, aIP):
-  Junos.__init__(self, aCTX, aIP)
+ def __init__(self, aCTX, aID, aIP = None):
+  Junos.__init__(self, aCTX, aID, aIP)
   self._style  = 'els'
   self._interfacenames = {}
 

@@ -10,15 +10,15 @@ def update(aCTX, aArgs = None):
  """Function docstring for update TBD
 
  Args:
+  - id (required)
   - slot (required)
-  - ip (required)
   - unit (required)
   - text (required)
 
  Output:
  """
  if not (int(aArgs['slot']) == 0 and int(aArgs['unit']) == 0):
-  avocent = Device(aCTX, aArgs['ip'])
+  avocent = Device(aCTX, aArgs['id'])
   ret = avocent.set_name(int(aArgs['slot']),int(aArgs['unit']),aArgs['text'])
  else:
   ret = 'not updating 0.0'
@@ -30,16 +30,16 @@ def info(aCTX, aArgs = None):
  """Function docstring for info TBD
 
  Args:
-  - ip (required)
   - id (required)
   - op (optional)
 
  Output:
+  - info
  """
  ret = {}
  with aCTX.db as db:
   if aArgs.get('op') == 'lookup':
-   pdu = Device(aCTX,aArgs['ip'])
+   pdu = Device(aCTX,aArgs['id'])
    slots = pdu.get_slot_names()
    args = {'slots':len(slots)}
    if args['slots'] > 0:
@@ -62,12 +62,17 @@ def inventory(aCTX, aArgs = None):
  """Function docstring for inventory TBD
 
  Args:
-  - ip (required)
+  - id (required)
 
  Output:
+  - inventory. list of inventory items
  """
- avocent = Device(aCTX,aArgs['ip'])
- return avocent.get_inventory()
+ ret = {}
+ avocent = Device(aCTX,aArgs['id'])
+ try:    ret['inventory'] = avocent.get_inventory()
+ except: ret['status'] = 'NOT_OK'
+ else:   ret['status'] = 'OK'
+ return ret
 
 #
 #
@@ -75,17 +80,19 @@ def op(aCTX, aArgs = None):
  """Function docstring for op TBD
 
  Args:
-  - ip (required)
+  - id (required)
   - slot (required)
   - state (required)
   - unit (required)
 
  Output:
+  - status. Operation status
+  - state. New state
  """
  from time import sleep
  ret = {}
- avocent = Device(aCTX,aArgs['ip'])
- ret['op'] = avocent.set_state(aArgs['slot'],aArgs['unit'],aArgs['state'])
+ avocent = Device(aCTX,aArgs['id'])
+ ret['status'] = avocent.set_state(aArgs['slot'],aArgs['unit'],aArgs['state'])
  sleep(10)
  ret['state'] = avocent.get_state(aArgs['slot'],aArgs['unit'])['state']
  return ret

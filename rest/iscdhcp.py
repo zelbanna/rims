@@ -1,5 +1,6 @@
 """ISCDHCP API module. The specific ISCDHCP REST interface to reload and fetch info from ISCDHCP server.
-Settings under section 'iscdhcp':
+
+Config section 'iscdhcp':
  - reload (argument from CLI)
  - active (file storing current leases)
  - static (file storing configuration for ISCDHCP
@@ -8,6 +9,17 @@ Settings under section 'iscdhcp':
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "DHCP"
+
+#
+#
+def __write_file(aFile,aEntries):
+ # Create file
+ from time import strftime, localtime
+ with open(aFile,'w') as config_file:
+  config_file.write("# Modified: %s\n"%( strftime('%Y-%m-%d %H:%M:%S', localtime()) ))
+  for entry in aEntries:
+   config_file.write("host {0: <10} {{ hardware ethernet {1}; fixed-address {2}; }} # Network: {3}\n".format(entry['id'],entry['mac'],entry['ip'],entry['network']))
+ return True
 
 #
 #
@@ -27,7 +39,7 @@ def status(aCTX, aArgs = None):
 
  result = []
  lease  = {}
- with open(aCTX.settings['iscdhcp']['active'],'r') as leasefile:
+ with open(aCTX.config['iscdhcp']['active'],'r') as leasefile:
   for line in leasefile:
    if line == '\n':
     continue
@@ -47,7 +59,7 @@ def status(aCTX, aArgs = None):
    elif parts[0] == 'client-hostname':
     lease['hostname'] = parts[1][1:-2]
   result.sort(key=lambda d: GL_ip2int(d['ip']))
-  return {'data':result }
+ return {'status':'OK','data':result }
 
 #
 #
@@ -59,25 +71,9 @@ def sync(aCTX, aArgs = None):
 
  Output:
  """
- from time import strftime, localtime
- entries = aCTX.node_function('master','device','server_macs')(aArgs = {'id':aArgs['id']})
- # Create file
- with open(aCTX.settings['iscdhcp']['static'],'w') as config_file:
-  config_file.write("# Created: %s\n"%( strftime('%Y-%m-%d %H:%M:%S', localtime()) ))
-  for entry in entries['data']:
-   config_file.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}, Network: {4}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id'],entry['network']))
-
- # Reload
- from subprocess import check_output, CalledProcessError
- ret = {}
- try:
-  ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split()).decode()
- except CalledProcessError as c:
-  ret['code'] = c.returncode
-  ret['output'] = c.output
-
- ret['status'] = 'NOT_OK' if ret['output'] else 'OK'
- return ret
+ entries = aCTX.node_function('master','ipam','server_macs')(aArgs = {'id':aArgs['id']})
+ __write_file(aCTX.config['iscdhcp']['static'],entries['data']) 
+ return restart(aCTX, None)
 
 #
 #
@@ -86,8 +82,6 @@ def update(aCTX, aArgs = None):
 
  Args:
   - id (optional)
-  - hostname (optional required)
-  - domain (optional required)
   - mac (optional required)
   - ip (optional required)
   - network (optional required)
@@ -95,34 +89,20 @@ def update(aCTX, aArgs = None):
  Output:
  """
  devices = {}
- ret = {}
 
- with open(aCTX.settings['iscdhcp']['static'],'r') as config_file:
+ with open(aCTX.config['iscdhcp']['static'],'r') as config_file:
   for line in config_file:
    if line[0] == '#':
     continue
    parts = line.split()
-   id = int(parts[11][:-1])
-   devices[id] = {'id':id,'fqdn':parts[1],'mac':parts[5],'ip':parts[7],'network':parts[3]}
- if aArgs.get('id'):
-  devices[aArgs['id']] = {'id':aArgs['id'],'fqdn':"%(hostname)s.%(domain)s"%aArgs,'mac':aArgs['mac'],'ip':aArgs['ip'],'network':aArgs['network']}
-  # Create file
-  with open(aCTX.settings['iscdhcp']['static'],'w') as config_file:
-   for entry in devices:
-    config_file.write("host {0: <30} {{ hardware ethernet {1}; fixed-address {2}; }} # Id: {3}, Network: {4}\n".format("%(hostname)s.%(domain)s"%entry,entry['mac'],entry['ip'],entry['id'],entry['network']))
-  # Reload
-  from subprocess import check_output, CalledProcessError
-  ret = {}
-  try:
-   ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split()).decode()
-  except CalledProcessError as c:
-   ret['code'] = c.returncode
-   ret['output'] = c.output
-
-  ret['status'] = 'NOT_OK' if ret['output'] else 'OK'
+   id = int(parts[1])
+   devices[id] = {'id':id,'mac':parts[5][:-1],'ip':parts[7][:-1],'network':parts[11]}
+ if 'id' in aArgs:
+  devices[aArgs['id']] = {'id':aArgs['id'],'mac':aArgs['mac'],'ip':aArgs['ip'],'network':aArgs['network']}
+  __write_file(aCTX.config['iscdhcp']['static'],devices.values())
+  ret = restart(aCTX,None)
  else:
-  ret['status'] = 'OK'
-  ret['devices'] = devices
+  ret = {'status':'OK','devices':devices}
  return ret
 
 #
@@ -140,7 +120,7 @@ def restart(aCTX, aArgs = None):
  from subprocess import check_output, CalledProcessError
  ret = {}
  try:
-  ret['output'] = check_output(aCTX.settings['iscdhcp']['reload'].split()).decode()
+  ret['output'] = check_output(aCTX.config['iscdhcp']['reload'].split()).decode()
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output

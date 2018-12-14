@@ -13,9 +13,9 @@ def list(aCTX, aArgs = None):
  Output:
  """
  ret = []
- sort = aArgs.get('sort','id')
+ sort = aArgs.get('sort','racks.id')
  with aCTX.db as db:
-  db.do("SELECT racks.* FROM racks ORDER BY %s"%sort)
+  db.do("SELECT racks.id, racks.name, racks.size, locations.name AS location FROM racks LEFT JOIN locations ON racks.location_id = locations.id ORDER BY %s"%sort)
   ret = db.get_rows()
  return ret
 
@@ -30,7 +30,7 @@ def info(aCTX, aArgs = None):
 
  Output:
  """
- ret =  {}
+ ret =  {'status':'OK'}
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  with aCTX.db as db:
@@ -44,7 +44,7 @@ def info(aCTX, aArgs = None):
    ret['found'] = (db.do("SELECT racks.* FROM racks WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = { 'id':'new', 'name':'new-name','location':'default', 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None  }
+   ret['data'] = { 'id':'new', 'name':'new-name','location_id':None, 'size':'48', 'pdu_1':None, 'pdu_2':None, 'console':None  }
 
   sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
   db.do(sqlbase%('console'))
@@ -53,6 +53,9 @@ def info(aCTX, aArgs = None):
   db.do(sqlbase%('pdu'))
   ret['pdus'] = db.get_rows()
   ret['pdus'].append({ 'id':'NULL', 'hostname':'No PDU'})
+  db.do("SELECT id, name FROM locations")
+  ret['locations'] = db.get_rows()
+  ret['locations'].append({'id':'NULL', 'name':'No Location'})
  return ret
 
 #
@@ -66,11 +69,11 @@ def inventory(aCTX, aArgs = None):
  Output:
  """
  ret = {'name': None, 'console':[], 'pdu':[] }
- sqlbase = "SELECT devices.id, devices.hostname, INET_NTOA(ia.ip) AS ip, device_types.name AS type, device_types.base AS base FROM devices LEFT JOIN ipam_addresses AS ia ON ia.id = devices.ipam_id INNER JOIN device_types ON devices.type_id = device_types.id WHERE %s ORDER BY devices.hostname"
+ sqlbase = "SELECT devices.id, devices.hostname, dt.name AS type, dt.base AS base FROM devices INNER JOIN device_types AS dt ON devices.type_id = dt.id WHERE %s ORDER BY devices.hostname"
 
  with aCTX.db as db:
-  if aArgs.get('id'):
-   res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aArgs.get('id'))
+  if 'id' in aArgs:
+   res = db.do("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aArgs['id'])
    select = db.get_row()
    ret['name'] = select.pop('name',"Noname")
    ids = ",".join(str(x) for x in [ select['pdu_1'],select['pdu_2'],select['console']] if x)
@@ -80,7 +83,7 @@ def inventory(aCTX, aArgs = None):
      ret[item['base']].append(item)
   else:
    for type in ['console','pdu']:
-    db.do(sqlbase%("device_types.base = '%s'"%type))
+    db.do(sqlbase%("dt.base = '%s'"%type))
     ret[type] = db.get_rows()
 
  return ret
@@ -101,7 +104,7 @@ def devices(aCTX, aArgs = None):
  with aCTX.db as db:
   db.do("SELECT name, size FROM racks where id = %s"%id)
   ret.update(db.get_row())
-  ret['count']   = db.do("SELECT devices.id, hostname, rack_info.rack_unit, rack_info.rack_size, reservations.user_id FROM devices LEFT JOIN reservations ON devices.id = reservations.device_id INNER JOIN rack_info ON devices.id = rack_info.device_id WHERE rack_info.rack_id = %s ORDER BY %s"%(id,ret['sort']))
+  ret['count']   = db.do("SELECT devices.id, devices.hostname, rack_info.rack_unit, rack_info.rack_size FROM devices INNER JOIN rack_info ON devices.id = rack_info.device_id WHERE rack_info.rack_id = %s ORDER BY %s"%(id,ret['sort']))
   ret['devices'] = db.get_rows()
  return ret
 
@@ -116,5 +119,5 @@ def delete(aCTX, aArgs = None):
  Output:
  """
  with aCTX.db as db:
-  deleted = db.do("DELETE FROM racks WHERE id = %s"%aArgs['id'])
+  deleted = (db.do("DELETE FROM racks WHERE id = %s"%aArgs['id']) == 1)
  return {'deleted':deleted}

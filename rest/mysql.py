@@ -8,7 +8,7 @@ def dump(aCTX, aArgs = None):
  """ Function dumps database schema or values or full database info
 
  Args:
-  - mode (required) 'structure'/'full'
+  - mode (required) 'schema'/'full'
   - username (optional)
   - password (optional)
   - database (optional)
@@ -16,17 +16,17 @@ def dump(aCTX, aArgs = None):
  Output:
  """
  from subprocess import check_output
- if aArgs.get('username') and aArgs.get('password') and aArgs.get('database'):
+ if all(i in aArgs for i in ['username','password','database']):
   db,username,password = aArgs['database'],aArgs['username'],aArgs['password']
  else:
-  db,username,password = aCTX.config['db_name'], aCTX.config['db_user'], aCTX.config['db_pass']
+  db,username,password = aCTX.config['database']['name'], aCTX.config['database']['username'], aCTX.config['database']['password']
  try:
   line_number = 0
-  mode = aArgs.get('mode','structure')
+  mode = aArgs.get('mode','schema')
   cmd  = ["mysqldump", "-u" + username, "-p" + password, db]
   output = []
 
-  if   mode == 'structure':
+  if   mode == 'schema':
    cmd.extend(['--no-data','--add-drop-database'])
   elif mode == 'database':
    output.append("SET sql_mode='NO_AUTO_VALUE_ON_ZERO';")
@@ -37,11 +37,12 @@ def dump(aCTX, aArgs = None):
   else:
    cmd.extend(['--no-create-info','--skip-triggers'])
   output.append("USE %s;"%db)
-  # print(" ".join(cmd))
   data = check_output(cmd).decode()
   for line in data.split('\n'):
    line_number+=1
-   if not line[:2] in [ '/*','--']:
+   if line[12:17] == "`oui`":
+    continue
+   elif not line[:2] in [ '/*','--']:
     if "AUTO_INCREMENT=" in line:
      parts = line.split();
      for indx, part in enumerate(parts):
@@ -49,7 +50,6 @@ def dump(aCTX, aArgs = None):
        parts.remove(part)
        break
      line = " ".join(parts)
-    # print("%05d: %s"%(line_number,line))
     output.append(line)
   res = 'OK'
  except Exception as e:
@@ -70,10 +70,10 @@ def restore(aCTX, aArgs = None):
   - result
  """
  from subprocess import check_output
- if aArgs.get('username') and aArgs.get('password'):
+ if all(i in aArgs for i in ['username','password']):
   username,password = aArgs['username'],aArgs['password']
  else:
-  username,password = aCTX.config['db_user'], aCTX.config['db_pass']
+  username,password = aCTX.config['database']['username'], aCTX.config['database']['password']
 
  try:
   cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '<',aArgs['file']]
@@ -102,7 +102,7 @@ def diff(aCTX, aArgs = None):
  with open(aArgs['schema_file']) as f:
   data = f.read()
  ret = {}
- aArgs.update({'mode':'structure'})
+ aArgs.update({'mode':'schema'})
  db = dump(aCTX, aArgs)
  ret['source'] = db['status']
  """ somehow now there is a now an extra line break... => [:-1] """
@@ -127,6 +127,7 @@ def patch(aCTX, aArgs = None):
  Output:
  """
  from os import remove
+ from json import dumps
  ret = {'status':'NOT_OK'}
  args = dict(aArgs)
  args.update({'mode':'database','full':True})
@@ -163,4 +164,5 @@ def patch(aCTX, aArgs = None):
     remove('mysql.backup')
     remove('mysql.values')
     ret['status'] = 'OK'
- return ret
+ 
+ return {'status':ret['status'],'output':dumps(ret,indent=2,sort_keys=True).split('\n')}

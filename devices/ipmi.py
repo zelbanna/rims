@@ -13,13 +13,13 @@ from rims.devices.generic import Device as GenericDevice
 
 class Device(GenericDevice):
 
- def __init__(self, aCTX, aIP):
-  GenericDevice.__init__(self, aCTX, aIP)
+ def __init__(self, aCTX, aID, aIP = None):
+  GenericDevice.__init__(self, aCTX, aID, aIP)
 
  def get_info(self, agrep):
   from subprocess import check_output
   result = []
-  readout = check_output("ipmitool -H " + self._ip + " -U " + self._ctx.settings['ipmi']['username'] + " -P " + self._ctx.settings['ipmi']['password'] + " sdr | grep -E '" + agrep + "'",shell=True).decode()
+  readout = check_output("ipmitool -H " + self._ip + " -U " + self._ctx.config['ipmi']['username'] + " -P " + self._ctx.config['ipmi']['password'] + " sdr | grep -E '" + agrep + "'",shell=True).decode()
   for fanline in readout.split('\n'):
    if fanline is not "":
     fan = fanline.split()
@@ -34,5 +34,5 @@ class Device(GenericDevice):
   FNULL = open(devnull, 'w')
   rear  = str2hex(arear)
   front = str2hex(afront)
-  ipmistring = "ipmitool -H " + self._ip + " -U " + self._ctx.settings['ipmi']['username'] + " -P " + self._ctx.settings['ipmi']['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
+  ipmistring = "ipmitool -H " + self._ip + " -U " + self._ctx.config['ipmi']['username'] + " -P " + self._ctx.config['ipmi']['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
   return check_call(ipmistring,stdout=FNULL,stderr=FNULL,shell=True)

@@ -1,35 +1,44 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from os   import path as ospath
+from os   import path as ospath, getcwd
 from sys  import path as syspath, argv, exit
 from json import loads,load,dumps
 from time import time
-syspath.insert(1, ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
-from rims.core.genlib import simple_arg_parser
+from argparse import ArgumentParser
+
+basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..'))
+syspath.insert(1, basepath)
 from rims.core.common import rest_call
 
-input = simple_arg_parser(argv)
-if   input.get('a'):
- func = "add"
- with open(input['a'],'r') as f:
+parser = ArgumentParser(description = 'Interface to RIMS task system', prog = 'task.py')
+parser.add_argument('config', help = 'RIMS config file')
+parser.add_argument('-n','--node',   help = 'Node to run on', required = False, default = 'master')
+parser.add_argument('-a','--add',    nargs = 1, help = 'Add JSON file with task info', required = False)
+parser.add_argument('-d','--delete', nargs = 1, help = 'Id of task to delete', required = False)
+parser.add_argument('-l','--list',   help = 'List tasks', required = False, action = 'store_true')
+input = parser.parse_args()
+
+if   input.add:
+ func = 'add'
+ with open(input.add[0],'r') as f:
   args = load(f)
- args['node'] = input.get('n',args.get('node','master'))
-elif input.get('d'):
- func = "delete"
- args = {'id':input['d'],'node':input.get('n','master')}
-elif input.get('l'):
- func = "list"
- args = {'node':input.get('n','master')}
+elif input.delete:
+ func = 'delete'
+ args = {'id':input.delete}
+elif input.list:
+ func = 'list'
+ args = {}
 else:
- print("%s: <config.json> [-n(ode) <node-name>] -a(dd) <JSON file>| -d(elete) <id>| -l(ist)"%argv[0])
+ parser.print_help()
  exit(0)
 
-with open(argv[1],'r') as f:
+args['node'] = input.node
+with open(input.config,'r') as f:
  config = load(f)
-started = "Executing:system_task_%s(%s)"%(func,args)
+started = "Executing:system_task_%s(%s)"%(func, args)
 try:
- output = rest_call("%s/api/system/task_%s"%(config['master'],func),aArgs = args, aTimeout = 300, aDataOnly = True)
+ output = rest_call("%s/api/master/task_%s"%(config['master'],func),aArgs = args, aTimeout = 300, aDataOnly = True)
 except Exception as e:
  output = e.args[0]
 print(started)
