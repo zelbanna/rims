@@ -233,14 +233,29 @@ def extended(aCTX, aArgs = None):
   result = {}
 
   if operation and ret['id']:
-   if operation == 'add_pem':
+   if   operation == 'add_pem':
     result['add_pem'] = (db.do("INSERT INTO device_pems(device_id) VALUES(%s)"%ret['id']) > 0)
-   if operation == 'remove_pem':
+   elif operation == 'remove_pem':
     result['remove_pem'] = (db.do("DELETE FROM device_pems WHERE device_id = %s AND id = %s "%(ret['id'],aArgs['pem_id'])) > 0)
-   if operation == 'add_ddp':
+   elif operation == 'add_ddp':
     result['add_pem'] = (db.do("INSERT INTO device_data_points(device_id) VALUES(%s)"%ret['id']) > 0)
-   if operation == 'remove_ddp':
+   elif operation == 'remove_ddp':
     result['remove_pem'] = (db.do("DELETE FROM device_data_points WHERE device_id = %s AND id = %s "%(ret['id'],aArgs['ddp_id'])) > 0)
+   elif operation == 'lookup_ddp':
+    result['ddp'] = {'insert':0}
+    from importlib import import_module
+    try:
+     db.do("SELECT INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN device_interfaces AS di ON di.interface_id = devices.management_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.id = %s"%ret['id'])
+     info = db.get_row()
+     module = import_module("rims.devices.%s"%info['type'])
+     device = getattr(module,'Device',None)(aCTX, ret['id'], info['ip'])
+     for ddp in device.get_data_points():
+      result['ddp']['insert'] += db.do("INSERT INTO device_data_points (device_id,measurement,tags,name,oid) VALUES(%i,'%s','%s','%s','%s') ON DUPLICATE KEY UPDATE id = id"%(int(ret['id']),ddp[0],ddp[1],ddp[2],ddp[3]))
+    except Exception as e:
+     result['ddp']['status'] = 'NOT_OK'
+     result['ddp']['info'] = str(e)
+    else:
+     result['status'] = 'OK'
 
    if operation == 'update':
     if aArgs.get('a_domain_id') and not aArgs['management_id'] in ['NULL',None] and (db.do("SELECT ia.id, ia.hostname, ia.a_domain_id FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE di.interface_id = %s"%aArgs['management_id']) > 0):
@@ -679,7 +694,7 @@ def model_list(aCTX, aArgs = None):
  with aCTX.db as db:
   if op == 'sync':
    old = db.ignore_warnings(True)
-   ret['status'] = "OK" if (db.do("INSERT IGNORE INTO device_models (name, type_id) SELECT DISTINCT model AS name ,type_id FROM devices") > 0) else "NO_NEW_MODELS"
+   ret['status'] = "OK" if (db.do("INSERT IGNORE INTO device_models (name, type_id) SELECT DISTINCT model AS name ,type_id FROM devices WHERE model NOT IN ('None','NULL')") > 0) else "NO_NEW_MODELS"
    db.ignore_warnings(old)
   db.do("SELECT dm.id, dm.name, dt.name AS type FROM device_models AS dm LEFT JOIN device_types AS dt ON dt.id = dm.type_id ORDER BY dm.name, dt.name")
   ret['models'] = db.get_rows()
@@ -919,7 +934,7 @@ def interface_snmp(aCTX, aArgs = None):
     data = dev.interfaces()
   except Exception as err:
    ret['status'] = 'NOT_OK'
-   ret['info'] = repr(err)
+   ret['info'] = str(err)
   else:
    ret['status'] = 'OK'
    if aArgs.get('index'):
@@ -935,10 +950,10 @@ def interface_snmp(aCTX, aArgs = None):
      if entry:
       mac = mac2int(entry.get('mac','0'))
       if not ((entry['name'] == con['name']) and (entry['description'] == con['description']) and (mac == con['mac'])):
-       ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', description = '%s', mac = %s WHERE interface_id = %s"%(entry['name'][0:24],entry['description'],mac,con['interface_id']))
+       ret['update'] += db.do("UPDATE device_interfaces SET name = '%s', description = '%s', mac = %s WHERE interface_id = %s"%(entry['name'][:24],entry['description'],mac,con['interface_id']))
     for key, entry in data.items():
      if entry['state'] == 'up':
-      ret['insert'] += db.do("INSERT INTO device_interfaces (device_id,name,description,snmp_index,mac) VALUES (%s,'%s','%s',%s,%s)"%(aArgs['device_id'],entry['name'][0:24],entry['description'],key,mac2int(entry['mac'])))
+      ret['insert'] += db.do("INSERT INTO device_interfaces (device_id,name,description,snmp_index,mac) VALUES (%s,'%s','%s',%s,%s)"%(aArgs['device_id'],entry['name'][:24],entry['description'],key,mac2int(entry['mac'])))
      else:
       ret['skip'] += 1
  return ret
@@ -976,7 +991,7 @@ def interface_stats(aCTX, aArgs = None):
   if (db.do("SELECT snmp_index,interface_id FROM device_interfaces WHERE device_id = %s AND snmp_index > 0"%aArgs['device_id']) > 0):
    interfaces = db.get_rows()
    device = Device(aCTX, aArgs['device_id'], aArgs.get('ip'))
-   res = device.interface_stats(interfaces)
+   res = device.data_points([],interfaces)
    ret.update(res)
  return ret
 

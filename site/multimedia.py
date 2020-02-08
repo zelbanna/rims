@@ -29,7 +29,7 @@ def list(aWeb):
  aWeb.wr(aWeb.button('trash', DIV='div_content_right', URL='multimedia_cleanup', MSG='Are you sure?'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  for row in data['files']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:290px'>%s</DIV><DIV CLASS=td>"%(row['file']))
+  aWeb.wr("<DIV><DIV  STYLE='max-width:290px'>%s</DIV><DIV>"%(row['file']))
   aWeb.wr(aWeb.button('info',     DIV='div_content_right', TITLE='Title info', URL='multimedia_title?path=%s&file=%s'%(row['path'],row['file'])))
   aWeb.wr(aWeb.button('search',   DIV='div_content_right', TITLE='Lookup info',URL='multimedia_lookup?path=%s&file=%s'%(row['path'],row['file'])))
   aWeb.wr(aWeb.button('document', DIV='div_content_right', TITLE='Subtitles',  URL='multimedia_subtitles?path=%s&file=%s'%(row['path'],row['file'])))
@@ -45,7 +45,7 @@ def cleanup(aWeb):
  aWeb.wr("<ARTICLE CLASS=info><P>Delete</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  for item in data['items']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td>%s</DIV></DIV>"%(item['item'],item['info']))
+  aWeb.wr("<DIV><DIV>%s:</DIV><DIV>%s</DIV></DIV>"%(item['item'],item['info']))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -55,15 +55,15 @@ def title(aWeb):
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<FORM ID=multimedia_info_form>")
  aWeb.wr("<INPUT TYPE=hidden VALUE='%s' NAME=file>"%(aWeb['file']))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=type></DIV></DIV>"%data['type'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Title:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=title></DIV></DIV>"%data['title'])
+ aWeb.wr("<DIV CLASS='info col2'>")
+ aWeb.wr("<DIV>Type:</DIV><DIV><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=type></DIV>"%data['type'])
+ aWeb.wr("<DIV>Title:</DIV><DIV><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=title></DIV>"%data['title'])
  if data.get('episode'):
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Episode:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=episode></DIV></DIV>"%data['episode'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>File Info:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=info></DIV></DIV>"%data['info'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>File Name:</DIV><DIV CLASS=td><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=name></DIV></DIV>"%data['name'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>File Path:</DIV><DIV CLASS=td><INPUT TYPE=TEXT READONLY VALUE='%s' NAME=path></DIV></DIV>"%data['path'])
- aWeb.wr("</DIV></DIV></FORM>")
+  aWeb.wr("<DIV>Episode:</DIV><DIV><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=episode></DIV>"%data['episode'])
+ aWeb.wr("<DIV>File Info:</DIV><DIV><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=info></DIV>"%data['info'])
+ aWeb.wr("<DIV>File Name:</DIV><DIV><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=name></DIV>"%data['name'])
+ aWeb.wr("<DIV>File Path:</DIV><DIV><INPUT TYPE=TEXT READONLY VALUE='%s' NAME=path></DIV>"%data['path'])
+ aWeb.wr("</DIV></FORM>")
  aWeb.wr(aWeb.button('start',DIV='div_content_right', SPIN='true', URL='multimedia_request?request=process',  FRM='multimedia_info_form'))
  aWeb.wr(aWeb.button('sync', DIV='div_content_right', SPIN='true', URL='multimedia_request?request=transfer', FRM='multimedia_info_form'))
  aWeb.wr("</ARTICLE>")
@@ -73,25 +73,25 @@ def title(aWeb):
 def subtitles(aWeb):
  data = aWeb.rest_call("multimedia/check_srt",{'path':aWeb['path'],'file':aWeb['file']})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['name'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Code:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['code'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>File:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['file'])
- aWeb.wr("</DIV></DIV></ARTICLE>")
+ aWeb.wr("<DIV CLASS='info col2'>")
+ aWeb.wr("<DIV>Name:</DIV><DIV>%s</DIV>"%data['name'])
+ aWeb.wr("<DIV>Code:</DIV><DIV>%s</DIV>"%data['code'])
+ aWeb.wr("<DIV>File:</DIV><DIV>%s</DIV>"%data['file'])
+ aWeb.wr("</DIV></ARTICLE>")
 
 #
 #
 def lookup(aWeb):
  data = aWeb.rest_call("multimedia/check_content",{'path':aWeb['path'],'file':aWeb['file'],'subtitle':None})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Result:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>"%data['status'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Video:</DIV><DIV CLASS=td>Set default: %s</DIV><DIV CLASS=td>Language: %s</DIV></DIV>"%(data['video']['set_default'],data['video']['language']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Audio:</DIV><DIV CLASS=td>Add/Remove: [%s/%s]</DIV><DIV CLASS=td>Add AAC: %s</DIV></DIV>"%(",".join(data['audio']['add']),",".join(data['audio']['remove']),data['audio']['add_aac']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Subtitles:</DIV><DIV CLASS=td>Add/Remove: [%s/%s]</DIV><DIV CLASS=td>Languages: %s</DIV></DIV>"%(",".join(data['subtitle']['add']),",".join(data['subtitle']['remove']),data['subtitle']['languages']))
+ aWeb.wr("<DIV CLASS='info col2'>")
+ aWeb.wr("<DIV>Result:</DIV><DIV>%s</DIV><DIV>&nbsp;</DIV>"%data['status'])
+ aWeb.wr("<DIV>Video:</DIV><DIV>Set default: %s</DIV><DIV>Language: %s</DIV>"%(data['video']['set_default'],data['video']['language']))
+ aWeb.wr("<DIV>Audio:</DIV><DIV>Add/Remove: [%s/%s]</DIV><DIV>Add AAC: %s</DIV>"%(",".join(data['audio']['add']),",".join(data['audio']['remove']),data['audio']['add_aac']))
+ aWeb.wr("<DIV>Subtitles:</DIV><DIV>Add/Remove: [%s/%s]</DIV><DIV>Languages: %s</DIV>"%(",".join(data['subtitle']['add']),",".join(data['subtitle']['remove']),data['subtitle']['languages']))
  if data.get('error'):
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Audio:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data['error'])
- aWeb.wr("</DIV></DIV></ARTICLE>")
+  aWeb.wr("<DIV>Audio:</DIV><DIV>%s</DIV>"%data['error'])
+ aWeb.wr("</DIV></ARTICLE>")
 
 #
 #
@@ -100,9 +100,9 @@ def request(aWeb):
  request = args.pop('request',None)
  data = aWeb.rest_call("system/worker",{'module':'multimedia','function':request,'output':True,'args':args})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Res:</DIV><DIV CLASS=td>%s</DIV></DIV>"%data)
- aWeb.wr("</DIV></DIV></ARTICLE>")
+ aWeb.wr("<DIV CLASS='info col2'>")
+ aWeb.wr("<DIV>Res:</DIV><DIV>%s</DIV>"%data)
+ aWeb.wr("</DIV></ARTICLE>")
 
 #
 #

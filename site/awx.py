@@ -21,9 +21,9 @@ def inventory_list(aWeb):
  if data.get('exception'):
   aWeb.wr("Error: %s"%(data['exception']))
  else:
-  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>ID</DIV><DIV>Name</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
   for row in data['inventories']:
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS='td maxed'>%s</DIV><DIV CLASS=td>"%(row['id'],row['name']))
+   aWeb.wr("<DIV><DIV>%s</DIV><DIV CLASS='maxed'>%s</DIV><DIV>"%(row['id'],row['name']))
    aWeb.wr(aWeb.button('items',DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(aWeb['node'],row['id']), SPIN='true', TITLE='Hosts list'))
    aWeb.wr(aWeb.button('trash',DIV='div_content_right', URL='awx_inventory_delete?node=%s&id=%s'%(aWeb['node'],row['id']), SPIN='true', TITLE='Delete inventory', MSG='Really delete inventory?'))
    aWeb.wr("</DIV></DIV>")
@@ -44,10 +44,10 @@ def inventory_info(aWeb):
  aWeb.wr(aWeb.button('add',    DIV='div_content_right', URL='awx_inventory_device_search?node=%s&id=%s'%(aWeb['node'],aWeb['id']), TITLE='Sync with AWX'))
  aWeb.wr(aWeb.button('trash',  DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s&op=delete_list'%(aWeb['node'],aWeb['id']), MSG='Delete hosts?', FRM='awx_inventory_info_form', SPIN='true'))
  aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=awx_inventory_info_form>"%(opres))
- aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Groups</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV>ID</DIV><DIV>Name</DIV><DIV>Description</DIV><DIV>Groups</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['hosts']:
   name = "<A CLASS=z-op DIV=div_content_right URL='device_info?id=%s'>%s</A>"%(row['instance_id'],row['name']) if row['instance_id'] != "" else row['name']
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(row['id'],name,row['description'],",".join(k['name'] for k in row['groups'])))
+  aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>"%(row['id'],name,row['description'],",".join(k['name'] for k in row['groups'])))
   aWeb.wr("<INPUT TYPE=CHECKBOX VALUE=%(id)s NAME='host_%(id)s'>"%row)
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></DIV>")
@@ -83,9 +83,9 @@ def inventory_device_choose(aWeb):
  aWeb.wr("<FORM ID=awx_inventory_device_choose_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(aWeb['id']))
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=node VALUE=%s>"%(aWeb['node']))
- aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>FQDN</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("</DIV><DIV CLASS=table><DIV CLASS=thead><DIV>Id</DIV><DIV>FQDN</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(hostname)s.%(domain)s</DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX VALUE=%(id)s NAME=device_%(id)s></DIV></DIV>"%row)
+  aWeb.wr("<DIV><DIV>%(id)s</DIV><DIV>%(hostname)s.%(domain)s</DIV><DIV><INPUT TYPE=CHECKBOX VALUE=%(id)s NAME=device_%(id)s></DIV></DIV>"%row)
  aWeb.wr("</DIV></DIV></FORM>")
  aWeb.wr(aWeb.button('back',DIV='div_content_right',URL='awx_inventory_device_search?id=%s&node=%s'%(aWeb['id'],aWeb['node'])))
  aWeb.wr(aWeb.button('forward',DIV='div_content_right',URL='awx_inventory_device_sync',FRM='awx_inventory_device_choose_form', SPIN='true'))
@@ -100,6 +100,6 @@ def inventory_device_sync(aWeb):
  aWeb.wr(aWeb.button('forward', DIV='div_content_right', URL='awx_inventory_info?node=%s&id=%s'%(aWeb['node'],aWeb['id'])))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  for row in res['devices']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s.%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(row['id'],row['hostname'],row['domain'],row['ip'],row['awx']))
+  aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s.%s</DIV><DIV>%s</DIV><DIV>%s</DIV></DIV>"%(row['id'],row['hostname'],row['domain'],row['ip'],row['awx']))
  aWeb.wr("</DIV>")
  aWeb.wr("</ARTICLE>")

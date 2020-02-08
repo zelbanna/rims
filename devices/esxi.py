@@ -14,7 +14,7 @@ class Device(GenericDevice):
 
  @classmethod
  def get_state_str(cls,aState):
-  return { "1" : "powered on", "2" : "powered off", "3" : "suspended", "powered on" : 1, "powered off" : 2, "suspended" : 3 }.get(aState)
+  return { "powered on":"up", "powered off":"down","suspended":"suspended" }.get(aState)
 
  @classmethod
  def get_functions(cls):
@@ -91,7 +91,7 @@ class Device(GenericDevice):
   if aType == 'shutdown':
    return 'HOST_NOT_SHUTTING_DOWN'
    # self._command("poweroff")
-  return 'OPERATION_NOT_IMPLEMENTED_%s'%aType.upper()  
+  return 'OPERATION_NOT_IMPLEMENTED_%s'%aType.upper()
 
  #
  def vm_operation(self, aOP, aID, aUUID = None, aSnapshot = None):
@@ -181,8 +181,7 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
    session.get(vmobj)
    session.walk(vminterfaces)
-   vm = {'name':vmobj[0].val.decode(),'config':vmobj[1].val.decode(),'state':vmobj[2].val.decode(),'device_uuid':vmobj[3].val.decode(),'interfaces':{}}
-   vm['state_id'] = self.get_state_str(vm['state'])
+   vm = {'name':vmobj[0].val.decode(),'config':vmobj[1].val.decode(),'state':Device.get_state_str(vmobj[2].val.decode()),'device_uuid':vmobj[3].val.decode(),'interfaces':{}}
    for obj in vminterfaces:
     tag,_,_ = obj.tag.rpartition('.')
     if   tag == '.1.3.6.1.4.1.6876.2.4.1.3':
@@ -201,11 +200,9 @@ class Device(GenericDevice):
    vmstateobj = VarList('.1.3.6.1.4.1.6876.2.1.1.6.%s'%aID)
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
    session.get(vmstateobj)
-   ret['state'] = vmstateobj[0].val.decode()
-   ret['state_id'] = self.get_state_str(ret['state'])
+   ret['state'] = Device.get_state_str(vmstateobj[0].val.decode())
   except:
    ret['state'] = 'unknown'
-   ret['state_id'] = 0
   return ret
 
  #
@@ -219,7 +216,7 @@ class Device(GenericDevice):
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for indx,result in enumerate(vmnameobjs):
-    statelist.append({'id':result.iid, 'name':result.val.decode(), 'state':vmstateobjs[indx].val.decode() ,'state_id':Device.get_state_str(vmstateobjs[indx].val.decode())})
+    statelist.append({'id':result.iid, 'name':result.val.decode(),'state':Device.get_state_str(vmstateobjs[indx].val.decode())})
   except: pass
   if aSort:
    statelist.sort(key = lambda x: x[aSort])

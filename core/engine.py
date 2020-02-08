@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.8"
-__build__ = 216
+__version__ = "5.9"
+__build__ = 219
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -11,18 +11,11 @@ from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enume
 from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
-from functools import lru_cache, partial
+from functools import partial, lru_cache
 from base64 import b64encode, b64decode
 from datetime import datetime,timedelta, timezone
 from crypt import crypt
 from rims.core.common import DB, rest_call
-
-########################################## Tools ###########################################
-
-@lru_cache(maxsize = 256)
-def cached_file_open(aFile):
- with open(aFile, 'rb') as file:
-  return file.read()
 
 ########################################### Context ########################################
 #
@@ -124,6 +117,7 @@ class Context(object):
    print(str(e))
    return False
   else:
+   self.log("______ Loading system - version: %s mode: %s ______"%(__build__,self.config['mode']))
    self.nodes.update(system['nodes'])
    self.services.update(system['services'])
    self.tokens.update(system['tokens'])
@@ -156,6 +150,7 @@ class Context(object):
    print(str(e))
    return False
   else:
+   self.log("______ REST server workers started ______")
    return True
 
  #
@@ -175,7 +170,6 @@ class Context(object):
    self.close()
   elif sig == SIGUSR1:
    print("\n".join(self.module_reload()))
-   cached_file_open.cache_clear()
   elif sig == SIGUSR2:
    data = self.report()
    data.update(self.config)
@@ -270,8 +264,6 @@ class Context(object):
   'Database':', '.join("%s:%s"%(k.lower(),v) for k,v in db_counter.items()),
   'OS path':',' .join(syspath),
   'OS pid':getpid()}
-  try: output['File cache'] = repr(cached_file_open.cache_info())
-  except:pass
   if self.config.get('database'):
    with self.db as db:
     oids = {}
@@ -352,7 +344,6 @@ class WorkerPool(object):
       sema.release()
      self._queue.task_done()
 
-   # TODO clean up DB connections
    return False
 
  #
@@ -442,6 +433,14 @@ class WorkerPool(object):
   for i in range(aSize):
    aSema.acquire()
 
+ def block_map(self, aFunction, aList):
+  """ Apply function on list elements and have at most 20 concurrent workers """
+  nworkers = max(20,int(self._ctx.config['workers']) - 5)
+  sema = self.semaphore(nworkers)
+  for elem in aList:
+   self.add_semaphore(aFunction, sema, elem)
+  self.block(sema,nworkers)
+
  ##################### FUNCTIONs ########################
  #
  def add_function(self, aFunction, *args, **kwargs):
@@ -497,20 +496,20 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.wfile.write(self._body)
 
  def route(self):
-  """ Route request to the right function """
-  path,_,query = (self.path.lstrip('/')).partition('/')
+  """ Route request to the right function /<path>/mod_fun?get or /<site:mod_fun>?get"""
+  path,_,query = self.path[1:].partition('/')
   if path in ['api','external']:
    self.api(path,query)
   elif path in ['infra','images','files']:
    self.files(path,query)
-  elif path == 'site' and len(query) > 0:
-   self.site(query)
   elif path == 'auth':
    self.auth()
   elif path == 'system':
    self.system(query)
+  elif len(path) == 0:
+   self._headers.update({'X-Process':'no route','Location':'portal_main','X-Code':301})
   else:
-   self._headers.update({'X-Process':'no route','Location':'%s/site/portal_main'%(self._ctx.nodes[self._ctx.node]['url']),'X-Code':301})
+   self.site(self.path[1:])
 
  #
  #
@@ -529,12 +528,14 @@ class SessionHandler(BaseHTTPRequestHandler):
   self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Process':'API','X-Route':self.headers.get('X-Route',extras.get('node',self._ctx.node if not mod == 'master' else 'master'))})
   try:
    length = int(self.headers.get('Content-Length',0))
-   raw = self.rfile.read(length).decode() if length > 0 else '{}'
-   if   self.headers.get('Content-Type') == 'application/json': args = loads(raw)
-   elif self.headers.get('Content-Type') == 'application/x-www-form-urlencoded':   args = { k: l[0] for k,l in parse_qs(raw, keep_blank_values=1).items() }
-   else: args = {}
-  except:
-   args = {}
+   if length > 0:
+    raw = self.rfile.read(length).decode()
+    header,_,_ = self.headers['Content-Type'].partition(';')
+    if   header == 'application/json': args = loads(raw)
+    elif header == 'application/x-www-form-urlencoded':   args = { k: l[0] for k,l in parse_qs(raw, keep_blank_values=1).items() }
+    else: args = {}
+   else:  args = {}
+  except: args = {}
   if self._ctx.config['logging']['rest']['enabled'] and self.headers.get('X-Log','true') == 'true':
    with open(self._ctx.config['logging']['rest']['file'], 'a') as f:
     f.write(str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system/worker" else "N/A", self._ctx.node, get.strip())))
@@ -557,10 +558,10 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  #
  #
- def site(self,query):
+ def site(self,path):
   """ Site - serve AJAX information """
-  api,_,get = query.partition('?')
-  (mod,_,fun)    = api.partition('_')
+  api,_,get = path.partition('?')
+  mod,_,fun = api.partition('_')
   stream = Stream(self,get)
   self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200,'X-Process':'site'})
   try:
@@ -580,18 +581,24 @@ class SessionHandler(BaseHTTPRequestHandler):
     stream.wr("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><PRE>%s</PRE></DETAILS>"%(type(e).__name__,str(e)))
    stream.wr("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS>"%(",".join(stream._form.keys())))
    stream.wr("<DETAILS><SUMMARY>Cookie</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(stream._cookies))
-  self._body = stream.output().encode('utf-8')
+  finally:
+   self._body = stream.output().encode('utf-8')
 
  #
  #
  def files(self,path,query):
-  """ Serve "common" system files and also route 'files' """
+  """ Serve "common" system files and also route 'files'
+
+ TODO: evaluate @lru_cache(maxsize=64) when not using site, add back <fun>.get_cache_info()
+
+ """
   query = unquote(query)
   self._ctx.analytics('files', path, query)
   self._headers['X-Process'] = 'files'
-  if query.endswith(".js"):
+  _,_,ftype = query.rpartition('.')
+  if ftype == 'js':
    self._headers['Content-type']='application/javascript; charset=utf-8'
-  elif query.endswith(".css"):
+  elif ftype == 'css':
    self._headers['Content-type']='text/css; charset=utf-8'
   try:
    if not path == 'files':
@@ -600,11 +607,8 @@ class SessionHandler(BaseHTTPRequestHandler):
     param,_,file = query.partition('/')
     fullpath = ospath.join(self._ctx.config['files'][param],file)
    if not fullpath.endswith("/"):
-    if not path == 'files':
-     self._body = cached_file_open(fullpath)
-    else:
-     with open(fullpath, 'rb') as file:
-      self._body = file.read()
+    with open(fullpath, 'rb') as file:
+     self._body = file.read()
    else:
     self._headers['Content-type']='text/html; charset=utf-8'
     _, _, filelist = next(walk(fullpath), (None, None, []))
@@ -666,7 +670,6 @@ class SessionHandler(BaseHTTPRequestHandler):
    output = self._ctx.system_info(env[0])
   elif op == 'reload':
    res = self._ctx.module_reload()
-   cached_file_open.cache_clear()
    output = {'modules':res}
   elif op == 'report':
    output = self._ctx.report()
@@ -763,11 +766,12 @@ class Stream(object):
 
  def put_html(self, aTitle = None, aIcon = 'rims.ico', aTheme = None):
   theme = self._ctx.site['portal'].get('theme','blue') if not aTheme else aTheme
-  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/system.css'><LINK REL='stylesheet' TYPE='text/css' HREF='../infra/theme.%s.css'>"%theme)
+  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='infra/system.css'><LINK REL='stylesheet' TYPE='text/css' HREF='infra/theme.%s.css'>"%theme)
   if aTitle:
    self._body.append("<TITLE>%s</TITLE>"%aTitle)
-  self._body.append("<LINK REL='shortcut icon' TYPE='image/png' HREF='../images/%s'/>"%(aIcon))
-  self._body.append("<SCRIPT SRC='../infra/3.1.1.jquery.min.js'></SCRIPT><SCRIPT SRC='../infra/4.21.0.vis.min.js'></SCRIPT><SCRIPT SRC='../infra/system.js'></SCRIPT>")
+  self._body.append("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/%s'/>"%(aIcon))
+  self._body.append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>")
+  self._body.append("<SCRIPT SRC='infra/3.1.1.jquery.min.js'></SCRIPT><SCRIPT SRC='infra/4.21.0.vis.min.js'></SCRIPT><SCRIPT SRC='infra/system.js'></SCRIPT>")
   self._body.append("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ) .on('input','.slider',slide_monitor); });</SCRIPT>")
   self._body.append("</HEAD>")
 

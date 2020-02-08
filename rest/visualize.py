@@ -119,7 +119,7 @@ def network(aCTX, aArgs = None):
 
    nodes = {ret['id']:{'processed':False,'distance':0,'connected':0}}
    edges = []
-   ret['options'] = {'layout':{'randomSeed':2}, 'physics':{'enabled':True }, 'edges':{'length':180}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'../images/viz-generic.png' }}
+   ret['options'] = {'layout':{'randomSeed':2}, 'physics':{'enabled':True }, 'edges':{'length':180}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'images/viz-generic.png' }}
 
    sql_connected = "SELECT di.device_id AS a_device, di.interface_id AS a_if, di.name AS a_name, di.snmp_index AS a_index, peer.device_id AS b_device, peer.interface_id AS b_if, peer.snmp_index AS b_index, peer.name AS b_name FROM device_interfaces AS di RIGHT JOIN device_interfaces AS peer ON di.connection_id = peer.connection_id AND peer.device_id <> {0} LEFT JOIN device_connections AS dc ON di.connection_id = dc.id WHERE dc.map = 1 AND di.device_id = {0}"
    for lvl in range(0,args.get('diameter',2)):

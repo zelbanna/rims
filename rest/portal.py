@@ -30,7 +30,7 @@ def menu(aCTX, aArgs = None):
  if aCTX.site.get('portal') and aCTX.site['portal'].get('start'):
   ret['start'] = True
   item = aCTX.site['menuitem'][aCTX.site['portal']['start']]
-  ret['menu'] = [{'icon':'../images/icon-start.png', 'title':'Start', 'href':item['href'], 'view':item.get('view','inline'),'type':'menuitem' }]
+  ret['menu'] = [{'icon':'images/icon-start.png', 'title':'Start', 'href':item['href'], 'view':item.get('view','inline'),'type':'menuitem' }]
  else:
   ret['start'] = False
   ret['menu'] = []

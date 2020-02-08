@@ -11,9 +11,9 @@ def list(aWeb):
  aWeb.wr(aWeb.button('reload',DIV='div_content',URL='servers_list?%s'%type))
  aWeb.wr(aWeb.button('add', DIV='div_content_right',URL='servers_info?id=new&%s'%type,TITLE='Add server'))
  aWeb.wr(aWeb.button('help',DIV='div_content_right',URL='servers_help'))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Service</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Node</DIV><DIV>Service</DIV><DIV>Type</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for srv in res['services']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(srv['node'],srv['service'],srv['type']))
+  aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>"%(srv['node'],srv['service'],srv['type']))
   aWeb.wr(aWeb.button('info',DIV='div_content_right',URL='servers_info?id=%s'%(srv['id'])))
   if srv['system']:
    aWeb.wr(aWeb.button('sync',DIV='div_content_right',URL='servers_sync?id=%s'%(srv['id']), SPIN='true', TITLE='Sync server'))
@@ -30,26 +30,26 @@ def list(aWeb):
 #
 #
 def info(aWeb):
- aWeb.wr("<ARTICLE CLASS=info><P>Server</P>")
  args = aWeb.args()
  res  = aWeb.rest_call("master/server_info",args)
  data = res['data']
+ aWeb.wr("<ARTICLE CLASS=info><P>Server</P>")
  aWeb.wr("<FORM ID=servers_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(data['id']))
- aWeb.wr("<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Id:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%data['id'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Node:</DIV><DIV CLASS=td><SELECT NAME=node>")
+ aWeb.wr("<DIV CLASS='info col2'>")
+ aWeb.wr("<DIV>Id:</DIV><DIV CLASS='readonly'>%s</DIV>"%data['id'])
+ aWeb.wr("<DIV>Node:</DIV><DIV><SELECT NAME=node>")
  for node in res['nodes']:
   extra = " selected" if (data['node'] == node) else ""
   aWeb.wr("<OPTION VALUE=%s %s>%s</OPTION>"%(node,extra,node))
- aWeb.wr("</SELECT></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Server:</DIV><DIV CLASS=td><SELECT NAME=type_id>")
+ aWeb.wr("</SELECT></DIV>")
+ aWeb.wr("<DIV>Server:</DIV><DIV><SELECT NAME=type_id>")
  for srv in res['services']:
   extra = " selected" if (data['type_id'] == srv['id']) else ""
   aWeb.wr("<OPTION VALUE=%s %s>%s (%s)</OPTION>"%(srv['id'],extra,srv['service'],srv['type']))
- aWeb.wr("</SELECT></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>UI:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=ui VALUE='%s'></DIV></DIV>"%(data['ui']))
- aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</SELECT></DIV>")
+ aWeb.wr("<DIV>UI:</DIV><DIV><INPUT TYPE=TEXT NAME=ui VALUE='%s'></DIV>"%(data['ui']))
+ aWeb.wr("</DIV>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('save',    DIV='div_content_right', URL='servers_info?op=update', FRM='servers_info_form'))
  if data['id'] != 'new':

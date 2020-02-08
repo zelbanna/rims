@@ -13,7 +13,7 @@ __oid__     = 8072
 
 from rims.core.common import VarList, Session
 
-############################################# Device ##########################################
+########################################### Device ########################################
 class Device(object):
 
  def __init__(self, aCTX, aID, aIP = None):
@@ -27,7 +27,10 @@ class Device(object):
     raise Exception('No IP could be found (%s)'%aID)
 
  @classmethod
- def get_functions(cls):  return []
+ def get_functions(cls): return []
+
+ @classmethod
+ def get_data_points(cls): return []
 
  def __str__(self):   return "GenericDevice(id=%s,ip=%s)"%(self._id,self._ip)
 
@@ -79,6 +82,8 @@ class Device(object):
    objs = VarList('.1.3.6.1.2.1.2.2.1.6','.1.3.6.1.2.1.2.2.1.2','.1.3.6.1.2.1.2.2.1.8','.1.3.6.1.2.1.31.1.1.1.18')
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(objs)
+   if (session.ErrorInd != 0):
+    raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
    for entry in objs:
     if   entry.tag == '.1.3.6.1.2.1.2.2.1.6':
      interfaces[int(entry.iid)] = {'mac':':'.join("%s%s"%x for x in zip(*[iter(entry.val.hex())]*2)).upper() if entry.val else "00:00:00:00:00:00", 'name':"None",'description':"None",'state':'unknown'}
@@ -97,14 +102,24 @@ class Device(object):
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
    ifoid   = VarList('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex,'.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex,'.1.3.6.1.2.1.2.2.1.6.%s'%aIndex)
    session.get(ifoid)
-  except:
-   return {'name':None,'description':None, 'mac':None}
-  else:
-   return {'name':ifoid[0].val.decode(),'description':ifoid[1].val.decode() if ifoid[1].val.decode() != "" else "None", 'mac':':'.join("%s%s"%x for x in zip(*[iter(ifoid[2].val.hex())]*2)).upper()}
+  except: return {'name':None,'description':None, 'mac':None}
+  else:   return {'name':ifoid[0].val.decode(),'description':ifoid[1].val.decode() if ifoid[1].val.decode() != "" else "None", 'mac':':'.join("%s%s"%x for x in zip(*[iter(ifoid[2].val.hex())]*2)).upper()}
 
  #
- def interface_stats(self,aInterfaces):
-  # Processes a list of {'snmp_index','interface_id'} dicts
+ def interfaces_state(self):
+  try:
+   objs = VarList('.1.3.6.1.2.1.2.2.1.8')
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session.walk(objs)
+  except: return {}
+  else:   return {int(entry.iid):'up' if entry.val.decode() == '1' else 'down' for entry in objs} if (session.ErrorInd == 0) else {}
+
+ #
+ def data_points(self, aGeneric, aInterfaces):
+  """ Function processes and updates:
+   - a list of generic objects containing 'snmp' which is a list of objects containing (at least) 'oid' which is a complete
+   - a list of objects containing 'snmp_index' and use IF-MIB to correlate
+  """
   ret = {}
   try:
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
@@ -115,12 +130,20 @@ class Device(object):
      raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
     else:
      iif.update({'in8s':int(ifentry[0].val),'inUPs':int(ifentry[1].val),'out8s':int(ifentry[2].val),'outUPs':int(ifentry[3].val)})
+   for measurement in aGeneric:
+    # Wrap all data with the same tag into the same session object
+    objs = VarList(*[o['oid'] for o in measurement['snmp']])
+    session.get(objs)
+    if (session.ErrorInd != 0):
+     raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
+    else:
+     for i,o in enumerate(measurement['snmp']):
+      o['value'] = objs[i].val.decode()
   except Exception as e:
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
   else:
    ret['status'] = 'OK'
-   ret['interfaces'] = aInterfaces
   return ret
 
  #

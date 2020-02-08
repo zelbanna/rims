@@ -79,6 +79,11 @@ def info(aCTX, aArgs = None):
    for tp in ['license','support_contract']:
     x = aArgs.get(tp,0)
     aArgs[tp] = 1 if (x == True or x == '1' or x == 1) else 0
+
+   for tp in ['receive_date','support_end_date']:
+    if tp in aArgs and aArgs[tp] == '':
+     aArgs.pop(tp,None)
+
    if not id == 'new':
     ret['update'] = db.update_dict('inventory',aArgs,'id=%s'%id)
    else:
@@ -93,7 +98,7 @@ def info(aCTX, aArgs = None):
    for tp in ['license','support_contract']:
     ret['data'][tp] = (ret['data'][tp] == 1)
   else:
-   ret['data'] = {'id':'new','vendor':None,'serial':None,'model':None,'license':False,'license_key':None,'support_contract':False,'support_end_date':None,'description':'N/A','purchase_order':None,'location_id':None,'receive_date':None}
+   ret['data'] = {'id':'new','vendor':None,'serial':None,'model':None,'license':False,'license_key':None,'support_contract':False,'support_end_date':None,'description':'N/A','purchase_order':None,'location_id':None,'receive_date':None,'product':None}
   db.do("SELECT id,name FROM locations")
   ret['locations'] = [{'id':'NULL', 'name':'None'}]
   ret['locations'].extend(db.get_rows())

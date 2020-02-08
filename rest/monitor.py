@@ -2,56 +2,10 @@
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
-#################################### Status management #################################
+#################################### IP Address #################################
 #
 #
-#
-#
-def ipam_events(aCTX, aArgs = None):
- """ Function operates on events
-
- Args:
-  - id (optional). find events for id
-  - op (optional). 'clear'. clears events (all or for 'id')
-  - extra (optional). list of extra fields to add (hostname,ip,ip_state)
-  - limit (optional)
-  - offset (optional)
-
- Output:
-  - status
-  - count (optional)
-  - events (optional) list of {'time','state',<extra>} entries
- """
- ret = {'status':'OK'}
- with aCTX.db as db:
-  if aArgs.get('op') == 'clear':
-   if 'id' in aArgs:
-    ret['count'] = db.do("DELETE FROM ipam_events WHERE ipam_id = %s"%aArgs['id'])
-   else:
-    db.do("TRUNCATE ipam_events")
-  else:
-   fields = ['DATE_FORMAT(ie.time,"%Y-%m-%d %H:%i") AS time', 'ie.state']
-   tables = ['ipam_events AS ie']
-   if 'id' in aArgs:
-    filter = "ie.ipam_id = %s"%aArgs['id']
-   else:
-    filter = "TRUE"
-    fields.append('ie.ipam_id AS id')
-   if 'extra' in aArgs:
-    tables.append('ipam_addresses AS ia')
-    if 'hostname' in aArgs['extra']:
-     fields.append('ia.hostname')
-    if 'ip' in aArgs['extra']:
-     fields.append('INET_NTOA(ia.ip) AS ip')
-    if 'ip_state' in aArgs['extra']:
-     fields.append('ia.state AS ip_state')
-   ret['count'] = db.do("SELECT {} FROM {} WHERE {} ORDER BY time DESC LIMIT {} OFFSET {}".format(", ".join(fields), " LEFT JOIN ".join(tables), filter, aArgs.get('limit','50'), aArgs.get('offset','0')))
-   ret['events']= db.get_rows()
- return ret
-
-#
-#
-def ipam_status(aCTX, aArgs = None):
+def ipam_init(aCTX, aArgs = None):
  """ Initiate a status check for all or a subset of IP:s that belongs to proper interfaces
 
  Args:
@@ -62,8 +16,7 @@ def ipam_status(aCTX, aArgs = None):
  with aCTX.db as db:
   db.do("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
   networks = db.get_rows()
-  # ('wired','optical','virtual')
-  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class <= 3 ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
+  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
   addresses = db.get_rows()
 
  if 'repeat' in aArgs:
@@ -92,11 +45,8 @@ def ipam_process(aCTX, aArgs = None):
   except: aDev['state'] = 'unknown'
   return True
 
- nworkers = max(20,int(aCTX.config['workers']) - 5)
- sema = aCTX.workers.semaphore(nworkers)
- for dev in aArgs['addresses']:
-  aCTX.workers.add_semaphore(__check_ip, sema, dev)
- aCTX.workers.block(sema,nworkers)
+ aCTX.workers.block_map(__check_ip,aArgs['addresses'])
+
  changed = [dev for dev in aArgs['addresses'] if (dev['state'] != dev['old'])]
  if changed:
   args = {'up':[x['id'] for x in changed if x['state'] == 'up'], 'down':[x['id'] for x in changed if x['state'] == 'down']}
@@ -123,7 +73,7 @@ def ipam_report(aCTX, aArgs = None):
   for chg in ['up','down']:
    change = aArgs.get(chg)
    if change:
-    ret[chg] = db.do("UPDATE ipam_addresses SET state = '%s' WHERE ID IN (%s)"%(chg,",".join(str(x) for x in change)))
+    ret[chg] = db.do("UPDATE ipam_addresses SET state = '%s' WHERE id IN (%s)"%(chg,",".join(str(x) for x in change)))
     begin = 0
     final  = len(change)
     while begin < final:
@@ -137,89 +87,85 @@ def ipam_report(aCTX, aArgs = None):
 #
 #
 
-def interface_status(aCTX, aArgs = None):
- """ Initiate a status check for all or a subset of devices' L2 interfaces, if the device is in up state (!)
+def interface_init(aCTX, aArgs = None):
+ """ Initiate a status check for devices' interfaces.
 
  Args:
   - networks (optional). List of subnet_ids to check
+  - repeat (optional). In-memory repetition of state check
 
  """
  ret = {}
  devices = []
- discover = (aArgs.get('discover') in ['up','all'])
 
  with aCTX.db as db:
   db.do("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
-  db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE ia.network_id IN (%s) ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
+  db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE ia.network_id IN (%s) ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
   for dev in db.get_rows():
-   if (db.do("SELECT snmp_index,interface_id FROM device_interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']) > 0):
+   if (db.do("SELECT snmp_index,interface_id,state FROM device_interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']) > 0):
     dev['interfaces'] = db.get_rows()
     devices.append(dev)
 
- interface_process(aCTX,{'devices':devices})
- return {'status':'OK'}
+ if 'repeat' in aArgs:
+  aCTX.workers.add_task('monitor','interface_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
+  return {'status':'OK','info':'MONITOR_CONTINUOUS_INITIATED_F%s'%aArgs['repeat']}
+ else:
+  interface_process(aCTX,{'devices':devices})
+  return {'status':'OK'}
 
 #
 #
 def interface_process(aCTX, aArgs = None):
  """ Function processes a list of devices and their interfaces
 
- TODO: parse mac and name here instead of in report
-
  Args:
   - devices (required)
-  - discover (optional). False/None/"up"/"all", defaults to false
 
  Output:
  """
- from importlib import import_module
+ from rims.devices.generic import Device
  report   = aCTX.node_function('master','monitor','interface_report', aHeader= {'X-Log':'false'})
 
- def __check_if(aCTX, aDev):
+ def __check_if(aDev):
   try:
-   module = import_module("rims.devices.%s"%aDev['type'])
-   device = getattr(module,'Device',None)(aCTX, aDev['device_id'], aDev['ip'])
-   probe  = device.interfaces()
-   exist  = aDev['interfaces']
-   for intf in exist:
-    intf.update( probe.pop(intf.get('snmp_index','NULL'),{}) )
-   if len(exist) > 0:
-    report(aArgs = aDev)
+   if len(aDev['interfaces']) > 0:
+    device = Device(aCTX, aDev['device_id'], aDev['ip'])
+    probe  = device.interfaces_state()
+    for intf in aDev['interfaces']:
+     intf['old'] = intf['state']
+     intf['state'] = probe.get(intf['snmp_index'],'unknown')
+    changed = [intf for intf in aDev['interfaces'] if intf['state'] != intf['old']]
+    if changed:
+     report(aArgs = {'device_id':aDev['device_id'],'up':[x['interface_id'] for x in changed if x['state'] == 'up'], 'down':[x['interface_id'] for x in changed if x['state'] == 'down']})
+
   except Exception as e:
    aCTX.log("monitor_interface_process issue for device %s: %s"%(aDev['device_id'],str(e)))
-  return True
+   return True
 
- nworkers = max(20,int(aCTX.config['workers']) - 5)
- sema = aCTX.workers.semaphore(nworkers)
- for dev in aArgs['devices']:
-  aCTX.workers.add_semaphore(__check_if, sema, aCTX, dev)
- aCTX.workers.block(sema,nworkers)
+ aCTX.workers.block_map(__check_if,aArgs['devices'])
 
  return True
 
 #
 #
 def interface_report(aCTX, aArgs = None):
- """Function updates interface status for a particular device
+ """Function updates interface status
 
  Args:
-  - device_id (required). Device id
-  - interfaces (required). list of interface objects {interface_id,snmp_index,name,state,mac,description}
+  - device_id (required)
+  - up (optional).   List of id that changed to up
+  - down (optional). List of id that changed to down
 
  Output:
  """
- ret = {'update':0,'insert':0}
- def mac2int(aMAC):
-  try:    return int(aMAC.replace(':',""),16)
-  except: return 0
-
+ ret = {'status':'OK','update':0}
  with aCTX.db as db:
-  for intf in aArgs['interfaces']:
-   args = {'device_id':aArgs['device_id'],'snmp_index':intf['snmp_index'],'interface_id':intf.get('interface_id'), 'mac':mac2int(intf.get('mac',0)), 'name':intf.get('name','NA')[:25],'state':intf.get('state','unknown'),'description':intf.get('description','NA')}
-   ret['update'] += db.do("UPDATE device_interfaces SET name = '%(name)s', mac = %(mac)s, state = '%(state)s', description = '%(description)s' WHERE interface_id = %(interface_id)s"%args)
+  for chg in ['up','down']:
+   if aArgs.get(chg):
+    ret[chg] = db.do("UPDATE device_interfaces SET state = '%s' WHERE interface_id IN (%s)"%(chg,",".join(str(x) for x in aArgs[chg])))
  return ret
 
-############################## INTERFACE STATS ###############################
+############################## Statistics ###############################
 
 def statistics_init(aCTX, aArgs = None):
  """ Initiate a status check for all or a subset of devices' interfaces
@@ -238,8 +184,22 @@ def statistics_init(aCTX, aArgs = None):
   db.do("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
   db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE ia.network_id IN (%s) AND ia.state = 'up' AND devices.class IN ('infrastructure','vm','out-of-band') ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
   for dev in db.get_rows():
+   if (db.do("SELECT measurement,tags,name,oid FROM device_data_points WHERE device_id = %s"%dev['device_id']) > 0):
+    dev['data_points'] = []
+    measurements = {}
+    for ddp in db.get_rows():
+     tobj = measurements.get(ddp['measurement'],{})
+     if len(tobj) == 0:
+      measurements[ddp['measurement']] = tobj
+     vobj = tobj.get(ddp['tags'],[])
+     if len(vobj) == 0:
+      tobj[ddp['tags']] = vobj
+     vobj.append({'name':ddp['name'],'oid':ddp['oid'],'value':None})
+    for m,tags in measurements.items():
+     dev['data_points'].extend([{'measurement':m,'tags':t,'snmp':values} for t,values in tags.items()])
    if (db.do("SELECT snmp_index,interface_id,name FROM device_interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']) > 0):
     dev['interfaces'] = db.get_rows()
+   if any(i in dev for i in ['data_points','interfaces']):
     devices.append(dev)
 
  if 'repeat' in aArgs:
@@ -251,31 +211,28 @@ def statistics_init(aCTX, aArgs = None):
 #
 #
 def statistics_process(aCTX, aArgs = None):
- """ Function processes a list of devices and their interfaces
+ """ Function processes a list of devices with  datapoints and their interfaces
 
  Args:
-  - devices (required)
+  - devices (required), each device object has a list of interface objects and optionally data points objects
 
  Output:
  """
  from rims.devices.generic import Device
- report   = aCTX.node_function('master','monitor','statistics_report', aHeader= {'X-Log':'false'})
+ report = aCTX.node_function('master','monitor','statistics_report', aHeader= {'X-Log':'false'})
 
- def __check_sp(aCTX, aDev):
+ def __check_sp(aDev):
   try:
    device = Device(aCTX, aDev['device_id'], aDev['ip'])
-   res = device.interface_stats(aDev['interfaces'])
-   if res['status'] == 'OK':
+   if device.data_points(aDev.get('data_points',[]), aDev['interfaces'])['status'] == 'OK':
     report(aArgs = aDev)
   except Exception as e:
-   aCTX.log("monitor_statstics_process issue for device %s: %s"%(aDev['device_id'],str(e)))
-  return True
+   aCTX.log("statistics_process_failed for device: %s =>%s"%(aDev['device_id'],str(e)))
+   return False
+  else:
+   return True
 
- nworkers = max(20,int(aCTX.config['workers']) - 5)
- sema = aCTX.workers.semaphore(nworkers)
- for dev in aArgs['devices']:
-  aCTX.workers.add_semaphore(__check_sp, sema, aCTX, dev)
- aCTX.workers.block(sema,nworkers)
+ aCTX.workers.block_map(__check_sp,aArgs['devices'])
 
  return {'status':'OK'}
 
@@ -287,20 +244,26 @@ def statistics_report(aCTX, aArgs = None):
  Args:
   - device_id (required). Device id
   - interfaces (required). list of interface objects
-  - monitor_items (optional). list of objects like {'measurement':<measurement>,'tags':'<tag-name>=<tag_value>,...', 'values':[<name1>:<value1>...]}
+  - data_points (optional). list of objects like {'measurement':<measurement>,'tags':'<tag-name>=<tag_value>,...', 'values':[{'name':<name>,'value':<value1>},...]}
 
  Output:
  """
  ret = {'status':'NOT_OK'}
-
  if ('influxdb' in [x['service'] for x in aCTX.services.values() if x['node'] == aCTX.node]):
   from datetime import datetime
+  args = []
   db = aCTX.config['influxdb']
   ts = int(datetime.now().timestamp())
-  tmpl  = ('interface,host_id={0},host_ip={1},if_id=%i,if_name=%b in8s=%i,inUPs=%i,out8s=%i,outUPs=%i {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
-  args = b'\n'.join([tmpl%(x['interface_id'],x['name'].encode(),x['in8s'],x['inUPs'],x['out8s'],x['outUPs']) for x in aArgs['interfaces']])
-  try:   aCTX.rest_call("%s/write?db=%s&precision=s"%(db['url'],db['database']), aApplication = 'octet-stream', aArgs = args)
-  except Exception as e: ret['info'] = str(e)
+  if 'interfaces' in aArgs:
+   tmpl = ('interface,host_id={0},host_ip={1},if_id=%i,if_name=%b in8s=%ii,inUPs=%ii,out8s=%ii,outUPs=%ii {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
+   args.extend([tmpl%(x['interface_id'],x['name'].replace(' ','\ ').encode(),x['in8s'],x['inUPs'],x['out8s'],x['outUPs']) for x in aArgs['interfaces']])
+  if 'data_points' in aArgs:
+   tmpl = ('%b,host_id={0},host_ip={1},%b %b {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
+   args.extend([tmpl%(m['measurement'].encode(),m['tags'].replace(' ','\ ').encode(),(','.join(["%(name)s=%(value)s"%x for x in m['snmp']])).encode()) for m in aArgs['data_points']])
+  try:   aCTX.rest_call("%s/write?db=%s&precision=s"%(db['url'],db['database']), aApplication = 'octet-stream', aArgs = b'\n'.join(args))
+  except Exception as e:
+   ret['info'] = str(e)
+   aCTX.log("statistics_report_error: %s"%str(e))
   else:  ret['status'] = 'OK'
  else:
   ret['info'] = 'No InfluxDB configured and initialized on local node'

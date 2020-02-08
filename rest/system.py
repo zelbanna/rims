@@ -218,10 +218,10 @@ def file_list(aCTX, aArgs = None):
   if 'fullpath' in aArgs:
    directory = aArgs['fullpath']
   elif 'directory' in aArgs:
-   ret['path'] = '../files/%s'%aArgs['directory']
+   ret['path'] = 'files/%s'%aArgs['directory']
    directory = aCTX.config['files'][aArgs['directory']]
   else:
-   ret['path'] = '../images'
+   ret['path'] = 'images'
    directory = 'images'
   for file in listdir(ospath.abspath(directory)):
    ret['files'].append(file)

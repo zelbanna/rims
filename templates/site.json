@@ -8,44 +8,44 @@
  "menuitem": {
   "activities": {
    "href": "activities_main",
-   "icon": "../images/icon-calendar.png"
+   "icon": "images/icon-calendar.png"
   },
   "device": {
    "href": "device_main",
-   "icon": "../images/icon-network.png"
+   "icon": "images/icon-network.png"
   },
   "hypervisors": {
    "href": "hypervisors_main",
-   "icon": "../images/icon-servers.png"
+   "icon": "images/icon-servers.png"
   },
   "inventory": {
    "href": "inventory_main",
-   "icon": "../images/icon-inventory.png"
+   "icon": "images/icon-inventory.png"
   },
   "racks": {
    "href": "racks_main",
-   "icon": "../images/icon-rack.png"
+   "icon": "images/icon-rack.png"
   },
   "resources": {
    "href": "portal_resources",
-   "icon": "../images/icon-tools.png"
+   "icon": "images/icon-tools.png"
   },
   "system": {
    "href": "system_main",
-   "icon": "../images/icon-config.png"
+   "icon": "images/icon-config.png"
   },
   "users": {
    "href": "users_main",
-   "icon": "../images/icon-users.png"
+   "icon": "images/icon-users.png"
   },
   "visualize": {
    "href": "visualize_main",
-   "icon": "../images/icon-visualize.png"
+   "icon": "images/icon-visualize.png"
   }
  },
   "images": {
    "href": "tools_images?navigation=true",
-   "icon": "../images/None"
+   "icon": "images/None"
   }
  }
 }

@@ -81,8 +81,7 @@ def map(aCTX, aArgs = None):
    try:    aArgs['device_id'] = int(aArgs['device_id'])
    except: pass
    else:   ret['update'] = (db.do("UPDATE device_vm_uuid SET device_id = '%(device_id)s' WHERE device_uuid = '%(device_uuid)s'"%aArgs) == 1)
-  db.do("SELECT device_id FROM device_vm_uuid WHERE device_uuid = '%(device_uuid)s'"%aArgs)
-  ret['device_id'] = db.get_val('device_id')
+  ret['device_id'] = db.get_val('device_id') if (db.do("SELECT device_id FROM device_vm_uuid WHERE device_uuid = '%(device_uuid)s'"%aArgs) > 0) else None
  return ret
 
 #

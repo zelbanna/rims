@@ -72,10 +72,10 @@ def list(aWeb):
  aWeb.wr(aWeb.button('devices',DIV='div_content_right', URL='device_discover', TITLE='Discover'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead>")
  for sort in ['IP','Hostname']:
-  aWeb.wr("<DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='device_list?sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red"))
- aWeb.wr("<DIV CLASS=th STYLE='width:30px;'>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+  aWeb.wr("<DIV><A CLASS=z-op DIV=div_content_left URL='device_list?sort=%s&%s'>%s<SPAN STYLE='font-size:14px; color:%s;'>&darr;</SPAN></A></DIV>"%(sort.lower(),aWeb.get_args(['sort']),sort,"black" if not sort.lower() == args['sort'] else "red"))
+ aWeb.wr("<DIV STYLE='width:30px;'>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td STYLE='max-width:180px; overflow-x:hidden'><A CLASS=z-op DIV=div_content_right URL='device_info?id=%i' TITLE='%s'>%s</A></DIV><DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%(row['ip'],row['id'],row['id'], row['hostname'], aWeb.state_ascii(row['state'])))
+  aWeb.wr("<DIV><DIV>%s</DIV><DIV STYLE='max-width:180px; overflow-x:hidden'><A CLASS=z-op DIV=div_content_right URL='device_info?id=%i' TITLE='%s'>%s</A></DIV><DIV><DIV CLASS='state %s' /></DIV></DIV>"%(row['ip'],row['id'],row['id'], row['hostname'], aWeb.state_ascii(row['state'])))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -88,7 +88,7 @@ def oui_search(aWeb):
  aWeb.wr("</ARTICLE>")
  if args.get('op') == 'find':
   res = aWeb.rest_call("master/oui_info",{'oui':args['oui']})
-  aWeb.wr("<ARTICLE CLASS='info'><DIV CLASS=table><DIV CLASS=tbody><DIV CLASS=tr><DIV CLASS=td>OUI:</DIV><DIV CLASS=td>%s</DIV></DIV><DIV CLASS=tr><DIV CLASS=td>Company:</DIV><DIV CLASS=td>%s</DIV></DIV></DIV></DIV></ARTICLE>"%(res['oui'],res['company']))
+  aWeb.wr("<ARTICLE CLASS='info'><DIV CLASS='info col2'><DIV>OUI:</DIV><DIV>%s</DIV><DIV>Company:</DIV><DIV>%s</DIV></DIV></ARTICLE>"%(res['oui'],res['company']))
 
 #
 #
@@ -96,9 +96,9 @@ def oui_list(aWeb):
  args = aWeb.args()
  res = aWeb.rest_call("master/oui_list",args)
  aWeb.wr("<ARTICLE><P>OUI</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Company</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Id</DIV><DIV>Company</DIV></DIV><DIV CLASS=tbody>")
  for oui in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(":".join(oui['oui'][i:i+2] for i in [0,2,4]),oui['company']))
+  aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s</DIV></DIV>"%(":".join(oui['oui'][i:i+2] for i in [0,2,4]),oui['company']))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -107,10 +107,10 @@ def report(aWeb):
  args = aWeb.args()
  res = aWeb.rest_call("device/list",{'extra': ['system', 'type', 'mac','oui','class']})
  aWeb.wr("<ARTICLE><P>Devices</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>Class</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>OUI</DIV><DIV CLASS=th>Model</DIV><DIV CLASS=th>OID</DIV><DIV CLASS=th>Serial</DIV><DIV CLASS=th>State</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Id</DIV><DIV>Device</DIV><DIV>Class</DIV><DIV>IP</DIV><DIV>MAC</DIV><DIV>OUI</DIV><DIV>Model</DIV><DIV>OID</DIV><DIV>Serial</DIV><DIV>State</DIV></DIV><DIV CLASS=tbody>")
  for dev in res['data']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(class)s</DIV><DIV CLASS=td>%(ip)s</DIV><DIV CLASS=td>%(mac)s</DIV><DIV CLASS=td>%(oui)s</DIV><DIV CLASS=td>%(model)s</DIV><DIV CLASS=td>%(oid)s</DIV><DIV CLASS=td>%(serial)s</DIV>"%dev)
-  aWeb.wr("<DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%aWeb.state_ascii(dev['state']))
+  aWeb.wr("<DIV><DIV>%(id)s</DIV><DIV>%(hostname)s</DIV><DIV>%(class)s</DIV><DIV>%(ip)s</DIV><DIV>%(mac)s</DIV><DIV>%(oui)s</DIV><DIV>%(model)s</DIV><DIV>%(oid)s</DIV><DIV>%(serial)s</DIV>"%dev)
+  aWeb.wr("<DIV><DIV CLASS='state %s' /></DIV></DIV>"%aWeb.state_ascii(dev['state']))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -141,80 +141,59 @@ def info(aWeb):
  dev_extra= dev['extra']
  dev_id   = dev['id']
  """ 3 parallell tables """
- width = 700 if (dev.get('rack') and not dev_extra['type_base'] == 'pdu') or dev.get('vm') else 480
- aWeb.wr("<ARTICLE CLASS='info' STYLE='position:relative; height:268px; width:%spx;'><P TITLE='%s'>Device Info</P>"%(width,dev_id))
+ aWeb.wr("<ARTICLE CLASS='info' STYLE='position:relative;'><P TITLE='%s'>Device Info</P>"%(dev_id))
  aWeb.wr("<FORM ID=info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev_id))
  aWeb.wr("<!-- Reachability Info -->")
- aWeb.wr("<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:210px;'><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:  </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev_info['hostname'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>ID:    </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev_id)
- aWeb.wr("<DIV CLASS=tr><DIV CLASS='td title' title='System MAC'>Sys MAC:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=mac VALUE='%s'></DIV></DIV>"%dev_info['mac'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS='td title' title='Management interface MAC'>Mgmt MAC:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev_extra['interface_mac'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Mgmt IP:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev_extra['interface_ip'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>SNMP:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev_info['snmp'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>State:</DIV><DIV CLASS=td><DIV CLASS='state %s' TITLE='interface' />&nbsp;<DIV CLASS='state %s' TITLE='IP' /></DIV></DIV>"%(aWeb.state_ascii(dev_extra['if_state']),aWeb.state_ascii(dev_extra['ip_state'])))
- aWeb.wr("</DIV></DIV></DIV>")
+ aWeb.wr("<DIV CLASS='info col2' STYLE='float:left;'>")
+ aWeb.wr("<DIV>Name:  </DIV><DIV>%s</DIV>"%dev_info['hostname'])
+ aWeb.wr("<DIV CLASS='title' title='System MAC'>Sys MAC:</DIV><DIV><INPUT TYPE=TEXT NAME=mac VALUE='%s'></DIV>"%dev_info['mac'])
+ aWeb.wr("<DIV CLASS='title' title='Management interface MAC'>Mgmt MAC:</DIV><DIV>%s</DIV>"%dev_extra['interface_mac'])
+ aWeb.wr("<DIV>Mgmt IP:</DIV><DIV>%s</DIV>"%dev_extra['interface_ip'])
+ aWeb.wr("<DIV>SNMP:</DIV><DIV>%s</DIV>"%dev_info['snmp'])
+ aWeb.wr("<DIV>State:</DIV><DIV><DIV CLASS='state %s' TITLE='interface' />&nbsp;<DIV CLASS='state %s' TITLE='IP' /></DIV>"%(aWeb.state_ascii(dev_extra['if_state']),aWeb.state_ascii(dev_extra['ip_state'])))
+ aWeb.wr("</DIV>")
  aWeb.wr("<!-- Additional info -->")
- aWeb.wr("<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:227px;'><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr ID=div_reservation_info><DIV CLASS=td>Reserve:</DIV>")
- if dev_extra['type_name'] == 'controlplane':
-  aWeb.wr("<DIV CLASS=td>N/A</DIV>")
- elif reservation:
-  aWeb.wr("<DIV CLASS='td %s'>"%("red" if reservation['valid'] else "orange"))
-  aWeb.wr(reservation['alias'] if reservation['user_id'] != int(cookie['id']) else "<A CLASS=z-op DIV=div_reservation_info URL='reservations_update?op=drop&id=%s'>%s</A>"%(dev_id,reservation['alias']))
-  aWeb.wr("</DIV>")
- else:
-  aWeb.wr("<DIV CLASS='td green'><A CLASS=z-op DIV=div_reservation_info URL='reservations_update?op=reserve&id=%s'>Available</A></DIV>"%dev_id)
+ aWeb.wr("<DIV CLASS='info col2' STYLE='float:left;'>")
+ aWeb.wr("<DIV>ID:</DIV><DIV>%s</DIV>"%dev_id)
+ aWeb.wr("<DIV>Class:</DIV><DIV><SELECT NAME=class>")
+ for cls in dev['classes']:
+  aWeb.wr("<OPTION VALUE={0} {1}>{0}</OPTION>".format(cls," selected" if dev_info['class'] == cls else ""))
+ aWeb.wr("</SELECT></DIV>")
+ aWeb.wr("<DIV>Type:</DIV><DIV><SELECT NAME=type_id>")
+ for type in dev['types']:
+  aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id']," selected" if dev_info['type_id'] == type['id'] else "",type['name']))
+ aWeb.wr("</SELECT></DIV>")
+ aWeb.wr("<DIV>Model: </DIV><DIV><INPUT TYPE=TEXT NAME=model VALUE='%(model)s' TITLE='%(model)s'></DIV>"%(dev_info))
+ aWeb.wr("<DIV>Version:</DIV><DIV>%s</DIV>"%dev_info['version'])
+ aWeb.wr("<DIV>S/N: </DIV><DIV><INPUT TYPE=TEXT NAME=serial VALUE='%s'></DIV>"%(dev_info['serial']))
  aWeb.wr("</DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Class:</DIV>")
- if dev.get('classes'):
-  aWeb.wr("<DIV CLASS=td><SELECT NAME=class>")
-  for cls in dev['classes']:
-   aWeb.wr("<OPTION VALUE={0} {1}>{0}</OPTION>".format(cls," selected" if dev_info['class'] == cls else ""))
-  aWeb.wr("</SELECT></DIV>")
- else:
-  aWeb.wr("<DIV CLASS=td>%s</DIV>"%dev_info['class'])
- aWeb.wr("</DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV>")
- if dev.get('types'):
-  aWeb.wr("<DIV CLASS=td><SELECT NAME=type_id>")
-  for type in dev['types']:
-   aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(type['id']," selected" if dev_info['type_id'] == type['id'] else "",type['name']))
-  aWeb.wr("</SELECT></DIV>")
- else:
-  aWeb.wr("<DIV CLASS=td>%s</DIV>"%dev_extra['type_name'])
- aWeb.wr("</DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Model: </DIV><DIV CLASS=td STYLE='max-width:150px;'><INPUT TYPE=TEXT NAME=model VALUE='%s'></DIV></DIV>"%(dev_info['model']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Version:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev_info['version'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>S/N: </DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=serial VALUE='%s'></DIV></DIV>"%(dev_info['serial']))
- aWeb.wr("</DIV></DIV></DIV>")
  if dev.get('rack') and not dev_extra['type_base'] == 'pdu':
   aWeb.wr("<!-- Rack Info -->")
-  aWeb.wr("<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='width:230px;'><DIV CLASS=tbody>")
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Rack/Pos: </DIV><DIV CLASS=td>%s (%s)</DIV></DIV>"%(dev['rack']['rack_name'],dev['rack']['rack_unit']))
+  aWeb.wr("<DIV CLASS='info col2' STYLE='float:left;'>")
+  aWeb.wr("<DIV>Rack/Pos: </DIV><DIV>%s (%s)</DIV>"%(dev['rack']['rack_name'],dev['rack']['rack_unit']))
   if not dev_extra['type_base'] == 'controlplane':
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Size:    </DIV><DIV CLASS=td>%s U</DIV></DIV>"%(dev['rack']['rack_size']))
+   aWeb.wr("<DIV>Size:</DIV><DIV>%s U</DIV>"%(dev['rack']['rack_size']))
   if not dev_extra['type_base'] == 'console':
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>TS/Port: </DIV><DIV CLASS=td>%s (%s)</DIV></DIV>"%(dev['rack']['console_name'],dev['rack']['console_port']))
+   aWeb.wr("<DIV>TS/Port: </DIV><DIV>%s (%s)</DIV>"%(dev['rack']['console_name'],dev['rack']['console_port']))
   for count,pem in enumerate(dev['pems'],0):
    if count < 4:
-    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s PDU: </DIV><DIV CLASS=td>%s (%s)</DIV></DIV>"%(pem['name'],pem['pdu_name'], pem['pdu_unit']))
-  aWeb.wr("</DIV></DIV></DIV>")
+    aWeb.wr("<DIV>%s PDU: </DIV><DIV>%s (%s)</DIV>"%(pem['name'],pem['pdu_name'], pem['pdu_unit']))
+  aWeb.wr("</DIV>")
  elif dev.get('vm'):
   aWeb.wr("<!-- VM Info -->")
-  aWeb.wr("<DIV STYLE='margin:3px; float:left;'><DIV CLASS=table STYLE='max-width:230px;'><DIV CLASS=tbody>")
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>VM Name:</DIV><DIV CLASS='td readonly small-text' STYLE='max-width:170px;'>%s</DIV></DIV>"%dev['vm']['name'])
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>VM Host:</DIV><DIV CLASS='td readonly small-text' STYLE='max-width:170px;'>%s</DIV></DIV>"%dev['vm']['host'])
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Device UUID'>UUID:</DIV><DIV CLASS='td readonly small-text' STYLE='max-width:170px;'>%s</DIV></DIV>"%dev['vm']['device_uuid'])
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Management UUID'>MGMT:</DIV><DIV CLASS='td readonly small-text' STYLE='max-width:170px;'>%s</DIV></DIV>"%dev['vm']['server_uuid'])
+  aWeb.wr("<DIV CLASS='info col2' STYLE='float:left;'>")
+  aWeb.wr("<DIV>VM Name:</DIV><DIV CLASS='small-text' STYLE='max-width:170px;'>%s</DIV>"%dev['vm']['name'])
+  aWeb.wr("<DIV>VM Host:</DIV><DIV CLASS='small-text' STYLE='max-width:170px;'>%s</DIV>"%dev['vm']['host'])
+  aWeb.wr("<DIV TITLE='Device UUID'>UUID:</DIV><DIV CLASS='small-text' STYLE='max-width:170px;' TITLE='%(device_uuid)s'>%(device_uuid)s</DIV>"%dev['vm'])
+  aWeb.wr("<DIV TITLE='Management UUID'>MGMT:</DIV><DIV CLASS='small-text' STYLE='max-width:170px;' TITLE='%(server_uuid)s'>%(server_uuid)s</DIV>"%dev['vm'])
   aWeb.wr("<!-- Config: %s -->"%dev['vm']['config'])
-  aWeb.wr("</DIV></DIV></DIV>")
+  aWeb.wr("</DIV></DIV>")
  aWeb.wr("<!-- Text fields -->")
- aWeb.wr("<DIV STYLE='display:block; clear:both; margin-bottom:3px; margin-top:1px; width:99%;'><DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>Comments:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=comment VALUE='{}'></DIV></DIV>".format("" if not dev_info['comment'] else dev_info['comment']))
- aWeb.wr("<DIV CLASS='tr even'><DIV CLASS=td>Web UI:</DIV><DIV CLASS=td><INPUT CLASS=odd TYPE=TEXT NAME=url VALUE='{}'></DIV></DIV>".format("" if not dev_info['url'] else dev_info['url']))
- aWeb.wr("</DIV></DIV></DIV>")
+ aWeb.wr("<DIV CLASS='info col2' STYLE='clear:both; margin-bottom:3px; margin-top:1px;'>")
+ aWeb.wr("<DIV>Comments:</DIV><DIV><INPUT TYPE=TEXT NAME=comment VALUE='{}'></DIV>".format("" if not dev_info['comment'] else dev_info['comment']))
+ aWeb.wr("<DIV>Web UI:</DIV><DIV><INPUT TYPE=TEXT NAME=url VALUE='{}'></DIV>".format("" if not dev_info['url'] else dev_info['url']))
+ aWeb.wr("</DIV>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',     DIV='div_content_right',URL='device_info?id=%i'%dev_id))
  aWeb.wr(aWeb.button('save',       DIV='div_content_right',URL='device_info?op=update', FRM='info_form', TITLE='Save Basic Device Information'))
@@ -244,7 +223,7 @@ def info(aWeb):
   else:
    aWeb.wr("<LI><A CLASS=z-op DIV=div_dev_data SPIN=true URL='device_function?id=%s&ip=%s&type=%s&op=%s'>%s</A></LI>"%(dev_id, dev_extra['interface_ip'], dev_extra['type_name'], fun, fun.title()))
  aWeb.wr("</UL></NAV>")
- aWeb.wr("<SECTION CLASS='content' ID=div_dev_data STYLE='top:308px; overflow-x:hidden; overflow-y:auto;'></SECTION>")
+ aWeb.wr("<SECTION ID=div_dev_data STYLE='overflow-x:hidden; overflow-y:auto;'></SECTION>")
 
 ####################################### UPDATE INFO ###################################
 #
@@ -259,59 +238,43 @@ def extended(aWeb):
  aWeb.wr("<FORM ID=info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(dev['id']))
  aWeb.wr("<!-- Reachability Info -->")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE='%s'></DIV></DIV>"%(dev_info['hostname']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Priv OID:</DIV><DIV CLASS='td readonly'>.1.3.6.1.4.1.%s</DIV></DIV>"%dev_extra['oid'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Mgmt OUI:  </DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%dev_extra['oui'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Mgmt Interface:</DIV><DIV CLASS=td><SELECT NAME=management_id>")
+ aWeb.wr("<DIV CLASS='info col3'>")
+ aWeb.wr("<DIV>Name:</DIV><DIV><INPUT NAME=hostname TYPE=TEXT VALUE='%s'></DIV><DIV/>"%(dev_info['hostname']))
+ aWeb.wr("<DIV>Priv OID:</DIV><DIV>.1.3.6.1.4.1.%s</DIV><DIV/>"%dev_extra['oid'])
+ aWeb.wr("<DIV>Mgmt OUI:</DIV><DIV>%s</DIV><DIV/>"%dev_extra['oui'])
+ aWeb.wr("<DIV>Mgmt Interface:</DIV><DIV><SELECT NAME=management_id>")
  for intf in dev['interfaces']:
   extra = " selected" if ((dev_info['management_id'] is None and intf['interface_id'] == 'NULL') or (dev_info['management_id'] == intf['interface_id'])) else ""
   aWeb.wr("<OPTION VALUE={0} {1}>{2} ({3} - {4})</OPTION>".format(intf['interface_id'],extra,intf['name'],intf['ip'],intf['fqdn']))
- aWeb.wr("</SELECT></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>MGMT Domain:</DIV><DIV CLASS=td><SELECT NAME=a_domain_id>")
+ aWeb.wr("</SELECT></DIV><DIV/>")
+ aWeb.wr("<DIV>MGMT Domain:</DIV><DIV><SELECT NAME=a_domain_id>")
  for dom in domains:
   extra = " selected" if dev_extra['management_domain'] == dom['id'] or dev_extra['management_domain'] is None and dom['id'] == 0 else ""
   aWeb.wr("<OPTION VALUE='%s' %s>%s</OPTION>"%(dom['id'],extra,dom['name']))
- aWeb.wr("</SELECT></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td><CENTER>Device-Unique Data Points<CENTER></DIV><DIV CLASS=td>")
- aWeb.wr(aWeb.button('add',   DIV='div_content_right',URL='device_extended?op=add_ddp&id=%s'%(dev['id']), TITLE='Add data point'))
- aWeb.wr("</DIV></DIV>")
- for stat in dev['data_points']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='%s'>Data Point:</DIV><DIV CLASS=td>"%stat['id'])
-  aWeb.wr("<INPUT TYPE=TEXT NAME=ddp_%(id)s_measurement VALUE='%(measurement)s' PLACEHOLDER='measurement' TITLE='measurement' STYLE='width:unset;'>"%stat)
-  aWeb.wr("<INPUT TYPE=TEXT NAME=ddp_%(id)s_tags VALUE='%(tags)s' PLACEHOLDER='tags' TITLE='tags' STYLE='width:unset;'>"%stat)
-  aWeb.wr("<INPUT TYPE=TEXT NAME=ddp_%(id)s_name VALUE='%(name)s' PLACEHOLDER='name' TITLE='name' STYLE='width:unset;'>"%stat)
-  aWeb.wr("<INPUT TYPE=TEXT NAME=ddp_%(id)s_oid VALUE='%(oid)s' PLACEHOLDER='oid' TITLE='OID' STYLE='width:30%%;'>"%stat)
-  aWeb.wr("</DIV><DIV CLASS=td>")
-  aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='device_extended?op=remove_ddp&id=%s&ddp_id=%s'%(dev['id'],stat['id']), TITLE='Remove data point'))
-  aWeb.wr("</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
+ aWeb.wr("</SELECT></DIV><DIV/>")
  aWeb.wr("<!-- Rack Info -->")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Rack:</DIV><DIV CLASS=td><SELECT NAME=rack_info_rack_id>")
+ aWeb.wr("<DIV>Rack:</DIV><DIV><SELECT NAME=rack_info_rack_id>")
  for rack in dev['infra']['racks']:
   extra = " selected" if ((not dev.get('rack') and rack['id'] == 'NULL') or (dev.get('rack') and dev['rack']['rack_id'] == rack['id'])) else ""
   aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(rack['id'],extra,rack['name']))
- aWeb.wr("</SELECT></DIV></DIV>")
+ aWeb.wr("</SELECT></DIV><DIV/>")
  if dev.get('rack') and not dev_extra['type_base'] == 'pdu':
   if not dev_extra['type_base'] == 'controlplane':
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Rack Size:</DIV><DIV CLASS=td><INPUT NAME=rack_info_rack_size TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['rack']['rack_size']))
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Top rack unit of device placement'>Rack Unit:</DIV><DIV CLASS=td><INPUT NAME=rack_info_rack_unit TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['rack']['rack_unit']))
+   aWeb.wr("<DIV>Rack Size:</DIV><DIV><INPUT NAME=rack_info_rack_size TYPE=TEXT VALUE='{}'></DIV><DIV/>".format(dev['rack']['rack_size']))
+   aWeb.wr("<DIV TITLE='Top rack unit of device placement'>Rack Unit:</DIV><DIV><INPUT NAME=rack_info_rack_unit TYPE=TEXT VALUE='{}'></DIV><DIV/>".format(dev['rack']['rack_unit']))
   if not dev_extra['type_base'] == 'console':
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>TS:</DIV><DIV CLASS=td><SELECT NAME=rack_info_console_id>")
+   aWeb.wr("<DIV>TS:</DIV><DIV><SELECT NAME=rack_info_console_id>")
    for console in dev['infra']['consoles']:
     extra = " selected='selected'" if (dev['rack']['console_id'] == console['id']) or (not dev['rack']['console_id'] and console['id'] == 'NULL') else ""
     aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(console['id'],extra,console['hostname']))
-   aWeb.wr("</SELECT></DIV></DIV>")
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Console port in rack TS'>TS Port:</DIV><DIV CLASS=td><INPUT NAME=rack_info_console_port TYPE=TEXT VALUE='{}'></DIV></DIV>".format(dev['rack']['console_port']))
+   aWeb.wr("</SELECT></DIV><DIV/>")
+   aWeb.wr("<DIV TITLE='Console port in rack TS'>TS Port:</DIV><DIV><INPUT NAME=rack_info_console_port TYPE=TEXT VALUE='{}'></DIV><DIV/>".format(dev['rack']['console_port']))
   if not dev_extra['type_base'] == 'controlplane':
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td><CENTER>Power Entry Modules<CENTER></DIV><DIV CLASS=td>")
+   aWeb.wr("<DIV/><DIV CLASS='heading'>Power Entry Modules</DIV><DIV>")
    aWeb.wr(aWeb.button('add',DIV='div_content_right',URL='device_extended?op=add_pem&id=%s'%(dev['id']), TITLE='Add PEM'))
-   aWeb.wr("</DIV></DIV>")
+   aWeb.wr("</DIV>")
    for pem in dev['pems']:
-    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>PEM:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=pems_%(id)s_name VALUE='%(name)s'></DIV><DIV CLASS=td>"%(pem))
-    aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='device_extended?op=remove_pem&id=%s&pem_id=%s'%(dev['id'],pem['id']), TITLE='Remove PEM'))
-    aWeb.wr("</DIV></DIV>")
-    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>PDU:</DIV><DIV CLASS=td><SELECT NAME=pems_%(id)s_pdu_slot>"%pem)
+    aWeb.wr("<DIV>PEM:</DIV><DIV><INPUT STYLE='width:unset' TYPE=TEXT NAME=pems_%(id)s_name VALUE='%(name)s' TITLE='PEM name'> <SELECT STYLE='width:unset;' NAME=pems_%(id)s_pdu_slot>"%pem)
     for pdu in dev['infra']['pdus']:
      pdu_info = dev['infra']['pdu_info'].get(str(pdu['id']))
      if pdu_info:
@@ -320,13 +283,26 @@ def extended(aWeb):
        pdu_slot_name = pdu_info["%s_slot_name"%slotid]
        extra = "selected" if ((pem['pdu_id'] == pdu['id']) and (pem['pdu_slot'] == slotid)) or (not pem['pdu_id'] and pdu['id'] == 'NULL') else ""
        aWeb.wr("<OPTION VALUE=%s.%s %s>%s</OPTION>"%(pdu['id'],slotid, extra, pdu['hostname']+":"+pdu_slot_name))
-    aWeb.wr("</SELECT></DIV></DIV>")
-    aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Unit:</DIV><DIV CLASS=td><INPUT NAME=pems_%s_pdu_unit TYPE=TEXT VALUE='%s'></DIV></DIV>"%(pem['id'],pem['pdu_unit']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>&nbsp;</DIV><DIV CLASS=td>&nbsp;</DIV></DIV>")
- aWeb.wr("</DIV></DIV></FORM>")
+    aWeb.wr("</SELECT> Unit:<INPUT STYLE='width:unset;' NAME=pems_%s_pdu_unit TYPE=TEXT VALUE='%s'></DIV><DIV>"%(pem['id'],pem['pdu_unit']))
+    aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='device_extended?op=remove_pem&id=%s&pem_id=%s'%(dev['id'],pem['id']), TITLE='Remove PEM'))
+    aWeb.wr("</DIV>")
+ aWeb.wr("<DIV/><DIV CLASS='heading'>Device-Unique Data Points</DIV><DIV>")
+ aWeb.wr(aWeb.button('add',DIV='div_content_right',URL='device_extended?op=add_ddp&id=%s'%(dev['id']), TITLE='Add data point'))
+ aWeb.wr("</DIV>")
+ for stat in dev['data_points']:
+  aWeb.wr("<DIV TITLE='%s'>Data Point:</DIV><DIV>"%stat['id'])
+  aWeb.wr("<INPUT TYPE=TEXT NAME=ddp_%(id)s_measurement VALUE='%(measurement)s' PLACEHOLDER='measurement' TITLE='measurement' STYLE='width:unset;'>"%stat)
+  aWeb.wr("<INPUT TYPE=TEXT NAME=ddp_%(id)s_tags VALUE='%(tags)s' PLACEHOLDER='tags' TITLE='tags' STYLE='width:unset;'>"%stat)
+  aWeb.wr("<INPUT TYPE=TEXT NAME=ddp_%(id)s_name VALUE='%(name)s' PLACEHOLDER='name' TITLE='name' STYLE='width:unset;'>"%stat)
+  aWeb.wr("<INPUT TYPE=TEXT NAME=ddp_%(id)s_oid VALUE='%(oid)s' PLACEHOLDER='oid' TITLE='OID' STYLE='width:30%%;'>"%stat)
+  aWeb.wr("</DIV><DIV>")
+  aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='device_extended?op=remove_ddp&id=%s&ddp_id=%s'%(dev['id'],stat['id']), TITLE='Remove data point'))
+  aWeb.wr("</DIV>")
+ aWeb.wr("</DIV></FORM>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='device_extended?id=%s'%dev['id']))
  aWeb.wr(aWeb.button('back',  DIV='div_content_right',URL='device_info?id=%s'%dev['id']))
  aWeb.wr(aWeb.button('save',  DIV='div_content_right',URL='device_extended?op=update', FRM='info_form', TITLE='Save Device Information'))
+ aWeb.wr(aWeb.button('search', DIV='div_content_right',URL='device_extended?op=lookup_ddp&id=%s'%dev['id'], TITLE='Lookup Data Points'))
  aWeb.wr("<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('result','')))
  aWeb.wr("</ARTICLE>")
 
@@ -336,24 +312,24 @@ def control(aWeb):
  args = aWeb.args()
  res = aWeb.rest_call("device/control",args)
  aWeb.wr("<ARTICLE CLASS='info'><P>Device Controls</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Reboot:</DIV><DIV CLASS=td>&nbsp;")
+ aWeb.wr("<DIV CLASS='info col3'>")
+ aWeb.wr("<DIV>Reboot:</DIV><DIV>&nbsp;")
  aWeb.wr(aWeb.button('revert', DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&dev_op=reboot'%res['id'], MSG='Really reboot device?', TITLE='reboot device'))
- aWeb.wr("</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res.get('dev_op') if args.get('dev_op') == 'reboot' else '&nbsp;'))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Shutdown:</DIV><DIV CLASS=td>&nbsp;")
+ aWeb.wr("</DIV><DIV>%s</DIV>"%(res.get('dev_op') if args.get('dev_op') == 'reboot' else '&nbsp;'))
+ aWeb.wr("<DIV>Shutdown:</DIV><DIV>&nbsp;")
  aWeb.wr(aWeb.button('off', DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&dev_op=shutdown'%res['id'], MSG='Really shutdown device?', TITLE='Shutdown device'))
- aWeb.wr("</DIV><DIV CLASS=td>%s</DIV></DIV>"%(res.get('dev_op') if args.get('dev_op') == 'shutdown' else '&nbsp;'))
+ aWeb.wr("</DIV><DIV>%s</DIV>"%(res.get('dev_op') if args.get('dev_op') == 'shutdown' else '&nbsp;'))
  for pem in res.get('pems',[]):
   aWeb.wr("<!-- %(pdu_type)s@%(pdu_ip)s:%(pdu_slot)s/%(pdu_unit)s -->"%pem)
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>PEM: %s</DIV><DIV CLASS=td>&nbsp;"%pem['name'])
+  aWeb.wr("<DIV>PEM: %s</DIV><DIV>&nbsp;"%pem['name'])
   if   pem['state'] == 'off':
    aWeb.wr(aWeb.button('start', DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&pem_id=%s&pem_op=on'%(res['id'],pem['id'])))
   elif pem['state'] == 'on':
    aWeb.wr(aWeb.button('stop',  DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&pem_id=%s&pem_op=off'%(res['id'],pem['id'])))
   else:
    aWeb.wr(aWeb.button('help', TITLE='Unknown state'))
-  aWeb.wr("</DIV><DIV CLASS=td>%s</DIV></DIV>"%(pem.get('op',{'status':'&nbsp;'})['status']))
- aWeb.wr("</DIV></DIV>")
+  aWeb.wr("</DIV><DIV>%s</DIV>"%(pem.get('op',{'status':'&nbsp;'})['status']))
+ aWeb.wr("</DIV>")
  aWeb.wr("</ARTICLE>")
 
 #
@@ -367,9 +343,9 @@ def delete(aWeb):
 def type_list(aWeb):
  res = aWeb.rest_call("device/type_list")
  aWeb.wr("<ARTICLE><P>Device Types<P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Class</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Icon</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Class</DIV><DIV>Name</DIV><DIV>Icon</DIV></DIV><DIV CLASS=tbody>")
  for tp in res['types']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='device_list?field=type&search=%s'>%s</A></DIV><DIV CLASS=td>%s</DIV></DIV>"%(tp['base'],tp['name'],tp['name'],tp['icon'].rpartition('/')[2]))
+  aWeb.wr("<DIV><DIV>%s</DIV><DIV><A CLASS=z-op DIV=div_content_left URL='device_list?field=type&search=%s'>%s</A></DIV><DIV>%s</DIV></DIV>"%(tp['base'],tp['name'],tp['name'],tp['icon'].rpartition('/')[2]))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
@@ -382,9 +358,9 @@ def model_list(aWeb):
  aWeb.wr(aWeb.button('reload',DIV='div_content_left',  URL='device_model_list'))
  aWeb.wr(aWeb.button('sync',  DIV='div_content_left',  URL='device_model_list?op=sync', TITLE='ReSync models'))
  aWeb.wr("<SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'>%s</SPAN>"%res.get('status',""))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>Model</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Id</DIV><DIV>Model</DIV><DIV>Type</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['models']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>%(type)s</DIV><DIV CLASS=td>"%row)
+  aWeb.wr("<DIV><DIV>%(id)s</DIV><DIV>%(name)s</DIV><DIV>%(type)s</DIV><DIV>"%row)
   aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='device_model_info?id=%s'%row['id']))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV>")
@@ -398,12 +374,12 @@ def model_info(aWeb):
  aWeb.wr("<ARTICLE CLASS='info'><P>Device Model<P>")
  aWeb.wr("<FORM ID='device_model_info_form'>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE='%s'>"%res['data']['id'])
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%res['data']['name'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS='td readonly'>%s</DIV></DIV>"%res['data']['type'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Defaults File:</DIV><DIV CLASS=td><INPUT NAME=defaults_file TYPE=TEXT VALUE='%s' STYLE='min-width:400px'></DIV></DIV>"%res['data']['defaults_file'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Image File:</DIV><DIV CLASS=td><INPUT NAME=image_file    TYPE=TEXT VALUE='%s'></DIV></DIV>"%res['data']['image_file'])
- aWeb.wr("</DIV></DIV>")
+ aWeb.wr("<DIV CLASS='info col2'>")
+ aWeb.wr("<DIV>Name:</DIV><DIV>%s</DIV>"%res['data']['name'])
+ aWeb.wr("<DIV>Type:</DIV><DIV>%s</DIV>"%res['data']['type'])
+ aWeb.wr("<DIV>Defaults File:</DIV><DIV><INPUT NAME=defaults_file TYPE=TEXT VALUE='%s' STYLE='min-width:400px'></DIV>"%res['data']['defaults_file'])
+ aWeb.wr("<DIV>Image File:</DIV><DIV><INPUT NAME=image_file    TYPE=TEXT VALUE='%s'></DIV>"%res['data']['image_file'])
+ aWeb.wr("</DIV>")
  aWeb.wr("<LABEL FOR=parameters>Parameters:</LABEL><TEXTAREA CLASS='maxed' ID=parameters NAME=parameters STYLE='height:400px'>%s</TEXTAREA>"%res['data']['parameters'])
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('save',    DIV='div_content_right', URL='device_model_info?op=update', FRM='device_model_info_form', TITLE='Save'))
@@ -415,9 +391,9 @@ def logs(aWeb):
  args = aWeb.args()
  res = aWeb.rest_call("device/logs_get",args)
  aWeb.wr("<ARTICLE>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>Event</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Time</DIV><DIV>Event</DIV></DIV><DIV CLASS=tbody>")
  for row in res['logs']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(time)s</DIV><DIV CLASS=td>%(message)s</DIV></DIV>"%row)
+  aWeb.wr("<DIV><DIV>%(time)s</DIV><DIV>%(message)s</DIV></DIV>"%row)
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
@@ -451,12 +427,12 @@ def function(aWeb):
    aWeb.wr("<DIV CLASS=table><DIV CLASS=thead>")
    head = res['data'][0].keys()
    for th in head:
-    aWeb.wr("<DIV CLASS=th>%s</DIV>"%(th.title()))
+    aWeb.wr("<DIV>%s</DIV>"%(th.title()))
    aWeb.wr("</DIV><DIV CLASS=tbody>")
    for row in res['data']:
-    aWeb.wr("<DIV CLASS=tr>")
+    aWeb.wr("<DIV>")
     for td in head:
-     aWeb.wr("<DIV CLASS=td>%s</DIV>"%(row.get(td,'&nbsp;')))
+     aWeb.wr("<DIV>%s</DIV>"%(row.get(td,'&nbsp;')))
     aWeb.wr("</DIV>")
    aWeb.wr("</DIV></DIV>")
   else:
@@ -494,23 +470,23 @@ def new(aWeb):
   classes  = aWeb.rest_call("device/class_list")['classes']
   aWeb.wr("<ARTICLE CLASS=info><P>Device Add</P>")
   aWeb.wr("<FORM ID=device_new_form>")
-  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td><INPUT NAME=hostname TYPE=TEXT VALUE={}></DIV></DIV>".format(name))
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Class:</DIV><DIV CLASS=td><SELECT  NAME=class>")
+  aWeb.wr("<DIV CLASS='info col2'>")
+  aWeb.wr("<DIV>Hostname:</DIV><DIV><INPUT NAME=hostname TYPE=TEXT VALUE={}></DIV>".format(name))
+  aWeb.wr("<DIV>Class:</DIV><DIV><SELECT  NAME=class>")
   for c in classes:
    aWeb.wr("<OPTION VALUE={0} {1}>{0}</OPTION>".format(c,"selected" if c == cls else ""))
-  aWeb.wr("</SELECT></DIV></DIV>")
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><SELECT NAME=ipam_network_id>")
+  aWeb.wr("</SELECT></DIV>")
+  aWeb.wr("<DIV>Network:</DIV><DIV><SELECT NAME=ipam_network_id>")
   for s in networks:
    aWeb.wr("<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == network else "", s['netasc'],s['description']))
-  aWeb.wr("</SELECT></DIV></DIV>")
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_domain_id>")
+  aWeb.wr("</SELECT></DIV>")
+  aWeb.wr("<DIV>Domain:</DIV><DIV><SELECT NAME=a_domain_id>")
   for d in domains:
    aWeb.wr("<OPTION VALUE={} {}>{}</OPTION>".format(d['id'],"selected" if str(d['id']) == dom else "", d['name']))
-  aWeb.wr("</SELECT></DIV></DIV>")
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT  NAME=ip ID=device_ip TYPE=TEXT VALUE='{}'></DIV></DIV>".format(ip))
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV></DIV>".format(mac))
-  aWeb.wr("</DIV></DIV>")
+  aWeb.wr("</SELECT></DIV>")
+  aWeb.wr("<DIV>IP:</DIV><DIV><INPUT  NAME=ip ID=device_ip TYPE=TEXT VALUE='{}'></DIV>".format(ip))
+  aWeb.wr("<DIV>MAC:</DIV><DIV><INPUT NAME=mac TYPE=TEXT PLACEHOLDER='{0}'></DIV>".format(mac))
+  aWeb.wr("</DIV>")
   aWeb.wr("</FORM>")
   aWeb.wr(aWeb.button('start', DIV='device_span', URL='device_new?op=new',  FRM='device_new_form', TITLE='Create'))
   aWeb.wr(aWeb.button('search',DIV='device_ip',   URL='device_new?op=find', FRM='device_new_form', TITLE='Find IP',INPUT='True'))
@@ -531,16 +507,16 @@ def discover(aWeb):
   aWeb.wr("<ARTICLE CLASS=info><P>Device Discovery</P>")
   aWeb.wr("<FORM ID=device_discover_form>")
   aWeb.wr("<INPUT TYPE=HIDDEN NAME=op VALUE=json>")
-  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_domain_id>")
+  aWeb.wr("<DIV CLASS='info col2'>")
+  aWeb.wr("<DIV>Domain:</DIV><DIV><SELECT NAME=a_domain_id>")
   for d in domains:
    aWeb.wr("<OPTION VALUE=%s>%s</OPTION>"%(d.get('id'),d.get('name')))
-  aWeb.wr("</SELECT></DIV></DIV>")
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><SELECT NAME=network_id>")
+  aWeb.wr("</SELECT></DIV>")
+  aWeb.wr("<DIV>Network:</DIV><DIV><SELECT NAME=network_id>")
   for s in networks:
    aWeb.wr("<OPTION VALUE=%s>%s (%s)</OPTION>"%(s['id'],s['netasc'],s['description']))
-  aWeb.wr("</SELECT></DIV></DIV>")
-  aWeb.wr("</DIV></DIV>")
+  aWeb.wr("</SELECT></DIV>")
+  aWeb.wr("</DIV>")
   aWeb.wr("</FORM>")
   aWeb.wr(aWeb.button('start', DIV='div_content_right', SPIN='true', URL='device_discover', FRM='device_discover_form'))
   aWeb.wr("</ARTICLE>")
@@ -570,12 +546,12 @@ def interface_list(aWeb):
  aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_lldp?device_id=%s' SPIN='true' MSG='Map interfaces using LLDP?' TITLE='Map interfaces'>LLDP</A>"%id)
  aWeb.wr("<A CLASS='z-op btn small text' DIV=div_dev_data URL='device_interface_list?device_id=%s&op=cleanup' TITLE='Clean up empty interfaces' SPIN=true>Cleanup</A>"%id)
  aWeb.wr("<SPAN CLASS=results>%s</SPAN><FORM ID=interface_list>"%(opres))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS=th>MAC</DIV><DIV CLASS=th>IP</DIV><DIV CLASS=th>SNMP</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Class</DIV><DIV CLASS='th title' TITLE='Database id of connection'>Link</DIV><DIV CLASS=th TITLE='State as per last invoked check'>&nbsp;</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Id</DIV><DIV>MAC</DIV><DIV>IP</DIV><DIV>SNMP</DIV><DIV>Name</DIV><DIV>Description</DIV><DIV>Class</DIV><DIV CLASS='th title' TITLE='Database id of connection'>Link</DIV><DIV CLASS=th TITLE='State as per last invoked check'>&nbsp;</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in res['data']:
   row.update({'if_state_ascii':aWeb.state_ascii(row['if_state']),'ip_state_ascii':aWeb.state_ascii(row['ip_state'])})
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(interface_id)s</DIV><DIV CLASS=td>%(mac)s</DIV><DIV CLASS=td>%(ip)s (%(ipam_id)s)</DIV><DIV CLASS=td>%(snmp_index)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>%(description)s</DIV><DIV CLASS=td>%(class)s</DIV><DIV CLASS=td>"%row)
+  aWeb.wr("<DIV><DIV>%(interface_id)s</DIV><DIV>%(mac)s</DIV><DIV>%(ip)s (%(ipam_id)s)</DIV><DIV>%(snmp_index)s</DIV><DIV>%(name)s</DIV><DIV>%(description)s</DIV><DIV>%(class)s</DIV><DIV>"%row)
   aWeb.wr("<A CLASS='z-op' DIV='div_dev_data' URL='device_connection_info?id=%(connection_id)s'>%(connection_id)s</A>"%row if row['connection_id'] else "-")
-  aWeb.wr("</DIV><DIV CLASS=td><DIV CLASS='state %(if_state_ascii)s' />&nbsp;<DIV CLASS='state %(ip_state_ascii)s' /></DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX VALUE=%(interface_id)s ID='interface_%(interface_id)s' NAME='interface_%(interface_id)s'>"%row)
+  aWeb.wr("</DIV><DIV><DIV CLASS='state %(if_state_ascii)s' />&nbsp;<DIV CLASS='state %(ip_state_ascii)s' /></DIV><DIV><INPUT TYPE=CHECKBOX VALUE=%(interface_id)s ID='interface_%(interface_id)s' NAME='interface_%(interface_id)s'>"%row)
   aWeb.wr(aWeb.button('info',  DIV='div_dev_data', URL='device_interface_info?device_id=%s&interface_id=%s'%(id,row['interface_id'])))
   aWeb.wr(aWeb.button('sync',  DIV='div_dev_data', URL='device_interface_connect?op=device&interface_id=%s&name=%s'%(row['interface_id'],row['name']), TITLE='Connect'))
   aWeb.wr("</DIV></DIV>")
@@ -587,9 +563,9 @@ def interface_lldp(aWeb):
  res = aWeb.rest_call('device/lldp_mapping',{'device_id':aWeb['device_id']})
  aWeb.wr("<ARTICLE><P>Interface</P>")
  aWeb.wr(aWeb.button('back', DIV='div_dev_data', URL='device_interface_list?device_id=%s'%aWeb['device_id']))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Chassis ID</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Port ID</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>SNMP Index</DIV><DIV CLASS=th>SNMP Name</DIV><DIV CLASS=th>Conn</DIV><DIV CLASS=th>Status</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Chassis ID</DIV><DIV>Type</DIV><DIV>Name</DIV><DIV>Port ID</DIV><DIV>Type</DIV><DIV>Description</DIV><DIV>SNMP Index</DIV><DIV>SNMP Name</DIV><DIV>Conn</DIV><DIV>Status</DIV></DIV><DIV CLASS=tbody>")
  for con in res['data'].values():
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(chassis_id)s</DIV><DIV CLASS=td>%(chassis_type)s</DIV><DIV CLASS=td>%(sys_name)s</DIV><DIV CLASS=td>%(port_id)s</DIV><DIV CLASS=td>%(port_type)s</DIV><DIV CLASS=td>%(port_desc)s</DIV><DIV CLASS=td>%(snmp_index)s</DIV><DIV CLASS=td>%(snmp_name)s</DIV><DIV CLASS=td>%(connection_id)s</DIV><DIV CLASS=td>%(status)s</DIV></DIV>"%con)
+  aWeb.wr("<DIV><DIV>%(chassis_id)s</DIV><DIV>%(chassis_type)s</DIV><DIV>%(sys_name)s</DIV><DIV>%(port_id)s</DIV><DIV>%(port_type)s</DIV><DIV>%(port_desc)s</DIV><DIV>%(snmp_index)s</DIV><DIV>%(snmp_name)s</DIV><DIV>%(connection_id)s</DIV><DIV>%(status)s</DIV></DIV>"%con)
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
 
@@ -620,31 +596,31 @@ def interface_info(aWeb):
  aWeb.wr("<FORM ID=interface_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=interface_id VALUE='%s'>"%(info['interface_id']))
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=device_id VALUE='%s'>"%(info['device_id']))
- aWeb.wr("<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT        NAME=name        VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV><DIV CLASS=td>"%(info['name']))
+ aWeb.wr("<DIV CLASS='info col3'>")
+ aWeb.wr("<DIV>Name:</DIV><DIV><INPUT        NAME=name        VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:400px'></DIV><DIV>"%(info['name']))
  if not info['ipam_id'] is None:
   aWeb.wr(aWeb.button('forward', DIV='div_dev_data', URL='device_interface_info?op=dns', FRM='interface_info_form', MSG='Update DNS with device-interface-name'))
- aWeb.wr("</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Class:</DIV><DIV CLASS=td><SELECT NAME=class>")
+ aWeb.wr("</DIV>")
+ aWeb.wr("<DIV>Class:</DIV><DIV><SELECT NAME=class>")
  for cls in data['classes']:
   aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(cls," selected" if info['class'] == cls else "",cls))
- aWeb.wr("</SELECT></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Description:</DIV><DIV CLASS=td><INPUT NAME=description VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:300px'></DIV></DIV>"%(info['description']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>SNMP Index:</DIV><DIV CLASS=td><INPUT  NAME=snmp_index  VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:300px'></DIV></DIV>"%(info['snmp_index']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>MAC:</DIV><DIV CLASS=td><INPUT         NAME=mac         VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:300px'></DIV></DIV>"%(info['mac']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>IPAM id:</DIV><DIV CLASS=td><INPUT     NAME=ipam_id     VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:300px'></DIV><DIV CLASS=td>"%(info['ipam_id']))
+ aWeb.wr("</SELECT></DIV><DIV/>")
+ aWeb.wr("<DIV>Description:</DIV><DIV><INPUT NAME=description VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:300px'></DIV><DIV/>"%(info['description']))
+ aWeb.wr("<DIV>SNMP Index:</DIV><DIV><INPUT  NAME=snmp_index  VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:300px'></DIV><DIV/>"%(info['snmp_index']))
+ aWeb.wr("<DIV>MAC:</DIV><DIV><INPUT         NAME=mac         VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:300px'></DIV><DIV/>"%(info['mac']))
+ aWeb.wr("<DIV>IPAM id:</DIV><DIV><INPUT     NAME=ipam_id     VALUE='%s' TYPE=TEXT REQUIRED STYLE='min-width:300px'></DIV><DIV>"%(info['ipam_id']))
  if not info['ipam_id'] is None:
   aWeb.wr(aWeb.button('forward', DIV='div_dev_data', URL='ipam_address_info?id=%s&vpl=div_dev_data'%info['ipam_id']))
   aWeb.wr(aWeb.button('trash',   DIV='div_dev_data', URL='device_interface_info?op=noip&interface_id=%s&ipam_id=%s'%(info['interface_id'],info['ipam_id']), MSG='Remove IP?'))
  elif info['interface_id'] != 'new':
   aWeb.wr(aWeb.button('forward', DIV='div_dev_data', URL='device_interface_ipam?interface_id=%s'%info['interface_id']))
- aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</DIV>")
  if extra:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Peer interface:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%extra['interface_id'])
+  aWeb.wr("<DIV>Peer interface:</DIV><DIV>%s</DIV><DIV>"%extra['interface_id'])
   aWeb.wr(aWeb.button('trash', DIV='div_dev_data', URL='device_interface_info?interface_id=%s&peer_interface=%s&op=disconnect'%(info['interface_id'],extra['interface_id'])))
-  aWeb.wr("</DIV></DIV>")
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Peer Device</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='device_info?id=%(device_id)s'>%(device_id)s</A></DIV></DIV>"%extra)
- aWeb.wr("</DIV></DIV>")
+  aWeb.wr("</DIV>")
+  aWeb.wr("<DIV>Peer Device</DIV><DIV><A CLASS=z-op DIV=div_content_right URL='device_info?id=%(device_id)s'>%(device_id)s</A></DIV></DIV>"%extra)
+ aWeb.wr("</DIV>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload', DIV='div_dev_data', URL='device_interface_info?device_id=%s&interface_id=%s'%(info['device_id'],info['interface_id'])))
  aWeb.wr(aWeb.button('back',   DIV='div_dev_data', URL='device_interface_list?device_id=%s'%info['device_id']))
@@ -666,17 +642,17 @@ def interface_ipam(aWeb):
   aWeb.wr("<ARTICLE CLASS=info><P>Create IPAM record</P>")
   aWeb.wr("<FORM ID=interface_ipam_form>")
   aWeb.wr("<INPUT TYPE=HIDDEN NAME=interface_id VALUE='%s'>"%(aWeb['interface_id']))
-  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Network:</DIV><DIV CLASS=td><SELECT NAME=network_id>")
+  aWeb.wr("<DIV CLASS='info col2'>")
+  aWeb.wr("<DIV>Network:</DIV><DIV><SELECT NAME=network_id>")
   for s in networks:
    aWeb.wr("<OPTION VALUE={} {}>{} ({})</OPTION>".format(s['id'],"selected" if str(s['id']) == aWeb['network_id'] else "", s['netasc'],s['description']))
-  aWeb.wr("</SELECT></DIV></DIV>")
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>IP:</DIV><DIV CLASS=td><INPUT  NAME=ip ID=div_ip TYPE=TEXT VALUE='%s'></DIV></DIV>"%aWeb.get('ip','0.0.0.0'))
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Domain:</DIV><DIV CLASS=td><SELECT NAME=a_domain_id>")
+  aWeb.wr("</SELECT></DIV>")
+  aWeb.wr("<DIV>IP:</DIV><DIV><INPUT  NAME=ip ID=div_ip TYPE=TEXT VALUE='%s'></DIV>"%aWeb.get('ip','0.0.0.0'))
+  aWeb.wr("<DIV>Domain:</DIV><DIV><SELECT NAME=a_domain_id>")
   for d in domains:
    aWeb.wr("<OPTION VALUE={} {}>{}</OPTION>".format(d['id'],"selected" if str(d['id']) == aWeb.get('a_domain_id','NULL') else "", d['name']))
-  aWeb.wr("</SELECT></DIV></DIV>")
-  aWeb.wr("</DIV></DIV>")
+  aWeb.wr("</SELECT></DIV>")
+  aWeb.wr("</DIV>")
   aWeb.wr("</FORM>")
   aWeb.wr(aWeb.button('back',    DIV='div_dev_data', URL='device_interface_info', FRM='interface_ipam_form'))
   aWeb.wr(aWeb.button('search',  DIV='div_ip',       URL='device_interface_ipam?op=find', FRM='interface_ipam_form', TITLE='Find IP',INPUT='True'))
@@ -713,9 +689,9 @@ def interface_connect(aWeb):
 def connection_info(aWeb):
  data = aWeb.rest_call("device/connection_info",{"connection_id":aWeb['id']})['data']
  aWeb.wr("<ARTICLE CLASS='info'><P>Connection</P>")
- aWeb.wr("<DIV CLASS=table STYLE='float:left; width:auto;'><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Map:</DIV><DIV CLASS=td><INPUT TYPE=CHECKBOX NAME=map VALUE=1 %s ></DIV></DIV>"%("CHECKED=checked" if data['map'] else ""))
+ aWeb.wr("<DIV CLASS='info col2'>")
+ aWeb.wr("<DIV>Map:</DIV><DIV><INPUT TYPE=CHECKBOX NAME=map VALUE=1 %s ></DIV>"%("CHECKED=checked" if data['map'] else ""))
  for intf in data['interfaces']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Device - Interface:</DIV><DIV CLASS=td>%s - %s (%s)</DIV></DIV>"%(intf['device_name'],intf['interface_name'], intf['interface_id']))
- aWeb.wr("</DIV></DIV>")
+  aWeb.wr("<DIV>Device - Interface:</DIV><DIV>%s - %s (%s)</DIV>"%(intf['device_name'],intf['interface_name'], intf['interface_id']))
+ aWeb.wr("</DIV>")
  aWeb.wr("</ARTICLE>")

@@ -3,6 +3,11 @@ __author__= "Zacharias El Banna"
 
 #
 #
+def login(aWeb):
+ pass
+
+#
+#
 def main(aWeb):
  cookie = aWeb.cookie('rims')
  auth,data,args = {},{},aWeb.args()
@@ -20,6 +25,9 @@ def main(aWeb):
   if auth.get('token'):
    aWeb.wr("<SCRIPT>set_cookie('rims','%s','%s');</SCRIPT>"%(aWeb.cookie_encode(cookie),auth['expires']))
   aWeb.wr("<HEADER>")
+  aWeb.wr("<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=rims URL=portal_main>Log out</BUTTON>")
+  aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='System' DIV=main URL='system_main?node=%s'><IMG SRC='images/icon-config.png' /></BUTTON>"%aWeb.node())
+  aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='User'   DIV=main URL='users_%s'><IMG SRC='images/icon-users.png' /></BUTTON>"%("main" if id == '1' else "user?id=%s"%id))
   for item in menu['menu']:
    if   item['view'] == 'inline':
     aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['href'],item['title'],item['icon']))
@@ -27,9 +35,6 @@ def main(aWeb):
     aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='resources_framed?type=%s&title=%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['type'],item['title'],item['title'],item['icon']))
    else:
     aWeb.wr("<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s' /></A>"%(item['title'],item['href'],item['title'],item['icon']))
-  aWeb.wr("<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=rims URL=portal_main>Log out</BUTTON>")
-  aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='System' DIV=main URL='system_main?node=%s'><IMG SRC='../images/icon-config.png' /></BUTTON>"%aWeb.node())
-  aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='User'   DIV=main URL='users_%s'><IMG SRC='../images/icon-users.png' /></BUTTON>"%("main" if id == '1' else "user?id=%s"%id))
   aWeb.wr("</HEADER>")
   aWeb.wr("<MAIN ID=main></MAIN>")
   if menu['start']:
@@ -43,11 +48,11 @@ def main(aWeb):
   else:
    error = auth.get('error',{})
    aWeb.wr("<FORM ACTION='portal_main' METHOD=POST ID='login_form'>")
-   aWeb.wr("<DIV CLASS=table STYLE='display:inline; float:left; margin:0px 0px 0px 30px; width:auto;'><DIV CLASS=tbody>")
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Username:</DIV><DIV CLASS=td><INPUT TYPE=username ID=username NAME=username PLACEHOLDER='username'></DIV></DIV>")
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Password:</DIV><DIV CLASS=td><INPUT TYPE=password ID=password NAME=password PLACEHOLDER='********'></DIV></DIV>")
-   aWeb.wr("</DIV></DIV>")
-   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM='login_form'><IMG SRC='../images/icon-start.png' /></BUTTON>")
+   aWeb.wr("<DIV CLASS='info col2' STYLE='display:inline; float:left; margin:0px 0px 0px 30px;'>")
+   aWeb.wr("<DIV>Username:</DIV><DIV><INPUT TYPE=username ID=username NAME=username PLACEHOLDER='username'></DIV>")
+   aWeb.wr("<DIV>Password:</DIV><DIV><INPUT TYPE=password ID=password NAME=password PLACEHOLDER='********'></DIV>")
+   aWeb.wr("</DIV>")
+   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM='login_form'><IMG SRC='images/icon-start.png' /></BUTTON>")
   aWeb.wr("<!-- %s -->"%auth.get('error'))
   aWeb.wr("</ARTICLE></DIV>")
 

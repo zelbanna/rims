@@ -32,9 +32,9 @@ def list(aWeb):
  aWeb.wr("<ARTICLE><P>Users</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='users_list'))
  aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='users_info?id=new'))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Alias</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>ID</DIV><DIV>Alias</DIV><DIV>Name</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in rows:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(id)s</DIV><DIV CLASS=td>%(alias)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>"%row)
+  aWeb.wr("<DIV><DIV>%(id)s</DIV><DIV>%(alias)s</DIV><DIV>%(name)s</DIV><DIV>"%row)
   aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='users_info?id=%(id)s'%row))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
@@ -56,18 +56,18 @@ def info(aWeb):
  aWeb.wr("<ARTICLE CLASS='info'><P>User Info (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=user_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='Login username'>Alias:</DIV>  <DIV CLASS=td><INPUT NAME=alias  TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['alias']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Password:</DIV><DIV CLASS=td><INPUT NAME=password TYPE=password PLACEHOLDER='*******' STYLE='min-width:400px'></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV>   <DIV CLASS=td><INPUT NAME=name   TYPE=TEXT  VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['name']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>E-mail:</DIV> <DIV CLASS=td><INPUT NAME=email  TYPE=email VALUE='{}' STYLE='min-width:400px'></DIV></DIV>".format(data['email']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td TITLE='UI Theme'>Theme:</DIV><DIV CLASS=td><SELECT NAME=theme>")
+ aWeb.wr("<DIV CLASS='info col2'>")
+ aWeb.wr("<DIV TITLE='Login username'>Alias:</DIV><DIV><INPUT NAME=alias TYPE=TEXT VALUE='{}'></DIV>".format(data['alias']))
+ aWeb.wr("<DIV>Password:</DIV><DIV><INPUT NAME=password TYPE=password PLACEHOLDER='*******'></DIV>")
+ aWeb.wr("<DIV>Name:</DIV><DIV><INPUT NAME=name   TYPE=TEXT  VALUE='{}'></DIV>".format(data['name']))
+ aWeb.wr("<DIV>E-mail:</DIV><DIV><INPUT NAME=email  TYPE=email VALUE='{}'></DIV>".format(data['email']))
+ aWeb.wr("<DIV TITLE='UI Theme'>Theme:</DIV><DIV><SELECT NAME=theme>")
  for theme in themes:
   aWeb.wr("<OPTION %s VALUE='%s'>%s</OPTION>"%("selected='selected'" if theme == data['theme'] else "",theme,theme))
- aWeb.wr("</SELECT></DIV></DIV>")
+ aWeb.wr("</SELECT></DIV>")
  if cookie['id'] == data['id']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Cookie:</DIV><DIV CLASS='td small-text'>%s</DIV></DIV>"%(",".join('%s=%s'%i for i in cookie.items())))
- aWeb.wr("</DIV></DIV>")
+  aWeb.wr("<DIV>Cookie:</DIV><DIV CLASS='small-text'>%s</DIV>"%(",".join('%s=%s'%i for i in cookie.items())))
+ aWeb.wr("</DIV>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='users_info?op=update', FRM='user_info_form'))
  if data['id'] != 'new' and ((cookie['id'] == str(data['id']) or cookie['id'] == "1")):
@@ -79,4 +79,3 @@ def info(aWeb):
 def delete(aWeb):
  res = aWeb.rest_call("master/user_delete",{'id':aWeb['id']})
  aWeb.wr("<ARTICLE>User with id %s removed(%s)</ARTICLE>"%(aWeb['id'],res))
-

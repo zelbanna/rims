@@ -20,11 +20,9 @@ def inventory(aWeb,aIP = None):
  res = aWeb.rest_call("opengear/inventory",{'id':aWeb['id']})
  config="https://%s/?form=serialconfig&action=edit&ports={}&start=&end="%ip
  aWeb.wr("<ARTICLE>")
- aWeb.wr("<DIV CLASS=table>")
- aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Server</DIV><DIV CLASS=th>Port</DIV><DIV CLASS=th>Device</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Server</DIV><DIV>Port</DIV><DIV>Device</DIV></DIV><DIV CLASS=tbody>")
  for con in res['inventory']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A HREF='https://{0}/'>{0}</A></DIV><DIV CLASS=td><A TITLE='Edit port info' HREF={4}>{1}</A></DIV><DIV CLASS=td><A HREF='telnet://{0}:{2}'>{3}</A></DIV></DIV>".format(ip,con['interface'],con['port'],con['name'], config.format(con['interface'])))
+  aWeb.wr("<DIV><DIV><A HREF='https://{0}/'>{0}</A></DIV><DIV><A TITLE='Edit port info' HREF={4}>{1}</A></DIV><DIV><A HREF='telnet://{0}:{2}'>{3}</A></DIV></DIV>".format(ip,con['interface'],con['port'],con['name'], config.format(con['interface'])))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 

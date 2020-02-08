@@ -1,9 +1,7 @@
 {
  "node":"master",
  "module":"monitor",
- "function":"ipam_status",
- "args":{
-  "repeat":60
- },
+ "function":"statistics_init",
+ "args":{ "repeat":60 },
  "on_boot":true
 }

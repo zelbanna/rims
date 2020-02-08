@@ -5,7 +5,7 @@ Generic Library. Many are for reference, make them "inline"
 """
 __author__ = "Zacharias El Banna"
 
-################################# Generics ####################################
+##############################################################################
 
 def debug_decorator(func_name):
  def decorator(func):
@@ -22,6 +22,31 @@ def debug_decorator(func_name):
 def basic_auth(aUsername,aPassword):
  from base64 import b64encode
  return {'Authorization':'Basic %s'%(b64encode(("%s:%s"%(aUsername,aPassword)).encode('utf-8')).decode()) }
+
+############################## Dummy context ##################################
+
+class DummyContext(object):
+ """ Dummy context object for standalone operations
+
+ - config is a dictionary with optional values depending on device type:
+ snmp: read, write, timeout
+ netconf: username, password
+ ...
+
+ """
+ def __init__(self, aConfig):
+  from rims.core.common import rest_call
+  self.config = aConfig
+  self.rest_call = rest_call
+
+ def node_function(aNode,aModule,aFunction,**kwargs):
+  return self.log if aFunction == 'log' else lambda x: None
+
+ def log(aArgs = None):
+  print("%(id)s => %(message)s"%(aArgs))
+
+
+################################### Generics ##################################
 
 def random_string(aLength):
  import string
@@ -93,35 +118,7 @@ def get_quote(aString):
 
 def str2hex(arg):
  try:    return '0x{0:02x}'.format(int(arg))
- except: return '0x00'    
-
-def pidfile_write(pidfname):
- from os import getpid
- pidfile = open(pidfname,'w')
- pidfile.write(str(getpid()))
- pidfile.close()
-
-def pidfile_read(pidfname):
- pid = -1
- from os import path as ospath
- if ospath.isfile(pidfname):
-  pidfile = open(pidfname)
-  pid = pidfile.readline().strip('\n')
-  pidfile.close()
- return int(pid)
-
-def pidfile_release(pidfname):
- from os import path as ospath
- if ospath.isfile(pidfname):
-  from os import remove
-  remove(pidfname)
-
-def pidfile_lock(pidfname, sleeptime = 1):
- from time import sleep
- from os import path as ospath
- while ospath.isfile(pidfname):
-  sleep(sleeptime)
- pidfile_write(pidfname) 
+ except: return '0x00'
 
 def file_replace(afile,old,new):
  if afile == "" or new == "" or old == "":

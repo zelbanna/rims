@@ -14,6 +14,13 @@ class Junos(GenericDevice):
  def get_functions(cls):
   return ['up_interfaces','info' ]
 
+ @classmethod
+ def get_data_points(cls):
+  return [
+   ('chassis','cpu=RE','temp','.1.3.6.1.4.1.2636.3.1.13.1.7.9.1.0.0'),
+   ('chassis','cpu=RE','load','.1.3.6.1.4.1.2636.3.1.13.1.8.9.1.0.0')
+  ]
+
  def __init__(self, aCTX, aID, aIP):
   GenericDevice.__init__(self, aCTX, aID, aIP)
   self._interfacesname = {}

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-"""Installer"""
+"""Installer 5.9"""
 __author__ = "Zacharias El Banna"
 
 from sys import argv, stdout, path as syspath
@@ -19,6 +19,7 @@ if len(argv) < 2:
  print("2) Then import database schema.db")
  print("3a) tools/mysql_dumps </path/json file> -r schema.db  (first time install)")
  print("3b) tools/mysql_patch </path/json file> schema.db     (subsequent install)")
+ print("\nAlso, it is good to use github project log2ram for various purposes, foremost debug logging but also influxdb et al..")
  exit(0)
 else:
  config_filename = argv[1]
@@ -163,7 +164,7 @@ if config['id'] == 'master':
   res['data']['master_node_id']  = db.get_last_id()
   res['data']['create_generic_device'] = (db.do("INSERT device_types (id,name,base) VALUES (0,'generic','generic') ON DUPLICATE KEY UPDATE id = 0") > 0)
 
-  sql ="INSERT device_types (name,base,icon,functions,oid) VALUES ('%(name)s','%(base)s','../images/%(icon)s','%(functions)s','%(oid)s') ON DUPLICATE KEY UPDATE oid = %(oid)s, icon = '../images/%(icon)s', functions = '%(functions)s'"
+  sql ="INSERT device_types (name,base,icon,functions,oid) VALUES ('%(name)s','%(base)s','images/%(icon)s','%(functions)s','%(oid)s') ON DUPLICATE KEY UPDATE oid = %(oid)s, icon = 'images/%(icon)s', functions = '%(functions)s'"
   for type in device_types:
    try:    res['data']['devices_new'] += db.do(sql%type)
    except Exception as err: res['info']['devices'] = str(err)

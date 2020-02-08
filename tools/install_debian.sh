@@ -9,9 +9,9 @@ alias rims_reload='/etc/init.d/rims restart'
 alias rims_clear='/etc/init.d/rims clear'
 alias rims_mysql='mysql -urims -prims rims'
 
-apt-get install sudo nano net-tools git python3 python3-pip mariadb-server mariadb-client libsnmp-dev graphviz grephviz-dev
+apt-get install sudo nano net-tools git python3 python3-pip mariadb-server mariadb-client libsnmp-dev graphviz graphviz-dev
 
-# Grafana
+# Grafana & Influxdb
 apt-get install -y influxdb influxdb-client
 apt-get install -y apt-transport-https
 apt-get install -y software-properties-common wget
@@ -36,6 +36,7 @@ mkdir -p /var/log/system
 cd /usr/local/sbin
 git init
 git clone git@github.com:zelbanna/rims.git
+git clone http://github.com/azlux/log2ram.git
 cd
 ln -s /usr/local/sbin/rims
 cd rims

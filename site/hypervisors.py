@@ -8,10 +8,10 @@ def main(aWeb):
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Hypervisors</P>")
  aWeb.wr(aWeb.button('sync',DIV='div_content_right', URL='hypervisors_sync'))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Hostname</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Hostname</DIV><DIV>Type</DIV><DIV>&nbsp;</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in hypervisors:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(hostname)s</DIV><DIV CLASS=td>%(type_name)s</DIV>"%row)
-  aWeb.wr("<DIV CLASS=td><DIV CLASS='state %s' /></DIV><DIV CLASS=td>"%aWeb.state_ascii(row['state']))
+  aWeb.wr("<DIV><DIV>%(hostname)s</DIV><DIV>%(type_name)s</DIV>"%row)
+  aWeb.wr("<DIV><DIV CLASS='state %s' /></DIV><DIV>"%aWeb.state_ascii(row['state']))
   if row['state'] == 'up':
    if row['type_functions'] == 'manage':
     aWeb.wr(aWeb.button('info', DIV='main', URL='%s_manage?id=%s'%(row['type_name'],row['id']), TITLE='Management'))
@@ -25,9 +25,9 @@ def main(aWeb):
 def sync(aWeb):
  res = aWeb.rest_call("device/vm_mapping")
  aWeb.wr("<ARTICLE>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Status</DIV><DIV CLASS=th>Host</DIV><DIV CLASS=th>Device</DIV><DIV CLASS=th>VM Name</DIV><DIV CLASS=th>Device UUID</DIV><DIV CLASS=th>Config</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Status</DIV><DIV>Host</DIV><DIV>Device</DIV><DIV>VM Name</DIV><DIV>Device UUID</DIV><DIV>Config</DIV></DIV><DIV CLASS=tbody>")
  for type in ['existing','inventory','discovered','database']:
   for row in res.get(type):
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(type.upper(),row['host_id'],row.get('device_id','-'),row['vm'],row['device_uuid'],row['config']))
+   aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV></DIV>"%(type.upper(),row['host_id'],row.get('device_id','-'),row['vm'],row['device_uuid'],row['config']))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")

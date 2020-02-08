@@ -30,11 +30,9 @@ def list(aWeb):
  statelist = res['data']
  aWeb.wr("<ARTICLE>")
  aWeb.wr(aWeb.button('reload',TITLE='Reload List',DIV='div_content_left',URL='esxi_list?id=%s&sort=%s'%(aWeb['id'],sort)))
- aWeb.wr("<DIV CLASS=table>")
- aWeb.wr("<DIV CLASS=thead><DIV CLASS=th><A CLASS=z-op DIV=div_content_left URL='esxi_list?id=%s&sort=%s'>VM</A></DIV><DIV CLASS=th>Operations</DIV></DIV>"%(aWeb['id'],"id" if sort == "name" else "name"))
- aWeb.wr("<DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV><A CLASS=z-op DIV=div_content_left URL='esxi_list?id=%s&sort=%s'>VM</A></DIV><DIV>Operations</DIV></DIV><DIV CLASS=tbody>"%(aWeb['id'],"id" if sort == "name" else "name"))
  for vm in statelist:
-  aWeb.wr("<DIV CLASS=tr STYLE='padding:0px;'><DIV CLASS=td STYLE='padding:0px;'>%s</DIV><DIV CLASS=td ID=div_vm_%s STYLE='width:120px'>"%(vm['name'],vm['id']))
+  aWeb.wr("<DIV><DIV STYLE='padding:0px;'>%s</DIV><DIV ID=div_vm_%s STYLE='width:120px'>"%(vm['name'],vm['id']))
   _vm_options(aWeb,vm,False)
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
@@ -46,25 +44,25 @@ def info(aWeb):
  res  = aWeb.rest_call("esxi/info",args)
  info = res['data']
  aWeb.wr("<ARTICLE CLASS='info'><P>VM info</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>VM Name:</DIV><DIV CLASS=td>%s</DIV></DIV>"%info['name'])
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Hostname:</DIV><DIV CLASS=td>%s</DIV></DIV>"%info.get('device_name','-'))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>SNMP ID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%info.get('snmp_id','-'))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>UUID:</DIV><DIV CLASS=td>%s</DIV></DIV>"%info.get('device_uuid','-'))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>State:</DIV><DIV CLASS=td><DIV CLASS='state %s' /></DIV></DIV>"%aWeb.state_ascii(info['state_id']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>System ID:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%info.get('device_id','-'))
+ aWeb.wr("<DIV CLASS='info col3'>")
+ aWeb.wr("<DIV>VM Name:</DIV><DIV>%s</DIV><DIV/>"%info['name'])
+ aWeb.wr("<DIV>Hostname:</DIV><DIV>%s</DIV><DIV/>"%info.get('device_name','-'))
+ aWeb.wr("<DIV>SNMP ID:</DIV><DIV>%s</DIV><DIV/>"%info.get('snmp_id','-'))
+ aWeb.wr("<DIV>UUID:</DIV><DIV>%s</DIV><DIV/>"%info.get('device_uuid','-'))
+ aWeb.wr("<DIV>State:</DIV><DIV><DIV CLASS='state %s' /></DIV><DIV/>"%aWeb.state_ascii(info['state']))
+ aWeb.wr("<DIV>System ID:</DIV><DIV>%s</DIV><DIV>"%info.get('device_id','-'))
  if info.get('device_id'):
   aWeb.wr(aWeb.button('forward', DIV='div_content_right', URL='device_info?id=%s'%info['device_id']))
  aWeb.wr(aWeb.button('configure', DIV='div_content_right', URL='esxi_map?device_uuid=%s'%info['device_uuid']))
- aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</DIV>")
  if info.get('host_id'):
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Host ID:</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%info.get('host_id','-'))
+  aWeb.wr("<DIV>Host ID:</DIV><DIV>%s</DIV><DIV>"%info.get('host_id','-'))
   aWeb.wr(aWeb.button('forward', DIV='div_content_right', URL='device_info?id=%s'%info['host_id']))
-  aWeb.wr("</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Config file</DIV><DIV CLASS=td STYLE='max-width:360px'>%s</DIV></DIV>"%info.get('config','-'))
+  aWeb.wr("</DIV>")
+ aWeb.wr("<DIV>Config file</DIV><DIV STYLE='max-width:360px'>%s</DIV><DIV/>"%info.get('config','-'))
  for k,v in info.get('interfaces').items():
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Interface %s</DIV><DIV CLASS=td>%s - %s - %s</DIV></DIV>"%(k,v['name'],v['mac'],v['port']))
- aWeb.wr("</DIV></DIV>")
+  aWeb.wr("<DIV>Interface %s</DIV><DIV>%s - %s - %s</DIV><DIV/>"%(k,v['name'],v['mac'],v['port']))
+ aWeb.wr("</DIV>")
  aWeb.wr(aWeb.button('sync', DIV='div_content_right',  URL='esxi_info?id=%s&vm_id=%s&op=update'%(args['id'],args['vm_id']), TITLE='Resync database with VM info'))
  aWeb.wr("<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(res.get('update','')))
  aWeb.wr("</ARTICLE>")
@@ -94,24 +92,24 @@ def _vm_options(aWeb,aVM,aHighlight):
  div = "div_vm_%s"%aVM['id']
  url = 'esxi_control?id=%s&op={}&vm_id=%s'%(aWeb['id'],aVM['id'])
  if aHighlight:
-  aWeb.wr("<DIV CLASS='border'>")
+  aWeb.wr("<DIV CLASS='highlight' STYLE='border-width:1px;'>")
  aWeb.wr(aWeb.button('info',     DIV='div_content_right', URL='esxi_info?id=%s&vm_id=%s'%(aWeb['id'],aVM['id'])))
- if aVM['state_id'] == 1:
+ if aVM['state'] == "up":
   aWeb.wr(aWeb.button('stop',    DIV=div, SPIN='div_content_left', URL=url.format('shutdown'), TITLE='Soft shutdown'))
   aWeb.wr(aWeb.button('reload',  DIV=div, SPIN='div_content_left', URL=url.format('reboot'), TITLE='Soft reboot'))
   aWeb.wr(aWeb.button('suspend', DIV=div, SPIN='div_content_left', URL=url.format('suspend'),TITLE='Suspend'))
   aWeb.wr(aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('off'), TITLE='Hard power off'))
   # Change to get IP when proper REACT
   # aWeb.wr(aWeb.button('term',    HREF="https://%s/ui/#/console/%s"%(aIP,aVM['id']),  TARGET='_blank', TITLE='vSphere Console'))
- elif aVM['state_id'] == 3:
+ elif aVM['state'] == "suspended":
   aWeb.wr(aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'), TITLE='Start'))
   aWeb.wr(aWeb.button('off',     DIV=div, SPIN='div_content_left', URL=url.format('off'), TITLE='Hard power off'))
- elif aVM['state_id'] == 2:
+ elif aVM['state'] == "down":
   aWeb.wr(aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on'), TITLE='Start'))
   aWeb.wr(aWeb.button('snapshot',DIV=div, SPIN='div_content_left', URL=url.format('create'), TITLE='Snapshot'))
   aWeb.wr(aWeb.button('info',    DIV='div_content_right',SPIN='true',URL='esxi_snapshot?id={}&vm_id={}'.format(aWeb['id'],aVM['id']), TITLE='Snapshot info'))
  else:
-  aWeb.wr("Unknown state [{}]".format(aVM['state_id']))
+  aWeb.wr("Unknown state [{}]".format(aVM['state']))
  if aHighlight:
   aWeb.wr("</DIV>")
 
@@ -120,10 +118,10 @@ def _vm_options(aWeb,aVM,aHighlight):
 def snapshot(aWeb):
  res = aWeb.rest_call("esxi/control",{'id':aWeb['id'],'vm_id':aWeb['vm_id'],'op':'list'})
  aWeb.wr("<ARTICLE><P>Snapshots (%s) Highest ID:%s</P>"%(aWeb['vm_id'],res['highest']))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Name</DIV><DIV CLASS=th>Id</DIV><DIV CLASS=th>Description</DIV><DIV CLASS=th>Created</DIV><DIV CLASS=th>State</DIV><DIV CLASS=th>&nbsp;</DIV></DIV>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Name</DIV><DIV>Id</DIV><DIV>Description</DIV><DIV>Created</DIV><DIV>State</DIV><DIV>&nbsp;</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  for snap in res['snapshots']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(snap['name'],snap['id'],snap['desc'],snap['created'],snap['state']))
+  aWeb.wr("<DIV><DIV>{}</DIV><DIV>{}</DIV><DIV>{}</DIV><DIV>{}</DIV><DIV>{}</DIV><DIV>".format(snap['name'],snap['id'],snap['desc'],snap['created'],snap['state']))
   aWeb.wr(aWeb.button('revert', TITLE='Revert', DIV='div_content_right',SPIN='true', URL='esxi_control?id=%s&vm_id=%s&op=revert&snapshot=%s&output=div'%(aWeb['id'],aWeb['vm_id'],snap['id'])))
   aWeb.wr(aWeb.button('delete', TITLE='Delete', DIV='div_content_right',SPIN='true', URL='esxi_control?id=%s&vm_id=%s&op=remove&snapshot=%s&output=div'%(aWeb['id'],aWeb['vm_id'],snap['id'])))
   aWeb.wr("</DIV></DIV>")

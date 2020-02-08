@@ -16,9 +16,9 @@ def list(aWeb):
  aWeb.wr("<ARTICLE><P>Racks</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_left',URL='racks_list'))
  aWeb.wr(aWeb.button('add',DIV='div_content_right',URL='racks_info?id=new'))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Location</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>Size</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Location</DIV><DIV>Name</DIV><DIV>Size</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for unit in racks:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS='td'>%(location)s</DIV><DIV CLASS=td>%(name)s</DIV><DIV CLASS=td>%(size)s</DIV><DIV CLASS=td>"%unit)
+  aWeb.wr("<DIV><DIV>%(location)s</DIV><DIV>%(name)s</DIV><DIV>%(size)s</DIV><DIV>"%unit)
   aWeb.wr(aWeb.button('edit', DIV='div_content_right', URL='racks_info?id=%s'%unit['id']))
   aWeb.wr(aWeb.button('show', DIV='main',              URL='device_main?rack=%s'%unit['id'],TITLE='Rack inventory'))
   aWeb.wr("</DIV></DIV>")
@@ -30,9 +30,9 @@ def list_infra(aWeb):
  devices = aWeb.rest_call("device/list",{'field':'base','search':type,'extra':['type']})['data']
  aWeb.wr("<ARTICLE><P>%ss</P>"%type.title())
  aWeb.wr(aWeb.button('reload',DIV='div_content_left', URL='racks_list_infra?type=%s'%type))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Name</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>ID</DIV><DIV>Name</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for dev in devices:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL='device_info?id=%s'>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_left URL='%s_inventory?ip=%s'>%s</A></DIV><DIV CLASS=td>"%(dev['id'],dev['id'],dev['type_name'],dev['ip'],dev['hostname']))
+  aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right URL='device_info?id=%s'>%s</DIV><DIV><A CLASS=z-op DIV=div_content_left URL='%s_inventory?ip=%s'>%s</A></DIV><DIV>"%(dev['id'],dev['id'],dev['type_name'],dev['ip'],dev['hostname']))
   aWeb.wr(aWeb.button('info',DIV='main',URL='%s_manage?id=%s&ip=%s&hostname=%s'%(dev['type_name'],dev['id'],dev['ip'],dev['hostname'])))
   if dev.get('url'):
    aWeb.wr(aWeb.button('ui', HREF=dev['url'], TARGET='_blank', TITLE='UI'))
@@ -75,28 +75,26 @@ def info(aWeb):
  aWeb.wr("<ARTICLE CLASS=info><P>Rack Info (%s)</P>"%(info['id']))
  aWeb.wr("<FORM ID=rack_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(info['id']))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Name:</DIV><DIV CLASS=td><INPUT NAME=name TYPE=TEXT VALUE='%s'></DIV></DIV>"%(info['name']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Size:</DIV><DIV CLASS=td><INPUT NAME=size TYPE=TEXT VALUE='%s'></DIV></DIV>"%(info['size']))
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Console:</DIV><DIV CLASS=td><SELECT NAME=console>")
+ aWeb.wr("<DIV CLASS='info col2'>")
+ aWeb.wr("<DIV>Name:</DIV><DIV><INPUT NAME=name TYPE=TEXT VALUE='%s'></DIV>"%(info['name']))
+ aWeb.wr("<DIV>Size:</DIV><DIV><INPUT NAME=size TYPE=TEXT VALUE='%s'></DIV>"%(info['size']))
+ aWeb.wr("<DIV>Console:</DIV><DIV><SELECT NAME=console>")
  for unit in res['consoles']:
   extra = " selected" if (info['console'] == unit['id']) or (not info['console'] and unit['id'] == 'NULL') else ""
   aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname']))
- aWeb.wr("</SELECT></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Location:</DIV><DIV CLASS=td><SELECT NAME=location_id>")
+ aWeb.wr("</SELECT></DIV>")
+ aWeb.wr("<DIV>Location:</DIV><DIV><SELECT NAME=location_id>")
  for unit in res['locations']:
   extra = " selected" if (info['location_id'] == unit['id']) or (not info['location_id'] and unit['id'] == 'NULL') else ""
   aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name']))
- aWeb.wr("</SELECT></DIV></DIV>")
-
+ aWeb.wr("</SELECT></DIV>")
  for key in ['pdu_1','pdu_2']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s:</DIV><DIV CLASS=td><SELECT NAME=%s>"%(key.capitalize(),key))
+  aWeb.wr("<DIV>%s:</DIV><DIV><SELECT NAME=%s>"%(key.capitalize(),key))
   for unit in res['pdus']:
    extra = " selected" if (info[key] == unit['id']) or (not info[key] and unit['id'] == 'NULL') else ""
    aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname']))
-  aWeb.wr("</SELECT></DIV></DIV>")
-
- aWeb.wr("</DIV></DIV>")
+  aWeb.wr("</SELECT></DIV>")
+ aWeb.wr("</DIV>")
  aWeb.wr("<SPAN CLASS='right small-text' ID=update_results></SPAN>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right', URL='racks_info?id={0}'.format(info['id'])))

@@ -12,7 +12,7 @@ def main(aWeb):
  if aWeb.node() == 'master':
   aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='nodes_list'>Nodes</A></LI>")
   aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='servers_list'>Servers</A></LI>")
-  aWeb.wr("<LI><A CLASS=z-op TARGET=_blank   HREF='../infra/erd.pdf'>ERD</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op TARGET=_blank   HREF='infra/erd.pdf'>ERD</A></LI>")
   aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
  if data.get('logs'):
   aWeb.wr("<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>")
@@ -51,13 +51,13 @@ def report(aWeb):
  info = aWeb.rest_full("%s/system/report"%aWeb.url(), aDataOnly = True)
  analytics = info.pop('analytics',{})
  keys = sorted(info.keys())
- aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>System</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Information</DIV><DIV CLASS=th>Value</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<ARTICLE><P>System</P>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Information</DIV><DIV>Value</DIV></DIV><DIV CLASS=tbody>")
  for i in keys:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(i,info[i]))
+  aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s</DIV></DIV>"%(i,info[i]))
  for x in ['modules','files']:
   for k,v in analytics.get(x,{}).items():
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s: %s</DIV><DIV CLASS=td>%s</DIV></DIV>"%(x.title(),k,v))
+   aWeb.wr("<DIV><DIV>%s: %s</DIV><DIV>%s</DIV></DIV>"%(x.title(),k,v))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -66,10 +66,10 @@ def reload(aWeb):
  """ Map node to URL and call reload """
  api = aWeb.rest_call("system/node_to_api",{'node':aWeb['node']})['url']
  res = aWeb.rest_full("%s/system/reload"%api, aDataOnly = True)
- aWeb.wr("<ARTICLE CLASS=info STYLE='width:100%'><P>Module</P>")
+ aWeb.wr("<ARTICLE><P>Module</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
  for x in res['modules']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV></DIV>"%x)
+  aWeb.wr("<DIV><DIV>%s</DIV></DIV>"%x)
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 ######################################### Tasks ######################################
@@ -78,9 +78,9 @@ def reload(aWeb):
 def task_report(aWeb):
  res = aWeb.rest_call("master/task_list",{'node':aWeb.node()})
  aWeb.wr("<ARTICLE><P>Tasks</P>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Node</DIV><DIV CLASS=th>Frequency</DIV><DIV CLASS=th>Module</DIV><DIV CLASS=th>Function</DIV><DIV CLASS=th>Args</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Node</DIV><DIV>Frequency</DIV><DIV>Module</DIV><DIV>Function</DIV><DIV>Args</DIV></DIV><DIV CLASS=tbody>")
  for task in res['tasks']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%(node)s</DIV><DIV CLASS=td>%(frequency)s</DIV><DIV CLASS=td>%(module)s</DIV><DIV CLASS=td>%(function)s</DIV><DIV CLASS=td>%(args)s</DIV></DIV>"%task)
+  aWeb.wr("<DIV><DIV>%(node)s</DIV><DIV>%(frequency)s</DIV><DIV>%(module)s</DIV><DIV>%(function)s</DIV><DIV>%(args)s</DIV></DIV>"%task)
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 ############################################ Options ##############################################
@@ -90,10 +90,11 @@ def task_report(aWeb):
 def rest_explore(aWeb):
  res = aWeb.rest_call("system/rest_explore")
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
- aWeb.wr("<ARTICLE><DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>API</DIV><DIV CLASS=th>Function</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<ARTICLE>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>API</DIV><DIV>Function</DIV></DIV><DIV CLASS=tbody>")
  for item in res['data']:
   for fun in item['functions']:
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td><A CLASS=z-op DIV=div_content_right URL=system_rest_information?api=%s&function=%s>%s</A></DIV></DIV>"%(item['api'],item['api'],fun,fun))
+   aWeb.wr("<DIV><DIV>%s</DIV><DIV><A CLASS=z-op DIV=div_content_right URL=system_rest_information?api=%s&function=%s>%s</A></DIV></DIV>"%(item['api'],item['api'],fun,fun))
  aWeb.wr("</DIV></DIV></ARTICLE>")
  aWeb.wr("</SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
@@ -182,7 +183,7 @@ def images(aWeb):
  aWeb.wr("<ARTICLE><P>Images<P><DIV CLASS=table><DIV CLASS=tbody>")
  for file in res['files']:
   if file[-3:] == 'png':
-   aWeb.wr("<DIV CLASS=tr><DIV CLASS=td STYLE='max-width:180px'>{0}</DIV><DIV CLASS=td STYLE='width:100%;'><IMG STYLE='max-height:60px;' SRC='{1}/{0}' /></DIV></DIV>".format(file,res['path']))
+   aWeb.wr("<DIV><DIV STYLE='max-width:180px'>{0}</DIV><DIV STYLE='width:100%;'><IMG STYLE='max-height:60px;' SRC='{1}/{0}' /></DIV></DIV>".format(file,res['path']))
  aWeb.wr("</DIV></DIV></ARTICLE>")
  if aWeb.get('navigation'):
   aWeb.wr("</SECTION>")
@@ -193,15 +194,14 @@ def images(aWeb):
 def controls(aWeb):
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/ipam_status'>IPAM status check</A></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/ipam_events&arguments={\"op\":\"clear\"}'>IPAM clear status logs</A></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/interface_status'>Interface status check</A></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/network_info_discover'>Discover system info</A></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/model_sync'>Sync models</A></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/vm_mapping'>VM UUID mapping</A></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=reservation/expiration_status'>Reservation checks</A></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=master/oui_fetch'>OUI Database sync</A></DIV></DIV>")
+ aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/ipam_init'>IPAM status check</A></DIV></DIV>")
+ aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/ipam_events&arguments={\"op\":\"clear\"}'>IPAM clear status logs</A></DIV></DIV>")
+ aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/interface_init'>Interface status check</A></DIV></DIV>")
+ aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/network_info_discover'>Discover system info</A></DIV></DIV>")
+ aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/model_sync'>Sync models</A></DIV></DIV>")
+ aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/vm_mapping'>VM UUID mapping</A></DIV></DIV>")
+ aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=reservation/expiration_status'>Reservation checks</A></DIV></DIV>")
+ aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=master/oui_fetch'>OUI Database sync</A></DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
  aWeb.wr("</SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
-

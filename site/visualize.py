@@ -18,11 +18,9 @@ def list(aWeb):
  res = aWeb.rest_call("visualize/list")
  aWeb.wr("<ARTICLE><P>Maps</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content_left', URL='visualize_list', TITLE='Reload'))
- aWeb.wr("<DIV CLASS=table>")
- aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Id</DIV><DIV CLASS='th maxed'>Name</DIV><DIV CLASS=th STYLE='width:50px'>&nbsp;</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Id</DIV><DIV CLASS='maxed'>Name</DIV><DIV STYLE='width:50px'>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for map in res['maps']:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(map['id'],map['name']))
+  aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>"%(map['id'],map['name']))
   aWeb.wr(aWeb.button('edit',      DIV='div_content_right', URL='visualize_network?type=map&id=%s'%map['id'],   TITLE='Show and Edit map') )
   aWeb.wr(aWeb.button('network', DIV='div_content_right', URL='visualize_show?id=%s'%map['id'],   TITLE='Show map'))
   aWeb.wr("</DIV></DIV>")
@@ -52,12 +50,14 @@ def show(aWeb):
   console.log('DoubleClick',params.nodes);
   if (params.nodes[0]){
    var args = {id:params.nodes[0]};
-   $.ajax({ type:"POST", url: '../api/device/management', data: JSON.stringify(args), dataType:'json',success: function(data){
+   $.ajax({ type:"POST", url: 'api/device/management', data: args, dataType:'json',success: function(data){
     if (data && data.status == 'OK'){
      if(data.data.url)
       window.open(data.data.url);
      else
       window.open("ssh://" + data.data.username + "@" + data.data.ip,"_self");
+    } else {
+     console.log('data not ok')
     }
    }});
   }

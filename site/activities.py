@@ -15,9 +15,9 @@ def main(aWeb):
 def report(aWeb):
  activities = aWeb.rest_call("master/activity_list",{'group':'month','mode':'full'})['data']
  aWeb.wr("<ARTICLE><P>Activities Report</P><DIV CLASS=table>")
- aWeb.wr("<DIV CLASS=thead><DIV CLASS=th>Time</DIV><DIV CLASS=th>User</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>Event</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=thead><DIV>Time</DIV><DIV>User</DIV><DIV>Type</DIV><DIV>Event</DIV></DIV><DIV CLASS=tbody>")
  for act in activities:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>{} - {}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>{}</DIV></DIV>".format(act['date'],act['time'],act['user'],act['type'],act['event']))
+  aWeb.wr("<DIV><DIV>{} - {}</DIV><DIV>{}</DIV><DIV>{}</DIV><DIV>{}</DIV></DIV>".format(act['date'],act['time'],act['user'],act['type'],act['event']))
  aWeb.wr("</DIV></DIV></ARTICLE>")
 
 #
@@ -29,9 +29,9 @@ def list(aWeb):
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='activities_list'))
  aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='activities_info?id=new'))
  aWeb.wr(aWeb.button('info',   DIV='div_content',URL='activities_type_list'))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>Date</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Date</DIV><DIV>Type</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in rows:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>{} - {}</DIV><DIV CLASS=td>{}</DIV><DIV CLASS=td>".format(row['date'],row['time'],row['type']))
+  aWeb.wr("<DIV><DIV>{} - {}</DIV><DIV>{}</DIV><DIV>".format(row['date'],row['time'],row['type']))
   aWeb.wr(aWeb.button('info',   DIV='div_content_right', URL='activities_info?id=%s'%row['id']))
   aWeb.wr(aWeb.button('delete', DIV='div_content_right', URL='activities_delete?id=%s'%row['id']))
   aWeb.wr("</DIV></DIV>")
@@ -48,19 +48,19 @@ def info(aWeb):
  aWeb.wr("<ARTICLE CLASS='info'><P>Activity (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=activities_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>User:</DIV><DIV CLASS=td><SELECT NAME=user_id>")
+ aWeb.wr("<DIV CLASS='info col2'>")
+ aWeb.wr("<DIV>User:</DIV><DIV><SELECT NAME=user_id>")
  for user in res['users']:
   selected = 'selected' if data['user_id'] == user['id'] or (data['id'] == 'new' and cookie['id'] == user['id']) else ''
   aWeb.wr("<OPTION %s VALUE='%s'>%s</OPTION>"%(selected,user['id'],user['alias']))
- aWeb.wr("</SELECT></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><SELECT NAME=type_id>")
+ aWeb.wr("</SELECT></DIV>")
+ aWeb.wr("<DIV>Type:</DIV><DIV><SELECT NAME=type_id>")
  for type in res['types']:
   selected = 'selected' if data['type_id'] == type['id'] else ''
   aWeb.wr("<OPTION %s VALUE='%s'>%s</OPTION>"%(selected,type['id'],type['type']))
- aWeb.wr("</SELECT></DIV></DIV>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Date:</DIV><DIV CLASS=td><INPUT TYPE=date NAME=date VALUE='%s'> <INPUT TYPE=time NAME=time VALUE='%s'></DIV></DIV>"%(data['date'],data['time']))
- aWeb.wr("</DIV></DIV>")
+ aWeb.wr("</SELECT></DIV>")
+ aWeb.wr("<DIV>Date:</DIV><DIV><INPUT TYPE=date NAME=date VALUE='%s'> <INPUT TYPE=time NAME=time VALUE='%s'></DIV>"%(data['date'],data['time']))
+ aWeb.wr("</DIV>")
  aWeb.wr("<TEXTAREA STYLE='width:100%; height:70px;' NAME=event>{}</TEXTAREA>".format(data['event']))
  aWeb.wr("</FORM>")
  if data['id'] != 'new':
@@ -82,9 +82,9 @@ def type_list(aWeb):
  aWeb.wr("<ARTICLE><P>Activity Types</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content', URL='activities_type_list'))
  aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='activities_type_info?id=new'))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV CLASS=th>ID</DIV><DIV CLASS=th>Type</DIV><DIV CLASS=th>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
+ aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>ID</DIV><DIV>Type</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in rows:
-  aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>%s</DIV><DIV CLASS=td>%s</DIV><DIV CLASS=td>"%(row['id'],row['type']))
+  aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>"%(row['id'],row['type']))
   aWeb.wr(aWeb.button('info',   DIV='div_content_right', URL='activities_type_info?id=%s'%row['id']))
   aWeb.wr(aWeb.button('delete', DIV='div_content_right', URL='activities_type_delete?id=%s'%row['id']))
   aWeb.wr("</DIV></DIV>")
@@ -100,9 +100,9 @@ def type_info(aWeb):
  aWeb.wr("<ARTICLE CLASS='info'><P>Activity Type (%s)</P>"%(data['id']))
  aWeb.wr("<FORM ID=activities_type_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV CLASS=tr><DIV CLASS=td>Type:</DIV><DIV CLASS=td><INPUT TYPE=TEXT NAME=type VALUE='%s'></DIV></DIV>"%data['type'])
- aWeb.wr("</DIV></DIV>")
+ aWeb.wr("<DIV CLASS='info col2'>")
+ aWeb.wr("<DIV>Type:</DIV><DIV><INPUT TYPE=TEXT NAME=type VALUE='%s'></DIV>"%data['type'])
+ aWeb.wr("</DIV>")
  aWeb.wr("</FORM>")
  if data['id'] != 'new':
   aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='activities_type_delete?id={0}'.format(data['id']), MSG='Really remove activity?'))
