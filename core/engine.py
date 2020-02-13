@@ -507,7 +507,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif path == 'system':
    self.system(query)
   elif len(path) == 0:
-   self._headers.update({'X-Process':'no route','Location':'portal_main','X-Code':301})
+   self._headers.update({'X-Process':'no route','Location':'portal_login','X-Code':301})
   else:
    self.site(self.path[1:])
 

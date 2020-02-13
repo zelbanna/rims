@@ -4,7 +4,19 @@ __author__= "Zacharias El Banna"
 #
 #
 def login(aWeb):
- pass
+ data = aWeb.rest_call("portal/application")
+ aWeb.put_html(aTitle = data['title'])
+ aWeb.wr("<DIV CLASS='background overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message'])
+ if data.get('exception'):
+  aWeb.wr("Error retrieving application info - exception info: %s"%(data['exception']))
+ else:
+  aWeb.wr("<FORM ACTION='portal_main' METHOD=POST ID='login_form'>")
+  aWeb.wr("<DIV CLASS='info col2' STYLE='float:left;'>")
+  aWeb.wr("<DIV>Username:</DIV><DIV><INPUT TYPE=username ID=username NAME=username PLACEHOLDER='username'></DIV>")
+  aWeb.wr("<DIV>Password:</DIV><DIV><INPUT TYPE=password ID=password NAME=password PLACEHOLDER='********'></DIV>")
+  aWeb.wr("</DIV>")
+  aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:10px 10px 10px 10px;' FRM='login_form'><IMG SRC='images/icon-start.png' /></BUTTON>")
+  aWeb.wr("</ARTICLE></DIV>")
 
 #
 #
@@ -40,21 +52,7 @@ def main(aWeb):
   if menu['start']:
    aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['href'] if menu['menu'][0]['view'] == 'inline' else "portal_framed?type=%s&title="%(menu['menu'][0]['type'],menu['menu'][0]['title'])))
  else:
-  data = aWeb.rest_call("portal/application")
-  aWeb.put_html(aTitle = data['title'])
-  aWeb.wr("<DIV CLASS='background overlay'><ARTICLE CLASS='login'><H1 CLASS='centered'>%s</H1>"%data['message'])
-  if data.get('exception'):
-   aWeb.wr("Error retrieving application info - exception info: %s"%(data['exception']))
-  else:
-   error = auth.get('error',{})
-   aWeb.wr("<FORM ACTION='portal_main' METHOD=POST ID='login_form'>")
-   aWeb.wr("<DIV CLASS='info col2' STYLE='display:inline; float:left; margin:0px 0px 0px 30px;'>")
-   aWeb.wr("<DIV>Username:</DIV><DIV><INPUT TYPE=username ID=username NAME=username PLACEHOLDER='username'></DIV>")
-   aWeb.wr("<DIV>Password:</DIV><DIV><INPUT TYPE=password ID=password NAME=password PLACEHOLDER='********'></DIV>")
-   aWeb.wr("</DIV>")
-   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:20px 20px 30px 40px;' FRM='login_form'><IMG SRC='images/icon-start.png' /></BUTTON>")
-  aWeb.wr("<!-- %s -->"%auth.get('error'))
-  aWeb.wr("</ARTICLE></DIV>")
+  aWeb.wr("<SCRIPT>window.location.replace('/portal_login');</SCRIPT>")
 
 ############################################ Resources ##############################################
 #
