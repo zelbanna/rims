@@ -56,13 +56,13 @@ def title(aWeb):
  aWeb.wr("<FORM ID=multimedia_info_form>")
  aWeb.wr("<INPUT TYPE=hidden VALUE='%s' NAME=file>"%(aWeb['file']))
  aWeb.wr("<DIV CLASS='info col2'>")
- aWeb.wr("<DIV>Type:</DIV><DIV><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=type></DIV>"%data['type'])
- aWeb.wr("<DIV>Title:</DIV><DIV><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=title></DIV>"%data['title'])
+ aWeb.wr("<label for='type'>Type:</label><INPUT id='type' TYPE=TEXT REQUIRED VALUE='%s' NAME=type>"%data['type'])
+ aWeb.wr("<label for='title'>Title:</label><INPUT id='title' TYPE=TEXT REQUIRED VALUE='%s' NAME=title>"%data['title'])
  if data.get('episode'):
-  aWeb.wr("<DIV>Episode:</DIV><DIV><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=episode></DIV>"%data['episode'])
- aWeb.wr("<DIV>File Info:</DIV><DIV><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=info></DIV>"%data['info'])
- aWeb.wr("<DIV>File Name:</DIV><DIV><INPUT TYPE=TEXT REQUIRED VALUE='%s' NAME=name></DIV>"%data['name'])
- aWeb.wr("<DIV>File Path:</DIV><DIV><INPUT TYPE=TEXT READONLY VALUE='%s' NAME=path></DIV>"%data['path'])
+  aWeb.wr("<label for='episode'>Episode:</label><INPUT id='episode' TYPE=TEXT REQUIRED VALUE='%s' NAME=episode>"%data['episode'])
+ aWeb.wr("<label for='info'>File Info:</label><INPUT id='info' TYPE=TEXT REQUIRED VALUE='%s' NAME=info>"%data['info'])
+ aWeb.wr("<label for='name'>File Name:</label><INPUT id='name' TYPE=TEXT REQUIRED VALUE='%s' NAME=name>"%data['name'])
+ aWeb.wr("<label for='path'>File Path:</label><INPUT id='path' TYPE=TEXT READONLY VALUE='%s' NAME=path>"%data['path'])
  aWeb.wr("</DIV></FORM>")
  aWeb.wr(aWeb.button('start',DIV='div_content_right', SPIN='true', URL='multimedia_request?request=process',  FRM='multimedia_info_form'))
  aWeb.wr(aWeb.button('sync', DIV='div_content_right', SPIN='true', URL='multimedia_request?request=transfer', FRM='multimedia_info_form'))
@@ -74,9 +74,9 @@ def subtitles(aWeb):
  data = aWeb.rest_call("multimedia/check_srt",{'path':aWeb['path'],'file':aWeb['file']})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<DIV CLASS='info col2'>")
- aWeb.wr("<DIV>Name:</DIV><DIV>%s</DIV>"%data['name'])
- aWeb.wr("<DIV>Code:</DIV><DIV>%s</DIV>"%data['code'])
- aWeb.wr("<DIV>File:</DIV><DIV>%s</DIV>"%data['file'])
+ aWeb.wr("<label for='name'>Name:</label><span id='name'>%s</span>"%data['name'])
+ aWeb.wr("<label for='code'>Code:</label><span id='code'>%s</span>"%data['code'])
+ aWeb.wr("<label for='file'>File:</label><span id='file'>%s</span>"%data['file'])
  aWeb.wr("</DIV></ARTICLE>")
 
 #
@@ -84,13 +84,13 @@ def subtitles(aWeb):
 def lookup(aWeb):
  data = aWeb.rest_call("multimedia/check_content",{'path':aWeb['path'],'file':aWeb['file'],'subtitle':None})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
- aWeb.wr("<DIV CLASS='info col2'>")
- aWeb.wr("<DIV>Result:</DIV><DIV>%s</DIV><DIV>&nbsp;</DIV>"%data['status'])
- aWeb.wr("<DIV>Video:</DIV><DIV>Set default: %s</DIV><DIV>Language: %s</DIV>"%(data['video']['set_default'],data['video']['language']))
- aWeb.wr("<DIV>Audio:</DIV><DIV>Add/Remove: [%s/%s]</DIV><DIV>Add AAC: %s</DIV>"%(",".join(data['audio']['add']),",".join(data['audio']['remove']),data['audio']['add_aac']))
- aWeb.wr("<DIV>Subtitles:</DIV><DIV>Add/Remove: [%s/%s]</DIV><DIV>Languages: %s</DIV>"%(",".join(data['subtitle']['add']),",".join(data['subtitle']['remove']),data['subtitle']['languages']))
+ aWeb.wr("<DIV CLASS='info col3'>")
+ aWeb.wr("<label for='status'>Result:</label><span id='status'>%s</span><span>&nbsp;</span>"%data['status'])
+ aWeb.wr("<label for='video'>Video:</label><span id='video'>Set default: %s</span><span>Language: %s</span>"%(data['video']['set_default'],data['video']['language']))
+ aWeb.wr("<label for='audio'>Audio:</label><span id='audio'>Add/Remove: [%s/%s]</span><span>Add AAC: %s</span>"%(",".join(data['audio']['add']),",".join(data['audio']['remove']),data['audio']['add_aac']))
+ aWeb.wr("<label for='subtitle'>Subtitles:</label><span id='subtitle'>Add/Remove: [%s/%s]</span><span>Languages: %s</span>"%(",".join(data['subtitle']['add']),",".join(data['subtitle']['remove']),data['subtitle']['languages']))
  if data.get('error'):
-  aWeb.wr("<DIV>Audio:</DIV><DIV>%s</DIV>"%data['error'])
+  aWeb.wr("<label for='error'>Audio:</label><span id='error'>%s</span><span>&nbsp;</span>"%data['error'])
  aWeb.wr("</DIV></ARTICLE>")
 
 #
@@ -101,7 +101,7 @@ def request(aWeb):
  data = aWeb.rest_call("system/worker",{'module':'multimedia','function':request,'output':True,'args':args})
  aWeb.wr("<ARTICLE CLASS=info><P>%s</P>"%aWeb['file'])
  aWeb.wr("<DIV CLASS='info col2'>")
- aWeb.wr("<DIV>Res:</DIV><DIV>%s</DIV>"%data)
+ aWeb.wr("<label for='res'>Res:</label><span id='res'>%s</span>"%data)
  aWeb.wr("</DIV></ARTICLE>")
 
 #

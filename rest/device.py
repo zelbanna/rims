@@ -190,7 +190,7 @@ def info(aCTX, aArgs = None):
     pdu_ids = [str(x['pdu_id']) for x in ret['pems'] if x['pdu_id']]
     infra_ids.extend(pdu_ids)
     if infra_ids:
-     db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, hostname FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.id IN (%s)"%','.join(infra_ids))
+     db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.id IN (%s)"%','.join(infra_ids))
      devices = db.get_dict('id')
     else:
      devices = {}
@@ -330,9 +330,9 @@ def extended(aCTX, aArgs = None):
       pdu = getattr(module,'Device',None)(aCTX, pem['pdu_id'],pdu_info['ip'])
       # Slot id is actually local slot ID, so we need to look up infra -> pdu_info -> pdu and then pdu[x_slot_id] to get the right ID
       pdu_res = pdu.set_name( int(ret['infra']['pdu_info'][pem['pdu_id']]['%s_slot_id'%pem['pdu_slot']] ), int(pem['pdu_unit']) , "%s-%s"%(ret['data']['hostname'],pem['name']) )
-      result["PDU_(%s)"%pem['id']] = "%s.%s"%(pdu_info['hostname'],pdu_res)
+      result["PDU_(%s)"%pem['id']] = "RES:%s.%s"%(pdu_info['hostname'],pdu_res)
      except Exception as err:
-      result["PDU_(%s)"%pem['id']] = "Error: %s"%repr(err)
+      result["PDU_(%s)"%pem['id']] = "ERROR: %s"%repr(err)
  ret['result'] = result if len(result) > 0 else None
  ret['status'] = 'OK'
  return ret

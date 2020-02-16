@@ -37,18 +37,18 @@ def info(aWeb):
  aWeb.wr("<FORM ID=servers_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE=%s>"%(data['id']))
  aWeb.wr("<DIV CLASS='info col2'>")
- aWeb.wr("<DIV>Id:</DIV><DIV CLASS='readonly'>%s</DIV>"%data['id'])
- aWeb.wr("<DIV>Node:</DIV><DIV><SELECT NAME=node>")
+ aWeb.wr("<LABEL for='id'>Id:</LABEL><SPAN id='id'>%s</SPAN>"%data['id'])
+ aWeb.wr("<LABEL for='node'>Node:</LABEL><SELECT id='node' NAME=node>")
  for node in res['nodes']:
   extra = " selected" if (data['node'] == node) else ""
   aWeb.wr("<OPTION VALUE=%s %s>%s</OPTION>"%(node,extra,node))
- aWeb.wr("</SELECT></DIV>")
- aWeb.wr("<DIV>Server:</DIV><DIV><SELECT NAME=type_id>")
+ aWeb.wr("</SELECT>")
+ aWeb.wr("<LABEL for='type_id'>Server:</LABEL><SELECT id='type_id' NAME=type_id>")
  for srv in res['services']:
   extra = " selected" if (data['type_id'] == srv['id']) else ""
   aWeb.wr("<OPTION VALUE=%s %s>%s (%s)</OPTION>"%(srv['id'],extra,srv['service'],srv['type']))
- aWeb.wr("</SELECT></DIV>")
- aWeb.wr("<DIV>UI:</DIV><DIV><INPUT TYPE=TEXT NAME=ui VALUE='%s'></DIV>"%(data['ui']))
+ aWeb.wr("</SELECT>")
+ aWeb.wr("<LABEL for='ui'>UI:</LABEL><INPUT id='ui' TYPE=TEXT NAME=ui VALUE='%s'>"%(data['ui']))
  aWeb.wr("</DIV>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('save',    DIV='div_content_right', URL='servers_info?op=update', FRM='servers_info_form'))

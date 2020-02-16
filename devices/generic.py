@@ -19,12 +19,9 @@ class Device(object):
  def __init__(self, aCTX, aID, aIP = None):
   self._id = aID
   self._ctx = aCTX
-  if aIP:
-   self._ip = aIP
-  else:
-   try: self._ip = aCTX.node_function('master','device','management')({'id':aID})['data']['ip']
-   except Exception as e:
-    raise Exception('No IP could be found (%s)'%aID)
+  self._ip = aIP if aIP else aCTX.node_function('master','device','management')({'id':aID})['data']['ip']
+  if self._ip is None:
+   raise Exception('GenericDevice(%s) - No IP passed or could be found'%aID)
 
  @classmethod
  def get_functions(cls): return []

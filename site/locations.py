@@ -25,7 +25,7 @@ def info(aWeb):
  aWeb.wr("<FORM ID='location_info_form'>")
  aWeb.wr("<INPUT TYPE=hidden NAME=id VALUE='%s'>"%info['id'])
  aWeb.wr("<DIV CLASS='info col2'>")
- aWeb.wr("<DIV>Name:</DIV><DIV><INPUT TYPE=TEXT NAME=name VALUE='%s'></DIV>"%info['name'])
+ aWeb.wr("<LABEL FOR='name'>Name:</LABEL><INPUT TYPE=TEXT ID=name NAME=name VALUE='%s'>"%info['name'])
  aWeb.wr("</DIV>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right', URL='locations_info?id=%s'%info['id']))
  if info['id'] != 'new':

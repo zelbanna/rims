@@ -621,7 +621,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  def auth(self):
   """ Authenticate using node function instead of API """
-  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'auth','X-Code':401})
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'auth','X-Code':401,'Access-Control-Allow-Origin':"*"})
   output = {'status':'NOT_OK'}
   try:
    length = int(self.headers.get('Content-Length',0))

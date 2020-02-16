@@ -76,26 +76,26 @@ def info(aWeb):
  aWeb.wr("<FORM ID=rack_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(info['id']))
  aWeb.wr("<DIV CLASS='info col2'>")
- aWeb.wr("<DIV>Name:</DIV><DIV><INPUT NAME=name TYPE=TEXT VALUE='%s'></DIV>"%(info['name']))
- aWeb.wr("<DIV>Size:</DIV><DIV><INPUT NAME=size TYPE=TEXT VALUE='%s'></DIV>"%(info['size']))
- aWeb.wr("<DIV>Console:</DIV><DIV><SELECT NAME=console>")
+ aWeb.wr("<label for='name'>Name:</label><INPUT id='name' NAME=name TYPE=TEXT VALUE='%s'>"%(info['name']))
+ aWeb.wr("<label for='size'>Size:</label><INPUT id='size' NAME=size TYPE=TEXT VALUE='%s'>"%(info['size']))
+ aWeb.wr("<label for='console'>Console:</label><SELECT id='console' NAME=console>")
  for unit in res['consoles']:
   extra = " selected" if (info['console'] == unit['id']) or (not info['console'] and unit['id'] == 'NULL') else ""
   aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname']))
- aWeb.wr("</SELECT></DIV>")
- aWeb.wr("<DIV>Location:</DIV><DIV><SELECT NAME=location_id>")
+ aWeb.wr("</SELECT>")
+ aWeb.wr("<label for='location_id'>Location:</label><SELECT id='location_id' NAME=location_id>")
  for unit in res['locations']:
   extra = " selected" if (info['location_id'] == unit['id']) or (not info['location_id'] and unit['id'] == 'NULL') else ""
   aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['name']))
- aWeb.wr("</SELECT></DIV>")
+ aWeb.wr("</SELECT>")
  for key in ['pdu_1','pdu_2']:
-  aWeb.wr("<DIV>%s:</DIV><DIV><SELECT NAME=%s>"%(key.capitalize(),key))
+  aWeb.wr("<label for='%s'>%s:</label><SELECT id='%s' NAME=%s>"%(key,key.capitalize(),key,key))
   for unit in res['pdus']:
    extra = " selected" if (info[key] == unit['id']) or (not info[key] and unit['id'] == 'NULL') else ""
    aWeb.wr("<OPTION VALUE={0} {1}>{2}</OPTION>".format(unit['id'],extra,unit['hostname']))
-  aWeb.wr("</SELECT></DIV>")
+  aWeb.wr("</SELECT>")
  aWeb.wr("</DIV>")
- aWeb.wr("<SPAN CLASS='right small-text' ID=update_results></SPAN>")
+ aWeb.wr("<SPAN CLASS='right' ID=update_results></SPAN>")
  aWeb.wr("</FORM>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_right', URL='racks_info?id={0}'.format(info['id'])))
  aWeb.wr(aWeb.button('save', DIV='div_content_right', URL='racks_info?op=update', FRM='rack_info_form'))
