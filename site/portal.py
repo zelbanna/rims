@@ -12,7 +12,7 @@ def login(aWeb):
  else:
   aWeb.wr("<FORM ACTION='portal_main' METHOD=POST ID='login_form'>")
   aWeb.wr("<DIV CLASS='info col2' STYLE='float:left;'>")
-  aWeb.wr("<label for='username'>Username:</label><INPUT TYPE=username ID=username NAME=username PLACEHOLDER='username'>")
+  aWeb.wr("<label for='username'>Username:</label><INPUT TYPE=text ID=username NAME=username PLACEHOLDER='username'>")
   aWeb.wr("<label for='password'>Password:</label><INPUT TYPE=password ID=password NAME=password PLACEHOLDER='********'>")
   aWeb.wr("</DIV>")
   aWeb.wr("</FORM><BUTTON CLASS='z-op menu' OP=submit STYLE='font-size:18px; margin:10px 10px 10px 10px;' FRM='login_form'><IMG SRC='images/icon-start.png' /></BUTTON>")
