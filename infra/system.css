@@ -34,6 +34,11 @@ label {  font-size:11px; font-weight:bold; font-style:normal!important;}
   /* For desktop: */
 }
 
+button::-moz-focus-inner,
+[type="button"]::-moz-focus-inner,
+[type="reset"]::-moz-focus-inner,
+[type="submit"]::-moz-focus-inner { border-style: none; padding: 0; }
+
 /*###################################### Content Model ########################################*/
 
 section.content {       position:absolute; top:34px; bottom:0px; width:100%;  overflow: auto; clear:both;}
@@ -64,8 +69,6 @@ details.web { font-family: "Courier New", serif; font-size: 12px; margin: 0px; }
 details.web > summary { font-weight:bold; }
 details.web > details { display:block; }
 
-/*############################### Tables #####################################*/ 
-
 article > form > div.table { width:99%; }
 article > div.table {        width:99%; }
 div.table {            display: table; }
@@ -80,12 +83,13 @@ div.table .tfoot {     display: table-footer-group; }
 
 /*#############################################################################*/
 
-.title {       text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed; }
-.maxed {       width:99%; }
-.right   {     float:right!important; }
+.title {    text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed; }
+.maxed {    width:99%; }
+.left {     float:left; }
+.right   {  float:right!important; }
+.inline {   display:inline; }
+.centered { align-items:center; justify-content:center; display:flex; flex-wrap:wrap }
 .small-text {  font-size:9px; }
-.inline {      display:inline; }
-.centered {    align-items:center; justify-content:center; display:flex; flex-wrap:wrap }
 .machine-text { font-family:Courier New, serif; font-size: 12px; margin: 0px; }
 
 div.rack-indx { font-weight:bold; font-size:8px; color:grey; padding:2px; }

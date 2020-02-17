@@ -495,6 +495,11 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.header()
   self.wfile.write(self._body)
 
+ def do_OPTIONS(self):
+  self._headers.update({'Access-Control-Allow-Headers':'X-Token,Content-Type','Access-Control-Allow-Origin':'*'})
+  self.header()
+  self.wfile.write(self._body)
+
  def route(self):
   """ Route request to the right function /<path>/mod_fun?get or /<site:mod_fun>?get"""
   path,_,query = self.path[1:].partition('/')

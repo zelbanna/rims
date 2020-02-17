@@ -1,0 +1,19 @@
+# Compiled python modules.
+*.swp
+
+# Backup files
+*.bck
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+
+# Settings should never be pushed to central repo
+*.json
+
+# CRA tools
+serviceWorker.js
+setupTests.js
+

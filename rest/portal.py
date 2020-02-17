@@ -40,6 +40,45 @@ def menu(aCTX, aArgs = None):
 
 #
 #
+def react_menu(aCTX, aArgs = None):
+ """Function docstring for react_menu
+
+ Args:
+
+ Output:
+ """
+ ret = {}
+ if aCTX.site.get('portal') and aCTX.site['portal'].get('start'):
+  ret['start'] = True
+  item = aCTX.site['menuitem'][aCTX.site['portal']['start']]
+  ret['menu'] = [{'icon':'images/icon-start.png', 'title':'Start', 'module':item['module'], 'view':item.get('view','inline'),'type':'menuitem' }]
+ else:
+  ret['start'] = False
+  ret['menu'] = []
+ ret['menu'].extend(react_resources(aCTX,{'type':'menuitem'})['data'])
+ ret['title'] = aCTX.site.get('portal',{}).get('title','Portal')
+ return ret
+
+#
+#
+def react_resources(aCTX, aArgs = None):
+ """Function returns site information
+
+ Args:
+  - type (optional)
+
+ Output:
+ """
+ ret = {}
+ types = ['menuitem','tool'] if not 'type' in aArgs else [aArgs['type']]
+ ret['data'] = []
+ for type in types:
+  ret['data'].extend([{'title':k,'type':type,'module':v['module'],'icon':v['icon'],'view':v.get('view','inline')} for k,v in aCTX.site.get(type,{}).items()])
+ return ret
+
+
+#
+#
 def resources(aCTX, aArgs = None):
  """Function returns site information
 
