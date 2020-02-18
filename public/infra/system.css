@@ -72,9 +72,9 @@ article > form > div.table,
 article > div.table { width:99%; }
 div.table {            display: table; }
 div.table .thead {     display: table-header-group; }
-div.table .thead > div { display: table-cell; vertical-align: middle; font-weight: bold; text-align: center; font-size:0.9em; padding: 3px 2px 6px 4px; }
+div.table .thead > div { font-size:14px; display: table-cell; vertical-align: middle; font-weight: bold; text-align: center;  padding: 3px 2px 6px 4px; }
 div.table .tbody {     display: table-row-group; }
-div.table .tbody > div { display: table-row; font-size:11px; }
+div.table .tbody > div { display: table-row; }
 div.table .tbody > div:nth-child(even) { background-color: #FFFFFF; }
 div.table .tbody > div:nth-child(odd)  { background-color: #F1F1F1; }
 div.table .tbody > div > div { display:table-cell; vertical-align: middle; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:3px 0px 3px 6px;}
@@ -124,7 +124,6 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
 li.drag {        position: relative; }
 li.drag::after {  content: ''; top: 0; left: 0; right: 0; bottom: 0; position: absolute; }
 ul.drop {        -ms-touch-action: none; touch-action: none; display:flex; flex-wrap:wrap; min-height:20px; width:100%;}
-ul.drop li {     font-size:11px; }
 ul.vertical {    display:block!important; }
 ul.vertical li { display:table!important; }
 
