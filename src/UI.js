@@ -3,7 +3,7 @@ import React from 'react';
 // ************************* UI functions ****************************
 
 // Send an update handler for mainUpdate
-export function MenuButton(props) {
+export const MenuButton = (props) => {
  const className = ('className' in props) ? 'menu ' + props.className : 'menu';
  const view = ('icon' in props) ? <img src={props.icon} alt={props.title} /> : props.title
  return (
@@ -13,7 +13,7 @@ export function MenuButton(props) {
  )
 }
 
-export function DivInfoCol2(props) {
+export const DivInfoCol2 = (props) => {
  const className = ('className' in props) ? 'info col2 ' + props.className : 'info col2';
  const griditems = props.griditems.map((row,index) => {
   let second = ''
@@ -36,3 +36,13 @@ export function DivInfoCol2(props) {
   </div>
  );
 }
+
+export const Spinner = () => {
+ return (
+  <div key='spinner' className='overlay'>
+   <div className='loader'></div>
+  </div>
+ )
+}
+
+

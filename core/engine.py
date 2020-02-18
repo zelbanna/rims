@@ -607,7 +607,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    self._headers['Content-type']='text/css; charset=utf-8'
   try:
    if not path == 'files':
-    fullpath = ospath.join(self._ctx.path,path,query)
+    fullpath = ospath.join(self._ctx.path,'public',path,query)
    else:
     param,_,file = query.partition('/')
     fullpath = ospath.join(self._ctx.config['files'][param],file)

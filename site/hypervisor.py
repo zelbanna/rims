@@ -7,7 +7,7 @@ def main(aWeb):
  aWeb.wr("<SECTION CLASS=content ID=div_content>")
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Hypervisors</P>")
- aWeb.wr(aWeb.button('sync',DIV='div_content_right', URL='hypervisors_sync'))
+ aWeb.wr(aWeb.button('sync',DIV='div_content_right', URL='hypervisor_sync'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Hostname</DIV><DIV>Type</DIV><DIV>&nbsp;</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in hypervisors:
   aWeb.wr("<DIV><DIV>%(hostname)s</DIV><DIV>%(type_name)s</DIV>"%row)

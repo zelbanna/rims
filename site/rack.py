@@ -14,12 +14,12 @@ def main(aWeb):
 def list(aWeb):
  racks = aWeb.rest_call("rack/list",{"sort":"name"})
  aWeb.wr("<ARTICLE><P>Racks</P>")
- aWeb.wr(aWeb.button('reload',DIV='div_content_left',URL='racks_list'))
- aWeb.wr(aWeb.button('add',DIV='div_content_right',URL='racks_info?id=new'))
+ aWeb.wr(aWeb.button('reload',DIV='div_content_left',URL='rack_list'))
+ aWeb.wr(aWeb.button('add',DIV='div_content_right',URL='rack_info?id=new'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Location</DIV><DIV>Name</DIV><DIV>Size</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for unit in racks:
   aWeb.wr("<DIV><DIV>%(location)s</DIV><DIV>%(name)s</DIV><DIV>%(size)s</DIV><DIV>"%unit)
-  aWeb.wr(aWeb.button('edit', DIV='div_content_right', URL='racks_info?id=%s'%unit['id']))
+  aWeb.wr(aWeb.button('edit', DIV='div_content_right', URL='rack_info?id=%s'%unit['id']))
   aWeb.wr(aWeb.button('show', DIV='main',              URL='device_main?rack=%s'%unit['id'],TITLE='Rack inventory'))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
@@ -29,7 +29,7 @@ def list_infra(aWeb):
  type = aWeb['type']
  devices = aWeb.rest_call("device/list",{'field':'base','search':type,'extra':['type']})['data']
  aWeb.wr("<ARTICLE><P>%ss</P>"%type.title())
- aWeb.wr(aWeb.button('reload',DIV='div_content_left', URL='racks_list_infra?type=%s'%type))
+ aWeb.wr(aWeb.button('reload',DIV='div_content_left', URL='rack_list_infra?type=%s'%type))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>ID</DIV><DIV>Name</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for dev in devices:
   aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right URL='device_info?id=%s'>%s</DIV><DIV><A CLASS=z-op DIV=div_content_left URL='%s_inventory?ip=%s'>%s</A></DIV><DIV>"%(dev['id'],dev['id'],dev['type_name'],dev['ip'],dev['hostname']))
@@ -97,10 +97,10 @@ def info(aWeb):
  aWeb.wr("</DIV>")
  aWeb.wr("<SPAN CLASS='right' ID=update_results></SPAN>")
  aWeb.wr("</FORM>")
- aWeb.wr(aWeb.button('reload',DIV='div_content_right', URL='racks_info?id={0}'.format(info['id'])))
- aWeb.wr(aWeb.button('save', DIV='div_content_right', URL='racks_info?op=update', FRM='rack_info_form'))
+ aWeb.wr(aWeb.button('reload',DIV='div_content_right', URL='rack_info?id={0}'.format(info['id'])))
+ aWeb.wr(aWeb.button('save', DIV='div_content_right', URL='rack_info?op=update', FRM='rack_info_form'))
  if not id == 'new':
-  aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='racks_delete?id=%s'%(info['id'])))
+  aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='rack_delete?id=%s'%(info['id'])))
  aWeb.wr("</ARTICLE>")
 
 #

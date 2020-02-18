@@ -45,9 +45,9 @@ class Portal extends Component {
    <React.Fragment key='portal'>
     <link key='userstyle' rel='stylesheet' type='text/css' href={styleSheet} />
     <header>
-     <MenuButton className='right warning' onClick={() => {this.props.eraseCookie()} } title='Log out' />
-     <MenuButton className='right'         onClick={() => {this.changeActive({module:'system_main'})}} title='System' icon='images/icon-config.png' />
-     <MenuButton className='right'         onClick={() => {this.changeActive({module:'user_user', args:{id:this.props.cookie.id}})}}   title='User'   icon='images/icon-users.png' />
+     <MenuButton key='logout' className='right warning' onClick={() => {this.props.eraseCookie()} } title='Log out' />
+     <MenuButton key='system' className='right'         onClick={() => {this.changeActive({module:'system_main'})}} title='System' icon='images/icon-config.png' />
+     <MenuButton key='user'   className='right'         onClick={() => {this.changeActive({module:'user_user', args:{id:this.props.cookie.id}})}}   title='User'   icon='images/icon-users.png' />
      {menuitems}
     </header>
     <main>{active}</main>

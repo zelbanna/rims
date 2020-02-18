@@ -6,8 +6,8 @@ def main(aWeb):
  cookie = aWeb.cookie('rims')
  info = aWeb.rest_call("master/user_info",{'id':cookie['id']})
  aWeb.wr("<NAV><UL>")
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='reservations_list'>Reservations</A></LI>")
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='user_list'>Users</A></LI>")
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='reservation_list'>Reservations</A></LI>")
  aWeb.wr("<LI CLASS='right navinfo'><A>%s</A></LI>"%info['data']['name'])
  aWeb.wr("</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content       ID=div_content></SECTION>")
@@ -30,12 +30,12 @@ def list(aWeb):
  rows = aWeb.rest_call("master/user_list")['data']
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Users</P>")
- aWeb.wr(aWeb.button('reload', DIV='div_content', URL='users_list'))
- aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='users_info?id=new'))
+ aWeb.wr(aWeb.button('reload', DIV='div_content', URL='user_list'))
+ aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='user_info?id=new'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>ID</DIV><DIV>Alias</DIV><DIV>Name</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in rows:
   aWeb.wr("<DIV><DIV>%(id)s</DIV><DIV>%(alias)s</DIV><DIV>%(name)s</DIV><DIV>"%row)
-  aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='users_info?id=%(id)s'%row))
+  aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='user_info?id=%(id)s'%row))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
@@ -69,9 +69,9 @@ def info(aWeb):
   aWeb.wr("<label for='cookie'>Cookie:</label><span id='cookie'>%s</span>"%(",".join('%s=%s'%i for i in cookie.items())))
  aWeb.wr("</DIV>")
  aWeb.wr("</FORM>")
- aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='users_info?op=update', FRM='user_info_form'))
+ aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='user_info?op=update', FRM='user_info_form'))
  if data['id'] != 'new' and ((cookie['id'] == str(data['id']) or cookie['id'] == "1")):
-  aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='users_delete?id={0}'.format(data['id']), MSG='Really remove user?'))
+  aWeb.wr(aWeb.button('trash',DIV='div_content_right',URL='user_delete?id={0}'.format(data['id']), MSG='Really remove user?'))
  aWeb.wr("</ARTICLE>")
 
 #

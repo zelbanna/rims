@@ -5,8 +5,8 @@ __author__= "Zacharias El Banna"
 def main(aWeb):
  cookie = aWeb.cookie('rims')
  aWeb.wr("<NAV><UL>")
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='activities_list'>Activities</A></LI>")
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='activities_report'>Report</A></LI>")
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='activity_list'>Activities</A></LI>")
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='activity_report'>Report</A></LI>")
  aWeb.wr("</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content       ID=div_content></SECTION>")
 
@@ -25,14 +25,14 @@ def list(aWeb):
  rows = aWeb.rest_call("master/activity_list")['data']
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Activities</P>")
- aWeb.wr(aWeb.button('reload', DIV='div_content', URL='activities_list'))
- aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='activities_info?id=new'))
- aWeb.wr(aWeb.button('info',   DIV='div_content',URL='activities_type_list'))
+ aWeb.wr(aWeb.button('reload', DIV='div_content', URL='activity_list'))
+ aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='activity_info?id=new'))
+ aWeb.wr(aWeb.button('info',   DIV='div_content',URL='activity_type_list'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Date</DIV><DIV>Type</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in rows:
   aWeb.wr("<DIV><DIV>{} - {}</DIV><DIV>{}</DIV><DIV>".format(row['date'],row['time'],row['type']))
-  aWeb.wr(aWeb.button('info',   DIV='div_content_right', URL='activities_info?id=%s'%row['id']))
-  aWeb.wr(aWeb.button('delete', DIV='div_content_right', URL='activities_delete?id=%s'%row['id']))
+  aWeb.wr(aWeb.button('info',   DIV='div_content_right', URL='activity_info?id=%s'%row['id']))
+  aWeb.wr(aWeb.button('delete', DIV='div_content_right', URL='activity_delete?id=%s'%row['id']))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
@@ -45,7 +45,7 @@ def info(aWeb):
  res  = aWeb.rest_call("master/activity_info",args)
  data = res['data']
  aWeb.wr("<ARTICLE CLASS='info'><P>Activity (%s)</P>"%(data['id']))
- aWeb.wr("<FORM ID=activities_info_form>")
+ aWeb.wr("<FORM ID=activity_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))
  aWeb.wr("<DIV CLASS='info col2'>")
  aWeb.wr("<LABEL for='user_id'>User:</LABEL><SELECT id='user_id' NAME=user_id>")
@@ -63,8 +63,8 @@ def info(aWeb):
  aWeb.wr("<TEXTAREA STYLE='width:100%; height:70px;' NAME=event>{}</TEXTAREA>".format(data['event']))
  aWeb.wr("</FORM>")
  if data['id'] != 'new':
-  aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='activities_delete?id={0}'.format(data['id']), MSG='Really remove activity?'))
- aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='activities_info?op=update', FRM='activities_info_form'))
+  aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='activity_delete?id={0}'.format(data['id']), MSG='Really remove activity?'))
+ aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='activity_info?op=update', FRM='activity_info_form'))
  aWeb.wr("</ARTICLE>")
 
 #
@@ -79,13 +79,13 @@ def type_list(aWeb):
  rows = aWeb.rest_call("master/activity_type_list")['data']
  aWeb.wr("<SECTION CLASS=content-left  ID=div_content_left>")
  aWeb.wr("<ARTICLE><P>Activity Types</P>")
- aWeb.wr(aWeb.button('reload', DIV='div_content', URL='activities_type_list'))
- aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='activities_type_info?id=new'))
+ aWeb.wr(aWeb.button('reload', DIV='div_content', URL='activity_type_list'))
+ aWeb.wr(aWeb.button('add',    DIV='div_content_right',URL='activity_type_info?id=new'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>ID</DIV><DIV>Type</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
  for row in rows:
   aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>"%(row['id'],row['type']))
-  aWeb.wr(aWeb.button('info',   DIV='div_content_right', URL='activities_type_info?id=%s'%row['id']))
-  aWeb.wr(aWeb.button('delete', DIV='div_content_right', URL='activities_type_delete?id=%s'%row['id']))
+  aWeb.wr(aWeb.button('info',   DIV='div_content_right', URL='activity_type_info?id=%s'%row['id']))
+  aWeb.wr(aWeb.button('delete', DIV='div_content_right', URL='activity_type_delete?id=%s'%row['id']))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE></SECTION>")
  aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
@@ -97,15 +97,15 @@ def type_info(aWeb):
  res  = aWeb.rest_call("master/activity_type_info",args)
  data = res['data']
  aWeb.wr("<ARTICLE CLASS='info'><P>Activity Type (%s)</P>"%(data['id']))
- aWeb.wr("<FORM ID=activities_type_info_form>")
+ aWeb.wr("<FORM ID=activity_type_info_form>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME=id VALUE={}>".format(data['id']))
  aWeb.wr("<DIV CLASS='info col2'>")
  aWeb.wr("<LABEL for='type'>Type:</LABEL><INPUT id='type' TYPE=TEXT NAME=type VALUE='%s'>"%data['type'])
  aWeb.wr("</DIV>")
  aWeb.wr("</FORM>")
  if data['id'] != 'new':
-  aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='activities_type_delete?id={0}'.format(data['id']), MSG='Really remove activity?'))
- aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='activities_type_info?op=update', FRM='activities_type_info_form'))
+  aWeb.wr(aWeb.button('delete',DIV='div_content_right',URL='activity_type_delete?id={0}'.format(data['id']), MSG='Really remove activity?'))
+ aWeb.wr(aWeb.button('save',DIV='div_content_right', URL='activity_type_info?op=update', FRM='activity_type_info_form'))
  aWeb.wr("</ARTICLE>")
 
 #

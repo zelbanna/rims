@@ -222,7 +222,7 @@ def file_list(aCTX, aArgs = None):
    directory = aCTX.config['files'][aArgs['directory']]
   else:
    ret['path'] = 'images'
-   directory = 'images'
+   directory = 'public/images'
   for file in listdir(ospath.abspath(directory)):
    ret['files'].append(file)
  except Exception as e:

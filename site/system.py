@@ -10,10 +10,10 @@ def main(aWeb):
  tools = data.get('tools',[])
  aWeb.wr("<NAV><UL>")
  if aWeb.node() == 'master':
-  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='nodes_list'>Nodes</A></LI>")
-  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='servers_list'>Servers</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='node_list'>Nodes</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='server_list'>Servers</A></LI>")
   aWeb.wr("<LI><A CLASS=z-op TARGET=_blank   HREF='infra/erd.pdf'>ERD</A></LI>")
-  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='users_list'>Users</A></LI>")
+  aWeb.wr("<LI><A CLASS=z-op DIV=div_content URL='user_list'>Users</A></LI>")
  if data.get('logs'):
   aWeb.wr("<LI CLASS='dropdown'><A>Logs</A><DIV CLASS='dropdown-content'>")
   for node in data['logs']:
@@ -21,8 +21,8 @@ def main(aWeb):
   aWeb.wr("</DIV></LI>")
  aWeb.wr("<LI CLASS='dropdown'><A>Reports</A><DIV CLASS='dropdown-content'>")
  if aWeb.node() == 'master':
-  aWeb.wr("<A CLASS=z-op DIV=div_content URL='activities_report'>Activities</A>")
-  aWeb.wr("<A CLASS=z-op DIV=div_content URL='reservations_report'>Reservations</A>")
+  aWeb.wr("<A CLASS=z-op DIV=div_content URL='activity_report'>Activities</A>")
+  aWeb.wr("<A CLASS=z-op DIV=div_content URL='reservation_report'>Reservations</A>")
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='device_report'>Devices</A>")
   aWeb.wr("<A CLASS=z-op DIV=div_content URL='inventory_report'>Inventory</A>")
  aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_task_report'>Tasks</A>")

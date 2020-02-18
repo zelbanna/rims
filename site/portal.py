@@ -39,53 +39,17 @@ def main(aWeb):
   aWeb.wr("<HEADER>")
   aWeb.wr("<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=rims URL=portal_main>Log out</BUTTON>")
   aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='System' DIV=main URL='system_main?node=%s'><IMG SRC='images/icon-config.png' /></BUTTON>"%aWeb.node())
-  aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='User'   DIV=main URL='users_%s'><IMG SRC='images/icon-users.png' /></BUTTON>"%("main" if id == '1' else "user?id=%s"%id))
+  aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='User'   DIV=main URL='user_%s'><IMG SRC='images/icon-users.png' /></BUTTON>"%("main" if id == '1' else "user?id=%s"%id))
   for item in menu['menu']:
-   if   item['view'] == 'inline':
-    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['href'],item['title'],item['icon']))
-   elif item['view'] == 'framed':
-    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='resources_framed?type=%s&title=%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['type'],item['title'],item['title'],item['icon']))
-   else:
-    aWeb.wr("<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s' /></A>"%(item['title'],item['href'],item['title'],item['icon']))
+   if 'module' in item:
+    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['module'],item['title'],item['icon']))
+   elif 'frame' in item:
+    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='resource_framed?type=%s&title=%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['type'],item['title'],item['title'],item['icon']))
+   elif 'tab' in item:
+    aWeb.wr("<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s' /></A>"%(item['title'],item['tab'],item['title'],item['icon']))
   aWeb.wr("</HEADER>")
   aWeb.wr("<MAIN ID=main></MAIN>")
   if menu['start']:
-   aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['href'] if menu['menu'][0]['view'] == 'inline' else "portal_framed?type=%s&title="%(menu['menu'][0]['type'],menu['menu'][0]['title'])))
+   aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['module'] if 'module' in menu['menu'][0] else "portal_framed?type=%s&title="%(menu['menu'][0]['type'],menu['menu'][0]['title'])))
  else:
   aWeb.wr("<SCRIPT>window.location.replace('/portal_login');</SCRIPT>")
-
-############################################ Resources ##############################################
-#
-#
-def resources(aWeb):
- aWeb.wr("<NAV><UL>")
- aWeb.wr("<LI CLASS='right dropdown'><A>Resources</A><DIV CLASS='dropdown-content'>")
- aWeb.wr("<A CLASS=z-op DIV=div_content URL='resources_view?type=menuitem'>Menuitems</A>")
- aWeb.wr("<A CLASS=z-op DIV=div_content URL='resources_view?type=tool'>Tools</A>")
- aWeb.wr("</DIV></LI>")
- aWeb.wr("</UL></NAV><SECTION CLASS=content ID=div_content>")
- view(aWeb)
- aWeb.wr("</SECTION>")
-
-#
-#
-def view(aWeb):
- cookie = aWeb.cookie('rims')
- res = aWeb.rest_call("portal/resources",{'type':aWeb.get('type','tool')})
- inline = "<BUTTON CLASS='z-op menu' DIV=main URL='%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
- framed = "<BUTTON CLASS='z-op menu' DIV=main URL='resources_framed?type=%(type)s&title=%(title)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
- tabbed = "<A CLASS='btn menu' TARGET=_blank HREF='%(href)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></A>"
- aWeb.wr("<DIV CLASS=centered STYLE='align-items:initial'>")
- view_map = {'inline':inline,'framed':framed,'tabbed':tabbed}
- for row in res['data']:
-  aWeb.wr("<DIV STYLE='float:left; min-width:100px; margin:6px;'>")
-  aWeb.wr(view_map[row['view']]%row)
-  aWeb.wr("<BR><SPAN STYLE='width:100px; display:block;'>%(title)s</SPAN>"%row)
-  aWeb.wr("</DIV>")
- aWeb.wr("</DIV>")
-
-#
-#
-def framed(aWeb):
- res = aWeb.rest_call("portal/resource",{'type':aWeb['type'],'title':aWeb['title']})
- aWeb.wr("<IFRAME ID=system_resource_frame NAME=system_resource_frame SRC='%s'></IFRAME>"%res['href'])

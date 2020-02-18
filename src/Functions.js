@@ -32,7 +32,7 @@ export const mapper = (params) => {
   const parts = params.module.split('_');
   const module = library[parts[0]];
   const Elem = module[parts[1].charAt(0).toUpperCase() + parts[1].substring(1)];
-  elem = <Elem {...args} />
+  elem = <Elem key={params.module} {...args} />
  } catch(err) {
   console.log("Mapper error: "+params);
   alert(err);

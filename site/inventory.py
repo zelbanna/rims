@@ -11,7 +11,7 @@ def main(aWeb):
  aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='inventory_search'>Search</A>")
  aWeb.wr("<A CLASS=z-op DIV=div_content_left URL='inventory_vendor'>Vendor</A>")
  aWeb.wr("</DIV></LI>")
- aWeb.wr("<LI><A CLASS=z-op DIV=div_content_left URL='locations_list'>Locations</A></LI>")
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content_left URL='location_list'>Locations</A></LI>")
  aWeb.wr("</UL></NAV>")
  aWeb.wr("<SECTION CLASS=content ID=div_content>")
  aWeb.wr("<SECTION CLASS=content-left ID=div_content_left></SECTION>")
