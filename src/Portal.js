@@ -14,7 +14,7 @@ class Portal extends Component {
  }
 
  componentDidMount() {
-  rest_call(rest_base + 'api/portal/react_menu',{id:this.props.cookie.id})
+  rest_call(rest_base + 'api/portal/menu',{id:this.props.cookie.id})
    .then((result) => {
     this.setState(result)
     console.log(result)
@@ -35,7 +35,7 @@ class Portal extends Component {
  }
 
  render() {
-  const styleSheet = 'theme.' + this.props.cookie.theme + '.css'
+  const styleSheet = 'infra/theme.' + this.props.cookie.theme + '.css'
   const active = this.state.active;
   const menuitems = this.state.menu.map((row,index) => {
    return (<MenuButton key={index} {...row} onClick={() => {this.changeActive({module:row.module, args:row.args})}} />);
