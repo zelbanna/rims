@@ -1,1 +1,3 @@
 *.swp
+serviceWorker.js
+setupTests.js
