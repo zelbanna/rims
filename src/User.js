@@ -32,7 +32,7 @@ export class Main extends Component {
 
   return (
    <React.Fragment key='user_main'>
-    <NavBar items={navitems} />
+    <NavBar key='user_navbar' items={navitems} />
     <section className='content' id='div_content'>{this.state.content}</section>
    </React.Fragment>
   )
@@ -114,11 +114,16 @@ export class Info extends Component {
  }
 
  updateInfo = (event) => {
-  console.log("UPDATE: "+this.state)
+  rest_call(rest_base + 'api/master/user_info',{op:'update', ...this.state.data})
+   .then((result) => { this.setState(result); })
  }
 
  deleteInfo = (event) => {
-  console.log("DELETE: "+this.state)
+  rest_call(rest_base + 'api/master/user_delete',{id:this.state.data.id})
+   .then((result) => {
+    console.log(JSON.stringify(result));
+    this.setState({data:null, found:false});
+  })
  }
 
  render() {
@@ -128,13 +133,12 @@ export class Info extends Component {
    return (<Spinner />);
   } else {
    const cookie = read_cookie('rims');
-
    const griditems = [
-    {element:'input', type:'text', id:'alias', text:'Alias', value:this.state.data.alias},
-    {element:'input', type:'password', id:'password', text:'Password',placeholder:'******'},
-    {element:'input', type:'text', id:'email', text:'e-mail', value:this.state.data.email},
-    {element:'input', type:'text', id:'name', text:'Full name', value:this.state.data.name},
-    {element:'select', id:'theme', text:'Theme', value:this.state.data.theme, options:this.state.themes.map((row) => { return ({value:row, text:row, selected:(this.state.data.theme === row)})})}
+    {tag:'input', type:'text', id:'alias', text:'Alias', value:this.state.data.alias},
+    {tag:'input', type:'password', id:'password', text:'Password',placeholder:'******'},
+    {tag:'input', type:'text', id:'email', text:'e-mail', value:this.state.data.email},
+    {tag:'input', type:'text', id:'name', text:'Full name', value:this.state.data.name},
+    {tag:'select', id:'theme', text:'Theme', value:this.state.data.theme, options:this.state.themes.map((row) => { return ({value:row, text:row})})}
    ]
    return (
     <article className='info'>
@@ -143,7 +147,7 @@ export class Info extends Component {
       <DivInfoCol2 key={'user_content'} griditems={griditems} changeHandler={this.handleChange} />
      </form>
      <InfoButton key='user_save' type='save' onClick={this.updateInfo} />
-     { ((this.state.data.id !== 'new' && ((cookie.id === this.state.data.id) || (cookie.id === '1'))) ? <InfoButton key='user_delete' type='trash' onClick={this.deleteInfo} /> : '') }
+     { ((this.state.data.id !== 'new' && ((cookie.id === this.state.data.id) || (cookie.id === 1))) ? <InfoButton key='user_delete' type='trash' onClick={this.deleteInfo} /> : '') }
     </article>
    );
   }
@@ -156,7 +160,7 @@ export class User extends Component {
  render() {
   return (
    <React.Fragment key='user_ser'>
-    <NavBar items={null} />
+    <NavBar key='user_navbar' items={null} />
     <section className='content' id='div_content'>
      <section className='content-left'>
      </section>

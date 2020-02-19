@@ -19,7 +19,7 @@ export const DivInfoCol2 = (props) => {
  const className = ('className' in props) ? 'info col2 ' + props.className : 'info col2';
  const griditems = props.griditems.map((row,index) => {
   let second = ''
-  switch(row.element) {
+  switch(row.tag) {
    case 'input':
     second = <input type={row.type} id={row.id} name={row.id} onChange={props.changeHandler} value={row.value} placeholder={row.placeholder} />
     break;
@@ -27,13 +27,8 @@ export const DivInfoCol2 = (props) => {
     second = <span id={row.id}>{row.content}</span>
     break;
    case 'select':
-    second = <select name={row.id} onChange={props.changeHandler}>{
-     row.options.map((opt,index) => {
-     if (row.selected)
-      return (<option key={row.id + '_'+index} selected='selected' value={opt.value}>{opt.text}</option>)
-     else
-      return (<option key={row.id + '_'+index} value={opt.value}>{opt.text}</option>)
-     })
+    second = <select name={row.id} onChange={props.changeHandler} value={row.value}>{
+     row.options.map((opt,index) => { return (<option key={row.id + '_'+index} value={opt.value}>{opt.text}</option>) })
     }</select>
     break;
    default:
