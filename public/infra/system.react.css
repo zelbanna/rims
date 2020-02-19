@@ -24,7 +24,6 @@ pre {    margin:0px; }
 details{ display:inline; }
 ul {     list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
 li {     display:inline-block; }
-label {  font-weight:bold; font-style:normal!important;}
 h1 {     font-size:16px; }
 
 button::-moz-focus-inner,
@@ -95,12 +94,15 @@ div.info input:-moz-read-only { font-style:italic; }
 div.info input:read-only {      font-style:italic; }
 div.info input:-webkit-input-placeholder { color: #9CA6B0; }
 div.info input:-moz-placeholder {          color: #9CA6B0; opacity:1; }
+div.info label {  font-weight:bold; font-style:normal!important;}
 
 button.info { height:22px; border:none; outline-width:0; border-radius:3px; margin-left:2px;}
 button.info:hover {  opacity:0.7; }
 button.info:active { opacity:0.5; }
 
 /***************************************  List Model *****************************************/
+
+button.text {          font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; }
 
 article.table {        z-index:101; height:100%; }
 div.table {            display: table; width:99%; }

@@ -81,7 +81,7 @@ class Login extends Component {
  }
 
  render() {
-  const griditems = [{element:'input', type:'text', id:'username', text:'Username'},{element:'input', type:'password', id:'password', text:'Password'}]
+  const griditems = [{tag:'input', type:'text', id:'username', text:'Username'},{tag:'input', type:'password', id:'password', text:'Password'}]
   return (
    <div className='background overlay'>
     <article className='login'>

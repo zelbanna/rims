@@ -1,8 +1,7 @@
 import React from 'react';
 
-// ************************* UI functions ****************************
+// ***************************** Button ********************************
 
-// ***************************** Menu ********************************
 export const MenuButton = (props) => {
  const className = ('className' in props) ? 'menu ' + props.className : 'menu';
  const view = ('icon' in props) ? <img src={props.icon} alt={props.title} /> : props.title
@@ -13,6 +12,23 @@ export const MenuButton = (props) => {
  )
 }
 
+export const NavButton = (props) => {
+ const className = ('className' in props) ? 'nav ' + props.className : 'nav';
+ return (
+  <button className={className} onClick={props.onClick}>
+   {props.title}
+  </button>
+ )
+}
+
+export const InfoButton = (props) => {
+ return(<button className={('className' in props) ? 'info type-' +props.type + ' ' + props.className : 'info type-' + props.type} onClick={props.onClick} title={props.title}/>);
+}
+
+export const TextButton = (props) => {
+ return(<button className={('className' in props) ? 'text ' + props.className : 'text'} onClick={props.onClick} title={props.title}>{props.text}</button>);
+}
+
 // ***************************** Info ********************************
 
 export const DivInfoCol2 = (props) => {
@@ -21,10 +37,21 @@ export const DivInfoCol2 = (props) => {
   let second = ''
   switch(row.tag) {
    case 'input':
-    second = <input type={row.type} id={row.id} name={row.id} onChange={props.changeHandler} value={row.value} placeholder={row.placeholder} />
+    if (row.type !== 'radio')
+     second = <input type={row.type} id={row.id} name={row.id} onChange={props.changeHandler} value={row.value} placeholder={row.placeholder} />
+    else {
+     second = <div>{
+      row.options.map((opt,index) => { return (
+       <React.Fragment key={'radio_'+index}>
+        <label htmlFor={'radio_'+index}>{opt.text}</label>
+        <input type='radio' key={'radio_input_'+index}  id={'radio_'+index} name={row.id} onChange={props.changeHandler} value={opt.value} checked={(row.value === opt.value) ? 'checked' : ''}/>
+       </React.Fragment>
+      ) })
+     }</div>
+    }
     break;
    case 'span':
-    second = <span id={row.id}>{row.content}</span>
+    second = <span id={row.id}>{row.value}</span>
     break;
    case 'select':
     second = <select name={row.id} onChange={props.changeHandler} value={row.value}>{
@@ -42,17 +69,6 @@ export const DivInfoCol2 = (props) => {
    {griditems}
   </div>
  );
-}
-
-export const InfoButton = (props) => {
- let className = ('className' in props) ? 'info ' + props.className : 'info';
- if ('type' in props) {
-  className = className + ' type-' + props.type;
-  return(<button className={className} onClick={props.onClick} />);
- } else {
-  alert("implement text button");
-  return (<button>TBD</button>);
- }
 }
 
 // ************************** Navigation ******************************
@@ -75,15 +91,6 @@ export const NavBar = (props) => {
  );
 }
 
-export const NavButton = (props) => {
- const className = ('className' in props) ? 'nav ' + props.className : 'nav';
- return (
-  <button className={className} onClick={props.onClick}>
-   {props.title}
-  </button>
- )
-}
-
 // ***************************** Table ********************************
 
 export const TableHead = (props) => {
@@ -103,7 +110,6 @@ export const TableRow = (props) => {
  const cells = props.cells.map((row,index) => { return (<div key={'tr_'+index}>{row}</div>); });
  return (<div>{cells}</div>);
 }
-
 
 // **************************** Generic ********************************
 export const Spinner = () => {

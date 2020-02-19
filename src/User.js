@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { List as ReservationList } from './Reservation.js';
 import { rest_call, rest_base, read_cookie } from './Functions.js';
 import { Spinner, NavBar, TableHead, TableRow, InfoButton, DivInfoCol2 } from './UI.js';
@@ -31,10 +31,10 @@ export class Main extends Component {
   ]
 
   return (
-   <React.Fragment key='user_main'>
+   <Fragment key='user_main'>
     <NavBar key='user_navbar' items={navitems} />
     <section className='content' id='div_content'>{this.state.content}</section>
-   </React.Fragment>
+   </Fragment>
   )
  }
 }
@@ -56,17 +56,22 @@ export class List extends Component {
   this.setState({contentright:elem})
  }
 
+ listItem = (row) => {
+  const cells = [
+   row.id,
+   row.alias,
+   row.name,
+   <InfoButton key={'user_'+row.id} type='info' onClick={() => { this.contentRight(<Info key={'user_info'+row.id} id={row.id} />)}} />
+  ]
+  return (<TableRow key={'tr_user_'+row.id} cells={cells} />)
+ }
+
  render() {
   if (this.state.data === null){
    return (<Spinner />);
   } else {
-   const users = this.state.data.map((row) => {
-    const cells = [row.id, row.alias, row.name, <InfoButton key={'user_'+row.id} type='info' onClick={() => { this.contentRight(<Info key={'user_info'+row.id} id={row.id} />)}} />]
-    return (<TableRow key={'tr_user_'+row.id} cells={cells} />)
-   });
-
    return (
-    <React.Fragment key='user_list'>
+    <Fragment key='user_list'>
      <section className='content-left'>
       <article className='table'>
        <p>Users</p>
@@ -75,7 +80,7 @@ export class List extends Component {
        <div className='table'>
         <TableHead key='th_user_list' headers={['ID','Alias','Name','']} />
         <div className='tbody'>
-         {users}
+         {this.state.data.map((row) => { return(this.listItem(row)); })}
         </div>
        </div>
       </article>
@@ -83,7 +88,7 @@ export class List extends Component {
      <section className='content-right'>
       {this.state.contentright}
      </section>
-    </React.Fragment>
+    </Fragment>
    )
   }
  }
@@ -94,8 +99,8 @@ export class List extends Component {
 export class Info extends Component {
  constructor(props) {
   super(props)
-
-  this.state = {data:null, found:true}
+  const cookie = read_cookie('rims');
+  this.state = {data:null, found:true, cookie_id:cookie.id}
  }
 
  handleChange = (e) => {
@@ -126,28 +131,30 @@ export class Info extends Component {
   })
  }
 
- render() {
-  if (this.state.found === false){
-   return (<article>User with id {this.props.id} removed</article>)
-  } else if ((this.state.data === null) || (this.state.themses === [])){
-   return (<Spinner />);
-  } else {
-   const cookie = read_cookie('rims');
-   const griditems = [
+ infoItems = () => {
+  return [
     {tag:'input', type:'text', id:'alias', text:'Alias', value:this.state.data.alias},
     {tag:'input', type:'password', id:'password', text:'Password',placeholder:'******'},
     {tag:'input', type:'text', id:'email', text:'e-mail', value:this.state.data.email},
     {tag:'input', type:'text', id:'name', text:'Full name', value:this.state.data.name},
     {tag:'select', id:'theme', text:'Theme', value:this.state.data.theme, options:this.state.themes.map((row) => { return ({value:row, text:row})})}
    ]
+ }
+
+ render() {
+  if (this.state.found === false){
+   return (<article>User with id {this.props.id} removed</article>)
+  } else if ((this.state.data === null) || (this.state.themses === [])){
+   return (<Spinner />);
+  } else {
    return (
     <article className='info'>
      <p>User Info ({this.state.data.id})</p>
      <form>
-      <DivInfoCol2 key={'user_content'} griditems={griditems} changeHandler={this.handleChange} />
+      <DivInfoCol2 key={'user_content'} griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>
      <InfoButton key='user_save' type='save' onClick={this.updateInfo} />
-     { ((this.state.data.id !== 'new' && ((cookie.id === this.state.data.id) || (cookie.id === 1))) ? <InfoButton key='user_delete' type='trash' onClick={this.deleteInfo} /> : '') }
+     { ((this.state.data.id !== 'new' && ((this.state.cookie_id === this.state.data.id) || (this.state.cookie_id === 1))) ? <InfoButton key='user_delete' type='trash' onClick={this.deleteInfo} /> : '') }
     </article>
    );
   }
@@ -159,7 +166,7 @@ export class Info extends Component {
 export class User extends Component {
  render() {
   return (
-   <React.Fragment key='user_ser'>
+   <Fragment key='user_ser'>
     <NavBar key='user_navbar' items={null} />
     <section className='content' id='div_content'>
      <section className='content-left'>
@@ -168,7 +175,7 @@ export class User extends Component {
       <Info id={this.props.id} />
      </section>
     </section>
-   </React.Fragment>
+   </Fragment>
   )
  }
 }

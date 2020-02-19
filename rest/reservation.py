@@ -17,16 +17,17 @@ def update(aCTX, aArgs = None):
   - op (required)
 
  Output:
+  - alias
  """
  ret = {'op':aArgs['op']}
  if aArgs['op'] == 'reserve':
   sql = "INSERT INTO reservations (device_id,user_id,time_end) VALUES('%(device_id)s','%(user_id)s',NOW() + INTERVAL %(days)s DAY)"
- elif aArgs['op'] == 'drop':
+ elif aArgs['op'] == 'delete':
   sql = "DELETE FROM reservations WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"
  elif aArgs['op'] == 'extend':
   sql = "UPDATE reservations SET time_end = NOW() + INTERVAL %(days)s DAY WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"
  with aCTX.db as db:
-  ret['update'] = db.do(sql%aArgs)
+  ret['update'] = (db.do(sql%aArgs) > 0)
   db.do("SELECT alias FROM users WHERE id = '%(user_id)s'"%aArgs)
   ret['alias']  = db.get_val('alias')
  return ret
@@ -58,18 +59,20 @@ def info(aCTX, aArgs = None):
   - device_id (required)
   - op (optional)
   - info (optional)
+  - shutdown (optional)
 
  Output:
-
+  - found (bool)
  """
  ret = {}
  op = aArgs.pop('op',None)
  id = aArgs.pop('device_id',None)
  with aCTX.db as db:
   if op == 'update':
+   aArgs.pop('alias',None)
    aArgs['shutdown'] = aArgs.get('shutdown',1)
    db.update_dict('reservations',aArgs,"device_id=%s"%id)
-  db.do("SELECT device_id, user_id, shutdown, info, alias, DATE_FORMAT(time_end,'%Y-%m-%d %H:%i') AS end, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') AS start FROM reservations LEFT JOIN users ON users.id = reservations.user_id WHERE device_id = {0}".format(id))
+  ret['found'] = (db.do("SELECT device_id, user_id, shutdown, info, alias, DATE_FORMAT(time_end,'%Y-%m-%d %H:%i') AS time_end, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') AS time_start FROM reservations LEFT JOIN users ON users.id = reservations.user_id WHERE device_id = {0}".format(id)) == 1)
   ret['data'] = db.get_row()
  return ret
 
