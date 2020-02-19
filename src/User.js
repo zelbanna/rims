@@ -1,7 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import { List as ReservationList } from './Reservation.js';
-import { rest_call, rest_base, read_cookie } from './Functions.js';
-import { Spinner, NavBar, TableHead, TableRow, InfoButton, DivInfoCol2 } from './UI.js';
+import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
+import { Spinner }    from './infra/Generic.js';
+import { NavBar }     from './infra/Navigation.js';
+import { InfoButton } from './infra/Buttons.js';
+import { ContentMain } from './infra/Content.js';
+import { InfoCol2 }   from './infra/Info.js';
 
 // ************** Main **************
 //
@@ -57,40 +61,18 @@ export class List extends Component {
  }
 
  listItem = (row) => {
-  const cells = [
-   row.id,
-   row.alias,
-   row.name,
-   <InfoButton key={'user_'+row.id} type='info' onClick={() => { this.contentRight(<Info key={'user_info'+row.id} id={row.id} />)}} />
-  ]
-  return (<TableRow key={'tr_user_'+row.id} cells={cells} />)
+  return [row.id,row.alias,row.name,<InfoButton key={'user_'+row.id} type='info' onClick={() => { this.contentRight(<Info key={'user_info'+row.id} id={row.id} />)}} />];
  }
 
  render() {
-  if (this.state.data === null){
-   return (<Spinner />);
-  } else {
-   return (
-    <Fragment key='user_list'>
-     <section className='content-left'>
-      <article className='table'>
-       <p>Users</p>
-       <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />
-       <InfoButton key='add'    type='add'    onClick={() => {this.contentRight(<Info id='new' />)}} />
-       <div className='table'>
-        <TableHead key='th_user_list' headers={['ID','Alias','Name','']} />
-        <div className='tbody'>
-         {this.state.data.map((row) => { return(this.listItem(row)); })}
-        </div>
-       </div>
-      </article>
-     </section>
-     <section className='content-right'>
-      {this.state.contentright}
-     </section>
-    </Fragment>
-   )
-  }
+  return (
+  <ContentMain key='user_content' base='user' header='Users' thead={['ID','Alias','Name','']}
+    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='user_header_buttons'>
+      <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />
+      <InfoButton key='add'    type='add'    onClick={() => {this.contentRight(<Info id='new' />)}} />
+    </Fragment>}
+    />
+  );
  }
 }
 
@@ -151,7 +133,7 @@ export class Info extends Component {
     <article className='info'>
      <p>User Info ({this.state.data.id})</p>
      <form>
-      <DivInfoCol2 key={'user_content'} griditems={this.infoItems()} changeHandler={this.handleChange} />
+      <InfoCol2 key={'user_content'} griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>
      <InfoButton key='user_save' type='save' onClick={this.updateInfo} />
      { ((this.state.data.id !== 'new' && ((this.state.cookie_id === this.state.data.id) || (this.state.cookie_id === 1))) ? <InfoButton key='user_delete' type='trash' onClick={this.deleteInfo} /> : '') }
@@ -166,7 +148,7 @@ export class Info extends Component {
 export class User extends Component {
  render() {
   return (
-   <Fragment key='user_ser'>
+   <Fragment key='user_user'>
     <NavBar key='user_navbar' items={null} />
     <section className='content' id='div_content'>
      <section className='content-left'>
@@ -179,4 +161,3 @@ export class User extends Component {
   )
  }
 }
-

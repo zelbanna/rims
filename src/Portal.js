@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 
-import { read_cookie, rest_call, rest_base, mapper } from  './Functions.js';
-import { DivInfoCol2, MenuButton } from './UI.js';
+import { read_cookie, rest_call, rest_base, mapper } from  './infra/Functions.js';
+import { InfoCol2 }   from './infra/Info.js';
+import { MenuButton } from './infra/Buttons.js';
 
 const styleLoginButton = {fontSize:'18px', margin:'10px 10px 10px 10px'};
 
@@ -87,7 +88,7 @@ class Login extends Component {
     <article className='login'>
      <h1 className='centered'>{this.state.message}</h1>
      <form>
-      <DivInfoCol2 griditems={griditems} changeHandler={this.handleChange} className={'left'}/>
+      <InfoCol2 griditems={griditems} changeHandler={this.handleChange} className={'left'}/>
      </form>
      <MenuButton icon='images/icon-start.png' title='Start' style={styleLoginButton} onClick={this.handleSubmit}/>
     </article>

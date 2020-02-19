@@ -1,7 +1,11 @@
 import React, { Component, Fragment } from 'react';
-import { rest_call, rest_base, read_cookie } from './Functions.js';
-import { Spinner, TableHead, TableRow, TextButton, InfoButton, DivInfoCol2 } from './UI.js';
+import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
 import { Info as UserInfo } from './User.js';
+import { Spinner }    from './infra/Generic.js';
+import { InfoButton, TextButton }    from './infra/Buttons.js';
+import { ContentMain, ContentTable } from './infra/Content.js';
+import { InfoCol2 }   from './infra/Info.js';
+
 
 // ************** List **************
 //
@@ -48,33 +52,17 @@ export class List extends Component {
     </Fragment>
    )
   }
-  return (<TableRow key={'tr_rsv_'+row.device_id} cells={cells} />);
+  return cells;
  }
 
- render() {
-  if (this.state.data === null)
-   return (<Spinner />);
-  else {
-   return (
-    <Fragment key='user_list'>
-     <section className='content-left'>
-      <article className='table'>
-       <p>Reservations</p>
+ render(){
+  return (
+   <ContentMain key='reservation_content' base='reservation' header='Reservations' thead={['User','Device','Until','']}
+    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='reservation_header_buttons'>
        <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />
-       <div className='table'>
-        <TableHead key='th_user_list' headers={['User (ID)','Device','Until','']} />
-        <div className='tbody'>
-         {this.state.data.map((row) => { return this.listItem(row) })}
-        </div>
-       </div>
-      </article>
-     </section>
-     <section className='content-right'>
-      {this.state.contentright}
-     </section>
-    </Fragment>
-   )
-  }
+    </Fragment>}
+    />
+  );
  }
 }
 
@@ -120,7 +108,7 @@ export class Info extends Component {
     <article className='info'>
      <p>Reservation ({this.state.data.device_id})</p>
      <form>
-      <DivInfoCol2 key={'user_content'} griditems={griditems} changeHandler={this.handleChange} />
+      <InfoCol2 key={'user_content'} griditems={griditems} changeHandler={this.handleChange} />
      </form>
      <InfoButton key='reservation_save' type='save' onClick={this.updateInfo} />
     </article>
@@ -142,25 +130,11 @@ export class Report extends Component{
    .then((result) => { this.setState(result); })
  }
 
- listItems = (row) => {
-  return (<TableRow key={'tr_rsv_'+row.device_id} cells={[row.alias,row.hostname,row.start,row.end,row.info]} />);
- }
+ listItem = (row) => { return [row.alias,row.hostname,row.start,row.end,row.info]; }
 
  render(){
-  if (this.state.data === null)
-   return (<Spinner />);
-  else {
-   return(
-    <article>
-     <p>Reservations</p>
-     <div className='table'>
-      <TableHead key='th_rsv_list' headers={['User','Device','Start','End','Info']} />
-      <div className='tbody'>
-       {this.state.data.map((row) => { return this.listItem(row) })}
-      </div>
-     </div>
-    </article>
-   );
-  }
+  return(<ContentTable key='reservation_content' base='reservation' header='Reservations' thead={['User','Device','Start','End','Info']}
+    trows={this.state.data} listItem={this.listItem} />
+  );
  }
 }
