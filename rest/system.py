@@ -278,13 +278,13 @@ def worker(aCTX, aArgs = None):
 
  Args:
   - module (required)
-  - function (required)       
+  - function (required)
   - frequency (optional required, 0 for transients)
   - output (optional)
   - args (required)
 
- Output:            
-  - result              
+ Output:
+  - result
  """
  if all(i in aArgs for i in ['module','function']):
   freq = int(aArgs.pop('frequency',0))
@@ -304,6 +304,6 @@ def theme_list(aCTX, aArgs = None):
   - list of theme names
  """
  from os import walk, path as ospath
- path = ospath.join(aCTX.path,'infra')
+ path = ospath.join(aCTX.path,'public','infra')
  _, _, filelist = next(walk(path), (None, None, []))
  return [x.split('.')[1] for x in filelist if x.startswith('theme.')]

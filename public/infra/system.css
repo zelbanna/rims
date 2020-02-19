@@ -67,10 +67,8 @@ div.info input:-moz-placeholder {          color: #9CA6B0; opacity:1; }
 
 /*######################################  List Model ########################################*/
 
-article.table > form > div.table,
-article > form > div.table,
-article > div.table { width:99%; }
-div.table {            display: table; }
+article.table {        z-index:101; }
+div.table {            display: table; width:99%; }
 div.table .thead {     display: table-header-group; }
 div.table .thead > div { font-size:14px; display: table-cell; vertical-align: middle; font-weight: bold; text-align: center;  padding: 3px 2px 6px 4px; }
 div.table .tbody {     display: table-row-group; }

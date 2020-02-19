@@ -1,0 +1,123 @@
+/* black style sheet 
+
+Main:   #1A1A1A
+Darker: #000000
+Highlight: #CB2026
+Back:  #F1F1F1
+
+*/
+
+/*###################################### Content Model ########################################*/
+header {        float:left; height:65px;             width:100%; padding-left:5px; background-color: #1A1A1A; overflow:auto; }
+main {          float:left; height: calc(100% - 65px);  width:100%; background-color:#F1F1F1; }
+
+/*#################################### Navigation Model ######################################*/
+
+nav {           clear:both; width:100%; font-size:14px; height:34px; background-color:#000000; display:block; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden;}
+nav li {        height:34px; float:left; background-color: transparent; }
+nav li.navinfo {  background-color:#00CC66; font-weight:bold; color:#FFFFFF }
+nav li.warning button:hover{ color:#000000; }
+nav button {     font-size:14px; padding:8px; border:none; display:inline-block; position:relative; color:#FFFFFF; cursor:pointer; background-color:transparent; }
+nav button:hover{ color:#CB2026; }
+nav button:active{ opacity:0.8; }
+nav button.reload {   background-image: url(/images/btn-nav-reload.black.png); background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; margin: 0px 10px; height:100%; } 
+nav button.reload:hover { background-image: url(/images/btn-nav-reload.black.hover.png); }
+nav button.navinfo:hover{ color:#FFFFFF; }
+
+/*###################################### Info Buttons ########################################*/
+
+input:focus,select:focus { border-color:#CB2026!important; }
+
+button.info:hover { box-shadow:0px 2px rgba(0,0,0,0.3); opacity: 1.0; color:#CB2026; }
+button.info:active { transform: translateY(1px); box-shadow:0px 1px rgba(0,0,0,0.3); opacity:0.7;}
+
+button.type-add {       width:22px; background-image: url(/images/btn-add.black.png); }
+button.type-analyze {   width:22px; background-image: url(/images/btn-analyze.black.png); }
+button.type-back {      width:22px; background-image: url(/images/btn-back.black.png); }
+button.type-configure { width:22px; background-image: url(/images/btn-configure.black.png); }
+button.type-connections { width:22px; background-image: url(/images/btn-connections.black.png); }
+button.type-delete {    width:22px; background-image: url(/images/btn-delete.black.png); }
+button.type-devices {   width:22px; background-image: url(/images/btn-devices.black.png); }
+button.type-document {  width:22px; background-image: url(/images/btn-document.black.png); }
+button.type-edit {      width:22px; background-image: url(/images/btn-edit.black.png); }
+button.type-fix {       width:22px; background-image: url(/images/btn-fix.black.png); }
+button.type-forward {   width:22px; background-image: url(/images/btn-forward.black.png); }
+button.type-help {      width:22px; background-image: url(/images/btn-help.black.png); }
+button.type-info {      width:22px; background-image: url(/images/btn-info.black.png); }
+button.type-items {     width:22px; background-image: url(/images/btn-items.black.png); }
+button.type-load {      width:22px; background-image: url(/images/btn-load.black.png); }
+button.type-logs {      width:22px; background-image: url(/images/btn-logs.black.png); }
+button.type-network {   width:22px; background-image: url(/images/btn-network.black.png); }
+button.type-off {       width:22px; background-image: url(/images/btn-off.black.png); }
+button.type-reload {    width:22px; background-image: url(/images/btn-reload.black.png); }
+button.type-revert {    width:22px; background-image: url(/images/btn-revert.black.png); }
+button.type-save {      width:22px; background-image: url(/images/btn-save.black.png); }
+button.type-search {    width:22px; background-image: url(/images/btn-search.black.png); }
+button.type-show {      width:22px; background-image: url(/images/btn-show.black.png); }
+button.type-snapshot {  width:22px; background-image: url(/images/btn-snapshot.black.png); }
+button.type-start {     width:22px; background-image: url(/images/btn-start.black.png); }
+button.type-stop {      width:22px; background-image: url(/images/btn-stop.black.png); }
+button.type-suspend {   width:22px; background-image: url(/images/btn-suspend.black.png); }
+button.type-sync {      width:22px; background-image: url(/images/btn-sync.black.png); }
+button.type-term-frame {width:22px; background-image: url(/images/btn-term-frame.black.png); }
+button.type-term {      width:22px; background-image: url(/images/btn-term.black.png); }
+button.type-trash {     width:22px; background-image: url(/images/btn-trash.black.png); }
+button.type-ui {        width:22px; background-image: url(/images/btn-ui.black.png); }
+
+button.type-add:hover {       background-image: url(/images/btn-add.black.hover.png); }
+button.type-analyze:hover {   background-image: url(/images/btn-analyze.black.hover.png); }
+button.type-back:hover {      background-image: url(/images/btn-back.black.hover.png); }
+button.type-configure:hover { background-image: url(/images/btn-configure.black.hover.png); }
+button.type-connections:hover { background-image: url(/images/btn-connections.black.hover.png); }
+button.type-delete:hover {    background-image: url(/images/btn-delete.black.hover.png); }
+button.type-devices:hover {   background-image: url(/images/btn-devices.black.hover.png); }
+button.type-document:hover {  background-image: url(/images/btn-document.black.hover.png); }
+button.type-edit:hover {      background-image: url(/images/btn-edit.black.hover.png); }
+button.type-fix:hover {       background-image: url(/images/btn-fix.black.hover.png); }
+button.type-forward:hover {   background-image: url(/images/btn-forward.black.hover.png); }
+button.type-help:hover {      background-image: url(/images/btn-help.black.hover.png); }
+button.type-info:hover {      background-image: url(/images/btn-info.black.hover.png); }
+button.type-items:hover {     background-image: url(/images/btn-items.black.hover.png); }
+button.type-load:hover {      background-image: url(/images/btn-load.black.hover.png); }
+button.type-logs:hover {      background-image: url(/images/btn-logs.black.hover.png); }
+button.type-network:hover {   background-image: url(/images/btn-network.black.hover.png); }
+button.type-off:hover {       background-image: url(/images/btn-off.black.hover.png); }
+button.type-reload:hover{     background-image: url(/images/btn-reload.black.hover.png); }
+button.type-revert:hover{     background-image: url(/images/btn-revert.black.hover.png); }
+button.type-save:hover {      background-image: url(/images/btn-save.black.hover.png); }
+button.type-search:hover {    background-image: url(/images/btn-search.black.hover.png); }
+button.type-show:hover {      background-image: url(/images/btn-show.black.hover.png); }
+button.type-snapshot:hover {  background-image: url(/images/btn-snapshot.black.hover.png); }
+button.type-start:hover {     opacity:0.7; }
+button.type-stop:hover {      opacity:0.7; }
+button.type-suspend:hover {   background-image: url(/images/btn-suspend.black.hover.png); }
+button.type-sync:hover {      background-image: url(/images/btn-sync.black.hover.png); }
+button.type-term-frame:hover {background-image: url(/images/btn-term-frame.black.hover.png); }
+button.type-term:hover {      background-image: url(/images/btn-term.black.hover.png); }
+button.type-trash:hover {     background-image: url(/images/btn-trash.black.hover.png); }
+button.type-ui:hover {        background-image: url(/images/btn-ui.black.hover.png); }
+
+
+
+/*################################# EXTRA SO FAR ############################################*/
+
+nav li.dropdown:hover .dropdown-content{ display:block; }
+nav div.dropdown-content { display:none; position: absolute; background-color: #000000; min-width: 60px; overflow:auto; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 200; }
+nav div.dropdown-content > a { display:block; text-align:left; }
+
+
+.background {  background-color:#F1F1F1; }
+
+.warning {     background-color:#CB2026!important; font-weight:bold; color:#FFFFFF!important; }
+.red {         background-color:#CB2026!important; }
+.green {       background-color:#26CB20!important; }
+.blue {        background-color:#2026CB!important; }
+.orange {      background-color:orange!important;  }
+.white {       background-color:#FFFFFF!important; }
+.grey {        background-color:#9CA6B0!important; }
+
+a.small { height: 22px; margin:0px; margin-right:1px; margin-bottom:2px; font-size:14px; color:#FFFFFF; background-color:#1A1A1A; padding:0px; border-radius: 3px; border:none!important; box-shadow:0px 2px rgba(0,0,0,0.3); }
+a.small:hover { box-shadow:0px 2px rgba(0,0,0,0.3); opacity: 1.0; color:#CB2026; }
+a.small:active { transform: translateY(1px); box-shadow:0px 1px rgba(0,0,0,0.3); opacity:0.7;}
+
+a.ipam { height:22px; width:22px; font-size:9px; color:#000000; margin:2px; padding:2px; float:left; font-family: Verdana,sans-serif; border: 1px solid #9CA6B0; }

@@ -17,12 +17,10 @@ class Portal extends Component {
   rest_call(rest_base + 'api/portal/menu',{id:this.props.cookie.id})
    .then((result) => {
     this.setState(result)
-    console.log(result)
     if (result.start){
      this.changeActive(result.menu[0]);
     }
     document.title = result.title
-    // TODO: add start to active here...
    })
  }
 
@@ -31,26 +29,20 @@ class Portal extends Component {
   if ('module' in panel) {
    elem = mapper(panel)
   }
-  this.setState(() => { return {active:elem} })
+  this.setState({active:elem})
  }
 
  render() {
-  const styleSheet = 'infra/theme.' + this.props.cookie.theme + '.css'
-  const active = this.state.active;
-  const menuitems = this.state.menu.map((row,index) => {
-   return (<MenuButton key={index} {...row} onClick={() => {this.changeActive({module:row.module, args:row.args})}} />);
-  });
-
   return (
    <React.Fragment key='portal'>
-    <link key='userstyle' rel='stylesheet' type='text/css' href={styleSheet} />
+    <link key='userstyle' rel='stylesheet' type='text/css' href={'infra/theme.' + this.props.cookie.theme + '.react.css'} />
     <header>
      <MenuButton key='logout' className='right warning' onClick={() => {this.props.eraseCookie()} } title='Log out' />
      <MenuButton key='system' className='right'         onClick={() => {this.changeActive({module:'system_main'})}} title='System' icon='images/icon-config.png' />
      <MenuButton key='user'   className='right'         onClick={() => {this.changeActive({module:'user_user', args:{id:this.props.cookie.id}})}}   title='User'   icon='images/icon-users.png' />
-     {menuitems}
+     { this.state.menu.map((row,index) => { return (<MenuButton key={index} {...row} onClick={() => {this.changeActive({module:row.module, args:row.args})}} />); }) }
     </header>
-    <main>{active}</main>
+    <main>{this.state.active}</main>
    </React.Fragment>
   )
  }
@@ -71,8 +63,8 @@ class Login extends Component {
    })
  }
 
- handleChange = (event) => {
-  this.state[event.target.name] = event.target.value
+ handleChange = (e) => {
+  this.setState({[e.target.name]:e.target.value});
  }
 
  handleSubmit = (event) => {
@@ -89,12 +81,11 @@ class Login extends Component {
  }
 
  render() {
-  const message = this.state.message
   const griditems = [{element:'input', type:'text', id:'username', text:'Username'},{element:'input', type:'password', id:'password', text:'Password'}]
   return (
    <div className='background overlay'>
     <article className='login'>
-     <h1 className='centered'>{message}</h1>
+     <h1 className='centered'>{this.state.message}</h1>
      <form>
       <DivInfoCol2 griditems={griditems} changeHandler={this.handleChange} className={'left'}/>
      </form>
