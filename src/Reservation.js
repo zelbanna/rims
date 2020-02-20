@@ -6,6 +6,7 @@ import { InfoButton, TextButton }    from './infra/Buttons.js';
 import { ContentMain, ContentTable } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
 
+// CONVERTED ENTIRELY
 
 // ************** List **************
 //
@@ -25,16 +26,19 @@ export class List extends Component {
   this.setState({contentright:elem})
  }
 
- extendLease = (device_id,user_id,days) => {
+ extendItem = (device_id,user_id,days) => {
   rest_call(rest_base + 'api/reservation/update',{op:'extend', device_id:device_id,user_id:user_id,days:days})
+  this.componentDidMount();
  }
 
- deleteLease = (device_id,user_id)  => {
+ deleteItem = (device_id,user_id)  => {
   rest_call(rest_base + 'api/reservation/update',{op:'delete', device_id:device_id,user_id:user_id})
    .then((result) => {
-   this.setState({found:false});
-   console.log(JSON.stringify(result));
-  });
+   if(result.result) {
+    this.setState({data:this.state.data.filter((row,index,arr) => row.device_id !== device_id)})
+   }
+  })
+  this.componentDidMount();
  }
 
  listItem = (row) => {
@@ -47,8 +51,8 @@ export class List extends Component {
    cells.push(
     <Fragment key='reservation_buttons'>
      <InfoButton type='info' key={'rsv_info_'+row.device_id} onClick={() => { this.contentRight(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
-     <InfoButton type='add'  key={'rsv_ext_'+row.device_id}  onClick={() => { this.extendLease(row.device_id,row.user_id,14) }} title='Extend reservation' />
-     <InfoButton type='delete' key={'rsv_del_'+row.device_id}  onClick={() => { this.deleteLease(row.device_id,row.user_id) }} title='Remove reservation' />
+     <InfoButton type='add'  key={'rsv_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />
+     <InfoButton type='delete' key={'rsv_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />
     </Fragment>
    )
   }

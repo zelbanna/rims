@@ -7,6 +7,8 @@ import { InfoButton } from './infra/Buttons.js';
 import { ContentMain } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
 
+// CONVERTED ENTIRELY
+
 // ************** Main **************
 //
 export class Main extends Component {
@@ -60,8 +62,20 @@ export class List extends Component {
   this.setState({contentright:elem})
  }
 
+ deleteUser = (id) => {
+  rest_call(rest_base + 'api/master/user_delete',{id:id})
+   .then((result) => {
+   if(result.deleted) {
+    this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id)})
+   }
+  })
+ }
+
  listItem = (row) => {
-  return [row.id,row.alias,row.name,<InfoButton key={'user_'+row.id} type='info' onClick={() => { this.contentRight(<Info key={'user_info'+row.id} id={row.id} />)}} />];
+  return [row.id,row.alias,row.name,<Fragment key={'user_buttons_'+row.id}>
+   <InfoButton key={'user_info_'+row.id} type='info' onClick={() => { this.contentRight(<Info key={'user_info_'+row.id} id={row.id} />)}} />
+   <InfoButton key={'user_del_'+row.id} type='trash' onClick={() => { this.deleteUser(row.id)}} msg='are you sure?' />
+  </Fragment>]
  }
 
  render() {
@@ -69,7 +83,7 @@ export class List extends Component {
   <ContentMain key='user_content' base='user' header='Users' thead={['ID','Alias','Name','']}
     trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='user_header_buttons'>
       <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />
-      <InfoButton key='add'    type='add'    onClick={() => {this.contentRight(<Info id='new' />)}} />
+      <InfoButton key='add'    type='add'    onClick={() => {this.contentRight(<Info key={'user_new_'+Math.floor(Math.random() * 10)} id='new' />)}} />
     </Fragment>}
     />
   );
@@ -105,14 +119,6 @@ export class Info extends Component {
    .then((result) => { this.setState(result); })
  }
 
- deleteInfo = (event) => {
-  rest_call(rest_base + 'api/master/user_delete',{id:this.state.data.id})
-   .then((result) => {
-    console.log(JSON.stringify(result));
-    this.setState({data:null, found:false});
-  })
- }
-
  infoItems = () => {
   return [
     {tag:'input', type:'text', id:'alias', text:'Alias', value:this.state.data.alias},
@@ -125,7 +131,7 @@ export class Info extends Component {
 
  render() {
   if (this.state.found === false){
-   return (<article>User with id {this.props.id} removed</article>)
+   return (<article>User with id: {this.props.id} removed</article>)
   } else if ((this.state.data === null) || (this.state.themses === [])){
    return (<Spinner />);
   } else {
@@ -133,10 +139,9 @@ export class Info extends Component {
     <article className='info'>
      <p>User Info ({this.state.data.id})</p>
      <form>
-      <InfoCol2 key={'user_content'} griditems={this.infoItems()} changeHandler={this.handleChange} />
+      <InfoCol2 key='user_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>
      <InfoButton key='user_save' type='save' onClick={this.updateInfo} />
-     { ((this.state.data.id !== 'new' && ((this.state.cookie_id === this.state.data.id) || (this.state.cookie_id === 1))) ? <InfoButton key='user_delete' type='trash' onClick={this.deleteInfo} /> : '') }
     </article>
    );
   }

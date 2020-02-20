@@ -277,7 +277,7 @@ def user_delete(aCTX, aArgs = None):
  Output:
  """
  with aCTX.db as db:
-  res = db.do("DELETE FROM users WHERE id = '%s'"%aArgs['id'])
+  res = (db.do("DELETE FROM users WHERE id = '%s'"%aArgs['id']) == 1)
  return { 'deleted':res }
 
 #
@@ -439,6 +439,8 @@ def activity_info(aCTX, aArgs = None):
  Args:
   - id (required)
   - start (optional)
+  - user_id (optional required)
+  - type_id (optional required)
 
  Output:
  """
@@ -482,7 +484,7 @@ def activity_delete(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  ret['delete'] = db.do("DELETE FROM activities WHERE id = '%s'"%aArgs['id'])
+  ret['deleted'] = (db.do("DELETE FROM activities WHERE id = '%s'"%aArgs['id']) == 1)
  return ret
 
 #
@@ -539,7 +541,7 @@ def activity_type_delete(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  ret['delete'] = db.do("DELETE FROM activity_types WHERE id = '%s'"%aArgs['id'])
+  ret['deleted'] = (db.do("DELETE FROM activity_types WHERE id = '%s'"%aArgs['id']) == 1)
  return ret
 
 ###################################### TASKs ######################################

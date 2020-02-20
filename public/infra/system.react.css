@@ -17,9 +17,6 @@ body {   margin:0px; padding:0px; z-index:1; font-family:Verdana,sans-serif;}
 iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 div {    z-index:100; }
 br {     clear:left; }
-form {   display:inline; }
-select,input[type='text'],input[type='url'],input[type='email'],input[type='password'],input[type='date'] {  overflow:visible; background-color: transparent; color: #000000; -webkit-appearance: none; border:solid 1px; border-color:transparent; border-bottom:dotted 1px #F1F1F1;}
-input[type='checkbox'] { width:22px; }
 pre {    margin:0px; }
 details{ display:inline; }
 ul {     list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
@@ -42,29 +39,17 @@ button::-moz-focus-inner,
 
 article.login {  border:solid 1px #9CA6B0; width:auto; height:auto;}
 article.login input:focus { border-color:black; }
+article.login form { display:inline; }
+article.login input[type='text'],input[type='password'] {  overflow:visible; background-color: transparent; color: #000000; -webkit-appearance: none; border:solid 1px; border-color:transparent; border-bottom:dotted 1px #F1F1F1;}
+input[type='checkbox'] { width:22px; }
 
 /***************************************** Menu Model *****************************************/
 
 button.menu { 
- -webkit-text-decoration-skip:objects;
- background-color:#FFFFFF; background-size:contain; background-position:center; background-repeat:no-repeat;  
- border:1px solid #9CA6B0; border-radius:6px;
- color:#000000; 
- display: inline-block;
- float:left;
- font-family: "Courier New", serif;
- font-size: 14px; 
- font-weight:bold;
- height: 52px;
- margin: 5px 2px;
- outline:none;
- overflow:hidden;
- padding:4px;
- text-align:center;
- text-decoration:none!important;
- vertical-align:top;
- white-space:nowrap;
- min-width:52px;
+ -webkit-text-decoration-skip:objects; background-color:#FFFFFF; background-size:contain; background-position:center; background-repeat:no-repeat; 
+ border:1px solid #9CA6B0; border-radius:6px; color:#000000;  display: inline-block; float:left; font-family: "Courier New", serif; font-size: 14px; font-weight:bold;
+ height: 52px; margin: 5px 2px; min-width:52px; outline:none; overflow:hidden; padding:4px; text-align:center; text-decoration:none!important;
+ vertical-align:top; white-space:nowrap;
 }
 button.menu:active { opacity:0.5; }
 button.menu:hover { opacity:0.7; box-shadow:4px 4px 4px 0 rgba(0,0,0,0.3); font-weight: bold; border: 1px solid #000000; }
@@ -83,13 +68,24 @@ article > p:first-child { font-size:16px; font-weight: bold; text-align:center; 
 /***************************************  Info  Model *****************************************/
 
 article.info { resize:horizontal; margin-left:0px; width:max-content; z-index:101;}
+article.info form { display:block; }
 div.info { display:grid; margin:2px 0px 2px 0px; }
 div.col2 { grid-template-columns: max-content auto;}
 div.col3 { grid-template-columns: max-content auto max-content;}
 div.info > * {  overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:3px 0px 3px 6px; font-style:italic;}
 div.info .heading { font-weight:bold; text-align:center;}
 div.info *[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
-div.info select,input[type='email'],input[type='text'],input[type='url'],input[type='date'] { width:99%; font-style:normal;}
+div.info select,input[type='text'],input[type='url'],input[type='email'],input[type='password'],input[type='date'],input[type='time'] { 
+ -webkit-appearance: none;
+ background-color: transparent;
+ border:solid 1px; border-color:transparent; border-bottom:dotted 1px #F1F1F1;
+ color: #000000;
+ font-style:normal;
+ overflow:visible; 
+ width:99%;
+}
+div.info input[type='checkbox'] { width:22px; }
+
 div.info input:-moz-read-only { font-style:italic; }
 div.info input:read-only {      font-style:italic; }
 div.info input:-webkit-input-placeholder { color: #9CA6B0; }
@@ -99,6 +95,7 @@ div.info label {  font-weight:bold; font-style:normal!important;}
 button.info { height:22px; border:none; outline-width:0; border-radius:3px; margin-left:2px;}
 button.info:hover {  opacity:0.7; }
 button.info:active { opacity:0.5; }
+
 
 /***************************************  List Model *****************************************/
 

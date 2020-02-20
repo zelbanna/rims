@@ -6,8 +6,10 @@ import { MenuButton } from './infra/Buttons.js';
 
 const styleLoginButton = {fontSize:'18px', margin:'10px 10px 10px 10px'};
 
-// ************************* Portal  ****************************
+// CONVERTED ENTIRELY
 
+// ************************* Portal  ****************************
+//
 class Portal extends Component {
  constructor(props){
   super(props)

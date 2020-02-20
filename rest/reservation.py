@@ -27,7 +27,7 @@ def update(aCTX, aArgs = None):
  elif aArgs['op'] == 'extend':
   sql = "UPDATE reservations SET time_end = NOW() + INTERVAL %(days)s DAY WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"
  with aCTX.db as db:
-  ret['update'] = (db.do(sql%aArgs) > 0)
+  ret['result'] = (db.do(sql%aArgs) ==  0)
   db.do("SELECT alias FROM users WHERE id = '%(user_id)s'"%aArgs)
   ret['alias']  = db.get_val('alias')
  return ret
