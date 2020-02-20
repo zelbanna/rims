@@ -121,7 +121,7 @@ class App extends Component {
  }
 
  render() {
-  return ((this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal cookie={this.state} setCookie={this.setCookie} eraseCookie={this.eraseCookie}/>);
+  return (this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal cookie={this.state} setCookie={this.setCookie} eraseCookie={this.eraseCookie}/>
  }
 }
 

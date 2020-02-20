@@ -35,9 +35,5 @@ export const InfoCol2 = (props) => {
   return <Fragment key={index}><label htmlFor={row.id}>{row.text}</label>{second}</Fragment>
  });
 
- return(
-  <div className={className} style={props.style}>
-   {griditems}
-  </div>
- );
+ return <div className={className} style={props.style}>{griditems}</div>
 }

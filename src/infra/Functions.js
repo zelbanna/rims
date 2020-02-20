@@ -65,9 +65,11 @@ export const set_cookie = (cookie,expires) => {
  console.log("Creating cookie: 'rims' expires:" + expires);
  const encoded = btoa(JSON.stringify(cookie));
  document.cookie = "rims=" + encoded + "; expires=" + expires + "; Path=/";
+ return true;
 }
 
 export const erase_cookie = () => {
  console.log("Erasing cookie 'rims'");
  document.cookie = "rims=; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+ return true;
 }

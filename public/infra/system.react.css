@@ -54,6 +54,8 @@ button.menu {
 button.menu:active { opacity:0.5; }
 button.menu:hover { opacity:0.7; box-shadow:4px 4px 4px 0 rgba(0,0,0,0.3); font-weight: bold; border: 1px solid #000000; }
 button.menu > img {  max-height:43px; }
+button.right   {  float:right!important; }
+
 
 /*************************************** Content Model *****************************************/
 
@@ -93,9 +95,8 @@ div.info input:-moz-placeholder {          color: #9CA6B0; opacity:1; }
 div.info label {  font-weight:bold; font-style:normal!important;}
 
 button.info { height:22px; border:none; outline-width:0; border-radius:3px; margin-left:2px;}
-button.info:hover {  opacity:0.7; }
-button.info:active { opacity:0.5; }
-
+button.info:hover {  opacity:0.9; box-shadow:0px 2px rgba(0,0,0,0.3); }
+button.info:active { opacity:0.7; box-shadow:0px 1px rgba(0,0,0,0.3); transform: translateY(1px); }
 
 /***************************************  List Model *****************************************/
 
@@ -112,7 +113,21 @@ div.table .tbody > div:nth-child(odd)  { background-color: #F1F1F1; }
 div.table .tbody > div > div { display:table-cell; vertical-align: middle; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:1px 0px 0px 3px;}
 div.table .tfoot {     display: table-footer-group; }
 
-/********************************* JS tools *************************************/
+/***********************************  Navigation Model **************************************/
+
+nav {     clear:both; width:100%; font-size:14px; height:34px; display:block; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden;}
+nav li {  height:34px; display:block; float:left; background-color: transparent; }
+nav li.dropdown ul { display:none; position: absolute;  min-width: 60px; overflow:auto; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 200; }
+nav li.dropdown:hover ul { display:block; }
+nav li.dropdown > ul > li { clear:left; }
+nav li.navinfo {  background-color:#00CC66; color:#FFFFFF; font-weight:bold;}
+nav li.right   {  float:right!important; }
+nav button,nav label { font-size:14px; padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; }
+nav button:active{ opacity:0.8; }
+nav button.reload { background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; margin: 0px 10px; height:100%; }
+nav button.navinfo:hover{ color:#FFFFFF!important; }
+
+/************************************** JS tools ********************************************/
 
 div.overlay { position: absolute; top:0px; bottom: 0px; left: 0px; right: 0px; z-index:10000; display:flex; justify-content:center; align-items:center; overflow:hidden; background-color: rgba(0,0,0,0.2); }
 div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px solid #5C6870; width: 80px; height: 80px; -webkit-animation: spin 1.4s linear infinite; animation: spin 1.4s linear infinite; }
@@ -121,13 +136,9 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } 
 }
 
-/***************************************  Engine Model *****************************************/
+/******************************************* EXTRA NOT FOUND YET *********************************************/
 
-details.web { font-family: "Courier New", serif; font-size: 12px; margin: 0px; }
-details.web > summary { font-weight:bold; }
-details.web > details { display:block; }
-
-/******************************************* Tools *********************************************/
+/*
 
 .title {    text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed; }
 .maxed {    width:99%; }
@@ -147,3 +158,4 @@ div.network { width:100%; height:500px; }
 
 div.state { border: 1px solid #9CA6B0; border-radius:16px; height:16px; width:16px; display:inline-block; }
 
+*/

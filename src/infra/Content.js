@@ -22,7 +22,7 @@ export const ContentMain = (props) => {
 // base,header,buttons,thead,trows,listItem
 export const ContentTable = (props) => {
  if (props.trows === null){
-  return (<Spinner />);
+  return <Spinner />
  } else {
   return (
    <article className='table'>

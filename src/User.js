@@ -79,14 +79,11 @@ export class List extends Component {
  }
 
  render() {
-  return (
-  <ContentMain key='user_content' base='user' header='Users' thead={['ID','Alias','Name','']}
+  return <ContentMain key='user_content' base='user' header='Users' thead={['ID','Alias','Name','']}
     trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='user_header_buttons'>
       <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />
       <InfoButton key='add'    type='add'    onClick={() => {this.contentRight(<Info key={'user_new_'+Math.floor(Math.random() * 10)} id='new' />)}} />
-    </Fragment>}
-    />
-  );
+    </Fragment>} />
  }
 }
 
@@ -130,11 +127,11 @@ export class Info extends Component {
  }
 
  render() {
-  if (this.state.found === false){
-   return (<article>User with id: {this.props.id} removed</article>)
-  } else if ((this.state.data === null) || (this.state.themses === [])){
-   return (<Spinner />);
-  } else {
+  if (this.state.found === false)
+   return <article>User with id: {this.props.id} removed</article>
+  else if ((this.state.data === null) || (this.state.themses === []))
+   return <Spinner />
+  else {
    return (
     <article className='info'>
      <p>User Info ({this.state.data.id})</p>

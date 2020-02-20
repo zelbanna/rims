@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 
-export class Main extends Component {
+export class Report extends Component {
 
  render() {
-  return (<div>Inventory Main</div>);
+  return (<div>Inventory Report</div>);
  }
 }

@@ -60,19 +60,16 @@ export class List extends Component {
  }
 
  render(){
-  return (
-   <ContentMain key='reservation_content' base='reservation' header='Reservations' thead={['User','Device','Until','']}
+  return <ContentMain key='reservation_content' base='reservation' header='Reservations' thead={['User','Device','Until','']}
     trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='reservation_header_buttons'>
-       <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />
-    </Fragment>}
-    />
-  );
+     <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />
+    </Fragment>} />
  }
 }
 
 // ************** Info **************
 //
-export class Info extends Component {
+class Info extends Component {
  constructor(props) {
   super(props)
 
@@ -97,9 +94,9 @@ export class Info extends Component {
 
  render() {
   if (this.state.found === false)
-   return(<article>Reservation deleted</article>);
+   return <article>Reservation deleted</article>
   else if (this.state.data === null)
-   return (<Spinner />);
+   return <Spinner />
   else {
    const griditems = [
     {tag:'span',  id:'alias', text:'Alias', value:this.state.data.alias},
@@ -137,8 +134,7 @@ export class Report extends Component{
  listItem = (row) => { return [row.alias,row.hostname,row.start,row.end,row.info]; }
 
  render(){
-  return(<ContentTable key='reservation_content' base='reservation' header='Reservations' thead={['User','Device','Start','End','Info']}
+  return <ContentTable key='reservation_content' base='reservation' header='Reservations' thead={['User','Device','Start','End','Info']}
     trows={this.state.data} listItem={this.listItem} />
-  );
  }
 }

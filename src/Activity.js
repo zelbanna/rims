@@ -15,7 +15,7 @@ const styleTextArea = {width:'300px',height:'70px'};
 export class Main extends Component {
  constructor(props){
   super(props)
-  this.state = {content:null, id:null, name:null}
+  this.state = {content:null}
  }
 
  content = (elem) => {
@@ -39,7 +39,7 @@ export class Main extends Component {
 
 // ************** List **************
 //
-export class List extends Component {
+class List extends Component {
  constructor(props){
   super(props);
   this.state = {data:null, contentright:null}
@@ -73,20 +73,17 @@ export class List extends Component {
  }
 
  render(){
-  return (
-   <ContentMain key='activity_content' base='activity' header='Activities' thead={['Date','Type','']}
+  return <ContentMain key='activity_content' base='activity' header='Activities' thead={['Date','Type','']}
     trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='activity_header_buttons'>
-       <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
-       <InfoButton key='add' type='add' onClick={() => { this.contentRight(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
-    </Fragment>}
-    />
-  );
+     <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
+     <InfoButton key='add' type='add' onClick={() => { this.contentRight(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
+    </Fragment>} />
  }
 }
 
 // *************** Info ***************
 //
-export class Info extends Component {
+class Info extends Component {
   constructor(props) {
   super(props)
   const cookie = read_cookie('rims')
@@ -125,11 +122,11 @@ export class Info extends Component {
  }
 
  render() {
-  if (this.state.found === false){
-   return (<article>User with id: {this.props.id} removed</article>)
-  } else if ((this.state.data === null) || (this.state.themses === [])){
-   return (<Spinner />);
-  } else {
+  if (this.state.found === false)
+   return <article>User with id: {this.props.id} removed</article>
+  else if ((this.state.data === null) || (this.state.themses === []))
+   return <Spinner />
+  else {
    return (
     <article className='info'>
      <p>Activity ({this.state.data.id})</p>
@@ -162,17 +159,15 @@ export class Report extends Component{
  }
 
  render(){
-  return (
-   <ContentTable key='activity_report' base='activity' header='Activities' thead={['Time','User','Type','Event']}
+  return <ContentTable key='activity_report' base='activity' header='Activities' thead={['Time','User','Type','Event']}
     trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={[]} />
-  );
  }
 }
 
 
 // ************** TypeList **************
 //
-export class TypeList extends Component {
+class TypeList extends Component {
  constructor(props){
   super(props);
   this.state = {data:null, contentright:null}
@@ -204,20 +199,17 @@ export class TypeList extends Component {
  }
 
  render(){
-  return (
-   <ContentMain key='activity_type_content' base='activity_type' header='Activity Types' thead={['ID','Type','']}
+  return <ContentMain key='activity_type_content' base='activity_type' header='Activity Types' thead={['ID','Type','']}
     trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='activity_type_header_buttons'>
        <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
        <InfoButton key='add' type='add' onClick={() => { this.contentRight(<TypeInfo key={'activity_type_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
-    </Fragment>}
-    />
-  );
+    </Fragment>} />
  }
 }
 
 // *************** TypeInfo ***************
 //
-export class TypeInfo extends Component {
+class TypeInfo extends Component {
   constructor(props) {
   super(props)
   this.state = {data:null, found:true}
@@ -246,11 +238,11 @@ export class TypeInfo extends Component {
  }
 
  render() {
-  if (this.state.found === false){
-   return (<article>User with id: {this.props.id} removed</article>)
-  } else if ((this.state.data === null) || (this.state.themses === [])){
-   return (<Spinner />);
-  } else {
+  if (this.state.found === false)
+   return <article>User with id: {this.props.id} removed</article>
+  else if ((this.state.data === null) || (this.state.themses === []))
+   return <Spinner />
+  else {
    return (
     <article className='info'>
      <p>Activity Type ({this.state.data.id})</p>
@@ -263,4 +255,3 @@ export class TypeInfo extends Component {
   }
  }
 }
-

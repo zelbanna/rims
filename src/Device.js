@@ -6,3 +6,10 @@ export class Main extends Component {
   return (<div>Device Main</div>);
  }
 }
+
+export class Report extends Component {
+
+ render() {
+  return (<div>Device Report</div>);
+ }
+}
