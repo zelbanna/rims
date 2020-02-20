@@ -4,7 +4,7 @@ import { read_cookie, rest_call, rest_base, mapper } from  './infra/Functions.js
 import { InfoCol2 }   from './infra/Info.js';
 import { MenuButton } from './infra/Buttons.js';
 
-const styleLoginButton = {fontSize:'18px', margin:'10px 10px 10px 10px'};
+const styleLoginButton = {margin:'10px 10px 10px 10px'};
 
 // CONVERTED ENTIRELY
 
@@ -39,16 +39,22 @@ class Portal extends Component {
   return (
    <React.Fragment key='portal'>
     <link key='userstyle' rel='stylesheet' type='text/css' href={'infra/theme.' + this.props.cookie.theme + '.react.css'} />
-    <header>
-     <MenuButton key='logout' className='right warning' onClick={() => {this.props.eraseCookie()} } title='Log out' />
-     <MenuButton key='system' className='right'         onClick={() => {this.changeActive({module:'system_main'})}} title='System' icon='images/icon-config.png' />
-     <MenuButton key='user'   className='right'         onClick={() => {this.changeActive({module:'user_user', args:{id:this.props.cookie.id}})}}   title='User'   icon='images/icon-users.png' />
-     { this.state.menu.map((row,index) => { return (<MenuButton key={index} {...row} onClick={() => {this.changeActive({module:row.module, args:row.args})}} />); }) }
-    </header>
+    <Header key='portal_header' menu={this.state.menu} changeActive={this.changeActive} {...this.props} />
     <main>{this.state.active}</main>
    </React.Fragment>
   )
  }
+}
+
+const Header = (props) => {
+ return (
+  <header>
+   <MenuButton key='logout' className='right warning' onClick={() => {props.eraseCookie()} } title='Log out' />
+   <MenuButton key='system' className='right'         onClick={() => {props.changeActive({module:'system_main'})}} title='System' icon='images/icon-config.png' />
+   <MenuButton key='user'   className='right'         onClick={() => {props.changeActive({module:'user_user', args:{id:props.cookie.id}})}}   title='User'   icon='images/icon-users.png' />
+   { props.menu.map((row,index) => { return (<MenuButton key={index} {...row} onClick={() => {props.changeActive({module:row.module, args:row.args})}} />); }) }
+  </header>
+ );
 }
 
 // ************************ Login ************************
@@ -121,7 +127,7 @@ class App extends Component {
  }
 
  render() {
-  return (this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal cookie={this.state} setCookie={this.setCookie} eraseCookie={this.eraseCookie}/>
+  return (this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal cookie={this.state} eraseCookie={this.eraseCookie}/>
  }
 }
 

@@ -98,7 +98,7 @@ button.type-ui:hover {        background-image: url(/images/btn-ui.black.hover.p
 
 .background {  background-color:#F1F1F1; }
 
-.warning {     background-color:#CB2026!important; font-weight:bold; color:#FFFFFF!important; }
+.warning {     background-color:#CB2026!important; color:#FFFFFF!important; }
 .red {         background-color:#CB2026!important; }
 .green {       background-color:#26CB20!important; }
 .blue {        background-color:#2026CB!important; }

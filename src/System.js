@@ -70,7 +70,7 @@ export class Main extends Component {
    reports.push({title:'Tasks',   onClick:() => { this.content(<TaskReport key='task_report' />)}})
    reports.push({title:'System',  onClick:() => { this.content(<Report key='system_report' />)}})
    navitems.push({title:'Report', type:'dropdown', items:reports})
-   navitems.push({title:'RestExplore',  onClick:() => { this.content(<RestExplore key='rest_explore' />) }})
+   navitems.push({title:'REST',  onClick:() => { this.content(<RestExplore key='rest_explore' />) }})
 
    return (
     <Fragment key='system_main'>

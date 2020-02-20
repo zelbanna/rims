@@ -39,17 +39,17 @@ button::-moz-focus-inner,
 
 article.login {  border:solid 1px #9CA6B0; width:auto; height:auto;}
 article.login input:focus { border-color:black; }
-article.login form { display:inline; }
+article.login form { display:inline; float:left; }
 article.login input[type='text'],input[type='password'] {  overflow:visible; background-color: transparent; color: #000000; -webkit-appearance: none; border:solid 1px; border-color:transparent; border-bottom:dotted 1px #F1F1F1;}
-input[type='checkbox'] { width:22px; }
+article.login h1 { text-align:center; }
 
 /***************************************** Menu Model *****************************************/
 
 button.menu { 
  -webkit-text-decoration-skip:objects; background-color:#FFFFFF; background-size:contain; background-position:center; background-repeat:no-repeat; 
- border:1px solid #9CA6B0; border-radius:6px; color:#000000;  display: inline-block; float:left; font-family: "Courier New", serif; font-size: 14px; font-weight:bold;
+ border:1px solid #9CA6B0; border-radius:6px; color:#000000;  display: block; float:left; font-family: "Courier New", serif; font-size: 14px; font-weight:bold;
  height: 52px; margin: 5px 2px; min-width:52px; outline:none; overflow:hidden; padding:4px; text-align:center; text-decoration:none!important;
- vertical-align:top; white-space:nowrap;
+ white-space:nowrap;
 }
 button.menu:active { opacity:0.5; }
 button.menu:hover { opacity:0.7; box-shadow:4px 4px 4px 0 rgba(0,0,0,0.3); font-weight: bold; border: 1px solid #000000; }
@@ -145,7 +145,6 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
 .left {     float:left; }
 .right   {  float:right!important; }
 .inline {   display:inline; }
-.centered { align-items:center; justify-content:center; display:flex; flex-wrap:wrap }
 .small-text {  font-size:9px; }
 .machine-text { font-family:Courier New, serif; font-size: 12px; margin: 0px; }
 
