@@ -907,7 +907,7 @@ def interface_connect(aCTX, aArgs = None):
    id = db.get_last_id()
    ret['update'] = (db.do("UPDATE device_interfaces SET connection_id = %s WHERE interface_id IN (%s,%s) AND class NOT IN ('logical','virtual')"%(id,aArgs['a_id'],aArgs['b_id'])) == 2)
    if not ret['update']:
-    ret['rollback' = (db.do("DELETE FROM device_connections WHERE id = %s"%id) == 1)
+    ret['rollback'] = (db.do("DELETE FROM device_connections WHERE id = %s"%id) == 1)
  return ret
 
 #

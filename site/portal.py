@@ -50,6 +50,6 @@ def main(aWeb):
   aWeb.wr("</HEADER>")
   aWeb.wr("<MAIN ID=main></MAIN>")
   if menu['start']:
-   aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['module'] if 'module' in menu['menu'][0] else "portal_framed?type=%s&title="%(menu['menu'][0]['type'],menu['menu'][0]['title'])))
+   aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['module'] if 'module' in menu['menu'][0] else "portal_framed?type=%s&title=%s"%(menu['menu'][0]['type'],menu['menu'][0]['title'])))
  else:
   aWeb.wr("<SCRIPT>window.location.replace('/portal_login');</SCRIPT>")
