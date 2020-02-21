@@ -9,7 +9,8 @@ export const MenuButton = (props) => {
 }
 
 export const NavButton = (props) => {
- return <li className={props.className}><button className={('className' in props) ? `nav ${props.className}` : 'nav'} onClick={props.onClick}>{props.title}</button></li>
+ const view = ('icon' in props) ? <img src={props.icon} alt={props.title} /> : props.title
+ return <li className={props.className}><button className={('className' in props) ? `nav ${props.className}` : 'nav'} onClick={props.onClick}>{view}</button></li>
 }
 
 export const InfoButton = (props) => {

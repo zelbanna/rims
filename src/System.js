@@ -20,10 +20,8 @@ def reload(aWeb):
 def rest_information(aWeb):
 def rest_execute(aWeb):
 def logs_clear(aWeb):
-def services_info(aWeb):
 def file_list(aWeb):
 def images(aWeb):
-def controls(aWeb):
 
 */
 
@@ -45,6 +43,7 @@ export class Main extends Component {
    .then((result) => {
    this.setState(result);
    })
+
  }
  content = (elem) => {
   this.setState({content:elem})
@@ -61,16 +60,22 @@ export class Main extends Component {
     navitems.push({title:'Servers', onClick:() => { this.content(<ServerList key='server_list' />)}})
     navitems.push({title:'ERD',    onClick:() => { window.open('infra/erd.pdf','_blank'); }})
     navitems.push({title:'Users',  onClick:() => { this.content(<UserList key='user_list' />)}})
+    navitems.push({title:'Controls',  onClick:() => { this.content(<Controls  />)}})
     reports.push({title:'Activities',  onClick:() => { this.content(<ActivityReport key='activity_report' />)}})
     reports.push({title:'Reservations',  onClick:() => { this.content(<ReservationReport key='reservation_report' />)}})
     reports.push({title:'Devices',  onClick:() => { this.content(<DeviceReport key='device_report' />)}})
     reports.push({title:'Inventory',  onClick:() => { this.content(<InventoryReport key='inventory_report' />)}})
    }
    navitems.push({title:'Logs',   type:'dropdown', items:this.state.logs.map( (row,index) => { return {title:row, onClick:() => { this.content( <LogShow node={row} /> )} } } )  })
-   reports.push({title:'Tasks',   onClick:() => { this.content(<TaskReport key='task_report' />)}})
-   reports.push({title:'System',  onClick:() => { this.content(<Report key='system_report' />)}})
    navitems.push({title:'Report', type:'dropdown', items:reports})
    navitems.push({title:'REST',  onClick:() => { this.content(<RestExplore key='rest_explore' />) }})
+   if (this.state.services.length > 0)
+    navitems.push({title:'Services',   type:'dropdown', items:this.state.services.map( (row,index) => { return {title:row, onClick:() => { this.content( <ServiceInfo {... row} /> )} } } )  })
+
+   navitems.push({ onClick:() => { this.setState({content:null}) }, className:'reload'} )
+   this.state.navinfo.map(row => { navitems.push({title:row, className:'right navinfo'}) })
+   reports.push({title:'Tasks',   onClick:() => { this.content(<TaskReport key='task_report' />)}})
+   reports.push({title:'System',  onClick:() => { this.content(<Report key='system_report' />)}})
 
    return (
     <Fragment key='system_main'>
@@ -81,28 +86,6 @@ export class Main extends Component {
   }
  }
 }
-
-/*
-
-def main(aWeb):
- if len(tools) > 0 or len(svcs) > 0:
-  aWeb.wr("<LI CLASS='dropdown'><A>Tools</A><DIV CLASS='dropdown-content'>")
-  for tool in tools:
-   aWeb.wr("<A CLASS=z-op DIV=div_content URL='%s'>%s</A>"%(tool['href'],tool['title']))
-  for svc in svcs:
-   aWeb.wr("<A CLASS=z-op DIV=div_content URL='system_services_info?service=%s'>%s</A>"%(svc['service'],svc['name']))
- aWeb.wr("</DIV></LI>")
- if aWeb.node() == 'master':
-  aWeb.wr("<LI><A CLASS='z-op' DIV=div_content URL='system_controls'>Controls</A></LI>")
- aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='system_main'></A></LI>")
- if data.get('navinfo'):
-  for info in data['navinfo']:
-   aWeb.wr("<LI CLASS='right navinfo'><A>%s</A></LI>"%info)
- aWeb.wr("</UL></NAV>")
- aWeb.wr("<SECTION CLASS=content ID=div_content></SECTION>")
-
-
-*/
 
 class Report extends Component {
  render(){
@@ -125,5 +108,17 @@ class TaskReport extends Component {
 class RestExplore extends Component {
  render() {
   return (<div>Rest Explore</div>)
+ }
+}
+
+class ServiceInfo extends Component {
+ render() {
+  return (<div>Service Info</div>)
+ }
+}
+
+class Controls extends Component {
+ render() {
+  return (<div>System Controls</div>)
  }
 }
