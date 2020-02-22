@@ -11,7 +11,7 @@ from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enume
 from time import localtime, strftime, time, sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
-from functools import partial, lru_cache
+from functools import partial
 from base64 import b64encode, b64decode
 from datetime import datetime,timedelta, timezone
 from crypt import crypt
@@ -476,7 +476,7 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def header(self):
   # Sends X-Code as response
-  self._headers.update({'X-Method':self.command,'Server':'RIMS Engine %s.%s'%(__version__,__build__),'Date':self.date_time_string()})
+  self._headers.update({'X-Method':self.command,'X-Powered-By':'RIMS Engine %s.%s'%(__version__,__build__),'Date':self.date_time_string()})
   code = self._headers.pop('X-Code',200)
   self.wfile.write(('HTTP/1.1 %s %s\r\n'%(code,self.responses.get(code,('Other','Server specialized return code'))[0])).encode('utf-8'))
   self._headers.update({'Content-Length':len(self._body),'Connection':'close'})
@@ -488,7 +488,9 @@ class SessionHandler(BaseHTTPRequestHandler):
  def do_GET(self):
   self.route()
   self.header()
-  self.wfile.write(self._body)
+  try:   self.wfile.write(self._body)
+  except Exception as e:
+   print("do_GET: Error writing above body => %s"%str(e))
 
  def do_POST(self):
   self.route()
@@ -506,7 +508,11 @@ class SessionHandler(BaseHTTPRequestHandler):
   if path in ['api','external']:
    self.api(path,query)
   elif path in ['infra','images','files']:
-   self.files(path,query)
+   # Use caching here :-)
+   if self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
+    self._headers['X-Code'] = 304
+   else:
+    self.files(path,query)
   elif path == 'auth':
    self.auth()
   elif path == 'system':
@@ -568,7 +574,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   api,_,get = path.partition('?')
   mod,_,fun = api.partition('_')
   stream = Stream(self,get)
-  self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200,'X-Process':'site'})
+  self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200,'X-Process':'site','ETag':'W/"%s"'% __build__})
   try:
    module = import_module("rims.site.%s"%mod)
    getattr(module,fun,lambda x:None)(stream)
@@ -592,14 +598,10 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def files(self,path,query):
-  """ Serve "common" system files and also route 'files'
-
- TODO: evaluate @lru_cache(maxsize=64) when not using site, add back <fun>.get_cache_info()
-
- """
+  """ Serve "common" system files and also route 'files' """
   query = unquote(query)
   self._ctx.analytics('files', path, query)
-  self._headers['X-Process'] = 'files'
+  self._headers.update({'X-Process':'files','Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
   _,_,ftype = query.rpartition('.')
   if ftype == 'js':
    self._headers['Content-type']='application/javascript; charset=utf-8'
@@ -666,7 +668,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  def system(self,query):
   """ /system/<op>/<args> """
-  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'system'})
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'system','Access-Control-Allow-Origin':'*'})
   op,_,arg = query.partition('/')
   if op == 'environment':
    env = arg.partition('/')
@@ -674,8 +676,13 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._ctx.log("Node '%s' connected, running version: %s"%(env[0],env[2]))
    output = self._ctx.system_info(env[0])
   elif op == 'reload':
-   res = self._ctx.module_reload()
-   output = {'modules':res}
+   if (len(arg) > 0) and arg != self._ctx.node:
+    try:
+     output = self._ctx.rest_call(self._ctx.nodes[arg]['url'] + '/system/reload')
+    except Exception as e:
+     output = {'node':arg,'modules':[],'status':'NOT_OK','info':'Remote reload error: %s'%str(e)}
+   else:
+    output = {'node':self._ctx.node, 'modules':self._ctx.module_reload(),'status':'OK'}
   elif op == 'report':
    output = self._ctx.report()
   elif op == 'register':

@@ -189,8 +189,9 @@ def record_info(aCTX, aArgs = None):
  """
  ret = {}
  domain_id = aArgs['domain_id']
-
- if aArgs['id'] == 'new' and not 'op' in aArgs:
+ if domain_id is None:
+  ret = {'status':'NOT_OK', 'data':None}
+ elif aArgs['id'] == 'new' and not 'op' in aArgs:
   ret = {'status':'OK', 'data':{'id':'new','domain_id':domain_id,'name':'key','content':'value','type':'type-of-record','ttl':'3600','foreign_id':'NA'}}
  else:
   with aCTX.db as db:

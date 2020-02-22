@@ -54,19 +54,20 @@ class List extends Component {
   this.setState({contentright:elem});
  }
 
- deleteItem = (id)  => {
-  rest_call(rest_base + 'api/master/activity_delete',{id:id})
-   .then((result) => {
-   if(result.deleted){
-    this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id)})
-   }
-  })
+ deleteItem = (id,msg)  => {
+  if(window.confirm(msg)){
+   rest_call(rest_base + 'api/master/activity_delete',{id:id})
+    .then((result) => {
+    if(result.deleted)
+     this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id)})
+   })
+  }
  }
 
  listItem = (row) => {
   return [row.date + ' - ' + row.time,row.type,<Fragment key='activity_buttons'>
    <InfoButton key='act_info'   type='info'  onClick={() => { this.contentRight(<Info key={'activity_'+row.id} id={row.id} />) }} />
-   <InfoButton key='act_delete' type='trash' onClick={() => { this.deleteItem(row.id) }} />
+   <InfoButton key='act_delete' type='trash' onClick={() => { this.deleteItem(row.id,'Really delete activity') }} />
    </Fragment>
   ];
 
@@ -129,7 +130,7 @@ class Info extends Component {
   else {
    return (
     <article className='info'>
-     <p>Activity ({this.state.data.id})</p>
+     <h1>Activity ({this.state.data.id})</h1>
      <form>
       <InfoCol2 key='activity_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
       <textarea id='event' name='event' onChange={this.handleChange} style={styleTextArea} value={this.state.data.event} />
@@ -182,19 +183,20 @@ class TypeList extends Component {
   this.setState({contentright:elem});
  }
 
- deleteItem = (id)  => {
-  rest_call(rest_base + 'api/master/activity_type_delete',{id:id})
-   .then((result) => {
-   if(result.deleted){
-    this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id)})
-   }
-  })
+ deleteItem = (id,msg)  => {
+  if (window.confirm(msg)){
+   rest_call(rest_base + 'api/master/activity_type_delete',{id:id})
+    .then((result) => {
+    if(result.deleted)
+     this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id)})
+   })
+  }
  }
 
  listItem = (row) => {
   return [row.id,row.type,<Fragment key='activity_buttons'>
    <InfoButton key='act_tp_info'   type='info'  onClick={() => { this.contentRight(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) }} />
-   <InfoButton key='act_tp_delete' type='trash' onClick={() => { this.deleteItem(row.id) }} />
+   <InfoButton key='act_tp_delete' type='trash' onClick={() => { this.deleteItem(row.id,'Really delete type?') }} />
    </Fragment>]
  }
 
@@ -245,7 +247,7 @@ class TypeInfo extends Component {
   else {
    return (
     <article className='info'>
-     <p>Activity Type ({this.state.data.id})</p>
+     <h1>Activity Type ({this.state.data.id})</h1>
      <form>
       <InfoCol2 key='activity_type_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>

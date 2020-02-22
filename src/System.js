@@ -6,7 +6,7 @@ import { InfoButton } from './infra/Buttons.js';
 import { ContentMain, ContentTable } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
 
-import { List as NodeList } from './Node.js';
+import { LogShow, List as NodeList } from './Node.js';
 import { List as ServerList } from './Server.js';
 import { List as UserList } from './User.js';
 import { Report as ActivityReport } from './Activity.js';
@@ -16,10 +16,8 @@ import { Report as InventoryReport } from './Inventory.js';
 
 /*
 
-def reload(aWeb):
 def rest_information(aWeb):
 def rest_execute(aWeb):
-def logs_clear(aWeb):
 def file_list(aWeb):
 def images(aWeb):
 
@@ -87,38 +85,33 @@ export class Main extends Component {
  }
 }
 
+
 class Report extends Component {
  render(){
-  return (<div>System Report</div>)
- }
-}
-
-class LogShow extends Component {
- render(){
-  return (<div>Log Show</div>)
+  return (<div>System Report TODO</div>)
  }
 }
 
 class TaskReport extends Component {
  render(){
-  return (<div>Task Report</div>)
+  return (<div>Task Report TODO</div>)
  }
 }
 
 class RestExplore extends Component {
  render() {
-  return (<div>Rest Explore</div>)
+  return (<div>Rest Explore TODO</div>)
  }
 }
 
 class ServiceInfo extends Component {
  render() {
-  return (<div>Service Info</div>)
+  return (<div>Service Info TODO</div>)
  }
 }
 
 class Controls extends Component {
  render() {
-  return (<div>System Controls</div>)
+  return (<div>System Controls TODO</div>)
  }
 }

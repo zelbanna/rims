@@ -168,14 +168,15 @@ def node_delete(aCTX, aArgs = None):
   - id (required)
 
  Output:
+  - deleted (bool)
  """
  ret = {}
  with aCTX.db as db:
   if (aArgs['id'] != 'new') and db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aArgs['id']) > 0:
    aCTX.nodes.pop(db.get_val('node'),None)
-   ret['delete'] = (db.do("DELETE FROM nodes WHERE id = %s"%aArgs['id']) == 1)
+   ret['deleted'] = (db.do("DELETE FROM nodes WHERE id = %s"%aArgs['id']) == 1)
   else:
-   ret['delete'] = False
+   ret['deleted'] = False
  return ret
 
 #

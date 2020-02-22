@@ -31,14 +31,14 @@ export class List extends Component {
   this.componentDidMount();
  }
 
- deleteItem = (device_id,user_id)  => {
-  rest_call(rest_base + 'api/reservation/update',{op:'delete', device_id:device_id,user_id:user_id})
-   .then((result) => {
-   if(result.result) {
-    this.setState({data:this.state.data.filter((row,index,arr) => row.device_id !== device_id)})
-   }
-  })
-  this.componentDidMount();
+ deleteItem = (device_id,user_id,msg)  => {
+  if (window.confirm(msg)){
+   rest_call(rest_base + 'api/reservation/update',{op:'delete', device_id:device_id,user_id:user_id})
+    .then((result) => {
+     if(result.result)
+      this.setState({data:this.state.data.filter((row,index,arr) => row.device_id !== device_id)})
+    })
+  }
  }
 
  listItem = (row) => {
@@ -52,7 +52,7 @@ export class List extends Component {
     <Fragment key='reservation_buttons'>
      <InfoButton type='info' key={'rsv_info_'+row.device_id} onClick={() => { this.contentRight(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
      <InfoButton type='add'  key={'rsv_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />
-     <InfoButton type='delete' key={'rsv_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />
+     <InfoButton type='delete' key={'rsv_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id,'Remove reservatin?') }} title='Remove reservation' />
     </Fragment>
    )
   }
@@ -107,7 +107,7 @@ class Info extends Component {
    ]
    return (
     <article className='info'>
-     <p>Reservation ({this.state.data.device_id})</p>
+     <h1>Reservation ({this.state.data.device_id})</h1>
      <form>
       <InfoCol2 key={'user_content'} griditems={griditems} changeHandler={this.handleChange} />
      </form>

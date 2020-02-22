@@ -26,7 +26,7 @@ export const ContentTable = (props) => {
  } else {
   return (
    <article className='table'>
-    <p>{props.header}</p>
+    <h1>{props.header}</h1>
     {props.buttons}
     <div className='table'>
      <TableHead key={'thead_' + props.base} headers={props.thead} />

@@ -58,23 +58,22 @@ export class List extends Component {
    .then((result) => { this.setState(result); })
  }
 
- contentRight = (elem) => {
-  this.setState({contentright:elem})
- }
+ contentRight = (elem) => { this.setState({contentright:elem}) }
 
- deleteUser = (id) => {
-  rest_call(rest_base + 'api/master/user_delete',{id:id})
-   .then((result) => {
-   if(result.deleted) {
-    this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id)})
-   }
-  })
+ deleteItem = (id,msg) => {
+  if (window.config(msg)){
+   rest_call(rest_base + 'api/master/user_delete',{id:id})
+    .then((result) => {
+     if(result.deleted)
+      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id)})
+    })
+  }
  }
 
  listItem = (row) => {
   return [row.id,row.alias,row.name,<Fragment key={'user_buttons_'+row.id}>
    <InfoButton key={'user_info_'+row.id} type='info' onClick={() => { this.contentRight(<Info key={'user_info_'+row.id} id={row.id} />)}} />
-   <InfoButton key={'user_del_'+row.id} type='trash' onClick={() => { this.deleteUser(row.id)}} msg='are you sure?' />
+   <InfoButton key={'user_del_'+row.id} type='trash' onClick={() => { this.deleteItem(row.id,'Really delete user?')}} />
   </Fragment>]
  }
 
@@ -134,7 +133,7 @@ export class Info extends Component {
   else {
    return (
     <article className='info'>
-     <p>User Info ({this.state.data.id})</p>
+     <h1>User Info ({this.state.data.id})</h1>
      <form>
       <InfoCol2 key='user_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>

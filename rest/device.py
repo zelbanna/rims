@@ -414,7 +414,7 @@ def search(aCTX, aArgs = None):
     search = "ia.hostname LIKE '%{0}%' OR CONCAT(ia.hostname,'.',domains.name) LIKE '%{0}%'".format(arg)
   else:
    search = "ia.hostname LIKE '%{0}%' OR CONCAT(ia.hostname,'.',domains.name) LIKE '%{0}%'".format(aArgs['hostname'])
-  ret['found'] = db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN device_interfaces AS di ON di.device_id = devices.id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE %s"%search)
+  ret['found'] = (db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN device_interfaces AS di ON di.device_id = devices.id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE %s"%search) > 0)
   ret['device']= db.get_row()
  return ret
 
