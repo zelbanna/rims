@@ -7,11 +7,8 @@ import { InfoCol2 }   from './infra/Info.js';
 
 /*
 
-def list(aWeb):
-def info(aWeb):
 def status(aWeb):
 def restart(aWeb):
-def sync(aWeb):
 def delete(aWeb):
 def help(aWeb):
 */
@@ -21,12 +18,13 @@ def help(aWeb):
 export class List extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, contentright:null}
+  this.state = {data:null, contentright:null }
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/node_list')
-   .then((result) => { this.setState(result); })
+  const args = (this.props.type) ? {type:this.props.type} : {}
+  rest_call(rest_base + 'api/master/server_list',args)
+   .then((result) => this.setState(result) )
  }
 
  contentRight = (elem) => {
@@ -35,7 +33,7 @@ export class List extends Component {
 
  deleteItem = (id,msg)  => {
   if(window.confirm(msg)){
-   rest_call(rest_base + 'api/master/node_delete',{id:id})
+   rest_call(rest_base + 'api/master/server_delete',{id:id})
     .then((result) => {
      if(result.deleted)
       this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id)})
@@ -45,22 +43,22 @@ export class List extends Component {
 
  listItem = (row) => {
   var buttons = [
-   <InfoButton key='node_info'   type='info'    onClick={() => { this.contentRight(<Info key={'node_info_'+row.id} id={row.id} />) }} />,
-   <InfoButton key='node_delete' type='delete'  onClick={() => { this.deleteItem(row.id,'Really delete node?') }} />
+   <InfoButton key='server_info'   type='info'   onClick={() => this.contentRight(<Info key={'server_info_'+row.id} id={row.id} />) } />,
+   <InfoButton key='server_delete' type='trash'  onClick={() => this.deleteItem(row.id,'Are you really sure?')  } />,
+   <InfoButton key='server_sync'   type='sync'   onClick={() => { this.contentRight(<Sync key={'server_sync_'+row.id} id={row.id} />) }} />,
+   <InfoButton key='server_restart' type='reload' onClick={() => { this.contentRight(<Restart key={'server_restart_'+row.id} id={row.id} />) }} />
   ]
-  if (row.system) {
-   buttons.push(<InfoButton key='node_reload' type='reload'  onClick={() => { this.contentRight(<Reload key={'node_reload_'+row.id} node={row.node} />) }} />)
-   buttons.push(<InfoButton key='node_logs'   type='logs'    onClick={() => { this.contentRight(<LogShow  key={'node_logs_'+row.id} node={row.node}  />) }} />)
-   buttons.push(<InfoButton key='node_logc' title='Clear logs' type='trash'   onClick={() => { this.contentRight(<LogClear key={'node_logc_'+row.id} node={row.node} msg='Really clear logs?' />) }} />)
-  }
-  return [row.node,row.url,<Fragment key='node_buttons'>{buttons}</Fragment>]
+/*
+   aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='server_status?id=%s'%(srv['id']), SPIN='true', TITLE='Server status'))
+*/
+  return [row.node,row.service,row.type,<Fragment key='server_buttons'>{buttons}</Fragment>]
  }
 
  render(){
-  return <ContentMain key='node_content' base='node' header='Nodes' thead={['Node','URL','']}
-    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='node_header_buttons'>
-     <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
-     <InfoButton key='add'  type='add'  onClick={() => { this.contentRight(<Info key={'node_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
+  return <ContentMain key='server_content' base='node' header='Nodes' thead={['Node','Service','Type','']}
+    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='server_header_buttons'>
+     <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />
+     <InfoButton key='add'  type='add' title='Add server'  onClick={() => this.contentRight(<Info key={'server_new_' + Math.floor(Math.random() * 10)} id='new' type={this.props.type} />)  } />
     </Fragment>} />
  }
 }
@@ -70,7 +68,7 @@ export class List extends Component {
 class Info extends Component {
   constructor(props) {
   super(props)
-  this.state = {data:null, found:true}
+  this.state = {data:null,found:true}
  }
 
  handleChange = (e) => {
@@ -80,83 +78,100 @@ class Info extends Component {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/node_info',{id:this.props.id})
+  rest_call(rest_base + 'api/master/server_info',{id:this.props.id})
    .then((result) => {
-    if(result.data.hostname === null)
-     result.data.hostname = undefined;
+    if (result.data.node === null)
+     result.data.node = result.nodes[0]
+    if (result.data.type_id === null)
+     result.data.type_id = result.services[0].id
     this.setState(result)
    })
  }
 
- searchInfo = () => {
-  rest_call(rest_base + 'api/device/search',{node:this.state.data.node})
-   .then((result) => {
-   if (result.found)
-    this.setState({data:{...this.state.data, hostname:result.device.hostname, device_id:result.device.id}})
-  })
- }
-
  updateInfo = () => {
-  rest_call(rest_base + 'api/master/node_info',{op:'update', ...this.state.data})
+  rest_call(rest_base + 'api/master/server_info',{op:'update', ...this.state.data})
    .then((result) => {
-    if(result.data.hostname === null)
-     result.data.hostname = undefined;
     this.setState(result)
    })
  }
 
  infoItems = () => {
   return [
-    {tag:'input', type:'text', id:'node', text:'Node', value:this.state.data.node},
-    {tag:'input', type:'url',  id:'url',  text:'URL', value:this.state.data.url},
-    {tag:'input', type:'text', id:'hostname',  text:'hostname', value:this.state.data.hostname},
+    {tag:'span', id:'server', text:'ID', value:this.state.data.id},
+    {tag:'select', id:'node', text:'Node', value:this.state.data.node, options:this.state.nodes.map(row => {return {value:row, text:row}})},
+    {tag:'select', id:'type_id', text:'Service', value:this.state.data.type_id, options:this.state.services.map(row => {return {value:row.id, text:`${row.service} (${row.type})`} })},
+    {tag:'input', type:'text', id:'ui', text:'UI', value:this.state.data.ui}
    ]
  }
 
  render() {
   if (this.state.found === false)
-   return <article>Node with id: {this.props.id} removed</article>
+   return <article>Server with id: {this.props.id} removed</article>
   else if (this.state.data === null)
    return <Spinner />
   else {
    return (
     <article className='info'>
-     <h1>Node Info ({this.state.data.id})</h1>
+     <h1>Server Info ({this.state.data.id})</h1>
      <form>
-      <InfoCol2 key='node_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
+      <InfoCol2 key='server_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>
-     <InfoButton key='node_srch' type='search' onClick={this.searchInfo} />
-     <InfoButton key='node_save' type='save' onClick={this.updateInfo} />
+     <InfoButton key='server_save' type='save' onClick={this.updateInfo} />
     </article>
    );
   }
  }
 }
 
+// *************** Sync ***************
+//
+class Sync extends Component {
+
+ componentDidMount(){
+  rest_call(rest_base + 'api/master/server_sync',{id:this.props.id})
+   .then((result) => {
+    this.setState(result)
+   })
+ }
+
+ render(){
+  if (this.state === null)
+   return <Spinner />
+  else
+   return <article className='code'>{JSON.stringify(this.state)}</article>
+ }
+}
+
+
+/*
+#
+#
+def status(aWeb):
+ from json import dumps
+ res = aWeb.rest_call("master/server_status",{'id':aWeb['id']})
+ aWeb.wr("<ARTICLE><PRE>%s<PRE></ARTICLE>"%dumps(res,indent=2,sort_keys=True))
+
+#
+#
+def restart(aWeb):
+ from json import dumps
+ res = aWeb.rest_call("master/server_restart",{'id':aWeb['id']})
+ aWeb.wr("<ARTICLE><PRE>%s<PRE></ARTICLE>"%dumps(res,indent=2,sort_keys=True))
+ */
 
 // *************** Reload ***************
 //
-class Reload extends Component {
- constructor(props){
-  super(props)
-  this.state = {modules:null}
- }
+class Restart extends Component {
 
  componentDidMount(){
-  rest_call(rest_base + 'system/reload/' + this.props.node)
+  rest_call(rest_base + 'api/master/server_restart',{id:this.props.id})
    .then((result) => { this.setState(result) })
  }
 
  render(){
-  if (this.state.modules === null)
+  if (this.state === null)
    return <Spinner />
-  else {
-   return (
-    <article className='code'>
-     <h1>Module</h1>
-     {this.state.modules.map((row,index) => { return <span key={index}>{row}</span> })}
-   </article>
-   )
-  }
+  else
+   return <article className='code'>{JSON.stringify(this.state)}</article>
  }
 }

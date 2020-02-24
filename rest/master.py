@@ -18,7 +18,7 @@ def inventory(aCTX, aArgs = None):
  ret = {'navinfo':[]}
  if aArgs['node'] == 'master':
   ret.update({'node':True,'users':True})
-  ret['logs'] = [k for k,v in aCTX.nodes.items() if v['system'] == 1]
+  ret['logs'] = [k for k,v in aCTX.nodes.items()]
  else:
   ret['logs']  = [aArgs['node']]
  with aCTX.db as db:
@@ -154,9 +154,9 @@ def node_info(aCTX, aArgs = None):
      if aCTX.nodes[k]['id'] == node['id']:
       aCTX.nodes.pop(k,None)
       break
-    aCTX.nodes[node['node']] = {'id':node['id'],'url':node['url'],'system':node['system']}
+    aCTX.nodes[node['node']] = {'id':node['id'],'url':node['url']}
   else:
-   ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':None,'system':0}
+   ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':None}
  return ret
 
 #
@@ -309,8 +309,8 @@ def server_list(aCTX, aArgs = None):
  ret = {}
 
  with aCTX.db as db:
-  db.do("SELECT servers.id, st.service, servers.node, st.type, servers.ui, nodes.system FROM servers LEFT JOIN nodes ON servers.node = nodes.node LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY servers.node"%("type = '%s'"%aArgs['type'] if 'type' in aArgs else "TRUE"))
-  ret['services']= db.get_rows()
+  db.do("SELECT servers.id, st.service, servers.node, st.type, servers.ui FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY servers.node"%("type = '%s'"%aArgs['type'] if 'type' in aArgs else "TRUE"))
+  ret['data']= db.get_rows()
  return ret
 
 #
@@ -319,6 +319,7 @@ def server_info(aCTX, aArgs = None):
  """Function docstring for server_info TBD
 
  Args:
+  - id (required)
 
  Output:
  """
@@ -346,7 +347,7 @@ def server_info(aCTX, aArgs = None):
       aCTX.services[int(id)] = {'node':ret['data']['node'],'service':x['service'],'type':x['type']}
       break
   else:
-   ret['data'] = {'id':'new','node':None,'type_id':None,'ui':None}
+   ret['data'] = {'id':'new','node':None,'type_id':None,'ui':''}
    db.do("SELECT id, service, type FROM service_types WHERE %s"%("type = '%s'"%aArgs['type'] if 'type' in aArgs else "TRUE"))
    ret['services'] = db.get_rows()
 
@@ -379,7 +380,12 @@ def server_sync(aCTX, aArgs = None):
  Output:
  """
  server = aCTX.services[int(aArgs['id'])]
- return aCTX.node_function(server['node'],server['service'],'sync')(aArgs = {'id':aArgs['id']})
+ try:
+  ret = aCTX.node_function(server['node'],server['service'],'sync')(aArgs = {'id':aArgs['id']})
+  ret['status'] = ret.get('status','NOT_OK')
+ except Exception as e:
+  ret = {'status':'NOT_OK','info':str(e)}
+ return ret
 
 #
 #
@@ -392,7 +398,12 @@ def server_status(aCTX, aArgs = None):
  Output:
  """
  server = aCTX.services[int(aArgs['id'])]
- return aCTX.node_function(server['node'],server['service'],'status')(aArgs = {'id':aArgs['id']})
+ try:
+  ret = aCTX.node_function(server['node'],server['service'],'status')(aArgs = {'id':aArgs['id']})
+  ret['status'] = ret.get('status','NOT_OK')
+ except Exception as e:
+  ret = {'status':'NOT_OK','info':str(e)}
+ return ret
 
 #
 #
@@ -406,7 +417,12 @@ def server_restart(aCTX, aArgs = None):
   - result.
  """
  server = aCTX.services[int(aArgs['id'])]
- return {'status':aCTX.node_function(server['node'],server['service'],'restart')(aArgs = {'id':aArgs['id']})}
+ try:
+  ret = aCTX.node_function(server['node'],server['service'],'restart')(aArgs = {'id':aArgs['id']})
+  ret['status'] = ret.get('status','NOT_OK')
+ except Exception as e:
+  ret = {'status':'NOT_OK','info':str(e)}
+ return ret
 
 ####################################### ACTIVITIES #######################################
 #
@@ -595,8 +611,8 @@ def task_list(aCTX, aArgs = None):
  ret = {}
  with aCTX.db as db:
   ret['count'] = db.do("SELECT tasks.*, nodes.node FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node_id IN (SELECT id FROM nodes WHERE node LIKE '%%%s%%')"%aArgs.get('node',''))
-  ret['tasks'] = db.get_rows()
-  for task in ret['tasks']:
+  ret['data'] = db.get_rows()
+  for task in ret['data']:
    task['output'] = (task['output']== 'true')
  return ret
 

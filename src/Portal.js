@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 
-import { read_cookie, rest_call, rest_base, mapper } from  './infra/Functions.js';
+import { read_cookie, rest_call, rest_base, library } from  './infra/Functions.js';
 import { InfoCol2 }   from './infra/Info.js';
 import { MenuButton } from './infra/Buttons.js';
+import { NavBar } from './infra/Navigation.js';
 
 const styleLoginButton = {margin:'10px 10px 10px 10px'};
 
@@ -13,48 +14,60 @@ const styleLoginButton = {margin:'10px 10px 10px 10px'};
 class Portal extends Component {
  constructor(props){
   super(props)
-  this.state = { active:null, menu:[]}
+  this.state = { active:null, active_name:null, menu:[], navigation:null}
  }
 
  componentDidMount() {
   rest_call(rest_base + 'api/portal/menu',{id:this.props.cookie.id})
    .then((result) => {
     this.setState(result)
-    if (result.start){
-     this.changeActive(result.menu[0]);
-    }
+    if (result.start)
+     this.changeActive(result.menu[result.start]);
     document.title = result.title
    })
  }
 
+ loadNavigation = (items) => {
+  this.setState({navigation:items})
+ }
+
  changeActive = (panel) => {
-  var elem = null;
-  if ('module' in panel) {
-   elem = mapper(panel)
+  if ('module' in panel){
+   if ((this.state.active !== null) && (this.state.active.key === panel.module))
+    return
+   try {
+    const parts = panel.module.split('_');
+    const module = library[parts[0]];
+    const Elem = module[parts[1].charAt(0).toUpperCase() + parts[1].substring(1)];
+    this.setState({navigation:[],active:<Elem key={panel.module} {...panel.args} loadNavigation={this.loadNavigation} />})
+   } catch(err) {
+    console.error("Mapper error: "+panel);
+    alert(err);
+   }
   }
-  this.setState({active:elem})
+ }
+
+ Header(props){
+  return (
+   <header>
+    <MenuButton key='logout' className='right warning' onClick={() => {props.eraseCookie()} } title='Log out' />
+    <MenuButton key='system_main' className='right'         onClick={() => {props.changeActive({module:'system_main'})}} title='System' icon='images/icon-config.png' />
+    <MenuButton key='user_user'   className='right'         onClick={() => {props.changeActive({module:'user_user', args:{id:props.cookie.id}})}}   title='User'   icon='images/icon-users.png' />
+    { Object.values(props.menu).map((row) => { return (<MenuButton key={row[row['type']]} {...row} onClick={() => {props.changeActive({module:row.module, args:row.args})}} />); }) }
+   </header>
+  )
  }
 
  render() {
   return (
    <React.Fragment key='portal'>
     <link key='userstyle' rel='stylesheet' type='text/css' href={'infra/theme.' + this.props.cookie.theme + '.react.css'} />
-    <Header key='portal_header' menu={this.state.menu} changeActive={this.changeActive} {...this.props} />
+    <this.Header key='portal_header' menu={this.state.menu} changeActive={this.changeActive} {...this.props} />
+    <NavBar key='portal_navigation' items={this.state.navigation} />
     <main>{this.state.active}</main>
    </React.Fragment>
   )
  }
-}
-
-const Header = (props) => {
- return (
-  <header>
-   <MenuButton key='logout' className='right warning' onClick={() => {props.eraseCookie()} } title='Log out' />
-   <MenuButton key='system' className='right'         onClick={() => {props.changeActive({module:'system_main'})}} title='System' icon='images/icon-config.png' />
-   <MenuButton key='user'   className='right'         onClick={() => {props.changeActive({module:'user_user', args:{id:props.cookie.id}})}}   title='User'   icon='images/icon-users.png' />
-   { props.menu.map((row,index) => { return (<MenuButton key={index} {...row} onClick={() => {props.changeActive({module:row.module, args:row.args})}} />); }) }
-  </header>
- );
 }
 
 // ************************ Login ************************

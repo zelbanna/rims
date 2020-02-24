@@ -12,15 +12,12 @@ def list(aWeb):
  aWeb.wr(aWeb.button('add', DIV='div_content_right',URL='server_info?id=new&%s'%type,TITLE='Add server'))
  aWeb.wr(aWeb.button('help',DIV='div_content_right',URL='server_help'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Node</DIV><DIV>Service</DIV><DIV>Type</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
- for srv in res['services']:
+ for srv in res['data']:
   aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>"%(srv['node'],srv['service'],srv['type']))
   aWeb.wr(aWeb.button('info',DIV='div_content_right',URL='server_info?id=%s'%(srv['id'])))
-  if srv['system']:
-   aWeb.wr(aWeb.button('sync',DIV='div_content_right',URL='server_sync?id=%s'%(srv['id']), SPIN='true', TITLE='Sync server'))
-   aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='server_status?id=%s'%(srv['id']), SPIN='true', TITLE='Server status'))
-   aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='server_restart?id=%s'%(srv['id']), SPIN='true', TITLE='Server restart'))
-  else:
-   aWeb.wr(aWeb.button('forward',DIV='main', URL='%s_manage?node=%s'%(srv['service'],srv['node']), TITLE='Server pane'))
+  aWeb.wr(aWeb.button('sync',DIV='div_content_right',URL='server_sync?id=%s'%(srv['id']), SPIN='true', TITLE='Sync server'))
+  aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='server_status?id=%s'%(srv['id']), SPIN='true', TITLE='Server status'))
+  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='server_restart?id=%s'%(srv['id']), SPIN='true', TITLE='Server restart'))
   if srv['ui']:
    aWeb.wr(aWeb.button('ui', HREF=srv['ui'], target='blank_', TITLE='Server UI'))
   aWeb.wr("</DIV></DIV>")

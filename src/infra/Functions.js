@@ -1,5 +1,3 @@
-import React from 'react';
-
 // ********************* Portal Pages ***********************
 import * as Activity from '../Activity.js';
 import * as Device   from '../Device.js';
@@ -23,21 +21,6 @@ export const library = {
  system:System,
  user:User,
  visualize:Visualize
-}
-
-export const mapper = (params) => {
- let elem = null;
- try {
-  const args = params.args;
-  const parts = params.module.split('_');
-  const module = library[parts[0]];
-  const Elem = module[parts[1].charAt(0).toUpperCase() + parts[1].substring(1)];
-  elem = <Elem key={params.module} {...args} />
- } catch(err) {
-  console.log("Mapper error: "+params);
-  alert(err);
- }
- return elem;
 }
 
 export const rest_base = 'http://172.16.36.129:8080/'

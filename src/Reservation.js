@@ -3,7 +3,7 @@ import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
 import { Info as UserInfo } from './User.js';
 import { Spinner }    from './infra/Generic.js';
 import { InfoButton, TextButton }    from './infra/Buttons.js';
-import { ContentMain, ContentTable } from './infra/Content.js';
+import { ContentMain, ContentList } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
 
 // CONVERTED ENTIRELY
@@ -134,7 +134,7 @@ export class Report extends Component{
  listItem = (row) => { return [row.alias,row.hostname,row.start,row.end,row.info]; }
 
  render(){
-  return <ContentTable key='reservation_content' base='reservation' header='Reservations' thead={['User','Device','Start','End','Info']}
+  return <ContentList key='reservation_content' base='reservation' header='Reservations' thead={['User','Device','Start','End','Info']}
     trows={this.state.data} listItem={this.listItem} />
  }
 }

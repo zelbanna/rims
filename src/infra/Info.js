@@ -27,7 +27,7 @@ export const InfoCol2 = (props) => {
    case 'select':
     second = <select name={row.id} onChange={props.changeHandler} value={row.value}>{
      row.options.map((opt,index) => { return (<option key={row.id + '_'+index} value={opt.value}>{opt.text}</option>) })
-    }</select>
+     }</select>
     break;
    default:
     second = <div id={row.id}>{row.content}</div>

@@ -64,6 +64,12 @@ class Context(object):
   except:
    self.log("Site file could not be loaded/found: %s"%self.config.get('site_file','N/A'))
    self.site     = {}
+  for type in ['menuitem','tool']:
+   for k,item in self.site.get(type,{}).items():
+    for tp in ['module','frame','tab']:
+     if tp in item:
+      item['type'] = tp
+      break
   self._kill    = Event()
   self._analytics= {'files':{},'modules':{}}
   self.rest_call = rest_call
@@ -91,8 +97,8 @@ class Context(object):
   elif self.config.get('database'):
    info = {'tokens':{}}
    with self.db as db:
-    db.do("SELECT id, node, url,system FROM nodes")
-    info['nodes']   = {x['node']:{'id':x['id'],'url':x['url'],'system':x['system']} for x in db.get_rows()}
+    db.do("SELECT id, node, url FROM nodes")
+    info['nodes']   = {x['node']:{'id':x['id'],'url':x['url']} for x in db.get_rows()}
     db.do("SELECT servers.id, node, st.service, st.type FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id")
     info['services'] = {x['id']:{'node':x['node'],'service':x['service'],'type':x['type']} for x in db.get_rows()}
     db.do("SELECT tasks.id, module, function, args, frequency, output FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node = '%s'"%aNode)
@@ -273,10 +279,10 @@ class Context(object):
    output['Unhandled detected OIDs']= ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
    output.update({'Mounted directory: %s'%k:"%s => %s/files/%s/"%(v,node_url,k) for k,v in self.config.get('files',{}).items()})
    output.update({'Modules (%03d)'%i:x for i,x in enumerate(sys_modules.keys()) if x.startswith('rims')})
-  output['analytics'] = {}
   for type in ['modules','files']:
-   for g,i in self._analytics[type].items():
-    output['analytics'][type] = {'%s/%s'%(g,f):c for f,c in i.items()}
+   for group,item in self._analytics[type].items():
+    for i,c in item.items():
+     output['%s: %s/%s'%(type.title(),group,i)] = c
   return output
 
 ########################################## WorkerPool ########################################

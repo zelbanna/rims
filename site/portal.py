@@ -40,16 +40,16 @@ def main(aWeb):
   aWeb.wr("<BUTTON CLASS='z-op menu right warning' OP=logout COOKIE=rims URL=portal_main>Log out</BUTTON>")
   aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='System' DIV=main URL='system_main?node=%s'><IMG SRC='images/icon-config.png' /></BUTTON>"%aWeb.node())
   aWeb.wr("<BUTTON CLASS='z-op menu right' TITLE='User'   DIV=main URL='user_%s'><IMG SRC='images/icon-users.png' /></BUTTON>"%("main" if id == '1' else "user?id=%s"%id))
-  for item in menu['menu']:
+  for title,item in menu['menu'].items():
    if 'module' in item:
-    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['module'],item['title'],item['icon']))
+    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(title,item['module'],title,item['icon']))
    elif 'frame' in item:
-    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='resource_framed?type=%s&title=%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(item['title'],item['type'],item['title'],item['title'],item['icon']))
+    aWeb.wr("<BUTTON CLASS='z-op menu' TITLE='%s' DIV=main URL='resource_framed?type=%s&title=%s'><IMG ALT='%s' SRC='%s' /></BUTTON>"%(title,item['type'],title,title,item['icon']))
    elif 'tab' in item:
-    aWeb.wr("<A CLASS='btn menu' TITLE='%s' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s' /></A>"%(item['title'],item['tab'],item['title'],item['icon']))
+    aWeb.wr("<A CLASS='btn menu' TARGET=_blank HREF='%s'><IMG ALT='%s' SRC='%s' /></A>"%(title,item['tab'],title,item['icon']))
   aWeb.wr("</HEADER>")
   aWeb.wr("<MAIN ID=main></MAIN>")
   if menu['start']:
-   aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][0]['module'] if 'module' in menu['menu'][0] else "portal_framed?type=%s&title=%s"%(menu['menu'][0]['type'],menu['menu'][0]['title'])))
+   aWeb.wr("<SCRIPT>include_html('main','%s')</SCRIPT>"%(menu['menu'][menu['start']]['module'] if 'module' in menu['menu'][menu['start']] else "portal_framed?type=%s&title=%s"%(menu['menu'][menu['start']]['type'],menu['menu'][0]['title'])))
  else:
   aWeb.wr("<SCRIPT>window.location.replace('/portal_login');</SCRIPT>")

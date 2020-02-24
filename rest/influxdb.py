@@ -119,3 +119,8 @@ def status(aCTX, aArgs = None):
  else:
   ret['status'] = 'OK'
  return ret
+
+#
+#
+def restart(aCTX,aArgs = None):
+ return {'status':'OK','output':"",'code':0}

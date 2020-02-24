@@ -1,9 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
 import { Spinner }    from './infra/Generic.js';
-import { NavBar }     from './infra/Navigation.js';
 import { InfoButton } from './infra/Buttons.js';
-import { ContentMain, ContentTable } from './infra/Content.js';
+import { ContentMain, ContentList } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
 
 const styleTextArea = {width:'300px',height:'70px'};
@@ -22,16 +21,18 @@ export class Main extends Component {
   this.setState({content:elem})
  }
 
- render() {
-  const navitems = [
+ componentDidMount(){
+  this.props.loadNavigation([
    {title:'Activities', onClick:() => { this.content(<List key='activity_list' />)}},
    {title:'Types', onClick:() => { this.content(<TypeList key='activity_type_list' />)}},
    {title:'Report', onClick:() => { this.content(<Report key='activity_report' />)}}
-  ]
+  ])
+ }
+
+ render() {
   return (
    <Fragment key='activity_main'>
-    <NavBar key='activity_navbar' items={navitems} />
-    <section className='content' id='div_content'>{this.state.content}</section>
+    {this.state.content}
    </Fragment>
   )
  }
@@ -70,7 +71,6 @@ class List extends Component {
    <InfoButton key='act_delete' type='trash' onClick={() => { this.deleteItem(row.id,'Really delete activity') }} />
    </Fragment>
   ];
-
  }
 
  render(){
@@ -160,7 +160,7 @@ export class Report extends Component{
  }
 
  render(){
-  return <ContentTable key='activity_report' base='activity' header='Activities' thead={['Time','User','Type','Event']}
+  return <ContentList key='activity_report' base='activity' header='Activities' thead={['Time','User','Type','Event']}
     trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={[]} />
  }
 }

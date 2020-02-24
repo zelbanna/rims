@@ -183,7 +183,7 @@ def sync(aCTX, aArgs = None):
 
  Output:
  """
- ret = {'update':0,'insert':0,'removed':0}
+ ret = {'update':0,'insert':0,'removed':0,'status':'OK'}
  with aCTX.db as db:
   # A records
   db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.',domains.name) AS fqdn, domains.foreign_id, ia.a_id, dr.id AS record_id, dr.name AS name, dr.content FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN domain_records AS dr ON ia.a_id = dr.id AND dr.type = 'A'WHERE domains.server_id = %s AND domains.type = 'forward' and ia.id IS NOT NULL AND (dr.id IS NULL OR (INET_NTOA(ia.ip) <> dr.content OR CONCAT(ia.hostname,'.',domains.name) <> dr.name OR ia.a_id <> dr.id))"%aArgs['id'])
@@ -217,7 +217,7 @@ def status(aCTX, aArgs = None):
 
  Output:
  """
- return {'top':[],'who':[] }
+ return {'status':'OK','top':[],'who':[]}
 
 #
 #
@@ -229,7 +229,7 @@ def restart(aCTX, aArgs = None):
  Output:
   - code
   - output
-  - result 'OK'/'NOT_OK'
+  - status 'OK'/'NOT_OK'
  """
  return {'status':'OK','code':0,'output':""}
 

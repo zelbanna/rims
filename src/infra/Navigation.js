@@ -4,18 +4,10 @@ import { NavButton } from './Buttons.js';
 // ************************** Navigation ******************************
 
 export const NavBar = (props) => {
- let items = [];
- try {
-  items = props.items.map((row) => {
-   if (row.type === 'dropdown')
-    return <NavDropDown key={'ndd_'+row.title} {...row} />
-   else
-    return <NavButton key={'nb_'+row.title} {...row} />
-  });
- } catch(err) {
-  items = [];
- }
- return <nav><ul>{items}</ul></nav>
+ if (props.items === null)
+  return <nav><ul></ul></nav>
+ else
+  return <nav><ul>{props.items.map((row) => { return (row.type === 'dropdown') ? <NavDropDown key={'ndd_'+row.title} {...row} /> : <NavButton key={'nb_'+row.title} {...row} /> })}</ul></nav>
 }
 
 const NavDropDown = (props) => {

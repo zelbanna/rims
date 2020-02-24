@@ -79,7 +79,7 @@ def task_report(aWeb):
  res = aWeb.rest_call("master/task_list",{'node':aWeb.node()})
  aWeb.wr("<ARTICLE><P>Tasks</P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Node</DIV><DIV>Frequency</DIV><DIV>Module</DIV><DIV>Function</DIV><DIV>Args</DIV></DIV><DIV CLASS=tbody>")
- for task in res['tasks']:
+ for task in res['data']:
   aWeb.wr("<DIV><DIV>%(node)s</DIV><DIV>%(frequency)s</DIV><DIV>%(module)s</DIV><DIV>%(function)s</DIV><DIV>%(args)s</DIV></DIV>"%task)
  aWeb.wr("</DIV></DIV></ARTICLE>")
 

@@ -27,9 +27,9 @@ def sync(aCTX, aArgs = None):
  Output:
   - code. (error code, optional)
   - output. (output from command)
-  - result. (operation result)
+  - status. (operation result)
  """
- return {'output':'No OP','status':'OK'}
+ return {'status':'OK','output':'No OP'}
 
 #
 #

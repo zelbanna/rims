@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import { List as ReservationList } from './Reservation.js';
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
 import { Spinner }    from './infra/Generic.js';
-import { NavBar }     from './infra/Navigation.js';
 import { InfoButton } from './infra/Buttons.js';
 import { ContentMain } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
@@ -22,6 +21,7 @@ export class Main extends Component {
   rest_call(rest_base + 'api/master/user_info',{id:cookie.id})
    .then((result) => {
     this.setState({name:result.data.name, id:cookie.id})
+    this.compileNavItems()
    })
  }
 
@@ -29,19 +29,16 @@ export class Main extends Component {
   this.setState({content:elem})
  }
 
- render() {
-  const navitems = [
-   {title:'Users', onClick:() => { this.content(<List  />)}},
-   {title:'Reservations', onClick:() => { this.content(<ReservationList />)}},
+ compileNavItems = () => {
+  this.props.loadNavigation([
+   {title:'Users', onClick:() => { this.content(<List key='user_list' />)}},
+   {title:'Reservations', onClick:() => { this.content(<ReservationList key='reservation_list' />)}},
    {title:this.state.name, className:'right navinfo'}
-  ]
+  ])
+ }
 
-  return (
-   <Fragment key='user_main'>
-    <NavBar key='user_navbar' items={navitems} />
-    <section className='content' id='div_content'>{this.state.content}</section>
-   </Fragment>
-  )
+ render() {
+  return <Fragment key='user_main'>{this.state.content}</Fragment>
  }
 }
 
@@ -61,7 +58,7 @@ export class List extends Component {
  contentRight = (elem) => { this.setState({contentright:elem}) }
 
  deleteItem = (id,msg) => {
-  if (window.config(msg)){
+  if (window.confirm(msg)){
    rest_call(rest_base + 'api/master/user_delete',{id:id})
     .then((result) => {
      if(result.deleted)
@@ -92,7 +89,7 @@ export class Info extends Component {
  constructor(props) {
   super(props)
   const cookie = read_cookie('rims');
-  this.state = {data:null, found:true, cookie_id:cookie.id}
+  this.state = {data:null, found:true, cookie_id:cookie.id, themes:null}
  }
 
  handleChange = (e) => {
@@ -128,7 +125,7 @@ export class Info extends Component {
  render() {
   if (this.state.found === false)
    return <article>User with id: {this.props.id} removed</article>
-  else if ((this.state.data === null) || (this.state.themses === []))
+  else if ((this.state.data === null) || (this.state.themes === null))
    return <Spinner />
   else {
    return (
@@ -150,13 +147,9 @@ export class User extends Component {
  render() {
   return (
    <Fragment key='user_user'>
-    <NavBar key='user_navbar' items={null} />
-    <section className='content' id='div_content'>
-     <section className='content-left'>
-     </section>
-     <section className='content-right'>
-      <Info id={this.props.id} />
-     </section>
+    <section className='content-left' />
+    <section className='content-right'>
+     <Info id={this.props.id} />
     </section>
    </Fragment>
   )

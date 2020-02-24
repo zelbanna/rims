@@ -52,7 +52,6 @@ button.right   {  float:right!important; }
 
 /*************************************** Content Model *****************************************/
 
-section.content {       float:left; height:100%;  width:100%; overflow: auto;    clear:both;}
 section.content-left {  float:left; height:100%;  width:33%;  overflow-y:scroll; overflow-x:hidden; }
 section.content-right { float:left; height:100%;  width:67%;  overflow: auto; }
 
@@ -123,6 +122,10 @@ nav button.navinfo:hover{ color:#FFFFFF!important; }
 /*************************************** Code Model ****************************************/
 
 article.code > span { font-family:Courier New, serif; display:block }
+
+/*************************************** Text Model ****************************************/
+
+article.text > p { margin:1px; }
 
 /************************************** JS tools ********************************************/
 

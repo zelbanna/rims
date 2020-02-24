@@ -27,18 +27,8 @@ def menu(aCTX, aArgs = None):
  Output:
  """
  ret = {}
- if aCTX.site.get('portal') and aCTX.site['portal'].get('start'):
-  ret['start'] = True
-  ret['menu'] = [{'icon':'images/icon-start.png', 'title':'Start','type':'menuitem' }]
-  item = aCTX.site['menuitem'][aCTX.site['portal']['start']]
-  for tp in ['module','frame','tab']:
-   if tp in item:
-    ret['menu'][0][tp] = item[tp]
-    break
- else:
-  ret['start'] = False
-  ret['menu'] = []
- ret['menu'].extend(resources(aCTX,{'type':'menuitem'})['data'])
+ ret['start'] = aCTX.site['portal'].get('start')
+ ret['menu'] = resources(aCTX,{'type':'menuitem'})['data']
  ret['title'] = aCTX.site.get('portal',{}).get('title','Portal')
  return ret
 
@@ -48,20 +38,12 @@ def resources(aCTX, aArgs = None):
  """Function returns site information
 
  Args:
-  - type (optional)
+  - type (required)
 
  Output:
  """
- ret = {}
- types = ['menuitem','tool'] if not 'type' in aArgs else [aArgs['type']]
- ret['data'] = []
- for type in types:
-  for k,item in aCTX.site.get(type,{}).items():
-   data = {'title':k,'type':type,'icon':item['icon']}
-   ret['data'].append(data)
-   for tp in ['module','frame','tab']:
-    if tp in item:
-     data[tp] = item[tp]
+ ret = {'data':[]}
+ ret['data'] = aCTX.site.get(aArgs['type'],{})
  return ret
 
 #
