@@ -5,8 +5,6 @@ import { InfoButton } from './infra/Buttons.js';
 import { ContentMain, ContentList } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
 
-const styleTextArea = {width:'300px',height:'70px'};
-
 // CONVERTED ENTIRELY
 
 // ************** Main **************
@@ -133,7 +131,7 @@ class Info extends Component {
      <h1>Activity ({this.state.data.id})</h1>
      <form>
       <InfoCol2 key='activity_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
-      <textarea id='event' name='event' onChange={this.handleChange} style={styleTextArea} value={this.state.data.event} />
+      <textarea id='event' name='event' className='info' onChange={this.handleChange} value={this.state.data.event} />
      </form>
      <InfoButton key='activity_save' type='save' onClick={this.updateInfo} />
     </article>

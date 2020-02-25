@@ -4,14 +4,7 @@ import { Spinner }    from './infra/Generic.js';
 import { InfoButton } from './infra/Buttons.js';
 import { ContentMain } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
-
-/*
-
-def status(aWeb):
-def restart(aWeb):
-def delete(aWeb):
-def help(aWeb):
-*/
+import { NavBar }   from './infra/Navigation.js';
 
 // ************** List **************
 //
@@ -43,22 +36,20 @@ export class List extends Component {
 
  listItem = (row) => {
   var buttons = [
-   <InfoButton key='server_info'   type='info'   onClick={() => this.contentRight(<Info key={'server_info_'+row.id} id={row.id} />) } />,
-   <InfoButton key='server_delete' type='trash'  onClick={() => this.deleteItem(row.id,'Are you really sure?')  } />,
-   <InfoButton key='server_sync'   type='sync'   onClick={() => { this.contentRight(<Sync key={'server_sync_'+row.id} id={row.id} />) }} />,
-   <InfoButton key='server_restart' type='reload' onClick={() => { this.contentRight(<Restart key={'server_restart_'+row.id} id={row.id} />) }} />
+   <InfoButton key='srv_info'   type='info'   onClick={() => this.contentRight(<Info key={'server_info_'+row.id} id={row.id} />) } />,
+   <InfoButton key='srv_delete' type='trash'  onClick={() => this.deleteItem(row.id,'Are you really sure?')  } />,
   ]
-/*
-   aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='server_status?id=%s'%(srv['id']), SPIN='true', TITLE='Server status'))
-*/
-  return [row.node,row.service,row.type,<Fragment key='server_buttons'>{buttons}</Fragment>]
+  if (('ui' in row) && (row.ui.length > 0))
+   buttons.push(<InfoButton key='srv_www' type='ui' onClick={() =>  window.open(row.ui,'_blank') } />)
+
+  return [row.node,row.service,row.type,<Fragment key='srv_buttons'>{buttons}</Fragment>]
  }
 
  render(){
-  return <ContentMain key='server_content' base='node' header='Nodes' thead={['Node','Service','Type','']}
-    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='server_header_buttons'>
-     <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />
-     <InfoButton key='add'  type='add' title='Add server'  onClick={() => this.contentRight(<Info key={'server_new_' + Math.floor(Math.random() * 10)} id='new' type={this.props.type} />)  } />
+  return <ContentMain key='srv_content' base='node' header='Nodes' thead={['Node','Service','Type','']}
+    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='srv_header_buttons'>
+     <InfoButton key='srv_reload' type='reload' onClick={() => this.componentDidMount() } />
+     <InfoButton key='srv_add'    type='add' title='Add server'  onClick={() => this.contentRight(<Info key={'srv_add_' + Math.floor(Math.random() * 10)} id='new' type={this.props.type} />)  } />
     </Fragment>} />
  }
 }
@@ -68,7 +59,7 @@ export class List extends Component {
 class Info extends Component {
   constructor(props) {
   super(props)
-  this.state = {data:null,found:true}
+  this.state = {data:null,found:true,contentbelow:null}
  }
 
  handleChange = (e) => {
@@ -95,6 +86,10 @@ class Info extends Component {
    })
  }
 
+ contentBelow = (elem) => {
+  this.setState({contentbelow:elem});
+ }
+
  infoItems = () => {
   return [
     {tag:'span', id:'server', text:'ID', value:this.state.data.id},
@@ -111,24 +106,30 @@ class Info extends Component {
    return <Spinner />
   else {
    return (
+    <Fragment key='srv_info_fragment'>
     <article className='info'>
      <h1>Server Info ({this.state.data.id})</h1>
      <form>
-      <InfoCol2 key='server_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
+      <InfoCol2 key='srv_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>
-     <InfoButton key='server_save' type='save' onClick={this.updateInfo} />
+     <InfoButton key='srv_save' type='save' onClick={this.updateInfo} />
+     <InfoButton key='srv_sync' type='sync' onClick={() => {      this.contentBelow(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />) }} />
+     <InfoButton key='srv_restart' type='reload' onClick={() => { this.contentBelow(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />) }} />
+     <InfoButton key='srv_status'  type='items'  onClick={() => { this.contentBelow(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />) }} />
     </article>
+    <NavBar key='srv_navbar' items={null} />
+    {this.state.contentbelow}
+    </Fragment>
    );
   }
  }
 }
 
-// *************** Sync ***************
+// *************** Operation ***************
 //
-class Sync extends Component {
-
+class Operation extends Component {
  componentDidMount(){
-  rest_call(rest_base + 'api/master/server_sync',{id:this.props.id})
+  rest_call(rest_base + 'api/master/server_' + this.props.operation,{id:this.props.id})
    .then((result) => {
     this.setState(result)
    })
@@ -138,40 +139,6 @@ class Sync extends Component {
   if (this.state === null)
    return <Spinner />
   else
-   return <article className='code'>{JSON.stringify(this.state)}</article>
- }
-}
-
-
-/*
-#
-#
-def status(aWeb):
- from json import dumps
- res = aWeb.rest_call("master/server_status",{'id':aWeb['id']})
- aWeb.wr("<ARTICLE><PRE>%s<PRE></ARTICLE>"%dumps(res,indent=2,sort_keys=True))
-
-#
-#
-def restart(aWeb):
- from json import dumps
- res = aWeb.rest_call("master/server_restart",{'id':aWeb['id']})
- aWeb.wr("<ARTICLE><PRE>%s<PRE></ARTICLE>"%dumps(res,indent=2,sort_keys=True))
- */
-
-// *************** Reload ***************
-//
-class Restart extends Component {
-
- componentDidMount(){
-  rest_call(rest_base + 'api/master/server_restart',{id:this.props.id})
-   .then((result) => { this.setState(result) })
- }
-
- render(){
-  if (this.state === null)
-   return <Spinner />
-  else
-   return <article className='code'>{JSON.stringify(this.state)}</article>
+   return <article className='code'><pre>{JSON.stringify(this.state,null,2)}</pre></article>
  }
 }

@@ -5,8 +5,6 @@ import { InfoCol2 }   from './infra/Info.js';
 import { MenuButton } from './infra/Buttons.js';
 import { NavBar } from './infra/Navigation.js';
 
-const styleLoginButton = {margin:'10px 10px 10px 10px'};
-
 // CONVERTED ENTIRELY
 
 // ************************* Portal  ****************************
@@ -111,7 +109,7 @@ class Login extends Component {
      <form>
       <InfoCol2 griditems={griditems} changeHandler={this.handleChange} className={'left'}/>
      </form>
-     <MenuButton icon='images/icon-start.png' title='Start' style={styleLoginButton} onClick={this.handleSubmit}/>
+     <MenuButton icon='images/icon-start.png' title='Start' onClick={this.handleSubmit}/>
     </article>
    </div>
   )

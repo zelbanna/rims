@@ -164,7 +164,6 @@ class RestInfo extends Component {
   this.state = {module:null,information:null}
  }
 
-
  componentDidMount(){
   rest_call(rest_base + 'api/system/rest_information',{api:this.props.api, function:this.props.function})
    .then((result) => { this.setState(result) })
@@ -183,6 +182,57 @@ class RestInfo extends Component {
     </article>
    )
   }
+ }
+}
+
+// ************************ Controls ********************
+//
+class RestExecute extends Component {
+ componentDidMount(){
+  const args = ('args' in this.props) ? this.props.args : {}
+  rest_call(rest_base + 'api/' + this.props.api,args)
+  .then((result) => { this.setState(result) })
+ }
+
+ render(){
+  if (this.state === null)
+   return <Spinner />
+  else
+   return <article className='code'><h1>{this.props.text}</h1><pre>{JSON.stringify(this.state,null,2)}</pre></article>
+ }
+}
+
+// ************************ Controls ********************
+//
+// TODO: List should be dynamic from config and passed through REST engine
+class Controls extends Component {
+ constructor(props){
+  super(props);
+  const items = [
+   {api:'monitor/ipam_init',text:'IPAM status check'},
+   {api:'ipam/address_events',text:'IPAM clear status logs',args:{op:'clear'}},
+   {api:'monitor/interface_init',text:'Interface status check'},
+   {api:'device/network_info_discover',text:'Discover device system information (sysmac etc)'},
+   {api:'device/model_sync',text:'Sync device model mapping'},
+   {api:'device/vm_mapping',text:'VM UUID mapping'},
+   {api:'master/oui_fetch',text:'Sync OUI database'},
+   {api:'reservation/expiration_status',text:'Check reservation status'}
+  ]
+  this.state = {contentright:null,items:items}
+ }
+
+ contentRight = (elem) => { this.setState({contentright:elem}) }
+
+ listItem = (row) => {
+  return [<TextButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.contentRight(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
+ }
+
+ render() {
+  if (this.state.items === null)
+   return <Spinner />
+  else
+   return <ContentMain key='ctrl_content' base='ctrl' thead={['Control Function']}
+    trows={this.state.items} content={this.state.contentright} listItem={this.listItem} />
  }
 }
 
@@ -205,34 +255,3 @@ class Images extends Component {
   return(<div>Images</div>)
  }
 }
-
-/*
-def controls(aWeb):
- aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
- aWeb.wr("<ARTICLE><DIV CLASS=table><DIV CLASS=tbody>")
- aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/ipam_init'>IPAM status check</A></DIV></DIV>")
- aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/ipam_events&arguments={\"op\":\"clear\"}'>IPAM clear status logs</A></DIV></DIV>")
- aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=monitor/interface_init'>Interface status check</A></DIV></DIV>")
- aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/network_info_discover'>Discover system info</A></DIV></DIV>")
- aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/model_sync'>Sync models</A></DIV></DIV>")
- aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=device/vm_mapping'>VM UUID mapping</A></DIV></DIV>")
- aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=reservation/expiration_status'>Reservation checks</A></DIV></DIV>")
- aWeb.wr("<DIV><DIV><A CLASS=z-op DIV=div_content_right SPIN='true' URL='system_rest_execute?api=master/oui_fetch'>OUI Database sync</A></DIV></DIV>")
- aWeb.wr("</DIV></DIV></ARTICLE>")
- aWeb.wr("</SECTION>")
- aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
-*/
-
-// Do when rest is done so no mapper is needed...
-class Controls extends Component {
- render() {
-  return (<div>System Controls TODO</div>)
- }
-}
-class RestExecute extends Component {
- render() {
-  return(<div>RestExecute</div>)
- }
-}
-
-

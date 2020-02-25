@@ -128,8 +128,9 @@ export class Info extends Component {
   else if ((this.state.data === null) || (this.state.themes === null))
    return <Spinner />
   else {
+   const className = (this.props.className) ? `info ${this.props.className}` : 'info'
    return (
-    <article className='info'>
+    <article className={className}>
      <h1>User Info ({this.state.data.id})</h1>
      <form>
       <InfoCol2 key='user_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
@@ -147,10 +148,7 @@ export class User extends Component {
  render() {
   return (
    <Fragment key='user_user'>
-    <section className='content-left' />
-    <section className='content-right'>
-     <Info id={this.props.id} />
-    </section>
+    <Info className='centered' id={this.props.id} />
    </Fragment>
   )
  }

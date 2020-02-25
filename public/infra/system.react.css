@@ -4,14 +4,12 @@ Use a theme together with this one to get proper color end result
 
 Hint: https://htmlcolorcodes.com/color-picker
 
-SECTION -> ARTICLE -> DIV ID naming: div_xyz ('_':s)
-
-Back:   #F1F1F1
-Content:#FFFFFF 
+With standard margin @ 3px we need to remove 6px from all heights and widths
 
 */
 
 /* **************************** HTML elements ************************ */
+
 * {      box-sizing: border-box; font-size:11px; }
 body {   margin:0px; padding:0px; z-index:1; font-family:Verdana,sans-serif;}
 iframe { border-style: none; border-width: thin; height:100%; width:100%; }
@@ -34,7 +32,8 @@ article.login {  border:solid 1px #9CA6B0; width:auto; height:auto;}
 article.login input:focus { border-color:black; }
 article.login form { display:inline; float:left; }
 article.login input[type='text'],input[type='password'] {  overflow:visible; background-color: transparent; color: #000000; -webkit-appearance: none; border:solid 1px; border-color:transparent; border-bottom:dotted 1px #F1F1F1;}
-article.login h1 { text-align:center; }
+article.login h1 { margin:10px!important; }
+article.login button { margin:10px!important; }
 
 /***************************************** Menu Model *****************************************/
 
@@ -52,15 +51,31 @@ button.right   {  float:right!important; }
 
 /*************************************** Content Model *****************************************/
 
-section.content-left {  float:left; height:100%;  width:33%;  overflow-y:scroll; overflow-x:hidden; }
-section.content-right { float:left; height:100%;  width:67%;  overflow: auto; }
+header {  height: 66px; width:100vw; padding-left:5px; overflow:auto; }
+nav {     height: 34px; width:100%; display:block; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden;}
+main {    height: calc(100vh - 100px);  width:100vw;  }
+section { float:left; height: 100%; width:auto; overflow-y:scroll; overflow-x:hidden; }
 
-article {        border-radius: 2px; background-color:#FFFFFF; margin: 3px; overflow:hidden; padding:6px 2px 6px 2px; width:auto; }
+nav ul {  list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
+nav li {  height:34px; display:block; float:left; background-color: transparent; }
+nav li.dropdown ul { display:none; position: absolute;  min-width: 60px; overflow:auto; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 200; }
+nav li.dropdown:hover ul { display:block; }
+nav li.dropdown > ul > li { clear:left; }
+nav li.navinfo {  background-color:#00CC66; color:#FFFFFF; font-weight:bold;}
+nav li.right   {  float:right!important; }
+nav button,nav label { font-size:14px; padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; }
+nav button:active{ opacity:0.8; }
+nav button.reload { background-position: center; background-repeat: no-repeat; background-size: contain; width:100%; margin: 0px 10px; height:100%; }
+nav button.navinfo:hover{ color:#FFFFFF!important; }
+
+article {        border-radius: 2px; background-color:#FFFFFF; margin: 3px; overflow:hidden; padding:2px; float:left; }
 article:hover {  box-shadow:0px 0px 2px 2px rgba(0,0,0,0.2); }
+
+article.centered { margin:auto!important; float:unset!important; }
 
 /***************************************  Info  Model *****************************************/
 
-article.info { resize:horizontal; margin-left:0px; width:max-content; z-index:101;}
+article.info { resize:horizontal; width:max-content; z-index:101;}
 article.info form { display:block; }
 div.info { display:grid; margin:2px 0px 2px 0px; }
 div.col2 { grid-template-columns: max-content auto;}
@@ -89,11 +104,13 @@ button.info { height:22px; border:none; outline-width:0; border-radius:3px; marg
 button.info:hover {  opacity:0.9; box-shadow:0px 2px rgba(0,0,0,0.3); }
 button.info:active { opacity:0.7; box-shadow:0px 1px rgba(0,0,0,0.3); transform: translateY(1px); }
 
+textarea.info { height:70px; width:300px; }
+
 /***************************************  List Model *****************************************/
 
 button.text {          font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; }
 
-article.table {        z-index:101; height:100%; }
+article.table {        z-index:101; height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; }
 div.table {            display: table; width:99%; }
 div.table .thead {     display: table-header-group; }
 div.table .thead > div { font-size:14px; display: table-cell; vertical-align: middle; font-weight: bold; text-align: center;  padding: 3px 2px 6px 4px; }
@@ -104,23 +121,9 @@ div.table .tbody > div:nth-child(odd)  { background-color: #F1F1F1; }
 div.table .tbody > div > div { display:table-cell; vertical-align: middle; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:1px 0px 0px 3px;}
 div.table .tfoot {     display: table-footer-group; }
 
-/***********************************  Navigation Model **************************************/
-
-nav {     clear:both; width:100%; font-size:14px; height:34px; display:block; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden;}
-nav ul {  list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
-nav li {  height:34px; display:block; float:left; background-color: transparent; }
-nav li.dropdown ul { display:none; position: absolute;  min-width: 60px; overflow:auto; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 200; }
-nav li.dropdown:hover ul { display:block; }
-nav li.dropdown > ul > li { clear:left; }
-nav li.navinfo {  background-color:#00CC66; color:#FFFFFF; font-weight:bold;}
-nav li.right   {  float:right!important; }
-nav button,nav label { font-size:14px; padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; }
-nav button:active{ opacity:0.8; }
-nav button.reload { background-position: center; background-repeat: no-repeat; background-size: contain; width:34px; margin: 0px 10px; height:100%; }
-nav button.navinfo:hover{ color:#FFFFFF!important; }
-
 /*************************************** Code Model ****************************************/
 
+article.code { width:calc(100% - 6px); }
 article.code > span { font-family:Courier New, serif; display:block }
 
 /*************************************** Text Model ****************************************/

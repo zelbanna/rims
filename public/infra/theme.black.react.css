@@ -9,10 +9,8 @@ Back:  #F1F1F1
 
 /*###################################### Content Model ########################################*/
 
-header { float:left; height: 65px;               width:100%; padding-left:5px; background-color: #1A1A1A; overflow:auto; }
-main {   float:left; height: calc(100% - 65px);  width:100%; background-color:#F1F1F1; }
-
-/*#################################### Navigation Model ######################################*/
+header { background-color: #1A1A1A; }
+main {   background-color:#F1F1F1; }
 
 nav { background-color:#000000; color:#FFFFFF!important; }
 nav li.warning button:hover{ color:#000000; }
@@ -21,6 +19,10 @@ nav button:hover{ color:#CB2026; }
 nav button.reload {       background-image: url(/images/btn-nav-reload.black.png); }
 nav button.reload:hover { background-image: url(/images/btn-nav-reload.black.hover.png); }
 nav ul.dropdown-content { background-color: #000000; }
+
+/*###################################### Menu Buttons ########################################*/
+
+button.warning {     background-color:#CB2026!important; color:#FFFFFF!important; }
 
 /*###################################### Info Buttons ########################################*/
 
@@ -96,9 +98,9 @@ button.type-ui:hover {        background-image: url(/images/btn-ui.black.hover.p
 
 /*################################# EXTRA SO FAR ############################################*/
 
+/*
 .background {  background-color:#F1F1F1; }
 
-.warning {     background-color:#CB2026!important; color:#FFFFFF!important; }
 .red {         background-color:#CB2026!important; }
 .green {       background-color:#26CB20!important; }
 .blue {        background-color:#2026CB!important; }
@@ -111,3 +113,4 @@ a.small:hover { box-shadow:0px 2px rgba(0,0,0,0.3); opacity: 1.0; color:#CB2026;
 a.small:active { transform: translateY(1px); box-shadow:0px 1px rgba(0,0,0,0.3); opacity:0.7;}
 
 a.ipam { height:22px; width:22px; font-size:9px; color:#000000; margin:2px; padding:2px; float:left; font-family: Verdana,sans-serif; border: 1px solid #9CA6B0; }
+*/
