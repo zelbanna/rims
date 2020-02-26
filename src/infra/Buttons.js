@@ -1,14 +1,14 @@
 import React, { Fragment } from 'react';
 
-export const ButtonsGenerator = (key,props) => {
- let buttons = []
- props.buttons.forEach(btn => {
+export const ButtonsGenerator = (key,buttons) => {
+ let btns = []
+ buttons.forEach(btn => {
   if (btn.button === 'info')
-   buttons.push(<InfoButton key={key + '_' + btn.type} {...btn} />)
+   btns.push(<InfoButton key={key + '_' + btn.type} {...btn} />)
   else if (btn.button === 'text')
-   buttons.push(<TextButton key={key + '_' + btn.type} {...btn} />)
+   btns.push(<TextButton key={key + '_' + btn.type} {...btn} />)
  })
- return <Fragment key={key}>{buttons}</Fragment>
+ return <Fragment key={key}>{btns}</Fragment>
 }
 
 // ***************************** Button ********************************

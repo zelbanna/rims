@@ -110,6 +110,14 @@ class Info extends Component {
   else if (this.state.data === null)
    return <Spinner />
   else {
+   let buttons = [<InfoButton key='node_btn_save' type='save' onClick={this.updateInfo} />]
+   if (this.state.data.id !== 'new'){
+    if (this.state.data.hostname === undefined)
+     buttons.push(<InfoButton key='node_btn_srch' type='search' onClick={this.searchInfo} />)
+    buttons.push(<InfoButton key='node_btn_reload' type='reload' onClick={() => { this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />) }} />)
+    buttons.push(<InfoButton key='node_btn_logs'  type='logs' onClick={() => { this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node}  />) }} />)
+    buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='trash' onClick={() => { this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) }} />)
+   }
    return (
    <Fragment key='srv_info_fragment'>
     <article className='info'>
@@ -117,11 +125,7 @@ class Info extends Component {
      <form>
       <InfoCol2 key='node_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>
-     <InfoButton key='node_btn_srch' type='search' onClick={this.searchInfo} />
-     <InfoButton key='node_btn_save' type='save' onClick={this.updateInfo} />
-     <InfoButton key='node_btn_reload' type='reload' onClick={() => { this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />) }} />
-     <InfoButton key='node_btn_logs'  type='logs' onClick={() => { this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node}  />) }} />
-     <InfoButton key='node_btn_logc'  title='Clear logs' type='trash' onClick={() => { this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) }} />
+     {buttons}
     </article>
     <NavBar key='node_navbar' items={null} />
     {this.state.content}

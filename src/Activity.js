@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
 import { Spinner }    from './infra/Generic.js';
-import { InfoButton } from './infra/Buttons.js';
+import { InfoButton, ButtonGenerator } from './infra/Buttons.js';
 import { ContentMain, ContentList } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
 
@@ -64,19 +64,19 @@ class List extends Component {
  }
 
  listItem = (row) => {
-  return [row.date + ' - ' + row.time,row.type,<Fragment key='activity_buttons'>
-   <InfoButton key='act_info'   type='info'  onClick={() => { this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) }} />
-   <InfoButton key='act_delete' type='trash' onClick={() => { this.deleteItem(row.id,'Really delete activity') }} />
+  return [row.date + ' - ' + row.time,row.type,<Fragment key={'activity_buttons_'+row.id}>
+   <InfoButton key={'act_info_'+row.id} type='info'  onClick={() => { this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) }} />
+   <InfoButton key={'act_delete_'+row.id} type='trash' onClick={() => { this.deleteItem(row.id,'Really delete activity') }} />
    </Fragment>
   ];
  }
 
  render(){
   return <ContentMain key='activity_content' base='activity' header='Activities' thead={['Date','Type','']}
-    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='activity_header_buttons'>
-     <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
-     <InfoButton key='add' type='add' onClick={() => { this.changeContent(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
-    </Fragment>} />
+   trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons=<Fragment key='activity_header_buttons'>
+    <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
+    <InfoButton key='add' type='add' onClick={() => { this.changeContent(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
+    </Fragment> />
  }
 }
 

@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { List as ReservationList } from './Reservation.js';
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
 import { Spinner }    from './infra/Generic.js';
-import { InfoButton } from './infra/Buttons.js';
+import { InfoButton, ButtonGenerator } from './infra/Buttons.js';
 import { ContentMain } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
 
