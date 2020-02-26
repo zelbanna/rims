@@ -1,9 +1,10 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rest_base } from './infra/Functions.js';
-import { Spinner }    from './infra/Generic.js';
+import { Spinner } from './infra/Generic.js';
 import { InfoButton } from './infra/Buttons.js';
 import { ContentMain } from './infra/Content.js';
-import { InfoCol2 }   from './infra/Info.js';
+import { InfoCol2 } from './infra/Info.js';
+import { NavBar } from './infra/Navigation.js';
 
 // CONVERTED ENTIRELY
 
@@ -12,7 +13,7 @@ import { InfoCol2 }   from './infra/Info.js';
 export class List extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, contentright:null}
+  this.state = {data:null, content:null}
  }
 
  componentDidMount(){
@@ -20,8 +21,8 @@ export class List extends Component {
    .then((result) => { this.setState(result); })
  }
 
- contentRight = (elem) => {
-  this.setState({contentright:elem});
+ changeContent = (elem) => {
+  this.setState({content:elem});
  }
 
  deleteItem = (id,msg)  => {
@@ -36,22 +37,17 @@ export class List extends Component {
 
  listItem = (row) => {
   var buttons = [
-   <InfoButton key='node_info'   type='info'    onClick={() => { this.contentRight(<Info key={'node_info_'+row.id} id={row.id} />) }} />,
-   <InfoButton key='node_delete' type='delete'  onClick={() => { this.deleteItem(row.id,'Really delete node?') }} />
+   <InfoButton key='node_info'   type='info'  onClick={() => { this.changeContent(<Info key={'node_info_'+row.id} id={row.id} />) }} />,
+   <InfoButton key='node_delete' type='trash' onClick={() => { this.deleteItem(row.id,'Really delete node?') }} />
   ]
-  if (row.system) {
-   buttons.push(<InfoButton key='node_reload' type='reload'  onClick={() => { this.contentRight(<Reload key={'node_reload_'+row.id} node={row.node} />) }} />)
-   buttons.push(<InfoButton key='node_logs'   type='logs'    onClick={() => { this.contentRight(<LogShow  key={'node_logs_'+row.id} node={row.node}  />) }} />)
-   buttons.push(<InfoButton key='node_logc' title='Clear logs' type='trash'   onClick={() => { this.contentRight(<LogClear key={'node_logc_'+row.id} node={row.node} msg='Really clear logs?' />) }} />)
-  }
   return [row.node,row.url,<Fragment key='node_buttons'>{buttons}</Fragment>]
  }
 
  render(){
   return <ContentMain key='node_content' base='node' header='Nodes' thead={['Node','URL','']}
-    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='node_header_buttons'>
+    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='node_header_buttons'>
      <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
-     <InfoButton key='add'  type='add'  onClick={() => { this.contentRight(<Info key={'node_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
+     <InfoButton key='add'  type='add'  onClick={() => { this.changeContent(<Info key={'node_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
     </Fragment>} />
  }
 }
@@ -61,7 +57,7 @@ export class List extends Component {
 class Info extends Component {
   constructor(props) {
   super(props)
-  this.state = {data:null, found:true}
+  this.state = {data:null, found:true, content:null}
  }
 
  handleChange = (e) => {
@@ -96,6 +92,10 @@ class Info extends Component {
    })
  }
 
+ changeContent = (elem) => {
+  this.setState({content:elem});
+ }
+
  infoItems = () => {
   return [
     {tag:'input', type:'text', id:'node', text:'Node', value:this.state.data.node},
@@ -111,14 +111,21 @@ class Info extends Component {
    return <Spinner />
   else {
    return (
+   <Fragment key='srv_info_fragment'>
     <article className='info'>
      <h1>Node Info ({this.state.data.id})</h1>
      <form>
       <InfoCol2 key='node_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>
-     <InfoButton key='node_srch' type='search' onClick={this.searchInfo} />
-     <InfoButton key='node_save' type='save' onClick={this.updateInfo} />
+     <InfoButton key='node_btn_srch' type='search' onClick={this.searchInfo} />
+     <InfoButton key='node_btn_save' type='save' onClick={this.updateInfo} />
+     <InfoButton key='node_btn_reload' type='reload' onClick={() => { this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />) }} />
+     <InfoButton key='node_btn_logs'  type='logs' onClick={() => { this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node}  />) }} />
+     <InfoButton key='node_btn_logc'  title='Clear logs' type='trash' onClick={() => { this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) }} />
     </article>
+    <NavBar key='node_navbar' items={null} />
+    {this.state.content}
+   </Fragment>
    );
   }
  }
@@ -174,7 +181,7 @@ class LogClear extends Component {
     output.push(<span key={name}>{name}: {res}</span>)
    return (
     <article className='code'>
-     <h1>{this.props.node}</h1>
+     <h1>Cleared</h1>
      {output}
    </article>
    )
@@ -210,7 +217,7 @@ export class LogShow extends Component {
   else {
    let output = []
    for (let [name, rows] of Object.entries(this.state.logs))
-    output.push(<this.Log key={name} name={name} rows={rows} />)
+    output.push(<this.Log key={'log_file_' + name} name={name} rows={rows} />)
    return (
     <article className='code'>
      {output}

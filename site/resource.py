@@ -19,19 +19,16 @@ def main(aWeb):
 def view(aWeb):
  cookie = aWeb.cookie('rims')
  res = aWeb.rest_call("portal/resources",{'type':aWeb.get('type','tool')})
- module = "<BUTTON CLASS='z-op menu' DIV=main URL='%(module)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
- frame  = "<BUTTON CLASS='z-op menu' DIV=main URL='resource_framed?type=%(type)s&title=%(title)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"
- tab    = "<A CLASS='btn menu' TARGET=_blank HREF='%(tab)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></A>"
  aWeb.wr("<DIV CLASS=centered STYLE='align-items:initial'>")
- view_map = {'module':module,'frame':frame,'tab':tab}
- for row in res['data']:
+ for title,row in res['data'].items():
+  row['title'] = title
   aWeb.wr("<DIV STYLE='float:left; min-width:100px; margin:6px;'>")
-  if 'module' in row:
-   aWeb.wr(module%row)
+  if 'mod_fun' in row:
+   aWeb.wr("<BUTTON CLASS='z-op menu' DIV=main URL='%(mod_fun)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"%row)
   elif 'frame' in row:
-   aWeb.wr(frame%row)
+   aWeb.wr("<BUTTON CLASS='z-op menu' DIV=main URL='resource_framed?type=%(type)s&title=%(title)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></BUTTON>"%row)
   elif 'tab' in row:
-   aWeb.wr(tab%row)
+   aWeb.wr("<A CLASS='btn menu' TARGET=_blank HREF='%(tab)s' STYLE='font-size:10px;' TITLE='%(title)s'><IMG ALT='%(icon)s' SRC='%(icon)s' /></A>"%row)
   aWeb.wr("<BR><SPAN STYLE='width:100px; display:block;'>%(title)s</SPAN>"%row)
   aWeb.wr("</DIV>")
  aWeb.wr("</DIV>")

@@ -47,7 +47,7 @@ export class Main extends Component {
 export class List extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, contentright:null}
+  this.state = {data:null, content:null}
  }
 
  componentDidMount(){
@@ -55,7 +55,7 @@ export class List extends Component {
    .then((result) => { this.setState(result); })
  }
 
- contentRight = (elem) => { this.setState({contentright:elem}) }
+ changeContent = (elem) => { this.setState({content:elem}) }
 
  deleteItem = (id,msg) => {
   if (window.confirm(msg)){
@@ -69,16 +69,16 @@ export class List extends Component {
 
  listItem = (row) => {
   return [row.id,row.alias,row.name,<Fragment key={'user_buttons_'+row.id}>
-   <InfoButton key={'user_info_'+row.id} type='info' onClick={() => { this.contentRight(<Info key={'user_info_'+row.id} id={row.id} />)}} />
+   <InfoButton key={'user_info_'+row.id} type='info' onClick={() => { this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)}} />
    <InfoButton key={'user_del_'+row.id} type='trash' onClick={() => { this.deleteItem(row.id,'Really delete user?')}} />
   </Fragment>]
  }
 
  render() {
   return <ContentMain key='user_content' base='user' header='Users' thead={['ID','Alias','Name','']}
-    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='user_header_buttons'>
+    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='user_header_buttons'>
       <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />
-      <InfoButton key='add'    type='add'    onClick={() => {this.contentRight(<Info key={'user_new_'+Math.floor(Math.random() * 10)} id='new' />)}} />
+      <InfoButton key='add'    type='add'    onClick={() => {this.changeContent(<Info key={'user_new_'+Math.floor(Math.random() * 10)} id='new' />)}} />
     </Fragment>} />
  }
 }
@@ -128,7 +128,7 @@ export class Info extends Component {
   else if ((this.state.data === null) || (this.state.themes === null))
    return <Spinner />
   else {
-   const className = (this.props.className) ? `info ${this.props.className}` : 'info'
+   const className = (this.props.hasOwnProperty('className')) ? `info ${this.props.className}` : 'info';
    return (
     <article className={className}>
      <h1>User Info ({this.state.data.id})</h1>

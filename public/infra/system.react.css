@@ -139,8 +139,11 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } 
 }
 
-/******************************************* EXTRA NOT FOUND YET *********************************************/
+/************************************************** EXTRA ****************************************************/
 
+div.centered { align-items:center; justify-content:center; display:flex; flex-wrap:wrap }
+
+/******************************************* EXTRA NOT FOUND YET *********************************************/
 /*
 
 .title {    text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed; }

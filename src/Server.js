@@ -11,7 +11,7 @@ import { NavBar }   from './infra/Navigation.js';
 export class List extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, contentright:null }
+  this.state = {data:null, content:null }
  }
 
  componentDidMount(){
@@ -20,8 +20,8 @@ export class List extends Component {
    .then((result) => this.setState(result) )
  }
 
- contentRight = (elem) => {
-  this.setState({contentright:elem});
+ changeContent = (elem) => {
+  this.setState({content:elem});
  }
 
  deleteItem = (id,msg)  => {
@@ -36,10 +36,10 @@ export class List extends Component {
 
  listItem = (row) => {
   var buttons = [
-   <InfoButton key='srv_info'   type='info'   onClick={() => this.contentRight(<Info key={'server_info_'+row.id} id={row.id} />) } />,
+   <InfoButton key='srv_info'   type='info'   onClick={() => this.changeContent(<Info key={'server_info_'+row.id} id={row.id} />) } />,
    <InfoButton key='srv_delete' type='trash'  onClick={() => this.deleteItem(row.id,'Are you really sure?')  } />,
   ]
-  if (('ui' in row) && (row.ui.length > 0))
+  if (row.hasOwnProperty('ui') && (row.ui.length > 0))
    buttons.push(<InfoButton key='srv_www' type='ui' onClick={() =>  window.open(row.ui,'_blank') } />)
 
   return [row.node,row.service,row.type,<Fragment key='srv_buttons'>{buttons}</Fragment>]
@@ -47,9 +47,9 @@ export class List extends Component {
 
  render(){
   return <ContentMain key='srv_content' base='node' header='Nodes' thead={['Node','Service','Type','']}
-    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='srv_header_buttons'>
+    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='srv_header_buttons'>
      <InfoButton key='srv_reload' type='reload' onClick={() => this.componentDidMount() } />
-     <InfoButton key='srv_add'    type='add' title='Add server'  onClick={() => this.contentRight(<Info key={'srv_add_' + Math.floor(Math.random() * 10)} id='new' type={this.props.type} />)  } />
+     <InfoButton key='srv_add'    type='add' title='Add server'  onClick={() => this.changeContent(<Info key={'srv_add_' + Math.floor(Math.random() * 10)} id='new' type={this.props.type} />)  } />
     </Fragment>} />
  }
 }

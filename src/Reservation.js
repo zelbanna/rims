@@ -14,7 +14,7 @@ export class List extends Component {
  constructor(props){
   super(props);
   const cookie = read_cookie('rims')
-  this.state = {data:null, contentright:null, cookie_id:cookie.id}
+  this.state = {data:null, content:null, cookie_id:cookie.id}
  }
 
  componentDidMount(){
@@ -22,8 +22,8 @@ export class List extends Component {
    .then((result) => { this.setState(result); })
  }
 
- contentRight = (elem) => {
-  this.setState({contentright:elem})
+ changeContent = (elem) => {
+  this.setState({content:elem})
  }
 
  extendItem = (device_id,user_id,days) => {
@@ -43,14 +43,14 @@ export class List extends Component {
 
  listItem = (row) => {
   const cells = [
-   <TextButton key={'user_' + this.state.cookie_id} text={row.alias} onClick={() => { this.contentRight(<UserInfo key={'user_info'+this.state.cookie_id} id={this.state.cookie_id} />)}} />,
+   <TextButton key={'user_' + this.state.cookie_id} text={row.alias} onClick={() => { this.changeContent(<UserInfo key={'user_info'+this.state.cookie_id} id={this.state.cookie_id} />)}} />,
    row.hostname,
    <div className={(row.valid) ? '' : 'orange'}>{row.end}</div>
   ]
   if ((this.state.cookie_id === row.user_id) || (row.valid === false)) {
    cells.push(
     <Fragment key='reservation_buttons'>
-     <InfoButton type='info' key={'rsv_info_'+row.device_id} onClick={() => { this.contentRight(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
+     <InfoButton type='info' key={'rsv_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
      <InfoButton type='add'  key={'rsv_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />
      <InfoButton type='delete' key={'rsv_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id,'Remove reservatin?') }} title='Remove reservation' />
     </Fragment>
@@ -61,7 +61,7 @@ export class List extends Component {
 
  render(){
   return <ContentMain key='reservation_content' base='reservation' header='Reservations' thead={['User','Device','Until','']}
-    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='reservation_header_buttons'>
+    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='reservation_header_buttons'>
      <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />
     </Fragment>} />
  }

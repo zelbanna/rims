@@ -131,7 +131,7 @@ export class TaskReport extends Component{
 class RestList extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, contentright:null}
+  this.state = {data:null, content:null}
  }
 
  componentDidMount(){
@@ -143,15 +143,15 @@ class RestList extends Component {
    })
  }
 
- contentRight = (elem) => { this.setState({contentright:elem}) }
+ changeContent = (elem) => { this.setState({content:elem}) }
 
  listItem = (row) => {
-  return [row.api,<TextButton key={'rest_' + row.api} text={row.function} onClick={() => { this.contentRight(<RestInfo key={`rest_info_${row.api}_${row.function}`} {...row} />)}} />]
+  return [row.api,<TextButton key={'rest_' + row.api} text={row.function} onClick={() => { this.changeContent(<RestInfo key={`rest_info_${row.api}_${row.function}`} {...row} />)}} />]
  }
 
  render() {
   return <ContentMain key='rest_content' base='rest' thead={['API','Function']}
-    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} />
+    trows={this.state.data} content={this.state.content} listItem={this.listItem} />
  }
 }
 
@@ -218,13 +218,13 @@ class Controls extends Component {
    {api:'master/oui_fetch',text:'Sync OUI database'},
    {api:'reservation/expiration_status',text:'Check reservation status'}
   ]
-  this.state = {contentright:null,items:items}
+  this.state = {content:null,items:items}
  }
 
- contentRight = (elem) => { this.setState({contentright:elem}) }
+ changeContent = (elem) => { this.setState({content:elem}) }
 
  listItem = (row) => {
-  return [<TextButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.contentRight(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
+  return [<TextButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.changeContent(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
  }
 
  render() {
@@ -232,7 +232,7 @@ class Controls extends Component {
    return <Spinner />
   else
    return <ContentMain key='ctrl_content' base='ctrl' thead={['Control Function']}
-    trows={this.state.items} content={this.state.contentright} listItem={this.listItem} />
+    trows={this.state.items} content={this.state.content} listItem={this.listItem} />
  }
 }
 
@@ -244,13 +244,13 @@ class ServiceInfo extends Component {
  }
 }
 
-class FileList extends Component {
+export class FileList extends Component {
  render() {
   return(<div>FileList</div>)
  }
 }
 
-class Images extends Component {
+export class Images extends Component {
  render() {
   return(<div>Images</div>)
  }

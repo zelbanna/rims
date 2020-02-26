@@ -11,16 +11,16 @@ import * as User     from '../User.js';
 import * as Visualize from '../Visualize';
 
 export const library = {
- activity:Activity,
- device:Device,
- hypervisor:Hypervisor,
- inventory:Inventory,
- rack:Rack,
- reservation:Reservation,
- resource:Resource,
- system:System,
- user:User,
- visualize:Visualize
+ Activity:Activity,
+ Device:Device,
+ Hypervisor:Hypervisor,
+ Inventory:Inventory,
+ Rack:Rack,
+ Reservation:Reservation,
+ Resource:Resource,
+ System:System,
+ User:User,
+ Visualize:Visualize
 }
 
 export const rest_base = 'http://172.16.36.129:8080/'

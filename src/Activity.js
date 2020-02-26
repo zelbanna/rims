@@ -41,7 +41,7 @@ export class Main extends Component {
 class List extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, contentright:null}
+  this.state = {data:null, content:null}
  }
 
  componentDidMount(){
@@ -49,8 +49,8 @@ class List extends Component {
    .then((result) => { this.setState(result); })
  }
 
- contentRight = (elem) => {
-  this.setState({contentright:elem});
+ changeContent = (elem) => {
+  this.setState({content:elem});
  }
 
  deleteItem = (id,msg)  => {
@@ -65,7 +65,7 @@ class List extends Component {
 
  listItem = (row) => {
   return [row.date + ' - ' + row.time,row.type,<Fragment key='activity_buttons'>
-   <InfoButton key='act_info'   type='info'  onClick={() => { this.contentRight(<Info key={'activity_'+row.id} id={row.id} />) }} />
+   <InfoButton key='act_info'   type='info'  onClick={() => { this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) }} />
    <InfoButton key='act_delete' type='trash' onClick={() => { this.deleteItem(row.id,'Really delete activity') }} />
    </Fragment>
   ];
@@ -73,9 +73,9 @@ class List extends Component {
 
  render(){
   return <ContentMain key='activity_content' base='activity' header='Activities' thead={['Date','Type','']}
-    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='activity_header_buttons'>
+    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='activity_header_buttons'>
      <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
-     <InfoButton key='add' type='add' onClick={() => { this.contentRight(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
+     <InfoButton key='add' type='add' onClick={() => { this.changeContent(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
     </Fragment>} />
  }
 }
@@ -113,8 +113,8 @@ class Info extends Component {
 
  infoItems = () => {
   return [
-    {tag:'select', id:'user_id', text:'User', value:this.state.data.user_id, options:this.state.users.map((row) => { return ({value:row.id, text:row.alias})})},
-    {tag:'select', id:'type_id', text:'Type', value:this.state.data.type_id, options:this.state.types.map((row) => { return ({value:row.id, text:row.type})})},
+    {tag:'select', id:'user_id', text:'User', value:this.state.data.user_id, options:this.state.users.map((row) => { return {value:row.id, text:row.alias} })},
+    {tag:'select', id:'type_id', text:'Type', value:this.state.data.type_id, options:this.state.types.map((row) => { return {value:row.id, text:row.type} })},
     {tag:'input', type:'date', id:'date', text:'Date', value:this.state.data.date},
     {tag:'input', type:'time', id:'time', text:'Time', value:this.state.data.time}
    ]
@@ -159,7 +159,7 @@ export class Report extends Component{
 
  render(){
   return <ContentList key='activity_report' base='activity' header='Activities' thead={['Time','User','Type','Event']}
-    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={[]} />
+    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={[]} />
  }
 }
 
@@ -169,7 +169,7 @@ export class Report extends Component{
 class TypeList extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, contentright:null}
+  this.state = {data:null, content:null}
  }
 
  componentDidMount(){
@@ -177,8 +177,8 @@ class TypeList extends Component {
    .then((result) => { this.setState(result); })
  }
 
- contentRight = (elem) => {
-  this.setState({contentright:elem});
+ changeContent = (elem) => {
+  this.setState({content:elem});
  }
 
  deleteItem = (id,msg)  => {
@@ -193,16 +193,16 @@ class TypeList extends Component {
 
  listItem = (row) => {
   return [row.id,row.type,<Fragment key='activity_buttons'>
-   <InfoButton key='act_tp_info'   type='info'  onClick={() => { this.contentRight(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) }} />
+   <InfoButton key='act_tp_info'   type='info'  onClick={() => { this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) }} />
    <InfoButton key='act_tp_delete' type='trash' onClick={() => { this.deleteItem(row.id,'Really delete type?') }} />
    </Fragment>]
  }
 
  render(){
   return <ContentMain key='activity_type_content' base='activity_type' header='Activity Types' thead={['ID','Type','']}
-    trows={this.state.data} content={this.state.contentright} listItem={this.listItem} buttons={<Fragment key='activity_type_header_buttons'>
+    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='activity_type_header_buttons'>
        <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
-       <InfoButton key='add' type='add' onClick={() => { this.contentRight(<TypeInfo key={'activity_type_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
+       <InfoButton key='add' type='add' onClick={() => { this.changeContent(<TypeInfo key={'activity_type_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
     </Fragment>} />
  }
 }

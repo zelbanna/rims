@@ -12,7 +12,7 @@ import { NavBar } from './infra/Navigation.js';
 class Portal extends Component {
  constructor(props){
   super(props)
-  this.state = { active:null, active_name:null, menu:[], navigation:null}
+  this.state = { content:null, menu:[], navigation:null}
  }
 
  componentDidMount() {
@@ -20,49 +20,52 @@ class Portal extends Component {
    .then((result) => {
     this.setState(result)
     if (result.start)
-     this.changeActive(result.menu[result.start]);
+     this.changeContent(result.menu[result.start]);
     document.title = result.title
    })
  }
 
- loadNavigation = (items) => {
-  this.setState({navigation:items})
- }
+ loadNavigation = (items) => { this.setState({navigation:items}) }
 
- changeActive = (panel) => {
-  if ('module' in panel){
-   if ((this.state.active !== null) && (this.state.active.key === panel.module))
-    return
-   try {
-    const parts = panel.module.split('_');
-    const module = library[parts[0]];
-    const Elem = module[parts[1].charAt(0).toUpperCase() + parts[1].substring(1)];
-    this.setState({navigation:[],active:<Elem key={panel.module} {...panel.args} loadNavigation={this.loadNavigation} />})
-   } catch(err) {
-    console.error("Mapper error: "+panel);
-    alert(err);
-   }
+ changeContent = (panel) => {
+  if ((this.state.content !== null) && (this.state.content.key === `${panel.module}_${panel.function}`))
+   return
+  try {
+   const Elem = library[panel.module][panel.function]
+   this.setState({navigation:[],content:<Elem key={panel.module + '_' + panel.function} {...panel.args} loadNavigation={this.loadNavigation} />})
+  } catch(err) {
+   console.error("Mapper error: "+panel);
+   alert(err);
   }
  }
 
  Header(props){
-  return (
-   <header>
-    <MenuButton key='logout' className='right warning' onClick={() => {props.eraseCookie()} } title='Log out' />
-    <MenuButton key='system_main' className='right'         onClick={() => {props.changeActive({module:'system_main'})}} title='System' icon='images/icon-config.png' />
-    <MenuButton key='user_user'   className='right'         onClick={() => {props.changeActive({module:'user_user', args:{id:props.cookie.id}})}}   title='User'   icon='images/icon-users.png' />
-    { Object.values(props.menu).map((row) => { return (<MenuButton key={row[row['type']]} {...row} onClick={() => {props.changeActive({module:row.module, args:row.args})}} />); }) }
-   </header>
-  )
+  let buttons = [
+   <MenuButton key='mb_Logout' className='right warning' onClick={() => {props.eraseCookie()} } title='Log out' />,
+   <MenuButton key='mb_System_Main' className='right' onClick={() => {props.changeContent({module:'System',function:'Main'})}} title='System' icon='images/icon-config.png' />,
+   <MenuButton key='mb_User_User' className='right' onClick={() => {props.changeContent({module:'User',function:'User', args:{id:props.cookie.id}})}}   title='User'   icon='images/icon-users.png' />
+  ]
+  for (let [key, panel] of Object.entries(props.menu)){
+   let click = null
+   if (panel.type === 'module')
+    click = () => props.changeContent(panel)
+   else if (panel.type === 'tab')
+    click = () => window.open(panel.tab,'_blank')
+   else if (panel.type === 'frame')
+    click = () => props.setState({content:<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>})
+   panel.title = key
+   buttons.push(<MenuButton key={'mb_'+key} {...panel} onClick={click} />)
+  }
+  return <header>{buttons}</header>
  }
 
  render() {
   return (
    <React.Fragment key='portal'>
     <link key='userstyle' rel='stylesheet' type='text/css' href={'infra/theme.' + this.props.cookie.theme + '.react.css'} />
-    <this.Header key='portal_header' menu={this.state.menu} changeActive={this.changeActive} {...this.props} />
+    <this.Header key='portal_header' menu={this.state.menu} changeContent={this.changeContent} setState={this.setState} {...this.props} />
     <NavBar key='portal_navigation' items={this.state.navigation} />
-    <main>{this.state.active}</main>
+    <main>{this.state.content}</main>
    </React.Fragment>
   )
  }
@@ -118,7 +121,7 @@ class Login extends Component {
 
 // ************************** App *************************
 
-class App extends Component {
+class RIMS extends Component {
  constructor(props) {
   super(props);
 
@@ -142,4 +145,4 @@ class App extends Component {
  }
 }
 
-export default App
+export default RIMS
