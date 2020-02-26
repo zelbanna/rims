@@ -36,7 +36,7 @@ export class List extends Component {
    rest_call(rest_base + 'api/reservation/update',{op:'delete', device_id:device_id,user_id:user_id})
     .then((result) => {
      if(result.result)
-      this.setState({data:this.state.data.filter((row,index,arr) => row.device_id !== device_id)})
+      this.setState({data:this.state.data.filter((row,index,arr) => row.device_id !== device_id),content:null})
     })
   }
  }

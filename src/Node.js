@@ -30,7 +30,7 @@ export class List extends Component {
    rest_call(rest_base + 'api/master/node_delete',{id:id})
     .then((result) => {
      if(result.deleted)
-      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id)})
+      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id),content:null})
     })
   }
  }

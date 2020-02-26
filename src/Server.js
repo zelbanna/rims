@@ -29,7 +29,7 @@ export class List extends Component {
    rest_call(rest_base + 'api/master/server_delete',{id:id})
     .then((result) => {
      if(result.deleted)
-      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id)})
+      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id),content:null})
     })
   }
  }
@@ -59,7 +59,7 @@ export class List extends Component {
 class Info extends Component {
   constructor(props) {
   super(props)
-  this.state = {data:null,found:true,contentbelow:null}
+  this.state = {data:null,found:true,content:null}
  }
 
  handleChange = (e) => {
@@ -86,8 +86,8 @@ class Info extends Component {
    })
  }
 
- contentBelow = (elem) => {
-  this.setState({contentbelow:elem});
+ contentChange = (elem) => {
+  this.setState({content:elem});
  }
 
  infoItems = () => {
@@ -105,6 +105,12 @@ class Info extends Component {
   else if (this.state.data === null)
    return <Spinner />
   else {
+   let buttons = [<InfoButton key='srv_save' type='save' onClick={this.updateInfo} />]
+   if (this.state.data.id !== 'new'){
+    buttons.push(<InfoButton key='srv_sync' type='sync' onClick={() => {      this.contentChange(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />) }} />)
+    buttons.push(<InfoButton key='srv_restart' type='reload' onClick={() => { this.contentChange(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />) }} />)
+    buttons.push(<InfoButton key='srv_status'  type='items'  onClick={() => { this.contentChange(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />) }} />)
+   }
    return (
     <Fragment key='srv_info_fragment'>
     <article className='info'>
@@ -112,13 +118,10 @@ class Info extends Component {
      <form>
       <InfoCol2 key='srv_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>
-     <InfoButton key='srv_save' type='save' onClick={this.updateInfo} />
-     <InfoButton key='srv_sync' type='sync' onClick={() => {      this.contentBelow(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />) }} />
-     <InfoButton key='srv_restart' type='reload' onClick={() => { this.contentBelow(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />) }} />
-     <InfoButton key='srv_status'  type='items'  onClick={() => { this.contentBelow(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />) }} />
+     {buttons}
     </article>
     <NavBar key='srv_navbar' items={null} />
-    {this.state.contentbelow}
+    {this.state.content}
     </Fragment>
    );
   }
