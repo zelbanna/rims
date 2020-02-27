@@ -20,6 +20,13 @@ nav button.reload {       background-image: url(/images/btn-nav-reload.black.png
 nav button.reload:hover { background-image: url(/images/btn-nav-reload.black.hover.png); }
 nav ul.dropdown-content { background-color: #000000; }
 
+.red {         background-color:#CB2026!important; }
+.green {       background-color:#26CB20!important; }
+.blue {        background-color:#2026CB!important; }
+.orange {      background-color:orange!important;  }
+.white {       background-color:#FFFFFF!important; }
+.grey {        background-color:#9CA6B0!important; }
+
 /*###################################### Menu Buttons ########################################*/
 
 button.warning {     background-color:#CB2026!important; color:#FFFFFF!important; }
@@ -98,13 +105,6 @@ button.type-ui:hover {        background-image: url(/images/btn-ui.black.hover.p
 
 /*
 .background {  background-color:#F1F1F1; }
-
-.red {         background-color:#CB2026!important; }
-.green {       background-color:#26CB20!important; }
-.blue {        background-color:#2026CB!important; }
-.orange {      background-color:orange!important;  }
-.white {       background-color:#FFFFFF!important; }
-.grey {        background-color:#9CA6B0!important; }
 
 a.small { height: 22px; margin:0px; margin-right:1px; margin-bottom:2px; font-size:14px; color:#FFFFFF; background-color:#1A1A1A; padding:0px; border-radius: 3px; border:none!important; box-shadow:0px 2px rgba(0,0,0,0.3); }
 a.small:hover { box-shadow:0px 2px rgba(0,0,0,0.3); opacity: 1.0; color:#CB2026; }

@@ -519,6 +519,8 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._headers['X-Code'] = 304
    else:
     self.files(path,query)
+  elif path == 'front':
+   self.front()
   elif path == 'auth':
    self.auth()
   elif path == 'system':
@@ -629,6 +631,14 @@ class SessionHandler(BaseHTTPRequestHandler):
   except Exception as e:
    self._headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
    self._body = b''
+
+ #
+ #
+ def front(self):
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'front','Access-Control-Allow-Origin':"*"})
+  output = {'message':"Welcome to the Management Portal",'title':'Portal'}
+  output.update(self._ctx.site.get('portal'))
+  self._body = dumps(output).encode('utf-8')
 
  #
  #

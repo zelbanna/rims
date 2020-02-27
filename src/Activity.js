@@ -1,47 +1,34 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { Spinner }    from './infra/Generic.js';
-import { InfoButton, ButtonGenerator } from './infra/Buttons.js';
-import { ContentMain, ContentList } from './infra/Content.js';
+import { MainBase, ListBase, InfoBase, ContentList, Spinner } from './infra/Generic.js';
+import { InfoButton } from './infra/Buttons.js';
 import { InfoCol2 }   from './infra/Info.js';
 
 // CONVERTED ENTIRELY
 
 // ************** Main **************
 //
-export class Main extends Component {
- constructor(props){
-  super(props)
-  this.state = {content:null}
- }
-
- content = (elem) => {
-  this.setState({content:elem})
- }
-
+export class Main extends MainBase {
  componentDidMount(){
   this.props.loadNavigation([
-   {title:'Activities', onClick:() => { this.content(<List key='activity_list' />)}},
-   {title:'Types', onClick:() => { this.content(<TypeList key='activity_type_list' />)}},
-   {title:'Report', onClick:() => { this.content(<Report key='activity_report' />)}}
+   {title:'Activities', onClick:() => { this.changeMain(<List key='activity_list' />)}},
+   {title:'Types', onClick:() => { this.changeMain(<TypeList key='activity_type_list' />)}},
+   {title:'Report', onClick:() => { this.changeMain(<Report key='activity_report' />)}}
   ])
- }
-
- render() {
-  return (
-   <Fragment key='activity_main'>
-    {this.state.content}
-   </Fragment>
-  )
  }
 }
 
 // ************** List **************
 //
-class List extends Component {
+class List extends ListBase {
  constructor(props){
-  super(props);
-  this.state = {data:null, content:null}
+  super(props)
+  this.thead = ['Date','Type','']
+  this.header = 'Activities'
+  this.buttons = [
+   <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />,
+   <InfoButton key='add' type='add' onClick={() => { this.changeList(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
+  ]
  }
 
  componentDidMount(){
@@ -49,50 +36,23 @@ class List extends Component {
    .then((result) => { this.setState(result); })
  }
 
- changeContent = (elem) => {
-  this.setState({content:elem});
- }
-
- deleteItem = (id,msg)  => {
-  if(window.confirm(msg)){
-   rest_call(rest_base + 'api/master/activity_delete',{id:id})
-    .then((result) => {
-    if(result.deleted)
-     this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id), content:null})
-   })
-  }
- }
-
  listItem = (row) => {
   return [row.date + ' - ' + row.time,row.type,<Fragment key={'activity_buttons_'+row.id}>
-   <InfoButton key={'act_info_'+row.id} type='info'  onClick={() => { this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) }} />
-   <InfoButton key={'act_delete_'+row.id} type='trash' onClick={() => { this.deleteItem(row.id,'Really delete activity') }} />
+   <InfoButton key={'act_info_'+row.id} type='info'  onClick={() => { this.changeList(<Info key={'activity_'+row.id} id={row.id} />) }} />
+   <InfoButton key={'act_delete_'+row.id} type='trash' onClick={() => { this.deleteList('api/master/activity_delete',row.id,'Really delete activity') }} />
    </Fragment>
   ];
  }
 
- render(){
-  return <ContentMain key='activity_content' base='activity' header='Activities' thead={['Date','Type','']}
-   trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons=<Fragment key='activity_header_buttons'>
-    <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
-    <InfoButton key='add' type='add' onClick={() => { this.changeContent(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
-    </Fragment> />
- }
 }
 
 // *************** Info ***************
 //
-class Info extends Component {
+class Info extends InfoBase {
   constructor(props) {
   super(props)
   const cookie = read_cookie('rims')
-  this.state = {data:null, found:true, cookie_id:cookie.id}
- }
-
- handleChange = (e) => {
-  var data = {...this.state.data}
-  data[e.target.name] = e.target.value
-  this.setState({data:data})
+  this.state.cookie_id  = cookie.id
  }
 
  componentDidMount(){
@@ -104,11 +64,6 @@ class Info extends Component {
     result.data.type_id = result.types[0].id
    this.setState(result);
    })
- }
-
- updateInfo = () => {
-  rest_call(rest_base + 'api/master/activity_info',{op:'update', ...this.state.data})
-   .then((result) => { this.setState(result); })
  }
 
  infoItems = () => {
@@ -133,7 +88,7 @@ class Info extends Component {
       <InfoCol2 key='activity_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
       <textarea id='event' name='event' className='info' onChange={this.handleChange} value={this.state.data.event} />
      </form>
-     <InfoButton key='activity_save' type='save' onClick={this.updateInfo} />
+     <InfoButton key='activity_save' type='save' onClick={() => this.updateInfo('api/master/activity_info')} />
     </article>
    );
   }
@@ -166,10 +121,15 @@ export class Report extends Component{
 
 // ************** TypeList **************
 //
-class TypeList extends Component {
+class TypeList extends ListBase {
  constructor(props){
   super(props);
-  this.state = {data:null, content:null}
+  this.thead = ['ID','Type','']
+  this.header= 'Activity Types'
+  this.buttons=[
+   <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />,
+   <InfoButton key='add' type='add' onClick={() => { this.changeList(<TypeInfo key={'activity_type_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
+  ]
  }
 
  componentDidMount(){
@@ -177,60 +137,24 @@ class TypeList extends Component {
    .then((result) => { this.setState(result); })
  }
 
- changeContent = (elem) => {
-  this.setState({content:elem});
- }
-
- deleteItem = (id,msg)  => {
-  if (window.confirm(msg)){
-   rest_call(rest_base + 'api/master/activity_type_delete',{id:id})
-    .then((result) => {
-    if(result.deleted)
-     this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id), content:null})
-   })
-  }
- }
-
  listItem = (row) => {
   return [row.id,row.type,<Fragment key='activity_buttons'>
-   <InfoButton key='act_tp_info'   type='info'  onClick={() => { this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) }} />
-   <InfoButton key='act_tp_delete' type='trash' onClick={() => { this.deleteItem(row.id,'Really delete type?') }} />
+   <InfoButton key='act_tp_info'   type='info'  onClick={() => { this.changeList(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) }} />
+   <InfoButton key='act_tp_delete' type='trash' onClick={() => { this.deleteList('api/master/activity_type_delete',row.id,'Really delete type?') }} />
    </Fragment>]
  }
 
- render(){
-  return <ContentMain key='activity_type_content' base='activity_type' header='Activity Types' thead={['ID','Type','']}
-    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='activity_type_header_buttons'>
-       <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
-       <InfoButton key='add' type='add' onClick={() => { this.changeContent(<TypeInfo key={'activity_type_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
-    </Fragment>} />
- }
 }
 
 // *************** TypeInfo ***************
 //
-class TypeInfo extends Component {
-  constructor(props) {
-  super(props)
-  this.state = {data:null, found:true}
- }
-
- handleChange = (e) => {
-  var data = {...this.state.data}
-  data[e.target.name] = e.target.value
-  this.setState({data:data})
- }
+class TypeInfo extends InfoBase {
 
  componentDidMount(){
   rest_call(rest_base + 'api/master/activity_type_info',{id:this.props.id})
    .then((result) => {
    this.setState(result);
    })
- }
-
- updateInfo = () => {
-  rest_call(rest_base + 'api/master/activity_type_info',{op:'update', ...this.state.data})
-   .then((result) => { this.setState(result); })
  }
 
  infoItems = () => {
@@ -249,7 +173,7 @@ class TypeInfo extends Component {
      <form>
       <InfoCol2 key='activity_type_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>
-     <InfoButton key='activity_type_save' type='save' onClick={this.updateInfo} />
+     <InfoButton key='activity_type_save' type='save' onClick={() => this.updateInfo('api/master/activity_type_info')} />
     </article>
    );
   }

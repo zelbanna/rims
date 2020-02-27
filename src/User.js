@@ -1,53 +1,23 @@
 import React, { Component, Fragment } from 'react';
-import { List as ReservationList } from './Reservation.js';
-import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { Spinner }    from './infra/Generic.js';
-import { InfoButton, ButtonGenerator } from './infra/Buttons.js';
-import { ContentMain } from './infra/Content.js';
+import { rest_call, rest_base, read_cookie, rnd } from './infra/Functions.js';
+import { ListBase, InfoBase, Spinner } from './infra/Generic.js';
+import { InfoButton } from './infra/Buttons.js';
 import { InfoCol2 }   from './infra/Info.js';
 
 // CONVERTED ENTIRELY
 
-// ************** Main **************
-//
-export class Main extends Component {
- constructor(props){
-  super(props)
-  this.state = {content:null, id:null, name:null}
- }
-
- componentDidMount(){
-  const cookie = read_cookie('rims');
-  rest_call(rest_base + 'api/master/user_info',{id:cookie.id})
-   .then((result) => {
-    this.setState({name:result.data.name, id:cookie.id})
-    this.compileNavItems()
-   })
- }
-
- content = (elem) => {
-  this.setState({content:elem})
- }
-
- compileNavItems = () => {
-  this.props.loadNavigation([
-   {title:'Users', onClick:() => { this.content(<List key='user_list' />)}},
-   {title:'Reservations', onClick:() => { this.content(<ReservationList key='reservation_list' />)}},
-   {title:this.state.name, className:'right navinfo'}
-  ])
- }
-
- render() {
-  return <Fragment key='user_main'>{this.state.content}</Fragment>
- }
-}
-
 // ************** List **************
 //
-export class List extends Component {
+export class List extends ListBase {
  constructor(props){
-  super(props);
-  this.state = {data:null, content:null}
+  super(props)
+  this.thead = ['ID','Alias','Name','']
+  this.header = 'Users'
+  this.base = 'user'
+  this.buttons = [
+   <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />,
+   <InfoButton key='add'    type='add'    onClick={() => {this.changeList(<Info key={'user_new_'+rnd()} id='new' />)}} />
+  ]
  }
 
  componentDidMount(){
@@ -55,47 +25,22 @@ export class List extends Component {
    .then((result) => { this.setState(result); })
  }
 
- changeContent = (elem) => { this.setState({content:elem}) }
-
- deleteItem = (id,msg) => {
-  if (window.confirm(msg)){
-   rest_call(rest_base + 'api/master/user_delete',{id:id})
-    .then((result) => {
-     if(result.deleted)
-      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id),content:null})
-    })
-  }
- }
-
  listItem = (row) => {
   return [row.id,row.alias,row.name,<Fragment key={'user_buttons_'+row.id}>
-   <InfoButton key={'user_info_'+row.id} type='info' onClick={() => { this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)}} />
-   <InfoButton key={'user_del_'+row.id} type='trash' onClick={() => { this.deleteItem(row.id,'Really delete user?')}} />
+   <InfoButton key={'user_info_'+row.id} type='info' onClick={() => { this.changeList(<Info key={'user_info_'+row.id} id={row.id} />)}} />
+   <InfoButton key={'user_del_'+row.id} type='trash' onClick={() => { this.deleteList('api/master/user_delete',row.id,'Really delete user?')}} />
   </Fragment>]
- }
-
- render() {
-  return <ContentMain key='user_content' base='user' header='Users' thead={['ID','Alias','Name','']}
-    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='user_header_buttons'>
-      <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />
-      <InfoButton key='add'    type='add'    onClick={() => {this.changeContent(<Info key={'user_new_'+Math.floor(Math.random() * 10)} id='new' />)}} />
-    </Fragment>} />
  }
 }
 
 // ************** Info **************
 //
-export class Info extends Component {
+export class Info extends InfoBase {
  constructor(props) {
   super(props)
   const cookie = read_cookie('rims');
-  this.state = {data:null, found:true, cookie_id:cookie.id, themes:null}
- }
-
- handleChange = (e) => {
-  var data = {...this.state.data}
-  data[e.target.name] = e.target.value
-  this.setState({data:data})
+  this.state.cookie_id = cookie.id;
+  this.state.themes = null;
  }
 
  componentDidMount(){
@@ -104,11 +49,6 @@ export class Info extends Component {
     this.setState({themes:result});
    })
   rest_call(rest_base + 'api/master/user_info',{id:this.props.id})
-   .then((result) => { this.setState(result); })
- }
-
- updateInfo = (event) => {
-  rest_call(rest_base + 'api/master/user_info',{op:'update', ...this.state.data})
    .then((result) => { this.setState(result); })
  }
 
@@ -135,7 +75,7 @@ export class Info extends Component {
      <form>
       <InfoCol2 key='user_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      </form>
-     <InfoButton key='user_save' type='save' onClick={this.updateInfo} />
+     <InfoButton key='user_save' type='save' onClick={() => this.updateInfo('api/master/user_info') } />
     </article>
    );
   }

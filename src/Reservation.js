@@ -1,29 +1,28 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
 import { Info as UserInfo } from './User.js';
-import { Spinner }    from './infra/Generic.js';
+import { ListBase, InfoBase, ContentList, Spinner }    from './infra/Generic.js';
 import { InfoButton, TextButton }    from './infra/Buttons.js';
-import { ContentMain, ContentList } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
 
 // CONVERTED ENTIRELY
 
 // ************** List **************
 //
-export class List extends Component {
+export class List extends ListBase {
  constructor(props){
   super(props);
   const cookie = read_cookie('rims')
-  this.state = {data:null, content:null, cookie_id:cookie.id}
+  this.state.cookie_id = cookie.id
+  this.thead = ['User','Device','Until','']
+  this.header = 'Reservations'
+  this.buttons = [<InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />]
+
  }
 
  componentDidMount(){
   rest_call(rest_base + 'api/reservation/list')
    .then((result) => { this.setState(result); })
- }
-
- changeContent = (elem) => {
-  this.setState({content:elem})
  }
 
  extendItem = (device_id,user_id,days) => {
@@ -43,14 +42,14 @@ export class List extends Component {
 
  listItem = (row) => {
   const cells = [
-   <TextButton key={'user_' + this.state.cookie_id} text={row.alias} onClick={() => { this.changeContent(<UserInfo key={'user_info'+this.state.cookie_id} id={this.state.cookie_id} />)}} />,
+   <TextButton key={'user_' + this.state.cookie_id} text={row.alias} onClick={() => { this.changeList(<UserInfo key={'user_info'+this.state.cookie_id} id={this.state.cookie_id} />)}} />,
    row.hostname,
    <div className={(row.valid) ? '' : 'orange'}>{row.end}</div>
   ]
   if ((this.state.cookie_id === row.user_id) || (row.valid === false)) {
    cells.push(
     <Fragment key='reservation_buttons'>
-     <InfoButton type='info' key={'rsv_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
+     <InfoButton type='info' key={'rsv_info_'+row.device_id} onClick={() => { this.changeList(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
      <InfoButton type='add'  key={'rsv_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />
      <InfoButton type='delete' key={'rsv_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id,'Remove reservatin?') }} title='Remove reservation' />
     </Fragment>
@@ -59,36 +58,14 @@ export class List extends Component {
   return cells;
  }
 
- render(){
-  return <ContentMain key='reservation_content' base='reservation' header='Reservations' thead={['User','Device','Until','']}
-    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='reservation_header_buttons'>
-     <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />
-    </Fragment>} />
- }
 }
 
 // ************** Info **************
 //
-class Info extends Component {
- constructor(props) {
-  super(props)
-
-  this.state = {data:null, found:true}
- }
-
- handleChange = (e) => {
-  var data = {...this.state.data}
-  data[e.target.name] = e.target.value
-  this.setState({data:data})
- }
+class Info extends InfoBase {
 
  componentDidMount(){
   rest_call(rest_base + 'api/reservation/info',{device_id:this.props.device_id})
-   .then((result) => { this.setState(result); })
- }
-
- updateInfo = (event) => {
-  rest_call(rest_base + 'api/reservation/info',{op:'update', ...this.state.data})
    .then((result) => { this.setState(result); })
  }
 
@@ -111,7 +88,7 @@ class Info extends Component {
      <form>
       <InfoCol2 key={'user_content'} griditems={griditems} changeHandler={this.handleChange} />
      </form>
-     <InfoButton key='reservation_save' type='save' onClick={this.updateInfo} />
+     <InfoButton key='reservation_save' type='save' onClick={() => this.updateInfo('api/reservation/info')} />
     </article>
    );
   }

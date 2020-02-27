@@ -1,17 +1,21 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call, rest_base } from './infra/Functions.js';
-import { Spinner }    from './infra/Generic.js';
+import { rest_call, rest_base, rnd } from './infra/Functions.js';
+import { ListBase, InfoBase, Spinner }    from './infra/Generic.js';
 import { InfoButton } from './infra/Buttons.js';
-import { ContentMain } from './infra/Content.js';
 import { InfoCol2 }   from './infra/Info.js';
 import { NavBar }   from './infra/Navigation.js';
 
 // ************** List **************
 //
-export class List extends Component {
+export class List extends ListBase {
  constructor(props){
   super(props);
-  this.state = {data:null, content:null }
+  this.header='Servers'
+  this.thead=['Node','Service','Type','']
+  this.buttons=[
+   <InfoButton key='srv_reload' type='reload' onClick={() => this.componentDidMount() } />,
+   <InfoButton key='srv_add'    type='add' title='Add server'  onClick={() => this.changeList(<Info key={'srv_add_' + rnd()} id='new' type={this.props.type} />)  } />
+  ]
  }
 
  componentDidMount(){
@@ -20,53 +24,20 @@ export class List extends Component {
    .then((result) => this.setState(result) )
  }
 
- changeContent = (elem) => {
-  this.setState({content:elem});
- }
-
- deleteItem = (id,msg)  => {
-  if(window.confirm(msg)){
-   rest_call(rest_base + 'api/master/server_delete',{id:id})
-    .then((result) => {
-     if(result.deleted)
-      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id),content:null})
-    })
-  }
- }
-
  listItem = (row) => {
   var buttons = [
-   <InfoButton key='srv_info'   type='info'   onClick={() => this.changeContent(<Info key={'server_info_'+row.id} id={row.id} />) } />,
-   <InfoButton key='srv_delete' type='trash'  onClick={() => this.deleteItem(row.id,'Are you really sure?')  } />,
+   <InfoButton key='srv_info'   type='info'   onClick={() => this.changeList(<Info key={'server_info_'+row.id} id={row.id} />) } />,
+   <InfoButton key='srv_delete' type='trash'  onClick={() => this.deleteList('api/master/server_delete',row.id,'Are you really sure?')  } />,
   ]
   if (row.hasOwnProperty('ui') && (row.ui.length > 0))
    buttons.push(<InfoButton key='srv_www' type='ui' onClick={() =>  window.open(row.ui,'_blank') } />)
-
   return [row.node,row.service,row.type,<Fragment key='srv_buttons'>{buttons}</Fragment>]
- }
-
- render(){
-  return <ContentMain key='srv_content' base='node' header='Nodes' thead={['Node','Service','Type','']}
-    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='srv_header_buttons'>
-     <InfoButton key='srv_reload' type='reload' onClick={() => this.componentDidMount() } />
-     <InfoButton key='srv_add'    type='add' title='Add server'  onClick={() => this.changeContent(<Info key={'srv_add_' + Math.floor(Math.random() * 10)} id='new' type={this.props.type} />)  } />
-    </Fragment>} />
  }
 }
 
 // *************** Info ***************
 //
-class Info extends Component {
-  constructor(props) {
-  super(props)
-  this.state = {data:null,found:true,content:null}
- }
-
- handleChange = (e) => {
-  var data = {...this.state.data}
-  data[e.target.name] = e.target.value
-  this.setState({data:data})
- }
+class Info extends InfoBase {
 
  componentDidMount(){
   rest_call(rest_base + 'api/master/server_info',{id:this.props.id})
@@ -77,17 +48,6 @@ class Info extends Component {
      result.data.type_id = result.services[0].id
     this.setState(result)
    })
- }
-
- updateInfo = () => {
-  rest_call(rest_base + 'api/master/server_info',{op:'update', ...this.state.data})
-   .then((result) => {
-    this.setState(result)
-   })
- }
-
- contentChange = (elem) => {
-  this.setState({content:elem});
  }
 
  infoItems = () => {
@@ -105,11 +65,11 @@ class Info extends Component {
   else if (this.state.data === null)
    return <Spinner />
   else {
-   let buttons = [<InfoButton key='srv_save' type='save' onClick={this.updateInfo} />]
+   let buttons = [<InfoButton key='srv_save' type='save' onClick={() => this.updateInfo('api/master/server_info')} />]
    if (this.state.data.id !== 'new'){
-    buttons.push(<InfoButton key='srv_sync' type='sync' onClick={() => {      this.contentChange(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />) }} />)
-    buttons.push(<InfoButton key='srv_restart' type='reload' onClick={() => { this.contentChange(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />) }} />)
-    buttons.push(<InfoButton key='srv_status'  type='items'  onClick={() => { this.contentChange(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />) }} />)
+    buttons.push(<InfoButton key='srv_sync' type='sync' onClick={() => {      this.changeInfo(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />) }} />)
+    buttons.push(<InfoButton key='srv_restart' type='reload' onClick={() => { this.changeInfo(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />) }} />)
+    buttons.push(<InfoButton key='srv_status'  type='items'  onClick={() => { this.changeInfo(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />) }} />)
    }
    return (
     <Fragment key='srv_info_fragment'>

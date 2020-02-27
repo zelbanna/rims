@@ -1,8 +1,7 @@
-import React, { Component, Fragment } from 'react'
+import React, { Component } from 'react'
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { Spinner }    from './infra/Generic.js';
+import { MainBase, ListBase, Spinner, ContentList } from './infra/Generic.js';
 import { TextButton } from './infra/Buttons.js';
-import { ContentMain, ContentList } from './infra/Content.js';
 
 import { LogShow, List as NodeList } from './Node.js';
 import { List as ServerList } from './Server.js';
@@ -14,11 +13,14 @@ import { Report as InventoryReport } from './Inventory.js';
 
 // ************** Main **************
 //
-export class Main extends Component {
+export class Main extends MainBase {
  constructor(props){
   super(props)
-  const cookie = read_cookie('rims')
-  this.state = {content:null, cookie:cookie, navinfo:[], navitems:[],logs:[],services:[]}
+  this.state.cookie = read_cookie('rims')
+  this.state.navinfo = []
+  this.state.navitems = []
+  this.state.logs = []
+  this.state.services = []
  }
 
  componentDidMount(){
@@ -38,43 +40,28 @@ export class Main extends Component {
   let navitems = [];
   let reports = []
    if (this.state.cookie.node === 'master') {
-    navitems.push({title:'Nodes',  onClick:() => { this.content(<NodeList key='node_list' />) }})
-    navitems.push({title:'Servers', onClick:() => { this.content(<ServerList key='server_list' />)}})
+    navitems.push({title:'Nodes',  onClick:() => { this.changeMain(<NodeList key='node_list' />) }})
+    navitems.push({title:'Servers', onClick:() => { this.changeMain(<ServerList key='server_list' />)}})
     navitems.push({title:'ERD',    onClick:() => { window.open('infra/erd.pdf','_blank'); }})
-    navitems.push({title:'Users',  onClick:() => { this.content(<UserList key='user_list' />)}})
-    navitems.push({title:'Controls',  onClick:() => { this.content(<Controls  />)}})
-    reports.push({title:'Activities',  onClick:() => { this.content(<ActivityReport key='activity_report' />)}})
-    reports.push({title:'Reservations',  onClick:() => { this.content(<ReservationReport key='reservation_report' />)}})
-    reports.push({title:'Devices',  onClick:() => { this.content(<DeviceReport key='device_report' />)}})
-    reports.push({title:'Inventory',  onClick:() => { this.content(<InventoryReport key='inventory_report' />)}})
+    navitems.push({title:'Users',  onClick:() => { this.changeMain(<UserList key='user_list' />)}})
+    navitems.push({title:'Controls',  onClick:() => { this.changeMain(<Controls  />)}})
+    reports.push({title:'Activities',  onClick:() => { this.changeMain(<ActivityReport key='activity_report' />)}})
+    reports.push({title:'Reservations',  onClick:() => { this.changeMain(<ReservationReport key='reservation_report' />)}})
+    reports.push({title:'Devices',  onClick:() => { this.changeMain(<DeviceReport key='device_report' />)}})
+    reports.push({title:'Inventory',  onClick:() => { this.changeMain(<InventoryReport key='inventory_report' />)}})
    }
-   reports.push({title:'Tasks',   onClick:() => { this.content(<TaskReport key='task_report' />)}})
-   reports.push({title:'System',  onClick:() => { this.content(<Report key='system_report' />)}})
-   navitems.push({title:'Logs',   type:'dropdown', items:this.state.logs.map( (row,index) => { return {title:row, onClick:() => { this.content( <LogShow node={row} /> )} } } )  })
+   reports.push({title:'Tasks',   onClick:() => { this.changeMain(<TaskReport key='task_report' />)}})
+   reports.push({title:'System',  onClick:() => { this.changeMain(<Report key='system_report' />)}})
+   navitems.push({title:'Logs',   type:'dropdown', items:this.state.logs.map( (row,index) => { return {title:row, onClick:() => { this.changeMain( <LogShow node={row} /> )} } } )  })
    navitems.push({title:'Report', type:'dropdown', items:reports})
-   navitems.push({title:'REST',  onClick:() => { this.content(<RestList key='rest_list' />) }})
+   navitems.push({title:'REST',  onClick:() => { this.changeMain(<RestList key='rest_list' />) }})
    if (this.state.services.length > 0)
-    navitems.push({title:'Services',   type:'dropdown', items:this.state.services.map( (row,index) => { return {title:row, onClick:() => { this.content( <ServiceInfo {... row} /> )} } } )  })
+    navitems.push({title:'Services',   type:'dropdown', items:this.state.services.map( (row,index) => { return {title:row, onClick:() => { this.changeMain( <ServiceInfo {... row} /> )} } } )  })
    navitems.push({ onClick:() => { this.setState({content:null}) }, className:'reload'} )
    this.state.navinfo.forEach(row => navitems.push({title:row, className:'right navinfo'}))
    this.props.loadNavigation(navitems)
  }
 
- content = (elem) => {
-  this.setState({content:elem})
- }
-
- render() {
-  if (this.state.navinfo === null)
-   return <Spinner />;
-  else {
-   return (
-    <Fragment key='system_main'>
-     {this.state.content}
-    </Fragment>
-   )
-  }
- }
 }
 
 // ************** Report **************
@@ -128,10 +115,11 @@ export class TaskReport extends Component{
 
 // ************** RestList **************
 //
-class RestList extends Component {
+class RestList extends ListBase {
  constructor(props){
   super(props);
-  this.state = {data:null, content:null}
+  this.thead=['API','Function']
+  this.header='REST API' 
  }
 
  componentDidMount(){
@@ -143,15 +131,8 @@ class RestList extends Component {
    })
  }
 
- changeContent = (elem) => { this.setState({content:elem}) }
-
  listItem = (row) => {
-  return [row.api,<TextButton key={'rest_' + row.api} text={row.function} onClick={() => { this.changeContent(<RestInfo key={`rest_info_${row.api}_${row.function}`} {...row} />)}} />]
- }
-
- render() {
-  return <ContentMain key='rest_content' base='rest' thead={['API','Function']}
-    trows={this.state.data} content={this.state.content} listItem={this.listItem} />
+  return [row.api,<TextButton key={'rest_' + row.api} text={row.function} onClick={() => { this.changeList(<RestInfo key={`rest_info_${row.api}_${row.function}`} {...row} />)}} />]
  }
 }
 
@@ -176,9 +157,9 @@ class RestInfo extends Component {
    return(
     <article className='text'>
      <h1>API: {this.props.api}</h1>
-     {this.state.module.map(row => {return <p>{row}</p> })}
+     {this.state.module.map((row,index) => {return <p key={'ria_'+index}>{row}</p> })}
      <h1>Function: {this.props.function}</h1>
-     {this.state.information.map(row => {return <p>{row}</p> })}
+     {this.state.information.map((row,index) => {return <p key={'rif_'+index}>{row}</p> })}
     </article>
    )
   }
@@ -205,10 +186,10 @@ class RestExecute extends Component {
 // ************************ Controls ********************
 //
 // TODO: List should be dynamic from config and passed through REST engine
-class Controls extends Component {
+class Controls extends ListBase {
  constructor(props){
   super(props);
-  const items = [
+  this.state.data = [
    {api:'monitor/ipam_init',text:'IPAM status check'},
    {api:'ipam/address_events',text:'IPAM clear status logs',args:{op:'clear'}},
    {api:'monitor/interface_init',text:'Interface status check'},
@@ -218,21 +199,12 @@ class Controls extends Component {
    {api:'master/oui_fetch',text:'Sync OUI database'},
    {api:'reservation/expiration_status',text:'Check reservation status'}
   ]
-  this.state = {content:null,items:items}
+  this.header = undefined
+  this.thead = ['Control Function']
  }
-
- changeContent = (elem) => { this.setState({content:elem}) }
 
  listItem = (row) => {
-  return [<TextButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.changeContent(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
- }
-
- render() {
-  if (this.state.items === null)
-   return <Spinner />
-  else
-   return <ContentMain key='ctrl_content' base='ctrl' thead={['Control Function']}
-    trows={this.state.items} content={this.state.content} listItem={this.listItem} />
+  return [<TextButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.changeList(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
  }
 }
 

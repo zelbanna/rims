@@ -1,26 +1,23 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rest_base, library } from './infra/Functions.js';
+import { MainBase } from './infra/Generic.js'
 import { MenuButton } from './infra/Buttons.js'
 
 // CONVERTED ENTIRELY
 
 // ************** Main **************
 //
-export class Main extends Component {
- constructor(props){
-  super(props)
-  this.state = {content:null}
-  this.props.loadNavigation([{ onClick:() => { this.componentDidMount() }, className:'reload right'}])
- }
+export class Main extends MainBase {
 
  componentDidMount(){
+  this.props.loadNavigation([{ onClick:() => { this.componentDidMount() }, className:'reload right'}])
   rest_call(rest_base + 'api/portal/resources',{type:'tool'})
    .then((result) => {
    let buttons = []
    for (let [key, panel] of Object.entries(result.data)){
     let click = null
     if (panel.type === 'module')
-     click = () => this.changeContent(panel)
+     click = () => this.changeMain(panel)
     else if (panel.type === 'tab')
      click = () => window.open(panel.tab,'_blank')
     else if (panel.type === 'frame')
@@ -32,7 +29,7 @@ export class Main extends Component {
   })
  }
 
- changeContent = (panel) => {
+ changeMain = (panel) => {
   if ((this.state.content !== null) && (this.state.content.key === `${panel.module}_${panel.function}`))
    return
   try {
@@ -44,7 +41,4 @@ export class Main extends Component {
   }
  }
 
- render() {
-  return <Fragment key='resource_main'>{this.state.content}</Fragment>
- }
 }

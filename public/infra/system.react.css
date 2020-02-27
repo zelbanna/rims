@@ -142,6 +142,7 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
 /************************************************** EXTRA ****************************************************/
 
 div.centered { align-items:center; justify-content:center; display:flex; flex-wrap:wrap }
+div.state { border: 1px solid #9CA6B0; border-radius:16px; height:16px; width:16px; display:inline-block; }
 
 /******************************************* EXTRA NOT FOUND YET *********************************************/
 /*
@@ -160,6 +161,5 @@ span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidd
 
 div.network { width:100%; height:500px; }
 
-div.state { border: 1px solid #9CA6B0; border-radius:16px; height:16px; width:16px; display:inline-block; }
 
 */

@@ -56,3 +56,5 @@ export const erase_cookie = () => {
  document.cookie = "rims=; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
  return true;
 }
+
+export const rnd = () => { return Math.floor(Math.random() * 10) }

@@ -1,8 +1,7 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call, rest_base } from './infra/Functions.js';
-import { Spinner } from './infra/Generic.js';
+import { rest_call, rest_base, rnd } from './infra/Functions.js';
+import { ListBase, InfoBase, Spinner } from './infra/Generic.js';
 import { InfoButton } from './infra/Buttons.js';
-import { ContentMain } from './infra/Content.js';
 import { InfoCol2 } from './infra/Info.js';
 import { NavBar } from './infra/Navigation.js';
 
@@ -10,10 +9,15 @@ import { NavBar } from './infra/Navigation.js';
 
 // ************** List **************
 //
-export class List extends Component {
+export class List extends ListBase {
  constructor(props){
   super(props);
-  this.state = {data:null, content:null}
+  this.header = 'Nodes'
+  this.thead = ['Node','URL','']
+  this.buttons = [
+   <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />,
+   <InfoButton key='add'  type='add'  onClick={() => { this.changeList(<Info key={'node_new_' + rnd()} id='new' />) }} />
+  ]
  }
 
  componentDidMount(){
@@ -21,50 +25,18 @@ export class List extends Component {
    .then((result) => { this.setState(result); })
  }
 
- changeContent = (elem) => {
-  this.setState({content:elem});
- }
-
- deleteItem = (id,msg)  => {
-  if(window.confirm(msg)){
-   rest_call(rest_base + 'api/master/node_delete',{id:id})
-    .then((result) => {
-     if(result.deleted)
-      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id),content:null})
-    })
-  }
- }
-
  listItem = (row) => {
   var buttons = [
-   <InfoButton key='node_info'   type='info'  onClick={() => { this.changeContent(<Info key={'node_info_'+row.id} id={row.id} />) }} />,
-   <InfoButton key='node_delete' type='trash' onClick={() => { this.deleteItem(row.id,'Really delete node?') }} />
+   <InfoButton key='node_info'   type='info'  onClick={() => { this.changeList(<Info key={'node_info_'+row.id} id={row.id} />) }} />,
+   <InfoButton key='node_delete' type='trash' onClick={() => { this.deleteList('api/master/node_delete',row.id,'Really delete node?') }} />
   ]
   return [row.node,row.url,<Fragment key='node_buttons'>{buttons}</Fragment>]
- }
-
- render(){
-  return <ContentMain key='node_content' base='node' header='Nodes' thead={['Node','URL','']}
-    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={<Fragment key='node_header_buttons'>
-     <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />
-     <InfoButton key='add'  type='add'  onClick={() => { this.changeContent(<Info key={'node_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
-    </Fragment>} />
  }
 }
 
 // *************** Info ***************
 //
-class Info extends Component {
-  constructor(props) {
-  super(props)
-  this.state = {data:null, found:true, content:null}
- }
-
- handleChange = (e) => {
-  var data = {...this.state.data}
-  data[e.target.name] = e.target.value
-  this.setState({data:data})
- }
+class Info extends InfoBase {
 
  componentDidMount(){
   rest_call(rest_base + 'api/master/node_info',{id:this.props.id})
@@ -83,19 +55,6 @@ class Info extends Component {
   })
  }
 
- updateInfo = () => {
-  rest_call(rest_base + 'api/master/node_info',{op:'update', ...this.state.data})
-   .then((result) => {
-    if(result.data.hostname === null)
-     result.data.hostname = undefined;
-    this.setState(result)
-   })
- }
-
- changeContent = (elem) => {
-  this.setState({content:elem});
- }
-
  infoItems = () => {
   return [
     {tag:'input', type:'text', id:'node', text:'Node', value:this.state.data.node},
@@ -110,13 +69,13 @@ class Info extends Component {
   else if (this.state.data === null)
    return <Spinner />
   else {
-   let buttons = [<InfoButton key='node_btn_save' type='save' onClick={this.updateInfo} />]
+   let buttons = [<InfoButton key='node_btn_save' type='save' onClick={() => this.updateInfo('api/master/node_info')} />]
    if (this.state.data.id !== 'new'){
     if (this.state.data.hostname === undefined)
      buttons.push(<InfoButton key='node_btn_srch' type='search' onClick={this.searchInfo} />)
-    buttons.push(<InfoButton key='node_btn_reload' type='reload' onClick={() => { this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />) }} />)
-    buttons.push(<InfoButton key='node_btn_logs'  type='logs' onClick={() => { this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node}  />) }} />)
-    buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='trash' onClick={() => { this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) }} />)
+    buttons.push(<InfoButton key='node_btn_reload' type='reload' onClick={() => { this.changeInfo(<Reload key={'node_reload'} node={this.state.data.node} />) }} />)
+    buttons.push(<InfoButton key='node_btn_logs'  type='logs' onClick={() => { this.changeInfo(<LogShow key={'node_logs'} node={this.state.data.node}  />) }} />)
+    buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='trash' onClick={() => { this.changeInfo(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) }} />)
    }
    return (
    <Fragment key='srv_info_fragment'>
@@ -134,7 +93,6 @@ class Info extends Component {
   }
  }
 }
-
 
 // *************** Reload ***************
 //

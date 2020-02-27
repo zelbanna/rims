@@ -79,7 +79,7 @@ class Login extends Component {
  }
 
  componentDidMount() {
-  rest_call(rest_base + 'api/portal/application')
+  rest_call(rest_base + 'front')
    .then((result) => {
     this.setState(result)
     document.title = result.title
