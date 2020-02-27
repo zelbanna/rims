@@ -34,9 +34,10 @@ export class List extends ListBase {
  listItem = (row) => {
   let buttons = []
   if (row.state === 'up')
-   buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => { this.changeList(<Sync key={'hypervisor_info_'+row.id} id={row.id} />)}} />)
-  if (row.url && row.url.length > 0)
-   buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => { window.open(row.url,'_blank') }} />)
+   if (row.type_functions === 'manage')
+    buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => { this.changeList(<Sync key={'hypervisor_info_'+row.id} id={row.id} />)}} />)
+   if (row.url && row.url.length > 0)
+    buttons.push(<InfoButton key={'hypervisor_ui_'+row.id} type='ui' onClick={() => { window.open(row.url,'_blank') }} />)
   return [row.hostname,row.type_name,<StateMap key='hypervisor_state' state={row.state} />,<Fragment key={'hypervisor_buttons_'+row.id}>{buttons}</Fragment>]
  }
 
@@ -46,22 +47,29 @@ export class List extends ListBase {
 //
 
 class Sync extends ReportBase{
+ constructor(props){
+  super(props)
+  this.thead = ['Status','Host','Device','VM Name','Device UUID','Config']
+  this.header= 'VM Mapping'
+ }
 
  componentDidMount(){
   rest_call(rest_base + 'api/device/vm_mapping')
    .then((result) => {
     let entries = []
-    for (let [type,rows] of Object.entries(result)){
-     rows.forEach(row => {
-      row.type = type;
-      entries.push(row)
-     })
-    }
-    this.setState(entries)
+    var types = ['existing','inventory','discovered','database'];
+    types.forEach(type => {
+     if (result.hasOwnProperty(type))
+      result[type].forEach(entry => {
+       entry.type = type
+       entries.push(entry)
+      })
+    })
+    this.setState({data:entries})
    })
  }
 
- listItem = (row) => [row.type,row.host_id,row.device_id,row.device_uuid,row.config]
+ listItem = (row) => [row.type,row.host_id,row.device_id,row.vm,row.device_uuid,row.config]
 
 }
 

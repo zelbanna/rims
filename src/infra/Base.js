@@ -42,8 +42,8 @@ export class ListBase extends Component {
  listItem = (row) => []
 
  render = () => <Fragment key={'listbase_content_fragment'}>
-   <section className='content-left'><ContentList key={this.base+'_content_list'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment>/></section>
-   <section className='content-right'><ContentData key={this.base+'_content_data'} content={this.state.content} /></section>
+   <section id='div_content_left' className='content-left'><ContentList key={this.base+'_content_list'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment>/></section>
+   <section id='div_content_right' className='content-right'><ContentData key={this.base+'_content_data'} content={this.state.content} /></section>
   </Fragment>
 }
 
@@ -83,5 +83,5 @@ export class ReportBase extends Component {
 
  listItem = (row) => []
 
- render = () => <ContentList key={this.base+'_content_list'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment> />
+ render = () => <ContentList articleClass={'report'} key={this.base+'_content_list'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment> />
 }

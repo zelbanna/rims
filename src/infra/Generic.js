@@ -19,10 +19,10 @@ export const ContentList = (props) => {
  if (props.trows === null)
   return <Spinner />
  else {
-  return <article className='table'>
+  return <article className={(props.hasOwnProperty('articleClass')) ? props.articleClass : 'table'}>
     <h1>{props.header}</h1>
     {props.buttons}
-    <div className='table'>
+    <div className={(props.hasOwnProperty('tableClass')) ? props.tableClass : 'table'}>
      <TableHead key={'content_thead'} headers={props.thead} />
      <div className='tbody'>
       {props.trows.map((row,index) => <TableRow key={'content_trow_'+props.base+'_'+index} cells={props.listItem(row)} /> )}
