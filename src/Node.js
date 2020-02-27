@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rest_base, rnd } from './infra/Functions.js';
-import { ListBase, InfoBase, Spinner } from './infra/Generic.js';
+import {Spinner } from './infra/Generic.js';
+import { ListBase, InfoBase } from './infra/Base.js';
 import { InfoButton } from './infra/Buttons.js';
 import { InfoCol2 } from './infra/Info.js';
 import { NavBar } from './infra/Navigation.js';
@@ -15,8 +16,8 @@ export class List extends ListBase {
   this.header = 'Nodes'
   this.thead = ['Node','URL','']
   this.buttons = [
-   <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />,
-   <InfoButton key='add'  type='add'  onClick={() => { this.changeList(<Info key={'node_new_' + rnd()} id='new' />) }} />
+   <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount()} />,
+   <InfoButton key='add'  type='add'  onClick={() => this.changeList(<Info key={'node_new_' + rnd()} id='new' />)}  />
   ]
  }
 
@@ -27,8 +28,8 @@ export class List extends ListBase {
 
  listItem = (row) => {
   var buttons = [
-   <InfoButton key='node_info'   type='info'  onClick={() => { this.changeList(<Info key={'node_info_'+row.id} id={row.id} />) }} />,
-   <InfoButton key='node_delete' type='trash' onClick={() => { this.deleteList('api/master/node_delete',row.id,'Really delete node?') }} />
+   <InfoButton key='node_info'   type='info'  onClick={() => this.changeList(<Info key={'node_info_'+row.id} id={row.id} />)} />,
+   <InfoButton key='node_delete' type='trash' onClick={() => this.deleteList('api/master/node_delete',row.id,'Really delete node?')} />
   ]
   return [row.node,row.url,<Fragment key='node_buttons'>{buttons}</Fragment>]
  }
@@ -73,9 +74,9 @@ class Info extends InfoBase {
    if (this.state.data.id !== 'new'){
     if (this.state.data.hostname === undefined)
      buttons.push(<InfoButton key='node_btn_srch' type='search' onClick={this.searchInfo} />)
-    buttons.push(<InfoButton key='node_btn_reload' type='reload' onClick={() => { this.changeInfo(<Reload key={'node_reload'} node={this.state.data.node} />) }} />)
-    buttons.push(<InfoButton key='node_btn_logs'  type='logs' onClick={() => { this.changeInfo(<LogShow key={'node_logs'} node={this.state.data.node}  />) }} />)
-    buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='trash' onClick={() => { this.changeInfo(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) }} />)
+    buttons.push(<InfoButton key='node_btn_reload' type='reload' onClick={() => this.changeInfo(<Reload key={'node_reload'} node={this.state.data.node} />) } />)
+    buttons.push(<InfoButton key='node_btn_logs'  type='logs' onClick={() => this.changeInfo(<LogShow key={'node_logs'} node={this.state.data.node} />) } />)
+    buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='trash' onClick={() => this.changeInfo(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />)
    }
    return (
    <Fragment key='srv_info_fragment'>
@@ -104,7 +105,7 @@ class Reload extends Component {
 
  componentDidMount(){
   rest_call(rest_base + 'system/reload/' + this.props.node)
-   .then((result) => { this.setState(result) })
+   .then((result) =>  this.setState(result) )
  }
 
  render(){
@@ -114,7 +115,7 @@ class Reload extends Component {
    return (
     <article className='code'>
      <h1>Module</h1>
-     {this.state.modules.map((row,index) => { return <span key={index}>{row}</span> })}
+     {this.state.modules.map((row,index) => <span key={index}>{row}</span> )}
    </article>
    )
   }
@@ -131,7 +132,7 @@ class LogClear extends Component {
 
  componentDidMount(){
   rest_call(rest_base + 'api/system/logs_clear?node=' + this.props.node)
-   .then((result) => {this.setState({logs:result.file}) })
+   .then((result) => this.setState({logs:result.file}) )
  }
 
  render(){
@@ -141,12 +142,7 @@ class LogClear extends Component {
    let output = []
    for (let [name, res] of Object.entries(this.state.logs))
     output.push(<span key={name}>{name}: {res}</span>)
-   return (
-    <article className='code'>
-     <h1>Cleared</h1>
-     {output}
-   </article>
-   )
+   return <article className='code'><h1>Cleared</h1>{output}</article>
   }
  }
 }
@@ -161,17 +157,13 @@ export class LogShow extends Component {
 
  componentDidMount(){
   rest_call(rest_base + 'api/system/logs_get?node=' + this.props.node)
-   .then((result) => {this.setState({logs:result}) })
+   .then((result) => this.setState({logs:result}) )
  }
 
- Log(props){
-  return(
-   <Fragment>
-    <h1>{props.name}</h1>
-    {props.rows.map((line,index) => { return <span key={'show_log_' + index}>{line}</span> })}
+ Log = (props) => <Fragment>
+   <h1>{props.name}</h1>
+   {props.rows.map((line,index) => <span key={props.name + '_row_' + index}>{line}</span> )}
    </Fragment>
-  )
- }
 
  render(){
   if (this.state.logs === null)
@@ -180,11 +172,7 @@ export class LogShow extends Component {
    let output = []
    for (let [name, rows] of Object.entries(this.state.logs))
     output.push(<this.Log key={'log_file_' + name} name={name} rows={rows} />)
-   return (
-    <article className='code'>
-     {output}
-   </article>
-   )
+   return <article className='code'>{output}</article>
   }
  }
 }

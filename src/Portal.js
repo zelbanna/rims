@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
-import { read_cookie, rest_call, rest_base, library } from  './infra/Functions.js';
+import { read_cookie, rest_call, rest_base } from  './infra/Functions.js';
+import Library from './infra/Mapper.js'
 import { InfoCol2 }   from './infra/Info.js';
 import { MenuButton } from './infra/Buttons.js';
 import { NavBar } from './infra/Navigation.js';
@@ -31,7 +32,7 @@ class Portal extends Component {
   if ((this.state.content !== null) && (this.state.content.key === `${panel.module}_${panel.function}`))
    return
   try {
-   const Elem = library[panel.module][panel.function]
+   const Elem = Library[panel.module][panel.function]
    this.setState({navigation:[],content:<Elem key={panel.module + '_' + panel.function} {...panel.args} loadNavigation={this.loadNavigation} />})
   } catch(err) {
    console.error("Mapper error: "+panel);
@@ -140,9 +141,7 @@ class RIMS extends Component {
   this.setState(() => { return cookie; })
  }
 
- render() {
-  return (this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal cookie={this.state} eraseCookie={this.eraseCookie}/>
- }
+ render = () =>  (this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal cookie={this.state} eraseCookie={this.eraseCookie}/>
 }
 
 export default RIMS

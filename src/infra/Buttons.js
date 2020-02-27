@@ -24,10 +24,6 @@ export const NavButton = (props) => {
  return <li className={props.className}><button className={('className' in props) ? `nav ${props.className}` : 'nav'} onClick={props.onClick}>{view}</button></li>
 }
 
-export const InfoButton = (props) => {
- return <button className={('className' in props) ? `info type-${props.type} ${props.className}` : `info type-${props.type}`} onClick={props.onClick} title={props.title}/>
-}
+export const InfoButton = (props) => <button className={('className' in props) ? `info type-${props.type} ${props.className}` : `info type-${props.type}`} onClick={props.onClick} title={props.title}/>
 
-export const TextButton = (props) => {
- return <button className={('className' in props) ? `text ${props.className}` : 'text'} onClick={props.onClick} title={props.title}>{props.text}</button>
-}
+export const TextButton = (props) => <button className={('className' in props) ? `text ${props.className}` : 'text'} onClick={props.onClick} title={props.title}>{props.text}</button>

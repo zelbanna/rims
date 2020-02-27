@@ -12,12 +12,10 @@ export const InfoCol2 = (props) => {
      second = <input type={row.type} id={row.id} name={row.id} onChange={props.changeHandler} value={row.value} placeholder={row.placeholder} />
     else {
      second = <div>{
-      row.options.map((opt,index) => { return (
-       <Fragment key={'radio_'+index}>
+      row.options.map((opt,index) => <Fragment key={'radio_'+index}>
         <label htmlFor={'radio_'+index}>{opt.text}</label>
         <input type='radio' key={'radio_input_'+index}  id={'radio_'+index} name={row.id} onChange={props.changeHandler} value={opt.value} checked={(row.value === opt.value) ? 'checked' : ''}/>
-       </Fragment>
-      ) })
+       </Fragment> )
      }</div>
     }
     break;
@@ -26,7 +24,7 @@ export const InfoCol2 = (props) => {
     break;
    case 'select':
     second = <select name={row.id} onChange={props.changeHandler} value={row.value}>{
-     row.options.map((opt,index) => { return (<option key={row.id + '_'+index} value={opt.value}>{opt.text}</option>) })
+     row.options.map((opt,index) => <option key={row.id + '_'+index} value={opt.value}>{opt.text}</option>)
      }</select>
     break;
    default:

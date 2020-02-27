@@ -1,9 +1,11 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment } from 'react';
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { Info as UserInfo } from './User.js';
-import { ListBase, InfoBase, ContentList, Spinner }    from './infra/Generic.js';
-import { InfoButton, TextButton }    from './infra/Buttons.js';
+import { ContentList, Spinner } from './infra/Generic.js';
+import { ListBase, ReportBase, InfoBase }    from './infra/Base.js';
+import { InfoButton, TextButton }  from './infra/Buttons.js';
 import { InfoCol2 }   from './infra/Info.js';
+
+import { Info as UserInfo } from './User.js';
 
 // CONVERTED ENTIRELY
 
@@ -97,10 +99,10 @@ class Info extends InfoBase {
 
 // ************** Report **************
 //
-export class Report extends Component{
+export class Report extends ReportBase {
  constructor(props){
   super(props);
-  this.state = {data:null}
+  this.thead = ['User','Device','Start','End','Info']
  }
 
  componentDidMount(){
@@ -108,10 +110,5 @@ export class Report extends Component{
    .then((result) => { this.setState(result); })
  }
 
- listItem = (row) => { return [row.alias,row.hostname,row.start,row.end,row.info]; }
-
- render(){
-  return <ContentList key='reservation_content' base='reservation' header='Reservations' thead={['User','Device','Start','End','Info']}
-    trows={this.state.data} listItem={this.listItem} />
- }
+ listItem = (row) => [row.alias,row.hostname,row.start,row.end,row.info]
 }

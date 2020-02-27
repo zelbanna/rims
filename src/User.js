@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call, rest_base, read_cookie, rnd } from './infra/Functions.js';
-import { ListBase, InfoBase, Spinner } from './infra/Generic.js';
+import { Spinner } from './infra/Generic.js';
+import { ListBase, InfoBase } from './infra/Base.js';
 import { InfoButton } from './infra/Buttons.js';
 import { InfoCol2 }   from './infra/Info.js';
 
@@ -25,12 +26,11 @@ export class List extends ListBase {
    .then((result) => { this.setState(result); })
  }
 
- listItem = (row) => {
-  return [row.id,row.alias,row.name,<Fragment key={'user_buttons_'+row.id}>
+ listItem = (row) => [row.id,row.alias,row.name,<Fragment key={'user_buttons_'+row.id}>
    <InfoButton key={'user_info_'+row.id} type='info' onClick={() => { this.changeList(<Info key={'user_info_'+row.id} id={row.id} />)}} />
    <InfoButton key={'user_del_'+row.id} type='trash' onClick={() => { this.deleteList('api/master/user_delete',row.id,'Really delete user?')}} />
   </Fragment>]
- }
+
 }
 
 // ************** Info **************
@@ -52,15 +52,13 @@ export class Info extends InfoBase {
    .then((result) => { this.setState(result); })
  }
 
- infoItems = () => {
-  return [
+ infoItems = () => [
     {tag:'input', type:'text', id:'alias', text:'Alias', value:this.state.data.alias},
     {tag:'input', type:'password', id:'password', text:'Password',placeholder:'******'},
     {tag:'input', type:'text', id:'email', text:'e-mail', value:this.state.data.email},
     {tag:'input', type:'text', id:'name', text:'Full name', value:this.state.data.name},
     {tag:'select', id:'theme', text:'Theme', value:this.state.data.theme, options:this.state.themes.map((row) => { return ({value:row, text:row})})}
    ]
- }
 
  render() {
   if (this.state.found === false)
@@ -86,10 +84,6 @@ export class Info extends InfoBase {
 //
 export class User extends Component {
  render() {
-  return (
-   <Fragment key='user_user'>
-    <Info className='centered' id={this.props.id} />
-   </Fragment>
-  )
+  return <Fragment key='user_user'><Info className='centered' id={this.props.id} /></Fragment>
  }
 }

@@ -1,7 +1,8 @@
-import React, { Component, Fragment } from 'react'
-import { rest_call, rest_base, library } from './infra/Functions.js';
-import { MainBase } from './infra/Generic.js'
+import React from 'react'
+import { rest_call, rest_base } from './infra/Functions.js';
+import { MainBase } from './infra/Base.js'
 import { MenuButton } from './infra/Buttons.js'
+import Library from './infra/Mapper.js'
 
 // CONVERTED ENTIRELY
 
@@ -33,7 +34,7 @@ export class Main extends MainBase {
   if ((this.state.content !== null) && (this.state.content.key === `${panel.module}_${panel.function}`))
    return
   try {
-   const Elem = library[panel.module][panel.function]
+   const Elem = Library[panel.module][panel.function]
    this.setState({content:<Elem key={panel.module + '_' + panel.function} {...panel.args} loadNavigation={this.props.loadNavigation} />})
   } catch(err) {
    console.error("Mapper error: "+panel);

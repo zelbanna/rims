@@ -1,6 +1,7 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment } from 'react';
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { MainBase, ListBase, InfoBase, ContentList, Spinner } from './infra/Generic.js';
+import { Spinner } from './infra/Generic.js';
+import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.js';
 import { InfoButton } from './infra/Buttons.js';
 import { InfoCol2 }   from './infra/Info.js';
 
@@ -36,13 +37,11 @@ class List extends ListBase {
    .then((result) => { this.setState(result); })
  }
 
- listItem = (row) => {
-  return [row.date + ' - ' + row.time,row.type,<Fragment key={'activity_buttons_'+row.id}>
+ listItem = (row) => [row.date + ' - ' + row.time,row.type,<Fragment key={'activity_buttons_'+row.id}>
    <InfoButton key={'act_info_'+row.id} type='info'  onClick={() => { this.changeList(<Info key={'activity_'+row.id} id={row.id} />) }} />
    <InfoButton key={'act_delete_'+row.id} type='trash' onClick={() => { this.deleteList('api/master/activity_delete',row.id,'Really delete activity') }} />
    </Fragment>
-  ];
- }
+  ]
 
 }
 
@@ -97,10 +96,11 @@ class Info extends InfoBase {
 
 // ************** Report **************
 //
-export class Report extends Component{
+export class Report extends ReportBase{
  constructor(props){
-  super(props);
-  this.state = {data:null}
+  super(props)
+  this.header = 'Activities'
+  this.thead = ['Time','User','Type','Event']
  }
 
  componentDidMount(){
@@ -108,14 +108,8 @@ export class Report extends Component{
    .then((result) => { this.setState(result) })
  }
 
- listItem = (row) => {
-  return [row.date + ' - ' + row.time,row.user,row.type,row.event];
- }
+ listItem = (row) => [row.date + ' - ' + row.time,row.user,row.type,row.event]
 
- render(){
-  return <ContentList key='activity_report' base='activity' header='Activities' thead={['Time','User','Type','Event']}
-    trows={this.state.data} content={this.state.content} listItem={this.listItem} buttons={[]} />
- }
 }
 
 
@@ -137,12 +131,10 @@ class TypeList extends ListBase {
    .then((result) => { this.setState(result); })
  }
 
- listItem = (row) => {
-  return [row.id,row.type,<Fragment key='activity_buttons'>
+ listItem = (row) => [row.id,row.type,<Fragment key='activity_buttons'>
    <InfoButton key='act_tp_info'   type='info'  onClick={() => { this.changeList(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) }} />
    <InfoButton key='act_tp_delete' type='trash' onClick={() => { this.deleteList('api/master/activity_type_delete',row.id,'Really delete type?') }} />
    </Fragment>]
- }
 
 }
 
