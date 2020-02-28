@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rest_base, rnd } from './infra/Functions.js';
 import { Spinner }    from './infra/Generic.js';
-import { ListBase, InfoBase } from './infra/Base.js';
+import { ListBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.js';
 import { InfoCol2 }   from './infra/Info.js';
 import { NavBar }   from './infra/Navigation.js';

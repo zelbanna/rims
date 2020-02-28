@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
 import { Spinner } from './infra/Generic.js';
-import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.js';
+import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.js';
 import { InfoCol2 }   from './infra/Info.js';
 

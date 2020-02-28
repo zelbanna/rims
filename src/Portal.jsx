@@ -141,7 +141,9 @@ class RIMS extends Component {
   this.setState(() => { return cookie; })
  }
 
- render = () =>  (this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal cookie={this.state} eraseCookie={this.eraseCookie}/>
+ render(){
+  return (this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal cookie={this.state} eraseCookie={this.eraseCookie}/>
+ }
 }
 
 export default RIMS

@@ -15,11 +15,15 @@ export const TableRow = (props) => <div>{props.cells.map((row,index) => <div key
 // ***************************** Content ********************************
 
 // base,header,buttons,thead,trows,listItem
-export const ContentList = (props) => {
+export const ContentList = (props) => content('table',props)
+
+export const ContentReport = (props) => content('report',props)
+
+const content = (type,props) => {
  if (props.trows === null)
   return <Spinner />
  else {
-  return <article className={(props.hasOwnProperty('articleClass')) ? props.articleClass : 'table'}>
+  return <article className={(props.hasOwnProperty('articleClass')) ? props.articleClass : type}>
     <h1>{props.header}</h1>
     {props.buttons}
     <div className={(props.hasOwnProperty('tableClass')) ? props.tableClass : 'table'}>

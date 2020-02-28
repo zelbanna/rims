@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call, rest_base } from './Functions.js';
-import { ContentData, ContentList } from './Generic.js';
+import { ContentData, ContentList, ContentReport } from './Generic.js';
 
 // ************** Main Base ****************
 //
@@ -12,7 +12,9 @@ export class MainBase extends Component {
 
  changeMain = (elem) => this.setState({content:elem})
 
- render = () => <Fragment key='main_base'>{this.state.content}</Fragment>
+ render(){
+  return  <Fragment key='main_base'>{this.state.content}</Fragment>
+ }
 }
 
 // ************** List Base ****************
@@ -41,10 +43,12 @@ export class ListBase extends Component {
 
  listItem = (row) => []
 
- render = () => <Fragment key={'listbase_content_fragment'}>
+ render(){
+   return <Fragment key={'listbase_content_fragment'}>
    <section id='div_content_left' className='content-left'><ContentList key={this.base+'_content_list'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment>/></section>
    <section id='div_content_right' className='content-right'><ContentData key={this.base+'_content_data'} content={this.state.content} /></section>
   </Fragment>
+ }
 }
 
 // ************** Info Base ****************
@@ -83,5 +87,7 @@ export class ReportBase extends Component {
 
  listItem = (row) => []
 
- render = () => <ContentList articleClass={'report'} key={this.base+'_content_list'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment> />
+ render(){
+  return <ContentReport articleClass={'report'} key={this.base+'_content_list'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment> />
+ }
 }

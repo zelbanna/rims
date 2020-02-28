@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rest_base, rnd } from './infra/Functions.js';
 import { StateMap } from './infra/Generic.js';
-import { MainBase, ListBase, ReportBase } from './infra/Base.js';
+import { MainBase, ListBase, ReportBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.js';
 
 // ************** Main **************

@@ -1,6 +1,6 @@
 import React from 'react'
 import { rest_call, rest_base } from './infra/Functions.js';
-import { MainBase } from './infra/Base.js'
+import { MainBase } from './infra/Base.jsx'
 import { MenuButton } from './infra/Buttons.js'
 import Library from './infra/Mapper.js'
 

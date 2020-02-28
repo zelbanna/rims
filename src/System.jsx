@@ -1,16 +1,16 @@
 import React, { Component } from 'react'
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
 import { Spinner, ContentList } from './infra/Generic.js';
-import { MainBase, ListBase, ReportBase } from './infra/Base.js';
+import { MainBase, ListBase, ReportBase } from './infra/Base.jsx';
 import { TextButton } from './infra/Buttons.js';
 
-import { LogShow, List as NodeList } from './Node.js';
-import { List as ServerList } from './Server.js';
-import { List as UserList } from './User.js';
-import { Report as ActivityReport } from './Activity.js';
-import { Report as ReservationReport } from './Reservation.js';
-import { Report as DeviceReport } from './Device.js';
-import { Report as InventoryReport } from './Inventory.js';
+import { LogShow, List as NodeList } from './Node.jsx';
+import { List as ServerList } from './Server.jsx';
+import { List as UserList } from './User.jsx';
+import { Report as ActivityReport } from './Activity.jsx';
+import { Report as ReservationReport } from './Reservation.jsx';
+import { Report as DeviceReport } from './Device.jsx';
+import { Report as InventoryReport } from './Inventory.jsx';
 
 // ************** Main **************
 //

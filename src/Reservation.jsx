@@ -1,11 +1,11 @@
 import React, { Fragment } from 'react';
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { ContentList, Spinner } from './infra/Generic.js';
-import { ListBase, ReportBase, InfoBase }    from './infra/Base.js';
+import { Spinner } from './infra/Generic.js';
+import { ListBase, ReportBase, InfoBase }    from './infra/Base.jsx';
 import { InfoButton, TextButton }  from './infra/Buttons.js';
 import { InfoCol2 }   from './infra/Info.js';
 
-import { Info as UserInfo } from './User.js';
+import { Info as UserInfo } from './User.jsx';
 
 // CONVERTED ENTIRELY
 
@@ -24,7 +24,7 @@ export class List extends ListBase {
 
  componentDidMount(){
   rest_call(rest_base + 'api/reservation/list')
-   .then((result) => { this.setState(result); })
+   .then((result) => this.setState(result) )
  }
 
  extendItem = (device_id,user_id,days) => {
@@ -68,7 +68,7 @@ class Info extends InfoBase {
 
  componentDidMount(){
   rest_call(rest_base + 'api/reservation/info',{device_id:this.props.device_id})
-   .then((result) => { this.setState(result); })
+   .then((result) => this.setState(result) )
  }
 
  render() {
