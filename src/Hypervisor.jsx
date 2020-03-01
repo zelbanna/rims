@@ -4,13 +4,15 @@ import { StateMap } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.js';
 
+import { Logs as DeviceLogs } from './Device.jsx';
+
 // ************** Main **************
 //
 
 export class Main extends MainBase {
  constructor(props){
   super(props)
-  this.state.content = <List key={'hypervisor_list_'+rnd()} changeMain={this.changeMain} />
+  this.state.content = <List key={'hypervisor_list_'+rnd()} changeMain={this.changeMain} loadNavigation={this.props.loadNavigation} />
   this.props.loadNavigation([{ onClick:() => { this.changeMain(<List key={'hypervisor_list_'+rnd()} changeMain={this.changeMain} />) }, className:'reload right'}])
  }
 }
@@ -23,19 +25,18 @@ export class List extends ListBase {
   this.thead = ['Hostname','Type','','']
   this.header = 'Hypervisor'
   this.buttons = [<InfoButton key='hypervisor_sync' type='sync' onClick={() => { this.changeList(<Sync />) }} />]
-
  }
 
  componentDidMount(){
   rest_call(rest_base + 'api/device/list',{field:'base',search:'hypervisor',extra:['type','functions','url'],sort:'hostname'})
-   .then((result) => { this.setState(result); })
+   .then((result) => this.setState(result) )
  }
 
  listItem = (row) => {
   let buttons = []
   if (row.state === 'up')
    if (row.type_functions === 'manage')
-    buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => { this.changeList(<Sync key={'hypervisor_info_'+row.id} id={row.id} />)}} />)
+    buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => { this.props.changeMain(<Manage key={'hypervisor_manage_'+row.id} loadNavigation={this.props.loadNavigation} id={row.id} />)}} />)
    if (row.url && row.url.length > 0)
     buttons.push(<InfoButton key={'hypervisor_ui_'+row.id} type='ui' onClick={() => { window.open(row.url,'_blank') }} />)
   return [row.hostname,row.type_name,<StateMap key='hypervisor_state' state={row.state} />,<Fragment key={'hypervisor_buttons_'+row.id}>{buttons}</Fragment>]
@@ -73,14 +74,40 @@ class Sync extends ReportBase{
 
 }
 
+// ************** Manage **************
+//
+class Manage extends ListBase {
+
+ componentDidMount(){
+  rest_call(rest_base + 'api/device/management',{id:this.props.id})
+   .then((result) => {
+    var navitems = [{title:'Logs', onClick:() => this.changeList(<DeviceLogs id={this.props.id} />)}];
+    //if (result.data.hasOwnProperty(url) && result.data.url.length > 0)
+    // navitems.push({title:)
+    this.props.loadNavigation(navitems);
+    this.setState(result)
+    })
+ }
+
+ render(){
+  return <div>Manage</div>
+ }
+}
+
 /*
-def sync(aWeb):
- res = aWeb.rest_call("device/vm_mapping")
- aWeb.wr("<ARTICLE>")
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Status</DIV><DIV>Host</DIV><DIV>Device</DIV><DIV>VM Name</DIV><DIV>Device UUID</DIV><DIV>Config</DIV></DIV><DIV CLASS=tbody>")
- for type in ['existing','inventory','discovered','database']:
-  for row in res.get(type):
-   aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>%s</DIV></DIV>"%(type.upper(),row['host_id'],row.get('device_id','-'),row['vm'],row['device_uuid'],row['config']))
- aWeb.wr("</DIV></DIV>")
- aWeb.wr("</ARTICLE>")
+def manage(aWeb):
+ id = aWeb['id']
+ data = aWeb.rest_call("device/management",{'id':id})
+ aWeb.wr("<NAV><UL>")
+ aWeb.wr("<LI><A CLASS=z-op DIV=div_content_right  URL='device_logs?id=%s'>Logs</A></LI>"%id)
+ if data['data']['url']:
+  aWeb.wr("<LI><A CLASS=z-op HREF='%s'     target=_blank>UI</A></LI>"%(data['data']['url']))
+ aWeb.wr("<LI><A CLASS='z-op reload' DIV=main URL='esxi_manage?id=%s'></A></LI>"%(id))
+ aWeb.wr("<LI CLASS='right navinfo'><A>{}</A></LI>".format(data['data']['hostname']))
+ aWeb.wr("</UL></NAV>")
+ aWeb.wr("<SECTION CLASS=content ID=div_content>")
+ aWeb.wr("<SECTION CLASS=content-left ID=div_content_left>")
+ list(aWeb)
+ aWeb.wr("</SECTION>")
+ aWeb.wr("<SECTION CLASS=content-right ID=div_content_right></SECTION>")
 */

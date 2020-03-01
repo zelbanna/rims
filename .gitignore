@@ -1,9 +1,6 @@
 # Compiled python modules.
 *.pyc
 
-# Backup files
-*.bck
-
 # Server files
 *.log
 
