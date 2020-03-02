@@ -1125,7 +1125,7 @@ def vm_mapping(aCTX, aArgs = None):
    db.do("TRUNCATE device_vm_uuid")
   db.do("SELECT device_id, vm, device_uuid FROM device_vm_uuid")
   existing = {row.pop('device_uuid',None):row for row in db.get_rows()}
-  db.do("SELECT devices.id, di.interface_id, LPAD(hex(di.mac),12,0) AS mac FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.class = 'vm' and di.mac > 0")
+  db.do("SELECT di.device_id, di.interface_id, LPAD(hex(di.mac),12,0) AS mac FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.class = 'vm' and di.mac > 0")
   vms = {row.pop('mac',None):row for row in db.get_rows()}
   db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dt.base = 'hypervisor' AND ia.state = 'up'")
   for row in db.get_rows():
@@ -1139,7 +1139,7 @@ def vm_mapping(aCTX, aArgs = None):
      for intf in vm.pop('interfaces',{}).values():
       db_vm = vms.pop(intf['mac'],None)
       if db_vm:
-       vm['device_id'] = db_vm['id']
+       vm['device_id'] = db_vm['device_id']
        existed = existing.pop(vm['device_uuid'],None)
        if existed:
         ret['existing'].append(vm)
@@ -1155,7 +1155,7 @@ def vm_mapping(aCTX, aArgs = None):
    ret['update']['existing'] = db.do("UPDATE device_vm_uuid SET device_id = %(device_id)s, host_id = %(host_id)s, snmp_id = %(snmp_id)s, config = '%(config)s', vm = '%(vm)s' WHERE device_uuid = '%(device_uuid)s'"%vm)
   for vm in ret['inventory']:
    ret['update']['inventory'] = db.do("INSERT INTO device_vm_uuid (device_id,host_id,snmp_id,device_uuid,config,vm) VALUES(NULL,%(host_id)s,%(snmp_id)s,'%(device_uuid)s','%(config)s','%(vm)s') ON DUPLICATE KEY UPDATE device_id = NULL, host_id = %(host_id)s, snmp_id = %(snmp_id)s, config = '%(config)s', vm = '%(vm)s'"%vm)
- ret['database'] = [x for x in vms.values()]
+ ret['database'] = [{'device_id':x['device_id'],'host_id':'-','device_uuid':'-','vm':'-','config':'-'} for x in vms.values()]
  return ret
 
 ################################################### Classes ###################################################
