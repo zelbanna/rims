@@ -40,7 +40,7 @@ def info(aCTX, aArgs = None):
     ret['update'] = db.update_dict('locations',aArgs,'id=%s'%id)
    else:
     ret['insert'] = db.insert_dict('locations',aArgs)
-    id = db.get_last_id() if ret['update'] > 0 else 'new'
+    id = db.get_last_id() if ret['insert'] > 0 else 'new'
 
   ret['data'] = db.get_row() if  not id == 'new' and (db.do("SELECT id,name FROM locations WHERE id = '%s'"%id) > 0) else {'id':'new','name':''}
  return ret
@@ -58,5 +58,6 @@ def delete(aCTX, aArgs = None):
  ret = {}
  # Racks and inventory sets NULL anyway
  with aCTX.db as db:
-  ret['status'] = 'OK' if (db.do("DELETE FROM locations WHERE id = %s"%aArgs['id']) == 1) else 'NOT_OK'
+  ret['deleted'] = (db.do("DELETE FROM locations WHERE id = %s"%aArgs['id']) == 1)
+  ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret

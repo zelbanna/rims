@@ -543,7 +543,7 @@ def activity_type_info(aCTX, aArgs = None):
    ret['found'] = (db.do("SELECT * FROM activity_types WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = {'id':'new','type':'Unknown'}
+   ret['data'] = {'id':'new','type':''}
  return ret
 
 #

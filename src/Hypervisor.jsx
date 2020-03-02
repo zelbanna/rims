@@ -13,7 +13,7 @@ export class Main extends MainBase {
  constructor(props){
   super(props)
   this.state.content = <List key={'hypervisor_list_'+rnd()} changeMain={this.changeMain} loadNavigation={this.props.loadNavigation} />
-  this.props.loadNavigation([{ onClick:() => { this.changeMain(<List key={'hypervisor_list_'+rnd()} changeMain={this.changeMain} />) }, className:'reload right'}])
+  this.props.loadNavigation([{ onClick:() => this.changeMain(<List key={'hypervisor_list_'+rnd()} changeMain={this.changeMain} />), className:'reload right'}])
  }
 }
 
@@ -24,7 +24,7 @@ export class List extends ListBase {
   super(props)
   this.thead = ['Hostname','Type','','']
   this.header = 'Hypervisor'
-  this.buttons = [<InfoButton key='hypervisor_sync' type='sync' onClick={() => { this.changeList(<Sync />) }} />]
+  this.buttons = [<InfoButton key='hypervisor_sync' type='sync' onClick={() => this.changeList(<Sync />) } />]
  }
 
  componentDidMount(){
@@ -36,9 +36,9 @@ export class List extends ListBase {
   let buttons = []
   if (row.state === 'up')
    if (row.type_functions === 'manage')
-    buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => { this.props.changeMain(<Manage key={'hypervisor_manage_'+row.id} loadNavigation={this.props.loadNavigation} id={row.id} />)}} />)
+    buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => this.props.changeMain(<Manage key={'hypervisor_manage_'+row.id} loadNavigation={this.props.loadNavigation} id={row.id} />) } />)
    if (row.url && row.url.length > 0)
-    buttons.push(<InfoButton key={'hypervisor_ui_'+row.id} type='ui' onClick={() => { window.open(row.url,'_blank') }} />)
+    buttons.push(<InfoButton key={'hypervisor_ui_'+row.id} type='ui' onClick={() => window.open(row.url,'_blank') } />)
   return [row.hostname,row.type_name,<StateMap key='hypervisor_state' state={row.state} />,<Fragment key={'hypervisor_buttons_'+row.id}>{buttons}</Fragment>]
  }
 
@@ -57,9 +57,8 @@ class Sync extends ReportBase{
  componentDidMount(){
   rest_call(rest_base + 'api/device/vm_mapping')
    .then((result) => {
-    let entries = []
-    var types = ['existing','inventory','discovered','database'];
-    types.forEach(type => {
+    let entries = [];
+    ["existing","inventory","discovered","database"].forEach(type => {
      if (result.hasOwnProperty(type))
       result[type].forEach(entry => {
        entry.type = type

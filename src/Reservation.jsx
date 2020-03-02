@@ -18,7 +18,7 @@ export class List extends ListBase {
   this.state.cookie_id = cookie.id
   this.thead = ['User','Device','Until','']
   this.header = 'Reservations'
-  this.buttons = [<InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />]
+  this.buttons = [<InfoButton key='reload' type='reload' onClick={() => this.componentDidMount()} />]
 
  }
 
@@ -44,7 +44,7 @@ export class List extends ListBase {
 
  listItem = (row) => {
   const cells = [
-   <TextButton key={'user_' + this.state.cookie_id} text={row.alias} onClick={() => { this.changeList(<UserInfo key={'user_info'+this.state.cookie_id} id={this.state.cookie_id} />)}} />,
+   <TextButton key={'user_' + this.state.cookie_id} text={row.alias} onClick={() => this.changeList(<UserInfo key={'user_info'+this.state.cookie_id} id={this.state.cookie_id} />) } />,
    row.hostname,
    <div className={(row.valid) ? '' : 'orange'}>{row.end}</div>
   ]

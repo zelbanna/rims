@@ -27,8 +27,8 @@ class List extends ListBase {
   this.thead = ['Date','Type','']
   this.header = 'Activities'
   this.buttons = [
-   <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />,
-   <InfoButton key='add' type='add' onClick={() => { this.changeList(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
+   <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
+   <InfoButton key='add' type='add' onClick={() => this.changeList(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) } />
   ]
  }
 
@@ -38,8 +38,8 @@ class List extends ListBase {
  }
 
  listItem = (row) => [row.date + ' - ' + row.time,row.type,<Fragment key={'activity_buttons_'+row.id}>
-   <InfoButton key={'act_info_'+row.id} type='info'  onClick={() => { this.changeList(<Info key={'activity_'+row.id} id={row.id} />) }} />
-   <InfoButton key={'act_delete_'+row.id} type='trash' onClick={() => { this.deleteList('api/master/activity_delete',row.id,'Really delete activity') }} />
+   <InfoButton key={'act_info_'+row.id} type='info'  onClick={() => this.changeList(<Info key={'activity_'+row.id} id={row.id} />) } />
+   <InfoButton key={'act_delete_'+row.id} type='trash' onClick={() => this.deleteList('api/master/activity_delete',row.id,'Really delete activity') } />
    </Fragment>
   ]
 
@@ -65,14 +65,12 @@ class Info extends InfoBase {
    })
  }
 
- infoItems = () => {
-  return [
-    {tag:'select', id:'user_id', text:'User', value:this.state.data.user_id, options:this.state.users.map((row) => { return {value:row.id, text:row.alias} })},
-    {tag:'select', id:'type_id', text:'Type', value:this.state.data.type_id, options:this.state.types.map((row) => { return {value:row.id, text:row.type} })},
+ infoItems = () => [
+    {tag:'select', id:'user_id', text:'User', value:this.state.data.user_id, options:this.state.users.map(row => ({value:row.id, text:row.alias}))},
+    {tag:'select', id:'type_id', text:'Type', value:this.state.data.type_id, options:this.state.types.map(row => ({value:row.id, text:row.type}))},
     {tag:'input', type:'date', id:'date', text:'Date', value:this.state.data.date},
     {tag:'input', type:'time', id:'time', text:'Time', value:this.state.data.time}
    ]
- }
 
  render() {
   if (this.state.found === false)
@@ -121,8 +119,8 @@ class TypeList extends ListBase {
   this.thead = ['ID','Type','']
   this.header= 'Activity Types'
   this.buttons=[
-   <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />,
-   <InfoButton key='add' type='add' onClick={() => { this.changeList(<TypeInfo key={'activity_type_new_' + Math.floor(Math.random() * 10)} id='new' />) }} />
+   <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
+   <InfoButton key='add' type='add' onClick={() => this.changeList(<TypeInfo key={'activity_type_new_' + Math.floor(Math.random() * 10)} id='new' />) } />
   ]
  }
 
@@ -132,8 +130,8 @@ class TypeList extends ListBase {
  }
 
  listItem = (row) => [row.id,row.type,<Fragment key='activity_buttons'>
-   <InfoButton key='act_tp_info'   type='info'  onClick={() => { this.changeList(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) }} />
-   <InfoButton key='act_tp_delete' type='trash' onClick={() => { this.deleteList('api/master/activity_type_delete',row.id,'Really delete type?') }} />
+   <InfoButton key='act_tp_info'   type='info'  onClick={() => this.changeList(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } />
+   <InfoButton key='act_tp_delete' type='trash' onClick={() => this.deleteList('api/master/activity_type_delete',row.id,'Really delete type?') } />
    </Fragment>]
 
 }
@@ -149,9 +147,7 @@ class TypeInfo extends InfoBase {
    })
  }
 
- infoItems = () => {
-  return [ {tag:'input', type:'text', id:'type', text:'Type', value:this.state.data.type} ]
- }
+ infoItems = () => [ {tag:'input', type:'text', id:'type', text:'Type', value:this.state.data.type, placeholder:'name'} ]
 
  render() {
   if (this.state.found === false)

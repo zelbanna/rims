@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { Spinner, ContentList } from './infra/Generic.js';
+import { Spinner } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase } from './infra/Base.jsx';
 import { TextButton } from './infra/Buttons.js';
 
@@ -53,11 +53,11 @@ export class Main extends MainBase {
    }
    reports.push({title:'Tasks',   onClick:() => this.changeMain(<TaskReport key='task_report' />) })
    reports.push({title:'System',  onClick:() => this.changeMain(<Report key='system_report' />) })
-   navitems.push({title:'Logs',   type:'dropdown', items:this.state.logs.map((row,index) => { return {title:row, onClick:() => this.changeMain( <LogShow node={row} /> ) }} ) })
+   navitems.push({title:'Logs',   type:'dropdown', items:this.state.logs.map(row => ({title:row, onClick:() => this.changeMain( <LogShow node={row} /> )})) })
    navitems.push({title:'Report', type:'dropdown', items:reports})
    navitems.push({title:'REST',  onClick:() => this.changeMain(<RestList key='rest_list' />) })
    if (this.state.services.length > 0)
-    navitems.push({title:'Services', type:'dropdown', items:this.state.services.map((row,index) => { return {title:row, onClick:() => this.changeMain( <ServiceInfo {... row} /> ) }} ) })
+    navitems.push({title:'Services', type:'dropdown', items:this.state.services.map(row => ({title:row, onClick:() => this.changeMain( <ServiceInfo {... row} /> )})) })
    navitems.push({ onClick:() => this.setState({content:null}), className:'reload' })
    this.state.navinfo.forEach(row => navitems.push({title:row, className:'right navinfo'}))
    this.props.loadNavigation(navitems)
@@ -76,10 +76,7 @@ export class Report extends ReportBase{
 
  componentDidMount(){
   rest_call(rest_base + 'system/report')
-   .then((result) => {
-   // TODO: Does not work...
-   this.setState({data:Object.keys(result).sort((a,b) => { return (b - a) }).map(key => { return {info:key,value:result[key]}})});
-  })
+   .then(result => this.setState({data:Object.keys(result).sort((a,b) => a.localeCompare(b)).map(key => ({info:key,value:result[key]})) }))
  }
 
  listItem = (row) => [row.info,row.value]
@@ -99,7 +96,7 @@ export class TaskReport extends ReportBase {
 
  componentDidMount(){
   rest_call(rest_base + 'api/master/task_list',{node:this.state.node})
-   .then((result) => { this.setState(result) })
+   .then(result => this.setState(result))
  }
 
  listItem = (row) => [row.node,row.frequency,row.module,row.function,row.args]
@@ -208,12 +205,12 @@ class ServiceInfo extends Component {
 
 export class FileList extends Component {
  render() {
-  return(<div>FileList</div>)
+  return(<div>FileList TODO</div>)
  }
 }
 
 export class Images extends Component {
  render() {
-  return(<div>Images</div>)
+  return(<div>Images TODO</div>)
  }
 }

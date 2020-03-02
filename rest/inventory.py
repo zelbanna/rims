@@ -91,15 +91,31 @@ def info(aCTX, aArgs = None):
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   db.do("SELECT * FROM inventory WHERE id = '%s'"%id)
+   ret['found'] = (db.do("SELECT * FROM inventory WHERE id = '%s'"%id) == 1)
    ret['data'] = db.get_row()
    ret['data']['receive_date'] = str(ret['data']['receive_date']) if ret['data']['receive_date'] else None
    ret['data']['support_end_date'] = str(ret['data']['support_end_date']) if ret['data']['support_end_date'] else None
    for tp in ['license','support_contract']:
     ret['data'][tp] = (ret['data'][tp] == 1)
   else:
+   ret['found'] = True
    ret['data'] = {'id':'new','vendor':None,'serial':None,'model':None,'license':False,'license_key':None,'support_contract':False,'support_end_date':None,'description':'N/A','purchase_order':None,'location_id':None,'receive_date':None,'product':None}
   db.do("SELECT id,name FROM locations")
   ret['locations'] = [{'id':'NULL', 'name':'None'}]
   ret['locations'].extend(db.get_rows())
  return ret
+
+#
+#
+def delete(aCTX, aArgs = None):
+ """Function deleted an inventory item
+
+ Args:
+  - id (required)
+
+ Output:
+  - deleted (bool)
+ """
+ with aCTX.db as db:
+  res = (db.do("DELETE FROM inventory WHERE id = %s"%aArgs['id']) == 1)
+ return {'deleted':res}

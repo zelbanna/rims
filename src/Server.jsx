@@ -51,14 +51,12 @@ class Info extends InfoBase {
    })
  }
 
- infoItems = () => {
-  return [
-    {tag:'span', id:'server', text:'ID', value:this.state.data.id},
-    {tag:'select', id:'node', text:'Node', value:this.state.data.node, options:this.state.nodes.map(row => {return {value:row, text:row}})},
-    {tag:'select', id:'type_id', text:'Service', value:this.state.data.type_id, options:this.state.services.map(row => {return {value:row.id, text:`${row.service} (${row.type})`} })},
-    {tag:'input', type:'text', id:'ui', text:'UI', value:this.state.data.ui}
-   ]
- }
+ infoItems = () => [
+  {tag:'span', id:'server', text:'ID', value:this.state.data.id},
+  {tag:'select', id:'node', text:'Node', value:this.state.data.node, options:this.state.nodes.map(row => ({value:row, text:row}))},
+  {tag:'select', id:'type_id', text:'Service', value:this.state.data.type_id, options:this.state.services.map(row => ({value:row.id, text:`${row.service} (${row.type})`}))},
+  {tag:'input', type:'text', id:'ui', text:'UI', value:this.state.data.ui}
+ ]
 
  render() {
   if (this.state.found === false)

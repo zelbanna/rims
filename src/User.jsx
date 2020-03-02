@@ -57,7 +57,7 @@ export class Info extends InfoBase {
     {tag:'input', type:'password', id:'password', text:'Password',placeholder:'******'},
     {tag:'input', type:'text', id:'email', text:'e-mail', value:this.state.data.email},
     {tag:'input', type:'text', id:'name', text:'Full name', value:this.state.data.name},
-    {tag:'select', id:'theme', text:'Theme', value:this.state.data.theme, options:this.state.themes.map((row) => { return ({value:row, text:row})})}
+    {tag:'select', id:'theme', text:'Theme', value:this.state.data.theme, options:this.state.themes.map(row => ({value:row, text:row}))}
    ]
 
  render() {
@@ -84,6 +84,6 @@ export class Info extends InfoBase {
 //
 export class User extends Component {
  render() {
-  return <Fragment key='user_user'><Info className='centered' id={this.props.id} /></Fragment>
+  return <div className='centered'><Info id={this.props.id} /></div>
  }
 }

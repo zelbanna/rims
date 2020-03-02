@@ -268,7 +268,7 @@ class Context(object):
   'Workers queue':self.workers.queue_size(),
   'Servers':self.workers.servers(),
   'Database':', '.join("%s:%s"%(k.lower(),v) for k,v in db_counter.items()),
-  'OS path':',' .join(syspath),
+  # 'OS path':', ' .join(syspath),
   'OS pid':getpid()}
   if self.config.get('database'):
    with self.db as db:
@@ -282,7 +282,7 @@ class Context(object):
   for type in ['modules','files']:
    for group,item in self._analytics[type].items():
     for i,c in item.items():
-     output['%s: %s/%s'%(type.title(),group,i)] = c
+     output['Access: %s/%s'%(group,i)] = c
   return output
 
 ########################################## WorkerPool ########################################

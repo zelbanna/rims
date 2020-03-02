@@ -26,13 +26,10 @@ export class List extends ListBase {
    .then((result) => { this.setState(result); })
  }
 
- listItem = (row) => {
-  var buttons = [
-   <InfoButton key='node_info'   type='info'  onClick={() => this.changeList(<Info key={'node_info_'+row.id} id={row.id} />)} />,
+ listItem = (row) => [row.node,row.url,<Fragment key='node_buttons'>
+   <InfoButton key='node_info'   type='info'  onClick={() => this.changeList(<Info key={'node_info_'+row.id} id={row.id} />)} />
    <InfoButton key='node_delete' type='trash' onClick={() => this.deleteList('api/master/node_delete',row.id,'Really delete node?')} />
-  ]
-  return [row.node,row.url,<Fragment key='node_buttons'>{buttons}</Fragment>]
- }
+  </Fragment>]
 }
 
 // *************** Info ***************
@@ -56,13 +53,11 @@ class Info extends InfoBase {
   })
  }
 
- infoItems = () => {
-  return [
-    {tag:'input', type:'text', id:'node', text:'Node', value:this.state.data.node},
-    {tag:'input', type:'url',  id:'url',  text:'URL', value:this.state.data.url},
-    {tag:'input', type:'text', id:'hostname',  text:'hostname', value:this.state.data.hostname},
-   ]
- }
+ infoItems = () => [
+  {tag:'input', type:'text', id:'node', text:'Node', value:this.state.data.node},
+  {tag:'input', type:'url',  id:'url',  text:'URL', value:this.state.data.url},
+  {tag:'input', type:'text', id:'hostname',  text:'hostname', value:this.state.data.hostname},
+ ]
 
  render() {
   if (this.state.found === false)

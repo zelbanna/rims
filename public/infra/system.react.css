@@ -18,6 +18,9 @@ pre {    margin:0px; }
 details{ display:inline; }
 h1 {     font-size:16px; font-weight: bold; text-align:center; margin:4px 0px 4px 0px; white-space:nowrap; text-overflow:ellipsis; clear:both; }
 button::-moz-focus-inner { border-style: none; padding: 0; }
+select,input[type='text'],input[type='url'],input[type='email'],input[type='password'],input[type='date'],input[type='time'] { 
+ -webkit-appearance: none; background-color: transparent; border:solid 1px; border-color:transparent; border-bottom:dotted 1px #F1F1F1; color: #000000;
+}
 
 @media only screen and (min-width: 600px) {
   /* For tablets: */
@@ -31,7 +34,6 @@ button::-moz-focus-inner { border-style: none; padding: 0; }
 article.login {  border:solid 1px #9CA6B0; width:auto; height:auto;}
 article.login input:focus { border-color:black; }
 article.login form { display:inline; float:left; }
-article.login input[type='text'],input[type='password'] {  overflow:visible; background-color: transparent; color: #000000; -webkit-appearance: none; border:solid 1px; border-color:transparent; border-bottom:dotted 1px #F1F1F1;}
 article.login h1 { margin:10px!important; }
 article.login button { margin:10px!important; }
 
@@ -48,16 +50,14 @@ button.menu:hover { opacity:0.7; box-shadow:4px 4px 4px 0 rgba(0,0,0,0.3); font-
 button.menu > img {  max-height:43px; }
 button.right   {  float:right!important; }
 
-
 /*************************************** Content Model *****************************************/
 
 header {  height: 66px; width:100vw; padding-left:5px; overflow:auto; }
 nav {     height: 34px; width:100%; display:block; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden;}
 main {    height: calc(100vh - 100px);  width:100vw; display:flex }
 section { float:left; height: 100%; width:auto; overflow-y: scroll; }
-section.content-left { min-width:max-content; overflow-x:hidden;}
+section.content-left { min-width:max-content; overflow-x:hidden; width:25%; }
 section.content-right { overflow-x:scroll;}
-
 
 nav ul {  list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
 nav li {  height:34px; display:block; float:left; background-color: transparent; }
@@ -82,18 +82,11 @@ div.info { display:grid; margin:2px 0px 2px 0px; }
 div.col2 { grid-template-columns: max-content auto;}
 div.col3 { grid-template-columns: max-content auto max-content;}
 div.info > * {  overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:3px 0px 3px 6px; font-style:italic;}
-div.info .heading { font-weight:bold; text-align:center;}
 div.info *[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
-div.info select,input[type='text'],input[type='url'],input[type='email'],input[type='password'],input[type='date'],input[type='time'] { 
- -webkit-appearance: none;
- background-color: transparent;
- border:solid 1px; border-color:transparent; border-bottom:dotted 1px #F1F1F1;
- color: #000000;
- font-style:normal;
- overflow:visible; 
- width:99%;
+div.info > select, div.info > input[type='text'], div.info > input[type='url'], div.info > input[type='email'], div.info > input[type='password'], div.info > input[type='date'], div.info > input[type='time'] {
+ overflow:visible;  width: 99%; font-style:normal;
 }
-div.info input[type='checkbox'] { width:22px; }
+div.info > input[type='checkbox'] { width:22px; }
 
 div.info input:-moz-read-only { font-style:italic; }
 div.info input:read-only {      font-style:italic; }
@@ -124,8 +117,12 @@ div.table .tfoot {     display: table-footer-group; }
 
 /*************************************** Report Model *****************************************/
 
-article.report {       z-index:101; height:auto; width:calc(100% - 6px); overflow:scroll; }
+article.report {       z-index:101; height:auto; width:calc(100% - 6px); overflow-y:scroll; overflow-x:hidden; }
 article.report div {   white-space:unset!important; }
+
+/*************************************** Line Input Model ****************************************/
+
+article.lineinput > div { display:flex; }
 
 /*************************************** Code Model ****************************************/
 
@@ -147,7 +144,7 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
 
 /************************************************** EXTRA ****************************************************/
 
-div.centered { justify-content:space-evenly; display:flex; flex-wrap:wrap; width:100%; }
+div.centered { justify-content:space-evenly; display:flex; flex-wrap:wrap; width:100%; height:max-content; }
 div.state { border: 1px solid #9CA6B0; border-radius:16px; height:16px; width:16px; display:inline-block; }
 
 /******************************************* EXTRA NOT FOUND YET *********************************************/

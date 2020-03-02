@@ -8,15 +8,20 @@ export const InfoCol2 = (props) => {
   let second = ''
   switch(row.tag) {
    case 'input':
-    if (row.type !== 'radio')
+    if (["text","url","email","password","date","time"].includes(row.type))
      second = <input type={row.type} id={row.id} name={row.id} onChange={props.changeHandler} value={row.value} placeholder={row.placeholder} />
-    else {
+    else if (row.type === "checkbox")
+     second = <input type="checkbox" id={row.id} name={row.id} onChange={props.changeHandler} defaultChecked={row.value} />
+    else if (row.type === "radio"){
      second = <div>{
       row.options.map((opt,index) => <Fragment key={'radio_'+index}>
         <label htmlFor={'radio_'+index}>{opt.text}</label>
         <input type='radio' key={'radio_input_'+index}  id={'radio_'+index} name={row.id} onChange={props.changeHandler} value={opt.value} checked={(row.value === opt.value) ? 'checked' : ''}/>
        </Fragment> )
      }</div>
+    } else {
+     window.alert("Unknown input type:" + row.type);
+     second = <div>UNKNOWN</div>
     }
     break;
    case 'span':

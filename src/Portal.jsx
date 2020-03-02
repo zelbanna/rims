@@ -132,13 +132,13 @@ class RIMS extends Component {
 
  eraseCookie = () => {
   document.cookie = "rims=; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-  this.setState(() => { return {token:null}})
+  this.setState({token:null})
  }
 
  setCookie = (cookie,expires) => {
   const encoded = btoa(JSON.stringify(cookie));
   document.cookie = "rims=" + encoded + "; expires=" + expires + "; Path=/";
-  this.setState(() => { return cookie; })
+  this.setState(cookie)
  }
 
  render(){

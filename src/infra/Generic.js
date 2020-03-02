@@ -4,7 +4,7 @@ import React, { Fragment } from 'react';
 
 export const Spinner = () => <div className='overlay'><div className='loader'></div></div>
 
-export const StateMap = (props) => <div className={'state '+ {unknown:'grey',up:'green',down:'red'}[props.state] || 'orange'} />
+export const StateMap = (props) =>  <div className={'state '+ {unknown:'grey',up:'green',down:'red',undefined:'orange',null:'orange'}[props.state] || 'orange'} />
 
 // ***************************** Table ********************************
 
