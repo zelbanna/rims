@@ -110,9 +110,7 @@ class Login extends Component {
    <div className='background overlay'>
     <article className='login'>
      <h1 className='centered'>{this.state.message}</h1>
-     <form>
-      <InfoCol2 griditems={griditems} changeHandler={this.handleChange} className={'left'}/>
-     </form>
+     <InfoCol2 griditems={griditems} changeHandler={this.handleChange} className={'left'}/>
      <MenuButton icon='images/icon-start.png' title='Start' onClick={this.handleSubmit}/>
     </article>
    </div>

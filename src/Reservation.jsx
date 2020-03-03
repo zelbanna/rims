@@ -87,9 +87,7 @@ class Info extends InfoBase {
    return (
     <article className='info'>
      <h1>Reservation ({this.state.data.device_id})</h1>
-     <form>
-      <InfoCol2 key={'user_content'} griditems={griditems} changeHandler={this.handleChange} />
-     </form>
+     <InfoCol2 key={'user_content'} griditems={griditems} changeHandler={this.handleChange} />
      <InfoButton key='reservation_save' type='save' onClick={() => this.updateInfo('api/reservation/info')} />
     </article>
    );

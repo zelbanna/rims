@@ -81,10 +81,8 @@ class Info extends InfoBase {
    return (
     <article className='info'>
      <h1>Activity ({this.state.data.id})</h1>
-     <form>
-      <InfoCol2 key='activity_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
-      <textarea id='event' name='event' className='info' onChange={this.handleChange} value={this.state.data.event} />
-     </form>
+     <InfoCol2 key='activity_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
+     <textarea id='event' name='event' className='info' onChange={this.handleChange} value={this.state.data.event} />
      <InfoButton key='activity_save' type='save' onClick={() => this.updateInfo('api/master/activity_info')} />
     </article>
    );
@@ -107,9 +105,7 @@ export class Report extends ReportBase{
  }
 
  listItem = (row) => [row.date + ' - ' + row.time,row.user,row.type,row.event]
-
 }
-
 
 // ************** TypeList **************
 //
@@ -158,9 +154,7 @@ class TypeInfo extends InfoBase {
    return (
     <article className='info'>
      <h1>Activity Type ({this.state.data.id})</h1>
-     <form>
-      <InfoCol2 key='activity_type_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
-     </form>
+     <InfoCol2 key='activity_type_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      <InfoButton key='activity_type_save' type='save' onClick={() => this.updateInfo('api/master/activity_type_info')} />
     </article>
    );

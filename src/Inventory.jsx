@@ -69,15 +69,13 @@ class Search extends Component {
    <article className='lineinput'>
     <h1>Inventory Search</h1>
     <div>
-     <form>
-      <span>Field:
-       <select id='field' name='field' onChange={this.handleChange} value={this.state.data.field}>
-        <option value='serial'>Serial</option>
-        <option value='vendor'>Vendor</option>
-       </select>:
-       <input type='text' id='search' name='search' required='required' onChange={this.handleChange} value={this.state.data.search} placeholder='search' />
-      </span>
-     </form>
+     <span>Field:
+      <select id='field' name='field' onChange={this.handleChange} value={this.state.data.field}>
+       <option value='serial'>Serial</option>
+       <option value='vendor'>Vendor</option>
+      </select>:
+      <input type='text' id='search' name='search' required='required' onChange={this.handleChange} value={this.state.data.search} placeholder='search' />
+     </span>
      <InfoButton type='search' title='Search' onClick={() => this.props.changeMain(<List key='inventory_list' args={this.state.data} changeMain={this.props.changeMain} />)} />
     </div>
    </article>
@@ -109,14 +107,14 @@ export class Info extends InfoBase {
    {tag:'select', id:'location_id', text:'Location', value:data.location_id, options:this.state.locations.map( row => ({value:row.id, text:row.name}))},
    {tag:'input', type:'date', id:'receive_date', text:'Received', value:data.receive_date},
    {tag:'input', type:'text', id:'purchase_order', text:'Purchase Order', value:data.purchase_order},
-   {tag:'input', type:'checkbox', id:'license', text:'License', value:data.license}
+   {tag:'input', type:'text', id:'comments', text:'Comments', value:data.comments},
+   {tag:'input', type:'checkbox', id:'license', text:'License', value:data.license},
+   {tag:'input', type:'checkbox', id:'support_contract', text:'Support Contract', value:data.support_contract}
   ]
   if (data.license)
    items.push({tag:'input', type:'text', id:'license_key', text:'Key', value:data.license_key})
-  items.push({tag:'input', type:'checkbox', id:'support_contract', text:'Support Contract', value:data.support_contract})
   if (data.support_contract)
    items.push({tag:'input', type:'date', id:'support_end_date', text:'Contract End', value:data.support_end_date})
-  items.push({tag:'input', type:'text', id:'comment', text:'Comments', value:data.comments})
   return items
  }
 
@@ -130,9 +128,7 @@ export class Info extends InfoBase {
    return (
     <article className={className}>
      <h1>Inventory Info ({this.state.data.id})</h1>
-     <form>
-      <InfoCol2 key='inventory_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
-     </form>
+     <InfoCol2 key='inventory_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      <InfoButton key='inventory_reload' type='reload' onClick={() => this.componentDidMount() } />
      <InfoButton key='inventory_save' type='save' onClick={() => this.updateInfo('api/inventory/info') } />
     </article>

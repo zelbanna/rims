@@ -74,12 +74,10 @@ class Info extends InfoBase {
     buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='trash' onClick={() => this.changeInfo(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />)
    }
    return (
-   <Fragment key='srv_info_fragment'>
+   <Fragment key='node_info_fragment'>
     <article className='info'>
      <h1>Node Info ({this.state.data.id})</h1>
-     <form>
-      <InfoCol2 key='node_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
-     </form>
+     <InfoCol2 key='node_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
      {buttons}
     </article>
     <NavBar key='node_navbar' items={null} />
