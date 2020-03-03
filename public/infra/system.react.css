@@ -66,7 +66,7 @@ nav li.dropdown:hover ul { display:block; }
 nav li.dropdown > ul > li { clear:left; }
 nav li.navinfo {  background-color:#00CC66; color:#FFFFFF; font-weight:bold;}
 nav li.right   {  float:right!important; }
-nav button,nav label { font-size:14px; padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; }
+nav button,nav label { font-size:14px; padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:34px; }
 nav button:active{ opacity:0.8; }
 nav button.reload { background-position: center; background-repeat: no-repeat; background-size: contain; width:100%; margin: 0px 10px; height:100%; }
 nav button.navinfo:hover{ color:#FFFFFF!important; }
