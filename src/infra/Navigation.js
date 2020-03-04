@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavButton } from './Buttons.js';
+import { NavButton } from './Buttons.jsx';
 
 // ************************** Navigation ******************************
 

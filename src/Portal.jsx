@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { read_cookie, rest_call, rest_base } from  './infra/Functions.js';
 import Library from './infra/Mapper.js'
 import { InfoCol2 }   from './infra/Info.js';
-import { MenuButton } from './infra/Buttons.js';
+import { MenuButton } from './infra/Buttons.jsx';
 import { NavBar } from './infra/Navigation.js';
 
 // CONVERTED ENTIRELY

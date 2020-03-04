@@ -14,9 +14,9 @@ dns.py:def status(aWeb):
 dns.py:def consistency(aWeb):
 
 */
-export class Main extends Component {
+export class DomainList extends Component {
 
  render() {
-  return (<div>Visualize Main</div>);
+  return (<div>Domain List (TODO)</div>);
  }
 }

@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
 import { Spinner } from './infra/Generic.js';
 import { ListBase, ReportBase, InfoBase }    from './infra/Base.jsx';
-import { InfoButton, TextButton }  from './infra/Buttons.js';
+import { InfoButton, TextButton }  from './infra/Buttons.jsx';
 import { InfoCol2 }   from './infra/Info.js';
 
 import { Info as UserInfo } from './User.jsx';

@@ -13,6 +13,13 @@ visualize.py:def network(aWeb):
 export class Main extends Component {
 
  render() {
-  return (<div>Visualize Main</div>);
+  return (<div>Visualize Main (TODO)</div>);
+ }
+}
+
+export class List extends Component {
+
+ render() {
+  return (<div>Visualize List (TODO)</div>);
  }
 }

@@ -1,17 +1,4 @@
-import React, { Fragment } from 'react';
-
-export const ButtonsGenerator = (key,buttons) => {
- let btns = []
- buttons.forEach(btn => {
-  if (btn.button === 'info')
-   btns.push(<InfoButton key={key + '_' + btn.type} {...btn} />)
-  else if (btn.button === 'text')
-   btns.push(<TextButton key={key + '_' + btn.type} {...btn} />)
- })
- return <Fragment key={key}>{btns}</Fragment>
-}
-
-// ***************************** Button ********************************
+import React from 'react';
 
 export const MenuButton = (props) => {
  const className = ('className' in props) ? `menu ${props.className}` : 'menu';

@@ -61,10 +61,7 @@ export class InfoBase extends Component {
 
  handleChange = (e) => {
   var data = {...this.state.data}
-  if (e.target.type === "checkbox")
-   data[e.target.name] = e.target.checked;
-  else
-   data[e.target.name] = e.target.value;
+  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data})
  }
 

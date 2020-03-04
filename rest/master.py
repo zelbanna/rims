@@ -26,8 +26,6 @@ def inventory(aCTX, aArgs = None):
    db.do("SELECT alias FROM users WHERE id = %s"%aArgs['user_id'])
    ret['navinfo'].append(db.get_val('alias'))
 
- ret['services'] = aCTX.config.get('services',[])
-
  return ret
 
 ########################################## OUI ##########################################

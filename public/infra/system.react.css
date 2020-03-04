@@ -60,7 +60,7 @@ section.content-left { min-width:max-content; overflow-x:hidden; width:25%; }
 section.content-right { overflow-x:scroll;}
 
 nav ul {  list-style-type:none; margin:0px ;padding:0px; overflow:hidden; }
-nav li {  height:34px; display:block; float:left; background-color: transparent; }
+nav li {  display:block; float:left; background-color: transparent; }
 nav li.dropdown ul { display:none; position: absolute;  min-width: 60px; overflow:auto; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 200; }
 nav li.dropdown:hover ul { display:block; }
 nav li.dropdown > ul > li { clear:left; }
@@ -68,7 +68,7 @@ nav li.navinfo {  background-color:#00CC66; color:#FFFFFF; font-weight:bold;}
 nav li.right   {  float:right!important; }
 nav button,nav label { font-size:14px; padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:34px; }
 nav button:active{ opacity:0.8; }
-nav button.reload { background-position: center; background-repeat: no-repeat; background-size: contain; width:100%; margin: 0px 10px; height:100%; }
+nav button.reload { background-position: center; background-repeat: no-repeat; background-size: contain; margin: 0px 10px; height:34px; width:34px; }
 nav button.navinfo:hover{ color:#FFFFFF!important; }
 
 article {        border-radius: 2px; background-color:#FFFFFF; margin: 3px; overflow:hidden; padding:2px; float:left; }
@@ -122,6 +122,7 @@ article.report div {   white-space:unset!important; }
 
 /*************************************** Line Input Model ****************************************/
 
+article.lineinput { height:max-content; }
 article.lineinput > div { display:flex; }
 
 /*************************************** Code Model ****************************************/
@@ -132,6 +133,12 @@ article.code > span { font-family:Courier New, serif; display:block }
 /*************************************** Text Model ****************************************/
 
 article.text > p { margin:1px; }
+
+/*************************************** File List Model ****************************************/
+
+article.files { overflow-y:scroll; min-width:200px; }
+article.files img { max-height:60px; }
+article.files h1 {  text-transform: capitalize; }
 
 /************************************** JS tools ********************************************/
 

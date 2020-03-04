@@ -137,7 +137,6 @@ def service_info(aCTX, aArgs = None):
  except CalledProcessError as c:
   output = c.output
   ret['code'] = c.returncode
-  ret['status'] = 'NOT_OK'
 
  for line in output.decode().split('\n'):
   line = line.lstrip()

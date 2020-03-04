@@ -1,8 +1,8 @@
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
 import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { Spinner } from './infra/Generic.js';
+import { Spinner, TableRow } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase } from './infra/Base.jsx';
-import { TextButton } from './infra/Buttons.js';
+import { InfoButton, TextButton } from './infra/Buttons.jsx';
 
 import { LogShow, List as NodeList } from './Node.jsx';
 import { List as ServerList } from './Server.jsx';
@@ -12,16 +12,14 @@ import { Report as ReservationReport } from './Reservation.jsx';
 import { Report as DeviceReport } from './Device.jsx';
 import { Report as InventoryReport } from './Inventory.jsx';
 
+// CONVERTED ENTIRELY
+
 // ************** Main **************
 //
 export class Main extends MainBase {
  constructor(props){
   super(props)
-  this.state.cookie = read_cookie('rims')
-  this.state.navinfo = []
-  this.state.navitems = []
-  this.state.logs = []
-  this.state.services = []
+  this.state = {cookie:read_cookie('rims'), navinfo:[], navitems:[], logs:[], services:[] }
  }
 
  componentDidMount(){
@@ -53,11 +51,11 @@ export class Main extends MainBase {
    }
    reports.push({title:'Tasks',   onClick:() => this.changeMain(<TaskReport key='task_report' />) })
    reports.push({title:'System',  onClick:() => this.changeMain(<Report key='system_report' />) })
-   navitems.push({title:'Logs',   type:'dropdown', items:this.state.logs.map(row => ({title:row, onClick:() => this.changeMain( <LogShow node={row} /> )})) })
+   navitems.push({title:'Logs',   type:'dropdown', items:this.state.logs.map(row => ({title:row, onClick:() => this.changeMain( <LogShow key={row.name} node={row} /> )})) })
    navitems.push({title:'Report', type:'dropdown', items:reports})
    navitems.push({title:'REST',  onClick:() => this.changeMain(<RestList key='rest_list' />) })
    if (this.state.services.length > 0)
-    navitems.push({title:'Services', type:'dropdown', items:this.state.services.map(row => ({title:row, onClick:() => this.changeMain( <ServiceInfo {... row} /> )})) })
+    navitems.push({title:'Services', type:'dropdown', items:this.state.services.map(row => ({title:row.name, onClick:() => this.changeMain( <ServiceInfo key={row.name} {...row} /> )})) })
    navitems.push({ onClick:() => this.setState({content:null}), className:'reload' })
    this.state.navinfo.forEach(row => navitems.push({title:row, className:'right navinfo'}))
    this.props.loadNavigation(navitems)
@@ -124,7 +122,6 @@ class RestList extends ListBase {
  listItem = (row) => [row.api,<TextButton key={'rest_' + row.api} text={row.function} onClick={() => { this.changeList(<RestInfo key={`rest_info_${row.api}_${row.function}`} {...row} />)}} />]
 
 }
-
 
 // ************** RestInfo **************
 //
@@ -195,22 +192,98 @@ class Controls extends ListBase {
  listItem = (row) => [<TextButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.changeList(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
 }
 
+// ************** File List **************
+//
+export class FileList extends Component {
+ constructor(props){
+  super(props)
+  this.state = {files:null}
+  if (this.props.hasOwnProperty('directory')){
+   this.state.mode = 'directory'
+   this.state.args = {directory:this.props.directory}
+  } else if (this.props.hasOwnProperty('fullpath')){
+   this.state.mode = 'fullpath'
+   this.state.args = {fullpath:this.props.fullpath}
+  } else {
+   this.state.mode = 'images'
+   this.state.args = {}
+  }
+ }
+
+ componentDidMount(){
+  rest_call(rest_base + 'api/system/file_list',this.state.args)
+  .then((result) => {
+   if (result.status === 'OK')
+    this.setState(result)
+   else {
+    window.alert("Error retrieving files:" + result.info);
+    this.setState({files:[]})
+   }
+  })
+ }
+
+ // TODO migrate rest_base to correct / when converted to single site
+ listItem = (row) => {
+  if (this.state.mode === 'images')
+   return (row.substr(row.length - 4) === '.png') ? [row,<img src={this.state.path +'/'+row} alt={this.state.path +'/'+row} />] : []
+  else
+   return [<Fragment key={row}>{this.state.path + "/"}<a href={rest_base + this.state.path + "/" + row} target="_blank" rel="noopener noreferrer">{row}</a></Fragment>]
+ }
+
+ render() {
+  if (this.state.files === null)
+   return <Spinner />
+  else
+   return (
+    <article className='files'>
+     <h1>{this.state.mode}</h1>
+     <div className='table'>
+      <div className='tbody'>
+      {this.state.files.map((row,index) => <TableRow key={'content_trow_files_'+index} cells={this.listItem(row)} /> )}
+      </div>
+     </div>
+    </article>
+   )
+ }
+}
+
 // ************************ TODO ********************
 
 class ServiceInfo extends Component {
- render() {
-  return (<div>Service Info TODO</div>)
+ constructor(props){
+  super(props)
+  this.state = {state:null}
  }
-}
 
-export class FileList extends Component {
- render() {
-  return(<div>FileList TODO</div>)
+ componentDidMount(){
+  this.updateService({service:this.props.service})
  }
-}
 
-export class Images extends Component {
+ updateService(args){
+  // Always do a reset (so do a spinner)
+  this.setState({state:null})
+  rest_call(rest_base + 'api/system/service_info',args)
+  .then((result) => {
+   if (result.status === 'OK')
+    this.setState(result)
+   else {
+    window.alert("Error retrieving service state:" + result.info);
+   }
+  })
+ }
+
  render() {
-  return(<div>Images TODO</div>)
+   if (this.state.state === null)
+    return <Spinner />
+   else {
+    const state = (this.state.state === 'inactive') ? 'start' : 'stop'
+    return (
+     <article className='lineinput'>
+      <div>
+       <b>{this.props.name}</b>: {this.state.state} ({this.state.extra}) <InfoButton key={'state_change'} type={state} onClick={() => this.updateService({service:this.props.service,op:state})} />
+      </div>
+     </article>
+    )
+   }
  }
 }

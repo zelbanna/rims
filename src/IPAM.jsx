@@ -13,9 +13,11 @@ ipam.py:def address_delete(aWeb):
 
 */
 
-export class Main extends Component {
+export class NetworkList extends Component {
 
  render() {
-  return (<div>Visualize Main</div>);
+  return (<div>IPAM Network List (TODO)</div>);
  }
 }
+
+

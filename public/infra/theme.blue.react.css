@@ -1,0 +1,82 @@
+/* Blue style sheet 
+
+Main:   #3E84F4
+Darker: #2674F2
+Back:   #F1F1F1
+
+*/
+
+/*###################################### Content Model ########################################*/
+
+
+header { background-color: #3E84F4; }
+main {   background-color:#F1F1F1; }
+
+nav { background-color:#2674F2; color:#FFFFFF!important; }
+nav li.warning button:hover{ color:#DF3620; }
+nav button {      color:#FFFFFF; }
+nav li:hover{     background-color:#3E84F4; }
+nav button.reload {       background-image: url(/images/btn-nav-reload.blue.png); }
+nav ul.dropdown-content { background-color: #3E84F4; }
+
+.red {         background-color:#DF3620!important; }
+.green {       background-color:#00CC66!important; }
+.blue {        background-color:#33CAFF!important; }
+.orange {      background-color:orange!important;  }
+.white {       background-color:#FFFFFF!important; }
+.grey {        background-color:#9CA6B0!important; }
+
+/*###################################### Menu Buttons ########################################*/
+
+button.warning {     background-color:#DF3620!important; color:#FFFFFF!important; }
+
+/*###################################### Info Buttons ########################################*/
+
+input:focus,select:focus,textarea:focus { border-color:#3E84F4!important; }
+
+/*#############################################################################*/
+
+button.type-add {       width:22px; background-image: url(/images/btn-add.blue.png); }
+button.type-analyze {   width:22px; background-image: url(/images/btn-analyze.blue.png); }
+button.type-back {      width:22px; background-image: url(/images/btn-back.blue.png); }
+button.type-configure { width:22px; background-image: url(/images/btn-configure.blue.png); }
+button.type-connections { width:22px; background-image: url(/images/btn-connections.blue.png); }
+button.type-delete {    width:22px; background-image: url(/images/btn-delete.blue.png); }
+button.type-devices {   width:22px; background-image: url(/images/btn-devices.blue.png); }
+button.type-document {  width:22px; background-image: url(/images/btn-document.blue.png); }
+button.type-edit {      width:22px; background-image: url(/images/btn-edit.blue.png); }
+button.type-fix {       width:22px; background-image: url(/images/btn-fix.blue.png); }
+button.type-forward {   width:22px; background-image: url(/images/btn-forward.blue.png); }
+button.type-help {      width:22px; background-image: url(/images/btn-help.blue.png); }
+button.type-info {      width:22px; background-image: url(/images/btn-info.blue.png); }
+button.type-items {     width:22px; background-image: url(/images/btn-items.blue.png); }
+button.type-load {      width:22px; background-image: url(/images/btn-load.blue.png); }
+button.type-logs {      width:22px; background-image: url(/images/btn-logs.blue.png); }
+button.type-network {   width:22px; background-image: url(/images/btn-network.blue.png); }
+button.type-off {       width:22px; background-image: url(/images/btn-off.blue.png); }
+button.type-reload {    width:22px; background-image: url(/images/btn-reload.blue.png); } 
+button.type-revert {    width:22px; background-image: url(/images/btn-revert.blue.png); }
+button.type-save {      width:22px; background-image: url(/images/btn-save.blue.png); }
+button.type-search {    width:22px; background-image: url(/images/btn-search.blue.png); }
+button.type-show {      width:22px; background-image: url(/images/btn-show.blue.png); }
+button.type-snapshot {  width:22px; background-image: url(/images/btn-snapshot.blue.png); }
+button.type-start {     width:22px; background-image: url(/images/btn-start.blue.png); }
+button.type-stop {      width:22px; background-image: url(/images/btn-stop.blue.png); }
+button.type-suspend {   width:22px; background-image: url(/images/btn-suspend.blue.png); }
+button.type-sync {      width:22px; background-image: url(/images/btn-sync.blue.png); }
+button.type-term-frame {width:22px; background-image: url(/images/btn-term-frame.blue.png); }
+button.type-term {      width:22px; background-image: url(/images/btn-term.blue.png); }
+button.type-trash {     width:22px; background-image: url(/images/btn-trash.blue.png); }
+button.type-ui {        width:22px; background-image: url(/images/btn-ui.blue.png); }
+
+/*################################# EXTRA SO FAR ############################################*/
+
+/*
+.background {  background-color:#F1F1F1; }
+
+a.small { height: 22px; margin:0px; margin-right:1px; margin-bottom:2px; font-size:14px; color:#FFFFFF; background-color:#3E84F4; padding:0px; border-radius: 3px; border:none!important; box-shadow:0px 2px rgba(0,0,0,0.3); }
+a.small:hover { box-shadow:0px 2px rgba(0,0,0,0.3); }
+a.small:active { transform: translateY(1px); box-shadow:0px 1px rgba(0,0,0,0.3);}
+
+a.ipam { height:22px; width:22px; font-size:9px; color:#000000; margin:2px; padding:2px; float:left; font-family: Verdana,sans-serif; border: 1px solid #9CA6B0; }
+*/
