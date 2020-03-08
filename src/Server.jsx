@@ -1,9 +1,8 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rest_base, rnd } from './infra/Functions.js';
-import { Spinner }    from './infra/Generic.js';
+import { Spinner, InfoCol2 }    from './infra/Generic.js';
 import { ListBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
-import { InfoCol2 }   from './infra/Info.js';
 import { NavBar }   from './infra/Navigation.js';
 
 // ************** List **************
@@ -11,11 +10,11 @@ import { NavBar }   from './infra/Navigation.js';
 export class List extends ListBase {
  constructor(props){
   super(props);
-  this.header='Servers'
-  this.thead=['Node','Service','Type','']
+  this.header='Servers';
+  this.thead=['Node','Service','Type',''];
   this.buttons=[
    <InfoButton key='srv_reload' type='reload' onClick={() => this.componentDidMount() } />,
-   <InfoButton key='srv_add'    type='add' title='Add server'  onClick={() => this.changeList(<Info key={'srv_add_' + rnd()} id='new' type={this.props.type} />)  } />
+   <InfoButton key='srv_add'    type='add' title='Add server'  onClick={() => this.changeContent(<Info key={'srv_add_' + rnd()} id='new' type={this.props.type} />)  } />
   ]
  }
 
@@ -27,7 +26,7 @@ export class List extends ListBase {
 
  listItem = (row) => {
   var buttons = [
-   <InfoButton key='srv_info'   type='info'   onClick={() => this.changeList(<Info key={'server_info_'+row.id} id={row.id} />) } />,
+   <InfoButton key='srv_info'   type='info'   onClick={() => this.changeContent(<Info key={'server_info_'+row.id} id={row.id} />) } />,
    <InfoButton key='srv_delete' type='trash'  onClick={() => this.deleteList('api/master/server_delete',row.id,'Are you really sure?')  } />,
   ]
   if (row.hasOwnProperty('ui') && (row.ui.length > 0))
@@ -66,9 +65,9 @@ class Info extends InfoBase {
   else {
    let buttons = [<InfoButton key='srv_save' type='save' onClick={() => this.updateInfo('api/master/server_info')} />]
    if (this.state.data.id !== 'new'){
-    buttons.push(<InfoButton key='srv_sync' type='sync' onClick={() => {      this.changeInfo(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />) }} />)
-    buttons.push(<InfoButton key='srv_restart' type='reload' onClick={() => { this.changeInfo(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />) }} />)
-    buttons.push(<InfoButton key='srv_status'  type='items'  onClick={() => { this.changeInfo(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />) }} />)
+    buttons.push(<InfoButton key='srv_sync' type='sync' onClick={() => {      this.changeContent(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />) }} />)
+    buttons.push(<InfoButton key='srv_restart' type='reload' onClick={() => { this.changeContent(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />) }} />)
+    buttons.push(<InfoButton key='srv_status'  type='items'  onClick={() => { this.changeContent(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />) }} />)
    }
    return (
     <Fragment key='srv_info_fragment'>

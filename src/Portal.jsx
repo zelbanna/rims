@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
-import { read_cookie, rest_call, rest_base } from  './infra/Functions.js';
+import { rest_call, rest_base } from  './infra/Functions.js';
 import Library from './infra/Mapper.js'
-import { InfoCol2 }   from './infra/Info.js';
+import { InfoCol2, CookieContext } from './infra/Generic.js';
 import { MenuButton } from './infra/Buttons.jsx';
 import { NavBar } from './infra/Navigation.js';
 
@@ -17,7 +17,7 @@ class Portal extends Component {
  }
 
  componentDidMount() {
-  rest_call(rest_base + 'api/portal/menu',{id:this.props.cookie.id})
+  rest_call(rest_base + 'api/portal/menu',{id:this.context.cookie.id})
    .then((result) => {
     this.setState(result)
     if (result.start)
@@ -29,22 +29,25 @@ class Portal extends Component {
  loadNavigation = (items) => { this.setState({navigation:items}) }
 
  changeContent = (panel) => {
-  if ((this.state.content !== null) && (this.state.content.key === `${panel.module}_${panel.function}`))
-   return
-  try {
-   const Elem = Library[panel.module][panel.function]
-   this.setState({navigation:[],content:<Elem key={panel.module + '_' + panel.function} {...panel.args} loadNavigation={this.loadNavigation} />})
-  } catch(err) {
-   console.error("Mapper error: "+panel);
-   alert(err);
-  }
+  if (panel.hasOwnProperty('module')) {
+   if ((this.state.content !== null) && (this.state.content.key === `${panel.module}_${panel.function}`))
+    return
+   try {
+    var Elem = Library[panel.module][panel.function]
+    this.setState({navigation:[],content:<Elem key={panel.module + '_' + panel.function} {...panel.args} loadNavigation={this.loadNavigation} />})
+   } catch(err) {
+    console.error("Mapper error: "+panel);
+    alert(err);
+   }
+  } else
+   this.setState({content:panel.content})
  }
 
  Header(props){
   let buttons = [
-   <MenuButton key='mb_Logout' className='right warning' onClick={() => {props.eraseCookie()} } title='Log out' />,
+   <MenuButton key='mb_Logout' className='right warning' onClick={() => { props.clearCookie()}} title='Log out' />,
    <MenuButton key='mb_System_Main' className='right' onClick={() => {props.changeContent({module:'System',function:'Main'})}} title='System' icon='images/icon-config.png' />,
-   <MenuButton key='mb_User_User' className='right' onClick={() => {props.changeContent({module:'User',function:'User', args:{id:props.cookie.id}})}}   title='User'   icon='images/icon-users.png' />
+   <MenuButton key='mb_User_User' className='right' onClick={() => {props.changeContent({module:'User',function:'User', args:{id:props.id}})}}   title='User'   icon='images/icon-users.png' />
   ]
   for (let [key, panel] of Object.entries(props.menu)){
    let click = null
@@ -53,7 +56,7 @@ class Portal extends Component {
    else if (panel.type === 'tab')
     click = () => window.open(panel.tab,'_blank')
    else if (panel.type === 'frame')
-    click = () => props.setState({content:<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>})
+    click = () => props.changeContent({content:<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>})
    panel.title = key
    buttons.push(<MenuButton key={'mb_'+key} {...panel} onClick={click} />)
   }
@@ -63,14 +66,15 @@ class Portal extends Component {
  render() {
   return (
    <React.Fragment key='portal'>
-    <link key='userstyle' rel='stylesheet' type='text/css' href={'infra/theme.' + this.props.cookie.theme + '.react.css'} />
-    <this.Header key='portal_header' menu={this.state.menu} changeContent={this.changeContent} setState={this.setState} {...this.props} />
+    <link key='userstyle' rel='stylesheet' type='text/css' href={'infra/theme.' + this.context.cookie.theme + '.react.css'} />
+    <this.Header key='portal_header' menu={this.state.menu} changeContent={this.changeContent} clearCookie={this.context.clearCookie} id={this.context.cookie.id} />
     <NavBar key='portal_navigation' items={this.state.navigation} />
     <main>{this.state.content}</main>
    </React.Fragment>
   )
  }
 }
+Portal.contextType = CookieContext;
 
 // ************************ Login ************************
 class Login extends Component {
@@ -96,7 +100,7 @@ class Login extends Component {
   rest_call(rest_base + 'auth',{username:this.state.username,password:this.state.password})
    .then((result) => {
     if (result.status === 'OK'){
-     this.props.setCookie({node:result.node,token:result.token,id:result.id,theme:result.theme},result.expires);
+     this.props.setCookie({node:result.node,token:result.token,id:result.id,theme:result.theme,expires:result.expires});
     } else {
      document.getElementById("password").value = "";
      this.setState(prevState => ({ ...prevState,   password : '' }))
@@ -124,23 +128,36 @@ class RIMS extends Component {
  constructor(props) {
   super(props);
 
-  const cookie = read_cookie('rims');
-  this.state = (cookie) ? cookie : {token:null}
+  this.state = this.readCookie();
  }
 
- eraseCookie = () => {
+ readCookie = () => {
+  var cookies = document.cookie.split("; ");
+  for(var i=0;i < cookies.length;i++) {
+   var c = cookies[i];
+   if (c.indexOf("rims=") === 0)
+    // Parse from 5th letter to end
+    return JSON.parse(atob(c.substring(5,c.length)));
+  }
+  return {token:null};
+ }
+
+ clearCookie = () => {
   document.cookie = "rims=; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   this.setState({token:null})
  }
 
- setCookie = (cookie,expires) => {
+ setCookie = (cookie) => {
   const encoded = btoa(JSON.stringify(cookie));
-  document.cookie = "rims=" + encoded + "; expires=" + expires + "; Path=/";
+  document.cookie = "rims=" + encoded + "; expires=" + cookie.expires + "; Path=/";
+  console.log("Write cookie: " + JSON.stringify(cookie))
   this.setState(cookie)
  }
 
  render(){
-  return (this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal cookie={this.state} eraseCookie={this.eraseCookie}/>
+  return (<CookieContext.Provider value={{setCookie:this.setCookie,clearCookie:this.clearCookie,cookie:this.state}}>
+   {(this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal />}
+   </CookieContext.Provider>)
  }
 }
 

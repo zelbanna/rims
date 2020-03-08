@@ -15,7 +15,7 @@ def list(aCTX, aArgs = None):
  ret = {}
  with aCTX.db as db:
   ret['count'] = db.do("SELECT id,name FROM visualize")
-  ret['maps']  = db.get_rows()
+  ret['data']  = db.get_rows()
  return ret
 
 #
@@ -55,7 +55,7 @@ def show(aCTX, aArgs = None):
   search = "id = %(id)s"%aArgs if 'id' in aArgs else "name = '%(name)s'"%aArgs
   ret['found'] = (db.do("SELECT * FROM visualize WHERE %s"%search) > 0)
   if ret['found']:
-   data = db.get_row() 
+   data = db.get_row()
    ret['id']   = data['id']
    ret['name'] = data['name']
    for var in ['nodes','edges','options']:
@@ -110,8 +110,9 @@ def network(aCTX, aArgs = None):
    ret['found'] = (db.do("SELECT * FROM visualize WHERE id = %s"%ret['id']) > 0)
    data = db.get_row() if ret['found'] else {}
    ret['name'] = data.get('name',"")
-   for var in ['nodes','edges','options']:
-    ret[var] = loads(data.get(var,'null'))
+   ret['nodes'] = loads(data.get('nodes','[]'))
+   ret['edges'] = loads(data.get('edges','[]'))
+   ret['options'] = loads(data.get('options','{}'))
   else:
    if 'ip' in args:
     db.do("SELECT devices.id FROM devices LEFT JOIN device_interfaces AS di ON devices.id = di.device_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE ia.ip = INET_ATON('%(ip)s')"%args)

@@ -154,6 +154,8 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
 div.centered { justify-content:space-evenly; display:flex; flex-wrap:wrap; width:100%; height:max-content; }
 div.state { border: 1px solid #9CA6B0; border-radius:16px; height:16px; width:16px; display:inline-block; }
 
+div.network { width:100%; height:500px; }
+
 /******************************************* EXTRA NOT FOUND YET *********************************************/
 /*
 
@@ -168,8 +170,5 @@ div.rack-indx { font-weight:bold; font-size:8px; color:grey; padding:2px; }
 div.rack-data { border: solid 2px grey; font-size:12px; text-align:center;}
 
 span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; font-family: Verdana,sans-serif; }
-
-div.network { width:100%; height:500px; }
-
 
 */

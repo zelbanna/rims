@@ -11,28 +11,4 @@ export async function rest_call(url = '', args = {}) {
   return {}
 }
 
-export const read_cookie = () => {
- var cookies = document.cookie.split("; ");
- for(var i=0;i < cookies.length;i++) {
-  var c = cookies[i];
-  if (c.indexOf("rims=") === 0)
-   // Parse from 5th letter to end
-   return JSON.parse(atob(c.substring(5,c.length)));
- }
- return null;
-}
-
-export const set_cookie = (cookie,expires) => {
- console.log("Creating cookie: 'rims' expires:" + expires);
- const encoded = btoa(JSON.stringify(cookie));
- document.cookie = "rims=" + encoded + "; expires=" + expires + "; Path=/";
- return true;
-}
-
-export const erase_cookie = () => {
- console.log("Erasing cookie 'rims'");
- document.cookie = "rims=; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
- return true;
-}
-
 export const rnd = () => Math.floor(Math.random() * 10)

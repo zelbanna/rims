@@ -1,9 +1,8 @@
 import React, { Fragment } from 'react';
-import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { Spinner } from './infra/Generic.js';
+import { rest_call, rest_base } from './infra/Functions.js';
+import { Spinner, InfoCol2, CookieContext } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
-import { InfoCol2 }   from './infra/Info.js';
 
 // CONVERTED ENTIRELY
 
@@ -28,7 +27,7 @@ class List extends ListBase {
   this.header = 'Activities'
   this.buttons = [
    <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
-   <InfoButton key='add' type='add' onClick={() => this.changeList(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) } />
+   <InfoButton key='add' type='add' onClick={() => this.changeContent(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) } />
   ]
  }
 
@@ -38,7 +37,7 @@ class List extends ListBase {
  }
 
  listItem = (row) => [row.date + ' - ' + row.time,row.type,<Fragment key={'activity_buttons_'+row.id}>
-   <InfoButton key={'act_info_'+row.id} type='info'  onClick={() => this.changeList(<Info key={'activity_'+row.id} id={row.id} />) } />
+   <InfoButton key={'act_info_'+row.id} type='info'  onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) } />
    <InfoButton key={'act_delete_'+row.id} type='trash' onClick={() => this.deleteList('api/master/activity_delete',row.id,'Really delete activity') } />
    </Fragment>
   ]
@@ -48,17 +47,12 @@ class List extends ListBase {
 // *************** Info ***************
 //
 class Info extends InfoBase {
-  constructor(props) {
-  super(props)
-  const cookie = read_cookie('rims')
-  this.state.cookie_id  = cookie.id
- }
 
  componentDidMount(){
   rest_call(rest_base + 'api/master/activity_info',{id:this.props.id})
    .then((result) => {
    if (result.data.user_id === null)
-    result.data.user_id = this.state.cookie_id
+    result.data.user_id = this.context.cookie.id
    if (result.data.type_id === null)
     result.data.type_id = result.types[0].id
    this.setState(result);
@@ -89,6 +83,7 @@ class Info extends InfoBase {
   }
  }
 }
+Info.contextType = CookieContext;
 
 // ************** Report **************
 //
@@ -116,7 +111,7 @@ class TypeList extends ListBase {
   this.header= 'Activity Types'
   this.buttons=[
    <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
-   <InfoButton key='add' type='add' onClick={() => this.changeList(<TypeInfo key={'activity_type_new_' + Math.floor(Math.random() * 10)} id='new' />) } />
+   <InfoButton key='add' type='add' onClick={() => this.changeContent(<TypeInfo key={'activity_type_new_' + Math.floor(Math.random() * 10)} id='new' />) } />
   ]
  }
 
@@ -126,7 +121,7 @@ class TypeList extends ListBase {
  }
 
  listItem = (row) => [row.id,row.type,<Fragment key='activity_buttons'>
-   <InfoButton key='act_tp_info'   type='info'  onClick={() => this.changeList(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } />
+   <InfoButton key='act_tp_info'   type='info'  onClick={() => this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } />
    <InfoButton key='act_tp_delete' type='trash' onClick={() => this.deleteList('api/master/activity_type_delete',row.id,'Really delete type?') } />
    </Fragment>]
 

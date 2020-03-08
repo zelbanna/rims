@@ -1,9 +1,8 @@
 import React, { Fragment } from 'react';
-import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { Spinner } from './infra/Generic.js';
+import { rest_call, rest_base } from './infra/Functions.js';
+import { Spinner, InfoCol2, CookieContext } from './infra/Generic.js';
 import { ListBase, ReportBase, InfoBase }    from './infra/Base.jsx';
 import { InfoButton, TextButton }  from './infra/Buttons.jsx';
-import { InfoCol2 }   from './infra/Info.js';
 
 import { Info as UserInfo } from './User.jsx';
 
@@ -14,8 +13,6 @@ import { Info as UserInfo } from './User.jsx';
 export class List extends ListBase {
  constructor(props){
   super(props);
-  const cookie = read_cookie('rims')
-  this.state.cookie_id = cookie.id
   this.thead = ['User','Device','Until','']
   this.header = 'Reservations'
   this.buttons = [<InfoButton key='reload' type='reload' onClick={() => this.componentDidMount()} />]
@@ -44,14 +41,14 @@ export class List extends ListBase {
 
  listItem = (row) => {
   const cells = [
-   <TextButton key={'user_' + this.state.cookie_id} text={row.alias} onClick={() => this.changeList(<UserInfo key={'user_info'+this.state.cookie_id} id={this.state.cookie_id} />) } />,
+   <TextButton key={'user_' + this.context.cookie.id} text={row.alias} onClick={() => this.changeContent(<UserInfo key={'user_info'+this.context.cookie.id} id={this.context.cookie.id} />) } />,
    row.hostname,
    <div className={(row.valid) ? '' : 'orange'}>{row.end}</div>
   ]
-  if ((this.state.cookie_id === row.user_id) || (row.valid === false)) {
+  if ((this.context.cookie.id === row.user_id) || (row.valid === false)) {
    cells.push(
     <Fragment key='reservation_buttons'>
-     <InfoButton type='info' key={'rsv_info_'+row.device_id} onClick={() => { this.changeList(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
+     <InfoButton type='info' key={'rsv_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
      <InfoButton type='add'  key={'rsv_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />
      <InfoButton type='delete' key={'rsv_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id,'Remove reservatin?') }} title='Remove reservation' />
     </Fragment>
@@ -59,8 +56,8 @@ export class List extends ListBase {
   }
   return cells;
  }
-
 }
+List.contextType = CookieContext;
 
 // ************** Info **************
 //

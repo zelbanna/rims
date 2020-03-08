@@ -1,9 +1,8 @@
 import React, { Component, Fragment } from 'react';
-import { rest_call, rest_base, read_cookie, rnd } from './infra/Functions.js';
-import { Spinner } from './infra/Generic.js';
+import { rest_call, rest_base, rnd } from './infra/Functions.js';
+import { Spinner, InfoCol2, CookieContext } from './infra/Generic.js';
 import { ListBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
-import { InfoCol2 }   from './infra/Info.js';
 
 // CONVERTED ENTIRELY
 
@@ -17,7 +16,7 @@ export class List extends ListBase {
   this.base = 'user'
   this.buttons = [
    <InfoButton key='reload' type='reload' onClick={() => {this.componentDidMount()}} />,
-   <InfoButton key='add'    type='add'    onClick={() => {this.changeList(<Info key={'user_new_'+rnd()} id='new' />)}} />
+   <InfoButton key='add'    type='add'    onClick={() => {this.changeContent(<Info key={'user_new_'+rnd()} id='new' />)}} />
   ]
  }
 
@@ -27,7 +26,7 @@ export class List extends ListBase {
  }
 
  listItem = (row) => [row.id,row.alias,row.name,<Fragment key={'user_buttons_'+row.id}>
-   <InfoButton key={'user_info_'+row.id} type='info' onClick={() => { this.changeList(<Info key={'user_info_'+row.id} id={row.id} />)}} />
+   <InfoButton key={'user_info_'+row.id} type='info' onClick={() => { this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)}} />
    <InfoButton key={'user_del_'+row.id} type='trash' onClick={() => { this.deleteList('api/master/user_delete',row.id,'Really delete user?')}} />
   </Fragment>]
 
@@ -38,8 +37,6 @@ export class List extends ListBase {
 export class Info extends InfoBase {
  constructor(props) {
   super(props)
-  const cookie = read_cookie('rims');
-  this.state.cookie_id = cookie.id;
   this.state.themes = null;
  }
 
@@ -60,6 +57,12 @@ export class Info extends InfoBase {
     {tag:'select', id:'theme', text:'Theme', value:this.state.data.theme, options:this.state.themes.map(row => ({value:row, text:row}))}
    ]
 
+ updateInfo = (api) => {
+  this.context.setCookie({...this.context.cookie, theme:this.state.data.theme});
+  rest_call(rest_base + api,{op:'update', ...this.state.data})
+   .then((result) => { this.setState(result); })
+ }
+
  render() {
   if (this.state.found === false)
    return <article>User with id: {this.props.id} removed</article>
@@ -77,6 +80,7 @@ export class Info extends InfoBase {
   }
  }
 }
+Info.contextType = CookieContext;
 
 // ************** User **************
 //

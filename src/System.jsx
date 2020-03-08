@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { Spinner, TableRow } from './infra/Generic.js';
+import { rest_call, rest_base } from './infra/Functions.js';
+import { Spinner, TableRow, CookieContext } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase } from './infra/Base.jsx';
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
 
@@ -19,7 +19,7 @@ import { Report as InventoryReport } from './Inventory.jsx';
 export class Main extends MainBase {
  constructor(props){
   super(props)
-  this.state = {cookie:read_cookie('rims'), navinfo:[], navitems:[], logs:[], services:[] }
+  this.state = {navinfo:[], navitems:[], logs:[], services:[] }
  }
 
  componentDidMount(){
@@ -28,7 +28,7 @@ export class Main extends MainBase {
     Object.assign(this.state,result)
     this.compileNavItems()
    })
-  rest_call(rest_base + 'api/master/inventory',{node:this.state.cookie.node, user_id:this.state.cookie.id})
+  rest_call(rest_base + 'api/master/inventory',{node:this.context.cookie.node, user_id:this.context.cookie.id})
    .then((result) => {
     Object.assign(this.state,result)
     this.compileNavItems()
@@ -38,7 +38,7 @@ export class Main extends MainBase {
  compileNavItems = () => {
   let navitems = [];
   let reports = [];
-   if (this.state.cookie.node === 'master') {
+   if (this.context.cookie.node === 'master') {
     navitems.push({title:'Nodes',  onClick:() => this.changeMain(<NodeList key='node_list' />) })
     navitems.push({title:'Servers', onClick:() => this.changeMain(<ServerList key='server_list' />) })
     navitems.push({title:'ERD',    onClick:() => window.open('infra/erd.pdf','_blank') })
@@ -60,8 +60,8 @@ export class Main extends MainBase {
    this.state.navinfo.forEach(row => navitems.push({title:row, className:'right navinfo'}))
    this.props.loadNavigation(navitems)
  }
-
 }
+Main.contextType = CookieContext;
 
 // ************** Report **************
 //
@@ -86,20 +86,19 @@ export class Report extends ReportBase{
 export class TaskReport extends ReportBase {
  constructor(props){
   super(props);
-  const cookie = read_cookie('rims')
-  this.state.node = cookie.node
   this.header = 'Tasks'
   this.thead = ['Node','Frequency','Module','Function','Arguments']
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/task_list',{node:this.state.node})
+  rest_call(rest_base + 'api/master/task_list',{node:this.context.cookie.node})
    .then(result => this.setState(result))
  }
 
  listItem = (row) => [row.node,row.frequency,row.module,row.function,row.args]
 
 }
+TaskReport.contextType = CookieContext;
 
 // ************** RestList **************
 //
@@ -119,7 +118,7 @@ class RestList extends ListBase {
    })
  }
 
- listItem = (row) => [row.api,<TextButton key={'rest_' + row.api} text={row.function} onClick={() => { this.changeList(<RestInfo key={`rest_info_${row.api}_${row.function}`} {...row} />)}} />]
+ listItem = (row) => [row.api,<TextButton key={'rest_' + row.api} text={row.function} onClick={() => { this.changeContent(<RestInfo key={`rest_info_${row.api}_${row.function}`} {...row} />)}} />]
 
 }
 
@@ -189,7 +188,7 @@ class Controls extends ListBase {
   this.thead = ['Control Function']
  }
 
- listItem = (row) => [<TextButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.changeList(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
+ listItem = (row) => [<TextButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.changeContent(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
 }
 
 // ************** File List **************

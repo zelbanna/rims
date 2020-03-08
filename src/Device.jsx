@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
-import { rest_call, rest_base, read_cookie } from './infra/Functions.js';
-import { Spinner,StateMap } from './infra/Generic.js';
+import { rest_call, rest_base } from './infra/Functions.js';
+import { Spinner, StateMap, InfoCol2 } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
-import { InfoCol2 }   from './infra/Info.js';
 
 import { List as ReservationList } from './Reservation.jsx';
 import { List as LocationList } from './Location.jsx';

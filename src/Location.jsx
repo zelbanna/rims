@@ -1,9 +1,8 @@
 import React, { Fragment } from 'react'
 import { rest_call, rest_base } from './infra/Functions.js';
-import { Spinner } from './infra/Generic.js';
+import { Spinner, InfoCol2 } from './infra/Generic.js';
 import { ListBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
-import { InfoCol2 }   from './infra/Info.js';
 
 // CONVERTED ENTIRELY
 
@@ -16,7 +15,7 @@ export class List extends ListBase {
   this.header = 'Locations'
   this.buttons = [
    <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />,
-   <InfoButton key='add' type='add' onClick={() => { this.changeList(<Info key={'location_new_' + Math.floor(Math.random() * 10)} id='new' />) }} title='Add new location' />
+   <InfoButton key='add' type='add' onClick={() => { this.changeContent(<Info key={'location_new_' + Math.floor(Math.random() * 10)} id='new' />) }} title='Add new location' />
   ]
  }
 
@@ -26,7 +25,7 @@ export class List extends ListBase {
  }
 
  listItem = (row) => [row.id,row.name,<Fragment key={'location_buttons_'+row.id}>
-   <InfoButton key={'loc_info_'+row.id} type='info'  onClick={() => { this.changeList(<Info key={'location_'+row.id} id={row.id} />) }} />
+   <InfoButton key={'loc_info_'+row.id} type='info'  onClick={() => { this.changeContent(<Info key={'location_'+row.id} id={row.id} />) }} />
    <InfoButton key={'loc_delete_'+row.id} type='trash' onClick={() => { this.deleteList('api/location/delete',row.id,'Really delete location') }} />
    </Fragment>
   ]

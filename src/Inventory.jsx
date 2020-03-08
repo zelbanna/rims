@@ -1,9 +1,8 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rest_base } from './infra/Functions.js';
-import { Spinner } from './infra/Generic.js';
+import { Spinner, InfoCol2 } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
-import { InfoCol2 }   from './infra/Info.js';
 
 import { List as LocationList } from './Location.jsx'
 
@@ -15,8 +14,8 @@ export class Main extends MainBase {
  componentDidMount(){
   this.props.loadNavigation([
    {title:'Inventory',   type:'dropdown', items:[
-    {title:'Search', onClick:() => { this.changeMain(<Search key='search_list' changeMain={this.changeMain} />)}},
-    {title:'Vendor', onClick:() => { this.changeMain(<Vendor key='vendor_list' changeMain={this.changeMain} />)}}
+    {title:'Search', onClick:() => { this.changeMain(<Search key='search_list' changeSelf={this.changeMain} />)}},
+    {title:'Vendor', onClick:() => { this.changeMain(<Vendor key='vendor_list' changeSelf={this.changeMain} />)}}
    ]},
    {title:'Locations', onClick:() => { this.changeMain(<LocationList key='location_list' />)}}
   ])
@@ -32,8 +31,8 @@ class List extends ListBase {
   this.header = 'Inventory'
   this.buttons = [
    <InfoButton key='reload' type='reload' onClick={() =>  this.componentDidMount() } />,
-   <InfoButton key='search' type='search' onClick={() => this.props.changeMain(<Search key='search_list' changeMain={this.props.changeMain} />) } />,
-   <InfoButton key='add' type='add' onClick={() => this.changeList(<Info key={'inventory_new_' + Math.floor(Math.random() * 10)} id='new' />) } />
+   <InfoButton key='search' type='search' onClick={() => this.props.changeSelf(<Search key='search_list' changeSelf={this.props.changeSelf} />) } />,
+   <InfoButton key='add' type='add' onClick={() => this.changeContent(<Info key={'inventory_new_' + Math.floor(Math.random() * 10)} id='new' />) } />
   ]
  }
 
@@ -43,7 +42,7 @@ class List extends ListBase {
  }
 
  listItem = (row) => [row.id,row.serial,row.model,<Fragment key={'inventory_buttons_'+row.id}>
-   <InfoButton key={'inv_info_'+row.id} type='info'  onClick={() => this.changeList(<Info key={'inventory_'+row.id} id={row.id} />) } />
+   <InfoButton key={'inv_info_'+row.id} type='info'  onClick={() => this.changeContent(<Info key={'inventory_'+row.id} id={row.id} />) } />
    <InfoButton key={'inv_delete_'+row.id} type='trash' onClick={() => this.deleteList('api/inventory/delete',row.id,'Really delete item') } />
    </Fragment>
   ]
@@ -76,7 +75,7 @@ class Search extends Component {
       </select>:
       <input type='text' id='search' name='search' required='required' onChange={this.handleChange} value={this.state.data.search} placeholder='search' />
      </span>
-     <InfoButton type='search' title='Search' onClick={() => this.props.changeMain(<List key='inventory_list' args={this.state.data} changeMain={this.props.changeMain} />)} />
+     <InfoButton type='search' title='Search' onClick={() => this.props.changeSelf(<List key='inventory_list' args={this.state.data} changeSelf={this.props.changeSelf} />)} />
     </div>
    </article>
   )
@@ -152,7 +151,7 @@ class Vendor extends ListBase {
    .then((result) => this.setState(result))
  }
 
- listItem = (row) => [<TextButton key={'search_' +row.vendor} text={row.vendor} onClick={() => this.props.changeMain(<List key='inventory_list' args={{field:'vendor', search:row.vendor}} changeMain={this.props.changeMain} />)} />,row.count]
+ listItem = (row) => [<TextButton key={'search_' +row.vendor} text={row.vendor} onClick={() => this.props.changeSelf(<List key='inventory_list' args={{field:'vendor', search:row.vendor}} changeSelf={this.props.changeSelf} />)} />,row.count]
 }
 
 // ************** Report **************

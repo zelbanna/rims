@@ -1,9 +1,8 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rest_base, rnd } from './infra/Functions.js';
-import {Spinner } from './infra/Generic.js';
+import {Spinner, InfoCol2 } from './infra/Generic.js';
 import { ListBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
-import { InfoCol2 } from './infra/Info.js';
 import { NavBar } from './infra/Navigation.js';
 
 // CONVERTED ENTIRELY
@@ -17,7 +16,7 @@ export class List extends ListBase {
   this.thead = ['Node','URL','']
   this.buttons = [
    <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount()} />,
-   <InfoButton key='add'  type='add'  onClick={() => this.changeList(<Info key={'node_new_' + rnd()} id='new' />)}  />
+   <InfoButton key='add'  type='add'  onClick={() => this.changeContent(<Info key={'node_new_' + rnd()} id='new' />)}  />
   ]
  }
 
@@ -27,7 +26,7 @@ export class List extends ListBase {
  }
 
  listItem = (row) => [row.node,row.url,<Fragment key='node_buttons'>
-   <InfoButton key='node_info'   type='info'  onClick={() => this.changeList(<Info key={'node_info_'+row.id} id={row.id} />)} />
+   <InfoButton key='node_info'   type='info'  onClick={() => this.changeContent(<Info key={'node_info_'+row.id} id={row.id} />)} />
    <InfoButton key='node_delete' type='trash' onClick={() => this.deleteList('api/master/node_delete',row.id,'Really delete node?')} />
   </Fragment>]
 }
@@ -69,9 +68,9 @@ class Info extends InfoBase {
    if (this.state.data.id !== 'new'){
     if (this.state.data.hostname === undefined)
      buttons.push(<InfoButton key='node_btn_srch' type='search' onClick={this.searchInfo} />)
-    buttons.push(<InfoButton key='node_btn_reload' type='reload' onClick={() => this.changeInfo(<Reload key={'node_reload'} node={this.state.data.node} />) } />)
-    buttons.push(<InfoButton key='node_btn_logs'  type='logs' onClick={() => this.changeInfo(<LogShow key={'node_logs'} node={this.state.data.node} />) } />)
-    buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='trash' onClick={() => this.changeInfo(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />)
+    buttons.push(<InfoButton key='node_btn_reload' type='reload' onClick={() => this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />) } />)
+    buttons.push(<InfoButton key='node_btn_logs'  type='logs' onClick={() => this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node} />) } />)
+    buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='trash' onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />)
    }
    return (
    <Fragment key='node_info_fragment'>

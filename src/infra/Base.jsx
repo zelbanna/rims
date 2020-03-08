@@ -29,7 +29,7 @@ export class ListBase extends Component {
   this.buttons = []
  }
 
- changeList = (elem) => this.setState({content:elem})
+ changeContent = (elem) => this.setState({content:elem})
 
  deleteList = (api,id,msg) => {
   if (window.confirm(msg)){
@@ -65,7 +65,7 @@ export class InfoBase extends Component {
   this.setState({data:data})
  }
 
- changeInfo = (elem) => this.setState({content:elem})
+ changeContent = (elem) => this.setState({content:elem})
 
  updateInfo = (api) => {
   rest_call(rest_base + api,{op:'update', ...this.state.data})

@@ -19,7 +19,7 @@ def list(aWeb):
  aWeb.wr("<ARTICLE><P>Maps</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_content_left', URL='visualize_list', TITLE='Reload'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Id</DIV><DIV CLASS='maxed'>Name</DIV><DIV STYLE='width:50px'>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
- for map in res['maps']:
+ for map in res['data']:
   aWeb.wr("<DIV><DIV>%s</DIV><DIV>%s</DIV><DIV>"%(map['id'],map['name']))
   aWeb.wr(aWeb.button('edit',      DIV='div_content_right', URL='visualize_network?type=map&id=%s'%map['id'],   TITLE='Show and Edit map') )
   aWeb.wr(aWeb.button('network', DIV='div_content_right', URL='visualize_show?id=%s'%map['id'],   TITLE='Show map'))
