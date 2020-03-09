@@ -20,20 +20,22 @@ nav button.reload {       background-image: url(/images/btn-nav-reload.black.png
 nav button.reload:hover { background-image: url(/images/btn-nav-reload.black.hover.png); }
 nav ul.dropdown-content { background-color: #000000; }
 
-.red {         background-color:#CB2026!important; }
-.green {       background-color:#26CB20!important; }
-.blue {        background-color:#2026CB!important; }
-.orange {      background-color:orange!important;  }
-.white {       background-color:#FFFFFF!important; }
-.grey {        background-color:#9CA6B0!important; }
+.red {    background-color:#CB2026!important; }
+.green {  background-color:#26CB20!important; }
+.blue {   background-color:#2026CB!important; }
+.orange { background-color:orange!important;  }
+.white {  background-color:#FFFFFF!important; }
+.grey {   background-color:#9CA6B0!important; }
 
 /*###################################### Menu Buttons ########################################*/
 
-button.warning {     background-color:#CB2026!important; color:#FFFFFF!important; }
+button.warning { background-color:#CB2026!important; color:#FFFFFF!important; }
 
 /*###################################### Info Buttons ########################################*/
 
 input:focus,select:focus,textarea:focus { border-color:#CB2026!important; }
+button.info { background-color:#000000; color:#FFFFFF; }
+button.info:hover { color:#CB2026; }
 
 button.type-add {       width:22px; background-image: url(/images/btn-add.black.png); }
 button.type-analyze {   width:22px; background-image: url(/images/btn-analyze.black.png); }

@@ -91,7 +91,7 @@ class Login extends Component {
    })
  }
 
- handleChange = (e) => {
+ changeHandler = (e) => {
   this.setState({[e.target.name]:e.target.value});
  }
 
@@ -114,7 +114,7 @@ class Login extends Component {
    <div className='background overlay'>
     <article className='login'>
      <h1 className='centered'>{this.state.message}</h1>
-     <InfoCol2 griditems={griditems} changeHandler={this.handleChange} className={'left'}/>
+     <InfoCol2 griditems={griditems} changeHandler={this.changeHandler} className={'left'}/>
      <MenuButton icon='images/icon-start.png' title='Start' onClick={this.handleSubmit}/>
     </article>
    </div>

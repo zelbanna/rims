@@ -56,10 +56,9 @@ def show(aCTX, aArgs = None):
   ret['found'] = (db.do("SELECT * FROM visualize WHERE %s"%search) > 0)
   if ret['found']:
    data = db.get_row()
-   ret['id']   = data['id']
-   ret['name'] = data['name']
+   ret['data'] = {'id':data['id'],'name':data['name']}
    for var in ['nodes','edges','options']:
-    ret[var] = loads(data[var])
+    ret['data'][var] = loads(data[var])
  return ret
 
 #
@@ -90,38 +89,35 @@ def network(aCTX, aArgs = None):
  from builtins import list
  from json import dumps, loads
  args = dict(aArgs)
- op   = args.pop('op',None)
- ret = {'id':args.get('id',0),'type':args.pop('type','map')}
+ op = args.pop('op',None)
+ id = int(args.get('id',0))
+ ret = {'data':{'type':args.pop('type','map')}}
  with aCTX.db as db:
   if op == 'update':
    for type in ['options','nodes','edges']:
-    args[type] = dumps(loads(args[type]))
-   if ret['id'] == 'new' or ret['type'] == 'device':
-    ret['insert']= db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%(name)s','%(options)s','%(nodes)s','%(edges)s')"%args)
-    ret['id']    = db.get_last_id()
-    ret['type']  = 'map'
-    ret['status']= 'insert (%s)'%(ret['insert'] > 0)
+    args[type] = dumps(args[type])
+   if id == 'new' or ret['data']['type'] == 'device':
+    ret['insert']= (db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%(name)s','%(options)s','%(nodes)s','%(edges)s')"%args) > 0)
+    id = db.get_last_id()
+    ret['data']['type']  = 'map'
+    ret['status']= 'OK'
    else:
-    ret['update']= db.do("UPDATE visualize SET name='%(name)s',options='%(options)s',nodes='%(nodes)s',edges='%(edges)s' WHERE id = %(id)s"%args)
-    ret['status']= 'update (%s)'%(ret['update'] > 0)
+    ret['update']= (db.do("UPDATE visualize SET name='%(name)s',options='%(options)s',nodes='%(nodes)s',edges='%(edges)s' WHERE id = %(id)s"%args) > 0)
+    ret['status']= 'OK'
 
-  ret['id'] = int(ret['id'])
-  if ret['type'] == 'map':
-   ret['found'] = (db.do("SELECT * FROM visualize WHERE id = %s"%ret['id']) > 0)
-   data = db.get_row() if ret['found'] else {}
-   ret['name'] = data.get('name',"")
-   ret['nodes'] = loads(data.get('nodes','[]'))
-   ret['edges'] = loads(data.get('edges','[]'))
-   ret['options'] = loads(data.get('options','{}'))
+  if ret['data']['type'] == 'map':
+   ret['found'] = (db.do("SELECT * FROM visualize WHERE id = %s"%id) == 1)
+   if ret['found']:
+    data = db.get_row()
+    ret['data'].update({'id':id,'name':data.get('name',""),'nodes':loads(data.get('nodes','[]')),'edges':loads(data.get('edges','[]')),'options':loads(data.get('options','{}'))})
   else:
    if 'ip' in args:
     db.do("SELECT devices.id FROM devices LEFT JOIN device_interfaces AS di ON devices.id = di.device_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE ia.ip = INET_ATON('%(ip)s')"%args)
-    ret['id'] = db.get_val('id')
+    id = db.get_val('id')
 
-   nodes = {ret['id']:{'processed':False,'distance':0,'connected':0}}
+   nodes = {id:{'processed':False,'distance':0,'connected':0}}
    edges = []
-   ret['options'] = {'layout':{'randomSeed':2}, 'physics':{'enabled':True }, 'edges':{'length':180}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'images/viz-generic.png' }}
-
+   ret['data'] = {'id':id,'options':{'layout':{'randomSeed':2}, 'physics':{'enabled':True }, 'edges':{'length':180}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'images/viz-generic.png' }}}
    sql_connected = "SELECT di.device_id AS a_device, di.interface_id AS a_if, di.name AS a_name, di.snmp_index AS a_index, peer.device_id AS b_device, peer.interface_id AS b_if, peer.snmp_index AS b_index, peer.name AS b_name FROM device_interfaces AS di RIGHT JOIN device_interfaces AS peer ON di.connection_id = peer.connection_id AND peer.device_id <> {0} LEFT JOIN device_connections AS dc ON di.connection_id = dc.id WHERE dc.map = 1 AND di.device_id = {0}"
    for lvl in range(0,args.get('diameter',2)):
     level_ids = list(nodes.keys())
@@ -153,9 +149,9 @@ def network(aCTX, aArgs = None):
 
    # Now update nodes with hostname and type and model, rename fields to fitting info
    db.do("SELECT devices.id, hostname AS label, model, icon AS image FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id IN (%s)"%(",".join(str(x) for x in nodes.keys())))
-   ret['nodes'] = db.get_rows()
-   for node in ret['nodes']:
+   ret['data']['nodes'] = db.get_rows()
+   for node in ret['data']['nodes']:
     nodes[node['id']]['hostname'] = node['label']
-   ret['name']  = nodes[ret['id']]['hostname']
-   ret['edges'] = [{'id':"rims_%(a_if)i_%(b_if)i"%intf,'from':intf['a_device'],'to':intf['b_device'],'smooth':intf['type'],'title':"%s:%s <-> %s:%s"%(nodes[intf['a_device']]['hostname'],intf['a_name'],nodes[intf['b_device']]['hostname'],intf['b_name'])} for intf in edges]
+   ret['data']['name']  = nodes[id]['hostname']
+   ret['data']['edges'] = [{'id':"rims_%(a_if)i_%(b_if)i"%intf,'from':intf['a_device'],'to':intf['b_device'],'smooth':intf['type'],'title':"%s:%s <-> %s:%s"%(nodes[intf['a_device']]['hostname'],intf['a_name'],nodes[intf['b_device']]['hostname'],intf['b_name'])} for intf in edges]
  return ret

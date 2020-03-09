@@ -1,10 +1,8 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call, rest_base } from './infra/Functions.js';
-import { MainBase, ListBase } from './infra/Base.jsx';
-import { InfoButton } from './infra/Buttons.jsx';
-import { Spinner } from './infra/Generic.js';
+import { MainBase, ListBase, InfoBase } from './infra/Base.jsx';
+import { InfoButton, TextButton } from './infra/Buttons.jsx';
 import { DataSet, Network } from 'vis';
-import { Info as DeviceInfo } from './Device.jsx'
 
 // ************** Main **************
 //
@@ -31,43 +29,25 @@ export class List extends ListBase {
  }
 
  listItem = (row) => [row.id,row.name,<Fragment key='viz_list_buttons'>
-  <InfoButton key={'viz_edt_'+row.id} type='edit'    onClick={() => { this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.props.changeContent} type='map' title='Show and edit map' />)}} />
+  <InfoButton key={'viz_edt_'+row.id} type='edit'    onClick={() => { this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.props.changeContent} type='map' />)}} title='Show and edit map' />
   <InfoButton key={'viz_net_'+row.id} type='network' onClick={() => { this.changeContent(<Show key={'viz_show_'+row.id} id={row.id} />)}} />
   <InfoButton key={'viz_del_'+row.id} type='trash'   onClick={() => { this.deleteList('api/visualize/delete',row.id,'Really delete map?')}} />
  </Fragment>]
 }
 
-// ******************** VizNetwork *********************
-//
-class VizNetwork extends Component {
-
- componentDidMount(){
-  var nodes = new DataSet(this.props.nodes);
-  var edges = new DataSet(this.props.edges);
-  var data = {nodes:nodes, edges:edges};
-  var network = new Network(this.refs.network_canvas, data, this.props.options);
-  network.on('stabilizationIterationsDone', () => network.setOptions({ physics: false }))
-  network.on('doubleClick', (params) => this.props.doubleClick(params))
- }
-
- render(){
-  return <div className='network' id='div_network' ref='network_canvas' />
- }
-}
-
 // ************** Show **************
 //
 class Show extends Component {
- constructor(props){
-  super(props)
-  this.state = {content:null}
- }
 
  componentDidMount(){
   var args = (this.props.hasOwnProperty("id")) ? {id:this.props.id}:{name:this.props.name};
   rest_call(rest_base + "api/visualize/show",args)
    .then(result => {
-    this.setState({content:<VizNetwork key='vizualize' nodes={result.nodes} edges={result.edges} options={result.options} doubleClick={this.doubleClick} />})
+    var nodes = new DataSet(result.data.nodes);
+    var edges = new DataSet(result.data.edges);
+    var network = new Network(this.refs.show_canvas, {nodes:nodes, edges:edges}, result.data.options);
+    network.on('stabilizationIterationsDone', () => network.setOptions({ physics: false }))
+    network.on('doubleClick', (params) => this.doubleClick(params))
    })
  }
 
@@ -88,28 +68,31 @@ class Show extends Component {
  }
 
  render(){
-  if (this.state.content === null)
-   return <Spinner />
-  else {
-   return <article>{this.state.content}</article>
-  }
+  return <article><div className='network' id='div_network' ref='show_canvas' /></article>
  }
 }
 
 // ************** Edit **************
 //
-// TODO: All buttons
-//
-class Edit extends Component {
+class Edit extends InfoBase {
  constructor(props){
   super(props)
-  this.state = {content:null,result:null,edit:false}
+  this.state = {edit:false, physics:false, name:"",content:'network', physics_button:'start'}
+  this.state.data = {options:{physics:{enabled:false}},nodes:null,edges:null,name:''}
+  this.viz = {network:null,nodes:null,edges:null}
  }
 
  componentDidMount(){
   rest_call(rest_base + "api/visualize/network",{id:this.props.id,type:this.props.type})
    .then((result) => {
-    this.setState({name:result.name, content:<VizNetwork key='vizualize' nodes={result.nodes} edges={result.edges} options={result.options} doubleClick={this.doubleClick} op={this.networkOp} />})
+    this.viz.nodes = new DataSet(result.data.nodes);
+    this.viz.edges = new DataSet(result.data.edges);
+    this.viz.network = new Network(this.refs.edit_canvas, {nodes:this.viz.nodes, edges:this.viz.edges}, result.data.options);
+    this.viz.network.on('stabilizationIterationsDone', () => this.viz.network.setOptions({ physics: false }))
+    this.viz.network.on('doubleClick', (params) => this.doubleClick(params))
+    this.viz.network.on('dragEnd', (params) => this.networkSync())
+    result.data.options.physics.enabled = false;
+    this.setState(result)
   })
  }
 
@@ -117,33 +100,62 @@ class Edit extends Component {
   console.log("DoubleClick",params.nodes);
  }
 
+ togglePhysics = () => {
+  const data = this.state.data;
+  data.options.physics.enabled = !data.options.physics.enabled;
+  this.setState({data:data})
+  this.setState({physics_button:(data.options.physics.enabled) ? 'stop':'start'})
+  console.log("Vizualize physics: " + data.options.physics.enabled)
+  this.viz.network.setOptions({ physics:data.options.physics.enabled })
+ }
 
- networkOp = (params) => {
-  if (params.op == 'edit'){
-   this.content.network.setOptions({ manipulation:{ enabled:true }});
+ toggleEdit = () => {
+  this.state.edit = !this.state.edit;
+  console.log("Vizualize edit: " + this.state.edit)
+  this.viz.network.setOptions({ manipulation:{ enabled:this.state.edit }})
+ }
+
+ toggleFix = () => {
+  console.log("Fix positions")
+  this.viz.nodes.forEach((node,id) => this.viz.nodes.update({id:id,fixed:!(node.fixed)}) );
+ }
+
+ networkSync = () => {
+  this.viz.network.storePositions();
+  this.setState({data:{...this.state.data, nodes:this.viz.nodes.get(), edges:this.viz.edges.get()}})
+ }
+
+ jsonHandler = (e) => {
+  var data = {...this.state.data}
+  try {
+   data[e.target.name] = JSON.parse(e.target.value);
+   this.setState({data:data})
+  } catch {
+   console.log("Error converting string to JSON")
   }
  }
+
+ showDiv = (id) => (id === this.state.content) ? 'network show' : 'hidden';
 
  render(){
-  if (this.state.content === null)
-   return <Spinner />
-  else {
-   return(
-    <article>
-     <h1>Info for {this.state.name}</h1>
-     <InfoButton key='viz_reload' type='reload' onClick={() => this.componentDidMount()} />
-     {this.state.content}
-    </article>
-   )
-  }
+  return(
+   <article className='network'>
+    <h1>Info for {this.state.name}</h1>
+    <InfoButton key='viz_reload' type='reload' onClick={() => this.componentDidMount()} />
+    <InfoButton key='viz_edit' type='edit' onClick={() => this.toggleEdit()} />
+    <InfoButton key='viz_physics' type={this.state.physics_button} onClick={() => this.togglePhysics()} />
+    <InfoButton key='viz_fix' type='fix' onClick={() => this.toggleFix()} />
+    <InfoButton key='viz_save' type='save' onClick={() => this.updateInfo('api/visualize/network')} />
+    <InfoButton key='viz_net' type='network' onClick={() => this.setState({content:'network'})} />
+    <TextButton key='viz_opt' text='Options' className='info' onClick={() => this.setState({content:'options'})} />
+    <TextButton key='viz_nodes' text='Nodes' className='info' onClick={() => this.setState({content:'nodes'})} />
+    <TextButton key='viz_edges' text='Edges' className='info' onClick={() => this.setState({content:'edges'})} />
+    <label className='network' htmlFor='name'>Name:</label><input type='text' id='name' name='name' value={this.state.data.name} onChange={this.changeHandler} />
+    <div id='div_network' className={this.showDiv('network')} ref='edit_canvas' />
+    <div id='div_options' className={this.showDiv('options')}><textarea id='options' name='options' value={JSON.stringify(this.state.data.options,undefined,2)} onChange={this.jsonHandler}/></div>
+    <div id='div_nodes'   className={this.showDiv('nodes')}><textarea id='nodes' name='nodes' value={JSON.stringify(this.state.data.nodes,undefined,2)} onChange={this.jsonHandler} /></div>
+    <div id='div_edges'   className={this.showDiv('edges')}><textarea id='edged' name='edges' value={JSON.stringify(this.state.data.edges,undefined,2)} onChange={this.jsonHandler} /></div>
+   </article>
+  )
  }
 }
-
-/*
- aWeb.wr(aWeb.button('edit', onclick='network_edit()', TITLE='Enable editor'))
- aWeb.wr(aWeb.button('start',  onclick='network_start()',  TITLE='Enable physics'))
- aWeb.wr(aWeb.button('stop',   onclick='network_stop()',   TITLE='Disable physics'))
- aWeb.wr(aWeb.button('fix',    onclick='network_fixate()', TITLE='Fix node positions'))
- aWeb.wr(aWeb.button('sync',   onclick='network_sync()',   TITLE='Sync graph to config'))
- aWeb.wr(aWeb.button('save',   DIV='div_content_right', URL='visualize_network?op=update', FRM='visualize_network', TITLE='Save config'))
-*/

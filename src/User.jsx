@@ -73,7 +73,7 @@ export class Info extends InfoBase {
    return (
     <article className={className}>
      <h1>User Info ({this.state.data.id})</h1>
-     <InfoCol2 key='user_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
+     <InfoCol2 key='user_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
      <InfoButton key='user_save' type='save' onClick={() => this.updateInfo('api/master/user_info') } />
     </article>
    );

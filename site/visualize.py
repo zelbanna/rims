@@ -37,7 +37,7 @@ def delete(aWeb):
 def show(aWeb):
  from json import dumps
  args = {'id':aWeb['id']} if aWeb['id'] else {'name':aWeb['name']}
- res = aWeb.rest_call("visualize/show",args)
+ res = aWeb.rest_call("visualize/show",args)['data']
  aWeb.wr("<ARTICLE><DIV CLASS='network' ID='div_network'></DIV><SCRIPT>")
  aWeb.wr("var nodes = new vis.DataSet(%s);"%dumps(res['nodes']))
  aWeb.wr("var edges = new vis.DataSet(%s);"%dumps(res['edges']))
@@ -70,7 +70,7 @@ def show(aWeb):
 def network(aWeb):
  from json import dumps
  args = aWeb.args()
- res = aWeb.rest_call("visualize/network",args)
+ res = aWeb.rest_call("visualize/network",args)['data']
  aWeb.wr("<ARTICLE><P>Info for %s</P>"%(res['name']))
  aWeb.wr(aWeb.button('reload', DIV='div_content_right', URL='visualize_network?type=%s&id=%s'%(res['type'],res['id'])))
  aWeb.wr(aWeb.button('trash',  DIV='div_content_right', URL='visualize_delete?id=%s'%res['id'], TITLE='Delete map', MSG='Really delete map?'))

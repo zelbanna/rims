@@ -73,7 +73,7 @@ class Info extends InfoBase {
     <Fragment key='srv_info_fragment'>
     <article className='info'>
      <h1>Server Info ({this.state.data.id})</h1>
-     <InfoCol2 key='srv_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
+     <InfoCol2 key='srv_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
      {buttons}
     </article>
     <NavBar key='srv_navbar' items={null} />

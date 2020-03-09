@@ -52,7 +52,7 @@ class Info extends InfoBase {
    return (
     <article className='info'>
      <h1>Location</h1>
-     <InfoCol2 key='location_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
+     <InfoCol2 key='location_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
      <InfoButton key='location_save' type='save' onClick={() => this.updateInfo('api/location/info')} />
     </article>
    );

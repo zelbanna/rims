@@ -92,7 +92,7 @@ div.info input:-moz-read-only { font-style:italic; }
 div.info input:read-only {      font-style:italic; }
 div.info input:-webkit-input-placeholder { color: #9CA6B0; }
 div.info input:-moz-placeholder {          color: #9CA6B0; opacity:1; }
-div.info label {  font-weight:bold; font-style:normal!important;}
+div.info label { font-weight:bold; font-style:normal!important; }
 
 button.info { height:22px; border:none; outline-width:0; border-radius:3px; margin-left:2px;}
 button.info:hover {  opacity:0.9; box-shadow:0px 2px rgba(0,0,0,0.3); }
@@ -102,7 +102,7 @@ textarea.info { height:70px; width:300px; display:block; }
 
 /***************************************  List Model *****************************************/
 
-button.text {          font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; }
+button.text {          font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; vertical-align:bottom; }
 
 article.table {        z-index:101; height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; }
 div.table {            display: table; width:99% }
@@ -154,13 +154,18 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
 div.centered { justify-content:space-evenly; display:flex; flex-wrap:wrap; width:100%; height:max-content; }
 div.state { border: 1px solid #9CA6B0; border-radius:16px; height:16px; width:16px; display:inline-block; }
 
-div.network { width:100%; height:500px; }
+/* media dependent */
+article.network { width:99%; }
+div.network { height:500px; width:600px; resize:horizontal}
+div.network > textarea { height:500px; width:99%; }
+div.hidden { display:none; }
+div.shown  { display:block; }
+label.network { font-weight:bold; font-style:normal!important; }
 
 /******************************************* EXTRA NOT FOUND YET *********************************************/
 /*
 
 .title {    text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed; }
-.maxed {    width:99%; }
 .left {     float:left; }
 .right   {  float:right!important; }
 .inline {   display:inline; }

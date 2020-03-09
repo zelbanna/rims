@@ -59,7 +59,7 @@ export class InfoBase extends Component {
   this.state = {data:null, found:true, content:null}
  }
 
- handleChange = (e) => {
+ changeHandler = (e) => {
   var data = {...this.state.data}
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data})

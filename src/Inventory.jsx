@@ -57,7 +57,7 @@ class Search extends Component {
   this.state = {data:{field:'serial',search:''}}
  }
 
- handleChange = (e) => {
+ changeHandler = (e) => {
   var data = {...this.state.data}
   data[e.target.name] = e.target.value
   this.setState({data:data})
@@ -69,11 +69,11 @@ class Search extends Component {
     <h1>Inventory Search</h1>
     <div>
      <span>Field:
-      <select id='field' name='field' onChange={this.handleChange} value={this.state.data.field}>
+      <select id='field' name='field' onChange={this.changeHandler} value={this.state.data.field}>
        <option value='serial'>Serial</option>
        <option value='vendor'>Vendor</option>
       </select>:
-      <input type='text' id='search' name='search' required='required' onChange={this.handleChange} value={this.state.data.search} placeholder='search' />
+      <input type='text' id='search' name='search' required='required' onChange={this.changeHandler} value={this.state.data.search} placeholder='search' />
      </span>
      <InfoButton type='search' title='Search' onClick={() => this.props.changeSelf(<List key='inventory_list' args={this.state.data} changeSelf={this.props.changeSelf} />)} />
     </div>
@@ -127,7 +127,7 @@ export class Info extends InfoBase {
    return (
     <article className={className}>
      <h1>Inventory Info ({this.state.data.id})</h1>
-     <InfoCol2 key='inventory_content' griditems={this.infoItems()} changeHandler={this.handleChange} />
+     <InfoCol2 key='inventory_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
      <InfoButton key='inventory_reload' type='reload' onClick={() => this.componentDidMount() } />
      <InfoButton key='inventory_save' type='save' onClick={() => this.updateInfo('api/inventory/info') } />
     </article>
