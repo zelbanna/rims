@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { rest_call, rest_base } from './infra/Functions.js';
-import { Spinner, StateMap, InfoCol2 } from './infra/Generic.js';
+import { Spinner, StateMap, InfoCol2, RimsContext } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
 
@@ -90,7 +90,7 @@ export class Main extends MainBase {
    {title:'OUI', type:'dropdown', items:[
     {title:'Search',  onClick:() => this.changeMain(<OUISearch key='oui_search' />)},
     {title:'List',  onClick:() => this.changeMain(<OUIList key='oui_list' />)}
-   ]},,
+   ]},
    { onClick:() => this.setState({content:null}), className:'reload' }
   ]
   if (this.state.pduinfo.length > 0)
@@ -99,10 +99,11 @@ export class Main extends MainBase {
    navitems.push({title:'Consoles', type:'dropdown', items:this.state.coninfo})
   if (this.state.rack_id)
    navitems.push({title:this.state.rack, onClick:() => this.changeMain(<RackInventory key='rack_inventory' id={this.state.rack_id} />)})
-  this.props.loadNavigation(navitems)
+  this.context.loadNavigation(navitems)
  }
 
 }
+Main.contextType = RimsContext;
 
 // ************** Report **************
 //

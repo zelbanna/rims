@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rest_base, rnd } from './infra/Functions.js';
-import { Spinner, InfoCol2 } from './infra/Generic.js';
+import { Spinner, InfoCol2, RimsContext } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
 
@@ -12,7 +12,7 @@ import { List as LocationList } from './Location.jsx'
 //
 export class Main extends MainBase {
  componentDidMount(){
-  this.props.loadNavigation([
+  this.context.loadNavigation([
    {title:'Inventory',   type:'dropdown', items:[
     {title:'Search', onClick:() => { this.changeMain(<Search key='search_list' changeSelf={this.changeMain} />)}},
     {title:'Vendor', onClick:() => { this.changeMain(<Vendor key='vendor_list' changeSelf={this.changeMain} />)}},
@@ -22,6 +22,7 @@ export class Main extends MainBase {
   ])
  }
 }
+Main.contextType = RimsContext;
 
 // ************** List **************
 //

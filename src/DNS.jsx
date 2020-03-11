@@ -1,9 +1,8 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rest_base, rnd } from './infra/Functions.js';
-import { Spinner, InfoCol2, StateMap, TableHead, TableRow } from './infra/Generic.js';
+import { Spinner, InfoCol2, TableHead, TableRow } from './infra/Generic.js';
 import { ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
-import { Info as DeviceInfo } from './Device.jsx';
 
 // CONVERTED ENTIRELY
 

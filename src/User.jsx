@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call, rest_base, rnd } from './infra/Functions.js';
-import { Spinner, InfoCol2, CookieContext } from './infra/Generic.js';
+import { Spinner, InfoCol2, RimsContext } from './infra/Generic.js';
 import { ListBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
 
@@ -80,7 +80,7 @@ export class Info extends InfoBase {
   }
  }
 }
-Info.contextType = CookieContext;
+Info.contextType = RimsContext;
 
 // ************** User **************
 //

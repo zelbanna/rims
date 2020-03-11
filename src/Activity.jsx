@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { rest_call, rest_base, rnd } from './infra/Functions.js';
-import { Spinner, InfoCol2, CookieContext } from './infra/Generic.js';
+import { Spinner, InfoCol2, RimsContext } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
 
@@ -10,13 +10,14 @@ import { InfoButton } from './infra/Buttons.jsx';
 //
 export class Main extends MainBase {
  componentDidMount(){
-  this.props.loadNavigation([
+  this.context.loadNavigation([
    {title:'Activities', onClick:() => { this.changeMain(<List key='activity_list' />)}},
    {title:'Types', onClick:() => { this.changeMain(<TypeList key='activity_type_list' />)}},
    {title:'Report', onClick:() => { this.changeMain(<Report key='activity_report' />)}}
   ])
  }
 }
+Main.contextType = RimsContext;
 
 // ************** List **************
 //
@@ -81,7 +82,7 @@ class Info extends InfoBase {
   }
  }
 }
-Info.contextType = CookieContext;
+Info.contextType = RimsContext;
 
 // ************** Report **************
 //

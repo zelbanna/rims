@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rest_base } from './infra/Functions.js';
-import { Spinner, TableRow, CookieContext } from './infra/Generic.js';
+import { Spinner, TableRow, RimsContext } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase } from './infra/Base.jsx';
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
 
@@ -63,10 +63,10 @@ export class Main extends MainBase {
     navitems.push({title:'Services', type:'dropdown', items:this.state.services.map(row => ({title:row.name, onClick:() => this.changeMain( <ServiceInfo key={row.name} {...row} /> )})) })
    navitems.push({ onClick:() => this.setState({content:null}), className:'reload' })
    this.state.navinfo.forEach(row => navitems.push({title:row, className:'right navinfo'}))
-   this.props.loadNavigation(navitems)
+   this.context.loadNavigation(navitems)
  }
 }
-Main.contextType = CookieContext;
+Main.contextType = RimsContext;
 
 // ************** Report **************
 //
@@ -103,7 +103,7 @@ export class TaskReport extends ReportBase {
  listItem = (row) => [row.node,row.frequency,row.module,row.function,row.args]
 
 }
-TaskReport.contextType = CookieContext;
+TaskReport.contextType = RimsContext;
 
 // ************** RestList **************
 //

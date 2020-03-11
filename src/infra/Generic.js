@@ -1,9 +1,9 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, createContext } from 'react';
 
 // **************************** Generic ********************************
 
-export const CookieContext = React.createContext({setCookie:()=>{},clearCookie:()=>{},cookie:null,main:null});
-CookieContext.displayName = "RimsCookie";
+export const RimsContext = createContext({setCookie:()=>{},clearCookie:()=>{},cookie:null,changeMain:()=>{},loadNavigtion:()=>{}})
+RimsContext.displayName = "RimsContext";
 
 export const Spinner = () => <div className='overlay'><div className='loader'></div></div>
 

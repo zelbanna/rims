@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react'
 import { rest_call, rest_base, rnd } from './infra/Functions.js';
-import { StateMap } from './infra/Generic.js';
+import { StateMap, RimsContext } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
 
@@ -10,12 +10,11 @@ import { Logs as DeviceLogs } from './Device.jsx';
 //
 
 export class Main extends MainBase {
- constructor(props){
-  super(props)
-  this.state.content = <List key={'hypervisor_list_'+rnd()} changeSelf={this.changeMain} loadNavigation={this.props.loadNavigation} />
-  this.props.loadNavigation([{ onClick:() => this.changeMain(<List key={'hypervisor_list_'+rnd()} changeSelf={this.changeMain} />), className:'reload right'}])
+ componentDidMount(){
+  this.setState({content:<List key={'hypervisor_list_'+rnd()} />})
  }
 }
+Main.contextType = RimsContext;
 
 // ************** List **************
 //
@@ -36,14 +35,14 @@ export class List extends ListBase {
   let buttons = []
   if (row.state === 'up')
    if (row.type_functions === 'manage')
-    buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => this.props.changeSelf(<Manage key={'hypervisor_manage_'+row.id} loadNavigation={this.props.loadNavigation} id={row.id} />) } />)
+    buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => this.context.changeMain({content:<Manage key={'hypervisor_manage_'+row.id} id={row.id} />}) } />)
    if (row.url && row.url.length > 0)
     buttons.push(<InfoButton key={'hypervisor_ui_'+row.id} type='ui' onClick={() => window.open(row.url,'_blank') } />)
   return [row.hostname,row.type_name,<StateMap key={'hypervisor_state_'+row.id} state={row.state} />,<Fragment key={'hypervisor_buttons_'+row.id}>{buttons}</Fragment>]
  }
 
 }
-
+List.contextType = RimsContext;
 // ************** Sync **************
 //
 
@@ -83,7 +82,7 @@ class Manage extends ListBase {
     var navitems = [{title:'Logs', onClick:() => this.changeContent(<DeviceLogs id={this.props.id} />)}];
     //if (result.data.hasOwnProperty(url) && result.data.url.length > 0)
     // navitems.push({title:)
-    this.props.loadNavigation(navitems);
+    this.context.loadNavigation(navitems);
     this.setState(result)
     })
  }
@@ -92,6 +91,7 @@ class Manage extends ListBase {
   return <div>Manage</div>
  }
 }
+Manage.contextType = RimsContext;
 
 /*
 def manage(aWeb):

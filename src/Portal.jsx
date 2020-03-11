@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-
 import { rest_call, rest_base } from  './infra/Functions.js';
 import Library from './infra/Mapper.js'
-import { InfoCol2, CookieContext } from './infra/Generic.js';
+import { InfoCol2, RimsContext } from './infra/Generic.js';
 import { MenuButton } from './infra/Buttons.jsx';
 import { NavBar } from './infra/Navigation.js';
 
@@ -13,16 +12,17 @@ import { NavBar } from './infra/Navigation.js';
 class Portal extends Component {
  constructor(props){
   super(props)
-  this.state = { content:null, menu:[], navigation:null}
+  this.state = { content:null, menu:[], navigation:null, cookie:null}
  }
 
  componentDidMount() {
+  this.props.providerMounting({changeMain:this.changeContent,loadNavigation:this.loadNavigation});
   rest_call(rest_base + 'api/portal/menu',{id:this.context.cookie.id})
    .then((result) => {
     this.setState(result)
     if (result.start)
      this.changeContent(result.menu[result.start]);
-    document.title = result.title
+    document.title = result.title;
    })
  }
 
@@ -34,7 +34,7 @@ class Portal extends Component {
     return
    try {
     var Elem = Library[panel.module][panel.function]
-    this.setState({navigation:[],content:<Elem key={panel.module + '_' + panel.function} {...panel.args} loadNavigation={this.loadNavigation} />})
+    this.setState({navigation:[],content:<Elem key={panel.module + '_' + panel.function} {...panel.args} />})
    } catch(err) {
     console.error("Mapper error: "+panel);
     alert(err);
@@ -70,11 +70,11 @@ class Portal extends Component {
     <this.Header key='portal_header' menu={this.state.menu} changeContent={this.changeContent} clearCookie={this.context.clearCookie} id={this.context.cookie.id} />
     <NavBar key='portal_navigation' items={this.state.navigation} />
     <main>{this.state.content}</main>
-   </React.Fragment>
+  </React.Fragment>
   )
  }
 }
-Portal.contextType = CookieContext;
+Portal.contextType = RimsContext;
 
 // ************************ Login ************************
 class Login extends Component {
@@ -129,6 +129,7 @@ class RIMS extends Component {
   super(props);
 
   this.state = this.readCookie();
+  this.provider = {}
  }
 
  readCookie = () => {
@@ -154,10 +155,17 @@ class RIMS extends Component {
   this.setState(cookie)
  }
 
+ providerMounting = (options) => {
+  Object.assign(this.provider,options);
+  this.forceUpdate();
+ }
+
  render(){
-  return (<CookieContext.Provider value={{setCookie:this.setCookie,clearCookie:this.clearCookie,cookie:this.state}}>
-   {(this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal />}
-   </CookieContext.Provider>)
+  return (
+   <RimsContext.Provider value={{setCookie:this.setCookie,clearCookie:this.clearCookie,cookie:this.state,...this.provider}}>
+    {(this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal providerMounting={this.providerMounting} />}
+   </RimsContext.Provider>
+  )
  }
 }
 

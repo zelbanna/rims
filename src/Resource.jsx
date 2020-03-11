@@ -1,8 +1,8 @@
-import React from 'react'
+import React from 'react';
 import { rest_call, rest_base } from './infra/Functions.js';
-import { MainBase } from './infra/Base.jsx'
-import { MenuButton } from './infra/Buttons.jsx'
-import Library from './infra/Mapper.js'
+import { MainBase } from './infra/Base.jsx';
+import { MenuButton } from './infra/Buttons.jsx';
+import { RimsContext } from './infra/Generic.js';
 
 // CONVERTED ENTIRELY
 
@@ -11,14 +11,13 @@ import Library from './infra/Mapper.js'
 export class Main extends MainBase {
 
  componentDidMount(){
-  this.props.loadNavigation([{ onClick:() => { this.componentDidMount() }, className:'reload right'}])
   rest_call(rest_base + 'api/portal/resources',{type:'tool'})
    .then((result) => {
    let buttons = []
    for (let [key, panel] of Object.entries(result.data)){
     let click = null
     if (panel.type === 'module')
-     click = () => this.changeMain(panel)
+     click = () => this.context.changeMain(panel)
     else if (panel.type === 'tab')
      click = () => window.open(panel.tab,'_blank')
     else if (panel.type === 'frame')
@@ -29,17 +28,5 @@ export class Main extends MainBase {
    this.setState({content:<div className='centered'>{buttons}</div>})
   })
  }
-
- changeMain = (panel) => {
-  if ((this.state.content !== null) && (this.state.content.key === `${panel.module}_${panel.function}`))
-   return
-  try {
-   const Elem = Library[panel.module][panel.function]
-   this.setState({content:<Elem key={panel.module + '_' + panel.function} {...panel.args} loadNavigation={this.props.loadNavigation} />})
-  } catch(err) {
-   console.error("Mapper error: "+panel);
-   alert(err);
-  }
- }
-
 }
+Main.contextType = RimsContext;
