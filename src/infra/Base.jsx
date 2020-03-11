@@ -51,6 +51,35 @@ export class ListBase extends Component {
  }
 }
 
+// ************** Report Base ****************
+//
+export class ReportBase extends Component {
+ constructor(props){
+  super(props);
+  this.state = {data:null}
+  this.base = 'reportbase'
+  this.thead = ['']
+  this.header = 'ReportBase'
+  this.buttons = []
+ }
+
+ deleteList = (api,id,msg) => {
+  if (window.confirm(msg)){
+   rest_call(rest_base + api, {id:id})
+    .then((result) => {
+     if(result.deleted)
+      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id )})
+    })
+  }
+ }
+
+ listItem = (row) => []
+
+ render(){
+  return <ContentReport articleClass={'report'} key={this.base+'_content_report'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment> />
+ }
+}
+
 // ************** Info Base ****************
 //
 export class InfoBase extends Component {
@@ -70,24 +99,5 @@ export class InfoBase extends Component {
  updateInfo = (api) => {
   rest_call(rest_base + api,{op:'update', ...this.state.data})
    .then((result) => { this.setState(result); })
- }
-}
-
-// ************** Report Base ****************
-//
-export class ReportBase extends Component {
- constructor(props){
-  super(props);
-  this.state = {data:null}
-  this.base = 'reportbase'
-  this.thead = ['']
-  this.header = 'ReportBase'
-  this.buttons = []
- }
-
- listItem = (row) => []
-
- render(){
-  return <ContentReport articleClass={'report'} key={this.base+'_content_list'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment> />
  }
 }

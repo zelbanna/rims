@@ -3,6 +3,7 @@ import { rest_call, rest_base } from './infra/Functions.js';
 import { MainBase, ListBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
 import { DataSet, Network } from 'vis';
+import { Info as DeviceInfo } from './Device.jsx';
 
 // ************** Main **************
 //
@@ -29,7 +30,7 @@ export class List extends ListBase {
  }
 
  listItem = (row) => [row.id,row.name,<Fragment key='viz_list_buttons'>
-  <InfoButton key={'viz_edt_'+row.id} type='edit'    onClick={() => { this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.props.changeContent} type='map' />)}} title='Show and edit map' />
+  <InfoButton key={'viz_edt_'+row.id} type='edit'    onClick={() => { this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.changeContent} type='map' />)}} title='Show and edit map' />
   <InfoButton key={'viz_net_'+row.id} type='network' onClick={() => { this.changeContent(<Show key={'viz_show_'+row.id} id={row.id} />)}} />
   <InfoButton key={'viz_del_'+row.id} type='trash'   onClick={() => { this.deleteList('api/visualize/delete',row.id,'Really delete map?')}} />
  </Fragment>]
@@ -97,7 +98,8 @@ class Edit extends InfoBase {
  }
 
  doubleClick = (params) => {
-  console.log("DoubleClick",params.nodes);
+  console.log("DoubleClick",params.nodes[0]);
+  this.props.changeSelf(<DeviceInfo id={params.nodes[0]} />)
  }
 
  togglePhysics = () => {

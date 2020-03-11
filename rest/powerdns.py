@@ -34,9 +34,9 @@ def domain_list(aCTX, aArgs = None):
    ret['count'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aArgs.get('filter') == 'reverse' else "NOT"))
   else:
    ret['count'] = db.do("SELECT domains.* FROM domains")
-  ret['domains'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
+  ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
   if 'dict' in aArgs and 'exclude' in aArgs:
-   ret['domains'].pop(aArgs['exclude'],None)
+   ret['data'].pop(aArgs['exclude'],None)
  return ret
 
 #

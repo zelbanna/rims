@@ -40,7 +40,7 @@ class Portal extends Component {
     alert(err);
    }
   } else
-   this.setState({content:panel.content})
+   this.setState(panel)
  }
 
  Header(props){
@@ -56,7 +56,7 @@ class Portal extends Component {
    else if (panel.type === 'tab')
     click = () => window.open(panel.tab,'_blank')
    else if (panel.type === 'frame')
-    click = () => props.changeContent({content:<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>})
+    click = () => props.changeContent({content:<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>,navigation:null})
    panel.title = key
    buttons.push(<MenuButton key={'mb_'+key} {...panel} onClick={click} />)
   }

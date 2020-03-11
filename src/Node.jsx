@@ -75,7 +75,7 @@ class Info extends InfoBase {
    return (
    <Fragment key='node_info_fragment'>
     <article className='info'>
-     <h1>Node Info ({this.state.data.id})</h1>
+     <h1>Node Info</h1>
      <InfoCol2 key='node_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
      {buttons}
     </article>

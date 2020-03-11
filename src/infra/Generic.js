@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 
 // **************************** Generic ********************************
 
-export const CookieContext = React.createContext({setCookie:()=>{},clearCookie:()=>{},cookie:null});
+export const CookieContext = React.createContext({setCookie:()=>{},clearCookie:()=>{},cookie:null,main:null});
 CookieContext.displayName = "RimsCookie";
 
 export const Spinner = () => <div className='overlay'><div className='loader'></div></div>
@@ -63,7 +63,9 @@ export const InfoCol2 = (props) => {
     second = <div>UNKNOWN</div>
    }
   } else if (row.tag === 'select'){
-   second = <select name={row.id} onChange={props.changeHandler} value={row.value}>{
+   if (row.value === null)
+    row.options.push({value:"NULL",text:"N/A"})
+   second = <select name={row.id} onChange={props.changeHandler} value={(row.value !== null) ? row.value : "NULL"}>{
     row.options.map((opt,index) => <option key={row.id + '_'+index} value={opt.value}>{opt.text}</option>)
     }</select>
   } else if (row.tag === 'span') {

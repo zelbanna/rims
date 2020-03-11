@@ -119,14 +119,14 @@ export class Info extends InfoBase {
 
  render() {
   if (this.state.found === false)
-   return <article>User with id: {this.props.id} removed</article>
-  else if ((this.state.data === null) || (this.state.themes === null))
+   return <article>Inventory item  with id: {this.props.id} removed</article>
+  else if (this.state.data === null)
    return <Spinner />
   else {
    const className = (this.props.hasOwnProperty('className')) ? `info ${this.props.className}` : 'info';
    return (
     <article className={className}>
-     <h1>Inventory Info ({this.state.data.id})</h1>
+     <h1>Inventory Item</h1>
      <InfoCol2 key='inventory_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
      <InfoButton key='inventory_reload' type='reload' onClick={() => this.componentDidMount() } />
      <InfoButton key='inventory_save' type='save' onClick={() => this.updateInfo('api/inventory/info') } />

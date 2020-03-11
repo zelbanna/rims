@@ -39,7 +39,7 @@ export class List extends ListBase {
     buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => this.props.changeSelf(<Manage key={'hypervisor_manage_'+row.id} loadNavigation={this.props.loadNavigation} id={row.id} />) } />)
    if (row.url && row.url.length > 0)
     buttons.push(<InfoButton key={'hypervisor_ui_'+row.id} type='ui' onClick={() => window.open(row.url,'_blank') } />)
-  return [row.hostname,row.type_name,<StateMap key='hypervisor_state' state={row.state} />,<Fragment key={'hypervisor_buttons_'+row.id}>{buttons}</Fragment>]
+  return [row.hostname,row.type_name,<StateMap key={'hypervisor_state_'+row.id} state={row.state} />,<Fragment key={'hypervisor_buttons_'+row.id}>{buttons}</Fragment>]
  }
 
 }

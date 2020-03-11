@@ -246,8 +246,8 @@ export class FileList extends Component {
  }
 }
 
-// ************************ TODO ********************
-
+// ************** Service Info **************
+//
 class ServiceInfo extends Component {
  constructor(props){
   super(props)

@@ -24,9 +24,9 @@ def domain_list(aCTX, aArgs = None):
  with aCTX.db as db:
   filter = "name %s LIKE '%%arpa' ORDER BY name"%('' if aArgs['filter'] == 'reverse' else "NOT") if 'filter' in aArgs else "TRUE"
   ret['count']   = db.do("SELECT foreign_id AS id, name,'MASTER' AS type,'127.0.0.1' AS master,0 AS notified_serial FROM domains JOIN servers ON domains.server_id = servers.id AND servers.node = '%s' JOIN service_types AS st ON servers.type_id = st.id AND st.service = 'nodns' WHERE %s"%(aCTX.node,filter))
-  ret['domains'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
+  ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
   if 'dict' in aArgs and 'exclude' in aArgs:
-   ret['domains'].pop(aArgs['exclude'],None)
+   ret['data'].pop(aArgs['exclude'],None)
  return ret
 
 #

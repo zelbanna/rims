@@ -10,7 +10,6 @@ def domain_list(aCTX, aArgs = None):
 
  Args:
   - filter (optional)
-  - dict (optional)
   - sync (optional)
   - exclude (optional)
 
@@ -49,7 +48,7 @@ def domain_list(aCTX, aArgs = None):
    filter.append("domains.id <> '%s'"%aArgs['exclude'])
 
   ret['count']   = db.do("SELECT domains.*, st.service FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY name"%('TRUE' if len(filter) == 0 else " AND ".join(filter)))
-  ret['domains'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
+  ret['data'] = db.get_rows()
  return ret
 
 #

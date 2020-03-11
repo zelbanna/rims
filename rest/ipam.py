@@ -12,7 +12,7 @@ def network_list(aCTX, aArgs = None):
  Args:
 
  Output:
-  - networks. List of:
+  - data. List of:
   -- id
   -- netasc
   -- gateway
@@ -23,7 +23,7 @@ def network_list(aCTX, aArgs = None):
  ret = {}
  with aCTX.db as db:
   ret['count']    = db.do("SELECT ipam_networks.id, CONCAT(INET_NTOA(network),'/',mask) AS netasc, INET_NTOA(gateway) AS gateway, description, mask, network, st.service FROM ipam_networks LEFT JOIN servers ON ipam_networks.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id ORDER by network")
-  ret['networks'] = db.get_rows()
+  ret['data'] = db.get_rows()
  return ret
 
 #
@@ -47,8 +47,8 @@ def network_info(aCTX, aArgs = None):
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  with aCTX.db as db:
-  ret['servers'] = [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DHCP']
-  ret['servers'].append({'id':'NULL','service':None,'node':None})
+  ret['servers'] = [{'id':'NULL','service':None,'node':None}]
+  ret['servers'].extend([{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DHCP'])
   if op == 'update':
    from struct import unpack
    from socket import inet_aton
@@ -77,8 +77,8 @@ def network_info(aCTX, aArgs = None):
   else:
    ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New','reverse_zone_id':None,'server_id':None }
  from rims.rest.dns import domain_ptr_list
- ret['domains'] = domain_ptr_list(aCTX, {'prefix':ret['data']['network']})
- ret['domains'].append({'id':'NULL','name':None,'server':None})
+ ret['domains'] = [{'id':'NULL','name':None,'server':None}]
+ ret['domains'].extend(domain_ptr_list(aCTX, {'prefix':ret['data']['network']}))
  return ret
 
 
@@ -97,7 +97,7 @@ def network_delete(aCTX, aArgs = None):
   db.do("SELECT id, ptr_id, a_id, a_domain_id FROM ipam_addresses WHERE network_id = %s AND (ptr_id > 0 OR a_id > 0)"%aArgs['id'])
   for address in db.get_rows():
    address_delete(aCTX, address)
-  ret['deleted'] = db.do("DELETE FROM ipam_networks WHERE id = " + aArgs['id'])
+  ret['deleted'] = db.do("DELETE FROM ipam_networks WHERE id = %s"%aArgs['id'])
  return ret
 
 #
@@ -248,7 +248,7 @@ def address_list(aCTX, aArgs = None):
     else:
      fields.append(field)
    ret['count']   = db.do("SELECT %s FROM %s WHERE network_id = %s ORDER BY ip_integer"%(",".join(fields)," LEFT JOIN ".join(tables),aArgs['network_id']))
-   ret['entries'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
+   ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
   else:
    ret['status'] = 'NOT_OK'
  return ret
@@ -260,7 +260,7 @@ def address_info(aCTX, aArgs = None):
 
  Args:
   - id (required) <id>/'new'
-  - op (optional) 'update'/'update_only'/'insert'
+  - op (optional) 'update'/'update_only'
   - ip (optional)
   - network_id (optional required when ip supplied)
   - a_domain_id (optional)
@@ -321,12 +321,12 @@ def address_info(aCTX, aArgs = None):
     aArgs['hostname'] = address_sanitize(aCTX, aArgs)['sanitized']
 
    if (len(aArgs) > 0) and ret['status'] == 'OK':
-    if not id == 'new' and op in ['update','update_only']:
+    if not id == 'new':
      try: ret['update'] = (db.update_dict('ipam_addresses',aArgs,'id=%s'%id) == 1)
      except:
       ret['status'] = 'NOT_OK'
       ret['info']   = "IPAM update failed"
-    elif 'ip' in aArgs and op == 'insert':
+    elif 'ip' in aArgs:
      try: ret['insert'] = (db.insert_dict('ipam_addresses',aArgs) == 1)
      except Exception as e:
       ret['status'] = 'NOT_OK'
@@ -479,11 +479,9 @@ def address_delete(aCTX, aArgs = None):
    for tp in ['a','ptr']:
     id,domain = '%s_id'%tp, '%s_domain_id'%tp
     ret[tp.upper()] = record_delete(aCTX, {'id':dns[id],'domain_id':dns[domain],'type':tp.upper()})['status'] if (dns[id] > 0 and dns[domain] is not None) else "OK_NONE"
-  ret['status'] = 'OK' if (db.do("DELETE FROM ipam_addresses WHERE id = %(id)s"%aArgs) == 1) else 'NOT_OK'
+  ret['deleted'] = (db.do("DELETE FROM ipam_addresses WHERE id = %(id)s"%aArgs) == 1)
+  ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret
-"""Monitor API module. Provides generic device monitoring"""
-__author__ = "Zacharias El Banna"
-__add_globals__ = lambda x: globals().update(x)
 
 #
 #

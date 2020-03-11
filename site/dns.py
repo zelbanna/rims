@@ -14,7 +14,7 @@ def domain_list(aWeb):
  if domains.get('sync'):
   aWeb.wr("<SPAN CLASS='results'>%s</SPAN>"%(domains['sync']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>ID</DIV><DIV>Domain</DIV><DIV>Server</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
- for dom in domains['domains']:
+ for dom in domains['data']:
   aWeb.wr("<DIV><DIV>%(id)s</DIV><DIV>%(name)s</DIV><DIV>%(service)s</DIV><DIV>"%dom)
   aWeb.wr(aWeb.button('info', DIV='div_content_right',URL='dns_domain_info?id=%s'%(dom['id'])))
   aWeb.wr(aWeb.button('items',DIV='div_content_right',URL='dns_record_list?domain_id=%s'%(dom['id'])))

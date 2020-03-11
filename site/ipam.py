@@ -10,7 +10,7 @@ def network_list(aWeb):
  aWeb.wr(aWeb.button('add',     DIV='div_content_right', URL='ipam_network_info?id=new', TITLE='New network'))
  aWeb.wr(aWeb.button('document',DIV='div_content_right', URL='ipam_server_leases', SPIN='true'))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>ID</DIV><DIV>Network</DIV><DIV>Description</DIV><DIV>DHCP</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
- for net in res['networks']:
+ for net in res['data']:
   aWeb.wr("<DIV><DIV>%(id)s</DIV><DIV>%(netasc)s</DIV><DIV STYLE='max-width:120px; overflow:hidden;'>%(description)s</DIV><DIV>%(service)s</DIV><DIV STYLE='width:80px'>"%net)
   aWeb.wr(aWeb.button('info',  DIV='div_content_right', URL='ipam_network_layout?id=%i'%net['id']))
   aWeb.wr(aWeb.button('items', DIV='div_content_right', URL='ipam_address_list?network_id=%i'%net['id']))
@@ -65,7 +65,7 @@ def network_layout(aWeb):
  data = aWeb.rest_call("ipam/address_list",{'network_id':aWeb['id'],'dict':'ip_integer','extra':['device_id']})
  startn  = int(data['start'])
  starta  = int(data['network'].split('.')[3])
- addresses = data['entries']
+ addresses = data['data']
  green = "<A CLASS='z-op btn small ipam green' TITLE='New' DIV=div_content_right URL='device_new?ipam_network_id="+ aWeb['id'] +"&ipint={}'>{}</A>"
  red   = "<A CLASS='z-op btn small ipam red'   TITLE='Used' DIV=div_content_right URL='device_info?id={}'>{}</A>"
  blue  = "<A CLASS='z-op btn small ipam blue'  TITLE='{}'>{}</A>"
@@ -102,7 +102,7 @@ def address_list(aWeb):
  aWeb.wr(aWeb.button('reload',DIV='div_content_right',URL='ipam_address_list?network_id=%s'%(aWeb['network_id'])))
  aWeb.wr(aWeb.button('add',   DIV='div_content_right',URL='ipam_address_info?id=new&network_id=%s'%(aWeb['network_id'])))
  aWeb.wr("<SPAN CLASS=results ID=ipam_address_operation>&nbsp;</SPAN><DIV CLASS=table><DIV CLASS=thead><DIV>Id</DIV><DIV>IP</DIV><DIV>Hostname</DIV><DIV>Domain</DIV><DIV>A_id</DIV><DIV>PTR_id</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
- for row in data['entries']:
+ for row in data['data']:
   aWeb.wr("<DIV><DIV>%(id)i</DIV><DIV>%(ip)s</DIV><DIV>%(hostname)s</DIV><DIV>%(domain)s</DIV><DIV>%(a_id)s</DIV><DIV>%(ptr_id)s</DIV>"%row)
   aWeb.wr("<DIV><DIV CLASS='state %s' /></DIV><DIV>"%aWeb.state_ascii(row['state']))
   aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='ipam_address_info?id=%(id)i'%row))
@@ -116,7 +116,7 @@ def address_info(aWeb):
  args = aWeb.args()
  div = args.pop('vpl','div_content_right')
  data = aWeb.rest_call("ipam/address_info",args)
- domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['domains']
+ domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['data']
  aWeb.wr("<ARTICLE CLASS='info'><P>Address Info</P>")
  aWeb.wr("<SPAN CLASS=results ID=ipam_address_operation>%(status)s %(info)s&nbsp;</SPAN>"%(data))
  aWeb.wr("<FORM ID=ipam_address_form>")

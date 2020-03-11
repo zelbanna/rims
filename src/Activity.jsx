@@ -67,14 +67,12 @@ class Info extends InfoBase {
    ]
 
  render() {
-  if (this.state.found === false)
-   return <article>User with id: {this.props.id} removed</article>
-  else if ((this.state.data === null) || (this.state.themses === []))
+  if (this.state.data === null)
    return <Spinner />
   else {
    return (
     <article className='info'>
-     <h1>Activity ({this.state.data.id})</h1>
+     <h1>Activity</h1>
      <InfoCol2 key='activity_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
      <textarea id='event' name='event' className='info' onChange={this.changeHandler} value={this.state.data.event} />
      <InfoButton key='activity_save' type='save' onClick={() => this.updateInfo('api/master/activity_info')} />
@@ -141,14 +139,12 @@ class TypeInfo extends InfoBase {
  infoItems = () => [ {tag:'input', type:'text', id:'type', text:'Type', value:this.state.data.type, placeholder:'name'} ]
 
  render() {
-  if (this.state.found === false)
-   return <article>User with id: {this.props.id} removed</article>
-  else if ((this.state.data === null) || (this.state.themses === []))
+  if (this.state.data === null)
    return <Spinner />
   else {
    return (
     <article className='info'>
-     <h1>Activity Type ({this.state.data.id})</h1>
+     <h1>Activity Type</h1>
      <InfoCol2 key='activity_type_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
      <InfoButton key='activity_type_save' type='save' onClick={() => this.updateInfo('api/master/activity_type_info')} />
     </article>

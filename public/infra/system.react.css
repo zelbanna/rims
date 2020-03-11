@@ -19,7 +19,7 @@ details{ display:inline; }
 h1 {     font-size:16px; font-weight: bold; text-align:center; margin:4px 0px 4px 0px; white-space:nowrap; text-overflow:ellipsis; clear:both; }
 button::-moz-focus-inner { border-style: none; padding: 0; }
 select,input[type='text'],input[type='url'],input[type='email'],input[type='password'],input[type='date'],input[type='time'] { 
- -webkit-appearance: none; background-color: transparent; border:solid 1px; border-color:transparent; border-bottom:dotted 1px #F1F1F1; color: #000000;
+ -webkit-appearance: none; background-color: transparent; border:solid 1px; border-color:transparent; border-bottom:dotted 1px #F1F1F1; 
 }
 
 @media only screen and (min-width: 600px) {
@@ -41,7 +41,7 @@ article.login button { margin:10px!important; }
 
 button.menu { 
  -webkit-text-decoration-skip:objects; background-color:#FFFFFF; background-size:contain; background-position:center; background-repeat:no-repeat; 
- border:1px solid #9CA6B0; border-radius:6px; color:#000000;  display: block; float:left; font-family: "Courier New", serif; font-size: 14px; font-weight:bold;
+ border:1px solid #9CA6B0; border-radius:6px; display: block; float:left; font-family: "Courier New", serif; font-size: 14px; font-weight:bold;
  height: 52px; margin: 5px 2px; min-width:52px; outline:none; overflow:hidden; padding:4px; text-align:center; text-decoration:none!important;
  white-space:nowrap;
 }
@@ -94,8 +94,8 @@ div.info input:-webkit-input-placeholder { color: #9CA6B0; }
 div.info input:-moz-placeholder {          color: #9CA6B0; opacity:1; }
 div.info label { font-weight:bold; font-style:normal!important; }
 
-button.info { height:22px; border:none; outline-width:0; border-radius:3px; margin-left:2px;}
-button.info:hover {  opacity:0.9; box-shadow:0px 2px rgba(0,0,0,0.3); }
+button.info { height:22px; border:none; outline-width:0; border-radius:3px; margin-left:2px; margin-bottom:2px; box-shadow:0px 2px rgba(0,0,0,0.3)}
+button.info:hover {  opacity:0.9; }
 button.info:active { opacity:0.7; box-shadow:0px 1px rgba(0,0,0,0.3); transform: translateY(1px); }
 
 textarea.info { height:70px; width:300px; display:block; }
@@ -105,14 +105,14 @@ textarea.info { height:70px; width:300px; display:block; }
 button.text {          font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; vertical-align:bottom; }
 
 article.table {        z-index:101; height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; }
-div.table {            display: table; width:99% }
+div.table {            display: table; width:100% }
 div.table .thead {     display: table-header-group; }
 div.table .thead > div { font-size:14px; display: table-cell; vertical-align: middle; font-weight: bold; text-align: center;  padding: 3px 2px 6px 4px; }
 div.table .tbody {     display: table-row-group; }
 div.table .tbody > div { display: table-row; }
 div.table .tbody > div:nth-child(even) { background-color: #FFFFFF; }
 div.table .tbody > div:nth-child(odd)  { background-color: #F1F1F1; }
-div.table .tbody > div > div { display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 0px 0px 3px; white-space:nowrap; }
+div.table .tbody > div > div { display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 2px 0px 2px; white-space:nowrap; }
 div.table .tfoot {     display: table-footer-group; }
 
 /*************************************** Report Model *****************************************/
@@ -154,6 +154,10 @@ div.loader {  border: 16px solid #D5DADD; border-radius: 50%; border-top: 16px s
 div.centered { justify-content:space-evenly; display:flex; flex-wrap:wrap; width:100%; height:max-content; }
 div.state { border: 1px solid #9CA6B0; border-radius:16px; height:16px; width:16px; display:inline-block; }
 
+span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; }
+
+button.ipam { float:left; font-size:9px; font-weight:bold; padding:0px; width:22px; color:#000000!important; margin:2px; }
+
 /* media dependent */
 article.network { width:99%; }
 div.network { height:500px; width:600px; resize:horizontal}
@@ -173,7 +177,5 @@ label.network { font-weight:bold; font-style:normal!important; }
 
 div.rack-indx { font-weight:bold; font-size:8px; color:grey; padding:2px; }
 div.rack-data { border: solid 2px grey; font-size:12px; text-align:center;}
-
-span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; font-family: Verdana,sans-serif; }
 
 */

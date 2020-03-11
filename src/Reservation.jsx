@@ -69,9 +69,7 @@ class Info extends InfoBase {
  }
 
  render() {
-  if (this.state.found === false)
-   return <article>Reservation deleted</article>
-  else if (this.state.data === null)
+  if (this.state.data === null)
    return <Spinner />
   else {
    const griditems = [
@@ -83,8 +81,8 @@ class Info extends InfoBase {
    ]
    return (
     <article className='info'>
-     <h1>Reservation ({this.state.data.device_id})</h1>
-     <InfoCol2 key={'user_content'} griditems={griditems} changeHandler={this.changeHandler} />
+     <h1>Reservation</h1>
+     <InfoCol2 key={'reservation_content'} griditems={griditems} changeHandler={this.changeHandler} />
      <InfoButton key='reservation_save' type='save' onClick={() => this.updateInfo('api/reservation/info')} />
     </article>
    );

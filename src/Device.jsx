@@ -90,7 +90,7 @@ export class Main extends MainBase {
    {title:'OUI', type:'dropdown', items:[
     {title:'Search',  onClick:() => this.changeMain(<OUISearch key='oui_search' />)},
     {title:'List',  onClick:() => this.changeMain(<OUIList key='oui_list' />)}
-   ]},
+   ]},,
    { onClick:() => this.setState({content:null}), className:'reload' }
   ]
   if (this.state.pduinfo.length > 0)
@@ -169,5 +169,18 @@ class OUIList extends Component {
 
  render() {
   return (<div>OUI List (TODO)</div>);
+ }
+}
+
+export class Info extends Component {
+
+ render() {
+  return (<div>Device Info (TODO)</div>);
+ }
+}
+export class New extends Component {
+
+ render() {
+  return (<div>Device New (TODO)</div>);
  }
 }

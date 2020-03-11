@@ -462,8 +462,8 @@ def new(aWeb):
  elif op == 'find':
   aWeb.wr(aWeb.rest_call("ipam/address_find",{'network_id':network})['ip'])
  else:
-  domains  = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['domains']
-  networks = aWeb.rest_call("ipam/network_list")['networks']
+  domains  = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['data']
+  networks = aWeb.rest_call("ipam/network_list")['data']
   classes  = aWeb.rest_call("device/class_list")['classes']
   aWeb.wr("<ARTICLE CLASS=info><P>Device Add</P>")
   aWeb.wr("<FORM ID=device_new_form>")
