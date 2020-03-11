@@ -78,11 +78,11 @@ export class Main extends MainBase {
    {title:'Reservations', className:'right', onClick:() => this.changeMain(<ReservationList key='reservation_list' />)},
    {title:'Locations', className:'right', onClick:() => this.changeMain(<LocationList key='location_list' />)},
    {title:'IPAM', type:'dropdown',  className:'right', items:[
-    {title:'Servers', onClick:() => this.changeMain(<ServerList key='server_list' type='DHCP' />)},
+    {title:'Servers', onClick:() => this.changeMain(<ServerList key='ipam_server_list' type='DHCP' />)},
     {title:'Networks', onClick:() => this.changeMain(<IPAMNetworkList key='ipam_network_list' />)}
    ]},
    {title:'DNS', type:'dropdown',  className:'right', items:[
-    {title:'Servers', onClick:() => this.changeMain(<ServerList key='server_list' type='DNS' />)},
+    {title:'Servers', onClick:() => this.changeMain(<ServerList key='dns_server_list' type='DNS' />)},
     {title:'Domains', onClick:() => this.changeMain(<DNSDomainList key='dns_domain_list' />)}
    ]},
    {title:'Racks', className:'right', onClick:() => this.changeMain(<RackList key='rack_list' />)},

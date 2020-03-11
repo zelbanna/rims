@@ -101,8 +101,7 @@ def info(aCTX, aArgs = None):
    ret['found'] = True
    ret['data'] = {'id':'new','vendor':None,'serial':None,'model':None,'license':False,'license_key':None,'support_contract':False,'support_end_date':None,'description':'N/A','purchase_order':None,'location_id':None,'receive_date':None,'product':None}
   db.do("SELECT id,name FROM locations")
-  ret['locations'] = [{'id':'NULL', 'name':'None'}]
-  ret['locations'].extend(db.get_rows())
+  ret['locations'] = db.get_rows()
  return ret
 
 #

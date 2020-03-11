@@ -1,7 +1,7 @@
 """NoDNS API module. Backend in case no DNS is available, only on master node, records can be exported :-)
-Settings:
- - id (server_id on master node)
 
+TODO: Add notified_serial to domain_cache and enable domain update
+ 
 """
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
@@ -43,21 +43,19 @@ def domain_info(aCTX, aArgs = None):
 
  Output:
  """
- ret = {'insert':0, 'update':0, 'found':True, 'data':{'id':aArgs['id'],'name':aArgs.get('name','new_name'),'master':'127.0.0.1','type':'MASTER', 'notified_serial':0 }}
+ ret = {'found':True, 'data':{'id':aArgs['id'],'name':aArgs.get('name','new_name'),'master':'127.0.0.1','type':'MASTER', 'notified_serial':0 }}
  op = aArgs.pop('op',None)
- if op == "update":
-  if not aArgs['id'] == 'new':
-   ret['update'] = True
-  else:
-   ret['insert'] = True
-   with aCTX.db as db:
+ with aCTX.db as db:
+  if op == "update":
+   if not aArgs['id'] == 'new':
+    ret['update'] = True
+   else:
+    ret['insert'] = True
     db.do("SELECT max(id) + 1 AS next FROM domains")
     ret['data']['id'] = db.get_val('next')
- elif aArgs['id'] != 'new':
-  with aCTX.db as db:
+  elif aArgs['id'] != 'new':
    db.do("SELECT name FROM domains WHERE foreign_id = %s"%aArgs['id'])
    ret['data']['name'] = db.get_val('name')
-
  return ret
 
 #
@@ -72,19 +70,7 @@ def domain_delete(aCTX, aArgs = None):
   - records (number of removed records)
   - domain: True or false, did op succeed
  """
- return {'domain':True,'records':0,'status':'OK'}
-
-#
-#
-def domain_save(aCTX, aArgs = None):
- """NO OP
-
- Args:
-  - id (required)
-
- Output:
- """
- return {'status':'OK'}
+ return {'deleted':True,'records':0,'status':'OK'}
 
 #################################### Records #######################################
 #
@@ -107,8 +93,7 @@ def record_list(aCTX, aArgs = None):
    select.append("type = '%s'"%aArgs['type'].upper())
   tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
   ret['count'] = db.do("SELECT id, domain_id, name, type, content,ttl,DATE_FORMAT(change_date,'%%Y%%m%%d%%H%%i') AS change_date FROM domain_records %s ORDER BY type, name ASC"%tune)
-  ret['records'] = db.get_rows()
-
+  ret['data'] = db.get_rows()
  return ret
 
 #
@@ -160,7 +145,7 @@ def record_delete(aCTX, aArgs = None):
   if (db.do("SELECT type FROM domain_records WHERE id = %(id)s AND domain_id = %(domain_id)s"%aArgs) > 0):
    ret['status'] = 'OK'
    type = db.get_val('type').lower()
-   db.do("DELETE FROM domain_records WHERE id = %(id)s"%aArgs)
+   ret['deleted'] = (db.do("DELETE FROM domain_records WHERE id = %(id)s"%aArgs) > 0)
    if   type == 'a':
     ret['ipam'] = 'OK' if (db.do("UPDATE ipam_addresses SET a_id = 0 WHERE a_id = %s AND a_domain_id IN (SELECT id FROM domains WHERE foreign_id = %s)"%(aArgs['id'],aArgs['domain_id'])) > 0) else 'NOT_OK'
    elif type == 'ptr':
@@ -170,6 +155,7 @@ def record_delete(aCTX, aArgs = None):
   else:
    ret['status'] = 'NOT_OK'
    ret['info'] = 'record not found'
+   ret['deleted'] = False
  return ret
 
 ############################### Tools #################################

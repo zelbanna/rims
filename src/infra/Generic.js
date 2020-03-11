@@ -64,7 +64,7 @@ export const InfoCol2 = (props) => {
     second = <div>UNKNOWN</div>
    }
   } else if (row.tag === 'select'){
-   if (row.value === null)
+   if ((row.value === null) && (row.options.find(opt => opt.value === 'NULL') === undefined))
     row.options.push({value:"NULL",text:"N/A"})
    second = <select name={row.id} onChange={props.changeHandler} value={(row.value !== null) ? row.value : "NULL"}>{
     row.options.map((opt,index) => <option key={row.id + '_'+index} value={opt.value}>{opt.text}</option>)
@@ -73,7 +73,7 @@ export const InfoCol2 = (props) => {
    second = <span id={row.id}>{row.value}</span>
   } else
    second = <div id={row.id}>{row.content}</div>
-  return <Fragment key={index}><label htmlFor={row.id}>{row.text}</label>{second}</Fragment>
+  return <Fragment key={index}><label htmlFor={row.id} title={row.title}>{row.text}</label>{second}</Fragment>
  });
 
  return <div className={('className' in props) ? 'info col2 ' + props.className : 'info col2'} style={props.style}>{griditems}</div>

@@ -15,7 +15,8 @@ export class Main extends MainBase {
   this.props.loadNavigation([
    {title:'Inventory',   type:'dropdown', items:[
     {title:'Search', onClick:() => { this.changeMain(<Search key='search_list' changeSelf={this.changeMain} />)}},
-    {title:'Vendor', onClick:() => { this.changeMain(<Vendor key='vendor_list' changeSelf={this.changeMain} />)}}
+    {title:'Vendor', onClick:() => { this.changeMain(<Vendor key='vendor_list' changeSelf={this.changeMain} />)}},
+    {title:'List',   onClick:() => { this.changeMain(<List key='list' changeSelf={this.changeMain} />)}}
    ]},
    {title:'Locations', onClick:() => { this.changeMain(<LocationList key='location_list' />)}}
   ])

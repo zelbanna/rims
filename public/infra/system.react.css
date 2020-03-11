@@ -21,7 +21,7 @@ button::-moz-focus-inner { border-style: none; padding: 0; }
 select,input[type='text'],input[type='url'],input[type='email'],input[type='password'],input[type='date'],input[type='time'] { 
  -webkit-appearance: none; background-color: transparent; border:solid 1px; border-color:transparent; border-bottom:dotted 1px #F1F1F1; 
 }
-select:focus,input:focus,textarea:focus,button:focus { border-color:var(--high-color)!important; }
+select:focus,input:focus,textarea:focus { border-color:var(--high-color)!important; }
 
 @media only screen and (min-width: 600px) {
   /* For tablets: */
@@ -102,7 +102,7 @@ div.info input:-webkit-input-placeholder { color: #9CA6B0; }
 div.info input:-moz-placeholder {          color: #9CA6B0; opacity:1; }
 div.info label { font-weight:bold; font-style:normal!important; }
 
-button.info { background-color:var(--std-color); color:var(--std-txt-color); height:22px; border:none; outline-width:0; border-radius:3px; margin-left:2px; margin-bottom:2px; box-shadow:0px 2px rgba(0,0,0,0.3) }
+button.info { background-color:var(--std-color)!important; color:var(--std-txt-color); height:22px; border:none; outline-width:0; border-radius:3px; margin-left:2px; margin-bottom:2px; box-shadow:0px 2px rgba(0,0,0,0.3) }
 button.info:hover, button.info:focus {  opacity:0.9; color:var(--high-color)!important; }
 button.info:active { opacity:0.7; box-shadow:0px 1px rgba(0,0,0,0.3); transform: translateY(1px); }
 
@@ -120,7 +120,7 @@ div.table .tbody {     display: table-row-group; }
 div.table .tbody > div { display: table-row; }
 div.table .tbody > div:nth-child(even) { background-color: #FFFFFF; }
 div.table .tbody > div:nth-child(odd)  { background-color: #F1F1F1; }
-div.table .tbody > div > div { display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 2px 0px 2px; white-space:nowrap; }
+div.table .tbody > div > div { display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 0px 4px; white-space:nowrap; }
 div.table .tfoot {     display: table-footer-group; }
 
 /*************************************** Report Model *****************************************/

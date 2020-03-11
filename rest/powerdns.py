@@ -95,20 +95,8 @@ def domain_delete(aCTX, aArgs = None):
  with DB(aCTX.config['powerdns']['database'],'localhost',aCTX.config['powerdns']['username'],aCTX.config['powerdns']['password']) as db:
   id = int(aArgs['id'])
   ret['records'] = db.do("DELETE FROM records WHERE domain_id = %i"%id)
-  ret['domain']  = (db.do("DELETE FROM domains WHERE id = %i"%(id)) == 1)
+  ret['deleted']  = (db.do("DELETE FROM domains WHERE id = %i"%(id)) == 1)
  return ret
-
-#
-#
-def domain_save(aCTX, aArgs = None):
- """NO OP
-
- Args:
-  - id (required)
-
- Output:
- """
- return {'status':'NO_OP'}
 
 #################################### Records #######################################
 #
@@ -131,7 +119,7 @@ def record_list(aCTX, aArgs = None):
  tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
  with DB(aCTX.config['powerdns']['database'],'localhost',aCTX.config['powerdns']['username'],aCTX.config['powerdns']['password']) as db:
   ret['count'] = db.do("SELECT id, domain_id, name, type, content,ttl,change_date FROM records %s ORDER BY type, name ASC"%tune)
-  ret['records'] = db.get_rows()
+  ret['data'] = db.get_rows()
  return ret
 
 #
@@ -178,7 +166,8 @@ def record_delete(aCTX, aArgs = None):
  """
  ret = {}
  with DB(aCTX.config['powerdns']['database'],'localhost',aCTX.config['powerdns']['username'],aCTX.config['powerdns']['password']) as db:
-  ret['status'] = 'OK' if (db.do("DELETE FROM records WHERE id = '%s'"%(aArgs['id'])) > 0) else 'NOT_OK'
+  ret['deleted'] = (db.do("DELETE FROM records WHERE id = '%s'"%(aArgs['id'])) > 0)
+  ret['status'] = 'OK'
  return ret
 
 ############################### Tools #################################

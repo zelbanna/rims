@@ -40,7 +40,7 @@ export class NetworkList extends ListBase {
 class NetworkInfo extends InfoBase {
  constructor(props) {
   super(props)
-  this.state = {data:null, servers:[]}
+  this.state.servers = []
  }
 
  componentDidMount(){
@@ -67,7 +67,7 @@ class NetworkInfo extends InfoBase {
   else {
    return (
     <article className='info'>
-     <h1>Network Info ({this.state.data.id})</h1>
+     <h1>Network Info</h1>
      <InfoCol2 key='network_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
      <InfoButton key='network_save' type='save' onClick={() => this.updateInfo('api/ipam/network_info')} />
     </article>

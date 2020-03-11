@@ -47,8 +47,7 @@ def network_info(aCTX, aArgs = None):
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  with aCTX.db as db:
-  ret['servers'] = [{'id':'NULL','service':None,'node':None}]
-  ret['servers'].extend([{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DHCP'])
+  ret['servers'] = [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DHCP']
   if op == 'update':
    from struct import unpack
    from socket import inet_aton
@@ -77,8 +76,7 @@ def network_info(aCTX, aArgs = None):
   else:
    ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New','reverse_zone_id':None,'server_id':None }
  from rims.rest.dns import domain_ptr_list
- ret['domains'] = [{'id':'NULL','name':None,'server':None}]
- ret['domains'].extend(domain_ptr_list(aCTX, {'prefix':ret['data']['network']}))
+ ret['domains'] = domain_ptr_list(aCTX, {'prefix':ret['data']['network']})
  return ret
 
 

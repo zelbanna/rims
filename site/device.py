@@ -229,7 +229,7 @@ def info(aWeb):
 def extended(aWeb):
  args = aWeb.args()
  dev  = aWeb.rest_call("device/extended",args)
- domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['domains']
+ domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['data']
  dev_info = dev['data']
  dev_extra= dev['extra']
  aWeb.wr("<ARTICLE CLASS='info' STYLE='min-width:800px;'><P>Extended Info</P>")
@@ -499,8 +499,8 @@ def discover(aWeb):
   res = aWeb.rest_call("device/discover",args,200)
   aWeb.wr("<ARTICLE>%s</ARTICLE>"%(res))
  else:
-  networks = aWeb.rest_call("ipam/network_list")['networks']
-  domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['domains']
+  networks = aWeb.rest_call("ipam/network_list")['data']
+  domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['data']
   aWeb.wr("<ARTICLE CLASS=info><P>Device Discovery</P>")
   aWeb.wr("<FORM ID=device_discover_form>")
   aWeb.wr("<INPUT TYPE=HIDDEN NAME=op VALUE=json>")
@@ -634,8 +634,8 @@ def interface_ipam(aWeb):
  if aWeb['op'] == 'find':
   aWeb.wr(aWeb.rest_call("ipam/address_find",{'network_id':aWeb['network_id']})['ip'])
  else:
-  domains  = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['domains']
-  networks = aWeb.rest_call("ipam/network_list")['networks']
+  domains  = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['data']
+  networks = aWeb.rest_call("ipam/network_list")['data']
   aWeb.wr("<ARTICLE CLASS=info><P>Create IPAM record</P>")
   aWeb.wr("<FORM ID=interface_ipam_form>")
   aWeb.wr("<INPUT TYPE=HIDDEN NAME=interface_id VALUE='%s'>"%(aWeb['interface_id']))
