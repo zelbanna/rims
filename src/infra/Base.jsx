@@ -22,7 +22,7 @@ export class MainBase extends Component {
 export class ListBase extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, content:null}
+  this.state = {data:null, content:null, status:null}
   this.base = 'listbase'
   this.thead = ['']
   this.header = 'ListBase'
@@ -45,7 +45,7 @@ export class ListBase extends Component {
 
  render(){
    return <Fragment key={'listbase_content_fragment'}>
-   <section id='div_content_left' className='content-left'><ContentList key={this.base+'_content_list'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment>/></section>
+   <section id='div_content_left' className='content-left'><ContentList key={this.base+'_content_list'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} status={this.state.status} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment>/></section>
    <section id='div_content_right' className='content-right'><ContentData key={this.base+'_content_data'} content={this.state.content} /></section>
   </Fragment>
  }
@@ -56,7 +56,7 @@ export class ListBase extends Component {
 export class ReportBase extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null}
+  this.state = {data:null,status:null}
   this.base = 'reportbase'
   this.thead = ['']
   this.header = 'ReportBase'
@@ -76,7 +76,7 @@ export class ReportBase extends Component {
  listItem = (row) => []
 
  render(){
-  return <ContentReport articleClass={'report'} key={this.base+'_content_report'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment> />
+  return <ContentReport articleClass={'report'} key={this.base+'_content_report'} base={this.base} header={this.header} thead={this.thead} trows={this.state.data} listItem={this.listItem} status={this.state.status} buttons=<Fragment key={this.base+'_buttons'}>{this.buttons}</Fragment> />
  }
 }
 

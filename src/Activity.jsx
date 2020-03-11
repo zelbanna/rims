@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { rest_call, rest_base } from './infra/Functions.js';
+import { rest_call, rest_base, rnd } from './infra/Functions.js';
 import { Spinner, InfoCol2, CookieContext } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
@@ -27,7 +27,7 @@ class List extends ListBase {
   this.header = 'Activities'
   this.buttons = [
    <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
-   <InfoButton key='add' type='add' onClick={() => this.changeContent(<Info key={'activity_new_' + Math.floor(Math.random() * 10)} id='new' />) } />
+   <InfoButton key='add' type='add' onClick={() => this.changeContent(<Info key={'activity_new_' + rnd()} id='new' />) } />
   ]
  }
 
@@ -109,7 +109,7 @@ class TypeList extends ListBase {
   this.header= 'Activity Types'
   this.buttons=[
    <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
-   <InfoButton key='add' type='add' onClick={() => this.changeContent(<TypeInfo key={'activity_type_new_' + Math.floor(Math.random() * 10)} id='new' />) } />
+   <InfoButton key='add' type='add' onClick={() => this.changeContent(<TypeInfo key={'activity_type_new_' + rnd()} id='new' />) } />
   ]
  }
 

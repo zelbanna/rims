@@ -1,23 +1,12 @@
-/* Blue style sheet 
+/* Blue style sheet */
 
-Main:   #3E84F4
-Darker: #2674F2
-Back:   #F1F1F1
-
-*/
-
-/*###################################### Content Model ########################################*/
-
-
-header { background-color: #3E84F4; }
-main {   background-color:#F1F1F1; }
-
-nav { background-color:#2674F2; color:#FFFFFF!important; }
-nav li.warning button:hover{ color:#DF3620; }
-nav button {      color:#FFFFFF; }
-nav li:hover{     background-color:#3E84F4; }
-nav button.reload {       background-image: url(/images/btn-nav-reload.blue.png); }
-nav ul.dropdown-content { background-color: #3E84F4; }
+:root {
+  --main-color: #F1F1F1;
+  --head-color: #3E84F4;
+  --std-color: #2674F2;
+  --high-color: #000000;
+  --std-txt-color: #FFFFFF;
+}
 
 .red {    background-color:#DF3620!important; }
 .green {  background-color:#00CC66!important; }
@@ -26,14 +15,9 @@ nav ul.dropdown-content { background-color: #3E84F4; }
 .white {  background-color:#FFFFFF!important; }
 .grey {   background-color:#9CA6B0!important; }
 
-/*###################################### Menu Buttons ########################################*/
+/*###################################### Content Model ########################################*/
 
-button.warning { background-color:#DF3620!important; color:#FFFFFF!important; }
-
-/*###################################### Info Buttons ########################################*/
-
-input:focus,select:focus,textarea:focus { border-color:#3E84F4!important; }
-button.info { background-color:#3E84F4; color:#FFFFFF; }
+nav button.reload {       background-image: url(/images/btn-nav-reload.blue.png); }
 
 button.type-add {       width:22px; background-image: url(/images/btn-add.blue.png); }
 button.type-analyze {   width:22px; background-image: url(/images/btn-analyze.blue.png); }

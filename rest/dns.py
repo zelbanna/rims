@@ -21,7 +21,7 @@ def domain_list(aCTX, aArgs = None):
   if aArgs.get('sync',False):
    org = {}
    for server in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DNS']:
-    org[server['id']] = aCTX.node_function(server['node'],server['service'],'domain_list')(aArgs = {})['domains']
+    org[server['id']] = aCTX.node_function(server['node'],server['service'],'domain_list')(aArgs = {})['data']
    ret.update({'sync':{'added':[],'deleted':[],'type_fix':0}})
    db.do("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
    cache = db.get_dict('srv_id')

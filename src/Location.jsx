@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react'
-import { rest_call, rest_base } from './infra/Functions.js';
+import { rest_call, rest_base, rnd } from './infra/Functions.js';
 import { Spinner, InfoCol2 } from './infra/Generic.js';
 import { ListBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
@@ -15,7 +15,7 @@ export class List extends ListBase {
   this.header = 'Locations'
   this.buttons = [
    <InfoButton key='reload' type='reload' onClick={() => { this.componentDidMount() }} />,
-   <InfoButton key='add' type='add' onClick={() => { this.changeContent(<Info key={'location_new_' + Math.floor(Math.random() * 10)} id='new' />) }} title='Add new location' />
+   <InfoButton key='add' type='add' onClick={() => { this.changeContent(<Info key={'location_new_' + rnd()} id='new' />) }} title='Add new location' />
   ]
  }
 

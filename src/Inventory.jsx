@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react'
-import { rest_call, rest_base } from './infra/Functions.js';
+import { rest_call, rest_base, rnd } from './infra/Functions.js';
 import { Spinner, InfoCol2 } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
@@ -32,7 +32,7 @@ class List extends ListBase {
   this.buttons = [
    <InfoButton key='reload' type='reload' onClick={() =>  this.componentDidMount() } />,
    <InfoButton key='search' type='search' onClick={() => this.props.changeSelf(<Search key='search_list' changeSelf={this.props.changeSelf} />) } />,
-   <InfoButton key='add' type='add' onClick={() => this.changeContent(<Info key={'inventory_new_' + Math.floor(Math.random() * 10)} id='new' />) } />
+   <InfoButton key='add' type='add' onClick={() => this.changeContent(<Info key={'inventory_new_' + rnd()} id='new' />) } />
   ]
  }
 

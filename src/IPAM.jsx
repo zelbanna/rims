@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react'
-import { rest_call, rest_base } from './infra/Functions.js';
+import { rest_call, rest_base, rnd } from './infra/Functions.js';
 import { Spinner, InfoCol2, StateMap } from './infra/Generic.js';
 import { ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
@@ -16,7 +16,7 @@ export class NetworkList extends ListBase {
   this.thead = ['ID','Network','Description','DHCP','']
   this.buttons = [
    <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
-   <InfoButton key='add' type='add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_' + Math.floor(Math.random() * 10)} id='new' />) } />,
+   <InfoButton key='add' type='add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_' + rnd()} id='new' />) } />,
    <InfoButton key='document' type='document' onClick={() => this.changeContent(<Leases key='network_leases' />)} />
   ]
  }
@@ -140,7 +140,7 @@ class AddressList extends ReportBase{
   this.thead = ['ID','IP','Hostname','Domain','A_id','PTR_id','','']
   this.buttons = [
    <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
-   <InfoButton key='add' type='add' onClick={() => this.props.changeSelf(<AddressInfo key={'address_new_' + Math.floor(Math.random() * 10)} network_id={this.props.network_id} id='new' />) } />,
+   <InfoButton key='add' type='add' onClick={() => this.props.changeSelf(<AddressInfo key={'address_new_' + rnd()} network_id={this.props.network_id} id='new' />) } />,
   ]
  }
 
@@ -191,9 +191,9 @@ componentDidMount(){
    return (
     <article className='info'>
      <h1>IP Address</h1>
-     <span className='results' id='ip_operation'>{this.state.status} {this.state.info}</span>
      <InfoCol2 key='ip_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
      <InfoButton key='ip_save' type='save' onClick={() => this.updateInfo('api/ipam/address_info')} />
+     <span className='results' id='ip_operation'>{this.state.status} {this.state.info}</span>
     </article>
    );
   }
