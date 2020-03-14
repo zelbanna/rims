@@ -12,7 +12,7 @@ def main(aWeb):
 #
 #
 def list(aWeb):
- racks = aWeb.rest_call("rack/list",{"sort":"name"})
+ racks = aWeb.rest_call("rack/list",{"sort":"name"})['data']
  aWeb.wr("<ARTICLE><P>Racks</P>")
  aWeb.wr(aWeb.button('reload',DIV='div_content_left',URL='rack_list'))
  aWeb.wr(aWeb.button('add',DIV='div_content_right',URL='rack_info?id=new'))

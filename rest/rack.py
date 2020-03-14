@@ -12,11 +12,11 @@ def list(aCTX, aArgs = None):
 
  Output:
  """
- ret = []
+ ret = {}
  sort = aArgs.get('sort','racks.id')
  with aCTX.db as db:
-  db.do("SELECT racks.id, racks.name, racks.size, locations.name AS location FROM racks LEFT JOIN locations ON racks.location_id = locations.id ORDER BY %s"%sort)
-  ret = db.get_rows()
+  ret['count'] = db.do("SELECT racks.id, racks.name, racks.size, locations.name AS location FROM racks LEFT JOIN locations ON racks.location_id = locations.id ORDER BY %s"%sort)
+  ret['data'] = db.get_rows()
  return ret
 
 #
@@ -36,9 +36,9 @@ def info(aCTX, aArgs = None):
  with aCTX.db as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('racks',aArgs,'id=%s'%id)
+    ret['update'] = (db.update_dict('racks',aArgs,'id=%s'%id) > 0)
    else:
-    ret['update'] = db.insert_dict('racks',aArgs)
+    ret['update'] = (db.insert_dict('racks',aArgs) == 1)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
   if not id == 'new':
    ret['found'] = (db.do("SELECT racks.* FROM racks WHERE id = %s"%id) > 0)

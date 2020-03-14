@@ -14,11 +14,11 @@ export class Main extends MainBase {
  componentDidMount(){
   this.context.loadNavigation([
    {title:'Inventory',   type:'dropdown', items:[
-    {title:'Search', onClick:() => { this.changeMain(<Search key='search_list' changeSelf={this.changeMain} />)}},
-    {title:'Vendor', onClick:() => { this.changeMain(<Vendor key='vendor_list' changeSelf={this.changeMain} />)}},
-    {title:'List',   onClick:() => { this.changeMain(<List key='list' changeSelf={this.changeMain} />)}}
+    {title:'Search', onClick:() => { this.changeContent(<Search key='search_list' changeSelf={this.changeContent} />)}},
+    {title:'Vendor', onClick:() => { this.changeContent(<Vendor key='vendor_list' changeSelf={this.changeContent} />)}},
+    {title:'List',   onClick:() => { this.changeContent(<List key='list' changeSelf={this.changeContent} />)}}
    ]},
-   {title:'Locations', onClick:() => { this.changeMain(<LocationList key='location_list' />)}}
+   {title:'Locations', onClick:() => { this.changeContent(<LocationList key='location_list' />)}}
   ])
  }
 }

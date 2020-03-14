@@ -24,7 +24,7 @@ export class DomainList extends ListBase {
  componentDidMount(){
   rest_call(rest_base + 'api/dns/domain_list')
    .then((result) => {
-    result.status = 'OK'
+    result.result = 'OK';
     this.setState(result);
    })
  }
@@ -32,8 +32,8 @@ export class DomainList extends ListBase {
  syncDomains(){
   rest_call(rest_base + 'api/dns/domain_list',{sync:true})
    .then((result) => {
-    result.status = JSON.stringify(result.sync)
-    this.setState(result)
+    result.result = JSON.stringify(result.result);
+    this.setState(result);
    })
  }
 

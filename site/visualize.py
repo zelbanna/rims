@@ -72,7 +72,7 @@ def network(aWeb):
  args = aWeb.args()
  res = aWeb.rest_call("visualize/network",args)['data']
  aWeb.wr("<ARTICLE><P>Info for %s</P>"%(res['name']))
- aWeb.wr(aWeb.button('reload', DIV='div_content_right', URL='visualize_network?type=%s&id=%s'%(res['type'],res['id'])))
+ aWeb.wr(aWeb.button('reload', DIV='div_content_right', URL='visualize_network?type=%s&id=%s'%(aWeb['type'],res['id'])))
  aWeb.wr(aWeb.button('trash',  DIV='div_content_right', URL='visualize_delete?id=%s'%res['id'], TITLE='Delete map', MSG='Really delete map?'))
  if aWeb['type'] == 'device':
   aWeb.wr(aWeb.button('back',   DIV='div_content_right', URL='device_info?id=%s'%res['id'], TITLE='Return to device'))
@@ -92,7 +92,7 @@ def network(aWeb):
  aWeb.wr("<DIV CLASS='tab' STYLE='display:none' ID='div_nodes'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=nodes NAME=nodes>%s</TEXTAREA></DIV>"%dumps(res['nodes'],indent=2))
  aWeb.wr("<DIV CLASS='tab' STYLE='display:none' ID='div_edges'><TEXTAREA CLASS=maxed STYLE='height:400px' ID=edges NAME=edges>%s</TEXTAREA></DIV>"%dumps(res['edges'],indent=2))
  aWeb.wr("<INPUT TYPE=HIDDEN VALUE='%s' NAME=id>"%res['id'])
- aWeb.wr("<INPUT TYPE=HIDDEN VALUE='%s' NAME=type>"%res['type'])
+ aWeb.wr("<INPUT TYPE=HIDDEN VALUE='%s' NAME=type>"%aWeb['type'])
  aWeb.wr("</FORM>")
  aWeb.wr("<DIV CLASS='tab network' ID='div_network'></DIV><SCRIPT>")
  aWeb.wr("var nodes = new vis.DataSet(%s);"%dumps(res['nodes']))

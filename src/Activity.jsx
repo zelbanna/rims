@@ -11,9 +11,9 @@ import { InfoButton } from './infra/Buttons.jsx';
 export class Main extends MainBase {
  componentDidMount(){
   this.context.loadNavigation([
-   {title:'Activities', onClick:() => { this.changeMain(<List key='activity_list' />)}},
-   {title:'Types', onClick:() => { this.changeMain(<TypeList key='activity_type_list' />)}},
-   {title:'Report', onClick:() => { this.changeMain(<Report key='activity_report' />)}}
+   {title:'Activities', onClick:() => { this.changeContent(<List key='activity_list' />)}},
+   {title:'Types', onClick:() => { this.changeContent(<TypeList key='activity_type_list' />)}},
+   {title:'Report', onClick:() => { this.changeContent(<Report key='activity_report' />)}}
   ])
  }
 }

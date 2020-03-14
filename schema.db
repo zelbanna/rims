@@ -101,9 +101,9 @@ CREATE TABLE `device_models` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `type_id` int(10) unsigned NOT NULL,
   `name` varchar(30) NOT NULL,
-  `defaults_file` varchar(60) DEFAULT NULL,
-  `image_file` varchar(60) DEFAULT NULL,
-  `parameters` text DEFAULT NULL,
+  `defaults_file` varchar(60) DEFAULT '',
+  `image_file` varchar(60) DEFAULT '',
+  `parameters` text DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `model` (`type_id`,`name`),
   CONSTRAINT `device_models_type_ibfk_1` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE

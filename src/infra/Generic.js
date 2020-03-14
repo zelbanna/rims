@@ -29,7 +29,7 @@ const content = (type,props) => {
   return <article className={(props.hasOwnProperty('articleClass')) ? props.articleClass : type}>
     <h1>{props.header}</h1>
     {props.buttons}
-    <span className='results'>{props.status}</span>
+    <span className='results'>{props.result}</span>
     <div className={(props.hasOwnProperty('tableClass')) ? props.tableClass : 'table'}>
      <TableHead key={'content_thead'} headers={props.thead} />
      <div className='tbody'>

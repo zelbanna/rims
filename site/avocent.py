@@ -25,7 +25,7 @@ def inventory(aWeb):
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>PDU</DIV><DIV>Position</DIV><DIV>Device</DIV><DIV CLASS=th STYLE='width:63px;'>State</DIV></DIV>")
  aWeb.wr("<DIV CLASS=tbody>")
  for counter,value in enumerate(data['inventory'],1):
-  aWeb.wr("<DIV><DIV TITLE='Open up a browser tab for {0}'><A TARGET='_blank' HREF='https://{0}:3502'>{0}</A></DIV><DIV>{1}</DIV>".format(aWeb['ip'],value['slotname']+'.'+value['unit']))
+  aWeb.wr("<DIV><DIV TITLE='Open up a browser tab for {0}'><A TARGET='_blank' HREF='https://{0}:3502'>{0}</A></DIV><DIV>{1}</DIV>".format(aWeb['ip'],'%s.%s'%(value['slotname'],value['unit'])))
   aWeb.wr("<DIV><A CLASS=z-op DIV=div_content_right URL='avocent_unit_info?id={0}&slot={1}&unit={2}&text={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV ID=div_pdu_{5}>&nbsp;".format(aWeb['id'],value['slot'],value['unit'],value['name'], value['slotname'],counter))
   url = 'avocent_op?id=%s&slot=%s&unit=%s&div_pdu_id=%i&nstate={}'%(aWeb['id'],value['slot'],value['unit'],counter)
   div = 'div_pdu_%i'%counter

@@ -85,14 +85,3 @@ button.type-term-frame:hover, button.type-term-frame:focus {   background-image:
 button.type-term:hover, button.type-term:focus {               background-image: url(/images/btn-term.black.hover.png); }
 button.type-trash:hover, button.type-trash:focus {             background-image: url(/images/btn-trash.black.hover.png); }
 button.type-ui:hover, button.type-ui:focus {                   background-image: url(/images/btn-ui.black.hover.png); }
-
-/*################################# EXTRA SO FAR ############################################*/
-
-/*
-.background {  background-color:#F1F1F1; }
-
-a.small { height: 22px; margin:0px; margin-right:1px; margin-bottom:2px; font-size:14px; color:#FFFFFF; background-color:#1A1A1A; padding:0px; border-radius: 3px; border:none!important; box-shadow:0px 2px rgba(0,0,0,0.3); }
-a.small:hover { box-shadow:0px 2px rgba(0,0,0,0.3); opacity: 1.0; color:#CB2026; }
-a.small:active { transform: translateY(1px); box-shadow:0px 1px rgba(0,0,0,0.3); opacity:0.7;}
-
-*/

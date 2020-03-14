@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import { rest_call, rest_base, rnd } from './infra/Functions.js';
 import {Spinner, InfoCol2 } from './infra/Generic.js';
 import { ListBase, InfoBase } from './infra/Base.jsx';
-import { InfoButton } from './infra/Buttons.jsx';
+import { TextButton, InfoButton } from './infra/Buttons.jsx';
 import { NavBar } from './infra/Navigation.js';
 
 // CONVERTED ENTIRELY
@@ -70,7 +70,7 @@ class Info extends InfoBase {
      buttons.push(<InfoButton key='node_btn_srch' type='search' onClick={this.searchInfo} />)
     buttons.push(<InfoButton key='node_btn_reload' type='reload' onClick={() => this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />) } />)
     buttons.push(<InfoButton key='node_btn_logs'  type='logs' onClick={() => this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node} />) } />)
-    buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='trash' onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />)
+    buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='trash' className='info'  onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />)
    }
    return (
    <Fragment key='node_info_fragment'>

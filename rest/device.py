@@ -451,7 +451,7 @@ def new(aCTX, aArgs = None):
   try:    mac = int(aArgs['mac'].replace(':',""),16)
   except: mac = 0
 
-  db.do("INSERT INTO devices (hostname,class) VALUES('%s','%s')"%(aArgs['hostname'],aArgs.get('class','device')))
+  db.do("INSERT INTO devices (hostname,class,type_id) SELECT '%s' AS hostname, '%s' AS class, id AS type_id FROM device_types WHERE name = 'generic'"%(aArgs['hostname'],aArgs.get('class','device')))
   ret['id'] = db.get_last_id()
   if mac > 0 or ipam is not None:
    ret['interface']  = db.do("INSERT INTO device_interfaces (device_id,mac,ipam_id,name,description) VALUES(%s,%s,%s,'management-%s','auto_created')"%(ret['id'], mac, ipam,ret['id']))
@@ -494,6 +494,11 @@ def discover(aCTX, aArgs = None):
  """
  from time import time
  from rims.rest.ipam import network_discover, address_info, address_delete
+ from struct import unpack
+ from socket import inet_aton
+
+ def ip2int(addr):
+  return unpack("!I", inet_aton(addr))[0]
 
  start_time = int(time())
  ipam = network_discover(aCTX, {'id':aArgs['network_id']})
@@ -518,14 +523,11 @@ def discover(aCTX, aArgs = None):
   with aCTX.db as db:
    db.do("SELECT id,name FROM device_types")
    devtypes = db.get_dict('name')
-   count = 0
    for ip,entry in ip_addresses.items():
-    count += 1
-    ipam = address_info(aCTX, {'op':'insert','ip':ip,'network_id':aArgs['network_id'],'a_domain_id':aArgs.get('a_domain_id'),'hostname':'unknown-%s'%count})
+    ipam = address_info(aCTX, {'op':'insert','ip':ip,'network_id':aArgs['network_id'],'a_domain_id':aArgs.get('a_domain_id'),'hostname':'unknown-%s'%ip2int(ip)})
     if ipam['status'] == 'OK':
-     if entry:
-      entry['type_id'] = devtypes[entry.pop('type','generic')]['id']
-     entry['hostname'] = 'unknown-%s'%count
+     entry['type_id'] = devtypes[entry.pop('type','generic')]['id'] if entry else devtypes['generic']['id']
+     entry['hostname'] = 'unknown-%s'%ip2int(ip)
      if (db.insert_dict('devices',entry) == 1):
       dev_id = db.get_last_id()
       if (db.do("INSERT INTO device_interfaces (device_id,ipam_id,name,description) VALUES(%s,%s,'management-%s','auto_created')"%(dev_id, ipam['data']['id'],dev_id)) > 0):
@@ -670,7 +672,7 @@ def type_list(aCTX, aArgs = None):
  sort = 'name' if aArgs.get('sort','name') == 'name' else 'base'
  with aCTX.db as db:
   ret['count'] = db.do("SELECT * FROM device_types ORDER BY %s"%sort)
-  ret['types'] = db.get_rows()
+  ret['data'] = db.get_rows()
  return ret
 
 ################################################## MODELS #################################################
@@ -687,17 +689,17 @@ def model_list(aCTX, aArgs = None):
   - op (optional). 'sync' triggers a resync before listing
 
  Output:
-  - list of models
+  - data
  """
- ret = {}
+ ret = {'status':'OK'}
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'sync':
    old = db.ignore_warnings(True)
-   ret['status'] = "OK" if (db.do("INSERT IGNORE INTO device_models (name, type_id) SELECT DISTINCT model AS name ,type_id FROM devices WHERE model NOT IN ('None','NULL')") > 0) else "NO_NEW_MODELS"
+   ret['result'] = "UPDATED" if (db.do("INSERT IGNORE INTO device_models (name, type_id) SELECT DISTINCT model AS name ,type_id FROM devices WHERE model NOT IN ('None','NULL')") > 0) else "NO_NEW_MODELS"
    db.ignore_warnings(old)
-  db.do("SELECT dm.id, dm.name, dt.name AS type FROM device_models AS dm LEFT JOIN device_types AS dt ON dt.id = dm.type_id ORDER BY dm.name, dt.name")
-  ret['models'] = db.get_rows()
+  ret['count'] = db.do("SELECT dm.id, dm.name, dt.name AS type FROM device_models AS dm LEFT JOIN device_types AS dt ON dt.id = dm.type_id ORDER BY dm.name, dt.name")
+  ret['data'] = db.get_rows()
  return ret
 
 #
@@ -747,6 +749,23 @@ def model_info(aCTX, aArgs = None):
 
   ret['found'] = (db.do("SELECT dm.*, dt.name AS type FROM device_models AS dm LEFT JOIN device_types AS dt ON dt.id = dm.type_id WHERE dm.id = %s"%id) == 1)
   ret['data'] = db.get_row()
+  ret['extra'] = {'type':ret['data'].pop('type',None)}
+ return ret
+
+#
+#
+def model_delete(aCTX, aArgs = None):
+ """ Delete a specific model
+
+ Args:
+  - id
+
+ Output:
+  - deleted
+ """
+ ret = {}
+ with aCTX.db as db:
+  ret['deleted'] = (db.do("DELETE FROM device_models WHERE id = %s"%aArgs['id']) > 0)
  return ret
 
 ############################################### INTERFACES ################################################

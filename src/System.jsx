@@ -40,27 +40,27 @@ export class Main extends MainBase {
   let reports = [];
    if (this.context.cookie.node === 'master') {
     navitems.push(
-     {title:'Nodes',  onClick:() => this.changeMain(<NodeList key='node_list' />) },
-     {title:'Servers', onClick:() => this.changeMain(<ServerList key='server_list' />) },
+     {title:'Nodes',  onClick:() => this.changeContent(<NodeList key='node_list' />) },
+     {title:'Servers', onClick:() => this.changeContent(<ServerList key='server_list' />) },
      {title:'ERD',    onClick:() => window.open('infra/erd.pdf','_blank') },
-     {title:'Users',  onClick:() => this.changeMain(<UserList key='user_list' />) },
-     {title:'Controls',  onClick:() => this.changeMain(<Controls  />) }
+     {title:'Users',  onClick:() => this.changeContent(<UserList key='user_list' />) },
+     {title:'Controls',  onClick:() => this.changeContent(<Controls  />) }
     )
     reports.push(
-     {title:'Activities',  onClick:() => this.changeMain(<ActivityReport key='activity_report' />) },
-     {title:'Reservations',  onClick:() => this.changeMain(<ReservationReport key='reservation_report' />) },
-     {title:'Devices',  onClick:() => this.changeMain(<DeviceReport key='device_report' />) },
-     {title:'Inventory',  onClick:() => this.changeMain(<InventoryReport key='inventory_report' />) }
+     {title:'Activities',  onClick:() => this.changeContent(<ActivityReport key='activity_report' />) },
+     {title:'Reservations',  onClick:() => this.changeContent(<ReservationReport key='reservation_report' />) },
+     {title:'Devices',  onClick:() => this.changeContent(<DeviceReport key='device_report' />) },
+     {title:'Inventory',  onClick:() => this.changeContent(<InventoryReport key='inventory_report' />) }
     )
    }
-   reports.push({title:'Tasks',   onClick:() => this.changeMain(<TaskReport key='task_report' />) },{title:'System',  onClick:() => this.changeMain(<Report key='system_report' />) })
+   reports.push({title:'Tasks',   onClick:() => this.changeContent(<TaskReport key='task_report' />) },{title:'System',  onClick:() => this.changeContent(<Report key='system_report' />) })
    navitems.push(
-    {title:'Logs',   type:'dropdown', items:this.state.logs.map(row => ({title:row, onClick:() => this.changeMain( <LogShow key={row.name} node={row} /> )})) },
+    {title:'Logs',   type:'dropdown', items:this.state.logs.map(row => ({title:row, onClick:() => this.changeContent( <LogShow key={row.name} node={row} /> )})) },
     {title:'Report', type:'dropdown', items:reports},
-    {title:'REST',  onClick:() => this.changeMain(<RestList key='rest_list' />) }
+    {title:'REST',  onClick:() => this.changeContent(<RestList key='rest_list' />) }
    )
    if (this.state.services.length > 0)
-    navitems.push({title:'Services', type:'dropdown', items:this.state.services.map(row => ({title:row.name, onClick:() => this.changeMain( <ServiceInfo key={row.name} {...row} /> )})) })
+    navitems.push({title:'Services', type:'dropdown', items:this.state.services.map(row => ({title:row.name, onClick:() => this.changeContent( <ServiceInfo key={row.name} {...row} /> )})) })
    navitems.push({ onClick:() => this.setState({content:null}), className:'reload' })
    this.state.navinfo.forEach(row => navitems.push({title:row, className:'right navinfo'}))
    this.context.loadNavigation(navitems)

@@ -153,14 +153,6 @@ class DB(object):
 
  ################# Extras ##################
  #
- # Assume dict keys are prefixed by aTable and separated by a single character (e.g. _)
-
- def update_dict_prefixed(self, aTable, aDict, aCondition = "TRUE"):
-  self.count['DO'] += 1
-  self._dirty = True
-  key_len = len(aTable) + 1
-  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join("%s=%s"%(k[key_len:],"'%s'"%v if not (v == 'NULL' or v is None) else 'NULL') for k,v in aDict.items() if k.startswith(aTable)),aCondition))
-
  def update_dict(self, aTable, aDict, aCondition = "TRUE"):
   self.count['DO'] += 1
   self._dirty = True

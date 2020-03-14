@@ -22,21 +22,21 @@ def domain_list(aCTX, aArgs = None):
    org = {}
    for server in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DNS']:
     org[server['id']] = aCTX.node_function(server['node'],server['service'],'domain_list')(aArgs = {})['data']
-   ret.update({'sync':{'added':[],'deleted':[],'type_fix':0}})
+   ret.update({'result':{'added':[],'deleted':[],'type_fix':0}})
    db.do("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
    cache = db.get_dict('srv_id')
    for srv,domains in org.items():
     for dom in domains:
      tmp = cache.pop("%s_%s"%(srv,dom['id']),None)
      if not tmp:
-      ret['sync']['added'].append(dom)
+      ret['result']['added'].append(dom)
       # Add forward here
       db.insert_dict('domains',{'name':dom['name'],'server_id':srv,'foreign_id':dom['id'],'type':'reverse' if 'arpa' in dom['name'] else 'forward'},"ON DUPLICATE KEY UPDATE name = '%s'"%dom['name'])
      else:
-      ret['sync']['type_fix'] += db.do("UPDATE domains SET type = '%s' WHERE id = %s"%('reverse' if 'arpa' in dom['name'] else 'forward',tmp['id']))
+      ret['result']['type_fix'] += db.do("UPDATE domains SET type = '%s' WHERE id = %s"%('reverse' if 'arpa' in dom['name'] else 'forward',tmp['id']))
    for id,dom in cache.items():
     dom.pop('srv_id',None)
-    ret['sync']['deleted'].append(dom)
+    ret['result']['deleted'].append(dom)
     db.do("DELETE FROM domains WHERE id = '%s'"%dom['id'])
 
   filter = []

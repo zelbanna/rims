@@ -51,15 +51,6 @@ def main(aWeb):
 
 #
 #
-def logs(aWeb):
- args = aWeb.args()
- res = aWeb.rest_call("device/logs",args)
- aWeb.wr("<ARTICLE>")
- aWeb.wr("<PRE>%s</PRE>"%("<BR>".join(res['data'])))
- aWeb.wr("</ARTICLE>")
-
-#
-#
 def list(aWeb):
  args = aWeb.args()
  args['sort'] = aWeb.get('sort','hostname')
@@ -342,7 +333,7 @@ def type_list(aWeb):
  res = aWeb.rest_call("device/type_list")
  aWeb.wr("<ARTICLE><P>Device Types<P>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Class</DIV><DIV>Name</DIV><DIV>Icon</DIV></DIV><DIV CLASS=tbody>")
- for tp in res['types']:
+ for tp in res['data']:
   aWeb.wr("<DIV><DIV>%s</DIV><DIV><A CLASS=z-op DIV=div_content_left URL='device_list?field=type&search=%s'>%s</A></DIV><DIV>%s</DIV></DIV>"%(tp['base'],tp['name'],tp['name'],tp['icon'].rpartition('/')[2]))
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
@@ -357,7 +348,7 @@ def model_list(aWeb):
  aWeb.wr(aWeb.button('sync',  DIV='div_content_left',  URL='device_model_list?op=sync', TITLE='ReSync models'))
  aWeb.wr("<SPAN CLASS='results' ID=device_span STYLE='max-width:400px;'>%s</SPAN>"%res.get('status',""))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Id</DIV><DIV>Model</DIV><DIV>Type</DIV><DIV>&nbsp;</DIV></DIV><DIV CLASS=tbody>")
- for row in res['models']:
+ for row in res['data']:
   aWeb.wr("<DIV><DIV>%(id)s</DIV><DIV>%(name)s</DIV><DIV>%(type)s</DIV><DIV>"%row)
   aWeb.wr(aWeb.button('info', DIV='div_content_right', URL='device_model_info?id=%s'%row['id']))
   aWeb.wr("</DIV></DIV>")
@@ -393,7 +384,6 @@ def logs(aWeb):
   aWeb.wr("<DIV><DIV>%(time)s</DIV><DIV>%(message)s</DIV></DIV>"%row)
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")
-
 
 
 ####################################################### Functions #######################################################

@@ -52,7 +52,8 @@ def domain_info(aCTX, aArgs = None):
    else:
     ret['insert'] = True
     db.do("SELECT max(id) + 1 AS next FROM domains")
-    ret['data']['id'] = db.get_val('next')
+    foreign_id = db.get_val('next')
+    ret['data']['id'] = foreign_id if foreign_id else 1
   elif aArgs['id'] != 'new':
    db.do("SELECT name FROM domains WHERE foreign_id = %s"%aArgs['id'])
    ret['data']['name'] = db.get_val('name')
