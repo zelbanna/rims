@@ -95,6 +95,7 @@ class Info extends InfoBase {
 export class Report extends ReportBase {
  constructor(props){
   super(props);
+  this.header = 'Reservations'
   this.thead = ['User','Device','Start','End','Info']
  }
 

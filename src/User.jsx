@@ -86,6 +86,6 @@ Info.contextType = RimsContext;
 //
 export class User extends Component {
  render() {
-  return <div className='centered'><Info id={this.props.id} /></div>
+  return <div className='flexdiv centered'><Info id={this.props.id} /></div>
  }
 }

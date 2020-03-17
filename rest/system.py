@@ -40,6 +40,21 @@ def garbage_collect(aCTX, aArgs = None):
  from gc import collect
  return {'collected':collect()}
 
+#
+#
+def sleep(aCTX, aArgs = None):
+ """ Function sleeps for X seconds
+
+ Args:
+  - seconds
+
+ Output:
+  status
+ """
+ from time import sleep
+ sleep(int(aArgs.get('seconds',10)))
+ return {'status':'OK'}
+
 ################################# REST #############################
 #
 #

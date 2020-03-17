@@ -25,7 +25,7 @@ export class Main extends MainBase {
     panel.title = key
     buttons.push(<MenuButton key={'mb_'+key} {...panel} onClick={click} />)
    }
-   this.setState({content:<div className='centered'>{buttons}</div>})
+   this.setState({content:<div className='flexdiv centered'>{buttons}</div>})
   })
  }
 }

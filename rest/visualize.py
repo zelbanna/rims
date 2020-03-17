@@ -109,7 +109,16 @@ def network(aCTX, aArgs = None):
    ret['found'] = (db.do("SELECT * FROM visualize WHERE id = %s"%id) == 1)
    if ret['found']:
     data = db.get_row()
-    ret['data'].update({'id':id,'name':data.get('name',""),'nodes':loads(data.get('nodes','[]')),'edges':loads(data.get('edges','[]')),'options':loads(data.get('options','{}'))})
+    ret['data'].update({'id':id,'name':data.get('name',"")})
+    try:
+     ret['data']['nodes'] = loads(data.get('nodes','[]'))
+     ret['data']['edges'] = loads(data.get('edges','[]'))
+     ret['data']['options'] = loads(data.get('options','{}'))
+    except Exception as e:
+     ret['info'] = str(e)
+     ret['data']['nodes'] = data.get('nodes','[]')
+     ret['data']['edges'] = data.get('edges','[]')
+     ret['data']['options'] = data.get('options','{}')
   else:
    if 'ip' in args:
     db.do("SELECT devices.id FROM devices LEFT JOIN device_interfaces AS di ON devices.id = di.device_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE ia.ip = INET_ATON('%(ip)s')"%args)

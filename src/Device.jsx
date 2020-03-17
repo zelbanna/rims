@@ -18,15 +18,11 @@ def search(aWeb):
 def list(aWeb):
 def delete(aWeb):
 
-def oui_search(aWeb):
-def oui_list(aWeb):
-
 def info(aWeb):
 def extended(aWeb):
 def control(aWeb):
 def function(aWeb):
 
-def model_info(aWeb):
 
 def logs(aWeb):
 def to_console(aWeb):
@@ -207,6 +203,57 @@ export class ModelInfo extends InfoBase {
  }
 }
 
+// ************** OUI Search **************
+//
+class OUISearch extends Component {
+ constructor(props){
+  super(props)
+  this.state = {data:{oui:''},content:null}
+ }
+
+ changeHandler = (e) => {
+  var data = {...this.state.data}
+  data[e.target.name] = e.target.value
+  this.setState({data:data})
+ }
+
+ ouiSearch = () => {
+  rest_call(rest_base + 'api/master/oui_info',{oui:this.state.data.oui})
+   .then((result) => {
+     this.setState({content:<article><div className='info col2'><label htmlFor='oui'>OUI:</label><span id='oui'>{result.oui}</span><label htmlFor='company'>Company:</label><span id='company'>{result.company}</span></div></article>});
+   })
+ }
+
+ render() {
+  return (<div className='flexdiv'>
+   <article className='lineinput'>
+    <h1>OUI Search</h1>
+    <div>
+     <span>Type OUI or MAC address to find OUI/company name:<input type='text' id='oui' name='oui' required='required' onChange={this.changeHandler} value={this.state.data.oui} placeholder='00:00:00' /></span>
+     <InfoButton type='search' title='Search' onClick={() => this.ouiSearch()} />
+    </div>
+   </article>
+   {this.state.content}
+  </div>)
+ }
+}
+// ************** OUI Search **************
+//
+class OUIList extends ListBase {
+ constructor(props){
+  super(props)
+  this.header = 'OUI'
+  this.thead = ['oui','company']
+ }
+
+ componentDidMount(){
+  rest_call(rest_base + 'api/master/oui_list')
+   .then((result) => { this.setState(result) })
+ }
+
+ listItem = (row) => [`${row.oui.substring(0,2)}:${row.oui.substring(2,4)}:${row.oui.substring(4,6)}`,row.company]
+}
+
 // ************** TODO **************
 //
 export class Logs extends Component {
@@ -227,20 +274,6 @@ class Search extends Component {
 
  render() {
   return (<div>Device Search (TODO)</div>);
- }
-}
-
-class OUISearch extends Component {
-
- render() {
-  return (<div>OUI Search (TODO)</div>);
- }
-}
-
-class OUIList extends Component {
-
- render() {
-  return (<div>OUI List (TODO)</div>);
  }
 }
 

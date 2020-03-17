@@ -156,7 +156,7 @@ class RestInfo extends Component {
  }
 }
 
-// ************************ Controls ********************
+// ************************ REST Execute ********************
 //
 class RestExecute extends Component {
  componentDidMount(){
@@ -187,9 +187,10 @@ class Controls extends ListBase {
    {api:'device/model_sync',text:'Sync device model mapping'},
    {api:'device/vm_mapping',text:'VM UUID mapping'},
    {api:'master/oui_fetch',text:'Sync OUI database'},
-   {api:'reservation/expiration_status',text:'Check reservation status'}
+   {api:'reservation/expiration_status',text:'Check reservation status'},
+   {api:'system/sleep',text:'Sleep Test', args:{seconds:20}},
   ]
-  this.header = undefined
+  this.header = ''
   this.thead = ['Control Function']
  }
 

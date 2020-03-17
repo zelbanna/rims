@@ -111,7 +111,7 @@ class Login extends Component {
  render() {
   const griditems = [{tag:'input', type:'text', id:'username', text:'Username'},{tag:'input', type:'password', id:'password', text:'Password'}]
   return (
-   <div className='background overlay'>
+   <div className='login'>
     <article className='login'>
      <h1 className='centered'>{this.state.message}</h1>
      <InfoCol2 griditems={griditems} changeHandler={this.changeHandler} className={'left'}/>
