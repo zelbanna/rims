@@ -19,7 +19,6 @@ def info(aWeb):
 def extended(aWeb):
 def control(aWeb):
 def function(aWeb):
-
 def logs(aWeb):
 def to_console(aWeb):
 def conf_gen(aWeb):
@@ -240,11 +239,10 @@ export class New extends InfoBase {
 
 // ************** Discover **************
 //
-// TODO
 class Discover extends Component {
  constructor(props){
   super(props)
-  this.state = {ipam_network_id:undefined,a_domain_id:undefined,results:undefined}
+  this.state = {ipam_network_id:undefined,a_domain_id:undefined,content:null}
  }
 
  componentDidMount(){
@@ -254,10 +252,7 @@ class Discover extends Component {
 
  changeHandler = (e) => this.setState({[e.target.name]:e.target.value});
 
- discover(){
-  this.setState({discover:true})
-  rest_call("api/device/discover",{network_id:this.state.ipam_network_id,a_domain_id:this.state.a_domain_id}).then(result => this.setState({results:result,discover:false}))
- }
+ changeContent = (elem) => this.setState({content:elem})
 
  infoItems = () => [
   {tag:'select', id:'ipam_network_id', text:'Network', value:this.state.ipam_network_id, options:this.state.networks.map(row => ({value:row.id, text:`${row.netasc} (${row.description})`}))},
@@ -275,10 +270,10 @@ class Discover extends Component {
      <article className="info">
       <h1>Device Discovery</h1>
       <InfoCol2 key='dd_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
-      <InfoButton key='dd_save' type='start' onClick={() => this.discover()} />
+      <InfoButton key='dd_save' type='start' onClick={() => this.changeContent(<DiscoverRun key={'dd_run_' + this.state.ipam_network_id} ipam_network_id={this.state.ipam_network_id} a_domain_id={this.state.a_domain_id} />)} />
      </article>
      <NavBar key='dd_nav' />
-     {(this.state.results) ? <this.Result key={'dd_result_'+rnd()} result={this.state.results} /> : null}
+     {this.state.content}
     </Fragment>
    )
   } else
@@ -286,35 +281,16 @@ class Discover extends Component {
  }
 }
 
-/*
+class DiscoverRun extends Component {
+ componentDidMount(){
+  rest_call("api/device/discover",{network_id:this.props.ipam_network_id, a_domain_id:this.props.a_domain_id}).then(result => this.setState(result))
+ }
 
-def discover(aWeb):
- args = aWeb.args()
- op = args.pop('op',None)
- if op:
-  res = aWeb.rest_call("device/discover",args,200)
-  aWeb.wr("<ARTICLE>%s</ARTICLE>"%(res))
- else:
-  networks = aWeb.rest_call("ipam/network_list")['data']
-  domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['data']
-  aWeb.wr("<ARTICLE CLASS=info><P>Device Discovery</P>")
-  aWeb.wr("<FORM ID=device_discover_form>")
-  aWeb.wr("<INPUT TYPE=HIDDEN NAME=op VALUE=json>")
-  aWeb.wr("<DIV CLASS='info col2'>")
-  aWeb.wr("<label for='a_domain_id'>Domain:</label><SELECT id='a_domain_id' NAME=a_domain_id>")
-  for d in domains:
-   aWeb.wr("<OPTION VALUE=%s>%s</OPTION>"%(d.get('id'),d.get('name')))
-  aWeb.wr("</SELECT>")
-  aWeb.wr("<label for='network_id'>Network:</label><SELECT id='network_id' NAME=network_id>")
-  for s in networks:
-   aWeb.wr("<OPTION VALUE=%s>%s (%s)</OPTION>"%(s['id'],s['netasc'],s['description']))
-  aWeb.wr("</SELECT>")
-  aWeb.wr("</DIV>")
-  aWeb.wr("</FORM>")
-  aWeb.wr(aWeb.button('start', DIV='div_content_right', SPIN='true', URL='device_discover', FRM='device_discover_form'))
-  aWeb.wr("</ARTICLE>")
+ render(){
+  return (this.state) ? <article className='code'><pre>{JSON.stringify(this.state,null,2)}</pre></article> : <Spinner />
+ }
+}
 
-*/
 // ************** Report **************
 //
 export class Report extends ReportBase {
