@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { rest_call, rest_base } from  './infra/Functions.js';
+import { rest_call } from  './infra/Functions.js';
 import Library from './infra/Mapper.js'
 import { InfoCol2, RimsContext } from './infra/Generic.js';
 import { MenuButton } from './infra/Buttons.jsx';
@@ -17,20 +17,18 @@ class Portal extends Component {
 
  componentDidMount() {
   this.props.providerMounting({changeMain:this.changeContent,loadNavigation:this.loadNavigation});
-  rest_call(rest_base + 'api/portal/menu',{id:this.context.cookie.id})
-   .then((result) => {
+  rest_call('api/portal/menu',{id:this.context.cookie.id}).then(result => {
     this.setState(result)
-    if (result.start)
-     this.changeContent(result.menu[result.start]);
+    result.start && this.changeContent(result.menu[result.start]);
     document.title = result.title;
    })
  }
 
- loadNavigation = (items) => { this.setState({navigation:items}) }
+ loadNavigation = (items) => this.setState({navigation:items})
 
  changeContent = (panel) => {
   if (panel.hasOwnProperty('module')) {
-   if ((this.state.content !== null) && (this.state.content.key === `${panel.module}_${panel.function}`))
+   if (this.state.content && (this.state.content.key === `${panel.module}_${panel.function}`))
     return
    try {
     var Elem = Library[panel.module][panel.function]
@@ -84,24 +82,21 @@ class Login extends Component {
  }
 
  componentDidMount() {
-  rest_call(rest_base + 'front')
-   .then((result) => {
-    this.setState(result)
-    document.title = result.title
-   })
+  rest_call('front').then(result => {
+   this.setState(result)
+   document.title = result.title
+  })
  }
 
- changeHandler = (e) => {
-  this.setState({[e.target.name]:e.target.value});
- }
+ changeHandler = (e) => this.setState({[e.target.name]:e.target.value});
 
  handleSubmit = (event) => {
   event.preventDefault();
-  rest_call(rest_base + 'auth',{username:this.state.username,password:this.state.password})
+  rest_call('auth',{username:this.state.username,password:this.state.password})
    .then((result) => {
-    if (result.status === 'OK'){
+    if (result.status === 'OK')
      this.props.setCookie({node:result.node,token:result.token,id:result.id,theme:result.theme,expires:result.expires});
-    } else {
+    else {
      document.getElementById("password").value = "";
      this.setState(prevState => ({ ...prevState,   password : '' }))
     }
@@ -151,7 +146,6 @@ class RIMS extends Component {
  setCookie = (cookie) => {
   const encoded = btoa(JSON.stringify(cookie));
   document.cookie = "rims=" + encoded + "; expires=" + cookie.expires + "; Path=/";
-  console.log("Write cookie: " + JSON.stringify(cookie))
   this.setState(cookie)
  }
 

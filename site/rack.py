@@ -20,7 +20,7 @@ def list(aWeb):
  for unit in racks:
   aWeb.wr("<DIV><DIV>%(location)s</DIV><DIV>%(name)s</DIV><DIV>%(size)s</DIV><DIV>"%unit)
   aWeb.wr(aWeb.button('edit', DIV='div_content_right', URL='rack_info?id=%s'%unit['id']))
-  aWeb.wr(aWeb.button('show', DIV='main',              URL='device_main?rack=%s'%unit['id'],TITLE='Rack inventory'))
+  aWeb.wr(aWeb.button('show', DIV='main',              URL='device_main?rack_id=%s'%unit['id'],TITLE='Rack inventory'))
   aWeb.wr("</DIV></DIV>")
  aWeb.wr("</DIV></DIV></ARTICLE>")
 

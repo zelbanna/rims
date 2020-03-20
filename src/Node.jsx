@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call, rest_base, rnd } from './infra/Functions.js';
+import { rest_call, rnd } from './infra/Functions.js';
 import {Spinner, InfoCol2 } from './infra/Generic.js';
 import { ListBase, InfoBase } from './infra/Base.jsx';
-import { TextButton, InfoButton } from './infra/Buttons.jsx';
+import { InfoButton } from './infra/Buttons.jsx';
 import { NavBar } from './infra/Navigation.js';
 
 // CONVERTED ENTIRELY
@@ -21,13 +21,12 @@ export class List extends ListBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/node_list')
-   .then((result) => { this.setState(result); })
+  rest_call('api/master/node_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [row.node,row.url,<Fragment key='node_buttons'>
    <InfoButton key='node_info'   type='info'  onClick={() => this.changeContent(<Info key={'node_info_'+row.id} id={row.id} />)} />
-   <InfoButton key='node_delete' type='trash' onClick={() => this.deleteList('api/master/node_delete',row.id,'Really delete node?')} />
+   <InfoButton key='node_delete' type='delete' onClick={() => this.deleteList('api/master/node_delete',row.id,'Really delete node?')} />
   </Fragment>]
 }
 
@@ -36,20 +35,11 @@ export class List extends ListBase {
 class Info extends InfoBase {
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/node_info',{id:this.props.id})
-   .then((result) => {
-    if(result.data.hostname === null)
-     result.data.hostname = undefined;
-    this.setState(result)
-   })
+  rest_call('api/master/node_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  searchInfo = () => {
-  rest_call(rest_base + 'api/device/search',{node:this.state.data.node})
-   .then((result) => {
-   if (result.found)
-    this.setState({data:{...this.state.data, hostname:result.device.hostname, device_id:result.device.id}})
-  })
+  rest_call('api/device/search',{node:this.state.data.node}).then(result => result.found && this.setState({data:{...this.state.data, hostname:result.device.hostname, device_id:result.device.id}}))
  }
 
  infoItems = () => [
@@ -59,18 +49,16 @@ class Info extends InfoBase {
  ]
 
  render() {
-  if (this.state.found === false)
+  if (!this.state.found)
    return <article>Node with id: {this.props.id} removed</article>
-  else if (this.state.data === null)
-   return <Spinner />
-  else {
+  else if (this.state.data) {
    let buttons = [<InfoButton key='node_btn_save' type='save' onClick={() => this.updateInfo('api/master/node_info')} />]
    if (this.state.data.id !== 'new'){
     if (this.state.data.hostname === undefined)
      buttons.push(<InfoButton key='node_btn_srch' type='search' onClick={this.searchInfo} />)
     buttons.push(<InfoButton key='node_btn_reload' type='reload' onClick={() => this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />) } />)
     buttons.push(<InfoButton key='node_btn_logs'  type='logs' onClick={() => this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node} />) } />)
-    buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='trash' className='info'  onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />)
+    buttons.push(<InfoButton key='node_btn_logc'  title='Clear logs' type='delete' className='info'  onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />)
    }
    return (
    <Fragment key='node_info_fragment'>
@@ -83,25 +71,21 @@ class Info extends InfoBase {
     {this.state.content}
    </Fragment>
    );
-  }
+  } else
+   return <Spinner />
  }
 }
 
 // *************** Reload ***************
 //
 class Reload extends Component {
- constructor(props){
-  super(props)
-  this.state = {modules:null}
- }
 
  componentDidMount(){
-  rest_call(rest_base + 'system/reload/' + this.props.node)
-   .then((result) =>  this.setState(result) )
+  rest_call('system/reload/' + this.props.node).then(result => this.setState(result))
  }
 
  render(){
-  if (this.state.modules === null)
+  if (!this.state)
    return <Spinner />
   else {
    return (
@@ -117,18 +101,13 @@ class Reload extends Component {
 // *************** LogClear ***************
 //
 class LogClear extends Component {
- constructor(props){
-  super(props)
-  this.state = {logs:null}
- }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/system/logs_clear?node=' + this.props.node)
-   .then((result) => this.setState({logs:result.file}) )
+  rest_call('api/system/logs_clear?node=' + this.props.node).then(result => this.setState({logs:result.file}))
  }
 
  render(){
-  if (this.state.logs === null)
+  if (!this.state)
    return <Spinner />
   else {
    let output = []
@@ -142,14 +121,9 @@ class LogClear extends Component {
 // *************** LogShow ***************
 //
 export class LogShow extends Component {
- constructor(props){
-  super(props)
-  this.state = {logs:null}
- }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/system/logs_get?node=' + this.props.node)
-   .then((result) => this.setState({logs:result}) )
+  rest_call('api/system/logs_get?node=' + this.props.node).then(result => this.setState({logs:result}))
  }
 
  Log = (props) => <Fragment>
@@ -158,7 +132,7 @@ export class LogShow extends Component {
    </Fragment>
 
  render(){
-  if (this.state.logs === null)
+  if (!this.state)
    return <Spinner />
   else {
    let output = []

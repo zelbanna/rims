@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call, rest_base } from './infra/Functions.js';
-import { Spinner, StateMap, InfoCol2, RimsContext } from './infra/Generic.js';
+import { rest_call, rnd } from './infra/Functions.js';
+import { Spinner, StateMap, SearchField, InfoCol2, RimsContext, ContentList, ContentData } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
+import { NavBar } from './infra/Navigation.js'
 
 import { List as ReservationList } from './Reservation.jsx';
 import { List as LocationList } from './Location.jsx';
@@ -14,22 +15,14 @@ import { List as RackList, Inventory as RackInventory, Infra as RackInfra } from
 
 /*
 
-def search(aWeb):
-def list(aWeb):
-def delete(aWeb):
-
 def info(aWeb):
 def extended(aWeb):
 def control(aWeb):
 def function(aWeb):
 
-
 def logs(aWeb):
 def to_console(aWeb):
 def conf_gen(aWeb):
-
-def new(aWeb):
-def discover(aWeb):
 
 def interface_list(aWeb):
 def interface_lldp(aWeb):
@@ -42,34 +35,22 @@ def connection_info(aWeb):
 
 // **************** Main ****************
 //
+// TODO - proper PDU and Console action for rack devices
+//
 export class Main extends MainBase {
- constructor(props){
-  super(props)
-  this.state = {pduinfo:[], coninfo:[], rack_name:'N/A'}
- }
 
  componentDidMount(){
-/*
- if aWeb['rack']:
-  data = aWeb.rest_call("rack/inventory",{'id':aWeb['rack']})
-  for type in ['pdu','console']:
-   if len(data[type]) > 0:
-    aWeb.wr("<LI CLASS='dropdown'><A>%s</A><DIV CLASS='dropdown-content'>"%(type.title()))
-    for row in data[type]:
-     aWeb.wr("<A CLASS=z-op DIV=div_content_left SPIN=true URL='%s_inventory?id=%s'>%s</A>"%(row['type'],row['id'],row['hostname']))
-    aWeb.wr("</DIV></LI>")
-  if data.get('name'):
-   aWeb.wr("<LI><A CLASS='z-op' DIV=div_content_right  URL='rack_inventory?rack=%s'>'%s'</A></LI>"%(aWeb['rack'],data['name']))
-
-*/
-  this.compileNavItems();
+  if (this.props.rack_id)
+   rest_call("api/rack/inventory",{id:this.props.rack_id}).then(result => this.compileNavItems({rack_id:this.props.rack_id, ...result}))
+  else
+   this.compileNavItems({pdu:[], console:[], name:'N/A', rack_id:undefined});
  }
 
- compileNavItems = () => {
+ compileNavItems = (state) => {
   const navitems = [
    {title:'Devices', type:'dropdown', items:[
-    {title:'List', onClick:() => this.changeContent(<List key='device_list' />)},
-    {title:'Search', onClick:() => this.changeContent(<Search key='device_search' />)},
+    {title:'List', onClick:() => this.changeContent(<List key='device_list' changeSelf={this.changeContent} rack_id={state.rack_id} />)},
+    {title:'Search', onClick:() => this.changeContent(<Search key='device_search' changeSelf={this.changeContent} />)},
     {title:'Types', onClick:() => this.changeContent(<TypeList key='device_type_list' changeSelf={this.changeContent} />)},
     {title:'Models', onClick:() => this.changeContent(<ModelList key='device_model_list' />)}
    ]},
@@ -94,12 +75,12 @@ export class Main extends MainBase {
     {title:'List',  onClick:() => this.changeContent(<OUIList key='oui_list' />)}
    ]}
   ]
-  if (this.state.pduinfo.length > 0)
-   navitems.push({title:'PDUs', type:'dropdown', items:this.state.pduinfo})
-  if (this.state.coninfo.length > 0)
-   navitems.push({title:'Consoles', type:'dropdown', items:this.state.coninfo})
-  if (this.props.rack_id)
-   navitems.push({title:this.state.rack_name, onClick:() => this.changeContent(<RackInventory key='rack_inventory' id={this.props.rack_id} />)})
+  if (state.pdu.length > 0)
+   navitems.push({title:'PDUs', type:'dropdown', items:state.pdu.map(row => ({title:row.hostname, onClick:() =>alert('implement PDU')}))})
+  if (state.console.length > 0)
+   navitems.push({title:'Consoles', type:'dropdown', items:state.console.map(row => ({title:row.hostname, onClick:() => alert('implement Console')}))})
+  if (state.rack_id)
+   navitems.push({title:state.name, onClick:() => this.changeContent(<RackInventory key='rack_inventory' id={state.rack_id} />)})
   navitems.push({ onClick:() => this.setState({content:null}), className:'reload' })
   this.context.loadNavigation(navitems)
  }
@@ -107,6 +88,233 @@ export class Main extends MainBase {
 }
 Main.contextType = RimsContext;
 
+
+// ************** Search **************
+//
+class Search extends Component {
+  constructor(props){
+  super(props)
+  this.state = {field:'ip',search:''}
+ }
+
+ changeHandler = (e) => {
+  this.setState({[e.target.name]:e.target.value})
+ }
+
+ render() {
+  return (
+   <article className='lineinput'>
+    <h1>Device Search</h1>
+    <div>
+     <span>Field:
+      <select id='field' name='field' onChange={this.changeHandler} value={this.state.field}>
+       <option value='hostname'>Hostname</option>
+       <option value='type'>Type</option>
+       <option value='id'>ID</option>
+       <option value='ip'>IP</option>
+       <option value='mac'>MAC</option>
+       <option value='type'>Type</option>
+       <option value='ipam_id'>IPAM ID</option>
+      </select>:
+      <input type='text' id='search' name='search' required='required' onChange={this.changeHandler} value={this.state.search} placeholder='search' />
+     </span>
+     <InfoButton type='search' title='Search' onClick={() => this.props.changeSelf(<List key='dl_list' {...this.state} changeSelf={this.props.changeSelf} />)} />
+    </div>
+   </article>
+  )
+ }
+}
+// ************** List **************
+//
+class List extends Component {
+ constructor(props){
+  super(props);
+  this.state = {data:null, content:null, sort:(props.hasOwnProperty('sort')) ? props.sort : 'hostname', rack_id:this.props.rack_id, searchfield:'', field:this.props.field, search:this.props.search}
+ }
+
+ componentDidMount(){
+  rest_call('api/device/list', {sort:this.state.sort, rack_id:this.state.rack_id, field:this.state.field, search:this.state.search}).then(result => this.setState(result))
+ }
+
+ changeContent = (elem) => this.setState({content:elem})
+
+ searchHandler = (e) => { this.setState({searchfield:e.target.value}) }
+
+ sortList = (method) => {
+  if (method === 'hostname')
+   this.state.data.sort((a,b) => a.hostname.localeCompare(b.hostname));
+  else
+   this.state.data.sort((a,b) => {
+    const num1 = Number(a.ip.split(".").map(num => (`000${num}`).slice(-3) ).join(""));
+    const num2 = Number(b.ip.split(".").map(num => (`000${num}`).slice(-3) ).join(""));
+    return num1-num2;
+   });
+  this.setState({sort:method})
+ }
+
+ listItem = (row) => [row.ip,<TextButton key={'dev_list_item_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'dev_info_'+row.id} id={row.id} />)} />,StateMap({state:row.state}),<InfoButton key={'delete_'+row.id} type='delete' onClick={() => { this.deleteList('api/device/delete',row.id,'Really delete device?'); }} />]
+
+ deleteList = (api,id,msg) => {
+  if (window.confirm(msg))
+   rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null}))
+ }
+
+ render(){
+  if (!this.state.data)
+   return <Spinner />
+  else {
+   let device_list = this.state.data.filter(row => row.hostname.includes(this.state.searchfield));
+   const buttons = [
+    <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
+    <InfoButton key='items' type='items'   onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='All items' />,
+    <InfoButton key='add' type='add'       onClick={() => this.changeContent(<New key={'device_new_' + rnd()} id='new' />) } />,
+    <InfoButton key='devices' type='devices' onClick={() => this.changeContent(<Discover key='device_discover' />) } title='Discovery' />,
+    <SearchField key='searchfield' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search devices' />
+   ];
+   const thead = [
+    <TextButton key='dl_btn_ip' text='IP' className={(this.state.sort === 'ip') ? 'highlight':''} onClick={() => { this.sortList('ip') }} />,
+    <TextButton key='dl_btn_hostname' text='Hostname' className={(this.state.sort === 'hostname') ? 'highlight':''} onClick={() => { this.sortList('hostname') }} />,
+    '',
+    ''
+   ];
+   return <Fragment key={'dl_fragment'}>
+    <section className='content-left'>
+     <ContentList key='dl_list' header='Device List' thead={thead} buttons={buttons} listItem={this.listItem} trows={device_list} />
+    </section>
+    <section className='content-right'>
+     <ContentData key='dl_content' content={this.state.content} />
+    </section>
+   </Fragment>
+  }
+ }
+}
+
+// ************** New **************
+//
+export class New extends InfoBase {
+ constructor(props){
+  super(props)
+  this.state.data = {ip:this.props.ip,mac:'00:00:00:00:00:00',class:'device',ipam_network_id:this.props.ipam_network_id,hostname:''}
+ }
+
+ componentDidMount(){
+  rest_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data}))
+  rest_call('api/ipam/network_list').then(result => this.setState({networks:result.data}))
+  rest_call('api/device/class_list').then(result => this.setState({classes:result.data}))
+ }
+
+ addDevice = () => {
+  if (this.state.data.hostname)
+   rest_call("api/device/new",this.state.data).then(result => this.setState({result:JSON.stringify(result)}))
+ }
+
+ searchIP = () => {
+  if (this.state.data.ipam_network_id)
+   rest_call("api/ipam/address_find",{network_id:this.state.data.ipam_network_id}).then(result => this.setState({data:{...this.state.data, ip:result.ip}}))
+ }
+
+ infoItems = () => [
+    {tag:'input', type:'text', id:'hostname', text:'Hostname', value:this.state.data.hostname, placeholder:'Device hostname'},
+    {tag:'select', id:'class', text:'Class', value:this.state.data.class, options:this.state.classes.map(row => ({value:row, text:row}))},
+    {tag:'select', id:'ipam_network_id', text:'Network', value:this.state.data.ipam_network_id, options:this.state.networks.map(row => ({value:row.id, text:`${row.netasc} (${row.description})`}))},
+    {tag:'select', id:'a_domain_id', text:'Domain', value:this.state.data.a_domain_id, options:this.state.domains.map(row => ({value:row.id, text:row.name}))},
+    {tag:'input', type:'text', id:'ip', text:'IP', value:this.state.data.ip},
+    {tag:'input', type:'text', id:'mac', text:'MAC', value:this.state.data.mac}
+   ]
+
+ render() {
+   if (!this.state.domains || !this.state.classes || !this.state.networks)
+    return <Spinner />
+   else
+    return (
+     <article className='info'>
+      <h1>Device Add</h1>
+      <InfoCol2 key='da_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
+      <InfoButton key='da_start' type='start' onClick={() => this.addDevice()} />
+      <InfoButton key='da_search' type='search' onClick={() => this.searchIP()} />
+      <span className='results'>{this.state.result}</span>
+     </article>
+    )
+ }
+}
+
+// ************** Discover **************
+//
+// TODO
+class Discover extends Component {
+ constructor(props){
+  super(props)
+  this.state = {ipam_network_id:undefined,a_domain_id:undefined,results:undefined}
+ }
+
+ componentDidMount(){
+  rest_call("api/ipam/network_list").then(result => this.setState({networks:result.data}))
+  rest_call("api/dns/domain_list",{filter:'forward'}).then(result => this.setState({domains:result.data}))
+ }
+
+ changeHandler = (e) => this.setState({[e.target.name]:e.target.value});
+
+ discover(){
+  this.setState({discover:true})
+  rest_call("api/device/discover",{network_id:this.state.ipam_network_id,a_domain_id:this.state.a_domain_id}).then(result => this.setState({results:result,discover:false}))
+ }
+
+ infoItems = () => [
+  {tag:'select', id:'ipam_network_id', text:'Network', value:this.state.ipam_network_id, options:this.state.networks.map(row => ({value:row.id, text:`${row.netasc} (${row.description})`}))},
+  {tag:'select', id:'a_domain_id', text:'Domain', value:this.state.a_domain_id, options:this.state.domains.map(row => ({value:row.id, text:row.name}))}
+ ]
+
+ Result(props){
+  return  <article className='code'><pre>{JSON.stringify(props.result,null,2)}</pre></article>
+ }
+
+ render() {
+  if (!this.state.discover && this.state.networks && this.state.domains){
+   return (
+    <Fragment key='dd_fragment'>
+     <article className="info">
+      <h1>Device Discovery</h1>
+      <InfoCol2 key='dd_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
+      <InfoButton key='dd_save' type='start' onClick={() => this.discover()} />
+     </article>
+     <NavBar key='dd_nav' />
+     {(this.state.results) ? <this.Result key={'dd_result_'+rnd()} result={this.state.results} /> : null}
+    </Fragment>
+   )
+  } else
+   return <Spinner />
+ }
+}
+
+/*
+
+def discover(aWeb):
+ args = aWeb.args()
+ op = args.pop('op',None)
+ if op:
+  res = aWeb.rest_call("device/discover",args,200)
+  aWeb.wr("<ARTICLE>%s</ARTICLE>"%(res))
+ else:
+  networks = aWeb.rest_call("ipam/network_list")['data']
+  domains = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['data']
+  aWeb.wr("<ARTICLE CLASS=info><P>Device Discovery</P>")
+  aWeb.wr("<FORM ID=device_discover_form>")
+  aWeb.wr("<INPUT TYPE=HIDDEN NAME=op VALUE=json>")
+  aWeb.wr("<DIV CLASS='info col2'>")
+  aWeb.wr("<label for='a_domain_id'>Domain:</label><SELECT id='a_domain_id' NAME=a_domain_id>")
+  for d in domains:
+   aWeb.wr("<OPTION VALUE=%s>%s</OPTION>"%(d.get('id'),d.get('name')))
+  aWeb.wr("</SELECT>")
+  aWeb.wr("<label for='network_id'>Network:</label><SELECT id='network_id' NAME=network_id>")
+  for s in networks:
+   aWeb.wr("<OPTION VALUE=%s>%s (%s)</OPTION>"%(s['id'],s['netasc'],s['description']))
+  aWeb.wr("</SELECT>")
+  aWeb.wr("</DIV>")
+  aWeb.wr("</FORM>")
+  aWeb.wr(aWeb.button('start', DIV='div_content_right', SPIN='true', URL='device_discover', FRM='device_discover_form'))
+  aWeb.wr("</ARTICLE>")
+
+*/
 // ************** Report **************
 //
 export class Report extends ReportBase {
@@ -117,8 +325,7 @@ export class Report extends ReportBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/device/list', { extra:['system','type','mac','oui','class']})
-   .then((result) => { this.setState(result) })
+  rest_call('api/device/list', { extra:['system','type','mac','oui','class']}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.hostname,row.class,row.ip,row.mac,row.oui,row.model,row.oid,row.serial,StateMap({state:row.state})]
@@ -134,8 +341,7 @@ class TypeList extends ListBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/device/type_list')
-   .then((result) => { this.setState(result) })
+  rest_call('api/device/type_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [row.base,<TextButton text={row.name} onClick={() => this.props.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
@@ -155,18 +361,16 @@ class ModelList extends ListBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/device/model_list')
-   .then((result) => { this.setState({...result,result:'OK'}) })
+  rest_call('api/device/model_list').then(result => this.setState({...result,result:'OK'}))
  }
 
- syncModels = () => {
-  rest_call(rest_base + 'api/device/model_list',{op:'sync'})
-   .then((result) => { this.setState(result) })
+ syncModels(){
+  rest_call('api/device/model_list',{op:'sync'}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.name,row.type,<Fragment key={'ml_' + row.id}>
   <InfoButton type='info' onClick={() => this.changeContent(<ModelInfo key={'model_info_'+row.id} id={row.id} />)} />
-  <InfoButton type='trash' onClick={() => this.deleteList('api/device/model_delete',row.id,'Really delete model?') } />
+  <InfoButton type='delete' onClick={() => this.deleteList('api/device/model_delete',row.id,'Really delete model?') } />
  </Fragment>]
 }
 
@@ -175,8 +379,7 @@ class ModelList extends ListBase {
 export class ModelInfo extends InfoBase {
 
  componentDidMount(){
-  rest_call(rest_base + 'api/device/model_info',{id:this.props.id})
-   .then((result) => { this.setState(result); })
+  rest_call('api/device/model_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  infoItems = () => [
@@ -187,9 +390,7 @@ export class ModelInfo extends InfoBase {
    ]
 
  render() {
-  if (this.state.data === null)
-   return <Spinner />
-  else {
+  if (this.state.data)
    return (
     <article className='info'>
      <h1>Device Model</h1>
@@ -199,7 +400,8 @@ export class ModelInfo extends InfoBase {
      <InfoButton key='device_model_save' type='save' onClick={() => this.updateInfo('api/device/model_info')} />
     </article>
    );
-  }
+  else
+   return <Spinner />
  }
 }
 
@@ -218,10 +420,7 @@ class OUISearch extends Component {
  }
 
  ouiSearch = () => {
-  rest_call(rest_base + 'api/master/oui_info',{oui:this.state.data.oui})
-   .then((result) => {
-     this.setState({content:<article><div className='info col2'><label htmlFor='oui'>OUI:</label><span id='oui'>{result.oui}</span><label htmlFor='company'>Company:</label><span id='company'>{result.company}</span></div></article>});
-   })
+  rest_call('api/master/oui_info',{oui:this.state.data.oui}).then(result => this.setState({content:<article><div className='info col2'><label htmlFor='oui'>OUI:</label><span id='oui'>{result.oui}</span><label htmlFor='company'>Company:</label><span id='company'>{result.company}</span></div></article>}))
  }
 
  render() {
@@ -237,21 +436,31 @@ class OUISearch extends Component {
   </div>)
  }
 }
-// ************** OUI Search **************
+
+// ************** OUI LIST **************
 //
-class OUIList extends ListBase {
- constructor(props){
-  super(props)
-  this.header = 'OUI'
-  this.thead = ['oui','company']
- }
+class OUIList extends Component {
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/oui_list')
-   .then((result) => { this.setState(result) })
+  rest_call('api/master/oui_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [`${row.oui.substring(0,2)}:${row.oui.substring(2,4)}:${row.oui.substring(4,6)}`,row.company]
+ render(){
+  if (this.state)
+   return <article className='table'>
+    <h1>OUI</h1>
+    <div className='table'>
+     <div className='thead'>
+      <div>oui</div><div>company</div>
+     </div>
+     <div className='tbody'>
+      {this.state.data.map((row,index) => <div key={'tr_'+index}><div>{`${row.oui.substring(0,2)}:${row.oui.substring(2,4)}:${row.oui.substring(4,6)}`}</div><div>{row.company}</div></div>)}
+     </div>
+    </div>
+   </article>
+  else
+   return <Spinner />
+ }
 }
 
 // ************** TODO **************
@@ -263,29 +472,9 @@ export class Logs extends Component {
  }
 }
 
-class List extends ListBase {
-
- render() {
-  return (<div>Device List (TODO)</div>);
- }
-}
-
-class Search extends Component {
-
- render() {
-  return (<div>Device Search (TODO)</div>);
- }
-}
-
 export class Info extends Component {
 
  render() {
   return (<div>Device Info (TODO)</div>);
- }
-}
-export class New extends Component {
-
- render() {
-  return (<div>Device New (TODO)</div>);
  }
 }

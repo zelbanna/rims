@@ -454,7 +454,7 @@ def new(aWeb):
  else:
   domains  = aWeb.rest_call("dns/domain_list",{'filter':'forward'})['data']
   networks = aWeb.rest_call("ipam/network_list")['data']
-  classes  = aWeb.rest_call("device/class_list")['classes']
+  classes  = aWeb.rest_call("device/class_list")['data']
   aWeb.wr("<ARTICLE CLASS=info><P>Device Add</P>")
   aWeb.wr("<FORM ID=device_new_form>")
   aWeb.wr("<DIV CLASS='info col2'>")

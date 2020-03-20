@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { rest_call, rest_base } from './infra/Functions.js';
+import { rest_call } from './infra/Functions.js';
 import { Spinner, InfoCol2, RimsContext } from './infra/Generic.js';
 import { ListBase, ReportBase, InfoBase }    from './infra/Base.jsx';
 import { InfoButton, TextButton }  from './infra/Buttons.jsx';
@@ -20,18 +20,16 @@ export class List extends ListBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/reservation/list')
-   .then((result) => this.setState(result) )
+  rest_call('api/reservation/list').then(result => this.setState(result))
  }
 
  extendItem = (device_id,user_id,days) => {
-  rest_call(rest_base + 'api/reservation/update',{op:'extend', device_id:device_id,user_id:user_id,days:days})
-  this.componentDidMount();
+  rest_call('api/reservation/update',{op:'extend', device_id:device_id,user_id:user_id,days:days}).then(result => this.componentDidMount())
  }
 
  deleteItem = (device_id,user_id,msg)  => {
   if (window.confirm(msg)){
-   rest_call(rest_base + 'api/reservation/update',{op:'delete', device_id:device_id,user_id:user_id})
+   rest_call('api/reservation/update',{op:'delete', device_id:device_id,user_id:user_id})
     .then((result) => {
      if(result.result)
       this.setState({data:this.state.data.filter((row,index,arr) => row.device_id !== device_id),content:null})
@@ -45,7 +43,7 @@ export class List extends ListBase {
    row.hostname,
    <div className={(row.valid) ? '' : 'orange'}>{row.end}</div>
   ]
-  if ((this.context.cookie.id === row.user_id) || (row.valid === false)) {
+  if ((this.context.cookie.id === row.user_id) || !row.valid) {
    cells.push(
     <Fragment key='reservation_buttons'>
      <InfoButton type='info' key={'rsv_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
@@ -64,14 +62,11 @@ List.contextType = RimsContext;
 class Info extends InfoBase {
 
  componentDidMount(){
-  rest_call(rest_base + 'api/reservation/info',{device_id:this.props.device_id})
-   .then((result) => this.setState(result) )
+  rest_call('api/reservation/info',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
  render() {
-  if (this.state.data === null)
-   return <Spinner />
-  else {
+  if (this.state.data){
    const griditems = [
     {tag:'span',  id:'alias', text:'Alias', value:this.state.data.alias},
     {tag:'span',  id:'time_start', text:'Start', value:this.state.data.time_start},
@@ -86,7 +81,8 @@ class Info extends InfoBase {
      <InfoButton key='reservation_save' type='save' onClick={() => this.updateInfo('api/reservation/info')} />
     </article>
    );
-  }
+  } else
+   return <Spinner />
  }
 }
 
@@ -100,8 +96,7 @@ export class Report extends ReportBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/reservation/list',{extended:true})
-   .then((result) => { this.setState(result); })
+  rest_call('api/reservation/list',{extended:true}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.alias,row.hostname,row.start,row.end,row.info]

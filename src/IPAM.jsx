@@ -1,11 +1,20 @@
 import React, { Fragment, Component } from 'react'
-import { rest_call, rest_base, rnd } from './infra/Functions.js';
+import { rest_call, rnd, int2ip } from './infra/Functions.js';
 import { Spinner, InfoCol2, StateMap } from './infra/Generic.js';
-import { ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
+import { ListBase, ReportBase, InfoBase, MainBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
 import { Info as DeviceInfo, New as DeviceNew } from './Device.jsx';
 
 // CONVERTED ENTIRELY
+
+// *************** Main ***************
+//
+export class Main extends MainBase {
+ constructor(props){
+  super(props)
+  this.state.content = <NetworkList key='ipam_list' />
+ }
+}
 
 // *************** NetworkList ***************
 //
@@ -22,31 +31,24 @@ export class NetworkList extends ListBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/ipam/network_list')
-   .then((result) => { this.setState(result); })
+  rest_call('api/ipam/network_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.netasc,row.description,row.service,<Fragment key={'network_buttons_'+row.id}>
    <InfoButton key={'net_info_'+row.id} type='info'  onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />) } />
    <InfoButton key={'net_items_'+row.id} type='items' onClick={() => this.changeContent(<AddressList changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
    <InfoButton key={'net_layout_'+row.id} type='devices' onClick={() => this.changeContent(<Layout changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
-   <InfoButton key={'net_delete_'+row.id} type='trash' onClick={() => this.deleteList('api/ipam/network_delete',row.id,'Really delete network') } />
-   </Fragment>
-  ]
+   <InfoButton key={'net_delete_'+row.id} type='delete' onClick={() => this.deleteList('api/ipam/network_delete',row.id,'Really delete network') } />
+  </Fragment>
+ ]
 }
 
 // *************** NetworkInfo ***************
 //
 class NetworkInfo extends InfoBase {
- constructor(props) {
-  super(props)
-  this.state.servers = []
- }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/ipam/network_info',{id:this.props.id})
-   .then((result) => {
-    this.setState(result); })
+  rest_call('api/ipam/network_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  infoItems = () => [
@@ -60,11 +62,7 @@ class NetworkInfo extends InfoBase {
    ]
 
  render() {
-  if (this.state.found === false)
-   return <article>Network with id: {this.props.id} removed</article>
-  else if (this.state.data === null)
-   return <Spinner />
-  else {
+  if (this.state.data)
    return (
     <article className='info'>
      <h1>Network Info</h1>
@@ -72,35 +70,29 @@ class NetworkInfo extends InfoBase {
      <InfoButton key='network_save' type='save' onClick={() => this.updateInfo('api/ipam/network_info')} />
     </article>
    );
-  }
+  else
+   return <Spinner />
  }
 }
 
 // *************** Network Layout ***************
 //
 class Layout extends Component {
- constructor(props){
-  super(props)
-  this.state = {data:null}
- }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/ipam/address_list',{network_id:this.props.network_id,dict:'ip_integer',extra:['device_id']})
-   .then((result) => {
-    this.setState({...result, start_address:parseInt(result.network.split(".")[3])})
-   })
+  rest_call('api/ipam/address_list',{network_id:this.props.network_id,dict:'ip_integer',extra:['device_id']}).then(result => this.setState({...result, start_address:parseInt(result.network.split(".")[3])}))
  }
 
  render(){
-  if (this.state.data === null)
+  if (!this.state)
    return <Spinner />
   else {
    const layout = [<button key={'btn_' + this.state.start_address} className='info ipam blue'>{this.state.start_address}</button>]
    for (let cnt = 1; cnt < this.state.size; cnt++){
-    if (this.state.data.hasOwnProperty(this.state.start + cnt)){
+    if (this.state.data.hasOwnProperty(this.state.start + cnt))
      layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam red' onClick={() => this.props.changeSelf(<DeviceInfo key={this.state.data[this.state.start + cnt].device_id} id={this.state.data[this.state.start + cnt].device_id} />)} >{cnt%256}</button>)
-    } else
-     layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam green' onClick={() => this.props.changeSelf(<DeviceNew key={this.state.start + cnt} network_id={this.props.network_id} ip_int={this.state.start + cnt} />)} >{cnt%256}</button>)
+    else
+     layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam green' onClick={() => this.props.changeSelf(<DeviceNew key={this.state.start + cnt} ipam_network_id={this.props.network_id} ip={int2ip(this.state.start + cnt)} />)} >{cnt%256}</button>)
    }
    layout.push(<button key={'btn_' + (this.state.start + this.state.size - 1)} className='info ipam blue'>{(this.state.start + this.state.size - 1) % 256}</button>)
    return (
@@ -122,13 +114,12 @@ class Leases extends ReportBase {
   this.thead = ['IP','Mac','Hostname','OUI','Starts','End']
  }
 
+ componentDidMount(){
+  rest_call('api/ipam/server_leases',{type:'active'}).then(result => this.setState(result))
+ }
+
  listItem = (row) => [row.ip,row.mac,row.hostname,row.oui,row.starts,row.ends]
 
- componentDidMount(){
-  rest_call(rest_base + 'api/ipam/server_leases',{type:'active'})
-   .then((result) => {
-    this.setState(result); })
- }
 }
 
 // *************** Address List ***************
@@ -145,33 +136,22 @@ class AddressList extends ReportBase{
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/ipam/address_list',{network_id:this.props.network_id,extra:['a_id','ptr_id','hostname','a_domain_id','device_id']})
-   .then((result) => { this.setState(result) })
+  rest_call('api/ipam/address_list',{network_id:this.props.network_id,extra:['a_id','ptr_id','hostname','a_domain_id','device_id']}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.ip,row.hostname,row.domain,row.a_id,row.ptr_id,<StateMap key={'ip_state_'+row.id} state={row.state} />,<Fragment key={'ip_button_'+row.id}>
    <InfoButton type='info' onClick={() => this.props.changeSelf(<AddressInfo id={row.id} />)} />
-   <InfoButton type='trash' onClick={() => this.deleteList('api/ipam/address_delete',row.id,'Really delete address?')} />
+   <InfoButton type='delete' onClick={() => this.deleteList('api/ipam/address_delete',row.id,'Really delete address?')} />
   </Fragment>]
 }
 
 // *************** Address Info ***************
 //
 class AddressInfo extends InfoBase {
- constructor(props){
-  super(props)
-  this.state.domains = null
- }
 
-componentDidMount(){
-  rest_call(rest_base + 'api/ipam/address_info',{id:this.props.id,network_id:this.props.network_id})
-   .then((result) => {
-   this.setState(result);
-   })
-  rest_call(rest_base + 'api/dns/domain_list',{'filter':'forward'})
-   .then((result) => {
-   this.setState({domains:result.data});
-   })
+ componentDidMount(){
+  rest_call('api/ipam/address_info',{id:this.props.id,network_id:this.props.network_id}).then(result => this.setState(result))
+  rest_call('api/dns/domain_list',{'filter':'forward'}).then(result => this.setState({domains:result.data}))
  }
 
  infoItems = () => [
@@ -185,9 +165,7 @@ componentDidMount(){
  ]
 
  render() {
-  if ((this.state.data === null) || (this.state.domains === null))
-   return <Spinner />
-  else {
+  if (this.state && this.state.data && this.state.domains)
    return (
     <article className='info'>
      <h1>IP Address</h1>
@@ -196,6 +174,7 @@ componentDidMount(){
      <span className='results' id='ip_operation'>{this.state.status} {this.state.info}</span>
     </article>
    );
-  }
+  else
+   return <Spinner />
  }
 }

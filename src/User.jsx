@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { rest_call, rest_base, rnd } from './infra/Functions.js';
+import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoCol2, RimsContext } from './infra/Generic.js';
 import { ListBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
@@ -21,13 +21,12 @@ export class List extends ListBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/user_list')
-   .then((result) => { this.setState(result); })
+  rest_call('api/master/user_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.alias,row.name,<Fragment key={'user_buttons_'+row.id}>
    <InfoButton key={'user_info_'+row.id} type='info' onClick={() => { this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)}} />
-   <InfoButton key={'user_del_'+row.id} type='trash' onClick={() => { this.deleteList('api/master/user_delete',row.id,'Really delete user?')}} />
+   <InfoButton key={'user_del_'+row.id} type='delete' onClick={() => { this.deleteList('api/master/user_delete',row.id,'Really delete user?')}} />
   </Fragment>]
 
 }
@@ -35,18 +34,10 @@ export class List extends ListBase {
 // ************** Info **************
 //
 export class Info extends InfoBase {
- constructor(props) {
-  super(props)
-  this.state.themes = null;
- }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/system/theme_list')
-   .then((result) => {
-    this.setState({themes:result});
-   })
-  rest_call(rest_base + 'api/master/user_info',{id:this.props.id})
-   .then((result) => { this.setState(result); })
+  rest_call('api/system/theme_list').then(result => this.setState({themes:result}))
+  rest_call('api/master/user_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  infoItems = () => [
@@ -59,16 +50,13 @@ export class Info extends InfoBase {
 
  updateInfo = (api) => {
   this.context.setCookie({...this.context.cookie, theme:this.state.data.theme});
-  rest_call(rest_base + api,{op:'update', ...this.state.data})
-   .then((result) => { this.setState(result); })
+  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
  }
 
  render() {
-  if (this.state.found === false)
+  if (!this.state.found)
    return <article>User with id: {this.props.id} removed</article>
-  else if ((this.state.data === null) || (this.state.themes === null))
-   return <Spinner />
-  else {
+  else if (this.state.data && this.state.themes){
    const className = (this.props.hasOwnProperty('className')) ? `info ${this.props.className}` : 'info';
    return (
     <article className={className}>
@@ -77,7 +65,8 @@ export class Info extends InfoBase {
      <InfoButton key='user_save' type='save' onClick={() => this.updateInfo('api/master/user_info') } />
     </article>
    );
-  }
+  } else
+   return <Spinner />
  }
 }
 Info.contextType = RimsContext;

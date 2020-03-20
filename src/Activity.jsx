@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { rest_call, rest_base, rnd } from './infra/Functions.js';
+import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoCol2, RimsContext } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
@@ -33,13 +33,12 @@ class List extends ListBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/activity_list')
-   .then((result) => { this.setState(result); })
+  rest_call('api/master/activity_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [row.date + ' - ' + row.time,row.type,<Fragment key={'activity_buttons_'+row.id}>
    <InfoButton key={'act_info_'+row.id} type='info'  onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) } />
-   <InfoButton key={'act_delete_'+row.id} type='trash' onClick={() => this.deleteList('api/master/activity_delete',row.id,'Really delete activity') } />
+   <InfoButton key={'act_delete_'+row.id} type='delete' onClick={() => this.deleteList('api/master/activity_delete',row.id,'Really delete activity') } />
    </Fragment>
   ]
 
@@ -50,27 +49,22 @@ class List extends ListBase {
 class Info extends InfoBase {
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/activity_info',{id:this.props.id})
-   .then((result) => {
+  rest_call('api/master/activity_info',{id:this.props.id}).then(result => {
    if (result.data.user_id === null)
-    result.data.user_id = this.context.cookie.id
-   if (result.data.type_id === null)
-    result.data.type_id = result.types[0].id
+    result.data.user_id = this.context.cookie.id;
    this.setState(result);
-   })
+  })
  }
 
  infoItems = () => [
-    {tag:'select', id:'user_id', text:'User', value:this.state.data.user_id, options:this.state.users.map(row => ({value:row.id, text:row.alias}))},
-    {tag:'select', id:'type_id', text:'Type', value:this.state.data.type_id, options:this.state.types.map(row => ({value:row.id, text:row.type}))},
-    {tag:'input', type:'date', id:'date', text:'Date', value:this.state.data.date},
-    {tag:'input', type:'time', id:'time', text:'Time', value:this.state.data.time}
-   ]
+  {tag:'select', id:'user_id', text:'User', value:this.state.data.user_id, options:this.state.users.map(row => ({value:row.id, text:row.alias}))},
+  {tag:'select', id:'type_id', text:'Type', value:this.state.data.type_id, options:this.state.types.map(row => ({value:row.id, text:row.type}))},
+  {tag:'input', type:'date', id:'date', text:'Date', value:this.state.data.date},
+  {tag:'input', type:'time', id:'time', text:'Time', value:this.state.data.time}
+ ]
 
  render() {
-  if (this.state.data === null)
-   return <Spinner />
-  else {
+  if (this.state.data)
    return (
     <article className='info'>
      <h1>Activity</h1>
@@ -79,7 +73,8 @@ class Info extends InfoBase {
      <InfoButton key='activity_save' type='save' onClick={() => this.updateInfo('api/master/activity_info')} />
     </article>
    );
-  }
+  else
+   return <Spinner />
  }
 }
 Info.contextType = RimsContext;
@@ -94,8 +89,7 @@ export class Report extends ReportBase{
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/activity_list',{group:'month',mode:'full'})
-   .then((result) => { this.setState(result) })
+  rest_call('api/master/activity_list',{group:'month',mode:'full'}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.date + ' - ' + row.time,row.user,row.type,row.event]
@@ -115,14 +109,14 @@ class TypeList extends ListBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/activity_type_list')
-   .then((result) => { this.setState(result); })
+  rest_call('api/master/activity_type_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.type,<Fragment key='activity_buttons'>
    <InfoButton key='act_tp_info'   type='info'  onClick={() => this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } />
-   <InfoButton key='act_tp_delete' type='trash' onClick={() => this.deleteList('api/master/activity_type_delete',row.id,'Really delete type?') } />
-   </Fragment>]
+   <InfoButton key='act_tp_delete' type='delete' onClick={() => this.deleteList('api/master/activity_type_delete',row.id,'Really delete type?') } />
+  </Fragment>
+ ]
 
 }
 
@@ -131,18 +125,13 @@ class TypeList extends ListBase {
 class TypeInfo extends InfoBase {
 
  componentDidMount(){
-  rest_call(rest_base + 'api/master/activity_type_info',{id:this.props.id})
-   .then((result) => {
-   this.setState(result);
-   })
+  rest_call('api/master/activity_type_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  infoItems = () => [ {tag:'input', type:'text', id:'type', text:'Type', value:this.state.data.type, placeholder:'name'} ]
 
  render() {
-  if (this.state.data === null)
-   return <Spinner />
-  else {
+  if (this.state.data)
    return (
     <article className='info'>
      <h1>Activity Type</h1>
@@ -150,6 +139,7 @@ class TypeInfo extends InfoBase {
      <InfoButton key='activity_type_save' type='save' onClick={() => this.updateInfo('api/master/activity_type_info')} />
     </article>
    );
-  }
+  else
+   return <Spinner />
  }
 }

@@ -1,10 +1,19 @@
 import React, { Fragment, Component } from 'react'
-import { rest_call, rest_base, rnd } from './infra/Functions.js';
+import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoCol2, TableHead, TableRow } from './infra/Generic.js';
-import { ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
+import { ListBase, ReportBase, InfoBase, MainBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
 
 // CONVERTED ENTIRELY
+
+// *************** Main ***************
+//
+export class Main extends MainBase {
+ constructor(props){
+  super(props)
+  this.state.content = <DomainList key='domain_list' />
+ }
+}
 
 // *************** Domain List ***************
 //
@@ -22,25 +31,23 @@ export class DomainList extends ListBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/dns/domain_list')
-   .then((result) => {
-    result.result = 'OK';
-    this.setState(result);
-   })
+  rest_call('api/dns/domain_list').then(result => {
+   result.result = 'OK';
+   this.setState(result);
+  })
  }
 
  syncDomains(){
-  rest_call(rest_base + 'api/dns/domain_list',{sync:true})
-   .then((result) => {
-    result.result = JSON.stringify(result.result);
-    this.setState(result);
-   })
+  rest_call('api/dns/domain_list',{sync:true}).then(result => {
+   result.result = JSON.stringify(result.result);
+   this.setState(result);
+  })
  }
 
  listItem = (row) => [row.id,row.name,row.service,<Fragment key={'domain_buttons_'+row.id}>
    <InfoButton key={'net_info_'+row.id} type='info'  onClick={() => this.changeContent(<DomainInfo key={'domain_'+row.id} id={row.id} />) } />
    <InfoButton key={'net_items_'+row.id} type='items' onClick={() => this.changeContent(<RecordList changeSelf={this.changeContent} key={'items_'+row.id} domain_id={row.id} />) } />
-   <InfoButton key={'net_delete_'+row.id} type='trash' onClick={() => this.deleteList('api/dns/domain_delete',row.id,'Really delete domain') } />
+   <InfoButton key={'net_delete_'+row.id} type='delete' onClick={() => this.deleteList('api/dns/domain_delete',row.id,'Really delete domain') } />
    </Fragment>
   ]
 }
@@ -48,16 +55,9 @@ export class DomainList extends ListBase {
 // *************** Domain Info ***************
 //
 class DomainInfo extends InfoBase {
- constructor(props){
-  super(props)
-  this.state.servers = null
- }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/dns/domain_info',{id:this.props.id})
-   .then((result) => {
-    result.data.server_id = null;
-    this.setState(result); })
+  rest_call('api/dns/domain_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  infoItems = () => {
@@ -78,11 +78,9 @@ class DomainInfo extends InfoBase {
  }
 
  render() {
-  if (this.state.found === false)
+  if (!this.state.found)
    return <article>Domain with id: {this.props.id} removed</article>
-  else if (this.state.data === null)
-   return <Spinner />
-  else {
+  else if (this.state.data)
    return (
     <article className='info'>
      <h1>Domain Info</h1>
@@ -90,7 +88,8 @@ class DomainInfo extends InfoBase {
      <InfoButton key='domain_save' type='save' onClick={() => this.updateInfo('api/dns/domain_info')} />
     </article>
    );
-  }
+  else
+   return <Spinner />
  }
 }
 
@@ -99,13 +98,11 @@ class DomainInfo extends InfoBase {
 class Status extends Component {
  constructor(props){
   super(props)
-  this.state = {top:null,who:null}
+  this.state = {}
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/dns/status')
-   .then((result) => {
-    this.setState(result); })
+  rest_call('api/dns/status').then(result => this.setState(result))
  }
 
  topTable = (node_service,rows) => {
@@ -133,9 +130,7 @@ class Status extends Component {
  }
 
  render(){
-  if ((this.state.top === null) || (this.state.whp === null))
-   return <Spinner />
-  else {
+  if (this.state.top && this.state.who)
    return (
     <div style={{display:'flex'}}>
      <article className='report'>
@@ -148,7 +143,8 @@ class Status extends Component {
      </article>
     </div>
    )
-  }
+  else
+   return <Spinner />
  }
 }
 
@@ -166,28 +162,22 @@ class RecordList extends ReportBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/dns/record_list',{domain_id:this.props.domain_id})
-   .then((result) => {
-    this.setState(result); })
+  rest_call('api/dns/record_list',{domain_id:this.props.domain_id}).then(result => this.setState(result))
  }
 
  listItem = (row) => {
   var buttons = [<InfoButton key={'record_info_btn_' + row.id} type='info' onClick={() => this.props.changeSelf(<RecordInfo key={'record_info_'+row.id} domain_id={this.props.domain_id} id={row.id} />)} />]
-  if (['A','CNAME','PTR'].includes(row.type )) {
-   buttons.push(<InfoButton key={'record_del_btn_' + row.id} type='trash' onClick={() => this.deleteList('api/dns/record_delete',row.id,'Really delete record?')} />)
+  if (['A','CNAME','PTR'].includes(row.type)) {
+   buttons.push(<InfoButton key={'record_del_btn_' + row.id} type='delete' onClick={() => this.deleteList('api/dns/record_delete',row.id,'Really delete record?')} />)
   }
   return [row.id,row.name,row.content,row.type,row.ttl,<Fragment key={'record_buttons_'+row.id}>{buttons}</Fragment>]
  }
 
  deleteList = (api,id,msg) => {
-  if (window.confirm(msg)){
-   rest_call(rest_base + api, {domain_id:this.props.domain_id,id:id})
-    .then((result) => {
-     if(result.deleted)
-      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id )})
-    })
-  }
+  if (window.confirm(msg))
+   rest_call(api, {domain_id:this.props.domain_id,id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))}))
  }
+
 }
 
 // *************** Record Info ***************
@@ -195,8 +185,7 @@ class RecordList extends ReportBase {
 class RecordInfo extends InfoBase {
 
  componentDidMount(){
-  rest_call(rest_base + 'api/dns/record_info',{id:this.props.id,domain_id:this.props.domain_id})
-   .then((result) => { this.setState(result); })
+  rest_call('api/dns/record_info',{id:this.props.id,domain_id:this.props.domain_id}).then(result => this.setState(result))
  }
 
  infoItems = () => [
@@ -207,9 +196,7 @@ class RecordInfo extends InfoBase {
  ]
 
  render() {
-  if (this.state.data === null)
-   return <Spinner />
-  else {
+  if (this.state.data)
    return (
     <article className='info'>
      <h1>Record Info</h1>
@@ -217,6 +204,7 @@ class RecordInfo extends InfoBase {
      <InfoButton key='record_save' type='save' onClick={() => this.updateInfo('api/dns/record_info')} />
     </article>
    );
-  }
+  else
+   return <Spinner />
  }
 }

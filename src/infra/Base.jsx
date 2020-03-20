@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { rest_call, rest_base } from './Functions.js';
+import { rest_call } from './Functions.js';
 import { ContentData, ContentList, ContentReport } from './Generic.js';
 
 // ************** Main Base ****************
@@ -32,13 +32,8 @@ export class ListBase extends Component {
  changeContent = (elem) => this.setState({content:elem})
 
  deleteList = (api,id,msg) => {
-  if (window.confirm(msg)){
-   rest_call(rest_base + api, {id:id})
-    .then((result) => {
-     if(result.deleted)
-      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id ),content:null})
-    })
-  }
+  if (window.confirm(msg))
+   rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null}))
  }
 
  listItem = (row) => []
@@ -64,13 +59,8 @@ export class ReportBase extends Component {
  }
 
  deleteList = (api,id,msg) => {
-  if (window.confirm(msg)){
-   rest_call(rest_base + api, {id:id})
-    .then((result) => {
-     if(result.deleted)
-      this.setState({data:this.state.data.filter((row,index,arr) => row.id !== id )})
-    })
-  }
+  if (window.confirm(msg))
+   rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))}))
  }
 
  listItem = (row) => []
@@ -97,7 +87,6 @@ export class InfoBase extends Component {
  changeContent = (elem) => this.setState({content:elem})
 
  updateInfo = (api) => {
-  rest_call(rest_base + api,{op:'update', ...this.state.data})
-   .then((result) => { this.setState(result); })
+  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
  }
 }

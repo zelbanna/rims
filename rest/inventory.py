@@ -99,7 +99,7 @@ def info(aCTX, aArgs = None):
     ret['data'][tp] = (ret['data'][tp] == 1)
   else:
    ret['found'] = True
-   ret['data'] = {'id':'new','vendor':None,'serial':None,'model':None,'license':False,'license_key':None,'support_contract':False,'support_end_date':None,'description':'N/A','purchase_order':None,'location_id':None,'receive_date':None,'product':None}
+   ret['data'] = {'id':'new','vendor':'','serial':'','model':'','license':False,'license_key':'','support_contract':False,'support_end_date':'','description':'N/A','purchase_order':'','location_id':None,'receive_date':'','product':''}
   db.do("SELECT id,name FROM locations")
   ret['locations'] = db.get_rows()
  return ret

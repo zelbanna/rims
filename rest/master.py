@@ -154,7 +154,7 @@ def node_info(aCTX, aArgs = None):
       break
     aCTX.nodes[node['node']] = {'id':node['id'],'url':node['url']}
   else:
-   ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':None}
+   ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':''}
  return ret
 
 #

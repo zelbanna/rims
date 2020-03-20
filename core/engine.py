@@ -492,14 +492,44 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
 
  def do_GET(self):
-  self.route()
+  """ Route request to the right function /<path>/mod_fun?get or /<site:mod_fun>?get"""
+  path,_,query = self.path[1:].partition('/')
+  if path in ['infra','images','files']:
+   # Use caching here :-)
+   if self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
+    self._headers['X-Code'] = 304
+   else:
+    self.files(path,query)
+  elif path in ['api','external']:
+   self.api(path,query)
+  elif path == 'front':
+   self.front()
+  elif path == 'system':
+   self.system(query)
+  elif len(path) == 0:
+   self._headers.update({'X-Process':'no route','Location':'portal_login','X-Code':301})
+  else:
+   self.site(self.path[1:])
   self.header()
   try:   self.wfile.write(self._body)
   except Exception as e:
    print("do_GET: Error writing above body => %s"%str(e))
 
  def do_POST(self):
-  self.route()
+  """ Route request to the right function /<path>/mod_fun?get"""
+  path,_,query = self.path[1:].partition('/')
+  if path in ['api','external']:
+   self.api(path,query)
+  elif path == 'front':
+   self.front()
+  elif path == 'auth':
+   self.auth()
+  elif path == 'system':
+   self.system(query)
+  elif len(path) == 0:
+   self._headers.update({'X-Process':'no route','X-Code':404})
+  else:
+   self.site(self.path[1:])
   self.header()
   self.wfile.write(self._body)
 

@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react'
-import { rest_call, rest_base, rnd } from './infra/Functions.js';
+import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoCol2, RimsContext } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
@@ -33,19 +33,17 @@ class List extends ListBase {
   this.header = 'Inventory'
   this.buttons = [
    <InfoButton key='reload' type='reload' onClick={() =>  this.componentDidMount() } />,
-   <InfoButton key='search' type='search' onClick={() => this.props.changeSelf(<Search key='search_list' changeSelf={this.props.changeSelf} />) } />,
    <InfoButton key='add' type='add' onClick={() => this.changeContent(<Info key={'inventory_new_' + rnd()} id='new' />) } />
   ]
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/inventory/list',(this.props.hasOwnProperty('args')) ? this.props.args : {})
-   .then((result) => this.setState(result) )
+  rest_call('api/inventory/list',this.props.args).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.serial,row.model,<Fragment key={'inventory_buttons_'+row.id}>
    <InfoButton key={'inv_info_'+row.id} type='info'  onClick={() => this.changeContent(<Info key={'inventory_'+row.id} id={row.id} />) } />
-   <InfoButton key={'inv_delete_'+row.id} type='trash' onClick={() => this.deleteList('api/inventory/delete',row.id,'Really delete item') } />
+   <InfoButton key={'inv_delete_'+row.id} type='delete' onClick={() => this.deleteList('api/inventory/delete',row.id,'Really delete item') } />
    </Fragment>
   ]
 
@@ -87,14 +85,9 @@ class Search extends Component {
 // ************** Info **************
 //
 export class Info extends InfoBase {
- constructor(props) {
-  super(props)
-  this.state = {data:null, locations:[]}
- }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/inventory/info',{id:this.props.id})
-   .then((result) => this.setState(result) )
+  rest_call('api/inventory/info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  infoItems = () => {
@@ -120,11 +113,7 @@ export class Info extends InfoBase {
  }
 
  render() {
-  if (this.state.found === false)
-   return <article>Inventory item  with id: {this.props.id} removed</article>
-  else if (this.state.data === null)
-   return <Spinner />
-  else {
+  if (this.state.data){
    const className = (this.props.hasOwnProperty('className')) ? `info ${this.props.className}` : 'info';
    return (
     <article className={className}>
@@ -134,9 +123,9 @@ export class Info extends InfoBase {
      <InfoButton key='inventory_save' type='save' onClick={() => this.updateInfo('api/inventory/info') } />
     </article>
    );
-  }
+  } else
+   return <Spinner />
  }
-
 }
 
 // ************** Vendor **************
@@ -149,8 +138,7 @@ class Vendor extends ListBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/inventory/vendor_list')
-   .then((result) => this.setState(result))
+  rest_call('api/inventory/vendor_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [<TextButton key={'search_' +row.vendor} text={row.vendor} onClick={() => this.props.changeSelf(<List key='inventory_list' args={{field:'vendor', search:row.vendor}} changeSelf={this.props.changeSelf} />)} />,row.count]
@@ -166,8 +154,7 @@ export class Report extends ReportBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/inventory/list', { extra:['vendor','product','description'], sort:'vendor'})
-   .then((result) => this.setState(result) )
+  rest_call('api/inventory/list', { extra:['vendor','product','description'], sort:'vendor'}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.serial,row.vendor,row.model,row.product,row.description]

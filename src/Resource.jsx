@@ -1,5 +1,5 @@
 import React from 'react';
-import { rest_call, rest_base } from './infra/Functions.js';
+import { rest_call } from './infra/Functions.js';
 import { MainBase } from './infra/Base.jsx';
 import { MenuButton } from './infra/Buttons.jsx';
 import { RimsContext } from './infra/Generic.js';
@@ -11,7 +11,7 @@ import { RimsContext } from './infra/Generic.js';
 export class Main extends MainBase {
 
  componentDidMount(){
-  rest_call(rest_base + 'api/portal/resources',{type:'tool'})
+  rest_call('api/portal/resources',{type:'tool'})
    .then((result) => {
    let buttons = []
    for (let [key, panel] of Object.entries(result.data)){

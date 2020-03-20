@@ -9,6 +9,8 @@ export const Spinner = () => <div className='overlay'><div className='loader'></
 
 export const StateMap = (props) =>  <div className={'state '+ {unknown:'grey',up:'green',down:'red',undefined:'orange',null:'orange'}[props.state] || 'orange'} />
 
+export const SearchField = (props) => <input type='text' className='searchfield' onChange={props.searchHandler} value={props.value} placeholder={props.placeholder} />
+
 // ***************************** Table ********************************
 
 export const TableHead = (props) => <div className='thead'>{props.headers.map((row,index) => <div key={'th_'+index}>{row}</div> )}</div>
@@ -23,9 +25,7 @@ export const ContentList = (props) => content('table',props)
 export const ContentReport = (props) => content('report',props)
 
 const content = (type,props) => {
- if (props.trows === null)
-  return <Spinner />
- else {
+ if (props.trows)
   return <article className={(props.hasOwnProperty('articleClass')) ? props.articleClass : type}>
     <h1>{props.header}</h1>
     {props.buttons}
@@ -37,7 +37,8 @@ const content = (type,props) => {
      </div>
     </div>
    </article>
- }
+ else
+  return <Spinner />
 }
 
 export const ContentData = (props) => <Fragment key='content_data_fragment'>{props.content}</Fragment>
@@ -64,9 +65,9 @@ export const InfoCol2 = (props) => {
     second = <div>UNKNOWN</div>
    }
   } else if (row.tag === 'select'){
-   if ((row.value === null) && (row.options.find(opt => opt.value === 'NULL') === undefined))
-    row.options.push({value:"NULL",text:"N/A"})
-   second = <select name={row.id} onChange={props.changeHandler} value={(row.value !== null) ? row.value : "NULL"}>{
+   if ((row.value === null || row.value === undefined) && row.options.find(opt => opt.value === 'NULL') === undefined)
+    row.options.push({value:"NULL",text:"<Empty>"})
+   second = <select name={row.id} onChange={props.changeHandler} value={(row.value !== null && row.value !== undefined) ? row.value : "NULL"}>{
     row.options.map((opt,index) => <option key={row.id + '_'+index} value={opt.value}>{opt.text}</option>)
     }</select>
   } else if (row.tag === 'span') {

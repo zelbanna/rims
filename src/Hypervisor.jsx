@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react'
-import { rest_call, rest_base, rnd } from './infra/Functions.js';
+import { rest_call, rnd } from './infra/Functions.js';
 import { StateMap, RimsContext } from './infra/Generic.js';
 import { MainBase, ListBase, ReportBase } from './infra/Base.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
@@ -27,8 +27,7 @@ export class List extends ListBase {
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/device/list',{field:'base',search:'hypervisor',extra:['type','functions','url'],sort:'hostname'})
-   .then((result) => this.setState(result) )
+  rest_call('api/device/list',{field:'base',search:'hypervisor',extra:['type','functions','url'],sort:'hostname'}).then(result => this.setState(result))
  }
 
  listItem = (row) => {
@@ -54,8 +53,8 @@ class Sync extends ReportBase{
  }
 
  componentDidMount(){
-  rest_call(rest_base + 'api/device/vm_mapping')
-   .then((result) => {
+  rest_call('api/device/vm_mapping')
+   .then(result => {
     let entries = [];
     ["existing","inventory","discovered","database"].forEach(type => {
      if (result.hasOwnProperty(type))
@@ -77,7 +76,7 @@ class Sync extends ReportBase{
 class Manage extends ListBase {
 
  componentDidMount(){
-  rest_call(rest_base + 'api/device/management',{id:this.props.id})
+  rest_call('api/device/management',{id:this.props.id})
    .then((result) => {
     var navitems = [{title:'Logs', onClick:() => this.changeContent(<DeviceLogs id={this.props.id} />)}];
     //if (result.data.hasOwnProperty(url) && result.data.url.length > 0)

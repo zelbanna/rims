@@ -431,15 +431,17 @@ def address_find(aCTX, aArgs = None):
  def GL_int2ip(addr):
   return inet_ntoa(pack("!I", addr))
 
+ ret = {'status':'OK'}
  consecutive = int(aArgs.get('consecutive',1))
  with aCTX.db as db:
-  db.do("SELECT network, INET_NTOA(network) as netasc, mask FROM ipam_networks WHERE id = %(network_id)s"%aArgs)
+  if (db.do("SELECT network, INET_NTOA(network) as netasc, mask FROM ipam_networks WHERE id = %(network_id)s"%aArgs) == 0):
+   return {'status':'NOT_OK', 'info':'Network not found'}
   net = db.get_row()
   db.do("SELECT ip FROM ipam_addresses WHERE network_id = %(network_id)s"%aArgs)
   iplist = db.get_dict('ip')
  network = int(net.get('network'))
  start  = None
- ret    = { 'network':net['netasc'] }
+ ret['network'] = net['netasc']
  for ip in range(network + 1, network + 2**(32-int(net.get('mask')))-1):
   if ip in iplist:
    start = None

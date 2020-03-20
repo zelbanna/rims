@@ -25,7 +25,7 @@ def list(aCTX, aArgs = None):
   - field (optional) 'id/ip/mac/hostname/type/base/vm/ipam_id' as search fields
   - search (optional) content to match on field, special case for mac where non-correct MAC will match all that are not '00:00:00:00:00:00'
   - extra (optional) list of extra info to add, None/'type'/'url'/'system'
-  - rack (optional), id of rack to filter devices from
+  - rack_id (optional), id of rack to filter devices from
   - sort (optional) (sort on id or hostname or...)
   - dict (optional) (output as dictionary instead of list)
 
@@ -36,9 +36,9 @@ def list(aCTX, aArgs = None):
  fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ip', 'devices.model','ia.state']
  tables = ['device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id']
  filter = ['TRUE']
- if 'rack' in aArgs:
+ if aArgs.get('rack_id'):
   tables.append("rack_info AS ri ON ri.device_id = devices.id")
-  filter.append("ri.rack_id = %(rack)s"%aArgs)
+  filter.append("ri.rack_id = %(rack_id)s"%aArgs)
  if 'search' in aArgs:
   if   aArgs['field'] == 'hostname':
    filter.append("devices.hostname LIKE '%%%(search)s%%'"%aArgs)
@@ -1195,7 +1195,7 @@ def class_list(aCTX, aArgs = None):
   else:
    db.do("SHOW COLUMNS FROM device_interfaces LIKE 'class'")
   parts = (db.get_val('Type')).split("'")
-  ret['classes'] = [parts[i] for i in range(1,len(parts),2)]
+  ret['data'] = [parts[i] for i in range(1,len(parts),2)]
  return ret
 
 ##################################################### Logs #####################################################
